@@ -58,7 +58,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchHirerDashboardData } from '../../services/hirerDashboardSlice';
 // Removed AuthContext import to prevent dual state management conflicts
-// import { useAuth } from '../../../auth/contexts/AuthContext';
+// import { useAuth } from '../../../auth/hooks/useAuth';
 import ErrorBoundary from '../../../../components/common/ErrorBoundary';
 import { useSelector, useDispatch } from 'react-redux';
 import {
@@ -797,3 +797,4 @@ const EnhancedHirerDashboard = () => {
 };
 
 export default EnhancedHirerDashboard;
+

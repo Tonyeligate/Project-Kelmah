@@ -28,7 +28,7 @@ import {
   Clear,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../../../common/services/axios';
+import { api } from '../../../../../services/apiClient';
 
 const JobSearch = () => {
   const navigate = useNavigate();
@@ -74,7 +74,7 @@ const JobSearch = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axiosInstance.get('/jobs/search', {
+      const response = await api.get('/jobs/search', {
         params: filters,
       });
       setJobs(response.data.data);
@@ -108,7 +108,7 @@ const JobSearch = () => {
 
   const handleApplyJob = async (jobId) => {
     try {
-      await axiosInstance.post(`/api/jobs/${jobId}/apply`, {});
+      await api.post(`/jobs/${jobId}/apply`, {});
       // Show success message or update UI
     } catch (err) {
       console.error('Error applying for job:', err);

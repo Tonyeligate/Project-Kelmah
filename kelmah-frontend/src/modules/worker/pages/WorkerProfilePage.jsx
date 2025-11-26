@@ -18,7 +18,7 @@ const WorkerProfilePage = () => {
           content="View detailed worker profile including skills, experience, reviews, and portfolio"
         />
       </Helmet>
-      
+
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box>
           <WorkerProfile />

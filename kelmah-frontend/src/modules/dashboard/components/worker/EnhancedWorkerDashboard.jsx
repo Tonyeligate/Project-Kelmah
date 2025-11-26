@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -38,7 +44,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchDashboardData } from '../../services/dashboardSlice';
 // Removed AuthContext import to prevent dual state management conflicts
-// import { useAuth } from '../../../auth/contexts/AuthContext';
+// import { useAuth } from '../../../auth/hooks/useAuth';
 import workerService from '../../../worker/services/workerService';
 import VocationalJobCategories from './VocationalJobCategories';
 import VisualQuickActions from './VisualQuickActions';
@@ -50,9 +56,7 @@ const RECENT_JOB_FALLBACK_RETRY_MS = 45 * 1000; // 45 seconds for degraded state
 
 const formatFallbackLabel = (reason) =>
   reason
-    ? reason
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, (char) => char.toUpperCase())
+    ? reason.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
     : null;
 
 const getJobServiceErrorMessage = (error) => {
@@ -614,10 +618,7 @@ const EnhancedWorkerDashboard = () => {
                                 </Typography>
                               )}
                               {recentJobsState.metadata?.receivedAt && (
-                                <Typography
-                                  variant="caption"
-                                  display="block"
-                                >
+                                <Typography variant="caption" display="block">
                                   Last checked at{' '}
                                   {new Date(
                                     recentJobsState.metadata.receivedAt,
@@ -626,10 +627,7 @@ const EnhancedWorkerDashboard = () => {
                                 </Typography>
                               )}
                               {recentJobsState.error && (
-                                <Typography
-                                  variant="caption"
-                                  display="block"
-                                >
+                                <Typography variant="caption" display="block">
                                   {recentJobsState.error}
                                 </Typography>
                               )}
@@ -685,7 +683,9 @@ const EnhancedWorkerDashboard = () => {
                             onClick={handleRecentJobsRetry}
                             disabled={recentJobsState.loading}
                           >
-                            {recentJobsState.loading ? 'Retrying…' : 'Retry now'}
+                            {recentJobsState.loading
+                              ? 'Retrying…'
+                              : 'Retry now'}
                           </Button>
                         </Box>
                       ) : (
@@ -693,12 +693,19 @@ const EnhancedWorkerDashboard = () => {
                           <WorkIcon
                             sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }}
                           />
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mb: 1 }}
+                          >
                             No recent job matches. Update your skills to see
                             more opportunities!
                           </Typography>
                           {recentJobsState.metadata?.receivedAt && (
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               Last checked at{' '}
                               {new Date(
                                 recentJobsState.metadata.receivedAt,
@@ -838,3 +845,4 @@ const EnhancedWorkerDashboard = () => {
 };
 
 export default EnhancedWorkerDashboard;
+

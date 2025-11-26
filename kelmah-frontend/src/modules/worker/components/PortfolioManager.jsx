@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 // Removed AuthContext import to prevent dual state management conflicts
-// import { useAuth } from '../../auth/contexts/AuthContext';"
+// import { useAuth } from '../../auth/hooks/useAuth';"
 import portfolioService from '../services/portfolioService';
 import fileUploadService from '../../common/services/fileUploadService';
 import {
@@ -722,3 +722,4 @@ const PortfolioManager = () => {
 };
 
 export default PortfolioManager;
+

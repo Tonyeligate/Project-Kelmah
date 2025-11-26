@@ -58,14 +58,12 @@ describe('ContractContext', () => {
   });
 
   test('handles loading state', async () => {
-    mockContractService.getContracts.mockReturnValue(new Promise(() => {})); // Never resolves
+    mockContractService.getContracts.mockReturnValue(new Promise(() => { })); // Never resolves
 
     render(
-      <AuthProvider>
-        <ContractProvider contractService={mockContractService}>
-          <MockConsumer />
-        </ContractProvider>
-      </AuthProvider>,
+      <ContractProvider contractService={mockContractService}>
+        <MockConsumer />
+      </ContractProvider>,
     );
 
     expect(screen.getByText('Loading...')).toBeInTheDocument();
@@ -76,11 +74,9 @@ describe('ContractContext', () => {
     mockContractService.getContracts.mockRejectedValue(new Error(errorMessage));
 
     render(
-      <AuthProvider>
-        <ContractProvider contractService={mockContractService}>
-          <MockConsumer />
-        </ContractProvider>
-      </AuthProvider>,
+      <ContractProvider contractService={mockContractService}>
+        <MockConsumer />
+      </ContractProvider>,
     );
 
     await waitFor(() => {

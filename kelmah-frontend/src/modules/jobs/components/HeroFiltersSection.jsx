@@ -69,17 +69,33 @@ const HeroFiltersSection = ({
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-      <Box sx={{ mb: { xs: 2, md: 4 }, mt: { xs: 1, md: 0 }, px: { xs: 1, sm: 0 } }}>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+    >
+      <Box
+        sx={{
+          mb: { xs: 2, md: 4 },
+          mt: { xs: 1, md: 0 },
+          px: { xs: 1, sm: 0 },
+        }}
+      >
         <Grid container spacing={{ xs: 2, md: 3 }} alignItems="center">
           <Grid item xs={12} md={4}>
-            <Box sx={{ textAlign: { xs: 'center', md: 'left' }, px: { xs: 1, sm: 0 } }}>
+            <Box
+              sx={{
+                textAlign: { xs: 'center', md: 'left' },
+                px: { xs: 1, sm: 0 },
+              }}
+            >
               <Typography
                 variant="h4"
                 component="h1"
                 sx={{
                   fontWeight: 'bold',
-                  background: 'linear-gradient(45deg, #D4AF37 30%, #FFD700 90%)',
+                  background:
+                    'linear-gradient(45deg, #D4AF37 30%, #FFD700 90%)',
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
@@ -94,7 +110,9 @@ const HeroFiltersSection = ({
                   wordWrap: 'break-word',
                 }}
               >
-                {isSmallMobile ? 'Find Trade Jobs' : 'Find Your Next Trade Opportunity'}
+                {isSmallMobile
+                  ? 'Find Trade Jobs'
+                  : 'Find Your Next Trade Opportunity'}
               </Typography>
               <Typography
                 variant="h6"
@@ -125,15 +143,26 @@ const HeroFiltersSection = ({
                 mx: { xs: 1, sm: 0 },
               }}
             >
-              <Grid container spacing={{ xs: 1.5, sm: 2 }} alignItems="stretch" sx={{ width: '100%', margin: 0 }}>
+              <Grid
+                container
+                spacing={{ xs: 1.5, sm: 2 }}
+                alignItems="stretch"
+                sx={{ width: '100%', margin: 0 }}
+              >
                 <Grid item xs={12} sm={5}>
                   <TextField
                     fullWidth
                     size="small"
                     value={searchQuery}
                     onChange={(event) => onSearchChange(event.target.value)}
-                    placeholder={isSmallMobile ? 'Search jobs...' : 'Search jobs, skills, companies...'}
-                    inputProps={{ 'aria-label': 'Search for jobs, skills, or companies' }}
+                    placeholder={
+                      isSmallMobile
+                        ? 'Search jobs...'
+                        : 'Search jobs, skills, companies...'
+                    }
+                    inputProps={{
+                      'aria-label': 'Search for jobs, skills, or companies',
+                    }}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         color: 'white',
@@ -160,7 +189,12 @@ const HeroFiltersSection = ({
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <SearchIcon sx={{ color: '#D4AF37', fontSize: { xs: '1.2rem', sm: '1rem' } }} />
+                          <SearchIcon
+                            sx={{
+                              color: '#D4AF37',
+                              fontSize: { xs: '1.2rem', sm: '1rem' },
+                            }}
+                          />
                         </InputAdornment>
                       ),
                     }}
@@ -209,10 +243,15 @@ const HeroFiltersSection = ({
                       }}
                     >
                       {categoryOptions.map((category) => (
-                        <MenuItem key={category.value || 'all-categories'} value={category.value}>
+                        <MenuItem
+                          key={category.value || 'all-categories'}
+                          value={category.value}
+                        >
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             {renderCategoryIcon(category.value)}
-                            <Typography variant="body2">{category.label}</Typography>
+                            <Typography variant="body2">
+                              {category.label}
+                            </Typography>
                           </Box>
                         </MenuItem>
                       ))}
@@ -262,15 +301,25 @@ const HeroFiltersSection = ({
                       }}
                     >
                       {locationOptions.map((location) => (
-                        <MenuItem key={location.value || 'all-locations'} value={location.value}>
-                          <Typography variant="body2">{location.label}</Typography>
+                        <MenuItem
+                          key={location.value || 'all-locations'}
+                          value={location.value}
+                        >
+                          <Typography variant="body2">
+                            {location.label}
+                          </Typography>
                         </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
                 </Grid>
 
-                <Grid item xs={12} sm={2} sx={{ display: 'flex', alignItems: 'stretch' }}>
+                <Grid
+                  item
+                  xs={12}
+                  sm={2}
+                  sx={{ display: 'flex', alignItems: 'stretch' }}
+                >
                   <Tooltip title="Search for jobs" placement="top">
                     <Button
                       fullWidth
@@ -324,15 +373,26 @@ const HeroFiltersSection = ({
               </Box>
 
               <Collapse in={showFilters}>
-                <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(212,175,55,0.2)' }}>
+                <Box
+                  sx={{
+                    mt: 2,
+                    pt: 2,
+                    borderTop: '1px solid rgba(212,175,55,0.2)',
+                  }}
+                >
                   <Grid container spacing={2}>
                     <Grid item xs={12} md={6}>
-                      <Typography variant="body2" sx={{ mb: 1, color: '#D4AF37', fontWeight: 'bold' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ mb: 1, color: '#D4AF37', fontWeight: 'bold' }}
+                      >
                         Salary Range (GHS)
                       </Typography>
                       <Slider
                         value={budgetRange}
-                        onChange={(_, newValue) => onBudgetRangeChange(newValue)}
+                        onChange={(_, newValue) =>
+                          onBudgetRangeChange(newValue)
+                        }
                         valueLabelDisplay="auto"
                         min={500}
                         max={10000}
@@ -342,37 +402,56 @@ const HeroFiltersSection = ({
                           color: '#D4AF37',
                           '& .MuiSlider-thumb': { bgcolor: '#D4AF37' },
                           '& .MuiSlider-track': { bgcolor: '#D4AF37' },
-                          '& .MuiSlider-rail': { bgcolor: 'rgba(212,175,55,0.3)' },
+                          '& .MuiSlider-rail': {
+                            bgcolor: 'rgba(212,175,55,0.3)',
+                          },
                         }}
                       />
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
-                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          mt: 0.5,
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{ color: 'rgba(255,255,255,0.7)' }}
+                        >
                           GHS {budgetRange[0]}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: 'rgba(255,255,255,0.7)' }}
+                        >
                           GHS {budgetRange[1]}+
                         </Typography>
                       </Box>
                     </Grid>
                     <Grid item xs={12} md={6}>
-                      <Typography variant="body2" sx={{ mb: 1, color: '#D4AF37', fontWeight: 'bold' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ mb: 1, color: '#D4AF37', fontWeight: 'bold' }}
+                      >
                         Quick Filters
                       </Typography>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {['Urgent', 'Verified', 'Full-time', 'Contract'].map((filter) => (
-                          <Chip
-                            key={filter}
-                            label={filter}
-                            size="small"
-                            variant="outlined"
-                            sx={{
-                              borderColor: '#D4AF37',
-                              color: '#D4AF37',
-                              fontSize: '0.7rem',
-                              '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
-                            }}
-                          />
-                        ))}
+                        {['Urgent', 'Verified', 'Full-time', 'Contract'].map(
+                          (filter) => (
+                            <Chip
+                              key={filter}
+                              label={filter}
+                              size="small"
+                              variant="outlined"
+                              sx={{
+                                borderColor: '#D4AF37',
+                                color: '#D4AF37',
+                                fontSize: '0.7rem',
+                                '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
+                              }}
+                            />
+                          ),
+                        )}
                       </Box>
                     </Grid>
                   </Grid>

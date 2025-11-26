@@ -97,22 +97,16 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
     return () => {
       isMounted = false;
     };
-  }, [
-    dispatch,
-    userIdentifier,
-    profile,
-    profileLoading,
-    profileRequested,
-  ]);
+  }, [dispatch, userIdentifier, profile, profileLoading, profileRequested]);
   // Determine role for navigation strictly from authenticated user
   const navRole =
     user?.role === 'hirer' ||
-      user?.userType === 'hirer' ||
-      user?.userRole === 'hirer'
+    user?.userType === 'hirer' ||
+    user?.userRole === 'hirer'
       ? 'hirer'
       : user?.role === 'worker' ||
-        user?.userType === 'worker' ||
-        user?.userRole === 'worker'
+          user?.userType === 'worker' ||
+          user?.userRole === 'worker'
         ? 'worker'
         : null;
   const isVerified = true; // Mock data
@@ -146,56 +140,56 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
   const roleNavItems =
     navRole === 'worker'
       ? [
-        { text: 'Dashboard', icon: <HomeIcon />, path: '/worker/dashboard' },
-        {
-          text: 'My Schedule',
-          icon: <CalendarTodayIcon />,
-          path: '/worker/schedule',
-        },
-        {
-          text: 'Find Work',
-          icon: <FindInPageIcon />,
-          path: '/worker/find-work',
-        },
-        {
-          text: 'My Applications',
-          icon: <AssignmentTurnedInIcon />,
-          path: '/worker/applications',
-        },
-        {
-          text: 'Active Contracts',
-          icon: <GavelIcon />,
-          path: '/worker/contracts',
-        },
-        { text: 'My Reviews', icon: <StarIcon />, path: '/worker/reviews' },
-        {
-          text: 'Payment Center',
-          icon: <PaymentIcon />,
-          path: '/worker/payment',
-        },
-        { text: 'Wallet', icon: <CreditCardIcon />, path: '/worker/wallet' },
-        { text: 'Bills', icon: <ReceiptIcon />, path: '/payment/bill' },
-      ]
+          { text: 'Dashboard', icon: <HomeIcon />, path: '/worker/dashboard' },
+          {
+            text: 'My Schedule',
+            icon: <CalendarTodayIcon />,
+            path: '/worker/schedule',
+          },
+          {
+            text: 'Find Work',
+            icon: <FindInPageIcon />,
+            path: '/worker/find-work',
+          },
+          {
+            text: 'My Applications',
+            icon: <AssignmentTurnedInIcon />,
+            path: '/worker/applications',
+          },
+          {
+            text: 'Active Contracts',
+            icon: <GavelIcon />,
+            path: '/worker/contracts',
+          },
+          { text: 'My Reviews', icon: <StarIcon />, path: '/worker/reviews' },
+          {
+            text: 'Payment Center',
+            icon: <PaymentIcon />,
+            path: '/worker/payment',
+          },
+          { text: 'Wallet', icon: <CreditCardIcon />, path: '/worker/wallet' },
+          { text: 'Bills', icon: <ReceiptIcon />, path: '/payment/bill' },
+        ]
       : navRole === 'hirer'
         ? [
-          { text: 'Dashboard', icon: <HomeIcon />, path: '/hirer/dashboard' },
-          {
-            text: 'Post a Job',
-            icon: <PaymentIcon />,
-            path: '/hirer/jobs/post',
-          },
-          { text: 'Manage Jobs', icon: <WorkIcon />, path: '/hirer/jobs' },
-          {
-            text: 'Applications',
-            icon: <AssignmentTurnedInIcon />,
-            path: '/hirer/applications',
-          },
-          {
-            text: 'Find Talent',
-            icon: <FindInPageIcon />,
-            path: '/hirer/find-talent',
-          },
-        ]
+            { text: 'Dashboard', icon: <HomeIcon />, path: '/hirer/dashboard' },
+            {
+              text: 'Post a Job',
+              icon: <PaymentIcon />,
+              path: '/hirer/jobs/post',
+            },
+            { text: 'Manage Jobs', icon: <WorkIcon />, path: '/hirer/jobs' },
+            {
+              text: 'Applications',
+              icon: <AssignmentTurnedInIcon />,
+              path: '/hirer/applications',
+            },
+            {
+              text: 'Find Talent',
+              icon: <FindInPageIcon />,
+              path: '/hirer/find-talent',
+            },
+          ]
         : [];
 
   // Define common navigation items for all roles
@@ -345,7 +339,11 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
             </Box>
             <Button
               component={RouterLink}
-              to={navRole === 'hirer' ? '/hirer/profile/edit' : '/worker/profile/edit'}
+              to={
+                navRole === 'hirer'
+                  ? '/hirer/profile/edit'
+                  : '/worker/profile/edit'
+              }
               variant="text"
               size="small"
               sx={{ mt: 1, color: '#FFD700', textTransform: 'none' }}

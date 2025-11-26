@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useAuth } from '../../auth/hooks/useAuth';
 import smartSearchService from '../services/smartSearchService';
 import {
   Box,
@@ -680,3 +680,4 @@ const SavedSearches = ({
 };
 
 export default SavedSearches;
+

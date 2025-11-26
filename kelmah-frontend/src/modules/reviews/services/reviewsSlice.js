@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axiosInstance from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
 // Create async thunk for submitting reviews
 export const submitReview = createAsyncThunk(
@@ -8,7 +8,7 @@ export const submitReview = createAsyncThunk(
     try {
       // Changed from '/api/reviews' to '/reviews' to avoid /api duplication
       // baseURL='/api' is provided by axiosInstance on Vercel
-      const response = await axiosInstance.post('/reviews', reviewData);
+      const response = await api.post('/reviews', reviewData);
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -27,7 +27,7 @@ export const fetchReviewsByRecipient = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await axiosInstance.get('/reviews', {
+      const response = await api.get('/reviews', {
         params: {
           recipientId,
           recipientType,
@@ -51,9 +51,7 @@ export const fetchReviewsByContract = createAsyncThunk(
   'reviews/fetchByContract',
   async (contractId, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get(
-        `/api/reviews/contract/${contractId}`,
-      );
+      const response = await api.get(`/reviews/contract/${contractId}`);
 
       return response.data;
     } catch (error) {

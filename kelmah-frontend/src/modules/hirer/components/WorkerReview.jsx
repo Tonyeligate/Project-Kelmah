@@ -41,7 +41,7 @@ import {
   Schedule as ScheduleIcon,
   AttachMoney as MoneyIcon,
 } from '@mui/icons-material';
-import { userServiceClient } from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
 // Use centralized client
 
@@ -77,9 +77,7 @@ const WorkerReview = () => {
     try {
       setLoading(true);
       // Try to fetch from user service, fall back to mock data
-      const response = await userServiceClient.get(
-        '/users/workers/completed-jobs',
-      );
+      const response = await api.get('/users/workers/completed-jobs');
       setWorkers(response.data || []);
       setError(null);
     } catch (err) {
@@ -158,19 +156,19 @@ const WorkerReview = () => {
           prev.map((worker) =>
             worker.id === selectedWorker.id
               ? {
-                  ...worker,
-                  completedJobs: worker.completedJobs.map((job) =>
-                    job.id === selectedJob.id
-                      ? {
-                          ...job,
-                          review: {
-                            ...reviewForm,
-                            reviewDate: new Date(),
-                          },
-                        }
-                      : job,
-                  ),
-                }
+                ...worker,
+                completedJobs: worker.completedJobs.map((job) =>
+                  job.id === selectedJob.id
+                    ? {
+                      ...job,
+                      review: {
+                        ...reviewForm,
+                        reviewDate: new Date(),
+                      },
+                    }
+                    : job,
+                ),
+              }
               : worker,
           ),
         );
@@ -218,9 +216,9 @@ const WorkerReview = () => {
     averageRating:
       completedReviews.length > 0
         ? (
-            completedReviews.reduce((sum, job) => sum + job.review.rating, 0) /
-            completedReviews.length
-          ).toFixed(1)
+          completedReviews.reduce((sum, job) => sum + job.review.rating, 0) /
+          completedReviews.length
+        ).toFixed(1)
         : 0,
     totalSpent: allJobs.reduce((sum, job) => sum + job.amount, 0),
   };

@@ -1,6 +1,4 @@
-import { userServiceClient } from '../../common/services/axios';
-
-const API_URL = '/api/hirers';
+import { api } from '../../../services/apiClient';
 
 /**
  * Service for managing hirer analytics and insights
@@ -14,10 +12,9 @@ const hirerAnalyticsService = {
    */
   getHirerAnalytics: async (hirerId, timeRange = '12months') => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/${hirerId}/analytics`,
-        { params: { timeRange } },
-      );
+      const response = await api.get(`/hirers/${hirerId}/analytics`, {
+        params: { timeRange },
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -32,10 +29,9 @@ const hirerAnalyticsService = {
    */
   getSpendingAnalytics: async (hirerId, filters = {}) => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/${hirerId}/spending`,
-        { params: filters },
-      );
+      const response = await api.get(`/hirers/${hirerId}/spending`, {
+        params: filters,
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -49,9 +45,7 @@ const hirerAnalyticsService = {
    */
   getWorkerPerformance: async (hirerId) => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/${hirerId}/workers/performance`,
-      );
+      const response = await api.get(`/hirers/${hirerId}/workers/performance`);
       return response.data;
     } catch (error) {
       throw error;
@@ -65,9 +59,7 @@ const hirerAnalyticsService = {
    */
   getJobSuccessMetrics: async (hirerId) => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/${hirerId}/jobs/success-metrics`,
-      );
+      const response = await api.get(`/hirers/${hirerId}/jobs/success-metrics`);
       return response.data;
     } catch (error) {
       throw error;
@@ -81,9 +73,7 @@ const hirerAnalyticsService = {
    */
   getMarketInsights: async (hirerId) => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/${hirerId}/market-insights`,
-      );
+      const response = await api.get(`/hirers/${hirerId}/market-insights`);
       return response.data;
     } catch (error) {
       throw error;
@@ -98,13 +88,10 @@ const hirerAnalyticsService = {
    */
   exportAnalyticsData: async (hirerId, timeRange = '12months') => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/${hirerId}/analytics/export`,
-        {
-          params: { timeRange, format: 'pdf' },
-          responseType: 'blob',
-        },
-      );
+      const response = await api.get(`/hirers/${hirerId}/analytics/export`, {
+        params: { timeRange, format: 'pdf' },
+        responseType: 'blob',
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -118,9 +105,7 @@ const hirerAnalyticsService = {
    */
   getCostSavingsOpportunities: async (hirerId) => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/${hirerId}/cost-savings`,
-      );
+      const response = await api.get(`/hirers/${hirerId}/cost-savings`);
       return response.data;
     } catch (error) {
       throw error;
@@ -134,9 +119,7 @@ const hirerAnalyticsService = {
    */
   getHiringEfficiencyMetrics: async (hirerId) => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/${hirerId}/efficiency`,
-      );
+      const response = await api.get(`/hirers/${hirerId}/efficiency`);
       return response.data;
     } catch (error) {
       throw error;
@@ -367,6 +350,8 @@ const generateMockSpendingTrend = () => {
     'Jul',
     'Aug',
     'Sep',
+    'Oct',
+    'Nov',
     'Oct',
     'Nov',
     'Dec',

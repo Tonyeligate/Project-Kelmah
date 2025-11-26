@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useAuth } from '../../auth/hooks/useAuth';
 import {
   Box,
   Paper,
@@ -767,3 +767,4 @@ const RealTimeJobAlerts = ({
 };
 
 export default RealTimeJobAlerts;
+

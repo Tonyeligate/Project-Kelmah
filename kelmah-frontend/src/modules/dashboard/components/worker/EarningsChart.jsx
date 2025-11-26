@@ -55,7 +55,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardCard from '../common/DashboardCard';
 // Removed AuthContext import to prevent dual state management conflicts
-// import { useAuth } from '../../../auth/contexts/AuthContext';
+// import { useAuth } from '../../../auth/hooks/useAuth';
 
 const EnhancedEarningsChart = () => {
   const theme = useTheme();
@@ -766,3 +766,4 @@ const EnhancedEarningsChart = () => {
 };
 
 export default EnhancedEarningsChart;
+

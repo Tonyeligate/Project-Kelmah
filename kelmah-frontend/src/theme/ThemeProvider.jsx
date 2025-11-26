@@ -12,7 +12,8 @@ const LIGHT_THEME_COLOR = lightTheme?.palette?.background?.default || '#F9F7ED';
 
 const isValidMode = (value) => value === 'dark' || value === 'light';
 
-const isBrowser = () => typeof window !== 'undefined' && typeof document !== 'undefined';
+const isBrowser = () =>
+  typeof window !== 'undefined' && typeof document !== 'undefined';
 
 const serializeThemePreference = (mode) =>
   JSON.stringify({
@@ -62,20 +63,31 @@ const readStoredThemePreference = () => {
   };
 
   try {
-    pushCandidate(window.localStorage.getItem(THEME_STORAGE_KEY), 'localStorage');
+    pushCandidate(
+      window.localStorage.getItem(THEME_STORAGE_KEY),
+      'localStorage',
+    );
   } catch (error) {
     console.warn('Failed to read theme from localStorage:', error);
   }
 
   try {
-    pushCandidate(window.sessionStorage.getItem(THEME_STORAGE_KEY), 'sessionStorage');
+    pushCandidate(
+      window.sessionStorage.getItem(THEME_STORAGE_KEY),
+      'sessionStorage',
+    );
   } catch (error) {
     console.warn('Failed to read theme from sessionStorage:', error);
   }
 
   const domTheme = document.documentElement?.getAttribute('data-theme');
   if (isValidMode(domTheme)) {
-    candidates.push({ mode: domTheme, updatedAt: 0, version: THEME_STORAGE_VERSION, source: 'dom' });
+    candidates.push({
+      mode: domTheme,
+      updatedAt: 0,
+      version: THEME_STORAGE_VERSION,
+      source: 'dom',
+    });
   }
 
   if (!candidates.length) {

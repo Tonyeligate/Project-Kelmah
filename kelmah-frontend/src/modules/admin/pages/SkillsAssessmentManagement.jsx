@@ -39,7 +39,7 @@ import {
   Assessment as AssessmentIcon,
   School as SchoolIcon,
 } from '@mui/icons-material';
-import { useAuth } from '../../../modules/auth/contexts/AuthContext';
+import { useAuth } from '../../../modules/auth/hooks/useAuth';
 
 // Custom TabPanel component
 function TabPanel(props) {

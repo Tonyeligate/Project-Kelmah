@@ -1,4 +1,5 @@
-import React from 'react';
+import { useMemo } from 'react';
+import PropTypes from 'prop-types';
 import {
   Card,
   CardContent,
@@ -22,12 +23,7 @@ import {
   BookmarkBorder,
   Bookmark,
 } from '@mui/icons-material';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  saveJobToServer,
-  unsaveJobFromServer,
-} from '@/modules/jobs/services/jobSlice';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Unified JobCard Component
@@ -43,33 +39,44 @@ import {
  * @param {boolean} props.features.showFullDescription - Show full vs truncated description
  * @param {string} props.variant - Visual variant ('default' | 'compact' | 'detailed')
  */
+const defaultFeatures = {
+  showSaveButton: true,
+  showNavigation: true,
+  showHirerInfo: true,
+  showFullDescription: false,
+};
+
 const JobCard = ({
   job,
   onViewDetails,
-  features = {
-    showSaveButton: true,
-    showNavigation: true,
-    showHirerInfo: true,
-    showFullDescription: false,
-  },
+  features = defaultFeatures,
   variant = 'default',
+  isSaved: isSavedProp,
+  isSaveLoading = false,
+  onToggleSave,
 }) => {
-  if (!job) return null;
-
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
   const navigate = useNavigate();
-  const locationHook = useLocation();
 
-  // Redux state (only imported if save functionality enabled)
-  const dispatch = features.showSaveButton ? useDispatch() : null;
-  const savedJobs = features.showSaveButton
-    ? useSelector((state) => state.jobs?.savedJobs || [])
-    : [];
-  const savedLoading = features.showSaveButton
-    ? useSelector((state) => state.jobs?.savedLoading)
-    : false;
+  const derivedIsSaved = useMemo(() => {
+    if (typeof isSavedProp === 'boolean') {
+      return isSavedProp;
+    }
+    if (job?.isSaved !== undefined) {
+      return Boolean(job.isSaved);
+    }
+    if (typeof job?.status === 'string') {
+      return job.status.toLowerCase() === 'saved';
+    }
+    return false;
+  }, [isSavedProp, job]);
+
+  if (!job) {
+    return null;
+  }
+
+  const canSave = Boolean(features.showSaveButton && onToggleSave);
 
   const {
     id,
@@ -78,7 +85,6 @@ const JobCard = ({
     budget,
     location,
     postedDate,
-    deadline,
     category,
     skills = [],
     hirerName,
@@ -88,28 +94,11 @@ const JobCard = ({
     applications = 0,
   } = job;
 
-  // Check if job is saved
-  const isSaved = features.showSaveButton
-    ? savedJobs.some(
-        (savedJob) =>
-          savedJob.job === id || savedJob.jobId === id || savedJob.id === id,
-      )
-    : false;
-
   // Handle save/unsave job
   const handleSaveToggle = async (e) => {
     e.stopPropagation();
-    if (!features.showSaveButton || !dispatch) return;
-
-    try {
-      if (isSaved) {
-        await dispatch(unsaveJobFromServer(id));
-      } else {
-        await dispatch(saveJobToServer(id));
-      }
-    } catch (error) {
-      console.error('Error toggling job save status:', error);
-    }
+    if (!canSave) return;
+    await onToggleSave?.(job, { isSaved: derivedIsSaved });
   };
 
   // Handle card click
@@ -145,8 +134,9 @@ const JobCard = ({
   // Truncate description based on variant
   const getDescription = () => {
     if (!description) return '';
-    if (features.showFullDescription || variant === 'detailed')
+    if (features.showFullDescription || variant === 'detailed') {
       return description;
+    }
 
     const limit = variant === 'compact' ? 100 : 150;
     return description.length > limit
@@ -205,15 +195,15 @@ const JobCard = ({
                 variant="outlined"
               />
             )}
-            {features.showSaveButton && (
+            {canSave && (
               <IconButton
                 size="small"
                 onClick={handleSaveToggle}
-                disabled={savedLoading}
-                color={isSaved ? 'primary' : 'default'}
+                disabled={isSaveLoading}
+                color={derivedIsSaved ? 'primary' : 'default'}
                 sx={{ p: 0.5 }}
               >
-                {isSaved ? <Bookmark /> : <BookmarkBorder />}
+                {derivedIsSaved ? <Bookmark /> : <BookmarkBorder />}
               </IconButton>
             )}
           </Box>
@@ -349,3 +339,57 @@ const JobCard = ({
 };
 
 export default JobCard;
+
+const budgetShape = PropTypes.oneOfType([
+  PropTypes.number,
+  PropTypes.string,
+  PropTypes.shape({
+    min: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    max: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  }),
+]);
+
+JobCard.propTypes = {
+  job: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    _id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    title: PropTypes.string,
+    description: PropTypes.string,
+    budget: budgetShape,
+    location: PropTypes.string,
+    postedDate: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.instanceOf(Date),
+    ]),
+    category: PropTypes.string,
+    skills: PropTypes.arrayOf(PropTypes.string),
+    hirerName: PropTypes.string,
+    hirerRating: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    hirerAvatar: PropTypes.string,
+    urgency: PropTypes.string,
+    applications: PropTypes.number,
+    isSaved: PropTypes.bool,
+    status: PropTypes.string,
+  }),
+  onViewDetails: PropTypes.func,
+  features: PropTypes.shape({
+    showSaveButton: PropTypes.bool,
+    showNavigation: PropTypes.bool,
+    showHirerInfo: PropTypes.bool,
+    showFullDescription: PropTypes.bool,
+  }),
+  variant: PropTypes.oneOf(['default', 'compact', 'detailed']),
+  isSaved: PropTypes.bool,
+  isSaveLoading: PropTypes.bool,
+  onToggleSave: PropTypes.func,
+};
+
+JobCard.defaultProps = {
+  job: null,
+  onViewDetails: undefined,
+  features: defaultFeatures,
+  variant: 'default',
+  isSaved: undefined,
+  isSaveLoading: false,
+  onToggleSave: undefined,
+};

@@ -6,25 +6,23 @@ const NavMenuSection = ({ title, items, onNavigate }) => (
     >
       {title}
     </Typography>
-    {items
-      .filter(Boolean)
-      .map((item) => (
-        <MenuItem
-          key={item.label}
-          onClick={() => {
-            onNavigate(item.path);
-            item.onClick?.();
-          }}
-          sx={{ py: 1.25 }}
-        >
-          <ListItemIcon>{item.icon}</ListItemIcon>
-          <ListItemText
-            primary={item.label}
-            secondary={item.description}
-            secondaryTypographyProps={{ variant: 'caption' }}
-          />
-        </MenuItem>
-      ))}
+    {items.filter(Boolean).map((item) => (
+      <MenuItem
+        key={item.label}
+        onClick={() => {
+          onNavigate(item.path);
+          item.onClick?.();
+        }}
+        sx={{ py: 1.25 }}
+      >
+        <ListItemIcon>{item.icon}</ListItemIcon>
+        <ListItemText
+          primary={item.label}
+          secondary={item.description}
+          secondaryTypographyProps={{ variant: 'caption' }}
+        />
+      </MenuItem>
+    ))}
   </Box>
 );
 
@@ -81,7 +79,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DesktopNav from './DesktopNav';
 import MobileNav from './MobileNav';
 // Removed AuthContext import to prevent dual state management conflicts
-// import { useAuth } from '../../auth/contexts/AuthContext';
+// import { useAuth } from '../../auth/hooks/useAuth';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 import { BRAND_COLORS } from '../../../theme';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
@@ -1118,7 +1116,7 @@ const Header = ({
             // Use NotificationContext to mark all as read
             const ctx = useNotifications();
             ctx.markAllAsRead?.();
-          } catch (_) { }
+          } catch (_) {}
           handleNotificationsClose();
         }}
         sx={{
@@ -1596,3 +1594,4 @@ const Header = ({
 };
 
 export default Header;
+

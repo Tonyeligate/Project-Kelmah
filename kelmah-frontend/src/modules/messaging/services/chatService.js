@@ -1,4 +1,4 @@
-import { messagingServiceClient } from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
 class ChatService {
   constructor() {
@@ -12,7 +12,7 @@ class ChatService {
   // Get all conversations
   async getConversations() {
     try {
-      const response = await messagingServiceClient.get(`/api/conversations`);
+      const response = await api.get(`/messaging/conversations`);
       return response.data.data;
     } catch (error) {
       console.error('Error fetching conversations:', error);
@@ -23,8 +23,8 @@ class ChatService {
   // Get conversation by ID
   async getConversation(conversationId) {
     try {
-      const response = await messagingServiceClient.get(
-        `/api/conversations/${conversationId}`,
+      const response = await api.get(
+        `/messaging/conversations/${conversationId}`,
       );
       return response.data.data;
     } catch (error) {
@@ -36,8 +36,8 @@ class ChatService {
   // ✅ FIXED: Get messages for a conversation - Updated to match backend route
   async getMessages(conversationId, page = 1, limit = 20) {
     try {
-      const response = await messagingServiceClient.get(
-        `/api/messages/conversations/${conversationId}/messages`,
+      const response = await api.get(
+        `/messaging/messages/conversations/${conversationId}/messages`,
         { params: { page, limit } },
       );
       return response.data.data;
@@ -50,7 +50,7 @@ class ChatService {
   // Send a message
   async sendMessage(conversationId, content) {
     try {
-      const response = await messagingServiceClient.post(`/api/messages`, {
+      const response = await api.post(`/messaging/messages`, {
         conversationId,
         content,
       });
@@ -64,7 +64,7 @@ class ChatService {
   // Create a new conversation
   async createConversation(participantId) {
     try {
-      const response = await messagingServiceClient.post(`/api/conversations`, {
+      const response = await api.post(`/messaging/conversations`, {
         participantId,
       });
       return response.data.data;
@@ -77,8 +77,8 @@ class ChatService {
   // Mark messages as read
   async markAsRead(conversationId) {
     try {
-      const response = await messagingServiceClient.put(
-        `/api/conversations/${conversationId}/read`,
+      const response = await api.put(
+        `/messaging/conversations/${conversationId}/read`,
       );
       return response.data.data;
     } catch (error) {
@@ -90,8 +90,8 @@ class ChatService {
   // Delete a conversation
   async deleteConversation(conversationId) {
     try {
-      const response = await messagingServiceClient.delete(
-        `/api/conversations/${conversationId}`,
+      const response = await api.delete(
+        `/messaging/conversations/${conversationId}`,
       );
       return response.data.data;
     } catch (error) {
@@ -103,10 +103,9 @@ class ChatService {
   // Search conversations
   async searchConversations(query) {
     try {
-      const response = await messagingServiceClient.get(
-        `/api/conversations/search`,
-        { params: { query } },
-      );
+      const response = await api.get(`/messaging/conversations/search`, {
+        params: { query },
+      });
       return response.data.data;
     } catch (error) {
       console.error('Error searching conversations:', error);
@@ -117,9 +116,7 @@ class ChatService {
   // Get unread message count
   async getUnreadCount() {
     try {
-      const response = await messagingServiceClient.get(
-        `/api/messages/unread/count`,
-      );
+      const response = await api.get(`/messaging/messages/unread/count`);
       return response.data?.unreadCount ?? response.data?.data ?? 0;
     } catch (error) {
       console.error('Error fetching unread count:', error);

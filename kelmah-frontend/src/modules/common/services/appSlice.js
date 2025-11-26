@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import apiClient from './axios';
+import { api as apiClient } from '../../../services/apiClient';
 
 // Async thunks
 export const fetchUserProfile = createAsyncThunk(

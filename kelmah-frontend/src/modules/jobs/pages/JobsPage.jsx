@@ -62,13 +62,13 @@
  * Action: Add .populate('hirer', 'name logo verified rating') to Job.find()
  */
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import prefetchLazyIcons from '@/utils/prefetchLazyIcons';
-import jobsService from '../services/jobsService';
 import HeroFiltersSection from '../components/HeroFiltersSection';
 import JobResultsSection from '../components/JobResultsSection';
 import tradeCategoriesData from '../data/tradeCategories.json';
 import ghanaLocations from '../data/ghanaLocations.json';
+import { useJobsQuery } from '../hooks/useJobsQuery';
 import {
   Container,
   Grid,
@@ -164,7 +164,9 @@ import {
 
 // Lazy-load non-critical icons to reduce initial bundle
 const LazyIcons = {
-  ElectricalServices: React.lazy(() => import('@mui/icons-material/ElectricalServices')),
+  ElectricalServices: React.lazy(
+    () => import('@mui/icons-material/ElectricalServices'),
+  ),
   Plumbing: React.lazy(() => import('@mui/icons-material/Plumbing')),
   Handyman: React.lazy(() => import('@mui/icons-material/Handyman')),
   Construction: React.lazy(() => import('@mui/icons-material/Construction')),
@@ -174,9 +176,13 @@ const LazyIcons = {
   Build: React.lazy(() => import('@mui/icons-material/Build')),
   Refresh: React.lazy(() => import('@mui/icons-material/Refresh')),
   FlashOn: React.lazy(() => import('@mui/icons-material/FlashOn')),
-  LocalFireDepartment: React.lazy(() => import('@mui/icons-material/LocalFireDepartment')),
+  LocalFireDepartment: React.lazy(
+    () => import('@mui/icons-material/LocalFireDepartment'),
+  ),
   Visibility: React.lazy(() => import('@mui/icons-material/Visibility')),
-  BookmarkBorder: React.lazy(() => import('@mui/icons-material/BookmarkBorder')),
+  BookmarkBorder: React.lazy(
+    () => import('@mui/icons-material/BookmarkBorder'),
+  ),
   Share: React.lazy(() => import('@mui/icons-material/Share')),
 };
 import { motion, AnimatePresence } from 'framer-motion';
@@ -644,53 +650,60 @@ const JobsPage = () => {
     return WorkIcon;
   };
 
-  // Fetch jobs from API (real backend)
+  const jobsQueryFilters = useMemo(
+    () => ({
+      status: 'open',
+      search: searchQuery || undefined,
+      category: selectedCategory || undefined,
+      location: selectedLocation || undefined,
+      min_budget: budgetRange?.[0],
+      max_budget: budgetRange?.[1],
+      limit: 50,
+    }),
+    [searchQuery, selectedCategory, selectedLocation, budgetRange],
+  );
+
+  const {
+    data: jobsResponse,
+    isLoading: isJobsLoading,
+    isFetching: isJobsFetching,
+    error: jobsQueryError,
+  } = useJobsQuery(jobsQueryFilters, { keepPreviousData: true });
+
   useEffect(() => {
-    const fetchFn = async () => {
-      try {
-        setLoading(true);
-        console.log('🔍 Fetching jobs from API...');
+    const hasDataArray = (payload) =>
+      Array.isArray(payload)
+        ? payload
+        : payload?.jobs || payload?.data || [];
 
-        const response = await jobsService.getJobs({
-          status: 'open',
-          search: searchQuery || undefined,
-          category: selectedCategory || undefined,
-          location: selectedLocation || undefined,
-          min_budget: budgetRange?.[0],
-          max_budget: budgetRange?.[1],
-          limit: 50,
-        });
+    if (jobsResponse) {
+      const normalizedJobs = hasDataArray(jobsResponse);
+      console.log('✅ Jobs loaded via React Query:', normalizedJobs.length);
+      setJobs(normalizedJobs);
+      return;
+    }
 
-        console.log('📊 API Response:', response);
+    if (!isJobsLoading && !jobsResponse) {
+      setJobs([]);
+    }
+  }, [jobsResponse, isJobsLoading]);
 
-        if (response && response.data) {
-          console.log('✅ Jobs loaded from API:', response.data.length);
-          setJobs(response.data);
-        } else if (response && Array.isArray(response)) {
-          console.log('✅ Jobs loaded from API (array):', response.length);
-          setJobs(response);
-        } else {
-          console.warn('⚠️ No jobs data in response');
-          setJobs([]);
-        }
-        setError(null);
-      } catch (err) {
-        console.error('❌ Error fetching jobs:', err);
-        console.error('❌ Error details:', {
-          message: err.message,
-          status: err.response?.status,
-          statusText: err.response?.statusText,
-          data: err.response?.data,
-        });
-        setError(`Failed to load jobs: ${err.message}`);
-        setJobs([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+  useEffect(() => {
+    if (jobsQueryError) {
+      console.error('❌ Error fetching jobs via React Query:', jobsQueryError);
+      setError(
+        `Failed to load jobs: ${jobsQueryError.message || 'Unknown error'}`,
+      );
+      return;
+    }
+    if (!isJobsLoading && !isJobsFetching) {
+      setError(null);
+    }
+  }, [jobsQueryError, isJobsLoading, isJobsFetching]);
 
-    fetchFn();
-  }, [searchQuery, selectedCategory, selectedLocation, budgetRange]);
+  useEffect(() => {
+    setLoading(isJobsLoading && !jobsResponse);
+  }, [isJobsLoading, jobsResponse]);
 
   // Warm non-critical icon bundles once hero content settles to avoid accordion flashes later
   useEffect(() => {
@@ -781,8 +794,6 @@ const JobsPage = () => {
 
     return children;
   };
-
-
 
   const filteredJobs = jobs.filter((job) => {
     const matchesSearch =
@@ -1009,9 +1020,9 @@ const JobsPage = () => {
                                 borderColor: '#D4AF37',
                               },
                               '&.Mui-focused .MuiOutlinedInput-notchedOutline':
-                              {
-                                borderColor: '#D4AF37',
-                              },
+                                {
+                                  borderColor: '#D4AF37',
+                                },
                               '& .MuiSvgIcon-root': {
                                 color: '#D4AF37',
                               },
@@ -1080,9 +1091,9 @@ const JobsPage = () => {
                                 borderColor: '#D4AF37',
                               },
                               '&.Mui-focused .MuiOutlinedInput-notchedOutline':
-                              {
-                                borderColor: '#D4AF37',
-                              },
+                                {
+                                  borderColor: '#D4AF37',
+                                },
                               '& .MuiSvgIcon-root': {
                                 color: '#D4AF37',
                               },

@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { apiGet } from '../modules/common/services/axios';
+import { api } from '../services/apiClient';
 
 export const DEFAULT_PROPOSAL_PAGE_SIZE = 10;
 const MAX_RETRY_ATTEMPTS = 2;
 const REQUEST_TIMEOUT_MS = 10000;
 const CACHE_TTL_MS = 60 * 1000;
-const PROPOSAL_ENDPOINT = '/api/jobs/proposals';
+const PROPOSAL_ENDPOINT = '/jobs/proposals';
 
 const buildCacheKey = (status, page, limit) => `${status}:${page}:${limit}`;
 
@@ -105,7 +105,8 @@ export const useProposals = ({
             params.status = targetStatus;
           }
 
-          const response = await apiGet(PROPOSAL_ENDPOINT, params, {
+          const response = await api.get(PROPOSAL_ENDPOINT, {
+            params,
             signal: controller.signal,
           });
 
@@ -121,9 +122,7 @@ export const useProposals = ({
             page: paginationData.page ?? targetPage,
             totalPages: paginationData.totalPages ?? 1,
             totalItems:
-              paginationData.totalItems ??
-              aggregates.total ??
-              items.length,
+              paginationData.totalItems ?? aggregates.total ?? items.length,
             limit: paginationData.limit ?? limit,
           };
 

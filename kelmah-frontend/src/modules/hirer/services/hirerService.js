@@ -6,14 +6,16 @@
  */
 
 import { API_ENDPOINTS } from '../../../config/environment';
-import {
-  userServiceClient,
-  jobServiceClient,
-} from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
 const { USER, JOB } = API_ENDPOINTS;
 
-const workerBookmarkPath = (workerId) => USER.WORKER_BOOKMARK(workerId);
+const workerBookmarkPath = (workerId) => {
+  if (typeof USER.WORKER_BOOKMARK === 'function') {
+    return USER.WORKER_BOOKMARK(workerId);
+  }
+  return `/api/users/workers/${workerId}/bookmark`;
+};
 
 // Clients come preconfigured with auth and retries
 
@@ -23,7 +25,7 @@ export const hirerService = {
   // Profile Management
   async getProfile() {
     try {
-      const response = await userServiceClient.get(USER.ME_CREDENTIALS);
+      const response = await api.get(USER.ME_CREDENTIALS);
       return response.data;
     } catch (error) {
       console.warn(
@@ -36,7 +38,7 @@ export const hirerService = {
 
   async updateProfile(profileData) {
     try {
-      const response = await userServiceClient.put(USER.UPDATE, profileData);
+      const response = await api.put(USER.UPDATE, profileData);
       return response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);
@@ -47,7 +49,7 @@ export const hirerService = {
   // Job Management
   async getJobs(status = 'active') {
     try {
-      const response = await jobServiceClient.get(JOB.MY_JOBS, {
+      const response = await api.get(JOB.MY_JOBS, {
         params: { status, role: 'hirer' },
       });
       return response.data;
@@ -65,10 +67,10 @@ export const hirerService = {
     try {
       const [metricsResult, workersResult, analyticsResult, jobsResult] =
         await Promise.allSettled([
-          userServiceClient.get(USER.DASHBOARD_METRICS),
-          userServiceClient.get(USER.DASHBOARD_WORKERS),
-          userServiceClient.get(USER.DASHBOARD_ANALYTICS),
-          jobServiceClient.get(JOB.MY_JOBS, {
+          api.get(USER.DASHBOARD_METRICS),
+          api.get(USER.DASHBOARD_WORKERS),
+          api.get(USER.DASHBOARD_ANALYTICS),
+          api.get(JOB.MY_JOBS, {
             params: { status: 'active', role: 'hirer', limit: 10 },
           }),
         ]);
@@ -80,8 +82,8 @@ export const hirerService = {
       const workers =
         workersResult.status === 'fulfilled'
           ? workersResult.value?.data?.workers ||
-            workersResult.value?.data ||
-            workersResult.value
+          workersResult.value?.data ||
+          workersResult.value
           : [];
       const analytics =
         analyticsResult.status === 'fulfilled'
@@ -90,9 +92,9 @@ export const hirerService = {
       const activeJobs =
         jobsResult.status === 'fulfilled'
           ? jobsResult.value?.data?.data ||
-            jobsResult.value?.data?.jobs ||
-            jobsResult.value?.data ||
-            []
+          jobsResult.value?.data?.jobs ||
+          jobsResult.value?.data ||
+          []
           : [];
 
       return {
@@ -123,7 +125,7 @@ export const hirerService = {
 
   async getStats(timeframe = '30d') {
     try {
-      const response = await userServiceClient.get(USER.DASHBOARD_ANALYTICS, {
+      const response = await api.get(USER.DASHBOARD_ANALYTICS, {
         params: { timeframe },
       });
       return response.data ?? response;
@@ -144,7 +146,7 @@ export const hirerService = {
 
   async getRecentJobs(limit = 10) {
     try {
-      const response = await jobServiceClient.get(JOB.MY_JOBS, {
+      const response = await api.get(JOB.MY_JOBS, {
         params: { status: 'active', limit, role: 'hirer' },
       });
       return response.data;
@@ -167,7 +169,7 @@ export const hirerService = {
 
   searchWorkers: async (searchParams = {}) => {
     try {
-      const response = await userServiceClient.get(USER.WORKERS_SEARCH, {
+      const response = await api.get(USER.WORKERS_SEARCH, {
         params: searchParams,
       });
       return response.data;
@@ -182,7 +184,7 @@ export const hirerService = {
 
   async getSavedWorkers() {
     try {
-      const response = await userServiceClient.get(USER.BOOKMARKS);
+      const response = await api.get(USER.BOOKMARKS);
       const payload = response.data?.data || response.data || {};
       return payload.workerIds || [];
     } catch (error) {
@@ -193,10 +195,7 @@ export const hirerService = {
 
   async saveWorker(workerId) {
     try {
-      const response = await userServiceClient.post(
-        workerBookmarkPath(workerId),
-        {},
-      );
+      const response = await api.post(workerBookmarkPath(workerId), {});
       return response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);
@@ -206,9 +205,7 @@ export const hirerService = {
 
   async unsaveWorker(workerId) {
     try {
-      const response = await userServiceClient.delete(
-        workerBookmarkPath(workerId),
-      );
+      const response = await api.delete(workerBookmarkPath(workerId));
       return response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);

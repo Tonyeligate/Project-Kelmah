@@ -27,6 +27,7 @@ import {
   Grid,
   Stack,
   useMediaQuery,
+  Divider,
 } from '@mui/material';
 import {
   Visibility as VisibilityIcon,
@@ -108,13 +109,13 @@ const MyApplicationsPage = () => {
   // Filter applications based on current tab
   const filteredApplications = Array.isArray(applications)
     ? applications.filter((app) => {
-        if (tabValue === 0) return true; // All applications
-        if (tabValue === 1) return app.status === 'pending';
-        if (tabValue === 2) return app.status === 'interview';
-        if (tabValue === 3) return app.status === 'offer';
-        if (tabValue === 4) return app.status === 'rejected';
-        return false;
-      })
+      if (tabValue === 0) return true; // All applications
+      if (tabValue === 1) return app.status === 'pending';
+      if (tabValue === 2) return app.status === 'interview';
+      if (tabValue === 3) return app.status === 'offer';
+      if (tabValue === 4) return app.status === 'rejected';
+      return false;
+    })
     : [];
 
   // Status label and color mapping
@@ -742,7 +743,7 @@ const MyApplicationsPage = () => {
                     <Typography variant="body2" color="text.secondary">
                       {new Date(
                         new Date(selectedApplication.createdAt).getTime() +
-                          3 * 24 * 60 * 60 * 1000,
+                        3 * 24 * 60 * 60 * 1000,
                       ).toLocaleDateString()}
                     </Typography>
                   </Box>
@@ -792,7 +793,7 @@ const MyApplicationsPage = () => {
                     <Typography variant="body2" color="text.secondary">
                       {new Date(
                         new Date(selectedApplication.interviewDate).getTime() +
-                          5 * 24 * 60 * 60 * 1000,
+                        5 * 24 * 60 * 60 * 1000,
                       ).toLocaleDateString()}
                     </Typography>
                   </Box>
@@ -817,7 +818,7 @@ const MyApplicationsPage = () => {
                     <Typography variant="body2" color="text.secondary">
                       {new Date(
                         new Date(selectedApplication.interviewDate).getTime() +
-                          2 * 24 * 60 * 60 * 1000,
+                        2 * 24 * 60 * 60 * 1000,
                       ).toLocaleDateString()}
                     </Typography>
                   </Box>

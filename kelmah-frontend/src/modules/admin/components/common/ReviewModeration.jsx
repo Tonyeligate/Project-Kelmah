@@ -14,7 +14,7 @@ import {
   Assessment as AnalyticsIcon,
   Security as SecurityIcon,
 } from '@mui/icons-material';
-import { useAuth } from '../../../auth/contexts/AuthContext';
+import { useAuth } from '../../../auth/hooks/useAuth';
 import ReviewModerationQueue from '../reviews/ReviewModerationQueue';
 import ReviewAnalyticsDashboard from '../reviews/ReviewAnalyticsDashboard';
 
@@ -177,3 +177,4 @@ const ReviewModeration = () => {
 };
 
 export default ReviewModeration;
+

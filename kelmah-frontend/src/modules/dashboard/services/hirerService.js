@@ -4,7 +4,7 @@
  * Follows module architecture pattern
  */
 
-import { userServiceClient } from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
 class HirerService {
   /**
@@ -13,9 +13,7 @@ class HirerService {
    */
   async getDashboardData() {
     try {
-      const response = await userServiceClient.get(
-        '/api/users/hirers/dashboard',
-      );
+      const response = await api.get('/users/hirers/dashboard');
       return response.data;
     } catch (error) {
       console.warn('Hirers dashboard API unavailable, using mock data');
@@ -30,8 +28,8 @@ class HirerService {
    */
   async getStats(timeframe = '30d') {
     try {
-      const response = await userServiceClient.get(
-        `/api/users/hirers/metrics?timeframe=${timeframe}`,
+      const response = await api.get(
+        `/users/hirers/metrics?timeframe=${timeframe}`,
       );
       return response.data;
     } catch (error) {
@@ -47,8 +45,8 @@ class HirerService {
    */
   async getRecentJobs(limit = 10) {
     try {
-      const response = await userServiceClient.get(
-        `/api/users/hirers/jobs/active?limit=${limit}`,
+      const response = await api.get(
+        `/users/hirers/jobs/active?limit=${limit}`,
       );
       return response.data;
     } catch (error) {
@@ -65,8 +63,8 @@ class HirerService {
   async getApplications(filters = {}) {
     try {
       const limit = filters.limit || 10;
-      const response = await userServiceClient.get(
-        `/api/users/hirers/applications/recent?limit=${limit}`,
+      const response = await api.get(
+        `/users/hirers/applications/recent?limit=${limit}`,
       );
       return response.data;
     } catch (error) {
@@ -81,7 +79,7 @@ class HirerService {
    */
   async getProfile() {
     try {
-      const response = await userServiceClient.get('/users/hirers/me');
+      const response = await api.get('/users/hirers/me');
       return response.data;
     } catch (error) {
       console.error('Failed to fetch hirer profile:', error);

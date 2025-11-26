@@ -16,8 +16,8 @@ import {
   Alert,
 } from '@mui/material';
 import { LocationOn, Work, AttachMoney, AccessTime } from '@mui/icons-material';
-import { useAuth } from '../../auth/contexts/AuthContext';
-import axiosInstance from '../../../common/services/axios';
+import { useAuth } from '../../auth/hooks/useAuth';
+import { api } from '../../../../../services/apiClient';
 import { formatDistanceToNow } from 'date-fns';
 
 function JobListing({ job, onApply, onViewDetails }) {
@@ -32,10 +32,7 @@ function JobListing({ job, onApply, onViewDetails }) {
 
   const handleApply = async () => {
     try {
-      const response = await axiosInstance.post(
-        `/jobs/${job.id}/apply`,
-        application,
-      );
+      const response = await api.post(`/jobs/${job.id}/apply`, application);
       setSuccess('Application submitted successfully!');
       setShowApplyDialog(false);
       if (onApply) onApply(response.data);
@@ -176,3 +173,4 @@ function JobListing({ job, onApply, onViewDetails }) {
 }
 
 export default JobListing;
+

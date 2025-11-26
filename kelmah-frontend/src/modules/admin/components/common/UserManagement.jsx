@@ -60,7 +60,7 @@ import {
   FilterList as FilterIcon,
 } from '@mui/icons-material';
 import { adminService } from '../../services/adminService';
-import { useAuth } from '../../../auth/contexts/AuthContext';
+import { useAuth } from '../../../auth/hooks/useAuth';
 
 const UserManagement = () => {
   const { user } = useAuth();
@@ -862,3 +862,4 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
+

@@ -1,4 +1,4 @@
-import { userServiceClient } from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
 // Helper to consistently unwrap backend responses
 const unwrap = (res) => res?.data?.data ?? res?.data ?? res;
@@ -14,9 +14,7 @@ const certificateService = {
    * @returns {Promise<Object>} - Response with certificates
    */
   getWorkerCertificates: async (workerId) => {
-    const res = await userServiceClient.get(
-      `/api/profile/${workerId}/certificates`,
-    );
+    const res = await api.get(`/api/profile/${workerId}/certificates`);
     const unwrapped = unwrap(res);
     // Support both { certificates: [] } and []
     return Array.isArray(unwrapped?.certificates)
@@ -32,7 +30,7 @@ const certificateService = {
    * @returns {Promise<Object>} - Created certificate
    */
   createCertificate: async (certificateData) => {
-    const res = await userServiceClient.post(
+    const res = await api.post(
       `/api/profile/${certificateData.workerId}/certificates`,
       certificateData,
     );
@@ -47,7 +45,7 @@ const certificateService = {
    * @returns {Promise<Object>} - Updated certificate
    */
   updateCertificate: async (certificateId, certificateData) => {
-    const res = await userServiceClient.put(
+    const res = await api.put(
       `/api/profile/certificates/${certificateId}`,
       certificateData,
     );
@@ -61,9 +59,7 @@ const certificateService = {
    * @returns {Promise<Object>} - Deletion confirmation
    */
   deleteCertificate: async (certificateId) => {
-    const res = await userServiceClient.delete(
-      `/api/profile/certificates/${certificateId}`,
-    );
+    const res = await api.delete(`/api/profile/certificates/${certificateId}`);
     const unwrapped = unwrap(res);
     return unwrapped?.success ?? true;
   },
@@ -75,14 +71,11 @@ const certificateService = {
    * @returns {Promise<Object>} - Upload response with URL
    */
   uploadCertificateFile: async (file, onProgress) => {
-    const presignRes = await userServiceClient.post(
-      '/api/profile/uploads/presign',
-      {
-        folder: 'certificates',
-        filename: file.name,
-        contentType: file.type,
-      },
-    );
+    const presignRes = await api.post('/api/profile/uploads/presign', {
+      folder: 'certificates',
+      filename: file.name,
+      contentType: file.type,
+    });
     const { putUrl, getUrl } = unwrap(presignRes) ?? {};
     if (!putUrl || !getUrl) throw new Error('Upload presign failed');
     await fetch(putUrl, {
@@ -100,7 +93,7 @@ const certificateService = {
    * @returns {Promise<Object>} - Verification request response
    */
   requestVerification: async (certificateId) => {
-    const res = await userServiceClient.post(
+    const res = await api.post(
       `/api/profile/certificates/${certificateId}/verify`,
     );
     const unwrapped = unwrap(res);
@@ -113,7 +106,7 @@ const certificateService = {
    * @returns {Promise<Object>} - Verification status
    */
   getVerificationStatus: async (certificateId) => {
-    const res = await userServiceClient.get(
+    const res = await api.get(
       `/api/profile/certificates/${certificateId}/verification`,
     );
     return unwrap(res);
@@ -125,9 +118,7 @@ const certificateService = {
    * @returns {Promise<Object>} - Certificate statistics
    */
   getCertificateStats: async (workerId) => {
-    const res = await userServiceClient.get(
-      `/api/profile/${workerId}/certificates/stats`,
-    );
+    const res = await api.get(`/api/profile/${workerId}/certificates/stats`);
     return unwrap(res);
   },
 
@@ -137,7 +128,7 @@ const certificateService = {
    * @returns {Promise<Object>} - Shareable link data
    */
   shareCertificate: async (certificateId) => {
-    const res = await userServiceClient.post(
+    const res = await api.post(
       `/api/profile/certificates/${certificateId}/share`,
     );
     return unwrap(res);
@@ -150,7 +141,7 @@ const certificateService = {
    * @returns {Promise<Object>} - Validation result
    */
   validateCertificate: async (certificateId, credentialId) => {
-    const res = await userServiceClient.post(
+    const res = await api.post(
       `/api/profile/certificates/${certificateId}/validate`,
       { credentialId },
     );
@@ -164,7 +155,7 @@ const certificateService = {
    * @returns {Promise<Object>} - Expiring certificates
    */
   getExpiringCertificates: async (workerId, daysAhead = 30) => {
-    const res = await userServiceClient.get(
+    const res = await api.get(
       `/api/profile/${workerId}/certificates/expiring`,
       { params: { daysAhead } },
     );
@@ -183,10 +174,9 @@ const certificateService = {
    * @returns {Promise<Object>} - Filtered certificates
    */
   searchCertificates: async (workerId, filters = {}) => {
-    const res = await userServiceClient.get(
-      `/api/profile/${workerId}/certificates/search`,
-      { params: filters },
-    );
+    const res = await api.get(`/api/profile/${workerId}/certificates/search`, {
+      params: filters,
+    });
     const unwrapped = unwrap(res);
     return Array.isArray(unwrapped?.certificates)
       ? unwrapped.certificates

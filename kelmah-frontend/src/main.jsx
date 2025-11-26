@@ -3,13 +3,10 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { SnackbarProvider } from 'notistack';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { queryClient } from './config/queryClient';
 import store from './store';
-// Keep AuthProvider for backward compatibility with existing useAuth hooks
-import { AuthProvider } from './modules/auth/contexts/AuthContext';
-import { NotificationProvider } from './modules/notifications/contexts/NotificationProvider';
-import { PaymentProvider } from './modules/payment/contexts/PaymentContext';
-import { MessageProvider } from './modules/messaging/contexts/MessageContext';
-import { ContractProvider } from './modules/contracts/contexts/ContractContext';
 import App from './App.jsx';
 import './index.css';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -111,37 +108,30 @@ const ErrorFallback = ({ error }) => (
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Provider store={store}>
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <SnackbarProvider
-          maxSnack={3}
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
           }}
-          dense
         >
-          <AuthProvider>
-            <NotificationProvider>
-              <MessageProvider>
-                <PaymentProvider>
-                  <ContractProvider>
-                    <ErrorBoundary FallbackComponent={ErrorFallback}>
-                      <HelmetProvider>
-                        <App />
-                      </HelmetProvider>
-                    </ErrorBoundary>
-                  </ContractProvider>
-                </PaymentProvider>
-              </MessageProvider>
-            </NotificationProvider>
-          </AuthProvider>
-        </SnackbarProvider>
-      </BrowserRouter>
+          <SnackbarProvider
+            maxSnack={3}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            dense
+          >
+            <ErrorBoundary FallbackComponent={ErrorFallback}>
+              <HelmetProvider>
+                <App />
+              </HelmetProvider>
+            </ErrorBoundary>
+          </SnackbarProvider>
+        </BrowserRouter>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
     </Provider>
   </React.StrictMode>,
 );

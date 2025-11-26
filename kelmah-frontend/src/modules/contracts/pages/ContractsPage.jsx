@@ -25,7 +25,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { formatDistanceToNow } from 'date-fns';
 import { alpha } from '@mui/material/styles';
-import { useAuth } from '@/modules/auth/contexts/AuthContext';
+import { useAuth } from '@/modules/auth/hooks/useAuth';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All contracts' },

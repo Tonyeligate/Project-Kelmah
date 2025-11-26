@@ -63,7 +63,7 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow, format } from 'date-fns';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useAuth } from '../../auth/hooks/useAuth';
 import reviewService from '../services/reviewService';
 
 // Enhanced Reviews Page with comprehensive review management
@@ -1278,3 +1278,4 @@ const EnhancedReviewsPage = () => {
 };
 
 export default EnhancedReviewsPage;
+

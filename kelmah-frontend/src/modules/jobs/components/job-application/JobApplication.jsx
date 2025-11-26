@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
   Box,
   Paper,
@@ -42,10 +43,12 @@ import {
   Paid,
   LocationOn,
 } from '@mui/icons-material';
-import jobsApi from '../../services/jobsService';
-import { useAuth } from '../../../auth/contexts/AuthContext';
 import { format } from 'date-fns';
-import axiosInstance from '../../../common/services/axios';
+import { api } from '../../../../services/apiClient';
+import {
+  useApplyToJobMutation,
+  useJobQuery,
+} from '../../hooks/useJobsQuery';
 
 // Styled components
 const ApplicationPaper = styled(Paper)(({ theme }) => ({
@@ -79,8 +82,14 @@ const ApplicationButton = styled(Button)(({ theme }) => ({
 function JobApplication() {
   const { id: jobId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useSelector((state) => state.auth);
   const theme = useTheme();
+  const {
+    data: job,
+    isLoading: isJobLoading,
+    error: jobError,
+  } = useJobQuery(jobId);
+  const applyMutation = useApplyToJobMutation();
 
   // Application form steps
   const [activeStep, setActiveStep] = useState(0);
@@ -92,10 +101,8 @@ function JobApplication() {
   ];
 
   // State
-  const [job, setJob] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(null);
+  const [submissionError, setSubmissionError] = useState(null);
   const [success, setSuccess] = useState(false);
 
   // Form state
@@ -119,35 +126,19 @@ function JobApplication() {
   // Form validation
   const [formErrors, setFormErrors] = useState({});
 
-  // Fetch job details on component mount
+  // Sync defaults from job payload when it loads
   useEffect(() => {
-    const fetchJobDetails = async () => {
-      try {
-        setLoading(true);
-        const response = await jobsApi.getJobById(jobId);
-        setJob(response);
-
-        // Set defaults from job
-        setApplicationData((prev) => ({
-          ...prev,
-          proposedBudget:
-            response?.budget?.amount ||
-            response?.budget?.min ||
-            response?.budget ||
-            '',
-          currency: response?.currency || 'GHS',
-        }));
-
-        setError(null);
-      } catch (err) {
-        setError(err.message || 'Failed to fetch job details');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchJobDetails();
-  }, [jobId]);
+    if (!job) return;
+    setApplicationData((prev) => ({
+      ...prev,
+      proposedBudget:
+        job?.budget?.amount ||
+        job?.budget?.min ||
+        job?.budget ||
+        '',
+      currency: job?.currency || 'GHS',
+    }));
+  }, [job]);
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -323,15 +314,11 @@ function JobApplication() {
           });
 
           // Upload the files first
-          const uploadResponse = await axiosInstance.post(
-            '/api/uploads',
-            formData,
-            {
-              headers: {
-                'Content-Type': 'multipart/form-data',
-              },
+          const uploadResponse = await api.post('/api/uploads', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
             },
-          );
+          });
 
           // Get the file URLs from the response
           processedAttachments = uploadResponse.data.files.map(
@@ -344,7 +331,7 @@ function JobApplication() {
             }),
           );
         } catch (uploadError) {
-          setError(
+          setSubmissionError(
             'Failed to upload attachments. ' + (uploadError.message || ''),
           );
           setSubmitting(false);
@@ -359,7 +346,11 @@ function JobApplication() {
       };
 
       // Submit the application with attachment references
-      await jobsApi.applyForJob(jobId, submissionData);
+      setSubmissionError(null);
+      await applyMutation.mutateAsync({
+        jobId,
+        applicationData: submissionData,
+      });
       setSuccess(true);
 
       // Redirect after successful submission (with delay)
@@ -367,13 +358,13 @@ function JobApplication() {
         navigate('/dashboard/applications');
       }, 2000);
     } catch (err) {
-      setError(err.message || 'Failed to submit application');
+      setSubmissionError(err.message || 'Failed to submit application');
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) {
+  if (isJobLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress color="primary" />
@@ -381,11 +372,28 @@ function JobApplication() {
     );
   }
 
-  if (error && !job) {
+  if (jobError && !job) {
     return (
       <Box sx={{ py: 3 }}>
         <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
+          {jobError?.message || 'Failed to fetch job details'}
+        </Alert>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate('/jobs')}
+          variant="outlined"
+        >
+          Back to Jobs
+        </Button>
+      </Box>
+    );
+  }
+
+  if (!job) {
+    return (
+      <Box sx={{ py: 3 }}>
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          Job details are not available right now. Please try again later.
         </Alert>
         <Button
           startIcon={<ArrowBackIcon />}
@@ -970,9 +978,9 @@ function JobApplication() {
                 </AccordionDetails>
               </Accordion>
 
-              {error && (
+              {submissionError && (
                 <Alert severity="error" sx={{ mt: 3 }}>
-                  {error}
+                  {submissionError}
                 </Alert>
               )}
             </Box>

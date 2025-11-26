@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
 // Async thunks for worker operations
 export const fetchWorkerProfile = createAsyncThunk(

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import {
   Box,
@@ -74,7 +74,7 @@ import {
 } from 'recharts';
 import PropTypes from 'prop-types';
 // Removed AuthContext import to prevent dual state management conflicts
-// import { useAuth } from '../../auth/contexts/AuthContext';"
+// import { useAuth } from '../../auth/hooks/useAuth';"
 import workerService from '../services/workerService';
 import {
   fallbackAvailableTests,
@@ -1418,3 +1418,4 @@ const SkillsAssessmentPage = () => {
 };
 
 export default SkillsAssessmentPage;
+

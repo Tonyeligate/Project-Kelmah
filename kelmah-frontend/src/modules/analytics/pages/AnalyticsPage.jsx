@@ -84,7 +84,7 @@ import {
   eachDayOfInterval,
   eachMonthOfInterval,
 } from 'date-fns';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useAuth } from '../../auth/hooks/useAuth';
 
 // Enhanced Analytics Dashboard
 const EnhancedAnalyticsPage = () => {
@@ -1133,3 +1133,4 @@ const EnhancedAnalyticsPage = () => {
 };
 
 export default EnhancedAnalyticsPage;
+

@@ -1,7 +1,4 @@
-import axios from '../../common/services/axios';
-
-const API_BASE = '/api';
-const withApi = (path) => `${API_BASE}${path}`;
+import { api } from '../../../services/apiClient';
 
 /**
  * Service for handling search functionality
@@ -15,7 +12,7 @@ const searchService = {
    */
   search: async (query, filters = {}) => {
     try {
-      const response = await axios.get(withApi('/search'), {
+      const response = await api.get('/search', {
         params: {
           q: query,
           ...filters,
@@ -35,7 +32,7 @@ const searchService = {
    */
   searchWorkers: async (params = {}) => {
     try {
-      const response = await axios.get(withApi('/search/workers'), {
+      const response = await api.get('/search/workers', {
         params,
       });
       return response.data.results || response.data;
@@ -51,7 +48,7 @@ const searchService = {
    * @returns {Promise<Object>} - Job search results
    */
   searchJobs: async (params) => {
-    const response = await axios.get(withApi('/jobs/search'), { params });
+    const response = await api.get('/jobs/search', { params });
     return response.data;
   },
 
@@ -66,7 +63,7 @@ const searchService = {
     }
 
     try {
-      const response = await axios.get(withApi('/search/suggestions'), {
+      const response = await api.get('/search/suggestions', {
         params: {
           q: partialQuery,
         },
@@ -85,7 +82,7 @@ const searchService = {
    */
   getPopularTerms: async (limit = 5) => {
     try {
-      const response = await axios.get(withApi('/search/popular'), {
+      const response = await api.get('/search/popular', {
         params: { limit },
       });
       return response.data.terms || response.data;
@@ -97,19 +94,19 @@ const searchService = {
 
   // Get job categories
   getCategories: async () => {
-    const response = await axios.get(withApi('/jobs/categories'));
+    const response = await api.get('/jobs/categories');
     return response.data;
   },
 
   // Get job skills
   getSkills: async () => {
-    const response = await axios.get(withApi('/jobs/skills'));
+    const response = await api.get('/jobs/skills');
     return response.data;
   },
 
   // Get search suggestions
   getSearchSuggestions: async (keyword) => {
-    const response = await axios.get(withApi('/jobs/suggestions'), {
+    const response = await api.get('/jobs/suggestions', {
       params: { keyword },
     });
     return response.data;
@@ -117,7 +114,7 @@ const searchService = {
 
   // Get popular searches
   getPopularSearches: async () => {
-    const response = await axios.get(withApi('/jobs/popular-searches'));
+    const response = await api.get('/jobs/popular-searches');
     return response.data;
   },
 };

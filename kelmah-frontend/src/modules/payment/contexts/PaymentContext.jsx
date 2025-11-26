@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from 'react';
 import paymentService from '../services/paymentService';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useAuth } from '../../auth/hooks/useAuth';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
 const PaymentContext = createContext(null);
 
@@ -226,3 +226,4 @@ export const usePayments = () => {
   }
   return context;
 };
+

@@ -1,6 +1,6 @@
-import { userServiceClient as schedulingClient } from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
-// Use centralized userServiceClient as scheduling lives in user-service
+// Use centralized api client
 
 class SchedulingService {
   /**
@@ -8,7 +8,7 @@ class SchedulingService {
    */
   async getAppointments(params = {}) {
     try {
-      const response = await schedulingClient.get('/appointments', {
+      const response = await api.get('/appointments', {
         params,
       });
       return response.data.data || response.data;
@@ -23,10 +23,7 @@ class SchedulingService {
    */
   async getAppointmentsByJob(jobId, params = {}) {
     try {
-      const response = await schedulingClient.get(
-        `/appointments/job/${jobId}`,
-        { params },
-      );
+      const response = await api.get(`/appointments/job/${jobId}`, { params });
       return response.data.data || response.data;
     } catch (error) {
       console.warn(
@@ -45,12 +42,9 @@ class SchedulingService {
       const queryParams = { ...params };
       if (role) queryParams.role = role;
 
-      const response = await schedulingClient.get(
-        `/appointments/user/${userId}`,
-        {
-          params: queryParams,
-        },
-      );
+      const response = await api.get(`/appointments/user/${userId}`, {
+        params: queryParams,
+      });
       return response.data.data || response.data;
     } catch (error) {
       console.warn(
@@ -66,10 +60,7 @@ class SchedulingService {
    */
   async createAppointment(appointmentData) {
     try {
-      const response = await schedulingClient.post(
-        '/api/appointments',
-        appointmentData,
-      );
+      const response = await api.post('/appointments', appointmentData);
       return response.data.data || response.data;
     } catch (error) {
       console.warn('Scheduling service unavailable:', error.message);
@@ -82,8 +73,8 @@ class SchedulingService {
    */
   async updateAppointment(appointmentId, updateData) {
     try {
-      const response = await schedulingClient.put(
-        `/api/appointments/${appointmentId}`,
+      const response = await api.put(
+        `/appointments/${appointmentId}`,
         updateData,
       );
       return response.data.data || response.data;
@@ -98,9 +89,7 @@ class SchedulingService {
    */
   async deleteAppointment(appointmentId) {
     try {
-      const response = await schedulingClient.delete(
-        `/api/appointments/${appointmentId}`,
-      );
+      const response = await api.delete(`/appointments/${appointmentId}`);
       return response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);
@@ -113,9 +102,7 @@ class SchedulingService {
    */
   async getAppointmentById(appointmentId) {
     try {
-      const response = await schedulingClient.get(
-        `/api/appointments/${appointmentId}`,
-      );
+      const response = await api.get(`/appointments/${appointmentId}`);
       return response.data.data || response.data;
     } catch (error) {
       console.warn('Scheduling service unavailable:', error.message);
@@ -128,8 +115,8 @@ class SchedulingService {
    */
   async updateAppointmentStatus(appointmentId, status) {
     try {
-      const response = await schedulingClient.patch(
-        `/api/appointments/${appointmentId}/status`,
+      const response = await api.patch(
+        `/appointments/${appointmentId}/status`,
         { status },
       );
       return response.data.data || response.data;
@@ -144,12 +131,9 @@ class SchedulingService {
    */
   async getAvailableTimeSlots(workerId, date, duration = 60) {
     try {
-      const response = await schedulingClient.get(
-        `/api/appointments/availability/${workerId}`,
-        {
-          params: { date, duration },
-        },
-      );
+      const response = await api.get(`/appointments/availability/${workerId}`, {
+        params: { date, duration },
+      });
       return response.data.data || response.data;
     } catch (error) {
       console.warn('Scheduling service unavailable:', error.message);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useAuth } from '../../auth/hooks/useAuth';
 import hirerAnalyticsService from '../services/hirerAnalyticsService';
 import {
   Box,
@@ -714,3 +714,4 @@ const HirerAnalyticsPage = () => {
 };
 
 export default HirerAnalyticsPage;
+

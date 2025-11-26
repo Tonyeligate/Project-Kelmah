@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useAuth } from '../../auth/hooks/useAuth';
 import {
   Box,
   Paper,
@@ -740,3 +740,4 @@ const RealTimeChat = ({
 };
 
 export default RealTimeChat;
+

@@ -1,9 +1,5 @@
-import axiosInstance, {
-  userServiceClient,
-  jobServiceClient,
-  messagingServiceClient,
-} from '../../common/services/axios';
-import { WS_CONFIG, API_ENDPOINTS } from '../../../config/environment';
+import { api } from '../../../services/apiClient';
+import { WS_CONFIG } from '../../../config/environment';
 import { io } from 'socket.io-client';
 
 /**
@@ -151,10 +147,10 @@ class DashboardService {
     try {
       const [metricsRes, jobsRes, analyticsRes, workersRes] =
         await Promise.allSettled([
-          userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_METRICS),
-          jobServiceClient.get(API_ENDPOINTS.JOB.DASHBOARD),
-          userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_ANALYTICS),
-          userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_WORKERS),
+          api.get('/users/dashboard/metrics'),
+          api.get('/jobs/dashboard'),
+          api.get('/users/dashboard/analytics'),
+          api.get('/users/dashboard/workers'),
         ]);
 
       const metrics =
@@ -213,7 +209,7 @@ class DashboardService {
   // Get recent activity
   async getRecentActivity(page = 1, limit = 10) {
     try {
-      const response = await jobServiceClient.get(API_ENDPOINTS.JOB.DASHBOARD, {
+      const response = await api.get('/jobs/dashboard', {
         params: { page, limit },
       });
       const data = response.data?.data || response.data || {};
@@ -234,12 +230,9 @@ class DashboardService {
   // Get statistics
   async getStatistics(timeframe = 'week') {
     try {
-      const response = await userServiceClient.get(
-        API_ENDPOINTS.USER.DASHBOARD_ANALYTICS,
-        {
-          params: { timeframe },
-        },
-      );
+      const response = await api.get('/users/dashboard/analytics', {
+        params: { timeframe },
+      });
       return response.data?.data || response.data || {};
     } catch (error) {
       console.error('Error fetching statistics:', error);
@@ -255,9 +248,7 @@ class DashboardService {
   // Get upcoming tasks
   async getUpcomingTasks() {
     try {
-      const response = await userServiceClient.get(
-        API_ENDPOINTS.USER.DASHBOARD_WORKERS,
-      );
+      const response = await api.get('/users/dashboard/workers');
       const workers = response.data?.workers || response.data || [];
       return workers.slice(0, 5).map((worker, index) => ({
         id: worker.id || index,
@@ -274,10 +265,9 @@ class DashboardService {
   // Get recent messages
   async getRecentMessages() {
     try {
-      const response = await messagingServiceClient.get(
-        API_ENDPOINTS.MESSAGING.CONVERSATIONS,
-        { params: { limit: 5 } },
-      );
+      const response = await api.get('/conversations', {
+        params: { limit: 5 },
+      });
       const conversations =
         response.data?.data || response.data?.conversations || response.data;
       if (Array.isArray(conversations)) {
@@ -293,9 +283,7 @@ class DashboardService {
   // Get performance metrics
   async getPerformanceMetrics() {
     try {
-      const response = await userServiceClient.get(
-        API_ENDPOINTS.USER.DASHBOARD_ANALYTICS,
-      );
+      const response = await api.get('/users/dashboard/analytics');
       const analytics = response.data?.data || response.data || {};
       return {
         completionRate: analytics.completionRate || 0,
@@ -392,9 +380,7 @@ class DashboardService {
   // Get job matches for workers
   async getJobMatches() {
     try {
-      const response = await jobServiceClient.get(
-        API_ENDPOINTS.JOB.RECOMMENDATIONS,
-      );
+      const response = await api.get('/jobs/recommendations');
       return response.data?.data || response.data || [];
     } catch (error) {
       console.error('Error fetching job matches:', error);
@@ -405,9 +391,7 @@ class DashboardService {
   // Get personalized recommendations
   async getRecommendations() {
     try {
-      const response = await jobServiceClient.get(
-        API_ENDPOINTS.JOB.RECOMMENDATIONS,
-      );
+      const response = await api.get('/jobs/recommendations');
       return response.data?.data || response.data || [];
     } catch (error) {
       console.error('Error fetching recommendations:', error);

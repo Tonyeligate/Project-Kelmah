@@ -1,4 +1,4 @@
-import { jobServiceClient } from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
 // Use centralized jobServiceClient with auth/retry interceptors
 
@@ -109,7 +109,7 @@ const jobsApi = {
   async getJobs(params = {}) {
     try {
       console.log('🔍 Calling job service API with params:', params);
-      const response = await jobServiceClient.get('/api/jobs', { params });
+      const response = await api.get('/api/jobs', { params });
       console.log('📊 Raw API response:', response.data);
 
       // Handle different response formats from the backend
@@ -200,7 +200,7 @@ const jobsApi = {
    * Create a job (hirer)
    */
   async createJob(jobData) {
-    const response = await jobServiceClient.post('/api/jobs', jobData);
+    const response = await api.post('/api/jobs', jobData);
     return response.data?.data || response.data;
   },
 
@@ -208,7 +208,7 @@ const jobsApi = {
    * Saved jobs
    */
   async getSavedJobs(params = {}) {
-    const response = await jobServiceClient.get('/jobs/saved', { params });
+    const response = await api.get('/jobs/saved', { params });
     const payload = response.data?.data || response.data;
     const jobs = Array.isArray(payload?.jobs)
       ? payload.jobs
@@ -218,11 +218,11 @@ const jobsApi = {
     return { jobs: jobs.map(transformJobListItem), totalPages: 1 };
   },
   async saveJob(jobId) {
-    const response = await jobServiceClient.post(`/api/jobs/${jobId}/save`);
+    const response = await api.post(`/api/jobs/${jobId}/save`);
     return response.data;
   },
   async unsaveJob(jobId) {
-    const response = await jobServiceClient.delete(`/api/jobs/${jobId}/save`);
+    const response = await api.delete(`/api/jobs/${jobId}/save`);
     return response.data;
   },
 
@@ -231,7 +231,7 @@ const jobsApi = {
    */
   async getContracts() {
     try {
-      const response = await jobServiceClient.get('/jobs/contracts');
+      const response = await api.get('/jobs/contracts');
       // Prefer nested data shape, fallback to flat
       return response.data?.data?.contracts || response.data?.contracts || [];
     } catch (error) {
@@ -251,7 +251,7 @@ const jobsApi = {
     }
 
     try {
-      const response = await jobServiceClient.get(`/api/jobs/${jobId}`);
+      const response = await api.get(`/api/jobs/${jobId}`);
       console.log('🔍 Single job API response:', response.data);
 
       // Handle the response format: {success: true, items: [...], page: 1, total: 12}
@@ -281,9 +281,9 @@ const jobsApi = {
               ? job.skills
               : typeof job.skills_required === 'string'
                 ? job.skills_required
-                  .split(',')
-                  .map((s) => s.trim())
-                  .filter(Boolean)
+                    .split(',')
+                    .map((s) => s.trim())
+                    .filter(Boolean)
                 : [],
           };
           return normalized;
@@ -295,24 +295,24 @@ const jobsApi = {
       const normalized =
         raw && typeof raw === 'object'
           ? {
-            ...raw,
-            created_at: raw.created_at || raw.createdAt || raw.postedDate,
-            hirer_name: raw.hirer_name || raw.hirer?.name,
-            postedDate:
-              raw.postedDate ||
-              (raw.createdAt ? new Date(raw.createdAt) : undefined),
-            deadline:
-              raw.deadline ||
-              (raw.endDate ? new Date(raw.endDate) : undefined),
-            skills: Array.isArray(raw.skills)
-              ? raw.skills
-              : typeof raw.skills_required === 'string'
-                ? raw.skills_required
-                  .split(',')
-                  .map((s) => s.trim())
-                  .filter(Boolean)
-                : [],
-          }
+              ...raw,
+              created_at: raw.created_at || raw.createdAt || raw.postedDate,
+              hirer_name: raw.hirer_name || raw.hirer?.name,
+              postedDate:
+                raw.postedDate ||
+                (raw.createdAt ? new Date(raw.createdAt) : undefined),
+              deadline:
+                raw.deadline ||
+                (raw.endDate ? new Date(raw.endDate) : undefined),
+              skills: Array.isArray(raw.skills)
+                ? raw.skills
+                : typeof raw.skills_required === 'string'
+                  ? raw.skills_required
+                      .split(',')
+                      .map((s) => s.trim())
+                      .filter(Boolean)
+                  : [],
+            }
           : raw;
       return normalized;
     } catch (error) {
@@ -327,7 +327,7 @@ const jobsApi = {
   async searchJobs(searchParams) {
     try {
       // Backend supports filtering and text search via /api/jobs with ?search=
-      const response = await jobServiceClient.get('/jobs', {
+      const response = await api.get('/jobs', {
         params: searchParams,
       });
       const jobs = response.data.data || response.data.jobs || [];
@@ -353,7 +353,7 @@ const jobsApi = {
    */
   async applyToJob(jobId, applicationData) {
     try {
-      const response = await jobServiceClient.post(
+      const response = await api.post(
         `/api/jobs/${jobId}/apply`,
         applicationData,
       );
@@ -372,7 +372,7 @@ const jobsApi = {
    */
   async getJobCategories() {
     try {
-      const response = await jobServiceClient.get('/jobs/categories');
+      const response = await api.get('/jobs/categories');
       return response.data.data || response.data;
     } catch (error) {
       console.warn(
@@ -388,12 +388,9 @@ const jobsApi = {
    */
   async getPersonalizedJobRecommendations(params = {}) {
     try {
-      const response = await jobServiceClient.get(
-        '/jobs/recommendations/personalized',
-        {
-          params,
-        },
-      );
+      const response = await api.get('/jobs/recommendations/personalized', {
+        params,
+      });
       const payload = response.data?.data || response.data;
       if (Array.isArray(payload?.recommendations)) {
         return payload.recommendations.map(transformJobListItem);

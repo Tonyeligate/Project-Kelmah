@@ -1,5 +1,5 @@
 import axios from 'axios';
-import axiosInstance from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 import { EXTERNAL_SERVICES } from '../../../config/services';
 
 /**
@@ -114,10 +114,9 @@ class MapService {
         searchParams.maxBudget = budget[1];
       }
 
-      const response = await axiosInstance.get('/jobs/search/location', {
+      const response = await api.get('/jobs/search/location', {
         params: searchParams,
       });
-
       return this.transformJobsForMap(response.data.data || []);
     } catch (error) {
       console.error('Jobs API unavailable:', error);
@@ -156,7 +155,7 @@ class MapService {
 
       // Changed from '/workers/search/location' to '/workers/search/location'
       // baseURL='/api' is provided by axiosInstance on Vercel, preventing /api duplication
-      const response = await axiosInstance.get('/workers/search/location', {
+      const response = await api.get('/workers/search/location', {
         params: searchParams,
       });
 

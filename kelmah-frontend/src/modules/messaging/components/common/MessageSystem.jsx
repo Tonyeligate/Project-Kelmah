@@ -17,8 +17,8 @@ import {
   Alert,
 } from '@mui/material';
 import { Send, Person, Search } from '@mui/icons-material';
-import { useAuth } from '../../auth/contexts/AuthContext';
-import axiosInstance from '../../../../common/services/axios';
+import { useAuth } from '../../auth/hooks/useAuth';
+import { api } from '../../../../../services/apiClient';
 import { wsService } from '../../../services/websocket';
 
 function MessageSystem() {
@@ -60,7 +60,7 @@ function MessageSystem() {
 
   const fetchConversations = async () => {
     try {
-      const response = await axiosInstance.get('/api/conversations');
+      const response = await api.get('/conversations');
       setConversations(response.data);
     } catch (err) {
       setError('Failed to load conversations');
@@ -71,8 +71,8 @@ function MessageSystem() {
   const fetchMessages = async (conversationId) => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get(
-        `/api/messages/conversation/${conversationId}`,
+      const response = await api.get(
+        `/messages/conversation/${conversationId}`,
       );
       setMessages(response.data);
       scrollToBottom();
@@ -89,7 +89,7 @@ function MessageSystem() {
     if (!newMessage.trim() || !selectedConversation) return;
 
     try {
-      await axiosInstance.post(`/api/messages`, {
+      await api.post(`/messages`, {
         content: newMessage,
         conversationId: selectedConversation.id,
       });
@@ -293,3 +293,4 @@ function MessageSystem() {
 }
 
 export default MessageSystem;
+

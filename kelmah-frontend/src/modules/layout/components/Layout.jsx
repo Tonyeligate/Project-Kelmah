@@ -191,7 +191,11 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
         overflowY: 'auto', // Allow natural vertical scrolling
       }}
     >
-      <Header toggleTheme={toggleTheme} mode={mode} setThemeMode={setThemeMode} />
+      <Header
+        toggleTheme={toggleTheme}
+        mode={mode}
+        setThemeMode={setThemeMode}
+      />
       <Fade in key={location.pathname} timeout={500}>
         <Box
           component="main"

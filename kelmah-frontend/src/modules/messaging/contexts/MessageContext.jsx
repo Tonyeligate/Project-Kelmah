@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import PropTypes from 'prop-types';
 import { messagingService } from '../services/messagingService';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useAuth } from '../../auth/hooks/useAuth';
 import io from 'socket.io-client';
 import { normalizeAttachmentListVirusScan } from '../utils/virusScanUtils';
 
@@ -564,3 +564,4 @@ MessageProvider.propTypes = {
 };
 
 export default MessageContext;
+

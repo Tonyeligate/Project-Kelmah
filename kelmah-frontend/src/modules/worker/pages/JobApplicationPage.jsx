@@ -1,6 +1,4 @@
-// Initial JobApplicationPage file
-
-import React, { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import Grow from '@mui/material/Grow';
 import {
   Container,
@@ -19,7 +17,6 @@ import {
   Divider,
   Chip,
   IconButton,
-  CircularProgress,
   Pagination,
   FormControl,
   InputLabel,
@@ -28,8 +25,17 @@ import {
   Stack,
   Skeleton,
   useTheme,
+  Alert,
 } from '@mui/material';
-import jobsApi from '../../jobs/services/jobsService';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import {
+  useJobsQuery,
+  useSavedJobIds,
+  useSavedJobsQuery,
+  useSaveJobMutation,
+  useUnsaveJobMutation,
+} from '../../jobs/hooks/useJobsQuery';
 import {
   Search as SearchIcon,
   LocationOn as LocationIcon,
@@ -37,7 +43,6 @@ import {
   AttachMoney as MoneyIcon,
   BookmarkBorder as BookmarkBorderIcon,
   Bookmark as BookmarkIcon,
-  FilterList as FilterListIcon,
   WorkOutline as WorkOutlineIcon,
   AccessTime as AccessTimeIcon,
 } from '@mui/icons-material';
@@ -45,70 +50,92 @@ import { Link as RouterLink } from 'react-router-dom';
 
 const JobApplicationPage = () => {
   const theme = useTheme();
-  const [jobs, setJobs] = useState([]);
-  const [totalItems, setTotalItems] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated } = useSelector((state) => state.auth || {});
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('');
   const [category, setCategory] = useState('');
   const [jobType, setJobType] = useState('');
-  const [savedJobs, setSavedJobs] = useState([]);
   const [page, setPage] = useState(1);
   const jobsPerPage = 5;
-  const [totalPages, setTotalPages] = useState(1);
   const [sortBy, setSortBy] = useState('recent');
 
-  // Fetch jobs from API
-  useEffect(() => {
-    const fetchJobs = async () => {
-      setLoading(true);
-      try {
-        const params = { page, limit: jobsPerPage };
-        if (searchTerm) params.search = searchTerm;
-        if (location) params.location = location;
-        if (category) params.category = category;
-        if (jobType) params.type = jobType;
-        // Map sortBy to API sort parameter
-        switch (sortBy) {
-          case 'salary-high':
-            params.sort = '-budget';
-            break;
-          case 'salary-low':
-            params.sort = 'budget';
-            break;
-          case 'recent':
-            params.sort = '-createdAt';
-            break;
-          // 'relevant' not directly supported by API
-          default:
-            break;
-        }
-        const response = await jobsApi.getJobs(params);
-        const { data, meta } = response;
-        setJobs(data);
-        setTotalPages(meta.pagination.totalPages);
-        setTotalItems(meta.pagination.totalItems);
-      } catch (error) {
-        console.error('Error fetching jobs:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchJobs();
-  }, [searchTerm, location, category, jobType, page, sortBy]);
+  const sortParam = useMemo(() => {
+    switch (sortBy) {
+      case 'salary-high':
+        return '-budget';
+      case 'salary-low':
+        return 'budget';
+      case 'recent':
+        return '-createdAt';
+      case 'relevant':
+        return 'relevance';
+      default:
+        return undefined;
+    }
+  }, [sortBy]);
 
-  const currentJobs = jobs;
+  const queryFilters = useMemo(() => {
+    const params = {
+      page,
+      limit: jobsPerPage,
+    };
+    if (searchTerm) params.search = searchTerm;
+    if (location) params.location = location;
+    if (category) params.category = category;
+    if (jobType) params.type = jobType;
+    if (sortParam && sortParam !== 'relevance') params.sort = sortParam;
+    return params;
+  }, [page, jobsPerPage, searchTerm, location, category, jobType, sortParam]);
+
+  const {
+    data: jobsData,
+    isLoading,
+    error,
+  } = useJobsQuery(queryFilters, {
+    keepPreviousData: true,
+  });
+
+  const jobs = jobsData?.jobs || jobsData?.data || [];
+  const totalPages = jobsData?.totalPages || 1;
+  const totalItems =
+    jobsData?.totalJobs ||
+    jobsData?.meta?.pagination?.totalItems ||
+    jobs.length;
+  const isInitialLoading = isLoading && jobs.length === 0;
+
+  const { data: savedJobsData } = useSavedJobsQuery(
+    {},
+    { enabled: Boolean(isAuthenticated) },
+  );
+
+  const savedJobIds = useSavedJobIds(savedJobsData);
+  const saveJobMutation = useSaveJobMutation();
+  const unsaveJobMutation = useUnsaveJobMutation();
 
   const handleChangePage = (event, value) => {
     setPage(value);
     window.scrollTo(0, 0);
   };
 
-  const handleSaveJob = (jobId) => {
-    if (savedJobs.includes(jobId)) {
-      setSavedJobs(savedJobs.filter((id) => id !== jobId));
-    } else {
-      setSavedJobs([...savedJobs, jobId]);
+  const handleSaveJob = async (job) => {
+    const jobId = job?._id || job?.id;
+    if (!jobId) return;
+
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: '/worker/find-work' } });
+      return;
+    }
+
+    const isSaved = savedJobIds.has(jobId);
+    try {
+      if (isSaved) {
+        await unsaveJobMutation.mutateAsync({ jobId });
+      } else {
+        await saveJobMutation.mutateAsync({ jobId, job });
+      }
+    } catch (saveError) {
+      console.error('Error toggling saved job:', saveError);
     }
   };
 
@@ -123,6 +150,7 @@ const JobApplicationPage = () => {
     setCategory('');
     setJobType('');
     setPage(1);
+    setSortBy('recent');
   };
 
   return (
@@ -222,7 +250,7 @@ const JobApplicationPage = () => {
         </Box>
 
         {/* Results Section */}
-        {loading ? (
+        {isInitialLoading ? (
           <Grid container spacing={3} sx={{ p: 2 }}>
             {Array.from({ length: jobsPerPage }).map((_, idx) => (
               <Grid item xs={12} sm={6} key={idx}>
@@ -276,6 +304,12 @@ const JobApplicationPage = () => {
                 </Select>
               </FormControl>
             </Box>
+
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error.message || 'Failed to load jobs'}
+              </Alert>
+            )}
 
             {jobs.length === 0 ? (
               <Paper sx={{ p: 4, textAlign: 'center' }}>
@@ -381,10 +415,8 @@ const JobApplicationPage = () => {
                                 </Box>
                               </Stack>
                             </Box>
-                            <IconButton
-                              onClick={() => handleSaveJob(job._id || job.id)}
-                            >
-                              {savedJobs.includes(job._id || job.id) ? (
+                            <IconButton onClick={() => handleSaveJob(job)}>
+                              {savedJobIds.has(job._id || job.id) ? (
                                 <BookmarkIcon color="primary" />
                               ) : (
                                 <BookmarkBorderIcon />

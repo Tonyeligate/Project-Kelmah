@@ -51,7 +51,7 @@ import {
   Download as ExportIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
-import { useAuth } from '../../../auth/contexts/AuthContext';
+import { useAuth } from '../../../auth/hooks/useAuth';
 
 // Custom TabPanel component
 function TabPanel(props) {
@@ -1028,3 +1028,4 @@ const PaymentOverview = () => {
 };
 
 export default PaymentOverview;
+

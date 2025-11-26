@@ -79,7 +79,7 @@ import {
   TimelineConnector,
   TimelineOppositeContent,
 } from '@mui/lab';
-import { useAuth } from '../../../auth/contexts/AuthContext';
+import { useAuth } from '../../../auth/hooks/useAuth';
 
 // Custom TabPanel component
 function TabPanel(props) {
@@ -1240,3 +1240,4 @@ const DisputeManagement = () => {
 };
 
 export default DisputeManagement;
+

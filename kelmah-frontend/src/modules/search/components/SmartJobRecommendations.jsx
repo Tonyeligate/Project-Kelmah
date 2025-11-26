@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { normalizeUser } from '../../../utils/userUtils';
 import searchService from '../services/smartSearchService';
 import {
-  saveJobToServer,
-  unsaveJobFromServer,
-  selectSavedJobs,
-  fetchSavedJobs,
-} from '../../jobs/services/jobSlice';
+  useSavedJobsQuery,
+  useSavedJobIds,
+  useSaveJobMutation,
+  useUnsaveJobMutation,
+} from '../../jobs/hooks/useJobsQuery';
 import {
   Box,
   Paper,
@@ -38,23 +39,17 @@ import {
   Schedule as TimeIcon,
   AttachMoney as MoneyIcon,
   Star as StarIcon,
-  TrendingUp as TrendingIcon,
   Lightbulb as AIIcon,
   Bookmark as SaveIcon,
   BookmarkBorder as SaveBorderIcon,
   Share as ShareIcon,
   Visibility as ViewIcon,
-  ThumbUp as LikeIcon,
   AutoAwesome as MagicIcon,
   Psychology as BrainIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
-import {
-  formatCurrency,
-  formatDate,
-  formatRelativeTime,
-} from '../../../utils/formatters';
+import { formatCurrency, formatRelativeTime } from '../../../utils/formatters';
 
 const SmartJobRecommendations = ({
   maxRecommendations = 6,
@@ -62,23 +57,35 @@ const SmartJobRecommendations = ({
   onJobSelect = null,
   filterCriteria = {},
 }) => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   // FIXED: Use standardized user normalization for consistent user data access
   const { user: rawUser, isAuthenticated } = useSelector((state) => state.auth);
   const user = normalizeUser(rawUser);
-  const savedJobs = useSelector(selectSavedJobs) || [];
+  const userId = user?.id || user?._id;
+  const userRole = user?.role;
+  const userType = user?.userType;
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
   const isWorker = useMemo(
-    () => user?.role === 'worker' || user?.userType === 'worker',
-    [user?.role, user?.userType],
+    () => userRole === 'worker' || userType === 'worker',
+    [userRole, userType],
   );
-  const savedJobIds = useMemo(() => {
-    return new Set(
-      (savedJobs || []).map((saved) => saved.id || saved._id || saved.jobId),
-    );
-  }, [savedJobs]);
+  const savedJobsQuery = useSavedJobsQuery(
+    {},
+    { enabled: Boolean(isAuthenticated) },
+  );
+  const savedJobIds = useSavedJobIds(savedJobsQuery.data);
+  const saveJobMutation = useSaveJobMutation({
+    onSuccess: () =>
+      enqueueSnackbar('Job saved successfully', { variant: 'success' }),
+    onError: () => enqueueSnackbar('Failed to save job', { variant: 'error' }),
+  });
+  const unsaveJobMutation = useUnsaveJobMutation({
+    onSuccess: () =>
+      enqueueSnackbar('Job removed from saved list', { variant: 'info' }),
+    onError: () =>
+      enqueueSnackbar('Failed to update saved jobs', { variant: 'error' }),
+  });
 
   // State management
   const [recommendations, setRecommendations] = useState([]);
@@ -99,7 +106,7 @@ const SmartJobRecommendations = ({
         }
 
         // If no authenticated user, skip personalized recommendations gracefully
-        if (!user || !user.id) {
+        if (!userId) {
           setRecommendations([]);
           setAiInsights(null);
           setError(null);
@@ -122,7 +129,7 @@ const SmartJobRecommendations = ({
         }
 
         const response = await searchService.getSmartJobRecommendations(
-          user.id,
+          userId,
           {
             limit: maxRecommendations,
             ...filterCriteria,
@@ -164,7 +171,7 @@ const SmartJobRecommendations = ({
         setRefreshing(false);
       }
     },
-    [user?.id, isWorker, maxRecommendations, filterCriteria, enqueueSnackbar],
+    [userId, isWorker, maxRecommendations, filterCriteria, enqueueSnackbar],
   );
 
   useEffect(() => {
@@ -173,34 +180,26 @@ const SmartJobRecommendations = ({
   }, [loadRecommendations]);
 
   // Handle save/unsave job
-  const handleToggleSave = async (jobId) => {
+  const handleToggleSave = async (job) => {
+    const jobId = job?.id || job?._id || job?.jobId;
     if (!jobId) {
       enqueueSnackbar('Job reference unavailable. Please refresh.', {
         variant: 'warning',
       });
       return;
     }
-
-    if (!isAuthenticated) {
-      navigate('/login', { state: { from: window.location.pathname } });
-      return;
-    }
+    const isSaved = savedJobIds.has(jobId);
 
     try {
-      const isSaved = savedJobIds.has(jobId);
-
       if (isSaved) {
-        await dispatch(unsaveJobFromServer(jobId));
-        enqueueSnackbar('Job removed from saved list', { variant: 'success' });
-      } else {
-        await dispatch(saveJobToServer(jobId));
-        enqueueSnackbar('Job saved successfully', { variant: 'success' });
+        await unsaveJobMutation.mutateAsync({ jobId });
+        return;
       }
 
-      // Refresh saved jobs list
-      await dispatch(fetchSavedJobs());
-    } catch (error) {
-      enqueueSnackbar('Failed to update saved jobs', { variant: 'error' });
+      await saveJobMutation.mutateAsync({ jobId, job });
+    } catch (mutationError) {
+      // Notification handled inside mutation callbacks.
+      console.warn('Saved job mutation failed:', mutationError);
     }
   };
 
@@ -218,9 +217,9 @@ const SmartJobRecommendations = ({
       if (onJobSelect) {
         onJobSelect(jobId, 'apply');
       }
-      // Navigate to job application page
-      window.location.href = `/jobs/${jobId}/apply`;
-    } catch (error) {
+      navigate(`/jobs/${jobId}/apply`);
+    } catch (applyError) {
+      console.error('Failed to process job application:', applyError);
       enqueueSnackbar('Failed to process job application', {
         variant: 'error',
       });
@@ -241,10 +240,9 @@ const SmartJobRecommendations = ({
       if (onJobSelect) {
         onJobSelect(jobId, 'view');
       }
-      // Navigate to job details page
-      window.location.href = `/jobs/${jobId}`;
-    } catch (error) {
-      console.error('Failed to track job view:', error);
+      navigate(`/jobs/${jobId}`);
+    } catch (viewError) {
+      console.error('Failed to track job view:', viewError);
     }
   };
 
@@ -534,7 +532,7 @@ const SmartJobRecommendations = ({
             <Tooltip title={isSaved ? 'Remove from saved' : 'Save job'}>
               <IconButton
                 size="small"
-                onClick={() => handleToggleSave(jobKey)}
+                onClick={() => handleToggleSave(job)}
                 color={isSaved ? 'primary' : 'default'}
               >
                 {isSaved ? <SaveIcon /> : <SaveBorderIcon />}
@@ -726,7 +724,7 @@ const SmartJobRecommendations = ({
             variant="outlined"
             onClick={() => {
               // Navigate to full search page with recommendations
-              window.location.href = '/search/jobs?recommended=true';
+              navigate('/search/jobs?recommended=true');
             }}
           >
             View All Recommendations
@@ -735,6 +733,20 @@ const SmartJobRecommendations = ({
       )}
     </Box>
   );
+};
+
+SmartJobRecommendations.propTypes = {
+  maxRecommendations: PropTypes.number,
+  showHeader: PropTypes.bool,
+  onJobSelect: PropTypes.func,
+  filterCriteria: PropTypes.object,
+};
+
+SmartJobRecommendations.defaultProps = {
+  maxRecommendations: 6,
+  showHeader: true,
+  onJobSelect: null,
+  filterCriteria: {},
 };
 
 export default SmartJobRecommendations;

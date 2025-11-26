@@ -159,10 +159,16 @@ const fetchRuntimeHints = async () => {
           try {
             window.sessionStorage.setItem(
               BOOTSTRAP_GATEWAY_SESSION_KEY,
-              JSON.stringify({ origin: config.apiGatewayUrl, updatedAt: Date.now() }),
+              JSON.stringify({
+                origin: config.apiGatewayUrl,
+                updatedAt: Date.now(),
+              }),
             );
           } catch (error) {
-            console.warn('[PWA] Failed to cache bootstrap gateway hint:', error);
+            console.warn(
+              '[PWA] Failed to cache bootstrap gateway hint:',
+              error,
+            );
           }
         }
         navigator.serviceWorker?.controller?.postMessage({
@@ -657,11 +663,7 @@ export const initializePWA = async () => {
     const isFresh = !cachedGateway.updatedAt
       ? true
       : Date.now() - Number(cachedGateway.updatedAt) <= BOOTSTRAP_TTL_MS;
-    if (
-      isFresh &&
-      typeof window !== 'undefined' &&
-      window.sessionStorage
-    ) {
+    if (isFresh && typeof window !== 'undefined' && window.sessionStorage) {
       try {
         window.sessionStorage.setItem(
           BOOTSTRAP_GATEWAY_SESSION_KEY,

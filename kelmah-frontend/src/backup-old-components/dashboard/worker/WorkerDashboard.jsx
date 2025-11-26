@@ -47,7 +47,7 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchDashboardData } from '../../services/dashboardSlice';
-import { useAuth } from '../../../auth/contexts/AuthContext';
+import { useAuth } from '../../../auth/hooks/useAuth';
 import StatisticsCard from '../common/StatisticsCard';
 import QuickActions from '../common/QuickActions';
 import Portfolio from './Portfolio';
@@ -1018,3 +1018,4 @@ const EnhancedWorkerDashboard = () => {
 };
 
 export default EnhancedWorkerDashboard;
+

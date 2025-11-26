@@ -1,7 +1,7 @@
-import { userServiceClient } from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
-const API_URL = '/api/search';
-const JOB_RECOMMENDATIONS_ENDPOINT = '/api/jobs/recommendations';
+const API_URL = '/search';
+const JOB_RECOMMENDATIONS_ENDPOINT = '/jobs/recommendations';
 
 /**
  * Service for AI-powered smart job search and recommendations
@@ -15,15 +15,12 @@ const smartSearchService = {
    */
   getSmartJobRecommendations: async (userId, options = {}) => {
     try {
-      const response = await userServiceClient.get(
-        JOB_RECOMMENDATIONS_ENDPOINT,
-        {
-          params: {
-            userId,
-            ...options,
-          },
+      const response = await api.get(JOB_RECOMMENDATIONS_ENDPOINT, {
+        params: {
+          userId,
+          ...options,
         },
-      );
+      });
       return response.data;
     } catch (error) {
       if (error?.response?.status === 403) {
@@ -53,10 +50,7 @@ const smartSearchService = {
    */
   performSmartSearch: async (searchParams) => {
     try {
-      const response = await userServiceClient.post(
-        `${API_URL}/smart-search`,
-        searchParams,
-      );
+      const response = await api.post(`${API_URL}/smart-search`, searchParams);
       return response.data;
     } catch (error) {
       throw error;
@@ -71,7 +65,7 @@ const smartSearchService = {
    */
   getJobMatchAnalysis: async (jobId, userId) => {
     try {
-      const response = await userServiceClient.get(
+      const response = await api.get(
         `${API_URL}/match-analysis/${jobId}/${userId}`,
       );
       return response.data;
@@ -87,7 +81,7 @@ const smartSearchService = {
    */
   saveJob: async (jobId) => {
     try {
-      const response = await userServiceClient.post(`${API_URL}/save-job`, {
+      const response = await api.post(`${API_URL}/save-job`, {
         jobId,
       });
       return response.data;
@@ -104,9 +98,7 @@ const smartSearchService = {
    */
   unsaveJob: async (jobId) => {
     try {
-      const response = await userServiceClient.delete(
-        `${API_URL}/save-job/${jobId}`,
-      );
+      const response = await api.delete(`${API_URL}/save-job/${jobId}`);
       return response.data;
     } catch (error) {
       throw error;
@@ -121,14 +113,11 @@ const smartSearchService = {
    */
   trackJobInteraction: async (jobId, action) => {
     try {
-      const response = await userServiceClient.post(
-        `${API_URL}/track-interaction`,
-        {
-          jobId,
-          action,
-          timestamp: new Date().toISOString(),
-        },
-      );
+      const response = await api.post(`${API_URL}/track-interaction`, {
+        jobId,
+        action,
+        timestamp: new Date().toISOString(),
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -143,10 +132,9 @@ const smartSearchService = {
    */
   getSearchSuggestions: async (userId, query) => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/suggestions/${userId}`,
-        { params: { q: query } },
-      );
+      const response = await api.get(`${API_URL}/suggestions/${userId}`, {
+        params: { q: query },
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -160,12 +148,9 @@ const smartSearchService = {
    */
   getMarketInsights: async (filters = {}) => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/market-insights`,
-        {
-          params: filters,
-        },
-      );
+      const response = await api.get(`${API_URL}/market-insights`, {
+        params: filters,
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -179,9 +164,7 @@ const smartSearchService = {
    */
   getSavedSearches: async (userId) => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/saved-searches/${userId}`,
-      );
+      const response = await api.get(`${API_URL}/saved-searches/${userId}`);
       return response.data;
     } catch (error) {
       throw error;
@@ -196,13 +179,10 @@ const smartSearchService = {
    */
   createSavedSearch: async (userId, searchData) => {
     try {
-      const response = await userServiceClient.post(
-        `${API_URL}/saved-searches`,
-        {
-          userId,
-          ...searchData,
-        },
-      );
+      const response = await api.post(`${API_URL}/saved-searches`, {
+        userId,
+        ...searchData,
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -217,7 +197,7 @@ const smartSearchService = {
    */
   updateSavedSearch: async (searchId, updateData) => {
     try {
-      const response = await userServiceClient.put(
+      const response = await api.put(
         `${API_URL}/saved-searches/${searchId}`,
         updateData,
       );
@@ -234,7 +214,7 @@ const smartSearchService = {
    */
   deleteSavedSearch: async (searchId) => {
     try {
-      const response = await userServiceClient.delete(
+      const response = await api.delete(
         `${API_URL}/saved-searches/${searchId}`,
       );
       return response.data;

@@ -3,7 +3,7 @@
  * Handles all notification-related API calls with proper service routing and fallbacks
  */
 
-import { messagingServiceClient } from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 import { io } from 'socket.io-client';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 import { WS_CONFIG } from '../../../config/environment';
@@ -11,7 +11,7 @@ import { WS_CONFIG } from '../../../config/environment';
 class NotificationService {
   constructor() {
     // Use messaging service for notifications (now that CORS is fixed)
-    this.client = messagingServiceClient;
+    this.client = api;
   }
 
   // Connect to notification socket
@@ -227,7 +227,7 @@ class NotificationService {
   async markAsRead(notificationId) {
     try {
       const response = await this.client.patch(
-        `/api/notifications/${notificationId}/read`,
+        `/notifications/${notificationId}/read`,
       );
       return response.data;
     } catch (error) {
@@ -273,7 +273,7 @@ class NotificationService {
   async deleteNotification(notificationId) {
     try {
       const response = await this.client.delete(
-        `/api/notifications/${notificationId}`,
+        `/notifications/${notificationId}`,
       );
       return response.data;
     } catch (error) {

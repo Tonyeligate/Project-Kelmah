@@ -1,4 +1,4 @@
-import gatewayClient from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
 /**
  * Calendar events API service
@@ -10,7 +10,7 @@ const eventsService = {
    */
   getEvents: async () => {
     try {
-      const response = await gatewayClient.get('/events');
+      const response = await api.get('/events');
       return response.data;
     } catch (error) {
       console.error('Error fetching events:', error);
@@ -25,7 +25,7 @@ const eventsService = {
    */
   createEvent: async (eventData) => {
     try {
-      const response = await gatewayClient.post('/events', eventData);
+      const response = await api.post('/events', eventData);
       return response.data;
     } catch (error) {
       console.error('Error creating event:', error);
@@ -41,10 +41,7 @@ const eventsService = {
    */
   updateEvent: async (eventId, eventData) => {
     try {
-      const response = await gatewayClient.put(
-        `/api/events/${eventId}`,
-        eventData,
-      );
+      const response = await api.put(`/events/${eventId}`, eventData);
       return response.data;
     } catch (error) {
       console.error('Error updating event:', error);
@@ -59,7 +56,7 @@ const eventsService = {
    */
   deleteEvent: async (eventId) => {
     try {
-      await gatewayClient.delete(`/api/events/${eventId}`);
+      await api.delete(`/events/${eventId}`);
     } catch (error) {
       console.error('Error deleting event:', error);
       throw error;

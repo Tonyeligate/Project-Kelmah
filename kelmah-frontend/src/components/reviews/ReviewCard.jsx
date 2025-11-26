@@ -30,7 +30,7 @@ import {
   Send as SendIcon,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useAuth } from '../../modules/auth/contexts/AuthContext';
+import { useAuth } from '../../modules/auth/hooks/useAuth';
 
 /**
  * Individual Review Card Component

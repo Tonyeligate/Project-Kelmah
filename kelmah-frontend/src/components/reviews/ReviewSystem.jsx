@@ -50,7 +50,7 @@ import {
   Cancel as CancelIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../../modules/auth/contexts/AuthContext';
+import { useAuth } from '../../modules/auth/hooks/useAuth';
 import reviewService from '../../modules/reviews/services/reviewService';
 
 /**

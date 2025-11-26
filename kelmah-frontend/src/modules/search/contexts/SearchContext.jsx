@@ -6,7 +6,6 @@ import React, {
   useCallback,
 } from 'react';
 import PropTypes from 'prop-types';
-import axios from '../../common/services/axios';
 import searchService from '../services/searchService';
 
 // Create Search Context

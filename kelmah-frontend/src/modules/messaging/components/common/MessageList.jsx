@@ -28,7 +28,7 @@ import {
 import { format } from 'date-fns';
 import { styled } from '@mui/material/styles';
 import { useMessages } from '../../contexts/MessageContext';
-import { useAuth } from '../../../auth/contexts/AuthContext';
+import { useAuth } from '../../../auth/hooks/useAuth';
 import { MESSAGE_TYPES } from '../../../../config/constants';
 import { useInView } from 'react-intersection-observer';
 import Message from './Message';
@@ -588,3 +588,4 @@ const MessageList = ({
 };
 
 export default MessageList;
+

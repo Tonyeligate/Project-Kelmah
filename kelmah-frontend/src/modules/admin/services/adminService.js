@@ -5,7 +5,7 @@
  * system monitoring, and administrative tasks.
  */
 
-import { authServiceClient as adminClient } from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
 export const adminService = {
   // User Management
@@ -13,12 +13,12 @@ export const adminService = {
     try {
       const params = { page, limit };
       if (search) {
-        const response = await adminClient.get('/users/search', {
+        const response = await api.get('/users/search', {
           params: { ...params, q: search },
         });
         return response.data;
       }
-      const response = await adminClient.get('/users', { params });
+      const response = await api.get('/users', { params });
       return response.data;
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -29,7 +29,7 @@ export const adminService = {
   // Payout queue
   async listPayouts(params = {}) {
     try {
-      const response = await adminClient.get('/payments/admin/payouts', {
+      const response = await api.get('/payments/admin/payouts', {
         params,
       });
       return response.data;
@@ -41,10 +41,7 @@ export const adminService = {
 
   async enqueuePayout(data) {
     try {
-      const response = await adminClient.post(
-        '/payments/admin/payouts/queue',
-        data,
-      );
+      const response = await api.post('/payments/admin/payouts/queue', data);
       return response.data;
     } catch (error) {
       console.error('Error enqueueing payout:', error);
@@ -54,10 +51,9 @@ export const adminService = {
 
   async processPayoutBatch(limit = 10) {
     try {
-      const response = await adminClient.post(
-        '/payments/admin/payouts/process',
-        { limit },
-      );
+      const response = await api.post('/payments/admin/payouts/process', {
+        limit,
+      });
       return response.data;
     } catch (error) {
       console.error('Error processing payout batch:', error);
@@ -68,7 +64,7 @@ export const adminService = {
   // Provider status and aggregate health
   async getProviderStatus() {
     try {
-      const response = await adminClient.get('/health/aggregate');
+      const response = await api.get('/health/aggregate');
       return response.data;
     } catch (error) {
       console.error('Error fetching provider status:', error);
@@ -79,10 +75,9 @@ export const adminService = {
   // Worker analytics
   async getWorkerAnalytics(workerId, params = {}) {
     try {
-      const response = await adminClient.get(
-        `/users/analytics/worker/${workerId}`,
-        { params },
-      );
+      const response = await api.get(`/users/analytics/worker/${workerId}`, {
+        params,
+      });
       return response.data;
     } catch (error) {
       console.error('Error fetching worker analytics:', error);
@@ -92,7 +87,7 @@ export const adminService = {
 
   async getUserById(userId) {
     try {
-      const response = await adminClient.get(`/users/${userId}`);
+      const response = await api.get(`/users/${userId}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching user:', error);
@@ -102,7 +97,7 @@ export const adminService = {
 
   async createUser(userData) {
     try {
-      const response = await adminClient.post('/users', userData);
+      const response = await api.post('/users', userData);
       return response.data;
     } catch (error) {
       console.error('Error creating user:', error);
@@ -112,7 +107,7 @@ export const adminService = {
 
   async updateUser(userId, userData) {
     try {
-      const response = await adminClient.put(`/users/${userId}`, userData);
+      const response = await api.put(`/users/${userId}`, userData);
       return response.data;
     } catch (error) {
       console.error('Error updating user:', error);
@@ -122,7 +117,7 @@ export const adminService = {
 
   async deleteUser(userId) {
     try {
-      const response = await adminClient.delete(`/users/${userId}`);
+      const response = await api.delete(`/users/${userId}`);
       return response.data;
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -133,7 +128,7 @@ export const adminService = {
   // User Status Management
   async toggleUserStatus(userId, status) {
     try {
-      const response = await adminClient.put(`/users/${userId}`, {
+      const response = await api.put(`/users/${userId}`, {
         isActive: status,
       });
       return response.data;
@@ -145,7 +140,7 @@ export const adminService = {
 
   async verifyUser(userId, verified = true) {
     try {
-      const response = await adminClient.put(`/users/${userId}`, {
+      const response = await api.put(`/users/${userId}`, {
         isEmailVerified: verified,
       });
       return response.data;
@@ -183,7 +178,7 @@ export const adminService = {
     try {
       // This would connect to analytics endpoints when available
       const [usersResponse] = await Promise.all([
-        adminClient.get('/users?limit=1'), // Get total count from pagination
+        api.get('/users?limit=1'), // Get total count from pagination
       ]);
 
       return {

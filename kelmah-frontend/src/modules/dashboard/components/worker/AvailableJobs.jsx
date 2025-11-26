@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useState, useMemo, useCallback } from 'react';
+import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 import {
   Box,
   Typography,
@@ -27,13 +28,33 @@ import {
   useMediaQuery,
   alpha,
   Skeleton,
-  Fade,
-  Grow,
   Menu,
   MenuItem,
   ListItemIcon,
   ListItemText,
 } from '@mui/material';
+
+const jobPropType = PropTypes.shape({
+  title: PropTypes.string,
+  company: PropTypes.string,
+  location: PropTypes.string,
+  distance: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  salary: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.shape({
+      min: PropTypes.number,
+      max: PropTypes.number,
+      currency: PropTypes.string,
+    }),
+  ]),
+  description: PropTypes.string,
+  matchScore: PropTypes.number,
+  applicants: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  timeAgo: PropTypes.string,
+  status: PropTypes.string,
+  color: PropTypes.string,
+  icon: PropTypes.node,
+});
 import {
   Plumbing as PlumbingIcon,
   Carpenter as CarpenterIcon,
@@ -41,7 +62,6 @@ import {
   LocationOn as LocationOnIcon,
   CalendarToday as CalendarTodayIcon,
   AttachMoney as AttachMoneyIcon,
-  Business as BusinessIcon,
   CheckCircle as CheckCircleIcon,
   Close as CloseIcon,
   Search as SearchIcon,
@@ -60,15 +80,16 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardCard from '../common/DashboardCard';
-import jobsApi from '../../../jobs/services/jobsService';
 import {
-  saveJobToServer,
-  unsaveJobFromServer,
-  selectSavedJobs,
-  fetchSavedJobs,
-} from '../../../jobs/services/jobSlice';
+  useJobsQuery,
+  useSavedJobsQuery,
+  useSavedJobIds,
+  useSaveJobMutation,
+  useUnsaveJobMutation,
+  useApplyToJobMutation,
+} from '../../../jobs/hooks/useJobsQuery';
 // Removed AuthContext import to prevent dual state management conflicts
-// import { useAuth } from '../../../auth/contexts/AuthContext';
+// import { useAuth } from '../../../auth/hooks/useAuth';
 
 // Enhanced trade icon mapping
 // Utility function to format budget/salary data
@@ -135,19 +156,54 @@ const getPriorityChip = (job) => {
   return null;
 };
 
+const deterministicNumber = (seed, min, max) => {
+  const range = max - min + 1;
+  if (range <= 0) return min;
+  if (seed === undefined || seed === null) {
+    return Math.floor(Math.random() * range) + min;
+  }
+
+  const str = seed.toString();
+  let hash = 0;
+  for (let i = 0; i < str.length; i += 1) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0; // Convert to 32bit integer
+  }
+  const normalized = Math.abs(hash) % range;
+  return min + normalized;
+};
+
+const getJobKey = (job) => job?.id || job?._id || job?.jobId || job?.title;
+
+const decorateJobForDashboard = (job, savedJobIds, jobStatuses) => {
+  const jobKey = getJobKey(job);
+  const iconData = getJobIconData(job);
+  const statusOverride = jobStatuses[jobKey];
+  const baseStatus = savedJobIds.has(jobKey) ? 'saved' : 'idle';
+
+  return {
+    ...job,
+    ...iconData,
+    status: statusOverride || baseStatus,
+    distance: job.distance || deterministicNumber(jobKey, 1, 20),
+    salary:
+      job.salary ||
+      job?.budget ||
+      `GH₵${deterministicNumber(jobKey, 100, 600)}/day`,
+    applicants: job.applicants || deterministicNumber(jobKey, 1, 15),
+    matchScore: job.matchScore || deterministicNumber(jobKey, 60, 99),
+    timeAgo: job.timeAgo || `${deterministicNumber(jobKey, 1, 12)}h ago`,
+  };
+};
+
 const EnhancedAvailableJobs = () => {
   const theme = useTheme();
-  const dispatch = useDispatch();
   // Use ONLY Redux auth state to prevent dual state management conflicts
   const { user, isAuthenticated } = useSelector((state) => state.auth);
-  const savedJobs = useSelector(selectSavedJobs) || [];
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
   // State management
-  const [jobs, setJobs] = useState([]);
-  // REMOVED: filteredJobs state - use applyFiltersAndSearch directly
-  // const [filteredJobs, setFilteredJobs] = useState([]);
+  const [jobStatuses, setJobStatuses] = useState({});
   const [selectedJob, setSelectedJob] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
@@ -161,9 +217,59 @@ const EnhancedAvailableJobs = () => {
     message: '',
     severity: 'success',
   });
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState(null);
+  const showFeedback = useCallback((message, severity = 'success') => {
+    setFeedback({ open: true, message, severity });
+  }, []);
+
+  const queryFilters = useMemo(
+    () => ({
+      status: 'open',
+      nearby: true,
+      limit: 20,
+      userSkills: user?.skills || [],
+    }),
+    [user?.skills],
+  );
+
+  const jobsQuery = useJobsQuery(queryFilters);
+  const savedJobsQuery = useSavedJobsQuery(
+    {},
+    { enabled: Boolean(isAuthenticated) },
+  );
+  const savedJobIds = useSavedJobIds(savedJobsQuery.data);
+  const baseJobs = useMemo(() => {
+    const data = jobsQuery.data;
+    if (!data) {
+      return [];
+    }
+    return data.jobs || data.data || data;
+  }, [jobsQuery.data]);
+  const jobs = useMemo(
+    () =>
+      baseJobs.map((job) =>
+        decorateJobForDashboard(job, savedJobIds, jobStatuses),
+      ),
+    [baseJobs, savedJobIds, jobStatuses],
+  );
+
+  const isLoading = jobsQuery.isLoading;
+  const isRefreshing = jobsQuery.isRefetching;
+  const error = jobsQuery.isError
+    ? 'Failed to load jobs. Please try again.'
+    : null;
+
+  const saveJobMutation = useSaveJobMutation({
+    onError: () => showFeedback('Failed to update saved jobs', 'error'),
+  });
+  const unsaveJobMutation = useUnsaveJobMutation({
+    onError: () => showFeedback('Failed to update saved jobs', 'error'),
+  });
+  const applyToJobMutation = useApplyToJobMutation({
+    onError: () =>
+      showFeedback('Failed to submit application. Please try again.', 'error'),
+    onSuccess: () =>
+      showFeedback('Application submitted successfully!', 'success'),
+  });
 
   // Filter options
   const filterOptions = [
@@ -182,59 +288,7 @@ const EnhancedAvailableJobs = () => {
     { value: 'relevance', label: 'Most Relevant' },
   ];
 
-  // Fetch jobs
-  const fetchJobs = async (refresh = false) => {
-    try {
-      if (refresh) setIsRefreshing(true);
-      else setIsLoading(true);
-
-      const response = await jobsApi.getJobs({
-        status: 'open',
-        nearby: true,
-        limit: 20,
-        userSkills: user?.skills || [],
-      });
-
-      // Ensure response exists and has jobs array
-      if (!response || !Array.isArray(response.jobs)) {
-        console.warn('Invalid response from jobsApi.getJobs:', response);
-        setJobs([]);
-        setError(null);
-        return;
-      }
-
-      const mappedJobs = response.jobs.map((job) => ({
-        ...job,
-        ...getJobIconData(job),
-        status: savedJobs.some(
-          (saved) => saved.id === job.id || saved._id === job.id,
-        )
-          ? 'saved'
-          : 'idle',
-        distance: job.distance || Math.floor(Math.random() * 20) + 1, // Mock distance
-        salary:
-          job.salary ||
-          job?.budget ||
-          `GH₵${Math.floor(Math.random() * 500) + 100}/day`,
-        applicants: job.applicants || Math.floor(Math.random() * 15) + 1,
-        matchScore: job.matchScore || Math.floor(Math.random() * 40) + 60, // Mock match score
-      }));
-
-      setJobs(mappedJobs);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching jobs:', err);
-      setError('Failed to load jobs. Please try again.');
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  };
-
-  // Initial load
-  useEffect(() => {
-    fetchJobs();
-  }, []);
+  const handleRefreshJobs = () => jobsQuery.refetch();
 
   // Filter and search jobs
   const applyFiltersAndSearch = useMemo(() => {
@@ -272,11 +326,12 @@ const EnhancedAvailableJobs = () => {
           (job) => job.featured || job.priority === 'high',
         );
         break;
-      case 'new':
+      case 'new': {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         filtered = filtered.filter((job) => new Date(job.created_at) >= today);
         break;
+      }
       default:
         break;
     }
@@ -321,68 +376,61 @@ const EnhancedAvailableJobs = () => {
   // }, [applyFiltersAndSearch]);
 
   // Handle job application
-  const handleApply = async (jobId) => {
-    setJobs((prev) =>
-      prev.map((job) =>
-        job.id === jobId ? { ...job, status: 'loading' } : job,
-      ),
-    );
+  const handleApply = async (job) => {
+    const jobId = getJobKey(job);
+    if (!jobId) {
+      showFeedback('Job reference unavailable. Please refresh.', 'warning');
+      return;
+    }
+
+    if (!isAuthenticated) {
+      showFeedback('Please log in to apply for jobs', 'warning');
+      return;
+    }
+
+    setJobStatuses((prev) => ({ ...prev, [jobId]: 'loading' }));
 
     try {
-      await jobsApi.applyToJob(jobId, {
-        coverMessage:
-          'I am interested in this position and believe my skills are a perfect match.',
+      await applyToJobMutation.mutateAsync({
+        jobId,
+        applicationData: {
+          coverMessage:
+            'I am interested in this position and believe my skills are a perfect match.',
+        },
       });
-
-      setJobs((prev) =>
-        prev.map((job) =>
-          job.id === jobId ? { ...job, status: 'applied' } : job,
-        ),
-      );
-
-      showFeedback('Application submitted successfully!', 'success');
+      setJobStatuses((prev) => ({ ...prev, [jobId]: 'applied' }));
     } catch (err) {
-      console.error('Error applying to job:', err);
-      setJobs((prev) =>
-        prev.map((job) =>
-          job.id === jobId ? { ...job, status: 'idle' } : job,
-        ),
-      );
-      showFeedback('Failed to submit application. Please try again.', 'error');
+      console.warn('Error applying to job:', err);
+      setJobStatuses((prev) => ({ ...prev, [jobId]: 'idle' }));
     }
   };
 
   // Handle saving jobs
-  const handleSaveJob = async (jobId) => {
-    // Require authentication to save jobs
+  const handleSaveJob = async (job) => {
+    const jobId = getJobKey(job);
+    if (!jobId) {
+      showFeedback('Job reference unavailable. Please refresh.', 'warning');
+      return;
+    }
+
     if (!isAuthenticated) {
       showFeedback('Please log in to save jobs', 'warning');
       return;
     }
 
-    try {
-      const isCurrentlySaved = savedJobs.some(
-        (saved) => saved.id === jobId || saved._id === jobId,
-      );
+    const isCurrentlySaved = savedJobIds.has(jobId);
 
+    try {
       if (isCurrentlySaved) {
-        await dispatch(unsaveJobFromServer(jobId));
+        await unsaveJobMutation.mutateAsync({ jobId });
         showFeedback('Job removed from saved list', 'info');
       } else {
-        await dispatch(saveJobToServer(jobId));
+        await saveJobMutation.mutateAsync({ jobId, job });
         showFeedback('Job saved successfully!', 'success');
       }
-
-      // Refresh saved jobs list to reflect latest server state
-      await dispatch(fetchSavedJobs());
-    } catch (error) {
-      showFeedback('Failed to update saved jobs', 'error');
+    } catch (mutationError) {
+      console.warn('Failed to toggle job save state:', mutationError);
     }
-  };
-
-  // Helper functions
-  const showFeedback = (message, severity) => {
-    setFeedback({ open: true, message, severity });
   };
 
   const handleCloseDetails = () => setSelectedJob(null);
@@ -393,9 +441,8 @@ const EnhancedAvailableJobs = () => {
   const JobCard = ({ job, index }) => {
     const priorityChip = getPriorityChip(job);
     const isApplied = job.status === 'applied';
-    const isSaved = savedJobs.some(
-      (saved) => saved.id === job.id || saved._id === job.id,
-    );
+    const jobKey = getJobKey(job);
+    const isSaved = savedJobIds.has(jobKey);
 
     return (
       <motion.div
@@ -500,7 +547,7 @@ const EnhancedAvailableJobs = () => {
                     size="small"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleSaveJob(job.id);
+                      handleSaveJob(job);
                     }}
                     sx={{
                       color: isSaved ? '#FFD700' : 'rgba(255,255,255,0.5)',
@@ -652,7 +699,7 @@ const EnhancedAvailableJobs = () => {
               onClick={(e) => {
                 e.stopPropagation();
                 if (!isApplied) {
-                  handleApply(job.id);
+                  handleApply(job);
                 }
               }}
               startIcon={
@@ -697,6 +744,11 @@ const EnhancedAvailableJobs = () => {
     );
   };
 
+  JobCard.propTypes = {
+    job: jobPropType.isRequired,
+    index: PropTypes.number.isRequired,
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -732,7 +784,7 @@ const EnhancedAvailableJobs = () => {
           </Typography>
           <Button
             variant="outlined"
-            onClick={() => fetchJobs()}
+            onClick={handleRefreshJobs}
             sx={{
               borderColor: '#FFD700',
               color: '#FFD700',
@@ -766,7 +818,7 @@ const EnhancedAvailableJobs = () => {
           <Stack direction="row" spacing={1}>
             <Tooltip title="Refresh jobs">
               <IconButton
-                onClick={() => fetchJobs(true)}
+                onClick={handleRefreshJobs}
                 disabled={isRefreshing}
                 sx={{
                   color: '#FFD700',
@@ -936,11 +988,14 @@ const EnhancedAvailableJobs = () => {
         ) : (
           <Grid container spacing={{ xs: 2, sm: 2.5, md: 3 }}>
             <AnimatePresence mode="popLayout">
-              {applyFiltersAndSearch.map((job, index) => (
-                <Grid item xs={12} sm={6} lg={4} key={job.id}>
-                  <JobCard job={job} index={index} />
-                </Grid>
-              ))}
+              {applyFiltersAndSearch.map((job, index) => {
+                const jobKey = getJobKey(job) || index;
+                return (
+                  <Grid item xs={12} sm={6} lg={4} key={jobKey}>
+                    <JobCard job={job} index={index} />
+                  </Grid>
+                );
+              })}
             </AnimatePresence>
           </Grid>
         )}
@@ -951,7 +1006,7 @@ const EnhancedAvailableJobs = () => {
             <Box sx={{ textAlign: 'center', mt: 4 }}>
               <Button
                 variant="outlined"
-                onClick={() => fetchJobs()}
+                onClick={handleRefreshJobs}
                 sx={{
                   borderColor: 'rgba(255,215,0,0.3)',
                   color: '#FFD700',
@@ -1000,7 +1055,7 @@ const EnhancedAvailableJobs = () => {
         <MenuItem
           onClick={() => {
             if (selectedJobForMenu) {
-              handleSaveJob(selectedJobForMenu.id);
+              handleSaveJob(selectedJobForMenu);
             }
             setMoreMenuAnchor(null);
             setSelectedJobForMenu(null);
@@ -1008,10 +1063,10 @@ const EnhancedAvailableJobs = () => {
         >
           <ListItemIcon>
             {selectedJobForMenu &&
-            savedJobs.some(
-              (saved) =>
-                saved.id === selectedJobForMenu.id ||
-                saved._id === selectedJobForMenu.id,
+            savedJobIds.has(
+              selectedJobForMenu?.id ||
+                selectedJobForMenu?._id ||
+                selectedJobForMenu?.jobId,
             ) ? (
               <BookmarkIcon />
             ) : (
@@ -1020,10 +1075,10 @@ const EnhancedAvailableJobs = () => {
           </ListItemIcon>
           <ListItemText>
             {selectedJobForMenu &&
-            savedJobs.some(
-              (saved) =>
-                saved.id === selectedJobForMenu.id ||
-                saved._id === selectedJobForMenu.id,
+            savedJobIds.has(
+              selectedJobForMenu?.id ||
+                selectedJobForMenu?._id ||
+                selectedJobForMenu?.jobId,
             )
               ? 'Remove from Saved'
               : 'Save Job'}
@@ -1191,12 +1246,10 @@ const EnhancedAvailableJobs = () => {
 
             <DialogActions sx={{ p: 3, pt: 0 }}>
               <Button
-                onClick={() => handleSaveJob(selectedJob.id)}
+                onClick={() => handleSaveJob(selectedJob)}
                 startIcon={
-                  savedJobs.some(
-                    (saved) =>
-                      saved.id === selectedJob.id ||
-                      saved._id === selectedJob.id,
+                  savedJobIds.has(
+                    selectedJob?.id || selectedJob?._id || selectedJob?.jobId,
                   ) ? (
                     <BookmarkIcon />
                   ) : (
@@ -1212,9 +1265,8 @@ const EnhancedAvailableJobs = () => {
                   },
                 }}
               >
-                {savedJobs.some(
-                  (saved) =>
-                    saved.id === selectedJob.id || saved._id === selectedJob.id,
+                {savedJobIds.has(
+                  selectedJob?.id || selectedJob?._id || selectedJob?.jobId,
                 )
                   ? 'Saved'
                   : 'Save'}
@@ -1224,7 +1276,7 @@ const EnhancedAvailableJobs = () => {
                 <Button
                   variant="contained"
                   onClick={() => {
-                    handleApply(selectedJob.id);
+                    handleApply(selectedJob);
                     handleCloseDetails();
                   }}
                   disabled={selectedJob.status === 'loading'}

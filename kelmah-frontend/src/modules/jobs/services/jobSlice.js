@@ -47,41 +47,6 @@ export const applyForJob = createAsyncThunk(
   },
 );
 
-// Thunks for saved jobs
-export const fetchSavedJobs = createAsyncThunk(
-  'jobs/fetchSavedJobs',
-  async (params, { rejectWithValue }) => {
-    try {
-      return await jobsApi.getSavedJobs(params);
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
-  },
-);
-
-export const saveJobToServer = createAsyncThunk(
-  'jobs/saveJob',
-  async (jobId, { rejectWithValue }) => {
-    try {
-      return await jobsApi.saveJob(jobId);
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
-  },
-);
-
-export const unsaveJobFromServer = createAsyncThunk(
-  'jobs/unsaveJob',
-  async (jobId, { rejectWithValue }) => {
-    try {
-      await jobsApi.unsaveJob(jobId);
-      return jobId;
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
-  },
-);
-
 const jobSlice = createSlice({
   name: 'jobs',
   initialState: {
@@ -92,11 +57,6 @@ const jobSlice = createSlice({
     error: null,
     totalPages: 0,
     currentPage: 1,
-    savedJobs: [], // for saved jobs
-    savedLoading: false,
-    savedError: null,
-    savedTotalPages: 0,
-    savedCurrentPage: 1,
     filters: {
       search: '',
       profession: '',
@@ -130,18 +90,6 @@ const jobSlice = createSlice({
     },
     setError: (state, action) => {
       state.error = action.payload;
-    },
-    // New reducers for saved jobs filters
-    setSavedFilters: (state, action) => {
-      state.savedFilters = { ...state.savedFilters, ...action.payload };
-      if (Object.prototype.hasOwnProperty.call(action.payload, 'page')) {
-        state.savedCurrentPage = action.payload.page;
-      } else {
-        state.savedCurrentPage = 1;
-      }
-    },
-    clearSavedError: (state) => {
-      state.savedError = null;
     },
   },
   extraReducers: (builder) => {
@@ -203,48 +151,6 @@ const jobSlice = createSlice({
       .addCase(applyForJob.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      })
-      // Fetch Saved Jobs
-      .addCase(fetchSavedJobs.pending, (state) => {
-        state.savedLoading = true;
-        state.savedError = null;
-      })
-      .addCase(fetchSavedJobs.fulfilled, (state, action) => {
-        state.savedLoading = false;
-        state.savedJobs = action.payload.jobs || [];
-        state.savedTotalPages = action.payload.totalPages || 1;
-      })
-      .addCase(fetchSavedJobs.rejected, (state, action) => {
-        state.savedLoading = false;
-        state.savedError = action.payload;
-      })
-      // Save Job
-      .addCase(saveJobToServer.pending, (state) => {
-        state.savedLoading = true;
-        state.savedError = null;
-      })
-      .addCase(saveJobToServer.fulfilled, (state) => {
-        state.savedLoading = false;
-      })
-      .addCase(saveJobToServer.rejected, (state, action) => {
-        state.savedLoading = false;
-        state.savedError = action.payload;
-      })
-      // Unsave Job
-      .addCase(unsaveJobFromServer.pending, (state) => {
-        state.savedLoading = true;
-        state.savedError = null;
-      })
-      .addCase(unsaveJobFromServer.fulfilled, (state, action) => {
-        state.savedLoading = false;
-        // Remove job from savedJobs list if present
-        state.savedJobs = state.savedJobs.filter(
-          (job) => job.id !== action.payload,
-        );
-      })
-      .addCase(unsaveJobFromServer.rejected, (state, action) => {
-        state.savedLoading = false;
-        state.savedError = action.payload;
       });
   },
 });
@@ -263,20 +169,6 @@ export const selectJobsPagination = createSelector(
   }),
 );
 
-export const selectSavedJobs = (state) => state.jobs.savedJobs;
-export const selectSavedLoading = (state) => state.jobs.savedLoading;
-export const selectSavedError = (state) => state.jobs.savedError;
-export const selectSavedPagination = createSelector(
-  [
-    (state) => state.jobs.savedCurrentPage,
-    (state) => state.jobs.savedTotalPages,
-  ],
-  (currentPage, totalPages) => ({
-    currentPage,
-    totalPages,
-  }),
-);
-
 export const {
   setFilters,
   clearJobError,
@@ -284,7 +176,5 @@ export const {
   setJobs,
   setLoading,
   setError,
-  setSavedFilters,
-  clearSavedError,
 } = jobSlice.actions;
 export default jobSlice.reducer;

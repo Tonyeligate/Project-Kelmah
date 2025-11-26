@@ -58,7 +58,7 @@ import {
   Storage as StorageIcon,
   CloudUpload as CloudIcon,
 } from '@mui/icons-material';
-import { useAuth } from '../../../auth/contexts/AuthContext';
+import { useAuth } from '../../../auth/hooks/useAuth';
 
 // Custom TabPanel component
 function TabPanel(props) {
@@ -1390,3 +1390,4 @@ const SystemSettings = () => {
 };
 
 export default SystemSettings;
+

@@ -386,8 +386,8 @@ const HirerDashboardPage = () => {
 
     const hasRenderableSnapshot = Boolean(
       (Array.isArray(activeJobs) && activeJobs.length > 0) ||
-      hirerProfile ||
-      (Array.isArray(completedJobs) && completedJobs.length > 0),
+        hirerProfile ||
+        (Array.isArray(completedJobs) && completedJobs.length > 0),
     );
 
     if (hasRenderableSnapshot) {
@@ -963,7 +963,7 @@ const HirerDashboardPage = () => {
               <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
                 <List sx={{ py: 0 }}>
                   {hirerProfile?.recentActivity &&
-                    hirerProfile.recentActivity.length > 0 ? (
+                  hirerProfile.recentActivity.length > 0 ? (
                     hirerProfile.recentActivity
                       .slice(0, 5)
                       .map((activity, index) => (
@@ -1045,9 +1045,9 @@ const HirerDashboardPage = () => {
                           </ListItem>
                           {index <
                             hirerProfile.recentActivity.slice(0, 5).length -
-                            1 && (
-                              <Divider component="li" sx={{ opacity: 0.6 }} />
-                            )}
+                              1 && (
+                            <Divider component="li" sx={{ opacity: 0.6 }} />
+                          )}
                         </React.Fragment>
                       ))
                   ) : (

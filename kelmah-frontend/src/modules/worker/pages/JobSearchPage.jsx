@@ -1,160 +1,92 @@
-import React, {
-  useEffect,
-  useState,
-  useRef,
-  useCallback,
-  useMemo,
-} from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import {
-  ToggleButton,
-  ToggleButtonGroup,
-  Container,
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  Chip,
-  TextField,
-  CircularProgress,
-  Box,
-  useTheme,
-  Paper,
-  Button,
-  Stack,
+  Alert,
   Avatar,
-  Rating,
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  Chip,
+  Collapse,
+  Container,
   Divider,
-  alpha,
-  IconButton,
-  Tooltip,
-  Badge,
-  LinearProgress,
-  Slider,
   FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Switch,
   FormControlLabel,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Grid,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  LinearProgress,
+  MenuItem,
+  Paper,
+  Rating,
+  Select,
+  Skeleton,
+  Slider,
   SpeedDial,
   SpeedDialAction,
   SpeedDialIcon,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Tabs,
-  Tab,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
+  Stack,
+  Switch,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+  alpha,
   useMediaQuery,
-  InputAdornment,
-  Skeleton,
-  CardActions,
-  Collapse,
-  Fab,
-  AvatarGroup,
-  Stepper,
-  Step,
-  StepLabel,
-  Breadcrumbs,
-  Link,
-  Alert,
+  useTheme,
 } from '@mui/material';
 import {
-  Timeline,
-  TimelineItem,
-  TimelineSeparator,
-  TimelineConnector,
-  TimelineContent,
-  TimelineDot,
-} from '@mui/lab';
-import {
   Search as SearchIcon,
-  LocationOn as LocationOnIcon,
-  Schedule as ScheduleIcon,
-  MonetizationOn as MonetizationOnIcon,
-  AttachMoney as AttachMoneyIcon,
-  TrendingUp as TrendingUpIcon,
-  CheckCircle as CheckCircleIcon,
-  Group as GroupIcon,
-  WorkspacePremium as WorkspacePremiumIcon,
-  Star as StarIcon,
-  Verified as VerifiedIcon,
-  AccessTime as AccessTimeIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
-  Tune as TuneIcon,
-  Clear as ClearIcon,
-  FilterList as FilterListIcon,
-  Bookmark as BookmarkIcon,
-  BookmarkBorder as BookmarkBorderIcon,
-  Share as ShareIcon,
-  Visibility as VisibilityIcon,
-  Work as WorkIcon,
-  Business as BusinessIcon,
-  FlashOn as ElectricalIcon,
-  Whatshot as WhatshotIcon,
-  AutoAwesome as AutoAwesomeIcon,
-  TrendingDown as TrendingDownIcon,
-  Security as SecurityIcon,
-  Speed as SpeedIcon,
-  Analytics as AnalyticsIcon,
-  Timeline as TimelineGraphIcon,
-  Dashboard as DashboardIcon,
-  MyLocation as MyLocationIcon,
-  Map as MapIcon,
-  ViewModule as ViewModuleIcon,
-  ViewList as ViewListIcon,
-  ViewQuilt as ViewQuiltIcon,
-  Sort as SortIcon,
-  FilterAlt as FilterAltIcon,
   Refresh as RefreshIcon,
-  SaveAlt as SaveAltIcon,
-  NotificationsActive as NotificationsActiveIcon,
-  Psychology as PsychologyIcon,
-  Engineering as EngineeringIcon,
-  Construction as ConstructionIcon,
-  ElectricalServices as ElectricalServicesIcon,
-  Plumbing as PlumbingIcon,
-  Build as BuildIcon,
-  Home as HomeIcon,
-  Handyman as CarpenterIcon,
-  Thermostat as HvacIcon,
-  Rocket as RocketIcon,
-  Diamond as DiamondIcon,
-  Handshake as HandshakeIcon,
 } from '@mui/icons-material';
+import ElectricalIcon from '@mui/icons-material/ElectricalServices';
+import PlumbingIcon from '@mui/icons-material/Plumbing';
+import ConstructionIcon from '@mui/icons-material/Construction';
+import SpeedIcon from '@mui/icons-material/Speed';
+import HomeIcon from '@mui/icons-material/Home';
+import PsychologyIcon from '@mui/icons-material/Psychology';
+import WorkIcon from '@mui/icons-material/Work';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import StarIcon from '@mui/icons-material/Star';
+import RocketIcon from '@mui/icons-material/RocketLaunch';
+import DiamondIcon from '@mui/icons-material/Diamond';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import ViewModuleIcon from '@mui/icons-material/ViewModule';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import MapIcon from '@mui/icons-material/Map';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ClearIcon from '@mui/icons-material/Clear';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import HandshakeIcon from '@mui/icons-material/Handshake';
+import ShareIcon from '@mui/icons-material/Share';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { styled, keyframes } from '@mui/material/styles';
-import { format, formatDistanceToNow } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { selectJobFilters, setFilters } from '../../jobs/services/jobSlice';
 import {
-  fetchJobs,
-  selectJobs,
-  selectJobsLoading,
-  selectJobsError,
-  selectJobFilters,
-  setFilters,
-  selectJobsPagination,
-  saveJobToServer,
-  unsaveJobFromServer,
-  selectSavedJobs,
-  fetchSavedJobs,
-} from '../../jobs/services/jobSlice';
-import jobsApi from '../../jobs/services/jobsService';
+  useJobsQuery,
+  useSavedJobIds,
+  useSavedJobsQuery,
+  useSaveJobMutation,
+  useUnsaveJobMutation,
+} from '../../jobs/hooks/useJobsQuery';
 // TODO: Integrate bid and user performance functionality into appropriate module services
-import EnhancedJobCard from '../components/EnhancedJobCard';
-import UserPerformanceDashboard from '../components/UserPerformanceDashboard';
 // Removed AuthContext import to prevent dual state management conflicts
 // import useAuth from '../../auth/hooks/useAuth';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
@@ -279,16 +211,6 @@ const pulse = keyframes`
   0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
   50% { transform: scale(1.08); box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); }
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
-`;
-
-const slideInFromLeft = keyframes`
-  from { transform: translateX(-100px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-`;
-
-const slideInFromRight = keyframes`
-  from { transform: translateX(100px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
 `;
 
 const gradientShift = keyframes`
@@ -798,6 +720,49 @@ const mapSortOptionToApi = (value) => {
   }
 };
 
+const buildQueryFilters = (filters = {}) => {
+  const params = {
+    page: filters.page || 1,
+    limit: filters.limit || 12,
+    status: filters.status || 'open',
+  };
+
+  if (filters.search) {
+    params.search = filters.search;
+  }
+  if (filters.profession) {
+    params.category = filters.profession;
+  }
+  if (filters.job_type) {
+    params.type = filters.job_type;
+  }
+
+  const parseBudget = (value) => {
+    if (value === undefined || value === null || value === '') {
+      return undefined;
+    }
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : undefined;
+  };
+
+  const minBudget = parseBudget(filters.min_budget);
+  const maxBudget = parseBudget(filters.max_budget);
+  if (minBudget !== undefined || maxBudget !== undefined) {
+    const normalizedMin = Math.max(minBudget ?? 0, 0);
+    if (maxBudget !== undefined) {
+      params.budget = `${normalizedMin}-${maxBudget}`;
+    } else {
+      params.budget = `${normalizedMin}-`;
+    }
+  }
+
+  if (filters.sort) {
+    params.sort = mapSortOptionToApi(filters.sort);
+  }
+
+  return params;
+};
+
 const isRemoteJob = (job) => {
   if (job.remote === true) return true;
   const location =
@@ -815,44 +780,50 @@ const JobSearchPage = () => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const authState = useAuthCheck();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
-  const isXs = useMediaQuery(theme.breakpoints.down('sm'));
   const heroRef = useRef(null);
   const searchRef = useRef(null);
 
-  // Redux state with enhanced safety
-  const rawJobs = useSelector(selectJobs) || [];
-  const loading = useSelector(selectJobsLoading) || false;
-  const error = useSelector(selectJobsError);
-  const filters = useSelector(selectJobFilters) || {};
-  const { currentPage = 1, totalPages = 0 } =
-    useSelector(selectJobsPagination) || {};
-  const rawSavedJobs = useSelector(selectSavedJobs) || [];
+  // Job + saved-job data sourced via React Query
+  const rawFilters = useSelector(selectJobFilters);
+  const filters = useMemo(() => rawFilters ?? {}, [rawFilters]);
 
+  const queryFilters = useMemo(() => buildQueryFilters(filters), [filters]);
+
+  const {
+    data: jobsData,
+    isLoading: isJobsLoading,
+    isFetching: isJobsFetching,
+  } = useJobsQuery(queryFilters, { keepPreviousData: true });
+
+  const { data: savedJobsData } = useSavedJobsQuery(
+    {},
+    { enabled: Boolean(isAuthenticated) },
+  );
+
+  const savedJobIds = useSavedJobIds(savedJobsData);
+  const saveJobMutation = useSaveJobMutation();
+  const unsaveJobMutation = useUnsaveJobMutation();
+
+  const jobsFromQuery = useMemo(
+    () => jobsData?.jobs ?? jobsData?.data ?? [],
+    [jobsData],
+  );
   const normalizedJobs = useMemo(
-    () => rawJobs.map(normalizeJobForUi).filter(Boolean),
-    [rawJobs],
+    () => jobsFromQuery.map(normalizeJobForUi).filter(Boolean),
+    [jobsFromQuery],
   );
   const fallbackJobs = useMemo(
     () => creativeJobOpportunities.map(normalizeJobForUi).filter(Boolean),
     [],
   );
-  const savedJobIds = useMemo(
-    () => rawSavedJobs.map((job) => job?.id || job?._id).filter(Boolean),
-    [rawSavedJobs],
-  );
   const hasLiveJobs = normalizedJobs.length > 0;
-  const availableJobsForPersonalization = useMemo(
-    () => (hasLiveJobs ? normalizedJobs : fallbackJobs),
-    [hasLiveJobs, normalizedJobs, fallbackJobs],
-  );
+  const loading = isJobsLoading || isJobsFetching;
 
   // Enhanced local state for better UX
   const [viewMode, setViewMode] = useState(isMobile ? 'list' : 'grid');
   const [userPosition, setUserPosition] = useState(null);
   const [searchQuery, setSearchQuery] = useState(filters.search || '');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [filterDialog, setFilterDialog] = useState(false);
   const [sortBy, setSortBy] = useState('relevance');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [salaryRange, setSalaryRange] = useState([0, 200]);
@@ -863,11 +834,6 @@ const JobSearchPage = () => {
   const [jobType, setJobType] = useState('');
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [matchingJobs, setMatchingJobs] = useState([]);
-  const [personalizedRecommendations, setPersonalizedRecommendations] =
-    useState([]);
-  const [careerInsights, setCareerInsights] = useState(null);
-  const [skillGaps, setSkillGaps] = useState([]);
-  const [animateCards, setAnimateCards] = useState(false);
   const [showSampleData, setShowSampleData] = useState(true);
 
   const jobsToRender = useMemo(() => {
@@ -881,99 +847,6 @@ const JobSearchPage = () => {
   }, [showSampleData, matchingJobs, fallbackJobs, normalizedJobs]);
   const totalJobsFound = jobsToRender.length;
 
-  // Enhanced state for new bidding system
-  const [userPerformance, setUserPerformance] = useState(null);
-  const [myBids, setMyBids] = useState([]);
-  const [biddingJobs, setBiddingJobs] = useState([]);
-  const [performanceLoading, setPerformanceLoading] = useState(false);
-  const [bidsLoading, setBidsLoading] = useState(false);
-  const initialFetchTriggeredRef = useRef(false);
-
-  // Enhanced functions for new system
-  const fetchUserPerformance = async () => {
-    if (!authState.isAuthenticated) return;
-
-    setPerformanceLoading(true);
-    try {
-      // TODO: Integrate into worker service
-      // const response = await userPerformanceApi.getMyPerformance();
-      setUserPerformance(null);
-    } catch (error) {
-      console.error('Error fetching user performance:', error);
-    } finally {
-      setPerformanceLoading(false);
-    }
-  };
-
-  const fetchMyBids = async () => {
-    if (!authState.isAuthenticated) return;
-
-    setBidsLoading(true);
-    try {
-      // TODO: Integrate into worker service
-      // const response = await bidApi.getMyBids();
-      setMyBids([]);
-    } catch (error) {
-      console.error('Error fetching my bids:', error);
-    } finally {
-      setBidsLoading(false);
-    }
-  };
-
-  const fetchBiddingJobs = async () => {
-    if (!authState.isAuthenticated) return;
-
-    try {
-      const response = await jobsApi.getPersonalizedJobRecommendations();
-      const jobs = Array.isArray(response)
-        ? response
-        : Array.isArray(response?.jobs)
-          ? response.jobs
-          : Array.isArray(response?.data)
-            ? response.data
-            : [];
-      setBiddingJobs(jobs.map(normalizeJobForUi).filter(Boolean));
-    } catch (error) {
-      console.error('Error fetching bidding jobs:', error);
-    }
-  };
-
-  // Skill options for autocomplete
-  const skillOptions = [
-    'Electrical Wiring',
-    'Smart Home Integration',
-    'Solar Installation',
-    'Industrial Automation',
-    'Plumbing Repair',
-    'Water Systems',
-    'Emergency Response',
-    'Green Plumbing',
-    'Project Management',
-    'Construction',
-    'Renovation',
-    'Sustainable Building',
-    'HVAC Systems',
-    'Climate Control',
-    'Energy Efficiency',
-    'Smart Climate',
-    'Interior Design',
-    'Custom Furniture',
-    'Space Planning',
-    '3D Design',
-    'Carpentry',
-    'Woodworking',
-    'Cabinet Making',
-    'Custom Millwork',
-    'IoT Systems',
-    'Home Automation',
-    'AI Integration',
-    'Smart Buildings',
-    'Welding',
-    'Fabrication',
-    'Metal Working',
-    'Precision Manufacturing',
-  ];
-
   // Get user location for personalized job matching
   useEffect(() => {
     if (navigator.geolocation && authState.isAuthenticated) {
@@ -986,32 +859,9 @@ const JobSearchPage = () => {
         },
       );
     }
-  }, [isAuthenticated]);
-
-  // Fetch jobs on initial load if store is empty
-  useEffect(() => {
-    if (initialFetchTriggeredRef.current) return;
-    if (!loading && rawJobs.length === 0) {
-      initialFetchTriggeredRef.current = true;
-      dispatch(
-        fetchJobs(
-          Object.keys(filters).length > 0
-            ? { ...filters, page: filters.page || currentPage || 1 }
-            : { page: currentPage || 1 },
-        ),
-      );
-    }
-  }, [dispatch, filters, loading, rawJobs.length, currentPage]);
-
-  // Fetch enhanced data when component mounts
-  useEffect(() => {
-    if (authState.isAuthenticated) {
-      fetchUserPerformance();
-      fetchMyBids();
-      fetchBiddingJobs();
-    }
   }, [authState.isAuthenticated]);
 
+  // Fetch enhanced data when component mounts
   // Responsive view mode adjustment
   useEffect(() => {
     if (isMobile && viewMode === 'grid') {
@@ -1019,124 +869,13 @@ const JobSearchPage = () => {
     }
   }, [isMobile, viewMode]);
 
-  const generatePersonalizedRecommendations = useCallback(() => {
-    if (!user) {
-      setPersonalizedRecommendations([]);
-      return;
-    }
-
-    const dataset = availableJobsForPersonalization;
-    if (!Array.isArray(dataset) || dataset.length === 0) {
-      setPersonalizedRecommendations([]);
-      return;
-    }
-
-    const userSkills = Array.isArray(user.skills) ? user.skills : [];
-    const userExperience = user.experience || 'mid';
-
-    const recommendations = dataset.filter((job) => {
-      const jobSkills = Array.isArray(job.skills) ? job.skills : [];
-      const skillMatch =
-        userSkills.length === 0 ||
-        jobSkills.some((skill) =>
-          userSkills.some(
-            (userSkill) =>
-              skill.toLowerCase().includes(userSkill.toLowerCase()) ||
-              userSkill.toLowerCase().includes(skill.toLowerCase()),
-          ),
-        );
-
-      const jobExperience = job.experienceLevel || job.experience || 'mid';
-      const experienceMatch =
-        jobExperience === userExperience ||
-        (userExperience === 'expert' &&
-          ['senior', 'mid'].includes(jobExperience)) ||
-        (userExperience === 'senior' && jobExperience === 'mid');
-
-      return skillMatch && experienceMatch;
-    });
-
-    setPersonalizedRecommendations(recommendations.slice(0, 10));
-  }, [availableJobsForPersonalization, user]);
-
-  const analyzeCareerGrowth = useCallback(() => {
-    if (!user) {
-      setCareerInsights(null);
-      return;
-    }
-
-    const insights = {
-      currentLevel: user.experience || 'mid',
-      nextLevel:
-        user.experience === 'entry'
-          ? 'mid'
-          : user.experience === 'mid'
-            ? 'senior'
-            : 'expert',
-      avgSalaryIncrease:
-        user.experience === 'entry'
-          ? '35%'
-          : user.experience === 'mid'
-            ? '28%'
-            : '22%',
-      timeToPromotion:
-        user.experience === 'entry'
-          ? '18 months'
-          : user.experience === 'mid'
-            ? '2-3 years'
-            : '3-5 years',
-      recommendedSkills: [
-        'Smart Home Tech',
-        'Project Management',
-        'Advanced Certification',
-      ],
-      marketDemand: 'Very High',
-      growthPotential:
-        user.experience === 'entry'
-          ? 'Excellent'
-          : user.experience === 'mid'
-            ? 'Strong'
-            : 'Moderate',
-    };
-
-    setCareerInsights(insights);
-  }, [user]);
-
-  const identifySkillGaps = useCallback(() => {
-    if (!user) {
-      setSkillGaps([]);
-      return;
-    }
-
-    const userSkills = Array.isArray(user.skills) ? user.skills : [];
-    const demandedSkills = [
-      'Smart Home Integration',
-      'IoT Systems',
-      'Project Management',
-      'Renewable Energy',
-      'AI Integration',
-    ];
-
-    const gaps = demandedSkills.filter(
-      (skill) =>
-        !userSkills.some(
-          (userSkill) =>
-            userSkill.toLowerCase().includes(skill.toLowerCase()) ||
-            skill.toLowerCase().includes(userSkill.toLowerCase()),
-        ),
-    );
-
-    setSkillGaps(gaps);
-  }, [user]);
-
   // Enhanced search with AI-powered matching
-  const handleSearch = useCallback(async () => {
+  const handleSearch = useCallback(() => {
     console.log('🔍 Search initiated:', {
       searchQuery,
       selectedCategory,
       sortBy,
     });
-    setAnimateCards(true);
 
     const params = {
       search: searchQuery.trim() || undefined,
@@ -1193,25 +932,17 @@ const JobSearchPage = () => {
       }),
     );
 
-    try {
-      await dispatch(fetchJobs(cleanedParams)).unwrap();
+    if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+      window.gtag('event', 'job_search', {
+        search_term: searchQuery,
+        category: selectedCategory,
+        skills_count: selectedSkills.length,
+        filters_applied: Object.keys(cleanedParams).length,
+      });
+    }
 
-      if (typeof gtag !== 'undefined') {
-        gtag('event', 'job_search', {
-          search_term: searchQuery,
-          category: selectedCategory,
-          skills_count: selectedSkills.length,
-          filters_applied: Object.keys(cleanedParams).length,
-        });
-      }
-
-      if (authState.isAuthenticated && user) {
-        generatePersonalizedRecommendations();
-        analyzeCareerGrowth();
-        identifySkillGaps();
-      }
-    } catch (error) {
-      console.error('Search error:', error);
+    if (authState.isAuthenticated && user) {
+      // Future personalization hooks integrate here
     }
   }, [
     dispatch,
@@ -1229,9 +960,6 @@ const JobSearchPage = () => {
     userPosition,
     authState.isAuthenticated,
     user,
-    generatePersonalizedRecommendations,
-    analyzeCareerGrowth,
-    identifySkillGaps,
   ]);
 
   useEffect(() => {
@@ -1394,32 +1122,36 @@ const JobSearchPage = () => {
         page: 1,
       }),
     );
-    dispatch(fetchJobs({ page: 1 }));
   }, [dispatch]);
 
   const toggleSaveJob = useCallback(
-    async (jobId) => {
+    async (job) => {
+      const jobId = job?._id || job?.id || job;
+      if (!jobId) return;
+
       if (!isAuthenticated) {
         navigate('/login', { state: { from: `/jobs/${jobId}` } });
         return;
       }
 
+      const isCurrentlySaved = savedJobIds.has(jobId);
       try {
-        const isCurrentlySaved = savedJobIds.includes(jobId);
-
         if (isCurrentlySaved) {
-          await dispatch(unsaveJobFromServer(jobId));
+          await unsaveJobMutation.mutateAsync({ jobId });
         } else {
-          await dispatch(saveJobToServer(jobId));
+          await saveJobMutation.mutateAsync({ jobId, job });
         }
-
-        // Refresh saved jobs list to reflect latest server state
-        await dispatch(fetchSavedJobs());
       } catch (error) {
         console.error('Failed to toggle save job:', error);
       }
     },
-    [isAuthenticated, navigate, savedJobIds, dispatch],
+    [
+      isAuthenticated,
+      navigate,
+      savedJobIds,
+      saveJobMutation,
+      unsaveJobMutation,
+    ],
   );
 
   // Enhanced keyboard shortcuts
@@ -1433,7 +1165,7 @@ const JobSearchPage = () => {
             break;
           case 'f':
             e.preventDefault();
-            setFilterDialog(true);
+            setShowAdvancedFilters((prev) => !prev);
             break;
           case 's':
             e.preventDefault();
@@ -1444,7 +1176,6 @@ const JobSearchPage = () => {
         }
       }
       if (e.key === 'Escape') {
-        setFilterDialog(false);
         setShowAdvancedFilters(false);
       }
     };
@@ -1476,7 +1207,7 @@ const JobSearchPage = () => {
     selectedSkills,
     experienceLevel,
     jobType,
-    isAuthenticated,
+    authState.isAuthenticated,
   ]);
 
   // Load saved preferences
@@ -1498,22 +1229,6 @@ const JobSearchPage = () => {
       }
     }
   }, [authState.isAuthenticated, isMobile]);
-
-  // Initialize personalized features for authenticated users
-  useEffect(() => {
-    if (authState.isAuthenticated && user && isAuthenticated) {
-      generatePersonalizedRecommendations();
-      analyzeCareerGrowth();
-      identifySkillGaps();
-    }
-  }, [
-    authState.isAuthenticated,
-    user,
-    isAuthenticated,
-    generatePersonalizedRecommendations,
-    analyzeCareerGrowth,
-    identifySkillGaps,
-  ]);
 
   const renderHeroSection = () => (
     <HeroGradientSection ref={heroRef}>
@@ -2112,14 +1827,14 @@ const JobSearchPage = () => {
               </Box>
 
               <IconButton
-                onClick={() => toggleSaveJob(job.id)}
+                onClick={() => toggleSaveJob(job)}
                 sx={{
-                  color: savedJobIds.includes(job.id)
+                  color: savedJobIds.has(job.id)
                     ? theme.palette.secondary.main
                     : theme.palette.text.secondary,
                 }}
               >
-                {savedJobIds.includes(job.id) ? (
+                {savedJobIds.has(job.id) ? (
                   <BookmarkIcon />
                 ) : (
                   <BookmarkBorderIcon />

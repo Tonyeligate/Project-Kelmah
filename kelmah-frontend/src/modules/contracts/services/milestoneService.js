@@ -1,4 +1,4 @@
-import { jobServiceClient } from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
 class MilestoneService {
   constructor() {}
@@ -10,9 +10,7 @@ class MilestoneService {
    */
   async getMilestones(contractId) {
     try {
-      const response = await jobServiceClient.get(
-        `/api/milestones/contract/${contractId}`,
-      );
+      const response = await api.get(`/milestones/contract/${contractId}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching milestones:', error);
@@ -27,9 +25,7 @@ class MilestoneService {
    */
   async getMilestone(milestoneId) {
     try {
-      const response = await jobServiceClient.get(
-        `/api/milestones/${milestoneId}`,
-      );
+      const response = await api.get(`/milestones/${milestoneId}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching milestone:', error);
@@ -45,8 +41,8 @@ class MilestoneService {
    */
   async createMilestone(contractId, milestoneData) {
     try {
-      const response = await jobServiceClient.post(
-        `/api/milestones/contract/${contractId}`,
+      const response = await api.post(
+        `/milestones/contract/${contractId}`,
         milestoneData,
       );
       return response.data;
@@ -64,10 +60,7 @@ class MilestoneService {
    */
   async updateMilestone(milestoneId, updateData) {
     try {
-      const response = await jobServiceClient.put(
-        `/api/milestones/${milestoneId}`,
-        updateData,
-      );
+      const response = await api.put(`/milestones/${milestoneId}`, updateData);
       return response.data;
     } catch (error) {
       console.error('Error updating milestone:', error);
@@ -82,9 +75,7 @@ class MilestoneService {
    */
   async deleteMilestone(milestoneId) {
     try {
-      const response = await jobServiceClient.delete(
-        `/api/milestones/${milestoneId}`,
-      );
+      const response = await api.delete(`/milestones/${milestoneId}`);
       return response.data;
     } catch (error) {
       console.error('Error deleting milestone:', error);
@@ -99,12 +90,9 @@ class MilestoneService {
    */
   async startMilestone(milestoneId) {
     try {
-      const response = await jobServiceClient.put(
-        `/api/milestones/${milestoneId}`,
-        {
-          status: 'in_progress',
-        },
-      );
+      const response = await api.put(`/milestones/${milestoneId}`, {
+        status: 'in_progress',
+      });
       return response.data;
     } catch (error) {
       console.error('Error starting milestone:', error);
@@ -121,14 +109,11 @@ class MilestoneService {
    */
   async submitMilestone(milestoneId, submissionNotes, deliverables) {
     try {
-      const response = await jobServiceClient.put(
-        `/api/milestones/${milestoneId}`,
-        {
-          status: 'submitted',
-          submissionNotes,
-          deliverables,
-        },
-      );
+      const response = await api.put(`/milestones/${milestoneId}`, {
+        status: 'submitted',
+        submissionNotes,
+        deliverables,
+      });
       return response.data;
     } catch (error) {
       console.error('Error submitting milestone:', error);
@@ -144,13 +129,10 @@ class MilestoneService {
    */
   async approveMilestone(milestoneId, feedback = '') {
     try {
-      const response = await jobServiceClient.put(
-        `/api/milestones/${milestoneId}`,
-        {
-          status: 'approved',
-          feedback,
-        },
-      );
+      const response = await api.put(`/milestones/${milestoneId}`, {
+        status: 'approved',
+        feedback,
+      });
       return response.data;
     } catch (error) {
       console.error('Error approving milestone:', error);
@@ -166,13 +148,10 @@ class MilestoneService {
    */
   async rejectMilestone(milestoneId, rejectionReason) {
     try {
-      const response = await jobServiceClient.put(
-        `/api/milestones/${milestoneId}`,
-        {
-          status: 'rejected',
-          rejectionReason,
-        },
-      );
+      const response = await api.put(`/milestones/${milestoneId}`, {
+        status: 'rejected',
+        rejectionReason,
+      });
       return response.data;
     } catch (error) {
       console.error('Error rejecting milestone:', error);
@@ -187,9 +166,7 @@ class MilestoneService {
    */
   async markMilestonePaid(milestoneId) {
     try {
-      const response = await jobServiceClient.patch(
-        `/api/milestones/${milestoneId}/pay`,
-      );
+      const response = await api.patch(`/milestones/${milestoneId}/pay`);
       return response.data;
     } catch (error) {
       console.error('Error marking milestone as paid:', error);

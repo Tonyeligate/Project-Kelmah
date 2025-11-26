@@ -64,7 +64,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ErrorBoundary from '../../../components/common/ErrorBoundary';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
 // Removed AuthContext import to prevent dual state management conflicts
-// import { useAuth } from '../../auth/contexts/AuthContext';
+// import { useAuth } from '../../auth/hooks/useAuth';
 import { useMessages } from '../contexts/MessageContext';
 // Use consolidated messaging service client that matches backend routes
 import messagingService from '../services/messagingService';
@@ -1962,3 +1962,4 @@ const EnhancedMessagingPage = () => {
 };
 
 export default EnhancedMessagingPage;
+

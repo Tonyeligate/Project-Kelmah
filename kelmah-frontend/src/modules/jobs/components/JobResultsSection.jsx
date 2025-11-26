@@ -79,7 +79,8 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
           left: '-100%',
           width: '100%',
           height: '100%',
-          background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent)',
+          background:
+            'linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent)',
           transition: 'left 0.5s ease-in-out',
           '.MuiPaper-root:hover &': {
             left: '100%',
@@ -98,7 +99,13 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
         }}
       >
         {inView ? (
-          <CountUp end={value} duration={2.5} separator="," suffix={suffix} useEasing={true} />
+          <CountUp
+            end={value}
+            duration={2.5}
+            separator=","
+            suffix={suffix}
+            useEasing={true}
+          />
         ) : (
           '0'
         )}
@@ -156,7 +163,9 @@ const JobResultsSection = ({
   platformStats,
   isSmallMobile,
 }) => {
-  const hasFilters = Boolean(searchQuery || selectedCategory || selectedLocation);
+  const hasFilters = Boolean(
+    searchQuery || selectedCategory || selectedLocation,
+  );
   const safeJobs = Array.isArray(jobs) ? jobs : [];
   const isAuthenticated = Boolean(authState?.isAuthenticated);
 
@@ -172,16 +181,31 @@ const JobResultsSection = ({
           mx: 'auto',
         }}
       >
-        <SearchIcon sx={{ fontSize: 80, color: '#D4AF37', mb: 2, opacity: 0.5 }} />
-        <Typography variant="h5" sx={{ color: '#D4AF37', mb: 2, fontWeight: 'bold' }}>
+        <SearchIcon
+          sx={{ fontSize: 80, color: '#D4AF37', mb: 2, opacity: 0.5 }}
+        />
+        <Typography
+          variant="h5"
+          sx={{ color: '#D4AF37', mb: 2, fontWeight: 'bold' }}
+        >
           No Jobs Found
         </Typography>
-        <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}>
+        <Typography
+          variant="body1"
+          sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}
+        >
           {hasFilters
             ? "We couldn't find any jobs matching your search criteria. Try adjusting your filters or search terms."
             : 'No jobs are currently available. Check back soon for new opportunities!'}
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+          }}
+        >
           {hasFilters && (
             <Button
               variant="contained"
@@ -245,7 +269,11 @@ const JobResultsSection = ({
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.3 }}>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6, delay: 0.3 }}
+    >
       <Box
         sx={{
           mb: 3,
@@ -257,12 +285,18 @@ const JobResultsSection = ({
         }}
       >
         <Box>
-          <Typography variant="h5" sx={{ color: '#D4AF37', fontWeight: 'bold', mb: 1 }}>
+          <Typography
+            variant="h5"
+            sx={{ color: '#D4AF37', fontWeight: 'bold', mb: 1 }}
+          >
             Featured Opportunities
           </Typography>
           {hasFilters && (
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+              <Typography
+                variant="body2"
+                sx={{ color: 'rgba(255,255,255,0.7)' }}
+              >
                 Active filters:
               </Typography>
               {searchQuery && (
@@ -320,7 +354,15 @@ const JobResultsSection = ({
       {loading && (
         <Grid container spacing={{ xs: 2, sm: 3 }}>
           {[1, 2, 3, 4, 5, 6].map((item) => (
-            <Grid item xs={12} sm={6} md={6} lg={4} xl={3} key={`job-skeleton-${item}`}>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={6}
+              lg={4}
+              xl={3}
+              key={`job-skeleton-${item}`}
+            >
               <Paper
                 sx={{
                   height: '100%',
@@ -346,16 +388,27 @@ const JobResultsSection = ({
               textAlign: 'center',
             }}
           >
-            <Typography variant="h6" sx={{ color: '#ff6b6b', mb: 2, fontWeight: 'bold' }}>
+            <Typography
+              variant="h6"
+              sx={{ color: '#ff6b6b', mb: 2, fontWeight: 'bold' }}
+            >
               Unable to Load Jobs
             </Typography>
-            <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}>
+            <Typography
+              variant="body1"
+              sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}
+            >
               {error}
             </Typography>
             <Button
               variant="contained"
               onClick={onClearAllFilters}
-              sx={{ bgcolor: '#D4AF37', color: 'black', fontWeight: 'bold', '&:hover': { bgcolor: '#B8941F' } }}
+              sx={{
+                bgcolor: '#D4AF37',
+                color: 'black',
+                fontWeight: 'bold',
+                '&:hover': { bgcolor: '#B8941F' },
+              }}
             >
               Retry
             </Button>
@@ -373,7 +426,15 @@ const JobResultsSection = ({
             const jobId = job.id || job._id || index;
             const CardIcon = getCategoryIcon(job.category);
             return (
-              <Grid item xs={12} sm={6} md={6} lg={4} xl={3} key={`job-${jobId}`}>
+              <Grid
+                item
+                xs={12}
+                sm={6}
+                md={6}
+                lg={4}
+                xl={3}
+                key={`job-${jobId}`}
+              >
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -414,7 +475,10 @@ const JobResultsSection = ({
                         },
                       },
                       '&:active': {
-                        transform: { xs: 'scale(0.98)', sm: 'translateY(-4px)' },
+                        transform: {
+                          xs: 'scale(0.98)',
+                          sm: 'translateY(-4px)',
+                        },
                       },
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
@@ -432,9 +496,19 @@ const JobResultsSection = ({
                           gap: { xs: 1, sm: 0 },
                         }}
                       >
-                        <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            flex: 1,
+                          }}
+                        >
                           {React.createElement(CardIcon, {
-                            sx: { mr: 1, color: '#D4AF37', fontSize: { xs: 20, sm: 24 } },
+                            sx: {
+                              mr: 1,
+                              color: '#D4AF37',
+                              fontSize: { xs: 20, sm: 24 },
+                            },
                           })}
                           <Box sx={{ flex: 1, minWidth: 0 }}>
                             <Typography
@@ -443,7 +517,11 @@ const JobResultsSection = ({
                               sx={{
                                 color: 'white',
                                 fontWeight: 'bold',
-                                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
+                                fontSize: {
+                                  xs: '1rem',
+                                  sm: '1.1rem',
+                                  md: '1.25rem',
+                                },
                                 lineHeight: { xs: 1.3, sm: 1.4 },
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
@@ -468,26 +546,53 @@ const JobResultsSection = ({
                               }}
                             >
                               {job.employer?.logo && (
-                                <Avatar src={job.employer.logo} alt={job.employer.name} sx={{ width: 16, height: 16, mr: 0.5 }} />
+                                <Avatar
+                                  src={job.employer.logo}
+                                  alt={job.employer.name}
+                                  sx={{ width: 16, height: 16, mr: 0.5 }}
+                                />
                               )}
                               {job.employer?.name || 'Employer Name Pending'}
                               {job.employer?.verified && (
-                                <Verified sx={{ fontSize: 12, color: '#4CAF50', ml: 0.5 }} />
+                                <Verified
+                                  sx={{
+                                    fontSize: 12,
+                                    color: '#4CAF50',
+                                    ml: 0.5,
+                                  }}
+                                />
                               )}
                             </Typography>
                           </Box>
                         </Box>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'end', gap: 0.5 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'end',
+                            gap: 0.5,
+                          }}
+                        >
                           {(job.urgent || job.proposalCount > 10) && (
                             <Tooltip
-                              title={job.urgent ? 'This job needs immediate attention' : 'High competition - many applicants'}
+                              title={
+                                job.urgent
+                                  ? 'This job needs immediate attention'
+                                  : 'High competition - many applicants'
+                              }
                               arrow
                               placement="left"
                             >
                               <Chip
                                 label={job.urgent ? 'URGENT' : 'HOT'}
                                 size="small"
-                                icon={job.urgent ? <FlashOnIcon sx={{ fontSize: 16 }} /> : <FireIcon sx={{ fontSize: 16 }} />}
+                                icon={
+                                  job.urgent ? (
+                                    <FlashOnIcon sx={{ fontSize: 16 }} />
+                                  ) : (
+                                    <FireIcon sx={{ fontSize: 16 }} />
+                                  )
+                                }
                                 sx={{
                                   bgcolor: job.urgent ? '#ff4444' : '#ff9800',
                                   color: 'white',
@@ -504,7 +609,11 @@ const JobResultsSection = ({
                             </Tooltip>
                           )}
                           {job.verified && (
-                            <Tooltip title="This employer has been verified by Kelmah" arrow placement="left">
+                            <Tooltip
+                              title="This employer has been verified by Kelmah"
+                              arrow
+                              placement="left"
+                            >
                               <Chip
                                 icon={<Verified sx={{ fontSize: 14 }} />}
                                 label="Verified"
@@ -523,9 +632,20 @@ const JobResultsSection = ({
                       </Box>
 
                       <Box sx={{ mb: 2 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                          <LocationOn fontSize="small" sx={{ mr: 1, color: '#D4AF37' }} />
-                          <Typography variant="body2" sx={{ color: 'white', fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
+                        >
+                          <LocationOn
+                            fontSize="small"
+                            sx={{ mr: 1, color: '#D4AF37' }}
+                          />
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'white',
+                              fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                            }}
+                          >
                             {job.location?.city
                               ? `${job.location.city}${job.location.country ? `, ${job.location.country}` : ''}`
                               : typeof job.location === 'string'
@@ -533,16 +653,25 @@ const JobResultsSection = ({
                                 : 'Remote/Flexible'}
                           </Typography>
                         </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                          <MonetizationOn fontSize="small" sx={{ mr: 1, color: '#D4AF37' }} />
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
+                        >
+                          <MonetizationOn
+                            fontSize="small"
+                            sx={{ mr: 1, color: '#D4AF37' }}
+                          />
                           <Typography
                             variant="body2"
                             fontWeight="bold"
-                            sx={{ color: '#D4AF37', fontSize: { xs: '0.875rem', sm: '0.95rem' } }}
+                            sx={{
+                              color: '#D4AF37',
+                              fontSize: { xs: '0.875rem', sm: '0.95rem' },
+                            }}
                           >
                             {job?.budget
                               ? typeof job?.budget === 'object'
-                                ? job.budget.min === job.budget.max || !job.budget.max
+                                ? job.budget.min === job.budget.max ||
+                                  !job.budget.max
                                   ? `GHS ${(job.budget.amount || job.budget.min)?.toLocaleString()}`
                                   : `GHS ${job.budget.min?.toLocaleString()} - ${job.budget.max?.toLocaleString()}`
                                 : `GHS ${job?.budget?.toLocaleString()}`
@@ -551,50 +680,91 @@ const JobResultsSection = ({
                           <Chip
                             label={job.paymentType || 'Fixed'}
                             size="small"
-                            sx={{ ml: 1, bgcolor: 'rgba(212,175,55,0.2)', color: '#D4AF37' }}
+                            sx={{
+                              ml: 1,
+                              bgcolor: 'rgba(212,175,55,0.2)',
+                              color: '#D4AF37',
+                            }}
                           />
                         </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                          <Star fontSize="small" sx={{ mr: 1, color: '#D4AF37' }} />
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', mb: 2 }}
+                        >
+                          <Star
+                            fontSize="small"
+                            sx={{ mr: 1, color: '#D4AF37' }}
+                          />
                           <Typography variant="body2" sx={{ color: 'white' }}>
-                            {job.rating || '4.5'} Rating • {job.proposalCount || 0} Applicants
+                            {job.rating || '4.5'} Rating •{' '}
+                            {job.proposalCount || 0} Applicants
                           </Typography>
                         </Box>
                       </Box>
 
-                      <Typography variant="body2" sx={{ mb: 2, color: 'rgba(255,255,255,0.8)' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ mb: 2, color: 'rgba(255,255,255,0.8)' }}
+                      >
                         {job.description}
                       </Typography>
 
                       <Box sx={{ mb: 2 }}>
-                        <Typography variant="body2" sx={{ mb: 1, color: '#D4AF37', fontWeight: 'bold' }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ mb: 1, color: '#D4AF37', fontWeight: 'bold' }}
+                        >
                           Required Skills:
                         </Typography>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        <Box
+                          sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}
+                        >
                           {skills.slice(0, 3).map((skill, idx) => (
                             <Chip
                               key={`${jobId}-skill-${idx}`}
                               label={skill}
                               size="small"
-                              sx={{ bgcolor: 'rgba(255,255,255,0.1)', color: 'white', fontSize: '0.75rem' }}
+                              sx={{
+                                bgcolor: 'rgba(255,255,255,0.1)',
+                                color: 'white',
+                                fontSize: '0.75rem',
+                              }}
                             />
                           ))}
                           {skills.length > 3 && (
                             <Chip
                               label={`+${skills.length - 3} more`}
                               size="small"
-                              sx={{ bgcolor: 'rgba(212,175,55,0.2)', color: '#D4AF37' }}
+                              sx={{
+                                bgcolor: 'rgba(212,175,55,0.2)',
+                                color: '#D4AF37',
+                              }}
                             />
                           )}
                         </Box>
                       </Box>
 
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>
-                          Posted {formatDistanceToNow(new Date(job.postedDate || Date.now()), { addSuffix: true })}
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{ color: 'rgba(255,255,255,0.6)' }}
+                        >
+                          Posted{' '}
+                          {formatDistanceToNow(
+                            new Date(job.postedDate || Date.now()),
+                            { addSuffix: true },
+                          )}
                         </Typography>
                         <Typography variant="caption" sx={{ color: '#ff6b6b' }}>
-                          Apply by {job.deadline ? format(new Date(job.deadline), 'MMM dd') : 'Soon'}
+                          Apply by{' '}
+                          {job.deadline
+                            ? format(new Date(job.deadline), 'MMM dd')
+                            : 'Soon'}
                         </Typography>
                       </Box>
                     </CardContent>
@@ -639,7 +809,9 @@ const JobResultsSection = ({
                         onClick={(event) => {
                           event.stopPropagation();
                           if (typeof job.id === 'number') {
-                            alert('This is sample data. Please ensure the API is connected to view real job details.');
+                            alert(
+                              'This is sample data. Please ensure the API is connected to view real job details.',
+                            );
                             return;
                           }
                           navigate(`/jobs/${job.id}`);
@@ -674,7 +846,10 @@ const JobResultsSection = ({
                           event.stopPropagation();
                           handleShare(job);
                         }}
-                        sx={{ color: '#D4AF37', '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' } }}
+                        sx={{
+                          color: '#D4AF37',
+                          '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
+                        }}
                       >
                         <Share />
                       </IconButton>
@@ -687,16 +862,25 @@ const JobResultsSection = ({
       </Grid>
 
       {!loading && !error && safeJobs.length > 0 && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.6 }}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+        >
           <Box sx={{ textAlign: 'center', mt: 6 }}>
-            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}>
+            <Typography
+              variant="body2"
+              sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}
+            >
               Showing {safeJobs.length} of 12 total opportunities
             </Typography>
             <Button
               variant="outlined"
               size="large"
               startIcon={<RefreshIcon />}
-              onClick={() => console.log('Load more functionality - to be implemented')}
+              onClick={() =>
+                console.log('Load more functionality - to be implemented')
+              }
               sx={{
                 borderColor: '#D4AF37',
                 color: '#D4AF37',
@@ -714,8 +898,18 @@ const JobResultsSection = ({
         </motion.div>
       )}
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.6 }}>
-        <Box sx={{ mt: { xs: 6, md: 8 }, mb: { xs: 4, md: 6 }, px: { xs: 1, sm: 0 } }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.6 }}
+      >
+        <Box
+          sx={{
+            mt: { xs: 6, md: 8 },
+            mb: { xs: 4, md: 6 },
+            px: { xs: 1, sm: 0 },
+          }}
+        >
           <Typography
             variant="h4"
             sx={{
@@ -731,14 +925,20 @@ const JobResultsSection = ({
           <Grid container spacing={{ xs: 2, sm: 3 }}>
             <Grid item xs={6} sm={6} md={3}>
               <AnimatedStatCard
-                value={platformStats.loading ? safeJobs.length : platformStats.availableJobs}
+                value={
+                  platformStats.loading
+                    ? safeJobs.length
+                    : platformStats.availableJobs
+                }
                 label="Available Jobs"
                 isLive
               />
             </Grid>
             <Grid item xs={6} sm={6} md={3}>
               <AnimatedStatCard
-                value={platformStats.loading ? 0 : platformStats.activeEmployers}
+                value={
+                  platformStats.loading ? 0 : platformStats.activeEmployers
+                }
                 suffix="+"
                 label="Active Employers"
               />
@@ -761,7 +961,11 @@ const JobResultsSection = ({
         </Box>
       </motion.div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.8 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.8 }}
+      >
         <Paper
           sx={{
             mt: { xs: 3, md: 4 },
@@ -796,17 +1000,29 @@ const JobResultsSection = ({
               px: { xs: 1, sm: 0 },
             }}
           >
-            Join thousands of skilled professionals who've found their dream jobs through Kelmah. Get personalized job
-            recommendations and connect directly with employers.
+            Join thousands of skilled professionals who've found their dream
+            jobs through Kelmah. Get personalized job recommendations and
+            connect directly with employers.
           </Typography>
-          <Box sx={{ display: 'flex', gap: { xs: 1.5, sm: 2 }, justifyContent: 'center', flexWrap: 'wrap', px: { xs: 1, sm: 0 } }}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: { xs: 1.5, sm: 2 },
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              px: { xs: 1, sm: 0 },
+            }}
+          >
             <Button
               variant="contained"
               size="large"
               onClick={() => {
                 if (!isAuthenticated) {
                   navigate('/login', {
-                    state: { from: '/jobs', message: 'Sign in to create job alerts' },
+                    state: {
+                      from: '/jobs',
+                      message: 'Sign in to create job alerts',
+                    },
                   });
                   return;
                 }
@@ -831,7 +1047,10 @@ const JobResultsSection = ({
               onClick={() => {
                 if (!isAuthenticated) {
                   navigate('/login', {
-                    state: { from: '/profile/upload-cv', message: 'Sign in to upload your CV' },
+                    state: {
+                      from: '/profile/upload-cv',
+                      message: 'Sign in to upload your CV',
+                    },
                   });
                   return;
                 }

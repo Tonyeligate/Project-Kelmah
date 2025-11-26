@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import { useSelector } from 'react-redux';
 // Removed AuthContext import to prevent dual state management conflicts
-// import { useAuth } from '../../auth/contexts/AuthContext';
+// import { useAuth } from '../../auth/hooks/useAuth';
 import LoadingScreen from '../../common/components/loading/LoadingScreen';
 import { fetchDashboardData } from '../../dashboard/services/dashboardSlice';
 import { useDispatch } from 'react-redux';
@@ -141,3 +141,4 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
+

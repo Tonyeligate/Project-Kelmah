@@ -43,7 +43,7 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
-import axios from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
 const JobApplicationForm = () => {
   console.log('🎯 JobApplicationForm component rendering...');
@@ -78,7 +78,7 @@ const JobApplicationForm = () => {
 
       setLoading(true);
       try {
-        const response = await axios.get(`/api/jobs/${jobId}`);
+        const response = await api.get(`/api/jobs/${jobId}`);
         if (response.data && response.data.success) {
           setJob(response.data.data || response.data);
         } else {
@@ -129,7 +129,7 @@ const JobApplicationForm = () => {
       };
 
       // Submit application via API
-      const response = await axios.post(
+      const response = await api.post(
         `/api/jobs/${jobId}/apply`,
         submissionData,
       );

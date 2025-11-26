@@ -1,4 +1,4 @@
-import { userServiceClient } from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
 const API_URL = '/workers';
 
@@ -14,7 +14,7 @@ const earningsService = {
    */
   getEarningsAnalytics: async (workerId, timeRange = '12months') => {
     try {
-      const response = await userServiceClient.get(
+      const response = await api.get(
         `${API_URL}/${workerId}/earnings/analytics`,
         { params: { timeRange } },
       );
@@ -32,7 +32,7 @@ const earningsService = {
    */
   getEarningsBreakdown: async (workerId, filters = {}) => {
     try {
-      const response = await userServiceClient.get(
+      const response = await api.get(
         `${API_URL}/${workerId}/earnings/breakdown`,
         { params: filters },
       );
@@ -50,7 +50,7 @@ const earningsService = {
    */
   getPaymentHistory: async (workerId, pagination = {}) => {
     try {
-      const response = await userServiceClient.get(
+      const response = await api.get(
         `${API_URL}/${workerId}/payments/history`,
         { params: pagination },
       );
@@ -68,13 +68,10 @@ const earningsService = {
    */
   exportEarningsData: async (workerId, timeRange = '12months') => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/${workerId}/earnings/export`,
-        {
-          params: { timeRange, format: 'csv' },
-          responseType: 'blob',
-        },
-      );
+      const response = await api.get(`${API_URL}/${workerId}/earnings/export`, {
+        params: { timeRange, format: 'csv' },
+        responseType: 'blob',
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -88,7 +85,7 @@ const earningsService = {
    */
   getEarningsProjections: async (workerId) => {
     try {
-      const response = await userServiceClient.get(
+      const response = await api.get(
         `${API_URL}/${workerId}/earnings/projections`,
       );
       return response.data;
@@ -105,10 +102,9 @@ const earningsService = {
    */
   getTaxInformation: async (workerId, taxYear = new Date().getFullYear()) => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/${workerId}/earnings/tax`,
-        { params: { taxYear } },
-      );
+      const response = await api.get(`${API_URL}/${workerId}/earnings/tax`, {
+        params: { taxYear },
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -122,7 +118,7 @@ const earningsService = {
    */
   getPeerComparison: async (workerId) => {
     try {
-      const response = await userServiceClient.get(
+      const response = await api.get(
         `${API_URL}/${workerId}/earnings/peer-comparison`,
       );
       return response.data;

@@ -22,8 +22,6 @@ export { SERVICES };
 
 // Load runtime config for dynamic LocalTunnel URL
 let runtimeConfig = null;
-let cachedApiBaseUrl = null;
-let apiBaseUrlPromise = null;
 
 const loadRuntimeConfig = async () => {
   if (typeof window !== 'undefined' && !runtimeConfig) {
@@ -38,319 +36,44 @@ const loadRuntimeConfig = async () => {
   return runtimeConfig;
 };
 
-const HEALTH_CHECK_PATH = '/health/aggregate';
-const HEALTH_CHECK_TIMEOUT_MS = 4000;
-const LAST_HEALTHY_BASE_KEY = 'kelmah:lastHealthyApiBase';
-const BOOTSTRAP_GATEWAY_SESSION_KEY = 'kelmah:bootstrapGateway';
-const BOOTSTRAP_GATEWAY_TTL_MS = 1000 * 60 * 60 * 6; // 6 hours
-
-const notifyServiceWorkerOfGateway = (baseUrl) => {
-  if (typeof navigator === 'undefined' || !navigator.serviceWorker) {
-    return;
+// Simple synchronous resolution
+const getApiBaseUrl = () => {
+  // Priority 1: Environment variable
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
   }
 
-  const message = {
-    type: 'CACHE_HEALTHY_GATEWAY',
-    payload: baseUrl,
-  };
-
-  if (navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage(message);
-  } else {
-    navigator.serviceWorker.ready
-      .then((registration) => registration?.active?.postMessage(message))
-      .catch(() => {});
+  // Priority 2: Runtime config (for LocalTunnel/Render dynamic URLs)
+  if (typeof window !== 'undefined' && window.RUNTIME_CONFIG?.apiUrl) {
+    return window.RUNTIME_CONFIG.apiUrl;
   }
-};
 
-const getStoredApiBase = () => {
-  if (typeof window === 'undefined') return null;
-  try {
-    return window.localStorage?.getItem(LAST_HEALTHY_BASE_KEY) || null;
-  } catch (error) {
-    console.warn(
-      '⚠️ Unable to read cached API base from storage:',
-      error?.message || error,
-    );
-    return null;
-  }
-};
-
-const storeBootstrapGatewayHint = (origin) => {
-  if (typeof window === 'undefined' || !origin) return;
-  try {
-    window.sessionStorage?.setItem(
-      BOOTSTRAP_GATEWAY_SESSION_KEY,
-      JSON.stringify({ origin, updatedAt: Date.now() }),
-    );
-  } catch (error) {
-    console.warn(
-      '⚠️ Unable to persist bootstrap gateway hint:',
-      error?.message || error,
-    );
-  }
-};
-
-const removeStoredApiBase = (baseUrl) => {
-  if (typeof window === 'undefined') return;
-  try {
-    const current = window.localStorage?.getItem(LAST_HEALTHY_BASE_KEY);
-    if (!current) return;
-    if (!baseUrl || current === baseUrl) {
-      window.localStorage?.removeItem(LAST_HEALTHY_BASE_KEY);
+  // Priority 3: Cached healthy URL from localStorage
+  if (typeof window !== 'undefined') {
+    const cached = localStorage.getItem('kelmah:lastHealthyApiBase');
+    if (cached) {
+      return cached;
     }
-  } catch (error) {
-    console.warn(
-      '⚠️ Unable to clear cached API base:',
-      error?.message || error,
-    );
   }
+
+  // Priority 4: Fallback to relative path (works when frontend and backend are on same domain)
+  return '/api';
 };
 
-const storeApiBase = (baseUrl) => {
-  if (typeof window === 'undefined' || !baseUrl) return;
-  try {
-    window.localStorage?.setItem(LAST_HEALTHY_BASE_KEY, baseUrl);
-    storeBootstrapGatewayHint(baseUrl);
-    notifyServiceWorkerOfGateway(baseUrl);
-  } catch (error) {
-    console.warn(
-      '⚠️ Unable to persist API base selection:',
-      error?.message || error,
-    );
-  }
+export const API_BASE_URL = getApiBaseUrl();
+
+// Export async function for backward compatibility if needed, but prefer direct export
+export const getApiBaseUrlAsync = async () => {
+  await loadRuntimeConfig();
+  return getApiBaseUrl();
 };
 
-const getBootstrapGatewayHint = () => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = window.sessionStorage?.getItem(BOOTSTRAP_GATEWAY_SESSION_KEY);
-    if (!raw) {
-      return null;
-    }
-    const parsed = JSON.parse(raw);
-    if (parsed?.origin) {
-      if (
-        parsed.updatedAt &&
-        Date.now() - Number(parsed.updatedAt) > BOOTSTRAP_GATEWAY_TTL_MS
-      ) {
-        window.sessionStorage?.removeItem(BOOTSTRAP_GATEWAY_SESSION_KEY);
-        return null;
-      }
-      return parsed.origin;
-    }
-    if (typeof parsed === 'string') {
-      return parsed;
-    }
-  } catch (error) {
-    console.warn(
-      '⚠️ Unable to read bootstrap gateway hint:',
-      error?.message || error,
-    );
-  }
-  return null;
-};
-
-const buildHealthCheckUrl = (baseUrl) => {
-  if (!baseUrl) {
-    return null;
-  }
-
-  // Ensure trailing slash consistency
-  const trimmedBase =
-    baseUrl.endsWith('/') && baseUrl !== '/' ? baseUrl.slice(0, -1) : baseUrl;
-
-  if (trimmedBase === '') {
-    return '/api' + HEALTH_CHECK_PATH;
-  }
-
-  if (trimmedBase.endsWith('/api')) {
-    return `${trimmedBase}${HEALTH_CHECK_PATH}`;
-  }
-
-  return `${trimmedBase}/api${HEALTH_CHECK_PATH}`;
-};
-
-const probeApiBase = async (baseUrl) => {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-
-  const healthUrl = buildHealthCheckUrl(baseUrl);
-  if (!healthUrl) {
-    return false;
-  }
-
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(
-      () => controller.abort(),
-      HEALTH_CHECK_TIMEOUT_MS,
-    );
-    const response = await fetch(healthUrl, {
-      method: 'GET',
-      credentials: 'omit',
-      headers: {
-        'ngrok-skip-browser-warning': 'true',
-        'X-Frontend-Health-Probe': 'kelmah-ui',
-      },
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    return response.ok;
-  } catch (error) {
-    if (import.meta.env.DEV) {
-      console.warn(
-        `⚠️ API base probe failed for ${baseUrl}:`,
-        error?.message || error,
-      );
-    }
-    return false;
-  }
-};
-
-const gatherCandidateBases = (config, envUrl) => {
-  const candidates = [];
-  const bootstrappedGateway = getBootstrapGatewayHint();
-  if (bootstrappedGateway) {
-    candidates.push(bootstrappedGateway);
-  }
-  const stored = getStoredApiBase();
-  if (stored) {
-    candidates.push(stored);
-  }
-
-  const runtimeCandidates = [
-    config?.apiGatewayUrl,
-    config?.API_URL,
-    config?.ngrokUrl,
-    config?.localtunnelUrl,
-    config?.LOCAL_TUNNEL_URL,
-  ];
-
-  candidates.push(...runtimeCandidates);
-
-  if (envUrl) {
-    candidates.push(envUrl);
-  }
-
-  if (import.meta.env.VITE_FALLBACK_API_URL) {
-    candidates.push(import.meta.env.VITE_FALLBACK_API_URL);
-  }
-
-  // Local development fallbacks
-  if (import.meta.env.DEV) {
-    candidates.push('http://localhost:5000');
-  }
-
-  // Relative gateway route should always be last-resort fallback
-  candidates.push('/api');
-
-  return Array.from(new Set(candidates.filter(Boolean)));
-};
-
-const selectHealthyBase = async (candidates) => {
-  // Parallel probing: race all candidates, return first healthy one
-  const cachedStoredBase =
-    typeof window !== 'undefined'
-      ? window.localStorage?.getItem(LAST_HEALTHY_BASE_KEY)
-      : null;
-  const probePromises = candidates.map(async (base) => {
-    const healthy = await probeApiBase(base);
-    return { base, healthy };
-  });
-
-  try {
-    // Wait for all probes to complete or first success
-    const results = await Promise.all(probePromises);
-    if (cachedStoredBase) {
-      const storedResult = results.find(
-        (result) => result.base === cachedStoredBase,
-      );
-      if (storedResult && !storedResult.healthy) {
-        removeStoredApiBase(cachedStoredBase);
-      }
-    }
-    const firstHealthy = results.find((r) => r.healthy);
-
-    if (firstHealthy) {
-      storeApiBase(firstHealthy.base);
-      notifyServiceWorkerOfGateway(firstHealthy.base);
-      if (import.meta.env.DEV) {
-        console.log(`✅ Selected healthy API base: ${firstHealthy.base}`);
-      }
-      return firstHealthy.base;
-    }
-  } catch (error) {
-    console.warn('⚠️ API base probing error:', error?.message || error);
-  }
-
-  // Nothing was reachable; fall back to the first provided candidate
-  const fallback = candidates[0];
-  if (fallback && import.meta.env.DEV) {
-    console.warn(
-      `⚠️ Using fallback API base despite failed probes: ${fallback}`,
-    );
-  }
-  return fallback || '/api';
-};
-
-// Primary API URL selection with mixed-content protection
-const computeApiBase = async () => {
-  if (cachedApiBaseUrl) {
-    return cachedApiBaseUrl;
-  }
-
-  if (apiBaseUrlPromise) {
-    return apiBaseUrlPromise;
-  }
-
-  apiBaseUrlPromise = (async () => {
-    const envUrl = import.meta.env.VITE_API_URL;
-
-    if (typeof window === 'undefined') {
-      cachedApiBaseUrl = envUrl || '/api';
-      return cachedApiBaseUrl;
-    }
-
-    const isHttpsPage = window.location?.protocol === 'https:';
-
-    // Prevent mixed content issues up front
-    let sanitizedEnvUrl = envUrl;
-    if (envUrl && isHttpsPage && envUrl.startsWith('http:')) {
-      console.warn(
-        '⚠️ Rejecting http URL on https page, using relative /api instead',
-      );
-      sanitizedEnvUrl = null;
-    }
-
-    const config = await loadRuntimeConfig();
-    const candidates = gatherCandidateBases(config, sanitizedEnvUrl);
-
-    if (candidates.length === 0) {
-      cachedApiBaseUrl = '/api';
-      return cachedApiBaseUrl;
-    }
-
-    const selectedBase = await selectHealthyBase(candidates);
-    cachedApiBaseUrl = selectedBase || '/api';
-
-    return cachedApiBaseUrl;
-  })();
-
-  try {
-    return await apiBaseUrlPromise;
-  } finally {
-    apiBaseUrlPromise = null;
-  }
-};
-
-// Export async function to get API base URL
-export const getApiBaseUrl = computeApiBase;
+// Re-export getApiBaseUrl for compatibility with existing code
+export { getApiBaseUrl };
 
 // For backward compatibility, export a promise that resolves to the URL
 // Note: This will be a promise, so consumers should await it or use getApiBaseUrl()
-export const API_BASE_URL = computeApiBase();
+// export const API_BASE_URL_PROMISE = getApiBaseUrlAsync();
 
 // ===============================================
 // APPLICATION CONFIGURATION

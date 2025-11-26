@@ -1,29 +1,28 @@
-import axios from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
 const portfolioService = {
   async getMyPortfolio(params = {}) {
     // Changed from '/api/profile/...' to '/profile/...' to avoid /api duplication
     // baseURL='/api' is provided by axios instance on Vercel
-    const { data } = await axios.get('/profile/portfolio/search', {
+    const { data } = await api.get('/profile/portfolio/search', {
       params,
     });
     return data?.data || data;
   },
   async getWorkerPortfolio(workerId, params = {}) {
-    const { data } = await axios.get(
-      `/profile/workers/${workerId}/portfolio`,
-      { params },
-    );
+    const { data } = await api.get(`/profile/workers/${workerId}/portfolio`, {
+      params,
+    });
     return data?.data || data;
   },
   async getPortfolioItem(id) {
-    const { data } = await axios.get(`/profile/portfolio/${id}`);
+    const { data } = await api.get(`/profile/portfolio/${id}`);
     return data?.data || data;
   },
   async uploadWorkSamples(files = []) {
     const form = new FormData();
     files.forEach((f) => form.append('files', f));
-    const { data } = await axios.post('/profile/portfolio/upload', form, {
+    const { data } = await api.post('/profile/portfolio/upload', form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return data?.data || data;
@@ -31,13 +30,9 @@ const portfolioService = {
   async uploadCertificates(files = []) {
     const form = new FormData();
     files.forEach((f) => form.append('files', f));
-    const { data } = await axios.post(
-      '/profile/certificates/upload',
-      form,
-      {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      },
-    );
+    const { data } = await api.post('/profile/certificates/upload', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return data?.data || data;
   },
 };

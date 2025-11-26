@@ -10,7 +10,7 @@ import {
 import { styled, useTheme } from '@mui/material/styles';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import axios from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 import { secureStorage } from '../../../utils/secureStorage';
 
 // Custom components
@@ -244,7 +244,7 @@ const SearchPage = () => {
     }
 
     try {
-      const response = await axios.get('/api/search/suggestions', {
+      const response = await api.get('/search/suggestions', {
         params: { query },
       });
 
@@ -277,7 +277,7 @@ const SearchPage = () => {
 
   const executeWorkerSearch = useCallback(
     async (params = {}, { sortOption } = {}) => {
-      const apiEndpoint = '/api/workers';
+      const apiEndpoint = '/workers';
       const apiParams = buildWorkerQueryParams(params);
 
       console.log('🔍 executeWorkerSearch - params:', params);
@@ -287,7 +287,7 @@ const SearchPage = () => {
       setError(null);
 
       try {
-        const response = await axios.get(apiEndpoint, { params: apiParams });
+        const response = await api.get(apiEndpoint, { params: apiParams });
         console.log('🔍 API response:', response.data);
 
         if (!response.data || !response.data.success) {
@@ -649,20 +649,7 @@ const SearchPage = () => {
   // Handle worker saving
   const handleSaveWorker = async (worker) => {
     try {
-      await axios.post(
-        `/api/workers/${worker.id}/save`,
-        {},
-        {
-          headers: (() => {
-            try {
-              const token = secureStorage.getAuthToken();
-              return token ? { Authorization: `Bearer ${token}` } : {};
-            } catch {
-              return {};
-            }
-          })(),
-        },
-      );
+      await api.post(`/workers/${worker.id}/save`, {});
 
       // Update saved status in results
       setSearchResults((prevResults) =>

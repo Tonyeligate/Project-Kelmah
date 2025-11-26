@@ -48,9 +48,10 @@ import {
 import { styled } from '@mui/material/styles';
 import {
   updateWorkerProfile,
+  updateWorkerAvailability,
   fetchWorkerProfile,
 } from '../services/workerSlice';
-import api from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
 const Input = styled('input')({
   display: 'none',

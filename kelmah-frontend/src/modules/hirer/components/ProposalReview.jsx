@@ -40,7 +40,7 @@ import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import StarIcon from '@mui/icons-material/Star';
 import { useSnackbar } from 'notistack';
-import { jobServiceClient } from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 import {
   DEFAULT_PROPOSAL_PAGE_SIZE,
   useProposals,
@@ -176,8 +176,10 @@ const ProposalReview = () => {
   const totalItems =
     paginationData.totalItems ?? meta?.aggregates?.total ?? proposals.length;
   const pageSize = paginationData.limit ?? DEFAULT_PROPOSAL_PAGE_SIZE;
-  const rangeStart = proposals.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const rangeEnd = proposals.length === 0 ? 0 : rangeStart + proposals.length - 1;
+  const rangeStart =
+    proposals.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const rangeEnd =
+    proposals.length === 0 ? 0 : rangeStart + proposals.length - 1;
   const safePage = currentPage > 0 ? currentPage : 1;
 
   const proposalStats = useMemo(() => {
@@ -190,9 +192,9 @@ const ProposalReview = () => {
       aggregates.averageRate ??
       (proposals.length
         ? proposals.reduce(
-            (sum, proposal) => sum + Number(proposal.proposedRate || 0),
-            0,
-          ) / proposals.length
+          (sum, proposal) => sum + Number(proposal.proposedRate || 0),
+          0,
+        ) / proposals.length
         : 0);
 
     return {
@@ -295,7 +297,8 @@ const ProposalReview = () => {
         selectedProposal.proposalID;
 
       if (!proposalId) {
-        const message = 'Missing proposal identifier. Please refresh and try again.';
+        const message =
+          'Missing proposal identifier. Please refresh and try again.';
         setActionError(message);
         enqueueSnackbar(message, { variant: 'error' });
         return;
@@ -308,7 +311,8 @@ const ProposalReview = () => {
         selectedProposal.job?._doc?._id;
 
       if (!jobId) {
-        const message = 'Missing job identifier for this proposal. Please refresh and try again.';
+        const message =
+          'Missing job identifier for this proposal. Please refresh and try again.';
         setActionError(message);
         enqueueSnackbar(message, { variant: 'error' });
         return;
@@ -320,15 +324,14 @@ const ProposalReview = () => {
         setActionInProgress(true);
         setActionError(null);
 
-        await jobServiceClient.put(
-          `/api/jobs/${jobId}/applications/${proposalId}`,
-          {
-            status: action,
-            notes: additionalData.feedback || additionalData.notes,
-          },
-        );
+        await api.put(`/api/jobs/${jobId}/applications/${proposalId}`, {
+          status: action,
+          notes: additionalData.feedback || additionalData.notes,
+        });
 
-        enqueueSnackbar('Proposal updated successfully.', { variant: 'success' });
+        enqueueSnackbar('Proposal updated successfully.', {
+          variant: 'success',
+        });
         handleDialogClose();
         await refresh();
       } catch (err) {
@@ -369,11 +372,14 @@ const ProposalReview = () => {
             {(worker.name ?? 'U').charAt(0)}
           </Avatar>
           <Box>
-            <Typography variant="h6">{worker.name ?? 'Unknown worker'}</Typography>
+            <Typography variant="h6">
+              {worker.name ?? 'Unknown worker'}
+            </Typography>
             <Box display="flex" alignItems="center" gap={1}>
               <StarIcon sx={{ fontSize: 16, color: 'gold' }} />
               <Typography variant="body2">
-                {Number(worker.rating ?? 0).toFixed(1)} ({worker.completedJobs ?? 0} jobs)
+                {Number(worker.rating ?? 0).toFixed(1)} (
+                {worker.completedJobs ?? 0} jobs)
               </Typography>
             </Box>
             <Typography variant="body2" color="text.secondary">
@@ -403,8 +409,11 @@ const ProposalReview = () => {
               </Typography>
             )}
             <Typography variant="body2" color="text.secondary">
-              Location: {formatLocationBadge(
-                job.location ?? job.locationDetails ?? selectedProposal.jobLocation,
+              Location:{' '}
+              {formatLocationBadge(
+                job.location ??
+                job.locationDetails ??
+                selectedProposal.jobLocation,
               )}
             </Typography>
           </Grid>
@@ -416,10 +425,12 @@ const ProposalReview = () => {
               Proposed Rate: {formatCurrency(selectedProposal.proposedRate)}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Duration: {formatDurationLabel(selectedProposal.availability?.duration)}
+              Duration:{' '}
+              {formatDurationLabel(selectedProposal.availability?.duration)}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Earliest Start: {formatDate(selectedProposal.availability?.startDate)}
+              Earliest Start:{' '}
+              {formatDate(selectedProposal.availability?.startDate)}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Submitted: {formatDate(selectedProposal.submittedAt)}
@@ -445,7 +456,12 @@ const ProposalReview = () => {
             </Typography>
             <Box display="flex" gap={1} flexWrap="wrap" mb={2}>
               {skills.map((skill) => (
-                <Chip key={skill} label={skill} size="small" variant="outlined" />
+                <Chip
+                  key={skill}
+                  label={skill}
+                  size="small"
+                  variant="outlined"
+                />
               ))}
             </Box>
           </>
@@ -613,79 +629,100 @@ const ProposalReview = () => {
             <TableBody>
               {loading
                 ? Array.from({ length: skeletonRowCount }).map((_, index) => (
-                    <TableRow key={`loading-${index}`}>
-                      <TableCell colSpan={6}>
-                        <Skeleton height={48} />
+                  <TableRow key={`loading-${index}`}>
+                    <TableCell colSpan={6}>
+                      <Skeleton height={48} />
+                    </TableCell>
+                  </TableRow>
+                ))
+                : proposals.map((proposal, index) => {
+                  const proposalId =
+                    proposal.id ??
+                    proposal._id ??
+                    proposal.proposalId ??
+                    proposal.proposalID ??
+                    `proposal-${index}`;
+                  const workerName =
+                    proposal.worker?.name ??
+                    proposal.workerName ??
+                    'Unknown worker';
+                  const locationLabel = formatLocationBadge(
+                    proposal.worker?.location ?? proposal.workerLocation,
+                  );
+                  const jobTitle =
+                    proposal.job?.title ??
+                    proposal.jobTitle ??
+                    'Untitled job';
+                  const jobCategory =
+                    proposal.job?.category ??
+                    proposal.jobCategory ??
+                    'General';
+                  const statusLabel = proposal.status ?? 'pending';
+
+                  return (
+                    <TableRow hover key={proposalId}>
+                      <TableCell>
+                        <Typography variant="subtitle2">
+                          {workerName}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {locationLabel}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="subtitle2">
+                          {jobTitle}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {jobCategory}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="subtitle2">
+                          {formatCurrency(
+                            proposal.proposedRate ?? proposal.rate,
+                          )}
+                        </Typography>
+                        {proposal.availability?.duration && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                          >
+                            {formatDurationLabel(
+                              proposal.availability.duration,
+                            )}
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">
+                          {formatDate(
+                            proposal.submittedAt ?? proposal.createdAt,
+                          )}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={formatStatusLabel(statusLabel)}
+                          color={getStatusColor(statusLabel)}
+                          size="small"
+                          variant={
+                            statusLabel === 'accepted' ? 'filled' : 'outlined'
+                          }
+                        />
+                      </TableCell>
+                      <TableCell align="right">
+                        <IconButton
+                          size="small"
+                          onClick={(event) => handleMenuOpen(event, proposal)}
+                          aria-label="Proposal actions"
+                        >
+                          <MoreVertIcon />
+                        </IconButton>
                       </TableCell>
                     </TableRow>
-                  ))
-                : proposals.map((proposal, index) => {
-                    const proposalId =
-                      proposal.id ??
-                      proposal._id ??
-                      proposal.proposalId ??
-                      proposal.proposalID ??
-                      `proposal-${index}`;
-                    const workerName =
-                      proposal.worker?.name ?? proposal.workerName ?? 'Unknown worker';
-                    const locationLabel = formatLocationBadge(
-                      proposal.worker?.location ?? proposal.workerLocation,
-                    );
-                    const jobTitle =
-                      proposal.job?.title ?? proposal.jobTitle ?? 'Untitled job';
-                    const jobCategory =
-                      proposal.job?.category ?? proposal.jobCategory ?? 'General';
-                    const statusLabel = proposal.status ?? 'pending';
-
-                    return (
-                      <TableRow hover key={proposalId}>
-                        <TableCell>
-                          <Typography variant="subtitle2">{workerName}</Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {locationLabel}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="subtitle2">{jobTitle}</Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {jobCategory}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="subtitle2">
-                            {formatCurrency(proposal.proposedRate ?? proposal.rate)}
-                          </Typography>
-                          {proposal.availability?.duration && (
-                            <Typography variant="caption" color="text.secondary">
-                              {formatDurationLabel(proposal.availability.duration)}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {formatDate(proposal.submittedAt ?? proposal.createdAt)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={formatStatusLabel(statusLabel)}
-                            color={getStatusColor(statusLabel)}
-                            size="small"
-                            variant={statusLabel === 'accepted' ? 'filled' : 'outlined'}
-                          />
-                        </TableCell>
-                        <TableCell align="right">
-                          <IconButton
-                            size="small"
-                            onClick={(event) => handleMenuOpen(event, proposal)}
-                            aria-label="Proposal actions"
-                          >
-                            <MoreVertIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  );
+                })}
             </TableBody>
           </Table>
         </TableContainer>
@@ -772,7 +809,11 @@ const ProposalReview = () => {
         justifyContent="space-between"
         sx={{ mb: 3 }}
       >
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} flexWrap="wrap">
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={1}
+          flexWrap="wrap"
+        >
           {STATUS_FILTERS.map(({ label, value }) => (
             <Button
               key={value}
@@ -784,7 +825,11 @@ const ProposalReview = () => {
             >
               {label}
               {value !== 'all' && (
-                <Chip label={statusCounts[value] ?? 0} size="small" sx={{ ml: 1 }} />
+                <Chip
+                  label={statusCounts[value] ?? 0}
+                  size="small"
+                  sx={{ ml: 1 }}
+                />
               )}
             </Button>
           ))}
@@ -821,7 +866,11 @@ const ProposalReview = () => {
             }}
           >
             <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {proposalStats.total}
@@ -845,7 +894,11 @@ const ProposalReview = () => {
             }}
           >
             <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {proposalStats.pending}
@@ -869,7 +922,11 @@ const ProposalReview = () => {
             }}
           >
             <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {formatCurrency(proposalStats.averageRate)}
@@ -878,7 +935,9 @@ const ProposalReview = () => {
                     Average Rate
                   </Typography>
                 </Box>
-                <MonetizationOnOutlinedIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+                <MonetizationOnOutlinedIcon
+                  sx={{ fontSize: 40, opacity: 0.8 }}
+                />
               </Box>
             </CardContent>
           </Card>
@@ -893,7 +952,11 @@ const ProposalReview = () => {
             }}
           >
             <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
                     {proposalStats.accepted}
@@ -953,14 +1016,15 @@ const ProposalReview = () => {
           {dialogType === 'view' && renderProposalDetails()}
           {dialogType === 'accept' && (
             <Typography variant="body2">
-              This will move the proposal to the accepted list and notify the worker. Do you
-              want to continue?
+              This will move the proposal to the accepted list and notify the
+              worker. Do you want to continue?
             </Typography>
           )}
           {dialogType === 'reject' && (
             <Box display="flex" flexDirection="column" gap={2} mt={1}>
               <Typography variant="body2">
-                Optionally share feedback to help the worker understand your decision.
+                Optionally share feedback to help the worker understand your
+                decision.
               </Typography>
               <TextField
                 label="Feedback (optional)"

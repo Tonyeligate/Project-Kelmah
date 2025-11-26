@@ -258,8 +258,7 @@ class SecureStorage {
     if (!item) {
       return null;
     }
-    const storedTtl =
-      typeof item.ttl === 'number' ? item.ttl : this.maxAge;
+    const storedTtl = typeof item.ttl === 'number' ? item.ttl : this.maxAge;
     const effectiveTtl =
       maxAge === undefined
         ? storedTtl

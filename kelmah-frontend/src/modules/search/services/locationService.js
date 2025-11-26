@@ -1,6 +1,6 @@
-import { userServiceClient } from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
-const API_URL = '/api/location';
+const API_URL = '/location';
 
 /**
  * Service for location-based search and geolocation features
@@ -12,7 +12,7 @@ const locationService = {
    */
   getPopularLocations: async () => {
     try {
-      const response = await userServiceClient.get(`${API_URL}/popular`);
+      const response = await api.get(`${API_URL}/popular`);
       return response.data;
     } catch (error) {
       throw error;
@@ -28,7 +28,7 @@ const locationService = {
    */
   getNearbyLocations: async (lat, lng, radius = 10) => {
     try {
-      const response = await userServiceClient.get(`${API_URL}/nearby`, {
+      const response = await api.get(`${API_URL}/nearby`, {
         params: { lat, lng, radius },
       });
       return response.data;
@@ -44,7 +44,7 @@ const locationService = {
    */
   searchLocations: async (query) => {
     try {
-      const response = await userServiceClient.get(`${API_URL}/search`, {
+      const response = await api.get(`${API_URL}/search`, {
         params: { q: query },
       });
       return response.data;
@@ -61,12 +61,9 @@ const locationService = {
    */
   reverseGeocode: async (lat, lng) => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/reverse-geocode`,
-        {
-          params: { lat, lng },
-        },
-      );
+      const response = await api.get(`${API_URL}/reverse-geocode`, {
+        params: { lat, lng },
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -79,9 +76,7 @@ const locationService = {
    */
   getRecentSearches: async () => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/recent-searches`,
-      );
+      const response = await api.get(`${API_URL}/recent-searches`);
       return response.data;
     } catch (error) {
       throw error;
@@ -95,10 +90,7 @@ const locationService = {
    */
   saveRecentSearch: async (location) => {
     try {
-      const response = await userServiceClient.post(
-        `${API_URL}/recent-searches`,
-        location,
-      );
+      const response = await api.post(`${API_URL}/recent-searches`, location);
       return response.data;
     } catch (error) {
       throw error;
@@ -112,9 +104,7 @@ const locationService = {
    */
   getLocationStats: async (locationName) => {
     try {
-      const response = await userServiceClient.get(
-        `${API_URL}/stats/${locationName}`,
-      );
+      const response = await api.get(`${API_URL}/stats/${locationName}`);
       return response.data;
     } catch (error) {
       throw error;
@@ -129,7 +119,7 @@ const locationService = {
    */
   getTravelInfo: async (origin, destination) => {
     try {
-      const response = await userServiceClient.post(`${API_URL}/travel-info`, {
+      const response = await api.post(`${API_URL}/travel-info`, {
         origin,
         destination,
       });
@@ -146,7 +136,7 @@ const locationService = {
    */
   getLocationSuggestions: async (query) => {
     try {
-      const response = await userServiceClient.get(`${API_URL}/suggestions`, {
+      const response = await api.get(`${API_URL}/suggestions`, {
         params: { q: query },
       });
       return response.data;

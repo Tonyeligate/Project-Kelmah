@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from 'react';
 import { contractService } from '../services/contractService';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useAuth } from '../../auth/hooks/useAuth';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
 const ContractContext = createContext(null);
 
@@ -114,3 +114,4 @@ export const useContracts = () => {
   }
   return context;
 };
+

@@ -49,7 +49,7 @@ import {
   AttachMoney as MoneyIcon,
 } from '@mui/icons-material';
 import { API_ENDPOINTS } from '../../../config/environment';
-import { userServiceClient } from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 import messagingService from '../../messaging/services/messagingService';
 
 // No mock data - using real API data only
@@ -132,16 +132,16 @@ const WorkerSearch = () => {
   const normalizeWorkerRecord = (worker = {}) => {
     const skillsArray = Array.isArray(worker.skills)
       ? worker.skills
-          .map((skill) => {
-            if (typeof skill === 'string') return skill;
-            if (skill?.name) return skill.name;
-            if (skill?.skillName) return skill.skillName;
-            if (skill?.label) return skill.label;
-            return typeof skill === 'object' && skill !== null
-              ? JSON.stringify(skill)
-              : String(skill || '').trim();
-          })
-          .filter(Boolean)
+        .map((skill) => {
+          if (typeof skill === 'string') return skill;
+          if (skill?.name) return skill.name;
+          if (skill?.skillName) return skill.skillName;
+          if (skill?.label) return skill.label;
+          return typeof skill === 'object' && skill !== null
+            ? JSON.stringify(skill)
+            : String(skill || '').trim();
+        })
+        .filter(Boolean)
       : Array.isArray(worker.specializations)
         ? worker.specializations.filter(Boolean)
         : [];
@@ -245,7 +245,7 @@ const WorkerSearch = () => {
     (async () => {
       try {
         console.log('WorkerSearch - fetching bookmarks');
-        const res = await userServiceClient.get(API_ENDPOINTS.USER.BOOKMARKS);
+        const res = await api.get(API_ENDPOINTS.USER.BOOKMARKS);
         const ids = res?.data?.data?.workerIds || [];
         setSavedWorkers(ids);
       } catch (err) {
@@ -306,9 +306,7 @@ const WorkerSearch = () => {
       );
 
       // ✅ FIXED: Use correct endpoint path (removed /users prefix)
-      const response = await userServiceClient.get(
-        `/api/workers?${queryParams.toString()}`,
-      );
+      const response = await api.get(`/api/workers?${queryParams.toString()}`);
 
       if (response.data) {
         const workersData =
@@ -324,9 +322,9 @@ const WorkerSearch = () => {
         setWorkers(sortedWorkers);
         setTotalPages(
           pagination.totalPages ||
-            pagination.pages ||
-            response.data.totalPages ||
-            1,
+          pagination.pages ||
+          response.data.totalPages ||
+          1,
         );
 
         try {
@@ -334,7 +332,7 @@ const WorkerSearch = () => {
             'worker_search_cache',
             JSON.stringify(sortedWorkers),
           );
-        } catch (_) {}
+        } catch (_) { }
       } else {
         throw new Error('No data received');
       }
@@ -354,7 +352,7 @@ const WorkerSearch = () => {
         // Optionally load a cached list from localStorage
         const cached = localStorage.getItem('worker_search_cache');
         if (cached) fallback = JSON.parse(cached);
-      } catch (_) {}
+      } catch (_) { }
 
       let filteredWorkers = Array.isArray(fallback) ? [...fallback] : [];
 
@@ -483,9 +481,7 @@ const WorkerSearch = () => {
 
   const handleSaveWorker = async (workerId) => {
     try {
-      const res = await userServiceClient.post(
-        `/api/users/workers/${workerId}/bookmark`,
-      );
+      const res = await api.post(`/api/users/workers/${workerId}/bookmark`);
       const bookmarked =
         res?.data?.data?.bookmarked ?? !savedWorkers.includes(workerId);
       setSavedWorkers((prev) => {
@@ -550,16 +546,16 @@ const WorkerSearch = () => {
     averageRating:
       Array.isArray(workers) && workers.length > 0
         ? (
-            workers.reduce((sum, w) => sum + (w?.rating || 0), 0) /
-            workers.length
-          ).toFixed(1)
+          workers.reduce((sum, w) => sum + (w?.rating || 0), 0) /
+          workers.length
+        ).toFixed(1)
         : 0,
     averageRate:
       Array.isArray(workers) && workers.length > 0
         ? Math.round(
-            workers.reduce((sum, w) => sum + (w?.hourlyRate || 0), 0) /
-              workers.length,
-          )
+          workers.reduce((sum, w) => sum + (w?.hourlyRate || 0), 0) /
+          workers.length,
+        )
         : 0,
   };
 
@@ -733,25 +729,25 @@ const WorkerSearch = () => {
                   filters.primaryTrade ||
                   filters.availability !== 'all' ||
                   sortOption !== 'relevance') && (
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      setFilters({
-                        skills: [],
-                        minRating: 0,
-                        maxRate: 100,
-                        location: '',
-                        availability: 'all',
-                        experience: 'all',
-                        primaryTrade: '',
-                      });
-                      setSortOption('relevance');
-                      setPage(1);
-                    }}
-                  >
-                    Clear
-                  </Button>
-                )}
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        setFilters({
+                          skills: [],
+                          minRating: 0,
+                          maxRate: 100,
+                          location: '',
+                          availability: 'all',
+                          experience: 'all',
+                          primaryTrade: '',
+                        });
+                        setSortOption('relevance');
+                        setPage(1);
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  )}
               </Box>
             </Grid>
           </Grid>
@@ -1037,9 +1033,9 @@ const WorkerSearch = () => {
                             typeof skill === 'string'
                               ? skill
                               : skill?.name ||
-                                skill?.skillName ||
-                                skill?.label ||
-                                String(skill || 'Skill');
+                              skill?.skillName ||
+                              skill?.label ||
+                              String(skill || 'Skill');
                           return (
                             <Chip
                               key={index}

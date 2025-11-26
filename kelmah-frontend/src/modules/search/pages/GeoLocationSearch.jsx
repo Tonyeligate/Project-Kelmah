@@ -64,7 +64,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { debounce } from 'lodash';
-import axiosInstance from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 import { Helmet } from 'react-helmet-async';
 import { useSelector } from 'react-redux';
 import { ListingJobCard as JobCard } from '../../common/components/cards';
@@ -367,12 +367,12 @@ const GeoLocationSearch = () => {
       let response;
       if (searchType === 0) {
         // Search for jobs
-        response = await axiosInstance.get('/jobs/search', {
+        response = await api.get('/jobs/search', {
           params: searchParams,
         });
       } else {
         // Search for workers/professionals
-        response = await axiosInstance.get('/workers/search', {
+        response = await api.get('/workers/search', {
           params: searchParams,
         });
       }
@@ -698,7 +698,9 @@ const GeoLocationSearch = () => {
                 No {searchType === 0 ? 'jobs' : 'workers'} found
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                {location ? `No results found for "${location}"` : 'Try adjusting your search criteria'}
+                {location
+                  ? `No results found for "${location}"`
+                  : 'Try adjusting your search criteria'}
               </Typography>
               <Button
                 variant="contained"

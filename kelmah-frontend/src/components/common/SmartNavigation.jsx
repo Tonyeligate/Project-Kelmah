@@ -79,11 +79,7 @@ const SmartNavigation = () => {
             updatedAt: Date.now(),
           },
         };
-        secureStorage.setItem(
-          QUICK_NAV_STORAGE_KEY,
-          next,
-          QUICK_NAV_PREF_TTL,
-        );
+        secureStorage.setItem(QUICK_NAV_STORAGE_KEY, next, QUICK_NAV_PREF_TTL);
       } catch (error) {
         console.warn(
           'Quick navigation preference persistence failed:',

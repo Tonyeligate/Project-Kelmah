@@ -1,14 +1,9 @@
-import { API_ENDPOINTS } from '../../../config/environment';
-import {
-  userServiceClient,
-  jobServiceClient,
-  getUserServiceClient,
-} from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
-const WORKERS_BASE = API_ENDPOINTS.USER.WORKERS;
+const WORKERS_BASE = '/users/workers';
 
 const workerPath = (workerId, suffix = '') =>
-  `${API_ENDPOINTS.USER.WORKER_DETAIL(workerId)}${suffix}`;
+  `/users/workers/${workerId}${suffix}`;
 
 const unwrapPayload = (response) =>
   response?.data?.data ?? response?.data ?? {};
@@ -40,7 +35,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of worker objects
    */
   getWorkers: (filters = {}) => {
-    return userServiceClient.get(WORKERS_BASE, { params: filters });
+    return api.get(WORKERS_BASE, { params: filters });
   },
 
   /**
@@ -49,7 +44,7 @@ const workerService = {
    * @returns {Promise<Object>} - Worker object
    */
   getWorkerById: (workerId) => {
-    return userServiceClient.get(workerPath(workerId));
+    return api.get(workerPath(workerId));
   },
 
   /**
@@ -59,7 +54,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of review objects
    */
   getWorkerReviews: (workerId, filters = {}) => {
-    return userServiceClient.get(workerPath(workerId, '/reviews'), {
+    return api.get(workerPath(workerId, '/reviews'), {
       params: filters,
     });
   },
@@ -71,10 +66,7 @@ const workerService = {
    * @returns {Promise<Object>} - Created review object
    */
   submitReview: (workerId, reviewData) => {
-    return userServiceClient.post(
-      workerPath(workerId, '/reviews'),
-      reviewData,
-    );
+    return api.post(workerPath(workerId, '/reviews'), reviewData);
   },
 
   /**
@@ -84,7 +76,7 @@ const workerService = {
    * @returns {Promise<Object>} - Updated worker profile
    */
   updateWorkerProfile: (workerId, profileData) => {
-    return userServiceClient.put(workerPath(workerId), profileData);
+    return api.put(workerPath(workerId), profileData);
   },
 
   /**
@@ -94,15 +86,11 @@ const workerService = {
    * @returns {Promise<Object>} - Upload response
    */
   uploadProfileImage: (workerId, formData) => {
-    return userServiceClient.post(
-      workerPath(workerId, '/image'),
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+    return api.post(workerPath(workerId, '/image'), formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
       },
-    );
+    });
   },
 
   /**
@@ -111,7 +99,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of skill objects
    */
   getWorkerSkills: (workerId) => {
-    return userServiceClient.get(workerPath(workerId, '/skills'));
+    return api.get(workerPath(workerId, '/skills'));
   },
 
   /**
@@ -119,9 +107,7 @@ const workerService = {
    * @returns {Promise<{ skills: Array, licenses: Array, certifications: Array }>}
    */
   getMyCredentials: async () => {
-    const response = await userServiceClient.get(
-      API_ENDPOINTS.USER.ME_CREDENTIALS,
-    );
+    const response = await api.get('/users/me/credentials');
     const payload = response?.data?.data ?? response?.data ?? {};
 
     return {
@@ -140,10 +126,7 @@ const workerService = {
    * @returns {Promise<Object>} - Added skill object
    */
   addWorkerSkill: (workerId, skillData) => {
-    return userServiceClient.post(
-      workerPath(workerId, '/skills'),
-      skillData,
-    );
+    return api.post(workerPath(workerId, '/skills'), skillData);
   },
 
   /**
@@ -154,10 +137,7 @@ const workerService = {
    * @returns {Promise<Object>} - Updated skill object
    */
   updateWorkerSkill: (workerId, skillId, skillData) => {
-    return userServiceClient.put(
-      workerPath(workerId, `/skills/${skillId}`),
-      skillData,
-    );
+    return api.put(workerPath(workerId, `/skills/${skillId}`), skillData);
   },
 
   /**
@@ -167,9 +147,7 @@ const workerService = {
    * @returns {Promise<void>}
    */
   deleteWorkerSkill: (workerId, skillId) => {
-    return userServiceClient.delete(
-      workerPath(workerId, `/skills/${skillId}`),
-    );
+    return api.delete(workerPath(workerId, `/skills/${skillId}`));
   },
 
   /**
@@ -178,7 +156,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of portfolio items
    */
   getWorkerPortfolio: (workerId) => {
-    return userServiceClient.get(workerPath(workerId, '/portfolio'));
+    return api.get(workerPath(workerId, '/portfolio'));
   },
 
   /**
@@ -188,10 +166,7 @@ const workerService = {
    * @returns {Promise<Object>} - Added portfolio item
    */
   addPortfolioItem: (workerId, portfolioData) => {
-    return userServiceClient.post(
-      workerPath(workerId, '/portfolio'),
-      portfolioData,
-    );
+    return api.post(workerPath(workerId, '/portfolio'), portfolioData);
   },
 
   /**
@@ -202,7 +177,7 @@ const workerService = {
    * @returns {Promise<Object>} - Updated portfolio item
    */
   updatePortfolioItem: (workerId, portfolioId, portfolioData) => {
-    return userServiceClient.put(
+    return api.put(
       workerPath(workerId, `/portfolio/${portfolioId}`),
       portfolioData,
     );
@@ -215,9 +190,7 @@ const workerService = {
    * @returns {Promise<void>}
    */
   deletePortfolioItem: (workerId, portfolioId) => {
-    return userServiceClient.delete(
-      workerPath(workerId, `/portfolio/${portfolioId}`),
-    );
+    return api.delete(workerPath(workerId, `/portfolio/${portfolioId}`));
   },
 
   /**
@@ -226,7 +199,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of certificate objects
    */
   getWorkerCertificates: (workerId) => {
-    return userServiceClient.get(workerPath(workerId, '/certificates'));
+    return api.get(workerPath(workerId, '/certificates'));
   },
 
   /**
@@ -236,10 +209,7 @@ const workerService = {
    * @returns {Promise<Object>} - Added certificate
    */
   addCertificate: (workerId, certificateData) => {
-    return userServiceClient.post(
-      workerPath(workerId, '/certificates'),
-      certificateData,
-    );
+    return api.post(workerPath(workerId, '/certificates'), certificateData);
   },
 
   /**
@@ -250,7 +220,7 @@ const workerService = {
    * @returns {Promise<Object>} - Updated certificate
    */
   updateCertificate: (workerId, certificateId, certificateData) => {
-    return userServiceClient.put(
+    return api.put(
       workerPath(workerId, `/certificates/${certificateId}`),
       certificateData,
     );
@@ -263,9 +233,7 @@ const workerService = {
    * @returns {Promise<void>}
    */
   deleteCertificate: (workerId, certificateId) => {
-    return userServiceClient.delete(
-      workerPath(workerId, `/certificates/${certificateId}`),
-    );
+    return api.delete(workerPath(workerId, `/certificates/${certificateId}`));
   },
 
   /**
@@ -274,7 +242,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of work history items
    */
   getWorkHistory: (workerId) => {
-    return userServiceClient.get(workerPath(workerId, '/work-history'));
+    return api.get(workerPath(workerId, '/work-history'));
   },
 
   /**
@@ -284,10 +252,7 @@ const workerService = {
    * @returns {Promise<Object>} - Added work history item
    */
   addWorkHistory: (workerId, workHistoryData) => {
-    return userServiceClient.post(
-      workerPath(workerId, '/work-history'),
-      workHistoryData,
-    );
+    return api.post(workerPath(workerId, '/work-history'), workHistoryData);
   },
 
   /**
@@ -302,18 +267,15 @@ const workerService = {
 
     let response;
     try {
-      response = await userServiceClient.get(
-        workerPath(workerId, '/availability'),
-      );
+      response = await api.get(workerPath(workerId, '/availability'));
     } catch (error) {
       const status = error?.response?.status;
       if (status && status !== 404 && status !== 405) {
         throw error;
       }
 
-      const client = await getUserServiceClient();
       // ⚠️ FIX: Use correct path /users/workers/{id}/availability, not /availability/{id}
-      response = await client.get(`/users/workers/${workerId}/availability`);
+      response = await api.get(`/users/workers/${workerId}/availability`);
     }
     const payload = unwrapPayload(response);
     const status = payload?.status;
@@ -349,7 +311,7 @@ const workerService = {
 
     let response;
     try {
-      response = await userServiceClient.put(
+      response = await api.put(
         workerPath(workerId, '/availability'),
         availabilityData,
       );
@@ -359,9 +321,8 @@ const workerService = {
         throw error;
       }
 
-      const client = await getUserServiceClient();
       // ⚠️ FIX: Use correct path /users/workers/{id}/availability, not /availability/{id}
-      response = await client.put(
+      response = await api.put(
         `/users/workers/${workerId}/availability`,
         availabilityData,
       );
@@ -398,9 +359,7 @@ const workerService = {
       throw new Error('workerId is required to fetch statistics');
     }
 
-    const response = await userServiceClient.get(
-      workerPath(workerId, '/completeness'),
-    );
+    const response = await api.get(workerPath(workerId, '/completeness'));
     const payload = unwrapPayload(response);
     const completion =
       payload?.completionPercentage ?? payload?.percentage ?? 0;
@@ -431,12 +390,9 @@ const workerService = {
    * @returns {Promise<Array>} - Array of recent jobs
    */
   getWorkerJobs: async ({ limit = 10 } = {}) => {
-    const response = await userServiceClient.get(
-      `${WORKERS_BASE}/jobs/recent`,
-      {
+    const response = await api.get(`${WORKERS_BASE}/jobs/recent`, {
       params: { limit },
-      },
-    );
+    });
 
     const payload = unwrapPayload(response);
     const jobs = Array.isArray(payload?.jobs)
@@ -460,7 +416,7 @@ const workerService = {
    * @returns {Promise<Object>} - Earnings information
    */
   getWorkerEarnings: (workerId, filters = {}) => {
-    return userServiceClient.get(workerPath(workerId, '/earnings'), {
+    return api.get(workerPath(workerId, '/earnings'), {
       params: filters,
     });
   },
@@ -475,9 +431,7 @@ const workerService = {
       throw new Error('workerId is required to fetch analytics');
     }
 
-    const response = await userServiceClient.get(
-      `/api/analytics/worker/${workerId}`,
-    );
+    const response = await api.get(`/analytics/worker/${workerId}`);
 
     return response?.data?.data ?? response?.data ?? {};
   },
@@ -488,7 +442,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of nearby workers
    */
   getNearbyWorkers: (locationData) => {
-    return userServiceClient.post(`${WORKERS_BASE}/nearby`, locationData);
+    return api.post(`${WORKERS_BASE}/nearby`, locationData);
   },
 
   /**
@@ -497,7 +451,7 @@ const workerService = {
    * @returns {Promise<Object>} - Search results with pagination
    */
   searchWorkers: (searchParams) => {
-    return userServiceClient.get(`${WORKERS_BASE}/search`, {
+    return api.get(`${WORKERS_BASE}/search`, {
       params: searchParams,
     });
   },
@@ -508,7 +462,7 @@ const workerService = {
    * @returns {Promise<void>}
    */
   bookmarkWorker: (workerId) => {
-    return userServiceClient.post(workerPath(workerId, '/bookmark'));
+    return api.post(workerPath(workerId, '/bookmark'));
   },
 
   /**
@@ -516,7 +470,7 @@ const workerService = {
    * @returns {Promise<{workerIds: string[]}>}
    */
   getBookmarks: () => {
-    return userServiceClient.get(`/api/users/bookmarks`);
+    return api.get(`/users/bookmarks`);
   },
 
   /**
@@ -525,7 +479,7 @@ const workerService = {
    * @returns {Promise<void>}
    */
   removeBookmark: (workerId) => {
-    return userServiceClient.delete(workerPath(workerId, '/bookmark'));
+    return api.delete(workerPath(workerId, '/bookmark'));
   },
 
   /**
@@ -535,10 +489,7 @@ const workerService = {
    * @returns {Promise<void>}
    */
   reportWorker: (workerId, reportData) => {
-    return userServiceClient.post(
-      workerPath(workerId, '/report'),
-      reportData,
-    );
+    return api.post(workerPath(workerId, '/report'), reportData);
   },
 
   /**
@@ -547,7 +498,7 @@ const workerService = {
    * @returns {Promise<Object>} - Verification status
    */
   getVerificationStatus: (workerId) => {
-    return userServiceClient.get(workerPath(workerId, '/verification'));
+    return api.get(workerPath(workerId, '/verification'));
   },
 
   /**
@@ -557,10 +508,7 @@ const workerService = {
    * @returns {Promise<Object>} - Verification request response
    */
   requestVerification: (workerId, verificationData) => {
-    return userServiceClient.post(
-      workerPath(workerId, '/verification'),
-      verificationData,
-    );
+    return api.post(workerPath(workerId, '/verification'), verificationData);
   },
 
   /**
@@ -569,7 +517,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of recommended workers
    */
   getRecommendedWorkers: (preferences = {}) => {
-    return userServiceClient.get(`${WORKERS_BASE}/recommended`, {
+    return api.get(`${WORKERS_BASE}/recommended`, {
       params: preferences,
     });
   },
@@ -579,7 +527,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of saved jobs
    */
   getSavedJobs: async () => {
-    const response = await jobServiceClient.get('/jobs/saved');
+    const response = await api.get('/jobs/saved');
     return response.data;
   },
 
@@ -589,7 +537,7 @@ const workerService = {
    * @returns {Promise<void>}
    */
   saveJob: (jobId) => {
-    return jobServiceClient.post(`/api/jobs/${jobId}/save`);
+    return api.post(`/jobs/${jobId}/save`);
   },
 
   /**
@@ -598,7 +546,7 @@ const workerService = {
    * @returns {Promise<void>}
    */
   unsaveJob: (jobId) => {
-    return jobServiceClient.delete(`/api/jobs/${jobId}/save`);
+    return api.delete(`/jobs/${jobId}/save`);
   },
 
   /**
@@ -607,7 +555,7 @@ const workerService = {
    * @returns {Promise<Array>} - Array of job applications
    */
   getApplications: async (filters = {}) => {
-    const response = await jobServiceClient.get('/jobs/applications/me', {
+    const response = await api.get('/jobs/applications/me', {
       params: filters,
     });
     return response.data;
@@ -620,7 +568,7 @@ const workerService = {
    * @returns {Promise<Object>} - Application response
    */
   applyToJob: (jobId, applicationData) => {
-    return jobServiceClient.post(`/api/jobs/${jobId}/apply`, applicationData);
+    return api.post(`/jobs/${jobId}/apply`, applicationData);
   },
 
   /**
@@ -629,7 +577,7 @@ const workerService = {
    * @returns {Promise<void>}
    */
   withdrawApplication: (jobId) => {
-    return jobServiceClient.delete(`/api/jobs/${jobId}/apply`);
+    return api.delete(`/jobs/${jobId}/apply`);
   },
 
   /**
@@ -638,7 +586,7 @@ const workerService = {
    * @returns {Promise<Object>} - Application status
    */
   getApplicationStatus: (jobId) => {
-    return jobServiceClient.get(`/api/jobs/${jobId}/application-status`);
+    return api.get(`/jobs/${jobId}/application-status`);
   },
 };
 

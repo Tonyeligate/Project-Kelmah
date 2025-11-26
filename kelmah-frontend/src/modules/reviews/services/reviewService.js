@@ -1,6 +1,4 @@
-import { reviewsServiceClient } from '../../common/services/axios';
-
-const withApi = (path) => `/api${path}`;
+import { api } from '../../../services/apiClient';
 
 const unwrapData = (response) => response?.data?.data ?? response?.data ?? {};
 const unwrapResponse = (response) => response?.data ?? {};
@@ -14,10 +12,7 @@ class ReviewService {
       throw new Error('workerId is required to fetch worker reviews');
     }
     try {
-      const response = await reviewsServiceClient.get(
-        withApi(`/reviews/worker/${workerId}`),
-        { params },
-      );
+      const response = await api.get(`/reviews/worker/${workerId}`, { params });
       return unwrapData(response);
     } catch (error) {
       console.error('Error fetching worker reviews:', error);
@@ -30,12 +25,9 @@ class ReviewService {
       throw new Error('userId is required to fetch user reviews');
     }
     try {
-      const response = await reviewsServiceClient.get(
-        withApi(`/reviews/user/${userId}`),
-        {
-          params: { page, limit, ...filters },
-        },
-      );
+      const response = await api.get(`/reviews/user/${userId}`, {
+        params: { page, limit, ...filters },
+      });
       return unwrapData(response);
     } catch (error) {
       console.error('Error fetching user reviews:', error);
@@ -48,12 +40,9 @@ class ReviewService {
       throw new Error('jobId is required to fetch job reviews');
     }
     try {
-      const response = await reviewsServiceClient.get(
-        withApi(`/reviews/job/${jobId}`),
-        {
-          params: { page, limit, ...filters },
-        },
-      );
+      const response = await api.get(`/reviews/job/${jobId}`, {
+        params: { page, limit, ...filters },
+      });
       return unwrapData(response);
     } catch (error) {
       console.error('Error fetching job reviews:', error);
@@ -66,9 +55,7 @@ class ReviewService {
       throw new Error('workerId is required to fetch worker rating');
     }
     try {
-      const response = await reviewsServiceClient.get(
-        withApi(`/ratings/worker/${workerId}`),
-      );
+      const response = await api.get(`/ratings/worker/${workerId}`);
       return unwrapData(response);
     } catch (error) {
       console.error('Error fetching worker rating:', error);
@@ -99,8 +86,8 @@ class ReviewService {
       };
     }
     try {
-      const response = await reviewsServiceClient.get(
-        withApi(`/reviews/worker/${workerId}/eligibility`),
+      const response = await api.get(
+        `/reviews/worker/${workerId}/eligibility`,
         { params: jobId ? { jobId } : undefined },
       );
       const data = unwrapData(response);
@@ -126,10 +113,7 @@ class ReviewService {
 
   async submitReview(reviewData) {
     try {
-      const response = await reviewsServiceClient.post(
-        withApi('/reviews'),
-        reviewData,
-      );
+      const response = await api.post('/reviews', reviewData);
       return unwrapResponse(response);
     } catch (error) {
       console.error('Error submitting review:', error);
@@ -143,10 +127,7 @@ class ReviewService {
 
   async updateReview(reviewId, reviewData) {
     try {
-      const response = await reviewsServiceClient.put(
-        withApi(`/reviews/${reviewId}`),
-        reviewData,
-      );
+      const response = await api.put(`/reviews/${reviewId}`, reviewData);
       return unwrapResponse(response);
     } catch (error) {
       console.error('Error updating review:', error);
@@ -156,9 +137,7 @@ class ReviewService {
 
   async deleteReview(reviewId) {
     try {
-      const response = await reviewsServiceClient.delete(
-        withApi(`/reviews/${reviewId}`),
-      );
+      const response = await api.delete(`/reviews/${reviewId}`);
       return unwrapResponse(response);
     } catch (error) {
       console.error('Error deleting review:', error);
@@ -168,9 +147,7 @@ class ReviewService {
 
   async getReview(reviewId) {
     try {
-      const response = await reviewsServiceClient.get(
-        withApi(`/reviews/${reviewId}`),
-      );
+      const response = await api.get(`/reviews/${reviewId}`);
       return unwrapData(response);
     } catch (error) {
       console.error('Error fetching review:', error);
@@ -180,10 +157,9 @@ class ReviewService {
 
   async addWorkerResponse(reviewId, comment) {
     try {
-      const response = await reviewsServiceClient.put(
-        withApi(`/reviews/${reviewId}/response`),
-        { comment },
-      );
+      const response = await api.put(`/reviews/${reviewId}/response`, {
+        comment,
+      });
       return unwrapResponse(response);
     } catch (error) {
       console.error('Error adding worker response:', error);
@@ -193,9 +169,7 @@ class ReviewService {
 
   async voteHelpful(reviewId) {
     try {
-      const response = await reviewsServiceClient.post(
-        withApi(`/reviews/${reviewId}/helpful`),
-      );
+      const response = await api.post(`/reviews/${reviewId}/helpful`);
       return unwrapResponse(response);
     } catch (error) {
       console.error('Error voting review helpful:', error);
@@ -205,10 +179,9 @@ class ReviewService {
 
   async reportReview(reviewId, reason) {
     try {
-      const response = await reviewsServiceClient.post(
-        withApi(`/reviews/${reviewId}/report`),
-        { reason },
-      );
+      const response = await api.post(`/reviews/${reviewId}/report`, {
+        reason,
+      });
       return unwrapResponse(response);
     } catch (error) {
       console.error('Error reporting review:', error);
@@ -218,12 +191,9 @@ class ReviewService {
 
   async getReviewAnalytics(timeRange = '30d') {
     try {
-      const response = await reviewsServiceClient.get(
-        withApi('/reviews/analytics'),
-        {
-          params: { timeRange },
-        },
-      );
+      const response = await api.get('/reviews/analytics', {
+        params: { timeRange },
+      });
       return unwrapData(response);
     } catch (error) {
       console.error('Error fetching review analytics:', error);
@@ -233,10 +203,7 @@ class ReviewService {
 
   async getModerationQueue(params = {}) {
     try {
-      const response = await reviewsServiceClient.get(
-        withApi('/admin/reviews/queue'),
-        { params },
-      );
+      const response = await api.get('/admin/reviews/queue', { params });
       return unwrapData(response);
     } catch (error) {
       console.error('Error fetching moderation queue:', error);
@@ -246,10 +213,10 @@ class ReviewService {
 
   async moderateReview(reviewId, status, note = '') {
     try {
-      const response = await reviewsServiceClient.post(
-        withApi(`/admin/reviews/${reviewId}/moderate`),
-        { status, note },
-      );
+      const response = await api.post(`/admin/reviews/${reviewId}/moderate`, {
+        status,
+        note,
+      });
       return unwrapResponse(response);
     } catch (error) {
       console.error('Error moderating review:', error);

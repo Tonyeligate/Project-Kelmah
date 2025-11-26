@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../auth/contexts/AuthContext';
+import { useAuth } from '../../auth/hooks/useAuth';
 import {
   Box,
   Paper,
@@ -623,3 +623,4 @@ const PaymentAnalyticsDashboard = ({
 };
 
 export default PaymentAnalyticsDashboard;
+

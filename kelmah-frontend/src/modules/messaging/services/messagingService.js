@@ -4,7 +4,7 @@
  * Updated: 2025-01-07 - Fixed import/export issues
  */
 
-import { messagingServiceClient } from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 
 // ✅ FIXED: Clear export to resolve import errors
@@ -13,7 +13,7 @@ export const messagingService = {
   async getConversations() {
     try {
       // Direct service path (matches messaging-service server.js)
-      const response = await messagingServiceClient.get('/conversations');
+      const response = await api.get('/messaging/conversations');
       // Normalize response shape
       const payload = response.data;
       if (Array.isArray(payload)) return payload;
@@ -31,7 +31,7 @@ export const messagingService = {
   async createConversation(participantId, jobId) {
     try {
       // Align with backend: expects participantIds array and optional type
-      const response = await messagingServiceClient.post('/conversations', {
+      const response = await api.post('/messaging/conversations', {
         participantIds: [participantId],
         type: 'direct',
         jobId,
@@ -49,7 +49,7 @@ export const messagingService = {
   // Create conversation from job application
   async createConversationFromApplication(applicationId) {
     try {
-      const response = await messagingServiceClient.post('/conversations', {
+      const response = await api.post('/messaging/conversations', {
         applicationId,
       });
       return response.data;
@@ -65,8 +65,8 @@ export const messagingService = {
   // Get messages for a conversation (REST fallback or initial load)
   async getMessages(conversationId, page = 1, limit = 50) {
     try {
-      const response = await messagingServiceClient.get(
-        `/messages/conversations/${conversationId}/messages`,
+      const response = await api.get(
+        `/messaging/messages/conversations/${conversationId}/messages`,
         {
           params: { page, limit },
         },
@@ -92,7 +92,7 @@ export const messagingService = {
     attachments = [],
   ) {
     try {
-      const response = await messagingServiceClient.post('/messages', {
+      const response = await api.post('/messaging/messages', {
         sender: senderId,
         recipient: recipientId,
         content,
@@ -110,9 +110,10 @@ export const messagingService = {
   // Create a direct conversation with a single participant
   async createDirectConversation(participantId) {
     try {
-      const response = await messagingServiceClient.post('/conversations', {
+      const response = await api.post('/messaging/conversations', {
         participantIds: [participantId],
         type: 'direct',
+        jobId,
       });
       return response.data?.data?.conversation || response.data;
     } catch (error) {
@@ -128,7 +129,7 @@ export const messagingService = {
   async searchMessages(query, { attachments = false, period, sender } = {}) {
     try {
       const params = { q: query, attachments, period, sender };
-      const response = await messagingServiceClient.get('/messages/search', {
+      const response = await api.get('/messaging/messages/search', {
         params,
       });
       const payload = response.data;

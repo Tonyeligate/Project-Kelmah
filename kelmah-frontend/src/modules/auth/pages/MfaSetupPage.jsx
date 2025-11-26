@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AuthWrapper from '../components/common/AuthWrapper';
 import { Box, Typography, Button, TextField, Alert } from '@mui/material';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 const MfaSetupPage = () => {
   const [secret, setSecret] = useState('');

@@ -1,4 +1,9 @@
-import { CheckCircle, HourglassEmpty, ReportProblem, Info } from '@mui/icons-material';
+import {
+  CheckCircle,
+  HourglassEmpty,
+  ReportProblem,
+  Info,
+} from '@mui/icons-material';
 
 export const normalizeAttachmentVirusScan = (attachment = {}) => {
   const existing = attachment.virusScan || {};
@@ -13,9 +18,15 @@ export const normalizeAttachmentVirusScan = (attachment = {}) => {
       reason: existing.reason || null,
       metadata: {
         filename:
-          attachment.fileName || attachment.filename || attachment.name || existing.metadata?.filename,
+          attachment.fileName ||
+          attachment.filename ||
+          attachment.name ||
+          existing.metadata?.filename,
         mimeType:
-          attachment.mimeType || attachment.fileType || attachment.type || existing.metadata?.mimeType,
+          attachment.mimeType ||
+          attachment.fileType ||
+          attachment.type ||
+          existing.metadata?.mimeType,
         size: attachment.size || attachment.fileSize || existing.metadata?.size,
         s3Key: attachment.s3Key || existing.metadata?.s3Key,
       },
@@ -26,7 +37,9 @@ export const normalizeAttachmentVirusScan = (attachment = {}) => {
 };
 
 export const normalizeAttachmentListVirusScan = (attachments = []) =>
-  attachments.map((attachment) => normalizeAttachmentVirusScan(attachment || {}));
+  attachments.map((attachment) =>
+    normalizeAttachmentVirusScan(attachment || {}),
+  );
 
 export const getVirusScanDisplay = (virusScan = {}) => {
   const status = virusScan.status || 'pending';
@@ -45,7 +58,8 @@ export const getVirusScanDisplay = (virusScan = {}) => {
         color: 'error',
         icon: ReportProblem,
         tooltip:
-          virusScan.details || 'Attachment flagged as infected. Download disabled.',
+          virusScan.details ||
+          'Attachment flagged as infected. Download disabled.',
         allowDownload: false,
       };
     case 'failed':
@@ -53,7 +67,8 @@ export const getVirusScanDisplay = (virusScan = {}) => {
         label: 'Scan failed',
         color: 'warning',
         icon: ReportProblem,
-        tooltip: virusScan.details || 'Scanner could not complete. Retry later.',
+        tooltip:
+          virusScan.details || 'Scanner could not complete. Retry later.',
         allowDownload: false,
       };
     case 'pending':

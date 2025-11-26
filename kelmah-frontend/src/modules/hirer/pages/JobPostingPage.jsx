@@ -232,7 +232,10 @@ const JobPostingPage = () => {
     [formData.description],
   );
   const descriptionLength = normalizedDescription.length;
-  const descriptionRemaining = Math.max(0, DESCRIPTION_MIN_CHARS - descriptionLength);
+  const descriptionRemaining = Math.max(
+    0,
+    DESCRIPTION_MIN_CHARS - descriptionLength,
+  );
   const descriptionTooLong = descriptionLength > DESCRIPTION_MAX_CHARS;
   const descriptionProgress = Math.min(
     100,
@@ -242,27 +245,22 @@ const JobPostingPage = () => {
   const getFieldError = (field, data = formData) => {
     switch (field) {
       case 'title':
-        return data.title.trim()
-          ? ''
-          : 'Job title is required.';
+        return data.title.trim() ? '' : 'Job title is required.';
       case 'category':
-        return data.category
-          ? ''
-          : 'Select a category to continue.';
-      case 'description':
-        {
-          const normalized = normalizeDescription(data.description || '');
-          if (!normalized) {
-            return 'Add a project description so workers know what to expect.';
-          }
-          if (normalized.length < DESCRIPTION_MIN_CHARS) {
-            return `Use at least ${DESCRIPTION_MIN_CHARS} characters (${DESCRIPTION_MIN_CHARS - normalized.length} more to go).`;
-          }
-          if (normalized.length > DESCRIPTION_MAX_CHARS) {
-            return `Keep the description under ${DESCRIPTION_MAX_CHARS} characters.`;
-          }
-          return '';
+        return data.category ? '' : 'Select a category to continue.';
+      case 'description': {
+        const normalized = normalizeDescription(data.description || '');
+        if (!normalized) {
+          return 'Add a project description so workers know what to expect.';
         }
+        if (normalized.length < DESCRIPTION_MIN_CHARS) {
+          return `Use at least ${DESCRIPTION_MIN_CHARS} characters (${DESCRIPTION_MIN_CHARS - normalized.length} more to go).`;
+        }
+        if (normalized.length > DESCRIPTION_MAX_CHARS) {
+          return `Keep the description under ${DESCRIPTION_MAX_CHARS} characters.`;
+        }
+        return '';
+      }
       case 'budget.min': {
         if (data.paymentType !== 'hourly') return '';
         const rawValue = String(data.budget.min ?? '').trim();
@@ -375,10 +373,7 @@ const JobPostingPage = () => {
       setFieldErrors((prev) => ({ ...prev, ...errors }));
       setTouchedFields((prev) => ({
         ...prev,
-        ...fields.reduce(
-          (acc, field) => ({ ...acc, [field]: true }),
-          {},
-        ),
+        ...fields.reduce((acc, field) => ({ ...acc, [field]: true }), {}),
       }));
       setStepAttempts((prev) => ({ ...prev, [activeStep]: true }));
       return;
@@ -589,7 +584,9 @@ const JobPostingPage = () => {
                     color: 'text.disabled',
                   },
                   '& .MuiSelect-select': {
-                    color: formData.category ? 'text.primary' : 'text.secondary',
+                    color: formData.category
+                      ? 'text.primary'
+                      : 'text.secondary',
                   },
                 }}
               >
@@ -636,7 +633,9 @@ const JobPostingPage = () => {
               required
               sx={REQUIRED_LABEL_SX}
               onBlur={() => markFieldTouched('description')}
-              error={Boolean(touchedFields.description && fieldErrors.description)}
+              error={Boolean(
+                touchedFields.description && fieldErrors.description,
+              )}
               helperText={
                 touchedFields.description && fieldErrors.description
                   ? fieldErrors.description
@@ -754,7 +753,8 @@ const JobPostingPage = () => {
                       touchedFields['budget.min'] && fieldErrors['budget.min'],
                     )}
                     helperText={
-                      (touchedFields['budget.min'] && fieldErrors['budget.min']) ||
+                      (touchedFields['budget.min'] &&
+                        fieldErrors['budget.min']) ||
                       'Lowest hourly rate you are willing to pay'
                     }
                     InputProps={{
@@ -778,7 +778,8 @@ const JobPostingPage = () => {
                       touchedFields['budget.max'] && fieldErrors['budget.max'],
                     )}
                     helperText={
-                      (touchedFields['budget.max'] && fieldErrors['budget.max']) ||
+                      (touchedFields['budget.max'] &&
+                        fieldErrors['budget.max']) ||
                       'Highest hourly rate for this project'
                     }
                     InputProps={{
@@ -801,10 +802,12 @@ const JobPostingPage = () => {
                   onChange={handleChange}
                   onBlur={() => markFieldTouched('budget.fixed')}
                   error={Boolean(
-                    touchedFields['budget.fixed'] && fieldErrors['budget.fixed'],
+                    touchedFields['budget.fixed'] &&
+                      fieldErrors['budget.fixed'],
                   )}
                   helperText={
-                    (touchedFields['budget.fixed'] && fieldErrors['budget.fixed']) ||
+                    (touchedFields['budget.fixed'] &&
+                      fieldErrors['budget.fixed']) ||
                     'Total amount you plan to spend on this job'
                   }
                   InputProps={{
@@ -943,13 +946,11 @@ const JobPostingPage = () => {
                   Complete these before continuing
                 </Typography>
                 <Box component="ul" sx={{ pl: 3, mb: 0 }}>
-                  {Object.entries(currentStepErrors).map(
-                    ([field, message]) => (
-                      <Typography component="li" variant="body2" key={field}>
-                        {message}
-                      </Typography>
-                    ),
-                  )}
+                  {Object.entries(currentStepErrors).map(([field, message]) => (
+                    <Typography component="li" variant="body2" key={field}>
+                      {message}
+                    </Typography>
+                  ))}
                 </Box>
               </Alert>
             )}

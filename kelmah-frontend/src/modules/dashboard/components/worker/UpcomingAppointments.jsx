@@ -51,7 +51,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardCard from '../common/DashboardCard';
 // Removed AuthContext import to prevent dual state management conflicts
-// import { useAuth } from '../../../auth/contexts/AuthContext';
+// import { useAuth } from '../../../auth/hooks/useAuth';
 import schedulingService from '../../../../modules/scheduling/services/schedulingService';
 import { FEATURES } from '../../../../config/environment';
 
@@ -791,3 +791,4 @@ const EnhancedUpcomingAppointments = () => {
 };
 
 export default EnhancedUpcomingAppointments;
+

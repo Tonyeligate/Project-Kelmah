@@ -44,9 +44,9 @@ async function readHealthyGateway() {
     const db = await openGatewayDb();
     return new Promise((resolve, reject) => {
       const tx = db.transaction(HEALTHY_GATEWAY_STORE, 'readonly');
-      const request = tx.objectStore(HEALTHY_GATEWAY_STORE).get(
-        HEALTHY_GATEWAY_KEY,
-      );
+      const request = tx
+        .objectStore(HEALTHY_GATEWAY_STORE)
+        .get(HEALTHY_GATEWAY_KEY);
       request.onsuccess = () => resolve(request.result || null);
       request.onerror = () => reject(request.error);
     });

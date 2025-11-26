@@ -1,4 +1,4 @@
-import { jobServiceClient } from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 
 // Use centralized jobServiceClient with auth/retries
 
@@ -10,10 +10,9 @@ const applicationsApi = {
    */
   getMyApplications: async (params = {}) => {
     try {
-      const response = await jobServiceClient.get(
-        '/api/applications/my-applications',
-        { params },
-      );
+      const response = await api.get('/applications/my-applications', {
+        params,
+      });
       return response.data.data || response.data;
     } catch (error) {
       console.error('Failed to fetch applications:', error.message);
@@ -26,9 +25,7 @@ const applicationsApi = {
    */
   getApplicationById: async (applicationId) => {
     try {
-      const response = await jobServiceClient.get(
-        `/api/applications/${applicationId}`,
-      );
+      const response = await api.get(`/applications/${applicationId}`);
       return response.data.data || response.data;
     } catch (error) {
       console.warn(
@@ -44,10 +41,7 @@ const applicationsApi = {
    */
   submitApplication: async (jobId, applicationData) => {
     try {
-      const response = await jobServiceClient.post(
-        `/api/jobs/${jobId}/apply`,
-        applicationData,
-      );
+      const response = await api.post(`/jobs/${jobId}/apply`, applicationData);
       return response.data.data || response.data;
     } catch (error) {
       console.warn(
@@ -63,9 +57,7 @@ const applicationsApi = {
    */
   withdrawApplication: async (applicationId) => {
     try {
-      const response = await jobServiceClient.delete(
-        `/api/applications/${applicationId}`,
-      );
+      const response = await api.delete(`/applications/${applicationId}`);
       return response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);
@@ -78,8 +70,8 @@ const applicationsApi = {
    */
   updateApplication: async (applicationId, updateData) => {
     try {
-      const response = await jobServiceClient.put(
-        `/api/applications/${applicationId}`,
+      const response = await api.put(
+        `/applications/${applicationId}`,
         updateData,
       );
       return response.data.data || response.data;
@@ -94,7 +86,7 @@ const applicationsApi = {
    */
   getApplicationStats: async () => {
     try {
-      const response = await jobServiceClient.get('/applications/stats');
+      const response = await api.get('/applications/stats');
       return response.data.data || response.data;
     } catch (error) {
       console.error('Failed to fetch application statistics:', error.message);

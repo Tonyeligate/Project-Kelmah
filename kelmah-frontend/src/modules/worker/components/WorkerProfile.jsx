@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 // Removed AuthContext import to prevent dual state management conflicts
-// import { useAuth } from '../../auth/contexts/AuthContext';"
+// import { useAuth } from '../../auth/hooks/useAuth';"
 import workerService from '../services/workerService';
 import {
   Box,
@@ -205,19 +205,19 @@ function WorkerProfile() {
         profileRes?.data;
       const normalizedProfile = worker
         ? {
-          ...worker,
-          user: worker.user,
-          // UI expects these keys
-          hourly_rate:
-            worker.hourlyRate?.min ??
-            worker.hourlyRate ??
-            worker.hourlyRateMin ??
-            0,
-          is_verified:
-            worker.verification?.isVerified ?? worker.isVerified ?? false,
-          profile_picture: worker.profile?.picture ?? worker.profilePicture,
-          is_online: false,
-        }
+            ...worker,
+            user: worker.user,
+            // UI expects these keys
+            hourly_rate:
+              worker.hourlyRate?.min ??
+              worker.hourlyRate ??
+              worker.hourlyRateMin ??
+              0,
+            is_verified:
+              worker.verification?.isVerified ?? worker.isVerified ?? false,
+            profile_picture: worker.profile?.picture ?? worker.profilePicture,
+            is_online: false,
+          }
         : null;
       setProfile(normalizedProfile);
 
@@ -244,8 +244,8 @@ function WorkerProfile() {
       const rawSkills = skillsRes?.data?.data || skillsRes?.data || [];
       const normalizedSkills = Array.isArray(rawSkills)
         ? rawSkills.map((s) => ({
-          name: s.name || s.skillName || s?.skill?.name || '',
-        }))
+            name: s.name || s.skillName || s?.skill?.name || '',
+          }))
         : [];
       setSkills(normalizedSkills);
 
@@ -1009,19 +1009,19 @@ function WorkerProfile() {
                   color="primary"
                 />
               )) || [
-                  <Chip
-                    key="general"
-                    label="General Construction"
-                    variant="outlined"
-                    color="primary"
-                  />,
-                  <Chip
-                    key="residential"
-                    label="Residential Work"
-                    variant="outlined"
-                    color="primary"
-                  />,
-                ]}
+                <Chip
+                  key="general"
+                  label="General Construction"
+                  variant="outlined"
+                  color="primary"
+                />,
+                <Chip
+                  key="residential"
+                  label="Residential Work"
+                  variant="outlined"
+                  color="primary"
+                />,
+              ]}
             </Box>
           </Grid>
 
@@ -1156,7 +1156,7 @@ function WorkerProfile() {
                 .replace(/\b\w/g, (c) => c.toUpperCase())}
               color={
                 (availability?.availabilityStatus || 'available') ===
-                  'available'
+                'available'
                   ? 'success'
                   : 'warning'
               }
@@ -1271,7 +1271,7 @@ function WorkerProfile() {
           pausedUntil: draft.pausedUntil || null,
         });
         setEditingAvailability(false);
-      } catch (_) { }
+      } catch (_) {}
     };
     return (
       <GlassCard sx={{ mb: 4 }}>
@@ -1568,3 +1568,4 @@ function WorkerProfile() {
 }
 
 export default WorkerProfile;
+

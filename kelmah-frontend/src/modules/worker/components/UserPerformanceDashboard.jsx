@@ -50,6 +50,8 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
     try {
       // TODO: Integrate into worker service
       // const response = await userPerformanceApi.getUserPerformance(userId);
+      // Mock response for now to fix build error
+      const response = { data: {} };
       setPerformance(response.data);
       setError(null);
     } catch (err) {
@@ -443,15 +445,15 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
 
                   {performance.locationPreferences.preferredCities?.length >
                     0 && (
-                    <Box sx={{ mt: 1 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Preferred Cities:{' '}
-                        {performance.locationPreferences.preferredCities.join(
-                          ', ',
-                        )}
-                      </Typography>
-                    </Box>
-                  )}
+                      <Box sx={{ mt: 1 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Preferred Cities:{' '}
+                          {performance.locationPreferences.preferredCities.join(
+                            ', ',
+                          )}
+                        </Typography>
+                      </Box>
+                    )}
                 </Grid>
               </Grid>
             </CardContent>

@@ -17,8 +17,8 @@ import {
   Alert,
 } from '@mui/material';
 import { Send, AttachFile } from '@mui/icons-material';
-import { useAuth } from '../../auth/contexts/AuthContext';
-import axiosInstance from '../../../common/services/axios';
+import { useAuth } from '../../auth/hooks/useAuth';
+import { api } from '../../../../../services/apiClient';
 import { formatDistanceToNow } from 'date-fns';
 import { API_ENDPOINTS } from '../../../../config/services';
 
@@ -90,7 +90,7 @@ function Messages() {
 
   const fetchConversations = async () => {
     try {
-      const response = await axiosInstance.get('/api/conversations');
+      const response = await api.get('/conversations');
       setConversations(response.data);
       setError(null);
     } catch (err) {
@@ -104,8 +104,8 @@ function Messages() {
   const fetchMessages = async (conversationId) => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get(
-        `/api/messages/conversation/${conversationId}`,
+      const response = await api.get(
+        `/messages/conversation/${conversationId}`,
       );
       setMessages(response.data);
       scrollToBottom();
@@ -363,3 +363,4 @@ function Messages() {
 }
 
 export default Messages;
+

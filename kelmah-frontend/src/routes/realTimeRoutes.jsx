@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 // Removed AuthContext import to prevent dual state management conflicts
-// import { useAuth } from '../modules/auth/contexts/AuthContext';
+// import { useAuth } from '../modules/auth/hooks/useAuth';
 import { useSelector } from 'react-redux';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
 

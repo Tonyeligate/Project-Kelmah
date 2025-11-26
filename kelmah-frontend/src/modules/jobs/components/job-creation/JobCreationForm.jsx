@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
@@ -37,16 +37,17 @@ import {
   Business as BusinessIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
-import { createJob } from '../../services/jobSlice';
 import { useJobDraft } from '../../hooks/useJobDraft';
+import { useCreateJobMutation } from '../../hooks/useJobsQuery';
 
 const JobCreationForm = ({ open, onClose }) => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const { mutateAsync: createJobMutation, isPending: isCreatingJob } =
+    useCreateJobMutation();
+  const loading = isCreatingJob;
 
   const defaultValues = useMemo(
     () => ({
@@ -94,15 +95,21 @@ const JobCreationForm = ({ open, onClose }) => {
 
   const watchedValues = watch();
 
-  const { lastSavedAt, draftRestored, hasDraft, clearDraft, discardDraft, saveDraft } =
-    useJobDraft({
-      values: watchedValues,
-      isDirty,
-      reset,
-      defaultValues,
-      dialogOpen: open,
-      userId: user?.id,
-    });
+  const {
+    lastSavedAt,
+    draftRestored,
+    hasDraft,
+    clearDraft,
+    discardDraft,
+    saveDraft,
+  } = useJobDraft({
+    values: watchedValues,
+    isDirty,
+    reset,
+    defaultValues,
+    dialogOpen: open,
+    userId: user?.id,
+  });
 
   const formatRelativeTime = (timestamp) => {
     if (!timestamp) return '';
@@ -199,7 +206,6 @@ const JobCreationForm = ({ open, onClose }) => {
   ];
 
   const onSubmit = async (data) => {
-    setLoading(true);
     setError(null);
     setSuccess(false);
 
@@ -216,7 +222,7 @@ const JobCreationForm = ({ open, onClose }) => {
 
       console.log('Submitting job data:', jobData);
 
-      const result = await dispatch(createJob(jobData)).unwrap();
+  const result = await createJobMutation(jobData);
 
       setSuccess(true);
       console.log('Job created successfully:', result);
@@ -235,8 +241,6 @@ const JobCreationForm = ({ open, onClose }) => {
     } catch (err) {
       console.error('Failed to create job:', err);
       setError(err.message || 'Failed to create job. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -340,7 +344,8 @@ const JobCreationForm = ({ open, onClose }) => {
               color: '#BBDEFB',
             }}
           >
-            We restored your previous draft so you can pick up where you left off.
+            We restored your previous draft so you can pick up where you left
+            off.
           </Alert>
         )}
 

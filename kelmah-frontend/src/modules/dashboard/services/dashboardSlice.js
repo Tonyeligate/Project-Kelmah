@@ -1,9 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import {
-  userServiceClient,
-  jobServiceClient,
-} from '../../common/services/axios';
+import { api } from '../../../services/apiClient';
 import { API_ENDPOINTS } from '../../../config/environment';
+
+const { USER, JOB } = API_ENDPOINTS;
 
 // Use centralized clients with auth/retries
 
@@ -71,10 +70,10 @@ export const fetchDashboardData = createAsyncThunk(
         workersResponse,
         analyticsResponse,
       ] = await Promise.allSettled([
-        userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_METRICS),
-        jobServiceClient.get(API_ENDPOINTS.JOB.DASHBOARD),
-        userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_WORKERS),
-        userServiceClient.get(API_ENDPOINTS.USER.DASHBOARD_ANALYTICS),
+        api.get(USER.DASHBOARD_METRICS),
+        api.get(JOB.DASHBOARD),
+        api.get(USER.DASHBOARD_WORKERS),
+        api.get(USER.DASHBOARD_ANALYTICS),
       ]);
 
       // Extract successful responses or use enhanced mock data
@@ -82,18 +81,18 @@ export const fetchDashboardData = createAsyncThunk(
         metricsResponse.status === 'fulfilled'
           ? metricsResponse.value.data
           : {
-              ...initialState.data.metrics,
-              totalJobs: Math.floor(Math.random() * 50) + 10,
-              activeJobs: Math.floor(Math.random() * 15) + 3,
-              completedJobs: Math.floor(Math.random() * 35) + 5,
-              totalEarnings: Math.floor(Math.random() * 5000) + 1000,
-              profileViews: Math.floor(Math.random() * 200) + 50,
-              weeklyViews: Math.floor(Math.random() * 50) + 10,
-              jobsChange: Math.floor(Math.random() * 20) - 5,
-              applicationsChange: Math.floor(Math.random() * 30) - 10,
-              earningsChange: Math.floor(Math.random() * 25) + 5,
-              viewsChange: Math.floor(Math.random() * 15) + 2,
-            };
+            ...initialState.data.metrics,
+            totalJobs: Math.floor(Math.random() * 50) + 10,
+            activeJobs: Math.floor(Math.random() * 15) + 3,
+            completedJobs: Math.floor(Math.random() * 35) + 5,
+            totalEarnings: Math.floor(Math.random() * 5000) + 1000,
+            profileViews: Math.floor(Math.random() * 200) + 50,
+            weeklyViews: Math.floor(Math.random() * 50) + 10,
+            jobsChange: Math.floor(Math.random() * 20) - 5,
+            applicationsChange: Math.floor(Math.random() * 30) - 10,
+            earningsChange: Math.floor(Math.random() * 25) + 5,
+            viewsChange: Math.floor(Math.random() * 15) + 2,
+          };
 
       const recentJobs =
         jobsResponse.status === 'fulfilled'
@@ -103,28 +102,28 @@ export const fetchDashboardData = createAsyncThunk(
               ? jobsResponse.value.data.jobs
               : []
           : [
-              {
-                id: 1,
-                title: 'Web Development Project',
-                location: 'Accra, Ghana',
-                budget: 2500,
-                status: 'Active',
-              },
-              {
-                id: 2,
-                title: 'Mobile App Design',
-                location: 'Kumasi, Ghana',
-                budget: 1800,
-                status: 'Pending',
-              },
-              {
-                id: 3,
-                title: 'Content Writing',
-                location: 'Takoradi, Ghana',
-                budget: 800,
-                status: 'Active',
-              },
-            ];
+            {
+              id: 1,
+              title: 'Web Development Project',
+              location: 'Accra, Ghana',
+              budget: 2500,
+              status: 'Active',
+            },
+            {
+              id: 2,
+              title: 'Mobile App Design',
+              location: 'Kumasi, Ghana',
+              budget: 1800,
+              status: 'Pending',
+            },
+            {
+              id: 3,
+              title: 'Content Writing',
+              location: 'Takoradi, Ghana',
+              budget: 800,
+              status: 'Active',
+            },
+          ];
 
       const activeWorkers =
         workersResponse.status === 'fulfilled'
@@ -138,31 +137,31 @@ export const fetchDashboardData = createAsyncThunk(
       const analytics =
         analyticsResponse.status === 'fulfilled'
           ? {
-              ...analyticsResponse.value.data,
-              topSkills: Array.isArray(analyticsResponse.value.data?.topSkills)
-                ? analyticsResponse.value.data.topSkills
-                : ['Web Development', 'Mobile Apps', 'Design', 'Writing'],
-            }
+            ...analyticsResponse.value.data,
+            topSkills: Array.isArray(analyticsResponse.value.data?.topSkills)
+              ? analyticsResponse.value.data.topSkills
+              : ['Web Development', 'Mobile Apps', 'Design', 'Writing'],
+          }
           : {
-              ...initialState.data.analytics,
-              jobsThisMonth: Math.floor(Math.random() * 20) + 5,
-              applicationsThisMonth: Math.floor(Math.random() * 80) + 20,
-              earningsThisMonth: Math.floor(Math.random() * 3000) + 500,
-              averageResponseTime: '2 hours',
-              completionRate: 95,
-              clientSatisfaction: 4.8,
-              monthlyGrowth: {
-                jobs: Math.floor(Math.random() * 15) + 5,
-                earnings: Math.floor(Math.random() * 25) + 10,
-                applications: Math.floor(Math.random() * 20) + 8,
-              },
-              topSkills: [
-                'Web Development',
-                'Mobile Apps',
-                'Design',
-                'Writing',
-              ],
-            };
+            ...initialState.data.analytics,
+            jobsThisMonth: Math.floor(Math.random() * 20) + 5,
+            applicationsThisMonth: Math.floor(Math.random() * 80) + 20,
+            earningsThisMonth: Math.floor(Math.random() * 3000) + 500,
+            averageResponseTime: '2 hours',
+            completionRate: 95,
+            clientSatisfaction: 4.8,
+            monthlyGrowth: {
+              jobs: Math.floor(Math.random() * 15) + 5,
+              earnings: Math.floor(Math.random() * 25) + 10,
+              applications: Math.floor(Math.random() * 20) + 8,
+            },
+            topSkills: [
+              'Web Development',
+              'Mobile Apps',
+              'Design',
+              'Writing',
+            ],
+          };
 
       // Log which services are using mock data
       if (metricsResponse.status === 'rejected') {
@@ -244,15 +243,15 @@ export const fetchDashboardData = createAsyncThunk(
 
 export const updateJobStatus = createAsyncThunk(
   'dashboard/updateJobStatus',
-  async ({ jobId, status }, { rejectWithValue }) => {
+  async ({ jobId, status }) => {
     try {
-      const response = await jobServiceClient.patch(
-        `${API_ENDPOINTS.JOB.BY_ID(jobId)}/status`,
-        { status },
-      );
-      return { jobId, ...response.data };
+      const response = await api.patch(`${JOB.BY_ID(jobId)}/status`, {
+        status,
+      });
+      const payload = response.data?.data || response.data || {};
+      return { jobId, status: payload.status ?? status, ...payload };
     } catch (error) {
-      console.warn('Service unavailable:', error.message);
+      console.warn('Job status update unavailable:', error.message);
       throw error;
     }
   },
