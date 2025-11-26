@@ -44,24 +44,38 @@ export default defineConfig({
   },
   build: {
     outDir: 'build',
+    sourcemap: false,
     rollupOptions: {
+      external: [],
       output: {
-        manualChunks: {
-          // VERCEL FIX: Simpler, more reliable chunking
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'mui-vendor': ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
-          'redux-vendor': ['@reduxjs/toolkit', 'react-redux'],
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react-vendor';
+            }
+            if (id.includes('@mui') || id.includes('@emotion')) {
+              return 'mui-vendor';
+            }
+            if (id.includes('redux')) {
+              return 'redux-vendor';
+            }
+            if (id.includes('react-query')) {
+              return 'query-vendor';
+            }
+            return 'vendor';
+          }
         },
       },
     },
     // 🚨 CRITICAL FIX: Ensure public assets including sw.js are copied
     copyPublicDir: true,
     assetsInclude: ['**/*.js', '**/*.json'],
+    chunkSizeWarningLimit: 1000,
   },
   optimizeDeps: {
     include: [
-      'react', 
-      'react-dom', 
+      'react',
+      'react-dom',
       'use-sync-external-store/shim',
       '@reduxjs/toolkit',
       'react-redux',
