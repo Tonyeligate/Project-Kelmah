@@ -30,7 +30,7 @@ class DashboardService {
     if (!this.token) return;
 
     // Get WebSocket URL from runtime config
-    let wsUrl = 'https://kelmah-api-gateway-kubd.onrender.com'; // Production fallback
+    let wsUrl = 'https://kelmah-api-gateway-50z3.onrender.com'; // Production fallback
     try {
       const response = await fetch('/runtime-config.json');
       if (response.ok) {
