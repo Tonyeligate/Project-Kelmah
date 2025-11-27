@@ -1,8 +1,8 @@
 {
-  "ngrokUrl": "https://kelmah-api-gateway-kubd.onrender.com",
-  "websocketUrl": "wss://kelmah-api-gateway-kubd.onrender.com",
-  "API_URL": "https://kelmah-api-gateway-kubd.onrender.com",
-  "WS_URL": "https://kelmah-api-gateway-kubd.onrender.com",
+  "ngrokUrl": "https://kelmah-api-gateway-50z3.onrender.com",
+  "websocketUrl": "wss://kelmah-api-gateway-50z3.onrender.com",
+  "API_URL": "https://kelmah-api-gateway-50z3.onrender.com",
+  "WS_URL": "https://kelmah-api-gateway-50z3.onrender.com",
   "NODE_ENV": "production",
   "TUNNEL_TYPE": "render",
   "WEBSOCKET_MODE": "unified",
