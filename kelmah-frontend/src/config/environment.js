@@ -23,11 +23,18 @@ export { SERVICES };
 // Load runtime config for dynamic LocalTunnel URL
 let runtimeConfig = null;
 
+// CRITICAL: Hardcoded production URL to bypass Vercel's cached environment variables
+const PRODUCTION_API_URL = 'https://kelmah-api-gateway-50z3.onrender.com';
+
 const loadRuntimeConfig = async () => {
   if (typeof window !== 'undefined' && !runtimeConfig) {
     try {
       const response = await fetch('/runtime-config.json');
       runtimeConfig = await response.json();
+      // Store in window for synchronous access
+      window.RUNTIME_CONFIG = {
+        apiUrl: runtimeConfig.API_URL || runtimeConfig.ngrokUrl || PRODUCTION_API_URL
+      };
       console.log('🔧 Runtime config loaded:', runtimeConfig);
     } catch (error) {
       console.warn('⚠️ Failed to load runtime config:', error.message);
@@ -38,26 +45,36 @@ const loadRuntimeConfig = async () => {
 
 // Simple synchronous resolution
 const getApiBaseUrl = () => {
-  // Priority 1: Runtime config (for production - checked first to allow dynamic URL updates)
+  // Priority 1: Runtime config (dynamically loaded)
   if (typeof window !== 'undefined' && window.RUNTIME_CONFIG?.apiUrl) {
     return window.RUNTIME_CONFIG.apiUrl;
   }
 
-  // Priority 2: Environment variable (build-time)
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+  // Priority 2: Check if runtimeConfig was loaded
+  if (runtimeConfig?.API_URL || runtimeConfig?.ngrokUrl) {
+    return runtimeConfig.API_URL || runtimeConfig.ngrokUrl;
   }
 
-  // Priority 3: Cached healthy URL from localStorage
+  // Priority 3: Environment variable - BUT ONLY if it's NOT the old 5loa URL
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && !envUrl.includes('5loa')) {
+    return envUrl;
+  }
+
+  // Priority 4: Cached healthy URL from localStorage (but not if it's 5loa)
   if (typeof window !== 'undefined') {
     const cached = localStorage.getItem('kelmah:lastHealthyApiBase');
-    if (cached) {
+    if (cached && !cached.includes('5loa')) {
       return cached;
+    }
+    // Clear bad cache if it exists
+    if (cached && cached.includes('5loa')) {
+      localStorage.removeItem('kelmah:lastHealthyApiBase');
     }
   }
 
-  // Priority 4: Fallback to relative path (works when frontend and backend are on same domain)
-  return '/api';
+  // Priority 5: Use hardcoded production URL (bypasses Vercel's broken env vars)
+  return PRODUCTION_API_URL;
 };
 
 export const API_BASE_URL = getApiBaseUrl();
