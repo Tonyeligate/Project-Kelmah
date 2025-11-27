@@ -38,14 +38,14 @@ const loadRuntimeConfig = async () => {
 
 // Simple synchronous resolution
 const getApiBaseUrl = () => {
-  // Priority 1: Environment variable
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-
-  // Priority 2: Runtime config (for LocalTunnel/Render dynamic URLs)
+  // Priority 1: Runtime config (for production - checked first to allow dynamic URL updates)
   if (typeof window !== 'undefined' && window.RUNTIME_CONFIG?.apiUrl) {
     return window.RUNTIME_CONFIG.apiUrl;
+  }
+
+  // Priority 2: Environment variable (build-time)
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
   }
 
   // Priority 3: Cached healthy URL from localStorage
