@@ -1,205 +1,124 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React from 'react';
 import {
   Drawer,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
-  Toolbar,
   Divider,
   Box,
   Typography,
   Avatar,
-  Rating,
-  LinearProgress,
-  Button,
-  Chip,
-  IconButton,
-  Tooltip,
+  Badge,
 } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNotifications } from '../../../notifications/contexts/NotificationContext';
 import { useMessages } from '../../../messaging/contexts/MessageContext';
-import { useThemeMode } from '../../../../theme/ThemeProvider';
 
 // --- ICONS ---
-import HomeIcon from '@mui/icons-material/Home';
-import FindInPageIcon from '@mui/icons-material/FindInPage';
-import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
-import GavelIcon from '@mui/icons-material/Gavel';
-import PaymentIcon from '@mui/icons-material/Payment';
-import VerifiedIcon from '@mui/icons-material/Verified';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import StarIcon from '@mui/icons-material/Star';
-import SettingsIcon from '@mui/icons-material/Settings';
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import WorkIcon from '@mui/icons-material/Work';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import ChatIcon from '@mui/icons-material/Chat';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import Badge from '@mui/material/Badge';
-import { Star } from '@mui/icons-material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices';
 import ReceiptIcon from '@mui/icons-material/Receipt';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import { getProfileCompletion } from '../../../../utils/userUtils';
-import profileService from '../../../profile/services/profileService';
-import {
-  selectProfile,
-  selectProfileLoading,
-  setProfile,
-  setError as setProfileError,
-} from '../../../../store/slices/profileSlice';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import TrackChangesIcon from '@mui/icons-material/TrackChanges';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import WorkIcon from '@mui/icons-material/Work';
+import PostAddIcon from '@mui/icons-material/PostAdd';
+import PeopleIcon from '@mui/icons-material/People';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import ChatIcon from '@mui/icons-material/Chat';
+import SettingsIcon from '@mui/icons-material/Settings';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+
+// Kelmah Logo Component
+const KelmahLogo = () => (
+  <Box
+    sx={{
+      width: 100,
+      height: 100,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      margin: '0 auto',
+    }}
+  >
+    <Box
+      component="img"
+      src="/kelmah-logo.png"
+      alt="Kelmah"
+      sx={{
+        width: 80,
+        height: 80,
+        objectFit: 'contain',
+      }}
+      onError={(e) => {
+        e.target.style.display = 'none';
+        e.target.parentElement.innerHTML = `
+          <div style="
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #1C2536;
+          ">K</div>
+        `;
+      }}
+    />
+  </Box>
+);
 
 const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
-  const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
-  const profile = useSelector(selectProfile);
-  const profileLoading = useSelector(selectProfileLoading);
   const { unreadCount: unreadMessages } = useMessages();
   const { unreadCount: unreadNotifications } = useNotifications();
-  const { mode, toggleTheme, isDark } = useThemeMode();
   const location = useLocation();
-  const [profileRequested, setProfileRequested] = useState(false);
-  const userIdentifier =
-    user?.id || user?._id || user?.userId || user?.email || null;
 
-  useEffect(() => {
-    setProfileRequested(false);
-  }, [userIdentifier]);
-
-  useEffect(() => {
-    if (!userIdentifier || profileRequested || profileLoading || profile) {
-      return;
-    }
-
-    let isMounted = true;
-    setProfileRequested(true);
-
-    const fetchProfile = async () => {
-      try {
-        const profileData = await profileService.getProfile();
-        if (isMounted && profileData) {
-          dispatch(setProfile(profileData));
-          dispatch(setProfileError(null));
-        }
-      } catch (error) {
-        console.warn('Sidebar profile prefetch failed:', error.message);
-        if (isMounted) {
-          dispatch(
-            setProfileError(
-              error?.message || 'Unable to load profile information',
-            ),
-          );
-          setProfileRequested(false);
-        }
-      }
-    };
-
-    fetchProfile();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [dispatch, userIdentifier, profile, profileLoading, profileRequested]);
-  // Determine role for navigation strictly from authenticated user
+  // Determine role for navigation
   const navRole =
     user?.role === 'hirer' ||
     user?.userType === 'hirer' ||
     user?.userRole === 'hirer'
       ? 'hirer'
       : user?.role === 'worker' ||
-          user?.userType === 'worker' ||
-          user?.userRole === 'worker'
+        user?.userType === 'worker' ||
+        user?.userRole === 'worker'
         ? 'worker'
         : null;
-  const isVerified = true; // Mock data
-  const completionInfo = useMemo(
-    () => getProfileCompletion(user, profile),
-    [user, profile],
-  );
-  const profileCompletion = completionInfo.percentage || 0;
-  const missingFields = completionInfo.missing?.slice(0, 3) || [];
-  const completionLabels = {
-    firstName: 'Add first name',
-    lastName: 'Add last name',
-    email: 'Verify email',
-    bio: 'Write a short bio',
-    location: 'Set your location',
-    phone: 'Add phone number',
-    profileImage: 'Upload a profile photo',
-    skills: 'List your skills',
-    experience: 'Detail experience',
-  };
-  const [openSubMenus, setOpenSubMenus] = useState({});
 
-  const handleSubMenuToggle = (itemText) => {
-    setOpenSubMenus((prev) => ({
-      ...prev,
-      [itemText]: !prev[itemText],
-    }));
-  };
+  // LC Portal style menu items - role specific
+  const menuItems = navRole === 'hirer' 
+    ? [
+        { text: 'Services', icon: <MiscellaneousServicesIcon />, path: '/hirer/services' },
+        { text: 'Post a Job', icon: <PostAddIcon />, path: '/hirer/jobs/post' },
+        { text: 'Active Jobs', icon: <WorkIcon />, path: '/hirer/jobs' },
+        { text: 'Applications', icon: <AssignmentIcon />, path: '/hirer/applications' },
+        { text: 'Find Talent', icon: <PeopleIcon />, path: '/hirer/find-talent' },
+        { text: 'Completed Jobs', icon: <CheckCircleIcon />, path: '/hirer/completed' },
+        { text: 'Track Progress', icon: <TrackChangesIcon />, path: '/hirer/progress' },
+        { text: 'Support & Enquiry', icon: <SupportAgentIcon />, path: '/support' },
+      ]
+    : [
+        { text: 'Services', icon: <MiscellaneousServicesIcon />, path: '/worker/services' },
+        { text: 'Unpaid Bills', icon: <ReceiptIcon />, path: '/worker/bills/unpaid' },
+        { text: 'Paid Bills', icon: <ReceiptLongIcon />, path: '/worker/bills/paid' },
+        { text: 'My Applications', icon: <AssignmentIcon />, path: '/worker/applications' },
+        { text: 'Queried Applications', icon: <HelpOutlineIcon />, path: '/worker/applications/queried' },
+        { text: 'Completed Jobs', icon: <CheckCircleIcon />, path: '/worker/completed' },
+        { text: 'Track Job', icon: <TrackChangesIcon />, path: '/worker/track' },
+        { text: 'Support & Enquiry', icon: <SupportAgentIcon />, path: '/support' },
+      ];
 
-  // Define role-specific navigation items
-  const roleNavItems =
-    navRole === 'worker'
-      ? [
-          { text: 'Dashboard', icon: <HomeIcon />, path: '/worker/dashboard' },
-          {
-            text: 'My Schedule',
-            icon: <CalendarTodayIcon />,
-            path: '/worker/schedule',
-          },
-          {
-            text: 'Find Work',
-            icon: <FindInPageIcon />,
-            path: '/worker/find-work',
-          },
-          {
-            text: 'My Applications',
-            icon: <AssignmentTurnedInIcon />,
-            path: '/worker/applications',
-          },
-          {
-            text: 'Active Contracts',
-            icon: <GavelIcon />,
-            path: '/worker/contracts',
-          },
-          { text: 'My Reviews', icon: <StarIcon />, path: '/worker/reviews' },
-          {
-            text: 'Payment Center',
-            icon: <PaymentIcon />,
-            path: '/worker/payment',
-          },
-          { text: 'Wallet', icon: <CreditCardIcon />, path: '/worker/wallet' },
-          { text: 'Bills', icon: <ReceiptIcon />, path: '/payment/bill' },
-        ]
-      : navRole === 'hirer'
-        ? [
-            { text: 'Dashboard', icon: <HomeIcon />, path: '/hirer/dashboard' },
-            {
-              text: 'Post a Job',
-              icon: <PaymentIcon />,
-              path: '/hirer/jobs/post',
-            },
-            { text: 'Manage Jobs', icon: <WorkIcon />, path: '/hirer/jobs' },
-            {
-              text: 'Applications',
-              icon: <AssignmentTurnedInIcon />,
-              path: '/hirer/applications',
-            },
-            {
-              text: 'Find Talent',
-              icon: <FindInPageIcon />,
-              path: '/hirer/find-talent',
-            },
-          ]
-        : [];
-
-  // Define common navigation items for all roles
-  const commonNavItems = [
+  // Common items at bottom
+  const bottomItems = [
     {
       text: 'Notifications',
       icon: <NotificationsIcon />,
@@ -212,245 +131,216 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
       path: '/messages',
       badge: unreadMessages,
     },
-    { text: 'Disputes', icon: <GavelIcon />, path: '/disputes' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
   ];
 
-  // Combine role-specific and common items
-  const mainNavItems = [...roleNavItems, ...commonNavItems];
+  const dashboardPath = navRole === 'hirer' ? '/hirer/dashboard' : '/worker/dashboard';
+  const isDashboardActive = location.pathname === dashboardPath || location.pathname === '/dashboard';
 
   return (
     <Drawer
       variant={variant}
       open={variant === 'temporary' ? open : undefined}
       onClose={variant === 'temporary' ? onClose : undefined}
-      ModalProps={{ keepMounted: true }} // Improve mobile performance
+      ModalProps={{ keepMounted: true }}
       aria-label="Sidebar navigation"
       sx={{
-        width: 280,
+        width: 260,
         flexShrink: 0,
         [`& .MuiDrawer-paper`]: {
-          width: 280,
+          width: 260,
           boxSizing: 'border-box',
-          backgroundColor: isDark ? '#1C2536' : '#FFFFFF',
-          color: isDark ? '#fff' : '#1C2536',
+          backgroundColor: '#FAFAFA',
+          color: '#333',
           display: 'flex',
           flexDirection: 'column',
-          borderRight: isDark ? 'none' : '1px solid rgba(0,0,0,0.08)',
+          borderRight: '1px solid #E0E0E0',
         },
       }}
     >
-      <Toolbar />
-      <Box sx={{ p: 2, textAlign: 'center' }}>
-        {/* Theme Toggle Button */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
-          <Tooltip title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
-            <IconButton
-              onClick={toggleTheme}
-              sx={{
-                backgroundColor: isDark ? 'rgba(255,215,0,0.1)' : 'rgba(28,37,54,0.1)',
-                color: '#FFD700',
-                '&:hover': {
-                  backgroundColor: isDark ? 'rgba(255,215,0,0.2)' : 'rgba(28,37,54,0.2)',
-                },
-              }}
-            >
-              {isDark ? <LightModeIcon /> : <DarkModeIcon />}
-            </IconButton>
-          </Tooltip>
-        </Box>
-        <Avatar
-          alt={user?.firstName || 'Worker'}
-          src={
-            user?.profileImage ||
-            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjMWExYTFhIi8+CjxjaXJjbGUgY3g9Ijc1IiBjeT0iNjAiIHI9IjI1IiBmaWxsPSIjRkZENzAwIi8+CjxwYXRoIGQ9Im0zMCAxMjBjMC0yNSAyMC00NSA0NS00NXM0NSAyMCA0NSA0NSIgZmlsbD0iI0ZGRDcwMCIvPgo8L3N2Zz4K'
-          }
-          sx={{
-            width: 80,
-            height: 80,
-            margin: '0 auto',
-            mb: 2,
-            border: '2px solid #FFD700',
-          }}
-        />
-        <Typography variant="h6" sx={{ color: isDark ? '#fff' : '#1C2536' }}>{user?.firstName || 'Demo User'}</Typography>
-        <Typography variant="body2" sx={{ color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' }}>
-          {user?.profession || 'Carpenter'}
-        </Typography>
+      {/* Logo Section */}
+      <Box sx={{ pt: 2, pb: 1 }}>
+        <KelmahLogo />
+      </Box>
 
-        {/* ✅ IMPROVED: Add current location indicator */}
-        <Box
+      {/* User Profile Card - LC Portal Style */}
+      <Box
+        sx={{
+          mx: 2,
+          mb: 2,
+          p: 2,
+          backgroundColor: '#FFFFFF',
+          borderRadius: 2,
+          border: '1px solid #E0E0E0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+        }}
+      >
+        <Avatar
           sx={{
-            mt: 2,
-            p: 1,
-            backgroundColor: isDark ? 'rgba(212,175,55,0.1)' : 'rgba(212,175,55,0.15)',
-            borderRadius: 1,
-            border: isDark ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(212,175,55,0.4)',
+            width: 40,
+            height: 40,
+            bgcolor: '#E3F2FD',
+            color: '#1976D2',
           }}
         >
-          <Typography
-            variant="caption"
-            sx={{ color: '#D4AF37', fontWeight: 'bold' }}
-          >
-            Currently on:{' '}
-            {mainNavItems.find((item) => location.pathname === item.path)
-              ?.text || 'Dashboard'}
+          {user?.firstName?.[0] || 'U'}
+        </Avatar>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="body2" fontWeight={600} sx={{ color: '#333' }}>
+            Hi, {user?.firstName || 'User'}
           </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 1 }}>
-          <Rating
-            name="read-only"
-            value={user?.rating || 4.5}
-            precision={0.5}
-            readOnly
-            sx={{
-              '& .MuiRating-iconFilled': { color: '#FFD700' },
-              '& .MuiRating-iconEmpty': { color: isDark ? 'rgba(255,255,255,0.26)' : 'rgba(0,0,0,0.26)' },
-            }}
-          />
-        </Box>
-        {isVerified && Chip && (
-          <Chip
-            icon={<VerifiedIcon />}
-            label="Verified"
-            color="success"
-            size="small"
-            sx={{ mt: 1 }}
-          />
-        )}
-      </Box>
-      <Divider sx={{ borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)' }} />
-      <Box sx={{ px: 2, py: 2 }}>
-        <Typography
-          variant="body2"
-          sx={{ color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)', mb: 1 }}
-        >
-          Profile Completion
-        </Typography>
-        <LinearProgress
-          variant="determinate"
-          value={profileCompletion}
-          sx={{ height: 8, borderRadius: 999 }}
-        />
-        <Typography
-          variant="caption"
-          sx={{ color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)', display: 'block', mt: 0.5 }}
-        >
-          {profileCompletion}% complete
-        </Typography>
-        {profileCompletion < 100 && missingFields.length > 0 && (
-          <Box sx={{ mt: 1.5 }}>
-            <Typography
-              variant="caption"
-              sx={{ color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)', display: 'block', mb: 0.5 }}
-            >
-              Next steps
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <FiberManualRecordIcon sx={{ fontSize: 10, color: '#4CAF50' }} />
+            <Typography variant="caption" sx={{ color: '#4CAF50' }}>
+              Online
             </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {missingFields.map((field) => (
-                <Chip
-                  key={field}
-                  label={completionLabels[field] || field}
-                  size="small"
-                  variant="outlined"
-                  sx={{
-                    borderColor: 'rgba(212,175,55,0.5)',
-                    color: '#FFD700',
-                    '& .MuiChip-label': { px: 1 },
-                  }}
-                />
-              ))}
-            </Box>
-            <Button
-              component={RouterLink}
-              to={
-                navRole === 'hirer'
-                  ? '/hirer/profile/edit'
-                  : '/worker/profile/edit'
-              }
-              variant="text"
-              size="small"
-              sx={{ mt: 1, color: '#FFD700', textTransform: 'none' }}
-            >
-              Complete profile
-            </Button>
           </Box>
-        )}
+        </Box>
       </Box>
-      <Divider sx={{ borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)' }} />
-      <List sx={{ flexGrow: 1 }}>
-        {mainNavItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          return (
-            <React.Fragment key={item.text}>
-              <ListItem
-                button
-                component={item.path ? RouterLink : 'div'}
-                to={item.path}
-                onClick={() => item.subItems && handleSubMenuToggle(item.text)}
-                sx={{
-                  // ✅ IMPROVED: Add active state highlighting
-                  backgroundColor: isActive
-                    ? isDark ? 'rgba(212,175,55,0.15)' : 'rgba(212,175,55,0.2)'
-                    : 'transparent',
-                  borderLeft: isActive
-                    ? '4px solid #D4AF37'
-                    : '4px solid transparent',
-                  '&:hover': {
-                    backgroundColor: isActive
-                      ? isDark ? 'rgba(212,175,55,0.2)' : 'rgba(212,175,55,0.25)'
-                      : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-                  },
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    color: isActive ? '#D4AF37' : isDark ? '#fff' : '#1C2536',
-                    transition: 'color 0.3s ease',
-                  }}
-                >
-                  {item.badge && item.badge > 0 ? (
-                    <Badge color="error" badgeContent={item.badge} max={99}>
-                      {item.icon}
-                    </Badge>
-                  ) : (
-                    item.icon
-                  )}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={{
-                    '& .MuiListItemText-primary': {
-                      color: isActive ? '#D4AF37' : isDark ? '#fff' : '#1C2536',
-                      fontWeight: isActive ? 'bold' : 'normal',
-                      transition: 'all 0.3s ease',
-                    },
-                  }}
-                />
-              </ListItem>
-            </React.Fragment>
-          );
-        })}
-      </List>
-      <Box sx={{ p: 2, mt: 'auto' }}>
-        <Button
+
+      {/* Dashboard Item - Highlighted Blue */}
+      <Box sx={{ px: 2, mb: 1 }}>
+        <ListItem
+          button
           component={RouterLink}
-          to="/premium"
-          variant="contained"
-          fullWidth
-          startIcon={<Star />}
+          to={dashboardPath}
           sx={{
-            backgroundColor: '#FFD700',
-            color: '#000',
+            backgroundColor: isDashboardActive ? '#E3F2FD' : 'transparent',
+            borderRadius: 1,
+            py: 1.5,
             '&:hover': {
-              backgroundColor: '#E6C200',
+              backgroundColor: '#E3F2FD',
             },
           }}
         >
-          Upgrade to Premium
-        </Button>
+          <ListItemIcon sx={{ minWidth: 40 }}>
+            <DashboardIcon sx={{ color: '#1976D2' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary="Dashboard"
+            sx={{
+              '& .MuiListItemText-primary': {
+                color: '#1976D2',
+                fontWeight: 600,
+              },
+            }}
+          />
+        </ListItem>
       </Box>
+
+      {/* MENU Section Header */}
+      <Typography
+        variant="caption"
+        sx={{
+          px: 3,
+          py: 1,
+          color: '#666',
+          fontWeight: 600,
+          letterSpacing: 1,
+        }}
+      >
+        MENU
+      </Typography>
+
+      {/* Menu Items */}
+      <List sx={{ px: 1, flexGrow: 1 }}>
+        {menuItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <ListItem
+              key={item.text}
+              button
+              component={RouterLink}
+              to={item.path}
+              sx={{
+                borderRadius: 1,
+                mb: 0.5,
+                py: 1.25,
+                backgroundColor: isActive ? '#F5F5F5' : 'transparent',
+                '&:hover': {
+                  backgroundColor: '#F5F5F5',
+                },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                {item.badge && item.badge > 0 ? (
+                  <Badge color="error" badgeContent={item.badge} max={99}>
+                    {React.cloneElement(item.icon, {
+                      sx: { color: isActive ? '#1976D2' : '#666' },
+                    })}
+                  </Badge>
+                ) : (
+                  React.cloneElement(item.icon, {
+                    sx: { color: isActive ? '#1976D2' : '#666' },
+                  })
+                )}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.text}
+                sx={{
+                  '& .MuiListItemText-primary': {
+                    color: isActive ? '#1976D2' : '#333',
+                    fontWeight: isActive ? 600 : 400,
+                    fontSize: '0.9rem',
+                  },
+                }}
+              />
+            </ListItem>
+          );
+        })}
+      </List>
+
+      <Divider sx={{ mx: 2, borderColor: '#E0E0E0' }} />
+
+      {/* Bottom Items */}
+      <List sx={{ px: 1, pb: 2 }}>
+        {bottomItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <ListItem
+              key={item.text}
+              button
+              component={RouterLink}
+              to={item.path}
+              sx={{
+                borderRadius: 1,
+                mb: 0.5,
+                py: 1.25,
+                backgroundColor: isActive ? '#F5F5F5' : 'transparent',
+                '&:hover': {
+                  backgroundColor: '#F5F5F5',
+                },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                {item.badge && item.badge > 0 ? (
+                  <Badge color="error" badgeContent={item.badge} max={99}>
+                    {React.cloneElement(item.icon, {
+                      sx: { color: isActive ? '#1976D2' : '#666' },
+                    })}
+                  </Badge>
+                ) : (
+                  React.cloneElement(item.icon, {
+                    sx: { color: isActive ? '#1976D2' : '#666' },
+                  })
+                )}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.text}
+                sx={{
+                  '& .MuiListItemText-primary': {
+                    color: isActive ? '#1976D2' : '#333',
+                    fontWeight: isActive ? 600 : 400,
+                    fontSize: '0.9rem',
+                  },
+                }}
+              />
+            </ListItem>
+          );
+        })}
+      </List>
     </Drawer>
   );
 };

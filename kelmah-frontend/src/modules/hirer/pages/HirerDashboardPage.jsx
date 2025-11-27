@@ -64,6 +64,7 @@ import {
   PersonSearch as PersonSearchIcon,
   Inbox as InboxIcon,
   AttachMoney as AttachMoneyIcon,
+  HelpOutline as HelpOutlineIcon,
 } from '@mui/icons-material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -573,337 +574,314 @@ const HirerDashboardPage = () => {
     return 'Good Evening';
   };
 
-  // LC Portal-inspired Dashboard Overview - SIMPLE & CLEAN
+  // LC Portal-inspired Dashboard Overview - EXACT MATCH
   const renderDashboardOverview = () => (
     <Fade in timeout={500}>
-      <Box>
+      <Box sx={{ bgcolor: '#F5F5F5', minHeight: '100vh', mx: -4, mt: -3, p: 4 }}>
+        {/* Breadcrumb - LC Portal Style */}
+        <Breadcrumbs sx={{ mb: 3 }}>
+          <MUILink
+            component={RouterLink}
+            to="/"
+            underline="hover"
+            sx={{ color: '#666', display: 'flex', alignItems: 'center', gap: 0.5 }}
+          >
+            🏠
+          </MUILink>
+          <Typography color="text.secondary">Dashboard</Typography>
+        </Breadcrumbs>
+
         {/* SIMPLE GREETING - LC Portal Style */}
         <Typography
           variant="h4"
-          fontWeight={700}
           sx={{
             mb: 4,
-            color: 'text.primary',
+            color: '#333',
+            fontWeight: 400,
             fontSize: { xs: '1.5rem', md: '2rem' },
           }}
         >
-          {getGreeting()}, {hirerProfile?.firstName || user?.firstName || 'there'}!
+          Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening'}, {hirerProfile?.firstName || user?.firstName || 'there'}
         </Typography>
 
-        {/* 4 METRIC CARDS IN ONE ROW - LC Portal Style */}
+        {/* 4 METRIC CARDS IN ONE ROW - LC Portal EXACT Style */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
+          {/* Card 1 - Orange/Yellow - Unpaid Bills / Active Jobs */}
           <Grid item xs={12} sm={6} md={3}>
             <Paper
               elevation={0}
               sx={{
-                p: 3,
+                p: 2.5,
                 borderRadius: 2,
-                background: 'linear-gradient(135deg, #6C5CE7 0%, #8B7CF7 100%)',
+                background: 'linear-gradient(135deg, #F39C12 0%, #E67E22 100%)',
                 color: 'white',
-                height: '100%',
+                height: 130,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                position: 'relative',
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <WorkIcon sx={{ fontSize: 28, opacity: 0.9 }} />
+              <Box>
+                <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
+                  Active Jobs
+                </Typography>
+                <Typography variant="h3" fontWeight={700}>
+                  {summaryData.activeJobs}
+                </Typography>
+                <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                  Pending Work
+                </Typography>
               </Box>
-              <Typography variant="h3" fontWeight={700} sx={{ mb: 0.5 }}>
-                {summaryData.activeJobs}
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                Active Jobs
-              </Typography>
+              <Box sx={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)' }}>
+                <WorkIcon sx={{ fontSize: 40, opacity: 0.3 }} />
+              </Box>
             </Paper>
           </Grid>
-          
+
+          {/* Card 2 - Teal/Green - Paid Bills / Completed */}
           <Grid item xs={12} sm={6} md={3}>
             <Paper
               elevation={0}
               sx={{
-                p: 3,
+                p: 2.5,
                 borderRadius: 2,
-                background: 'linear-gradient(135deg, #00B894 0%, #00D9A5 100%)',
+                background: 'linear-gradient(135deg, #1ABC9C 0%, #16A085 100%)',
                 color: 'white',
-                height: '100%',
+                height: 130,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                position: 'relative',
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <AttachMoneyIcon sx={{ fontSize: 28, opacity: 0.9 }} />
+              <Box>
+                <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
+                  Completed Jobs
+                </Typography>
+                <Typography variant="h3" fontWeight={700}>
+                  {summaryData.completedJobs}
+                </Typography>
+                <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                  Total Paid Status
+                </Typography>
               </Box>
-              <Typography variant="h3" fontWeight={700} sx={{ mb: 0.5 }}>
-                ${(summaryData.totalSpent || 0).toLocaleString()}
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                Total Spent
-              </Typography>
+              <Box sx={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)' }}>
+                <CheckCircleIcon sx={{ fontSize: 40, opacity: 0.3 }} />
+              </Box>
             </Paper>
           </Grid>
-          
+
+          {/* Card 3 - Blue - Submitted Applications */}
           <Grid item xs={12} sm={6} md={3}>
             <Paper
               elevation={0}
               sx={{
-                p: 3,
+                p: 2.5,
                 borderRadius: 2,
-                background: 'linear-gradient(135deg, #0984E3 0%, #3D9EE8 100%)',
+                background: 'linear-gradient(135deg, #3498DB 0%, #2980B9 100%)',
                 color: 'white',
-                height: '100%',
+                height: 130,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                position: 'relative',
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <ProposalIcon sx={{ fontSize: 28, opacity: 0.9 }} />
+              <Box>
+                <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
+                  Applications
+                </Typography>
+                <Typography variant="h3" fontWeight={700}>
+                  {summaryData.pendingProposals}
+                </Typography>
+                <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                  Pending Review
+                </Typography>
               </Box>
-              <Typography variant="h3" fontWeight={700} sx={{ mb: 0.5 }}>
-                {summaryData.pendingProposals}
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                Applications
-              </Typography>
+              <Box sx={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)' }}>
+                <ProposalIcon sx={{ fontSize: 40, opacity: 0.3 }} />
+              </Box>
             </Paper>
           </Grid>
-          
+
+          {/* Card 4 - Red - Queried / Needs Attention */}
           <Grid item xs={12} sm={6} md={3}>
             <Paper
               elevation={0}
               sx={{
-                p: 3,
+                p: 2.5,
                 borderRadius: 2,
-                background: 'linear-gradient(135deg, #FDCB6E 0%, #FFEAA7 100%)',
-                color: '#2D3436',
-                height: '100%',
+                background: 'linear-gradient(135deg, #E74C3C 0%, #C0392B 100%)',
+                color: 'white',
+                height: 130,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                position: 'relative',
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <PeopleIcon sx={{ fontSize: 28, opacity: 0.9 }} />
+              <Box>
+                <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
+                  Needs Attention
+                </Typography>
+                <Typography variant="h3" fontWeight={700}>
+                  {summaryData.pendingPayments}
+                </Typography>
+                <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                  Action Required
+                </Typography>
               </Box>
-              <Typography variant="h3" fontWeight={700} sx={{ mb: 0.5 }}>
-                {summaryData.activeWorkers?.length || 0}
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                Active Workers
-              </Typography>
+              <Box sx={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)' }}>
+                <HelpOutlineIcon sx={{ fontSize: 40, opacity: 0.3 }} />
+              </Box>
             </Paper>
           </Grid>
         </Grid>
 
-        {/* QUICK ACTIONS - Simple row of buttons */}
-        <Paper
-          elevation={0}
-          sx={{
-            p: 3,
-            mb: 4,
-            borderRadius: 2,
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-          }}
-        >
-          <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
-            Quick Actions
-          </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <Button
-              variant="contained"
-              startIcon={<PostAddIcon />}
-              onClick={() => navigate('/hirer/jobs/post')}
-              sx={{
-                bgcolor: '#6C5CE7',
-                px: 3,
-                py: 1.5,
-                '&:hover': { bgcolor: '#5B4ED6' },
-              }}
-            >
-              Post a Job
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<PersonSearchIcon />}
-              onClick={() => navigate('/hirer/find-talent')}
-              sx={{
-                borderColor: '#0984E3',
-                color: '#0984E3',
-                px: 3,
-                py: 1.5,
-                '&:hover': { borderColor: '#0984E3', bgcolor: 'rgba(9,132,227,0.1)' },
-              }}
-            >
-              Find Talent
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<InboxIcon />}
-              onClick={() => setTabValue(1)}
-              sx={{
-                borderColor: '#00B894',
-                color: '#00B894',
-                px: 3,
-                py: 1.5,
-                '&:hover': { borderColor: '#00B894', bgcolor: 'rgba(0,184,148,0.1)' },
-              }}
-            >
-              Review Applications
-            </Button>
-          </Stack>
-        </Paper>
-
-        {/* ACTIVITY OVERVIEW - Two columns like LC Portal */}
+        {/* TWO CHART SECTIONS - LC Portal Style */}
         <Grid container spacing={3}>
+          {/* Bills Chart / Spending Chart */}
           <Grid item xs={12} md={6}>
             <Paper
               elevation={0}
               sx={{
                 p: 3,
                 borderRadius: 2,
-                bgcolor: 'background.paper',
-                border: '1px solid',
-                borderColor: 'divider',
-                height: '100%',
+                bgcolor: 'white',
+                height: 350,
               }}
             >
-              <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
-                Job Statistics
+              <Typography variant="h6" fontWeight={600} sx={{ mb: 3, color: '#333' }}>
+                Spending Overview
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-                  <Typography variant="body1" color="text.secondary">Active Jobs</Typography>
-                  <Typography variant="h6" fontWeight={600}>{summaryData.activeJobs}</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-                  <Typography variant="body1" color="text.secondary">Completed Jobs</Typography>
-                  <Typography variant="h6" fontWeight={600}>{summaryData.completedJobs}</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-                  <Typography variant="body1" color="text.secondary">Pending Payments</Typography>
-                  <Typography variant="h6" fontWeight={600}>{summaryData.pendingPayments}</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.5 }}>
-                  <Typography variant="body1" color="text.secondary">Success Rate</Typography>
-                  <Typography variant="h6" fontWeight={600} sx={{ color: '#00B894' }}>
-                    {summaryData.completedJobs > 0 ? '100%' : 'N/A'}
+              {/* Simple Chart Placeholder */}
+              <Box
+                sx={{
+                  height: 250,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  gap: 2,
+                }}
+              >
+                {summaryData.totalSpent > 0 ? (
+                  <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', gap: 4 }}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Box
+                        sx={{
+                          width: 60,
+                          height: Math.min(180, (summaryData.completedJobs / (summaryData.activeJobs + summaryData.completedJobs || 1)) * 180 + 20),
+                          bgcolor: '#1ABC9C',
+                          borderRadius: 1,
+                          mb: 1,
+                        }}
+                      />
+                      <Typography variant="caption" color="text.secondary">Completed</Typography>
+                    </Box>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Box
+                        sx={{
+                          width: 60,
+                          height: Math.min(180, (summaryData.activeJobs / (summaryData.activeJobs + summaryData.completedJobs || 1)) * 180 + 20),
+                          bgcolor: '#F39C12',
+                          borderRadius: 1,
+                          mb: 1,
+                        }}
+                      />
+                      <Typography variant="caption" color="text.secondary">Active</Typography>
+                    </Box>
+                  </Box>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No spending data yet
                   </Typography>
+                )}
+                {/* Legend */}
+                <Box sx={{ display: 'flex', gap: 3, mt: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#1ABC9C' }} />
+                    <Typography variant="caption">Completed</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#F39C12' }} />
+                    <Typography variant="caption">Active</Typography>
+                  </Box>
                 </Box>
               </Box>
             </Paper>
           </Grid>
-          
+
+          {/* Applications Chart - Donut Style */}
           <Grid item xs={12} md={6}>
             <Paper
               elevation={0}
               sx={{
                 p: 3,
                 borderRadius: 2,
-                bgcolor: 'background.paper',
-                border: '1px solid',
-                borderColor: 'divider',
-                height: '100%',
+                bgcolor: 'white',
+                height: 350,
               }}
             >
-              <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
-                Recent Activity
+              <Typography variant="h6" fontWeight={600} sx={{ mb: 3, color: '#333' }}>
+                Applications Overview
               </Typography>
-              {summaryData.activeJobs === 0 && summaryData.completedJobs === 0 ? (
-                <Box sx={{ py: 4, textAlign: 'center' }}>
-                  <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-                    No activity yet. Start by posting your first job!
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    startIcon={<PostAddIcon />}
-                    onClick={() => navigate('/hirer/jobs/post')}
-                    sx={{
-                      bgcolor: '#6C5CE7',
-                      '&:hover': { bgcolor: '#5B4ED6' },
-                    }}
-                  >
-                    Post Your First Job
-                  </Button>
-                </Box>
-              ) : (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-                    <Avatar sx={{ bgcolor: '#6C5CE7', width: 36, height: 36 }}>
-                      <WorkIcon sx={{ fontSize: 20 }} />
-                    </Avatar>
-                    <Box>
-                      <Typography variant="body2" fontWeight={500}>Jobs Posted</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {summaryData.activeJobs + summaryData.completedJobs} total jobs
-                      </Typography>
-                    </Box>
+              <Box sx={{ display: 'flex', height: 250 }}>
+                {/* Legend on left */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, justifyContent: 'center', pr: 4 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#4CAF50' }} />
+                    <Typography variant="body2">Completed: {summaryData.completedJobs}</Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-                    <Avatar sx={{ bgcolor: '#0984E3', width: 36, height: 36 }}>
-                      <ProposalIcon sx={{ fontSize: 20 }} />
-                    </Avatar>
-                    <Box>
-                      <Typography variant="body2" fontWeight={500}>Applications Received</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {summaryData.pendingProposals} pending review
-                      </Typography>
-                    </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#2196F3' }} />
+                    <Typography variant="body2">Submitted: {summaryData.pendingProposals}</Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1.5 }}>
-                    <Avatar sx={{ bgcolor: '#00B894', width: 36, height: 36 }}>
-                      <AttachMoneyIcon sx={{ fontSize: 20 }} />
-                    </Avatar>
-                    <Box>
-                      <Typography variant="body2" fontWeight={500}>Total Invested</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        ${(summaryData.totalSpent || 0).toLocaleString()} spent on workers
-                      </Typography>
-                    </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#F44336' }} />
+                    <Typography variant="body2">Pending: {summaryData.pendingPayments}</Typography>
                   </Box>
                 </Box>
-              )}
-            </Paper>
-          </Grid>
-        </Grid>
-
-        {/* NEW USER ONBOARDING - Only show for new hirers */}
-        {isNewHirer && (
-          <Paper
-            elevation={0}
-            sx={{
-              p: 4,
-              mt: 4,
-              borderRadius: 2,
-              background: 'linear-gradient(135deg, rgba(108,92,231,0.1) 0%, rgba(9,132,227,0.1) 100%)',
-              border: '1px solid rgba(108,92,231,0.3)',
-            }}
-          >
-            <Typography variant="h5" fontWeight={700} gutterBottom>
-              🚀 Get Started with Kelmah
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-              Follow these steps to make your first successful hire:
-            </Typography>
-            <Grid container spacing={2}>
-              {[
-                { step: 1, title: 'Post Your First Job', desc: 'Create a detailed job posting', icon: <PostAddIcon /> },
-                { step: 2, title: 'Review Applications', desc: 'Browse and shortlist candidates', icon: <ProposalIcon /> },
-                { step: 3, title: 'Hire & Pay Safely', desc: 'Use secure escrow payments', icon: <PaymentIcon /> },
-                { step: 4, title: 'Complete & Review', desc: 'Finish and rate the worker', icon: <ReviewIcon /> },
-              ].map((item) => (
-                <Grid item xs={6} sm={3} key={item.step}>
+                {/* Donut Chart Placeholder */}
+                <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Box
                     sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      bgcolor: 'rgba(255,255,255,0.05)',
-                      textAlign: 'center',
+                      width: 180,
+                      height: 180,
+                      borderRadius: '50%',
+                      background: `conic-gradient(
+                        #4CAF50 0deg ${summaryData.completedJobs * 36}deg,
+                        #2196F3 ${summaryData.completedJobs * 36}deg ${(summaryData.completedJobs + summaryData.pendingProposals) * 36}deg,
+                        #F44336 ${(summaryData.completedJobs + summaryData.pendingProposals) * 36}deg 360deg
+                      )`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative',
                     }}
                   >
-                    <Avatar sx={{ bgcolor: '#6C5CE7', width: 40, height: 40, mx: 'auto', mb: 1 }}>
-                      {item.icon}
-                    </Avatar>
-                    <Typography variant="caption" fontWeight={600} display="block">
-                      {item.title}
-                    </Typography>
+                    <Box
+                      sx={{
+                        width: 120,
+                        height: 120,
+                        borderRadius: '50%',
+                        bgcolor: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Typography variant="h4" fontWeight={600} color="#666">
+                        {summaryData.activeJobs + summaryData.completedJobs}
+                      </Typography>
+                    </Box>
                   </Box>
-                </Grid>
-              ))}
-            </Grid>
-          </Paper>
-        )}
+                </Box>
+              </Box>
+            </Paper>
+          </Grid>
+        </Grid>
       </Box>
     </Fade>
   );
