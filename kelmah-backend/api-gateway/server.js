@@ -220,9 +220,10 @@ app.use(cors({
     'Authorization',
     'ngrok-skip-browser-warning',
     'x-requested-with',
-    'x-frontend-health-probe'  // ✅ FIXED: Allow frontend health probe header
+    'x-frontend-health-probe',  // ✅ FIXED: Allow frontend health probe header
+    'x-request-id'              // ✅ FIXED: Allow Axios request ID header
   ],
-  exposedHeaders: ['ngrok-skip-browser-warning']
+  exposedHeaders: ['ngrok-skip-browser-warning', 'x-request-id']
 }));
 
 // Add ngrok-skip-browser-warning header to all responses
