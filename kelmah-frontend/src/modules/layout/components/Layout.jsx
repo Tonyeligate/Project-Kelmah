@@ -12,7 +12,7 @@ import {
   useTheme,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import Sidebar from './sidebar/Sidebar';
@@ -28,6 +28,9 @@ import SmartNavigation from '../../../components/common/SmartNavigation';
 const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
   const location = useLocation();
   const theme = useTheme();
+  
+  // Use Outlet for React Router nested routes, fallback to children prop
+  const content = children || <Outlet />;
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const isActualMobile = useMediaQuery('(max-width: 768px)');
   // 🎯 ENHANCED: Comprehensive dashboard page detection
@@ -75,7 +78,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             mode={mode}
             setThemeMode={setThemeMode}
           />
-          {children}
+          {content}
           <MobileBottomNav />
         </Box>
       );
@@ -124,7 +127,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
                 </Typography>
               </Box>
             )}
-            {children}
+            {content}
           </Box>
           <SmartNavigation />
         </Box>
@@ -172,7 +175,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             position: 'relative',
           }}
         >
-          {children}
+          {content}
         </Box>
         <MobileBottomNav />
       </Box>
@@ -221,7 +224,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             pb: { xs: 0, sm: 2, md: 3 },
           }}
         >
-          {children}
+          {content}
         </Box>
       </Fade>
       {/* Dynamic footer - only shows when scrolled to bottom */}
