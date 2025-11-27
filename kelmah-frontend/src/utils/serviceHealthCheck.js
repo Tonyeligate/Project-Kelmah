@@ -154,7 +154,7 @@ export const warmUpService = async (serviceUrl) => {
   console.log(`🔥 Warming up service: ${serviceUrl || 'gateway'}`);
 
   try {
-    const base = await getApiBaseUrl().catch(() => '/api');
+    const base = await Promise.resolve(getApiBaseUrl()).catch(() => '/api');
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
     const warmupUrl = buildHealthUrl(base, '/health');

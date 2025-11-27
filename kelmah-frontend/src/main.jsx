@@ -11,6 +11,7 @@ import App from './App.jsx';
 import './index.css';
 import { ErrorBoundary } from 'react-error-boundary';
 import { HelmetProvider } from 'react-helmet-async';
+import { NotificationProvider } from './modules/notifications/contexts/NotificationContext';
 
 // Add debugging for module loading
 console.log('🔧 Main.jsx loading - React version:', React.version);
@@ -125,7 +126,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           >
             <ErrorBoundary FallbackComponent={ErrorFallback}>
               <HelmetProvider>
-                <App />
+                <NotificationProvider>
+                  <App />
+                </NotificationProvider>
               </HelmetProvider>
             </ErrorBoundary>
           </SnackbarProvider>
