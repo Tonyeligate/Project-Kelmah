@@ -59,56 +59,38 @@ export default defineConfig({
         warn(warning);
       },
       output: {
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            // Core React libs - MUST be loaded first (use exact matches to avoid false positives)
-            if (
-              id.includes('/react/') || 
-              id.includes('/react-dom/') || 
-              id.match(/\/react$/) || 
-              id.match(/\/react-dom$/)
-            ) {
-              return 'react-core';
-            }
-            // React ecosystem - depends on react-core
-            if (
-              id.includes('react-router') || 
-              id.includes('react-redux') || 
-              id.includes('react-hook-form') ||
-              id.includes('react-error-boundary') ||
-              id.includes('react-helmet')
-            ) {
-              return 'react-libs';
-            }
-            // Emotion must be separate from MUI to avoid "Cannot access before initialization"
-            if (id.includes('@emotion/')) {
-              return 'emotion';
-            }
-            // MUI packages - split by scope to prevent circular deps
-            if (id.includes('@mui/material')) {
-              return 'mui-material';
-            }
-            if (id.includes('@mui/icons-material')) {
-              return 'mui-icons';
-            }
-            if (id.includes('@mui/')) {
-              return 'mui-other';
-            }
-            // Redux
-            if (id.includes('redux') || id.includes('@reduxjs')) {
-              return 'redux';
-            }
-            // React Query
-            if (id.includes('react-query') || id.includes('@tanstack')) {
-              return 'react-query';
-            }
-            // Socket.io
-            if (id.includes('socket.io')) {
-              return 'socketio';
-            }
-            // Everything else
-            return 'vendor';
-          }
+        manualChunks: {
+          // Static object-based chunks - Vite handles dependency order automatically
+          'vendor-react': [
+            'react',
+            'react-dom',
+            'react/jsx-runtime',
+            'react-router-dom',
+            'react-redux',
+            'react-hook-form',
+            'react-error-boundary',
+            'react-helmet-async',
+          ],
+          'vendor-mui': [
+            '@mui/material',
+            '@mui/icons-material',
+            '@mui/lab',
+            '@mui/x-date-pickers',
+            '@emotion/react',
+            '@emotion/styled',
+          ],
+          'vendor-state': [
+            '@reduxjs/toolkit',
+            '@tanstack/react-query',
+            '@tanstack/react-query-devtools',
+          ],
+          'vendor-utils': [
+            'axios',
+            'socket.io-client',
+            'date-fns',
+            'notistack',
+            'zod',
+          ],
         },
       },
     },
