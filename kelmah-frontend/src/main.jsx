@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { SnackbarProvider } from 'notistack';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tantml:query/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from './config/queryClient';
 import store from './store';
@@ -13,10 +13,11 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { HelmetProvider } from 'react-helmet-async';
 import { NotificationProvider } from './modules/notifications/contexts/NotificationContext';
 
-// Add debugging for module loading
-console.log('🔧 Main.jsx loading - React version:', React.version);
+// Version 1.0.4 - Force fresh bundle generation
+console.log('🔧 Main.jsx v1.0.4 - Kelmah PWA with 50z3 gateway');
 console.log('🔧 Store initialized:', !!store);
 console.log('🔧 All imports successful');
+
 
 const ErrorFallback = ({ error }) => (
   <div
