@@ -39,6 +39,7 @@ import {
   Menu,
   MenuItem,
   ListItemIcon,
+  alpha,
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -59,6 +60,11 @@ import {
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
+  PostAdd as PostAddIcon,
+  PersonSearch as PersonSearchIcon,
+  Inbox as InboxIcon,
+  TrendingUp as TrendingUpIcon,
+  AttachMoney as AttachMoneyIcon,
 } from '@mui/icons-material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -251,6 +257,139 @@ DashboardCard.propTypes = {
   sx: PropTypes.object,
 };
 
+// LC Portal-inspired Service Action Card for primary actions
+const ServiceActionCard = ({ icon, title, description, buttonText, onClick, bgColor, iconBgColor }) => (
+  <Card
+    elevation={4}
+    sx={{
+      height: '100%',
+      borderRadius: 3,
+      background: `linear-gradient(135deg, ${bgColor} 0%, ${alpha(bgColor, 0.85)} 100%)`,
+      color: 'white',
+      position: 'relative',
+      overflow: 'hidden',
+      transition: 'all 0.3s ease',
+      cursor: 'pointer',
+      '&:hover': {
+        transform: 'translateY(-8px)',
+        boxShadow: `0 20px 40px ${alpha(bgColor, 0.4)}`,
+      },
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: -50,
+        right: -50,
+        width: 150,
+        height: 150,
+        borderRadius: '50%',
+        background: 'rgba(255,255,255,0.1)',
+      },
+    }}
+    onClick={onClick}
+  >
+    <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
+      <Box
+        sx={{
+          width: 64,
+          height: 64,
+          borderRadius: 3,
+          bgcolor: iconBgColor || 'rgba(255,255,255,0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          mb: 2,
+        }}
+      >
+        {icon}
+      </Box>
+      <Typography variant="h5" fontWeight={700} gutterBottom>
+        {title}
+      </Typography>
+      <Typography variant="body2" sx={{ opacity: 0.9, mb: 3, minHeight: 48 }}>
+        {description}
+      </Typography>
+      <Button
+        variant="contained"
+        fullWidth
+        endIcon={<ArrowForwardIcon />}
+        sx={{
+          bgcolor: 'rgba(255,255,255,0.2)',
+          color: 'white',
+          fontWeight: 600,
+          py: 1.5,
+          borderRadius: 2,
+          '&:hover': {
+            bgcolor: 'rgba(255,255,255,0.3)',
+          },
+        }}
+      >
+        {buttonText}
+      </Button>
+    </CardContent>
+  </Card>
+);
+
+ServiceActionCard.propTypes = {
+  icon: PropTypes.node.isRequired,
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  buttonText: PropTypes.string.isRequired,
+  onClick: PropTypes.func.isRequired,
+  bgColor: PropTypes.string.isRequired,
+  iconBgColor: PropTypes.string,
+};
+
+// Metric Card component for the overview grid - softer colors
+const MetricCard = ({ icon, title, value, subtitle, color, trend }) => (
+  <Card
+    elevation={2}
+    sx={{
+      borderRadius: 3,
+      background: `linear-gradient(135deg, ${color} 0%, ${alpha(color, 0.8)} 100%)`,
+      color: 'white',
+      transition: 'all 0.3s ease',
+      '&:hover': {
+        transform: 'translateY(-4px)',
+        boxShadow: `0 12px 24px ${alpha(color, 0.3)}`,
+      },
+    }}
+  >
+    <CardContent sx={{ p: 2.5 }}>
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+        <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+          {title}
+        </Typography>
+        <Box sx={{ opacity: 0.8 }}>{icon}</Box>
+      </Box>
+      <Typography variant="h4" fontWeight={700} gutterBottom>
+        {value}
+      </Typography>
+      {subtitle && (
+        <Typography variant="caption" sx={{ opacity: 0.8 }}>
+          {subtitle}
+        </Typography>
+      )}
+      {trend !== undefined && (
+        <Box display="flex" alignItems="center" gap={0.5} mt={1}>
+          <TrendingUpIcon sx={{ fontSize: 14 }} />
+          <Typography variant="caption">
+            {trend > 0 ? '+' : ''}{trend}% this month
+          </Typography>
+        </Box>
+      )}
+    </CardContent>
+  </Card>
+);
+
+MetricCard.propTypes = {
+  icon: PropTypes.node,
+  title: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  subtitle: PropTypes.string,
+  color: PropTypes.string.isRequired,
+  trend: PropTypes.number,
+};
+
 const StyledPaper = ({ children, elevation = 3, ...props }) => (
   <Paper
     elevation={elevation}
@@ -386,8 +525,8 @@ const HirerDashboardPage = () => {
 
     const hasRenderableSnapshot = Boolean(
       (Array.isArray(activeJobs) && activeJobs.length > 0) ||
-        hirerProfile ||
-        (Array.isArray(completedJobs) && completedJobs.length > 0),
+      hirerProfile ||
+      (Array.isArray(completedJobs) && completedJobs.length > 0),
     );
 
     if (hasRenderableSnapshot) {
@@ -560,573 +699,402 @@ const HirerDashboardPage = () => {
     (summaryData.activeWorkers?.length || 0) === 0 &&
     (summaryData.totalSpent || 0) === 0;
 
-  // Dashboard overview component
+  // Softer color palette for metric cards (LC Portal inspired)
+  const metricColors = {
+    purple: '#6C5CE7',    // Total Jobs Posted
+    green: '#00B894',     // Total Amount Spent
+    blue: '#0984E3',      // Applications
+    orange: '#FDCB6E',    // Success Rate
+    teal: '#00CEC9',      // Active Workers
+    rose: '#E17055',      // Pending Applications
+  };
+
+  // LC Portal-inspired Dashboard Overview
   const renderDashboardOverview = () => (
     <Fade in timeout={500}>
-      <Grid container spacing={3}>
-        {/* Welcome banner with stats */}
-        <Grid item xs={12}>
+      <Box>
+        {/* HERO SECTION - Single clean welcome with stats */}
+        <Paper
+          elevation={4}
+          sx={{
+            p: { xs: 3, md: 4 },
+            mb: 4,
+            borderRadius: 3,
+            background: 'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(45,45,45,0.95) 100%)',
+            border: '1px solid rgba(255,215,0,0.2)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <Grid container spacing={3} alignItems="center">
+            <Grid item xs={12} md={6}>
+              <Typography
+                variant="h4"
+                fontWeight={700}
+                sx={{
+                  color: '#FFD700',
+                  mb: 1,
+                  fontSize: { xs: '1.75rem', md: '2.25rem' },
+                }}
+              >
+                Welcome back, {hirerProfile?.firstName || user?.firstName || 'Hirer'}!
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                Here&apos;s your dashboard overview. Manage jobs, review applications, and track progress.
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent={{ xs: 'center', md: 'flex-end' }}
+                flexWrap="wrap"
+                gap={2}
+              >
+                {[
+                  { label: 'Active Jobs', value: summaryData.activeJobs, color: '#FFD700' },
+                  { label: 'Active Workers', value: summaryData.activeWorkers?.length || 0, color: '#fff' },
+                  { label: 'Total Spent', value: `$${(summaryData.totalSpent || 0).toLocaleString()}`, color: '#00B894' },
+                ].map((stat) => (
+                  <Box
+                    key={stat.label}
+                    sx={{
+                      textAlign: 'center',
+                      px: 3,
+                      py: 1.5,
+                      borderRadius: 2,
+                      bgcolor: 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${alpha(stat.color, 0.3)}`,
+                      minWidth: 100,
+                    }}
+                  >
+                    <Typography variant="h5" fontWeight={700} sx={{ color: stat.color }}>
+                      {stat.value}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {stat.label}
+                    </Typography>
+                  </Box>
+                ))}
+              </Stack>
+            </Grid>
+          </Grid>
+        </Paper>
+
+        {/* PRIMARY ACTION GRID - LC Portal Style Service Cards */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} md={4}>
+            <ServiceActionCard
+              icon={<PostAddIcon sx={{ fontSize: 32, color: 'white' }} />}
+              title="Post a Job"
+              description="Create a detailed job posting to attract skilled vocational workers in Ghana."
+              buttonText="Post Now"
+              onClick={() => navigate('/hirer/jobs/post')}
+              bgColor="#6C5CE7"
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <ServiceActionCard
+              icon={<PersonSearchIcon sx={{ fontSize: 32, color: 'white' }} />}
+              title="Find Talent"
+              description="Browse our pool of skilled workers and invite top professionals to your jobs."
+              buttonText="Find Workers"
+              onClick={() => navigate('/hirer/find-talent')}
+              bgColor="#0984E3"
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <ServiceActionCard
+              icon={<InboxIcon sx={{ fontSize: 32, color: 'white' }} />}
+              title="Review Applications"
+              description="View and manage applications from workers interested in your job postings."
+              buttonText="View Applications"
+              onClick={() => setTabValue(1)}
+              bgColor="#FDCB6E"
+              iconBgColor="rgba(0,0,0,0.2)"
+            />
+          </Grid>
+        </Grid>
+
+        {/* METRICS GRID - 2 rows of 3 cards with softer colors */}
+        <Typography variant="h6" fontWeight={600} sx={{ mb: 2, color: 'text.primary' }}>
+          Your Statistics
+        </Typography>
+        <Grid container spacing={2} sx={{ mb: 4 }}>
+          <Grid item xs={12} sm={6} md={4}>
+            <MetricCard
+              icon={<WorkIcon sx={{ fontSize: 24 }} />}
+              title="Total Jobs Posted"
+              value={summaryData.activeJobs + summaryData.completedJobs}
+              subtitle={`${summaryData.activeJobs} active, ${summaryData.completedJobs} completed`}
+              color={metricColors.purple}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <MetricCard
+              icon={<AttachMoneyIcon sx={{ fontSize: 24 }} />}
+              title="Total Spent"
+              value={`$${(summaryData.totalSpent || 0).toLocaleString()}`}
+              subtitle="Lifetime spending"
+              color={metricColors.green}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <MetricCard
+              icon={<ProposalIcon sx={{ fontSize: 24 }} />}
+              title="Applications"
+              value={summaryData.pendingProposals}
+              subtitle="Pending review"
+              color={metricColors.blue}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <MetricCard
+              icon={<CheckCircleIcon sx={{ fontSize: 24 }} />}
+              title="Success Rate"
+              value={summaryData.completedJobs > 0 ? '100%' : 'N/A'}
+              subtitle="Completed jobs"
+              color={metricColors.orange}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <MetricCard
+              icon={<PeopleIcon sx={{ fontSize: 24 }} />}
+              title="Active Workers"
+              value={summaryData.activeWorkers?.length || 0}
+              subtitle="Currently hired"
+              color={metricColors.teal}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <MetricCard
+              icon={<PaymentIcon sx={{ fontSize: 24 }} />}
+              title="Pending Payments"
+              value={summaryData.pendingPayments}
+              subtitle="Awaiting release"
+              color={metricColors.rose}
+            />
+          </Grid>
+        </Grid>
+
+        {/* NEW USER ONBOARDING - Only show for new hirers */}
+        {isNewHirer && (
           <Paper
-            elevation={4}
+            elevation={3}
             sx={{
-              p: { xs: 2, md: 4 },
-              textAlign: { xs: 'center', md: 'left' },
-              backgroundColor: 'rgba(255,255,255,0.05)',
-              borderRadius: 2,
+              p: 4,
               mb: 4,
-              border: '1px solid rgba(255,215,0,0.2)',
-              boxShadow:
-                '0 15px 35px rgba(0,0,0,0.15), 0 5px 15px rgba(0,0,0,0.1)',
-              position: 'relative',
-              overflow: 'hidden',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                backgroundImage:
-                  'radial-gradient(circle at 20% 30%, rgba(255,215,0,0.07) 0%, transparent 60%)',
-                zIndex: 0,
-              },
+              borderRadius: 3,
+              background: 'linear-gradient(135deg, rgba(108,92,231,0.1) 0%, rgba(9,132,227,0.1) 100%)',
+              border: '1px solid rgba(108,92,231,0.3)',
             }}
           >
-            <Box sx={{ position: 'relative', zIndex: 1 }}>
-              <Box
+            <Typography variant="h5" fontWeight={700} gutterBottom>
+              🚀 Get Started with Kelmah
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              Follow these steps to make your first successful hire:
+            </Typography>
+            <Grid container spacing={2}>
+              {[
+                { step: 1, title: 'Post Your First Job', desc: 'Create a detailed job posting with budget and timeline', icon: <PostAddIcon /> },
+                { step: 2, title: 'Review Applications', desc: 'Browse applications and shortlist candidates', icon: <ProposalIcon /> },
+                { step: 3, title: 'Hire & Pay Safely', desc: 'Use our secure payment system with escrow protection', icon: <PaymentIcon /> },
+                { step: 4, title: 'Complete & Review', desc: 'Finish the job and leave a rating for the worker', icon: <ReviewIcon /> },
+              ].map((item) => (
+                <Grid item xs={12} sm={6} md={3} key={item.step}>
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      bgcolor: 'rgba(255,255,255,0.05)',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <Avatar
+                      sx={{
+                        bgcolor: '#6C5CE7',
+                        width: 48,
+                        height: 48,
+                        mb: 1,
+                      }}
+                    >
+                      {item.icon}
+                    </Avatar>
+                    <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                      Step {item.step}: {item.title}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {item.desc}
+                    </Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+            <Box sx={{ mt: 3, textAlign: 'center' }}>
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<AddCircleIcon />}
+                onClick={() => navigate('/hirer/jobs/post')}
                 sx={{
-                  display: 'flex',
-                  flexDirection: { xs: 'column', md: 'row' },
-                  alignItems: { xs: 'center', md: 'center' },
-                  justifyContent: { xs: 'center', md: 'space-between' },
-                  flexWrap: 'wrap',
-                  gap: 2,
+                  bgcolor: '#6C5CE7',
+                  px: 4,
+                  py: 1.5,
+                  '&:hover': { bgcolor: '#5B4ED6' },
                 }}
               >
-                <Box>
-                  <Typography
-                    variant="h3"
-                    gutterBottom
-                    fontWeight={700}
-                    sx={{
-                      color: '#FFD700',
-                      textShadow: '0px 2px 4px rgba(0,0,0,0.4)',
-                      fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.5rem' },
-                    }}
-                  >
-                    Welcome back,{' '}
-                    {hirerProfile?.firstName || user?.firstName || 'Hirer'}!
-                  </Typography>
-                  <Typography
-                    variant="h6"
-                    color="white"
-                    sx={{
-                      opacity: 0.9,
-                      fontWeight: 400,
-                      maxWidth: '90%',
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    Manage your jobs, review proposals, and track progress
-                  </Typography>
-                </Box>
-
-                {/* Stats summary */}
-                <Stack
-                  direction="row"
-                  spacing={2}
-                  sx={{
-                    overflowX: 'auto',
-                    scrollSnapType: 'x mandatory',
-                    WebkitOverflowScrolling: 'touch',
-                    '&::-webkit-scrollbar': { display: 'none' },
-                    flexWrap: { xs: 'nowrap', sm: 'wrap' },
-                    justifyContent: { xs: 'flex-start', md: 'flex-end' },
-                    width: '100%',
-                    mt: { xs: 2, md: 0 },
-                    py: { xs: 1, md: 0 },
-                    px: { xs: 1, md: 0 },
-                  }}
-                >
-                  <Box
-                    sx={{
-                      scrollSnapAlign: 'start',
-                      textAlign: 'center',
-                      px: 3,
-                      py: 1.5,
-                      borderRadius: 3,
-                      bgcolor: 'rgba(255,215,0,0.1)',
-                      border: '1px solid rgba(255,215,0,0.3)',
-                      minWidth: 120,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-5px)',
-                        boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
-                      },
-                    }}
-                  >
-                    <Typography
-                      variant="h4"
-                      fontWeight={700}
-                      color="secondary.main"
-                    >
-                      {summaryData.activeJobs}
-                    </Typography>
-                    <Typography variant="subtitle2" color="text.primary">
-                      Active Jobs
-                    </Typography>
-                  </Box>
-
-                  <Box
-                    sx={{
-                      scrollSnapAlign: 'start',
-                      textAlign: 'center',
-                      px: 3,
-                      py: 1.5,
-                      borderRadius: 3,
-                      bgcolor: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      minWidth: 120,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-5px)',
-                        boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
-                      },
-                    }}
-                  >
-                    <Typography
-                      variant="h4"
-                      fontWeight={700}
-                      color="text.primary"
-                    >
-                      {summaryData.activeWorkers?.length || 0}
-                    </Typography>
-                    <Typography variant="subtitle2" color="text.primary">
-                      Active Workers
-                    </Typography>
-                  </Box>
-
-                  <Box
-                    sx={{
-                      scrollSnapAlign: 'start',
-                      textAlign: 'center',
-                      px: 3,
-                      py: 1.5,
-                      borderRadius: 3,
-                      bgcolor: 'rgba(76,175,80,0.05)',
-                      border: '1px solid rgba(76,175,80,0.3)',
-                      minWidth: 120,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-5px)',
-                        boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
-                      },
-                    }}
-                  >
-                    <Typography
-                      variant="h4"
-                      fontWeight={700}
-                      color="success.main"
-                    >
-                      ${summaryData.totalSpent?.toLocaleString() || 0}
-                    </Typography>
-                    <Typography variant="subtitle2" color="text.primary">
-                      Total Spent
-                    </Typography>
-                  </Box>
-                </Stack>
-              </Box>
+                Post Your First Job
+              </Button>
             </Box>
           </Paper>
-        </Grid>
-
-        {isNewHirer && (
-          <Grid item xs={12}>
-            <StyledPaper
-              elevation={4}
-              sx={{
-                p: { xs: 3, md: 4 },
-                display: 'flex',
-                flexDirection: { xs: 'column', md: 'row' },
-                gap: 3,
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                backgroundColor: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,215,0,0.25)',
-              }}
-            >
-              <Box sx={{ maxWidth: 520 }}>
-                <Typography variant="h5" fontWeight={700} gutterBottom>
-                  Ready to make your first hire?
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Post a detailed job to attract skilled workers or browse the
-                  talent pool to invite top professionals.
-                </Typography>
-                <Stack direction="row" spacing={1.5} sx={{ mt: 2 }}>
-                  <Chip
-                    label="Tip: Include timeline and budget for stronger matches"
-                    color="secondary"
-                    variant="outlined"
-                  />
-                </Stack>
-              </Box>
-              <Stack
-                direction={{ xs: 'column', sm: 'row' }}
-                spacing={2}
-                sx={{ width: { xs: '100%', md: 'auto' } }}
-              >
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<AddCircleIcon />}
-                  onClick={() => navigate('/hirer/jobs/post')}
-                  sx={{ minWidth: 200 }}
-                >
-                  Post Your First Job
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  startIcon={<SearchIcon />}
-                  onClick={() => navigate('/hirer/find-talent')}
-                  sx={{ minWidth: 200 }}
-                >
-                  Find Talented Workers
-                </Button>
-              </Stack>
-            </StyledPaper>
-          </Grid>
         )}
 
-        {/* Summary cards */}
-        <Grid item xs={12} md={8}>
-          <Grid container spacing={3}>
-            {/* Active Jobs Card */}
-            <Grid item xs={12} sm={6}>
-              <DashboardCard
-                icon={
-                  <WorkIcon
-                    sx={{ fontSize: 30, color: 'primary.contrastText' }}
-                  />
-                }
-                iconColor="primary.main"
-                title="Active Jobs"
-                value={summaryData.activeJobs}
-                secondaryLabel="Pending applications"
-                secondaryComponent={
-                  <Box sx={{ display: 'flex', alignItems: 'space-between' }}>
-                    <Typography variant="h6" fontWeight={600}>
-                      {summaryData.pendingProposals}
+        {/* RECENT ACTIVITY */}
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={8}>
+            {/* Quick Stats Summary */}
+            <StyledPaper elevation={3} sx={{ p: 0, mb: 3 }}>
+              <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <Typography variant="h6" fontWeight={600}>
+                  Active Jobs Overview
+                </Typography>
+              </Box>
+              <Box sx={{ p: 2 }}>
+                {activeJobs && activeJobs.length > 0 ? (
+                  <List disablePadding>
+                    {activeJobs.slice(0, 3).map((job, index) => (
+                      <React.Fragment key={job._id || job.id || index}>
+                        <ListItem
+                          sx={{
+                            px: 2,
+                            py: 1.5,
+                            '&:hover': { bgcolor: 'rgba(255,255,255,0.03)' },
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => navigate(`/hirer/jobs/${job._id || job.id}`)}
+                        >
+                          <ListItemIcon>
+                            <WorkIcon color="secondary" />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={job.title}
+                            secondary={`Budget: $${job.budget || 0} • ${job.applicationsCount || 0} applications`}
+                          />
+                          <Chip
+                            label={job.status || 'Active'}
+                            size="small"
+                            color="success"
+                            variant="outlined"
+                          />
+                        </ListItem>
+                        {index < Math.min(activeJobs.length, 3) - 1 && <Divider />}
+                      </React.Fragment>
+                    ))}
+                  </List>
+                ) : (
+                  <Box sx={{ py: 4, textAlign: 'center' }}>
+                    <WorkIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
+                    <Typography color="text.secondary">
+                      No active jobs yet. Post your first job to get started!
                     </Typography>
-                    <Chip
-                      label="Waiting for review"
-                      size="small"
-                      color="warning"
-                      sx={{ borderRadius: 1.5 }}
-                    />
-                  </Box>
-                }
-                actionText="Manage Jobs"
-                actionHandler={() => setTabValue(1)}
-              />
-            </Grid>
-
-            {/* Completed Jobs Card */}
-            <Grid item xs={12} sm={6}>
-              <DashboardCard
-                icon={
-                  <CheckCircleIcon
-                    sx={{ fontSize: 30, color: 'success.contrastText' }}
-                  />
-                }
-                iconColor="success.main"
-                title="Completed Jobs"
-                value={completedJobs?.length || 0}
-                secondaryLabel="Success rate"
-                secondaryComponent={
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                    <Box sx={{ flexGrow: 1, mr: 1 }}>
-                      <LinearProgress
-                        variant="determinate"
-                        value={hirerProfile?.completionRate || 100}
-                        color="success"
-                        sx={{
-                          height: 8,
-                          borderRadius: 4,
-                          bgcolor: 'rgba(76,175,80,0.1)',
-                        }}
-                      />
-                    </Box>
-                    <Typography
-                      variant="body2"
-                      fontWeight={600}
-                      color="success.main"
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      startIcon={<AddIcon />}
+                      onClick={() => navigate('/hirer/jobs/post')}
+                      sx={{ mt: 2 }}
                     >
-                      {hirerProfile?.completionRate || 100}%
-                    </Typography>
+                      Post a Job
+                    </Button>
                   </Box>
-                }
-                actionText="View History"
-                actionColor="success"
-                actionHandler={() => setTabValue(2)}
-              />
-            </Grid>
-
-            {/* Worker Management Card */}
-            <Grid item xs={12} sm={6}>
-              <DashboardCard
-                icon={
-                  <PeopleIcon
-                    sx={{ fontSize: 30, color: 'secondary.contrastText' }}
-                  />
-                }
-                iconColor="secondary.main"
-                title="Worker Management"
-                value={hirerProfile?.activeWorkers?.length || 0}
-                secondaryLabel="Average worker rating"
-                secondaryComponent={
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Rating
-                      value={hirerProfile?.averageWorkerRating || 0}
-                      readOnly
-                      precision={0.5}
-                      size="medium"
-                      sx={{ color: '#FFD700' }}
-                    />
-                    <Typography variant="body1" fontWeight={600} sx={{ ml: 1 }}>
-                      {hirerProfile?.averageWorkerRating?.toFixed(1) || 0}
-                    </Typography>
-                  </Box>
-                }
-                actionText="Manage Workers"
-                actionColor="secondary"
-                actionHandler={() => setTabValue(3)}
-              />
-            </Grid>
-
-            {/* Financial Overview Card */}
-            <Grid item xs={12} sm={6}>
-              <DashboardCard
-                icon={<PaymentIcon sx={{ fontSize: 30, color: 'white' }} />}
-                iconColor="info.main"
-                title="Financial Overview"
-                value={
-                  <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
-                    <Box component="span" sx={{ fontSize: '1.5rem', mr: 0.5 }}>
-                      $
-                    </Box>
-                    {hirerProfile?.totalSpent?.toLocaleString() || 0}
-                  </Box>
-                }
-                secondaryLabel="Current budget"
-                secondaryValue={
-                  <Typography variant="h6" fontWeight={600} color="info.main">
-                    ${hirerProfile?.currentBudget?.toLocaleString() || 0}{' '}
-                    available
-                  </Typography>
-                }
-                actionText="Financial Reports"
-                actionColor="info"
-                actionHandler={() => setTabValue(4)}
-              />
-            </Grid>
+                )}
+              </Box>
+              {activeJobs && activeJobs.length > 3 && (
+                <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
+                  <Button
+                    color="secondary"
+                    endIcon={<ArrowForwardIcon />}
+                    onClick={() => setTabValue(1)}
+                  >
+                    View All {activeJobs.length} Jobs
+                  </Button>
+                </Box>
+              )}
+            </StyledPaper>
           </Grid>
-        </Grid>
 
-        {/* Recent activity and notifications */}
-        <Grid item xs={12} md={4}>
-          <StyledPaper elevation={3} sx={{ height: '100%' }}>
-            <CardContent
-              sx={{
-                p: 0,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <Box
-                sx={{
-                  bgcolor: 'background.dark',
-                  color: 'white',
-                  py: 2,
-                  px: 3,
-                  background:
-                    'linear-gradient(90deg, #1a1a1a 0%, #222222 100%)',
-                  borderBottom: '1px solid rgba(255,215,0,0.2)',
-                }}
-              >
+          <Grid item xs={12} md={4}>
+            {/* Recent Activity */}
+            <StyledPaper elevation={3} sx={{ p: 0 }}>
+              <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                 <Typography variant="h6" fontWeight={600}>
                   Recent Activity
                 </Typography>
               </Box>
-              <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-                <List sx={{ py: 0 }}>
-                  {hirerProfile?.recentActivity &&
-                  hirerProfile.recentActivity.length > 0 ? (
-                    hirerProfile.recentActivity
-                      .slice(0, 5)
-                      .map((activity, index) => (
-                        <React.Fragment key={index}>
-                          <ListItem
-                            alignItems="flex-start"
-                            sx={{
-                              px: 3,
-                              py: 2,
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                bgcolor: 'rgba(255,215,0,0.03)',
-                              },
-                            }}
-                          >
-                            <ListItemAvatar>
-                              <Avatar
-                                sx={{
-                                  bgcolor:
-                                    activity.type === 'job_posted'
-                                      ? 'primary.main'
-                                      : activity.type === 'worker_hired'
-                                        ? 'secondary.main'
-                                        : activity.type === 'payment'
-                                          ? 'success.main'
-                                          : 'info.main',
-                                  boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                                }}
-                              >
-                                {activity.type === 'job_posted' ? (
-                                  <WorkIcon />
-                                ) : activity.type === 'worker_hired' ? (
-                                  <PeopleIcon />
-                                ) : activity.type === 'payment' ? (
-                                  <PaymentIcon />
-                                ) : (
-                                  <NotificationsIcon />
-                                )}
-                              </Avatar>
-                            </ListItemAvatar>
-                            <ListItemText
-                              primary={
-                                <Typography
-                                  variant="subtitle1"
-                                  fontWeight={600}
-                                >
-                                  {activity.title}
-                                </Typography>
-                              }
-                              secondary={
-                                <React.Fragment>
-                                  <Typography
-                                    sx={{ display: 'block', mt: 0.5, mb: 0.5 }}
-                                    component="span"
-                                    variant="body2"
-                                    color="text.primary"
-                                  >
-                                    {activity.description}
-                                  </Typography>
-                                  <Typography
-                                    component="span"
-                                    variant="body2"
-                                    color="text.secondary"
-                                  >
-                                    {new Date(activity.date).toLocaleDateString(
-                                      'en-US',
-                                      {
-                                        year: 'numeric',
-                                        month: 'short',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                      },
-                                    )}
-                                  </Typography>
-                                </React.Fragment>
-                              }
-                            />
-                          </ListItem>
-                          {index <
-                            hirerProfile.recentActivity.slice(0, 5).length -
-                              1 && (
-                            <Divider component="li" sx={{ opacity: 0.6 }} />
-                          )}
-                        </React.Fragment>
-                      ))
-                  ) : (
-                    <ListItem
-                      sx={{
-                        px: 3,
-                        py: 4,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <NotificationsIcon
-                        sx={{
-                          fontSize: 40,
-                          color: 'text.disabled',
-                          mb: 2,
-                          opacity: 0.4,
-                        }}
-                      />
-                      <ListItemText
-                        primary={
-                          <Typography
-                            align="center"
-                            variant="subtitle1"
-                            color="text.secondary"
-                            gutterBottom
-                          >
-                            No recent activity
-                          </Typography>
-                        }
-                        secondary={
-                          <Typography
-                            align="center"
-                            variant="body2"
-                            color="text.disabled"
-                          >
-                            Your activities will appear here
-                          </Typography>
-                        }
-                      />
-                    </ListItem>
-                  )}
-                </List>
+              <Box sx={{ maxHeight: 300, overflow: 'auto' }}>
+                {hirerProfile?.recentActivity && hirerProfile.recentActivity.length > 0 ? (
+                  <List disablePadding>
+                    {hirerProfile.recentActivity.slice(0, 5).map((activity, index) => (
+                      <React.Fragment key={activity.id || index}>
+                        <ListItem sx={{ px: 2, py: 1.5 }}>
+                          <ListItemAvatar>
+                            <Avatar sx={{ bgcolor: 'rgba(255,215,0,0.2)', width: 36, height: 36 }}>
+                              {activity.type === 'job' ? (
+                                <WorkIcon sx={{ fontSize: 18, color: '#FFD700' }} />
+                              ) : activity.type === 'application' ? (
+                                <ProposalIcon sx={{ fontSize: 18, color: '#0984E3' }} />
+                              ) : (
+                                <NotificationsIcon sx={{ fontSize: 18, color: '#E17055' }} />
+                              )}
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText
+                            primary={
+                              <Typography variant="body2" fontWeight={500}>
+                                {activity.title}
+                              </Typography>
+                            }
+                            secondary={
+                              <Typography variant="caption" color="text.secondary">
+                                {new Date(activity.date).toLocaleDateString()}
+                              </Typography>
+                            }
+                          />
+                        </ListItem>
+                        {index < 4 && <Divider />}
+                      </React.Fragment>
+                    ))}
+                  </List>
+                ) : (
+                  <Box sx={{ py: 4, textAlign: 'center' }}>
+                    <NotificationsIcon sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }} />
+                    <Typography variant="body2" color="text.secondary">
+                      No recent activity
+                    </Typography>
+                  </Box>
+                )}
               </Box>
-              <Box
-                sx={{
-                  p: 2,
-                  textAlign: 'center',
-                  borderTop: '1px solid rgba(0,0,0,0.05)',
-                }}
-              >
+              <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
                 <Button
+                  color="secondary"
                   startIcon={<NotificationsIcon />}
                   onClick={() => navigate('/notifications')}
-                  variant="text"
-                  color="secondary"
-                  sx={{
-                    py: 1,
-                    fontWeight: 600,
-                    '&:hover': {
-                      backgroundColor: 'rgba(255,215,0,0.05)',
-                    },
-                  }}
                 >
-                  View All Notifications
+                  View All
                   {unreadNotifications > 0 && (
-                    <Badge
-                      color="error"
-                      badgeContent={unreadNotifications}
-                      sx={{ ml: 1 }}
-                    />
+                    <Badge color="error" badgeContent={unreadNotifications} sx={{ ml: 1 }} />
                   )}
                 </Button>
               </Box>
-            </CardContent>
-          </StyledPaper>
+            </StyledPaper>
+          </Grid>
         </Grid>
-      </Grid>
+      </Box>
     </Fade>
   );
 
@@ -1321,7 +1289,7 @@ const HirerDashboardPage = () => {
               {error}
             </Alert>
           )}
-          {/* Tabs Navigation */}
+          {/* Tabs Navigation - Streamlined to 5 tabs */}
           <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
             <Tabs
               value={tabValue}
@@ -1332,17 +1300,16 @@ const HirerDashboardPage = () => {
               TabIndicatorProps={{ style: { backgroundColor: '#FFD700' } }}
             >
               <StyledTab icon={<DashboardIcon />} label="Overview" />
-              <StyledTab icon={<WorkIcon />} label="Jobs" />
               <StyledTab
                 icon={
                   <Badge
                     badgeContent={summaryData.pendingProposals}
                     color="warning"
                   >
-                    <ProposalIcon />
+                    <WorkIcon />
                   </Badge>
                 }
-                label="Proposals"
+                label="My Jobs"
               />
               <StyledTab
                 icon={
@@ -1357,10 +1324,9 @@ const HirerDashboardPage = () => {
               />
               <StyledTab icon={<ProgressIcon />} label="Progress" />
               <StyledTab icon={<ReviewIcon />} label="Reviews" />
-              <StyledTab icon={<SearchIcon />} label="Find Talent" />
             </Tabs>
           </Box>
-          {/* Tab Panels */}
+          {/* Tab Panels - 5 streamlined panels */}
           <TabPanel value={tabValue} index={0}>
             {isHydrating ? (
               <LoadingOverviewSkeleton />
@@ -1372,19 +1338,13 @@ const HirerDashboardPage = () => {
             <HirerJobManagement />
           </TabPanel>
           <TabPanel value={tabValue} index={2}>
-            <ProposalReview />
-          </TabPanel>
-          <TabPanel value={tabValue} index={3}>
             <PaymentRelease />
           </TabPanel>
-          <TabPanel value={tabValue} index={4}>
+          <TabPanel value={tabValue} index={3}>
             <JobProgressTracker />
           </TabPanel>
-          <TabPanel value={tabValue} index={5}>
+          <TabPanel value={tabValue} index={4}>
             <WorkerReview />
-          </TabPanel>
-          <TabPanel value={tabValue} index={6}>
-            <WorkerSearch />
           </TabPanel>
         </Container>
         {/* Floating Quick Actions */}
