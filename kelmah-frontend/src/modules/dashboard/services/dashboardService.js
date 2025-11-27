@@ -157,14 +157,14 @@ class DashboardService {
         metricsRes.status === 'fulfilled'
           ? metricsRes.value.data?.data || metricsRes.value.data
           : {
-              totalUsers: 0,
-              totalWorkers: 0,
-              activeWorkers: 0,
-              totalJobs: 0,
-              completedJobs: 0,
-              growthRate: 0,
-              source: 'fallback',
-            };
+            totalUsers: 0,
+            totalWorkers: 0,
+            activeWorkers: 0,
+            totalJobs: 0,
+            completedJobs: 0,
+            growthRate: 0,
+            source: 'fallback',
+          };
 
       const jobsData =
         jobsRes.status === 'fulfilled'
@@ -313,16 +313,16 @@ class DashboardService {
       return [
         topJob
           ? {
-              id: topJob.id || 'job-highlight',
-              label: `Review ${topJob.title}`,
-              type: 'job',
-              source: 'jobs',
-            }
+            id: topJob.id || 'job-highlight',
+            label: `Review ${topJob.title}`,
+            type: 'job',
+            source: 'jobs',
+          }
           : {
-              id: 'refresh-dashboard',
-              label: 'Refresh dashboard data',
-              type: 'action',
-            },
+            id: 'refresh-dashboard',
+            label: 'Refresh dashboard data',
+            type: 'action',
+          },
         {
           id: 'update-profile',
           label: 'Update your profile details',

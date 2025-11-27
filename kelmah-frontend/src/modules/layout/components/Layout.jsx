@@ -28,7 +28,7 @@ import SmartNavigation from '../../../components/common/SmartNavigation';
 const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
   const location = useLocation();
   const theme = useTheme();
-  
+
   // Use Outlet for React Router nested routes, fallback to children prop
   const content = children || <Outlet />;
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));

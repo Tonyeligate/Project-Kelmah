@@ -165,10 +165,10 @@ export const MessageProvider = ({ children }) => {
         prev.map((conv) =>
           conv.id === hydratedMessage.conversationId
             ? {
-                ...conv,
-                lastMessage: hydratedMessage,
-                updatedAt: hydratedMessage.createdAt,
-              }
+              ...conv,
+              lastMessage: hydratedMessage,
+              updatedAt: hydratedMessage.createdAt,
+            }
             : conv,
         ),
       );
@@ -362,20 +362,20 @@ export const MessageProvider = ({ children }) => {
           const eventName = useEncrypted ? 'send_encrypted' : 'send_message';
           const payload = useEncrypted
             ? {
-                conversationId: selectedConversation.id,
-                encryptedBody: content.trim(),
-                encryption: { scheme: 'beta', version: '1', senderKeyId: 'me' },
-                messageType,
-                attachments: safeAttachments,
-                clientId,
-              }
+              conversationId: selectedConversation.id,
+              encryptedBody: content.trim(),
+              encryption: { scheme: 'beta', version: '1', senderKeyId: 'me' },
+              messageType,
+              attachments: safeAttachments,
+              clientId,
+            }
             : {
-                conversationId: selectedConversation.id,
-                content: content.trim(),
-                messageType,
-                attachments: safeAttachments,
-                clientId,
-              };
+              conversationId: selectedConversation.id,
+              content: content.trim(),
+              messageType,
+              attachments: safeAttachments,
+              clientId,
+            };
 
           socket.emit(eventName, payload, async (ack) => {
             if (!ack || ack.ok !== true) {

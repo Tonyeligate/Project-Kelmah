@@ -14,11 +14,14 @@ import {
   LinearProgress,
   Button,
   Chip,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNotifications } from '../../../notifications/contexts/NotificationContext';
 import { useMessages } from '../../../messaging/contexts/MessageContext';
+import { useThemeMode } from '../../../../theme/ThemeProvider';
 
 // --- ICONS ---
 import HomeIcon from '@mui/icons-material/Home';
@@ -39,6 +42,8 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import Badge from '@mui/material/Badge';
 import { Star } from '@mui/icons-material';
 import ReceiptIcon from '@mui/icons-material/Receipt';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import { getProfileCompletion } from '../../../../utils/userUtils';
 import profileService from '../../../profile/services/profileService';
 import {
@@ -55,6 +60,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
   const profileLoading = useSelector(selectProfileLoading);
   const { unreadCount: unreadMessages } = useMessages();
   const { unreadCount: unreadNotifications } = useNotifications();
+  const { mode, toggleTheme, isDark } = useThemeMode();
   const location = useLocation();
   const [profileRequested, setProfileRequested] = useState(false);
   const userIdentifier =
@@ -226,15 +232,33 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
         [`& .MuiDrawer-paper`]: {
           width: 280,
           boxSizing: 'border-box',
-          backgroundColor: '#1C2536',
-          color: '#fff',
+          backgroundColor: isDark ? '#1C2536' : '#FFFFFF',
+          color: isDark ? '#fff' : '#1C2536',
           display: 'flex',
           flexDirection: 'column',
+          borderRight: isDark ? 'none' : '1px solid rgba(0,0,0,0.08)',
         },
       }}
     >
       <Toolbar />
       <Box sx={{ p: 2, textAlign: 'center' }}>
+        {/* Theme Toggle Button */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+          <Tooltip title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+            <IconButton
+              onClick={toggleTheme}
+              sx={{
+                backgroundColor: isDark ? 'rgba(255,215,0,0.1)' : 'rgba(28,37,54,0.1)',
+                color: '#FFD700',
+                '&:hover': {
+                  backgroundColor: isDark ? 'rgba(255,215,0,0.2)' : 'rgba(28,37,54,0.2)',
+                },
+              }}
+            >
+              {isDark ? <LightModeIcon /> : <DarkModeIcon />}
+            </IconButton>
+          </Tooltip>
+        </Box>
         <Avatar
           alt={user?.firstName || 'Worker'}
           src={
@@ -249,8 +273,8 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
             border: '2px solid #FFD700',
           }}
         />
-        <Typography variant="h6">{user?.firstName || 'Demo User'}</Typography>
-        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+        <Typography variant="h6" sx={{ color: isDark ? '#fff' : '#1C2536' }}>{user?.firstName || 'Demo User'}</Typography>
+        <Typography variant="body2" sx={{ color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' }}>
           {user?.profession || 'Carpenter'}
         </Typography>
 
@@ -259,9 +283,9 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
           sx={{
             mt: 2,
             p: 1,
-            backgroundColor: 'rgba(212,175,55,0.1)',
+            backgroundColor: isDark ? 'rgba(212,175,55,0.1)' : 'rgba(212,175,55,0.15)',
             borderRadius: 1,
-            border: '1px solid rgba(212,175,55,0.3)',
+            border: isDark ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(212,175,55,0.4)',
           }}
         >
           <Typography
@@ -281,7 +305,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
             readOnly
             sx={{
               '& .MuiRating-iconFilled': { color: '#FFD700' },
-              '& .MuiRating-iconEmpty': { color: 'rgba(255,255,255,0.26)' },
+              '& .MuiRating-iconEmpty': { color: isDark ? 'rgba(255,255,255,0.26)' : 'rgba(0,0,0,0.26)' },
             }}
           />
         </Box>
@@ -295,11 +319,11 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
           />
         )}
       </Box>
-      <Divider sx={{ borderColor: 'rgba(255,255,255,0.12)' }} />
+      <Divider sx={{ borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)' }} />
       <Box sx={{ px: 2, py: 2 }}>
         <Typography
           variant="body2"
-          sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}
+          sx={{ color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)', mb: 1 }}
         >
           Profile Completion
         </Typography>
@@ -310,7 +334,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
         />
         <Typography
           variant="caption"
-          sx={{ color: 'rgba(255,255,255,0.7)', display: 'block', mt: 0.5 }}
+          sx={{ color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)', display: 'block', mt: 0.5 }}
         >
           {profileCompletion}% complete
         </Typography>
@@ -318,7 +342,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
           <Box sx={{ mt: 1.5 }}>
             <Typography
               variant="caption"
-              sx={{ color: 'rgba(255,255,255,0.7)', display: 'block', mb: 0.5 }}
+              sx={{ color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)', display: 'block', mb: 0.5 }}
             >
               Next steps
             </Typography>
@@ -353,7 +377,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
           </Box>
         )}
       </Box>
-      <Divider sx={{ borderColor: 'rgba(255,255,255,0.12)' }} />
+      <Divider sx={{ borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)' }} />
       <List sx={{ flexGrow: 1 }}>
         {mainNavItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -367,22 +391,22 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                 sx={{
                   // ✅ IMPROVED: Add active state highlighting
                   backgroundColor: isActive
-                    ? 'rgba(212,175,55,0.15)'
+                    ? isDark ? 'rgba(212,175,55,0.15)' : 'rgba(212,175,55,0.2)'
                     : 'transparent',
                   borderLeft: isActive
                     ? '4px solid #D4AF37'
                     : '4px solid transparent',
                   '&:hover': {
                     backgroundColor: isActive
-                      ? 'rgba(212,175,55,0.2)'
-                      : 'rgba(255,255,255,0.05)',
+                      ? isDark ? 'rgba(212,175,55,0.2)' : 'rgba(212,175,55,0.25)'
+                      : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
                   },
                   transition: 'all 0.3s ease',
                 }}
               >
                 <ListItemIcon
                   sx={{
-                    color: isActive ? '#D4AF37' : '#fff',
+                    color: isActive ? '#D4AF37' : isDark ? '#fff' : '#1C2536',
                     transition: 'color 0.3s ease',
                   }}
                 >
@@ -398,7 +422,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                   primary={item.text}
                   sx={{
                     '& .MuiListItemText-primary': {
-                      color: isActive ? '#D4AF37' : '#fff',
+                      color: isActive ? '#D4AF37' : isDark ? '#fff' : '#1C2536',
                       fontWeight: isActive ? 'bold' : 'normal',
                       transition: 'all 0.3s ease',
                     },
