@@ -24,7 +24,8 @@ export { SERVICES };
 let runtimeConfig = null;
 
 // CRITICAL: Hardcoded production URL to bypass Vercel's cached environment variables
-const PRODUCTION_API_URL = 'https://kelmah-api-gateway-50z3.onrender.com';
+// Include /api prefix since all API gateway routes are under /api/*
+const PRODUCTION_API_URL = 'https://kelmah-api-gateway-50z3.onrender.com/api';
 
 const loadRuntimeConfig = async () => {
   if (typeof window !== 'undefined' && !runtimeConfig) {

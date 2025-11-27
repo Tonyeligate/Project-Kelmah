@@ -1,7 +1,7 @@
 {
-  "ngrokUrl": "https://kelmah-api-gateway-50z3.onrender.com",
+  "ngrokUrl": "https://kelmah-api-gateway-50z3.onrender.com/api",
   "websocketUrl": "wss://kelmah-api-gateway-50z3.onrender.com",
-  "API_URL": "https://kelmah-api-gateway-50z3.onrender.com",
+  "API_URL": "https://kelmah-api-gateway-50z3.onrender.com/api",
   "WS_URL": "https://kelmah-api-gateway-50z3.onrender.com",
   "NODE_ENV": "production",
   "TUNNEL_TYPE": "render",

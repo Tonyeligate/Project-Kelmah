@@ -1,7 +1,7 @@
 // Kelmah Service Worker for Ghana Market
 // Optimized for poor network conditions and offline functionality
 
-const CACHE_NAME = 'kelmah-v1.0.5-production';
+const CACHE_NAME = 'kelmah-v1.0.6-api-prefix-fix';
 const OFFLINE_URL = '/offline.html';
 const HEALTHY_GATEWAY_DB = 'kelmah-gateway-db';
 const HEALTHY_GATEWAY_STORE = 'healthyGatewayStore';
