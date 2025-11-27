@@ -12,6 +12,7 @@ import './index.css';
 import { ErrorBoundary } from 'react-error-boundary';
 import { HelmetProvider } from 'react-helmet-async';
 import { NotificationProvider } from './modules/notifications/contexts/NotificationContext';
+import { MessageProvider } from './modules/messaging/contexts/MessageContext';
 
 // Version 1.0.4 - Force fresh bundle generation
 console.log('🔧 Main.jsx v1.0.4 - Kelmah PWA with 50z3 gateway');
@@ -128,7 +129,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <ErrorBoundary FallbackComponent={ErrorFallback}>
               <HelmetProvider>
                 <NotificationProvider>
-                  <App />
+                  <MessageProvider>
+                    <App />
+                  </MessageProvider>
                 </NotificationProvider>
               </HelmetProvider>
             </ErrorBoundary>
