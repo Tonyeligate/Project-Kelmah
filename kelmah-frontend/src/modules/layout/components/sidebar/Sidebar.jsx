@@ -22,7 +22,6 @@ import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import AssignmentIcon from '@mui/icons-material/Assignment';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
@@ -85,8 +84,8 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
   // Determine role for navigation
   const navRole =
     user?.role === 'hirer' ||
-    user?.userType === 'hirer' ||
-    user?.userRole === 'hirer'
+      user?.userType === 'hirer' ||
+      user?.userRole === 'hirer'
       ? 'hirer'
       : user?.role === 'worker' ||
         user?.userType === 'worker' ||
@@ -94,28 +93,25 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
         ? 'worker'
         : null;
 
-  // LC Portal style menu items - role specific
-  const menuItems = navRole === 'hirer' 
+  // LC Portal style menu items - role specific (mapped to actual routes)
+  const menuItems = navRole === 'hirer'
     ? [
-        { text: 'Services', icon: <MiscellaneousServicesIcon />, path: '/hirer/services' },
-        { text: 'Post a Job', icon: <PostAddIcon />, path: '/hirer/jobs/post' },
-        { text: 'Active Jobs', icon: <WorkIcon />, path: '/hirer/jobs' },
-        { text: 'Applications', icon: <AssignmentIcon />, path: '/hirer/applications' },
-        { text: 'Find Talent', icon: <PeopleIcon />, path: '/hirer/find-talent' },
-        { text: 'Completed Jobs', icon: <CheckCircleIcon />, path: '/hirer/completed' },
-        { text: 'Track Progress', icon: <TrackChangesIcon />, path: '/hirer/progress' },
-        { text: 'Support & Enquiry', icon: <SupportAgentIcon />, path: '/support' },
-      ]
+      { text: 'Post a Job', icon: <PostAddIcon />, path: '/hirer/jobs/post' },
+      { text: 'My Jobs', icon: <WorkIcon />, path: '/hirer/jobs' },
+      { text: 'Applications', icon: <AssignmentIcon />, path: '/hirer/applications' },
+      { text: 'Find Talent', icon: <PeopleIcon />, path: '/hirer/find-talent' },
+      { text: 'Tools', icon: <MiscellaneousServicesIcon />, path: '/hirer/tools' },
+      { text: 'Support', icon: <SupportAgentIcon />, path: '/support' },
+    ]
     : [
-        { text: 'Services', icon: <MiscellaneousServicesIcon />, path: '/worker/services' },
-        { text: 'Unpaid Bills', icon: <ReceiptIcon />, path: '/worker/bills/unpaid' },
-        { text: 'Paid Bills', icon: <ReceiptLongIcon />, path: '/worker/bills/paid' },
-        { text: 'My Applications', icon: <AssignmentIcon />, path: '/worker/applications' },
-        { text: 'Queried Applications', icon: <HelpOutlineIcon />, path: '/worker/applications/queried' },
-        { text: 'Completed Jobs', icon: <CheckCircleIcon />, path: '/worker/completed' },
-        { text: 'Track Job', icon: <TrackChangesIcon />, path: '/worker/track' },
-        { text: 'Support & Enquiry', icon: <SupportAgentIcon />, path: '/support' },
-      ];
+      { text: 'Find Work', icon: <WorkIcon />, path: '/worker/find-work' },
+      { text: 'My Applications', icon: <AssignmentIcon />, path: '/worker/applications' },
+      { text: 'Contracts', icon: <ReceiptIcon />, path: '/worker/contracts' },
+      { text: 'Earnings', icon: <ReceiptLongIcon />, path: '/worker/earnings' },
+      { text: 'Wallet', icon: <CheckCircleIcon />, path: '/worker/wallet' },
+      { text: 'Reviews', icon: <TrackChangesIcon />, path: '/worker/reviews' },
+      { text: 'Support', icon: <SupportAgentIcon />, path: '/support' },
+    ];
 
   // Common items at bottom
   const bottomItems = [
