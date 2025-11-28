@@ -38,6 +38,7 @@ router.delete('/:userId', userProxy);
 // Worker-specific routes
 router.get('/workers', userProxy);
 router.get('/workers/:workerId', userProxy);
+router.put('/workers/:workerId', userProxy); // 🔥 FIX: Add worker profile update route
 router.put('/workers/:workerId/status', userProxy);
 router.get('/workers/:workerId/portfolio', userProxy);
 router.put('/workers/:workerId/portfolio', userProxy);

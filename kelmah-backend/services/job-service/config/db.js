@@ -35,11 +35,12 @@ mongoose.set('autoIndex', false); // Don't auto-create indexes on startup
 // MongoDB connection options
 const options = {
   retryWrites: true,
-  w: 'majority',
+  w: 1, // Changed from 'majority' to 1 for faster writes (single server acknowledge)
   maxPoolSize: 10,
-  serverSelectionTimeoutMS: 5000, // Reduced from 10000 - fail faster if can't connect
-  socketTimeoutMS: 20000, // Reduced from 45000 - faster timeout on socket issues
-  connectTimeoutMS: 5000, // Added - limit initial connection time
+  serverSelectionTimeoutMS: 10000, // 10 seconds to find server
+  socketTimeoutMS: 30000, // 30 seconds socket timeout
+  connectTimeoutMS: 10000, // 10 seconds to connect
+  bufferCommands: false, // Fail immediately if not connected, don't buffer
   family: 4 // Use IPv4, skip trying IPv6
 };
 

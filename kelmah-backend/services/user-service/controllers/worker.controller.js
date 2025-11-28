@@ -3174,9 +3174,114 @@ class WorkerController {
       return handleServiceError(res, error, 'Failed to get worker availability');
     }
   }
+
+  /**
+   * Update worker profile
+   * PUT /workers/:id
+   */
+  static async updateWorkerProfile(req, res) {
+    const workerId = req.params.id || req.params.workerId;
+    
+    if (!workerId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Worker ID is required' 
+      });
+    }
+
+    try {
+      await ensureConnection({ timeoutMs: 30000 });
+      
+      const { User } = require('../models');
+      
+      // Find the worker user
+      const user = await User.findById(workerId);
+      
+      if (!user) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Worker not found' 
+        });
+      }
+
+      if (user.role !== 'worker') {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'User is not a worker' 
+        });
+      }
+
+      // Extract profile data from request body
+      const {
+        firstName,
+        lastName,
+        title,
+        bio,
+        hourlyRate,
+        experience,
+        skills,
+        education,
+        languages,
+        location,
+        phone,
+        portfolio,
+      } = req.body;
+
+      // Update basic user fields
+      if (firstName) user.firstName = firstName;
+      if (lastName) user.lastName = lastName;
+      if (phone) user.phone = phone;
+
+      // Update worker profile fields
+      if (!user.workerProfile) {
+        user.workerProfile = {};
+      }
+
+      if (title) user.workerProfile.title = title;
+      if (bio) user.workerProfile.bio = bio;
+      if (hourlyRate !== undefined) user.workerProfile.hourlyRate = Number(hourlyRate);
+      if (experience !== undefined) user.workerProfile.experience = Number(experience);
+      if (location) user.workerProfile.location = location;
+      
+      // Update arrays
+      if (Array.isArray(skills)) user.workerProfile.skills = skills;
+      if (Array.isArray(education)) user.workerProfile.education = education;
+      if (Array.isArray(languages)) user.workerProfile.languages = languages;
+      if (Array.isArray(portfolio)) user.workerProfile.portfolio = portfolio;
+
+      // Handle profile image if provided (FormData)
+      if (req.file) {
+        user.profileImageUrl = req.file.path || req.file.url;
+      }
+
+      // Save the updated user
+      await user.save();
+
+      // Return the updated profile
+      const updatedProfile = {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        profileImageUrl: user.profileImageUrl,
+        ...user.workerProfile,
+      };
+
+      return res.json({ 
+        success: true, 
+        data: updatedProfile,
+        message: 'Worker profile updated successfully'
+      });
+
+    } catch (error) {
+      console.error('updateWorkerProfile error:', error);
+      return handleServiceError(res, error, 'Failed to update worker profile');
+    }
+  }
 }
 
-// Helper function to calculate distance between coordinates
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Earth's radius in kilometers
   const dLat = (lat2 - lat1) * Math.PI / 180;

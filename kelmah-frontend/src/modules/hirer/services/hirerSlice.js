@@ -28,16 +28,18 @@ export const fetchHirerJobs = createAsyncThunk(
       const response = await api.get('/jobs/my-jobs', {
         params: { status, role: 'hirer' },
       });
-      const jobs =
-        response.data?.data || response.data?.jobs || response.data || [];
-      // ✅ FIXED: Ensure jobs is always an array
+      // Response structure: { success: true, data: { items: [...], pagination: {...} } }
+      // Extract items array from response - check multiple possible paths
+      const responseData = response.data?.data;
+      const jobs = responseData?.items || responseData?.jobs || responseData || response.data?.jobs || [];
+      console.log('[HirerSlice] Fetched jobs:', { status, count: Array.isArray(jobs) ? jobs.length : 0 });
       return { status, jobs: Array.isArray(jobs) ? jobs : [] };
     } catch (error) {
       console.warn(
         `Job service unavailable for hirer jobs (${status}):`,
         error.message,
       );
-      // ✅ FIXED: Always return empty array on error
+      // Always return empty array on error
       return { status, jobs: [] };
     }
   },
@@ -179,9 +181,9 @@ export const fetchPaymentSummary = createAsyncThunk(
       const escrowBalance = Array.isArray(wallet?.accounts)
         ? wallet.accounts.find((a) => a.type === 'escrow')?.balance || 0
         : escrows.reduce(
-            (sum, e) => sum + (e.amount || 0) * (e.status === 'active' ? 1 : 0),
-            0,
-          );
+          (sum, e) => sum + (e.amount || 0) * (e.status === 'active' ? 1 : 0),
+          0,
+        );
 
       // Build pending payments from escrows' pending milestones
       const pending = [];
@@ -232,8 +234,8 @@ export const fetchPaymentSummary = createAsyncThunk(
         .filter((d) => Number.isFinite(d) && d > 0);
       const avgMs = payoutDurations.length
         ? Math.round(
-            payoutDurations.reduce((a, b) => a + b, 0) / payoutDurations.length,
-          )
+          payoutDurations.reduce((a, b) => a + b, 0) / payoutDurations.length,
+        )
         : null;
       const averagePaymentTime = avgMs
         ? `${Math.max(1, Math.round(avgMs / (1000 * 60)))} min`

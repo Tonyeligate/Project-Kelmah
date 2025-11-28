@@ -166,14 +166,14 @@ const createJob = async (req, res, next) => {
       // Filter skills to only include valid enum values for primarySkills
       const allSkills = Array.isArray(body.skills) ? body.skills.map(String) : [];
       const validSkills = allSkills.filter(skill => VALID_PRIMARY_SKILLS.includes(skill));
-      
+
       // If no valid skills found, try to map category to a skill or use default
       let primary = validSkills.length > 0 ? [validSkills[0]] : [];
       if (primary.length === 0 && body.category) {
         // Map common categories to primarySkills
         const categoryToSkill = {
           'Plumbing': 'Plumbing',
-          'Electrical': 'Electrical', 
+          'Electrical': 'Electrical',
           'Carpentry': 'Carpentry',
           'Masonry': 'Masonry',
           'Welding': 'Welding',
@@ -194,7 +194,7 @@ const createJob = async (req, res, next) => {
           primary = ['Construction'];
         }
       }
-      
+
       const secondary = validSkills.length > 1 ? validSkills.slice(1) : [];
       body.requirements = {
         primarySkills: primary,

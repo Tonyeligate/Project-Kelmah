@@ -77,6 +77,15 @@ router.get('/workers/:id', (req, res, next) => {
   next();
 }, WorkerController.getWorkerById);
 
+// 🔥 FIX: Add PUT route for worker profile updates
+router.put('/workers/:id', verifyGatewayRequest, (req, res, next) => {
+  console.log('✅ [USER-ROUTES] PUT /workers/:id route hit:', {
+    workerId: req.params.id,
+    fullPath: req.originalUrl
+  });
+  next();
+}, WorkerController.updateWorkerProfile);
+
 // Worker-specific parameterized routes (MUST be after specific routes like /search)
 router.get("/workers/debug/models", verifyGatewayRequest, (req, res) => {
   const modelsModule = require('../models');
