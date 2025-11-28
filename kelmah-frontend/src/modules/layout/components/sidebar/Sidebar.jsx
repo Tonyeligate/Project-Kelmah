@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Drawer,
   List,
@@ -10,8 +10,13 @@ import {
   Typography,
   Avatar,
   Badge,
+  TextField,
+  InputAdornment,
+  Tooltip,
+  Collapse,
+  IconButton,
 } from '@mui/material';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useNotifications } from '../../../notifications/contexts/NotificationContext';
 import { useMessages } from '../../../messaging/contexts/MessageContext';
@@ -32,6 +37,8 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import ChatIcon from '@mui/icons-material/Chat';
 import SettingsIcon from '@mui/icons-material/Settings';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
 
 // Kelmah Logo Component
 const KelmahLogo = () => (
@@ -80,6 +87,10 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
   const { unreadCount: unreadMessages } = useMessages();
   const { unreadCount: unreadNotifications } = useNotifications();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Determine role for navigation
   const navRole =
@@ -96,21 +107,21 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
   // LC Portal style menu items - role specific (mapped to actual routes)
   const menuItems = navRole === 'hirer'
     ? [
-      { text: 'Post a Job', icon: <PostAddIcon />, path: '/hirer/jobs/post' },
-      { text: 'My Jobs', icon: <WorkIcon />, path: '/hirer/jobs' },
-      { text: 'Applications', icon: <AssignmentIcon />, path: '/hirer/applications' },
-      { text: 'Find Talent', icon: <PeopleIcon />, path: '/hirer/find-talent' },
-      { text: 'Tools', icon: <MiscellaneousServicesIcon />, path: '/hirer/tools' },
-      { text: 'Support', icon: <SupportAgentIcon />, path: '/support' },
+      { text: 'Post a Job', icon: <PostAddIcon />, path: '/hirer/jobs/post', tooltip: 'Create a new job posting' },
+      { text: 'My Jobs', icon: <WorkIcon />, path: '/hirer/jobs', tooltip: 'Manage your job postings' },
+      { text: 'Applications', icon: <AssignmentIcon />, path: '/hirer/applications', tooltip: 'Review worker applications' },
+      { text: 'Find Talent', icon: <PeopleIcon />, path: '/hirer/find-talent', tooltip: 'Search for skilled workers' },
+      { text: 'Tools', icon: <MiscellaneousServicesIcon />, path: '/hirer/tools', tooltip: 'Hirer tools and utilities' },
+      { text: 'Support', icon: <SupportAgentIcon />, path: '/support', tooltip: 'Get help and support' },
     ]
     : [
-      { text: 'Find Work', icon: <WorkIcon />, path: '/worker/find-work' },
-      { text: 'My Applications', icon: <AssignmentIcon />, path: '/worker/applications' },
-      { text: 'Contracts', icon: <ReceiptIcon />, path: '/worker/contracts' },
-      { text: 'Earnings', icon: <ReceiptLongIcon />, path: '/worker/earnings' },
-      { text: 'Wallet', icon: <CheckCircleIcon />, path: '/worker/wallet' },
-      { text: 'Reviews', icon: <TrackChangesIcon />, path: '/worker/reviews' },
-      { text: 'Support', icon: <SupportAgentIcon />, path: '/support' },
+      { text: 'Find Work', icon: <WorkIcon />, path: '/worker/find-work', tooltip: 'Search for available jobs' },
+      { text: 'My Applications', icon: <AssignmentIcon />, path: '/worker/applications', tooltip: 'Track your job applications' },
+      { text: 'Contracts', icon: <ReceiptIcon />, path: '/worker/contracts', tooltip: 'View your active contracts' },
+      { text: 'Earnings', icon: <ReceiptLongIcon />, path: '/worker/earnings', tooltip: 'Track your earnings' },
+      { text: 'Wallet', icon: <CheckCircleIcon />, path: '/worker/wallet', tooltip: 'Manage your wallet' },
+      { text: 'Reviews', icon: <TrackChangesIcon />, path: '/worker/reviews', tooltip: 'See your reviews' },
+      { text: 'Support', icon: <SupportAgentIcon />, path: '/support', tooltip: 'Get help and support' },
     ];
 
   // Common items at bottom
@@ -120,15 +131,41 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
       icon: <NotificationsIcon />,
       path: '/notifications',
       badge: unreadNotifications,
+      tooltip: 'View your notifications',
     },
     {
       text: 'Messages',
       icon: <ChatIcon />,
       path: '/messages',
       badge: unreadMessages,
+      tooltip: 'View your messages',
     },
-    { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
+    { text: 'Settings', icon: <SettingsIcon />, path: '/settings', tooltip: 'Account settings' },
   ];
+
+  // Filter menu items based on search
+  const filteredMenuItems = useMemo(() => {
+    if (!searchQuery.trim()) return menuItems;
+    const query = searchQuery.toLowerCase();
+    return menuItems.filter(item =>
+      item.text.toLowerCase().includes(query) ||
+      (item.tooltip && item.tooltip.toLowerCase().includes(query))
+    );
+  }, [menuItems, searchQuery]);
+
+  const filteredBottomItems = useMemo(() => {
+    if (!searchQuery.trim()) return bottomItems;
+    const query = searchQuery.toLowerCase();
+    return bottomItems.filter(item =>
+      item.text.toLowerCase().includes(query) ||
+      (item.tooltip && item.tooltip.toLowerCase().includes(query))
+    );
+  }, [bottomItems, searchQuery]);
+
+  // Handle search clear
+  const handleClearSearch = () => {
+    setSearchQuery('');
+  };
 
   const dashboardPath = navRole === 'hirer' ? '/hirer/dashboard' : '/worker/dashboard';
   const isDashboardActive = location.pathname === dashboardPath || location.pathname === '/dashboard';
@@ -226,6 +263,56 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
         </ListItem>
       </Box>
 
+      {/* Search Input */}
+      <Box sx={{ px: 2, mb: 1 }}>
+        <TextField
+          size="small"
+          placeholder="Search menu..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          fullWidth
+          aria-label="Search navigation menu"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon sx={{ color: '#666', fontSize: 20 }} />
+              </InputAdornment>
+            ),
+            endAdornment: searchQuery && (
+              <InputAdornment position="end">
+                <IconButton
+                  size="small"
+                  onClick={handleClearSearch}
+                  aria-label="Clear search"
+                  sx={{ p: 0.5 }}
+                >
+                  <ClearIcon sx={{ fontSize: 18, color: '#666' }} />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: '#FFFFFF',
+              borderRadius: 1,
+              '& fieldset': {
+                borderColor: '#E0E0E0',
+              },
+              '&:hover fieldset': {
+                borderColor: '#BDBDBD',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#1976D2',
+              },
+            },
+            '& .MuiInputBase-input': {
+              fontSize: '0.875rem',
+              py: 0.75,
+            },
+          }}
+        />
+      </Box>
+
       {/* MENU Section Header */}
       <Typography
         variant="caption"
@@ -242,14 +329,88 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
 
       {/* Menu Items */}
       <List sx={{ px: 1, flexGrow: 1 }}>
-        {menuItems.map((item) => {
+        {filteredMenuItems.length === 0 && searchQuery ? (
+          <Typography
+            variant="body2"
+            sx={{ px: 2, py: 2, color: '#999', textAlign: 'center' }}
+          >
+            No menu items found
+          </Typography>
+        ) : (
+          filteredMenuItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            const menuItemElement = (
+              <ListItem
+                key={item.text}
+                button
+                component={RouterLink}
+                to={item.path}
+                aria-label={item.tooltip || item.text}
+                sx={{
+                  borderRadius: 1,
+                  mb: 0.5,
+                  py: 1.25,
+                  backgroundColor: isActive ? '#F5F5F5' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: '#F5F5F5',
+                  },
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 40 }}>
+                  {item.badge && item.badge > 0 ? (
+                    <Badge color="error" badgeContent={item.badge} max={99}>
+                      {React.cloneElement(item.icon, {
+                        sx: { color: isActive ? '#1976D2' : '#666' },
+                      })}
+                    </Badge>
+                  ) : (
+                    React.cloneElement(item.icon, {
+                      sx: { color: isActive ? '#1976D2' : '#666' },
+                    })
+                  )}
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.text}
+                  sx={{
+                    '& .MuiListItemText-primary': {
+                      color: isActive ? '#1976D2' : '#333',
+                      fontWeight: isActive ? 600 : 400,
+                      fontSize: '0.9rem',
+                    },
+                  }}
+                />
+              </ListItem>
+            );
+
+            return item.tooltip ? (
+              <Tooltip
+                key={item.text}
+                title={item.tooltip}
+                placement="right"
+                arrow
+              >
+                {menuItemElement}
+              </Tooltip>
+            ) : (
+              menuItemElement
+            );
+          })
+        )}
+      </List>
+
+      <Divider sx={{ mx: 2, borderColor: '#E0E0E0' }} />
+
+      {/* Bottom Items */}
+      <List sx={{ px: 1, pb: 2 }}>
+        {filteredBottomItems.map((item) => {
           const isActive = location.pathname === item.path;
-          return (
+          const bottomItemElement = (
             <ListItem
               key={item.text}
               button
               component={RouterLink}
               to={item.path}
+              aria-label={item.tooltip || item.text}
               sx={{
                 borderRadius: 1,
                 mb: 0.5,
@@ -285,55 +446,18 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
               />
             </ListItem>
           );
-        })}
-      </List>
 
-      <Divider sx={{ mx: 2, borderColor: '#E0E0E0' }} />
-
-      {/* Bottom Items */}
-      <List sx={{ px: 1, pb: 2 }}>
-        {bottomItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          return (
-            <ListItem
+          return item.tooltip ? (
+            <Tooltip
               key={item.text}
-              button
-              component={RouterLink}
-              to={item.path}
-              sx={{
-                borderRadius: 1,
-                mb: 0.5,
-                py: 1.25,
-                backgroundColor: isActive ? '#F5F5F5' : 'transparent',
-                '&:hover': {
-                  backgroundColor: '#F5F5F5',
-                },
-              }}
+              title={item.tooltip}
+              placement="right"
+              arrow
             >
-              <ListItemIcon sx={{ minWidth: 40 }}>
-                {item.badge && item.badge > 0 ? (
-                  <Badge color="error" badgeContent={item.badge} max={99}>
-                    {React.cloneElement(item.icon, {
-                      sx: { color: isActive ? '#1976D2' : '#666' },
-                    })}
-                  </Badge>
-                ) : (
-                  React.cloneElement(item.icon, {
-                    sx: { color: isActive ? '#1976D2' : '#666' },
-                  })
-                )}
-              </ListItemIcon>
-              <ListItemText
-                primary={item.text}
-                sx={{
-                  '& .MuiListItemText-primary': {
-                    color: isActive ? '#1976D2' : '#333',
-                    fontWeight: isActive ? 600 : 400,
-                    fontSize: '0.9rem',
-                  },
-                }}
-              />
-            </ListItem>
+              {bottomItemElement}
+            </Tooltip>
+          ) : (
+            bottomItemElement
           );
         })}
       </List>

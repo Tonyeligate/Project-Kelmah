@@ -65,8 +65,10 @@ export const messagingService = {
   // Get messages for a conversation (REST fallback or initial load)
   async getMessages(conversationId, page = 1, limit = 50) {
     try {
+      // FIXED: Correct path structure - /messaging/conversations/:id/messages
+      // Backend router at /api/messages handles /conversations/:id/messages
       const response = await api.get(
-        `/messaging/messages/conversations/${conversationId}/messages`,
+        `/messages/conversations/${conversationId}/messages`,
         {
           params: { page, limit },
         },
@@ -108,13 +110,17 @@ export const messagingService = {
   },
 
   // Create a direct conversation with a single participant
-  async createDirectConversation(participantId) {
+  async createDirectConversation(participantId, jobId = null) {
     try {
-      const response = await api.post('/messaging/conversations', {
+      // FIXED: jobId was undefined - now passed as parameter
+      const payload = {
         participantIds: [participantId],
         type: 'direct',
-        jobId,
-      });
+      };
+      if (jobId) {
+        payload.jobId = jobId;
+      }
+      const response = await api.post('/messaging/conversations', payload);
       return response.data?.data?.conversation || response.data;
     } catch (error) {
       console.warn(

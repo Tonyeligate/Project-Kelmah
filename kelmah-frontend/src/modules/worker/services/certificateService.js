@@ -14,7 +14,8 @@ const certificateService = {
    * @returns {Promise<Object>} - Response with certificates
    */
   getWorkerCertificates: async (workerId) => {
-    const res = await api.get(`/api/profile/${workerId}/certificates`);
+    // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
+    const res = await api.get(`/profile/${workerId}/certificates`);
     const unwrapped = unwrap(res);
     // Support both { certificates: [] } and []
     return Array.isArray(unwrapped?.certificates)
@@ -30,8 +31,9 @@ const certificateService = {
    * @returns {Promise<Object>} - Created certificate
    */
   createCertificate: async (certificateData) => {
+    // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
     const res = await api.post(
-      `/api/profile/${certificateData.workerId}/certificates`,
+      `/profile/${certificateData.workerId}/certificates`,
       certificateData,
     );
     const unwrapped = unwrap(res);
@@ -45,8 +47,9 @@ const certificateService = {
    * @returns {Promise<Object>} - Updated certificate
    */
   updateCertificate: async (certificateId, certificateData) => {
+    // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
     const res = await api.put(
-      `/api/profile/certificates/${certificateId}`,
+      `/profile/certificates/${certificateId}`,
       certificateData,
     );
     const unwrapped = unwrap(res);
@@ -59,7 +62,8 @@ const certificateService = {
    * @returns {Promise<Object>} - Deletion confirmation
    */
   deleteCertificate: async (certificateId) => {
-    const res = await api.delete(`/api/profile/certificates/${certificateId}`);
+    // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
+    const res = await api.delete(`/profile/certificates/${certificateId}`);
     const unwrapped = unwrap(res);
     return unwrapped?.success ?? true;
   },
@@ -93,8 +97,9 @@ const certificateService = {
    * @returns {Promise<Object>} - Verification request response
    */
   requestVerification: async (certificateId) => {
+    // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
     const res = await api.post(
-      `/api/profile/certificates/${certificateId}/verify`,
+      `/profile/certificates/${certificateId}/verify`,
     );
     const unwrapped = unwrap(res);
     return unwrapped?.certificate ?? unwrapped;
@@ -106,8 +111,9 @@ const certificateService = {
    * @returns {Promise<Object>} - Verification status
    */
   getVerificationStatus: async (certificateId) => {
+    // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
     const res = await api.get(
-      `/api/profile/certificates/${certificateId}/verification`,
+      `/profile/certificates/${certificateId}/verification`,
     );
     return unwrap(res);
   },
@@ -118,7 +124,8 @@ const certificateService = {
    * @returns {Promise<Object>} - Certificate statistics
    */
   getCertificateStats: async (workerId) => {
-    const res = await api.get(`/api/profile/${workerId}/certificates/stats`);
+    // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
+    const res = await api.get(`/profile/${workerId}/certificates/stats`);
     return unwrap(res);
   },
 
@@ -128,8 +135,9 @@ const certificateService = {
    * @returns {Promise<Object>} - Shareable link data
    */
   shareCertificate: async (certificateId) => {
+    // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
     const res = await api.post(
-      `/api/profile/certificates/${certificateId}/share`,
+      `/profile/certificates/${certificateId}/share`,
     );
     return unwrap(res);
   },
@@ -141,8 +149,9 @@ const certificateService = {
    * @returns {Promise<Object>} - Validation result
    */
   validateCertificate: async (certificateId, credentialId) => {
+    // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
     const res = await api.post(
-      `/api/profile/certificates/${certificateId}/validate`,
+      `/profile/certificates/${certificateId}/validate`,
       { credentialId },
     );
     return unwrap(res);
@@ -155,8 +164,9 @@ const certificateService = {
    * @returns {Promise<Object>} - Expiring certificates
    */
   getExpiringCertificates: async (workerId, daysAhead = 30) => {
+    // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
     const res = await api.get(
-      `/api/profile/${workerId}/certificates/expiring`,
+      `/profile/${workerId}/certificates/expiring`,
       { params: { daysAhead } },
     );
     const unwrapped = unwrap(res);
@@ -174,7 +184,8 @@ const certificateService = {
    * @returns {Promise<Object>} - Filtered certificates
    */
   searchCertificates: async (workerId, filters = {}) => {
-    const res = await api.get(`/api/profile/${workerId}/certificates/search`, {
+    // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
+    const res = await api.get(`/profile/${workerId}/certificates/search`, {
       params: filters,
     });
     const unwrapped = unwrap(res);

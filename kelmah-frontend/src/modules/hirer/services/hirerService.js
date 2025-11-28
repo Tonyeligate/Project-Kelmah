@@ -14,7 +14,8 @@ const workerBookmarkPath = (workerId) => {
   if (typeof USER.WORKER_BOOKMARK === 'function') {
     return USER.WORKER_BOOKMARK(workerId);
   }
-  return `/api/users/workers/${workerId}/bookmark`;
+  // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
+  return `/users/workers/${workerId}/bookmark`;
 };
 
 // Clients come preconfigured with auth and retries

@@ -1,14 +1,15 @@
 import { api } from '../../../services/apiClient';
 
+// FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
 const SERVICE_TARGETS = {
   user: {
-    presign: '/api/profile/uploads/presign',
-    directUpload: '/api/profile/uploads',
+    presign: '/profile/uploads/presign',
+    directUpload: '/profile/uploads',
   },
   messaging: {
-    presign: '/api/uploads/presign',
+    presign: '/uploads/presign',
     directUpload: (folder = 'messages') =>
-      `/api/messages/${folder.replace(/^attachments\//, '')}/attachments`,
+      `/messages/${folder.replace(/^attachments\//, '')}/attachments`,
   },
 };
 

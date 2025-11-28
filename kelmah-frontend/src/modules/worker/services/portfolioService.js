@@ -1,6 +1,7 @@
 import { api } from '../../../services/apiClient';
 
-const PROFILE_BASE = '/api/profile';
+// FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
+const PROFILE_BASE = '/profile';
 const profilePath = (suffix = '') => `${PROFILE_BASE}${suffix}`;
 
 /**

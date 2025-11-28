@@ -7,7 +7,7 @@ export const fetchWorkerProfile = createAsyncThunk(
   async (workerId, { rejectWithValue }) => {
     try {
       // Use user-service worker endpoint
-      const response = await api.get(`/api/users/workers/${workerId}`);
+      const response = await api.get(`/users/workers/${workerId}`);
       return (
         response.data?.data?.worker || response.data?.data || response.data
       );
@@ -24,7 +24,7 @@ export const updateWorkerProfile = createAsyncThunk(
   async ({ workerId, profileData }, { rejectWithValue }) => {
     try {
       const response = await api.put(
-        `/api/users/workers/${workerId}`,
+        `/users/workers/${workerId}`,
         profileData,
       );
       return response.data?.data || response.data;
@@ -40,7 +40,7 @@ export const fetchWorkerSkills = createAsyncThunk(
   'worker/fetchSkills',
   async (workerId, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/users/workers/${workerId}/skills`);
+      const response = await api.get(`/users/workers/${workerId}/skills`);
       return response.data?.data || response.data;
     } catch (error) {
       return rejectWithValue(
@@ -55,7 +55,7 @@ export const updateWorkerSkills = createAsyncThunk(
   async ({ workerId, skills }, { rejectWithValue }) => {
     try {
       // Bulk update not supported; client should call add/update individually
-      const response = await api.get(`/api/users/workers/${workerId}/skills`);
+      const response = await api.get(`/users/workers/${workerId}/skills`);
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -109,7 +109,7 @@ export const submitWorkerApplication = createAsyncThunk(
   async ({ jobId, applicationData }, { rejectWithValue }) => {
     try {
       const response = await api.post(
-        `/api/jobs/${jobId}/apply`,
+        `/jobs/${jobId}/apply`,
         applicationData,
       );
       return response.data;
@@ -126,7 +126,7 @@ export const fetchWorkerEarnings = createAsyncThunk(
   async ({ workerId, period = 'month' }, { rejectWithValue }) => {
     try {
       const response = await api.get(
-        `/api/users/workers/${workerId}/earnings?period=${period}`,
+        `/users/workers/${workerId}/earnings?period=${period}`,
       );
       return response.data;
     } catch (error) {
@@ -142,7 +142,7 @@ export const updateWorkerAvailability = createAsyncThunk(
   async ({ workerId, availabilityData }, { rejectWithValue }) => {
     try {
       const response = await api.put(
-        `/api/users/workers/${workerId}/availability`,
+        `/users/workers/${workerId}/availability`,
         availabilityData,
       );
       return response.data;

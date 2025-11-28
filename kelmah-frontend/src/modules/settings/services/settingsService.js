@@ -1,13 +1,14 @@
 import { api } from '../../../services/apiClient';
 
-const SETTINGS_BASE = '/api/settings';
+// FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
+const SETTINGS_BASE = '/settings';
 const settingsPath = (suffix = '') => `${SETTINGS_BASE}${suffix}`;
 
 class SettingsService {
   // Get user settings
   async getSettings() {
     try {
-      // User-service currently implements only notifications under /api/settings
+      // User-service currently implements only notifications under /settings
       // Return a sensible default settings object instead of 404
       const notifications = await this.getNotificationPreferences().catch(
         () => null,

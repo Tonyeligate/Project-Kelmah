@@ -4,7 +4,8 @@ class ProfileService {
   // Get user profile
   async getProfile() {
     try {
-      console.debug('[ProfileService] Requesting /api/users/profile');
+      // Note: apiClient.baseURL already includes '/api', so we use '/users/profile'
+      console.debug('[ProfileService] Requesting /users/profile');
       const response = await api.get('/users/profile');
       const payload = response.data || {};
 

@@ -727,6 +727,10 @@ app.use('/api/payments',
 const messagingRouter = require('./routes/messaging.routes');
 app.use('/api/messages', authenticate, messagingRouter);
 
+// IMPORTANT: Also mount at /api/messaging to match frontend API calls
+// Frontend uses /api/messaging/conversations, /api/messaging/messages, etc.
+app.use('/api/messaging', authenticate, messagingRouter);
+
 // Upload routes for messaging (protected) → messaging-service
 app.use('/api/uploads',
   authenticate,

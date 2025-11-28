@@ -85,6 +85,28 @@ router.get('/my-jobs', authenticate, async (req, res) => {
   await forwardToJobService(req, res, '/api/jobs/my-jobs', 'GET');
 });
 
+// GET /api/jobs/dashboard - Get dashboard jobs (protected)
+router.get('/dashboard', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, '/api/jobs/dashboard', 'GET');
+});
+
+// GET /api/jobs/stats - Get platform stats (public)
+router.get('/stats', async (req, res) => {
+  await forwardToJobService(req, res, '/api/jobs/stats', 'GET');
+});
+
+// GET /api/jobs/suggestions - Get search suggestions (public)
+router.get('/suggestions', async (req, res) => {
+  const queryString = new URLSearchParams(req.query).toString();
+  const path = `/api/jobs/suggestions${queryString ? '?' + queryString : ''}`;
+  await forwardToJobService(req, res, path, 'GET');
+});
+
+// GET /api/jobs/contracts - Get contracts (public)
+router.get('/contracts', async (req, res) => {
+  await forwardToJobService(req, res, '/api/jobs/contracts', 'GET');
+});
+
 // GET /api/jobs/:id - Get job details (public)
 router.get('/:id', async (req, res) => {
   await forwardToJobService(req, res, `/api/jobs/${req.params.id}`, 'GET');
