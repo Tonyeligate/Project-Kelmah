@@ -221,12 +221,20 @@ const mountApiRoutes = () => {
     console.log('[ROUTE MOUNTING] Routes already mounted, skipping');
     return;
   }
+  // Mount routes under both /jobs and /api/jobs for backward compatibility
+  // API Gateway forwards to /api/jobs, but some direct calls use /jobs
   console.log('[ROUTE MOUNTING] Mounting /jobs routes...');
   app.use("/jobs", jobRoutes);
+  console.log('[ROUTE MOUNTING] Mounting /api/jobs routes (API Gateway compatibility)...');
+  app.use("/api/jobs", jobRoutes);
   console.log('[ROUTE MOUNTING] Mounting /bids routes...');
   app.use("/bids", bidRoutes);
+  console.log('[ROUTE MOUNTING] Mounting /api/bids routes (API Gateway compatibility)...');
+  app.use("/api/bids", bidRoutes);
   console.log('[ROUTE MOUNTING] Mounting /user-performance routes...');
   app.use("/user-performance", userPerformanceRoutes);
+  console.log('[ROUTE MOUNTING] Mounting /api/user-performance routes (API Gateway compatibility)...');
+  app.use("/api/user-performance", userPerformanceRoutes);
   apiRoutesMounted = true;
   console.log('[ROUTE MOUNTING] ✅ All API routes mounted successfully!');
   logger.info('✅ API routes mounted after DB connection');
