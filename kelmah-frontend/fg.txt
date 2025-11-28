@@ -62,7 +62,7 @@ Bash Scripting: Automation basics
 
 Network Scanning: nmap (TCP/UDP scans)
 
-Vulnerability Scanning: openvas, nessus
+Vulnerability Scanning: openvas, nessus nog
 
 Password Cracking: john, hashcat
 
