@@ -12,8 +12,8 @@ export const messagingService = {
   // Get all conversations for the current user
   async getConversations() {
     try {
-      // Direct service path (matches messaging-service server.js)
-      const response = await api.get('/messaging/conversations');
+      // FIXED: Use /messages/conversations - matches backend router path rewrite
+      const response = await api.get('/messages/conversations');
       // Normalize response shape
       const payload = response.data;
       if (Array.isArray(payload)) return payload;
@@ -30,8 +30,8 @@ export const messagingService = {
   // Create a new conversation
   async createConversation(participantId, jobId) {
     try {
-      // Align with backend: expects participantIds array and optional type
-      const response = await api.post('/messaging/conversations', {
+      // FIXED: Use /messages/conversations - matches backend router path rewrite
+      const response = await api.post('/messages/conversations', {
         participantIds: [participantId],
         type: 'direct',
         jobId,
@@ -49,7 +49,8 @@ export const messagingService = {
   // Create conversation from job application
   async createConversationFromApplication(applicationId) {
     try {
-      const response = await api.post('/messaging/conversations', {
+      // FIXED: Use /messages/conversations - matches backend router path rewrite
+      const response = await api.post('/messages/conversations', {
         applicationId,
       });
       return response.data;
@@ -94,7 +95,8 @@ export const messagingService = {
     attachments = [],
   ) {
     try {
-      const response = await api.post('/messaging/messages', {
+      // FIXED: Use /messages/messages - matches backend router
+      const response = await api.post('/messages', {
         sender: senderId,
         recipient: recipientId,
         content,
@@ -112,7 +114,7 @@ export const messagingService = {
   // Create a direct conversation with a single participant
   async createDirectConversation(participantId, jobId = null) {
     try {
-      // FIXED: jobId was undefined - now passed as parameter
+      // FIXED: Use /messages/conversations - matches backend router path rewrite
       const payload = {
         participantIds: [participantId],
         type: 'direct',
@@ -120,7 +122,7 @@ export const messagingService = {
       if (jobId) {
         payload.jobId = jobId;
       }
-      const response = await api.post('/messaging/conversations', payload);
+      const response = await api.post('/messages/conversations', payload);
       return response.data?.data?.conversation || response.data;
     } catch (error) {
       console.warn(
@@ -135,7 +137,8 @@ export const messagingService = {
   async searchMessages(query, { attachments = false, period, sender } = {}) {
     try {
       const params = { q: query, attachments, period, sender };
-      const response = await api.get('/messaging/messages/search', {
+      // FIXED: Use /messages/search - matches backend router
+      const response = await api.get('/messages/search', {
         params,
       });
       const payload = response.data;

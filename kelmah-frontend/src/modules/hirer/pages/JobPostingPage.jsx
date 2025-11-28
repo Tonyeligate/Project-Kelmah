@@ -199,9 +199,9 @@ const JobPostingPage = () => {
     const normalized = normalizeDescription(formData.description || '');
     const cleanSkills = Array.isArray(formData.skills)
       ? formData.skills
-          .map((skill) => (typeof skill === 'string' ? skill.trim() : ''))
-          .filter(Boolean)
-          .slice(0, 8)
+        .map((skill) => (typeof skill === 'string' ? skill.trim() : ''))
+        .filter(Boolean)
+        .slice(0, 8)
       : [];
     const safeRequirements = formData.requirements?.trim();
     const safeLocation = (formData.location || '').trim();
@@ -489,7 +489,7 @@ const JobPostingPage = () => {
     dispatch(createHirerJob(payload))
       .unwrap()
       .then(() => setSubmitSuccess(true))
-      .catch(() => {});
+      .catch(() => { });
   };
 
   // Determine if Next button should be disabled
@@ -686,11 +686,16 @@ const JobPostingPage = () => {
               multiple
               freeSolo
               options={[
-                'Web Development',
-                'Mobile Development',
-                'Design',
-                'Writing',
-                'Marketing',
+                'Plumbing',
+                'Electrical',
+                'Carpentry',
+                'Construction',
+                'Painting',
+                'Welding',
+                'Masonry',
+                'HVAC',
+                'Roofing',
+                'Flooring',
               ]}
               value={formData.skills}
               onChange={handleSkillsChange}
@@ -803,7 +808,7 @@ const JobPostingPage = () => {
                   onBlur={() => markFieldTouched('budget.fixed')}
                   error={Boolean(
                     touchedFields['budget.fixed'] &&
-                      fieldErrors['budget.fixed'],
+                    fieldErrors['budget.fixed'],
                   )}
                   helperText={
                     (touchedFields['budget.fixed'] &&

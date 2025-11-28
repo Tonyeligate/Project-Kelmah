@@ -159,9 +159,43 @@ const createJob = async (req, res, next) => {
       body.skills = body.skills.map(String);
     }
 
+    // Valid enum values for requirements.primarySkills and secondarySkills
+    const VALID_PRIMARY_SKILLS = ["Plumbing", "Electrical", "Carpentry", "Construction", "Painting", "Welding", "Masonry", "HVAC", "Roofing", "Flooring"];
+
     if (!body.requirements) {
-      const primary = Array.isArray(body.skills) && body.skills.length > 0 ? [String(body.skills[0])] : [];
-      const secondary = Array.isArray(body.skills) && body.skills.length > 1 ? body.skills.slice(1).map(String) : [];
+      // Filter skills to only include valid enum values for primarySkills
+      const allSkills = Array.isArray(body.skills) ? body.skills.map(String) : [];
+      const validSkills = allSkills.filter(skill => VALID_PRIMARY_SKILLS.includes(skill));
+      
+      // If no valid skills found, try to map category to a skill or use default
+      let primary = validSkills.length > 0 ? [validSkills[0]] : [];
+      if (primary.length === 0 && body.category) {
+        // Map common categories to primarySkills
+        const categoryToSkill = {
+          'Plumbing': 'Plumbing',
+          'Electrical': 'Electrical', 
+          'Carpentry': 'Carpentry',
+          'Masonry': 'Masonry',
+          'Welding': 'Welding',
+          'Painting': 'Painting',
+          'HVAC': 'HVAC',
+          'Roofing': 'Roofing',
+          'Tiling': 'Flooring',
+          'Flooring': 'Flooring',
+          'Construction': 'Construction',
+          'Interior Design': 'Painting',
+          'Landscaping': 'Construction'
+        };
+        const mappedSkill = categoryToSkill[body.category];
+        if (mappedSkill) {
+          primary = [mappedSkill];
+        } else {
+          // Default fallback to Construction if nothing matches
+          primary = ['Construction'];
+        }
+      }
+      
+      const secondary = validSkills.length > 1 ? validSkills.slice(1) : [];
       body.requirements = {
         primarySkills: primary,
         secondarySkills: secondary,
