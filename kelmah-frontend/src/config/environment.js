@@ -220,12 +220,10 @@ export const LOG_CONFIG = {
 // ===============================================
 
 // Helper function to build API endpoints
+// Note: API_BASE_URL already includes /api, so paths should NOT include /api prefix
 const buildEndpoint = (serviceUrl, path) => {
-  // Always route via API gateway unless a direct service URL override is present
-  if (serviceUrl && /^https?:\/\//.test(serviceUrl)) {
-    return `${serviceUrl}/api${path}`;
-  }
-  return `/api${path}`;
+  // Just return the path - the base URL in axios client already has /api
+  return path;
 };
 
 export const API_ENDPOINTS = {

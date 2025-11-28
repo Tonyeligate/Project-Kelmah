@@ -71,7 +71,7 @@ const certificateService = {
    * @returns {Promise<Object>} - Upload response with URL
    */
   uploadCertificateFile: async (file, onProgress) => {
-    const presignRes = await api.post('/api/profile/uploads/presign', {
+    const presignRes = await api.post('/profile/uploads/presign', {
       folder: 'certificates',
       filename: file.name,
       contentType: file.type,

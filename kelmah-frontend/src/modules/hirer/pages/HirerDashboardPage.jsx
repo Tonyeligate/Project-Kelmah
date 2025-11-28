@@ -117,29 +117,37 @@ StyledTab.propTypes = {
   label: PropTypes.node,
 };
 
-// TabPanel component for tabs
+// TabPanel component for tabs - FIXED: Uses key-based rendering to prevent content bleed
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
+
+  // Only render content when this tab is active - prevents content bleed
+  if (value !== index) {
+    return null;
+  }
+
   return (
     <div
       role="tabpanel"
-      hidden={value !== index}
       id={`hirer-dashboard-tabpanel-${index}`}
       aria-labelledby={`hirer-dashboard-tab-${index}`}
+      aria-hidden={value !== index}
+      tabIndex={0}
       {...other}
     >
-      {value === index && (
-        <Paper
-          elevation={2}
-          sx={{
-            p: 3,
-            mt: 2,
-            bgcolor: 'background.paper',
-          }}
-        >
-          {children}
-        </Paper>
-      )}
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          mt: 2,
+          bgcolor: 'background.paper',
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider',
+        }}
+      >
+        {children}
+      </Paper>
     </div>
   );
 }
@@ -540,10 +548,13 @@ const HirerDashboardPage = () => {
     }
   };
 
-  // Handler for tab change
+  // Handler for tab change - FIXED: Clear error state on tab switch to prevent content bleed
   const handleTabChange = (event, newValue) => {
+    // Clear any errors when switching tabs
+    setError(null);
     setTabValue(newValue);
 
+    // Fetch fresh data for specific tabs
     if (newValue === 1) {
       dispatch(fetchHirerJobs('active'));
     } else if (newValue === 2) {
@@ -574,21 +585,21 @@ const HirerDashboardPage = () => {
     return 'Good Evening';
   };
 
-  // LC Portal-inspired Dashboard Overview - EXACT MATCH
+  // LC Portal-inspired Dashboard Overview - IMPROVED with empty state CTAs
   const renderDashboardOverview = () => (
     <Fade in timeout={500}>
       <Box sx={{ bgcolor: '#F5F5F5', minHeight: '100vh', mx: -4, mt: -3, p: 4 }}>
         {/* Breadcrumb - LC Portal Style */}
-        <Breadcrumbs sx={{ mb: 3 }}>
+        <Breadcrumbs sx={{ mb: 3 }} aria-label="breadcrumb">
           <MUILink
             component={RouterLink}
             to="/"
             underline="hover"
             sx={{ color: '#666', display: 'flex', alignItems: 'center', gap: 0.5 }}
           >
-            🏠
+            🏠 Home
           </MUILink>
-          <Typography color="text.secondary">Dashboard</Typography>
+          <Typography color="text.primary">Dashboard</Typography>
         </Breadcrumbs>
 
         {/* SIMPLE GREETING - LC Portal Style */}
@@ -601,15 +612,49 @@ const HirerDashboardPage = () => {
             fontSize: { xs: '1.5rem', md: '2rem' },
           }}
         >
-          Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening'}, {hirerProfile?.firstName || user?.firstName || 'there'}
+          {getGreeting()}, {hirerProfile?.firstName || user?.firstName || 'there'}
         </Typography>
 
-        {/* 4 METRIC CARDS IN ONE ROW - LC Portal EXACT Style */}
+        {/* New Hirer Welcome Banner - Shows when no activity */}
+        {isNewHirer && (
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              mb: 4,
+              borderRadius: 2,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+            }}
+          >
+            <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
+              Welcome to Kelmah! 🎉
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }}>
+              Get started by posting your first job to connect with skilled workers in your area.
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<PostAddIcon />}
+              onClick={() => navigate('/hirer/jobs/post')}
+              sx={{
+                bgcolor: 'white',
+                color: '#667eea',
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
+              }}
+            >
+              Post Your First Job
+            </Button>
+          </Paper>
+        )}
+
+        {/* 4 METRIC CARDS IN ONE ROW - LC Portal Style with Click Actions */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          {/* Card 1 - Orange/Yellow - Unpaid Bills / Active Jobs */}
+          {/* Card 1 - Orange/Yellow - Active Jobs */}
           <Grid item xs={12} sm={6} md={3}>
             <Paper
               elevation={0}
+              onClick={() => setTabValue(1)}
               sx={{
                 p: 2.5,
                 borderRadius: 2,
@@ -620,7 +665,16 @@ const HirerDashboardPage = () => {
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 position: 'relative',
+                cursor: 'pointer',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 25px rgba(243, 156, 18, 0.3)',
+                },
               }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Active Jobs: ${summaryData.activeJobs}. Click to view jobs.`}
             >
               <Box>
                 <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
@@ -630,7 +684,7 @@ const HirerDashboardPage = () => {
                   {summaryData.activeJobs}
                 </Typography>
                 <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                  Pending Work
+                  {summaryData.activeJobs === 0 ? 'Post a job to get started' : 'Click to manage'}
                 </Typography>
               </Box>
               <Box sx={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)' }}>
@@ -639,10 +693,11 @@ const HirerDashboardPage = () => {
             </Paper>
           </Grid>
 
-          {/* Card 2 - Teal/Green - Paid Bills / Completed */}
+          {/* Card 2 - Teal/Green - Completed Jobs */}
           <Grid item xs={12} sm={6} md={3}>
             <Paper
               elevation={0}
+              onClick={() => setTabValue(3)}
               sx={{
                 p: 2.5,
                 borderRadius: 2,
@@ -653,7 +708,16 @@ const HirerDashboardPage = () => {
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 position: 'relative',
+                cursor: 'pointer',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 25px rgba(26, 188, 156, 0.3)',
+                },
               }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Completed Jobs: ${summaryData.completedJobs}. Click to view progress.`}
             >
               <Box>
                 <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
@@ -663,7 +727,7 @@ const HirerDashboardPage = () => {
                   {summaryData.completedJobs}
                 </Typography>
                 <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                  Total Paid Status
+                  Click to view progress
                 </Typography>
               </Box>
               <Box sx={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)' }}>
@@ -672,10 +736,11 @@ const HirerDashboardPage = () => {
             </Paper>
           </Grid>
 
-          {/* Card 3 - Blue - Submitted Applications */}
+          {/* Card 3 - Blue - Applications */}
           <Grid item xs={12} sm={6} md={3}>
             <Paper
               elevation={0}
+              onClick={() => navigate('/hirer/applications')}
               sx={{
                 p: 2.5,
                 borderRadius: 2,
@@ -686,7 +751,16 @@ const HirerDashboardPage = () => {
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 position: 'relative',
+                cursor: 'pointer',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 25px rgba(52, 152, 219, 0.3)',
+                },
               }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Applications: ${summaryData.pendingProposals}. Click to review applications.`}
             >
               <Box>
                 <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
@@ -696,7 +770,7 @@ const HirerDashboardPage = () => {
                   {summaryData.pendingProposals}
                 </Typography>
                 <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                  Pending Review
+                  {summaryData.pendingProposals === 0 ? 'No pending reviews' : 'Click to review'}
                 </Typography>
               </Box>
               <Box sx={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)' }}>
@@ -705,10 +779,11 @@ const HirerDashboardPage = () => {
             </Paper>
           </Grid>
 
-          {/* Card 4 - Red - Queried / Needs Attention */}
+          {/* Card 4 - Red - Needs Attention */}
           <Grid item xs={12} sm={6} md={3}>
             <Paper
               elevation={0}
+              onClick={() => setTabValue(2)}
               sx={{
                 p: 2.5,
                 borderRadius: 2,
@@ -719,7 +794,16 @@ const HirerDashboardPage = () => {
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 position: 'relative',
+                cursor: 'pointer',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 25px rgba(231, 76, 60, 0.3)',
+                },
               }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Needs Attention: ${summaryData.pendingPayments}. Click to view payments.`}
             >
               <Box>
                 <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
@@ -729,7 +813,7 @@ const HirerDashboardPage = () => {
                   {summaryData.pendingPayments}
                 </Typography>
                 <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                  Action Required
+                  {summaryData.pendingPayments === 0 ? 'All clear!' : 'Click to resolve'}
                 </Typography>
               </Box>
               <Box sx={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)' }}>
@@ -942,41 +1026,33 @@ const HirerDashboardPage = () => {
         <Helmet>
           <title>Dashboard | Kelmah</title>
         </Helmet>
-        {/* Simplified Top Actions Bar */}
+        {/* Minimal Top Bar - Only shows last updated time */}
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'flex-end',
             px: 4,
-            py: 1.5,
-            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            py: 1,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Tooltip title="Refresh Dashboard">
-              <IconButton onClick={handleRefresh} color="secondary" size="small">
-                <RefreshIcon />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Tooltip title="Refresh Dashboard" arrow>
+              <IconButton
+                onClick={handleRefresh}
+                size="small"
+                disabled={refreshing}
+                aria-label="Refresh dashboard data"
+                sx={{ color: 'text.secondary' }}
+              >
+                <RefreshIcon sx={{ animation: refreshing ? 'spin 1s linear infinite' : 'none', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />
               </IconButton>
             </Tooltip>
             <Typography variant="caption" color="text.secondary">
-              Last updated:{' '}
-              {new Date(lastRefreshed).toLocaleTimeString(undefined, {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+              Updated {new Date(lastRefreshed).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </Typography>
-            <Tooltip title="View Notifications">
-              <IconButton
-                onClick={() => navigate('/notifications')}
-                color="secondary"
-                size="small"
-              >
-                <Badge badgeContent={unreadNotifications} color="error">
-                  <NotificationsIcon />
-                </Badge>
-              </IconButton>
-            </Tooltip>
           </Box>
         </Box>
         <Menu
@@ -1037,7 +1113,7 @@ const HirerDashboardPage = () => {
               {error}
             </Alert>
           )}
-          {/* Tabs Navigation - Streamlined to 5 tabs */}
+          {/* Tabs Navigation - Streamlined to 5 tabs with proper ARIA */}
           <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
             <Tabs
               value={tabValue}
@@ -1046,6 +1122,8 @@ const HirerDashboardPage = () => {
               scrollButtons="auto"
               textColor="inherit"
               TabIndicatorProps={{ style: { backgroundColor: '#FFD700' } }}
+              aria-label="Dashboard navigation tabs"
+              role="tablist"
             >
               <StyledTab icon={<DashboardIcon />} label="Overview" />
               <StyledTab
@@ -1074,24 +1152,24 @@ const HirerDashboardPage = () => {
               <StyledTab icon={<ReviewIcon />} label="Reviews" />
             </Tabs>
           </Box>
-          {/* Tab Panels - 5 streamlined panels */}
-          <TabPanel value={tabValue} index={0}>
+          {/* Tab Panels - 5 streamlined panels with unique keys for proper isolation */}
+          <TabPanel value={tabValue} index={0} key={`tab-overview-${tabValue === 0}`}>
             {isHydrating ? (
               <LoadingOverviewSkeleton />
             ) : (
               renderDashboardOverview()
             )}
           </TabPanel>
-          <TabPanel value={tabValue} index={1}>
+          <TabPanel value={tabValue} index={1} key={`tab-jobs-${tabValue === 1}`}>
             <HirerJobManagement />
           </TabPanel>
-          <TabPanel value={tabValue} index={2}>
+          <TabPanel value={tabValue} index={2} key={`tab-payments-${tabValue === 2}`}>
             <PaymentRelease />
           </TabPanel>
-          <TabPanel value={tabValue} index={3}>
+          <TabPanel value={tabValue} index={3} key={`tab-progress-${tabValue === 3}`}>
             <JobProgressTracker />
           </TabPanel>
-          <TabPanel value={tabValue} index={4}>
+          <TabPanel value={tabValue} index={4} key={`tab-reviews-${tabValue === 4}`}>
             <WorkerReview />
           </TabPanel>
         </Container>
