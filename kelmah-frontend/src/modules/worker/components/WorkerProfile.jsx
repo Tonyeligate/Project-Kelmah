@@ -169,6 +169,7 @@ function WorkerProfile() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
+  const isActualMobile = useMediaQuery('(max-width: 768px)');
 
   const [profile, setProfile] = useState(null);
   const [skills, setSkills] = useState([]);
@@ -603,7 +604,6 @@ function WorkerProfile() {
   );
 
   const renderMetrics = () => {
-    const isActualMobile = useMediaQuery('(max-width: 768px)');
     const statsData = stats || {};
     const totalAllTime =
       statsData.totalEarnings || earnings?.totals?.allTime || 0;
