@@ -205,32 +205,25 @@ function WorkerProfile() {
         profileRes?.data;
       const normalizedProfile = worker
         ? {
-            ...worker,
-            user: worker.user,
-            // UI expects these keys
-            hourly_rate:
-              worker.hourlyRate?.min ??
-              worker.hourlyRate ??
-              worker.hourlyRateMin ??
-              0,
-            is_verified:
-              worker.verification?.isVerified ?? worker.isVerified ?? false,
-            profile_picture: worker.profile?.picture ?? worker.profilePicture,
-            is_online: false,
-          }
+          ...worker,
+          user: worker.user,
+          // UI expects these keys
+          hourly_rate:
+            worker.hourlyRate?.min ??
+            worker.hourlyRate ??
+            worker.hourlyRateMin ??
+            0,
+          is_verified:
+            worker.verification?.isVerified ?? worker.isVerified ?? false,
+          profile_picture: worker.profile?.picture ?? worker.profilePicture,
+          is_online: false,
+        }
         : null;
       setProfile(normalizedProfile);
 
-      const [
-        skillsRes,
-        portfolioRes,
-        certsRes,
-        historyRes,
-        availabilityRes,
-        statsRes,
-        ratingRes,
-        earningsRes,
-      ] = await Promise.all([
+      // Use Promise.allSettled for graceful degradation - if ratings or other
+      // secondary endpoints fail (e.g., during service cold start), still show profile
+      const results = await Promise.allSettled([
         workerService.getWorkerSkills(workerId),
         workerService.getWorkerPortfolio(workerId),
         workerService.getWorkerCertificates(workerId),
@@ -241,11 +234,26 @@ function WorkerProfile() {
         workerService.getWorkerEarnings(workerId),
       ]);
 
+      // Helper to safely extract value from settled promise
+      const getValue = (result, fallback = null) =>
+        result.status === 'fulfilled' ? result.value : fallback;
+
+      const [
+        skillsRes,
+        portfolioRes,
+        certsRes,
+        historyRes,
+        availabilityRes,
+        statsRes,
+        ratingRes,
+        earningsRes,
+      ] = results.map((r) => getValue(r));
+
       const rawSkills = skillsRes?.data?.data || skillsRes?.data || [];
       const normalizedSkills = Array.isArray(rawSkills)
         ? rawSkills.map((s) => ({
-            name: s.name || s.skillName || s?.skill?.name || '',
-          }))
+          name: s.name || s.skillName || s?.skill?.name || '',
+        }))
         : [];
       setSkills(normalizedSkills);
 
@@ -253,7 +261,7 @@ function WorkerProfile() {
       setCertificates(certsRes?.data?.data || certsRes?.data || []);
       // Review list comes from ReviewSystem; keep count from rating summary
       setReviews([]);
-      setRatingSummary(ratingRes);
+      setRatingSummary(ratingRes || null);
       setWorkHistory(historyRes?.data?.data || historyRes?.data || []);
       setAvailability(availabilityRes?.data?.data || null);
       setStats(statsRes?.data?.data || {});
@@ -1009,19 +1017,19 @@ function WorkerProfile() {
                   color="primary"
                 />
               )) || [
-                <Chip
-                  key="general"
-                  label="General Construction"
-                  variant="outlined"
-                  color="primary"
-                />,
-                <Chip
-                  key="residential"
-                  label="Residential Work"
-                  variant="outlined"
-                  color="primary"
-                />,
-              ]}
+                  <Chip
+                    key="general"
+                    label="General Construction"
+                    variant="outlined"
+                    color="primary"
+                  />,
+                  <Chip
+                    key="residential"
+                    label="Residential Work"
+                    variant="outlined"
+                    color="primary"
+                  />,
+                ]}
             </Box>
           </Grid>
 
@@ -1156,7 +1164,7 @@ function WorkerProfile() {
                 .replace(/\b\w/g, (c) => c.toUpperCase())}
               color={
                 (availability?.availabilityStatus || 'available') ===
-                'available'
+                  'available'
                   ? 'success'
                   : 'warning'
               }
@@ -1271,7 +1279,7 @@ function WorkerProfile() {
           pausedUntil: draft.pausedUntil || null,
         });
         setEditingAvailability(false);
-      } catch (_) {}
+      } catch (_) { }
     };
     return (
       <GlassCard sx={{ mb: 4 }}>

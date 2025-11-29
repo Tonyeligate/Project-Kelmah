@@ -305,8 +305,8 @@ const JobManagementPage = () => {
 
       {/* Data consistency warning - shows when API returned data but display shows 0 */}
       {!loading && jobs.length === 0 && !error && (
-        <Alert 
-          severity="info" 
+        <Alert
+          severity="info"
           sx={{ mb: 3 }}
           action={
             <Button color="inherit" size="small" onClick={handleRefresh}>

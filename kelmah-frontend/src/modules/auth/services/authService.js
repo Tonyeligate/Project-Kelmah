@@ -39,15 +39,15 @@ const retryWithBackoff = async (fn, maxRetries = 3, baseDelay = 2000) => {
     } catch (error) {
       lastError = error;
       // Only retry on network errors or timeouts (Render cold start scenarios)
-      const isRetryable = !error.response || 
-                          error.code === 'ECONNABORTED' || 
-                          error.message?.includes('timeout') ||
-                          error.message?.includes('Network Error');
-      
+      const isRetryable = !error.response ||
+        error.code === 'ECONNABORTED' ||
+        error.message?.includes('timeout') ||
+        error.message?.includes('Network Error');
+
       if (!isRetryable || attempt === maxRetries) {
         throw error;
       }
-      
+
       // Exponential backoff: 2s, 4s, 8s
       const delay = baseDelay * Math.pow(2, attempt - 1);
       console.log(`[Auth] Retry attempt ${attempt}/${maxRetries} after ${delay}ms...`);
@@ -62,7 +62,7 @@ const authService = {
   login: async (credentials) => {
     try {
       // Use retry wrapper to handle Render cold start delays
-      const response = await retryWithBackoff(() => 
+      const response = await retryWithBackoff(() =>
         api.post('/auth/login', credentials)
       );
 

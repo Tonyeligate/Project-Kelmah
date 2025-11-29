@@ -146,7 +146,7 @@ const WorkerProfileEditPage = () => {
           setCompleteness(json.data?.completion ?? 0);
           setSuggestions(json.data?.suggestions ?? []);
         }
-      } catch (_) {}
+      } catch (_) { }
     };
     fetchCompleteness();
   }, [user]);
