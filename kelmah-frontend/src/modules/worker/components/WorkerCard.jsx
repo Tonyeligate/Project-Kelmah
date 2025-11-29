@@ -293,11 +293,11 @@ const WorkerCard = ({ worker }) => {
       e.preventDefault();
       e.stopPropagation();
     }
-    
+
     const targetId = worker.id || worker._id || worker.userId;
     console.log('🟡 WorkerCard CLICKED! Target ID:', targetId);
     console.log('🟡 Attempting navigation to:', `/worker-profile/${targetId}`);
-    
+
     if (targetId) {
       console.log('🟡 Calling navigate() now...');
       navigate(`/worker-profile/${targetId}`);
@@ -375,22 +375,28 @@ const WorkerCard = ({ worker }) => {
     };
   }, [handleMessage, isAuthenticated, isHirer, isViewingSelf]);
 
+  const profileUrl = `/worker-profile/${worker.id || worker._id || worker.userId}`;
+
   return (
-    <Card
-      elevation={2}
-      onClick={handleViewProfile}
-      sx={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        cursor: 'pointer',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: 6,
-        },
-      }}
+    <RouterLink
+      to={profileUrl}
+      style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+      onClick={() => console.log('🟡 RouterLink clicked! Going to:', profileUrl)}
     >
+      <Card
+        elevation={2}
+        sx={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          cursor: 'pointer',
+          transition: 'transform 0.2s, box-shadow 0.2s',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: 6,
+          },
+        }}
+      >
       <CardContent
         sx={{
           flexGrow: 1,
@@ -547,12 +553,16 @@ const WorkerCard = ({ worker }) => {
       {/* Contact Action Buttons */}
       <CardActions
         sx={{ justifyContent: 'space-between', px: 2, pb: 2, pt: 0 }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
       >
         <Button
           onClick={(e) => {
+            e.preventDefault();
             e.stopPropagation();
-            handleViewProfile();
+            handleViewProfile(e);
           }}
           variant="outlined"
           startIcon={<VisibilityIcon />}
@@ -578,6 +588,7 @@ const WorkerCard = ({ worker }) => {
               variant="contained"
               startIcon={<MessageIcon />}
               onClick={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 messageCta.handler(e);
               }}
@@ -605,6 +616,7 @@ const WorkerCard = ({ worker }) => {
         </Tooltip>
       </CardActions>
     </Card>
+    </RouterLink>
   );
 };
 
