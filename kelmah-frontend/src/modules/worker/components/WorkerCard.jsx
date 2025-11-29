@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -34,6 +34,11 @@ const WorkerCard = ({ worker }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, user } = useAuthCheck();
+
+  // Debug: Log when card is rendered (verifies latest code is deployed)
+  useEffect(() => {
+    console.log('🃏 WorkerCard v2 rendered for:', worker?.name || worker?.id);
+  }, [worker?.name, worker?.id]);
 
   const resolvedWorkerId = worker.id || worker._id || worker.userId;
   const resolvedViewerId = user?.id || user?._id || user?.userId;
@@ -282,13 +287,25 @@ const WorkerCard = ({ worker }) => {
   ]);
 
   // Handle view profile - used for card click navigation
-  const handleViewProfile = useCallback(() => {
-    const targetId = worker.id || worker._id || worker.userId;
-    console.log('🟡 WorkerCard clicked - navigating to:', `/worker-profile/${targetId}`);
-    if (targetId) {
-      navigate(`/worker-profile/${targetId}`);
+  const handleViewProfile = useCallback((e) => {
+    // Prevent any default behavior and stop propagation
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
     }
-  }, [navigate, worker.id, worker._id, worker.userId]);
+    
+    const targetId = worker.id || worker._id || worker.userId;
+    console.log('🟡 WorkerCard CLICKED! Target ID:', targetId);
+    console.log('🟡 Attempting navigation to:', `/worker-profile/${targetId}`);
+    
+    if (targetId) {
+      console.log('🟡 Calling navigate() now...');
+      navigate(`/worker-profile/${targetId}`);
+      console.log('🟡 navigate() called successfully');
+    } else {
+      console.error('❌ No targetId found for worker:', worker);
+    }
+  }, [navigate, worker]);
 
   // Handle message worker
   const handleMessage = useCallback(
