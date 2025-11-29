@@ -101,7 +101,6 @@ const getConnectionString = () => {
   console.log('[DB CONFIG] Using fallback connection:', url);
   return url;
 };
-};
 
 /**
  * Connect to MongoDB
