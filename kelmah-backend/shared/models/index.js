@@ -13,8 +13,6 @@ const mongoose = require('mongoose');
 mongoose.set('bufferCommands', false);
 // Short timeout - don't wait for slow connections
 mongoose.set('bufferTimeoutMS', 1000);
-// Unacknowledged writes - fire and forget
-mongoose.set('writeConcern', { w: 0 });
 
 const User = require('./User');
 const Job = require('./Job');
