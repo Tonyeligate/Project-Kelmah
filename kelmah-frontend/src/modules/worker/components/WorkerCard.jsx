@@ -27,7 +27,7 @@ import {
   WorkspacePremium as WorkspacePremiumIcon,
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 
 const WorkerCard = ({ worker }) => {
@@ -94,13 +94,13 @@ const WorkerCard = ({ worker }) => {
     const badgeList = Array.isArray(worker.badges) ? worker.badges : [];
     return Boolean(
       worker.isVerified ||
-        worker.verified ||
-        worker.verificationStatus === 'verified' ||
-        worker.status === 'verified' ||
-        worker.trustLevel === 'verified' ||
-        badgeList.some((badge) =>
-          badge?.toString()?.toLowerCase().includes('verified'),
-        ),
+      worker.verified ||
+      worker.verificationStatus === 'verified' ||
+      worker.status === 'verified' ||
+      worker.trustLevel === 'verified' ||
+      badgeList.some((badge) =>
+        badge?.toString()?.toLowerCase().includes('verified'),
+      ),
     );
   }, [
     worker.badges,
@@ -179,9 +179,9 @@ const WorkerCard = ({ worker }) => {
 
   const completedJobs = Number(
     worker.totalJobsCompleted ??
-      worker.completedJobs ??
-      worker.projectsCompleted ??
-      0,
+    worker.completedJobs ??
+    worker.projectsCompleted ??
+    0,
   );
 
   const jobSuccessValue = useMemo(() => {
@@ -373,8 +373,15 @@ const WorkerCard = ({ worker }) => {
       }}
     >
       <CardContent
-        sx={{ flexGrow: 1, cursor: 'pointer' }}
-        onClick={handleViewProfile}
+        component={RouterLink}
+        to={`/worker-profile/${worker.id || worker._id || worker.userId}`}
+        sx={{
+          flexGrow: 1,
+          cursor: 'pointer',
+          textDecoration: 'none',
+          color: 'inherit',
+          display: 'block',
+        }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Avatar
@@ -470,12 +477,12 @@ const WorkerCard = ({ worker }) => {
             ))}
           {worker.skills?.filter((skill) => skill && (skill.name || skill))
             .length > 3 && (
-            <Chip
-              label={`+${worker.skills.filter((skill) => skill && (skill.name || skill)).length - 3}`}
-              size="small"
-              variant="outlined"
-            />
-          )}
+              <Chip
+                label={`+${worker.skills.filter((skill) => skill && (skill.name || skill)).length - 3}`}
+                size="small"
+                variant="outlined"
+              />
+            )}
         </Stack>
 
         <Divider sx={{ my: 1 }} />
@@ -526,9 +533,10 @@ const WorkerCard = ({ worker }) => {
         sx={{ justifyContent: 'space-between', px: 2, pb: 2, pt: 0 }}
       >
         <Button
+          component={RouterLink}
+          to={`/worker-profile/${worker.id || worker._id || worker.userId}`}
           variant="outlined"
           startIcon={<VisibilityIcon />}
-          onClick={handleViewProfile}
           size="small"
           sx={{
             minHeight: '44px',
@@ -536,6 +544,7 @@ const WorkerCard = ({ worker }) => {
             mr: 1,
             borderColor: 'rgba(255, 215, 0, 0.5)',
             color: 'text.primary',
+            textDecoration: 'none',
             '&:hover': {
               borderColor: '#FFD700',
               bgcolor: 'rgba(255, 215, 0, 0.08)',

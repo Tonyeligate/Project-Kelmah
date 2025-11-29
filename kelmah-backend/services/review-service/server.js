@@ -46,7 +46,7 @@ try {
 }
 
 // Optional tracing and error monitoring
-try { const monitoring = require('../../shared/utils/monitoring'); monitoring.initErrorMonitoring('review-service'); monitoring.initTracing('review-service'); } catch {}
+try { const monitoring = require('../../shared/utils/monitoring'); monitoring.initErrorMonitoring('review-service'); monitoring.initTracing('review-service'); } catch { }
 
 // Env validation (fail-fast in production)
 try {
@@ -54,7 +54,7 @@ try {
   if (process.env.NODE_ENV === 'production') {
     requireEnv(['JWT_SECRET', 'MONGODB_URI'], 'review-service');
   }
-} catch {}
+} catch { }
 
 // Fail-fast for required secrets in production
 if (process.env.NODE_ENV === 'production') {
@@ -94,7 +94,7 @@ const corsOptions = {
     ];
     const envOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [];
     const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
-    
+
     if (allowedOrigins.some(allowed => origin === allowed || origin.endsWith('.vercel.app'))) {
       return callback(null, true);
     }
@@ -103,8 +103,8 @@ const corsOptions = {
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization','X-Requested-With','X-Request-ID'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Request-ID'],
 };
 app.use(cors(corsOptions));
 
@@ -132,16 +132,16 @@ async function connectDbWithRetry() {
   }
   const baseDelayMs = 5000;
   let attempt = 0;
-  for (;;) {
+  for (; ;) {
     try {
       const mongoUri = process.env.MONGODB_URI || process.env.DATABASE_URL;
       if (!mongoUri) {
         throw new Error('MONGODB_URI or DATABASE_URL environment variable is required');
       }
-      
+
       console.log('🔗 Review Service connecting to MongoDB...');
       console.log('🔗 Connection string preview:', mongoUri.substring(0, 50) + '...');
-      
+
       await mongoose.connect(mongoUri, {
         bufferCommands: true, // Enable buffering for connection establishment
         bufferTimeoutMS: 30000, // Increase timeout to 30 seconds
@@ -153,16 +153,16 @@ async function connectDbWithRetry() {
         family: 4, // Use IPv4, skip trying IPv6
         dbName: 'kelmah_platform' // Ensure using correct database
       });
-      
-      logger.info('✅ Review Service connected to MongoDB', { 
+
+      logger.info('✅ Review Service connected to MongoDB', {
         host: mongoose.connection.host,
-        database: mongoose.connection.name 
+        database: mongoose.connection.name
       });
       break;
     } catch (error) {
       attempt += 1;
       const delay = Math.min(baseDelayMs * attempt, 30000);
-      
+
       console.error('='.repeat(80));
       console.error(`🚨 REVIEW SERVICE - MONGODB CONNECTION ATTEMPT ${attempt} FAILED`);
       console.error('='.repeat(80));
@@ -170,7 +170,7 @@ async function connectDbWithRetry() {
       console.error(`📛 Error Name: ${error.name}`);
       console.error(`📛 Will retry in ${delay}ms...`);
       console.error('='.repeat(80));
-      
+
       logger.warn(`MongoDB connection attempt ${attempt} failed, retrying in ${delay}ms:`, error.message);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
@@ -239,7 +239,7 @@ if (keepAliveManager) {
   app.get('/health/keepalive', (req, res) => {
     res.json({ success: true, data: keepAliveManager.getStatus() });
   });
-  
+
   app.post('/health/keepalive/trigger', async (req, res) => {
     try {
       const results = await keepAliveManager.triggerPing();
