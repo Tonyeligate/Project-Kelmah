@@ -40,25 +40,25 @@ const getConnectionString = () => {
     console.log('🔗 Using DATABASE_URL from environment');
     return process.env.DATABASE_URL;
   }
-  
+
   console.log('⚠️ No MongoDB URI environment variable found, using fallback construction');
-  
+
   // Fallback to individual credentials (for local development)
   const dbHost = process.env.DB_HOST || 'localhost';
   const dbPort = process.env.DB_PORT || '27017';
   const dbName = process.env.DB_NAME || 'kelmah_platform';
   const dbUser = process.env.DB_USER;
   const dbPassword = process.env.DB_PASSWORD;
-  
+
   let scheme = 'mongodb://';
   if (dbHost.includes('mongodb.net') || dbHost.includes('cloud.mongodb.com')) {
     scheme = 'mongodb+srv://';
   }
-  
+
   if (dbUser && dbPassword) {
     return `${scheme}${dbUser}:${dbPassword}@${dbHost}/${dbName}?retryWrites=true&w=majority`;
   }
-  
+
   return `${scheme}${dbHost}:${dbPort}/${dbName}`;
 };
 
@@ -76,7 +76,7 @@ const connectDB = async () => {
     }
 
     const connectionString = getConnectionString();
-    
+
     // Connect to MongoDB with specific database name
     connectPromise = mongoose.connect(connectionString, {
       ...options,
@@ -85,27 +85,27 @@ const connectDB = async () => {
     const conn = await connectPromise;
 
     connectPromise = null;
-    
+
     console.log(`✅ AUTH Service connected to MongoDB: ${conn.connection.host}`);
     console.log(`📊 Database: ${conn.connection.name}`);
-    
+
     // Handle connection events
     mongoose.connection.on('error', (error) => {
       console.error('❌ MongoDB connection error:', error);
     });
-    
+
     mongoose.connection.on('disconnected', () => {
       console.log('⚠️ MongoDB disconnected');
     });
-    
+
     mongoose.connection.on('reconnected', () => {
       console.log('✅ MongoDB reconnected');
     });
-    
+
     return conn;
   } catch (error) {
     connectPromise = null;
-    
+
     // COMPREHENSIVE ERROR LOGGING for debugging on Render
     console.error('='.repeat(80));
     console.error('🚨 MONGODB CONNECTION FAILURE - DETAILED ERROR INFO');
@@ -113,11 +113,11 @@ const connectDB = async () => {
     console.error(`📛 Error Message: ${error.message}`);
     console.error(`� Error Name: ${error.name}`);
     console.error(`📛 Error Code: ${error.code || 'N/A'}`);
-    
+
     if (error.reason) {
       console.error(`📛 Error Reason: ${JSON.stringify(error.reason, null, 2)}`);
     }
-    
+
     console.error('\n🔍 Environment Check:');
     console.error(`  - NODE_ENV: ${process.env.NODE_ENV || 'not set'}`);
     console.error(`  - MONGODB_URI exists: ${!!process.env.MONGODB_URI}`);
@@ -127,24 +127,24 @@ const connectDB = async () => {
       const sanitized = uri.replace(/:[^@]+@/, ':****@');
       console.error(`  - Connection string (sanitized): ${sanitized}`);
     }
-    
+
     console.error('\n🔍 Connection Options:');
     console.error(JSON.stringify(options, null, 2));
-    
+
     console.error('\n🔍 Full Error Stack:');
     console.error(error.stack);
-    
+
     console.error('='.repeat(80));
     console.error('END OF ERROR REPORT');
     console.error('='.repeat(80));
-    
+
     // In production, we should exit if database connection fails
     if (process.env.NODE_ENV === 'production') {
       console.error('🚨 Production environment requires database connection');
       console.error('🚨 Service will exit in 5 seconds...');
       setTimeout(() => process.exit(1), 5000);
     }
-    
+
     throw error;
   }
 };
@@ -260,8 +260,8 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-module.exports = { 
-  connectDB, 
+module.exports = {
+  connectDB,
   closeDB,
   mongoose,
   ensureConnection,
