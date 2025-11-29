@@ -314,7 +314,15 @@ const createJob = async (req, res, next) => {
     }
 
     const writeStart = Date.now();
-    const job = await Job.create(body);
+
+    // Use direct MongoDB insert to bypass Mongoose buffering issues
+    // This writes directly without waiting for schema validation buffering
+    const jobDoc = new Job(body);
+    await jobDoc.validate(); // Validate first
+
+    const insertResult = await mongoose.connection.db.collection('jobs').insertOne(jobDoc.toObject());
+    const job = await Job.findById(insertResult.insertedId);
+
     const writeLatencyMs = Date.now() - writeStart;
 
     jobLogger.info('job.create.success', {
