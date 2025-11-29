@@ -199,7 +199,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
         mode={mode}
         setThemeMode={setThemeMode}
       />
-      <Fade in key={location.pathname} timeout={500}>
+      <Fade in timeout={500}>
         <Box
           component="main"
           sx={{
