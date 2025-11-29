@@ -5,7 +5,7 @@ const axios = require('axios');
         console.log('🔄 Testing job creation with optimized DB settings...\n');
 
         // Get token
-        const login = await axios.post('https://kelmah-api-gateway-50z3.onrender.com/api/auth/login', {
+        const login = await axios.post('https://kelmah-api-gateway-6yoy.onrender.com/api/auth/login', {
             email: 'giftyafisa@gmail.com',
             password: '11221122Tg'
         });
@@ -15,7 +15,7 @@ const axios = require('axios');
 
         // Create job
         const startTime = Date.now();
-        const createJob = await axios.post('https://kelmah-api-gateway-50z3.onrender.com/api/jobs', {
+        const createJob = await axios.post('https://kelmah-api-gateway-6yoy.onrender.com/api/jobs', {
             title: 'Test Job - DB Timeout Fix',
             description: 'Testing if MongoDB write timeout is fixed with optimized settings',
             category: 'plumbing',

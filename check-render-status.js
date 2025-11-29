@@ -5,7 +5,7 @@ const axios = require('axios');
         console.log('Checking service health and deployment status...\n');
 
         // Check API Gateway health
-        const gatewayHealth = await axios.get('https://kelmah-api-gateway-50z3.onrender.com/health');
+        const gatewayHealth = await axios.get('https://kelmah-api-gateway-6yoy.onrender.com/health');
         console.log('✓ API Gateway:', gatewayHealth.data);
 
         // Check Job Service health  
