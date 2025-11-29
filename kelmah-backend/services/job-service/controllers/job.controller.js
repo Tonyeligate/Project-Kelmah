@@ -314,27 +314,9 @@ const createJob = async (req, res, next) => {
     }
 
     const writeStart = Date.now();
-    
-    // Use Mongoose create but ensure connection is ready first
-    // Wait for connection if not ready
-    if (mongoose.connection.readyState !== 1) {
-      jobLogger.info('job.create.waitingForConnection', {
-        ...baseLogMeta,
-        readyState: mongoose.connection.readyState
-      });
-      
-      // Wait up to 60 seconds for connection
-      const maxWait = 60000;
-      const startWait = Date.now();
-      while (mongoose.connection.readyState !== 1 && Date.now() - startWait < maxWait) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-      
-      if (mongoose.connection.readyState !== 1) {
-        return errorResponse(res, 503, 'Database connection not ready. Please try again.', 'DB_NOT_READY');
-      }
-    }
-    
+
+    // Job.create will use unacknowledged writes (w: 0) - fail fast
+    // If connection not ready, operation will fail immediately instead of buffering
     const job = await Job.create(body);
     const writeLatencyMs = Date.now() - writeStart;
 
@@ -348,7 +330,7 @@ const createJob = async (req, res, next) => {
       readyLatencyMs,
       writeLatencyMs,
       totalLatencyMs: Date.now() - totalStart
-    });    return successResponse(res, 201, 'Job created successfully', job);
+    }); return successResponse(res, 201, 'Job created successfully', job);
   } catch (error) {
     jobLogger.error('job.create.failed', {
       ...baseLogMeta,

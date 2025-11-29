@@ -27,20 +27,28 @@ let connectPromise = null;
 const DEFAULT_READY_TIMEOUT_MS = Number(process.env.DB_READY_TIMEOUT_MS || 15000);
 
 // MongoDB connection settings - optimized for serverless/cold-start environments
-mongoose.set('bufferCommands', true); // Enable buffering for cold starts
+mongoose.set('bufferCommands', false); // Disable buffering - fail fast instead of waiting
 mongoose.set('autoCreate', true); // Auto-create collections if they don't exist
 mongoose.set('autoIndex', false); // Don't auto-create indexes on startup
-mongoose.set('bufferTimeoutMS', 60000); // 60 seconds buffer timeout for slow Atlas connections
+mongoose.set('bufferTimeoutMS', 5000); // 5 seconds buffer timeout - fail fast
+
+// Mongoose write concern settings
+mongoose.set('writeConcern', { w: 0 }); // Unacknowledged writes for speed
 
 // MongoDB connection options - optimized for Render + MongoDB Atlas
 const options = {
-  retryWrites: true,
-  w: 1, // Single server acknowledge for faster writes
-  maxPoolSize: 5, // Lower pool for free tier
-  serverSelectionTimeoutMS: 30000, // 30 seconds to find server
-  socketTimeoutMS: 60000, // 60 seconds socket timeout
-  connectTimeoutMS: 30000, // 30 seconds to connect
-  family: 4 // Use IPv4 only
+  retryWrites: false, // Disable retry writes to avoid timeouts
+  w: 0, // Unacknowledged writes (fire-and-forget)
+  j: false, // Don't wait for journal
+  maxPoolSize: 10, // Increased pool size for better throughput
+  minPoolSize: 2, // Maintain minimum connections
+  serverSelectionTimeoutMS: 10000, // 10 seconds to find server
+  socketTimeoutMS: 30000, // 30 seconds socket timeout
+  connectTimeoutMS: 10000, // 10 seconds to connect
+  family: 4, // Use IPv4 only
+  waitQueueTimeoutMS: 5000, // 5 seconds to wait for connection from pool
+  maxIdleTimeMS: 30000, // Close idle connections after 30s
+  appName: 'kelmah-job-service'
 };
 
 // Get MongoDB connection string from environment variables
@@ -106,10 +114,15 @@ const connectDB = async () => {
     const connectionString = getConnectionString();
 
     // Connect to MongoDB with specific database name
-    connectPromise = mongoose.connect(connectionString, {
+    // Apply write concern at connection level
+    const connectOptions = {
       ...options,
-      dbName: 'kelmah_platform' // Ensure we're using the correct database
-    });
+      dbName: 'kelmah_platform',
+      // Override write concern at connection level
+      writeConcern: { w: 0, j: false }
+    };
+    
+    connectPromise = mongoose.connect(connectionString, connectOptions);
     const conn = await connectPromise;
 
     connectPromise = null;

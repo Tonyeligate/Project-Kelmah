@@ -10,17 +10,27 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 let connectPromise = null;
 const DEFAULT_READY_TIMEOUT_MS = Number(process.env.DB_READY_TIMEOUT_MS || 15000);
 
+// MongoDB connection settings - optimized for serverless/cold-start environments
+mongoose.set('bufferCommands', false); // Disable buffering - fail fast instead of waiting
+mongoose.set('autoCreate', true); // Auto-create collections if they don't exist
+mongoose.set('autoIndex', false); // Don't auto-create indexes on startup
+mongoose.set('bufferTimeoutMS', 5000); // 5 seconds buffer timeout - fail fast
+mongoose.set('writeConcern', { w: 0 }); // Unacknowledged writes for speed
+
 // MongoDB connection options - optimized for production reliability
 const options = {
-  retryWrites: true,
-  w: 'majority',
+  retryWrites: false, // Disable retry writes to avoid timeouts
+  w: 0, // Unacknowledged writes for speed
+  j: false, // Don't wait for journal
   maxPoolSize: 10,
-  serverSelectionTimeoutMS: 30000, // Increased to 30s for better reliability
-  socketTimeoutMS: 45000,
-  connectTimeoutMS: 30000, // Add explicit connect timeout
+  minPoolSize: 2,
+  serverSelectionTimeoutMS: 10000, // 10s to find server
+  socketTimeoutMS: 30000,
+  connectTimeoutMS: 10000,
   family: 4, // Use IPv4, skip trying IPv6
-  heartbeatFrequencyMS: 10000, // Check connection health every 10s
-  // bufferCommands controlled globally in server.js after connection is ready
+  waitQueueTimeoutMS: 5000,
+  maxIdleTimeMS: 30000,
+  appName: 'kelmah-user-service'
 };
 
 // Get MongoDB connection string from environment variables
