@@ -28,19 +28,21 @@ const DEFAULT_READY_TIMEOUT_MS = Number(process.env.DB_READY_TIMEOUT_MS || 15000
 
 // Disable Mongoose buffering completely - fail immediately if not connected
 // This prevents misleading "buffering timed out" errors
-mongoose.set('bufferCommands', false);
+// Note: Schema-level bufferTimeoutMS is set to 30000ms for individual models
+mongoose.set('bufferCommands', true); // Re-enable buffering with longer timeout at schema level
 mongoose.set('autoCreate', true); // Auto-create collections if they don't exist
 mongoose.set('autoIndex', false); // Don't auto-create indexes on startup
+mongoose.set('bufferTimeoutMS', 30000); // 30 seconds global buffer timeout
 
 // MongoDB connection options
 const options = {
   retryWrites: true,
   w: 1, // Changed from 'majority' to 1 for faster writes (single server acknowledge)
   maxPoolSize: 10,
-  serverSelectionTimeoutMS: 10000, // 10 seconds to find server
-  socketTimeoutMS: 30000, // 30 seconds socket timeout
-  connectTimeoutMS: 10000, // 10 seconds to connect
-  bufferCommands: false, // Fail immediately if not connected, don't buffer
+  serverSelectionTimeoutMS: 15000, // 15 seconds to find server
+  socketTimeoutMS: 45000, // 45 seconds socket timeout
+  connectTimeoutMS: 15000, // 15 seconds to connect
+  bufferCommands: true, // Allow buffering with timeout
   family: 4 // Use IPv4, skip trying IPv6
 };
 

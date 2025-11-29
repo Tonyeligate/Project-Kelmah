@@ -345,6 +345,9 @@ JobSchema.index({ "locationDetails.region": 1, "requirements.primarySkills": 1 }
 JobSchema.index({ "performanceTier": 1, "bidding.bidStatus": 1 });
 JobSchema.index({ "expiresAt": 1, "status": 1 });
 
+// Increase buffer timeout for cold starts and slow MongoDB Atlas responses
+JobSchema.set('bufferTimeoutMS', 30000); // 30 seconds buffer timeout
+
 // Use mongoose.connection.model() to ensure model uses the active connection
 const JobModel = mongoose.connection.models.Job || mongoose.connection.model("Job", JobSchema);
 module.exports = JobModel;
