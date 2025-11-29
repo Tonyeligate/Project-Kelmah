@@ -24,7 +24,7 @@ async function runDiagnostics() {
         logger.info('1. Checking API Gateway health...');
         try {
             const healthResponse = await axios.get(
-                'https://kelmah-api-gateway-50z3.onrender.com/health',
+                'https://kelmah-api-gateway-6yoy.onrender.com/health',
                 { timeout: 10000 }
             );
             logger.info('✅ API Gateway is responding', {
@@ -44,7 +44,7 @@ async function runDiagnostics() {
         logger.info('2. Checking all services health aggregate...');
         try {
             const aggregateResponse = await axios.get(
-                'https://kelmah-api-gateway-50z3.onrender.com/api/health/aggregate',
+                'https://kelmah-api-gateway-6yoy.onrender.com/api/health/aggregate',
                 { timeout: 15000 }
             );
             logger.info('✅ Health aggregate retrieved', aggregateResponse.data);
@@ -61,7 +61,7 @@ async function runDiagnostics() {
         logger.info('3. Checking job service health...');
         try {
             const jobHealthResponse = await axios.get(
-                'https://kelmah-api-gateway-50z3.onrender.com/api/jobs/health',
+                'https://kelmah-api-gateway-6yoy.onrender.com/api/jobs/health',
                 { timeout: 10000 }
             );
             logger.info('✅ Job service is responding', jobHealthResponse.data);
@@ -78,7 +78,7 @@ async function runDiagnostics() {
         logger.info('4. Checking database connectivity via gateway...');
         try {
             const dbCheckResponse = await axios.post(
-                'https://kelmah-api-gateway-50z3.onrender.com/api/debug/db-status',
+                'https://kelmah-api-gateway-6yoy.onrender.com/api/debug/db-status',
                 {},
                 { timeout: 10000 }
             );

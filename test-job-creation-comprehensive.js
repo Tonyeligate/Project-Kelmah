@@ -8,7 +8,7 @@
 const axios = require('axios');
 
 // Use the Render API Gateway URL
-const API_BASE = 'https://kelmah-api-gateway-50z3.onrender.com/api';
+const API_BASE = 'https://kelmah-api-gateway-6yoy.onrender.com/api';
 
 const logger = {
     info: (msg, data) => console.log(`✅ ${msg}`, data ? JSON.stringify(data, null, 2) : ''),

@@ -5,7 +5,7 @@ const axios = require('axios');
         console.log('Testing w:0 unacknowledged writes...');
 
         // Get token
-        const login = await axios.post('https://kelmah-api-gateway-50z3.onrender.com/api/auth/login', {
+        const login = await axios.post('https://kelmah-api-gateway-6yoy.onrender.com/api/auth/login', {
             email: 'giftyafisa@gmail.com',
             password: '11221122Tg'
         });
@@ -15,7 +15,7 @@ const axios = require('axios');
 
         // Create job with w:0 setting
         const startTime = Date.now();
-        const createJob = await axios.post('https://kelmah-api-gateway-50z3.onrender.com/api/jobs', {
+        const createJob = await axios.post('https://kelmah-api-gateway-6yoy.onrender.com/api/jobs', {
             title: 'w:0 Test Job',
             description: 'Testing w:0 unacknowledged writes',
             category: 'plumbing',

@@ -5,7 +5,7 @@ const axios = require('axios');
         console.log('Getting job service logs to find the actual error...\n');
 
         // First, try to get the service info
-        const info = await axios.get('https://kelmah-api-gateway-50z3.onrender.com/api/health/aggregate', {
+        const info = await axios.get('https://kelmah-api-gateway-6yoy.onrender.com/api/health/aggregate', {
             timeout: 5000
         }).catch(() => null);
 
@@ -14,7 +14,7 @@ const axios = require('axios');
         }
 
         // Attempt a job creation to trigger the error
-        const login = await axios.post('https://kelmah-api-gateway-50z3.onrender.com/api/auth/login', {
+        const login = await axios.post('https://kelmah-api-gateway-6yoy.onrender.com/api/auth/login', {
             email: 'giftyafisa@gmail.com',
             password: '11221122Tg'
         });
@@ -25,7 +25,7 @@ const axios = require('axios');
 
         try {
             const startTime = Date.now();
-            const response = await axios.post('https://kelmah-api-gateway-50z3.onrender.com/api/jobs', {
+            const response = await axios.post('https://kelmah-api-gateway-6yoy.onrender.com/api/jobs', {
                 title: 'Audit Test Job',
                 description: 'Testing to capture error details',
                 category: 'plumbing',
