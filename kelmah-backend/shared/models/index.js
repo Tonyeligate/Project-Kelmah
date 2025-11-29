@@ -10,8 +10,8 @@
 const mongoose = require('mongoose');
 
 // Disable buffering - fail fast if connection not ready
-mongoose.set('bufferCommands', false);
-// Short timeout - don't wait for slow connections
+mongoose.set('bufferCommands', true); // Allow buffering but with short timeout
+// Short timeout - don't wait excessively for connection during startup
 mongoose.set('bufferTimeoutMS', 1000);
 
 const User = require('./User');

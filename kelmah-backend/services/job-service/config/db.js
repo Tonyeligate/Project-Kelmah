@@ -27,10 +27,10 @@ let connectPromise = null;
 const DEFAULT_READY_TIMEOUT_MS = Number(process.env.DB_READY_TIMEOUT_MS || 15000);
 
 // MongoDB connection settings - optimized for serverless/cold-start environments
-mongoose.set('bufferCommands', false); // Disable buffering - fail fast instead of waiting
+mongoose.set('bufferCommands', true); // Allow buffering during startup, but with short timeout
 mongoose.set('autoCreate', true); // Auto-create collections if they don't exist
 mongoose.set('autoIndex', false); // Don't auto-create indexes on startup
-mongoose.set('bufferTimeoutMS', 5000); // 5 seconds buffer timeout - fail fast
+mongoose.set('bufferTimeoutMS', 1000); // 1 second buffer timeout - fail quickly if DB not connected
 
 // MongoDB connection options - optimized for Render + MongoDB Atlas
 const options = {
