@@ -30,13 +30,40 @@ const persistNormalizedUser = (user) => {
   return normalizedUser;
 };
 
+// Retry helper for handling Render cold starts
+const retryWithBackoff = async (fn, maxRetries = 3, baseDelay = 2000) => {
+  let lastError;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      // Only retry on network errors or timeouts (Render cold start scenarios)
+      const isRetryable = !error.response || 
+                          error.code === 'ECONNABORTED' || 
+                          error.message?.includes('timeout') ||
+                          error.message?.includes('Network Error');
+      
+      if (!isRetryable || attempt === maxRetries) {
+        throw error;
+      }
+      
+      // Exponential backoff: 2s, 4s, 8s
+      const delay = baseDelay * Math.pow(2, attempt - 1);
+      console.log(`[Auth] Retry attempt ${attempt}/${maxRetries} after ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  throw lastError;
+};
+
 const authService = {
-  // Login user
+  // Login user with automatic retry for Render cold starts
   login: async (credentials) => {
     try {
-      const response = await api.post(
-        '/auth/login',
-        credentials,
+      // Use retry wrapper to handle Render cold start delays
+      const response = await retryWithBackoff(() => 
+        api.post('/auth/login', credentials)
       );
 
       // Extract data from response (handle different response structures)

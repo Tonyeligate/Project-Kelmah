@@ -303,6 +303,21 @@ const JobManagementPage = () => {
         </Alert>
       )}
 
+      {/* Data consistency warning - shows when API returned data but display shows 0 */}
+      {!loading && jobs.length === 0 && !error && (
+        <Alert 
+          severity="info" 
+          sx={{ mb: 3 }}
+          action={
+            <Button color="inherit" size="small" onClick={handleRefresh}>
+              Refresh
+            </Button>
+          }
+        >
+          Loading your jobs... If you've posted jobs and don't see them, try refreshing or contact support.
+        </Alert>
+      )}
+
       <Paper sx={{ mb: 4, borderRadius: 2 }}>
         <Box
           sx={{
@@ -473,16 +488,29 @@ const JobManagementPage = () => {
               }}
             >
               <WarningIcon
-                sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }}
+                sx={{ fontSize: 48, color: jobs.length > 0 ? 'warning.main' : 'text.secondary', mb: 2 }}
               />
               <Typography variant="h6" gutterBottom>
-                No jobs found
+                {jobs.length > 0 && filteredJobs.length === 0
+                  ? 'No jobs match current filter'
+                  : 'No jobs found'}
               </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
+              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ textAlign: 'center', maxWidth: 400 }}>
                 {searchText
                   ? 'No jobs match your search criteria. Try changing your search terms.'
-                  : 'You have no jobs in this category yet.'}
+                  : jobs.length > 0 && tabValue !== 0
+                    ? `You have ${jobs.length} total job${jobs.length !== 1 ? 's' : ''}, but none in this status category. Try selecting "All Jobs" tab.`
+                    : 'You haven\'t posted any jobs yet. Create your first job posting to start finding talent!'}
               </Typography>
+              {jobs.length > 0 && tabValue !== 0 && (
+                <Button
+                  variant="outlined"
+                  onClick={() => setTabValue(0)}
+                  sx={{ mt: 2, mr: 1 }}
+                >
+                  View All Jobs ({jobs.length})
+                </Button>
+              )}
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
