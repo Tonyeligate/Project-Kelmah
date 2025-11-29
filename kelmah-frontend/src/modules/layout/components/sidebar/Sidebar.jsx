@@ -257,6 +257,10 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
               '& .MuiListItemText-primary': {
                 color: '#1976D2',
                 fontWeight: 600,
+                letterSpacing: 'normal',
+                wordSpacing: 'normal',
+                whiteSpace: 'nowrap',
+                fontFamily: '"Inter", "Roboto", "Helvetica Neue", Arial, sans-serif',
               },
             }}
           />
@@ -376,6 +380,10 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                       color: isActive ? '#1976D2' : '#333',
                       fontWeight: isActive ? 600 : 400,
                       fontSize: '0.9rem',
+                      letterSpacing: 'normal',
+                      wordSpacing: 'normal',
+                      whiteSpace: 'nowrap',
+                      fontFamily: '"Inter", "Roboto", "Helvetica Neue", Arial, sans-serif',
                     },
                   }}
                 />
@@ -441,6 +449,10 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                     color: isActive ? '#1976D2' : '#333',
                     fontWeight: isActive ? 600 : 400,
                     fontSize: '0.9rem',
+                    letterSpacing: 'normal',
+                    wordSpacing: 'normal',
+                    whiteSpace: 'nowrap',
+                    fontFamily: '"Inter", "Roboto", "Helvetica Neue", Arial, sans-serif',
                   },
                 }}
               />

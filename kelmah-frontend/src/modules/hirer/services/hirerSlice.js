@@ -42,7 +42,7 @@ export const fetchHirerJobs = createAsyncThunk(
       if (dbStatus) {
         params.status = dbStatus;
       }
-      
+
       const response = await api.get('/jobs/my-jobs', { params });
       // Response structure: { success: true, data: { items: [...], pagination: {...} } }
       // Extract items array from response - check multiple possible paths
