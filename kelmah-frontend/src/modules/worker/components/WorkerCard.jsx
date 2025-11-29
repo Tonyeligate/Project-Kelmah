@@ -281,14 +281,14 @@ const WorkerCard = ({ worker }) => {
     responseTimeLabel,
   ]);
 
-  // Handle view profile
-  const handleViewProfile = (e) => {
-    e.stopPropagation();
+  // Handle view profile - used for card click navigation
+  const handleViewProfile = useCallback(() => {
     const targetId = worker.id || worker._id || worker.userId;
+    console.log('🟡 WorkerCard clicked - navigating to:', `/worker-profile/${targetId}`);
     if (targetId) {
       navigate(`/worker-profile/${targetId}`);
     }
-  };
+  }, [navigate, worker.id, worker._id, worker.userId]);
 
   // Handle message worker
   const handleMessage = useCallback(
@@ -361,10 +361,12 @@ const WorkerCard = ({ worker }) => {
   return (
     <Card
       elevation={2}
+      onClick={handleViewProfile}
       sx={{
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
+        cursor: 'pointer',
         transition: 'transform 0.2s, box-shadow 0.2s',
         '&:hover': {
           transform: 'translateY(-4px)',
@@ -373,11 +375,8 @@ const WorkerCard = ({ worker }) => {
       }}
     >
       <CardContent
-        component={RouterLink}
-        to={`/worker-profile/${worker.id || worker._id || worker.userId}`}
         sx={{
           flexGrow: 1,
-          cursor: 'pointer',
           textDecoration: 'none',
           color: 'inherit',
           display: 'block',
@@ -531,10 +530,13 @@ const WorkerCard = ({ worker }) => {
       {/* Contact Action Buttons */}
       <CardActions
         sx={{ justifyContent: 'space-between', px: 2, pb: 2, pt: 0 }}
+        onClick={(e) => e.stopPropagation()}
       >
         <Button
-          component={RouterLink}
-          to={`/worker-profile/${worker.id || worker._id || worker.userId}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleViewProfile();
+          }}
           variant="outlined"
           startIcon={<VisibilityIcon />}
           size="small"
@@ -558,7 +560,10 @@ const WorkerCard = ({ worker }) => {
             <Button
               variant="contained"
               startIcon={<MessageIcon />}
-              onClick={messageCta.handler}
+              onClick={(e) => {
+                e.stopPropagation();
+                messageCta.handler(e);
+              }}
               disabled={messageCta.disabled}
               size="small"
               fullWidth
