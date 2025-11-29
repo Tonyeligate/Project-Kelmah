@@ -226,7 +226,7 @@ const userSchema = new mongoose.Schema({
   collection: 'users',
   // bufferCommands controlled globally by mongoose.set() in server startup
   autoCreate: true, // Ensure collection is created
-  writeConcern: { w: 0, j: false } // Unacknowledged writes for speed
+  // writeConcern removed - uses connection default (w: 1) for proper acknowledgments
 });
 
 // ✅ FIXED: Clean indexes without duplicates (removed unique: true from explicit indexes)

@@ -166,12 +166,28 @@ if (keepAliveManager) {
 // Readiness and liveness endpoints (also before limiter)
 app.get('/health/ready', (req, res) => {
   const isDbConnected = !!(require('mongoose').connection?.readyState === 1);
-  res.status(isDbConnected ? 200 : 503).json({ ready: isDbConnected, timestamp: new Date().toISOString() });
+  const bufferCommands = require('mongoose').get('bufferCommands');
+  const bufferTimeoutMS = require('mongoose').get('bufferTimeoutMS');
+  res.status(isDbConnected ? 200 : 503).json({
+    ready: isDbConnected,
+    readyState: require('mongoose').connection?.readyState,
+    bufferCommands,
+    bufferTimeoutMS,
+    timestamp: new Date().toISOString()
+  });
 });
 
 app.get('/api/health/ready', (req, res) => {
   const isDbConnected = !!(require('mongoose').connection?.readyState === 1);
-  res.status(isDbConnected ? 200 : 503).json({ ready: isDbConnected, timestamp: new Date().toISOString() });
+  const bufferCommands = require('mongoose').get('bufferCommands');
+  const bufferTimeoutMS = require('mongoose').get('bufferTimeoutMS');
+  res.status(isDbConnected ? 200 : 503).json({
+    ready: isDbConnected,
+    readyState: require('mongoose').connection?.readyState,
+    bufferCommands,
+    bufferTimeoutMS,
+    timestamp: new Date().toISOString()
+  });
 });
 
 app.get('/health/live', (req, res) => {

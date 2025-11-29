@@ -59,7 +59,7 @@ const ApplicationSchema = new Schema(
     timestamps: true,
     // bufferCommands controlled globally by mongoose.set() in server startup
     autoCreate: true,
-    writeConcern: { w: 0, j: false } // Unacknowledged writes for speed
+    // writeConcern removed - uses connection default (w: 1) for proper acknowledgments
   },
 );
 

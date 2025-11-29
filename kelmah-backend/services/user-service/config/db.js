@@ -99,10 +99,10 @@ const connectDB = async () => {
     });
 
     // Add explicit timeout in case mongoose.connect hangs
-    const connectionTimeout = new Promise((_, reject) => 
+    const connectionTimeout = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('MongoDB connection timeout after 35 seconds')), 35000)
     );
-    
+
     const conn = await Promise.race([connectPromise, connectionTimeout]);
     connectPromise = null;
 

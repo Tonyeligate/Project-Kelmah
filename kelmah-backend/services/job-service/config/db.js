@@ -52,29 +52,32 @@ const options = {
 const getConnectionString = () => {
   // Priority order for MongoDB URI (service-specific first, then generic)
   if (process.env.JOB_MONGO_URI) {
-    console.log('🔗 Using JOB_MONGO_URI from environment');
-    console.log('🔗 Connection string preview:', process.env.JOB_MONGO_URI.substring(0, 50) + '...');
+    console.log('[DB CONFIG] Using JOB_MONGO_URI');
+    const preview = process.env.JOB_MONGO_URI.substring(0, 50);
+    console.log('[DB CONFIG] Connection string preview:', preview + '...');
     return process.env.JOB_MONGO_URI;
   }
   if (process.env.MONGODB_URI) {
-    console.log('🔗 Using MONGODB_URI from environment');
-    console.log('🔗 Connection string preview:', process.env.MONGODB_URI.substring(0, 50) + '...');
+    console.log('[DB CONFIG] Using MONGODB_URI');
+    const preview = process.env.MONGODB_URI.substring(0, 50);
+    console.log('[DB CONFIG] Connection string preview:', preview + '...');
     return process.env.MONGODB_URI;
   }
   if (process.env.USER_MONGO_URI) {
-    console.log('🔗 Using USER_MONGO_URI from environment');
+    console.log('[DB CONFIG] Using USER_MONGO_URI');
     return process.env.USER_MONGO_URI;
   }
   if (process.env.MONGO_URI) {
-    console.log('🔗 Using MONGO_URI from environment');
+    console.log('[DB CONFIG] Using MONGO_URI');
     return process.env.MONGO_URI;
   }
   if (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('mongodb')) {
-    console.log('🔗 Using DATABASE_URL from environment');
+    console.log('[DB CONFIG] Using DATABASE_URL');
     return process.env.DATABASE_URL;
   }
 
-  console.log('⚠️ No MongoDB URI environment variable found, using fallback construction');
+  console.log('[DB CONFIG] ⚠️ No MongoDB URI environment variable found, using fallback construction');
+  console.log('[DB CONFIG] Available env vars:', Object.keys(process.env).filter(k => k.includes('MONGO') || k.includes('DB') || k.includes('DATABASE')).join(', '));
 
   // Fallback to individual credentials (for local development)
   const dbHost = process.env.DB_HOST || 'localhost';
@@ -89,10 +92,15 @@ const getConnectionString = () => {
   }
 
   if (dbUser && dbPassword) {
-    return `${scheme}${dbUser}:${dbPassword}@${dbHost}/${dbName}?retryWrites=true&w=majority`;
+    const url = `${scheme}${dbUser}:${dbPassword}@${dbHost}/${dbName}?retryWrites=true&w=majority`;
+    console.log('[DB CONFIG] Constructed URL from individual credentials');
+    return url;
   }
 
-  return `${scheme}${dbHost}:${dbPort}/${dbName}`;
+  const url = `${scheme}${dbHost}:${dbPort}/${dbName}`;
+  console.log('[DB CONFIG] Using fallback connection:', url);
+  return url;
+};
 };
 
 /**
@@ -120,12 +128,12 @@ const connectDB = async () => {
     };
 
     connectPromise = mongoose.connect(connectionString, connectOptions);
-    
+
     // Add explicit timeout in case mongoose.connect hangs
-    const connectionTimeout = new Promise((_, reject) => 
+    const connectionTimeout = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('MongoDB connection timeout after 35 seconds')), 35000)
     );
-    
+
     const conn = await Promise.race([connectPromise, connectionTimeout]);
     connectPromise = null;
 

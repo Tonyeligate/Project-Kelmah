@@ -237,7 +237,7 @@ const JobSchema = new mongoose.Schema(
     autoCreate: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-    writeConcern: { w: 0, j: false }, // Unacknowledged writes for speed
+    // writeConcern removed - uses connection default (w: 1) for proper acknowledgments
   },
 );
 
