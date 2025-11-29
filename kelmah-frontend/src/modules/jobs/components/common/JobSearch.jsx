@@ -29,6 +29,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../../../../services/apiClient';
+import { formatJobLocation } from '../../../../../utils/formatters';
 
 const JobSearch = () => {
   const navigate = useNavigate();
@@ -127,7 +128,7 @@ const JobSearch = () => {
               {job.description}
             </Typography>
             <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <Chip icon={<LocationOn />} label={job.location} size="small" />
+              <Chip icon={<LocationOn />} label={formatJobLocation(job.location)} size="small" />
               <Chip icon={<Work />} label={job.category} size="small" />
               <Chip
                 icon={<AttachMoney />}

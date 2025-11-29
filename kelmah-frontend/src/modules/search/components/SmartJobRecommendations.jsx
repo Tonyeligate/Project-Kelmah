@@ -49,7 +49,7 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
-import { formatCurrency, formatRelativeTime } from '../../../utils/formatters';
+import { formatCurrency, formatRelativeTime, formatJobLocation } from '../../../utils/formatters';
 
 const SmartJobRecommendations = ({
   maxRecommendations = 6,
@@ -405,7 +405,7 @@ const SmartJobRecommendations = ({
           <Stack spacing={1} mb={2}>
             <Box display="flex" alignItems="center" gap={1}>
               <LocationIcon fontSize="small" color="action" />
-              <Typography variant="body2">{job.location}</Typography>
+              <Typography variant="body2">{formatJobLocation(job.location)}</Typography>
             </Box>
 
             <Box display="flex" alignItems="center" gap={1}>

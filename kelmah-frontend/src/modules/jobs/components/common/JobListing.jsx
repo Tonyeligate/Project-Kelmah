@@ -19,6 +19,7 @@ import { LocationOn, Work, AttachMoney, AccessTime } from '@mui/icons-material';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { api } from '../../../../../services/apiClient';
 import { formatDistanceToNow } from 'date-fns';
+import { formatJobLocation } from '../../../../../utils/formatters';
 
 function JobListing({ job, onApply, onViewDetails }) {
   const { user, token } = useAuth();
@@ -68,7 +69,7 @@ function JobListing({ job, onApply, onViewDetails }) {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <LocationOn sx={{ mr: 1, color: 'primary.main' }} />
                 <Typography variant="body2" color="text.secondary">
-                  {job.location}
+                  {formatJobLocation(job.location)}
                 </Typography>
               </Box>
 

@@ -47,6 +47,7 @@ import {
   AccessTime as AccessTimeIcon,
 } from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
+import { formatJobLocation } from '../../../utils/formatters';
 
 const JobApplicationPage = () => {
   const theme = useTheme();
@@ -382,7 +383,7 @@ const JobApplicationPage = () => {
                                     variant="body2"
                                     color="text.secondary"
                                   >
-                                    {job.location}
+                                    {formatJobLocation(job.location)}
                                   </Typography>
                                 </Box>
                                 <Box

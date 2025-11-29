@@ -44,6 +44,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { api } from '../../../services/apiClient';
+import { formatJobLocation } from '../../../utils/formatters';
 
 const JobApplicationForm = () => {
   console.log('🎯 JobApplicationForm component rendering...');
@@ -157,8 +158,8 @@ const JobApplicationForm = () => {
       console.error('Error submitting application:', err);
       setError(
         err.response?.data?.message ||
-          err.message ||
-          'Failed to submit application',
+        err.message ||
+        'Failed to submit application',
       );
     } finally {
       setSubmitting(false);
@@ -254,7 +255,7 @@ const JobApplicationForm = () => {
                   <Box>
                     <Typography variant="h6">{job.company.name}</Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {job.location}
+                      {formatJobLocation(job.location)}
                     </Typography>
                   </Box>
                 </Box>
@@ -283,7 +284,7 @@ const JobApplicationForm = () => {
                     <LocationIcon
                       sx={{ mr: 1, color: theme.palette.secondary.main }}
                     />
-                    <Typography>{job.location}</Typography>
+                    <Typography>{formatJobLocation(job.location)}</Typography>
                   </Box>
                 </Stack>
 

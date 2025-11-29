@@ -67,6 +67,7 @@ import {
   selectHirerLoading,
   selectHirerError,
 } from '../services/hirerSlice';
+import { formatJobLocation } from '../../../utils/formatters';
 
 // TabPanel component
 function TabPanel(props) {
@@ -167,10 +168,11 @@ const JobManagementPage = () => {
   // Filter jobs based on tab and search
   const filteredJobs = jobs.filter((job) => {
     const matchesTab = tabValue === 0 || job.status === tabStatuses[tabValue];
+    const locationStr = formatJobLocation(job.location);
     const matchesSearch =
       searchText === '' ||
       job.title.toLowerCase().includes(searchText.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchText.toLowerCase());
+      locationStr.toLowerCase().includes(searchText.toLowerCase());
 
     return matchesTab && matchesSearch;
   });
@@ -391,15 +393,15 @@ const JobManagementPage = () => {
                 In Progress
                 {jobs.filter((job) => job.status === 'in-progress').length >
                   0 && (
-                  <Chip
-                    label={
-                      jobs.filter((job) => job.status === 'in-progress').length
-                    }
-                    size="small"
-                    color="warning"
-                    sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
-                  />
-                )}
+                    <Chip
+                      label={
+                        jobs.filter((job) => job.status === 'in-progress').length
+                      }
+                      size="small"
+                      color="warning"
+                      sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
+                    />
+                  )}
               </Box>
             }
           />
@@ -409,15 +411,15 @@ const JobManagementPage = () => {
                 Completed
                 {jobs.filter((job) => job.status === 'completed').length >
                   0 && (
-                  <Chip
-                    label={
-                      jobs.filter((job) => job.status === 'completed').length
-                    }
-                    size="small"
-                    color="success"
-                    sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
-                  />
-                )}
+                    <Chip
+                      label={
+                        jobs.filter((job) => job.status === 'completed').length
+                      }
+                      size="small"
+                      color="success"
+                      sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
+                    />
+                  )}
               </Box>
             }
           />
@@ -427,15 +429,15 @@ const JobManagementPage = () => {
                 Cancelled
                 {jobs.filter((job) => job.status === 'cancelled').length >
                   0 && (
-                  <Chip
-                    label={
-                      jobs.filter((job) => job.status === 'cancelled').length
-                    }
-                    size="small"
-                    color="error"
-                    sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
-                  />
-                )}
+                    <Chip
+                      label={
+                        jobs.filter((job) => job.status === 'cancelled').length
+                      }
+                      size="small"
+                      color="error"
+                      sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
+                    />
+                  )}
               </Box>
             }
           />
@@ -507,119 +509,119 @@ const JobManagementPage = () => {
                   <TableBody>
                     {loading
                       ? Array.from(new Array(rowsPerPage)).map((_, idx) => (
-                          <TableRow key={`skeleton-${idx}`}>
-                            <TableCell>
-                              <Skeleton />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton />
-                            </TableCell>
-                            <TableCell>
-                              <Skeleton />
-                            </TableCell>
-                            <TableCell align="right">
-                              <Skeleton />
-                            </TableCell>
-                          </TableRow>
-                        ))
+                        <TableRow key={`skeleton-${idx}`}>
+                          <TableCell>
+                            <Skeleton />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton />
+                          </TableCell>
+                          <TableCell align="right">
+                            <Skeleton />
+                          </TableCell>
+                        </TableRow>
+                      ))
                       : paginatedJobs.map((job) => (
-                          <TableRow
-                            key={job.id}
-                            sx={{
-                              '&:hover': { bgcolor: 'action.hover' },
-                              cursor: 'pointer',
-                            }}
+                        <TableRow
+                          key={job.id}
+                          sx={{
+                            '&:hover': { bgcolor: 'action.hover' },
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <TableCell
+                            onClick={() => handleViewJob(job.id)}
+                            sx={{ fontWeight: 500 }}
                           >
-                            <TableCell
-                              onClick={() => handleViewJob(job.id)}
-                              sx={{ fontWeight: 500 }}
+                            {job.title}
+                            <Box sx={{ display: 'flex', mt: 0.5 }}>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{ mr: 2 }}
+                              >
+                                {formatJobLocation(job.location)}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                ${job.hourlyRate}/hr
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <StatusChip status={job.status} />
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              badgeContent={job.applications?.length || 0}
+                              color="primary"
+                              max={999}
+                              showZero
                             >
-                              {job.title}
-                              <Box sx={{ display: 'flex', mt: 0.5 }}>
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                  sx={{ mr: 2 }}
+                              <ApplicationIcon color="action" />
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{job.postedDate}</TableCell>
+                          <TableCell>{job.expiryDate}</TableCell>
+                          <TableCell align="right">
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                              }}
+                            >
+                              <Tooltip title="View Applications">
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleViewApplications(job.id)
+                                  }
+                                  sx={{ mr: 1 }}
                                 >
-                                  {job.location}
-                                </Typography>
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
+                                  <PersonIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="View Job">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleViewJob(job.id)}
+                                  sx={{ mr: 1 }}
                                 >
-                                  ${job.hourlyRate}/hr
-                                </Typography>
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              <StatusChip status={job.status} />
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                badgeContent={job.applications?.length || 0}
-                                color="primary"
-                                max={999}
-                                showZero
-                              >
-                                <ApplicationIcon color="action" />
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{job.postedDate}</TableCell>
-                            <TableCell>{job.expiryDate}</TableCell>
-                            <TableCell align="right">
-                              <Box
-                                sx={{
-                                  display: 'flex',
-                                  justifyContent: 'flex-end',
-                                }}
-                              >
-                                <Tooltip title="View Applications">
-                                  <IconButton
-                                    size="small"
-                                    onClick={() =>
-                                      handleViewApplications(job.id)
-                                    }
-                                    sx={{ mr: 1 }}
-                                  >
-                                    <PersonIcon />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="View Job">
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => handleViewJob(job.id)}
-                                    sx={{ mr: 1 }}
-                                  >
-                                    <ViewIcon />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Edit Job">
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => handleEditJob(job.id)}
-                                    sx={{ mr: 1 }}
-                                  >
-                                    <EditIcon />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="More Options">
-                                  <IconButton
-                                    size="small"
-                                    onClick={(e) => handleMenuOpen(e, job)}
-                                  >
-                                    <MoreIcon />
-                                  </IconButton>
-                                </Tooltip>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                                  <ViewIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Edit Job">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleEditJob(job.id)}
+                                  sx={{ mr: 1 }}
+                                >
+                                  <EditIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="More Options">
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => handleMenuOpen(e, job)}
+                                >
+                                  <MoreIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               </TableContainer>

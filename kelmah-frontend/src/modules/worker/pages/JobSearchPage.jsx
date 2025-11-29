@@ -91,6 +91,7 @@ import {
 // import useAuth from '../../auth/hooks/useAuth';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 import { EXTERNAL_SERVICES } from '../../../config/services';
+import { formatJobLocation } from '../../../utils/formatters';
 
 // Enhanced Animations with Worker-focused Themes
 const float = keyframes`
@@ -1922,7 +1923,7 @@ const JobSearchPage = () => {
             <Stack spacing={1} sx={{ mb: 3 }}>
               <Stack direction="row" spacing={1} alignItems="center">
                 <LocationOnIcon fontSize="small" color="secondary" />
-                <Typography variant="body2">{job.location}</Typography>
+                <Typography variant="body2">{formatJobLocation(job.location)}</Typography>
                 {job.remote && (
                   <Chip label="Remote" size="small" color="success" />
                 )}

@@ -49,6 +49,7 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SwipeableList, PullToRefresh } from './SwipeGestures';
+import { formatJobLocation } from '../../utils/formatters';
 
 /**
  * Mobile-Optimized Job Search Component for Ghana
@@ -459,7 +460,7 @@ const MobileJobSearch = () => {
             <Stack direction="row" alignItems="center" spacing={1}>
               <LocationIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
               <Typography variant="caption" color="text.secondary">
-                {job.location}
+                {formatJobLocation(job.location)}
               </Typography>
               {userLocation && (
                 <Typography
@@ -780,9 +781,9 @@ const MobileJobSearch = () => {
                         color: '#FFD700',
                       },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track':
-                        {
-                          backgroundColor: '#FFD700',
-                        },
+                      {
+                        backgroundColor: '#FFD700',
+                      },
                     }}
                   />
                 }
@@ -800,9 +801,9 @@ const MobileJobSearch = () => {
                         color: '#FFD700',
                       },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track':
-                        {
-                          backgroundColor: '#FFD700',
-                        },
+                      {
+                        backgroundColor: '#FFD700',
+                      },
                     }}
                   />
                 }

@@ -436,6 +436,48 @@ export const formatTimeRange = (startTime, endTime) => {
   }
 };
 
+/**
+ * Format job location - handles both string and object location formats
+ * @param {string|object} location - Location value (can be string or {type, country, city} object)
+ * @returns {string} Formatted location string
+ */
+export const formatJobLocation = (location) => {
+  // Handle null/undefined
+  if (!location) return 'Location not specified';
+
+  // If it's already a string, return it
+  if (typeof location === 'string') return location;
+
+  // If it's an object with type, country, city
+  if (typeof location === 'object') {
+    const { type, country, city } = location;
+
+    // Build location string based on available fields
+    if (type === 'remote') {
+      return 'Remote';
+    }
+
+    const parts = [];
+    if (city) parts.push(city);
+    if (country) parts.push(country);
+
+    if (parts.length > 0) {
+      const locationStr = parts.join(', ');
+      if (type === 'hybrid') {
+        return `${locationStr} (Hybrid)`;
+      }
+      return locationStr;
+    }
+
+    // If only type is available
+    if (type) {
+      return type.charAt(0).toUpperCase() + type.slice(1);
+    }
+  }
+
+  return 'Location not specified';
+};
+
 export default {
   formatCurrency,
   getCurrencySymbol,
@@ -456,4 +498,5 @@ export default {
   formatNumber,
   formatCompactNumber,
   formatTimeRange,
+  formatJobLocation,
 };
