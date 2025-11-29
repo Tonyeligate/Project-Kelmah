@@ -168,7 +168,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
   const { user: authUser } = useSelector((state) => state.auth);
   const resolvedWorkerId =
     workerIdProp ?? routeParams?.workerId ?? authUser?.userId ?? null;
-  
+
   // Debug logging to trace worker ID resolution
   console.log('[WorkerProfile] Render:', {
     workerIdProp,
@@ -176,7 +176,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
     resolvedWorkerId,
     timestamp: new Date().toISOString()
   });
-  
+
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -313,6 +313,20 @@ function WorkerProfile({ workerId: workerIdProp }) {
     if (!resolvedWorkerId) {
       return;
     }
+
+    // Reset all state when navigating to a new worker profile
+    console.log('[WorkerProfile] useEffect triggered - resetting state and fetching for:', resolvedWorkerId);
+    setLoading(true);
+    setError(null);
+    setProfile(null);
+    setSkills([]);
+    setPortfolio([]);
+    setCertificates([]);
+    setReviews([]);
+    setAvailability(null);
+    setStats({});
+    setEarnings(null);
+    setTabValue(0);
 
     // Force refetch when workerId changes
     fetchAllData();

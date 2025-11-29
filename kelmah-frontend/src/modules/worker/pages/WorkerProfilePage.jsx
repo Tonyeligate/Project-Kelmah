@@ -38,9 +38,8 @@ const WorkerProfilePage = () => {
 
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Box>
-          {/* key prop forces complete re-mount when workerId changes, 
-              ensuring fresh data fetch for each profile navigation */}
-          <WorkerProfile key={workerId} workerId={workerId} />
+          {/* Pass workerId as prop - component handles navigation changes via useEffect */}
+          <WorkerProfile workerId={workerId} />
         </Box>
       </Container>
     </>
