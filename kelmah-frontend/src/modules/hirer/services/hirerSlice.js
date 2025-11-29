@@ -21,18 +21,34 @@ export const fetchHirerProfile = createAsyncThunk(
   },
 );
 
+// Map frontend status terminology to database canonical statuses
+const STATUS_MAP = {
+  'active': 'open',      // Frontend "active" = database "open"
+  'completed': 'completed',
+  'in-progress': 'in-progress',
+  'cancelled': 'cancelled',
+  'draft': 'draft',
+  'all': null,           // No filter
+  'open': 'open',        // Direct mapping
+};
+
 export const fetchHirerJobs = createAsyncThunk(
   'hirer/fetchJobs',
   async (status = 'all') => {
     try {
-      const response = await api.get('/jobs/my-jobs', {
-        params: { status, role: 'hirer' },
-      });
+      // Map frontend status to database canonical status
+      const dbStatus = STATUS_MAP[status] || status;
+      const params = { role: 'hirer' };
+      if (dbStatus) {
+        params.status = dbStatus;
+      }
+      
+      const response = await api.get('/jobs/my-jobs', { params });
       // Response structure: { success: true, data: { items: [...], pagination: {...} } }
       // Extract items array from response - check multiple possible paths
       const responseData = response.data?.data;
       const jobs = responseData?.items || responseData?.jobs || responseData || response.data?.jobs || [];
-      console.log('[HirerSlice] Fetched jobs:', { status, count: Array.isArray(jobs) ? jobs.length : 0 });
+      console.log('[HirerSlice] Fetched jobs:', { requestedStatus: status, dbStatus, count: Array.isArray(jobs) ? jobs.length : 0 });
       return { status, jobs: Array.isArray(jobs) ? jobs : [] };
     } catch (error) {
       console.warn(
