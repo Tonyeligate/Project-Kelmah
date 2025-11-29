@@ -6,13 +6,8 @@
  * Service-specific models belong in their respective service directories
  */
 
-// ⚡ CRITICAL: Apply mongoose settings BEFORE loading models
+// Import mongoose - buffer settings are handled in each service's db.js
 const mongoose = require('mongoose');
-
-// Disable buffering - fail fast if connection not ready
-mongoose.set('bufferCommands', true); // Allow buffering with reasonable timeout
-// Buffer timeout - allow time for cold start on Render
-mongoose.set('bufferTimeoutMS', 45000); // 45 seconds for cold start initialization
 
 const User = require('./User');
 const Job = require('./Job');

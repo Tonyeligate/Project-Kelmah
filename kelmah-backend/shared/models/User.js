@@ -371,22 +371,6 @@ userSchema.statics.findByRole = function (role) {
 };
 
 // Create and export the User model
-// CRITICAL: Use mongoose.connection.model() to ensure it uses the active connection
-// mongoose.model() might create models on a different instance than the connected one
-
-// Try to get existing model first from the connection
-if (mongoose.connection.models && mongoose.connection.models.User) {
-  console.log('✅ User model already exists in connection registry');
-  module.exports = mongoose.connection.models.User;
-} else if (mongoose.models.User) {
-  console.log('✅ User model exists in global registry');
-  module.exports = mongoose.models.User;
-} else {
-  // Create the model on the ACTIVE CONNECTION
-  console.log('🔧 Creating new User model on active connection...');
-  const UserModel = mongoose.connection.model('User', userSchema);
-
-  console.log('✅ User model created on active connection');
-
-  module.exports = UserModel;
-}
+// Use standard mongoose.model() - it auto-binds to the default connection
+// This works correctly whether connection is established before or after model definition
+module.exports = mongoose.models.User || mongoose.model('User', userSchema);

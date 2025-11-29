@@ -3,10 +3,8 @@
  * Uses shared models for cross-service entities, local models for service-specific
  */
 
-// Get the connected mongoose instance from db config
-const { mongoose } = require('../config/db');
-
 // Import shared models (truly cross-service)
+// These use mongoose.model() which auto-binds to the default connection
 const { Job, Application, User } = require('../../../shared/models');
 
 // Import LOCAL service-specific models

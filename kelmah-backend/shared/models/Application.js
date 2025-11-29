@@ -72,7 +72,5 @@ ApplicationSchema.methods.updateStatus = function (newStatus) {
   return this.save();
 };
 
-// Use mongoose.connection.model() to ensure model uses the active connection
-const Application = mongoose.connection.models.Application || mongoose.connection.model("Application", ApplicationSchema);
-
-module.exports = Application;
+// Use standard mongoose.model() - it auto-binds to the default connection
+module.exports = mongoose.models.Application || mongoose.model("Application", ApplicationSchema);
