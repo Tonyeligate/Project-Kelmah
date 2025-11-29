@@ -27,24 +27,24 @@ let connectPromise = null;
 const DEFAULT_READY_TIMEOUT_MS = Number(process.env.DB_READY_TIMEOUT_MS || 15000);
 
 // MongoDB connection settings - optimized for serverless/cold-start environments
-mongoose.set('bufferCommands', true); // Allow buffering during startup, but with short timeout
+mongoose.set('bufferCommands', true); // Allow buffering during startup, but with reasonable timeout
 mongoose.set('autoCreate', true); // Auto-create collections if they don't exist
 mongoose.set('autoIndex', false); // Don't auto-create indexes on startup
-mongoose.set('bufferTimeoutMS', 1000); // 1 second buffer timeout - fail quickly if DB not connected
+mongoose.set('bufferTimeoutMS', 45000); // 45 seconds buffer timeout - allow time for cold start on Render
 
 // MongoDB connection options - optimized for Render + MongoDB Atlas
 const options = {
-  retryWrites: false, // Disable retry writes to avoid timeouts
-  w: 0, // Unacknowledged writes (fire-and-forget)
-  j: false, // Don't wait for journal
-  maxPoolSize: 10, // Increased pool size for better throughput
+  retryWrites: true, // Enable retry writes for reliability
+  w: 1, // Single server acknowledgment (fast enough, safer than w:0)
+  j: false, // Don't wait for journal fsync
+  maxPoolSize: 10, // Connection pool size
   minPoolSize: 2, // Maintain minimum connections
-  serverSelectionTimeoutMS: 10000, // 10 seconds to find server
-  socketTimeoutMS: 30000, // 30 seconds socket timeout
-  connectTimeoutMS: 10000, // 10 seconds to connect
+  serverSelectionTimeoutMS: 30000, // 30 seconds to find/select server
+  socketTimeoutMS: 45000, // 45 seconds socket timeout
+  connectTimeoutMS: 30000, // 30 seconds to establish connection
   family: 4, // Use IPv4 only
-  waitQueueTimeoutMS: 5000, // 5 seconds to wait for connection from pool
-  maxIdleTimeMS: 30000, // Close idle connections after 30s
+  waitQueueTimeoutMS: 10000, // 10 seconds to wait for connection slot
+  maxIdleTimeMS: 60000, // Close idle connections after 60s
   appName: 'kelmah-job-service'
 };
 
