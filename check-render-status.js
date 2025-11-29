@@ -9,7 +9,7 @@ const axios = require('axios');
         console.log('✓ API Gateway:', gatewayHealth.data);
 
         // Check Job Service health  
-        const jobHealth = await axios.get('https://kelmah-api-gateway-50z3.onrender.com/api/health/aggregate');
+        const jobHealth = await axios.get('https://kelmah-api-gateway-6yoy.onrender.com/api/health/aggregate');
         console.log('\n✓ Aggregate Health:', JSON.stringify(jobHealth.data, null, 2));
 
     } catch (error) {
