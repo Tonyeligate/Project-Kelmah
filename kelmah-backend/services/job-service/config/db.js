@@ -113,52 +113,13 @@ const connectDB = async () => {
     const connectionString = getConnectionString();
 
     // Connect to MongoDB with specific database name
+    // Using same pattern as auth-service (direct await) to avoid race conditions with 'connected' event
     const connectOptions = {
       ...options,
       dbName: 'kelmah_platform'
     };
 
-    // Create a promise that resolves only when connection is truly ready ('connected' event)
-    // Using 'connected' instead of 'open' for consistency with other services and better reliability on Render
-    connectPromise = (async () => {
-      // Start the connection
-      const conn = await mongoose.connect(connectionString, connectOptions);
-
-      // Wait for the 'connected' event which indicates the connection is ready for operations
-      // This matches the pattern used in auth-service which works reliably on Render
-      return new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error('Connection connected event timeout - connection not ready after 30s'));
-        }, 30000);
-
-        const onConnected = () => {
-          clearTimeout(timeout);
-          mongoose.connection.removeListener('connected', onConnected);
-          mongoose.connection.removeListener('error', onError);
-          console.log(`✅ JOB Service connection established and ready for operations: ${conn.connection.host}`);
-          console.log(`📊 Database: ${conn.connection.name}`);
-          console.log(`⚡ Connection ready state: ${mongoose.connection.readyState}`);
-          resolve(conn);
-        };
-
-        const onError = (error) => {
-          clearTimeout(timeout);
-          mongoose.connection.removeListener('connected', onConnected);
-          mongoose.connection.removeListener('error', onError);
-          reject(error);
-        };
-
-        // If already connected, call immediately
-        if (mongoose.connection.readyState === 1) {
-          onConnected();
-        } else {
-          // Otherwise wait for connected event
-          mongoose.connection.once('connected', onConnected);
-          mongoose.connection.once('error', onError);
-        }
-      });
-    })();
-
+    connectPromise = mongoose.connect(connectionString, connectOptions);
     const conn = await connectPromise;
     connectPromise = null;
 
