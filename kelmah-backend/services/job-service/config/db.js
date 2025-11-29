@@ -101,6 +101,8 @@ const getConnectionString = () => {
 const connectDB = async () => {
   try {
     if (mongoose.connection.readyState === 1) {
+      // Connection already established, ensure it's ready for writes
+      // Return immediately since 'open' event already fired
       return mongoose.connection;
     }
 
@@ -119,15 +121,50 @@ const connectDB = async () => {
       writeConcern: { w: 0, j: false }
     };
 
-    connectPromise = mongoose.connect(connectionString, connectOptions);
-    const conn = await connectPromise;
+    // Create a promise that resolves only when connection is truly ready ('open' event)
+    connectPromise = (async () => {
+      // Start the connection
+      const conn = await mongoose.connect(connectionString, connectOptions);
 
+      // Wait for the 'open' event which indicates the connection is ready for operations
+      // This is MORE reliable than just checking readyState === 1
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Connection open event timeout - connection not ready after 30s'));
+        }, 30000);
+
+        const onOpen = () => {
+          clearTimeout(timeout);
+          mongoose.connection.removeListener('open', onOpen);
+          mongoose.connection.removeListener('error', onError);
+          console.log(`✅ JOB Service connection OPEN and ready for operations: ${conn.connection.host}`);
+          console.log(`📊 Database: ${conn.connection.name}`);
+          console.log(`⚡ Connection ready state: ${mongoose.connection.readyState}`);
+          resolve(conn);
+        };
+
+        const onError = (error) => {
+          clearTimeout(timeout);
+          mongoose.connection.removeListener('open', onOpen);
+          mongoose.connection.removeListener('error', onError);
+          reject(error);
+        };
+
+        // If already open, call immediately (shouldn't happen but being defensive)
+        if (mongoose.connection.readyState === 1) {
+          onOpen();
+        } else {
+          // Otherwise wait for open event
+          mongoose.connection.once('open', onOpen);
+          mongoose.connection.once('error', onError);
+        }
+      });
+    })();
+
+    const conn = await connectPromise;
     connectPromise = null;
 
-    console.log(`✅ JOB Service connected to MongoDB: ${conn.connection.host}`);
-    console.log(`📊 Database: ${conn.connection.name}`);
-
-    // Handle connection events
+    // Handle connection events for ongoing management
     mongoose.connection.on('error', (error) => {
       console.error('❌ MongoDB connection error:', error);
     });
