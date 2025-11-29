@@ -121,23 +121,24 @@ const connectDB = async () => {
       writeConcern: { w: 0, j: false }
     };
 
-    // Create a promise that resolves only when connection is truly ready ('open' event)
+    // Create a promise that resolves only when connection is truly ready ('connected' event)
+    // Using 'connected' instead of 'open' for consistency with other services and better reliability on Render
     connectPromise = (async () => {
       // Start the connection
       const conn = await mongoose.connect(connectionString, connectOptions);
 
-      // Wait for the 'open' event which indicates the connection is ready for operations
-      // This is MORE reliable than just checking readyState === 1
+      // Wait for the 'connected' event which indicates the connection is ready for operations
+      // This matches the pattern used in auth-service which works reliably on Render
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
-          reject(new Error('Connection open event timeout - connection not ready after 30s'));
+          reject(new Error('Connection connected event timeout - connection not ready after 30s'));
         }, 30000);
 
-        const onOpen = () => {
+        const onConnected = () => {
           clearTimeout(timeout);
-          mongoose.connection.removeListener('open', onOpen);
+          mongoose.connection.removeListener('connected', onConnected);
           mongoose.connection.removeListener('error', onError);
-          console.log(`✅ JOB Service connection OPEN and ready for operations: ${conn.connection.host}`);
+          console.log(`✅ JOB Service connection established and ready for operations: ${conn.connection.host}`);
           console.log(`📊 Database: ${conn.connection.name}`);
           console.log(`⚡ Connection ready state: ${mongoose.connection.readyState}`);
           resolve(conn);
@@ -145,17 +146,17 @@ const connectDB = async () => {
 
         const onError = (error) => {
           clearTimeout(timeout);
-          mongoose.connection.removeListener('open', onOpen);
+          mongoose.connection.removeListener('connected', onConnected);
           mongoose.connection.removeListener('error', onError);
           reject(error);
         };
 
-        // If already open, call immediately (shouldn't happen but being defensive)
+        // If already connected, call immediately
         if (mongoose.connection.readyState === 1) {
-          onOpen();
+          onConnected();
         } else {
-          // Otherwise wait for open event
-          mongoose.connection.once('open', onOpen);
+          // Otherwise wait for connected event
+          mongoose.connection.once('connected', onConnected);
           mongoose.connection.once('error', onError);
         }
       });
