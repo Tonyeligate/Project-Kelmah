@@ -107,7 +107,7 @@ const connectDB = async () => {
     connectPromise = null;
     
     // COMPREHENSIVE ERROR LOGGING for debugging on Render
-    console.error('=' * 80);
+    console.error('='.repeat(80));
     console.error('🚨 MONGODB CONNECTION FAILURE - DETAILED ERROR INFO');
     console.error('='.repeat(80));
     console.error(`📛 Error Message: ${error.message}`);
