@@ -314,15 +314,28 @@ const createJob = async (req, res, next) => {
     }
 
     const writeStart = Date.now();
-
-    // Use direct MongoDB insert to bypass Mongoose buffering issues
-    // This writes directly without waiting for schema validation buffering
-    const jobDoc = new Job(body);
-    await jobDoc.validate(); // Validate first
-
-    const insertResult = await mongoose.connection.db.collection('jobs').insertOne(jobDoc.toObject());
-    const job = await Job.findById(insertResult.insertedId);
-
+    
+    // Use Mongoose create but ensure connection is ready first
+    // Wait for connection if not ready
+    if (mongoose.connection.readyState !== 1) {
+      jobLogger.info('job.create.waitingForConnection', {
+        ...baseLogMeta,
+        readyState: mongoose.connection.readyState
+      });
+      
+      // Wait up to 60 seconds for connection
+      const maxWait = 60000;
+      const startWait = Date.now();
+      while (mongoose.connection.readyState !== 1 && Date.now() - startWait < maxWait) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      
+      if (mongoose.connection.readyState !== 1) {
+        return errorResponse(res, 503, 'Database connection not ready. Please try again.', 'DB_NOT_READY');
+      }
+    }
+    
+    const job = await Job.create(body);
     const writeLatencyMs = Date.now() - writeStart;
 
     jobLogger.info('job.create.success', {
@@ -335,9 +348,7 @@ const createJob = async (req, res, next) => {
       readyLatencyMs,
       writeLatencyMs,
       totalLatencyMs: Date.now() - totalStart
-    });
-
-    return successResponse(res, 201, 'Job created successfully', job);
+    });    return successResponse(res, 201, 'Job created successfully', job);
   } catch (error) {
     jobLogger.error('job.create.failed', {
       ...baseLogMeta,
