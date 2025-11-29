@@ -60,10 +60,10 @@ const normalizeWorkerRecord = (worker = {}) => {
 
   const skillsArray = Array.isArray(worker.skills)
     ? worker.skills.map((skill) =>
-        typeof skill === 'string'
-          ? skill
-          : skill?.name || skill?.skillName || skill?.label || String(skill),
-      )
+      typeof skill === 'string'
+        ? skill
+        : skill?.name || skill?.skillName || skill?.label || String(skill),
+    )
     : Array.isArray(worker.specializations)
       ? worker.specializations.filter(Boolean)
       : [];
@@ -210,6 +210,15 @@ const SearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Debug logging for navigation issues
+  useEffect(() => {
+    console.log('🟢 SearchPage MOUNTED');
+    console.log('🟢 location.pathname:', location.pathname);
+    return () => {
+      console.log('🔴 SearchPage UNMOUNTED');
+    };
+  }, []);
 
   // Get user authentication state
   const { user, isAuthenticated } = useSelector((state) => state.auth);

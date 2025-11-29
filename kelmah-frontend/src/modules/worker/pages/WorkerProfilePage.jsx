@@ -16,6 +16,13 @@ const WorkerProfilePage = () => {
   const { workerId } = useParams();
   const location = useLocation();
 
+  // Debug logging for navigation issues
+  useEffect(() => {
+    console.log('🔵 WorkerProfilePage MOUNTED/UPDATED');
+    console.log('🔵 workerId from params:', workerId);
+    console.log('🔵 location.pathname:', location.pathname);
+  }, [workerId, location.pathname]);
+
   // Scroll to top when workerId changes (new profile navigation)
   useEffect(() => {
     window.scrollTo(0, 0);
