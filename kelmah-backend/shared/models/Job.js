@@ -114,22 +114,22 @@ const JobSchema = new mongoose.Schema(
     completedDate: {
       type: Date,
     },
-    
+
     // Enhanced fields for bidding system
     bidding: {
-      maxBidders: { 
-        type: Number, 
+      maxBidders: {
+        type: Number,
         default: 5,
         min: 1,
         max: 10
       },
-      currentBidders: { 
-        type: Number, 
-        default: 0 
+      currentBidders: {
+        type: Number,
+        default: 0
       },
       bidDeadline: {
         type: Date,
-        default: function() {
+        default: function () {
           // Default to 7 days from creation
           return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
         }
@@ -142,13 +142,13 @@ const JobSchema = new mongoose.Schema(
         type: Number,
         required: [true, "Maximum bid amount is required"]
       },
-      bidStatus: { 
-        type: String, 
+      bidStatus: {
+        type: String,
         enum: ["open", "closed", "full"],
         default: "open"
       }
     },
-    
+
     // Enhanced location details for Ghana cities
     locationDetails: {
       region: {
@@ -179,7 +179,7 @@ const JobSchema = new mongoose.Schema(
         max: 100
       }
     },
-    
+
     // Enhanced requirements for skill matching
     requirements: {
       primarySkills: [{
@@ -205,23 +205,23 @@ const JobSchema = new mongoose.Schema(
         trim: true
       }]
     },
-    
+
     // Performance tier for job visibility
     performanceTier: {
       type: String,
       enum: ["tier1", "tier2", "tier3"],
       default: "tier3"
     },
-    
+
     // Auto-expiry system
     expiresAt: {
       type: Date,
-      default: function() {
+      default: function () {
         // Auto-expire after 30 days
         return new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
       }
     },
-    
+
     createdAt: {
       type: Date,
       default: Date.now,
@@ -257,21 +257,21 @@ JobSchema.virtual("contract", {
 });
 
 // Virtual field to check if job is expired
-JobSchema.virtual("isExpired").get(function() {
+JobSchema.virtual("isExpired").get(function () {
   return this.expiresAt && this.expiresAt < new Date();
 });
 
 // Virtual field to check if bidding is open
-JobSchema.virtual("isBiddingOpen").get(function() {
-  return this.bidding.bidStatus === "open" && 
-         this.bidding.currentBidders < this.bidding.maxBidders &&
-         this.bidding.bidDeadline > new Date() &&
-         !this.isExpired;
+JobSchema.virtual("isBiddingOpen").get(function () {
+  return this.bidding.bidStatus === "open" &&
+    this.bidding.currentBidders < this.bidding.maxBidders &&
+    this.bidding.bidDeadline > new Date() &&
+    !this.isExpired;
 });
 
 // Instance methods
-JobSchema.methods.updateBidCount = function() {
-  return this.constructor.countDocuments({ 
+JobSchema.methods.updateBidCount = function () {
+  return this.constructor.countDocuments({
     _id: this._id,
     'bids.status': 'pending'
   }).then(count => {
@@ -283,17 +283,17 @@ JobSchema.methods.updateBidCount = function() {
   });
 };
 
-JobSchema.methods.closeBidding = function() {
+JobSchema.methods.closeBidding = function () {
   this.bidding.bidStatus = 'closed';
   return this.save();
 };
 
-JobSchema.methods.extendDeadline = function(days = 7) {
+JobSchema.methods.extendDeadline = function (days = 7) {
   this.bidding.bidDeadline = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
   return this.save();
 };
 
-JobSchema.methods.renewJob = function() {
+JobSchema.methods.renewJob = function () {
   this.expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   this.bidding.bidStatus = 'open';
   this.bidding.currentBidders = 0;
@@ -301,7 +301,7 @@ JobSchema.methods.renewJob = function() {
 };
 
 // Static methods
-JobSchema.statics.findByLocation = function(region, district = null) {
+JobSchema.statics.findByLocation = function (region, district = null) {
   const query = { 'locationDetails.region': region };
   if (district) {
     query['locationDetails.district'] = district;
@@ -309,7 +309,7 @@ JobSchema.statics.findByLocation = function(region, district = null) {
   return this.find(query);
 };
 
-JobSchema.statics.findBySkill = function(skill) {
+JobSchema.statics.findBySkill = function (skill) {
   return this.find({
     $or: [
       { 'requirements.primarySkills': skill },
@@ -319,11 +319,11 @@ JobSchema.statics.findBySkill = function(skill) {
   });
 };
 
-JobSchema.statics.findByPerformanceTier = function(tier) {
+JobSchema.statics.findByPerformanceTier = function (tier) {
   return this.find({ performanceTier: tier });
 };
 
-JobSchema.statics.findExpiredJobs = function() {
+JobSchema.statics.findExpiredJobs = function () {
   return this.find({ expiresAt: { $lt: new Date() } });
 };
 
@@ -344,9 +344,6 @@ JobSchema.index({ "locationDetails.coordinates": "2dsphere" });
 JobSchema.index({ "locationDetails.region": 1, "requirements.primarySkills": 1 });
 JobSchema.index({ "performanceTier": 1, "bidding.bidStatus": 1 });
 JobSchema.index({ "expiresAt": 1, "status": 1 });
-
-// Increase buffer timeout for cold starts and slow MongoDB Atlas responses
-JobSchema.set('bufferTimeoutMS', 30000); // 30 seconds buffer timeout
 
 // Use mongoose.connection.model() to ensure model uses the active connection
 const JobModel = mongoose.connection.models.Job || mongoose.connection.model("Job", JobSchema);

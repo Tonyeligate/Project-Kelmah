@@ -313,58 +313,21 @@ const createJob = async (req, res, next) => {
       }
     }
 
-    // Retry mechanism for write operations on cold connections
-    const MAX_WRITE_RETRIES = 3;
-    const RETRY_DELAY_MS = 2000;
-    let writeAttempt = 0;
-    let job = null;
-    let lastWriteError = null;
+    const writeStart = Date.now();
+    const job = await Job.create(body);
+    const writeLatencyMs = Date.now() - writeStart;
 
-    while (writeAttempt < MAX_WRITE_RETRIES && !job) {
-      writeAttempt++;
-      const writeStart = Date.now();
-      try {
-        job = await Job.create(body);
-        const writeLatencyMs = Date.now() - writeStart;
-
-        jobLogger.info('job.create.success', {
-          ...baseLogMeta,
-          jobId: job?._id?.toString?.() || job?.id,
-          paymentType: body.paymentType,
-          budget: body.budget,
-          status: job.status,
-          readySource,
-          readyLatencyMs,
-          writeLatencyMs,
-          writeAttempt,
-          totalLatencyMs: Date.now() - totalStart
-        });
-      } catch (writeError) {
-        lastWriteError = writeError;
-        const writeLatencyMs = Date.now() - writeStart;
-        jobLogger.warn('job.create.writeAttemptFailed', {
-          ...baseLogMeta,
-          writeAttempt,
-          maxRetries: MAX_WRITE_RETRIES,
-          writeLatencyMs,
-          error: writeError.message
-        });
-
-        // Only retry on buffering/timeout errors, not validation errors
-        if (writeAttempt < MAX_WRITE_RETRIES &&
-          (writeError.message.includes('buffering') ||
-            writeError.message.includes('timeout') ||
-            writeError.name === 'MongooseError')) {
-          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
-        } else {
-          break; // Don't retry for validation or other errors
-        }
-      }
-    }
-
-    if (!job) {
-      throw lastWriteError || new Error('Failed to create job after retries');
-    }
+    jobLogger.info('job.create.success', {
+      ...baseLogMeta,
+      jobId: job?._id?.toString?.() || job?.id,
+      paymentType: body.paymentType,
+      budget: body.budget,
+      status: job.status,
+      readySource,
+      readyLatencyMs,
+      writeLatencyMs,
+      totalLatencyMs: Date.now() - totalStart
+    });
 
     return successResponse(res, 201, 'Job created successfully', job);
   } catch (error) {
@@ -2875,4 +2838,3 @@ module.exports = {
   getPlatformStats,
   getSearchSuggestions,
 };
-      

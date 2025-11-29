@@ -26,29 +26,31 @@ const describeReadyState = (state) => connectionStateLabels[state] || 'unknown';
 let connectPromise = null;
 const DEFAULT_READY_TIMEOUT_MS = Number(process.env.DB_READY_TIMEOUT_MS || 15000);
 
-// Disable Mongoose buffering completely - fail immediately if not connected
-// This prevents misleading "buffering timed out" errors
-// Note: Schema-level bufferTimeoutMS is set to 30000ms for individual models
-mongoose.set('bufferCommands', true); // Re-enable buffering with longer timeout at schema level
+// MongoDB connection settings - optimized for serverless/cold-start environments
+mongoose.set('bufferCommands', true); // Enable buffering for cold starts
 mongoose.set('autoCreate', true); // Auto-create collections if they don't exist
 mongoose.set('autoIndex', false); // Don't auto-create indexes on startup
-mongoose.set('bufferTimeoutMS', 30000); // 30 seconds global buffer timeout
+mongoose.set('bufferTimeoutMS', 60000); // 60 seconds buffer timeout for slow Atlas connections
 
-// MongoDB connection options
+// MongoDB connection options - optimized for Render + MongoDB Atlas
 const options = {
   retryWrites: true,
-  w: 1, // Changed from 'majority' to 1 for faster writes (single server acknowledge)
-  maxPoolSize: 10,
-  serverSelectionTimeoutMS: 15000, // 15 seconds to find server
-  socketTimeoutMS: 45000, // 45 seconds socket timeout
-  connectTimeoutMS: 15000, // 15 seconds to connect
-  bufferCommands: true, // Allow buffering with timeout
-  family: 4 // Use IPv4, skip trying IPv6
+  w: 1, // Single server acknowledge for faster writes
+  maxPoolSize: 5, // Lower pool for free tier
+  serverSelectionTimeoutMS: 30000, // 30 seconds to find server
+  socketTimeoutMS: 60000, // 60 seconds socket timeout
+  connectTimeoutMS: 30000, // 30 seconds to connect
+  family: 4 // Use IPv4 only
 };
 
 // Get MongoDB connection string from environment variables
 const getConnectionString = () => {
-  // Priority order for MongoDB URI
+  // Priority order for MongoDB URI (service-specific first, then generic)
+  if (process.env.JOB_MONGO_URI) {
+    console.log('🔗 Using JOB_MONGO_URI from environment');
+    console.log('🔗 Connection string preview:', process.env.JOB_MONGO_URI.substring(0, 50) + '...');
+    return process.env.JOB_MONGO_URI;
+  }
   if (process.env.MONGODB_URI) {
     console.log('🔗 Using MONGODB_URI from environment');
     console.log('🔗 Connection string preview:', process.env.MONGODB_URI.substring(0, 50) + '...');
