@@ -79,7 +79,7 @@ const JobApplicationForm = () => {
 
       setLoading(true);
       try {
-        const response = await api.get(`/api/jobs/${jobId}`);
+        const response = await api.get(`/jobs/${jobId}`);
         if (response.data && response.data.success) {
           setJob(response.data.data || response.data);
         } else {

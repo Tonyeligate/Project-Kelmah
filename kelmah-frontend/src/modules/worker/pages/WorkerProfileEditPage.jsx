@@ -204,7 +204,7 @@ const WorkerProfileEditPage = () => {
     if (!id) return;
     (async () => {
       try {
-        const resp = await api.get(`/api/users/workers/${id}/availability`);
+        const resp = await api.get(`/users/workers/${id}/availability`);
         const data = resp.data?.data || resp.data;
         if (data) {
           setFormData((prev) => ({

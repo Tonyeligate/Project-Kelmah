@@ -324,7 +324,7 @@ const ProposalReview = () => {
         setActionInProgress(true);
         setActionError(null);
 
-        await api.put(`/api/jobs/${jobId}/applications/${proposalId}`, {
+        await api.put(`/jobs/${jobId}/applications/${proposalId}`, {
           status: action,
           notes: additionalData.feedback || additionalData.notes,
         });

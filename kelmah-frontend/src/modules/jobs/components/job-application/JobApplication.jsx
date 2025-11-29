@@ -314,7 +314,7 @@ function JobApplication() {
           });
 
           // Upload the files first
-          const uploadResponse = await api.post('/api/uploads', formData, {
+          const uploadResponse = await api.post('/uploads', formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },

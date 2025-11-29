@@ -302,11 +302,11 @@ const WorkerSearch = () => {
 
       console.log(
         'WorkerSearch - making API call to:',
-        `/api/workers?${queryParams.toString()}`,
+        `/workers?${queryParams.toString()}`,
       );
 
-      // ✅ FIXED: Use correct endpoint path (removed /users prefix)
-      const response = await api.get(`/api/workers?${queryParams.toString()}`);
+      // ✅ FIXED: Use correct endpoint path (baseURL already includes /api)
+      const response = await api.get(`/workers?${queryParams.toString()}`);
 
       if (response.data) {
         const workersData =
@@ -481,7 +481,7 @@ const WorkerSearch = () => {
 
   const handleSaveWorker = async (workerId) => {
     try {
-      const res = await api.post(`/api/users/workers/${workerId}/bookmark`);
+      const res = await api.post(`/users/workers/${workerId}/bookmark`);
       const bookmarked =
         res?.data?.data?.bookmarked ?? !savedWorkers.includes(workerId);
       setSavedWorkers((prev) => {
