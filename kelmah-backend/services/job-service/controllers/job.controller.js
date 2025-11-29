@@ -688,7 +688,7 @@ const getJobs = async (req, res, next) => {
       const client = mongoose.connection.getClient();
       const db = client.db();
       const jobsCollection = db.collection('jobs');
-      const directCount = await jobsCollection.countDocuments({ status: 'Open', visibility: 'public' });
+      const directCount = await jobsCollection.countDocuments({ status: 'open', visibility: 'public' });
       console.log('[GET JOBS] Direct driver query SUCCESS - open jobs count:', directCount);
 
       // If direct query works, try to use it
@@ -708,8 +708,8 @@ const getJobs = async (req, res, next) => {
 
     console.log('[GET JOBS] Pagination:', { page, limit, startIndex });
 
-    // Build query - FIXED: Use capitalized "Open" status
-    let query = { status: "Open", visibility: "public" };
+    // Build query - Use lowercase "open" status (matches database canonical values)
+    let query = { status: "open", visibility: "public" };
     console.log('[GET JOBS] Initial query:', JSON.stringify(query));
 
     // Filtering

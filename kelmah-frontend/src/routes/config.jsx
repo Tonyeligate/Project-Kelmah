@@ -22,6 +22,10 @@ const MessagesPage = lazy(
   () => import('../modules/messaging/pages/MessagingPage'),
 );
 const NotFoundPage = lazy(() => import('../modules/common/pages/NotFoundPage'));
+// Find Workers / Find Talents page (public worker search)
+const FindWorkersPage = lazy(
+  () => import('../modules/search/pages/SearchPage'),
+);
 
 // Hirer Pages
 const HirerDashboardPage = lazy(
@@ -144,6 +148,11 @@ const routes = [
       {
         path: 'workers/:id',
         element: <WorkerProfilePage />,
+      },
+      // Public Find Workers / Find Talents route
+      {
+        path: 'find-talents',
+        element: <FindWorkersPage />,
       },
       {
         path: 'messages',
