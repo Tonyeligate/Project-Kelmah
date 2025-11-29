@@ -6,6 +6,16 @@
  * Service-specific models belong in their respective service directories
  */
 
+// ⚡ CRITICAL: Apply mongoose settings BEFORE loading models
+const mongoose = require('mongoose');
+
+// Disable buffering - fail fast if connection not ready
+mongoose.set('bufferCommands', false);
+// Short timeout - don't wait for slow connections
+mongoose.set('bufferTimeoutMS', 1000);
+// Unacknowledged writes - fire and forget
+mongoose.set('writeConcern', { w: 0 });
+
 const User = require('./User');
 const Job = require('./Job');
 const Application = require('./Application');

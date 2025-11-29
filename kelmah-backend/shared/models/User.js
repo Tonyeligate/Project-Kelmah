@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
     sparse: true, // Allows multiple null values
     trim: true,
     validate: {
-      validator: function(value) {
+      validator: function (value) {
         if (!value) return true; // Allow empty/null values
         // Ghana phone number validation (supports international format)
         const phoneRegex = /^(\+233|0)[2-9][0-9]{8}$/;
@@ -55,7 +55,7 @@ const userSchema = new mongoose.Schema({
     },
     default: 'worker'
   },
-  
+
   // Email Verification
   isEmailVerified: {
     type: Boolean,
@@ -63,7 +63,7 @@ const userSchema = new mongoose.Schema({
   },
   emailVerificationToken: String,
   emailVerificationExpires: Date,
-  
+
   // Phone Verification
   isPhoneVerified: {
     type: Boolean,
@@ -71,18 +71,18 @@ const userSchema = new mongoose.Schema({
   },
   phoneVerificationToken: String,
   phoneVerificationExpires: Date,
-  
+
   // Password Reset
   passwordResetToken: String,
   passwordResetExpires: Date,
-  
+
   // Two-Factor Authentication
   isTwoFactorEnabled: {
     type: Boolean,
     default: false
   },
   twoFactorSecret: String,
-  
+
   // Account Management
   tokenVersion: {
     type: Number,
@@ -93,7 +93,7 @@ const userSchema = new mongoose.Schema({
     default: true
   },
   lastLogin: Date,
-  
+
   // OAuth Integration
   googleId: {
     type: String,
@@ -107,7 +107,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     sparse: true
   },
-  
+
   // Personal Information
   dateOfBirth: Date,
   gender: {
@@ -115,7 +115,7 @@ const userSchema = new mongoose.Schema({
     enum: ['male', 'female', 'other', 'prefer_not_to_say'],
     default: 'prefer_not_to_say'
   },
-  
+
   // Address Information (Ghana-specific)
   address: String,
   city: String,
@@ -142,14 +142,14 @@ const userSchema = new mongoose.Schema({
       default: undefined
     }
   },
-  
+
   // Profile
   profilePicture: String,
   bio: {
     type: String,
     maxlength: [500, 'Bio cannot exceed 500 characters']
   },
-  
+
   // Worker-specific fields
   profession: {
     type: String,
@@ -207,7 +207,7 @@ const userSchema = new mongoose.Schema({
     of: mongoose.Schema.Types.Mixed,
     default: {}
   },
-  
+
   // Security
   failedLoginAttempts: {
     type: Number,
@@ -218,14 +218,15 @@ const userSchema = new mongoose.Schema({
     default: false
   },
   accountLockedUntil: Date,
-  
+
   // Soft delete
   deletedAt: Date
 }, {
   timestamps: true, // Adds createdAt and updatedAt
   collection: 'users',
   // bufferCommands controlled globally by mongoose.set() in server startup
-  autoCreate: true // Ensure collection is created
+  autoCreate: true, // Ensure collection is created
+  writeConcern: { w: 0, j: false } // Unacknowledged writes for speed
 });
 
 // ✅ FIXED: Clean indexes without duplicates (removed unique: true from explicit indexes)
@@ -241,14 +242,14 @@ userSchema.index({ linkedinId: 1 }, { sparse: true }); // Already no unique: tru
 userSchema.index({ locationCoordinates: '2dsphere' });
 
 // Virtual for full name
-userSchema.virtual('fullName').get(function() {
+userSchema.virtual('fullName').get(function () {
   return `${this.firstName} ${this.lastName}`;
 });
 
 // Ensure virtual fields are serialized
 userSchema.set('toJSON', {
   virtuals: true,
-  transform: function(doc, ret) {
+  transform: function (doc, ret) {
     delete ret.password;
     delete ret.passwordResetToken;
     delete ret.emailVerificationToken;
@@ -259,10 +260,10 @@ userSchema.set('toJSON', {
 });
 
 // Pre-save middleware for password hashing
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   // Only hash if password is modified
   if (!this.isModified('password')) return next();
-  
+
   try {
     // Hash password with cost of 12
     this.password = await bcrypt.hash(this.password, 12);
@@ -273,11 +274,11 @@ userSchema.pre('save', async function(next) {
 });
 
 // Instance Methods
-userSchema.methods.validatePassword = async function(candidatePassword) {
+userSchema.methods.validatePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-userSchema.methods.generateVerificationToken = function() {
+userSchema.methods.generateVerificationToken = function () {
   const token = crypto.randomBytes(32).toString('hex');
   this.emailVerificationToken = crypto
     .createHash('sha256')
@@ -287,7 +288,7 @@ userSchema.methods.generateVerificationToken = function() {
   return token;
 };
 
-userSchema.methods.generatePasswordResetToken = function() {
+userSchema.methods.generatePasswordResetToken = function () {
   const token = crypto.randomBytes(32).toString('hex');
   this.passwordResetToken = crypto
     .createHash('sha256')
@@ -297,7 +298,7 @@ userSchema.methods.generatePasswordResetToken = function() {
   return token;
 };
 
-userSchema.methods.generatePhoneVerificationToken = function() {
+userSchema.methods.generatePhoneVerificationToken = function () {
   const token = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
   this.phoneVerificationToken = crypto
     .createHash('sha256')
@@ -307,36 +308,36 @@ userSchema.methods.generatePhoneVerificationToken = function() {
   return token;
 };
 
-userSchema.methods.incrementFailedLogins = function() {
+userSchema.methods.incrementFailedLogins = function () {
   this.failedLoginAttempts += 1;
-  
+
   // Lock account after 5 failed attempts
   if (this.failedLoginAttempts >= 5) {
     this.accountLocked = true;
     this.accountLockedUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
   }
-  
+
   return this.save();
 };
 
-userSchema.methods.resetFailedLogins = function() {
+userSchema.methods.resetFailedLogins = function () {
   this.failedLoginAttempts = 0;
   this.accountLocked = false;
   this.accountLockedUntil = undefined;
   return this.save();
 };
 
-userSchema.methods.incrementTokenVersion = async function() {
+userSchema.methods.incrementTokenVersion = async function () {
   this.tokenVersion += 1;
   return this.save();
 };
 
 // Static Methods
-userSchema.statics.findByEmail = function(email) {
+userSchema.statics.findByEmail = function (email) {
   return this.findOne({ email: email.toLowerCase() });
 };
 
-userSchema.statics.findByVerificationToken = function(token) {
+userSchema.statics.findByVerificationToken = function (token) {
   const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
   return this.findOne({
     emailVerificationToken: hashedToken,
@@ -344,7 +345,7 @@ userSchema.statics.findByVerificationToken = function(token) {
   });
 };
 
-userSchema.statics.findByPasswordResetToken = function(token) {
+userSchema.statics.findByPasswordResetToken = function (token) {
   const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
   return this.findOne({
     passwordResetToken: hashedToken,
@@ -352,7 +353,7 @@ userSchema.statics.findByPasswordResetToken = function(token) {
   });
 };
 
-userSchema.statics.findByPhoneVerificationToken = function(token, phone) {
+userSchema.statics.findByPhoneVerificationToken = function (token, phone) {
   const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
   return this.findOne({
     phone: phone,
@@ -361,11 +362,11 @@ userSchema.statics.findByPhoneVerificationToken = function(token, phone) {
   });
 };
 
-userSchema.statics.findActiveUsers = function() {
+userSchema.statics.findActiveUsers = function () {
   return this.find({ isActive: true, deletedAt: { $exists: false } });
 };
 
-userSchema.statics.findByRole = function(role) {
+userSchema.statics.findByRole = function (role) {
   return this.find({ role: role, isActive: true, deletedAt: { $exists: false } });
 };
 
@@ -384,8 +385,8 @@ if (mongoose.connection.models && mongoose.connection.models.User) {
   // Create the model on the ACTIVE CONNECTION
   console.log('🔧 Creating new User model on active connection...');
   const UserModel = mongoose.connection.model('User', userSchema);
-  
+
   console.log('✅ User model created on active connection');
-  
+
   module.exports = UserModel;
 }

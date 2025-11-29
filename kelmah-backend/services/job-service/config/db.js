@@ -121,7 +121,7 @@ const connectDB = async () => {
       // Override write concern at connection level
       writeConcern: { w: 0, j: false }
     };
-    
+
     connectPromise = mongoose.connect(connectionString, connectOptions);
     const conn = await connectPromise;
 

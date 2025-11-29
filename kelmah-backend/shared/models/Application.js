@@ -55,10 +55,11 @@ const ApplicationSchema = new Schema(
       default: false,
     },
   },
-  { 
+  {
     timestamps: true,
     // bufferCommands controlled globally by mongoose.set() in server startup
-    autoCreate: true
+    autoCreate: true,
+    writeConcern: { w: 0, j: false } // Unacknowledged writes for speed
   },
 );
 
