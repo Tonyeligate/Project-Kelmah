@@ -32,9 +32,6 @@ mongoose.set('autoCreate', true); // Auto-create collections if they don't exist
 mongoose.set('autoIndex', false); // Don't auto-create indexes on startup
 mongoose.set('bufferTimeoutMS', 5000); // 5 seconds buffer timeout - fail fast
 
-// Mongoose write concern settings
-mongoose.set('writeConcern', { w: 0 }); // Unacknowledged writes for speed
-
 // MongoDB connection options - optimized for Render + MongoDB Atlas
 const options = {
   retryWrites: false, // Disable retry writes to avoid timeouts

@@ -15,7 +15,6 @@ mongoose.set('bufferCommands', false); // Disable buffering - fail fast instead 
 mongoose.set('autoCreate', true); // Auto-create collections if they don't exist
 mongoose.set('autoIndex', false); // Don't auto-create indexes on startup
 mongoose.set('bufferTimeoutMS', 5000); // 5 seconds buffer timeout - fail fast
-mongoose.set('writeConcern', { w: 0 }); // Unacknowledged writes for speed
 
 // MongoDB connection options - optimized for production reliability
 const options = {
