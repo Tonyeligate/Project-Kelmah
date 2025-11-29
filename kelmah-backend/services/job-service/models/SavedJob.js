@@ -26,5 +26,5 @@ const SavedJobSchema = new Schema({
 SavedJobSchema.index({ job: 1, user: 1 }, { unique: true });
 SavedJobSchema.index({ user: 1, createdAt: -1 }); // For user's saved jobs list
 
-// Use mongoose.connection.model() to ensure model uses the active connection
-module.exports = mongoose.connection.models.SavedJob || mongoose.connection.model("SavedJob", SavedJobSchema);
+// Use standard mongoose.model() - it auto-binds to the default connection
+module.exports = mongoose.models.SavedJob || mongoose.model("SavedJob", SavedJobSchema);

@@ -28,8 +28,8 @@ const RefreshTokenSchema = new mongoose.Schema({
     browser: String,
     os: String,
   },
-}, { 
-  timestamps: true, 
+}, {
+  timestamps: true,
   collection: 'refreshtokens',
   autoCreate: true
 });
@@ -40,11 +40,11 @@ RefreshTokenSchema.index({ tokenHash: 1 }, { unique: true, sparse: true });
 RefreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 // Instance Methods
-RefreshTokenSchema.methods.isExpired = function() {
+RefreshTokenSchema.methods.isExpired = function () {
   return this.expiresAt < new Date();
 };
 
-RefreshTokenSchema.methods.revoke = function(ip) {
+RefreshTokenSchema.methods.revoke = function (ip) {
   this.isRevoked = true;
   this.revokedAt = new Date();
   this.revokedByIp = ip;
@@ -52,7 +52,7 @@ RefreshTokenSchema.methods.revoke = function(ip) {
 };
 
 // Static Methods
-RefreshTokenSchema.statics.cleanupExpired = function() {
+RefreshTokenSchema.statics.cleanupExpired = function () {
   return this.deleteMany({
     $or: [
       { expiresAt: { $lt: new Date() } },
@@ -61,5 +61,5 @@ RefreshTokenSchema.statics.cleanupExpired = function() {
   });
 };
 
-// Use mongoose.connection.model() to ensure model uses the active connection
-module.exports = mongoose.connection.models.RefreshToken || mongoose.connection.model('RefreshToken', RefreshTokenSchema);
+// Use standard mongoose.model() - it auto-binds to the default connection
+module.exports = mongoose.models.RefreshToken || mongoose.model('RefreshToken', RefreshTokenSchema);

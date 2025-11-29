@@ -480,5 +480,5 @@ workerProfileSchema.statics.getTopWorkers = async function (limit = 10) {
         .lean();
 };
 
-// Use mongoose.connection.model() to ensure model uses the active connection
-module.exports = mongoose.connection.models.WorkerProfile || mongoose.connection.model('WorkerProfile', workerProfileSchema);
+// Use standard mongoose.model() - it auto-binds to the default connection
+module.exports = mongoose.models.WorkerProfile || mongoose.model('WorkerProfile', workerProfileSchema);

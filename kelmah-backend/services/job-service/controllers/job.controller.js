@@ -255,10 +255,151 @@ const createJob = async (req, res, next) => {
 
     const writeStart = Date.now();
 
-    // Mongoose will buffer operations if connection not ready
-    // No need for explicit ensureMongoReady() - let Mongoose handle buffering naturally
-    // This matches the pattern used in auth-service which works reliably on Render
-    const job = await Job.create(body);
+    // ========== COMPREHENSIVE SCHEMA VALIDATION DEBUG ==========
+    // Check if data matches what the schema expects BEFORE attempting insert
+    const VALID_REGIONS = ["Greater Accra", "Ashanti", "Western", "Eastern", "Central", "Volta", "Northern", "Upper East", "Upper West", "Brong-Ahafo"];
+    const VALID_SKILLS = ["Plumbing", "Electrical", "Carpentry", "Construction", "Painting", "Welding", "Masonry", "HVAC", "Roofing", "Flooring"];
+    const VALID_LOCATION_TYPES = ["remote", "onsite", "hybrid"];
+    const VALID_PAYMENT_TYPES = ["fixed", "hourly"];
+    const VALID_DURATION_UNITS = ["hour", "day", "week", "month"];
+    const VALID_EXP_LEVELS = ["beginner", "intermediate", "advanced", "expert"];
+
+    const validationIssues = [];
+
+    // Check required fields
+    if (!body.title) validationIssues.push('MISSING: title (required)');
+    if (!body.description) validationIssues.push('MISSING: description (required)');
+    if (!body.category) validationIssues.push('MISSING: category (required)');
+    if (body.budget == null || !Number.isFinite(body.budget)) validationIssues.push(`INVALID: budget=${body.budget} (must be a number)`);
+    if (!body.hirer) validationIssues.push('MISSING: hirer (required ObjectId)');
+
+    // Check location.type enum
+    if (!body.location?.type) {
+      validationIssues.push('MISSING: location.type (required)');
+    } else if (!VALID_LOCATION_TYPES.includes(body.location.type)) {
+      validationIssues.push(`INVALID: location.type="${body.location.type}" not in [${VALID_LOCATION_TYPES.join(', ')}]`);
+    }
+
+    // Check paymentType enum
+    if (!body.paymentType) {
+      validationIssues.push('MISSING: paymentType (required)');
+    } else if (!VALID_PAYMENT_TYPES.includes(body.paymentType)) {
+      validationIssues.push(`INVALID: paymentType="${body.paymentType}" not in [${VALID_PAYMENT_TYPES.join(', ')}]`);
+    }
+
+    // Check duration
+    if (!body.duration?.value || !Number.isFinite(body.duration.value)) {
+      validationIssues.push(`INVALID: duration.value=${body.duration?.value} (must be a number)`);
+    }
+    if (!body.duration?.unit) {
+      validationIssues.push('MISSING: duration.unit (required)');
+    } else if (!VALID_DURATION_UNITS.includes(body.duration.unit)) {
+      validationIssues.push(`INVALID: duration.unit="${body.duration.unit}" not in [${VALID_DURATION_UNITS.join(', ')}]`);
+    }
+
+    // Check locationDetails.region enum (REQUIRED)
+    if (!body.locationDetails?.region) {
+      validationIssues.push('MISSING: locationDetails.region (required)');
+    } else if (!VALID_REGIONS.includes(body.locationDetails.region)) {
+      validationIssues.push(`INVALID: locationDetails.region="${body.locationDetails.region}" not in [${VALID_REGIONS.join(', ')}]`);
+    }
+
+    // Check requirements.primarySkills enum (REQUIRED)
+    if (!body.requirements?.primarySkills || !Array.isArray(body.requirements.primarySkills) || body.requirements.primarySkills.length === 0) {
+      validationIssues.push('MISSING: requirements.primarySkills (required array with at least one skill)');
+    } else {
+      const invalidPrimarySkills = body.requirements.primarySkills.filter(s => !VALID_SKILLS.includes(s));
+      if (invalidPrimarySkills.length > 0) {
+        validationIssues.push(`INVALID: requirements.primarySkills contains invalid values: [${invalidPrimarySkills.join(', ')}]`);
+      }
+    }
+
+    // Check requirements.experienceLevel enum
+    if (body.requirements?.experienceLevel && !VALID_EXP_LEVELS.includes(body.requirements.experienceLevel)) {
+      validationIssues.push(`INVALID: requirements.experienceLevel="${body.requirements.experienceLevel}" not in [${VALID_EXP_LEVELS.join(', ')}]`);
+    }
+
+    // Check bidding required fields
+    if (body.bidding?.minBidAmount == null || !Number.isFinite(body.bidding.minBidAmount)) {
+      validationIssues.push(`INVALID: bidding.minBidAmount=${body.bidding?.minBidAmount} (required number)`);
+    }
+    if (body.bidding?.maxBidAmount == null || !Number.isFinite(body.bidding.maxBidAmount)) {
+      validationIssues.push(`INVALID: bidding.maxBidAmount=${body.bidding?.maxBidAmount} (required number)`);
+    }
+
+    // Log validation results
+    jobLogger.info('job.create.schemaValidation', {
+      ...baseLogMeta,
+      validationPassed: validationIssues.length === 0,
+      issueCount: validationIssues.length,
+      issues: validationIssues,
+      actualData: {
+        title: body.title ? `"${body.title.substring(0, 30)}..."` : null,
+        description: body.description ? `${body.description.length} chars` : null,
+        category: body.category,
+        budget: body.budget,
+        paymentType: body.paymentType,
+        hirer: body.hirer,
+        locationType: body.location?.type,
+        locationRegion: body.locationDetails?.region,
+        durationValue: body.duration?.value,
+        durationUnit: body.duration?.unit,
+        primarySkills: body.requirements?.primarySkills,
+        experienceLevel: body.requirements?.experienceLevel,
+        biddingMin: body.bidding?.minBidAmount,
+        biddingMax: body.bidding?.maxBidAmount
+      }
+    });
+
+    // Debug: Log model and connection state before write
+    jobLogger.info('job.create.preWrite', {
+      ...baseLogMeta,
+      mongooseConnectionReadyState: mongoose.connection.readyState,
+      mongooseConnectionHost: mongoose.connection.host,
+      modelDbName: Job.db?.name || 'no-db',
+      modelDbReadyState: Job.db?.readyState,
+      modelHasCollection: !!Job.collection,
+      schemaBufferTimeoutMS: Job.schema?.options?.bufferTimeoutMS || 'not-set-on-schema',
+      schemaBufferCommands: Job.schema?.options?.bufferCommands,
+      // Check if model is using the same mongoose instance
+      modelMongooseId: Job.base?.models ? Object.keys(Job.base.models).length : 'unknown',
+      connectionMongooseId: mongoose.models ? Object.keys(mongoose.models).length : 'unknown'
+    });
+
+    // If validation issues exist, fail fast with clear error message instead of waiting for timeout
+    if (validationIssues.length > 0) {
+      jobLogger.error('job.create.validationFailed', {
+        ...baseLogMeta,
+        issues: validationIssues
+      });
+      return errorResponse(res, 400, `Schema validation failed: ${validationIssues.join('; ')}`, 'VALIDATION_ERROR');
+    }
+
+    // ========== ATTEMPT DOCUMENT CREATION ==========
+    // Try using validateSync first to catch any mongoose validation issues
+    const jobDoc = new Job(body);
+    const syncValidationError = jobDoc.validateSync();
+    if (syncValidationError) {
+      jobLogger.error('job.create.mongooseValidationFailed', {
+        ...baseLogMeta,
+        validationError: syncValidationError.message,
+        errors: Object.keys(syncValidationError.errors || {}).map(key => ({
+          field: key,
+          message: syncValidationError.errors[key].message,
+          kind: syncValidationError.errors[key].kind,
+          value: syncValidationError.errors[key].value
+        }))
+      });
+      return errorResponse(res, 400, `Mongoose validation failed: ${syncValidationError.message}`, 'MONGOOSE_VALIDATION_ERROR');
+    }
+
+    jobLogger.info('job.create.validationPassed', {
+      ...baseLogMeta,
+      message: 'All validations passed, attempting save...'
+    });
+
+    // Save with explicit timeout handling
+    const job = await jobDoc.save({ wtimeout: 30000 });
     const writeLatencyMs = Date.now() - writeStart;
 
     jobLogger.info('job.create.success', {
@@ -2060,21 +2201,37 @@ const applyToJob = async (req, res, next) => {
  * @access Private (Hirer only)
  */
 const getJobApplications = async (req, res, next) => {
+  const requestId = req.id || req.headers?.['x-request-id'];
   try {
     const jobId = req.params.id;
-    const job = await Job.findById(jobId);
+
+    // Find job with timeout
+    const job = await Job.findById(jobId).maxTimeMS(5000).lean();
     if (!job) return errorResponse(res, 404, 'Job not found');
     if (String(job.hirer) !== String(req.user.id)) {
       return errorResponse(res, 403, 'Not authorized');
     }
+
     const { status } = req.query;
     const query = { job: jobId };
     if (status) query.status = status;
+
+    // Query applications with timeout and lean for performance
     const apps = await Application.find(query)
       .populate('worker', 'firstName lastName profileImage rating')
-      .sort('-createdAt');
+      .sort('-createdAt')
+      .maxTimeMS(8000)
+      .lean();
+
     return successResponse(res, 200, 'Applications retrieved', apps);
   } catch (error) {
+    jobLogger.error('getJobApplications.error', {
+      requestId,
+      jobId: req.params?.id,
+      error: error.message,
+      code: error.code,
+      name: error.name
+    });
     next(error);
   }
 };

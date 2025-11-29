@@ -13,8 +13,8 @@ const BookmarkSchema = new mongoose.Schema({
 
 BookmarkSchema.index({ userId: 1, workerId: 1 }, { unique: true });
 
-// Use mongoose.connection.model() to ensure model uses the active connection
-module.exports = mongoose.connection.models.Bookmark || mongoose.connection.model('Bookmark', BookmarkSchema);
+// Use standard mongoose.model() - it auto-binds to the default connection
+module.exports = mongoose.models.Bookmark || mongoose.model('Bookmark', BookmarkSchema);
 
 
 

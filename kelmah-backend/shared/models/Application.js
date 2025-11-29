@@ -57,14 +57,21 @@ const ApplicationSchema = new Schema(
   },
   {
     timestamps: true,
-    // bufferCommands controlled globally by mongoose.set() in server startup
     autoCreate: true,
-    // writeConcern removed - uses connection default (w: 1) for proper acknowledgments
+    // CRITICAL: Set buffer timeout at schema level to ensure it's applied
+    bufferCommands: true,
+    bufferTimeoutMS: 45000, // 45 seconds - matches service db.js settings
   },
 );
 
 // Ensure a worker can't apply to the same job multiple times
 ApplicationSchema.index({ job: 1, worker: 1 }, { unique: true });
+
+// Index for efficient job applications lookup (getJobApplications query)
+ApplicationSchema.index({ job: 1, createdAt: -1 });
+
+// Index for worker's applications lookup
+ApplicationSchema.index({ worker: 1, createdAt: -1 });
 
 // Add methods to the model as needed
 ApplicationSchema.methods.updateStatus = function (newStatus) {

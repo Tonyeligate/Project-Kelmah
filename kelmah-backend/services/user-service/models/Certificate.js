@@ -41,7 +41,7 @@ CertificateSchema.index({ credentialId: 1 });
 // Index for share token lookup
 CertificateSchema.index({ shareToken: 1 });
 
-// Use mongoose.connection.model() to ensure model uses the active connection
-module.exports = mongoose.connection.models.Certificate || mongoose.connection.model('Certificate', CertificateSchema);
+// Use standard mongoose.model() - it auto-binds to the default connection
+module.exports = mongoose.models.Certificate || mongoose.model('Certificate', CertificateSchema);
 
 

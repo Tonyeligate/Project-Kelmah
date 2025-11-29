@@ -224,9 +224,10 @@ const userSchema = new mongoose.Schema({
 }, {
   timestamps: true, // Adds createdAt and updatedAt
   collection: 'users',
-  // bufferCommands controlled globally by mongoose.set() in server startup
   autoCreate: true, // Ensure collection is created
-  // writeConcern removed - uses connection default (w: 1) for proper acknowledgments
+  // CRITICAL: Set buffer timeout at schema level to ensure it's applied
+  bufferCommands: true,
+  bufferTimeoutMS: 45000, // 45 seconds - matches service db.js settings
 });
 
 // ✅ FIXED: Clean indexes without duplicates (removed unique: true from explicit indexes)

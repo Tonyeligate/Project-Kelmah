@@ -515,6 +515,61 @@ shared/
 - **Proactive Testing**: Execute diagnostic commands yourself using terminal tools - do not ask user to run tests
 - **Self-Verification**: Perform your own health checks, endpoint tests, and status verification
 
+### Database Schema vs Data Validation ⚠️ CRITICAL - ALWAYS CHECK FIRST
+
+**LESSON LEARNED**: Before debugging mongoose/database connection issues (buffering timeouts, operation failures), ALWAYS verify that existing data in the database matches the schema requirements.
+
+**Common Symptoms of Schema/Data Mismatch:**
+- `Operation buffering timed out` despite valid connection (readyState=1)
+- Mongoose operations hang indefinitely
+- Inserts/updates fail silently or with cryptic errors
+- Schema validation errors on existing documents
+
+**Mandatory Database Validation Checklist:**
+1. **Connect directly to MongoDB** and inspect actual documents:
+   ```javascript
+   // Use provided connection string to verify data structure
+   const { MongoClient } = require('mongodb');
+   const client = new MongoClient(MONGODB_URI);
+   const docs = await client.db('kelmah_platform').collection('jobs').find({}).limit(5).toArray();
+   console.log(JSON.stringify(docs, null, 2));
+   ```
+
+2. **Compare schema required fields vs existing data:**
+   - List ALL fields marked as `required: true` in the Mongoose schema
+   - Check if EVERY existing document has those fields
+   - Pay special attention to nested objects (e.g., `bidding.minBidAmount`, `locationDetails.region`)
+
+3. **Check enum value cases:**
+   - Schema enum: `['open', 'in-progress', 'completed']`
+   - Database value: `"Open"` ❌ MISMATCH - case sensitivity matters!
+   - Fix: Either update schema enum OR migrate existing data
+
+4. **Validate nested object requirements:**
+   - If schema has `locationDetails.region: { required: true }`
+   - Document must have `locationDetails: { region: "value" }`, not just `locationDetails: {}`
+
+**Schema Design Best Practices (Prevent Future Mismatches):**
+```javascript
+// ❌ BAD: Strict required without defaults
+minBidAmount: { type: Number, required: true }
+
+// ✅ GOOD: Smart defaults for graceful handling
+minBidAmount: { type: Number, default: 100 }
+
+// ✅ GOOD: Required with sensible default
+region: { type: String, enum: [...regions], default: "Greater Accra" }
+```
+
+**Fix Protocol When Mismatch Found:**
+1. Create migration script to fix existing documents
+2. Update schema to have smart defaults where appropriate
+3. Run migration script against production database
+4. Verify all documents now pass schema validation
+5. THEN test the original operation
+
+**⚠️ REMEMBER**: The database is the source of truth. If mongoose operations fail, CHECK THE ACTUAL DATA FIRST before assuming code/connection issues.
+
 ## AI Agent Operational Rules (Augmented)
 
 ### Strict Investigation Protocol (MANDATORY)

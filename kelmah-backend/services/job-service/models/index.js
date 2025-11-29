@@ -22,7 +22,7 @@ module.exports = {
   Job,         // ✅ Shared (used by job, review, payment)
   Application, // ✅ Shared (used by job, review, payment)
   User,        // ✅ Shared (used by all services)
-  
+
   // Local service-specific models
   SavedJob,
   Bid,

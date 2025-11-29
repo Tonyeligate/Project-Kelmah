@@ -42,7 +42,7 @@ const portfolioSchema = new mongoose.Schema({
     type: String,
     trim: true,
     validate: {
-      validator: function(v) {
+      validator: function (v) {
         if (!v) return true;
         return /^https?:\/\/.+/.test(v);
       },
@@ -74,7 +74,7 @@ const portfolioSchema = new mongoose.Schema({
   endDate: {
     type: Date,
     validate: {
-      validator: function(value) {
+      validator: function (value) {
         return !value || !this.startDate || value >= this.startDate;
       },
       message: 'End date must be after start date'
@@ -204,7 +204,7 @@ portfolioSchema.index({ createdAt: -1 });
 // Instance Methods
 // Instance Methods
 
-portfolioSchema.methods.getStatusText = function() {
+portfolioSchema.methods.getStatusText = function () {
   const statuses = {
     'draft': 'Draft',
     'published': 'Published',
@@ -214,35 +214,35 @@ portfolioSchema.methods.getStatusText = function() {
   return statuses[this.status] || 'Unknown';
 };
 
-portfolioSchema.methods.getMainImageUrl = function() {
+portfolioSchema.methods.getMainImageUrl = function () {
   if (this.images && this.images.length > 0) {
     return this.images[0].url || this.images[0];
   }
   return this.mainImage;
 };
 
-portfolioSchema.methods.getAllImageUrls = function() {
+portfolioSchema.methods.getAllImageUrls = function () {
   if (this.images && Array.isArray(this.images)) {
-    return this.images.map(img => 
+    return this.images.map(img =>
       typeof img === 'object' ? img.url : img
     ).filter(Boolean);
   }
   return this.mainImage ? [this.mainImage] : [];
 };
 
-portfolioSchema.methods.isVisible = function() {
+portfolioSchema.methods.isVisible = function () {
   return this.status === 'published' && this.isActive;
 };
 
-portfolioSchema.methods.getDurationText = function() {
+portfolioSchema.methods.getDurationText = function () {
   if (!this.startDate) return 'Duration not specified';
-  
+
   const start = new Date(this.startDate);
   const end = this.endDate ? new Date(this.endDate) : new Date();
-  
+
   const diffTime = Math.abs(end - start);
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+
   if (diffDays < 7) {
     return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
   } else if (diffDays < 30) {
@@ -257,35 +257,35 @@ portfolioSchema.methods.getDurationText = function() {
   }
 };
 
-portfolioSchema.methods.getSkillsUsed = function() {
+portfolioSchema.methods.getSkillsUsed = function () {
   return this.skillsUsed || [];
 };
 
-portfolioSchema.methods.getComplexityScore = function() {
+portfolioSchema.methods.getComplexityScore = function () {
   let score = 1;
-  
+
   if (this.projectValue) {
     if (this.projectValue > 10000) score += 3;
     else if (this.projectValue > 5000) score += 2;
     else if (this.projectValue > 1000) score += 1;
   }
-  
+
   const skillsCount = this.getSkillsUsed().length;
   score += Math.min(skillsCount, 3);
-  
+
   if (this.startDate && this.endDate) {
     const duration = new Date(this.endDate) - new Date(this.startDate);
     const days = duration / (1000 * 60 * 60 * 24);
     if (days > 90) score += 2;
     else if (days > 30) score += 1;
   }
-  
+
   if (this.clientRating >= 5) score += 1;
-  
+
   return Math.min(10, Math.max(1, score));
 };
 
-portfolioSchema.methods.getSummary = function() {
+portfolioSchema.methods.getSummary = function () {
   return {
     id: this._id,
     title: this.title,
@@ -307,20 +307,20 @@ portfolioSchema.methods.getSummary = function() {
 
 // Static Methods
 
-portfolioSchema.statics.findByWorker = async function(workerProfileId, options = {}) {
+portfolioSchema.statics.findByWorker = async function (workerProfileId, options = {}) {
   return await this.find({
     workerProfileId,
     isActive: true,
     ...options.where
   })
-  .sort({ isFeatured: -1, sortOrder: 1, createdAt: -1 })
-  .limit(options.limit)
-  .skip(options.skip);
+    .sort({ isFeatured: -1, sortOrder: 1, createdAt: -1 })
+    .limit(options.limit)
+    .skip(options.skip);
 };
 
-portfolioSchema.statics.searchPortfolio = async function(query, options = {}) {
+portfolioSchema.statics.searchPortfolio = async function (query, options = {}) {
   const searchRegex = new RegExp(query, 'i');
-  
+
   return await this.find({
     $or: [
       { title: searchRegex },
@@ -332,21 +332,21 @@ portfolioSchema.statics.searchPortfolio = async function(query, options = {}) {
     isActive: true,
     ...options.where
   })
-  .sort({ isFeatured: -1, viewCount: -1, createdAt: -1 })
-  .limit(options.limit || 10);
+    .sort({ isFeatured: -1, viewCount: -1, createdAt: -1 })
+    .limit(options.limit || 10);
 };
 
-portfolioSchema.statics.getFeaturedPortfolio = async function(limit = 10) {
+portfolioSchema.statics.getFeaturedPortfolio = async function (limit = 10) {
   return await this.find({
     isFeatured: true,
     status: 'published',
     isActive: true
   })
-  .sort({ viewCount: -1, likeCount: -1, createdAt: -1 })
-  .limit(limit);
+    .sort({ viewCount: -1, likeCount: -1, createdAt: -1 })
+    .limit(limit);
 };
 
-portfolioSchema.statics.incrementView = async function(portfolioId) {
+portfolioSchema.statics.incrementView = async function (portfolioId) {
   return await this.findByIdAndUpdate(
     portfolioId,
     { $inc: { viewCount: 1 } },
@@ -354,7 +354,7 @@ portfolioSchema.statics.incrementView = async function(portfolioId) {
   );
 };
 
-portfolioSchema.statics.incrementLike = async function(portfolioId) {
+portfolioSchema.statics.incrementLike = async function (portfolioId) {
   return await this.findByIdAndUpdate(
     portfolioId,
     { $inc: { likeCount: 1 } },
@@ -362,7 +362,7 @@ portfolioSchema.statics.incrementLike = async function(portfolioId) {
   );
 };
 
-portfolioSchema.statics.incrementShare = async function(portfolioId) {
+portfolioSchema.statics.incrementShare = async function (portfolioId) {
   return await this.findByIdAndUpdate(
     portfolioId,
     { $inc: { shareCount: 1 } },
@@ -372,67 +372,67 @@ portfolioSchema.statics.incrementShare = async function(portfolioId) {
 
 // Hooks (Mongoose middleware)
 
-portfolioSchema.pre('save', function(next) {
+portfolioSchema.pre('save', function (next) {
   // Generate keywords from title and description
   if (!this.keywords || this.keywords.length === 0) {
     const titleWords = this.title.toLowerCase().split(/\s+/);
-    const descWords = this.description 
-      ? this.description.toLowerCase().split(/\s+/) 
+    const descWords = this.description
+      ? this.description.toLowerCase().split(/\s+/)
       : [];
-    
+
     this.keywords = [...new Set([...titleWords, ...descWords])]
       .filter(word => word.length > 3)
       .slice(0, 20);
   }
-  
+
   // Auto-generate tags from skills and project type
   if (!this.tags || this.tags.length === 0) {
     const tags = [];
-    
+
     if (this.projectType) {
       tags.push(this.projectType);
     }
-    
+
     if (this.skillsUsed && Array.isArray(this.skillsUsed)) {
       tags.push(...this.skillsUsed.slice(0, 5));
     }
-    
+
     this.tags = [...new Set(tags)];
   }
-  
+
   next();
 });
 
-portfolioSchema.pre('findOneAndUpdate', function(next) {
+portfolioSchema.pre('findOneAndUpdate', function (next) {
   const update = this.getUpdate();
-  
+
   // Update keywords if title or description changed
   if (update.$set && (update.$set.title || update.$set.description)) {
     const titleWords = update.$set.title ? update.$set.title.toLowerCase().split(/\s+/) : [];
     const descWords = update.$set.description ? update.$set.description.toLowerCase().split(/\s+/) : [];
-    
+
     update.$set.keywords = [...new Set([...titleWords, ...descWords])]
       .filter(word => word.length > 3)
       .slice(0, 20);
   }
-  
+
   // Update tags if skills or project type changed
   if (update.$set && (update.$set.skillsUsed || update.$set.projectType)) {
     const tags = [];
-    
+
     if (update.$set.projectType) {
       tags.push(update.$set.projectType);
     }
-    
+
     if (update.$set.skillsUsed && Array.isArray(update.$set.skillsUsed)) {
       tags.push(...update.$set.skillsUsed.slice(0, 5));
     }
-    
+
     update.$set.tags = [...new Set(tags)];
   }
-  
+
   next();
 });
 
-// Use mongoose.connection.model() to ensure model uses the active connection
-module.exports = mongoose.connection.models.Portfolio || mongoose.connection.model('Portfolio', portfolioSchema);
+// Use standard mongoose.model() - it auto-binds to the default connection
+module.exports = mongoose.models.Portfolio || mongoose.model('Portfolio', portfolioSchema);

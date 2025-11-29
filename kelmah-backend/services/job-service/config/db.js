@@ -45,7 +45,9 @@ const options = {
   family: 4, // Use IPv4 only
   waitQueueTimeoutMS: 10000, // 10 seconds to wait for connection slot
   maxIdleTimeMS: 60000, // Close idle connections after 60s
-  appName: 'kelmah-job-service'
+  appName: 'kelmah-job-service',
+  // CRITICAL: Buffer settings must also be in connection options
+  bufferCommands: true,
 };
 
 // Get MongoDB connection string from environment variables

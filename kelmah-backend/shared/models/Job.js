@@ -136,11 +136,11 @@ const JobSchema = new mongoose.Schema(
       },
       minBidAmount: {
         type: Number,
-        required: [true, "Minimum bid amount is required"]
+        default: 100 // Default min bid, controller calculates from budget
       },
       maxBidAmount: {
         type: Number,
-        required: [true, "Maximum bid amount is required"]
+        default: 500 // Default max bid, controller calculates from budget
       },
       bidStatus: {
         type: String,
@@ -154,7 +154,7 @@ const JobSchema = new mongoose.Schema(
       region: {
         type: String,
         enum: ["Greater Accra", "Ashanti", "Western", "Eastern", "Central", "Volta", "Northern", "Upper East", "Upper West", "Brong-Ahafo"],
-        required: [true, "Region is required"]
+        default: "Greater Accra" // Default region, controller can override
       },
       district: {
         type: String,
@@ -184,8 +184,8 @@ const JobSchema = new mongoose.Schema(
     requirements: {
       primarySkills: [{
         type: String,
-        enum: ["Plumbing", "Electrical", "Carpentry", "Construction", "Painting", "Welding", "Masonry", "HVAC", "Roofing", "Flooring"],
-        required: [true, "At least one primary skill is required"]
+        enum: ["Plumbing", "Electrical", "Carpentry", "Construction", "Painting", "Welding", "Masonry", "HVAC", "Roofing", "Flooring"]
+        // Not required - controller maps from category/skills
       }],
       secondarySkills: [{
         type: String,
@@ -233,11 +233,13 @@ const JobSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    // bufferCommands controlled globally by mongoose.set() in server startup
     autoCreate: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-    // writeConcern removed - uses connection default (w: 1) for proper acknowledgments
+    // CRITICAL: Set buffer timeout at schema level to ensure it's applied
+    // regardless of when mongoose.set() is called in the service
+    bufferCommands: true,
+    bufferTimeoutMS: 45000, // 45 seconds - matches job-service db.js setting
   },
 );
 
