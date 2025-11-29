@@ -168,6 +168,15 @@ function WorkerProfile({ workerId: workerIdProp }) {
   const { user: authUser } = useSelector((state) => state.auth);
   const resolvedWorkerId =
     workerIdProp ?? routeParams?.workerId ?? authUser?.userId ?? null;
+  
+  // Debug logging to trace worker ID resolution
+  console.log('[WorkerProfile] Render:', {
+    workerIdProp,
+    routeParamWorkerId: routeParams?.workerId,
+    resolvedWorkerId,
+    timestamp: new Date().toISOString()
+  });
+  
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -299,11 +308,13 @@ function WorkerProfile({ workerId: workerIdProp }) {
     }
   }, [resolvedWorkerId]);
 
+  // Main effect to fetch data when workerId changes
   useEffect(() => {
     if (!resolvedWorkerId) {
       return;
     }
 
+    // Force refetch when workerId changes
     fetchAllData();
 
     if (!authUser) {
@@ -323,7 +334,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
           console.error('Failed to load bookmarks', error);
         }
       });
-  }, [resolvedWorkerId, fetchAllData, authUser]);
+  }, [workerIdProp, resolvedWorkerId, fetchAllData, authUser]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
