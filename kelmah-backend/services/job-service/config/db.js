@@ -35,7 +35,7 @@ mongoose.set('bufferTimeoutMS', 45000); // 45 seconds buffer timeout - allow tim
 // MongoDB connection options - optimized for Render + MongoDB Atlas
 const options = {
   retryWrites: true, // Enable retry writes for reliability
-  w: 1, // Single server acknowledgment (fast enough, safer than w:0)
+  w: 1, // Single server acknowledgment (necessary for write operations to complete)
   j: false, // Don't wait for journal fsync
   maxPoolSize: 10, // Connection pool size
   minPoolSize: 2, // Maintain minimum connections
@@ -113,12 +113,9 @@ const connectDB = async () => {
     const connectionString = getConnectionString();
 
     // Connect to MongoDB with specific database name
-    // Apply write concern at connection level
     const connectOptions = {
       ...options,
-      dbName: 'kelmah_platform',
-      // Override write concern at connection level
-      writeConcern: { w: 0, j: false }
+      dbName: 'kelmah_platform'
     };
 
     // Create a promise that resolves only when connection is truly ready ('connected' event)
