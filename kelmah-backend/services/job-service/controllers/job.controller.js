@@ -253,70 +253,11 @@ const createJob = async (req, res, next) => {
       payload: payloadSummary
     });
 
-    let readyLatencyMs = 0;
-    let readySource = 'controller';
-    const reuseCandidate = req.mongoReady;
-    const canReuseReady = Boolean(
-      reuseCandidate?.ok &&
-      reuseCandidate?.checkedAt &&
-      Date.now() - reuseCandidate.checkedAt <= READY_REUSE_WINDOW_MS &&
-      mongoose.connection.readyState === 1
-    );
-
-    if (canReuseReady) {
-      readySource = reuseCandidate.cached ? 'middleware-cache' : 'middleware';
-      readyLatencyMs = Number(reuseCandidate.latencyMs) || 0;
-      jobLogger.info('job.create.readyReuse', {
-        ...baseLogMeta,
-        readySource,
-        cacheWindowMs: READY_REUSE_WINDOW_MS,
-        checkedAt: reuseCandidate.checkedAt,
-        latencyMs: readyLatencyMs
-      });
-    } else {
-      const readyStart = Date.now();
-      const timeoutMs = Number(process.env.DB_READY_TIMEOUT_MS || 15000);
-      try {
-        await ensureMongoReady({
-          timeoutMs,
-          logger: jobLogger,
-          context: 'job.create',
-          requestId,
-          correlationId
-        });
-        readyLatencyMs = Date.now() - readyStart;
-        jobLogger.info('job.create.dbReady', {
-          ...baseLogMeta,
-          readyState: mongoose.connection.readyState,
-          latencyMs: readyLatencyMs,
-          timeoutMs
-        });
-      } catch (dbReadyError) {
-        jobLogger.warn('job.create.dbUnavailable', {
-          ...baseLogMeta,
-          readyState: mongoose.connection.readyState,
-          error: dbReadyError.message,
-          errorName: dbReadyError.name
-        });
-
-        return errorResponse(
-          res,
-          503,
-          'Database temporarily unavailable. Please retry in a moment.',
-          'DB_UNAVAILABLE',
-          {
-            reason: dbReadyError.message,
-            readyState: mongoose.connection.readyState,
-            readySource: 'controller'
-          }
-        );
-      }
-    }
-
     const writeStart = Date.now();
 
-    // Job.create will use unacknowledged writes (w: 0) - fail fast
-    // If connection not ready, operation will fail immediately instead of buffering
+    // Mongoose will buffer operations if connection not ready
+    // No need for explicit ensureMongoReady() - let Mongoose handle buffering naturally
+    // This matches the pattern used in auth-service which works reliably on Render
     const job = await Job.create(body);
     const writeLatencyMs = Date.now() - writeStart;
 
@@ -326,8 +267,6 @@ const createJob = async (req, res, next) => {
       paymentType: body.paymentType,
       budget: body.budget,
       status: job.status,
-      readySource,
-      readyLatencyMs,
       writeLatencyMs,
       totalLatencyMs: Date.now() - totalStart
     }); return successResponse(res, 201, 'Job created successfully', job);
