@@ -74,7 +74,7 @@ app.set('trust proxy', 1);
 // CORS configuration
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, etc.)
+    // Allow requests with no origin (mobile apps, Postman, server-to-server, etc.)
     if (!origin) return callback(null, true);
 
     // In development, allow all origins
@@ -83,8 +83,19 @@ const corsOptions = {
     }
 
     // In production, check against allowed origins
-    const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,https://kelmah.com').split(',');
-    if (allowedOrigins.includes(origin)) {
+    // Include all production frontend URLs and local development
+    const defaultOrigins = [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'https://kelmah.com',
+      'https://www.kelmah.com',
+      'https://kelmah-frontend-cyan.vercel.app',
+      'https://kelmah-frontend.vercel.app'
+    ];
+    const envOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [];
+    const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
+    
+    if (allowedOrigins.some(allowed => origin === allowed || origin.endsWith('.vercel.app'))) {
       return callback(null, true);
     }
 
