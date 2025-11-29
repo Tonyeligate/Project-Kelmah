@@ -146,7 +146,12 @@ const routes = [
         ],
       },
       {
-        path: 'workers/:id',
+        path: 'workers/:workerId',
+        element: <WorkerProfilePage />,
+      },
+      // Alternative worker profile route (used by worker cards)
+      {
+        path: 'worker-profile/:workerId',
         element: <WorkerProfilePage />,
       },
       // Public Find Workers / Find Talents route
