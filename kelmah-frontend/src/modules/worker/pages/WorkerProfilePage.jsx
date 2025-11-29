@@ -1,5 +1,5 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
 import { Container, Box } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import WorkerProfile from '../components/WorkerProfile';
@@ -14,6 +14,17 @@ import WorkerProfile from '../components/WorkerProfile';
  */
 const WorkerProfilePage = () => {
   const { workerId } = useParams();
+  const location = useLocation();
+
+  // Scroll to top when workerId changes (new profile navigation)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [workerId, location.pathname]);
+
+  // Early return if no workerId
+  if (!workerId) {
+    return null;
+  }
 
   return (
     <>
