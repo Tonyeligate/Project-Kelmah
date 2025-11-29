@@ -462,4 +462,4 @@ Every API response should follow this format:
 {
   "success": boolean,
   "data": object | null,
-  "error": {
+  "error": {........
