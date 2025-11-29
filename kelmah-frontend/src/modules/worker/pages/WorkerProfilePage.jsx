@@ -40,7 +40,7 @@ const WorkerProfilePage = () => {
         <Box>
           {/* key prop forces complete re-mount when workerId changes, 
               ensuring fresh data fetch for each profile navigation */}
-          <WorkerProfile key={workerId} />
+          <WorkerProfile key={workerId} workerId={workerId} />
         </Box>
       </Container>
     </>

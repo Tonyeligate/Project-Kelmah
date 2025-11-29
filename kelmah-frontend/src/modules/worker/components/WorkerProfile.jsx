@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 // Removed AuthContext import to prevent dual state management conflicts
@@ -161,10 +162,12 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-function WorkerProfile() {
+function WorkerProfile({ workerId: workerIdProp }) {
+  const routeParams = useParams();
   // Use ONLY Redux auth state to prevent dual state management conflicts
   const { user: authUser } = useSelector((state) => state.auth);
-  const { workerId } = useParams();
+  const resolvedWorkerId =
+    workerIdProp ?? routeParams?.workerId ?? authUser?.userId ?? null;
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -176,8 +179,7 @@ function WorkerProfile() {
   const [portfolio, setPortfolio] = useState([]);
   const [certificates, setCertificates] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [ratingSummary, setRatingSummary] = useState(null);
-  const [workHistory, setWorkHistory] = useState([]);
+  const [ratingSummary] = useState(null);
   const [availability, setAvailability] = useState(null);
   const [stats, setStats] = useState({});
   const [earnings, setEarnings] = useState(null);
@@ -193,13 +195,33 @@ function WorkerProfile() {
   const [editingAvailability, setEditingAvailability] = useState(false);
   const [availabilityDraft, setAvailabilityDraft] = useState(null);
 
-  const isOwner = authUser?.userId === workerId;
+  const isOwner =
+    authUser?.userId && resolvedWorkerId
+      ? authUser.userId === resolvedWorkerId
+      : false;
 
   const fetchAllData = useCallback(async () => {
+    if (!resolvedWorkerId) {
+      setError('Worker profile could not be found.');
+      setLoading(false);
+      return;
+    }
+    // Reset all state immediately when starting to load new profile
+    setProfile(null);
+    setSkills([]);
+    setPortfolio([]);
+    setCertificates([]);
+    setReviews([]);
+    setRatingSummary(null);
+    setWorkHistory([]);
+    setAvailability(null);
+    setStats({});
+    setEarnings(null);
     setLoading(true);
     setError(null);
+
     try {
-      const profileRes = await workerService.getWorkerById(workerId);
+      const profileRes = await workerService.getWorkerById(resolvedWorkerId);
       const worker =
         profileRes?.data?.data?.worker ||
         profileRes?.data?.worker ||
@@ -225,14 +247,14 @@ function WorkerProfile() {
       // Use Promise.allSettled for graceful degradation - if ratings or other
       // secondary endpoints fail (e.g., during service cold start), still show profile
       const results = await Promise.allSettled([
-        workerService.getWorkerSkills(workerId),
-        workerService.getWorkerPortfolio(workerId),
-        workerService.getWorkerCertificates(workerId),
-        workerService.getWorkHistory(workerId),
-        workerService.getWorkerAvailability(workerId),
-        workerService.getWorkerStats(workerId),
-        reviewService.getWorkerRating(workerId),
-        workerService.getWorkerEarnings(workerId),
+        workerService.getWorkerSkills(resolvedWorkerId),
+        workerService.getWorkerPortfolio(resolvedWorkerId),
+        workerService.getWorkerCertificates(resolvedWorkerId),
+        workerService.getWorkHistory(resolvedWorkerId),
+        workerService.getWorkerAvailability(resolvedWorkerId),
+        workerService.getWorkerStats(resolvedWorkerId),
+        reviewService.getWorkerRating(resolvedWorkerId),
+        workerService.getWorkerEarnings(resolvedWorkerId),
       ]);
 
       // Helper to safely extract value from settled promise
@@ -275,10 +297,10 @@ function WorkerProfile() {
     } finally {
       setLoading(false);
     }
-  }, [workerId]);
+  }, [resolvedWorkerId]);
 
   useEffect(() => {
-    if (!workerId) {
+    if (!resolvedWorkerId) {
       return;
     }
 
@@ -294,14 +316,14 @@ function WorkerProfile() {
       .getBookmarks()
       .then((res) => {
         const ids = res?.data?.data?.workerIds || [];
-        setIsBookmarked(ids.includes(workerId));
+        setIsBookmarked(ids.includes(resolvedWorkerId));
       })
       .catch((error) => {
         if (error?.response?.status !== 401) {
           console.error('Failed to load bookmarks', error);
         }
       });
-  }, [workerId, fetchAllData, authUser]);
+  }, [resolvedWorkerId, fetchAllData, authUser]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -312,13 +334,18 @@ function WorkerProfile() {
       navigate('/login');
       return;
     }
-    navigate(`/messages?recipient=${workerId}`);
+    if (resolvedWorkerId) {
+      navigate(`/messages?recipient=${resolvedWorkerId}`);
+    }
   };
 
   const handleBookmarkToggle = async () => {
+    if (!resolvedWorkerId) {
+      return;
+    }
     try {
       setIsBookmarked((prev) => !prev);
-      await workerService.bookmarkWorker(workerId);
+      await workerService.bookmarkWorker(resolvedWorkerId);
     } catch (_) {
       // revert on error
       setIsBookmarked((prev) => !prev);
@@ -590,7 +617,9 @@ function WorkerProfile() {
                   size="large"
                   startIcon={<BusinessCenterIcon />}
                   onClick={() =>
-                    navigate(`/contracts/create?workerId=${workerId}`)
+                    navigate(
+                      `/contracts/create?workerId=${resolvedWorkerId}`
+                    )
                   }
                 >
                   Hire Now
@@ -1135,7 +1164,7 @@ function WorkerProfile() {
           <StarIcon color="primary" />
           Client Reviews
         </Typography>
-        <ReviewSystem workerId={workerId} showSubmissionForm />
+        <ReviewSystem workerId={resolvedWorkerId} showSubmissionForm />
       </CardContent>
     </GlassCard>
   );
@@ -1272,14 +1301,16 @@ function WorkerProfile() {
     };
     const save = async () => {
       try {
-        await workerService.updateWorkerAvailability(workerId, draft);
+        await workerService.updateWorkerAvailability(resolvedWorkerId, draft);
         setAvailability({
           availabilityStatus: draft.availabilityStatus,
           availableHours: draft.availableHours,
           pausedUntil: draft.pausedUntil || null,
         });
         setEditingAvailability(false);
-      } catch (_) { }
+      } catch {
+        // Availability update failed
+      }
     };
     return (
       <GlassCard sx={{ mb: 4 }}>
@@ -1561,7 +1592,7 @@ function WorkerProfile() {
             <SpeedDialAction
               icon={<BusinessCenterIcon />}
               tooltipTitle="Hire Now"
-              onClick={() => navigate(`/contracts/create?workerId=${workerId}`)}
+              onClick={() => navigate(`/contracts/create?workerId=${resolvedWorkerId}`)}
             />
             <SpeedDialAction
               icon={<ShareIcon />}
