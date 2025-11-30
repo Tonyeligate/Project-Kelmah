@@ -298,12 +298,13 @@ const MobileRegister = () => {
   return (
     <Box
       sx={{
-        height: '100vh',
+        minHeight: '100vh',
         backgroundColor: '#0F0F0F',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
-        overflow: 'hidden',
+        overflowX: 'hidden',
+        overflowY: 'auto',
       }}
     >
       {/* Background Pattern */}
@@ -370,10 +371,13 @@ const MobileRegister = () => {
         sx={{
           flex: 1,
           px: 2,
-          py: 0.5,
+          py: 1,
+          pb: 4,
           position: 'relative',
           zIndex: 2,
-          overflow: 'hidden',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          WebkitOverflowScrolling: 'touch',
         }}
       >
         <motion.div

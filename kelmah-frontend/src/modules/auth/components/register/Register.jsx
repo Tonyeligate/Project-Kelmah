@@ -41,7 +41,7 @@ import {
   VisibilityOff,
   Work as WorkIcon,
 } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Controller } from 'react-hook-form';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -151,10 +151,10 @@ const Register = () => {
     }
   }, [authError]);
 
+  // Only clear form error on step change, not validation errors
   useEffect(() => {
-    clearErrors();
     setFormError('');
-  }, [activeStep, clearErrors]);
+  }, [activeStep]);
 
   const getFieldsForStep = useCallback(() => {
     switch (activeStep) {
@@ -742,9 +742,10 @@ const Register = () => {
       case 0:
         return (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+            key="step-0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
           >
             <Container maxWidth="md" sx={{ px: { xs: 1, sm: 2 } }}>
               <Stack spacing={{ xs: 1.5, sm: 2 }} alignItems="center">
@@ -794,9 +795,10 @@ const Register = () => {
       case 1:
         return (
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4 }}
+            key="step-1"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
           >
             <Container maxWidth="sm" sx={{ px: { xs: 1, sm: 2 } }}>
               <Stack spacing={3} alignItems="center">
@@ -818,9 +820,10 @@ const Register = () => {
       case 2:
         return (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+            key="step-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
           >
             <Container maxWidth="sm" sx={{ px: { xs: 1, sm: 2 } }}>
               <Stack spacing={3} alignItems="center">
@@ -842,9 +845,10 @@ const Register = () => {
       case 3:
         return (
           <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4 }}
+            key="step-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
           >
             <Container maxWidth="sm" sx={{ px: { xs: 1, sm: 2 } }}>
               {renderConfirmation()}
@@ -1067,7 +1071,9 @@ const Register = () => {
                 mb: { xs: 2, sm: 3 },
               }}
             >
-              {renderStepContent()}
+              <AnimatePresence mode="wait">
+                {renderStepContent()}
+              </AnimatePresence>
             </Box>
 
             <Stack
