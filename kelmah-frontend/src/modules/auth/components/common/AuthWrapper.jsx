@@ -85,15 +85,16 @@ const AuthWrapper = ({ children }) => {
     <Box
       sx={{
         minHeight: '100vh',
-        width: '100vw',
+        width: '100%',
         position: 'relative',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
         backgroundColor: '#000',
-        py: { xs: 2, sm: 3, md: 4 },
-        px: { xs: 1, sm: 2 },
-        overflow: 'auto', // Allow scrolling instead of hidden
+        py: { xs: 2, sm: 4, md: 5 },
+        px: { xs: 1, sm: 2, md: 3 },
+        overflowY: 'auto',
+        overflowX: 'hidden',
       }}
     >
       {/* Enhanced background with animated overlay */}
@@ -190,23 +191,15 @@ const AuthWrapper = ({ children }) => {
               display: 'flex',
               flexDirection: { xs: 'column', md: 'row' },
               width: '100%',
-              maxWidth: { xs: '100%', sm: '90%', md: 'none' },
+              maxWidth: { xs: '100%', sm: '95%', md: '1100px', lg: '1200px' },
               mx: 'auto',
-              overflow: 'hidden',
-              borderRadius: { xs: 4, sm: 5, md: 6 },
+              overflow: 'visible',
+              borderRadius: { xs: 3, sm: 4, md: 5 },
               background:
-                'linear-gradient(145deg, rgba(20, 20, 20, 0.95) 0%, rgba(30, 30, 30, 0.98) 100%)',
-              boxShadow: {
-                xs: '0 12px 40px rgba(0,0,0,0.3)',
-                sm: '0 16px 50px rgba(0,0,0,0.35)',
-                md: '0 20px 60px rgba(0,0,0,0.4)',
-              },
+                'linear-gradient(145deg, rgba(20, 20, 20, 0.98) 0%, rgba(30, 30, 30, 0.99) 100%)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
               backdropFilter: 'blur(20px)',
-              border: {
-                xs: '1px solid rgba(255,215,0,0.15)',
-                sm: '1px solid rgba(255,215,0,0.2)',
-              },
-              minHeight: { xs: 'auto', md: 650 },
+              border: '1px solid rgba(255,215,0,0.2)',
               position: 'relative',
               '&::before': {
                 content: '""',
@@ -218,6 +211,7 @@ const AuthWrapper = ({ children }) => {
                 background:
                   'linear-gradient(90deg, #FFD700 0%, #FFC000 50%, #FFD700 100%)',
                 zIndex: 3,
+                borderRadius: '5px 5px 0 0',
               },
             }}
           >
@@ -706,22 +700,17 @@ const AuthWrapper = ({ children }) => {
                 flex: 1,
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: { xs: 'flex-start', md: 'center' },
+                justifyContent: 'flex-start',
                 alignItems: 'center',
-                p: { xs: 0, sm: 3, md: 4 },
-                minWidth: { xs: 'auto', md: 450, lg: 500 },
+                p: { xs: 2, sm: 3, md: 4 },
+                minWidth: { xs: 'auto', md: 480, lg: 520 },
                 backgroundColor: 'transparent',
-                minHeight: { xs: 'auto', md: 650 },
+                overflow: 'visible',
               }}
             >
-              <motion.div
-                initial={{ opacity: 0, x: isMobile ? 0 : 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-                style={{ width: '100%', maxWidth: isMobile ? '100%' : '480px' }}
-              >
+              <Box sx={{ width: '100%', maxWidth: { xs: '100%', sm: '520px' } }}>
                 {children}
-              </motion.div>
+              </Box>
             </Box>
           </Paper>
         </motion.div>

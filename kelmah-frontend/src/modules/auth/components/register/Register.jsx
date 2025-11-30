@@ -863,24 +863,19 @@ const Register = () => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        width: '100%',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
-        px: { xs: 0.5, sm: 2 },
-        py: { xs: 0.5, sm: 2 },
-        background:
-          'radial-gradient(circle at top, rgba(255,215,0,0.15), transparent 45%)',
+        px: { xs: 1, sm: 2 },
+        py: { xs: 2, sm: 3 },
       }}
     >
       <Box
         sx={{
           width: '100%',
-          maxWidth: { xs: '100%', md: 800 },
+          maxWidth: { xs: '100%', sm: 540, md: 680 },
           mx: 'auto',
-          display: 'flex',
-          alignItems: 'center',
-          px: { xs: 0.5, sm: 2 },
         }}
       >
         <motion.div
@@ -892,25 +887,25 @@ const Register = () => {
           <Paper
             elevation={12}
             sx={{
-              p: { xs: 1.5, sm: 2.5, md: 3 },
+              p: { xs: 2, sm: 3, md: 4 },
               width: '100%',
-              maxWidth: { xs: '100%', sm: 520, md: 720 },
               mx: 'auto',
-              borderRadius: { xs: 2, sm: 3 },
+              borderRadius: { xs: 3, sm: 4 },
               background:
-                'linear-gradient(145deg, rgba(38,38,38,0.95) 0%, rgba(28,28,28,0.98) 100%)',
-              border: '1px solid rgba(255,215,0,0.2)',
+                'linear-gradient(145deg, rgba(38,38,38,0.98) 0%, rgba(28,28,28,0.99) 100%)',
+              border: '1px solid rgba(255,215,0,0.25)',
               position: 'relative',
-              overflow: 'hidden',
+              overflow: 'visible',
               '&::before': {
                 content: '""',
                 position: 'absolute',
                 top: 0,
                 left: 0,
                 right: 0,
-                height: 3,
+                height: 4,
                 background:
                   'linear-gradient(90deg, #FFD700 0%, #FFC000 50%, #FFD700 100%)',
+                borderRadius: '4px 4px 0 0',
               },
             }}
           >
@@ -1068,10 +1063,8 @@ const Register = () => {
 
             <Box
               sx={{
-                minHeight: { xs: '45vh', sm: '300px' },
-                maxHeight: { xs: '50vh', sm: 'auto' },
-                overflow: 'auto',
-                mb: { xs: 1, sm: 2 },
+                minHeight: { xs: 'auto', sm: '280px' },
+                mb: { xs: 2, sm: 3 },
               }}
             >
               {renderStepContent()}
