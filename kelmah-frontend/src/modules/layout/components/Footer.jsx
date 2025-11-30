@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -8,8 +8,6 @@ import {
   IconButton,
   useTheme,
   useMediaQuery,
-  Slide,
-  Fade,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -34,43 +32,7 @@ const Footer = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const currentYear = new Date().getFullYear();
-  // FIXED LP-002: Footer now always visible, removed scroll-dependent visibility
-  const [showFooter, setShowFooter] = useState(true);
-  const [hasUserScrolled, setHasUserScrolled] = useState(false);
   const [expandedSection, setExpandedSection] = useState(null);
-  const [isCompactMode, setIsCompactMode] = useState(true); // Start in compact mode
-
-  useEffect(() => {
-    let scrollTimeout;
-
-    const checkScrollPosition = () => {
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-
-      scrollTimeout = setTimeout(() => {
-        const scrollTop =
-          window.pageYOffset || document.documentElement.scrollTop;
-        const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight;
-
-        // Mark that user has scrolled
-        if (scrollTop > 100 && !hasUserScrolled) {
-          setHasUserScrolled(true);
-        }
-
-        // Expand footer when near bottom, stay compact otherwise
-        const distanceFromBottom = documentHeight - (scrollTop + windowHeight);
-        setIsCompactMode(distanceFromBottom > 150);
-      }, 50);
-    };
-
-    window.addEventListener('scroll', checkScrollPosition, { passive: true });
-    checkScrollPosition();
-
-    return () => {
-      window.removeEventListener('scroll', checkScrollPosition);
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-    };
-  }, [hasUserScrolled]);
 
   const footerSections = [
     {
@@ -109,20 +71,15 @@ const Footer = () => {
     { icon: InstagramIcon, color: '#E4405F', label: 'Instagram', href: '#' },
   ];
 
-  // FIXED LP-002: Compact footer always visible, expands on scroll to bottom
+  // FIXED LP-002: Footer is now a normal static element at bottom of page content
   return (
-    <Slide direction="up" in={showFooter} timeout={300}>
-      <Box
-        component="footer"
-        sx={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1300,
-          transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-        }}
-      >
+    <Box
+      component="footer"
+      sx={{
+        width: '100%',
+        mt: 'auto', // Push to bottom of flex container
+      }}
+    >
         <Box
           sx={{
             py: { xs: 2, sm: 3 },
@@ -604,7 +561,6 @@ const Footer = () => {
           </Container>
         </Box>
       </Box>
-    </Slide>
   );
 };
 

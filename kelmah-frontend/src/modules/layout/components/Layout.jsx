@@ -31,6 +31,9 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
 
   // Use Outlet for React Router nested routes, fallback to children prop
   const content = children || <Outlet />;
+  
+  // Only show footer on homepage
+  const isHomePage = location.pathname === '/' || location.pathname === '/home';
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const isActualMobile = useMediaQuery('(max-width: 768px)');
   // 🎯 ENHANCED: Comprehensive dashboard page detection
@@ -227,8 +230,8 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
           {content}
         </Box>
       </Fade>
-      {/* Dynamic footer - only shows when scrolled to bottom */}
-      <Footer />
+      {/* Footer only on homepage */}
+      {isHomePage && <Footer />}
     </Box>
   );
 };
