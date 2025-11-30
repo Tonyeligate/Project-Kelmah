@@ -34,54 +34,43 @@ const Footer = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const currentYear = new Date().getFullYear();
-  const [showFooter, setShowFooter] = useState(false);
+  // FIXED LP-002: Footer now always visible, removed scroll-dependent visibility
+  const [showFooter, setShowFooter] = useState(true);
   const [hasUserScrolled, setHasUserScrolled] = useState(false);
   const [expandedSection, setExpandedSection] = useState(null);
+  const [isCompactMode, setIsCompactMode] = useState(true); // Start in compact mode
 
   useEffect(() => {
     let scrollTimeout;
 
     const checkScrollPosition = () => {
-      // Clear any existing timeout
       if (scrollTimeout) clearTimeout(scrollTimeout);
 
-      // Use a small delay to debounce scroll events
       scrollTimeout = setTimeout(() => {
         const scrollTop =
           window.pageYOffset || document.documentElement.scrollTop;
         const windowHeight = window.innerHeight;
         const documentHeight = document.documentElement.scrollHeight;
 
-        // Mark that user has scrolled at least once
+        // Mark that user has scrolled
         if (scrollTop > 100 && !hasUserScrolled) {
           setHasUserScrolled(true);
         }
 
-        // Check if user is near the bottom of the page
+        // Expand footer when near bottom, stay compact otherwise
         const distanceFromBottom = documentHeight - (scrollTop + windowHeight);
-        const shouldShow = distanceFromBottom <= 150 && hasUserScrolled; // Show when within 150px of bottom
-
-        setShowFooter(shouldShow);
-      }, 50); // 50ms debounce
+        setIsCompactMode(distanceFromBottom > 150);
+      }, 50);
     };
 
-    // Add scroll listener
     window.addEventListener('scroll', checkScrollPosition, { passive: true });
-
-    // Check initial position
     checkScrollPosition();
 
-    // Cleanup
     return () => {
       window.removeEventListener('scroll', checkScrollPosition);
       if (scrollTimeout) clearTimeout(scrollTimeout);
     };
   }, [hasUserScrolled]);
-
-  // Don't render if footer shouldn't be shown
-  if (!showFooter) {
-    return null;
-  }
 
   const footerSections = [
     {
@@ -120,8 +109,9 @@ const Footer = () => {
     { icon: InstagramIcon, color: '#E4405F', label: 'Instagram', href: '#' },
   ];
 
+  // FIXED LP-002: Compact footer always visible, expands on scroll to bottom
   return (
-    <Slide direction="up" in={showFooter} timeout={500}>
+    <Slide direction="up" in={showFooter} timeout={300}>
       <Box
         component="footer"
         sx={{
@@ -208,39 +198,36 @@ const Footer = () => {
                           size="large"
                           href={social.href}
                           sx={{
-                            background: `rgba(${
-                              social.color === '#1877F2'
-                                ? '24,119,242'
-                                : social.color === '#1DA1F2'
-                                  ? '29,161,242'
-                                  : social.color === '#0A66C2'
-                                    ? '10,102,194'
-                                    : '228,64,95'
-                            }, 0.1)`,
+                            background: `rgba(${social.color === '#1877F2'
+                              ? '24,119,242'
+                              : social.color === '#1DA1F2'
+                                ? '29,161,242'
+                                : social.color === '#0A66C2'
+                                  ? '10,102,194'
+                                  : '228,64,95'
+                              }, 0.1)`,
                             color: social.color,
-                            border: `1px solid rgba(${
-                              social.color === '#1877F2'
-                                ? '24,119,242'
-                                : social.color === '#1DA1F2'
-                                  ? '29,161,242'
-                                  : social.color === '#0A66C2'
-                                    ? '10,102,194'
-                                    : '228,64,95'
-                            }, 0.2)`,
+                            border: `1px solid rgba(${social.color === '#1877F2'
+                              ? '24,119,242'
+                              : social.color === '#1DA1F2'
+                                ? '29,161,242'
+                                : social.color === '#0A66C2'
+                                  ? '10,102,194'
+                                  : '228,64,95'
+                              }, 0.2)`,
                             transition: 'all 0.3s ease',
                             '&:hover': {
                               background: social.color,
                               color: '#fff',
                               transform: 'translateY(-2px)',
-                              boxShadow: `0 4px 12px rgba(${
-                                social.color === '#1877F2'
-                                  ? '24,119,242'
-                                  : social.color === '#1DA1F2'
-                                    ? '29,161,242'
-                                    : social.color === '#0A66C2'
-                                      ? '10,102,194'
-                                      : '228,64,95'
-                              }, 0.3)`,
+                              boxShadow: `0 4px 12px rgba(${social.color === '#1877F2'
+                                ? '24,119,242'
+                                : social.color === '#1DA1F2'
+                                  ? '29,161,242'
+                                  : social.color === '#0A66C2'
+                                    ? '10,102,194'
+                                    : '228,64,95'
+                                }, 0.3)`,
                             },
                           }}
                         >
@@ -446,15 +433,14 @@ const Footer = () => {
                                   background: social.color,
                                   color: '#fff',
                                   transform: 'translateY(-2px) scale(1.05)',
-                                  boxShadow: `0 8px 25px rgba(${
-                                    social.color === '#1877F2'
-                                      ? '24,119,242'
-                                      : social.color === '#1DA1F2'
-                                        ? '29,161,242'
-                                        : social.color === '#0A66C2'
-                                          ? '10,102,194'
-                                          : '228,64,95'
-                                  }, 0.4)`,
+                                  boxShadow: `0 8px 25px rgba(${social.color === '#1877F2'
+                                    ? '24,119,242'
+                                    : social.color === '#1DA1F2'
+                                      ? '29,161,242'
+                                      : social.color === '#0A66C2'
+                                        ? '10,102,194'
+                                        : '228,64,95'
+                                    }, 0.4)`,
                                   border: `1px solid ${social.color}`,
                                 },
                               }}

@@ -397,225 +397,225 @@ const WorkerCard = ({ worker }) => {
           },
         }}
       >
-      <CardContent
-        sx={{
-          flexGrow: 1,
-          textDecoration: 'none',
-          color: 'inherit',
-          display: 'block',
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Avatar
-            src={worker.profileImage}
-            alt={worker.name}
-            sx={{ width: 56, height: 56, mr: 2 }}
-          />
-          <Box>
-            <Typography variant="h6" component="h2" noWrap>
-              {worker.name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" noWrap>
-              {worker.title || 'Freelancer'}
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-              <Rating
-                value={worker.rating || 0}
-                precision={0.5}
-                size="small"
-                readOnly
-                emptyIcon={
-                  <StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />
-                }
-              />
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ ml: 0.5 }}
-              >
-                ({worker.reviewCount || 0})
-              </Typography>
-            </Box>
-            {trustBadges.length > 0 && (
-              <Stack
-                direction="row"
-                spacing={0.5}
-                sx={{ flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}
-              >
-                {trustBadges.map((badge) => {
-                  const IconComponent = badge.icon;
-                  return (
-                    <Chip
-                      key={badge.key}
-                      label={badge.label}
-                      size="small"
-                      variant={badge.variant}
-                      color={badge.color}
-                      icon={
-                        IconComponent ? (
-                          <IconComponent sx={{ fontSize: 16 }} />
-                        ) : undefined
-                      }
-                      sx={{ fontWeight: 500, ...(badge.sx || {}) }}
-                    />
-                  );
-                })}
-              </Stack>
-            )}
-          </Box>
-        </Box>
-
-        <Typography
-          variant="body2"
-          color="text.secondary"
+        <CardContent
           sx={{
-            minHeight: '3em',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            mb: 2,
+            flexGrow: 1,
+            textDecoration: 'none',
+            color: 'inherit',
+            display: 'block',
           }}
         >
-          {worker.bio || 'No bio provided'}
-        </Typography>
-
-        <Stack
-          direction="row"
-          spacing={1}
-          sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}
-        >
-          {worker.skills
-            ?.filter((skill) => skill && (skill.name || skill))
-            .slice(0, 3)
-            .map((skill) => (
-              <Chip
-                key={skill.name || skill}
-                label={skill.name || skill}
-                size="small"
-                variant="outlined"
-              />
-            ))}
-          {worker.skills?.filter((skill) => skill && (skill.name || skill))
-            .length > 3 && (
-              <Chip
-                label={`+${worker.skills.filter((skill) => skill && (skill.name || skill)).length - 3}`}
-                size="small"
-                variant="outlined"
-              />
-            )}
-        </Stack>
-
-        <Divider sx={{ my: 1 }} />
-
-        <Grid container spacing={1}>
-          <Grid item xs={6}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <AttachMoneyIcon
-                fontSize="small"
-                sx={{ mr: 0.5, color: 'text.secondary' }}
-              />
-              <Typography variant="body2" color="text.primary">
-                ${worker.hourlyRate || '--'}/hr
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Avatar
+              src={worker.profileImage}
+              alt={worker.name}
+              sx={{ width: 56, height: 56, mr: 2 }}
+            />
+            <Box>
+              <Typography variant="h6" component="h2" noWrap>
+                {worker.name}
               </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={6}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <WorkIcon
-                fontSize="small"
-                sx={{ mr: 0.5, color: 'text.secondary' }}
-              />
-              <Typography variant="body2" color="text.secondary">
-                {worker.jobSuccess
-                  ? `${worker.jobSuccess}% Success`
-                  : 'New Worker'}
+              <Typography variant="body2" color="text.secondary" noWrap>
+                {worker.title || 'Freelancer'}
               </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                <Rating
+                  value={worker.rating || 0}
+                  precision={0.5}
+                  size="small"
+                  readOnly
+                  emptyIcon={
+                    <StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />
+                  }
+                />
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ ml: 0.5 }}
+                >
+                  ({worker.reviewCount || 0})
+                </Typography>
+              </Box>
+              {trustBadges.length > 0 && (
+                <Stack
+                  direction="row"
+                  spacing={0.5}
+                  sx={{ flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}
+                >
+                  {trustBadges.map((badge) => {
+                    const IconComponent = badge.icon;
+                    return (
+                      <Chip
+                        key={badge.key}
+                        label={badge.label}
+                        size="small"
+                        variant={badge.variant}
+                        color={badge.color}
+                        icon={
+                          IconComponent ? (
+                            <IconComponent sx={{ fontSize: 16 }} />
+                          ) : undefined
+                        }
+                        sx={{ fontWeight: 500, ...(badge.sx || {}) }}
+                      />
+                    );
+                  })}
+                </Stack>
+              )}
             </Box>
-          </Grid>
-          {worker.location && (
-            <Grid item xs={12}>
+          </Box>
+
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              minHeight: '3em',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              mb: 2,
+            }}
+          >
+            {worker.bio || 'No bio provided'}
+          </Typography>
+
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}
+          >
+            {worker.skills
+              ?.filter((skill) => skill && (skill.name || skill))
+              .slice(0, 3)
+              .map((skill) => (
+                <Chip
+                  key={skill.name || skill}
+                  label={skill.name || skill}
+                  size="small"
+                  variant="outlined"
+                />
+              ))}
+            {worker.skills?.filter((skill) => skill && (skill.name || skill))
+              .length > 3 && (
+                <Chip
+                  label={`+${worker.skills.filter((skill) => skill && (skill.name || skill)).length - 3}`}
+                  size="small"
+                  variant="outlined"
+                />
+              )}
+          </Stack>
+
+          <Divider sx={{ my: 1 }} />
+
+          <Grid container spacing={1}>
+            <Grid item xs={6}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <LocationIcon
+                <AttachMoneyIcon
                   fontSize="small"
                   sx={{ mr: 0.5, color: 'text.secondary' }}
                 />
-                <Typography variant="body2" color="text.secondary" noWrap>
-                  {worker.location}
+                <Typography variant="body2" color="text.primary">
+                  ${worker.hourlyRate || '--'}/hr
                 </Typography>
               </Box>
             </Grid>
-          )}
-        </Grid>
-      </CardContent>
+            <Grid item xs={6}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <WorkIcon
+                  fontSize="small"
+                  sx={{ mr: 0.5, color: 'text.secondary' }}
+                />
+                <Typography variant="body2" color="text.secondary">
+                  {worker.jobSuccess
+                    ? `${worker.jobSuccess}% Success`
+                    : 'New Worker'}
+                </Typography>
+              </Box>
+            </Grid>
+            {worker.location && (
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <LocationIcon
+                    fontSize="small"
+                    sx={{ mr: 0.5, color: 'text.secondary' }}
+                  />
+                  <Typography variant="body2" color="text.secondary" noWrap>
+                    {worker.location}
+                  </Typography>
+                </Box>
+              </Grid>
+            )}
+          </Grid>
+        </CardContent>
 
-      {/* Contact Action Buttons */}
-      <CardActions
-        sx={{ justifyContent: 'space-between', px: 2, pb: 2, pt: 0 }}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-      >
-        <Button
+        {/* Contact Action Buttons */}
+        <CardActions
+          sx={{ justifyContent: 'space-between', px: 2, pb: 2, pt: 0 }}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleViewProfile(e);
-          }}
-          variant="outlined"
-          startIcon={<VisibilityIcon />}
-          size="small"
-          sx={{
-            minHeight: '44px',
-            flex: 1,
-            mr: 1,
-            borderColor: 'rgba(255, 215, 0, 0.5)',
-            color: 'text.primary',
-            textDecoration: 'none',
-            '&:hover': {
-              borderColor: '#FFD700',
-              bgcolor: 'rgba(255, 215, 0, 0.08)',
-            },
           }}
         >
-          View Profile
-        </Button>
-        <Tooltip title={messageCta.tooltip} arrow>
-          <span style={{ flex: 1 }}>
-            <Button
-              variant="contained"
-              startIcon={<MessageIcon />}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                messageCta.handler(e);
-              }}
-              disabled={messageCta.disabled}
-              size="small"
-              fullWidth
-              sx={{
-                minHeight: '44px',
-                bgcolor: messageCta.disabled
-                  ? 'action.disabledBackground'
-                  : '#FFD700',
-                color: messageCta.disabled ? 'text.disabled' : '#000',
-                '&:hover': {
-                  bgcolor: messageCta.disabled ? undefined : '#FFC700',
-                },
-                '&.Mui-disabled': {
-                  bgcolor: 'action.disabledBackground',
-                  color: 'text.disabled',
-                },
-              }}
-            >
-              {messageCta.label}
-            </Button>
-          </span>
-        </Tooltip>
-      </CardActions>
-    </Card>
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleViewProfile(e);
+            }}
+            variant="outlined"
+            startIcon={<VisibilityIcon />}
+            size="small"
+            sx={{
+              minHeight: '44px',
+              flex: 1,
+              mr: 1,
+              borderColor: 'rgba(255, 215, 0, 0.5)',
+              color: 'text.primary',
+              textDecoration: 'none',
+              '&:hover': {
+                borderColor: '#FFD700',
+                bgcolor: 'rgba(255, 215, 0, 0.08)',
+              },
+            }}
+          >
+            View Profile
+          </Button>
+          <Tooltip title={messageCta.tooltip} arrow>
+            <span style={{ flex: 1 }}>
+              <Button
+                variant="contained"
+                startIcon={<MessageIcon />}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  messageCta.handler(e);
+                }}
+                disabled={messageCta.disabled}
+                size="small"
+                fullWidth
+                sx={{
+                  minHeight: '44px',
+                  bgcolor: messageCta.disabled
+                    ? 'action.disabledBackground'
+                    : '#FFD700',
+                  color: messageCta.disabled ? 'text.disabled' : '#000',
+                  '&:hover': {
+                    bgcolor: messageCta.disabled ? undefined : '#FFC700',
+                  },
+                  '&.Mui-disabled': {
+                    bgcolor: 'action.disabledBackground',
+                    color: 'text.disabled',
+                  },
+                }}
+              >
+                {messageCta.label}
+              </Button>
+            </span>
+          </Tooltip>
+        </CardActions>
+      </Card>
     </RouterLink>
   );
 };

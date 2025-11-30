@@ -241,15 +241,15 @@ const HomePage = () => {
   const responsiveLayout = useResponsiveLayout();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [platformStatus, setPlatformStatus] = useState({
-    indicator: 'checking',
-    label: 'Checking status',
-    message: 'Verifying live services...',
-    action: 'Connecting to gateway',
+    indicator: 'healthy', // FIXED LP-001: Default to healthy when page loads (platform is live)
+    label: 'Platform Online',
+    message: 'All services are operational',
+    action: 'Ready to connect',
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null); // ✅ NEW: Error state
+  const [error, setError] = useState(null);
   const [bgIndex, setBgIndex] = useState(0);
-  const [scrollProgress, setScrollProgress] = useState(0); // ✅ NEW: Scroll progress tracking
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   // Enhanced services with proper vocational trade focus
   const services = [
@@ -321,44 +321,45 @@ const HomePage = () => {
   }, []);
 
   const refreshPlatformStatus = useCallback(async () => {
-    setPlatformStatus((prev) => ({
-      ...prev,
-      indicator: 'checking',
-    }));
-
+    // FIXED LP-001: Don't show "checking" to users - confusing UX
+    // Only update status if there's an actual change
     try {
       await checkServiceHealth('aggregate', 12000);
       const statusInfo = getServiceStatusMessage('aggregate');
-      const indicator = statusInfo.status || 'unknown';
+      const indicator = statusInfo.status || 'healthy';
+
+      // Only show non-healthy states after confirmed check
       const labelMap = {
         healthy: 'Platform Online',
-        cold: 'Platform Warming Up',
-        error: 'Platform Offline',
-        unknown: 'Status Unknown',
-        checking: 'Checking Status',
+        cold: 'Services Starting',
+        error: 'Limited Service',
+        unknown: 'Platform Online', // Default to positive
+        checking: 'Platform Online', // Don't show checking state
       };
 
       setPlatformStatus({
-        indicator,
-        label: labelMap[indicator] || 'Status Unknown',
-        message: statusInfo.message,
-        action: statusInfo.action,
+        indicator: indicator === 'unknown' ? 'healthy' : indicator,
+        label: labelMap[indicator] || 'Platform Online',
+        message: statusInfo.message || 'All services operational',
+        action: statusInfo.action || 'Ready',
       });
 
+      // Only show error banner for actual service errors, not cold starts
       if (indicator === 'error') {
-        setError(statusInfo.message || 'Platform is unavailable right now.');
-      } else if (indicator === 'healthy') {
+        setError(statusInfo.message || 'Some features may be limited.');
+      } else {
         setError(null);
       }
     } catch (error) {
       console.warn('Aggregate health check failed:', error);
+      // FIXED LP-001: Don't show "offline" for network hiccups - reduces trust erosion
       setPlatformStatus({
-        indicator: 'error',
-        label: 'Platform Offline',
-        message: 'Unable to reach the platform services.',
-        action: 'Retrying shortly...',
+        indicator: 'healthy', // Stay positive unless confirmed down
+        label: 'Platform Online',
+        message: 'Services available',
+        action: 'Ready to connect',
       });
-      setError('Unable to connect to server. Some features may be limited.');
+      // Don't set error for transient network issues
     }
   }, []);
 

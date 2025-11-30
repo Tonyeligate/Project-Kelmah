@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { normalizeUser } from '../../../utils/userUtils';
 import {
@@ -16,6 +16,9 @@ import {
   useTheme,
   useMediaQuery,
   Alert,
+  AlertTitle,
+  LinearProgress,
+  Snackbar,
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
@@ -28,6 +31,8 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip } from 'recharts';
 import {
   fetchWorkerApplications,
@@ -36,6 +41,7 @@ import {
   selectWorkerJobs,
   selectWorkerLoading,
   selectWorkerError,
+  clearWorkerErrors,
 } from '../services/workerSlice';
 
 const WorkerDashboardPage = () => {
@@ -56,14 +62,48 @@ const WorkerDashboardPage = () => {
   const isLoading = useSelector(selectWorkerLoading('applications'));
   const error = useSelector(selectWorkerError('applications'));
 
-  // Fetch data on mount
+  // Enhanced state for error handling and loading feedback
+  const [retryCount, setRetryCount] = useState(0);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('info');
+  const MAX_RETRIES = 3;
+  const LOADING_TIMEOUT = 15000; // 15 seconds
+
+  // Fetch data with retry logic
+  const fetchDashboardData = useCallback(async () => {
+    setLoadingTimeout(false);
+
+    const timeoutId = setTimeout(() => {
+      setLoadingTimeout(true);
+    }, LOADING_TIMEOUT);
+
+    try {
+      await Promise.all([
+        dispatch(fetchWorkerApplications('pending')),
+        dispatch(fetchWorkerApplications('accepted')),
+        dispatch(fetchWorkerApplications('rejected')),
+        dispatch(fetchWorkerJobs('active')),
+        dispatch(fetchWorkerJobs('completed')),
+      ]);
+      clearTimeout(timeoutId);
+      setLoadingTimeout(false);
+      if (retryCount > 0) {
+        setSnackbarMessage('Dashboard data loaded successfully!');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+      }
+    } catch (err) {
+      clearTimeout(timeoutId);
+      console.error('Dashboard data fetch error:', err);
+    }
+  }, [dispatch, retryCount]);
+
+  // Initial fetch on mount
   useEffect(() => {
-    dispatch(fetchWorkerApplications('pending'));
-    dispatch(fetchWorkerApplications('accepted'));
-    dispatch(fetchWorkerApplications('rejected'));
-    dispatch(fetchWorkerJobs('active'));
-    dispatch(fetchWorkerJobs('completed'));
-  }, [dispatch]);
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   // Get time-based greeting
   const getGreeting = () => {
@@ -81,12 +121,25 @@ const WorkerDashboardPage = () => {
     rating: user?.rating || 0,
   }), [pendingApplications, acceptedApplications, completedJobs, user]);
 
-  // Handle refresh
-  const handleRefresh = () => {
-    dispatch(fetchWorkerApplications('pending'));
-    dispatch(fetchWorkerApplications('accepted'));
-    dispatch(fetchWorkerJobs('completed'));
-  };
+  // Handle refresh with retry logic
+  const handleRefresh = useCallback(() => {
+    dispatch(clearWorkerErrors());
+    setRetryCount(prev => prev + 1);
+    fetchDashboardData();
+  }, [dispatch, fetchDashboardData]);
+
+  // Auto-retry on error (up to MAX_RETRIES)
+  useEffect(() => {
+    if (error && retryCount < MAX_RETRIES && !isLoading) {
+      const retryTimer = setTimeout(() => {
+        setSnackbarMessage(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+        setSnackbarSeverity('info');
+        setSnackbarOpen(true);
+        handleRefresh();
+      }, 3000 * (retryCount + 1)); // Exponential backoff
+      return () => clearTimeout(retryTimer);
+    }
+  }, [error, retryCount, isLoading, handleRefresh]);
 
   // Chart data for Earnings Overview - using real or fallback data
   const earningsData = useMemo(() => [
@@ -150,22 +203,99 @@ const WorkerDashboardPage = () => {
     </Grid>
   );
 
-  // Show error alert if there's an error
-  if (error) {
-    return (
-      <Box sx={{ backgroundColor: '#FAFAFA', minHeight: '100vh', p: 3 }}>
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-        <Button variant="contained" onClick={handleRefresh}>
-          Try Again
+  // Enhanced error display with retry functionality
+  const ErrorDisplay = () => (
+    <Box sx={{ mb: 3 }}>
+      <Alert
+        severity={retryCount >= MAX_RETRIES ? "error" : "warning"}
+        icon={<ErrorOutlineIcon />}
+        action={
+          <Button
+            color="inherit"
+            size="small"
+            onClick={handleRefresh}
+            disabled={isLoading}
+            startIcon={isLoading ? <RefreshIcon sx={{ animation: 'spin 1s linear infinite' }} /> : <RefreshIcon />}
+          >
+            {isLoading ? 'Retrying...' : 'Try Again'}
+          </Button>
+        }
+        sx={{
+          borderRadius: 2,
+          '& .MuiAlert-message': { width: '100%' }
+        }}
+      >
+        <AlertTitle sx={{ fontWeight: 600 }}>
+          {retryCount >= MAX_RETRIES ? 'Unable to Load Dashboard' : 'Loading Issue Detected'}
+        </AlertTitle>
+        <Typography variant="body2" sx={{ mb: 1 }}>
+          {error || 'Failed to fetch worker applications'}
+        </Typography>
+        {retryCount < MAX_RETRIES && (
+          <Typography variant="caption" color="text.secondary">
+            Auto-retry in {3 * (retryCount + 1)} seconds ({retryCount}/{MAX_RETRIES} attempts)
+          </Typography>
+        )}
+        {retryCount >= MAX_RETRIES && (
+          <Typography variant="caption" color="text.secondary">
+            Please check your internet connection or try again later.
+          </Typography>
+        )}
+      </Alert>
+    </Box>
+  );
+
+  // Loading timeout warning
+  const LoadingTimeoutWarning = () => (
+    <Alert
+      severity="warning"
+      sx={{ mb: 2, borderRadius: 2 }}
+      action={
+        <Button color="inherit" size="small" onClick={handleRefresh}>
+          Refresh
         </Button>
-      </Box>
-    );
-  }
+      }
+    >
+      <AlertTitle>Loading Taking Longer Than Expected</AlertTitle>
+      <Typography variant="body2">
+        The server might be warming up. Please wait or try refreshing.
+      </Typography>
+    </Alert>
+  );
 
   return (
     <Box sx={{ backgroundColor: '#FAFAFA', minHeight: '100vh', p: 3 }}>
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+          icon={snackbarSeverity === 'success' ? <CheckCircleIcon /> : undefined}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+
+      {/* Loading Progress Bar */}
+      {isLoading && (
+        <LinearProgress
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1200,
+            height: 3,
+          }}
+        />
+      )}
+
       {/* Breadcrumb Navigation */}
       <Breadcrumbs
         separator={<NavigateNextIcon fontSize="small" sx={{ color: '#999' }} />}
@@ -229,6 +359,12 @@ const WorkerDashboardPage = () => {
           </Tooltip>
         </Box>
       </Box>
+
+      {/* Error Display - Shows inline instead of blocking */}
+      {error && <ErrorDisplay />}
+
+      {/* Loading Timeout Warning */}
+      {loadingTimeout && isLoading && <LoadingTimeoutWarning />}
 
       {/* Loading State */}
       {isLoading ? (

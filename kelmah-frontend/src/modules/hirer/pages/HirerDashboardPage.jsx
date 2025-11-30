@@ -287,6 +287,7 @@ StyledPaper.propTypes = {
 
 const DASHBOARD_LOADING_TIMEOUT_MS = 10000;
 const APPLICATION_REFRESH_TTL_MS = 2 * 60 * 1000; // 2 minutes
+const AUTO_REFRESH_INTERVAL_MS = 60 * 1000; // DASH-001: Auto-refresh every 60 seconds
 
 const HirerDashboardPage = () => {
   const theme = useTheme();
@@ -301,11 +302,14 @@ const HirerDashboardPage = () => {
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   const [isHydrating, setIsHydrating] = useState(true);
   const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true); // DASH-001: Auto-refresh state
+  const [timeSinceRefresh, setTimeSinceRefresh] = useState('Just now'); // DASH-001: Human-readable time
 
   const timeoutRef = useRef(null);
   const fetchPromiseRef = useRef(null);
   const isMountedRef = useRef(true);
   const applicationRecordsRef = useRef({});
+  const autoRefreshRef = useRef(null); // DASH-001: Auto-refresh interval ref
 
   // Get data from Redux store using selectors
   const user = useSelector((state) => state.auth.user);
@@ -540,6 +544,7 @@ const HirerDashboardPage = () => {
     try {
       await fetchDashboardData('manual-refresh');
       setLastRefreshed(Date.now());
+      setTimeSinceRefresh('Just now');
     } catch (err) {
       console.error('Error refreshing data:', err);
       setError('Failed to refresh data. Please try again.');
@@ -547,6 +552,54 @@ const HirerDashboardPage = () => {
       setRefreshing(false);
     }
   };
+
+  // DASH-001: Auto-refresh interval for real-time updates
+  useEffect(() => {
+    if (!autoRefreshEnabled || isHydrating) {
+      return;
+    }
+
+    autoRefreshRef.current = setInterval(async () => {
+      if (!isMountedRef.current || refreshing) {
+        return;
+      }
+
+      try {
+        // Silent background refresh
+        await dispatch(fetchHirerJobs('active')).unwrap();
+        setLastRefreshed(Date.now());
+        setTimeSinceRefresh('Just now');
+      } catch (err) {
+        console.warn('Auto-refresh failed:', err);
+        // Don't show error for background refresh failures
+      }
+    }, AUTO_REFRESH_INTERVAL_MS);
+
+    return () => {
+      if (autoRefreshRef.current) {
+        clearInterval(autoRefreshRef.current);
+      }
+    };
+  }, [autoRefreshEnabled, isHydrating, dispatch, refreshing]);
+
+  // DASH-001: Update "time since refresh" display
+  useEffect(() => {
+    const updateTimeSinceRefresh = () => {
+      const seconds = Math.floor((Date.now() - lastRefreshed) / 1000);
+      if (seconds < 60) {
+        setTimeSinceRefresh('Just now');
+      } else if (seconds < 3600) {
+        const minutes = Math.floor(seconds / 60);
+        setTimeSinceRefresh(`${minutes} min${minutes > 1 ? 's' : ''} ago`);
+      } else {
+        const hours = Math.floor(seconds / 3600);
+        setTimeSinceRefresh(`${hours} hour${hours > 1 ? 's' : ''} ago`);
+      }
+    };
+
+    const interval = setInterval(updateTimeSinceRefresh, 30000); // Update every 30 seconds
+    return () => clearInterval(interval);
+  }, [lastRefreshed]);
 
   // Handler for tab change - FIXED: Clear error state on tab switch to prevent content bleed
   const handleTabChange = (event, newValue) => {
@@ -1039,6 +1092,22 @@ const HirerDashboardPage = () => {
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {/* DASH-001: Auto-refresh indicator */}
+            <Tooltip title={autoRefreshEnabled ? 'Auto-refresh enabled (every 60s)' : 'Auto-refresh disabled'} arrow>
+              <Chip
+                size="small"
+                label={autoRefreshEnabled ? 'Live' : 'Paused'}
+                color={autoRefreshEnabled ? 'success' : 'default'}
+                variant="outlined"
+                onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+                sx={{
+                  cursor: 'pointer',
+                  fontSize: '0.7rem',
+                  height: 24,
+                  '& .MuiChip-label': { px: 1 }
+                }}
+              />
+            </Tooltip>
             <Tooltip title="Refresh Dashboard" arrow>
               <IconButton
                 onClick={handleRefresh}
@@ -1050,8 +1119,9 @@ const HirerDashboardPage = () => {
                 <RefreshIcon sx={{ animation: refreshing ? 'spin 1s linear infinite' : 'none', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />
               </IconButton>
             </Tooltip>
-            <Typography variant="caption" color="text.secondary">
-              Updated {new Date(lastRefreshed).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            {/* DASH-001: Human-readable time since refresh */}
+            <Typography variant="caption" color="text.secondary" sx={{ minWidth: 80 }}>
+              {timeSinceRefresh}
             </Typography>
           </Box>
         </Box>
