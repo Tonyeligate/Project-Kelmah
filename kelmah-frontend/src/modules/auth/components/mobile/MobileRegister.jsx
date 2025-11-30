@@ -138,10 +138,8 @@ const MobileRegister = () => {
     if (field === 'acceptTerms') {
       value = event.target.checked;
     } else if (field === 'phone') {
-      // Format phone number
-      value = value
-        .replace(/\D/g, '')
-        .replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+      // Only allow digits, + and spaces - don't auto-format to prevent cursor jumping
+      value = value.replace(/[^\d+\s]/g, '');
     }
 
     setFormData((prev) => ({ ...prev, [field]: value }));

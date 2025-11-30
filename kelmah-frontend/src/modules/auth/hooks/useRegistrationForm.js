@@ -12,7 +12,7 @@ import {
   clearRegistrationDraft,
 } from '../utils/registrationDraftStorage';
 
-const AUTOSAVE_INTERVAL = 750; // ms
+const AUTOSAVE_INTERVAL = 2000; // ms - increased to reduce glitches
 
 export const useRegistrationForm = ({
   defaultValues,

@@ -108,13 +108,13 @@ const Register = () => {
   const authLoading = useSelector(selectAuthLoading);
   const authError = useSelector(selectAuthError);
 
-  const savedStep = watch('step') ?? 0;
-  const [activeStep, setActiveStep] = useState(savedStep);
+  const [activeStep, setActiveStep] = useState(0);
   const [formError, setFormError] = useState('');
   const [draftStatus, setDraftStatus] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Get values for display only - don't use watch() to avoid re-renders
   const role = watch('role');
   const firstName = watch('firstName');
   const lastName = watch('lastName');
@@ -126,23 +126,19 @@ const Register = () => {
   const experienceYears = watch('experienceYears');
   const password = watch('password');
 
-  useEffect(() => {
-    if (typeof savedStep === 'number' && savedStep !== activeStep) {
-      setActiveStep(savedStep);
-    }
-  }, [savedStep, activeStep]);
-
-  useEffect(() => {
-    setValue('step', activeStep, { shouldDirty: false });
-  }, [activeStep, setValue]);
-
+  // Restore step from draft on initial load only
   useEffect(() => {
     if (draftLoaded) {
+      const savedStep = getValues('step');
+      if (typeof savedStep === 'number' && savedStep > 0) {
+        setActiveStep(savedStep);
+      }
       setDraftStatus('Draft restored from your last session.');
       const timer = setTimeout(() => setDraftStatus(''), 4000);
       return () => clearTimeout(timer);
     }
     return undefined;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draftLoaded]);
 
   useEffect(() => {

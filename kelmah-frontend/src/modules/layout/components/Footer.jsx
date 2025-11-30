@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -13,7 +13,6 @@ import {
   AccordionDetails,
   Stack,
   Divider,
-  Slide,
 } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
@@ -34,25 +33,6 @@ const Footer = () => {
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const currentYear = new Date().getFullYear();
   const [expandedSection, setExpandedSection] = useState(null);
-  const [showFooter, setShowFooter] = useState(false);
-
-  // Show footer only when user scrolls near the bottom of the page
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-
-      // Show footer when within 200px of bottom
-      const distanceFromBottom = documentHeight - (scrollTop + windowHeight);
-      setShowFooter(distanceFromBottom < 200);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Check initial position
-
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const footerSections = [
     {
@@ -91,45 +71,24 @@ const Footer = () => {
     { icon: InstagramIcon, color: '#E4405F', label: 'Instagram', href: '#' },
   ];
 
-  // Footer slides up when user scrolls to bottom
+  // Simple static footer - appears at bottom of page content
   return (
-    <Slide direction="up" in={showFooter} mountOnEnter unmountOnExit>
+    <Box
+      component="footer"
+      sx={{
+        width: '100%',
+        mt: 'auto', // Push to bottom in flex container
+      }}
+    >
       <Box
-        component="footer"
         sx={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1200,
+          py: { xs: 2, sm: 3 },
+          backgroundColor: 'rgba(25, 25, 25, 0.98)',
+          borderTop: '3px solid rgba(255, 215, 0, 0.5)',
+          background:
+            'linear-gradient(135deg, rgba(25, 25, 25, 0.98) 0%, rgba(35, 35, 35, 0.95) 100%)',
         }}
       >
-        <Box
-          sx={{
-            py: { xs: 2, sm: 3 },
-            backgroundColor: 'rgba(25, 25, 25, 0.98)',
-            backdropFilter: 'blur(25px)',
-            borderTop: '3px solid rgba(255, 215, 0, 0.5)',
-            boxShadow: '0 -12px 40px rgba(0, 0, 0, 0.8)',
-            background:
-              'linear-gradient(135deg, rgba(25, 25, 25, 0.98) 0%, rgba(35, 35, 35, 0.95) 100%)',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '2px',
-              background:
-                'linear-gradient(90deg, transparent 0%, rgba(255, 215, 0, 0.6) 50%, transparent 100%)',
-              animation: 'footerGlow 2s ease-in-out infinite alternate',
-            },
-            '@keyframes footerGlow': {
-              '0%': { opacity: 0.5 },
-              '100%': { opacity: 1 },
-            },
-          }}
-        >
           <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 2 } }}>
             {/* Mobile Accordion Layout */}
             {isMobile ? (
@@ -585,7 +544,6 @@ const Footer = () => {
           </Container>
         </Box>
       </Box>
-    </Slide>
   );
 };
 
