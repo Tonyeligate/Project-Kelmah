@@ -138,7 +138,7 @@ const Register = () => {
       return () => clearTimeout(timer);
     }
     return undefined;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draftLoaded]);
 
   useEffect(() => {
@@ -856,10 +856,8 @@ const Register = () => {
     }
   };
 
-  if (prefersDedicatedMobile) {
-    return <MobileRegister />;
-  }
-
+  // Mobile detection now handled by RegisterPage
+  // Desktop Register form
   return (
     <Box
       sx={{

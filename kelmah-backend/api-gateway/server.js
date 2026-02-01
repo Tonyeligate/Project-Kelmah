@@ -713,6 +713,27 @@ app.use('/api/jobs/search', createDynamicProxy('job', {
   }
 }));
 
+// QuickJob routes - Protected Quick-Hire System
+// All quick-job operations require authentication
+app.use('/api/quick-jobs', authenticate, (req, res, next) => {
+  // Forward user info to job service
+  if (req.user) {
+    req.headers['x-authenticated-user'] = JSON.stringify(req.user);
+    req.headers['x-auth-source'] = 'api-gateway';
+  }
+  next();
+}, createDynamicProxy('job', {
+  pathRewrite: { '^/api/quick-jobs': '/api/quick-jobs' },
+  onError: (err, req, res) => {
+    console.error('[API Gateway] QuickJob service error:', err.message);
+    res.status(503).json({
+      error: 'QuickJob service temporarily unavailable',
+      message: 'Please try again later',
+      timestamp: new Date().toISOString()
+    });
+  }
+}));
+
 // Payment routes (protected with validation) — use dedicated router to expose granular endpoints and aliases
 const paymentRouter = require('./routes/payment.routes');
 app.use('/api/payments',

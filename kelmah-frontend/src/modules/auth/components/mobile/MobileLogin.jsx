@@ -1,15 +1,9 @@
 /**
- * Enhanced Mobile Login Component
- *
- * A modern, user-friendly mobile login experience with:
- * - Improved visual design and spacing
- * - Better error handling and user feedback
- * - Social login integration
- * - Enhanced accessibility
- * - Loading states and animations
+ * Professional Mobile Login Component
+ * Clean, minimal design optimized for mobile devices
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { login as loginAction } from '../../services/authSlice';
 import {
@@ -17,84 +11,57 @@ import {
   Button,
   TextField,
   Typography,
-  Paper,
   Alert,
   CircularProgress,
   IconButton,
   InputAdornment,
   FormControlLabel,
   Checkbox,
-  Divider,
   Stack,
   Fade,
-  Slide,
-  useTheme,
+  Chip,
 } from '@mui/material';
 import {
   Visibility,
   VisibilityOff,
   Email as EmailIcon,
   Lock as LockIcon,
-  Google as GoogleIcon,
-  ArrowBack as ArrowBackIcon,
   CheckCircle as CheckCircleIcon,
+  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-// Removed AuthContext import to use Redux auth system
-// import { useAuth } from '../../contexts/AuthContext';
+import logoIcon from '../../../../assets/images/logo.png';
 
-const MobileLogin = () => {
-  const theme = useTheme();
+const MobileLogin = ({ registrationSuccess = false }) => {
   const navigate = useNavigate();
-  // Use Redux auth system instead of AuthContext
   const dispatch = useDispatch();
   const { loading: authLoading } = useSelector((state) => state.auth);
 
   // Form state
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    rememberMe: false,
-  });
-
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Handle input changes
-  const handleInputChange = (field) => (event) => {
-    const value =
-      field === 'rememberMe' ? event.target.checked : event.target.value;
-    setFormData((prev) => ({ ...prev, [field]: value }));
-
-    // Clear field error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: '' }));
-    }
-
-    // Clear submit error
-    if (submitError) {
-      setSubmitError('');
-    }
-  };
-
   // Validate form
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.email.trim()) {
+    if (!email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Enter a valid email';
     }
 
-    if (!formData.password) {
+    if (!password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    } else if (password.length < 6) {
+      newErrors.password = 'At least 6 characters';
     }
 
     setErrors(newErrors);
@@ -105,9 +72,7 @@ const MobileLogin = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
     setSubmitError('');
@@ -115,453 +80,381 @@ const MobileLogin = () => {
     try {
       await dispatch(
         loginAction({
-          email: formData.email.trim(),
-          password: formData.password,
-          rememberMe: formData.rememberMe,
+          email: email.trim(),
+          password,
+          rememberMe,
         }),
       ).unwrap();
 
-      // Show success state briefly
       setShowSuccess(true);
-
-      // Navigate after a short delay
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1000);
+      setTimeout(() => navigate('/dashboard'), 800);
     } catch (error) {
-      console.error('Login error:', error);
       setSubmitError(error.message || 'Login failed. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Handle social login
-  const handleSocialLogin = (provider) => {
-    console.log(`Social login with ${provider}`);
-    // TODO: Implement social login
-    setSubmitError(`${provider} login is coming soon!`);
+  // Shared input styles
+  const inputStyles = {
+    '& .MuiOutlinedInput-root': {
+      backgroundColor: 'rgba(255, 255, 255, 0.06)',
+      borderRadius: 2,
+      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
+      '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.4)' },
+      '&.Mui-focused fieldset': { borderColor: '#FFD700', borderWidth: 2 },
+    },
+    '& .MuiInputLabel-root': {
+      color: 'rgba(255, 255, 255, 0.7)',
+      fontSize: '14px',
+    },
+    '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
+    '& .MuiOutlinedInput-input': {
+      color: 'white',
+      fontSize: '16px',
+      py: 1.5,
+    },
   };
 
   return (
     <Box
       sx={{
-        minHeight: '100vh', // Changed from fixed height
-        backgroundColor: '#0F0F0F',
+        minHeight: '100vh',
+        backgroundColor: '#0a0a0a',
         display: 'flex',
         flexDirection: 'column',
-        position: 'relative',
-        overflow: 'auto', // Allow scrolling
+        px: 3,
+        py: 4,
       }}
     >
-      {/* Background Pattern */}
-      <Box
-        sx={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `
-            radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
-            radial-gradient(circle at 40% 40%, rgba(255, 215, 0, 0.05) 0%, transparent 50%)
-          `,
-          zIndex: 0,
-        }}
-      />
-
-      {/* Empty Header Space */}
-      <Box
-        sx={{
-          position: 'relative',
-          zIndex: 2,
-          p: 1,
-          pt: 1.5,
-          flexShrink: 0,
-        }}
-      >
-        {/* Back arrow moved to branding section */}
-      </Box>
-
-      {/* Main Content */}
-      <Box
-        sx={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-start',
-          px: 2,
-          py: 0,
-          position: 'relative',
-          zIndex: 2,
-          overflow: 'visible', // Allow content to flow naturally
-        }}
-      >
+      {/* Header with Logo */}
+      <Box sx={{ textAlign: 'center', mb: 4, mt: 2 }}>
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.4 }}
         >
-          <Paper
-            elevation={8}
+          <Box
+            component="img"
+            src={logoIcon}
+            alt="Kelmah"
             sx={{
-              p: 1.5,
-              borderRadius: 2,
-              background: 'rgba(26, 26, 26, 0.95)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 215, 0, 0.2)',
-              maxWidth: 380,
-              mx: 'auto',
-              width: '100%',
+              width: 70,
+              height: 70,
+              mb: 2,
+              borderRadius: '50%',
+              boxShadow: '0 4px 20px rgba(255, 215, 0, 0.3)',
+            }}
+          />
+          <Typography
+            variant="h5"
+            sx={{
+              color: '#FFD700',
+              fontWeight: 800,
+              letterSpacing: 1,
+              mb: 0.5,
             }}
           >
-            {/* Back Arrow positioned near branding */}
-            <Box
+            Kelmah
+          </Typography>
+          <Typography
+            sx={{
+              color: 'rgba(255, 255, 255, 0.6)',
+              fontSize: '13px',
+            }}
+          >
+            Ghana's Skilled Trades Platform
+          </Typography>
+        </motion.div>
+      </Box>
+
+      {/* Trade chips */}
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+          gap: 0.75,
+          mb: 4,
+        }}
+      >
+        {['Verified', 'Skilled', 'Quality'].map((label) => (
+          <Chip
+            key={label}
+            label={label}
+            size="small"
+            sx={{
+              backgroundColor: 'rgba(255, 215, 0, 0.15)',
+              color: '#FFD700',
+              fontSize: '11px',
+              fontWeight: 600,
+              height: 24,
+            }}
+          />
+        ))}
+      </Box>
+
+      {/* Main Form Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        <Box
+          sx={{
+            backgroundColor: 'rgba(20, 20, 20, 0.9)',
+            borderRadius: 3,
+            p: 3,
+            border: '1px solid rgba(255, 215, 0, 0.2)',
+          }}
+        >
+          {/* Back button & Title */}
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <IconButton
+              onClick={() => navigate('/')}
+              size="small"
               sx={{
-                display: 'flex',
-                alignItems: 'center',
-                mb: 1,
+                color: 'rgba(255, 255, 255, 0.7)',
+                mr: 1,
+                '&:hover': { color: '#FFD700' },
               }}
             >
-              <IconButton
-                onClick={() => navigate('/')}
-                sx={{
-                  color: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(10px)',
-                  p: 0.5,
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  },
-                }}
-              >
-                <ArrowBackIcon sx={{ fontSize: '18px' }} />
-              </IconButton>
-            </Box>
-
-            {/* Compact Welcome Text */}
-            <Box sx={{ textAlign: 'center', mb: 1 }}>
+              <ArrowBackIcon fontSize="small" />
+            </IconButton>
+            <Box>
               <Typography
-                variant="h5"
-                sx={{
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '16px',
-                  mb: 0.25,
-                }}
+                variant="h6"
+                sx={{ color: 'white', fontWeight: 700, fontSize: '18px' }}
               >
                 Welcome back
               </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  fontSize: '11px',
-                }}
-              >
+              <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>
                 Sign in to continue
               </Typography>
             </Box>
+          </Box>
 
-            {/* Success State */}
-            <AnimatePresence>
-              {showSuccess && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                >
-                  <Alert
-                    severity="success"
-                    icon={<CheckCircleIcon />}
-                    sx={{
-                      mb: 3,
-                      backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                      color: '#4caf50',
-                      border: '1px solid rgba(76, 175, 80, 0.3)',
-                      borderRadius: 2,
-                    }}
-                  >
-                    Login successful! Redirecting...
-                  </Alert>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Error Alert */}
-            <Fade in={Boolean(submitError)}>
-              <Box>
-                {submitError && (
-                  <Alert
-                    severity="error"
-                    sx={{
-                      mb: 3,
-                      backgroundColor: 'rgba(244, 67, 54, 0.1)',
-                      color: '#f44336',
-                      border: '1px solid rgba(244, 67, 54, 0.3)',
-                      borderRadius: 2,
-                      '& .MuiAlert-icon': { color: '#f44336' },
-                    }}
-                  >
-                    {submitError}
-                  </Alert>
-                )}
-              </Box>
-            </Fade>
-
-            {/* Login Form */}
-            <Box component="form" onSubmit={handleSubmit}>
-              <Stack spacing={1}>
-                {/* Email Field */}
-                <TextField
-                  fullWidth
-                  type="email"
-                  label="Email"
-                  value={formData.email}
-                  onChange={handleInputChange('email')}
-                  error={Boolean(errors.email)}
-                  helperText={errors.email}
-                  size="small"
-                  placeholder="Enter your email"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <EmailIcon
-                          sx={{
-                            color: 'rgba(255, 255, 255, 0.5)',
-                            fontSize: '18px',
-                          }}
-                        />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      borderRadius: 2,
-                      '& fieldset': {
-                        borderColor: 'rgba(255, 255, 255, 0.2)',
-                      },
-                      '&:hover fieldset': {
-                        borderColor: 'rgba(255, 215, 0, 0.5)',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#FFD700',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      color: 'rgba(255, 255, 255, 0.9)',
-                      fontSize: '14px',
-                      fontWeight: 500,
-                    },
-                    '& .MuiInputLabel-root.Mui-focused': {
-                      color: '#FFD700',
-                    },
-                    '& .MuiInputLabel-root.MuiFormLabel-filled': {
-                      color: '#FFD700',
-                    },
-                    '& .MuiOutlinedInput-input': {
-                      color: 'white',
-                      fontSize: '14px',
-                      '&::placeholder': {
-                        color: 'rgba(255, 255, 255, 0.6)',
-                        opacity: 1,
-                      },
-                    },
-                  }}
-                />
-
-                {/* Password Field */}
-                <TextField
-                  fullWidth
-                  type={showPassword ? 'text' : 'password'}
-                  label="Password"
-                  value={formData.password}
-                  onChange={handleInputChange('password')}
-                  error={Boolean(errors.password)}
-                  helperText={errors.password}
-                  size="small"
-                  placeholder="Enter your password"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LockIcon
-                          sx={{
-                            color: 'rgba(255, 255, 255, 0.5)',
-                            fontSize: '18px',
-                          }}
-                        />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => setShowPassword(!showPassword)}
-                          sx={{ color: 'rgba(255, 255, 255, 0.5)', p: 0.5 }}
-                          size="small"
-                        >
-                          {showPassword ? (
-                            <VisibilityOff fontSize="small" />
-                          ) : (
-                            <Visibility fontSize="small" />
-                          )}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      borderRadius: 2,
-                      '& fieldset': {
-                        borderColor: 'rgba(255, 255, 255, 0.2)',
-                      },
-                      '&:hover fieldset': {
-                        borderColor: 'rgba(255, 215, 0, 0.5)',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#FFD700',
-                      },
-                    },
-                    '& .MuiInputLabel-root': {
-                      color: 'rgba(255, 255, 255, 0.9)',
-                      fontSize: '14px',
-                      fontWeight: 500,
-                    },
-                    '& .MuiInputLabel-root.Mui-focused': {
-                      color: '#FFD700',
-                    },
-                    '& .MuiInputLabel-root.MuiFormLabel-filled': {
-                      color: '#FFD700',
-                    },
-                    '& .MuiOutlinedInput-input': {
-                      color: 'white',
-                      fontSize: '14px',
-                      '&::placeholder': {
-                        color: 'rgba(255, 255, 255, 0.6)',
-                        opacity: 1,
-                      },
-                    },
-                  }}
-                />
-
-                {/* Remember Me & Forgot Password */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mt: -0.5,
-                  }}
-                >
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={formData.rememberMe}
-                        onChange={handleInputChange('rememberMe')}
-                        size="small"
-                        sx={{
-                          color: 'rgba(255, 255, 255, 0.5)',
-                          '&.Mui-checked': {
-                            color: '#FFD700',
-                          },
-                        }}
-                      />
-                    }
-                    label={
-                      <Typography
-                        sx={{
-                          color: 'rgba(255, 255, 255, 0.7)',
-                          fontSize: '10px',
-                        }}
-                      >
-                        Remember me
-                      </Typography>
-                    }
-                  />
-
-                  <Button
-                    component={RouterLink}
-                    to="/forgot-password"
-                    sx={{
-                      color: '#FFD700',
-                      textDecoration: 'none',
-                      fontSize: '10px',
-                      p: 0.25,
-                      minWidth: 'auto',
-                      '&:hover': {
-                        textDecoration: 'underline',
-                        backgroundColor: 'transparent',
-                      },
-                    }}
-                  >
-                    Forgot Password?
-                  </Button>
-                </Box>
-
-                {/* Login Button */}
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  disabled={isSubmitting || authLoading}
-                  sx={{
-                    height: 38,
-                    borderRadius: 2,
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    background:
-                      'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                    color: '#000',
-                    '&:hover': {
-                      background:
-                        'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                    },
-                    '&:disabled': {
-                      background: 'rgba(255, 215, 0, 0.3)',
-                      color: 'rgba(0, 0, 0, 0.5)',
-                    },
-                  }}
-                >
-                  {isSubmitting || authLoading ? (
-                    <CircularProgress size={16} sx={{ color: '#000' }} />
-                  ) : (
-                    'Sign In'
-                  )}
-                </Button>
-              </Stack>
-            </Box>
-
-            {/* Sign Up Link */}
-            <Box sx={{ textAlign: 'center', mt: 0.5 }}>
-              <Typography
-                sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '10px' }}
+          {/* Success Alert */}
+          <AnimatePresence>
+            {(showSuccess || registrationSuccess) && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
               >
-                Don't have an account?{' '}
+                <Alert
+                  severity="success"
+                  icon={<CheckCircleIcon />}
+                  sx={{
+                    mb: 2,
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    color: '#4caf50',
+                    borderRadius: 2,
+                    py: 0.5,
+                    '& .MuiAlert-message': { fontSize: '13px' },
+                  }}
+                >
+                  {showSuccess ? 'Login successful!' : 'Account created! Please sign in.'}
+                </Alert>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Error Alert */}
+          <Fade in={Boolean(submitError)}>
+            <Box>
+              {submitError && (
+                <Alert
+                  severity="error"
+                  sx={{
+                    mb: 2,
+                    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                    color: '#f44336',
+                    borderRadius: 2,
+                    py: 0.5,
+                    '& .MuiAlert-message': { fontSize: '13px' },
+                  }}
+                >
+                  {submitError}
+                </Alert>
+              )}
+            </Box>
+          </Fade>
+
+          {/* Login Form */}
+          <Box component="form" onSubmit={handleSubmit}>
+            <Stack spacing={2}>
+              {/* Email */}
+              <TextField
+                fullWidth
+                type="email"
+                label="Email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) setErrors((p) => ({ ...p, email: '' }));
+                }}
+                error={Boolean(errors.email)}
+                helperText={errors.email}
+                placeholder="Enter your email"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={inputStyles}
+              />
+
+              {/* Password */}
+              <TextField
+                fullWidth
+                type={showPassword ? 'text' : 'password'}
+                label="Password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (errors.password) setErrors((p) => ({ ...p, password: '' }));
+                }}
+                error={Boolean(errors.password)}
+                helperText={errors.password}
+                placeholder="Enter your password"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                        sx={{ color: 'rgba(255,255,255,0.4)' }}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={inputStyles}
+              />
+
+              {/* Remember & Forgot */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      size="small"
+                      sx={{
+                        color: 'rgba(255,255,255,0.4)',
+                        '&.Mui-checked': { color: '#FFD700' },
+                      }}
+                    />
+                  }
+                  label={
+                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>
+                      Remember me
+                    </Typography>
+                  }
+                />
                 <Button
                   component={RouterLink}
-                  to="/register"
+                  to="/forgot-password"
                   sx={{
                     color: '#FFD700',
-                    textDecoration: 'none',
-                    fontSize: '10px',
-                    fontWeight: 600,
-                    p: 0.25,
+                    fontSize: '12px',
+                    textTransform: 'none',
+                    p: 0,
                     minWidth: 'auto',
-                    '&:hover': {
-                      textDecoration: 'underline',
-                      backgroundColor: 'transparent',
-                    },
+                    '&:hover': { textDecoration: 'underline', backgroundColor: 'transparent' },
                   }}
                 >
-                  Sign Up
+                  Forgot Password?
                 </Button>
-              </Typography>
-            </Box>
-          </Paper>
-        </motion.div>
-      </Box>
+              </Box>
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                disabled={isSubmitting || authLoading}
+                sx={{
+                  height: 48,
+                  borderRadius: 2,
+                  fontSize: '15px',
+                  fontWeight: 700,
+                  textTransform: 'none',
+                  background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                  color: '#000',
+                  boxShadow: '0 4px 15px rgba(255, 215, 0, 0.3)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
+                    boxShadow: '0 6px 20px rgba(255, 215, 0, 0.4)',
+                  },
+                  '&:disabled': {
+                    background: 'rgba(255, 215, 0, 0.3)',
+                    color: 'rgba(0, 0, 0, 0.5)',
+                  },
+                }}
+              >
+                {isSubmitting || authLoading ? (
+                  <CircularProgress size={22} sx={{ color: '#000' }} />
+                ) : (
+                  'Sign In'
+                )}
+              </Button>
+            </Stack>
+          </Box>
+
+          {/* Sign Up Link */}
+          <Typography
+            sx={{
+              textAlign: 'center',
+              mt: 3,
+              color: 'rgba(255,255,255,0.6)',
+              fontSize: '13px',
+            }}
+          >
+            Don't have an account?{' '}
+            <Button
+              component={RouterLink}
+              to="/register"
+              sx={{
+                color: '#FFD700',
+                fontWeight: 700,
+                fontSize: '13px',
+                textTransform: 'none',
+                p: 0,
+                minWidth: 'auto',
+                '&:hover': { textDecoration: 'underline', backgroundColor: 'transparent' },
+              }}
+            >
+              Sign Up
+            </Button>
+          </Typography>
+        </Box>
+      </motion.div>
+
+      {/* Footer decoration */}
+      <Box
+        component="img"
+        src={logoIcon}
+        alt=""
+        sx={{
+          position: 'fixed',
+          bottom: 20,
+          right: 20,
+          width: 50,
+          height: 50,
+          opacity: 0.15,
+          borderRadius: '50%',
+        }}
+      />
     </Box>
   );
 };

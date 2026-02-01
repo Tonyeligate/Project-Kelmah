@@ -114,6 +114,17 @@ const JobAlertsPage = lazy(
   () => import('../modules/jobs/pages/JobAlertsPage'),
 );
 
+// Quick Jobs (Protected Quick-Hire System)
+const QuickJobRequestPage = lazy(
+  () => import('../modules/quickjobs/pages/QuickJobRequestPage'),
+);
+const NearbyJobsPage = lazy(
+  () => import('../modules/quickjobs/pages/NearbyJobsPage'),
+);
+const QuickJobTrackingPage = lazy(
+  () => import('../modules/quickjobs/pages/QuickJobTrackingPage'),
+);
+
 // Role-based route protection wrapper
 const RoleProtectedRoute = ({ children, allowedRoles }) => (
   <ProtectedRoute allowedRoles={allowedRoles}>
@@ -413,6 +424,64 @@ const routes = [
             element: (
               <ProtectedRoute>
                 <JobAlertsPage />
+              </ProtectedRoute>
+            ),
+          },
+        ],
+      },
+
+      // ==========================================
+      // QUICK JOBS ROUTES (Protected Quick-Hire)
+      // ==========================================
+      {
+        path: 'quick-hire',
+        children: [
+          {
+            index: true,
+            element: (
+              <ProtectedRoute>
+                <QuickJobRequestPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'request',
+            element: (
+              <ProtectedRoute>
+                <QuickJobRequestPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'request/:category',
+            element: (
+              <ProtectedRoute>
+                <QuickJobRequestPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'nearby',
+            element: (
+              <ProtectedRoute>
+                <NearbyJobsPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'track/:jobId',
+            element: (
+              <ProtectedRoute>
+                <QuickJobTrackingPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            // Payment callback route for Paystack redirects
+            path: 'payment/:jobId',
+            element: (
+              <ProtectedRoute>
+                <QuickJobTrackingPage />
               </ProtectedRoute>
             ),
           },

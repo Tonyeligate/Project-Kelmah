@@ -48,12 +48,16 @@ import SecurityIcon from '@mui/icons-material/Security';
 import StarIcon from '@mui/icons-material/Star';
 import WorkIcon from '@mui/icons-material/Work';
 import EngineeringIcon from '@mui/icons-material/Engineering';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import PaymentIcon from '@mui/icons-material/Payment';
 import { alpha } from '@mui/material/styles';
 
 const Section = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   position: 'relative',
-  overflow: 'hidden', // Prevent any overflow to avoid scroll bar glitches
+  overflow: 'visible', // Allow content to flow naturally - was hidden causing content clipping
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -1210,6 +1214,261 @@ const HomePage = () => {
                   </Grid>
                 ))}
               </Grid>
+
+              {/* ============================================ */}
+              {/* QUICK-HIRE SECTION - Get Help Fast */}
+              {/* ============================================ */}
+              <Box
+                sx={{
+                  mt: { xs: 6, sm: 10, md: 14 },
+                  mb: { xs: 4, sm: 6, md: 8 },
+                  py: { xs: 4, sm: 6, md: 8 },
+                  px: { xs: 2, sm: 4, md: 6 },
+                  background: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,215,0,0.15) 100%)',
+                  borderRadius: { xs: 3, sm: 4 },
+                  border: '2px solid rgba(255, 215, 0, 0.3)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}
+              >
+                {/* Decorative background */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: -50,
+                    right: -50,
+                    width: 200,
+                    height: 200,
+                    borderRadius: '50%',
+                    background: 'radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 70%)',
+                    pointerEvents: 'none',
+                  }}
+                />
+                
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6 }}
+                >
+                  {/* Section Header */}
+                  <Box sx={{ textAlign: 'center', mb: { xs: 4, sm: 5, md: 6 } }}>
+                    <Box
+                      sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        mb: 2,
+                        px: 3,
+                        py: 1,
+                        borderRadius: 5,
+                        background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                        boxShadow: '0 4px 15px rgba(255, 215, 0, 0.4)',
+                      }}
+                    >
+                      <FlashOnIcon sx={{ color: '#000', fontSize: 24 }} />
+                      <Typography
+                        sx={{
+                          color: '#000',
+                          fontWeight: 800,
+                          fontSize: { xs: '0.9rem', sm: '1rem' },
+                          textTransform: 'uppercase',
+                          letterSpacing: 1,
+                        }}
+                      >
+                        New! Quick-Hire
+                      </Typography>
+                    </Box>
+                    
+                    <Typography
+                      variant={isMobile ? 'h4' : 'h3'}
+                      sx={{
+                        fontWeight: 800,
+                        color: '#FFD700',
+                        mb: 2,
+                        fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' },
+                        textShadow: '0 2px 10px rgba(255, 215, 0, 0.3)',
+                      }}
+                    >
+                      Need Help Right Now?
+                    </Typography>
+                    
+                    <Typography
+                      sx={{
+                        color: 'rgba(255,255,255,0.9)',
+                        fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
+                        maxWidth: 600,
+                        mx: 'auto',
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      Get a skilled worker at your door in hours, not days. 
+                      Payment protected until the job is done right.
+                    </Typography>
+                  </Box>
+
+                  {/* How It Works - 4 Steps */}
+                  <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 4, sm: 5 } }}>
+                    {[
+                      { icon: <HandymanIcon />, step: '1', title: 'Describe Your Problem', desc: 'Tell us what needs fixing' },
+                      { icon: <LocationOnIcon />, step: '2', title: 'Share Location', desc: 'We find workers near you' },
+                      { icon: <PaymentIcon />, step: '3', title: 'Pay Securely', desc: 'Money held until job is done' },
+                      { icon: <AccessTimeIcon />, step: '4', title: 'Worker Arrives', desc: 'Track in real-time' },
+                    ].map((item, index) => (
+                      <Grid item xs={6} sm={3} key={item.step}>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.4, delay: index * 0.1 }}
+                        >
+                          <Box
+                            sx={{
+                              textAlign: 'center',
+                              p: { xs: 2, sm: 3 },
+                              borderRadius: 2,
+                              background: 'rgba(0,0,0,0.3)',
+                              border: '1px solid rgba(255,215,0,0.2)',
+                              height: '100%',
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                width: { xs: 50, sm: 60 },
+                                height: { xs: 50, sm: 60 },
+                                borderRadius: '50%',
+                                background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                mx: 'auto',
+                                mb: 2,
+                                boxShadow: '0 4px 15px rgba(255,215,0,0.4)',
+                              }}
+                            >
+                              {React.cloneElement(item.icon, { sx: { color: '#000', fontSize: { xs: 24, sm: 28 } } })}
+                            </Box>
+                            <Typography
+                              sx={{
+                                color: '#FFD700',
+                                fontWeight: 700,
+                                fontSize: { xs: '0.9rem', sm: '1rem' },
+                                mb: 0.5,
+                              }}
+                            >
+                              {item.title}
+                            </Typography>
+                            <Typography
+                              sx={{
+                                color: 'rgba(255,255,255,0.7)',
+                                fontSize: { xs: '0.8rem', sm: '0.85rem' },
+                              }}
+                            >
+                              {item.desc}
+                            </Typography>
+                          </Box>
+                        </motion.div>
+                      </Grid>
+                    ))}
+                  </Grid>
+
+                  {/* Quick-Hire CTA Buttons */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: { xs: 'column', sm: 'row' },
+                      gap: { xs: 2, sm: 3 },
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <StyledButton
+                      variant="contained"
+                      size="large"
+                      startIcon={<FlashOnIcon />}
+                      sx={{
+                        background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                        color: '#000',
+                        fontWeight: 800,
+                        fontSize: { xs: '1.1rem', sm: '1.2rem' },
+                        px: { xs: 4, sm: 5 },
+                        py: { xs: 1.8, sm: 2 },
+                        minHeight: { xs: '54px', sm: '58px' },
+                        width: { xs: '100%', sm: 'auto' },
+                        maxWidth: { xs: '320px', sm: 'none' },
+                        boxShadow: '0 6px 25px rgba(255, 215, 0, 0.5)',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 8px 30px rgba(255, 215, 0, 0.6)',
+                        },
+                        '&:active': { transform: 'scale(0.98)' },
+                      }}
+                      onClick={() => navigate('/quick-hire/request')}
+                    >
+                      🔧 Get Help Now
+                    </StyledButton>
+                    
+                    {user?.role === 'worker' && (
+                      <StyledButton
+                        variant="outlined"
+                        size="large"
+                        sx={{
+                          borderColor: '#FFD700',
+                          color: '#FFD700',
+                          borderWidth: 2,
+                          fontWeight: 700,
+                          fontSize: { xs: '1rem', sm: '1.1rem' },
+                          px: { xs: 3, sm: 4 },
+                          py: { xs: 1.5, sm: 1.8 },
+                          minHeight: { xs: '54px', sm: '58px' },
+                          width: { xs: '100%', sm: 'auto' },
+                          maxWidth: { xs: '320px', sm: 'none' },
+                          background: 'rgba(255, 215, 0, 0.1)',
+                          '&:hover': {
+                            background: 'rgba(255, 215, 0, 0.2)',
+                            borderColor: '#FFC000',
+                          },
+                        }}
+                        onClick={() => navigate('/quick-hire/nearby')}
+                      >
+                        📍 Find Nearby Jobs
+                      </StyledButton>
+                    )}
+                  </Box>
+
+                  {/* Trust Badges */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      gap: { xs: 2, sm: 4 },
+                      mt: { xs: 3, sm: 4 },
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    {[
+                      { icon: <SecurityIcon />, text: 'Escrow Protected' },
+                      { icon: <VerifiedIcon />, text: 'Verified Workers' },
+                      { icon: <StarIcon />, text: '4.8★ Average Rating' },
+                    ].map((badge) => (
+                      <Box
+                        key={badge.text}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          color: 'rgba(255,255,255,0.8)',
+                          fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                        }}
+                      >
+                        {React.cloneElement(badge.icon, { sx: { color: '#FFD700', fontSize: 20 } })}
+                        <Typography sx={{ fontSize: 'inherit' }}>{badge.text}</Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </motion.div>
+              </Box>
 
               {/* Call-to-action section */}
               <motion.div

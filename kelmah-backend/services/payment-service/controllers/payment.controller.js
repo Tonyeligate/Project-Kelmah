@@ -558,19 +558,21 @@ class PaymentController {
         whereClause.method = method;
       }
 
-      // Date range filter
+      // Date range filter (Mongoose syntax)
       if (startDate && endDate) {
         whereClause.createdAt = {
-          [Op.between]: [new Date(startDate), new Date(endDate)]
+          $gte: new Date(startDate),
+          $lte: new Date(endDate)
         };
       }
 
-      const { count, rows: payments } = await Payment.findAndCountAll({
-        where: whereClause,
-        limit: parseInt(limit),
-        offset,
-        order: [['createdAt', 'DESC']]
-      });
+      // Use Mongoose syntax (NOT Sequelize)
+      const payments = await Payment.find(whereClause)
+        .skip(offset)
+        .limit(parseInt(limit))
+        .sort({ createdAt: -1 });
+
+      const totalCount = await Payment.countDocuments(whereClause);
 
       const paymentHistory = payments.map(payment => ({
         id: payment.id,
@@ -593,8 +595,8 @@ class PaymentController {
           pagination: {
             page: parseInt(page),
             limit: parseInt(limit),
-            total: count,
-            pages: Math.ceil(count / limit)
+            total: totalCount,
+            pages: Math.ceil(totalCount / limit)
           }
         }
       });

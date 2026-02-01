@@ -129,11 +129,8 @@ const Login = () => {
     }
   };
 
-  // Use enhanced mobile login view for mobile devices
-  if (isActualMobile) {
-    return <MobileLogin />;
-  }
-
+  // Mobile detection now handled by LoginPage
+  // Desktop Login form
   return (
     <Box
       sx={{

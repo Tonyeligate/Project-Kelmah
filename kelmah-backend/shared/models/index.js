@@ -12,6 +12,7 @@ const mongoose = require('mongoose');
 const User = require('./User');
 const Job = require('./Job');
 const Application = require('./Application');
+const QuickJob = require('./QuickJob');
 
 // ❌ REMOVED: Portfolio (only user-service) - moved to user-service/models/
 // ❌ REMOVED: Conversation (only messaging-service) - should move to messaging-service/models/
@@ -24,5 +25,6 @@ const Application = require('./Application');
 module.exports = {
   User,        // ✅ Used by: auth, user, job, messaging, review, payment
   Job,         // ✅ Used by: job, review, payment
-  Application  // ✅ Used by: job, review, payment
+  Application, // ✅ Used by: job, review, payment
+  QuickJob     // ✅ Used by: job, messaging, payment - Protected Quick-Hire system
 };

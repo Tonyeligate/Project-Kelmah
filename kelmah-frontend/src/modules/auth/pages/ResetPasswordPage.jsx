@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import AuthWrapper from '../components/common/AuthWrapper';
 import { Box, TextField, Button, Typography, Alert } from '@mui/material';
 import authService from '../services/authService';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 
 const ResetPasswordPage = () => {
-  const { token } = useParams();
+  const { token: paramToken } = useParams();
+  const [searchParams] = useSearchParams();
+  // Support token from URL params (/reset-password/:token) or query string (?token=xxx)
+  const token = paramToken || searchParams.get('token');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [status, setStatus] = useState('');
@@ -19,8 +22,12 @@ const ResetPasswordPage = () => {
       setError('Passwords do not match');
       return;
     }
+    if (!token) {
+      setError('Reset token is missing. Please use the link from your email.');
+      return;
+    }
     try {
-      const res = await authApi.resetPassword({ token, password });
+      const res = await authService.resetPassword(token, password);
       setStatus(res.message || 'Password reset successful. You can now login.');
     } catch (err) {
       setError(err.response?.data?.message || err.message);

@@ -25,7 +25,7 @@ const ForgotPasswordPage = () => {
     setStatus('');
     setError('');
     try {
-      const res = await authApi.requestPasswordReset({ email });
+      const res = await authService.forgotPassword(email);
       setStatus(
         res.message || 'If that email exists, a reset link has been sent.',
       );

@@ -7,7 +7,7 @@ import { useEffect, Suspense, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, CircularProgress, Alert } from '@mui/material';
+import { Box, CircularProgress, Alert, Snackbar, LinearProgress } from '@mui/material';
 import { KelmahThemeProvider, useThemeMode } from './theme/ThemeProvider';
 import { AppRoutes } from './routes/config';
 import { verifyAuth } from './modules/auth/services/authSlice';
@@ -16,6 +16,7 @@ import { secureStorage } from './utils/secureStorage';
 import { initializePWA } from './utils/pwaHelpers';
 import GlobalErrorBoundary from './modules/common/components/GlobalErrorBoundary';
 import { useApiHealth } from './hooks/useApiHealth';
+import { warmUpServices } from './utils/serviceWarmUp';
 
 // Main App Component
 const App = () => {
@@ -26,10 +27,31 @@ const App = () => {
   const { isHealthy } = useApiHealth();
   const location = useLocation();
   const initialized = useRef(false);
+  const [servicesWakingUp, setServicesWakingUp] = useState(false);
 
   // Initialize PWA
   useEffect(() => {
     initializePWA();
+  }, []);
+
+  // Warm up backend services on app load (prevents Render free tier sleep)
+  useEffect(() => {
+    const wakeUpBackend = async () => {
+      setServicesWakingUp(true);
+      try {
+        const result = await warmUpServices();
+        if (result.wakingUp > 0) {
+          // Services are waking up, keep indicator for a bit
+          setTimeout(() => setServicesWakingUp(false), 15000);
+        } else {
+          setServicesWakingUp(false);
+        }
+      } catch (e) {
+        console.warn('Service warm-up check failed:', e);
+        setServicesWakingUp(false);
+      }
+    };
+    wakeUpBackend();
   }, []);
 
   // Verify authentication on mount
@@ -62,7 +84,16 @@ const App = () => {
   return (
     <KelmahThemeProvider>
       <GlobalErrorBoundary>
-        {!isHealthy && (
+        {/* Service wake-up indicator */}
+        {servicesWakingUp && (
+          <Box sx={{ width: '100%', position: 'fixed', top: 0, left: 0, zIndex: 9999 }}>
+            <LinearProgress color="warning" />
+            <Alert severity="info" sx={{ borderRadius: 0 }}>
+              ⏳ Waking up backend services... This may take up to 30 seconds on first load.
+            </Alert>
+          </Box>
+        )}
+        {!isHealthy && !servicesWakingUp && (
           <Alert severity="warning" sx={{ mb: 2 }}>
             Backend services are currently unreachable. Some features may be limited.
           </Alert>

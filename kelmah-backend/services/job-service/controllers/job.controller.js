@@ -2535,17 +2535,16 @@ const getJobsByLocation = async (req, res, next) => {
       query['locationDetails.district'] = district;
     }
 
-    const { count, rows } = await Job.findAndCountAll({
-      where: query,
-      offset,
-      limit,
-      order: [['createdAt', 'DESC']],
-      include: [
-        { model: 'User', as: 'hirer', attributes: ['firstName', 'lastName', 'profilePicture'] }
-      ]
-    });
+    // Use Mongoose syntax (NOT Sequelize)
+    const jobs = await Job.find(query)
+      .populate('hirer', 'firstName lastName profilePicture')
+      .skip(offset)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
-    return paginatedResponse(res, 200, 'Jobs by location retrieved successfully', rows, page, limit, count);
+    const totalCount = await Job.countDocuments(query);
+
+    return paginatedResponse(res, 200, 'Jobs by location retrieved successfully', jobs, page, limit, totalCount);
   } catch (error) {
     next(error);
   }

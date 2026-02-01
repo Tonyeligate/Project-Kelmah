@@ -134,17 +134,16 @@ exports.getUsersByTier = async (req, res, next) => {
       return errorResponse(res, 400, 'Invalid tier. Must be tier1, tier2, or tier3');
     }
 
-    const { count, rows } = await UserPerformance.findAndCountAll({
-      where: { performanceTier: tier },
-      offset,
-      limit,
-      order: [['overallScore', 'DESC']],
-      include: [
-        { model: 'User', as: 'userId', attributes: ['firstName', 'lastName', 'email', 'profilePicture'] }
-      ]
-    });
+    // Use Mongoose syntax (NOT Sequelize)
+    const users = await UserPerformance.find({ performanceTier: tier })
+      .populate('userId', 'firstName lastName email profilePicture')
+      .skip(offset)
+      .limit(limit)
+      .sort({ overallScore: -1 });
 
-    return paginatedResponse(res, 200, `Users in ${tier} retrieved successfully`, rows, page, limit, count);
+    const totalCount = await UserPerformance.countDocuments({ performanceTier: tier });
+
+    return paginatedResponse(res, 200, `Users in ${tier} retrieved successfully`, users, page, limit, totalCount);
   } catch (error) {
     next(error);
   }
@@ -189,17 +188,16 @@ exports.getUsersByLocation = async (req, res, next) => {
       return errorResponse(res, 403, 'Access denied');
     }
 
-    const { count, rows } = await UserPerformance.findAndCountAll({
-      where: { 'locationPreferences.primaryRegion': region },
-      offset,
-      limit,
-      order: [['overallScore', 'DESC']],
-      include: [
-        { model: 'User', as: 'userId', attributes: ['firstName', 'lastName', 'email', 'profilePicture'] }
-      ]
-    });
+    // Use Mongoose syntax (NOT Sequelize)
+    const users = await UserPerformance.find({ 'locationPreferences.primaryRegion': region })
+      .populate('userId', 'firstName lastName email profilePicture')
+      .skip(offset)
+      .limit(limit)
+      .sort({ overallScore: -1 });
 
-    return paginatedResponse(res, 200, `Users in ${region} retrieved successfully`, rows, page, limit, count);
+    const totalCount = await UserPerformance.countDocuments({ 'locationPreferences.primaryRegion': region });
+
+    return paginatedResponse(res, 200, `Users in ${region} retrieved successfully`, users, page, limit, totalCount);
   } catch (error) {
     next(error);
   }
@@ -218,22 +216,22 @@ exports.getUsersBySkill = async (req, res, next) => {
       return errorResponse(res, 403, 'Access denied');
     }
 
-    const { count, rows } = await UserPerformance.findAndCountAll({
-      where: {
-        $or: [
-          { 'skillVerification.primarySkills.skill': skill },
-          { 'skillVerification.secondarySkills.skill': skill }
-        ]
-      },
-      offset,
-      limit,
-      order: [['overallScore', 'DESC']],
-      include: [
-        { model: 'User', as: 'userId', attributes: ['firstName', 'lastName', 'email', 'profilePicture'] }
+    // Use Mongoose syntax (NOT Sequelize)
+    const query = {
+      $or: [
+        { 'skillVerification.primarySkills.skill': skill },
+        { 'skillVerification.secondarySkills.skill': skill }
       ]
-    });
+    };
+    const users = await UserPerformance.find(query)
+      .populate('userId', 'firstName lastName email profilePicture')
+      .skip(offset)
+      .limit(limit)
+      .sort({ overallScore: -1 });
 
-    return paginatedResponse(res, 200, `Users with ${skill} skill retrieved successfully`, rows, page, limit, count);
+    const totalCount = await UserPerformance.countDocuments(query);
+
+    return paginatedResponse(res, 200, `Users with ${skill} skill retrieved successfully`, users, page, limit, totalCount);
   } catch (error) {
     next(error);
   }

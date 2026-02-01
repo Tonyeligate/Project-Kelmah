@@ -1,12 +1,6 @@
 /**
- * Enhanced Mobile Registration Component
- *
- * A streamlined, single-page mobile registration experience with:
- * - Progressive form sections
- * - Smart field validation
- * - Role-based field revelation
- * - Enhanced visual design
- * - Better accessibility
+ * Professional Mobile Registration Component
+ * Clean, step-based design optimized for mobile devices
  */
 
 import React, { useState, useEffect } from 'react';
@@ -15,23 +9,20 @@ import {
   Button,
   TextField,
   Typography,
-  Paper,
   Alert,
   CircularProgress,
   IconButton,
   InputAdornment,
   FormControlLabel,
   Checkbox,
-  RadioGroup,
-  Radio,
-  FormControl,
-  FormLabel,
-  Divider,
   Stack,
   Fade,
   Chip,
   Autocomplete,
-  useTheme,
+  LinearProgress,
+  Radio,
+  RadioGroup,
+  FormControl,
 } from '@mui/material';
 import {
   Visibility,
@@ -42,9 +33,9 @@ import {
   Lock as LockIcon,
   Business as BusinessIcon,
   Work as WorkIcon,
-  ArrowBack as ArrowBackIcon,
   CheckCircle as CheckCircleIcon,
-  Google as GoogleIcon,
+  ArrowBack as ArrowBackIcon,
+  ArrowForward as ArrowForwardIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
@@ -54,14 +45,15 @@ import {
   selectAuthLoading,
   selectAuthError,
 } from '../../services/authSlice';
+import logoIcon from '../../../../assets/images/logo.png';
 
-// Ghana phone number validation
+// Ghana phone validation
 const validateGhanaPhone = (phone) => {
   const cleaned = phone.replace(/\s+/g, '');
   return /^(\+233|0)[0-9]{9}$/.test(cleaned);
 };
 
-// Password strength checker
+// Password strength
 const checkPasswordStrength = (password) => {
   let strength = 0;
   if (password.length >= 8) strength++;
@@ -72,48 +64,35 @@ const checkPasswordStrength = (password) => {
   return strength;
 };
 
-// Common trades/skills in Ghana
+// Common trades
 const COMMON_TRADES = [
-  'Electrician',
-  'Plumber',
-  'Carpenter',
-  'Mason',
-  'Painter',
-  'Mechanic',
-  'Welder',
-  'Tailor',
-  'Barber',
-  'Hairdresser',
-  'Cook',
-  'Cleaner',
-  'Security Guard',
-  'Driver',
-  'Gardener',
-  'HVAC Technician',
-  'Tiler',
-  'Roofer',
-  'Blacksmith',
-  'Electronics Repair',
+  'Electrician', 'Plumber', 'Carpenter', 'Mason', 'Painter',
+  'Mechanic', 'Welder', 'Tailor', 'Barber', 'Hairdresser',
+  'Cook', 'Cleaner', 'Driver', 'Gardener', 'HVAC Technician',
+  'Tiler', 'Roofer', 'Blacksmith', 'Electronics Repair',
 ];
 
 const MobileRegister = () => {
-  const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const authLoading = useSelector(selectAuthLoading);
   const authError = useSelector(selectAuthError);
 
+  // Step state
+  const [step, setStep] = useState(1); // 1: Role, 2: Info, 3: Security
+  const totalSteps = 3;
+
   // Form state
   const [formData, setFormData] = useState({
+    role: '',
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
-    password: '',
-    confirmPassword: '',
-    role: '',
     companyName: '',
     trades: [],
+    password: '',
+    confirmPassword: '',
     acceptTerms: false,
   });
 
@@ -126,118 +105,85 @@ const MobileRegister = () => {
   const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
-    if (authError) {
-      setSubmitError(authError);
-    }
+    if (authError) setSubmitError(authError);
   }, [authError]);
 
   // Handle input changes
-  const handleInputChange = (field) => (event) => {
+  const handleChange = (field) => (event) => {
     let value = event.target.value;
-
-    if (field === 'acceptTerms') {
-      value = event.target.checked;
-    } else if (field === 'phone') {
-      // Only allow digits, + and spaces - don't auto-format to prevent cursor jumping
-      value = value.replace(/[^\d+\s]/g, '');
-    }
+    if (field === 'acceptTerms') value = event.target.checked;
+    if (field === 'phone') value = value.replace(/[^\d+\s]/g, '');
 
     setFormData((prev) => ({ ...prev, [field]: value }));
-
-    // Clear field error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: '' }));
-    }
-
-    // Clear submit error
-    if (submitError) {
-      setSubmitError('');
-    }
-
-    // Update password strength
-    if (field === 'password') {
-      setPasswordStrength(checkPasswordStrength(value));
-    }
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: '' }));
+    if (submitError) setSubmitError('');
+    if (field === 'password') setPasswordStrength(checkPasswordStrength(value));
   };
 
-  // Handle role selection
-  const handleRoleChange = (event) => {
-    const role = event.target.value;
-    setFormData((prev) => ({ ...prev, role }));
-    setErrors((prev) => ({ ...prev, role: '' }));
-  };
-
-  // Handle trades selection
-  const handleTradesChange = (event, newValue) => {
-    setFormData((prev) => ({ ...prev, trades: newValue }));
-  };
-
-  // Validate form
-  const validateForm = () => {
+  // Validate current step
+  const validateStep = () => {
     const newErrors = {};
 
-    // Basic info validation
-    if (!formData.firstName.trim())
-      newErrors.firstName = 'First name is required';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+    if (step === 1) {
+      if (!formData.role) newErrors.role = 'Please select account type';
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
-    } else if (!validateGhanaPhone(formData.phone)) {
-      newErrors.phone = 'Please enter a valid Ghana phone number';
+    if (step === 2) {
+      if (!formData.firstName.trim()) newErrors.firstName = 'Required';
+      if (!formData.lastName.trim()) newErrors.lastName = 'Required';
+      if (!formData.email.trim()) {
+        newErrors.email = 'Required';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        newErrors.email = 'Invalid email';
+      }
+      if (!formData.phone.trim()) {
+        newErrors.phone = 'Required';
+      } else if (!validateGhanaPhone(formData.phone)) {
+        newErrors.phone = 'Invalid Ghana number';
+      }
+      if (formData.role === 'hirer' && !formData.companyName.trim()) {
+        newErrors.companyName = 'Required';
+      }
+      if (formData.role === 'worker' && formData.trades.length === 0) {
+        newErrors.trades = 'Select at least one';
+      }
     }
 
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
-    } else if (passwordStrength < 3) {
-      newErrors.password = 'Please choose a stronger password';
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
-    // Role validation
-    if (!formData.role) {
-      newErrors.role = 'Please select your account type';
-    }
-
-    // Role-specific validation
-    if (formData.role === 'hirer' && !formData.companyName.trim()) {
-      newErrors.companyName = 'Company name is required';
-    }
-
-    if (formData.role === 'worker' && formData.trades.length === 0) {
-      newErrors.trades = 'Please select at least one trade/skill';
-    }
-
-    // Terms validation
-    if (!formData.acceptTerms) {
-      newErrors.acceptTerms = 'You must accept the terms and conditions';
+    if (step === 3) {
+      if (!formData.password) {
+        newErrors.password = 'Required';
+      } else if (formData.password.length < 8) {
+        newErrors.password = 'Min 8 characters';
+      } else if (passwordStrength < 3) {
+        newErrors.password = 'Too weak';
+      }
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = 'Required';
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords don\'t match';
+      }
+      if (!formData.acceptTerms) {
+        newErrors.acceptTerms = 'Must accept terms';
+      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle form submission
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  // Navigation
+  const handleNext = () => {
+    if (validateStep()) setStep((s) => Math.min(s + 1, totalSteps));
+  };
 
-    if (!validateForm()) {
-      return;
-    }
+  const handleBack = () => {
+    if (step === 1) navigate('/');
+    else setStep((s) => Math.max(s - 1, 1));
+  };
+
+  // Submit
+  const handleSubmit = async () => {
+    if (!validateStep()) return;
 
     setIsSubmitting(true);
     setSubmitError('');
@@ -250,668 +196,445 @@ const MobileRegister = () => {
         phone: formData.phone.replace(/\s/g, ''),
         password: formData.password,
         role: formData.role,
-        ...(formData.role === 'hirer' && {
-          companyName: formData.companyName.trim(),
-        }),
+        ...(formData.role === 'hirer' && { companyName: formData.companyName.trim() }),
         ...(formData.role === 'worker' && { trades: formData.trades }),
         acceptTerms: formData.acceptTerms,
       };
 
       await dispatch(registerAction(userData)).unwrap();
-
-      // Show success state
       setShowSuccess(true);
-
-      // Navigate to login after delay
       setTimeout(() => {
-        navigate('/login', {
-          state: {
-            registered: true,
-            message:
-              'Registration successful! Please check your email to verify your account.',
-          },
-        });
-      }, 2000);
+        navigate('/login', { state: { registered: true } });
+      }, 1500);
     } catch (error) {
-      console.error('Registration error:', error);
-      setSubmitError(error.message || 'Registration failed. Please try again.');
+      setSubmitError(error.message || 'Registration failed');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Get password strength color
-  const getPasswordStrengthColor = () => {
-    if (passwordStrength <= 2) return '#f44336';
-    if (passwordStrength <= 3) return '#ff9800';
-    return '#4caf50';
+  // Input styles
+  const inputStyles = {
+    '& .MuiOutlinedInput-root': {
+      backgroundColor: 'rgba(255, 255, 255, 0.06)',
+      borderRadius: 2,
+      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
+      '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.4)' },
+      '&.Mui-focused fieldset': { borderColor: '#FFD700', borderWidth: 2 },
+    },
+    '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)', fontSize: '14px' },
+    '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
+    '& .MuiOutlinedInput-input': { color: 'white', fontSize: '15px' },
   };
 
-  const getPasswordStrengthText = () => {
-    if (passwordStrength <= 2) return 'Weak';
-    if (passwordStrength <= 3) return 'Medium';
-    return 'Strong';
+  // Render step content
+  const renderStep = () => {
+    switch (step) {
+      case 1:
+        return (
+          <Box>
+            <Typography sx={{ color: 'white', fontWeight: 600, mb: 2, textAlign: 'center' }}>
+              I want to...
+            </Typography>
+            <Stack spacing={2}>
+              {[
+                { value: 'worker', icon: <WorkIcon />, label: 'Find Work', desc: 'I\'m a skilled tradesperson' },
+                { value: 'hirer', icon: <BusinessIcon />, label: 'Hire Workers', desc: 'I need skilled professionals' },
+              ].map((option) => (
+                <Box
+                  key={option.value}
+                  onClick={() => setFormData((p) => ({ ...p, role: option.value }))}
+                  sx={{
+                    p: 2.5,
+                    borderRadius: 2,
+                    border: formData.role === option.value
+                      ? '2px solid #FFD700'
+                      : '2px solid rgba(255,255,255,0.15)',
+                    backgroundColor: formData.role === option.value
+                      ? 'rgba(255, 215, 0, 0.1)'
+                      : 'rgba(255,255,255,0.03)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    '&:hover': { borderColor: 'rgba(255, 215, 0, 0.5)' },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box
+                      sx={{
+                        width: 45,
+                        height: 45,
+                        borderRadius: '50%',
+                        backgroundColor: formData.role === option.value ? '#FFD700' : 'rgba(255,255,255,0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: formData.role === option.value ? '#000' : 'rgba(255,255,255,0.6)',
+                      }}
+                    >
+                      {option.icon}
+                    </Box>
+                    <Box>
+                      <Typography sx={{ color: 'white', fontWeight: 600 }}>{option.label}</Typography>
+                      <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>{option.desc}</Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              ))}
+            </Stack>
+            {errors.role && (
+              <Typography sx={{ color: '#f44336', fontSize: '12px', mt: 1, textAlign: 'center' }}>
+                {errors.role}
+              </Typography>
+            )}
+          </Box>
+        );
+
+      case 2:
+        return (
+          <Stack spacing={1.5}>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <TextField
+                fullWidth
+                label="First Name"
+                value={formData.firstName}
+                onChange={handleChange('firstName')}
+                error={Boolean(errors.firstName)}
+                helperText={errors.firstName}
+                size="small"
+                sx={inputStyles}
+              />
+              <TextField
+                fullWidth
+                label="Last Name"
+                value={formData.lastName}
+                onChange={handleChange('lastName')}
+                error={Boolean(errors.lastName)}
+                helperText={errors.lastName}
+                size="small"
+                sx={inputStyles}
+              />
+            </Box>
+            <TextField
+              fullWidth
+              type="email"
+              label="Email"
+              value={formData.email}
+              onChange={handleChange('email')}
+              error={Boolean(errors.email)}
+              helperText={errors.email}
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={inputStyles}
+            />
+            <TextField
+              fullWidth
+              label="Phone (Ghana)"
+              value={formData.phone}
+              onChange={handleChange('phone')}
+              error={Boolean(errors.phone)}
+              helperText={errors.phone}
+              placeholder="+233 or 0XX XXX XXXX"
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PhoneIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={inputStyles}
+            />
+            {formData.role === 'hirer' && (
+              <TextField
+                fullWidth
+                label="Company Name"
+                value={formData.companyName}
+                onChange={handleChange('companyName')}
+                error={Boolean(errors.companyName)}
+                helperText={errors.companyName}
+                size="small"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <BusinessIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={inputStyles}
+              />
+            )}
+            {formData.role === 'worker' && (
+              <Autocomplete
+                multiple
+                options={COMMON_TRADES}
+                value={formData.trades}
+                onChange={(_, newValue) => setFormData((p) => ({ ...p, trades: newValue }))}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip
+                      label={option}
+                      size="small"
+                      {...getTagProps({ index })}
+                      sx={{ backgroundColor: 'rgba(255,215,0,0.2)', color: '#FFD700' }}
+                    />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Your Skills/Trades"
+                    error={Boolean(errors.trades)}
+                    helperText={errors.trades}
+                    size="small"
+                    sx={inputStyles}
+                  />
+                )}
+                sx={{
+                  '& .MuiAutocomplete-tag': { color: '#FFD700' },
+                  '& .MuiAutocomplete-popupIndicator': { color: 'rgba(255,255,255,0.5)' },
+                  '& .MuiAutocomplete-clearIndicator': { color: 'rgba(255,255,255,0.5)' },
+                }}
+              />
+            )}
+          </Stack>
+        );
+
+      case 3:
+        return (
+          <Stack spacing={1.5}>
+            <TextField
+              fullWidth
+              type={showPassword ? 'text' : 'password'}
+              label="Password"
+              value={formData.password}
+              onChange={handleChange('password')}
+              error={Boolean(errors.password)}
+              helperText={errors.password}
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }} />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)} sx={{ color: 'rgba(255,255,255,0.4)' }}>
+                      {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              sx={inputStyles}
+            />
+            {formData.password && (
+              <Box>
+                <LinearProgress
+                  variant="determinate"
+                  value={(passwordStrength / 5) * 100}
+                  sx={{
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    '& .MuiLinearProgress-bar': {
+                      backgroundColor: passwordStrength <= 2 ? '#f44336' : passwordStrength <= 3 ? '#ff9800' : '#4caf50',
+                    },
+                  }}
+                />
+                <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', mt: 0.5 }}>
+                  Strength: {passwordStrength <= 2 ? 'Weak' : passwordStrength <= 3 ? 'Medium' : 'Strong'}
+                </Typography>
+              </Box>
+            )}
+            <TextField
+              fullWidth
+              type={showConfirmPassword ? 'text' : 'password'}
+              label="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={handleChange('confirmPassword')}
+              error={Boolean(errors.confirmPassword)}
+              helperText={errors.confirmPassword}
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }} />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} sx={{ color: 'rgba(255,255,255,0.4)' }}>
+                      {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              sx={inputStyles}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={formData.acceptTerms}
+                  onChange={handleChange('acceptTerms')}
+                  size="small"
+                  sx={{ color: 'rgba(255,255,255,0.4)', '&.Mui-checked': { color: '#FFD700' } }}
+                />
+              }
+              label={
+                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>
+                  I accept the{' '}
+                  <Button component={RouterLink} to="/terms" sx={{ color: '#FFD700', fontSize: '12px', p: 0, minWidth: 'auto', textTransform: 'none' }}>
+                    Terms
+                  </Button>{' '}
+                  &{' '}
+                  <Button component={RouterLink} to="/privacy" sx={{ color: '#FFD700', fontSize: '12px', p: 0, minWidth: 'auto', textTransform: 'none' }}>
+                    Privacy Policy
+                  </Button>
+                </Typography>
+              }
+            />
+            {errors.acceptTerms && (
+              <Typography sx={{ color: '#f44336', fontSize: '12px' }}>{errors.acceptTerms}</Typography>
+            )}
+          </Stack>
+        );
+
+      default:
+        return null;
+    }
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        backgroundColor: '#0F0F0F',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-        overflowX: 'hidden',
-        overflowY: 'auto',
-      }}
-    >
-      {/* Background Pattern */}
-      <Box
-        sx={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `
-            radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
-            radial-gradient(circle at 40% 40%, rgba(255, 215, 0, 0.05) 0%, transparent 50%)
-          `,
-          zIndex: 0,
-        }}
-      />
-
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#0a0a0a', display: 'flex', flexDirection: 'column', px: 3, py: 3 }}>
       {/* Header */}
-      <Box
-        sx={{
-          position: 'relative',
-          zIndex: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          p: 1.5,
-          pt: 2,
-          flexShrink: 0,
-        }}
-      >
-        <IconButton
-          onClick={() => navigate('/')}
-          sx={{
-            color: 'white',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(10px)',
-            '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            },
-          }}
-        >
-          <ArrowBackIcon />
-        </IconButton>
-
-        <Typography
-          variant="h6"
-          sx={{
-            color: '#FFD700',
-            fontWeight: 700,
-            fontSize: '18px',
-            textAlign: 'center',
-            flex: 1,
-            pr: 6,
-          }}
-        >
-          Join Kelmah
-        </Typography>
+      <Box sx={{ textAlign: 'center', mb: 3 }}>
+        <Box component="img" src={logoIcon} alt="Kelmah" sx={{ width: 50, height: 50, mb: 1, borderRadius: '50%' }} />
+        <Typography sx={{ color: '#FFD700', fontWeight: 700, fontSize: '18px' }}>Join Kelmah</Typography>
       </Box>
 
-      {/* Main Content */}
+      {/* Progress */}
+      <Box sx={{ mb: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+          <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>
+            Step {step} of {totalSteps}
+          </Typography>
+          <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>
+            {step === 1 ? 'Account Type' : step === 2 ? 'Your Info' : 'Security'}
+          </Typography>
+        </Box>
+        <LinearProgress
+          variant="determinate"
+          value={(step / totalSteps) * 100}
+          sx={{
+            height: 4,
+            borderRadius: 2,
+            backgroundColor: 'rgba(255,255,255,0.1)',
+            '& .MuiLinearProgress-bar': { backgroundColor: '#FFD700' },
+          }}
+        />
+      </Box>
+
+      {/* Main Card */}
       <Box
         sx={{
           flex: 1,
-          px: 2,
-          py: 1,
-          pb: 4,
-          position: 'relative',
-          zIndex: 2,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          WebkitOverflowScrolling: 'touch',
+          backgroundColor: 'rgba(20, 20, 20, 0.9)',
+          borderRadius: 3,
+          p: 2.5,
+          border: '1px solid rgba(255, 215, 0, 0.2)',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-        >
-          <Paper
-            elevation={8}
+        {/* Success */}
+        <AnimatePresence>
+          {showSuccess && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <Alert severity="success" icon={<CheckCircleIcon />} sx={{ mb: 2, backgroundColor: 'rgba(76,175,80,0.1)', color: '#4caf50', borderRadius: 2 }}>
+                Account created! Redirecting...
+              </Alert>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Error */}
+        <Fade in={Boolean(submitError)}>
+          <Box>
+            {submitError && (
+              <Alert severity="error" sx={{ mb: 2, backgroundColor: 'rgba(244,67,54,0.1)', color: '#f44336', borderRadius: 2 }}>
+                {submitError}
+              </Alert>
+            )}
+          </Box>
+        </Fade>
+
+        {/* Step Content */}
+        <Box sx={{ flex: 1 }}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              {renderStep()}
+            </motion.div>
+          </AnimatePresence>
+        </Box>
+
+        {/* Navigation Buttons */}
+        <Box sx={{ display: 'flex', gap: 1.5, mt: 3 }}>
+          <Button
+            onClick={handleBack}
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
             sx={{
-              p: 2,
-              borderRadius: 3,
-              background: 'rgba(26, 26, 26, 0.95)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 215, 0, 0.2)',
-              maxWidth: 500,
-              mx: 'auto',
-              width: '100%',
-              mb: 2,
+              flex: 1,
+              borderColor: 'rgba(255,255,255,0.2)',
+              color: 'rgba(255,255,255,0.7)',
+              '&:hover': { borderColor: 'rgba(255,255,255,0.4)' },
             }}
           >
-            {/* Welcome Text */}
-            <Box sx={{ textAlign: 'center', mb: 1 }}>
-              <Typography
-                variant="h5"
-                sx={{
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '16px',
-                  mb: 0.5,
-                }}
-              >
-                Create Account
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  fontSize: '11px',
-                }}
-              >
-                Join Ghana's premier skilled trades platform
-              </Typography>
-            </Box>
+            Back
+          </Button>
+          <Button
+            onClick={step === totalSteps ? handleSubmit : handleNext}
+            variant="contained"
+            endIcon={step < totalSteps ? <ArrowForwardIcon /> : null}
+            disabled={isSubmitting || authLoading}
+            sx={{
+              flex: 2,
+              background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+              color: '#000',
+              fontWeight: 700,
+              '&:hover': { background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)' },
+              '&:disabled': { background: 'rgba(255,215,0,0.3)', color: 'rgba(0,0,0,0.5)' },
+            }}
+          >
+            {isSubmitting || authLoading ? (
+              <CircularProgress size={20} sx={{ color: '#000' }} />
+            ) : step === totalSteps ? (
+              'Create Account'
+            ) : (
+              'Continue'
+            )}
+          </Button>
+        </Box>
 
-            {/* Success State */}
-            <AnimatePresence>
-              {showSuccess && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                >
-                  <Alert
-                    severity="success"
-                    icon={<CheckCircleIcon />}
-                    sx={{
-                      mb: 3,
-                      backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                      color: '#4caf50',
-                      border: '1px solid rgba(76, 175, 80, 0.3)',
-                      borderRadius: 2,
-                    }}
-                  >
-                    Registration successful! Redirecting to login...
-                  </Alert>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Error Alert */}
-            <Fade in={Boolean(submitError)}>
-              <Box>
-                {submitError && (
-                  <Alert
-                    severity="error"
-                    sx={{
-                      mb: 3,
-                      backgroundColor: 'rgba(244, 67, 54, 0.1)',
-                      color: '#f44336',
-                      border: '1px solid rgba(244, 67, 54, 0.3)',
-                      borderRadius: 2,
-                    }}
-                  >
-                    {submitError}
-                  </Alert>
-                )}
-              </Box>
-            </Fade>
-
-            {/* Registration Form */}
-            <Box component="form" onSubmit={handleSubmit}>
-              <Stack spacing={1}>
-                {/* Personal Information */}
-                <Box>
-                  <Stack spacing={1}>
-                    {/* Name Fields */}
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <TextField
-                        fullWidth
-                        label="First Name"
-                        value={formData.firstName}
-                        onChange={handleInputChange('firstName')}
-                        error={Boolean(errors.firstName)}
-                        helperText={errors.firstName}
-                        size="small"
-                        placeholder="Enter first name"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                            borderRadius: 2,
-                            '& fieldset': {
-                              borderColor: 'rgba(255, 255, 255, 0.2)',
-                            },
-                            '&:hover fieldset': {
-                              borderColor: 'rgba(255, 215, 0, 0.5)',
-                            },
-                            '&.Mui-focused fieldset': {
-                              borderColor: '#FFD700',
-                            },
-                          },
-                          '& .MuiInputLabel-root': {
-                            color: 'rgba(255, 255, 255, 0.9)',
-                            fontSize: '12px',
-                            fontWeight: 500,
-                          },
-                          '& .MuiInputLabel-root.Mui-focused': {
-                            color: '#FFD700',
-                          },
-                          '& .MuiInputLabel-root.MuiFormLabel-filled': {
-                            color: '#FFD700',
-                          },
-                          '& .MuiOutlinedInput-input': {
-                            color: 'white',
-                            fontSize: '12px',
-                          },
-                          '& .MuiOutlinedInput-input::placeholder': {
-                            color: 'rgba(255, 255, 255, 0.6)',
-                            opacity: 1,
-                          },
-                        }}
-                      />
-
-                      <TextField
-                        fullWidth
-                        label="Last Name"
-                        value={formData.lastName}
-                        onChange={handleInputChange('lastName')}
-                        error={Boolean(errors.lastName)}
-                        helperText={errors.lastName}
-                        size="small"
-                        placeholder="Enter last name"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                            borderRadius: 2,
-                            '& fieldset': {
-                              borderColor: 'rgba(255, 255, 255, 0.2)',
-                            },
-                            '&:hover fieldset': {
-                              borderColor: 'rgba(255, 215, 0, 0.5)',
-                            },
-                            '&.Mui-focused fieldset': {
-                              borderColor: '#FFD700',
-                            },
-                          },
-                          '& .MuiInputLabel-root': {
-                            color: 'rgba(255, 255, 255, 0.9)',
-                            fontSize: '12px',
-                            fontWeight: 500,
-                          },
-                          '& .MuiInputLabel-root.Mui-focused': {
-                            color: '#FFD700',
-                          },
-                          '& .MuiInputLabel-root.MuiFormLabel-filled': {
-                            color: '#FFD700',
-                          },
-                          '& .MuiOutlinedInput-input': {
-                            color: 'white',
-                            fontSize: '12px',
-                          },
-                          '& .MuiOutlinedInput-input::placeholder': {
-                            color: 'rgba(255, 255, 255, 0.6)',
-                            opacity: 1,
-                          },
-                        }}
-                      />
-                    </Box>
-
-                    {/* Email Field */}
-                    <TextField
-                      fullWidth
-                      type="email"
-                      label="Email"
-                      value={formData.email}
-                      onChange={handleInputChange('email')}
-                      error={Boolean(errors.email)}
-                      helperText={errors.email}
-                      size="small"
-                      placeholder="Enter your email"
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                          borderRadius: 2,
-                          '& fieldset': {
-                            borderColor: 'rgba(255, 255, 255, 0.2)',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: 'rgba(255, 215, 0, 0.5)',
-                          },
-                          '&.Mui-focused fieldset': { borderColor: '#FFD700' },
-                        },
-                        '& .MuiInputLabel-root': {
-                          color: 'rgba(255, 255, 255, 0.9)',
-                          fontSize: '12px',
-                          fontWeight: 500,
-                        },
-                        '& .MuiInputLabel-root.Mui-focused': {
-                          color: '#FFD700',
-                        },
-                        '& .MuiInputLabel-root.MuiFormLabel-filled': {
-                          color: '#FFD700',
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          color: 'white',
-                          fontSize: '12px',
-                        },
-                        '& .MuiOutlinedInput-input::placeholder': {
-                          color: 'rgba(255, 255, 255, 0.6)',
-                          opacity: 1,
-                        },
-                      }}
-                    />
-
-                    {/* Phone Field */}
-                    <TextField
-                      fullWidth
-                      label="Phone Number"
-                      value={formData.phone}
-                      onChange={handleInputChange('phone')}
-                      error={Boolean(errors.phone)}
-                      helperText={
-                        errors.phone ||
-                        'Ghana phone number (e.g., 0XX XXX XXXX)'
-                      }
-                      size="small"
-                      placeholder="Enter phone number"
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                          borderRadius: 2,
-                          '& fieldset': {
-                            borderColor: 'rgba(255, 255, 255, 0.2)',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: 'rgba(255, 215, 0, 0.5)',
-                          },
-                          '&.Mui-focused fieldset': { borderColor: '#FFD700' },
-                        },
-                        '& .MuiInputLabel-root': {
-                          color: 'rgba(255, 255, 255, 0.9)',
-                          fontSize: '12px',
-                          fontWeight: 500,
-                        },
-                        '& .MuiInputLabel-root.Mui-focused': {
-                          color: '#FFD700',
-                        },
-                        '& .MuiInputLabel-root.MuiFormLabel-filled': {
-                          color: '#FFD700',
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          color: 'white',
-                          fontSize: '12px',
-                        },
-                        '& .MuiOutlinedInput-input::placeholder': {
-                          color: 'rgba(255, 255, 255, 0.6)',
-                          opacity: 1,
-                        },
-                      }}
-                    />
-                  </Stack>
-                </Box>
-
-                {/* Password Fields */}
-                <Box>
-                  <Stack spacing={1}>
-                    {/* Password Field */}
-                    <TextField
-                      fullWidth
-                      type={showPassword ? 'text' : 'password'}
-                      label="Password"
-                      value={formData.password}
-                      onChange={handleInputChange('password')}
-                      error={Boolean(errors.password)}
-                      helperText={errors.password}
-                      size="small"
-                      placeholder="Enter password"
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={() => setShowPassword(!showPassword)}
-                              sx={{ color: 'rgba(255, 255, 255, 0.5)', p: 0.5 }}
-                              size="small"
-                            >
-                              {showPassword ? (
-                                <VisibilityOff fontSize="small" />
-                              ) : (
-                                <Visibility fontSize="small" />
-                              )}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                          borderRadius: 2,
-                          '& fieldset': {
-                            borderColor: 'rgba(255, 255, 255, 0.2)',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: 'rgba(255, 215, 0, 0.5)',
-                          },
-                          '&.Mui-focused fieldset': { borderColor: '#FFD700' },
-                        },
-                        '& .MuiInputLabel-root': {
-                          color: 'rgba(255, 255, 255, 0.9)',
-                          fontSize: '12px',
-                          fontWeight: 500,
-                        },
-                        '& .MuiInputLabel-root.Mui-focused': {
-                          color: '#FFD700',
-                        },
-                        '& .MuiInputLabel-root.MuiFormLabel-filled': {
-                          color: '#FFD700',
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          color: 'white',
-                          fontSize: '12px',
-                        },
-                        '& .MuiOutlinedInput-input::placeholder': {
-                          color: 'rgba(255, 255, 255, 0.6)',
-                          opacity: 1,
-                        },
-                      }}
-                    />
-
-                    {/* Confirm Password Field */}
-                    <TextField
-                      fullWidth
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      label="Confirm Password"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange('confirmPassword')}
-                      error={Boolean(errors.confirmPassword)}
-                      helperText={errors.confirmPassword}
-                      size="small"
-                      placeholder="Confirm password"
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={() =>
-                                setShowConfirmPassword(!showConfirmPassword)
-                              }
-                              sx={{ color: 'rgba(255, 255, 255, 0.5)', p: 0.5 }}
-                              size="small"
-                            >
-                              {showConfirmPassword ? (
-                                <VisibilityOff fontSize="small" />
-                              ) : (
-                                <Visibility fontSize="small" />
-                              )}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      }}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                          borderRadius: 2,
-                          '& fieldset': {
-                            borderColor: 'rgba(255, 255, 255, 0.2)',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: 'rgba(255, 215, 0, 0.5)',
-                          },
-                          '&.Mui-focused fieldset': { borderColor: '#FFD700' },
-                        },
-                        '& .MuiInputLabel-root': {
-                          color: 'rgba(255, 255, 255, 0.9)',
-                          fontSize: '12px',
-                          fontWeight: 500,
-                        },
-                        '& .MuiInputLabel-root.Mui-focused': {
-                          color: '#FFD700',
-                        },
-                        '& .MuiInputLabel-root.MuiFormLabel-filled': {
-                          color: '#FFD700',
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          color: 'white',
-                          fontSize: '12px',
-                        },
-                        '& .MuiOutlinedInput-input::placeholder': {
-                          color: 'rgba(255, 255, 255, 0.6)',
-                          opacity: 1,
-                        },
-                      }}
-                    />
-                  </Stack>
-                </Box>
-
-                {/* Terms and Conditions */}
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={formData.acceptTerms}
-                      onChange={handleInputChange('acceptTerms')}
-                      size="small"
-                      sx={{
-                        color: 'rgba(255, 255, 255, 0.5)',
-                        '&.Mui-checked': { color: '#FFD700' },
-                      }}
-                    />
-                  }
-                  label={
-                    <Typography
-                      sx={{
-                        color: 'rgba(255, 255, 255, 0.7)',
-                        fontSize: '10px',
-                      }}
-                    >
-                      I agree to the{' '}
-                      <Button
-                        component={RouterLink}
-                        to="/terms"
-                        sx={{
-                          color: '#FFD700',
-                          textDecoration: 'underline',
-                          fontSize: '10px',
-                          p: 0,
-                          minWidth: 'auto',
-                        }}
-                      >
-                        Terms
-                      </Button>{' '}
-                      and{' '}
-                      <Button
-                        component={RouterLink}
-                        to="/privacy"
-                        sx={{
-                          color: '#FFD700',
-                          textDecoration: 'underline',
-                          fontSize: '10px',
-                          p: 0,
-                          minWidth: 'auto',
-                        }}
-                      >
-                        Privacy
-                      </Button>
-                    </Typography>
-                  }
-                />
-
-                {errors.acceptTerms && (
-                  <Typography
-                    sx={{ color: '#f44336', fontSize: '10px', mt: -1 }}
-                  >
-                    {errors.acceptTerms}
-                  </Typography>
-                )}
-
-                {/* Register Button */}
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  disabled={isSubmitting || authLoading}
-                  sx={{
-                    height: 40,
-                    borderRadius: 2,
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    background:
-                      'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                    color: '#000',
-                    mt: 0.5,
-                    '&:hover': {
-                      background:
-                        'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                    },
-                    '&:disabled': {
-                      background: 'rgba(255, 215, 0, 0.3)',
-                      color: 'rgba(0, 0, 0, 0.5)',
-                    },
-                  }}
-                >
-                  {isSubmitting || authLoading ? (
-                    <CircularProgress size={18} sx={{ color: '#000' }} />
-                  ) : (
-                    'Create Account'
-                  )}
-                </Button>
-              </Stack>
-            </Box>
-
-            {/* Sign In Link */}
-            <Box sx={{ textAlign: 'center', mt: 1 }}>
-              <Typography
-                sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '10px' }}
-              >
-                Already have an account?{' '}
-                <Button
-                  component={RouterLink}
-                  to="/login"
-                  sx={{
-                    color: '#FFD700',
-                    textDecoration: 'none',
-                    fontSize: '10px',
-                    fontWeight: 600,
-                    p: 0.5,
-                    minWidth: 'auto',
-                    '&:hover': {
-                      textDecoration: 'underline',
-                      backgroundColor: 'transparent',
-                    },
-                  }}
-                >
-                  Sign In
-                </Button>
-              </Typography>
-            </Box>
-          </Paper>
-        </motion.div>
+        {/* Login Link */}
+        <Typography sx={{ textAlign: 'center', mt: 2, color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>
+          Already have an account?{' '}
+          <Button component={RouterLink} to="/login" sx={{ color: '#FFD700', fontWeight: 700, fontSize: '13px', p: 0, minWidth: 'auto', textTransform: 'none' }}>
+            Sign In
+          </Button>
+        </Typography>
       </Box>
     </Box>
   );
