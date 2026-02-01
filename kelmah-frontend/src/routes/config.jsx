@@ -106,6 +106,29 @@ const WorkerReviewsPage = lazy(
   () => import('../modules/reviews/pages/WorkerReviewsPage'),
 );
 
+// Notifications
+const NotificationsPage = lazy(
+  () => import('../modules/notifications/pages/NotificationsPage'),
+);
+const NotificationSettingsPage = lazy(
+  () => import('../modules/notifications/pages/NotificationSettingsPage'),
+);
+
+// Settings
+const SettingsPage = lazy(
+  () => import('../modules/settings/pages/SettingsPage'),
+);
+
+// Profile
+const ProfilePage = lazy(
+  () => import('../modules/profile/pages/ProfilePage'),
+);
+
+// Support
+const HelpCenterPage = lazy(
+  () => import('../modules/support/pages/HelpCenterPage'),
+);
+
 // Jobs
 const SavedJobs = lazy(
   () => import('../modules/jobs/components/common/SavedJobs'),
@@ -486,6 +509,58 @@ const routes = [
             ),
           },
         ],
+      },
+
+      // ==========================================
+      // SHARED ROUTES (ALL AUTHENTICATED USERS)
+      // ==========================================
+      {
+        path: 'notifications',
+        element: (
+          <ProtectedRoute>
+            <NotificationsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'notifications/settings',
+        element: (
+          <ProtectedRoute>
+            <NotificationSettingsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'settings',
+        element: (
+          <ProtectedRoute>
+            <SettingsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'support',
+        element: <HelpCenterPage />,
+      },
+      {
+        path: 'support/help-center',
+        element: <HelpCenterPage />,
+      },
+      {
+        path: 'profile',
+        element: (
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'wallet',
+        element: (
+          <ProtectedRoute>
+            <WalletPage />
+          </ProtectedRoute>
+        ),
       },
 
       // Catch-all 404

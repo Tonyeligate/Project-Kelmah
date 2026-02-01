@@ -37,6 +37,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const isActualMobile = useMediaQuery('(max-width: 768px)');
   // 🎯 ENHANCED: Comprehensive dashboard page detection
+  // FIX: Added missing paths that should render with dashboard sidebar layout
   const currentPath = location.pathname || '';
   const isPublicWorkerProfile = currentPath.startsWith('/worker-profile');
   const isDashboardPage =
@@ -52,7 +53,17 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
       currentPath.includes('/payments') ||
       currentPath.includes('/wallet') ||
       currentPath.includes('/schedule') ||
-      currentPath.includes('/reviews'));
+      currentPath.includes('/reviews') ||
+      // FIX: Added missing shared routes that need dashboard layout
+      currentPath === '/notifications' ||
+      currentPath.startsWith('/notifications') ||
+      currentPath === '/settings' ||
+      currentPath.startsWith('/settings') ||
+      currentPath === '/support' ||
+      currentPath.startsWith('/support') ||
+      currentPath === '/profile' ||
+      currentPath === '/messages' ||
+      currentPath.startsWith('/messages'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const handleDrawerToggle = () => setMobileOpen((prev) => !prev);
 

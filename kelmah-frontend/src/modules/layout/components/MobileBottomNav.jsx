@@ -132,7 +132,7 @@ const MobileBottomNav = () => {
     return 'home';
   }, [path]);
 
-  // Navigation items based on user role
+  // Navigation items based on user role - simplified to 4 items max for clean UX
   const navigationItems = useMemo(() => {
     if (isHirer) {
       return [
@@ -143,16 +143,10 @@ const MobileBottomNav = () => {
           path: '/hirer/dashboard',
         },
         {
-          label: 'My Jobs',
+          label: 'Jobs',
           value: 'jobs',
           icon: <ManageIcon />,
           path: '/hirer/jobs',
-        },
-        {
-          label: 'Find Talent',
-          value: 'search',
-          icon: <SearchIcon />,
-          path: '/hirer/find-talent',
         },
         {
           label: 'Messages',
@@ -162,14 +156,14 @@ const MobileBottomNav = () => {
           badge: unreadCount > 0 ? unreadCount : null,
         },
         {
-          label: 'Profile',
+          label: 'Settings',
           value: 'profile',
           icon: <ProfileIcon />,
-          path: '/profile',
+          path: '/settings',
         },
       ];
     }
-    // Worker navigation
+    // Worker navigation - 4 items for clean mobile UX
     return [
       {
         label: 'Home',
@@ -178,7 +172,7 @@ const MobileBottomNav = () => {
         path: '/worker/dashboard',
       },
       {
-        label: 'Find Jobs',
+        label: 'Jobs',
         value: 'jobs',
         icon: <JobsIcon />,
         path: '/worker/find-work',
@@ -191,10 +185,10 @@ const MobileBottomNav = () => {
         badge: unreadCount > 0 ? unreadCount : null,
       },
       {
-        label: 'Profile',
+        label: 'Settings',
         value: 'profile',
         icon: <ProfileIcon />,
-        path: '/worker/profile',
+        path: '/settings',
       },
     ];
   }, [isHirer, unreadCount]);

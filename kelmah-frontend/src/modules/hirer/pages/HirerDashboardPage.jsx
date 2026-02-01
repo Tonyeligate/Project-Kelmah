@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import PropTypes from 'prop-types';
 import {
   Box,
   Container,
@@ -9,9 +8,6 @@ import {
   Card,
   CardContent,
   Button,
-  Divider,
-  Tabs,
-  Tab,
   CircularProgress,
   Alert,
   IconButton,
@@ -36,35 +32,23 @@ import {
   Breadcrumbs,
   Link as MUILink,
   Skeleton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
   alpha,
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
   Work as WorkIcon,
   Payment as PaymentIcon,
-  Assignment as ProposalIcon,
-  Assessment as ProgressIcon,
-  Star as ReviewIcon,
   Refresh as RefreshIcon,
   Add as AddIcon,
-  Search as SearchIcon,
   ArrowForward as ArrowForwardIcon,
-  Notifications as NotificationsIcon,
   CheckCircle as CheckCircleIcon,
   People as PeopleIcon,
   Message as MessageIcon,
-  AddCircle as AddCircleIcon,
-  Settings as SettingsIcon,
-  Logout as LogoutIcon,
-  Person as PersonIcon,
   PostAdd as PostAddIcon,
   PersonSearch as PersonSearchIcon,
-  Inbox as InboxIcon,
   AttachMoney as AttachMoneyIcon,
   HelpOutline as HelpOutlineIcon,
+  Assignment as ProposalIcon,
 } from '@mui/icons-material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -79,84 +63,6 @@ import {
   selectHirerError,
 } from '../services/hirerSlice';
 import { selectUnreadCount } from '../../notifications/services/notificationSlice';
-import { logoutUser } from '../../auth/services/authSlice';
-
-// Import all hirer components
-import HirerJobManagement from '../components/HirerJobManagement';
-import PaymentRelease from '../components/PaymentRelease';
-import ProposalReview from '../components/ProposalReview';
-import JobProgressTracker from '../components/JobProgressTracker';
-import WorkerReview from '../components/WorkerReview';
-import WorkerSearch from '../components/WorkerSearch';
-
-// Custom styled components
-const StyledTab = ({ icon, label, ...props }) => (
-  <Tab
-    icon={icon}
-    label={label}
-    sx={{
-      minHeight: 72,
-      color: 'text.secondary',
-      '&.Mui-selected': {
-        color: 'secondary.main',
-        fontWeight: 600,
-      },
-      '& .MuiTab-iconWrapper': {
-        marginBottom: 0.5,
-      },
-      textTransform: 'none',
-      fontSize: '0.9rem',
-      transition: 'all 0.3s ease',
-    }}
-    {...props}
-  />
-);
-
-StyledTab.propTypes = {
-  icon: PropTypes.node,
-  label: PropTypes.node,
-};
-
-// TabPanel component for tabs - FIXED: Uses key-based rendering to prevent content bleed
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  // Only render content when this tab is active - prevents content bleed
-  if (value !== index) {
-    return null;
-  }
-
-  return (
-    <div
-      role="tabpanel"
-      id={`hirer-dashboard-tabpanel-${index}`}
-      aria-labelledby={`hirer-dashboard-tab-${index}`}
-      aria-hidden={value !== index}
-      tabIndex={0}
-      {...other}
-    >
-      <Paper
-        elevation={0}
-        sx={{
-          p: 3,
-          mt: 2,
-          bgcolor: 'background.paper',
-          borderRadius: 2,
-          border: '1px solid',
-          borderColor: 'divider',
-        }}
-      >
-        {children}
-      </Paper>
-    </div>
-  );
-}
-
-TabPanel.propTypes = {
-  children: PropTypes.node,
-  value: PropTypes.number.isRequired,
-  index: PropTypes.number.isRequired,
-};
 
 // Enhanced dashboard card component
 const DashboardCard = ({
@@ -293,15 +199,12 @@ const HirerDashboardPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const [tabValue, setTabValue] = useState(0);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState(Date.now());
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   const [isHydrating, setIsHydrating] = useState(true);
-  const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true); // DASH-001: Auto-refresh state
   const [timeSinceRefresh, setTimeSinceRefresh] = useState('Just now'); // DASH-001: Human-readable time
 
@@ -319,29 +222,6 @@ const HirerDashboardPage = () => {
   const applicationRecords = useSelector(selectHirerApplications);
   const totalPendingProposals = useSelector(selectHirerPendingProposalCount);
   const payments = useSelector((state) => state.hirer.payments);
-  const storeError = useSelector(selectHirerError('profile'));
-  const jobsError = useSelector(selectHirerError('jobs'));
-  const unreadNotifications = useSelector(selectUnreadCount);
-  const isProfileMenuOpen = Boolean(profileMenuAnchor);
-
-  const handleProfileMenuOpen = (event) => {
-    setProfileMenuAnchor(event.currentTarget);
-  };
-
-  const handleProfileMenuClose = () => {
-    setProfileMenuAnchor(null);
-  };
-
-  const handleProfileMenuNavigate = (path) => {
-    handleProfileMenuClose();
-    navigate(path);
-  };
-
-  const handleLogout = async () => {
-    handleProfileMenuClose();
-    await dispatch(logoutUser());
-    navigate('/login');
-  };
 
   // Summary skeleton for overview while data loads
   const LoadingOverviewSkeleton = () => (
@@ -601,20 +481,6 @@ const HirerDashboardPage = () => {
     return () => clearInterval(interval);
   }, [lastRefreshed]);
 
-  // Handler for tab change - FIXED: Clear error state on tab switch to prevent content bleed
-  const handleTabChange = (event, newValue) => {
-    // Clear any errors when switching tabs
-    setError(null);
-    setTabValue(newValue);
-
-    // Fetch fresh data for specific tabs
-    if (newValue === 1) {
-      dispatch(fetchHirerJobs('active'));
-    } else if (newValue === 2) {
-      dispatch(fetchHirerJobs('completed'));
-    }
-  };
-
   // Dashboard summary data
   const summaryData = {
     activeJobs: activeJobs?.length || 0,
@@ -707,7 +573,7 @@ const HirerDashboardPage = () => {
           <Grid item xs={12} sm={6} md={3}>
             <Paper
               elevation={0}
-              onClick={() => setTabValue(1)}
+              onClick={() => navigate('/hirer/jobs')}
               sx={{
                 p: 2.5,
                 borderRadius: 2,
@@ -750,7 +616,7 @@ const HirerDashboardPage = () => {
           <Grid item xs={12} sm={6} md={3}>
             <Paper
               elevation={0}
-              onClick={() => setTabValue(3)}
+              onClick={() => navigate('/hirer/jobs')}
               sx={{
                 p: 2.5,
                 borderRadius: 2,
@@ -836,7 +702,7 @@ const HirerDashboardPage = () => {
           <Grid item xs={12} sm={6} md={3}>
             <Paper
               elevation={0}
-              onClick={() => setTabValue(2)}
+              onClick={() => navigate('/hirer/payments')}
               sx={{
                 p: 2.5,
                 borderRadius: 2,
@@ -1125,48 +991,6 @@ const HirerDashboardPage = () => {
             </Typography>
           </Box>
         </Box>
-        <Menu
-          anchorEl={profileMenuAnchor}
-          open={isProfileMenuOpen}
-          onClose={handleProfileMenuClose}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        >
-          <MenuItem disabled sx={{ opacity: 1, cursor: 'default' }}>
-            <Box>
-              <Typography variant="subtitle2" fontWeight={600}>
-                {user?.fullName ||
-                  `${user?.firstName || ''} ${user?.lastName || ''}`.trim() ||
-                  'Account'}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {user?.email}
-              </Typography>
-            </Box>
-          </MenuItem>
-          <Divider sx={{ my: 0.5 }} />
-          <MenuItem onClick={() => handleProfileMenuNavigate('/profile')}>
-            <ListItemIcon>
-              <PersonIcon fontSize="small" />
-            </ListItemIcon>
-            View Profile
-          </MenuItem>
-          <MenuItem
-            onClick={() => handleProfileMenuNavigate('/settings/account')}
-          >
-            <ListItemIcon>
-              <SettingsIcon fontSize="small" />
-            </ListItemIcon>
-            Account Settings
-          </MenuItem>
-          <Divider sx={{ my: 0.5 }} />
-          <MenuItem onClick={handleLogout}>
-            <ListItemIcon>
-              <LogoutIcon fontSize="small" />
-            </ListItemIcon>
-            Logout
-          </MenuItem>
-        </Menu>
         {/* Main Content (full-width container) */}
         <Container
           maxWidth={false}
@@ -1183,65 +1007,14 @@ const HirerDashboardPage = () => {
               {error}
             </Alert>
           )}
-          {/* Tabs Navigation - Streamlined to 5 tabs with proper ARIA */}
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-            <Tabs
-              value={tabValue}
-              onChange={handleTabChange}
-              variant={isMobile ? 'scrollable' : 'fullWidth'}
-              scrollButtons="auto"
-              textColor="inherit"
-              TabIndicatorProps={{ style: { backgroundColor: '#FFD700' } }}
-              aria-label="Dashboard navigation tabs"
-              role="tablist"
-            >
-              <StyledTab icon={<DashboardIcon />} label="Overview" />
-              <StyledTab
-                icon={
-                  <Badge
-                    badgeContent={summaryData.pendingProposals}
-                    color="warning"
-                  >
-                    <WorkIcon />
-                  </Badge>
-                }
-                label="My Jobs"
-              />
-              <StyledTab
-                icon={
-                  <Badge
-                    badgeContent={summaryData.pendingPayments}
-                    color="info"
-                  >
-                    <PaymentIcon />
-                  </Badge>
-                }
-                label="Payments"
-              />
-              <StyledTab icon={<ProgressIcon />} label="Progress" />
-              <StyledTab icon={<ReviewIcon />} label="Reviews" />
-            </Tabs>
-          </Box>
-          {/* Tab Panels - 5 streamlined panels with unique keys for proper isolation */}
-          <TabPanel value={tabValue} index={0} key={`tab-overview-${tabValue === 0}`}>
+          {/* Dashboard Overview - Direct content without tabs (navigation via sidebar) */}
+          <Box sx={{ mt: 1 }}>
             {isHydrating ? (
               <LoadingOverviewSkeleton />
             ) : (
               renderDashboardOverview()
             )}
-          </TabPanel>
-          <TabPanel value={tabValue} index={1} key={`tab-jobs-${tabValue === 1}`}>
-            <HirerJobManagement />
-          </TabPanel>
-          <TabPanel value={tabValue} index={2} key={`tab-payments-${tabValue === 2}`}>
-            <PaymentRelease />
-          </TabPanel>
-          <TabPanel value={tabValue} index={3} key={`tab-progress-${tabValue === 3}`}>
-            <JobProgressTracker />
-          </TabPanel>
-          <TabPanel value={tabValue} index={4} key={`tab-reviews-${tabValue === 4}`}>
-            <WorkerReview />
-          </TabPanel>
+          </Box>
         </Container>
         {/* Floating Quick Actions */}
         <SpeedDial

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   Drawer,
   List,
@@ -111,16 +112,6 @@ const MobileNav = ({ open, onClose }) => {
   const userRole = user?.role || 'user';
   const isWorker = userRole === 'worker';
   const isHirer = userRole === 'hirer';
-  const dashboardPath = isWorker
-    ? '/worker/dashboard'
-    : isHirer
-      ? '/hirer/dashboard'
-      : '/dashboard';
-  const applicationsPath = isWorker
-    ? '/worker/applications'
-    : isHirer
-      ? '/hirer/applications'
-      : '/applications';
 
   const formatRoleLabel = () => {
     if (isWorker) return 'Skilled Worker';
@@ -174,60 +165,50 @@ const MobileNav = ({ open, onClose }) => {
     return 'U';
   };
 
-  const navigationItems = [
-    // Public navigation (always visible)
-    {
-      label: 'Home',
-      icon: <HomeIcon />,
-      path: '/',
-      show: true,
-    },
-    {
-      label: 'Jobs',
-      icon: <WorkIcon />,
-      path: '/jobs',
-      show: true,
-    },
-    {
-      label: 'Find Workers',
-      icon: <SearchIcon />,
-      path: '/find-talents',
-      show: true,
-    },
-    // Authenticated user navigation
-    {
-      label: 'Dashboard',
-      icon: <DashboardIcon />,
-      path: dashboardPath,
-      show: showUserMenu,
-    },
-    {
-      label: 'My Applications',
-      icon: <AssignmentIcon />,
-      path: applicationsPath,
-      show: showUserMenu,
-    },
-    {
-      label: 'Messages',
-      icon: <MessageIcon />,
-      path: '/messages',
-      badge: 0,
-      show: showUserMenu,
-    },
-    {
-      label: 'Notifications',
-      icon: <NotificationsIcon />,
-      path: '/notifications',
-      badge: unreadCount,
-      show: showUserMenu,
-    },
-    {
-      label: 'Wallet',
-      icon: <WalletIcon />,
-      path: '/wallet',
-      show: showUserMenu,
-    },
-  ];
+  // Role-specific navigation items - cleaner, no duplicates
+  const navigationItems = useMemo(() => {
+    const baseItems = [];
+    
+    if (showUserMenu) {
+      // Authenticated user navigation based on role
+      if (isHirer) {
+        baseItems.push(
+          { label: 'Dashboard', icon: <DashboardIcon />, path: '/hirer/dashboard' },
+          { label: 'Post a Job', icon: <WorkIcon />, path: '/hirer/jobs/post' },
+          { label: 'My Job Posts', icon: <AssignmentIcon />, path: '/hirer/jobs' },
+          { label: 'Applications', icon: <AssignmentIcon />, path: '/hirer/applications' },
+          { label: 'Find Workers', icon: <SearchIcon />, path: '/hirer/find-talent' },
+        );
+      } else if (isWorker) {
+        baseItems.push(
+          { label: 'Dashboard', icon: <DashboardIcon />, path: '/worker/dashboard' },
+          { label: 'Find Jobs', icon: <SearchIcon />, path: '/worker/find-work' },
+          { label: 'My Applications', icon: <AssignmentIcon />, path: '/worker/applications' },
+          { label: 'My Profile', icon: <PersonIcon />, path: '/worker/profile' },
+        );
+      } else {
+        baseItems.push(
+          { label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+          { label: 'Browse Jobs', icon: <WorkIcon />, path: '/jobs' },
+        );
+      }
+      
+      // Common items for authenticated users
+      baseItems.push(
+        { label: 'Messages', icon: <MessageIcon />, path: '/messages', badge: unreadCount },
+        { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications', badge: unreadCount },
+      );
+    } else {
+      // Guest navigation
+      baseItems.push(
+        { label: 'Home', icon: <HomeIcon />, path: '/' },
+        { label: 'Browse Jobs', icon: <WorkIcon />, path: '/jobs' },
+        { label: 'Find Workers', icon: <SearchIcon />, path: '/find-talents' },
+      );
+    }
+    
+    return baseItems;
+  }, [showUserMenu, isHirer, isWorker, unreadCount]);
 
   return (
     <StyledDrawer
@@ -326,14 +307,12 @@ const MobileNav = ({ open, onClose }) => {
 
         {/* Navigation Items */}
         <List sx={{ flex: 1, py: 1 }}>
-          {navigationItems
-            .filter((item) => item.show)
-            .map((item) => (
+          {navigationItems.map((item, index) => (
               <motion.div
                 key={item.path}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
               >
                 <StyledListItemButton onClick={() => handleNavigate(item.path)}>
                   <ListItemIcon>
@@ -361,21 +340,6 @@ const MobileNav = ({ open, onClose }) => {
                 transition={{ duration: 0.3, delay: 0.1 }}
               >
                 <StyledListItemButton
-                  onClick={() => handleNavigate('/profile')}
-                >
-                  <ListItemIcon>
-                    <PersonIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Profile" />
-                </StyledListItemButton>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.2 }}
-              >
-                <StyledListItemButton
                   onClick={() => handleNavigate('/settings')}
                 >
                   <ListItemIcon>
@@ -388,7 +352,22 @@ const MobileNav = ({ open, onClose }) => {
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.3 }}
+                transition={{ duration: 0.3, delay: 0.15 }}
+              >
+                <StyledListItemButton
+                  onClick={() => handleNavigate('/support')}
+                >
+                  <ListItemIcon>
+                    <HomeIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Help & Support" />
+                </StyledListItemButton>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.2 }}
               >
                 <StyledListItemButton
                   onClick={handleLogout}

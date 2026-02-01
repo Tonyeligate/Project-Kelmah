@@ -1396,21 +1396,23 @@ const Header = ({
         {/* Desktop Navigation */}
         {!isMobile && <DesktopNav />}
 
-        {/* Action Buttons */}
+        {/* Action Buttons - Simplified for mobile */}
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: { xs: 0.25, sm: 0.5, md: 1 },
+            gap: { xs: 0.5, sm: 0.75, md: 1 },
             ml: 'auto',
           }}
         >
-          {/* Theme Toggle */}
-          <Tooltip title="Theme" arrow>
-            <ActionButton onClick={handleThemeMenuOpen}>
-              <ColorLensIcon />
-            </ActionButton>
-          </Tooltip>
+          {/* Theme Toggle - Only show on desktop */}
+          {!isMobile && (
+            <Tooltip title="Theme" arrow>
+              <ActionButton onClick={handleThemeMenuOpen}>
+                <ColorLensIcon />
+              </ActionButton>
+            </Tooltip>
+          )}
 
           {/* Show loading state during initialization */}
           {!authState.isReady ? (
@@ -1419,8 +1421,8 @@ const Header = ({
             </Box>
           ) : showUserFeatures ? (
             <>
-              {/* Worker quick status chips */}
-              {user?.role === 'worker' && (
+              {/* Worker quick status chips - Desktop only (takes too much space on mobile) */}
+              {!isMobile && user?.role === 'worker' && (
                 <Stack direction="row" spacing={0.75} sx={{ mr: 0.5 }}>
                   {headerAvailability && (
                     <Chip
@@ -1466,26 +1468,30 @@ const Header = ({
                   )}
                 </Stack>
               )}
-              {/* Messages */}
-              <Tooltip title="Messages" arrow>
-                <ActionButton onClick={() => navigate('/messages')}>
-                  <StyledBadge badgeContent={unreadMessages} color="primary">
-                    <MessageIcon />
-                  </StyledBadge>
-                </ActionButton>
-              </Tooltip>
+              {/* Messages - Desktop only (available via bottom nav on mobile) */}
+              {!isMobile && (
+                <Tooltip title="Messages" arrow>
+                  <ActionButton onClick={() => navigate('/messages')}>
+                    <StyledBadge badgeContent={unreadMessages} color="primary">
+                      <MessageIcon />
+                    </StyledBadge>
+                  </ActionButton>
+                </Tooltip>
+              )}
 
-              {/* Notifications */}
-              <Tooltip title="Notifications" arrow>
-                <ActionButton onClick={handleNotificationsOpen}>
-                  <StyledBadge
-                    badgeContent={unreadNotifications}
-                    color="primary"
-                  >
-                    <NotificationsIcon />
-                  </StyledBadge>
-                </ActionButton>
-              </Tooltip>
+              {/* Notifications - Desktop only (available via drawer on mobile) */}
+              {!isMobile && (
+                <Tooltip title="Notifications" arrow>
+                  <ActionButton onClick={handleNotificationsOpen}>
+                    <StyledBadge
+                      badgeContent={unreadNotifications}
+                      color="primary"
+                    >
+                      <NotificationsIcon />
+                    </StyledBadge>
+                  </ActionButton>
+                </Tooltip>
+              )}
 
               {/* User Avatar */}
               <Tooltip title="Account menu" arrow>

@@ -40,12 +40,12 @@ import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 
-// Kelmah Logo Component
+// Kelmah Logo Component - FIX: Reduced size from 100x100 to 64x64
 const KelmahLogo = () => (
   <Box
     sx={{
-      width: 100,
-      height: 100,
+      width: 64,
+      height: 64,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -57,22 +57,22 @@ const KelmahLogo = () => (
       src="/kelmah-logo.png"
       alt="Kelmah"
       sx={{
-        width: 80,
-        height: 80,
+        width: 48,
+        height: 48,
         objectFit: 'contain',
       }}
       onError={(e) => {
         e.target.style.display = 'none';
         e.target.parentElement.innerHTML = `
           <div style="
-            width: 80px;
-            height: 80px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             color: #1C2536;
           ">K</div>
@@ -183,11 +183,12 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
         [`& .MuiDrawer-paper`]: {
           width: 260,
           boxSizing: 'border-box',
-          backgroundColor: '#FAFAFA',
-          color: '#333',
+          // FIX: Dark theme sidebar to match content area
+          backgroundColor: '#1a1a1a',
+          color: '#E0E0E0',
           display: 'flex',
           flexDirection: 'column',
-          borderRight: '1px solid #E0E0E0',
+          borderRight: '1px solid rgba(255, 215, 0, 0.2)',
         },
       }}
     >
@@ -196,15 +197,15 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
         <KelmahLogo />
       </Box>
 
-      {/* User Profile Card - LC Portal Style */}
+      {/* User Profile Card - Dark Theme Style */}
       <Box
         sx={{
           mx: 2,
           mb: 2,
           p: 2,
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'rgba(255, 215, 0, 0.1)',
           borderRadius: 2,
-          border: '1px solid #E0E0E0',
+          border: '1px solid rgba(255, 215, 0, 0.2)',
           display: 'flex',
           alignItems: 'center',
           gap: 1.5,
@@ -214,14 +215,15 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
           sx={{
             width: 40,
             height: 40,
-            bgcolor: '#E3F2FD',
-            color: '#1976D2',
+            bgcolor: '#FFD700',
+            color: '#1a1a1a',
+            fontWeight: 700,
           }}
         >
           {user?.firstName?.[0] || 'U'}
         </Avatar>
         <Box sx={{ flex: 1 }}>
-          <Typography variant="body2" fontWeight={600} sx={{ color: '#333' }}>
+          <Typography variant="body2" fontWeight={600} sx={{ color: '#E0E0E0' }}>
             Hi, {user?.firstName || 'User'}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -233,29 +235,29 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
         </Box>
       </Box>
 
-      {/* Dashboard Item - Highlighted Blue */}
+      {/* Dashboard Item - Highlighted Gold */}
       <Box sx={{ px: 2, mb: 1 }}>
         <ListItem
           button
           component={RouterLink}
           to={dashboardPath}
           sx={{
-            backgroundColor: isDashboardActive ? '#E3F2FD' : 'transparent',
+            backgroundColor: isDashboardActive ? 'rgba(255, 215, 0, 0.15)' : 'transparent',
             borderRadius: 1,
             py: 1.5,
             '&:hover': {
-              backgroundColor: '#E3F2FD',
+              backgroundColor: 'rgba(255, 215, 0, 0.1)',
             },
           }}
         >
           <ListItemIcon sx={{ minWidth: 40 }}>
-            <DashboardIcon sx={{ color: '#1976D2' }} />
+            <DashboardIcon sx={{ color: '#FFD700' }} />
           </ListItemIcon>
           <ListItemText
             primary="Dashboard"
             sx={{
               '& .MuiListItemText-primary': {
-                color: '#1976D2',
+                color: '#FFD700',
                 fontWeight: 600,
                 letterSpacing: 'normal',
                 wordSpacing: 'normal',
@@ -267,63 +269,13 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
         </ListItem>
       </Box>
 
-      {/* Search Input */}
-      <Box sx={{ px: 2, mb: 1 }}>
-        <TextField
-          size="small"
-          placeholder="Search menu..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          fullWidth
-          aria-label="Search navigation menu"
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ color: '#666', fontSize: 20 }} />
-              </InputAdornment>
-            ),
-            endAdornment: searchQuery && (
-              <InputAdornment position="end">
-                <IconButton
-                  size="small"
-                  onClick={handleClearSearch}
-                  aria-label="Clear search"
-                  sx={{ p: 0.5 }}
-                >
-                  <ClearIcon sx={{ fontSize: 18, color: '#666' }} />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              backgroundColor: '#FFFFFF',
-              borderRadius: 1,
-              '& fieldset': {
-                borderColor: '#E0E0E0',
-              },
-              '&:hover fieldset': {
-                borderColor: '#BDBDBD',
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: '#1976D2',
-              },
-            },
-            '& .MuiInputBase-input': {
-              fontSize: '0.875rem',
-              py: 0.75,
-            },
-          }}
-        />
-      </Box>
-
       {/* MENU Section Header */}
       <Typography
         variant="caption"
         sx={{
           px: 3,
           py: 1,
-          color: '#666',
+          color: 'rgba(255, 215, 0, 0.7)',
           fontWeight: 600,
           letterSpacing: 1,
         }}
@@ -333,15 +285,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
 
       {/* Menu Items */}
       <List sx={{ px: 1, flexGrow: 1 }}>
-        {filteredMenuItems.length === 0 && searchQuery ? (
-          <Typography
-            variant="body2"
-            sx={{ px: 2, py: 2, color: '#999', textAlign: 'center' }}
-          >
-            No menu items found
-          </Typography>
-        ) : (
-          filteredMenuItems.map((item) => {
+        {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
             const menuItemElement = (
               <ListItem
@@ -354,9 +298,9 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                   borderRadius: 1,
                   mb: 0.5,
                   py: 1.25,
-                  backgroundColor: isActive ? '#F5F5F5' : 'transparent',
+                  backgroundColor: isActive ? 'rgba(255, 215, 0, 0.15)' : 'transparent',
                   '&:hover': {
-                    backgroundColor: '#F5F5F5',
+                    backgroundColor: 'rgba(255, 215, 0, 0.08)',
                   },
                 }}
               >
@@ -364,12 +308,12 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                   {item.badge && item.badge > 0 ? (
                     <Badge color="error" badgeContent={item.badge} max={99}>
                       {React.cloneElement(item.icon, {
-                        sx: { color: isActive ? '#1976D2' : '#666' },
+                        sx: { color: isActive ? '#FFD700' : '#9E9E9E' },
                       })}
                     </Badge>
                   ) : (
                     React.cloneElement(item.icon, {
-                      sx: { color: isActive ? '#1976D2' : '#666' },
+                      sx: { color: isActive ? '#FFD700' : '#9E9E9E' },
                     })
                   )}
                 </ListItemIcon>
@@ -377,7 +321,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                   primary={item.text}
                   sx={{
                     '& .MuiListItemText-primary': {
-                      color: isActive ? '#1976D2' : '#333',
+                      color: isActive ? '#FFD700' : '#E0E0E0',
                       fontWeight: isActive ? 600 : 400,
                       fontSize: '0.9rem',
                       letterSpacing: 'normal',
@@ -402,15 +346,14 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
             ) : (
               menuItemElement
             );
-          })
-        )}
+          })}
       </List>
 
-      <Divider sx={{ mx: 2, borderColor: '#E0E0E0' }} />
+      <Divider sx={{ mx: 2, borderColor: 'rgba(255, 215, 0, 0.2)' }} />
 
       {/* Bottom Items */}
       <List sx={{ px: 1, pb: 2 }}>
-        {filteredBottomItems.map((item) => {
+        {bottomItems.map((item) => {
           const isActive = location.pathname === item.path;
           const bottomItemElement = (
             <ListItem
@@ -423,9 +366,9 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                 borderRadius: 1,
                 mb: 0.5,
                 py: 1.25,
-                backgroundColor: isActive ? '#F5F5F5' : 'transparent',
+                backgroundColor: isActive ? 'rgba(255, 215, 0, 0.15)' : 'transparent',
                 '&:hover': {
-                  backgroundColor: '#F5F5F5',
+                  backgroundColor: 'rgba(255, 215, 0, 0.08)',
                 },
               }}
             >
@@ -433,12 +376,12 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                 {item.badge && item.badge > 0 ? (
                   <Badge color="error" badgeContent={item.badge} max={99}>
                     {React.cloneElement(item.icon, {
-                      sx: { color: isActive ? '#1976D2' : '#666' },
+                      sx: { color: isActive ? '#FFD700' : '#9E9E9E' },
                     })}
                   </Badge>
                 ) : (
                   React.cloneElement(item.icon, {
-                    sx: { color: isActive ? '#1976D2' : '#666' },
+                    sx: { color: isActive ? '#FFD700' : '#9E9E9E' },
                   })
                 )}
               </ListItemIcon>
@@ -446,7 +389,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                 primary={item.text}
                 sx={{
                   '& .MuiListItemText-primary': {
-                    color: isActive ? '#1976D2' : '#333',
+                    color: isActive ? '#FFD700' : '#E0E0E0',
                     fontWeight: isActive ? 600 : 400,
                     fontSize: '0.9rem',
                     letterSpacing: 'normal',
