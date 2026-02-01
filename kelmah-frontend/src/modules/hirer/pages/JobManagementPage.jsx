@@ -4,9 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Helmet } from 'react-helmet-async';
 import {
   Box,
-  Container,
   Typography,
-  Grid,
   Tabs,
   Tab,
   Paper,
@@ -31,7 +29,6 @@ import {
   DialogActions,
   useTheme,
   useMediaQuery,
-  Avatar,
   TableContainer,
   Table,
   TableHead,
@@ -39,7 +36,6 @@ import {
   TableRow,
   TableCell,
   TablePagination,
-  Skeleton,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -47,13 +43,10 @@ import {
   Delete as DeleteIcon,
   MoreVert as MoreIcon,
   Search as SearchIcon,
-  FilterList as FilterIcon,
   Person as PersonIcon,
   Visibility as ViewIcon,
-  Star as StarIcon,
   Assignment as ApplicationIcon,
   CheckCircle as ActiveIcon,
-  PauseCircle as PausedIcon,
   AccessTime as ExpiredIcon,
   Close as ClosedIcon,
   HourglassEmpty as DraftIcon,
@@ -256,49 +249,128 @@ const JobManagementPage = () => {
   };
 
   const handleRefresh = () => {
-    ['active', 'draft', 'completed', 'cancelled', 'paused'].forEach(
+    ['open', 'in-progress', 'completed', 'cancelled', 'draft'].forEach(
       (status) => {
         dispatch(fetchHirerJobs(status));
       },
     );
   };
 
+  // Mobile Job Card Component
+  const MobileJobCard = ({ job }) => (
+    <Card
+      sx={{
+        mb: 2,
+        borderRadius: 2,
+        '&:active': { transform: 'scale(0.98)' },
+        transition: 'transform 0.1s ease',
+      }}
+      onClick={() => handleViewJob(job.id)}
+    >
+      <CardContent sx={{ pb: '12px !important' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+          <Typography variant="subtitle1" fontWeight={600} sx={{ flex: 1, pr: 1 }}>
+            {job.title}
+          </Typography>
+          <StatusChip status={job.status} />
+        </Box>
+        
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+          {formatJobLocation(job.location)} • ${job.hourlyRate}/hr
+        </Typography>
+        
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Badge
+              badgeContent={job.applications?.length || 0}
+              color="primary"
+              max={99}
+              showZero
+              sx={{ '& .MuiBadge-badge': { fontSize: '0.7rem' } }}
+            >
+              <ApplicationIcon fontSize="small" color="action" />
+            </Badge>
+            <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+              applicants
+            </Typography>
+          </Box>
+          
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <IconButton
+              size="small"
+              onClick={(e) => { e.stopPropagation(); handleViewApplications(job.id); }}
+              sx={{ bgcolor: 'action.hover' }}
+            >
+              <PersonIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={(e) => { e.stopPropagation(); handleEditJob(job.id); }}
+              sx={{ bgcolor: 'action.hover' }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={(e) => { e.stopPropagation(); handleMenuOpen(e, job); }}
+              sx={{ bgcolor: 'action.hover' }}
+            >
+              <MoreIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box sx={{ pb: { xs: 2, md: 4 }, pt: { xs: 1, md: 2 } }}>
       <Helmet>
         <title>Manage Jobs | Kelmah</title>
       </Helmet>
-      <Box sx={{ mb: 4 }}>
+      
+      {/* Mobile-optimized header */}
+      <Box sx={{ mb: { xs: 2, md: 4 }, px: { xs: 0.5, md: 0 } }}>
         <Box
           sx={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: 2,
+            gap: 1,
           }}
         >
-          <Typography variant="h4" gutterBottom fontWeight="bold">
-            Job Management
+          <Typography 
+            variant={isMobile ? 'h5' : 'h4'} 
+            fontWeight="bold"
+            sx={{ mb: 0 }}
+          >
+            {isMobile ? 'My Jobs' : 'Job Management'}
           </Typography>
 
           <Button
             variant="contained"
             color="primary"
-            startIcon={<AddIcon />}
+            startIcon={!isMobile && <AddIcon />}
             onClick={handleCreateJob}
             size={isMobile ? 'small' : 'medium'}
+            sx={{ 
+              minWidth: isMobile ? 'auto' : undefined,
+              px: isMobile ? 2 : 3,
+            }}
           >
-            Post a New Job
+            {isMobile ? '+ New Job' : 'Post a New Job'}
           </Button>
         </Box>
-        <Typography variant="body1" color="text.secondary">
-          Manage your job postings and track applications
-        </Typography>
+        {!isMobile && (
+          <Typography variant="body1" color="text.secondary">
+            Manage your job postings and track applications
+          </Typography>
+        )}
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert severity="error" sx={{ mb: 2, mx: { xs: 0.5, md: 0 } }}>
           {error}
         </Alert>
       )}
@@ -307,81 +379,100 @@ const JobManagementPage = () => {
       {!loading && jobs.length === 0 && !error && (
         <Alert
           severity="info"
-          sx={{ mb: 3 }}
+          sx={{ mb: 2, mx: { xs: 0.5, md: 0 } }}
           action={
             <Button color="inherit" size="small" onClick={handleRefresh}>
               Refresh
             </Button>
           }
         >
-          Loading your jobs... If you've posted jobs and don't see them, try refreshing or contact support.
+          {isMobile 
+            ? 'No jobs yet. Tap + New Job to create one!' 
+            : 'Loading your jobs... If you\'ve posted jobs and don\'t see them, try refreshing or contact support.'}
         </Alert>
       )}
 
-      <Paper sx={{ mb: 4, borderRadius: 2 }}>
+      <Paper sx={{ mb: 2, borderRadius: 2, mx: { xs: 0, md: 0 } }} elevation={isMobile ? 0 : 1}>
+        {/* Search and filter bar */}
         <Box
           sx={{
-            p: { xs: 2, md: 3 },
+            p: { xs: 1.5, md: 3 },
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: 2,
+            gap: 1,
           }}
         >
           <TextField
             placeholder="Search jobs..."
             value={searchText}
             onChange={handleSearchChange}
-            size={isMobile ? 'small' : 'medium'}
+            size="small"
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon />
+                  <SearchIcon fontSize="small" />
                 </InputAdornment>
               ),
             }}
             sx={{
-              width: { xs: '100%', sm: 'auto' },
-              minWidth: { sm: 300 },
+              width: '100%',
+              flex: 1,
+              '& .MuiOutlinedInput-root': {
+                fontSize: '0.875rem',
+              },
             }}
           />
 
-          <Box>
-            <Tooltip title="Refresh Jobs">
-              <IconButton onClick={handleRefresh} disabled={loading}>
-                <RefreshIcon />
-              </IconButton>
-            </Tooltip>
-          </Box>
+          <IconButton 
+            onClick={handleRefresh} 
+            disabled={loading}
+            size="small"
+            sx={{ 
+              bgcolor: 'action.hover',
+              '&:hover': { bgcolor: 'action.selected' },
+            }}
+          >
+            <RefreshIcon fontSize="small" />
+          </IconButton>
         </Box>
 
+        {/* Simplified tabs for mobile */}
         <Tabs
           value={tabValue}
           onChange={handleTabChange}
           indicatorColor="primary"
           textColor="primary"
-          variant={isMobile ? 'scrollable' : 'fullWidth'}
-          scrollButtons={isMobile ? 'auto' : false}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
           sx={{
             borderBottom: 1,
             borderColor: 'divider',
+            minHeight: { xs: 40, md: 48 },
             '& .MuiTab-root': {
               textTransform: 'none',
               fontWeight: 500,
-              fontSize: '0.9rem',
+              fontSize: { xs: '0.8rem', md: '0.9rem' },
+              minHeight: { xs: 40, md: 48 },
+              minWidth: { xs: 'auto', md: 100 },
+              px: { xs: 1.5, md: 2 },
+            },
+            '& .MuiTabs-scrollButtons': {
+              width: 28,
             },
           }}
         >
           <Tab
             label={
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                All Jobs
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <span>All</span>
                 {jobs.length > 0 && (
                   <Chip
                     label={jobs.length}
                     size="small"
-                    sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
+                    sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
                   />
                 )}
               </Box>
@@ -389,14 +480,14 @@ const JobManagementPage = () => {
           />
           <Tab
             label={
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                Open
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <span>Open</span>
                 {jobs.filter((job) => job.status === 'open').length > 0 && (
                   <Chip
                     label={jobs.filter((job) => job.status === 'open').length}
                     size="small"
                     color="success"
-                    sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
+                    sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
                   />
                 )}
               </Box>
@@ -404,8 +495,8 @@ const JobManagementPage = () => {
           />
           <Tab
             label={
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                In Progress
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <span>{isMobile ? 'Active' : 'In Progress'}</span>
                 {jobs.filter((job) => job.status === 'in-progress').length >
                   0 && (
                     <Chip
@@ -414,7 +505,7 @@ const JobManagementPage = () => {
                       }
                       size="small"
                       color="warning"
-                      sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
+                      sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
                     />
                   )}
               </Box>
@@ -422,8 +513,8 @@ const JobManagementPage = () => {
           />
           <Tab
             label={
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                Completed
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <span>Done</span>
                 {jobs.filter((job) => job.status === 'completed').length >
                   0 && (
                     <Chip
@@ -432,7 +523,7 @@ const JobManagementPage = () => {
                       }
                       size="small"
                       color="success"
-                      sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
+                      sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
                     />
                   )}
               </Box>
@@ -440,8 +531,8 @@ const JobManagementPage = () => {
           />
           <Tab
             label={
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                Cancelled
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <span>{isMobile ? 'X' : 'Cancelled'}</span>
                 {jobs.filter((job) => job.status === 'cancelled').length >
                   0 && (
                     <Chip
@@ -450,7 +541,7 @@ const JobManagementPage = () => {
                       }
                       size="small"
                       color="error"
-                      sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
+                      sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
                     />
                   )}
               </Box>
@@ -458,13 +549,13 @@ const JobManagementPage = () => {
           />
           <Tab
             label={
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                Drafts
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <span>Drafts</span>
                 {jobs.filter((job) => job.status === 'draft').length > 0 && (
                   <Chip
                     label={jobs.filter((job) => job.status === 'draft').length}
                     size="small"
-                    sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
+                    sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
                   />
                 )}
               </Box>
@@ -472,10 +563,11 @@ const JobManagementPage = () => {
           />
         </Tabs>
 
-        <Box sx={{ p: { xs: 2, md: 3 } }}>
+        {/* Content area - Mobile cards vs Desktop table */}
+        <Box sx={{ p: { xs: 1.5, md: 3 } }}>
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-              <CircularProgress />
+              <CircularProgress size={32} />
             </Box>
           ) : filteredJobs.length === 0 ? (
             <Box
@@ -484,43 +576,65 @@ const JobManagementPage = () => {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                py: 6,
+                py: { xs: 4, md: 6 },
               }}
             >
               <WarningIcon
-                sx={{ fontSize: 48, color: jobs.length > 0 ? 'warning.main' : 'text.secondary', mb: 2 }}
+                sx={{ fontSize: { xs: 40, md: 48 }, color: jobs.length > 0 ? 'warning.main' : 'text.secondary', mb: 2 }}
               />
-              <Typography variant="h6" gutterBottom>
+              <Typography variant={isMobile ? 'body1' : 'h6'} fontWeight={500} gutterBottom textAlign="center">
                 {jobs.length > 0 && filteredJobs.length === 0
                   ? 'No jobs match current filter'
-                  : 'No jobs found'}
+                  : 'No jobs yet'}
               </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ textAlign: 'center', maxWidth: 400 }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ textAlign: 'center', maxWidth: 300, px: 2 }}>
                 {searchText
-                  ? 'No jobs match your search criteria. Try changing your search terms.'
+                  ? 'Try different search terms.'
                   : jobs.length > 0 && tabValue !== 0
-                    ? `You have ${jobs.length} total job${jobs.length !== 1 ? 's' : ''}, but none in this status category. Try selecting "All Jobs" tab.`
-                    : 'You haven\'t posted any jobs yet. Create your first job posting to start finding talent!'}
+                    ? `${jobs.length} job${jobs.length !== 1 ? 's' : ''} in other tabs.`
+                    : 'Create your first job posting!'}
               </Typography>
               {jobs.length > 0 && tabValue !== 0 && (
                 <Button
                   variant="outlined"
+                  size="small"
                   onClick={() => setTabValue(0)}
-                  sx={{ mt: 2, mr: 1 }}
+                  sx={{ mt: 2 }}
                 >
-                  View All Jobs ({jobs.length})
+                  View All ({jobs.length})
                 </Button>
               )}
               <Button
                 variant="contained"
+                size={isMobile ? 'small' : 'medium'}
                 startIcon={<AddIcon />}
                 onClick={handleCreateJob}
                 sx={{ mt: 2 }}
               >
-                Post a New Job
+                {isMobile ? 'Post Job' : 'Post a New Job'}
               </Button>
             </Box>
+          ) : isMobile ? (
+            /* Mobile: Card-based layout */
+            <>
+              {paginatedJobs.map((job) => (
+                <MobileJobCard key={job.id} job={job} />
+              ))}
+              {filteredJobs.length > rowsPerPage && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => setRowsPerPage(prev => prev + 10)}
+                    disabled={paginatedJobs.length >= filteredJobs.length}
+                  >
+                    Load More ({filteredJobs.length - paginatedJobs.length} remaining)
+                  </Button>
+                </Box>
+              )}
+            </>
           ) : (
+            /* Desktop: Table layout */
             <>
               <TableContainer sx={{ overflowX: 'auto' }}>
                 <Table sx={{ minWidth: 650 }}>
@@ -535,30 +649,7 @@ const JobManagementPage = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {loading
-                      ? Array.from(new Array(rowsPerPage)).map((_, idx) => (
-                        <TableRow key={`skeleton-${idx}`}>
-                          <TableCell>
-                            <Skeleton />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton />
-                          </TableCell>
-                          <TableCell align="right">
-                            <Skeleton />
-                          </TableCell>
-                        </TableRow>
-                      ))
-                      : paginatedJobs.map((job) => (
+                    {paginatedJobs.map((job) => (
                         <TableRow
                           key={job.id}
                           sx={{
@@ -753,7 +844,7 @@ const JobManagementPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </Box>
   );
 };
 

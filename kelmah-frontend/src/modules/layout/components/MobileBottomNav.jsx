@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   BottomNavigation,
   BottomNavigationAction,
@@ -8,62 +8,77 @@ import {
   Box,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { motion } from 'framer-motion';
 import {
   Home as HomeIcon,
-  Work as JobsIcon,
+  WorkOutline as JobsIcon,
   ChatBubbleOutline as MessagesIcon,
-  AccountCircle as ProfileIcon,
+  PersonOutline as ProfileIcon,
+  BusinessCenter as ManageIcon,
+  Search as SearchIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { BRAND_COLORS } from '../../../theme';
+import { useNotifications } from '../../notifications/contexts/NotificationContext';
 
-// Styled Components - Updated to match the template design
+// Styled Components - Clean mobile-first design
 const StyledPaper = styled(Paper)(({ theme }) => ({
   position: 'fixed',
   bottom: 0,
   left: 0,
   right: 0,
-  zIndex: 1000,
-  borderTop: '1px solid #35332c',
-  backgroundColor: '#24231e',
+  zIndex: 1200,
+  borderTop: theme.palette.mode === 'dark' 
+    ? '1px solid rgba(255, 215, 0, 0.2)' 
+    : '1px solid rgba(0, 0, 0, 0.1)',
+  backgroundColor: theme.palette.mode === 'dark' 
+    ? 'rgba(24, 23, 18, 0.98)' 
+    : 'rgba(255, 255, 255, 0.98)',
   backdropFilter: 'blur(20px)',
-  boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.8)',
+  boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.15)',
+  // Safe area for iOS devices
+  paddingBottom: 'env(safe-area-inset-bottom, 0px)',
 }));
 
 const StyledBottomNavigation = styled(BottomNavigation)(({ theme }) => ({
   backgroundColor: 'transparent',
-  height: 70,
-  paddingTop: theme.spacing(0.5),
-  paddingBottom: theme.spacing(1),
+  height: 56,
+  minHeight: 56,
 }));
 
 const StyledBottomNavigationAction = styled(BottomNavigationAction)(
   ({ theme }) => ({
-    color: '#b2afa3',
-    minWidth: 'auto',
-    padding: theme.spacing(0.5, 1),
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    color: theme.palette.mode === 'dark' ? '#888' : '#666',
+    minWidth: 64,
+    maxWidth: 120,
+    padding: '6px 12px 8px',
+    transition: 'all 0.2s ease',
     '&.Mui-selected': {
-      color: 'white',
+      color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
       '& .MuiBottomNavigationAction-label': {
-        fontSize: '0.75rem',
-        fontWeight: 600,
-        letterSpacing: '0.015em',
+        fontSize: '0.7rem',
+        fontWeight: 700,
+        opacity: 1,
       },
       '& .MuiSvgIcon-root': {
-        transform: 'scale(1.1)',
+        transform: 'scale(1.15)',
       },
     },
     '& .MuiBottomNavigationAction-label': {
-      fontSize: '0.75rem',
+      fontSize: '0.65rem',
       fontWeight: 500,
-      marginTop: theme.spacing(0.5),
-      letterSpacing: '0.015em',
+      marginTop: 2,
+      opacity: 0.9,
+      transition: 'all 0.2s ease',
     },
     '& .MuiSvgIcon-root': {
-      fontSize: '1.5rem',
+      fontSize: '1.4rem',
       transition: 'transform 0.2s ease',
+    },
+    // Better touch targets
+    '&:active': {
+      backgroundColor: theme.palette.mode === 'dark' 
+        ? 'rgba(255, 215, 0, 0.1)' 
+        : 'rgba(0, 0, 0, 0.05)',
     },
   }),
 );
@@ -73,102 +88,154 @@ const MobileBottomNav = () => {
   const location = useLocation();
   const theme = useTheme();
   const path = location.pathname;
-  // Determine user role from path for proper routing
+  const { unreadCount = 0 } = useNotifications();
+  
+  // Determine user role from path
   const isHirer = path.startsWith('/hirer');
+  const isWorker = path.startsWith('/worker');
 
-  // Determine current tab based on path
-  let currentValue;
-  if (path.includes('/dashboard')) currentValue = 'dashboard';
-  else if (
-    path.startsWith('/search') ||
-    path.startsWith('/hirer/find-talent') ||
-    path.includes('/find-work') ||
-    path.startsWith('/find-talents')
-  )
-    currentValue = 'jobs';
-  else if (path.includes('/applications')) currentValue = 'jobs';
-  else if (path.startsWith('/messages')) currentValue = 'messages';
-  else if (path.includes('/profile')) currentValue = 'profile';
-  else currentValue = 'dashboard';
+  // Determine current active tab based on path - comprehensive matching
+  const currentValue = useMemo(() => {
+    // Dashboard/Home detection
+    if (path.includes('/dashboard') || path === '/' || path === '/home') {
+      return 'home';
+    }
+    // Jobs/Work management (hirer: my jobs, worker: search jobs)
+    if (
+      path.includes('/jobs') || 
+      path.includes('/find-work') ||
+      path.includes('/applications') ||
+      path.includes('/job-search')
+    ) {
+      return 'jobs';
+    }
+    // Talent/Worker search (hirer specific)
+    if (
+      path.includes('/find-talent') || 
+      path.includes('/search') ||
+      path.includes('/workers')
+    ) {
+      return 'search';
+    }
+    // Messages
+    if (path.includes('/messages') || path.includes('/chat')) {
+      return 'messages';
+    }
+    // Profile
+    if (path.includes('/profile') || path.includes('/settings')) {
+      return 'profile';
+    }
+    return 'home';
+  }, [path]);
 
-  const [value, setValue] = React.useState(currentValue);
+  // Navigation items based on user role
+  const navigationItems = useMemo(() => {
+    if (isHirer) {
+      return [
+        {
+          label: 'Home',
+          value: 'home',
+          icon: <HomeIcon />,
+          path: '/hirer/dashboard',
+        },
+        {
+          label: 'My Jobs',
+          value: 'jobs',
+          icon: <ManageIcon />,
+          path: '/hirer/jobs',
+        },
+        {
+          label: 'Find Talent',
+          value: 'search',
+          icon: <SearchIcon />,
+          path: '/hirer/find-talent',
+        },
+        {
+          label: 'Messages',
+          value: 'messages',
+          icon: <MessagesIcon />,
+          path: '/messages',
+          badge: unreadCount > 0 ? unreadCount : null,
+        },
+        {
+          label: 'Profile',
+          value: 'profile',
+          icon: <ProfileIcon />,
+          path: '/profile',
+        },
+      ];
+    }
+    // Worker navigation
+    return [
+      {
+        label: 'Home',
+        value: 'home',
+        icon: <HomeIcon />,
+        path: '/worker/dashboard',
+      },
+      {
+        label: 'Find Jobs',
+        value: 'jobs',
+        icon: <JobsIcon />,
+        path: '/worker/find-work',
+      },
+      {
+        label: 'Messages',
+        value: 'messages',
+        icon: <MessagesIcon />,
+        path: '/messages',
+        badge: unreadCount > 0 ? unreadCount : null,
+      },
+      {
+        label: 'Profile',
+        value: 'profile',
+        icon: <ProfileIcon />,
+        path: '/worker/profile',
+      },
+    ];
+  }, [isHirer, unreadCount]);
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-    switch (newValue) {
-      case 'dashboard':
-        navigate(isHirer ? '/hirer/dashboard' : '/worker/dashboard');
-        break;
-      case 'jobs':
-        navigate(isHirer ? '/hirer/find-talent' : '/worker/find-work');
-        break;
-      case 'messages':
-        navigate('/messages');
-        break;
-      case 'profile':
-        navigate(isHirer ? '/profile' : '/worker/profile');
-        break;
-      default:
-        navigate('/');
+  const handleNavigation = (event, newValue) => {
+    const item = navigationItems.find(i => i.value === newValue);
+    if (item?.path) {
+      navigate(item.path);
     }
   };
 
-  const navigationItems = [
-    {
-      label: 'Home',
-      value: 'dashboard',
-      icon: <HomeIcon />,
-      badge: null,
-    },
-    {
-      label: 'Jobs',
-      value: 'jobs',
-      icon: <JobsIcon />,
-      badge: null,
-    },
-    {
-      label: 'Messages',
-      value: 'messages',
-      icon: <MessagesIcon />,
-      badge: null,
-    },
-    {
-      label: 'Profile',
-      value: 'profile',
-      icon: <ProfileIcon />,
-      badge: null,
-    },
-  ];
-
   return (
-    <StyledPaper elevation={8}>
-      <StyledBottomNavigation value={value} onChange={handleChange} showLabels>
-        {navigationItems.map((item, index) => (
-          <motion.div
+    <StyledPaper elevation={0}>
+      <StyledBottomNavigation 
+        value={currentValue} 
+        onChange={handleNavigation} 
+        showLabels
+      >
+        {navigationItems.map((item) => (
+          <StyledBottomNavigationAction
             key={item.value}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            style={{ flex: 1 }}
-          >
-            <StyledBottomNavigationAction
-              label={item.label}
-              value={item.value}
-              icon={
-                item.badge ? (
-                  <Badge badgeContent={item.badge} color="error">
-                    {item.icon}
-                  </Badge>
-                ) : (
-                  item.icon
-                )
-              }
-            />
-          </motion.div>
+            label={item.label}
+            value={item.value}
+            icon={
+              item.badge ? (
+                <Badge 
+                  badgeContent={item.badge} 
+                  color="error"
+                  sx={{ 
+                    '& .MuiBadge-badge': { 
+                      fontSize: '0.65rem',
+                      minWidth: 16,
+                      height: 16,
+                    }
+                  }}
+                >
+                  {item.icon}
+                </Badge>
+              ) : (
+                item.icon
+              )
+            }
+          />
         ))}
       </StyledBottomNavigation>
-      {/* Add bottom spacing like in the template */}
-      <Box sx={{ height: '20px', backgroundColor: '#24231e' }} />
     </StyledPaper>
   );
 };

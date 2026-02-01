@@ -74,6 +74,9 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             width: '100%',
             minHeight: '100vh',
             position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            bgcolor: theme.palette.background.default,
           }}
         >
           <Header
@@ -81,7 +84,22 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             mode={mode}
             setThemeMode={setThemeMode}
           />
-          {content}
+          {/* Main content area with proper spacing for header and bottom nav */}
+          <Box
+            component="main"
+            sx={{
+              flex: 1,
+              width: '100%',
+              pt: '44px', // Space for fixed header
+              pb: '72px', // Space for bottom nav (56px + safe area)
+              px: 1.5,
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              WebkitOverflowScrolling: 'touch',
+            }}
+          >
+            {content}
+          </Box>
           <MobileBottomNav />
         </Box>
       );
