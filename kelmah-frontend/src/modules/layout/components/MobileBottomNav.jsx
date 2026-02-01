@@ -5,7 +5,6 @@ import {
   Paper,
   Badge,
   useTheme,
-  Box,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import {
@@ -17,6 +16,7 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { BRAND_COLORS } from '../../../theme';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
 
@@ -90,9 +90,13 @@ const MobileBottomNav = () => {
   const path = location.pathname;
   const { unreadCount = 0 } = useNotifications();
   
-  // Determine user role from path
-  const isHirer = path.startsWith('/hirer');
-  const isWorker = path.startsWith('/worker');
+  // Get user role from Redux auth state (not path-based)
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const userRole = user?.role || user?.userType || '';
+  
+  // Determine user role - use auth state primarily, path as fallback
+  const isHirer = userRole === 'hirer' || path.startsWith('/hirer');
+  const isWorker = userRole === 'worker' || path.startsWith('/worker');
 
   // Determine current active tab based on path - comprehensive matching
   const currentValue = useMemo(() => {

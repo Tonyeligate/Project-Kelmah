@@ -82,7 +82,7 @@ export const NotificationProvider = ({ children }) => {
 
         setNotifications(data);
         setPagination(paginationData);
-        setUnreadCount(data.filter((n) => !n.read).length);
+        // unreadCount is computed from notifications, no need for separate setter
         setError(null);
       } catch (err) {
         console.error('Failed to fetch notifications:', err);
