@@ -299,21 +299,24 @@ const JobManagementPage = () => {
             <IconButton
               size="small"
               onClick={(e) => { e.stopPropagation(); handleViewApplications(job.id); }}
-              sx={{ bgcolor: 'action.hover' }}
+              aria-label="View applicants"
+              sx={{ bgcolor: 'action.hover', minWidth: 44, minHeight: 44 }}
             >
               <PersonIcon fontSize="small" />
             </IconButton>
             <IconButton
               size="small"
               onClick={(e) => { e.stopPropagation(); handleEditJob(job.id); }}
-              sx={{ bgcolor: 'action.hover' }}
+              aria-label="Edit job"
+              sx={{ bgcolor: 'action.hover', minWidth: 44, minHeight: 44 }}
             >
               <EditIcon fontSize="small" />
             </IconButton>
             <IconButton
               size="small"
               onClick={(e) => { e.stopPropagation(); handleMenuOpen(e, job); }}
-              sx={{ bgcolor: 'action.hover' }}
+              aria-label="More options"
+              sx={{ bgcolor: 'action.hover', minWidth: 44, minHeight: 44 }}
             >
               <MoreIcon fontSize="small" />
             </IconButton>
@@ -429,8 +432,11 @@ const JobManagementPage = () => {
             onClick={handleRefresh} 
             disabled={loading}
             size="small"
+            aria-label="Refresh jobs"
             sx={{ 
               bgcolor: 'action.hover',
+              minWidth: 44,
+              minHeight: 44,
               '&:hover': { bgcolor: 'action.selected' },
             }}
           >
@@ -825,7 +831,7 @@ const JobManagementPage = () => {
       </Menu>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
+      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog} fullScreen={isMobile}>
         <DialogTitle>Delete Job</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -834,11 +840,12 @@ const JobManagementPage = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDeleteDialog}>Cancel</Button>
+          <Button onClick={handleCloseDeleteDialog} sx={{ minHeight: 44 }}>Cancel</Button>
           <Button
             onClick={handleDeleteConfirm}
             color="error"
             variant="contained"
+            sx={{ minHeight: 44 }}
           >
             Delete
           </Button>

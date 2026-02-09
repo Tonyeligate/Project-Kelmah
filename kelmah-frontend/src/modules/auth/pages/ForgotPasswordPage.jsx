@@ -8,13 +8,15 @@ import {
   Alert,
   useMediaQuery,
   IconButton,
+  useTheme,
 } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import authService from '../services/authService';
 import { Link, useNavigate } from 'react-router-dom';
 
 const ForgotPasswordPage = () => {
-  const isActualMobile = useMediaQuery('(max-width: 768px)');
+  const theme = useTheme();
+  const isActualMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('');
@@ -59,7 +61,8 @@ const ForgotPasswordPage = () => {
           >
             <IconButton
               onClick={() => navigate('/login')}
-              sx={{ color: 'white', p: 0, mr: 2 }}
+              sx={{ color: 'white', mr: 2, minWidth: 44, minHeight: 44 }}
+              aria-label="Back to login"
             >
               <ArrowBack />
             </IconButton>
@@ -248,7 +251,7 @@ const ForgotPasswordPage = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
+        <Button type="submit" variant="contained" fullWidth sx={{ mt: 2, minHeight: 44 }}>
           Send Reset Link
         </Button>
         <Box sx={{ mt: 2 }}>

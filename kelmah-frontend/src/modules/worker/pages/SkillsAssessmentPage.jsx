@@ -920,23 +920,25 @@ const SkillsAssessmentPage = () => {
     return (
       <Box>
         {/* Test Header */}
-        <Paper sx={{ p: 3, mb: 3, borderRadius: 2 }}>
+        <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3, borderRadius: 2 }}>
           <Box
             sx={{
               display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
               justifyContent: 'space-between',
-              alignItems: 'center',
+              alignItems: { xs: 'stretch', sm: 'center' },
+              gap: { xs: 1, sm: 2 },
               mb: 2,
             }}
           >
-            <Typography variant="h5" fontWeight={700}>
+            <Typography variant={isMobile ? 'h6' : 'h5'} fontWeight={700}>
               {currentTest.title}
             </Typography>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
               <TimerDisplay urgent={timeUrgent}>
                 <TimerIcon />
-                <Typography variant="h6" fontWeight={600}>
+                <Typography variant={isMobile ? 'body1' : 'h6'} fontWeight={600}>
                   {formatTime(timeRemaining)}
                 </Typography>
               </TimerDisplay>
@@ -945,6 +947,7 @@ const SkillsAssessmentPage = () => {
                 variant="outlined"
                 onClick={testPaused ? resumeTest : pauseTest}
                 startIcon={testPaused ? <PlayIcon /> : <PauseIcon />}
+                sx={{ minHeight: 44 }}
               >
                 {testPaused ? 'Resume' : 'Pause'}
               </Button>
@@ -954,6 +957,7 @@ const SkillsAssessmentPage = () => {
                 color="error"
                 onClick={exitTest}
                 startIcon={<StopIcon />}
+                sx={{ minHeight: 44 }}
               >
                 Exit
               </Button>
@@ -984,7 +988,7 @@ const SkillsAssessmentPage = () => {
             transition={{ duration: 0.3 }}
           >
             <GlassCard sx={{ mb: 3 }}>
-              <CardContent sx={{ p: 4 }}>
+              <CardContent sx={{ p: { xs: 2, md: 4 } }}>
                 <Typography variant="h6" gutterBottom>
                   {question.question}
                 </Typography>
@@ -1071,14 +1075,17 @@ const SkillsAssessmentPage = () => {
               onClick={prevQuestion}
               disabled={currentQuestion === 0}
               startIcon={<ArrowBackIcon />}
+              sx={{ minHeight: 44 }}
             >
               Previous
             </Button>
 
-            <Typography variant="body2" color="text.secondary">
-              {Object.keys(answers).length} of {currentTest.questions.length}{' '}
-              answered
-            </Typography>
+            {!isMobile && (
+              <Typography variant="body2" color="text.secondary">
+                {Object.keys(answers).length} of {currentTest.questions.length}{' '}
+                answered
+              </Typography>
+            )}
 
             {currentQuestion === currentTest.questions.length - 1 ? (
               <AnimatedButton
@@ -1088,6 +1095,7 @@ const SkillsAssessmentPage = () => {
                 disabled={
                   Object.keys(answers).length < currentTest.questions.length
                 }
+                sx={{ minHeight: 44 }}
               >
                 Submit Test
               </AnimatedButton>
@@ -1096,6 +1104,7 @@ const SkillsAssessmentPage = () => {
                 variant="contained"
                 onClick={nextQuestion}
                 endIcon={<ArrowForwardIcon />}
+                sx={{ minHeight: 44 }}
               >
                 Next
               </Button>
@@ -1108,7 +1117,7 @@ const SkillsAssessmentPage = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
         <Box
           sx={{
             display: 'flex',
@@ -1125,7 +1134,7 @@ const SkillsAssessmentPage = () => {
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
         <Alert severity="error" sx={{ borderRadius: 2 }}>
           {error}
         </Alert>
@@ -1135,7 +1144,7 @@ const SkillsAssessmentPage = () => {
 
   if (assessmentInProgress && testStarted) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
         {renderTestInterface()}
 
         {/* Confirm Exit Dialog */}
@@ -1171,8 +1180,8 @@ const SkillsAssessmentPage = () => {
         />
       </Helmet>
 
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Breadcrumbs sx={{ mb: 3 }}>
+      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+        <Breadcrumbs sx={{ mb: 3, display: { xs: 'none', sm: 'block' } }}>
           <Link color="inherit" component={RouterLink} to="/">
             <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
             Home
@@ -1183,13 +1192,15 @@ const SkillsAssessmentPage = () => {
           <Typography color="text.primary">Skills Assessment</Typography>
         </Breadcrumbs>
 
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h3" fontWeight={700} gutterBottom>
+        <Box sx={{ mb: { xs: 2, md: 4 } }}>
+          <Typography variant={isMobile ? 'h4' : 'h3'} fontWeight={700} gutterBottom>
             Skills Assessment Center
           </Typography>
-          <Typography variant="h6" color="text.secondary">
-            Validate your expertise and earn professional certifications
-          </Typography>
+          {!isMobile && (
+            <Typography variant="h6" color="text.secondary">
+              Validate your expertise and earn professional certifications
+            </Typography>
+          )}
         </Box>
 
         {/* Tabs */}
@@ -1199,6 +1210,7 @@ const SkillsAssessmentPage = () => {
             onChange={(e, newValue) => setTabValue(newValue)}
             variant={isMobile ? 'scrollable' : 'fullWidth'}
             scrollButtons="auto"
+            allowScrollButtonsMobile
           >
             <Tab icon={<QuizIcon />} label="Available Tests" />
             <Tab icon={<BuildIcon />} label="My Skills" />
@@ -1230,6 +1242,7 @@ const SkillsAssessmentPage = () => {
           onClose={() => setStartTestDialog(false)}
           maxWidth="md"
           fullWidth
+          fullScreen={isMobile}
         >
           <DialogTitle>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -1299,11 +1312,12 @@ const SkillsAssessmentPage = () => {
             )}
           </DialogContent>
           <DialogActions sx={{ p: 3 }}>
-            <Button onClick={() => setStartTestDialog(false)}>Cancel</Button>
+            <Button onClick={() => setStartTestDialog(false)} sx={{ minHeight: 44 }}>Cancel</Button>
             <AnimatedButton
               variant="contained"
               onClick={confirmStartTest}
               startIcon={<PlayIcon />}
+              sx={{ minHeight: 44 }}
             >
               Start Assessment
             </AnimatedButton>
@@ -1316,6 +1330,7 @@ const SkillsAssessmentPage = () => {
           onClose={() => setResultsDialog(false)}
           maxWidth="md"
           fullWidth
+          fullScreen={isMobile}
         >
           <DialogTitle>
             <Box sx={{ textAlign: 'center' }}>
@@ -1380,19 +1395,20 @@ const SkillsAssessmentPage = () => {
               </Box>
             )}
           </DialogContent>
-          <DialogActions sx={{ justifyContent: 'center', p: 3 }}>
+          <DialogActions sx={{ justifyContent: 'center', p: 3, flexWrap: 'wrap', gap: 1 }}>
             {testResults?.certificate && (
-              <Button startIcon={<DownloadIcon />} variant="outlined">
+              <Button startIcon={<DownloadIcon />} variant="outlined" sx={{ minHeight: 44 }}>
                 Download Certificate
               </Button>
             )}
-            <Button onClick={() => setResultsDialog(false)}>Close</Button>
+            <Button onClick={() => setResultsDialog(false)} sx={{ minHeight: 44 }}>Close</Button>
             <Button
               variant="contained"
               onClick={() => {
                 setResultsDialog(false);
                 navigate('/worker/skills');
               }}
+              sx={{ minHeight: 44 }}
             >
               View All Assessments
             </Button>

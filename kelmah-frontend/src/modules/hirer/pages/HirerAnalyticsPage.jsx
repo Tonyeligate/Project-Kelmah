@@ -26,6 +26,7 @@ import {
   Stack,
   useTheme,
   alpha,
+  useMediaQuery,
   Table,
   TableBody,
   TableCell,
@@ -86,6 +87,7 @@ const HirerAnalyticsPage = () => {
   const { user } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // State management
   const [analyticsData, setAnalyticsData] = useState(null);
@@ -275,11 +277,11 @@ const HirerAnalyticsPage = () => {
     if (!analyticsData?.spendingData) return null;
 
     return (
-      <Paper sx={{ p: 3, mb: 3 }}>
+      <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
         <Typography variant="h6" gutterBottom>
           Spending Trend
         </Typography>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={isMobile ? 220 : 300}>
           <AreaChart data={analyticsData.spendingData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="period" tick={{ fontSize: 12 }} />
@@ -307,11 +309,11 @@ const HirerAnalyticsPage = () => {
     return (
       <Grid container spacing={3} mb={3}>
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
+          <Paper sx={{ p: { xs: 2, md: 3 } }}>
             <Typography variant="h6" gutterBottom>
               Job Status Distribution
             </Typography>
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
               <PieChart>
                 <Pie
                   data={analyticsData.jobStatusData}
@@ -339,7 +341,7 @@ const HirerAnalyticsPage = () => {
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
+          <Paper sx={{ p: { xs: 2, md: 3 } }}>
             <Typography variant="h6" gutterBottom>
               Performance Metrics
             </Typography>
@@ -418,11 +420,11 @@ const HirerAnalyticsPage = () => {
     if (!analyticsData?.categoryBreakdown) return null;
 
     return (
-      <Paper sx={{ p: 3, mb: 3 }}>
+      <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
         <Typography variant="h6" gutterBottom>
           Spending by Category
         </Typography>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={isMobile ? 220 : 300}>
           <BarChart data={analyticsData.categoryBreakdown}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="category" tick={{ fontSize: 12 }} />
@@ -446,11 +448,11 @@ const HirerAnalyticsPage = () => {
     if (!analyticsData?.topWorkers) return null;
 
     return (
-      <Paper sx={{ p: 3, mb: 3 }}>
+      <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
         <Typography variant="h6" gutterBottom>
           Top Performing Workers
         </Typography>
-        <TableContainer>
+        <TableContainer sx={{ overflowX: 'auto' }}>
           <Table>
             <TableHead>
               <TableRow>
@@ -512,12 +514,12 @@ const HirerAnalyticsPage = () => {
                   </TableCell>
                   <TableCell align="center">
                     <Tooltip title="View Profile">
-                      <IconButton size="small">
+                      <IconButton aria-label="View worker profile" sx={{ minWidth: 44, minHeight: 44 }}>
                         <ViewIcon />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Compare">
-                      <IconButton size="small">
+                      <IconButton aria-label="Compare workers" sx={{ minWidth: 44, minHeight: 44 }}>
                         <CompareIcon />
                       </IconButton>
                     </Tooltip>
@@ -536,7 +538,7 @@ const HirerAnalyticsPage = () => {
     if (!analyticsData?.recentActivity) return null;
 
     return (
-      <Paper sx={{ p: 3 }}>
+      <Paper sx={{ p: { xs: 2, md: 3 } }}>
         <Typography variant="h6" gutterBottom>
           Recent Activity
         </Typography>
@@ -658,14 +660,16 @@ const HirerAnalyticsPage = () => {
       <Box
         mb={3}
         display="flex"
+        flexDirection={{ xs: 'column', sm: 'row' }}
         justifyContent="space-between"
-        alignItems="center"
+        alignItems={{ xs: 'stretch', sm: 'center' }}
+        gap={2}
       >
-        <Typography variant="h4" component="h1">
+        <Typography variant={isMobile ? 'h5' : 'h4'} component="h1">
           Hiring Analytics
         </Typography>
-        <Stack direction="row" spacing={2}>
-          <FormControl size="small" sx={{ minWidth: 150 }}>
+        <Stack direction="row" spacing={1} flexWrap="wrap">
+          <FormControl size="small" sx={{ minWidth: { xs: 120, sm: 150 } }}>
             <InputLabel>Time Range</InputLabel>
             <Select
               value={timeRange}
@@ -683,8 +687,9 @@ const HirerAnalyticsPage = () => {
             variant="outlined"
             startIcon={<DownloadIcon />}
             onClick={handleExportData}
+            sx={{ minHeight: 44 }}
           >
-            Export Report
+            {isMobile ? 'Export' : 'Export Report'}
           </Button>
         </Stack>
       </Box>

@@ -26,6 +26,7 @@ import {
   Skeleton,
   useTheme,
   Alert,
+  useMediaQuery,
 } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -52,6 +53,7 @@ import { formatJobLocation } from '../../../utils/formatters';
 const JobApplicationPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { isAuthenticated } = useSelector((state) => state.auth || {});
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('');
@@ -156,8 +158,8 @@ const JobApplicationPage = () => {
 
   return (
     <Grow in timeout={500}>
-      <Container sx={{ py: 4 }}>
-        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+      <Container sx={{ py: { xs: 2, md: 4 } }}>
+        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2, display: { xs: 'none', sm: 'block' } }}>
           <Link
             component={RouterLink}
             to="/worker/dashboard"
@@ -168,12 +170,12 @@ const JobApplicationPage = () => {
           </Link>
           <Typography color="text.primary">Find Work</Typography>
         </Breadcrumbs>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 3 }}>
+        <Typography variant={isMobile ? 'h5' : 'h4'} component="h1" gutterBottom sx={{ mb: { xs: 2, md: 3 } }}>
           Find Work
         </Typography>
 
         {/* Search and Filter Section */}
-        <Paper sx={{ p: 3, mb: 4 }}>
+        <Paper sx={{ p: { xs: 2, md: 3 }, mb: { xs: 2, md: 4 } }}>
           <Grid container spacing={2}>
             <Grid item xs={12} md={4}>
               <TextField
@@ -335,10 +337,12 @@ const JobApplicationPage = () => {
                           borderRadius: 2,
                           boxShadow: 3,
                           transition: 'all 0.3s ease',
-                          '&:hover': {
-                            boxShadow: 6,
-                            transform: 'translateY(-2px)',
-                          },
+                          ...(!isMobile && {
+                            '&:hover': {
+                              boxShadow: 6,
+                              transform: 'translateY(-2px)',
+                            },
+                          }),
                         }}
                       >
                         <CardContent>
@@ -354,10 +358,11 @@ const JobApplicationPage = () => {
                                 variant="h5"
                                 component="h2"
                                 gutterBottom
+                                sx={{ fontSize: { xs: '1.125rem', md: '1.5rem' } }}
                               >
                                 {job.title}
                               </Typography>
-                              <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                              <Stack direction="row" spacing={2} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
                                 <Box
                                   sx={{ display: 'flex', alignItems: 'center' }}
                                 >
@@ -416,7 +421,11 @@ const JobApplicationPage = () => {
                                 </Box>
                               </Stack>
                             </Box>
-                            <IconButton onClick={() => handleSaveJob(job)}>
+                            <IconButton
+                              onClick={() => handleSaveJob(job)}
+                              aria-label={savedJobIds.has(job._id || job.id) ? 'Unsave job' : 'Save job'}
+                              sx={{ minWidth: 44, minHeight: 44 }}
+                            >
                               {savedJobIds.has(job._id || job.id) ? (
                                 <BookmarkIcon color="primary" />
                               ) : (
@@ -457,12 +466,13 @@ const JobApplicationPage = () => {
                           </Box>
                         </CardContent>
                         <Divider />
-                        <CardActions sx={{ justifyContent: 'flex-end' }}>
+                        <CardActions sx={{ justifyContent: 'flex-end', p: { xs: 1.5, md: 2 } }}>
                           <Button
                             size="small"
                             variant="text"
                             component={RouterLink}
                             to={`/jobs/${job._id || job.id}`}
+                            sx={{ minHeight: 44 }}
                           >
                             View Details
                           </Button>
@@ -471,6 +481,7 @@ const JobApplicationPage = () => {
                             variant="contained"
                             component={RouterLink}
                             to={`/jobs/${job._id || job.id}?apply=true`}
+                            sx={{ minHeight: 44 }}
                           >
                             Apply Now
                           </Button>

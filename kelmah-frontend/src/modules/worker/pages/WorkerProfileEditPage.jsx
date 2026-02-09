@@ -62,7 +62,7 @@ const WorkerProfileEditPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // FIXED: Use standardized user normalization for consistent user data access
   const { user: rawUser } = useSelector((state) => state.auth);
@@ -499,9 +499,9 @@ const WorkerProfileEditPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom fontWeight="bold">
+    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+      <Box sx={{ mb: { xs: 2, md: 4 } }}>
+        <Typography variant={isMobile ? 'h5' : 'h4'} gutterBottom fontWeight="bold">
           Edit Your Profile
         </Typography>
         <Typography variant="body1" color="text.secondary">
@@ -534,7 +534,7 @@ const WorkerProfileEditPage = () => {
         {/* Availability */}
         <Paper
           elevation={3}
-          sx={{ p: 3, mb: 4, borderRadius: 2 }}
+          sx={{ p: { xs: 2, md: 3 }, mb: 4, borderRadius: 2 }}
           ref={availabilityRef}
         >
           <Typography
@@ -656,7 +656,7 @@ const WorkerProfileEditPage = () => {
           </Box>
         </Paper>
         {/* Profile Completeness */}
-        <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+        <Paper elevation={3} sx={{ p: { xs: 2, md: 3 }, mb: 4, borderRadius: 2 }}>
           <Typography
             variant="h6"
             gutterBottom
@@ -681,7 +681,7 @@ const WorkerProfileEditPage = () => {
             </Box>
           )}
         </Paper>
-        <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+        <Paper elevation={3} sx={{ p: { xs: 2, md: 3 }, mb: 4, borderRadius: 2 }}>
           <Typography
             variant="h6"
             gutterBottom
@@ -702,7 +702,7 @@ const WorkerProfileEditPage = () => {
             <Avatar
               src={imagePreview}
               alt={`${formData.firstName} ${formData.lastName}`}
-              sx={{ width: 150, height: 150, mb: 2 }}
+              sx={{ width: { xs: 100, md: 150 }, height: { xs: 100, md: 150 }, mb: 2 }}
             />
             <label htmlFor="profile-image">
               <Input
@@ -804,7 +804,7 @@ const WorkerProfileEditPage = () => {
         </Paper>
 
         {/* Professional Info */}
-        <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+        <Paper elevation={3} sx={{ p: { xs: 2, md: 3 }, mb: 4, borderRadius: 2 }}>
           <Typography
             variant="h6"
             gutterBottom
@@ -874,7 +874,7 @@ const WorkerProfileEditPage = () => {
         </Paper>
 
         {/* Skills */}
-        <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+        <Paper elevation={3} sx={{ p: { xs: 2, md: 3 }, mb: 4, borderRadius: 2 }}>
           <Typography
             variant="h6"
             gutterBottom
@@ -890,7 +890,7 @@ const WorkerProfileEditPage = () => {
                 label="Add a Skill"
                 value={newSkill}
                 onChange={(e) => setNewSkill(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddSkill()}
                 placeholder="e.g. Plumbing, Electrical Installation, Carpentry"
                 InputProps={{
                   startAdornment: (
@@ -926,7 +926,7 @@ const WorkerProfileEditPage = () => {
         </Paper>
 
         {/* Education */}
-        <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+        <Paper elevation={3} sx={{ p: { xs: 2, md: 3 }, mb: 4, borderRadius: 2 }}>
           <Typography
             variant="h6"
             gutterBottom
@@ -1012,9 +1012,10 @@ const WorkerProfileEditPage = () => {
                           </Typography>
                         </Box>
                         <IconButton
-                          size="small"
                           onClick={() => handleRemoveEducation(index)}
                           color="error"
+                          aria-label="Remove education entry"
+                          sx={{ minWidth: 44, minHeight: 44 }}
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -1027,7 +1028,7 @@ const WorkerProfileEditPage = () => {
         </Paper>
 
         {/* Languages */}
-        <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+        <Paper elevation={3} sx={{ p: { xs: 2, md: 3 }, mb: 4, borderRadius: 2 }}>
           <Typography
             variant="h6"
             gutterBottom
@@ -1112,9 +1113,10 @@ const WorkerProfileEditPage = () => {
                           </Typography>
                         </Box>
                         <IconButton
-                          size="small"
                           onClick={() => handleRemoveLanguage(index)}
                           color="error"
+                          aria-label="Remove language entry"
+                          sx={{ minWidth: 44, minHeight: 44 }}
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -1127,7 +1129,7 @@ const WorkerProfileEditPage = () => {
         </Paper>
 
         {/* Portfolio */}
-        <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+        <Paper elevation={3} sx={{ p: { xs: 2, md: 3 }, mb: 4, borderRadius: 2 }}>
           <Typography
             variant="h6"
             gutterBottom
@@ -1160,10 +1162,10 @@ const WorkerProfileEditPage = () => {
                           Portfolio Item #{index + 1}
                         </Typography>
                         <IconButton
-                          size="small"
                           onClick={() => handleRemovePortfolioItem(index)}
                           color="error"
-                          sx={{ position: 'absolute', top: 8, right: 8 }}
+                          aria-label="Remove portfolio item"
+                          sx={{ position: 'absolute', top: 8, right: 8, minWidth: 44, minHeight: 44 }}
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -1261,13 +1263,14 @@ const WorkerProfileEditPage = () => {
         </Paper>
 
         {/* Action buttons */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column-reverse', sm: 'row' }, justifyContent: 'space-between', gap: 2, mt: 4 }}>
           <Button
             variant="outlined"
             color="error"
             startIcon={<CancelIcon />}
             onClick={handleCancel}
             size="large"
+            sx={{ minHeight: 44 }}
           >
             Cancel
           </Button>
@@ -1279,6 +1282,7 @@ const WorkerProfileEditPage = () => {
             startIcon={<SaveIcon />}
             size="large"
             disabled={!!loading?.profile}
+            sx={{ minHeight: 44 }}
           >
             {loading?.profile ? 'Saving...' : 'Save Profile'}
           </Button>

@@ -208,7 +208,7 @@ const InteractiveMap = ({
             <LocationOnIcon
               sx={{ fontSize: 64, mb: 2, color: theme.palette.secondary.main }}
             />
-            <Typography variant="h4" sx={{ mb: 1, fontWeight: 'bold' }}>
+            <Typography variant="h4" sx={{ mb: 1, fontWeight: 'bold', fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
               Kelmah Professional Map
             </Typography>
             <Typography variant="body1" sx={{ mb: 3, opacity: 0.9 }}>
@@ -330,7 +330,7 @@ const LiveAnalytics = ({ analytics, onClose }) => {
           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
             Live Analytics
           </Typography>
-          <IconButton onClick={onClose} size="small">
+          <IconButton onClick={onClose} size="small" aria-label="Close analytics" sx={{ minWidth: 44, minHeight: 44 }}>
             <CloseIcon />
           </IconButton>
         </Box>
@@ -517,7 +517,7 @@ const SearchFilterPanel = ({
             ),
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton size="small" onClick={onSearch}>
+                <IconButton size="small" onClick={onSearch} aria-label="Refresh search" sx={{ minWidth: 44, minHeight: 44 }}>
                   <RefreshIcon />
                 </IconButton>
               </InputAdornment>
@@ -818,7 +818,9 @@ const ProfessionalMapPage = () => {
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center',
+              alignItems: { xs: 'flex-start', md: 'center' },
+              flexDirection: { xs: 'column', md: 'row' },
+              gap: { xs: 2, md: 0 },
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -826,7 +828,7 @@ const ProfessionalMapPage = () => {
                 K
               </Avatar>
               <Box>
-                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', fontSize: { xs: '1.25rem', md: '1.5rem' } }}>
                   Kelmah Professional Map
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
@@ -835,9 +837,9 @@ const ProfessionalMapPage = () => {
               </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
               {/* Key Metrics */}
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
                 <Chip
                   label={`${mockMapData.jobs.length} Jobs`}
                   icon={<JobIcon />}
@@ -872,7 +874,7 @@ const ProfessionalMapPage = () => {
               >
                 <ToggleButton
                   value="jobs"
-                  sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}
+                  sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)', minHeight: 44 }}
                 >
                   Jobs
                   <Badge
@@ -883,7 +885,7 @@ const ProfessionalMapPage = () => {
                 </ToggleButton>
                 <ToggleButton
                   value="workers"
-                  sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}
+                  sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)', minHeight: 44 }}
                 >
                   Workers
                   <Badge
@@ -896,10 +898,10 @@ const ProfessionalMapPage = () => {
 
               {/* Action Buttons */}
               <Box sx={{ display: 'flex', gap: 1 }}>
-                <IconButton sx={{ color: 'white' }}>
+                <IconButton sx={{ color: 'white', minWidth: 44, minHeight: 44 }} aria-label="Refresh map">
                   <RefreshIcon />
                 </IconButton>
-                <IconButton sx={{ color: 'white' }}>
+                <IconButton sx={{ color: 'white', minWidth: 44, minHeight: 44 }} aria-label="Toggle fullscreen">
                   <FullscreenIcon />
                 </IconButton>
               </Box>
@@ -971,6 +973,7 @@ const ProfessionalMapPage = () => {
         onClose={() => setSelectedItem(null)}
         maxWidth="sm"
         fullWidth
+        fullScreen={isMobile}
       >
         <DialogTitle>
           <Box
@@ -983,7 +986,7 @@ const ProfessionalMapPage = () => {
             <Typography variant="h6">
               {selectedItem?.title || selectedItem?.name}
             </Typography>
-            <IconButton onClick={() => setSelectedItem(null)}>
+            <IconButton onClick={() => setSelectedItem(null)} aria-label="Close dialog" sx={{ minWidth: 44, minHeight: 44 }}>
               <CloseIcon />
             </IconButton>
           </Box>
@@ -1007,8 +1010,8 @@ const ProfessionalMapPage = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setSelectedItem(null)}>Close</Button>
-          <Button variant="contained">View Details</Button>
+          <Button onClick={() => setSelectedItem(null)} sx={{ minHeight: 44 }}>Close</Button>
+          <Button variant="contained" sx={{ minHeight: 44 }}>View Details</Button>
         </DialogActions>
       </Dialog>
 

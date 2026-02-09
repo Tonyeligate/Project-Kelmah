@@ -3,12 +3,13 @@ import Login from '../components/login/Login';
 import AuthWrapper from '../components/common/AuthWrapper';
 import MobileLogin from '../components/mobile/MobileLogin';
 import { useLocation } from 'react-router-dom';
-import { Alert, useMediaQuery } from '@mui/material';
+import { Alert, useMediaQuery, useTheme } from '@mui/material';
 
 const LoginPage = () => {
   const location = useLocation();
   const registered = location.state?.registered;
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Render clean mobile view without AuthWrapper
   if (isMobile) {

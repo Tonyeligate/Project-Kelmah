@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { Box, Container, Typography, Alert, Button } from '@mui/material';
+import { Box, Container, Typography, Alert, Button, useTheme, useMediaQuery } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectIsAuthenticated } from '../../auth/services/authSlice';
@@ -7,6 +8,8 @@ import WorkerSearch from '../components/WorkerSearch';
 import { Helmet } from 'react-helmet-async';
 
 const WorkerSearchPage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
@@ -32,9 +35,9 @@ const WorkerSearchPage = () => {
         <Helmet>
           <title>Find Talent | Kelmah</title>
         </Helmet>
-        <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
           <Typography
-            variant="h2"
+            variant={isMobile ? 'h4' : 'h2'}
             sx={{
               color: '#D4AF37',
               textAlign: 'center',
@@ -48,7 +51,7 @@ const WorkerSearchPage = () => {
             Find Ghana's Top Skilled Workers
           </Typography>
           <Typography
-            variant="h5"
+            variant={isMobile ? 'body1' : 'h5'}
             sx={{
               color: 'rgba(255,255,255,0.8)',
               textAlign: 'center',
@@ -103,19 +106,25 @@ const WorkerSearchPage = () => {
       <Helmet>
         <title>Find Talent | Kelmah</title>
       </Helmet>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <Box
           display="flex"
           justifyContent="space-between"
           alignItems="center"
           mb={3}
         >
-          <Button variant="text" color="inherit" onClick={handleGoBack}>
-            ← Go Back
+          <Button
+            variant="text"
+            color="inherit"
+            onClick={handleGoBack}
+            startIcon={<ArrowBackIcon />}
+            sx={{ minHeight: 44 }}
+          >
+            {isMobile ? '' : 'Go Back'}
           </Button>
         </Box>
         <Typography
-          variant="h2"
+          variant={isMobile ? 'h4' : 'h2'}
           sx={{
             color: '#D4AF37',
             textAlign: 'center',
@@ -129,7 +138,7 @@ const WorkerSearchPage = () => {
           Find Ghana's Top Skilled Workers
         </Typography>
         <Typography
-          variant="h5"
+          variant={isMobile ? 'body1' : 'h5'}
           sx={{
             color: 'rgba(255,255,255,0.8)',
             textAlign: 'center',

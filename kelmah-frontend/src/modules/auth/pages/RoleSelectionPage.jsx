@@ -1,10 +1,11 @@
 import React from 'react';
-import { Box, Button, Typography, useMediaQuery } from '@mui/material';
+import { Box, Button, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import AuthWrapper from '../components/common/AuthWrapper';
 
 const RoleSelectionPage = () => {
-  const isActualMobile = useMediaQuery('(max-width: 768px)');
+  const theme = useTheme();
+  const isActualMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
 
   const handleRoleSelection = (role) => {
@@ -53,10 +54,12 @@ const RoleSelectionPage = () => {
               <Button
                 sx={{
                   color: 'white',
-                  minWidth: 'auto',
+                  minWidth: 44,
+                  minHeight: 44,
                   p: 0,
                   '&:hover': { backgroundColor: 'transparent' },
                 }}
+                aria-label="Help"
               >
                 <svg
                   width="24"
@@ -244,7 +247,7 @@ const RoleSelectionPage = () => {
             variant="contained"
             size="large"
             onClick={() => handleRoleSelection('worker')}
-            sx={{ minWidth: 120 }}
+            sx={{ minWidth: 120, minHeight: 44 }}
           >
             Worker
           </Button>
@@ -252,7 +255,7 @@ const RoleSelectionPage = () => {
             variant="outlined"
             size="large"
             onClick={() => handleRoleSelection('hirer')}
-            sx={{ minWidth: 120 }}
+            sx={{ minWidth: 120, minHeight: 44 }}
           >
             Hirer
           </Button>

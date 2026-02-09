@@ -75,7 +75,7 @@ const MfaSetupPage = () => {
                 onChange={(e) => setToken(e.target.value)}
                 sx={{ mb: 2 }}
               />
-              <Button type="submit" variant="contained">
+              <Button type="submit" variant="contained" fullWidth sx={{ minHeight: 44 }}>
                 Enable 2FA
               </Button>
             </Box>

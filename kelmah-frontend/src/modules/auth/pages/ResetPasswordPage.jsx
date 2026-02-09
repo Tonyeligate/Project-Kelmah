@@ -72,7 +72,7 @@ const ResetPasswordPage = () => {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
-        <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
+        <Button type="submit" variant="contained" fullWidth sx={{ mt: 2, minHeight: 44 }}>
           Reset Password
         </Button>
         <Box sx={{ mt: 2 }}>

@@ -9,7 +9,7 @@ import BackgroundChecker from '../components/BackgroundChecker';
 const HirerToolsPage = () => {
   const [skills, setSkills] = useState([]);
   return (
-    <Container sx={{ py: 4 }}>
+    <Container sx={{ py: { xs: 2, md: 4 } }}>
       <Grid container spacing={3}>
         <Grid item xs={12} md={8}>
           <JobCreationWizard

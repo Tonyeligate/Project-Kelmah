@@ -70,7 +70,7 @@ import reviewService from '../services/reviewService';
 const EnhancedReviewsPage = () => {
   const { user } = useAuth();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
   // State management
@@ -858,9 +858,12 @@ const EnhancedReviewsPage = () => {
 
           <IconButton
             onClick={() => window.location.reload()}
+            aria-label="Refresh reviews"
             sx={{
               background: alpha('#FFD700', 0.1),
               border: '1px solid rgba(255,215,0,0.3)',
+              minWidth: 44,
+              minHeight: 44,
               '&:hover': {
                 background: alpha('#FFD700', 0.2),
               },
@@ -884,10 +887,14 @@ const EnhancedReviewsPage = () => {
         <Tabs
           value={activeTab}
           onChange={(e, newValue) => setActiveTab(newValue)}
+          variant={isMobile ? 'scrollable' : 'standard'}
+          scrollButtons="auto"
+          allowScrollButtonsMobile
           sx={{
             '& .MuiTab-root': {
               color: 'rgba(255,255,255,0.7)',
               fontWeight: 600,
+              minWidth: { xs: 'auto', md: 120 },
               '&.Mui-selected': {
                 color: '#FFD700',
               },
@@ -920,9 +927,9 @@ const EnhancedReviewsPage = () => {
             }}
           >
             <Stack
-              direction="row"
+              direction={{ xs: 'column', sm: 'row' }}
               spacing={2}
-              alignItems="center"
+              alignItems={{ xs: 'stretch', sm: 'center' }}
               sx={{ mb: 2 }}
             >
               <TextField
@@ -1139,6 +1146,7 @@ const EnhancedReviewsPage = () => {
         }}
         maxWidth="md"
         fullWidth
+        fullScreen={isMobile}
         PaperProps={{
           sx: {
             background:
@@ -1233,7 +1241,7 @@ const EnhancedReviewsPage = () => {
               setReplyText('');
               setSelectedReview(null);
             }}
-            sx={{ color: 'rgba(255,255,255,0.7)' }}
+            sx={{ color: 'rgba(255,255,255,0.7)', minHeight: 44 }}
           >
             Cancel
           </Button>
@@ -1244,6 +1252,7 @@ const EnhancedReviewsPage = () => {
               background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
               color: '#000',
               fontWeight: 700,
+              minHeight: 44,
               '&:hover': {
                 background: 'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
               },

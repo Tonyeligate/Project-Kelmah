@@ -47,7 +47,7 @@ import {
   selectHirerLoading,
   selectHirerError,
 } from '../services/hirerSlice';
-import { alpha, useTheme } from '@mui/material/styles';
+import { alpha, useTheme, useMediaQuery } from '@mui/material/styles';
 
 const steps = [
   { label: 'Job Details', icon: <Work /> },
@@ -176,6 +176,8 @@ const REQUIRED_LABEL_SX = {
 const JobPostingPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isLoading = useSelector(selectHirerLoading('jobs'));
   const error = useSelector(selectHirerError('jobs'));
   const [activeStep, setActiveStep] = useState(0);
@@ -504,8 +506,8 @@ const JobPostingPage = () => {
 
   if (submitSuccess) {
     return (
-      <Container maxWidth="md" sx={{ py: 5, textAlign: 'center' }}>
-        <CheckCircle color="success" sx={{ fontSize: 80, mb: 2 }} />
+      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 }, textAlign: 'center' }}>
+        <CheckCircle color="success" sx={{ fontSize: { xs: 60, md: 80 }, mb: 2 }} />
         <Typography variant="h4" gutterBottom>
           Job Posted Successfully!
         </Typography>
@@ -912,7 +914,7 @@ const JobPostingPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
@@ -922,17 +924,28 @@ const JobPostingPage = () => {
         <title>Post a Job | Kelmah</title>
       </Helmet>
 
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+      <Box sx={{ mb: { xs: 2, md: 4 } }}>
+        <Typography variant={isMobile ? 'h5' : 'h4'} component="h1" gutterBottom>
           Post a Job
         </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Create a detailed job posting to find the perfect talent for your
-          project
-        </Typography>
+        {!isMobile && (
+          <Typography variant="body1" color="text.secondary">
+            Create a detailed job posting to find the perfect talent for your
+            project
+          </Typography>
+        )}
       </Box>
 
-      <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+      <Stepper
+        activeStep={activeStep}
+        orientation={isMobile ? 'vertical' : 'horizontal'}
+        sx={{
+          mb: { xs: 2, md: 4 },
+          '& .MuiStepLabel-label': {
+            fontSize: { xs: '0.75rem', md: '0.875rem' },
+          },
+        }}
+      >
         {steps.map((step) => (
           <Step key={step.label}>
             <StepLabel StepIconComponent={() => step.icon}>
@@ -944,7 +957,7 @@ const JobPostingPage = () => {
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 3, mb: 3 }}>
+          <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
             {showStepErrors && (
               <Alert severity="error" sx={{ mb: 2 }}>
                 <Typography variant="subtitle2" fontWeight={600} gutterBottom>
@@ -962,30 +975,41 @@ const JobPostingPage = () => {
             {getStepContent(activeStep)}
           </Paper>
         </Grid>
-        <Grid item xs={12} md={4}>
-          <JobPreview snapshot={previewSnapshot} />
-        </Grid>
+        {!isMobile && (
+          <Grid item xs={12} md={4}>
+            <JobPreview snapshot={previewSnapshot} />
+          </Grid>
+        )}
       </Grid>
 
       {activeStep !== 5 && (
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column-reverse', sm: 'row' },
+            justifyContent: 'space-between',
+            gap: 1,
+            mb: 2,
+          }}
+        >
           <Button
             variant="outlined"
             onClick={handleBack}
             startIcon={<ArrowBack />}
             disabled={activeStep === 0}
+            sx={{ minHeight: 44 }}
           >
             Back
           </Button>
 
-          <Box>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: { xs: 'stretch', sm: 'flex-end' } }}>
             {activeStep === steps.length - 1 ? (
               <>
                 <Button
                   variant="outlined"
                   onClick={() => handleSubmit(true)}
                   startIcon={<Save />}
-                  sx={{ mr: 1 }}
+                  sx={{ mr: 1, minHeight: 44, flex: { xs: 1, sm: 'none' } }}
                   disabled={isLoading}
                 >
                   Save as Draft
@@ -996,6 +1020,7 @@ const JobPostingPage = () => {
                   endIcon={<Publish />}
                   disabled={isLoading}
                   color="primary"
+                  sx={{ minHeight: 44, flex: { xs: 1, sm: 'none' } }}
                 >
                   {isLoading ? <CircularProgress size={24} /> : 'Post Job'}
                 </Button>
@@ -1006,6 +1031,7 @@ const JobPostingPage = () => {
                 onClick={handleNext}
                 endIcon={<ArrowForward />}
                 disabled={isLoading}
+                sx={{ minHeight: 44, width: { xs: '100%', sm: 'auto' } }}
               >
                 Next
               </Button>

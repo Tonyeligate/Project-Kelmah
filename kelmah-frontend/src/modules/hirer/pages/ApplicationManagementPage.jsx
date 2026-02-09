@@ -173,11 +173,11 @@ function ApplicationManagementPage() {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="xl" sx={{ mt: { xs: 2, md: 4 }, mb: { xs: 2, md: 4 } }}>
       <Helmet>
         <title>Applications | Kelmah</title>
       </Helmet>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant={isMobile ? 'h5' : 'h4'} gutterBottom>
         Job Applications
       </Typography>
       <Paper
@@ -211,11 +211,14 @@ function ApplicationManagementPage() {
               sx={{
                 borderBottom: `1px solid ${theme.palette.divider}`,
                 '& .MuiTab-root': {
-                  minWidth: 120,
-                  px: 2,
+                  minWidth: { xs: 80, sm: 120 },
+                  px: { xs: 1, sm: 2 },
                 },
               }}
-              centered
+              variant={isMobile ? 'scrollable' : 'standard'}
+              scrollButtons="auto"
+              allowScrollButtonsMobile
+              centered={!isMobile}
             >
               <Tab label="Pending" value="pending" />
               <Tab label="Accepted" value="accepted" />
@@ -296,8 +299,8 @@ function ApplicationManagementPage() {
                   {selectedApplication.coverLetter}
                 </Typography>
                 <Divider sx={{ my: 2 }} />
-                <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
-                  <Button startIcon={<Message />} onClick={handleMessage}>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-around', gap: 1 }}>
+                  <Button startIcon={<Message />} onClick={handleMessage} sx={{ minHeight: 44 }}>
                     Message
                   </Button>
                   <Button
@@ -305,6 +308,7 @@ function ApplicationManagementPage() {
                     variant="contained"
                     startIcon={<CheckCircle />}
                     onClick={() => handleOpenReviewDialog('accepted')}
+                    sx={{ minHeight: 44 }}
                   >
                     Accept
                   </Button>
@@ -313,6 +317,7 @@ function ApplicationManagementPage() {
                     variant="outlined"
                     startIcon={<Cancel />}
                     onClick={() => handleOpenReviewDialog('rejected')}
+                    sx={{ minHeight: 44 }}
                   >
                     Reject
                   </Button>
@@ -337,6 +342,7 @@ function ApplicationManagementPage() {
         onClose={() => setShowReviewDialog(false)}
         fullWidth
         maxWidth="sm"
+        fullScreen={isMobile}
       >
         <DialogTitle>Confirm Action</DialogTitle>
         <DialogContent>
@@ -356,12 +362,13 @@ function ApplicationManagementPage() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowReviewDialog(false)}>Cancel</Button>
+          <Button onClick={() => setShowReviewDialog(false)} sx={{ minHeight: 44 }}>Cancel</Button>
           <Button
             onClick={handleStatusUpdate}
             color={actionType === 'accepted' ? 'success' : 'error'}
             variant="contained"
             disabled={updating}
+            sx={{ minHeight: 44 }}
           >
             {updating ? (
               <CircularProgress size={24} />

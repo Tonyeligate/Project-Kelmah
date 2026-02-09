@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import {
   Container,
   Grid,
@@ -68,9 +69,9 @@ const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
   <Paper
     elevation={4}
     sx={{
-      p: 3,
+      p: { xs: 2, md: 3 },
       borderRadius: 2,
-      background: 'linear-gradient(to right, #28313b, #485461, #ffd700)',
+      background: 'linear-gradient(to right, #28313b, #485461, #ffd700),
       color: 'white',
       border: '2px solid',
       borderColor: 'secondary.main',
@@ -84,15 +85,16 @@ const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
         Wallet Balance
       </Typography>
     </Box>
-    <Typography variant="h3" fontWeight="bold" sx={{ my: 1 }}>
+    <Typography variant="h3" fontWeight="bold" sx={{ my: 1, fontSize: { xs: '1.75rem', md: '3rem' } }}>
       {currencyFormatter.format(balance)}
     </Typography>
-    <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+    <Box sx={{ mt: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
       <Button
         variant="contained"
         color="success"
         startIcon={<ArrowUpwardIcon />}
         onClick={onDepositClick}
+        sx={{ minHeight: 44 }}
       >
         Deposit
       </Button>
@@ -101,6 +103,7 @@ const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
         color="warning"
         startIcon={<ArrowDownwardIcon />}
         onClick={onWithdrawClick}
+        sx={{ minHeight: 44 }}
       >
         Withdraw
       </Button>
@@ -109,7 +112,7 @@ const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
 );
 
 const TransactionHistory = ({ transactions }) => (
-  <Paper sx={{ p: 3, borderRadius: 2 }}>
+  <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
     <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
       Recent Transactions
     </Typography>
@@ -156,7 +159,7 @@ const PaymentMethodsView = ({ methods }) => {
   // Empty state
   if (!methods || methods.length === 0) {
     return (
-      <Paper sx={{ p: 3, borderRadius: 2, textAlign: 'center' }}>
+      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2, textAlign: 'center' }}>
         <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
           Methods
         </Typography>
@@ -168,7 +171,7 @@ const PaymentMethodsView = ({ methods }) => {
   }
 
   return (
-    <Paper sx={{ p: 3, borderRadius: 2 }}>
+    <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
       <Box
         sx={{
           display: 'flex',
@@ -184,7 +187,7 @@ const PaymentMethodsView = ({ methods }) => {
           <Button
             variant="contained"
             color="secondary"
-            sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
+            sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)', minHeight: 44 }}
             startIcon={<AddIcon />}
             component={RouterLink}
             to="/payment/methods"
@@ -243,12 +246,12 @@ const PaymentMethodsView = ({ methods }) => {
                   }}
                 >
                   <Tooltip title="Edit this method">
-                    <IconButton size="small">
+                    <IconButton size="small" aria-label="Edit payment method" sx={{ minWidth: 44, minHeight: 44 }}>
                       <EditIcon />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Delete this method">
-                    <IconButton size="small" color="error">
+                    <IconButton size="small" color="error" aria-label="Delete payment method" sx={{ minWidth: 44, minHeight: 44 }}>
                       <DeleteIcon />
                     </IconButton>
                   </Tooltip>
@@ -301,7 +304,7 @@ const ActiveEscrows = ({ escrows }) => {
   // Empty state when no active escrows
   if (!escrows || escrows.length === 0) {
     return (
-      <Paper sx={{ p: 3, borderRadius: 2, textAlign: 'center' }}>
+      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2, textAlign: 'center' }}>
         <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
           Active Escrows
         </Typography>
@@ -312,7 +315,7 @@ const ActiveEscrows = ({ escrows }) => {
     );
   }
   return (
-    <Paper sx={{ p: 3, borderRadius: 2 }}>
+    <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
       <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
         Active Escrows ({escrows.length})
       </Typography>
@@ -422,7 +425,7 @@ const SummaryCard = ({ icon: Icon, count, label }) => (
 const BillsView = ({ bills, actionLoading, onPayBill }) => {
   if (!bills || bills.length === 0) {
     return (
-      <Paper sx={{ p: 3, borderRadius: 2, textAlign: 'center' }}>
+      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2, textAlign: 'center' }}>
         <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
           Your Bills
         </Typography>
@@ -433,7 +436,7 @@ const BillsView = ({ bills, actionLoading, onPayBill }) => {
     );
   }
   return (
-    <Paper sx={{ p: 3, borderRadius: 2 }}>
+    <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
       <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
         Your Bills
       </Typography>
@@ -529,6 +532,7 @@ const PaymentCenterPage = () => {
     fetchTransactions,
   } = usePayments();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [tabIndex, setTabIndex] = useState(0);
   const [depositOpen, setDepositOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
@@ -630,23 +634,23 @@ const PaymentCenterPage = () => {
 
   if (loading)
     return (
-      <Container sx={{ py: 4 }}>
+      <Container sx={{ py: { xs: 2, md: 4 } }}>
         <Skeleton variant="rectangular" height={300} />
       </Container>
     );
   if (error)
     return (
-      <Container sx={{ py: 4 }}>
+      <Container sx={{ py: { xs: 2, md: 4 } }}>
         <Alert severity="error">{error}</Alert>
       </Container>
     );
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
       <Typography
         variant="h4"
         fontWeight="bold"
-        sx={{ mb: 1, color: 'secondary.main' }}
+        sx={{ mb: 1, color: 'secondary.main', fontSize: { xs: '1.5rem', md: '2.125rem' } }}
       >
         Payments
       </Typography>
@@ -666,21 +670,21 @@ const PaymentCenterPage = () => {
         <Grid item xs={12} lg={8}>
           {/* Summary row for illiterate-friendly icon counts */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={3}>
+            <Grid item xs={6} sm={3}>
               <SummaryCard
                 icon={ReceiptIcon}
                 count={transactions.length}
                 label="Transactions"
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={6} sm={3}>
               <SummaryCard
                 icon={CreditCardIcon}
                 count={paymentMethods.length}
                 label="Methods"
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={6} sm={3}>
               <SummaryCard
                 icon={GavelIcon}
                 count={escrows.length}
@@ -692,12 +696,13 @@ const PaymentCenterPage = () => {
                   to="/worker/payment/escrows"
                   size="small"
                   variant="outlined"
+                  sx={{ minHeight: 44 }}
                 >
                   Open Escrow Manager
                 </Button>
               </Box>
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={6} sm={3}>
               <SummaryCard
                 icon={ReceiptLongIcon}
                 count={bills.length}
@@ -711,10 +716,13 @@ const PaymentCenterPage = () => {
               value={tabIndex}
               onChange={handleTabChange}
               aria-label="payment center tabs"
+              variant={isMobile ? 'scrollable' : 'standard'}
+              scrollButtons="auto"
+              allowScrollButtonsMobile
               indicatorColor="secondary"
               textColor="inherit"
               sx={{
-                '& .MuiTab-root': { color: 'text.secondary' },
+                '& .MuiTab-root': { color: 'text.secondary', minWidth: { xs: 'auto', md: 120 } },
                 '& .Mui-selected': { color: 'secondary.main' },
               }}
             >
@@ -745,7 +753,7 @@ const PaymentCenterPage = () => {
             <>
               {/* Filters bar */}
               <Box
-                sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}
+                sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}
               >
                 <Tooltip title="Transactions from this date">
                   <TextField
@@ -806,7 +814,7 @@ const PaymentCenterPage = () => {
             <>
               {/* Escrows filters */}
               <Box
-                sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}
+                sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}
               >
                 <Tooltip title="Filter by status">
                   <FormControl sx={{ minWidth: 140 }}>
@@ -847,7 +855,7 @@ const PaymentCenterPage = () => {
             <>
               {/* Bills filters */}
               <Box
-                sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}
+                sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}
               >
                 <Tooltip title="Bills from this date">
                   <TextField
@@ -931,6 +939,7 @@ const PaymentCenterPage = () => {
         onClose={closeDepositDialog}
         fullWidth
         maxWidth="xs"
+        fullScreen={isMobile}
         BackdropProps={{
           sx: {
             backgroundColor: 'rgba(0, 0, 0, 0.85)',
@@ -1141,7 +1150,7 @@ const PaymentCenterPage = () => {
             onClick={closeWithdrawDialog}
             variant="outlined"
             color="secondary"
-            sx={{ borderWidth: 2 }}
+            sx={{ borderWidth: 2, minHeight: 44 }}
           >
             Cancel
           </Button>
@@ -1154,7 +1163,7 @@ const PaymentCenterPage = () => {
             color="secondary"
             startIcon={<ArrowDownwardIcon />}
             disabled={!amount || !methodId}
-            sx={{ boxShadow: '0 2px 8px rgba(255, 215, 0, 0.4)' }}
+            sx={{ boxShadow: '0 2px 8px rgba(255, 215, 0, 0.4)', minHeight: 44 }}
           >
             Withdraw
           </Button>

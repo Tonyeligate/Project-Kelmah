@@ -95,12 +95,6 @@ const MyApplicationsPage = () => {
 
   // Send message
   const handleSendMessage = () => {
-    console.log(
-      'Sending message to',
-      selectedApplication?.company,
-      ':',
-      message,
-    );
     setMessage('');
     setOpenMessageDialog(false);
     // Here you would typically call an API to send the message
@@ -155,7 +149,7 @@ const MyApplicationsPage = () => {
   };
 
   // Mobile detection
-  const isActualMobile = useMediaQuery('(max-width: 768px)');
+  const isActualMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Mobile applications template
   if (isActualMobile) {
@@ -184,12 +178,13 @@ const MyApplicationsPage = () => {
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <IconButton
-              onClick={() => navigate('/worker/dashboard')}
+              onClick={() => navigate(-1)}
+              aria-label="Go back"
               sx={{
                 backgroundColor: 'rgba(255, 215, 0, 0.1)',
                 color: '#FFD700',
-                width: 40,
-                height: 40,
+                minWidth: 44,
+                minHeight: 44,
               }}
             >
               <ArrowBackIcon sx={{ fontSize: 20 }} />
@@ -205,11 +200,12 @@ const MyApplicationsPage = () => {
             </Typography>
           </Box>
           <IconButton
+            aria-label="Filter applications"
             sx={{
               backgroundColor: 'rgba(255, 215, 0, 0.1)',
               color: '#FFD700',
-              width: 40,
-              height: 40,
+              minWidth: 44,
+              minHeight: 44,
             }}
           >
             <FilterListIcon sx={{ fontSize: 20 }} />
@@ -267,72 +263,18 @@ const MyApplicationsPage = () => {
               </Typography>
             </Box>
           ) : (
-            // Sample applications for demonstration
-            [
-              {
-                id: 1,
-                jobTitle: 'Residential Carpenter',
-                company: 'Golden Gate Construction',
-                location: 'East Legon, Accra',
-                appliedDate: '2024-01-15',
-                status: 'pending',
-                salary: 'GH₵150/day',
-                type: 'Full-time',
-              },
-              {
-                id: 2,
-                jobTitle: 'Plumbing Technician',
-                company: 'AquaFlow Services',
-                location: 'Asokwa, Kumasi',
-                appliedDate: '2024-01-10',
-                status: 'interview',
-                salary: 'GH₵120/day',
-                type: 'Contract',
-              },
-              {
-                id: 3,
-                jobTitle: 'Electrical Installer',
-                company: 'PowerTech Ghana',
-                location: 'Industrial Area, Tema',
-                appliedDate: '2024-01-08',
-                status: 'offer',
-                salary: 'GH₵180/day',
-                type: 'Full-time',
-              },
-            ].map((application) => {
-              const getStatusColor = (status) => {
-                switch (status) {
-                  case 'pending':
-                    return '#ff9800';
-                  case 'interview':
-                    return '#2196f3';
-                  case 'offer':
-                    return '#4caf50';
-                  case 'rejected':
-                    return '#f44336';
-                  default:
-                    return '#9e9e9e';
-                }
-              };
-
-              const getStatusLabel = (status) => {
-                switch (status) {
-                  case 'pending':
-                    return 'Under Review';
-                  case 'interview':
-                    return 'Interview';
-                  case 'offer':
-                    return 'Job Offer';
-                  case 'rejected':
-                    return 'Rejected';
-                  default:
-                    return 'Unknown';
-                }
+            filteredApplications.map((application) => {
+              const statusInfo = getStatusInfo(application.status);
+              const statusColors = {
+                pending: '#ff9800',
+                interview: '#2196f3',
+                offer: '#4caf50',
+                rejected: '#f44336',
               };
 
               return (
                 <Paper
-                  key={application.id}
+                  key={application.id || application._id}
                   sx={{
                     backgroundColor: '#24231e',
                     borderRadius: '12px',
@@ -359,7 +301,7 @@ const MyApplicationsPage = () => {
                             mb: 0.5,
                           }}
                         >
-                          {application.jobTitle}
+                          {application.job?.title || application.jobTitle || 'Untitled Job'}
                         </Typography>
                         <Typography
                           sx={{
@@ -368,7 +310,7 @@ const MyApplicationsPage = () => {
                             mb: 0.5,
                           }}
                         >
-                          {application.company}
+                          {application.company || 'Unknown Company'}
                         </Typography>
                         <Typography
                           sx={{
@@ -377,45 +319,21 @@ const MyApplicationsPage = () => {
                             mb: 1,
                           }}
                         >
-                          📍 {application.location} • Applied{' '}
+                          📍 {application.job?.location?.city || application.location || 'Unknown'} • Applied{' '}
                           {new Date(
-                            application.appliedDate,
+                            application.createdAt || application.appliedDate,
                           ).toLocaleDateString()}
                         </Typography>
                       </Box>
                       <Chip
-                        label={getStatusLabel(application.status)}
+                        label={statusInfo.label}
                         size="small"
                         sx={{
-                          backgroundColor: getStatusColor(application.status),
+                          backgroundColor: statusColors[application.status] || '#9e9e9e',
                           color: 'white',
                           fontSize: '0.65rem',
                           fontWeight: 'bold',
                           height: 22,
-                        }}
-                      />
-                    </Box>
-
-                    <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                      <Chip
-                        label={application.type}
-                        size="small"
-                        sx={{
-                          backgroundColor: '#35332c',
-                          color: 'white',
-                          fontSize: '0.65rem',
-                          height: 20,
-                        }}
-                      />
-                      <Chip
-                        label={application.salary}
-                        size="small"
-                        sx={{
-                          backgroundColor: '#4CAF50',
-                          color: 'white',
-                          fontSize: '0.65rem',
-                          fontWeight: 'bold',
-                          height: 20,
                         }}
                       />
                     </Box>
@@ -430,6 +348,7 @@ const MyApplicationsPage = () => {
                           color: '#FFD700',
                           fontSize: '0.75rem',
                           textTransform: 'none',
+                          minHeight: 44,
                           '&:hover': {
                             borderColor: '#FFC000',
                             backgroundColor: 'rgba(255, 215, 0, 0.1)',
@@ -448,6 +367,7 @@ const MyApplicationsPage = () => {
                           color: '#161513',
                           fontSize: '0.75rem',
                           textTransform: 'none',
+                          minHeight: 44,
                           '&:hover': {
                             backgroundColor: '#FFC000',
                           },
@@ -471,7 +391,7 @@ const MyApplicationsPage = () => {
   }
 
   return (
-    <Container sx={{ py: 4 }}>
+    <Container sx={{ py: { xs: 2, md: 4 } }}>
       <Typography variant="h4" gutterBottom>
         My Applications
       </Typography>
@@ -566,14 +486,16 @@ const MyApplicationsPage = () => {
                         <IconButton
                           size="small"
                           onClick={() => handleOpenDetails(application)}
-                          title="View Details"
+                          aria-label="View application details"
+                          sx={{ minWidth: 44, minHeight: 44 }}
                         >
                           <VisibilityIcon fontSize="small" />
                         </IconButton>
                         <IconButton
                           size="small"
                           onClick={() => handleOpenMessage(application)}
-                          title="Send Message"
+                          aria-label="Send message to employer"
+                          sx={{ minWidth: 44, minHeight: 44 }}
                         >
                           <MessageIcon fontSize="small" />
                         </IconButton>
@@ -593,6 +515,7 @@ const MyApplicationsPage = () => {
         onClose={() => setOpenDetailsDialog(false)}
         maxWidth="md"
         fullWidth
+        fullScreen={isActualMobile}
       >
         {selectedApplication && (
           <>
@@ -848,6 +771,7 @@ const MyApplicationsPage = () => {
         onClose={() => setOpenMessageDialog(false)}
         maxWidth="sm"
         fullWidth
+        fullScreen={isActualMobile}
       >
         {selectedApplication && (
           <>

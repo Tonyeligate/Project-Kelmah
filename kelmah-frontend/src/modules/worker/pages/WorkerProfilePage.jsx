@@ -16,13 +16,6 @@ const WorkerProfilePage = () => {
   const { workerId } = useParams();
   const location = useLocation();
 
-  // Debug logging for navigation issues
-  useEffect(() => {
-    console.log('🔵 WorkerProfilePage MOUNTED/UPDATED');
-    console.log('🔵 workerId from params:', workerId);
-    console.log('🔵 location.pathname:', location.pathname);
-  }, [workerId, location.pathname]);
-
   // Scroll to top when workerId changes (new profile navigation)
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -43,7 +36,7 @@ const WorkerProfilePage = () => {
         />
       </Helmet>
 
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: { xs: 1, md: 4 }, px: { xs: 1, md: 3 } }}>
         <Box>
           {/* Pass workerId as prop - component handles navigation changes via useEffect */}
           <WorkerProfile workerId={workerId} />

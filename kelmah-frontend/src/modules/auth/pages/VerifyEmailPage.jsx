@@ -68,7 +68,7 @@ const VerifyEmailPage = () => {
                 type="submit"
                 variant="contained"
                 fullWidth
-                sx={{ mt: 1 }}
+                sx={{ mt: 1, minHeight: 44 }}
               >
                 Resend Link
               </Button>

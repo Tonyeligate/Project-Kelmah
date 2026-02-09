@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Container, Typography } from '@mui/material';
+import { Box, Container, Typography, useTheme, useMediaQuery } from '@mui/material';
 import PortfolioGallery from '../components/PortfolioGallery';
 import ProjectShowcase from '../components/ProjectShowcase';
 import portfolioService from '../services/portfolioService';
 
 const PortfolioPage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [items, setItems] = useState([]);
   const [selected, setSelected] = useState(null);
 
@@ -25,8 +27,8 @@ const PortfolioPage = () => {
   }, []);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Typography variant="h4" gutterBottom>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
+      <Typography variant={isMobile ? 'h5' : 'h4'} gutterBottom>
         My Portfolio
       </Typography>
       <Box sx={{ mt: 2 }}>
