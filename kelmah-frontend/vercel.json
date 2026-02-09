@@ -1,8 +1,7 @@
 {
-  "version": 2,
-  "buildCommand": "cd kelmah-frontend && npm run build",
-  "outputDirectory": "kelmah-frontend/build",
-  "installCommand": "cd kelmah-frontend && npm install --legacy-peer-deps",
+  "buildCommand": "npm run build",
+  "outputDirectory": "build",
+  "installCommand": "npm install --legacy-peer-deps",
   "rewrites": [
     {
       "source": "/api/(.*)",
