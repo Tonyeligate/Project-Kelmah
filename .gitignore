@@ -117,6 +117,7 @@ render-cli/
 temp/
 /data/
 .vercel/
+backup/root_cleanup_20260201/cli/
 
 # Allow runtime configuration files
 !kelmah-frontend/public/runtime-config.json

@@ -1,0 +1,258 @@
+┌─────────────────────────── PAYMENT SYSTEM ARCHITECTURE ────────────────────────────┐
+│                                                                                    │
+│                               1. FRONTEND COMPONENTS                               │
+│                                                                                    │
+│  ┌─────────────────────┐   ┌────────────────────────┐   ┌────────────────────────┐│
+│  │ PAYMENT FORM        │   │  WALLET                │   │   TRANSACTION HISTORY  ││
+│  │                     │   │                        │   │                        ││
+│  │ /kelmah-frontend/   │   │ /kelmah-frontend/      │   │ /kelmah-frontend/      ││
+│  │ src/components/     │   │ src/components/        │   │ src/components/        ││
+│  │ payments/PaymentForm.jsx│  │ payments/Wallet.jsx      │   │ payments/TransactionHistory.jsx ││
+│  │                     │   │                        │   │                        ││
+│  │ • Card payment      │   │ • View balance         │   │ • List transactions    ││
+│  │ • Mobile money      │   │ • Deposit funds        │   │ • Filter by type       ││
+│  │ • Payment processing│   │ • Withdraw funds       │   │ • Download receipts    ││
+│  │ • Error handling    │   │ • Transfer money       │   │ • Transaction status   ││
+│  └─────────────────────┘   └────────────────────────┘   └────────────────────────┘│
+│            │                          │                            │              │
+│            └──────────────────────────┼────────────────────────────┘              │
+│                                       ▼                                           │
+│  ┌─────────────────────────────────────────────────────────────────────────────┐ │
+│  │                              PAYMENT SERVICE                                │ │
+│  │                                                                             │ │
+│  │                    /kelmah-frontend/src/services/PaymentService.js          │ │
+│  │                                                                             │ │
+│  │  • API calls for payments, escrow, wallet operations                        │ │
+│  │  • Payment method management                                                │ │
+│  │  • Transaction history retrieval                                            │ │
+│  │  • Payment verification                                                     │ │
+│  └────────────────────────────────────┬────────────────────────────────────────┘ │
+│                                       │                                          │
+│                                       ▼                                          │
+│                                   API CALLS                                      │
+│                                       │                                          │
+│                                       │                                          │
+│───────────────────────────────────────────────────────────────────────────────────│
+│                                       │                                          │
+│                                       ▼                                          │
+│                                BACKEND SERVICES                                  │
+│                                                                                  │
+│  ┌─────────────────────────────────────────────────────────────────────────────┐│
+│  │                           PAYMENT SERVICE                                   ││
+│  │                                                                             ││
+│  │                  /kelmah-backend/services/payment-service/                  ││
+│  │                                                                             ││
+│  │  ┌─────────────────┐    ┌────────────────────┐   ┌───────────────────────┐ ││
+│  │  │  CONTROLLERS    │    │     MODELS         │   │   INTEGRATIONS        │ ││
+│  │  │                 │    │                    │   │                       │ ││
+│  │  │ payment.        │    │ payment.model.js   │   │ mobile-money.js       │ ││
+│  │  │ controller.js   │    │                    │   │                       │ ││
+│  │  │                 │    │ transaction.       │   │ paystack.js           │ ││
+│  │  │ wallet.         │    │ model.js           │   │                       │ ││
+│  │  │ controller.js   │    │                    │   │ flutterwave.js        │ ││
+│  │  │                 │    │ wallet.model.js    │   │                       │ ││
+│  │  │ escrow.         │    │                    │   │ index.js              │ ││
+│  │  │ controller.js   │    │ escrow.model.js    │   │                       │ ││
+│  │  │                 │    │                    │   │                       │ ││
+│  │  │ dispute.        │    │ dispute.model.js   │   │                       │ ││
+│  │  │ controller.js   │    │                    │   │                       │ ││
+│  │  └─────────────────┘    └────────────────────┘   └───────────────────────┘ ││
+│  │                                                                             ││
+│  └─────────────────────────────────────────────────────────────────────────────┘│
+│                                       │                                          │
+│                                       ▼                                          │
+│  ┌─────────────────────────────────────────────────────────────────────────────┐│
+│  │                           PAYMENT GATEWAY APIs                              ││
+│  │                                                                             ││
+│  │   ┌──────────────────┐    ┌───────────────────┐    ┌───────────────────┐   ││
+│  │   │  MOBILE MONEY    │    │     PAYSTACK      │    │   FLUTTERWAVE     │   ││
+│  │   │                  │    │                   │    │                   │   ││
+│  │   │ • MTN Mobile     │    │ • Card payments   │    │ • Multiple payment│   ││
+│  │   │   Money          │    │ • Bank transfers  │    │   methods         │   ││
+│  │   │ • Vodafone Cash  │    │ • Verification    │    │ • International   │   ││
+│  │   │ • AirtelTigo     │    │ • Webhooks        │    │   payments        │   ││
+│  │   │   Money          │    │                   │    │                   │   ││
+│  │   └──────────────────┘    └───────────────────┘    └───────────────────┘   ││
+│  │                                                                             ││
+│  └─────────────────────────────────────────────────────────────────────────────┘│
+│                                                                                  │
+└──────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────── PAYMENT WORKFLOW ─────────────────────────────┐
+│                                                                          │
+│  1. PAYMENT PROCESSING                                                   │
+│     ┌─────────────┐     ┌─────────────────┐     ┌───────────────────┐   │
+│     │ PaymentForm │────▶│ PaymentService  │────▶│payment.controller │   │
+│     │ Component   │     │ createPayment() │     │processPayment()   │   │
+│     └─────────────┘     └─────────────────┘     └────────┬──────────┘   │
+│                                                           │              │
+│                          ┌───────────────────────────────┐│              │
+│                          │ Payment Gateway Integration   ││              │
+│                          │ (Mobile Money/Paystack/etc.)  │◀──────────────┘
+│                          └───────────────────────────────┘               │
+│                                                                          │
+│  2. ESCROW SYSTEM                                                        │
+│     ┌───────────┐     ┌─────────────────┐     ┌──────────────────┐      │
+│     │Contract   │────▶│ PaymentService  │────▶│escrow.controller │      │
+│     │Component  │     │ createEscrow()  │     │createEscrow()    │      │
+│     └───────────┘     └─────────────────┘     └────────┬─────────┘      │
+│                                                         │                │
+│                          ┌──────────────────────────────┐                │
+│                          │ Escrow.create()              │                │
+│                          │ Store escrow in database     │                │
+│                          └──────────────┬───────────────┘                │
+│                                         │                                │
+│     ┌───────────┐     ┌─────────────────┐     ┌──────────────────┐      │
+│     │Hirer funds│────▶│ PaymentService  │────▶│escrow.controller │      │
+│     │escrow     │     │ fundEscrow()    │     │fundEscrow()      │      │
+│     └───────────┘     └─────────────────┘     └────────┬─────────┘      │
+│                                                         │                │
+│                          ┌──────────────────────────────┐                │
+│                          │ Payment processing           │                │
+│                          │ Update escrow status         │                │
+│                          └──────────────┬───────────────┘                │
+│                                         │                                │
+│     ┌───────────┐     ┌─────────────────┐     ┌──────────────────┐      │
+│     │Complete   │────▶│ PaymentService  │────▶│escrow.controller │      │
+│     │milestone  │     │ releaseEscrow() │     │releaseEscrow()   │      │
+│     └───────────┘     └─────────────────┘     └────────┬─────────┘      │
+│                                                         │                │
+│                          ┌──────────────────────────────┐                │
+│                          │ Release funds to worker      │                │
+│                          │ Create transaction records   │                │
+│                          └──────────────────────────────┘                │
+│                                                                          │
+│  3. WALLET OPERATIONS                                                    │
+│     ┌────────────┐     ┌─────────────────┐     ┌──────────────────┐     │
+│     │Wallet      │────▶│ PaymentService  │────▶│wallet.controller │     │
+│     │Component   │     │ getWallet()     │     │getWallet()       │     │
+│     └────────────┘     └─────────────────┘     └────────┬─────────┘     │
+│                                                          │               │
+│                          ┌───────────────────────────────┐               │
+│                          │ Return wallet information     │               │
+│                          └───────────────────────────────┘               │
+│                                                                          │
+│     ┌────────────┐     ┌─────────────────┐     ┌──────────────────┐     │
+│     │Deposit     │────▶│ PaymentService  │────▶│wallet.controller │     │
+│     │funds       │     │ deposit()       │     │deposit()         │     │
+│     └────────────┘     └─────────────────┘     └────────┬─────────┘     │
+│                                                          │               │
+│                          ┌───────────────────────────────┐               │
+│                          │ Process payment               │               │
+│                          │ Update wallet balance         │               │
+│                          └───────────────────────────────┘               │
+│                                                                          │
+│     ┌────────────┐     ┌─────────────────┐     ┌──────────────────┐     │
+│     │Withdraw    │────▶│ PaymentService  │────▶│wallet.controller │     │
+│     │funds       │     │ withdraw()      │     │withdraw()        │     │
+│     └────────────┘     └─────────────────┘     └────────┬─────────┘     │
+│                                                          │               │
+│                          ┌───────────────────────────────┐               │
+│                          │ Initiate transfer to user     │               │
+│                          │ Update wallet balance         │               │
+│                          └───────────────────────────────┘               │
+│                                                                          │
+│  4. DISPUTES & RESOLUTION                                                │
+│     ┌────────────┐     ┌─────────────────┐     ┌──────────────────┐     │
+│     │Worker/Hirer│────▶│ PaymentService  │────▶│dispute.controller│     │
+│     │raises      │     │ createDispute() │     │createDispute()   │     │
+│     │dispute     │     │                 │     │                  │     │
+│     └────────────┘     └─────────────────┘     └────────┬─────────┘     │
+│                                                          │               │
+│                          ┌───────────────────────────────┐               │
+│                          │ Create dispute record         │               │
+│                          │ Update escrow status          │               │
+│                          └───────────────────────────────┘               │
+│                                                                          │
+│     ┌────────────┐     ┌─────────────────┐     ┌──────────────────┐     │
+│     │Admin       │────▶│ PaymentService  │────▶│dispute.controller│     │
+│     │resolves    │     │ resolveDispute()│     │resolveDispute()  │     │
+│     │dispute     │     │                 │     │                  │     │
+│     └────────────┘     └─────────────────┘     └────────┬─────────┘     │
+│                                                          │               │
+│                          ┌───────────────────────────────┐               │
+│                          │ Update dispute status         │               │
+│                          │ Process appropriate transfers │               │
+│                          └───────────────────────────────┘               │
+└──────────────────────────────────────────────────────────────────────────┘
+
+
+
+Key Files and Their Roles
+Frontend Components
+Main UI Components
+/kelmah-frontend/src/components/payments/PaymentForm.jsx: Form for processing payments with various methods
+/kelmah-frontend/src/components/payments/Wallet.jsx: User wallet interface for managing funds
+/kelmah-frontend/src/components/payments/TransactionHistory.jsx: Lists transaction history with filters
+/kelmah-frontend/src/components/payments/PaymentMethodForm.jsx: Form for adding/editing payment methods
+/kelmah-frontend/src/components/payments/PaymentDialog.jsx: Modal for payment confirmation and processing
+Service Layer
+/kelmah-frontend/src/services/PaymentService.js: Core service with API calls for all payment operations
+Admin Components
+/kelmah-frontend/src/components/admin/PaymentManagement.jsx: Admin interface for payment oversight
+/kelmah-frontend/src/components/analytics/PaymentAnalytics.jsx: Analytics dashboard for payment metrics
+/kelmah-frontend/src/pages/admin/PaymentVerification.jsx: Admin interface for verifying payments
+Backend Services
+Payment Service Controllers
+/kelmah-backend/services/payment-service/controllers/payment.controller.js: Handles payment processing
+/kelmah-backend/services/payment-service/controllers/wallet.controller.js: Manages wallet operations
+/kelmah-backend/services/payment-service/controllers/escrow.controller.js: Handles escrow creation and management
+/kelmah-backend/services/payment-service/controllers/dispute.controller.js: Manages payment disputes
+Database Models
+/kelmah-backend/services/payment-service/models/payment.model.js: Payment data structure
+/kelmah-backend/services/payment-service/models/transaction.model.js: Transaction records
+/kelmah-backend/services/payment-service/models/wallet.model.js: User wallet data
+/kelmah-backend/services/payment-service/models/escrow.model.js: Escrow data structure
+/kelmah-backend/services/payment-service/models/dispute.model.js: Dispute data structure
+Payment Gateway Integrations
+/kelmah-backend/services/payment-service/integrations/mobile-money.js: Mobile Money (MTN, Vodafone, AirtelTigo)
+/kelmah-backend/services/payment-service/integrations/paystack.js: Paystack integration
+/kelmah-backend/services/payment-service/integrations/flutterwave.js: Flutterwave integration
+/kelmah-backend/services/payment-service/integrations/index.js: Integration hub
+API Routes
+/kelmah-backend/services/payment-service/routes/payment.routes.js: Payment API endpoints
+/kelmah-backend/services/payment-service/routes/wallet.routes.js: Wallet API endpoints
+/kelmah-backend/services/payment-service/routes/escrow.routes.js: Escrow API endpoints
+Key Features and Workflows
+Payment Processing
+Multiple Payment Methods:
+Credit/debit cards
+Mobile Money (MTN, Vodafone, AirtelTigo)
+Bank transfers
+Wallet balance
+Escrow System:
+Creation of escrow for jobs/contracts
+Funding escrow by hirer
+Milestone tracking
+Release funds to worker
+Partial releases
+Auto-release on due dates
+Wallet Management:
+Balance viewing
+Deposit funds
+Withdraw funds
+Transfer between users
+Transaction history
+Dispute Resolution:
+Raising disputes
+Admin review
+Multiple resolution options (release, refund, split)
+Detailed dispute tracking
+Payment Security:
+Secure gateway integrations
+Transaction verification
+Webhook processing
+Receipt generation
+Admin Features:
+Payment verification
+Transaction management
+Payment analytics
+Report generation
+Manual intervention capabilities
+Worker-Hirer Payment Flow:
+Job payment setup
+Contract milestone payments
+Recurring payments
+Payment status tracking
+Notifications for payment events
+The payment system uses multiple payment gateways to process payments, with a focus on local Ghanaian payment methods like Mobile Money. The escrow system provides security for both workers and hirers, ensuring funds are only released when work is completed satisfactorily. The wallet system enables users to manage their funds within the platform for smoother transactions.

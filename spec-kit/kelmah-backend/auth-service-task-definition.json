@@ -1,0 +1,141 @@
+{
+  "family": "kelmah-auth-service",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::992350137489:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "auth-service",
+      "image": "992350137489.dkr.ecr.eu-north-1.amazonaws.com/kelmah-auth-service:project-fix",
+      "portMappings": [
+        {
+          "containerPort": 5001,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/kelmah-auth-service",
+          "awslogs-region": "eu-north-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "environment": [
+        {
+          "name": "NODE_ENV",
+          "value": "production"
+        },
+        {
+          "name": "PORT",
+          "value": "5001"
+        },
+        {
+          "name": "SERVICE_NAME",
+          "value": "auth-service"
+        },
+        {
+          "name": "DB_URL",
+          "value": "mongodb+srv://TonyGate:0553366244Aj@kelmah-messaging.xyqcurn.mongodb.net/kelmah_platform?retryWrites=true&w=majority&appName=Kelmah-messaging"
+        },
+        {
+          "name": "MONGODB_URI",
+          "value": "mongodb+srv://TonyGate:0553366244Aj@kelmah-messaging.xyqcurn.mongodb.net/kelmah_platform?retryWrites=true&w=majority&appName=Kelmah-messaging"
+        },
+        {
+          "name": "JWT_SECRET",
+          "value": "kelmah-ultra-secure-access-token-secret-2024-production-v1"
+        },
+        {
+          "name": "JWT_REFRESH_SECRET",
+          "value": "kelmah-ultra-secure-refresh-token-secret-2024-production-v1"
+        },
+        {
+          "name": "JWT_EXPIRES_IN",
+          "value": "15m"
+        },
+        {
+          "name": "JWT_REFRESH_EXPIRES_IN",
+          "value": "7d"
+        },
+        {
+          "name": "BCRYPT_ROUNDS",
+          "value": "12"
+        },
+        {
+          "name": "EMAIL_FROM",
+          "value": "noreply@kelmah.com"
+        },
+        {
+          "name": "SMTP_HOST",
+          "value": "smtp.gmail.com"
+        },
+        {
+          "name": "SMTP_PORT",
+          "value": "465"
+        },
+        {
+          "name": "SMTP_SECURE",
+          "value": "true"
+        },
+        {
+          "name": "SMTP_USER",
+          "value": "your-smtp-user@gmail.com"
+        },
+        {
+          "name": "SMTP_PASS",
+          "value": "your-app-password"
+        },
+        {
+          "name": "CORS_ORIGIN",
+          "value": "https://kelmah.com,https://www.kelmah.com"
+        },
+        {
+          "name": "USE_REDIS_RATE_LIMIT",
+          "value": "true"
+        },
+        {
+          "name": "REDIS_URL",
+          "value": "redis://kelmah-redis.dgwzns.0001.eun1.cache.amazonaws.com:6379"
+        },
+        {
+          "name": "MAX_LOGIN_ATTEMPTS",
+          "value": "5"
+        },
+        {
+          "name": "ACCOUNT_LOCK_TIME",
+          "value": "30"
+        },
+        {
+          "name": "PASSWORD_RESET_EXPIRES",
+          "value": "3600000"
+        },
+        {
+          "name": "EMAIL_VERIFICATION_EXPIRES",
+          "value": "86400000"
+        },
+        {
+          "name": "ENABLE_RATE_LIMITING",
+          "value": "true"
+        },
+        {
+          "name": "LOG_LEVEL",
+          "value": "info"
+        }
+      ],
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:5001/health || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}

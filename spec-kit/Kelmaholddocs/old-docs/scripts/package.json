@@ -1,0 +1,26 @@
+{
+  "name": "kelmah-production-scripts",
+  "version": "1.0.0",
+  "description": "Production database and service management scripts for Kelmah",
+  "main": "fix-production-database.js",
+  "scripts": {
+    "fix-db": "node fix-production-database.js",
+    "test-real-data": "node test-real-data-connections.js",
+    "verify-platform": "npm run fix-db && npm run test-real-data",
+    "migrate": "node fix-production-database.js",
+    "mongodb-migrate": "node mongodb-migration.js",
+    "mongodb-test": "node test-mongodb-connections.js",
+    "mongodb-setup": "npm run mongodb-migrate && npm run mongodb-test",
+    "setup": "npm install && echo 'Ready to migrate! Set MONGODB_URI and run: npm run mongodb-migrate'"
+  },
+  "dependencies": {
+    "axios": "^1.11.0",
+    "bcryptjs": "^3.0.2",
+    "mongodb": "^6.18.0",
+    "mongoose": "^8.17.0",
+    "pg": "^8.11.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

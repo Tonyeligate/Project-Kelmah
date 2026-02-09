@@ -1,0 +1,12 @@
+# Deploy only frontend directory
+kelmah-backend/
+kelmah-team/
+*.md
+*.txt
+*.log
+.env
+.env.*
+.DS_Store
+Thumbs.db
+node_modules/
+!kelmah-frontend/

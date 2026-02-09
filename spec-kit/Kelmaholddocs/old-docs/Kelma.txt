@@ -1,0 +1,540 @@
+# Kelmah Project Documentation
+
+## Project Overview
+Kelmah is a comprehensive platform designed to connect vocational job seekers(like carpenters, mason, plumbers, electritians etc.) with potential hirers. The platform facilitates efficient job matching, worker discovery, and seamless communication between parties. Built with a modern tech stack and a responsive design, Kelmah aims to revolutionize how vocational job hiring works.
+
+## Architecture
+
+### Frontend Architecture
+- **React**: The frontend is built using React for component-based UI development
+- **Material-UI**: Provides a comprehensive component library with a consistent design language
+- **Redux**: Manages application state, particularly for authentication and notifications
+- **React Router**: Handles client-side routing
+- **Axios**: Makes HTTP requests to the backend API
+
+### Backend Architecture
+- **Node.js & Express**: Powers the RESTful API
+- **Prostgrel**: Stores user profiles, job listings, reviews, and messages
+- **JWT**: Handles user authentication
+- **Socket.io**: Enables real-time messaging and notifications
+
+## Features
+
+### 1. User Authentication System
+- **Registration**: Users can sign up as either workers or hirers
+- **Login**: Secure authentication with JWT
+- **Account Management**: Profile editing, password reset
+- **Role-based Access**: Different capabilities for workers and hirers
+
+### 2. Job Management System
+- **Job Listing**: Hirers can post detailed job descriptions
+- **Job Applications**: Workers can apply to jobs with their qualifications
+- **Job Search**: Advanced filtering and search capabilities
+- **Job Details**: Comprehensive job information display
+
+### 3. Worker Profile System
+- **Detailed Profiles**: Workers can showcase their skills, experience, portfolio
+- **Verification**: Identity and skills verification process
+- **Reviews & Ratings**: Reputation system for workers
+- **Availability Management**: Workers can set their available hours
+
+### 4. Worker Search System
+- **Advanced Filtering**: Find workers by skill, location, rating, etc.
+- **Search Results**: Visually appealing worker cards with key information
+- **Sorting Options**: Sort by relevance, rating, or hourly rate
+- **Save Favorites**: Hirers can save workers for future reference
+
+### 5. Review System
+- **Rating System**: 5-star rating scale
+- **Detailed Reviews**: Comments and specific strength categories
+- **Review Management**: Overview and filtering of reviews
+- **Rating Analytics**: Distribution and average calculations
+
+### 6. Messaging System
+
+## Overview
+The Kelmah messaging system provides a real-time communication platform for workers and hirers to connect, discuss job details, and build professional relationships. The messaging interface is intuitive, responsive, and integrates seamlessly with the rest of the platform.
+
+## Architecture
+The messaging system follows a client-server architecture:
+
+- **Frontend**: React-based UI components with Material-UI styling for consistent design
+- **State Management**: Context API for local state management and real-time updates
+- **API Integration**: RESTful API calls for conversation and message management
+- **Authentication**: JWT token-based authentication for secure messaging
+
+## Key Components
+
+### Frontend Components
+1. **MessageContext**: Context provider that manages conversation and message state
+   - Handles active conversations, messages, loading states, and error handling
+   - Provides methods for sending, deleting, and managing messages
+
+2. **AuthContext**: Authentication context that integrates with the messaging system
+   - Manages user state and authentication tokens
+   - Controls access to protected message routes
+
+3. **MessageService**: Service layer for API communication
+   - Handles all API calls related to messaging
+   - Provides methods for managing conversations and messages
+   - Includes mock data generation for development
+
+4. **ConversationList**: UI component for displaying and selecting conversations
+   - Shows conversation previews with last message, timestamp, and unread indicators
+   - Provides search functionality to filter conversations
+   - Handles conversation selection
+
+5. **MessageList**: UI component for displaying messages in a conversation
+   - Renders message bubbles with sender information and timestamps
+   - Groups messages by date for better readability
+   - Supports different message types (text, image, attachment)
+   - Includes message actions (copy, delete)
+
+6. **MessageInput**: UI component for composing and sending messages
+   - Text input for typing messages
+   - File attachment support with preview
+   - Emoji picker integration
+   - Progress indicators for sending status
+
+7. **MessagesPage**: Main page component that integrates all messaging components
+   - Responsive layout that adapts to different screen sizes
+   - Mobile-friendly navigation between conversations and messages
+   - Error handling and empty state displays
+
+### API Endpoints
+The messaging system communicates with the backend through the following endpoints:
+
+- `GET /api/messages/conversations`: Retrieves all conversations for the current user
+- `POST /api/messages/conversations`: Creates a new conversation with another user
+- `GET /api/messages/conversations/:id`: Retrieves messages for a specific conversation
+- `POST /api/messages/conversations/:id/messages`: Sends a new message in a conversation
+- `PUT /api/messages/conversations/:id/read`: Marks all messages in a conversation as read
+- `DELETE /api/messages/messages/:id`: Deletes a specific message
+- `POST /api/messages/attachments`: Uploads file attachments for messages
+- `GET /api/messages/stats`: Retrieves message statistics for the current user
+
+## Features
+
+### Conversation Management
+- Create new conversations with workers or hirers
+- View conversation history with timestamps and read status
+- Search and filter conversations by user name or message content
+- Mark conversations as read/unread
+- Delete conversations
+
+### Real-time Messaging
+- Send and receive text messages instantly
+- Support for rich text formatting
+- File and image attachments with previews
+- Emoji support
+- Read receipts
+- Typing indicators
+
+### Media Support
+- Image sharing with previews
+- Document attachments
+- Size and type restrictions for security
+- Download options for recipients
+
+### Message Actions
+- Copy message content
+- Delete messages (for sender)
+- Report inappropriate messages
+
+### Notifications
+- In-app notifications for new messages
+- Unread message count in navigation
+- Email notifications for offline users
+
+## User Flow Examples
+
+### Starting a Conversation with a Worker
+1. User navigates to worker profile
+2. User clicks "Message" button
+3. System creates a new conversation if one doesn't exist
+4. User is redirected to the MessagesPage with the conversation open
+5. User can type and send messages
+
+### Responding to a Job Inquiry
+1. Hirer receives a message notification
+2. Hirer navigates to MessagesPage
+3. Conversation with unread messages is highlighted
+4. Hirer opens the conversation and views messages
+5. Hirer responds with text and/or attachments
+6. Worker receives the response in real-time
+
+## Data Models
+
+### Conversation Model
+```javascript
+{
+  id: String,                 // Unique identifier
+  participants: [String],     // Array of user IDs
+  lastMessage: {              // Most recent message
+    id: String,
+    senderId: String,
+    content: String,
+    createdAt: Date,
+    type: String
+  },
+  unreadCount: Number,        // Number of unread messages
+  updatedAt: Date,            // Last activity timestamp
+  createdAt: Date             // Creation timestamp
+}
+```
+
+### Message Model
+```javascript
+{
+  id: String,                 // Unique identifier
+  conversationId: String,     // Reference to conversation
+  senderId: String,           // User who sent the message
+  content: String,            // Message text content
+  type: String,               // 'text', 'image', 'attachment', 'system'
+  attachment: {               // Optional attachment
+    url: String,
+    type: String,
+    filename: String,
+    size: Number
+  },
+  isRead: Boolean,            // Read status
+  createdAt: Date,            // Creation timestamp
+  updatedAt: Date             // Last update timestamp
+}
+```
+
+## Implementation Details
+
+The messaging system has been implemented with a focus on performance, reliability, and user experience:
+
+1. **Optimistic Updates**: Messages appear instantly in the UI before server confirmation
+2. **Pagination**: Messages are loaded in chunks to improve performance
+3. **Error Handling**: Comprehensive error handling with user-friendly messages
+4. **Offline Support**: Message queue for offline sending (future enhancement)
+5. **Mobile Optimization**: Responsive design that works well on all devices
+6. **Accessibility**: Fully keyboard navigable and screen reader compatible
+7. **Performance**: Virtualized lists for handling large conversation histories
+
+## Current Status and Future Enhancements
+
+### Completed
+- Core messaging UI components
+- Conversation management
+- Message sending and receiving
+- File attachments
+- Mobile responsive design
+- Search functionality
+- Message deletion
+
+### Planned Enhancements
+- End-to-end encryption for increased security
+- Voice and video messaging
+- Message reactions
+- Message editing
+- Advanced search options
+- Group conversations
+- Message templates for common responses
+- Integration with calendar for scheduling meetings
+- Read receipts with timestamps
+- Message translation services
+
+### 7. Notification System
+- **Real-time Alerts**: For new messages, job applications, etc.
+- **Email Notifications**: Optional email updates
+- **Notification Preferences**: User-configurable notification settings
+
+## Implementation Details
+
+### Authentication Flow
+1. User submits registration form
+2. Backend validates and creates a new user record
+3. User logs in with credentials
+4. Backend verifies credentials and issues a JWT
+5. Frontend stores the JWT for authenticated requests
+6. JWT is verified by backend middleware for protected routes
+
+### Job Posting Flow
+1. Hirer creates a new job post with details
+2. Job is stored in the database and made available for search
+3. Interested workers can view and apply to the job
+4. Hirer receives applications and can review them
+5. Hirer can contact candidates through messaging
+6. Upon job completion, hirer can leave a review
+
+### Worker Search Flow
+1. Hirer uses search filters to find qualified workers
+2. Backend queries the database and returns matching workers
+3. Results are displayed as worker cards with key information
+4. Hirer can view detailed worker profiles
+5. Hirer can contact selected workers or save them for later
+
+### Review System Implementation
+1. After job completion, hirer can submit a review
+2. Review includes star rating, comments, and strengths
+3. Worker's average rating is updated
+4. Review appears on worker's profile
+5. Reviews can be filtered and sorted by various criteria
+
+### Messaging System Implementation
+1. User initiates a conversation from profile or job page
+2. Messages are stored in MongoDB and delivered in real-time via Socket.io
+3. Unread message counts are tracked
+4. Message history is preserved and accessible
+5. Attachments are stored in cloud storage with secure links
+
+## Design Language
+
+### Color Scheme
+- **Primary**: Black (#1a1a1a) - Represents professionalism and sophistication
+- **Secondary**: Gold (#D4AF37) - Represents quality and excellence
+- **Accent**: White (#ffffff) - Provides contrast and readability
+- **Additional Accents**: Various grays for subtle UI elements
+
+### Typography
+- **Primary Font**: Roboto - Clean, modern, and highly readable
+- **Heading Font**: Montserrat - Bold and distinctive for headings
+- **Monospace**: Roboto Mono - For code examples or technical details
+
+### UI Components
+- **Cards**: Used for job listings, worker profiles, messages
+- **Dialogs**: For forms, confirmations, and interactive prompts
+- **Navigation**: Drawer-based navigation with consistent styling
+- **Buttons**: Gold primary buttons, outlined secondary buttons
+- **Forms**: Clean, validated forms with helpful error messages
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/verify` - Verify authentication token
+- `POST /api/auth/password-reset` - Request password reset
+
+### User Management
+- `GET /api/users/:id` - Get user profile
+- `PUT /api/users/:id` - Update user profile
+- `PUT /api/users/:id/settings` - Update user settings
+- `GET /api/users/:id/notifications` - Get user notifications
+
+### Jobs
+- `GET /api/jobs` - List all jobs with filtering
+- `POST /api/jobs` - Create a new job
+- `GET /api/jobs/:id` - Get job details
+- `PUT /api/jobs/:id` - Update job details
+- `DELETE /api/jobs/:id` - Delete a job
+- `POST /api/jobs/:id/apply` - Apply to a job
+
+### Workers
+- `GET /api/workers` - List all workers with filtering
+- `GET /api/workers/:id` - Get worker details
+- `GET /api/workers/:id/reviews` - Get worker reviews
+- `POST /api/workers/:id/reviews` - Submit a review for a worker
+- `GET /api/workers/:id/availability` - Get worker availability
+
+### Messaging API
+
+- **GET /api/messages/conversations**: Get all conversations for the current user
+- **POST /api/messages/conversations**: Create a new conversation with another user
+- **GET /api/messages/conversations/:id**: Get messages for a specific conversation
+- **POST /api/messages/conversations/:id/messages**: Send a new message in a conversation
+- **PUT /api/messages/conversations/:id/read**: Mark all messages in a conversation as read
+- **DELETE /api/messages/messages/:id**: Delete a specific message
+- **POST /api/messages/attachments**: Upload file attachments
+- **GET /api/messages/stats**: Get message statistics for the current user
+
+## Development Progress
+
+### Completed
+- Core infrastructure and authentication system
+- Worker profile and search system
+- Review system for rating and reviewing workers
+- Messaging system for communication between hirers and workers
+
+### In Progress
+- Job posting and management system
+- Payment integration
+- Notification system enhancements
+
+### Phase 1: Core Infrastructure (Completed)
+- Project setup and configuration
+- Authentication system implementation
+- Basic user management features
+- Initial UI theme and components
+
+### Phase 2: Job Management System (Completed)
+- Job listing creation and display
+- Job search functionality
+- Job application system
+- Job details page
+
+### Phase 3: Worker Profiles (Completed)
+- Detailed worker profile pages
+- Worker information display
+- Worker portfolio showcase
+- Initial review system implementation
+
+### Phase 4: Worker Search (Completed)
+- Advanced worker search interface
+- Filter and sort capabilities
+- Worker card component
+- Save favorite workers functionality
+
+### Phase 5: Review System (Completed)
+- Review submission interface
+- Display of worker reviews
+- Review filtering and sorting
+- Rating analytics display
+
+### Phase 6: Messaging System (In Progress)
+- Direct messaging interface
+- Real-time message delivery
+- Conversation management
+- Message notifications
+
+### Phase 7: Notification System (Planned)
+- Real-time notification delivery
+- Email notification integration
+- Notification preferences
+- Activity feed implementation
+
+### Phase 8: Mobile Optimization (Planned)
+- Responsive design improvements
+- Touch interaction optimization
+- Mobile-specific features
+- Performance optimization
+
+### Phase 9: Advanced Features (Planned)
+- Payment integration
+- Scheduling system
+- Contract management
+- Premium features and subscriptions
+
+## Deployment
+
+### Current Deployment
+- Frontend: Netlify
+- Backend: Heroku
+- Database: MongoDB Atlas
+- File Storage: AWS S3
+- CI/CD: GitHub Actions
+
+### Production URLs
+- Production: https://kelmah.com
+- Staging: https://staging.kelmah.com
+- Development: https://dev.kelmah.com
+
+## Getting Started
+
+### Prerequisites
+- Node.js (v14+)
+- npm or yarn
+- MongoDB (local or Atlas)
+- Git
+
+### Frontend Setup
+```bash
+# Clone the repository
+git clone https://github.com/organization/kelmah.git
+cd kelmah/kelmah-frontend
+
+# Install dependencies
+npm install
+
+# Start development server
+npm start
+```
+
+### Backend Setup
+```bash
+# Navigate to backend directory
+cd ../kelmah-backend
+
+# Install dependencies
+npm install
+
+# Configure environment variables
+cp .env.example .env
+# Edit .env with your configuration
+
+# Start development server
+npm run dev
+```
+
+## Testing
+
+### Frontend Tests
+- Unit tests with Jest
+- Component tests with React Testing Library
+- End-to-end tests with Cypress
+
+### Backend Tests
+- API endpoint tests with Mocha and Chai
+- Integration tests for database operations
+- Authentication flow tests
+
+### Running Tests
+```bash
+# Frontend tests
+cd kelmah-frontend
+npm test
+
+# Backend tests
+cd kelmah-backend
+npm test
+```
+
+## Contributors
+- Lead Developer: [Developer Name]
+- UI/UX Designer: [Designer Name]
+- Project Manager: [Manager Name]
+
+## License
+This project is licensed under the [License Type] - see the LICENSE file for details.
+
+## Contact
+For more information, contact the project team at team@kelmah.com. 
+
+
+Key Features and Workflows
+Payment Processing
+Multiple Payment Methods:
+Credit/debit cards
+Mobile Money (MTN, Vodafone, AirtelTigo)
+Bank transfers
+Wallet balance
+Escrow System:
+Creation of escrow for jobs/contracts
+Funding escrow by hirer
+Milestone tracking
+Release funds to worker
+Partial releases
+Auto-release on due dates
+Wallet Management:
+Balance viewing
+Deposit funds
+Withdraw funds
+Transfer between users
+Transaction history
+Dispute Resolution:
+Raising disputes
+Admin review
+Multiple resolution options (release, refund, split)
+Detailed dispute tracking
+Payment Security:
+Secure gateway integrations
+Transaction verification
+Webhook processing
+Receipt generation
+Admin Features:
+Payment verification
+Transaction management
+Payment analytics
+Report generation
+Manual intervention capabilities
+Worker-Hirer Payment Flow:
+Job payment setup
+Contract milestone payments
+Recurring payments
+Payment status tracking
+Notifications for payment events
+The payment system uses multiple payment gateways to process payments, with a focus on local Ghanaian payment methods like Mobile Money. The escrow system provides security for both workers and hirers, ensuring funds are only released when work is completed satisfactorily. The wallet system enables users to manage their funds within the platform for smoother transactions.

@@ -1,0 +1,208 @@
+## Kelmah Master Plan v4 (God Mode)
+
+### Purpose
+Deliver a production-ready vocational jobs marketplace with secure auth, robust worker experience, reliable messaging, and Ghana-first payments/escrow. This plan fixes critical defects, completes underbuilt areas, and provides a phased roadmap with acceptance criteria and ops checklists.
+
+### A. Critical Findings (must-fix)
+- Auth refresh-token design conflict (blocks stable sessions)
+  - generateAuthTokens returns standard JWTs, but downstream handlers expect composite refresh tokens with raw suffix and hashed storage. This breaks verification/rotation paths and mixes storage styles in DB.
+  - Impact: Unstable logins, refresh failures, token misuse risk.
+  - References:
+```128:kelmah-backend/services/auth-service/controllers/auth.controller.js
+    const { accessToken, refreshToken } = jwtUtils.generateAuthTokens(user);
+```
+```187:kelmah-backend/services/auth-service/controllers/auth.controller.js
+    const parsed = jwtUtils.verifyRefreshToken(refreshToken);
+    const parts = refreshToken.split('.');
+    const raw = parts[3];
+```
+```49:kelmah-backend/services/auth-service/utils/jwt-secure.js
+  async generateRefreshToken(user, context = {}) {
+```
+
+- Inconsistent RefreshToken persistence
+  - Some flows store tokenHash + tokenId (secure pattern), others store raw token string. Mixed schema complicates verification and revocation.
+  - References:
+```263:kelmah-backend/services/auth-service/controllers/auth.controller.js
+    await RefreshToken.create({ userId: user.id, token: refreshToken, ... })
+```
+
+- Worker controller duplication and legacy blocks
+  - Duplicate methods and repeated definitions inflate risk and drift. Needs dedup and single-source exports.
+  - References:
+```165:kelmah-backend/services/user-service/controllers/worker.controller.js
+// NOTE: duplicate legacy block below
+```
+
+- Public profile/portfolio reads require auth in some routes
+  - UI shows public worker pages; fetching `/api/profile/workers/:id/portfolio` currently enforces auth, causing 401 for visitors.
+
+- Overuse of console logging in prod paths
+  - Several services log verbose output; unify via shared logger and level gating.
+
+- Mixed data backends for people/worker data (Mongo + Sequelize)
+  - Acceptable during transition, but must define authoritative source and sync story. Current mix increases consistency risk.
+
+- Messaging E2E envelope toggles without full client decryption path
+  - Server supports envelope gating; client only toggles event but no end-to-end decrypt/verify. Implement or disable by default.
+
+- Payment/escrow mocks and idempotency gaps
+  - Wallet/escrow flows rely on mocked or partial implementations. Lack of idempotency keys and webhook reconciliation adds risk of duplicate processing.
+
+- Env/config drift across services (CORS, URLs, secrets)
+  - ALLOWED_ORIGINS/CORS_ALLOWLIST differ; secrets fail-fast in some services but not in all. Normalize.
+
+### B. Underdeveloped Areas vs. Project Goals
+- Worker Experience (priority)
+  - Public profile read model, portfolio media, certificates verification, availability scheduler UX, profile completeness scoring, worker analytics (earnings, jobs completed, response time), saved jobs and applications lifecycles, verification badge flow.
+- Messaging
+  - Group conversations, message editing/deletion windows, reactions, file virus scanning queue end-to-end, message templates, better unread/read syncing, presence lists.
+- Payments & Escrow
+  - Full Ghana MoMo flows (MTN/Vodafone/AirtelTigo) with idempotency + webhook reconciliation, wallet ledger with double-entry, milestones partial release, payout queue, KYC requirements.
+- Notifications
+  - Unified in-app + email notifications with preferences, typed events, and throttling.
+- Search & Discovery
+  - Geo search across Mongo 2dsphere; worker/job ranking improvements; caching and warmers.
+- Observability & SRE
+  - Health, readiness, tracing, structured logging, alerting; golden signals and SLOs per service.
+
+### C. Remediation Plan (Phased)
+
+Phase 0: Hotfixes and Consistency (1–2 days)
+- Unify refresh token architecture
+  - Adopt jwt-secure composite refresh tokens platform-wide OR standardize to signed refresh JWT + stored hash of random suffix (recommended: keep jwt-secure).
+  - Actions:
+    - Replace generateAuthTokens refresh path with jwt-secure.generateRefreshToken; store tokenId+tokenHash+version; remove raw token storage; add unique index on tokenId.
+    - Align refresh endpoint to verify composite token and rotate atomically.
+    - Update verifyEmail/OAuth callbacks to store hashed refresh tokens (no raw storage).
+- Worker controller cleanup
+  - Remove legacy duplicate blocks; ensure single definitions for getSkills/updateSkill/getAvailability/searchWorkers.
+- Public portfolio access
+  - Expose GET portfolio (read-only) without auth for public viewing. Keep write endpoints protected.
+- Logging policy
+  - Replace console.* with shared logger; set level from env; scrub PII in auth/messaging.
+- Config normalization
+  - Centralize CORS allowlists; verify JWT secrets presence; align SERVICE URLs; document envs.
+
+Acceptance criteria
+- Auth: login, refresh, logout, email-verify, OAuth callbacks pass with rotating refresh tokens; DB shows only tokenId+tokenHash, no raw token.
+- Worker: visiting a worker profile as guest loads profile and portfolio without 401.
+- CI runs smoke tests across gateway + services.
+
+Phase 1: Worker Experience Completion (5–7 days)
+- API
+  - Profile completeness endpoint (already present) + suggestions finalized.
+  - Certificates CRUD + verification flow; presigned uploads only in prod (S3).
+  - Availability scheduler model validation and audit logging.
+  - Worker stats aggregation (jobs completed, earnings last 7/30/all-time) via job/payment services.
+  - Bookmarks endpoints complete; idempotent.
+- Frontend (black/gold/white theme)
+  - Worker public page: stable portfolio grid, cert badges, availability, metrics.
+  - Worker dashboard: earnings widgets, saved jobs, applications, performance.
+  - Accessibility and mobile polish.
+
+Acceptance
+- Lighthouse PWA > 90 on mobile, a11y > 90.
+- E2E flow: visitor views profile/portfolio; hirer bookmarks; worker edits availability; cert upload with presign in prod.
+
+Phase 2: Messaging Enhancements (5–7 days)
+- Group conversations (model + routes + UI); participant roles.
+- Message reactions and edit window (server validation; audit trail).
+- Virus scan worker wired via queue (scan before broadcast for files > threshold).
+- Reliable unread counters and presence (heartbeats + reconciliation endpoint).
+- Optional E2E envelope disabled by default until client decrypt path lands; then enable behind flag.
+
+Acceptance
+- WebSocket reconnect resilience test; 100 concurrent clients; message loss < 0.1% in soak test.
+- Files over size threshold scanned and flagged.
+
+Phase 3: Payments, Wallet, Escrow (7–10 days)
+- Ledger & idempotency
+  - Double-entry ledger, idempotency keys for all provider requests; replay-safe webhooks.
+- Ghana MoMo integrations complete with validation endpoints; provider health.
+- Escrow lifecycle
+  - Create, fund, dispute, partial release, refund; milestones; payout queue to worker wallet.
+- Admin
+  - Payout approval workflows; anomaly flags.
+
+Acceptance
+- End-to-end fund-escrow → complete milestone → release → worker wallet credit, reconciled via webhook.
+- Idempotent replays cause 0 duplicate transactions.
+
+Phase 4: Notifications & Reviews (3–5 days)
+- Notification preferences; batching and throttling.
+- Email notifications (verify SPF/DKIM/DMARC); queue-based dispatch.
+- Review analytics and anti-abuse rate limiting.
+
+Phase 5: Hardening, Ops, and DX (3–5 days)
+- Logging: JSON logs; redact PII; correlation IDs end-to-end.
+- Metrics: request rate, error rate, latency, queue depth; dashboards.
+- Rate limiting (Redis) enforced for auth, payments, messaging; WAF rules.
+- Backups/retention policy; runbooks.
+
+### D. Detailed Work Items
+
+Auth
+- Replace usages of jwtUtils.generateAuthTokens with:
+  - access: shared/utils/jwt.signAccessToken
+  - refresh: auth-service/utils/jwt-secure.generateRefreshToken
+- Standardize RefreshToken schema: { userId, tokenId, tokenHash, version, expiresAt, deviceInfo, ipAddress, isRevoked, revokedAt }.
+- Rotate on refresh; mark old tokenId revoked with audit. Remove any raw token persistence.
+- Tests: login/refresh/logout/email-verify/oauth; token theft simulation (wrong IP/device) returns 401.
+
+Worker Service
+- Remove legacy block; export a single class; ensure indices for worker search.
+- Public GETs: profile summary, portfolio list, rating summary.
+- Validate availability updates at gateway and service (already gated); add full unit tests.
+
+Messaging
+- Conversation membership rules; moderator/admin roles for groups.
+- Message edit/reaction schema; audit logs; limits.
+- Queue-based virus scanning; backpressure for large attachments; presign uploads only.
+
+Payments
+- IdempotencyKey model; apply to all provider calls.
+- Webhook signatures verification; reconciliation job.
+- Wallet ledger: credit/debit with invariants; monthly statements.
+
+Gateway
+- Normalize CORS; add ws proxy hardening; set X-User-ID/Role consistently.
+- Global schema validation (celebrate) for high-risk routes.
+
+Frontend
+- Align API paths; robust error handling; optimistic UI only where safe.
+- Theming and animation within performance budgets; code-split heavy routes.
+
+### E. Environment & Config Unification
+- Required envs per service documented; fail-fast on missing secrets (JWT, refresh, SMTP, S3, Redis, DB URIs).
+- CORS allowlists single source via gateway; downstream allow origins follow gateway domain(s).
+- Feature flags: ENABLE_E2E_ENVELOPE, ENABLE_S3_UPLOADS, USE_REDIS_RATE_LIMIT.
+
+### F. Quality Engineering
+- Test matrix
+  - Unit: 80%+ core modules; auth/messaging/payment critical paths.
+  - Integration: gateway ↔ services; messaging WebSocket; escrow lifecycle.
+  - E2E: login → search → view worker → message → contract → escrow → release.
+- Load tests: messaging (socket), search (geo), payments (idempotency under retry).
+- Security: JWT fuzzing, CSRF (if cookies later), SSRF/file upload constraints.
+
+### G. Deployment & Ops
+- Vercel (frontend), Render (services), Mongo Atlas, S3.
+- Blue/green for gateway; helm or Compose for local dev.
+- Dashboards and alerts (latency p95, error rate, 5xx, queue depth, DB connections).
+- Runbooks: refresh-token incident, payments webhook backlog, Redis outage fallback.
+
+### H. Milestones & Success Criteria
+- P0: Stable auth refresh; public worker pages; CI green across services.
+- P1: Worker experience polished; page speed and a11y targets met.
+- P2: Messaging feature parity with reactions/edits; file scanning.
+- P3: Escrow fully operational with Ghana MoMo; idempotent and reconciled.
+- P4–P5: Notifications, observability, and SRE maturity.
+
+### I. Risks & Mitigations
+- Data model duality (Mongo + SQL): define source-of-truth; migration scripts; read models to bridge.
+- Provider instability: aggressive retries with idempotency; circuit breakers; dashboards.
+- WebSocket scaling: sticky sessions or message broker; horizontal scale plan.
+
+---
+This plan is intentionally exhaustive and sequencing-aware. Start with Phase 0 hotfixes to unlock reliable sessions and a consistent worker read path; then build out worker UX, messaging, and payments with strong correctness and operability guarantees.

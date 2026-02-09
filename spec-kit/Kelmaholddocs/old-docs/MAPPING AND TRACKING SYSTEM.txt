@@ -1,0 +1,219 @@
+┌───────────────────────── MAPPING AND TRACKING SYSTEM ─────────────────────────┐
+│                                                                               │
+│                            1. FRONTEND COMPONENTS                             │
+│                                                                               │
+│  ┌─────────────────────┐   ┌────────────────────────┐   ┌───────────────────┐│
+│  │ MAP COMPONENTS      │   │  SEARCH COMPONENTS     │   │   TRACKING UI     ││
+│  │                     │   │                        │   │                   ││
+│  │ /kelmah-frontend/   │   │ /kelmah-frontend/      │   │ /kelmah-frontend/ ││
+│  │ src/components/     │   │ src/components/        │   │ src/components/   ││
+│  │ maps/GoogleMap.jsx  │   │ search/                │   │ hirer/            ││
+│  │                     │   │ GeolocationSearch.jsx  │   │ JobProgressTracker││
+│  │ • Map rendering     │   │ • Location-based       │   │ • Timeline view   ││
+│  │ • Marker display    │   │   search               │   │ • Milestone status││
+│  │ • Zoom controls     │   │ • Radius filters       │   │ • Progress updates││
+│  │ • User location     │   │ • Location suggestions │   │ • Review tools    ││
+│  └─────────────────────┘   └────────────────────────┘   └───────────────────┘│
+│            │                          │                            │         │
+│            │                          │                            │         │
+│  ┌─────────────────────┐   ┌────────────────────────┐   ┌───────────────────┐│
+│  │ JOB MAP VIEW        │   │  DASHBOARD COMPONENTS  │   │   WORKER UI       ││
+│  │                     │   │                        │   │                   ││
+│  │ /kelmah-frontend/   │   │ /kelmah-frontend/      │   │ /kelmah-frontend/ ││
+│  │ src/components/     │   │ src/components/        │   │ src/services/     ││
+│  │ map/JobMapView.jsx  │   │ dashboard/             │   │ milestoneService.js│
+│  │                     │   │ ActiveJobsList.jsx     │   │                   ││
+│  │ • Jobs on map       │   │ • Job progress bars    │   │ • Update progress ││
+│  │ • Job info overlays │   │ • Milestone tracking   │   │ • Log hours       ││
+│  │ • Map/list toggle   │   │ • Status indicators    │   │ • Submit milestones││
+│  │ • Marker clustering │   │ • Dashboard metrics    │   │ • Track location  ││
+│  └─────────────────────┘   └────────────────────────┘   └───────────────────┘│
+│            │                          │                            │         │
+│            └──────────────────────────┼────────────────────────────┘         │
+│                                       │                                      │
+│                                       ▼                                      │
+│  ┌─────────────────────────────────────────────────────────────────────────┐ │
+│  │                         API SERVICE LAYER                               │ │
+│  │                                                                         │ │
+│  │                    /kelmah-frontend/src/services/                       │ │
+│  │                                                                         │ │
+│  │  • Location and map services                                            │ │
+│  │  • Geocoding API calls                                                  │ │
+│  │  • Job location fetching                                                │ │
+│  │  • Progress tracking API calls                                          │ │
+│  └────────────────────────────────────┬────────────────────────────────────┘ │
+│                                       │                                      │
+│                                       ▼                                      │
+│                                   API CALLS                                  │
+│                                       │                                      │
+│                                       │                                      │
+│───────────────────────────────────────────────────────────────────────────────│
+│                                       │                                      │
+│                                       ▼                                      │
+│                                BACKEND SERVICES                              │
+│                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │                          LOCATION & GEOCODING                           ││
+│  │                                                                         ││
+│  │               /kelmah-backend/services/job-service/                     ││
+│  │                                                                         ││
+│  │  ┌─────────────────────┐    ┌────────────────────┐   ┌────────────────┐ ││
+│  │  │  CONTROLLERS        │    │     UTILS          │   │     ROUTES     │ ││
+│  │  │                     │    │                    │   │                │ ││
+│  │  │ location.           │    │ geocoding.js       │   │ location.      │ ││
+│  │  │ controller.js       │    │                    │   │ routes.js      │ ││
+│  │  │                     │    │ geolocation.js     │   │                │ ││
+│  │  │ search.             │    │                    │   │                │ ││
+│  │  │ controller.js       │    │                    │   │                │ ││
+│  │  └─────────────────────┘    └────────────────────┘   └────────────────┘ ││
+│  │                                                                         ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+│                                       │                                      │
+│                                       ▼                                      │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │                        MILESTONE & JOB TRACKING                         ││
+│  │                                                                         ││
+│  │               /kelmah-backend/services/job-service/                     ││
+│  │                                                                         ││
+│  │  ┌─────────────────────┐    ┌────────────────────┐   ┌────────────────┐ ││
+│  │  │  CONTROLLERS        │    │     MODELS         │   │    ANALYTICS   │ ││
+│  │  │                     │    │                    │   │                │ ││
+│  │  │ milestone.          │    │ job.model.js       │   │ analytics.     │ ││
+│  │  │ controller.js       │    │                    │   │ controller.js  │ ││
+│  │  │                     │    │ milestone.model.js │   │                │ ││
+│  │  │ job.                │    │                    │   │                │ ││
+│  │  │ controller.js       │    │ location.model.js  │   │                │ ││
+│  │  └─────────────────────┘    └────────────────────┘   └────────────────┘ ││
+│  │                                                                         ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────── MAPPING & TRACKING WORKFLOW ───────────────────────────┐
+│                                                                                   │
+│  1. LOCATION SEARCH & MAPPING                                                     │
+│     ┌─────────────┐     ┌─────────────────┐     ┌───────────────────────┐        │
+│     │GeolocationSe│────▶│ API Service     │────▶│location.controller.js │        │
+│     │arch Component│     │ Layer           │     │getLocationSuggestions()│        │
+│     └─────────────┘     └─────────────────┘     └───────────┬───────────┘        │
+│                                                             │                     │
+│                          ┌─────────────────────────────────┐│                     │
+│                          │ Geocoding service               ││                     │
+│                          │ (Google/Nominatim)              │◀─────────────────────┘
+│                          └─────────────────────────────────┘                      │
+│                                                                                   │
+│  2. JOB LOCATION VISUALIZATION                                                    │
+│     ┌───────────┐     ┌─────────────────┐     ┌───────────────────────┐          │
+│     │JobMapView │────▶│ API Service     │────▶│search.controller.js   │          │
+│     │Component  │     │ Layer           │     │nearbyJobs()           │          │
+│     └───────────┘     └─────────────────┘     └───────────┬───────────┘          │
+│                                                           │                       │
+│                          ┌───────────────────────────────┐│                       │
+│                          │ Database query with           ││                       │
+│                          │ geospatial calculations       │◀───────────────────────┘
+│                          └───────────────────────────────┘                        │
+│                                                                                   │
+│  3. MILESTONE TRACKING                                                            │
+│     ┌───────────┐     ┌─────────────────┐     ┌───────────────────────┐          │
+│     │JobProgress│────▶│ milestoneService│────▶│milestone.controller.js│          │
+│     │Tracker    │     │ .js             │     │updateMilestone()      │          │
+│     └───────────┘     └─────────────────┘     └───────────┬───────────┘          │
+│                                                           │                       │
+│                          ┌───────────────────────────────┐│                       │
+│                          │ Update milestone status       ││                       │
+│                          │ in database                   │◀───────────────────────┘
+│                          └───────────────────────────────┘                        │
+│                                                                                   │
+│  4. WORKER LOCATION TRACKING                                                      │
+│     ┌───────────┐     ┌─────────────────┐     ┌───────────────────────┐          │
+│     │Worker     │────▶│ API Service     │────▶│location.controller.js │          │
+│     │Mobile App │     │ Layer           │     │updateWorkerLocation() │          │
+│     └───────────┘     └─────────────────┘     └───────────┬───────────┘          │
+│                                                           │                       │
+│                          ┌───────────────────────────────┐│                       │
+│                          │ Store worker location         ││                       │
+│                          │ with timestamps               │◀───────────────────────┘
+│                          └───────────────────────────────┘                        │
+│                                                                                   │
+│  5. JOB PROGRESS ANALYTICS                                                        │
+│     ┌───────────┐     ┌─────────────────┐     ┌───────────────────────┐          │
+│     │Dashboard  │────▶│ API Service     │────▶│analytics.controller.js│          │
+│     │Component  │     │ Layer           │     │trackJobView()         │          │
+│     └───────────┘     └─────────────────┘     └───────────┬───────────┘          │
+│                                                           │                       │
+│                          ┌───────────────────────────────┐│                       │
+│                          │ Record analytics data         ││                       │
+│                          │ Generate reports              │◀───────────────────────┘
+│                          └───────────────────────────────┘                        │
+└───────────────────────────────────────────────────────────────────────────────────┘
+
+Key Files and Their Roles
+Frontend Components
+Map Components
+/kelmah-frontend/src/components/maps/GoogleMap.jsx: Core map rendering component using Google Maps API
+/kelmah-frontend/src/components/maps/MapView.jsx: Alternative map component using Leaflet
+/kelmah-frontend/src/components/map/JobMapView.jsx: Job-specific map view with interactive markers and job details
+Search Components
+/kelmah-frontend/src/components/search/GeolocationSearch.jsx: Location-based search with radius filtering
+/kelmah-frontend/src/pages/search/GeoLocationSearch.jsx: Page component for geolocation search
+Tracking UI
+/kelmah-frontend/src/components/hirer/JobProgressTracker.jsx: Timeline view for job milestones and progress
+/kelmah-frontend/src/components/dashboard/ActiveJobsList.jsx: Progress tracking for active jobs with completion status
+/kelmah-frontend/src/services/milestoneService.js: Service for milestone updates and tracking
+Backend Services
+Location & Geocoding
+/kelmah-backend/services/job-service/controllers/location.controller.js: Handles location services like geocoding, location suggestions
+/kelmah-backend/services/job-service/utils/geocoding.js: Geocoding service implementation with Google Maps/Nominatim
+/kelmah-backend/services/job-service/utils/geolocation.js: Geolocation utilities for distance calculation
+/kelmah-backend/services/job-service/routes/location.routes.js: API routes for location services
+Milestone & Job Tracking
+/kelmah-backend/services/job-service/controllers/milestone.controller.js: Handles milestone updates and tracking
+/kelmah-backend/services/job-service/controllers/analytics.controller.js: Tracks job views and analytics metrics
+/kelmah-backend/services/job-service/models/job.model.js: Job model with milestone tracking methods
+/kelmah-backend/services/user-service/routes/worker-jobs.routes.js: Worker job progress tracking routes
+Key Features and Workflows
+Location Search & Mapping
+Geolocation Search:
+Location-based job/worker search
+Radius filtering (distance calculations)
+Location suggestions and autocomplete
+Map visualization of search results
+Geocoding Services:
+Forward geocoding (address to coordinates)
+Reverse geocoding (coordinates to address)
+Location data formatting and standardization
+Multiple provider support (Google Maps, Nominatim)
+Job Visualization
+Map Components:
+Interactive job markers on maps
+Job details on marker click
+Custom map styling and controls
+Marker clustering for dense areas
+Job Location Tracking:
+Job location storage with coordinates
+Distance calculation from user location
+Nearby job search functionality
+Map/list toggle views
+Worker Tracking
+Location Tracking:
+Worker location updates
+Search for workers by location with radius
+Worker location history (timestamps)
+Location-based job matching
+Availability Tracking:
+Worker availability status updates
+Location-based availability filtering
+Work schedule visualization
+Real-time status updates
+Progress Monitoring
+Milestone Tracking:
+Create and assign job milestones
+Update milestone status (pending, in_progress, completed)
+Milestone timeline visualization
+Progress percentage calculation
+Job Progress Analytics:
+Job view tracking with user data
+Progress analytics and reporting
+Time tracking and hours logged
+Completion rate metrics
+This mapping and tracking system provides comprehensive functionality for job location visualization, worker tracking, milestone monitoring, and progress analytics. It enables hirers to track job progress through visual timelines and progress indicators, while workers can update their location, log hours, and report milestone completions.

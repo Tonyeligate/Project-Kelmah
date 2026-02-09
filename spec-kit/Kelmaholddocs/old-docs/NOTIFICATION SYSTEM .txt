@@ -1,0 +1,262 @@
+┌───────────────────────── NOTIFICATION SYSTEM ─────────────────────────┐
+│                                                                       │
+│                        1. FRONTEND COMPONENTS                         │
+│                                                                       │
+│  ┌─────────────────────┐   ┌────────────────────────┐   ┌───────────┐│
+│  │ NOTIFICATION UI     │   │  NOTIFICATION CONTEXT  │   │ USER      ││
+│  │                     │   │                        │   │ SETTINGS  ││
+│  │ /kelmah-frontend/   │   │ /kelmah-frontend/      │   │           ││
+│  │ src/components/     │   │ src/contexts/          │   │ /frontend/││
+│  │ common/             │   │ NotificationContext.jsx│   │ src/      ││
+│  │ NotificationBadge.jsx   │                        │   │ components/││
+│  │                     │   │ • Context provider     │   │ settings/ ││
+│  │ • Badge display     │   │ • Socket connection    │   │ Notification││
+│  │ • Notification count│   │ • Event handling       │   │ Preferences││
+│  │ • Click handling    │   │ • Notification mgmt    │   │ .jsx      ││
+│  └─────────────────────┘   └────────────────────────┘   └───────────┘│
+│            │                          │                       │      │
+│            │                          │                       │      │
+│  ┌─────────────────────┐   ┌────────────────────────┐   ┌───────────┐│
+│  │ NOTIFICATION CENTER │   │  TOAST NOTIFICATIONS   │   │ REDUX     ││
+│  │                     │   │                        │   │ STORE     ││
+│  │ /kelmah-frontend/   │   │ /kelmah-frontend/      │   │           ││
+│  │ src/components/     │   │ src/components/        │   │ /frontend/││
+│  │ notifications/      │   │ common/Toast.jsx       │   │ src/redux/││
+│  │ NotificationCenter  │   │                        │   │ reducers/ ││
+│  │ .jsx                │   │ • Toast display        │   │ notification││
+│  │ • Notification list │   │ • Toast context        │   │ Reducer.js││
+│  │ • Mark as read      │   │ • Toast management     │   │           ││
+│  │ • Clear all         │   │ • Priority handling    │   │ • State   ││
+│  └─────────────────────┘   └────────────────────────┘   └───────────┘│
+│            │                          │                       │      │
+│            └──────────────────────────┼───────────────────────┘      │
+│                                       │                              │
+│                                       ▼                              │
+│  ┌─────────────────────────────────────────────────────────────────┐ │
+│  │                   NOTIFICATION SERVICE LAYER                     │ │
+│  │                                                                  │ │
+│  │             /kelmah-frontend/src/services/notificationService.js │ │
+│  │                                                                  │ │
+│  │  • API calls for notification operations                         │ │
+│  │  • WebSocket connection management                               │ │
+│  │  • Real-time notification handling                               │ │
+│  │  • Notification preferences management                           │ │
+│  └────────────────────────────────────┬─────────────────────────────┘ │
+│                                       │                               │
+│                                       ▼                               │
+│                                   API CALLS                           │
+│                                   WEBSOCKET                           │
+│                                       │                               │
+│───────────────────────────────────────────────────────────────────────│
+│                                       │                               │
+│                                       ▼                               │
+│                              BACKEND SERVICES                         │
+│                                                                       │
+│  ┌─────────────────────────────────────────────────────────────────┐ │
+│  │                     NOTIFICATION SERVICE                         │ │
+│  │                                                                  │ │
+│  │       /kelmah-backend/services/notification-service/            │ │
+│  │                                                                  │ │
+│  │  ┌─────────────────┐    ┌────────────────────┐   ┌────────────┐ │ │
+│  │  │  CONTROLLERS    │    │     SERVICES       │   │   SOCKET   │ │ │
+│  │  │                 │    │                    │   │            │ │ │
+│  │  │ notification.   │    │ notification.      │   │ notification│ │ │
+│  │  │ controller.js   │    │ service.js         │   │ Socket.js  │ │ │
+│  │  │                 │    │                    │   │            │ │ │
+│  │  │ preferences.    │    │ template.service.js│   │ • WebSocket│ │ │
+│  │  │ controller.js   │    │                    │   │   server   │ │ │
+│  │  │                 │    │ email.service.js   │   │ • Real-time│ │ │
+│  │  │                 │    │                    │   │   events   │ │ │
+│  │  │                 │    │ sms.service.js     │   │            │ │ │
+│  │  └─────────────────┘    └────────────────────┘   └────────────┘ │ │
+│  │                                                                  │ │
+│  │  ┌─────────────────┐    ┌────────────────────┐   ┌────────────┐ │ │
+│  │  │  MODELS         │    │     TEMPLATES      │   │ CONSTANTS  │ │ │
+│  │  │                 │    │                    │   │            │ │ │
+│  │  │ notification.   │    │ /templates/email/  │   │ index.js   │ │ │
+│  │  │ model.js        │    │ *.html             │   │            │ │ │
+│  │  │                 │    │                    │   │ • Types    │ │ │
+│  │  │ notification-   │    │ /templates/sms/    │   │ • Channels │ │ │
+│  │  │ preference.     │    │ *.txt              │   │ • Priorities│ │ │
+│  │  │ model.js        │    │                    │   │            │ │ │
+│  │  └─────────────────┘    └────────────────────┘   └────────────┘ │ │
+│  │                                                                  │ │
+│  └─────────────────────────────────────────────────────────────────┘ │
+│                                       │                               │
+│                                       ▼                               │
+│  ┌─────────────────────────────────────────────────────────────────┐ │
+│  │                     DELIVERY CHANNELS                            │ │
+│  │                                                                  │ │
+│  │   ┌──────────────┐    ┌───────────────┐    ┌───────────────┐    │ │
+│  │   │  IN-APP      │    │     EMAIL     │    │     SMS       │    │ │
+│  │   │              │    │               │    │               │    │ │
+│  │   │ • WebSocket  │    │ • SMTP        │    │ • Twilio      │    │ │
+│  │   │   realtime   │    │   service     │    │   service     │    │ │
+│  │   │   delivery   │    │ • HTML        │    │ • Text        │    │ │
+│  │   │ • Client     │    │   templates   │    │   templates   │    │ │
+│  │   │   badge      │    │ • Templating  │    │ • Security    │    │ │
+│  │   │   updates    │    │   engine      │    │   validation  │    │ │
+│  │   └──────────────┘    └───────────────┘    └───────────────┘    │ │
+│  │                                                                  │ │
+│  └─────────────────────────────────────────────────────────────────┘ │
+│                                                                       │
+└───────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────── NOTIFICATION WORKFLOW ───────────────────────────┐
+│                                                                             │
+│  1. NOTIFICATION CREATION                                                   │
+│     ┌─────────────┐     ┌─────────────────┐     ┌───────────────────────┐  │
+│     │Application  │────▶│ notification.   │────▶│notification.service.js│  │
+│     │event trigger│     │ controller.js   │     │sendNotification()     │  │
+│     └─────────────┘     └─────────────────┘     └───────────┬───────────┘  │
+│                                                             │              │
+│                          ┌─────────────────────────────────┐│              │
+│                          │ Create notification record      ││              │
+│                          │ Determine delivery channels     │◀──────────────┘
+│                          └─────────────────────────────────┘               │
+│                                                                             │
+│  2. DELIVERY CHANNEL PROCESSING                                             │
+│     ┌───────────┐     ┌─────────────────┐     ┌───────────────────────┐    │
+│     │notification│────▶│ email.service.js│────▶│template.service.js   │    │
+│     │service.js  │     │ sendEmail()     │     │compileTemplate()     │    │
+│     └───────────┘     └─────────────────┘     └───────────┬───────────┘    │
+│          │                                                │                │
+│          │                                                │                │
+│          │                                 ┌──────────────▼──────────────┐ │
+│          │                                 │Process email template       │ │
+│          │                                 │with notification data       │ │
+│          │                                 └─────────────────────────────┘ │
+│          │                                                                 │
+│          │              ┌─────────────────┐     ┌───────────────────────┐ │
+│          └─────────────▶│ sms.service.js  │────▶│Send SMS message       │ │
+│          │              │ sendSms()       │     │via SMS provider       │ │
+│          │              └─────────────────┘     └───────────────────────┘ │
+│          │                                                                 │
+│          │              ┌─────────────────┐     ┌───────────────────────┐ │
+│          └─────────────▶│ notification    │────▶│Emit socket event      │ │
+│                         │ Socket.js       │     │to connected clients    │ │
+│                         └─────────────────┘     └───────────────────────┘ │
+│                                                                            │
+│  3. REAL-TIME DELIVERY & FRONTEND HANDLING                                 │
+│     ┌───────────┐     ┌─────────────────┐     ┌───────────────────────┐   │
+│     │notification│────▶│ notification    │────▶│NotificationContext.jsx│   │
+│     │Socket.js   │     │ Service.js      │     │handleNotification()   │   │
+│     └───────────┘     └─────────────────┘     └───────────┬───────────┘   │
+│                                                           │               │
+│                          ┌───────────────────────────────┐│               │
+│                          │ Update notification count     ││               │
+│                          │ Show notification toast       │◀───────────────┘
+│                          │ Update notification list      │                │
+│                          └───────────────────────────────┘                │
+│                                                                            │
+│  4. NOTIFICATION PREFERENCE MANAGEMENT                                     │
+│     ┌───────────┐     ┌─────────────────┐     ┌───────────────────────┐   │
+│     │Notification│────▶│ preferences.    │────▶│Update user notification│  │
+│     │Preferences │     │ controller.js   │     │preferences in database │  │
+│     │Component   │     │updatePreferences│     │                       │  │
+│     └───────────┘     └─────────────────┘     └───────────────────────┘   │
+│                                                                            │
+│  5. USER INTERACTION WITH NOTIFICATIONS                                    │
+│     ┌───────────┐     ┌─────────────────┐     ┌───────────────────────┐   │
+│     │Notification│────▶│ notification.   │────▶│Mark notification as   │   │
+│     │Badge/Center│     │ controller.js   │     │read in database       │   │
+│     │            │     │markAsRead()     │     │                       │   │
+│     └───────────┘     └─────────────────┘     └───────────┬───────────┘   │
+│                                                           │               │
+│                          ┌───────────────────────────────┐│               │
+│                          │ Update notification status    ││               │
+│                          │ Emit socket event for real-   │◀───────────────┘
+│                          │ time status update            │                │
+│                          └───────────────────────────────┘                │
+└────────────────────────────────────────────────────────────────────────────┘
+
+
+Key Files and Their Roles
+Frontend Components
+Notification UI
+/kelmah-frontend/src/components/common/NotificationBadge.jsx: Displays notification badge with unread count in navbar
+/kelmah-frontend/src/components/notifications/NotificationCenter.jsx: Displays list of notifications with options to manage them
+/kelmah-frontend/src/components/common/Toast.jsx: Displays toast notifications for real-time alerts
+/kelmah-frontend/src/components/dashboard/NotificationsPanel.jsx: Dashboard widget showing recent notifications
+Context and State Management
+/kelmah-frontend/src/contexts/NotificationContext.jsx: Context provider for notification state and actions
+/kelmah-frontend/src/redux/reducers/notificationReducer.js: Redux state management for notifications
+/kelmah-frontend/src/redux/actions/notificationActions.js: Redux actions for notification operations
+User Preferences
+/kelmah-frontend/src/components/settings/NotificationPreferences.jsx: Settings page for notification preferences
+/kelmah-frontend/src/components/notifications/NotificationPreferences.jsx: Component for managing notification preferences
+Service Layer
+/kelmah-frontend/src/services/notificationService.js: Core service with API calls and WebSocket handling
+Backend Services
+Notification Service
+/kelmah-backend/services/notification-service/services/notification.service.js: Core service for processing notifications
+/kelmah-backend/services/notification-service/services/template.service.js: Handles template rendering for notifications
+/kelmah-backend/services/notification-service/services/email.service.js: Email delivery service
+/kelmah-backend/services/notification-service/services/sms.service.js: SMS delivery service
+Models and Data
+/kelmah-backend/services/notification-service/models/notification.model.js: Notification data model
+/kelmah-backend/services/notification-service/models/notification-preference.model.js: User notification preferences
+/kelmah-backend/services/notification-service/constants/index.js: Constants for notification types, channels, priorities
+WebSocket Implementation
+/kelmah-backend/services/notification-service/socket/notificationSocket.js: WebSocket server implementation
+/kelmah-backend/services/user-service/socket/notificationSocket.js: Additional WebSocket handlers in user service
+Templates
+/kelmah-backend/services/notification-service/templates/email/*.html: Email templates
+/kelmah-backend/services/notification-service/templates/sms/*.txt: SMS templates
+Key Features and Workflows
+Notification Types and Channels
+Notification Types:
+Authentication notifications (login alerts, password reset)
+User account notifications (profile updates, account status)
+Messaging notifications (new messages, conversation invites)
+Job and contract notifications (job postings, applications, contracts)
+Payment notifications (payments received/sent, payouts)
+Review notifications (new reviews, responses)
+System notifications (announcements, maintenance)
+Delivery Channels:
+In-app notifications (real-time WebSocket)
+Email notifications (HTML templates)
+SMS notifications (text templates)
+Push notifications (for mobile devices)
+Notification Creation and Delivery
+Notification Creation:
+Application events trigger notification creation
+Notification service determines delivery channels based on user preferences
+Creates notification record in database
+Multi-channel Delivery:
+In-app notifications via WebSocket for real-time updates
+Email notifications using HTML templates
+SMS notifications for high-priority alerts
+Templates processed with notification data
+Real-time Updates:
+WebSocket server emits events to connected clients
+Frontend socket client receives notifications
+Notification context updates UI components
+Toast notifications for immediate alerts
+User Preferences and Management
+Notification Preferences:
+Channel preferences (in-app, email, SMS, push)
+Type preferences (which notification types to receive)
+Quiet hours settings (do not disturb periods)
+Default preferences for new users
+User Interactions:
+Mark notifications as read
+Delete notifications
+Clear all notifications
+Update notification preferences
+Additional Features
+Scheduled Notifications:
+Schedule notifications for future delivery
+Cron jobs for processing scheduled notifications
+Notification Expiration:
+Auto-expiration based on notification priority
+Cleanup jobs for expired notifications
+Priority Levels:
+Urgent, high, medium, low priorities
+Different styling and behavior based on priority
+Priority-based delivery channel selection
+Analytics and Tracking:
+Delivery status tracking for each channel
+Read/unread status tracking
+Notification effectiveness metrics
+This notification system provides a comprehensive solution for delivering important updates to users across multiple channels based on their preferences. It ensures real-time delivery through WebSockets, while also supporting traditional channels like email and SMS for critical notifications.

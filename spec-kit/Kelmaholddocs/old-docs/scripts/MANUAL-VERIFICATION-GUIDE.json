@@ -1,0 +1,49 @@
+{
+  "timestamp": "2025-08-06T07:09:05.949Z",
+  "testResults": {
+    "canLogin": [],
+    "needsVerification": [],
+    "errors": [
+      {
+        "email": "kwame.asante1@kelmah.test",
+        "name": "Kwame Asante",
+        "role": "worker",
+        "error": "timeout of 10000ms exceeded"
+      },
+      {
+        "email": "samuel.osei@ghanaconstruction.com",
+        "name": "Samuel Osei",
+        "role": "hirer",
+        "error": "timeout of 10000ms exceeded"
+      },
+      {
+        "email": "efua.mensah@kelmah.test",
+        "name": "Efua Mensah",
+        "role": "worker",
+        "error": "Request failed with status code 403"
+      },
+      {
+        "email": "akosua.mensah@goldstarbuilders.com",
+        "name": "Akosua Mensah",
+        "role": "hirer",
+        "error": "Request failed with status code 403"
+      },
+      {
+        "email": "kwaku.osei@kelmah.test",
+        "name": "Kwaku Osei",
+        "role": "worker",
+        "error": "Request failed with status code 403"
+      }
+    ]
+  },
+  "manualSteps": {
+    "mongodbAtlasUrl": "https://cloud.mongodb.com/",
+    "priorityUsers": [
+      "kwame.asante1@kelmah.test",
+      "samuel.osei@ghanaconstruction.com",
+      "efua.mensah@kelmah.test"
+    ],
+    "loginUrl": "https://kelmah-frontend-mu.vercel.app/login",
+    "password": "TestUser123!"
+  }
+}

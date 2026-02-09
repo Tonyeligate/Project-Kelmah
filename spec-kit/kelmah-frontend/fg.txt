@@ -1,0 +1,163 @@
+Windows Fundamentals (First 25 Skills)
+Command Line Mastery: cmd, PowerShell basics
+
+File System Navigation: NTFS structure, permissions
+
+User Account Management: Admin vs standard accounts
+
+Group Policy Editing: gpedit.msc
+
+Registry Editing: regedit fundamentals
+
+Event Log Analysis: Security/System/Application logs
+
+Task Scheduler: Automating system tasks
+
+Windows Services Management: services.msc
+
+Firewall Configuration: Inbound/outbound rules
+
+Network Configuration: ipconfig, netsh
+
+Active Directory Basics: Users, groups, OUs
+
+PowerShell Scripting: Basic automation
+
+Windows Backup/Restore: System image creation
+
+BitLocker Encryption: Drive encryption
+
+WMI Usage: Windows Management Instrumentation
+
+DLL Analysis: Dependency Walker
+
+Process Monitoring: Task Manager → Details tab
+
+Resource Monitoring: Performance analysis
+
+Windows Update Management: WSUS basics
+
+RDP Security: Secure remote access
+
+SMB Configuration: File sharing security
+
+Windows Defender: AV configuration
+
+Credential Manager: Password vault
+
+PowerShell Remoting: Enter-PSSession
+
+Windows Forensics Basics: Prefetch, Amcache analysis
+
+🐧 Kali Linux Essentials (Next 25 Skills)
+Linux Command Line: Bash fundamentals
+
+File System Structure: /etc, /var, /bin
+
+Package Management: apt, dpkg
+
+Service Management: systemctl
+
+Bash Scripting: Automation basics
+
+Network Scanning: nmap (TCP/UDP scans)
+
+Vulnerability Scanning: openvas, nessus
+
+Password Cracking: john, hashcat
+
+Wireless Testing: aircrack-ng suite
+
+Packet Analysis: wireshark, tcpdump
+
+Web App Testing: burp suite, OWASP ZAP
+
+Exploit Frameworks: metasploit
+
+Social Engineering: setoolkit
+
+OSINT Techniques: maltego, theharvester
+
+Steganography: steghide, exiftool
+
+Forensic Imaging: dd, guymager
+
+Memory Analysis: volatility
+
+Web Server Hacking: Apache/Nginx hardening
+
+SQL Injection: sqlmap
+
+Privilege Escalation: Linux kernel exploits
+
+VPN Technologies: openvpn configuration
+
+Firewall Evasion: proxychains, ssh tunneling
+
+IDS/IPS Evasion: Fragmentation, encoding
+
+Reverse Engineering: gdb, radare2
+
+Report Writing: Documenting findings
+
+💻 Critical Hands-On Projects
+Build Home Lab:
+
+VirtualBox/VMWare Workstation
+
+Windows 10/11 VM + Kali VM
+
+Configure host-only networking
+
+Windows Security:
+
+Create vulnerable AD environment
+
+Practice password policy cracking
+
+Analyze Windows Defender logs
+
+Kali Practice:
+
+bash
+# Sample NMAP scan
+nmap -sV -O -T4 192.168.1.0/24
+
+# Password cracking example
+john --format=NT --wordlist=rockyou.txt hashes.txt
+Capture the Flag (CTF) Platforms:
+
+Hack The Box (Windows/Linux machines)
+
+TryHackMe (Beginner friendly)
+
+VulnHub (Realistic vulnerable VMs)
+
+📚 Learning Resources
+Books:
+
+"Windows Internals" by Pavel Yosifovich
+
+"The Linux Command Line" by William Shotts
+
+Courses:
+
+eLearnSecurity eJPT (Entry-level)
+
+OSCP Certification Path
+
+YouTube:
+
+NetworkChuck
+
+John Hammond
+
+The Cyber Mentor
+
+💡 Pro Tip: Start with Windows Privilege Escalation practice on Hack The Box before moving to Kali tools. Master PowerShell and netcat before learning Metasploit.
+
+⏱️ Estimated Timeline
+Phase	Duration	Focus Areas
+Windows Fundamentals	2-3 months	Skills 1-25
+Linux Transition	1 month	Skills 26-35
+Security Tools	2-3 months	Skills 36-50

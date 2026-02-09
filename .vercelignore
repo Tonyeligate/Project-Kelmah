@@ -1,6 +1,11 @@
 # Deploy only frontend directory
 kelmah-backend/
 kelmah-team/
+backup/
+scripts/
+tests/
+docs/
+spec-kit/
 *.md
 *.txt
 *.log
