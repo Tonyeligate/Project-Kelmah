@@ -190,29 +190,23 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             flexGrow: 1,
             width: '100%',
             minWidth: 0,
-            py: { xs: 1, sm: 2, md: 3 },
-            px: { xs: 1, sm: 2, md: 3 },
+            // Homepage gets full-bleed treatment (no padding) like Upwork/Freelancer
+            // Other public pages get standard padding
+            py: isHomePage ? 0 : { xs: 1, sm: 2, md: 3 },
+            px: isHomePage ? 0 : { xs: 1, sm: 2, md: 3 },
             overflowX: 'hidden',
-            overflowY: 'visible', // Allow content to flow naturally
-            // Ensure content adapts to all zoom levels
+            overflowY: 'visible',
             '@media (min-width: 1px)': {
               maxWidth: '100vw',
               boxSizing: 'border-box',
             },
-            // ✅ MOBILE-AUDIT FIX: Use consistent breakpoint for mobile padding reset
-            '@media (max-width: 899px)': {
-              py: 0,
-              px: 1,
-            },
-            // No bottom padding needed since footer is now dynamic and fixed
-            pb: { xs: 0, sm: 2, md: 3 },
           }}
         >
           {content}
         </Box>
       </Fade>
-      {/* Footer only on homepage */}
-      {isHomePage && <Footer />}
+      {/* Footer on all public pages (like Upwork/Freelancer) */}
+      <Footer />
     </Box>
   );
 };

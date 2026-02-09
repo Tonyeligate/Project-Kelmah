@@ -1,1601 +1,933 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import {
   Box,
   Container,
   Typography,
   Button,
   Grid,
-  CircularProgress,
   Card,
-  CardMedia,
   CardContent,
-  Chip,
+  Stack,
   useTheme,
   useMediaQuery,
-  IconButton,
   Avatar,
-  Tooltip,
+  Chip,
+  Rating,
+  IconButton,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
-import { motion } from 'framer-motion';
-import { styled } from '@mui/material/styles';
-import LoadingScreen from '../../common/components/loading/LoadingScreen';
-import GestureControl from '../../common/components/controls/GestureControl';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { motion } from 'framer-motion';
 import {
-  checkServiceHealth,
-  getServiceStatusMessage,
-} from '../../../utils/serviceHealthCheck';
-import {
-  useResponsive,
-  useResponsiveTypography,
-  useResponsiveLayout,
-} from '../../../hooks/useResponsive';
-import backgroundImg from '../../../assets/images/background.jpg';
-import plumbingImg from '../../../assets/images/plumbing.jpg.jpeg';
-import electricalImg from '../../../assets/images/electrical.jpg';
-import carpentryImg from '../../../assets/images/carpentry.jpg';
-import constructionImg from '../../../assets/images/construction.jpg';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import BuildIcon from '@mui/icons-material/Build';
-import HandymanIcon from '@mui/icons-material/Handyman';
-import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
-import PlumbingIcon from '@mui/icons-material/Plumbing';
-import CarpenterIcon from '@mui/icons-material/Carpenter';
-import ConstructionIcon from '@mui/icons-material/Construction';
-import VerifiedIcon from '@mui/icons-material/Verified';
-import SecurityIcon from '@mui/icons-material/Security';
-import StarIcon from '@mui/icons-material/Star';
-import WorkIcon from '@mui/icons-material/Work';
-import EngineeringIcon from '@mui/icons-material/Engineering';
-import FlashOnIcon from '@mui/icons-material/FlashOn';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import PaymentIcon from '@mui/icons-material/Payment';
+  Search as SearchIcon,
+  Build as CarpenterIcon,
+  Construction as MasonIcon,
+  Plumbing as PlumberIcon,
+  ElectricalServices as ElectricianIcon,
+  Brush as PainterIcon,
+  Roofing as RoofingIcon,
+  Work as WorkIcon,
+  PersonSearch as FindTalentIcon,
+  VerifiedUser as VerifiedIcon,
+  Payments as PaymentIcon,
+  ChatBubbleOutline as ChatIcon,
+  Speed as SpeedIcon,
+  Shield as ShieldIcon,
+  Star as StarIcon,
+  TrendingUp as TrendingUpIcon,
+  ArrowForward as ArrowForwardIcon,
+  CheckCircle as CheckIcon,
+  LocationOn as LocationIcon,
+  Groups as GroupsIcon,
+  TaskAlt as TaskAltIcon,
+  Handshake as HandshakeIcon,
+} from '@mui/icons-material';
 import { alpha } from '@mui/material/styles';
 
-const Section = styled(Box)(({ theme }) => ({
-  minHeight: '100vh',
-  position: 'relative',
-  overflow: 'visible', // Allow content to flow naturally - was hidden causing content clipping
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: '#000000',
-  width: '100%',
-  maxWidth: '100vw',
-  boxSizing: 'border-box',
-  // Ensure proper full width utilization on all devices and zoom levels
-  '@media (min-width: 1px)': {
-    width: '100%',
-    maxWidth: '100vw',
-  },
-  // Mobile: use auto height so content isn't pushed below fold
-  [theme.breakpoints.down('sm')]: {
-    minHeight: 'auto',
-    paddingTop: theme.spacing(4),
-    paddingBottom: theme.spacing(4),
-  },
-  // Tablet adjustments
-  [theme.breakpoints.between('sm', 'md')]: {
-    minHeight: 'auto',
-    paddingTop: theme.spacing(3),
-    paddingBottom: theme.spacing(3),
-  },
-}));
+// Animation variants
+const fadeInUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (i = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.55, delay: i * 0.1, ease: [0.25, 0.46, 0.45, 0.94] },
+  }),
+};
 
-const HeroBackgroundImage = styled(Box)(({ theme }) => ({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  width: '100%',
-  height: '100%',
-  maxWidth: '100vw',
-  backgroundImage: `url(${plumbingImg})`,
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  zIndex: 0,
-  boxSizing: 'border-box',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    zIndex: 1,
-    pointerEvents: 'none',
-    background:
-      'linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 15%, rgba(0,0,0,0.2) 35%, rgba(0,0,0,0.2) 65%, rgba(0,0,0,0.4) 85%, rgba(0,0,0,0.6) 100%)',
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.15 },
   },
-}));
+};
 
-const StyledButton = styled(Button)(({ theme }) => ({
-  borderRadius: theme.spacing(2),
-  padding: `${theme.spacing(1.8)} ${theme.spacing(4)}`,
-  fontSize: '1.1rem',
-  textTransform: 'none',
-  fontWeight: 'bold',
-  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-  boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
-  // Desktop styling for all devices
-  '&:hover': {
-    transform: 'translateY(-3px)',
-    boxShadow: '0 8px 25px rgba(0,0,0,0.35)',
-    // Consistent hover effects for all devices
-  },
-}));
-
-const FeatureCircle = styled(Box)(({ theme }) => ({
-  width: 50,
-  height: 50,
-  borderRadius: '50%',
-  background: `linear-gradient(135deg, #FFD700 0%, #FFA500 100%)`,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: '#000000',
-  fontWeight: 'bold',
-  marginRight: theme.spacing(3),
-  boxShadow: '0 4px 15px rgba(255,215,0,0.3)',
-}));
-
-const FeatureBox = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  padding: theme.spacing(3),
-  borderRadius: theme.spacing(2),
-  background: 'rgba(50, 50, 50, 0.9)',
-  backdropFilter: 'blur(10px)',
-  marginBottom: theme.spacing(3),
-  border: '1px solid rgba(255,215,0,0.2)',
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    background: 'rgba(60, 60, 60, 0.95)',
-    border: '1px solid rgba(255,215,0,0.4)',
-    transform: 'translateX(5px)',
-  },
-}));
-
-const ServiceCard = styled(Card)(({ theme }) => ({
-  height: '100%',
-  background: 'rgba(44, 44, 44, 0.6)',
-  backdropFilter: 'blur(8px)',
-  borderRadius: theme.spacing(2),
-  overflow: 'hidden',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  border: '2px solid rgba(255, 215, 0, 0.2)',
-  cursor: 'pointer',
-  // Mobile-optimized hover effects
-  '@media (max-width: 600px)': {
-    borderRadius: theme.spacing(1.5),
-    '&:hover': {
-      transform: 'none', // ✅ Disable transform on mobile
-      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3)',
-      border: '2px solid rgba(255, 215, 0, 0.4)',
-    },
-    '&:active': {
-      // ✅ Active state for mobile touch feedback
-      transform: 'scale(0.98)',
-      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4)',
-    },
-  },
-  '&:hover': {
-    transform: 'translateY(-8px) scale(1.02)',
-    boxShadow: '0 15px 30px rgba(0, 0, 0, 0.4)',
-    border: '2px solid rgba(255, 215, 0, 0.6)',
-    '& .MuiCardMedia-root': {
-      transform: 'scale(1.05)',
-    },
-    '& .service-icon': {
-      transform: 'rotate(180deg)',
-    },
-  },
-}));
-
-const ServiceCardMedia = styled(CardMedia)(({ theme }) => ({
-  height: 220, // Desktop default; mobile overrides via @media below
-  transition: 'transform 0.4s ease',
-  position: 'relative',
-  objectFit: 'cover', // ✅ Better image scaling
-
-  /* ✅ PERFORMANCE OPTIMIZATIONS FOR MOBILE SCROLL */
-  willChange: 'transform', // Hint browser for GPU acceleration
-  backfaceVisibility: 'hidden', // Reduce repaints
-  transform: 'translateZ(0)', // Force GPU acceleration
-
-  // Mobile-specific optimizations
-  '@media (max-width: 600px)': {
-    height: 200, // ✅ Updated to 200px max per user request
-    contain: 'layout style paint', // Isolate paint operations
-  },
-  // ✅ Ensure images load efficiently
-  '@media (max-width: 360px)': {
-    height: 180, // ✅ Smaller screens get appropriate sizing
-  },
-}));
-
-const ServiceCardContent = styled(CardContent)(({ theme }) => ({
-  background:
-    'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(44,44,44,0.6) 100%)',
-  padding: theme.spacing(3), // Desktop default; mobile override via @media below
-  // Mobile-specific optimizations
-  '@media (max-width: 600px)': {
-    padding: theme.spacing(2), // ✅ Consistent spacing
-  },
-}));
-
-const TradeIcon = styled(Box)(({ theme }) => ({
-  position: 'absolute',
-  top: 15,
-  right: 15,
-  width: 40,
-  height: 40,
-  borderRadius: '50%',
-  background: 'rgba(255,215,0,0.9)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  transition: 'transform 0.4s ease',
-}));
-
-const HomePage = () => {
-  const theme = useTheme();
+// ─── HERO SECTION ─────────────────────────────────────────
+const HeroSection = () => {
   const navigate = useNavigate();
-  const { isMobile, isTablet, isDesktop } = useResponsive();
-  const responsiveTypography = useResponsiveTypography();
-  const responsiveLayout = useResponsiveLayout();
-  const { user, isAuthenticated } = useSelector((state) => state.auth);
-  const [platformStatus, setPlatformStatus] = useState({
-    indicator: 'healthy', // FIXED LP-001: Default to healthy when page loads (platform is live)
-    label: 'Platform Online',
-    message: 'All services are operational',
-    action: 'Ready to connect',
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [bgIndex, setBgIndex] = useState(0);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMd = useMediaQuery(theme.breakpoints.down('md'));
 
-  // Enhanced services with proper vocational trade focus
-  const services = [
-    {
-      title: 'Plumbing Services',
-      description:
-        'Professional plumbing installations, repairs, and maintenance for homes and businesses',
-      image: plumbingImg,
-      icon: <PlumbingIcon sx={{ color: '#000', fontSize: 24 }} />,
-      skills: ['Pipe Installation', 'Leak Repairs', 'Drain Cleaning'],
-    },
-    {
-      title: 'Electrical Work',
-      description:
-        'Licensed electricians for wiring, installations, and electrical system maintenance',
-      image: electricalImg,
-      icon: <ElectricalServicesIcon sx={{ color: '#000', fontSize: 24 }} />,
-      skills: ['Wiring', 'Panel Upgrades', 'Lighting Installation'],
-    },
-    {
-      title: 'Carpentry & Woodwork',
-      description:
-        'Custom carpentry, furniture making, and wooden structure construction',
-      image: carpentryImg,
-      icon: <CarpenterIcon sx={{ color: '#000', fontSize: 24 }} />,
-      skills: ['Custom Furniture', 'Framing', 'Cabinet Making'],
-    },
-    {
-      title: 'Construction & Masonry',
-      description:
-        'Building construction, masonry work, and renovation projects',
-      image: constructionImg,
-      icon: <ConstructionIcon sx={{ color: '#000', fontSize: 24 }} />,
-      skills: ['Foundation Work', 'Bricklaying', 'Concrete Work'],
-    },
+  return (
+    <Box
+      sx={{
+        position: 'relative',
+        minHeight: { xs: 'auto', md: '88vh' },
+        display: 'flex',
+        alignItems: 'center',
+        pt: { xs: 6, sm: 8, md: 0 },
+        pb: { xs: 8, sm: 10, md: 0 },
+        overflow: 'hidden',
+        // Subtle gradient background instead of garish colors
+        background: theme.palette.mode === 'dark'
+          ? 'radial-gradient(ellipse at 20% 50%, rgba(255,215,0,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(255,215,0,0.04) 0%, transparent 50%)'
+          : 'radial-gradient(ellipse at 20% 50%, rgba(255,215,0,0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(255,193,7,0.06) 0%, transparent 50%)',
+      }}
+    >
+      <Container maxWidth="lg">
+        <Grid container spacing={{ xs: 4, md: 6 }} alignItems="center">
+          {/* Left — Copy */}
+          <Grid item xs={12} md={7}>
+            <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
+              {/* Top badge */}
+              <motion.div variants={fadeInUp}>
+                <Chip
+                  icon={<LocationIcon sx={{ fontSize: 16 }} />}
+                  label="Ghana's #1 Skilled Trades Platform"
+                  size="small"
+                  sx={{
+                    mb: 3,
+                    bgcolor: alpha(theme.palette.primary.main, 0.12),
+                    color: 'primary.main',
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+                    '& .MuiChip-icon': { color: 'primary.main' },
+                  }}
+                />
+              </motion.div>
+
+              {/* Headline */}
+              <motion.div variants={fadeInUp}>
+                <Typography
+                  variant="h1"
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: { xs: '2.2rem', sm: '3rem', md: '3.75rem' },
+                    lineHeight: 1.12,
+                    letterSpacing: '-0.025em',
+                    color: 'text.primary',
+                    mb: 2.5,
+                  }}
+                >
+                  Find skilled workers{' '}
+                  <Box
+                    component="span"
+                    sx={{
+                      color: 'primary.main',
+                      position: 'relative',
+                      '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        bottom: 2,
+                        left: 0,
+                        width: '100%',
+                        height: '6px',
+                        bgcolor: alpha(theme.palette.primary.main, 0.25),
+                        borderRadius: 2,
+                      },
+                    }}
+                  >
+                    you can trust
+                  </Box>
+                </Typography>
+              </motion.div>
+
+              {/* Subheadline */}
+              <motion.div variants={fadeInUp}>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    color: 'text.secondary',
+                    fontWeight: 400,
+                    lineHeight: 1.6,
+                    fontSize: { xs: '1rem', sm: '1.15rem', md: '1.3rem' },
+                    mb: 4,
+                    maxWidth: 520,
+                  }}
+                >
+                  Connect with verified carpenters, electricians, plumbers, masons
+                  and more — hire with confidence or find your next job.
+                </Typography>
+              </motion.div>
+
+              {/* Search / CTA */}
+              <motion.div variants={fadeInUp}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    gap: 1.5,
+                    mb: 4,
+                    maxWidth: 560,
+                  }}
+                >
+                  <TextField
+                    fullWidth
+                    placeholder={isMobile ? 'Search skills…' : 'Try "plumber in Accra" or "electrician"'}
+                    variant="outlined"
+                    size="medium"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: 'text.secondary' }} />
+                        </InputAdornment>
+                      ),
+                      sx: {
+                        borderRadius: 2,
+                        bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.06)' : '#fff',
+                        '& fieldset': {
+                          borderColor: theme.palette.mode === 'dark'
+                            ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)',
+                        },
+                      },
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && e.target.value.trim()) {
+                        navigate(`/search?q=${encodeURIComponent(e.target.value.trim())}`);
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="contained"
+                    size="large"
+                    sx={{
+                      minWidth: { xs: '100%', sm: 150 },
+                      py: 1.5,
+                      fontSize: '1rem',
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      fontWeight: 700,
+                    }}
+                    onClick={() => navigate('/search')}
+                  >
+                    Search
+                  </Button>
+                </Box>
+              </motion.div>
+
+              {/* Dual CTA */}
+              <motion.div variants={fadeInUp}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 4 }}>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    startIcon={<FindTalentIcon />}
+                    onClick={() => navigate('/search')}
+                    sx={{
+                      py: 1.5,
+                      px: 3.5,
+                      borderRadius: 2,
+                      fontSize: '1rem',
+                      fontWeight: 700,
+                    }}
+                  >
+                    Find Talent
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    startIcon={<WorkIcon />}
+                    onClick={() => navigate('/jobs')}
+                    sx={{
+                      py: 1.5,
+                      px: 3.5,
+                      borderRadius: 2,
+                      fontSize: '1rem',
+                      fontWeight: 700,
+                    }}
+                  >
+                    Browse Jobs
+                  </Button>
+                </Stack>
+              </motion.div>
+
+              {/* Trust bar */}
+              <motion.div variants={fadeInUp}>
+                <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', gap: 1.5 }}>
+                  {[
+                    { icon: <VerifiedIcon sx={{ fontSize: 18 }} />, text: 'Verified Pros' },
+                    { icon: <ShieldIcon sx={{ fontSize: 18 }} />, text: 'Secure Payments' },
+                    { icon: <StarIcon sx={{ fontSize: 18 }} />, text: 'Rated & Reviewed' },
+                  ].map((item) => (
+                    <Stack key={item.text} direction="row" alignItems="center" spacing={0.75}>
+                      <Box sx={{ color: 'primary.main', display: 'flex' }}>{item.icon}</Box>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, fontSize: '0.85rem' }}>
+                        {item.text}
+                      </Typography>
+                    </Stack>
+                  ))}
+                </Stack>
+              </motion.div>
+            </motion.div>
+          </Grid>
+
+          {/* Right — Hero visual (desktop only) */}
+          {!isMd && (
+            <Grid item md={5}>
+              <motion.div
+                initial={{ opacity: 0, x: 40 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 0.3 }}
+              >
+                <Box sx={{ position: 'relative' }}>
+                  {/* Floating stat cards */}
+                  <FloatingStatCard
+                    top="10%"
+                    right="-5%"
+                    icon={<GroupsIcon />}
+                    value="5,000+"
+                    label="Active Workers"
+                    delay={0.5}
+                  />
+                  <FloatingStatCard
+                    bottom="15%"
+                    left="-5%"
+                    icon={<TaskAltIcon />}
+                    value="12,000+"
+                    label="Jobs Completed"
+                    delay={0.7}
+                  />
+                  {/* Main visual card */}
+                  <Card
+                    sx={{
+                      borderRadius: 4,
+                      overflow: 'hidden',
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                      bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : '#fff',
+                    }}
+                  >
+                    <CardContent sx={{ p: 4 }}>
+                      <Stack spacing={3}>
+                        <Typography variant="h6" fontWeight={700}>
+                          🔥 Top Workers This Week
+                        </Typography>
+                        {[
+                          { name: 'Kwame Asante', skill: 'Master Electrician', rating: 4.9, jobs: 127, color: '#FFD700' },
+                          { name: 'Ama Mensah', skill: 'Expert Plumber', rating: 4.8, jobs: 98, color: '#4169E1' },
+                          { name: 'Kofi Boateng', skill: 'Carpenter', rating: 4.9, jobs: 156, color: '#8B4513' },
+                        ].map((worker) => (
+                          <Stack key={worker.name} direction="row" alignItems="center" spacing={2}>
+                            <Avatar sx={{ bgcolor: worker.color, width: 48, height: 48, fontWeight: 700 }}>
+                              {worker.name.charAt(0)}
+                            </Avatar>
+                            <Box sx={{ flex: 1 }}>
+                              <Stack direction="row" alignItems="center" spacing={1}>
+                                <Typography variant="subtitle2" fontWeight={700}>
+                                  {worker.name}
+                                </Typography>
+                                <VerifiedIcon sx={{ fontSize: 16, color: 'primary.main' }} />
+                              </Stack>
+                              <Typography variant="caption" color="text.secondary">
+                                {worker.skill}
+                              </Typography>
+                            </Box>
+                            <Stack alignItems="flex-end">
+                              <Stack direction="row" alignItems="center" spacing={0.5}>
+                                <StarIcon sx={{ fontSize: 14, color: '#FFD700' }} />
+                                <Typography variant="caption" fontWeight={700}>{worker.rating}</Typography>
+                              </Stack>
+                              <Typography variant="caption" color="text.secondary">
+                                {worker.jobs} jobs
+                              </Typography>
+                            </Stack>
+                          </Stack>
+                        ))}
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                </Box>
+              </motion.div>
+            </Grid>
+          )}
+        </Grid>
+      </Container>
+    </Box>
+  );
+};
+
+// Floating stat card component
+const FloatingStatCard = ({ icon, value, label, delay = 0, ...positionProps }) => {
+  const theme = useTheme();
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, delay }}
+      style={{
+        position: 'absolute',
+        zIndex: 2,
+        ...positionProps,
+      }}
+    >
+      <Card
+        sx={{
+          px: 2.5,
+          py: 2,
+          borderRadius: 3,
+          bgcolor: theme.palette.mode === 'dark' ? 'rgba(15,16,22,0.95)' : 'rgba(255,255,255,0.97)',
+          backdropFilter: 'blur(12px)',
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+          boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.2)}`,
+        }}
+      >
+        <Stack direction="row" alignItems="center" spacing={1.5}>
+          <Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.15), color: 'primary.main', width: 40, height: 40 }}>
+            {icon}
+          </Avatar>
+          <Box>
+            <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1.2 }}>{value}</Typography>
+            <Typography variant="caption" color="text.secondary">{label}</Typography>
+          </Box>
+        </Stack>
+      </Card>
+    </motion.div>
+  );
+};
+
+// ─── CATEGORIES SECTION (like Upwork's "Explore millions of pros") ──
+const CategoriesSection = () => {
+  const navigate = useNavigate();
+  const theme = useTheme();
+
+  const categories = [
+    { icon: <CarpenterIcon />, name: 'Carpentry', color: '#8B4513', jobs: '800+', path: '/search?category=carpentry' },
+    { icon: <ElectricianIcon />, name: 'Electrical', color: '#FFB300', jobs: '650+', path: '/search?category=electrical' },
+    { icon: <PlumberIcon />, name: 'Plumbing', color: '#1E88E5', jobs: '520+', path: '/search?category=plumbing' },
+    { icon: <MasonIcon />, name: 'Masonry', color: '#757575', jobs: '430+', path: '/search?category=masonry' },
+    { icon: <PainterIcon />, name: 'Painting', color: '#E91E63', jobs: '380+', path: '/search?category=painting' },
+    { icon: <RoofingIcon />, name: 'Roofing', color: '#795548', jobs: '290+', path: '/search?category=roofing' },
   ];
+
+  return (
+    <Box sx={{ py: { xs: 8, md: 12 } }}>
+      <Container maxWidth="lg">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={staggerContainer}>
+          <motion.div variants={fadeInUp}>
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'primary.main',
+                fontWeight: 700,
+                letterSpacing: 2,
+                mb: 1,
+                display: 'block',
+              }}
+            >
+              EXPLORE BY CATEGORY
+            </Typography>
+            <Typography variant="h3" fontWeight={700} sx={{ mb: 1.5 }}>
+              Browse talent by trade
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 6, maxWidth: 500 }}>
+              Find the right professional for your project from our growing community of verified tradespeople.
+            </Typography>
+          </motion.div>
+
+          <Grid container spacing={2.5}>
+            {categories.map((cat, i) => (
+              <Grid item xs={6} sm={4} md={2} key={cat.name}>
+                <motion.div variants={fadeInUp} custom={i}>
+                  <Card
+                    onClick={() => navigate(cat.path)}
+                    sx={{
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      py: { xs: 3, md: 4 },
+                      px: 2,
+                      borderRadius: 3,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-6px)',
+                        borderColor: alpha(cat.color, 0.5),
+                        boxShadow: `0 12px 40px ${alpha(cat.color, 0.15)}`,
+                        '& .cat-icon': {
+                          bgcolor: cat.color,
+                          color: '#fff',
+                          transform: 'scale(1.1)',
+                        },
+                      },
+                    }}
+                  >
+                    <Avatar
+                      className="cat-icon"
+                      sx={{
+                        width: 56,
+                        height: 56,
+                        mx: 'auto',
+                        mb: 2,
+                        bgcolor: alpha(cat.color, 0.12),
+                        color: cat.color,
+                        transition: 'all 0.3s ease',
+                        '& svg': { fontSize: 28 },
+                      }}
+                    >
+                      {cat.icon}
+                    </Avatar>
+                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5 }}>
+                      {cat.name}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {cat.jobs} jobs
+                    </Typography>
+                  </Card>
+                </motion.div>
+              </Grid>
+            ))}
+          </Grid>
+
+          <Box sx={{ textAlign: 'center', mt: 5 }}>
+            <Button
+              variant="outlined"
+              endIcon={<ArrowForwardIcon />}
+              onClick={() => navigate('/search')}
+              sx={{ borderRadius: 2, px: 4, py: 1.2 }}
+            >
+              View All Categories
+            </Button>
+          </Box>
+        </motion.div>
+      </Container>
+    </Box>
+  );
+};
+
+// ─── HOW IT WORKS SECTION ─────────────────────────────────
+const HowItWorksSection = () => {
+  const theme = useTheme();
+  const [activeTab, setActiveTab] = React.useState('hiring');
+
+  const hiringSteps = [
+    { icon: <WorkIcon />, title: 'Post Your Job', desc: 'Describe what you need — it\'s free and takes 2 minutes.' },
+    { icon: <FindTalentIcon />, title: 'Get Matched', desc: 'Receive bids from verified workers near you, often within minutes.' },
+    { icon: <ChatIcon />, title: 'Chat & Hire', desc: 'Compare profiles, reviews and quotes. Hire the right person.' },
+    { icon: <PaymentIcon />, title: 'Pay Securely', desc: 'Pay only when you\'re satisfied — your money is protected.' },
+  ];
+
+  const workingSteps = [
+    { icon: <SearchIcon />, title: 'Create Profile', desc: 'Showcase your skills, certifications and portfolio for free.' },
+    { icon: <SpeedIcon />, title: 'Browse Jobs', desc: 'Find work that matches your skills and location.' },
+    { icon: <HandshakeIcon />, title: 'Apply & Work', desc: 'Submit bids, get hired, and deliver great work.' },
+    { icon: <PaymentIcon />, title: 'Get Paid', desc: 'Receive secure payments directly to your account.' },
+  ];
+
+  const steps = activeTab === 'hiring' ? hiringSteps : workingSteps;
+
+  return (
+    <Box
+      sx={{
+        py: { xs: 8, md: 12 },
+        bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+      }}
+    >
+      <Container maxWidth="lg">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={staggerContainer}>
+          <motion.div variants={fadeInUp}>
+            <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: 2, mb: 1, display: 'block' }}>
+              HOW IT WORKS
+            </Typography>
+            <Typography variant="h3" fontWeight={700} sx={{ mb: 2 }}>
+              Simple steps to get started
+            </Typography>
+
+            {/* Tab switcher like Upwork */}
+            <Stack direction="row" spacing={1} sx={{ mb: 6 }}>
+              {['hiring', 'working'].map((tab) => (
+                <Button
+                  key={tab}
+                  variant={activeTab === tab ? 'contained' : 'text'}
+                  onClick={() => setActiveTab(tab)}
+                  sx={{
+                    borderRadius: 6,
+                    px: 3,
+                    py: 1,
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    textTransform: 'none',
+                    ...(activeTab !== tab && {
+                      color: 'text.secondary',
+                      '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.08) },
+                    }),
+                  }}
+                >
+                  {tab === 'hiring' ? 'For Hiring' : 'For Finding Work'}
+                </Button>
+              ))}
+            </Stack>
+          </motion.div>
+
+          <Grid container spacing={3}>
+            {steps.map((step, i) => (
+              <Grid item xs={12} sm={6} md={3} key={step.title}>
+                <motion.div variants={fadeInUp} custom={i}>
+                  <Box sx={{ position: 'relative' }}>
+                    {/* Step number */}
+                    <Typography
+                      sx={{
+                        position: 'absolute',
+                        top: -8,
+                        left: 0,
+                        fontSize: '4.5rem',
+                        fontWeight: 900,
+                        color: alpha(theme.palette.primary.main, 0.08),
+                        lineHeight: 1,
+                        zIndex: 0,
+                        userSelect: 'none',
+                      }}
+                    >
+                      {i + 1}
+                    </Typography>
+                    <Box sx={{ position: 'relative', zIndex: 1, pt: 3 }}>
+                      <Avatar
+                        sx={{
+                          width: 52,
+                          height: 52,
+                          bgcolor: alpha(theme.palette.primary.main, 0.12),
+                          color: 'primary.main',
+                          mb: 2.5,
+                          '& svg': { fontSize: 26 },
+                        }}
+                      >
+                        {step.icon}
+                      </Avatar>
+                      <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
+                        {step.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                        {step.desc}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </motion.div>
+              </Grid>
+            ))}
+          </Grid>
+        </motion.div>
+      </Container>
+    </Box>
+  );
+};
+
+// ─── STATS / SOCIAL PROOF SECTION ─────────────────────────
+const StatsSection = () => {
+  const theme = useTheme();
+
+  const stats = [
+    { value: '5,000+', label: 'Verified Workers', icon: <GroupsIcon /> },
+    { value: '12,000+', label: 'Jobs Completed', icon: <TaskAltIcon /> },
+    { value: '4.8/5', label: 'Average Rating', icon: <StarIcon /> },
+    { value: '16', label: 'Regions Covered', icon: <LocationIcon /> },
+  ];
+
+  return (
+    <Box sx={{ py: { xs: 6, md: 10 } }}>
+      <Container maxWidth="lg">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
+          <Grid container spacing={4}>
+            {stats.map((stat, i) => (
+              <Grid item xs={6} md={3} key={stat.label}>
+                <motion.div variants={fadeInUp} custom={i}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Avatar
+                      sx={{
+                        width: 56,
+                        height: 56,
+                        mx: 'auto',
+                        mb: 2,
+                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                        color: 'primary.main',
+                      }}
+                    >
+                      {stat.icon}
+                    </Avatar>
+                    <Typography
+                      variant="h3"
+                      fontWeight={800}
+                      sx={{
+                        color: 'primary.main',
+                        fontSize: { xs: '2rem', md: '2.75rem' },
+                        mb: 0.5,
+                      }}
+                    >
+                      {stat.value}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                      {stat.label}
+                    </Typography>
+                  </Box>
+                </motion.div>
+              </Grid>
+            ))}
+          </Grid>
+        </motion.div>
+      </Container>
+    </Box>
+  );
+};
+
+// ─── WHY KELMAH SECTION (Trust / Value props) ─────────────
+const WhyKelmahSection = () => {
+  const theme = useTheme();
 
   const features = [
     {
-      icon: <VerifiedIcon sx={{ fontSize: 28, color: '#000000' }} />,
-      title: 'Verified Skilled Workers',
-      description:
-        'All tradespeople are vetted and verified for quality assurance',
+      icon: <VerifiedIcon sx={{ fontSize: 32 }} />,
+      title: 'Verified Professionals',
+      desc: 'Every worker is identity-verified and skill-assessed before joining our platform.',
     },
     {
-      icon: <SecurityIcon sx={{ fontSize: 28, color: '#000000' }} />,
-      title: 'Secure Escrow Payments',
-      description: 'Safe payment system protecting both workers and hirers',
+      icon: <ShieldIcon sx={{ fontSize: 32 }} />,
+      title: 'Secure Payments',
+      desc: 'Your money is held safely until the job is done to your satisfaction.',
     },
     {
-      icon: <StarIcon sx={{ fontSize: 28, color: '#000000' }} />,
-      title: 'Quality Guarantee',
-      description: 'Rating system ensuring high-quality workmanship',
+      icon: <SpeedIcon sx={{ fontSize: 32 }} />,
+      title: 'Fast Matching',
+      desc: 'Post a job and receive bids from qualified workers, often within minutes.',
+    },
+    {
+      icon: <ChatIcon sx={{ fontSize: 32 }} />,
+      title: 'Real-Time Chat',
+      desc: 'Communicate instantly with workers — discuss details, share photos, stay updated.',
+    },
+    {
+      icon: <StarIcon sx={{ fontSize: 32 }} />,
+      title: 'Transparent Reviews',
+      desc: 'Read honest reviews from real clients. No surprises — hire based on track record.',
+    },
+    {
+      icon: <TrendingUpIcon sx={{ fontSize: 32 }} />,
+      title: 'Growing Opportunities',
+      desc: 'New jobs posted daily across all 16 regions of Ghana. Your next gig is waiting.',
     },
   ];
 
-  const goToCategorySearch = (category) => {
-    const query = encodeURIComponent(category);
-    navigate(`/search?categories=${query}`);
-  };
+  return (
+    <Box
+      sx={{
+        py: { xs: 8, md: 12 },
+        bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)',
+      }}
+    >
+      <Container maxWidth="lg">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={staggerContainer}>
+          <motion.div variants={fadeInUp}>
+            <Box sx={{ textAlign: 'center', mb: 8 }}>
+              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: 2, mb: 1, display: 'block' }}>
+                WHY KELMAH
+              </Typography>
+              <Typography variant="h3" fontWeight={700} sx={{ mb: 2 }}>
+                Built for Ghana's workforce
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 580, mx: 'auto' }}>
+                We understand the unique needs of skilled tradespeople and the businesses that hire them.
+              </Typography>
+            </Box>
+          </motion.div>
 
-  // Control loading screen
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-      setError(null); // ✅ Clear any initialization errors
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+          <Grid container spacing={3}>
+            {features.map((feat, i) => (
+              <Grid item xs={12} sm={6} md={4} key={feat.title}>
+                <motion.div variants={fadeInUp} custom={i}>
+                  <Card
+                    sx={{
+                      p: 3.5,
+                      height: '100%',
+                      borderRadius: 3,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        borderColor: alpha(theme.palette.primary.main, 0.3),
+                      },
+                    }}
+                  >
+                    <Box sx={{ color: 'primary.main', mb: 2, display: 'flex' }}>
+                      {feat.icon}
+                    </Box>
+                    <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
+                      {feat.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                      {feat.desc}
+                    </Typography>
+                  </Card>
+                </motion.div>
+              </Grid>
+            ))}
+          </Grid>
+        </motion.div>
+      </Container>
+    </Box>
+  );
+};
 
-  const refreshPlatformStatus = useCallback(async () => {
-    // FIXED LP-001: Don't show "checking" to users - confusing UX
-    // Only update status if there's an actual change
-    try {
-      await checkServiceHealth('aggregate', 12000);
-      const statusInfo = getServiceStatusMessage('aggregate');
-      const indicator = statusInfo.status || 'healthy';
+// ─── TESTIMONIALS ─────────────────────────────────────────
+const TestimonialsSection = () => {
+  const theme = useTheme();
 
-      // Only show non-healthy states after confirmed check
-      const labelMap = {
-        healthy: 'Platform Online',
-        cold: 'Services Starting',
-        error: 'Limited Service',
-        unknown: 'Platform Online', // Default to positive
-        checking: 'Platform Online', // Don't show checking state
-      };
-
-      setPlatformStatus({
-        indicator: indicator === 'unknown' ? 'healthy' : indicator,
-        label: labelMap[indicator] || 'Platform Online',
-        message: statusInfo.message || 'All services operational',
-        action: statusInfo.action || 'Ready',
-      });
-
-      // Only show error banner for actual service errors, not cold starts
-      if (indicator === 'error') {
-        setError(statusInfo.message || 'Some features may be limited.');
-      } else {
-        setError(null);
-      }
-    } catch (error) {
-      console.warn('Aggregate health check failed:', error);
-      // FIXED LP-001: Don't show "offline" for network hiccups - reduces trust erosion
-      setPlatformStatus({
-        indicator: 'healthy', // Stay positive unless confirmed down
-        label: 'Platform Online',
-        message: 'Services available',
-        action: 'Ready to connect',
-      });
-      // Don't set error for transient network issues
-    }
-  }, []);
-
-  useEffect(() => {
-    refreshPlatformStatus();
-
-    const interval = setInterval(() => {
-      refreshPlatformStatus();
-    }, 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, [refreshPlatformStatus]);
-
-  // ✅ NEW: Scroll Progress Tracking for Mobile
-  useEffect(() => {
-    const handleScroll = () => {
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-
-      // Calculate scroll progress (0-100)
-      const scrollableHeight = documentHeight - windowHeight;
-      const progress =
-        scrollableHeight > 0
-          ? Math.min(100, Math.max(0, (scrollTop / scrollableHeight) * 100))
-          : 0;
-
-      setScrollProgress(progress);
-    };
-
-    // Add scroll listener with passive flag for better performance
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    // Initial calculation
-    handleScroll();
-
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    const rotate = setInterval(
-      () => setBgIndex((i) => (i + 1) % services.length),
-      10000,
-    );
-    return () => clearInterval(rotate);
-  }, [services.length]);
+  const testimonials = [
+    {
+      name: 'Akua Darkowaa',
+      role: 'Business Owner, Kumasi',
+      text: 'I found a reliable electrician for my shop renovation within an hour. The quality of work was excellent and the whole process was transparent.',
+      rating: 5,
+      avatar: 'A',
+    },
+    {
+      name: 'Emmanuel Tetteh',
+      role: 'Master Carpenter',
+      text: 'Kelmah has transformed how I find work. I get steady jobs, clients can see my portfolio, and I get paid on time every time.',
+      rating: 5,
+      avatar: 'E',
+    },
+    {
+      name: 'Nana Adwoa Serwaa',
+      role: 'Property Manager, Accra',
+      text: 'Managing maintenance for multiple properties used to be a nightmare. Now I have a network of trusted workers just a tap away.',
+      rating: 5,
+      avatar: 'N',
+    },
+  ];
 
   return (
-    <>
-      <LoadingScreen isLoading={isLoading} />
-
-      {/* ✅ NEW: Error Message Display */}
-      {error && !isLoading && (
-        <Box
-          sx={{
-            position: 'fixed',
-            top: { xs: 60, sm: 70 },
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 1200,
-            width: { xs: '90%', sm: '500px' },
-            maxWidth: '90vw',
-          }}
-        >
-          <Box
-            sx={{
-              bgcolor: 'error.main',
-              color: 'white',
-              px: { xs: 2, sm: 3 },
-              py: { xs: 1.5, sm: 2 },
-              borderRadius: 2,
-              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 2,
-            }}
-          >
-            <Typography
-              variant="body2"
-              sx={{ flex: 1, fontSize: { xs: '0.875rem', sm: '1rem' } }}
-            >
-              {error}
-            </Typography>
-            <IconButton
-              size="small"
-              onClick={() => setError(null)}
-              sx={{ color: 'white', minWidth: '44px', minHeight: '44px' }}
-            >
-              <Box component="span" sx={{ fontSize: '1.5rem' }}>
-                ×
-              </Box>
-            </IconButton>
-          </Box>
-        </Box>
-      )}
-
-      {/* ✅ NEW: Scroll Progress Indicator - Mobile Only */}
-      <Box
-        sx={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '4px',
-          zIndex: 1100, // Below MUI dialogs (1300) and modals (1200)
-          display: { xs: 'block', md: 'none' }, // Mobile only
-          backgroundColor: 'rgba(0, 0, 0, 0.1)',
-        }}
-      >
-        <Box
-          sx={{
-            height: '100%',
-            width: `${scrollProgress}%`,
-            background: 'linear-gradient(90deg, #FFD700 0%, #FFC000 100%)',
-            transition: 'width 0.1s ease-out',
-            boxShadow: '0 0 10px rgba(255, 215, 0, 0.5)',
-          }}
-        />
-      </Box>
-
-      <GestureControl>
-        <Box sx={{ position: 'relative' }}>
-          {/* Enhanced platform status badge */}
-          <Tooltip
-            title={platformStatus.message || 'Checking platform status'}
-            arrow
-            placement="left"
-          >
-            <Chip
-              label={platformStatus.label}
-              color={
-                {
-                  healthy: 'success',
-                  cold: 'warning',
-                  error: 'error',
-                  checking: 'info',
-                  unknown: 'default',
-                }[platformStatus.indicator] || 'default'
-              }
-              size="small"
-              sx={{
-                position: 'absolute',
-                top: { xs: 12, sm: 16 },
-                right: { xs: 12, sm: 16 },
-                zIndex: 2,
-                fontWeight: 'bold',
-                fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                cursor: 'default',
-                '@media (max-width: 320px)': {
-                  top: 8,
-                  right: 8,
-                  fontSize: '0.7rem',
-                  '& .MuiChip-label': {
-                    padding: '0 6px',
-                  },
-                },
-              }}
-            />
-          </Tooltip>
-
-          <Section>
-            <HeroBackgroundImage
-              sx={{ backgroundImage: `url(${services[bgIndex].image})` }}
-            />
-            <Box
-              sx={{
-                position: 'relative',
-                zIndex: 1,
-                width: '100%',
-                maxWidth: '100vw',
-                px: { xs: 2, sm: 3, md: 4, lg: 6 },
-                py: { xs: 2, sm: 3, md: 4 },
-                boxSizing: 'border-box',
-                // Mobile-optimized spacing
-                '@media (max-width: 600px)': {
-                  px: 1.5,
-                  py: 2,
-                },
-              }}
-            >
-              <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-                <Grid item xs={12} md={8}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1, ease: 'easeOut' }}
-                  >
-                    {user && isAuthenticated && (
-                      <motion.div
-                        initial={{ opacity: 0, x: -30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.8, delay: 0.3 }}
-                      >
-                        <Typography
-                          variant="h4"
-                          sx={{
-                            color: theme.palette.secondary.main,
-                            mb: 2,
-                            fontWeight: 600,
-                          }}
-                        >
-                          Welcome back, {user.firstName || user.username}!
-                        </Typography>
-                      </motion.div>
-                    )}
-                    <Typography
-                      variant={isMobile ? 'h3' : 'h1'}
-                      sx={{
-                        fontSize: {
-                          xs: '2rem',
-                          sm: '2.5rem',
-                          md: '3.5rem',
-                          lg: '4.5rem',
-                          xl: '5rem',
-                        },
-                        fontWeight: 800,
-                        color: '#FFFFFF',
-                        mb: { xs: 2.5, sm: 3, md: 3 }, // ✅ Increased mobile spacing
-                        textShadow:
-                          '2px 2px 4px rgba(0,0,0,0.9), 1px 1px 2px rgba(0,0,0,0.8)',
-                        lineHeight: { xs: 1.2, sm: 1.2, md: 1.1 }, // ✅ Better mobile line height
-                        textAlign: { xs: 'center', md: 'left' },
-                        px: { xs: 1, sm: 0 }, // ✅ Added mobile horizontal padding
-                        wordBreak: 'break-word', // ✅ Prevent text overflow
-                        // Mobile-specific optimizations
-                        '@media (max-width: 600px)': {
-                          fontSize: '1.75rem',
-                          lineHeight: 1.2, // ✅ Improved from 1.1
-                          mb: 2, // ✅ Increased from 1
-                        },
-                      }}
-                    >
-                      Ghana's Leading
-                      <br />
-                      <Typography
-                        component="span"
-                        sx={{
-                          fontSize: 'inherit',
-                          fontWeight: 'inherit',
-                          background:
-                            'linear-gradient(45deg, #FFD700 30%, #FFC000 90%)',
-                          backgroundClip: 'text',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                        }}
-                      >
-                        Jobs & Talent
-                      </Typography>{' '}
-                      Marketplace
-                    </Typography>
-                    <Typography
-                      variant={isMobile ? 'h6' : 'h5'}
-                      sx={{
-                        color: '#FFFFFF',
-                        mb: { xs: 3, sm: 3.5, md: 4 }, // ✅ Increased mobile spacing
-                        fontWeight: 500,
-                        maxWidth: { xs: '100%', md: '85%' },
-                        lineHeight: { xs: 1.5, sm: 1.5, md: 1.6 }, // ✅ Better mobile readability
-                        fontSize: {
-                          xs: '1rem',
-                          sm: '1.1rem',
-                          md: '1.3rem',
-                          lg: '1.4rem',
-                        },
-                        textAlign: { xs: 'center', md: 'left' },
-                        px: { xs: 1.5, sm: 0 }, // ✅ Increased mobile padding
-                        textShadow:
-                          '1px 1px 3px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,0.6)',
-                        // Mobile-specific optimizations
-                        '@media (max-width: 600px)': {
-                          fontSize: '0.95rem',
-                          lineHeight: 1.5, // ✅ Improved from 1.3
-                          mb: 2.5, // ✅ Increased from 1.5
-                        },
-                      }}
-                    >
-                      Find skilled trade jobs or hire verified workers.
-                      Thousands of opportunities in plumbing, electrical,
-                      carpentry, and construction across Ghana.
-                    </Typography>
-
-                    {/* ✅ JOB STATISTICS - Show Proof of Opportunities */}
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        gap: { xs: 2, sm: 3 },
-                        flexWrap: 'wrap',
-                        mb: { xs: 2, sm: 3 },
-                        justifyContent: { xs: 'center', md: 'flex-start' },
-                      }}
-                    >
-                      <Box sx={{ textAlign: 'center' }}>
-                        <Typography
-                          sx={{
-                            fontSize: { xs: '1.5rem', sm: '2rem' },
-                            fontWeight: 800,
-                            color: '#FFD700',
-                            textShadow: '0 2px 10px rgba(255, 215, 0, 0.5)',
-                          }}
-                        >
-                          2,500+
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontSize: { xs: '0.875rem', sm: '0.85rem' },
-                            color: '#FFFFFF',
-                            opacity: 0.9,
-                          }}
-                        >
-                          Jobs Posted
-                        </Typography>
-                      </Box>
-                      <Box sx={{ textAlign: 'center' }}>
-                        <Typography
-                          sx={{
-                            fontSize: { xs: '1.5rem', sm: '2rem' },
-                            fontWeight: 800,
-                            color: '#FFD700',
-                            textShadow: '0 2px 10px rgba(255, 215, 0, 0.5)',
-                          }}
-                        >
-                          5,000+
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontSize: { xs: '0.875rem', sm: '0.85rem' },
-                            color: '#FFFFFF',
-                            opacity: 0.9,
-                          }}
-                        >
-                          Workers Hired
-                        </Typography>
-                      </Box>
-                      <Box sx={{ textAlign: 'center' }}>
-                        <Typography
-                          sx={{
-                            fontSize: { xs: '1.5rem', sm: '2rem' },
-                            fontWeight: 800,
-                            color: '#FFD700',
-                            textShadow: '0 2px 10px rgba(255, 215, 0, 0.5)',
-                          }}
-                        >
-                          ₵50M+
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontSize: { xs: '0.875rem', sm: '0.85rem' },
-                            color: '#FFFFFF',
-                            opacity: 0.9,
-                          }}
-                        >
-                          Earned by Workers
-                        </Typography>
-                      </Box>
-                    </Box>
-
-                    <motion.div
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.8, delay: 0.6 }}
-                    >
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexDirection: { xs: 'column', md: 'row' },
-                          gap: { xs: 2, sm: 2, md: 3 }, // ✅ Increased mobile gap
-                          mt: { xs: 3, sm: 3.5, md: 4 }, // ✅ Increased mobile margin
-                          alignItems: { xs: 'center', md: 'flex-start' },
-                          justifyContent: { xs: 'center', md: 'flex-start' },
-                          width: '100%',
-                          // Mobile-optimized button layout
-                          '@media (max-width: 600px)': {
-                            gap: 1.5, // ✅ Increased from 1
-                            mt: 2.5, // ✅ Increased from 1.5
-                          },
-                        }}
-                      >
-                        {!user ? (
-                          <>
-                            {/* ✅ PRIMARY CTA: Find Jobs Now */}
-                            <StyledButton
-                              variant="contained"
-                              size={isMobile ? 'large' : 'large'}
-                              startIcon={<WorkIcon />}
-                              sx={{
-                                background:
-                                  'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                                color: '#000',
-                                fontWeight: 800,
-                                fontSize: {
-                                  xs: '1.1rem',
-                                  sm: '1.2rem',
-                                  md: '1.3rem',
-                                },
-                                px: { xs: 4, sm: 5, md: 6 },
-                                py: { xs: 1.8, sm: 2, md: 2.2 },
-                                boxShadow: '0 6px 20px rgba(255, 215, 0, 0.5)',
-                                border: '3px solid rgba(255, 215, 0, 0.9)',
-                                minHeight: {
-                                  xs: '54px',
-                                  sm: '58px',
-                                  md: '62px',
-                                },
-                                width: { xs: '100%', sm: 'auto' },
-                                maxWidth: { xs: '320px', sm: 'none' },
-                                '&:hover': {
-                                  background:
-                                    'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                                  boxShadow:
-                                    '0 8px 25px rgba(255, 215, 0, 0.7)',
-                                  transform: 'translateY(-2px) scale(1.02)',
-                                },
-                                '&:active': { transform: 'scale(0.98)' },
-                              }}
-                              fullWidth={isMobile}
-                              onClick={() => navigate('/jobs')}
-                            >
-                              💼 Find Jobs Now
-                            </StyledButton>
-
-                            {/* ✅ SECONDARY CTA: Find Talent (For Employers) */}
-                            <StyledButton
-                              variant="outlined"
-                              size={isMobile ? 'large' : 'large'}
-                              startIcon={<EngineeringIcon />}
-                              sx={{
-                                borderColor: '#FFD700',
-                                color: '#FFD700',
-                                borderWidth: { xs: 2.5, sm: 3, md: 3 },
-                                fontWeight: 700,
-                                fontSize: {
-                                  xs: '1rem',
-                                  sm: '1.1rem',
-                                  md: '1.2rem',
-                                },
-                                px: { xs: 3, sm: 4, md: 5 },
-                                py: { xs: 1.5, sm: 1.8, md: 2 },
-                                textShadow: '1px 1px 3px rgba(0,0,0,0.9)',
-                                boxShadow: '0 4px 15px rgba(255,215,0,0.4)',
-                                background: 'rgba(255, 215, 0, 0.12)',
-                                backdropFilter: 'blur(10px)',
-                                minHeight: {
-                                  xs: '54px',
-                                  sm: '58px',
-                                  md: '62px',
-                                },
-                                width: { xs: '100%', sm: 'auto' },
-                                maxWidth: { xs: '320px', sm: 'none' },
-                                '&:hover': {
-                                  borderColor: '#FFC000',
-                                  color: '#000',
-                                  background:
-                                    'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                                  borderWidth: { xs: 2.5, sm: 3, md: 3 },
-                                  textShadow: 'none',
-                                  boxShadow: '0 6px 20px rgba(255,215,0,0.6)',
-                                  transform: 'translateY(-2px) scale(1.02)',
-                                },
-                                '&:active': { transform: 'scale(0.98)' },
-                              }}
-                              fullWidth={isMobile}
-                              onClick={() => navigate('/search')}
-                            >
-                              👷 Find Talent
-                            </StyledButton>
-                          </>
-                        ) : user.role === 'worker' ? (
-                          <StyledButton
-                            variant="contained"
-                            size={isMobile ? 'medium' : 'large'}
-                            sx={{
-                              background:
-                                'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                              color: '#000',
-                              fontWeight: 800,
-                              fontSize: {
-                                xs: '1rem',
-                                sm: '1.1rem',
-                                md: '1.2rem',
-                              },
-                              px: { xs: 3, sm: 4, md: 5 },
-                              py: { xs: 1.5, sm: 1.8, md: 2 },
-                              minHeight: { xs: '48px', sm: '52px', md: '56px' },
-                              width: { xs: '100%', sm: 'auto' },
-                              maxWidth: { xs: '300px', sm: 'none' },
-                              '@media (max-width: 600px)': {
-                                px: 2.5,
-                                py: 1.2,
-                                fontSize: '0.95rem',
-                                minHeight: '44px',
-                                maxWidth: '280px',
-                              },
-                              '&:hover': {
-                                background:
-                                  'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                              },
-                            }}
-                            fullWidth={isMobile}
-                            onClick={() => navigate('/jobs')}
-                          >
-                            {isMobile ? 'Browse Jobs' : 'Browse Available Jobs'}
-                          </StyledButton>
-                        ) : (
-                          <StyledButton
-                            variant="contained"
-                            size={isMobile ? 'medium' : 'large'}
-                            sx={{
-                              background:
-                                'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                              color: '#000',
-                              fontWeight: 800,
-                              fontSize: {
-                                xs: '1rem',
-                                sm: '1.1rem',
-                                md: '1.2rem',
-                              },
-                              px: { xs: 3, sm: 4, md: 5 },
-                              py: { xs: 1.5, sm: 1.8, md: 2 },
-                              minHeight: { xs: '48px', sm: '52px', md: '56px' },
-                              width: { xs: '100%', sm: 'auto' },
-                              maxWidth: { xs: '300px', sm: 'none' },
-                              '@media (max-width: 600px)': {
-                                px: 2.5,
-                                py: 1.2,
-                                fontSize: '0.95rem',
-                                minHeight: '44px',
-                                maxWidth: '280px',
-                              },
-                              '&:hover': {
-                                background:
-                                  'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                              },
-                            }}
-                            fullWidth={isMobile}
-                            onClick={() => navigate('/hirer/jobs/post')}
-                          >
-                            {isMobile ? 'Post Job' : 'Post a Job'}
-                          </StyledButton>
-                        )}
-                      </Box>
-                    </motion.div>
-                  </motion.div>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <motion.div
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 1, delay: 0.4 }}
-                  >
-                    <Box
-                      sx={{
-                        mt: { xs: 2, sm: 3, md: 8 },
-                        display: 'block',
-                      }}
-                    >
-                      {features.map((feature, index) => (
-                        <motion.div
-                          key={feature.title}
-                          initial={{ opacity: 0, y: 30 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.6, delay: index * 0.2 }}
-                        >
-                          <FeatureBox>
-                            <FeatureCircle>{feature.icon}</FeatureCircle>
-                            <Box>
-                              <Typography
-                                color="white"
-                                variant="h6"
-                                sx={{ fontWeight: 700, mb: 0.5 }}
-                              >
-                                {feature.title}
-                              </Typography>
-                              <Typography
-                                color="rgba(255,255,255,0.8)"
-                                variant="body2"
-                                sx={{ fontSize: '0.95rem' }}
-                              >
-                                {feature.description}
-                              </Typography>
-                            </Box>
-                          </FeatureBox>
-                        </motion.div>
-                      ))}
-                    </Box>
-                  </motion.div>
-                </Grid>
-              </Grid>
-            </Box>
-
-            {/* Enhanced scroll indicator */}
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: 32,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                zIndex: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 1,
-                // ✅ Hide on very small screens to prevent overlap
-                '@media (max-width: 360px)': {
-                  display: 'none',
-                },
-              }}
-            >
-              <Typography
-                variant="body2"
-                sx={{
-                  color: theme.palette.secondary.main,
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  fontSize: { xs: '0.7rem', sm: '0.75rem' }, // ✅ Responsive font
-                }}
-              >
-                Explore Services
+    <Box sx={{ py: { xs: 8, md: 12 } }}>
+      <Container maxWidth="lg">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={staggerContainer}>
+          <motion.div variants={fadeInUp}>
+            <Box sx={{ textAlign: 'center', mb: 7 }}>
+              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: 2, mb: 1, display: 'block' }}>
+                TESTIMONIALS
               </Typography>
-              <motion.div
-                initial={{ y: -10 }}
-                animate={{ y: 10 }}
-                transition={{
-                  y: { repeat: Infinity, repeatType: 'reverse', duration: 1.5 },
-                }}
-                style={{ cursor: 'pointer' }}
-                onClick={() =>
-                  document
-                    .getElementById('services')
-                    .scrollIntoView({ behavior: 'smooth' })
-                }
-              >
-                <KeyboardArrowDownIcon
-                  sx={{ fontSize: 40, color: theme.palette.secondary.main }}
-                />
-              </motion.div>
+              <Typography variant="h3" fontWeight={700} sx={{ mb: 2 }}>
+                Real results from real people
+              </Typography>
             </Box>
-          </Section>
+          </motion.div>
 
-          {/* ✅ NEW: Visual Separator Between Hero and Services */}
-          <Box
-            sx={{
-              width: '100%',
-              height: { xs: '4px', sm: '6px' },
-              background:
-                'linear-gradient(90deg, transparent 0%, #FFD700 50%, transparent 100%)',
-              boxShadow: '0 2px 15px rgba(255, 215, 0, 0.5)',
-            }}
-          />
-
-          {/* Enhanced Services Section */}
-          <Section
-            id="services"
-            sx={{
-              minHeight: 'auto',
-              py: { xs: 6, sm: 10, md: 16 }, // ✅ Reduced top padding on mobile
-              background: 'linear-gradient(135deg, #111 0%, #1a1a1a 100%)',
-              alignItems: 'flex-start',
-              overflow: 'visible',
-            }}
-          >
-            <Box
-              sx={{
-                width: '100%',
-                maxWidth: '100vw',
-                px: { xs: 2, sm: 3, md: 4, lg: 6 }, // ✅ Increased mobile padding
-                boxSizing: 'border-box',
-                // Mobile-specific optimizations
-                '@media (max-width: 600px)': {
-                  px: 1.5, // ✅ Increased from 1
-                },
-              }}
-            >
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8 }}
-              >
-                <Typography
-                  variant={isMobile ? 'h4' : 'h2'}
-                  sx={{
-                    textAlign: 'center',
-                    mb: { xs: 2.5, sm: 3 }, // ✅ Increased mobile spacing
-                    color: theme.palette.secondary.main,
-                    fontWeight: 800,
-                    fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3.5rem' },
-                    px: { xs: 1, sm: 0 }, // ✅ Added mobile padding
-                  }}
-                >
-                  Opportunities by Trade
-                </Typography>
-                <Typography
-                  variant={isMobile ? 'body1' : 'h6'}
-                  sx={{
-                    textAlign: 'center',
-                    mb: { xs: 4, sm: 6, md: 10 }, // ✅ Reduced mobile margin
-                    color: 'rgba(255,255,255,0.8)',
-                    maxWidth: { xs: '100%', sm: 600 },
-                    mx: 'auto',
-                    fontWeight: 400,
-                    fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' },
-                    lineHeight: { xs: 1.5, sm: 1.5 }, // ✅ Improved mobile readability
-                    px: { xs: 2, sm: 0 },
-                  }}
-                >
-                  Find jobs or hire skilled workers in these trade categories.
-                  Browse opportunities or post your requirements today.
-                </Typography>
-              </motion.div>
-
-              <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-                {services.map((service, index) => (
-                  <Grid item xs={12} sm={6} md={3} key={service.title}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 50 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: index * 0.15 }}
-                    >
-                      <ServiceCard
-                        onClick={() => goToCategorySearch(service.title)}
-                      >
-                        <Box sx={{ position: 'relative' }}>
-                          <ServiceCardMedia
-                            component="img"
-                            image={service.image}
-                            title={service.title}
-                            loading="lazy"
-                            alt={`${service.title} service`}
-                          />
-                          <TradeIcon className="service-icon">
-                            {service.icon}
-                          </TradeIcon>
-                        </Box>
-                        <ServiceCardContent>
-                          <Typography
-                            gutterBottom
-                            variant={isMobile ? 'h6' : 'h5'}
-                            component="div"
-                            color="white"
-                            sx={{
-                              fontWeight: 700,
-                              mb: { xs: 1, sm: 1.5, md: 2 },
-                              fontSize: {
-                                xs: '1.1rem',
-                                sm: '1.2rem',
-                                md: '1.25rem',
-                              },
-                            }}
-                          >
-                            {service.title}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            color="rgba(255,255,255,0.85)"
-                            sx={{
-                              mb: { xs: 1.5, sm: 2 },
-                              lineHeight: { xs: 1.4, sm: 1.5 },
-                              fontSize: {
-                                xs: '0.85rem',
-                                sm: '0.9rem',
-                                md: '0.875rem',
-                              },
-                            }}
-                          >
-                            {service.description}
-                          </Typography>
-                          <Box
-                            sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}
-                          >
-                            {service.skills.map((skill) => (
-                              <Chip
-                                key={skill}
-                                label={skill}
-                                size="small"
-                                sx={{
-                                  backgroundColor: 'rgba(255,215,0,0.2)',
-                                  color: '#FFD700',
-                                  fontSize: { xs: '0.8rem', sm: '0.75rem' },
-                                  fontWeight: 600,
-                                }}
-                              />
-                            ))}
-                          </Box>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              gap: { xs: 1.5, sm: 1 }, // ✅ Increased mobile gap
-                              mt: { xs: 2, sm: 2 }, // ✅ Increased mobile margin
-                              flexDirection: { xs: 'column', sm: 'row' },
-                            }}
-                          >
-                            <StyledButton
-                              variant="contained"
-                              size={isMobile ? 'small' : 'small'}
-                              sx={{
-                                fontSize: { xs: '0.85rem', sm: '0.8rem' }, // ✅ Larger mobile font
-                                py: { xs: 1.2, sm: 0.8 }, // ✅ More padding
-                                px: { xs: 2, sm: 2 }, // ✅ More horizontal padding
-                                minHeight: { xs: '44px', sm: '36px' }, // ✅ TOUCH TARGET
-                                width: { xs: '100%', sm: 'auto' },
-                                fontWeight: 600, // ✅ Better readability
-                                '&:active': { transform: 'scale(0.98)' }, // ✅ Mobile feedback
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                goToCategorySearch(service.title);
-                              }}
-                            >
-                              {isMobile ? 'Find Workers' : 'Find Workers'}{' '}
-                              {/* ✅ Full text on mobile */}
-                            </StyledButton>
-                            <StyledButton
-                              variant="outlined"
-                              size={isMobile ? 'small' : 'small'}
-                              sx={{
-                                fontSize: { xs: '0.85rem', sm: '0.8rem' }, // ✅ Larger mobile font
-                                py: { xs: 1.2, sm: 0.8 }, // ✅ More padding
-                                px: { xs: 2, sm: 2 }, // ✅ More horizontal padding
-                                minHeight: { xs: '44px', sm: '36px' }, // ✅ TOUCH TARGET
-                                width: { xs: '100%', sm: 'auto' },
-                                borderWidth: { xs: 2, sm: 2 }, // ✅ Consistent border
-                                fontWeight: 600, // ✅ Better readability
-                                '&:active': { transform: 'scale(0.98)' }, // ✅ Mobile feedback
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (!user) {
-                                  navigate('/login?redirect=/hirer/jobs/post');
-                                } else if (user.role === 'hirer') {
-                                  navigate('/hirer/jobs/post');
-                                } else {
-                                  navigate('/jobs');
-                                }
-                              }}
-                            >
-                              {isMobile ? 'Post a Job' : 'Post Job'}{' '}
-                              {/* ✅ Full text on mobile */}
-                            </StyledButton>
-                          </Box>
-                        </ServiceCardContent>
-                      </ServiceCard>
-                    </motion.div>
-                  </Grid>
-                ))}
-              </Grid>
-
-              {/* ============================================ */}
-              {/* QUICK-HIRE SECTION - Get Help Fast */}
-              {/* ============================================ */}
-              <Box
-                sx={{
-                  mt: { xs: 6, sm: 10, md: 14 },
-                  mb: { xs: 4, sm: 6, md: 8 },
-                  py: { xs: 4, sm: 6, md: 8 },
-                  px: { xs: 2, sm: 4, md: 6 },
-                  background: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,215,0,0.15) 100%)',
-                  borderRadius: { xs: 3, sm: 4 },
-                  border: '2px solid rgba(255, 215, 0, 0.3)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-              >
-                {/* Decorative background */}
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: -50,
-                    right: -50,
-                    width: 200,
-                    height: 200,
-                    borderRadius: '50%',
-                    background: 'radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 70%)',
-                    pointerEvents: 'none',
-                  }}
-                />
-                
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6 }}
-                >
-                  {/* Section Header */}
-                  <Box sx={{ textAlign: 'center', mb: { xs: 4, sm: 5, md: 6 } }}>
-                    <Box
-                      sx={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        mb: 2,
-                        px: 3,
-                        py: 1,
-                        borderRadius: 5,
-                        background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                        boxShadow: '0 4px 15px rgba(255, 215, 0, 0.4)',
-                      }}
-                    >
-                      <FlashOnIcon sx={{ color: '#000', fontSize: 24 }} />
-                      <Typography
-                        sx={{
-                          color: '#000',
-                          fontWeight: 800,
-                          fontSize: { xs: '0.9rem', sm: '1rem' },
-                          textTransform: 'uppercase',
-                          letterSpacing: 1,
-                        }}
-                      >
-                        New! Quick-Hire
-                      </Typography>
-                    </Box>
-                    
-                    <Typography
-                      variant={isMobile ? 'h4' : 'h3'}
-                      sx={{
-                        fontWeight: 800,
-                        color: '#FFD700',
-                        mb: 2,
-                        fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' },
-                        textShadow: '0 2px 10px rgba(255, 215, 0, 0.3)',
-                      }}
-                    >
-                      Need Help Right Now?
-                    </Typography>
-                    
-                    <Typography
-                      sx={{
-                        color: 'rgba(255,255,255,0.9)',
-                        fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem' },
-                        maxWidth: 600,
-                        mx: 'auto',
-                        lineHeight: 1.6,
-                      }}
-                    >
-                      Get a skilled worker at your door in hours, not days. 
-                      Payment protected until the job is done right.
-                    </Typography>
-                  </Box>
-
-                  {/* How It Works - 4 Steps */}
-                  <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 4, sm: 5 } }}>
-                    {[
-                      { icon: <HandymanIcon />, step: '1', title: 'Describe Your Problem', desc: 'Tell us what needs fixing' },
-                      { icon: <LocationOnIcon />, step: '2', title: 'Share Location', desc: 'We find workers near you' },
-                      { icon: <PaymentIcon />, step: '3', title: 'Pay Securely', desc: 'Money held until job is done' },
-                      { icon: <AccessTimeIcon />, step: '4', title: 'Worker Arrives', desc: 'Track in real-time' },
-                    ].map((item, index) => (
-                      <Grid item xs={6} sm={3} key={item.step}>
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.4, delay: index * 0.1 }}
-                        >
-                          <Box
-                            sx={{
-                              textAlign: 'center',
-                              p: { xs: 2, sm: 3 },
-                              borderRadius: 2,
-                              background: 'rgba(0,0,0,0.3)',
-                              border: '1px solid rgba(255,215,0,0.2)',
-                              height: '100%',
-                            }}
-                          >
-                            <Box
-                              sx={{
-                                width: { xs: 50, sm: 60 },
-                                height: { xs: 50, sm: 60 },
-                                borderRadius: '50%',
-                                background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                mx: 'auto',
-                                mb: 2,
-                                boxShadow: '0 4px 15px rgba(255,215,0,0.4)',
-                              }}
-                            >
-                              {React.cloneElement(item.icon, { sx: { color: '#000', fontSize: { xs: 24, sm: 28 } } })}
-                            </Box>
-                            <Typography
-                              sx={{
-                                color: '#FFD700',
-                                fontWeight: 700,
-                                fontSize: { xs: '0.9rem', sm: '1rem' },
-                                mb: 0.5,
-                              }}
-                            >
-                              {item.title}
-                            </Typography>
-                            <Typography
-                              sx={{
-                                color: 'rgba(255,255,255,0.7)',
-                                fontSize: { xs: '0.875rem', sm: '0.85rem' },
-                              }}
-                            >
-                              {item.desc}
-                            </Typography>
-                          </Box>
-                        </motion.div>
-                      </Grid>
-                    ))}
-                  </Grid>
-
-                  {/* Quick-Hire CTA Buttons */}
-                  <Box
+          <Grid container spacing={3}>
+            {testimonials.map((t, i) => (
+              <Grid item xs={12} md={4} key={t.name}>
+                <motion.div variants={fadeInUp} custom={i}>
+                  <Card
                     sx={{
+                      p: 3.5,
+                      height: '100%',
+                      borderRadius: 3,
                       display: 'flex',
-                      flexDirection: { xs: 'column', sm: 'row' },
-                      gap: { xs: 2, sm: 3 },
-                      justifyContent: 'center',
-                      alignItems: 'center',
+                      flexDirection: 'column',
                     }}
                   >
-                    <StyledButton
-                      variant="contained"
-                      size="large"
-                      startIcon={<FlashOnIcon />}
-                      sx={{
-                        background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                        color: '#000',
-                        fontWeight: 800,
-                        fontSize: { xs: '1.1rem', sm: '1.2rem' },
-                        px: { xs: 4, sm: 5 },
-                        py: { xs: 1.8, sm: 2 },
-                        minHeight: { xs: '54px', sm: '58px' },
-                        width: { xs: '100%', sm: 'auto' },
-                        maxWidth: { xs: '320px', sm: 'none' },
-                        boxShadow: '0 6px 25px rgba(255, 215, 0, 0.5)',
-                        '&:hover': {
-                          background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                          transform: 'translateY(-2px)',
-                          boxShadow: '0 8px 30px rgba(255, 215, 0, 0.6)',
-                        },
-                        '&:active': { transform: 'scale(0.98)' },
-                      }}
-                      onClick={() => navigate('/quick-hire/request')}
+                    <Rating value={t.rating} readOnly size="small" sx={{ mb: 2 }} />
+                    <Typography
+                      variant="body1"
+                      sx={{ mb: 3, flex: 1, fontStyle: 'italic', lineHeight: 1.7, color: 'text.secondary' }}
                     >
-                      🔧 Get Help Now
-                    </StyledButton>
-                    
-                    {user?.role === 'worker' && (
-                      <StyledButton
-                        variant="outlined"
-                        size="large"
-                        sx={{
-                          borderColor: '#FFD700',
-                          color: '#FFD700',
-                          borderWidth: 2,
-                          fontWeight: 700,
-                          fontSize: { xs: '1rem', sm: '1.1rem' },
-                          px: { xs: 3, sm: 4 },
-                          py: { xs: 1.5, sm: 1.8 },
-                          minHeight: { xs: '54px', sm: '58px' },
-                          width: { xs: '100%', sm: 'auto' },
-                          maxWidth: { xs: '320px', sm: 'none' },
-                          background: 'rgba(255, 215, 0, 0.1)',
-                          '&:hover': {
-                            background: 'rgba(255, 215, 0, 0.2)',
-                            borderColor: '#FFC000',
-                          },
-                        }}
-                        onClick={() => navigate('/quick-hire/nearby')}
-                      >
-                        📍 Find Nearby Jobs
-                      </StyledButton>
-                    )}
-                  </Box>
-
-                  {/* Trust Badges */}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      gap: { xs: 2, sm: 4 },
-                      mt: { xs: 3, sm: 4 },
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    {[
-                      { icon: <SecurityIcon />, text: 'Escrow Protected' },
-                      { icon: <VerifiedIcon />, text: 'Verified Workers' },
-                      { icon: <StarIcon />, text: '4.8★ Average Rating' },
-                    ].map((badge) => (
-                      <Box
-                        key={badge.text}
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          color: 'rgba(255,255,255,0.8)',
-                          fontSize: { xs: '0.85rem', sm: '0.9rem' },
-                        }}
-                      >
-                        {React.cloneElement(badge.icon, { sx: { color: '#FFD700', fontSize: 20 } })}
-                        <Typography sx={{ fontSize: 'inherit' }}>{badge.text}</Typography>
+                      "{t.text}"
+                    </Typography>
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                      <Avatar sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 700 }}>
+                        {t.avatar}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="subtitle2" fontWeight={700}>{t.name}</Typography>
+                        <Typography variant="caption" color="text.secondary">{t.role}</Typography>
                       </Box>
-                    ))}
-                  </Box>
+                    </Stack>
+                  </Card>
                 </motion.div>
-              </Box>
+              </Grid>
+            ))}
+          </Grid>
+        </motion.div>
+      </Container>
+    </Box>
+  );
+};
 
-              {/* Call-to-action section */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.3 }}
+// ─── CTA BANNER ───────────────────────────────────────────
+const CTASection = () => {
+  const navigate = useNavigate();
+  const theme = useTheme();
+
+  return (
+    <Box
+      sx={{
+        py: { xs: 8, md: 10 },
+        background: theme.palette.mode === 'dark'
+          ? `linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,215,0,0.02) 100%)`
+          : `linear-gradient(135deg, rgba(255,215,0,0.12) 0%, rgba(255,193,7,0.04) 100%)`,
+      }}
+    >
+      <Container maxWidth="md">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="h3" fontWeight={800} sx={{ mb: 2 }}>
+              Ready to get started?
+            </Typography>
+            <Typography variant="h6" color="text.secondary" fontWeight={400} sx={{ mb: 5, maxWidth: 500, mx: 'auto' }}>
+              Join thousands of skilled workers and businesses already on Kelmah.
+            </Typography>
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={2}
+              justifyContent="center"
+            >
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => navigate('/register')}
+                sx={{ py: 1.8, px: 5, borderRadius: 2, fontSize: '1.05rem', fontWeight: 700 }}
               >
-                <Box
-                  sx={{
-                    textAlign: 'center',
-                    mt: { xs: 5, sm: 8, md: 12 }, // ✅ Reduced mobile margin
-                    px: { xs: 2.5, sm: 0 }, // ✅ Increased mobile padding
-                    py: { xs: 4, sm: 5, md: 6 }, // ✅ Added vertical padding
-                    background:
-                      'linear-gradient(135deg, rgba(255,215,0,0.05) 0%, rgba(255,215,0,0.1) 100%)', // ✅ Better contrast
-                    borderRadius: { xs: 2, sm: 3 }, // ✅ Rounded corners
-                    border: '2px solid rgba(255, 215, 0, 0.2)', // ✅ Visible border
-                    boxShadow: '0 8px 32px rgba(255, 215, 0, 0.15)', // ✅ Subtle glow
-                  }}
-                >
-                  <Typography
-                    variant={isMobile ? 'h5' : 'h4'}
-                    sx={{
-                      color: '#FFD700', // ✅ Gold color for prominence
-                      mb: { xs: 2.5, sm: 3 }, // ✅ Increased spacing
-                      fontWeight: 800, // ✅ Bolder
-                      fontSize: { xs: '1.6rem', sm: '2rem', md: '2.125rem' }, // ✅ Larger mobile
-                      textShadow: '0 2px 10px rgba(255, 215, 0, 0.3)', // ✅ Text glow
-                      px: { xs: 1, sm: 0 }, // ✅ Mobile padding
-                    }}
-                  >
-                    Ready to Get Started?
-                  </Typography>
-                  <Typography
-                    variant={isMobile ? 'body1' : 'h6'}
-                    sx={{
-                      color: 'rgba(255,255,255,0.9)', // ✅ Better contrast
-                      mb: { xs: 3.5, sm: 4 }, // ✅ Increased spacing
-                      maxWidth: { xs: '100%', sm: 500 },
-                      mx: 'auto',
-                      fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' }, // ✅ Larger mobile
-                      lineHeight: { xs: 1.6, sm: 1.5 }, // ✅ Better readability
-                      px: { xs: 1, sm: 0 }, // ✅ Mobile padding
-                    }}
-                  >
-                    Join thousands of skilled workers and satisfied customers on
-                    Ghana's leading trade platform
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      gap: { xs: 2, sm: 3 },
-                      justifyContent: 'center',
-                      flexWrap: 'wrap',
-                      flexDirection: { xs: 'column', sm: 'row' },
-                      alignItems: 'center',
-                    }}
-                  >
-                    <StyledButton
-                      variant="contained"
-                      size={isMobile ? 'medium' : 'large'}
-                      sx={{
-                        background:
-                          'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                        color: '#000',
-                        fontWeight: 800,
-                        fontSize: { xs: '1.05rem', sm: '1.1rem' }, // ✅ Larger mobile font
-                        px: { xs: 4, sm: 4 }, // ✅ More padding
-                        py: { xs: 1.5, sm: 1.5 }, // ✅ More vertical padding
-                        minHeight: { xs: '50px', sm: '52px' }, // ✅ Larger touch target
-                        width: { xs: '100%', sm: 'auto' },
-                        maxWidth: { xs: '300px', sm: 'none' }, // ✅ Wider mobile
-                        boxShadow: '0 4px 20px rgba(255, 215, 0, 0.4)', // ✅ Prominent shadow
-                        '&:hover': {
-                          background:
-                            'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)',
-                          boxShadow: '0 6px 25px rgba(255, 215, 0, 0.5)', // ✅ Enhanced hover
-                        },
-                        '&:active': { transform: 'scale(0.98)' }, // ✅ Mobile feedback
-                      }}
-                      fullWidth={isMobile}
-                      onClick={() => navigate('/register')}
-                    >
-                      {isMobile ? 'Join as Worker' : 'Join as a Worker'}
-                    </StyledButton>
-                    <StyledButton
-                      variant="outlined"
-                      size={isMobile ? 'medium' : 'large'}
-                      sx={{
-                        borderColor: '#FFD700',
-                        color: '#FFD700',
-                        borderWidth: { xs: 2.5, sm: 2 }, // ✅ Thicker mobile border
-                        fontWeight: 700,
-                        fontSize: { xs: '1.05rem', sm: '1.1rem' }, // ✅ Larger mobile font
-                        px: { xs: 4, sm: 4 }, // ✅ More padding
-                        py: { xs: 1.5, sm: 1.5 }, // ✅ More vertical padding
-                        minHeight: { xs: '50px', sm: '52px' }, // ✅ Larger touch target
-                        width: { xs: '100%', sm: 'auto' },
-                        maxWidth: { xs: '300px', sm: 'none' }, // ✅ Wider mobile
-                        background: 'rgba(255, 215, 0, 0.08)', // ✅ Better visibility
-                        boxShadow: '0 4px 20px rgba(255, 215, 0, 0.2)', // ✅ Prominent shadow
-                        '&:hover': {
-                          background: alpha('#FFD700', 0.15), // ✅ Better hover
-                          borderWidth: { xs: 2.5, sm: 2 },
-                          borderColor: '#FFC000',
-                          boxShadow: '0 6px 25px rgba(255, 215, 0, 0.3)',
-                        },
-                        '&:active': { transform: 'scale(0.98)' }, // ✅ Mobile feedback
-                      }}
-                      fullWidth={isMobile}
-                      onClick={() => navigate('/hirer/find-talent')}
-                    >
-                      {isMobile ? 'Hire Workers' : 'Hire Skilled Workers'}
-                    </StyledButton>
-                  </Box>
-                </Box>
-              </motion.div>
-            </Box>
-          </Section>
-        </Box>
-      </GestureControl>
+                Sign Up Free
+              </Button>
+              <Button
+                variant="outlined"
+                size="large"
+                onClick={() => navigate('/login')}
+                sx={{ py: 1.8, px: 5, borderRadius: 2, fontSize: '1.05rem', fontWeight: 700 }}
+              >
+                Log In
+              </Button>
+            </Stack>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 3, display: 'block' }}>
+              No credit card required · Free for workers · Post your first job in minutes
+            </Typography>
+          </Box>
+        </motion.div>
+      </Container>
+    </Box>
+  );
+};
 
-      {/* Removed: Sticky footer nav conflicted with MobileBottomNav from Layout */}
-    </>
+// ─── MAIN HOME PAGE ───────────────────────────────────────
+const HomePage = () => {
+  return (
+    <Box sx={{ width: '100%', overflow: 'hidden' }}>
+      <HeroSection />
+      <CategoriesSection />
+      <StatsSection />
+      <HowItWorksSection />
+      <WhyKelmahSection />
+      <TestimonialsSection />
+      <CTASection />
+    </Box>
   );
 };
 
