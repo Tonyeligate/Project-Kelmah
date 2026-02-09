@@ -71,7 +71,7 @@ const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
     sx={{
       p: { xs: 2, md: 3 },
       borderRadius: 2,
-      background: 'linear-gradient(to right, #28313b, #485461, #ffd700),
+      background: 'linear-gradient(to right, #28313b, #485461, #ffd700)',
       color: 'white',
       border: '2px solid',
       borderColor: 'secondary.main',

@@ -385,7 +385,6 @@ const ProfilePage = () => {
                         }}>Add</Button>
                       </DialogActions>
                     </Dialog>
-                    </Box>
                   </Box>
                 )}
 

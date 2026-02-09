@@ -47,7 +47,8 @@ import {
   selectHirerLoading,
   selectHirerError,
 } from '../services/hirerSlice';
-import { alpha, useTheme, useMediaQuery } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+import { useMediaQuery } from '@mui/material';
 
 const steps = [
   { label: 'Job Details', icon: <Work /> },

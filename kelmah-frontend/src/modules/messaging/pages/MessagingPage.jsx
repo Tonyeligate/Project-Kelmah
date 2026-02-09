@@ -1686,7 +1686,7 @@ const EnhancedMessagingPage = () => {
                 flex: 1,
                 p: 2,
                 overflowY: 'auto',
-                minHeight: 'calc(100dvh - 220px)',,
+                minHeight: 'calc(100dvh - 220px)',
               }}
             >
               {messages.length === 0 && (
