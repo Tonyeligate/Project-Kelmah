@@ -1,8 +1,9 @@
 {
   "version": 2,
-  "installCommand": "echo 'Skipping root install'",
-  "buildCommand": "cd kelmah-frontend && npm install --legacy-peer-deps && npm run build",
-  "outputDirectory": "kelmah-frontend/build",
+  "buildCommand": "npm run build",
+  "outputDirectory": "build",
+  "installCommand": "npm install --legacy-peer-deps",
+  "rootDirectory": "kelmah-frontend",
   "rewrites": [
     {
       "source": "/api/(.*)",
