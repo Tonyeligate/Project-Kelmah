@@ -24,8 +24,8 @@ import HirerDashboard from '../../hirer/pages/HirerDashboardPage';
 const DashboardPage = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const isMobile = false; // Disabled responsive behavior as per user requirement
-  const isActualMobile = useMediaQuery('(max-width: 768px)'); // Check actual screen size
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isActualMobile = isMobile;
   // Use ONLY Redux auth state to prevent dual state management conflicts
   const { user, loading: authLoading } = useSelector((state) => state.auth);
   // Get data from Redux store
@@ -106,7 +106,7 @@ const DashboardPage = () => {
         flexGrow: 1,
         width: '100%',
         maxWidth: '100vw',
-        padding: isMobile ? 1 : 3,
+        padding: isMobile ? 1.5 : 3,
         boxSizing: 'border-box',
         overflowX: 'hidden',
         overflowY: 'auto',

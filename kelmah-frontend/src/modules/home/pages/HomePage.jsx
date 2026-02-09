@@ -70,6 +70,12 @@ const Section = styled(Box)(({ theme }) => ({
     width: '100%',
     maxWidth: '100vw',
   },
+  // Mobile: use auto height so content isn't pushed below fold
+  [theme.breakpoints.down('sm')]: {
+    minHeight: 'auto',
+    paddingTop: theme.spacing(4),
+    paddingBottom: theme.spacing(4),
+  },
   // Tablet adjustments
   [theme.breakpoints.between('sm', 'md')]: {
     minHeight: 'auto',
@@ -188,7 +194,7 @@ const ServiceCard = styled(Card)(({ theme }) => ({
 }));
 
 const ServiceCardMedia = styled(CardMedia)(({ theme }) => ({
-  height: { xs: 200, sm: 200, md: 220 }, // ✅ Updated to 200px max per user request
+  height: 220, // Desktop default; mobile overrides via @media below
   transition: 'transform 0.4s ease',
   position: 'relative',
   objectFit: 'cover', // ✅ Better image scaling
@@ -212,11 +218,7 @@ const ServiceCardMedia = styled(CardMedia)(({ theme }) => ({
 const ServiceCardContent = styled(CardContent)(({ theme }) => ({
   background:
     'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(44,44,44,0.6) 100%)',
-  padding: {
-    xs: theme.spacing(2), // ✅ Increased from 1.5
-    sm: theme.spacing(2.5),
-    md: theme.spacing(3),
-  },
+  padding: theme.spacing(3), // Desktop default; mobile override via @media below
   // Mobile-specific optimizations
   '@media (max-width: 600px)': {
     padding: theme.spacing(2), // ✅ Consistent spacing
@@ -469,7 +471,7 @@ const HomePage = () => {
           left: 0,
           right: 0,
           height: '4px',
-          zIndex: 1300,
+          zIndex: 1100, // Below MUI dialogs (1300) and modals (1200)
           display: { xs: 'block', md: 'none' }, // Mobile only
           backgroundColor: 'rgba(0, 0, 0, 0.1)',
         }}
@@ -1592,64 +1594,7 @@ const HomePage = () => {
         </Box>
       </GestureControl>
 
-      {/* ✅ NEW: Sticky Footer Navigation for Mobile */}
-      <Box
-        sx={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          display: { xs: 'flex', md: 'none' }, // Only mobile
-          gap: 1,
-          p: 1.5,
-          backgroundColor: 'rgba(0, 0, 0, 0.95)',
-          borderTop: '2px solid rgba(255, 215, 0, 0.3)',
-          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.5)',
-          zIndex: 1000,
-          backdropFilter: 'blur(10px)',
-        }}
-      >
-        <StyledButton
-          variant="contained"
-          fullWidth
-          sx={{
-            background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-            color: '#000',
-            fontWeight: 800,
-            minHeight: '44px',
-            fontSize: '0.9rem',
-            boxShadow: '0 2px 8px rgba(255, 215, 0, 0.4)',
-            '&:hover': {
-              background: 'linear-gradient(135deg, #FFC000 0%, #FFD700 100%)',
-            },
-            '&:active': { transform: 'scale(0.98)' },
-          }}
-          onClick={() => navigate('/register')}
-        >
-          Join Kelmah
-        </StyledButton>
-        <StyledButton
-          variant="outlined"
-          fullWidth
-          sx={{
-            borderColor: '#FFD700',
-            color: '#FFD700',
-            borderWidth: 2,
-            fontWeight: 700,
-            minHeight: '44px',
-            fontSize: '0.9rem',
-            background: 'rgba(255, 215, 0, 0.08)',
-            '&:hover': {
-              background: 'rgba(255, 215, 0, 0.15)',
-              borderColor: '#FFC000',
-            },
-            '&:active': { transform: 'scale(0.98)' },
-          }}
-          onClick={() => navigate('/hirer/find-talent')}
-        >
-          Find Workers
-        </StyledButton>
-      </Box>
+      {/* Removed: Sticky footer nav conflicted with MobileBottomNav from Layout */}
     </>
   );
 };

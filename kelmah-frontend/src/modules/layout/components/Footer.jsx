@@ -137,7 +137,10 @@ const Footer = () => {
                         key={social.label}
                         size="large"
                         href={social.href}
+                        aria-label={social.label}
                         sx={{
+                          minWidth: 44,
+                          minHeight: 44,
                           background: `rgba(${social.color === '#1877F2'
                             ? '24,119,242'
                             : social.color === '#1DA1F2'
@@ -363,7 +366,10 @@ const Footer = () => {
                             key={social.label}
                             size="medium"
                             href={social.href}
+                            aria-label={social.label}
                             sx={{
+                              minWidth: 44,
+                              minHeight: 44,
                               background: 'rgba(255,255,255,0.05)',
                               border: '1px solid rgba(255,255,255,0.1)',
                               color: 'text.secondary',

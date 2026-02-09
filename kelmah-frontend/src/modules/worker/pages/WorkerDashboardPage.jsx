@@ -48,7 +48,7 @@ const WorkerDashboardPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const { user: rawUser } = useSelector((state) => state.auth);
   const user = normalizeUser(rawUser);
@@ -264,7 +264,7 @@ const WorkerDashboardPage = () => {
   );
 
   return (
-    <Box sx={{ backgroundColor: '#FAFAFA', minHeight: '100vh', p: 3 }}>
+    <Box sx={{ backgroundColor: '#FAFAFA', minHeight: '100vh', p: { xs: 1.5, sm: 2, md: 3 } }}>
       {/* Snackbar for notifications */}
       <Snackbar
         open={snackbarOpen}
@@ -454,7 +454,7 @@ const WorkerDashboardPage = () => {
             >
               Earnings Overview
             </Typography>
-            <Box sx={{ height: 280 }}>
+            <Box sx={{ height: { xs: 220, md: 280 } }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -508,7 +508,7 @@ const WorkerDashboardPage = () => {
             >
               Applications Overview
             </Typography>
-            <Box sx={{ height: 280 }}>
+            <Box sx={{ height: { xs: 220, md: 280 } }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie

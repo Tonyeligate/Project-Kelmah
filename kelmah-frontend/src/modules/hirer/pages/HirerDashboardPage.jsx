@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import PropTypes from 'prop-types';
 import {
   Box,
   Container,
@@ -222,6 +223,9 @@ const HirerDashboardPage = () => {
   const applicationRecords = useSelector(selectHirerApplications);
   const totalPendingProposals = useSelector(selectHirerPendingProposalCount);
   const payments = useSelector((state) => state.hirer.payments);
+  const storeError = useSelector(selectHirerError('profile'));
+  const jobsError = useSelector(selectHirerError('jobs'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Summary skeleton for overview while data loads
   const LoadingOverviewSkeleton = () => (
@@ -507,7 +511,7 @@ const HirerDashboardPage = () => {
   // LC Portal-inspired Dashboard Overview - IMPROVED with empty state CTAs
   const renderDashboardOverview = () => (
     <Fade in timeout={500}>
-      <Box sx={{ bgcolor: '#F5F5F5', minHeight: '100vh', mx: -4, mt: -3, p: 4 }}>
+      <Box sx={{ bgcolor: '#F5F5F5', minHeight: '100vh', mx: { xs: -2, sm: -3, md: -4 }, mt: { xs: -1, md: -3 }, p: { xs: 2, sm: 3, md: 4 } }}>
         {/* Breadcrumb - LC Portal Style */}
         <Breadcrumbs sx={{ mb: 3 }} aria-label="breadcrumb">
           <MUILink
@@ -516,7 +520,7 @@ const HirerDashboardPage = () => {
             underline="hover"
             sx={{ color: '#666', display: 'flex', alignItems: 'center', gap: 0.5 }}
           >
-            🏠 Home
+            Home
           </MUILink>
           <Typography color="text.primary">Dashboard</Typography>
         </Breadcrumbs>
@@ -830,7 +834,7 @@ const HirerDashboardPage = () => {
               <Typography variant="h6" fontWeight={600} sx={{ mb: 3, color: '#333' }}>
                 Applications Overview
               </Typography>
-              <Box sx={{ display: 'flex', height: 250 }}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, height: { xs: 'auto', sm: 250 } }}>
                 {/* Legend on left */}
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, justifyContent: 'center', pr: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1017,12 +1021,13 @@ const HirerDashboardPage = () => {
           </Box>
         </Container>
         {/* Floating Quick Actions */}
+        {/* SpeedDial - offset for mobile bottom nav */}
         <SpeedDial
           ariaLabel="Quick Actions"
           sx={{
             position: 'fixed',
-            bottom: 32,
-            right: 32,
+            bottom: { xs: 80, md: 32 },
+            right: { xs: 16, md: 32 },
             zIndex: (theme) => theme.zIndex.tooltip,
           }}
           icon={<SpeedDialIcon openIcon={<AddIcon />} />}

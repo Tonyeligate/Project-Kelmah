@@ -62,10 +62,10 @@ const SettingsPage = () => {
   ];
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4, color: 'text.primary' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-        <SettingsIcon sx={{ fontSize: 36, mr: 1.5, color: 'primary.main' }} />
-        <Typography variant="h4" fontWeight="bold">
+    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1.5, sm: 3 }, color: 'text.primary' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, md: 4 } }}>
+        <SettingsIcon sx={{ fontSize: { xs: 28, md: 36 }, mr: 1.5, color: 'primary.main' }} />
+        <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
           Settings
         </Typography>
       </Box>
@@ -89,6 +89,8 @@ const SettingsPage = () => {
             <Tabs
               orientation={isMdUp ? 'vertical' : 'horizontal'}
               variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
               value={tabValue}
               onChange={handleTabChange}
               aria-label={
@@ -103,17 +105,12 @@ const SettingsPage = () => {
                   fontWeight: '600',
                   textTransform: 'none',
                   minHeight: isMdUp ? 64 : 48,
-                },
-                '& .MuiTabs-flexContainer': {
-                  flexWrap: isMdUp ? 'nowrap' : 'wrap',
-                  rowGap: isMdUp ? 0 : 1,
+                  minWidth: isMdUp ? 'auto' : 44,
                 },
                 '& .Mui-selected': {
                   color: 'primary.main',
                 },
               }}
-              allowScrollButtonsMobile
-              scrollButtons="auto"
             >
               {settingsPanels.map((panel) => (
                 <Tab

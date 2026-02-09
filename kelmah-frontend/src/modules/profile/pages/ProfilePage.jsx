@@ -43,7 +43,7 @@ import ErrorBoundary from '../../../components/common/ErrorBoundary';
 
 const ProfilePage = () => {
   const theme = useTheme();
-  const isActualMobile = useMediaQuery('(max-width: 768px)');
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const {
     loadProfile,
@@ -125,16 +125,16 @@ const ProfilePage = () => {
 
   if (loading) {
     content = (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
-            <Paper sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-                <Skeleton variant="circular" width={150} height={150} />
-                <Box sx={{ flex: 1 }}>
-                  <Skeleton width="40%" height={32} sx={{ mb: 1 }} />
-                  <Skeleton width="30%" height={24} sx={{ mb: 1 }} />
-                  <Skeleton width="50%" height={24} />
+            <Paper sx={{ p: { xs: 2, md: 3 } }}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: { xs: 'center', md: 'flex-start' } }}>
+                <Skeleton variant="circular" width={isMobile ? 100 : 150} height={isMobile ? 100 : 150} />
+                <Box sx={{ flex: 1, width: '100%', textAlign: { xs: 'center', md: 'left' } }}>
+                  <Skeleton width="40%" height={32} sx={{ mb: 1, mx: { xs: 'auto', md: 0 } }} />
+                  <Skeleton width="30%" height={24} sx={{ mb: 1, mx: { xs: 'auto', md: 0 } }} />
+                  <Skeleton width="50%" height={24} sx={{ mx: { xs: 'auto', md: 0 } }} />
                 </Box>
               </Box>
             </Paper>
@@ -166,14 +166,14 @@ const ProfilePage = () => {
     );
   } else {
     content = (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
         <Grid container spacing={3}>
           {/* Profile Header */}
           <Grid item xs={12}>
-            <Paper sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-                <ProfilePicture size={150} />
-                <Box sx={{ flex: 1 }}>
+            <Paper sx={{ p: { xs: 2, md: 3 } }}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: { xs: 'center', md: 'flex-start' } }}>
+                <ProfilePicture size={isMobile ? 100 : 150} />
+                <Box sx={{ flex: 1, width: '100%', textAlign: { xs: 'center', md: 'left' } }}>
                   {error && (
                     <Alert severity="error" sx={{ mb: 2 }}>
                       {error}
@@ -288,7 +288,7 @@ const ProfilePage = () => {
                       <Button
                         startIcon={<EditIcon />}
                         onClick={handleEdit}
-                        sx={{ mt: 2 }}
+                        sx={{ mt: 2, minHeight: 44 }}
                       >
                         Edit Profile
                       </Button>
@@ -301,8 +301,14 @@ const ProfilePage = () => {
 
           {/* Profile Content */}
           <Grid item xs={12}>
-            <Paper sx={{ p: 3 }}>
-              <Tabs value={selectedTab} onChange={handleTabChange}>
+            <Paper sx={{ p: { xs: 2, md: 3 } }}>
+              <Tabs
+                value={selectedTab}
+                onChange={handleTabChange}
+                variant="scrollable"
+                scrollButtons="auto"
+                allowScrollButtonsMobile
+              >
                 <Tab label="Skills" />
                 <Tab label="Education" />
                 <Tab label="Experience" />
@@ -365,6 +371,8 @@ const ProfilePage = () => {
                               secondary={`${edu.institution} • ${edu.year}`}
                             />
                             <IconButton
+                              aria-label="Delete education entry"
+                              sx={{ minWidth: 44, minHeight: 44 }}
                               onClick={() => {
                                 const currentEducation = Array.isArray(
                                   profile.education,
@@ -422,6 +430,8 @@ const ProfilePage = () => {
                               secondary={`${exp.company} • ${exp.duration}`}
                             />
                             <IconButton
+                              aria-label="Delete experience entry"
+                              sx={{ minWidth: 44, minHeight: 44 }}
                               onClick={() => {
                                 const currentExperience = Array.isArray(
                                   profile.experience,
@@ -536,37 +546,37 @@ const ProfilePage = () => {
           {/* Statistics */}
           {statistics && (
             <Grid item xs={12}>
-              <Paper sx={{ p: 3 }}>
+              <Paper sx={{ p: { xs: 2, md: 3 } }}>
                 <Typography variant="h6" gutterBottom>
                   Statistics
                 </Typography>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={4} sm={4}>
                     <Box sx={{ textAlign: 'center' }}>
-                      <Typography variant="h4" color="primary">
+                      <Typography variant="h4" color="primary" sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
                         {statistics.jobsApplied}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                         Jobs Applied
                       </Typography>
                     </Box>
                   </Grid>
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={4} sm={4}>
                     <Box sx={{ textAlign: 'center' }}>
-                      <Typography variant="h4" color="primary">
+                      <Typography variant="h4" color="primary" sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
                         {statistics.interviews}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                         Interviews
                       </Typography>
                     </Box>
                   </Grid>
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={4} sm={4}>
                     <Box sx={{ textAlign: 'center' }}>
-                      <Typography variant="h4" color="primary">
+                      <Typography variant="h4" color="primary" sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
                         {statistics.offers}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                         Job Offers
                       </Typography>
                     </Box>

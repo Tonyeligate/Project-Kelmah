@@ -397,10 +397,16 @@ const EnhancedJobCard = ({
               <IconButton
                 onClick={() => onSave?.(job)}
                 color={job.saved ? 'primary' : 'default'}
+                aria-label={job.saved ? 'Remove from saved jobs' : 'Save job'}
+                sx={{ minWidth: 44, minHeight: 44 }}
               >
                 {job.saved ? <BookmarkIcon /> : <BookmarkBorderIcon />}
               </IconButton>
-              <IconButton onClick={() => onShare?.(job)}>
+              <IconButton
+                onClick={() => onShare?.(job)}
+                aria-label="Share job"
+                sx={{ minWidth: 44, minHeight: 44 }}
+              >
                 <ShareIcon />
               </IconButton>
             </Box>

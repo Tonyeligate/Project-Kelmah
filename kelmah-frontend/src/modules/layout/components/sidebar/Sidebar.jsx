@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   Drawer,
   List,
@@ -10,13 +10,9 @@ import {
   Typography,
   Avatar,
   Badge,
-  TextField,
-  InputAdornment,
   Tooltip,
-  Collapse,
-  IconButton,
 } from '@mui/material';
-import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useNotifications } from '../../../notifications/contexts/NotificationContext';
 import { useMessages } from '../../../messaging/contexts/MessageContext';
@@ -37,60 +33,65 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import ChatIcon from '@mui/icons-material/Chat';
 import SettingsIcon from '@mui/icons-material/Settings';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
-import SearchIcon from '@mui/icons-material/Search';
-import ClearIcon from '@mui/icons-material/Clear';
+// ✅ MOBILE-AUDIT FIX: Removed unused imports (SearchIcon, ClearIcon) — search UI not rendered
 
-// Kelmah Logo Component - FIX: Reduced size from 100x100 to 64x64
-const KelmahLogo = () => (
-  <Box
-    sx={{
-      width: 64,
-      height: 64,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      margin: '0 auto',
-    }}
-  >
+// ✅ MOBILE-AUDIT FIX: React-based logo fallback (replaced innerHTML which bypasses React reconciliation)
+const KelmahLogo = () => {
+  const [logoError, setLogoError] = useState(false);
+
+  return (
     <Box
-      component="img"
-      src="/kelmah-logo.png"
-      alt="Kelmah"
       sx={{
-        width: 48,
-        height: 48,
-        objectFit: 'contain',
+        width: 64,
+        height: 64,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        margin: '0 auto',
       }}
-      onError={(e) => {
-        e.target.style.display = 'none';
-        e.target.parentElement.innerHTML = `
-          <div style="
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
-            color: #1C2536;
-          ">K</div>
-        `;
-      }}
-    />
-  </Box>
-);
+    >
+      {logoError ? (
+        <Box
+          sx={{
+            width: 48,
+            height: 48,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 20,
+            fontWeight: 'bold',
+            color: '#1C2536',
+          }}
+        >
+          K
+        </Box>
+      ) : (
+        <Box
+          component="img"
+          src="/kelmah-logo.png"
+          alt="Kelmah"
+          sx={{
+            width: 48,
+            height: 48,
+            objectFit: 'contain',
+          }}
+          onError={() => setLogoError(true)}
+        />
+      )}
+    </Box>
+  );
+};
 
 const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
   const user = useSelector((state) => state.auth.user);
   const { unreadCount: unreadMessages } = useMessages();
   const { unreadCount: unreadNotifications } = useNotifications();
   const location = useLocation();
-  const navigate = useNavigate();
 
-  // Search state
-  const [searchQuery, setSearchQuery] = useState('');
+  // ✅ MOBILE-AUDIT FIX: Whether tooltips should show (disabled on temporary/mobile drawer)
+  const showTooltips = variant === 'permanent';
 
   // Determine role for navigation
   const navRole =
@@ -142,30 +143,6 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
     },
     { text: 'Settings', icon: <SettingsIcon />, path: '/settings', tooltip: 'Account settings' },
   ];
-
-  // Filter menu items based on search
-  const filteredMenuItems = useMemo(() => {
-    if (!searchQuery.trim()) return menuItems;
-    const query = searchQuery.toLowerCase();
-    return menuItems.filter(item =>
-      item.text.toLowerCase().includes(query) ||
-      (item.tooltip && item.tooltip.toLowerCase().includes(query))
-    );
-  }, [menuItems, searchQuery]);
-
-  const filteredBottomItems = useMemo(() => {
-    if (!searchQuery.trim()) return bottomItems;
-    const query = searchQuery.toLowerCase();
-    return bottomItems.filter(item =>
-      item.text.toLowerCase().includes(query) ||
-      (item.tooltip && item.tooltip.toLowerCase().includes(query))
-    );
-  }, [bottomItems, searchQuery]);
-
-  // Handle search clear
-  const handleClearSearch = () => {
-    setSearchQuery('');
-  };
 
   const dashboardPath = navRole === 'hirer' ? '/hirer/dashboard' : '/worker/dashboard';
   const isDashboardActive = location.pathname === dashboardPath || location.pathname === '/dashboard';
@@ -261,6 +238,8 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                 fontWeight: 600,
                 letterSpacing: 'normal',
                 wordSpacing: 'normal',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 fontFamily: '"Inter", "Roboto", "Helvetica Neue", Arial, sans-serif',
               },
@@ -326,6 +305,8 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                       fontSize: '0.9rem',
                       letterSpacing: 'normal',
                       wordSpacing: 'normal',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
                       fontFamily: '"Inter", "Roboto", "Helvetica Neue", Arial, sans-serif',
                     },
@@ -334,7 +315,8 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
               </ListItem>
             );
 
-            return item.tooltip ? (
+            // ✅ MOBILE-AUDIT FIX: Only wrap in Tooltip on permanent (desktop) sidebar
+            return showTooltips && item.tooltip ? (
               <Tooltip
                 key={item.text}
                 title={item.tooltip}
@@ -344,7 +326,9 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                 {menuItemElement}
               </Tooltip>
             ) : (
-              menuItemElement
+              <React.Fragment key={item.text}>
+                {menuItemElement}
+              </React.Fragment>
             );
           })}
       </List>
@@ -394,6 +378,8 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                     fontSize: '0.9rem',
                     letterSpacing: 'normal',
                     wordSpacing: 'normal',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     fontFamily: '"Inter", "Roboto", "Helvetica Neue", Arial, sans-serif',
                   },
@@ -402,7 +388,8 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
             </ListItem>
           );
 
-          return item.tooltip ? (
+          // ✅ MOBILE-AUDIT FIX: Only wrap in Tooltip on permanent (desktop) sidebar
+          return showTooltips && item.tooltip ? (
             <Tooltip
               key={item.text}
               title={item.tooltip}
@@ -412,7 +399,9 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
               {bottomItemElement}
             </Tooltip>
           ) : (
-            bottomItemElement
+            <React.Fragment key={item.text}>
+              {bottomItemElement}
+            </React.Fragment>
           );
         })}
       </List>

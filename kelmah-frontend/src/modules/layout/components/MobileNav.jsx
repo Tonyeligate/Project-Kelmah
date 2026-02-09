@@ -44,7 +44,7 @@ import { secureStorage } from '../../../utils/secureStorage';
 // Styled Components
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
-    width: 280,
+    width: 'min(280px, 85vw)', // ✅ MOBILE-AUDIT FIX: Clamp to 85vw for 320px screens
     background:
       theme.palette.mode === 'dark'
         ? `linear-gradient(180deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`
@@ -310,9 +310,9 @@ const MobileNav = ({ open, onClose }) => {
           {navigationItems.map((item, index) => (
               <motion.div
                 key={item.path}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
+                transition={{ duration: 0.15, delay: index * 0.02 }}
               >
                 <StyledListItemButton onClick={() => handleNavigate(item.path)}>
                   <ListItemIcon>
@@ -335,9 +335,9 @@ const MobileNav = ({ open, onClose }) => {
               <Divider sx={{ my: 2, mx: 2 }} />
 
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
+                transition={{ duration: 0.15, delay: 0.05 }}
               >
                 <StyledListItemButton
                   onClick={() => handleNavigate('/settings')}
@@ -350,9 +350,9 @@ const MobileNav = ({ open, onClose }) => {
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.15 }}
+                transition={{ duration: 0.15, delay: 0.07 }}
               >
                 <StyledListItemButton
                   onClick={() => handleNavigate('/support')}
@@ -365,9 +365,9 @@ const MobileNav = ({ open, onClose }) => {
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.2 }}
+                transition={{ duration: 0.15, delay: 0.09 }}
               >
                 <StyledListItemButton
                   onClick={handleLogout}

@@ -201,7 +201,7 @@ const MobileBottomNav = () => {
   };
 
   return (
-    <StyledPaper elevation={0}>
+    <StyledPaper elevation={0} component="nav" aria-label="Main navigation">
       <StyledBottomNavigation 
         value={currentValue} 
         onChange={handleNavigation} 

@@ -143,22 +143,15 @@ const SearchInterface = styled(Paper)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
   border: '1px solid rgba(255, 255, 255, 0.3)',
-  borderRadius: 24,
-  padding: theme.spacing(4),
+  borderRadius: { xs: 12, md: 24 },
+  padding: theme.spacing(2),
+  [theme.breakpoints.up('md')]: {
+    padding: theme.spacing(4),
+    borderRadius: 24,
+  },
   position: 'relative',
   overflow: 'hidden',
   boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background:
-      'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-    pointerEvents: 'none',
-  },
 }));
 
 // GlassCard styled component for glass morphism effect
@@ -248,14 +241,21 @@ const HeroGradientSection = styled(Box)(({ theme }) => {
       ${theme.palette.secondary.dark} 75%,
       ${theme.palette.primary.main} 100%)`,
     backgroundSize: '400% 400%',
-    animation: `${gradientShift} 20s ease infinite`,
     color: 'white',
-    padding: theme.spacing(12, 0),
+    padding: theme.spacing(6, 0),
+    [theme.breakpoints.up('md')]: {
+      padding: theme.spacing(12, 0),
+      minHeight: '90vh',
+      animation: `${gradientShift} 20s ease infinite`,
+    },
     position: 'relative',
     overflow: 'hidden',
-    minHeight: '90vh',
     display: 'flex',
     alignItems: 'center',
+    '@media (prefers-reduced-motion: reduce)': {
+      animation: 'none !important',
+      '&::before, &::after': { animation: 'none !important' },
+    },
     '&::before': {
       content: '""',
       position: 'absolute',
@@ -266,7 +266,9 @@ const HeroGradientSection = styled(Box)(({ theme }) => {
       background: `radial-gradient(circle at 25% 75%, ${alpha('#4ECDC4', 0.3)} 0%, transparent 50%),
                   radial-gradient(circle at 75% 25%, ${alpha('#FFD700', 0.3)} 0%, transparent 50%),
                   radial-gradient(circle at 50% 50%, ${alpha('#FF6B6B', 0.2)} 0%, transparent 70%)`,
-      animation: `${float} 25s ease-in-out infinite`,
+      [theme.breakpoints.up('md')]: {
+        animation: `${float} 25s ease-in-out infinite`,
+      },
     },
     '&::after': {
       content: '""',
@@ -276,7 +278,9 @@ const HeroGradientSection = styled(Box)(({ theme }) => {
       width: '140%',
       height: '160%',
       background: `conic-gradient(from 45deg at 50% 50%, transparent 0deg, ${alpha('#FFD700', 0.15)} 90deg, transparent 180deg, ${alpha('#4ECDC4', 0.15)} 270deg, transparent 360deg)`,
-      animation: `${rotateGlow} 40s linear infinite`,
+      [theme.breakpoints.up('md')]: {
+        animation: `${rotateGlow} 40s linear infinite`,
+      },
     },
   };
 });
@@ -872,12 +876,6 @@ const JobSearchPage = () => {
 
   // Enhanced search with AI-powered matching
   const handleSearch = useCallback(() => {
-    console.log('🔍 Search initiated:', {
-      searchQuery,
-      selectedCategory,
-      sortBy,
-    });
-
     const params = {
       search: searchQuery.trim() || undefined,
       category: selectedCategory || undefined,
@@ -1330,7 +1328,8 @@ const JobSearchPage = () => {
             </motion.div>
           </Grid>
 
-          <Grid item xs={12} lg={6}>
+          {/* Stats grid — hidden on mobile to reduce scroll depth */}
+          <Grid item xs={12} lg={6} sx={{ display: { xs: 'none', md: 'block' } }}>
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -1421,7 +1420,7 @@ const JobSearchPage = () => {
                   bgcolor: alpha(theme.palette.background.default, 0.5),
                 },
               }}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             />
           </Grid>
 
@@ -1478,10 +1477,7 @@ const JobSearchPage = () => {
             <Stack direction="row" spacing={1}>
               <Button
                 variant="contained"
-                onClick={() => {
-                  console.log('🔍 Search button clicked!');
-                  handleSearch();
-                }}
+                onClick={() => handleSearch()}
                 fullWidth
                 startIcon={<SearchIcon />}
                 sx={{
@@ -1492,33 +1488,6 @@ const JobSearchPage = () => {
                 }}
               >
                 Find Jobs
-              </Button>
-
-              {/* Test Navigation Button */}
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => {
-                  console.log('🧪 Test navigation to application form');
-                  navigate('/jobs/1/apply');
-                }}
-                sx={{ mt: 1 }}
-              >
-                Test Apply
-              </Button>
-
-              {/* Test Search Button */}
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => {
-                  console.log('🧪 Test search functionality');
-                  setSearchQuery('electrical');
-                  handleSearch();
-                }}
-                sx={{ mt: 1 }}
-              >
-                Test Search
               </Button>
 
               <ToggleButtonGroup
@@ -1649,7 +1618,7 @@ const JobSearchPage = () => {
 
       <Grid container spacing={3} justifyContent="center">
         {jobCategories.map((category, index) => (
-          <Grid item xs={12} sm={6} md={4} lg={2} key={category.name}>
+          <Grid item xs={6} sm={6} md={4} lg={2} key={category.name}>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -2000,10 +1969,7 @@ const JobSearchPage = () => {
                 variant="contained"
                 size="small"
                 startIcon={<VisibilityIcon />}
-                onClick={() => {
-                  console.log('🔍 View Details clicked for job:', job.id);
-                  navigate(`/jobs/${job.id}`);
-                }}
+                onClick={() => navigate(`/jobs/${job.id}`)}
                 sx={{ flex: 1 }}
               >
                 View Details
@@ -2013,17 +1979,7 @@ const JobSearchPage = () => {
                 size="small"
                 startIcon={<HandshakeIcon />}
                 onClick={() => {
-                  console.log('📝 Apply Now clicked for job:', job.id);
-                  console.log('🔐 Auth state:', {
-                    isAuthenticated: authState.isAuthenticated,
-                    user: authState.user,
-                    authState: authState,
-                  });
-
                   if (!authState.isAuthenticated) {
-                    console.log(
-                      '🔒 User not authenticated, redirecting to login',
-                    );
                     navigate('/login', {
                       state: {
                         from: `/jobs/${job.id}/apply`,
@@ -2032,11 +1988,6 @@ const JobSearchPage = () => {
                     });
                     return;
                   }
-
-                  console.log(
-                    '🚀 Navigating to application form:',
-                    `/jobs/${job.id}/apply`,
-                  );
                   navigate(`/jobs/${job.id}/apply`);
                 }}
                 sx={{
@@ -2067,7 +2018,6 @@ const JobSearchPage = () => {
                   navigator.clipboard.writeText(
                     `${job.title} at ${job.company.name} - ${window.location.origin}/jobs/${job.id}`,
                   );
-                  console.log('Job link copied to clipboard');
                 }
               }}
             >
@@ -2081,7 +2031,7 @@ const JobSearchPage = () => {
 
   const renderMapView = (mapJobs = []) => (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Box sx={{ height: 600, borderRadius: 3, overflow: 'hidden' }}>
+      <Box sx={{ height: { xs: 350, md: 600 }, borderRadius: 3, overflow: 'hidden' }}>
         <MapContainer
           center={userPosition || [39.8283, -98.5795]} // Center of USA if no user location
           zoom={userPosition ? 13 : 4}
@@ -2246,7 +2196,7 @@ const JobSearchPage = () => {
         {/* Floating Actions */}
         <SpeedDial
           ariaLabel="Quick Actions"
-          sx={{ position: 'fixed', bottom: 16, right: 16 }}
+          sx={{ position: 'fixed', bottom: { xs: 80, md: 16 }, right: 16 }}
           icon={<SpeedDialIcon />}
         >
           <SpeedDialAction

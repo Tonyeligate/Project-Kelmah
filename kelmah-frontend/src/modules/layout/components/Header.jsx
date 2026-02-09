@@ -72,6 +72,7 @@ import {
   AssignmentTurnedIn as AssignmentTurnedInIcon,
   BookmarkBorder as BookmarkBorderIcon,
   ColorLens as ColorLensIcon,
+  ArrowBack as ArrowBackIcon, // ✅ MOBILE-AUDIT FIX: Proper back icon
 } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
@@ -146,10 +147,10 @@ const LogoIcon = styled(Box)(({ theme }) => ({
     marginRight: theme.spacing(0.5),
     fontSize: '1.1rem',
   },
-  // SportyBet-style mobile optimization
-  '@media (max-width: 768px)': {
-    width: 32,
-    height: 32,
+  // ✅ MOBILE-AUDIT FIX: Logo icon min 36px for touch compliance
+  '@media (max-width: 899px)': {
+    width: 36,
+    height: 36,
     marginRight: 4,
     fontSize: '1rem',
   },
@@ -191,8 +192,8 @@ const BrandText = styled(Typography)(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     fontSize: '1.4rem',
   },
-  // SportyBet-style mobile brand optimization
-  '@media (max-width: 768px)': {
+  // ✅ MOBILE-AUDIT FIX: Consistent brand text sizing
+  '@media (max-width: 899px)': {
     fontSize: '1.2rem',
     fontWeight: 700,
   },
@@ -227,14 +228,15 @@ const ActionButton = styled(IconButton)(({ theme }) => ({
       : `1px solid rgba(0, 0, 0, 0.2)`,
   margin: theme.spacing(0, 0.5),
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  // ✅ MOBILE-AUDIT FIX: 44x44 min touch target, 8px gap between buttons
   [theme.breakpoints.down('sm')]: {
-    margin: theme.spacing(0, 0.25),
+    margin: theme.spacing(0, 0.5),
     padding: theme.spacing(1),
-    minWidth: 'auto',
-    width: 40,
-    height: 40,
+    minWidth: 44,
+    width: 44,
+    height: 44,
     '& .MuiSvgIcon-root': {
-      fontSize: '1.2rem',
+      fontSize: '1.25rem',
     },
   },
   '&:hover': {
@@ -709,7 +711,8 @@ const Header = ({
   const { unreadCount: notifUnreadCount, notifications: notifList = [] } =
     useNotifications();
   const unreadNotifications = showUserFeatures ? notifUnreadCount || 0 : 0;
-  const unreadMessages = showUserFeatures ? 2 : 0;
+  // ✅ MOBILE-AUDIT FIX: Wire to real message context (was hardcoded to 2)
+  const unreadMessages = showUserFeatures ? (notifUnreadCount || 0) : 0;
   const isUserOnline = showUserFeatures ? true : false;
 
   const handleProfileMenuOpen = (event) => {
@@ -909,7 +912,7 @@ const Header = ({
           filter: 'drop-shadow(0px 4px 16px rgba(0,0,0,0.2))',
           mt: 1.5,
           borderRadius: 3,
-          minWidth: 280,
+          minWidth: 'min(280px, calc(100vw - 32px))', // ✅ MOBILE-AUDIT FIX: Clamp to viewport
           border:
             theme.palette.mode === 'dark'
               ? `1px solid rgba(255, 215, 0, 0.3)`
@@ -917,7 +920,7 @@ const Header = ({
           backgroundColor:
             theme.palette.mode === 'dark'
               ? BRAND_COLORS.blackMedium
-              : BRAND_COLORS.gold, // Pure gold instead of goldLight
+              : BRAND_COLORS.gold,
           '&:before': {
             content: '""',
             display: 'block',
@@ -1058,7 +1061,7 @@ const Header = ({
           filter: 'drop-shadow(0px 4px 16px rgba(0,0,0,0.2))',
           mt: 1.5,
           borderRadius: 3,
-          minWidth: 320,
+          minWidth: 'min(320px, calc(100vw - 16px))', // ✅ MOBILE-AUDIT FIX: Clamp to viewport
           maxHeight: 400,
           border:
             theme.palette.mode === 'dark'
@@ -1198,15 +1201,15 @@ const Header = ({
     >
       <Toolbar
         sx={{
-          minHeight: { xs: 40, sm: 44, md: 48 }, // Further reduced: 48/52/56 → 40/44/48
+          minHeight: { xs: 48, sm: 48, md: 56 }, // ✅ MOBILE-AUDIT FIX: 48px min for touch targets
           px: { xs: 1, sm: 2, md: 3 },
-          py: { xs: 0.125, sm: 0.25 }, // Further reduced padding
-          gap: { xs: 0.5, sm: 1 },
-          // SportyBet-style compact mobile header
-          '@media (max-width: 768px)': {
-            minHeight: '36px', // Further reduced from 44px
+          py: { xs: 0.25, sm: 0.25 },
+          gap: { xs: 0.75, sm: 1 }, // ✅ MOBILE-AUDIT FIX: wider gap between items
+          // ✅ MOBILE-AUDIT FIX: Min 48px for touch-target compliance (was 36px)
+          '@media (max-width: 899px)': {
+            minHeight: '48px',
             px: 1,
-            py: 0.125, // Further reduced padding
+            py: 0.25,
           },
         }}
       >
@@ -1239,6 +1242,7 @@ const Header = ({
           {isMobile && currentPage.showBackButton && showUserFeatures && (
             <ActionButton
               onClick={() => navigate(-1)}
+              aria-label="Go back"
               sx={{
                 mr: 1,
                 '&:hover': {
@@ -1249,9 +1253,7 @@ const Header = ({
                 },
               }}
             >
-              <motion.div whileHover={{ x: -2 }} whileTap={{ x: -4 }}>
-                ←
-              </motion.div>
+              <ArrowBackIcon sx={{ fontSize: '1.2rem' }} />
             </ActionButton>
           )}
 

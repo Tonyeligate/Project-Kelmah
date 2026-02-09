@@ -212,14 +212,16 @@ const MobileLogin = ({ registrationSuccess = false }) => {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <IconButton
               onClick={() => navigate('/')}
-              size="small"
               sx={{
                 color: 'rgba(255, 255, 255, 0.7)',
                 mr: 1,
+                minWidth: 44,
+                minHeight: 44,
                 '&:hover': { color: '#FFD700' },
               }}
+              aria-label="Go back to home"
             >
-              <ArrowBackIcon fontSize="small" />
+              <ArrowBackIcon />
             </IconButton>
             <Box>
               <Typography
@@ -440,21 +442,8 @@ const MobileLogin = ({ registrationSuccess = false }) => {
         </Box>
       </motion.div>
 
-      {/* Footer decoration */}
-      <Box
-        component="img"
-        src={logoIcon}
-        alt=""
-        sx={{
-          position: 'fixed',
-          bottom: 20,
-          right: 20,
-          width: 50,
-          height: 50,
-          opacity: 0.15,
-          borderRadius: '50%',
-        }}
-      />
+      {/* Spacer for bottom safe area */}
+      <Box sx={{ pb: 'env(safe-area-inset-bottom, 0px)' }} />
     </Box>
   );
 };

@@ -31,9 +31,9 @@ const theme = createTheme({
           backgroundColor: '#1C1C1C',
           scrollBehavior: 'smooth',
         },
-        '*': {
-          transition: 'all 0.2s ease-in-out',
-        },
+        // ✅ MOBILE-AUDIT FIX: Removed wildcard '* { transition: all 0.2s }'
+        // It caused scroll jank, dropped frames & battery drain on mobile.
+        // Transitions are now applied only on specific components that need them.
       },
     },
     MuiPaper: {

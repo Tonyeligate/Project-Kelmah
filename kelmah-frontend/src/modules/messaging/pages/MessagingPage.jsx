@@ -128,7 +128,6 @@ const EnhancedMessagingPage = () => {
       setIsLoading(true);
       try {
         // Real messaging initialization will be handled by the context
-        console.log('Messaging system initialized with real data');
 
         // Calculate total unread count from context conversations
         const totalUnread = (conversations || []).reduce(
@@ -304,7 +303,6 @@ const EnhancedMessagingPage = () => {
     setSelectedFiles([]);
 
     // Update conversation last message would be handled by context
-    console.log('Message sent:', newMessage);
 
     try {
       // Simulate API call
@@ -906,9 +904,11 @@ const EnhancedMessagingPage = () => {
             <Stack direction="row" spacing={1}>
               <Tooltip title="Voice call">
                 <IconButton
-                  size="small"
+                  aria-label="Voice call"
                   sx={{
                     color: 'rgba(255,255,255,0.7)',
+                    minWidth: 44,
+                    minHeight: 44,
                     '&:hover': {
                       color: '#FFD700',
                       background: alpha('#FFD700', 0.1),
@@ -920,9 +920,11 @@ const EnhancedMessagingPage = () => {
               </Tooltip>
               <Tooltip title="Video call">
                 <IconButton
-                  size="small"
+                  aria-label="Video call"
                   sx={{
                     color: 'rgba(255,255,255,0.7)',
+                    minWidth: 44,
+                    minHeight: 44,
                     '&:hover': {
                       color: '#FFD700',
                       background: alpha('#FFD700', 0.1),
@@ -934,10 +936,12 @@ const EnhancedMessagingPage = () => {
               </Tooltip>
               <Tooltip title="More options">
                 <IconButton
-                  size="small"
+                  aria-label="More options"
                   onClick={(e) => setMoreMenuAnchor(e.currentTarget)}
                   sx={{
                     color: 'rgba(255,255,255,0.7)',
+                    minWidth: 44,
+                    minHeight: 44,
                     '&:hover': {
                       color: '#FFD700',
                       background: alpha('#FFD700', 0.1),
@@ -1271,7 +1275,7 @@ const EnhancedMessagingPage = () => {
                 setMessageText(e.target.value);
                 handleTyping();
               }}
-              onKeyPress={(e) => {
+              onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
                   handleSendMessage();
@@ -1344,11 +1348,8 @@ const EnhancedMessagingPage = () => {
     );
   }
 
-  // Mobile detection for our custom template
-  const isActualMobile = useMediaQuery('(max-width: 768px)');
-
-  // Mobile messaging template
-  if (isActualMobile) {
+  // Mobile messaging template — uses isMobile (theme.breakpoints.down('md'))
+  if (isMobile) {
     return (
       <Box
         sx={{
@@ -1377,12 +1378,13 @@ const EnhancedMessagingPage = () => {
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <IconButton
-                  onClick={() => navigate('/worker/dashboard')}
+                  onClick={() => navigate(-1)}
+                  aria-label="Go back"
                   sx={{
                     backgroundColor: 'rgba(255, 215, 0, 0.1)',
                     color: '#FFD700',
-                    width: 40,
-                    height: 40,
+                    minWidth: 44,
+                    minHeight: 44,
                   }}
                 >
                   <ArrowBackIcon sx={{ fontSize: 20 }} />
@@ -1398,11 +1400,17 @@ const EnhancedMessagingPage = () => {
                 </Typography>
               </Box>
               <IconButton
+                aria-label="Search conversations"
+                onClick={() => {
+                  // Scroll to search input and focus it
+                  const searchInput = document.querySelector('#mobile-search-input input');
+                  if (searchInput) searchInput.focus();
+                }}
                 sx={{
                   backgroundColor: 'rgba(255, 215, 0, 0.1)',
                   color: '#FFD700',
-                  width: 40,
-                  height: 40,
+                  minWidth: 44,
+                  minHeight: 44,
                 }}
               >
                 <SearchIcon sx={{ fontSize: 20 }} />
@@ -1412,6 +1420,7 @@ const EnhancedMessagingPage = () => {
             {/* Search Bar */}
             <Box sx={{ p: 2 }}>
               <TextField
+                id="mobile-search-input"
                 fullWidth
                 placeholder="Search conversations..."
                 value={searchQuery}
@@ -1443,7 +1452,7 @@ const EnhancedMessagingPage = () => {
               />
             </Box>
 
-            {/* Conversations List */}
+            {/* Conversations List — Real Data */}
             <Box sx={{ px: 2 }}>
               <Typography
                 sx={{
@@ -1456,40 +1465,17 @@ const EnhancedMessagingPage = () => {
                 Recent Conversations
               </Typography>
 
-              {/* Sample Conversations */}
-              {[
-                {
-                  id: 1,
-                  name: 'Golden Gate Construction',
-                  role: 'Hirer',
-                  lastMessage: 'When can you start the carpentry project?',
-                  time: '10:30 AM',
-                  unread: 2,
-                  avatar: 'GG',
-                  online: true,
-                },
-                {
-                  id: 2,
-                  name: 'AquaFlow Services',
-                  role: 'Hirer',
-                  lastMessage: 'Great work on the plumbing installation!',
-                  time: 'Yesterday',
-                  unread: 0,
-                  avatar: 'AS',
-                  online: false,
-                },
-                {
-                  id: 3,
-                  name: 'PowerTech Ghana',
-                  role: 'Hirer',
-                  lastMessage:
-                    'Can you handle electrical wiring for our new office?',
-                  time: '2 days ago',
-                  unread: 1,
-                  avatar: 'PT',
-                  online: true,
-                },
-              ].map((conversation) => (
+              {filteredConversations.length === 0 && (
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography sx={{ color: '#b2afa3', fontSize: '0.9rem' }}>
+                    {searchQuery ? 'No conversations match your search' : 'No conversations yet'}
+                  </Typography>
+                </Box>
+              )}
+
+              {filteredConversations.map((conversation) => {
+                const otherParticipant = getOtherParticipant(conversation);
+                return (
                 <Paper
                   key={conversation.id}
                   sx={{
@@ -1503,11 +1489,12 @@ const EnhancedMessagingPage = () => {
                       backgroundColor: '#2a2926',
                     },
                   }}
-                  onClick={() => selectConversation(conversation)}
+                  onClick={() => handleConversationSelect(conversation)}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Box sx={{ position: 'relative' }}>
                       <Avatar
+                        src={otherParticipant?.avatar}
                         sx={{
                           backgroundColor: '#FFD700',
                           color: '#161513',
@@ -1516,9 +1503,9 @@ const EnhancedMessagingPage = () => {
                           fontWeight: 'bold',
                         }}
                       >
-                        {conversation.avatar}
+                        {otherParticipant?.name?.charAt(0) || '?'}
                       </Avatar>
-                      {conversation.online && (
+                      {otherParticipant?.status === 'online' && (
                         <Box
                           sx={{
                             position: 'absolute',
@@ -1547,17 +1534,24 @@ const EnhancedMessagingPage = () => {
                             color: 'white',
                             fontSize: '1rem',
                             fontWeight: 'bold',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
                           }}
                         >
-                          {conversation.name}
+                          {otherParticipant?.name || 'Unknown'}
                         </Typography>
                         <Typography
                           sx={{
                             color: '#b2afa3',
                             fontSize: '0.75rem',
+                            flexShrink: 0,
+                            ml: 1,
                           }}
                         >
-                          {conversation.time}
+                          {conversation.lastMessage?.timestamp
+                            ? formatMessageTime(conversation.lastMessage.timestamp)
+                            : ''}
                         </Typography>
                       </Box>
                       <Box
@@ -1577,11 +1571,12 @@ const EnhancedMessagingPage = () => {
                             flex: 1,
                           }}
                         >
-                          {conversation.lastMessage}
+                          {conversation.lastMessage?.sender === user?.id && 'You: '}
+                          {conversation.lastMessage?.text || 'No messages yet'}
                         </Typography>
-                        {conversation.unread > 0 && (
+                        {conversation.unreadCount > 0 && (
                           <Badge
-                            badgeContent={conversation.unread}
+                            badgeContent={conversation.unreadCount}
                             sx={{
                               '& .MuiBadge-badge': {
                                 backgroundColor: '#FFD700',
@@ -1596,7 +1591,8 @@ const EnhancedMessagingPage = () => {
                     </Box>
                   </Box>
                 </Paper>
-              ))}
+                );
+              })}
             </Box>
 
             {/* Bottom spacing for nav */}
@@ -1604,6 +1600,9 @@ const EnhancedMessagingPage = () => {
           </>
         ) : (
           // Chat View
+          (() => {
+            const chatParticipant = getOtherParticipant(selectedConversation);
+            return (
           <>
             {/* Chat Header */}
             <Box
@@ -1621,17 +1620,19 @@ const EnhancedMessagingPage = () => {
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <IconButton
-                  onClick={() => setSelectedConversation(null)}
+                  onClick={() => clearConversation()}
+                  aria-label="Back to conversations"
                   sx={{
                     backgroundColor: 'rgba(255, 215, 0, 0.1)',
                     color: '#FFD700',
-                    width: 40,
-                    height: 40,
+                    minWidth: 44,
+                    minHeight: 44,
                   }}
                 >
                   <ArrowBackIcon sx={{ fontSize: 20 }} />
                 </IconButton>
                 <Avatar
+                  src={chatParticipant?.avatar}
                   sx={{
                     backgroundColor: '#FFD700',
                     color: '#161513',
@@ -1640,7 +1641,7 @@ const EnhancedMessagingPage = () => {
                     fontWeight: 'bold',
                   }}
                 >
-                  {selectedConversation.avatar}
+                  {chatParticipant?.name?.charAt(0) || '?'}
                 </Avatar>
                 <Box>
                   <Typography
@@ -1651,7 +1652,7 @@ const EnhancedMessagingPage = () => {
                       lineHeight: 1,
                     }}
                   >
-                    {selectedConversation.name}
+                    {chatParticipant?.name || 'Unknown'}
                   </Typography>
                   <Typography
                     sx={{
@@ -1660,60 +1661,49 @@ const EnhancedMessagingPage = () => {
                       lineHeight: 1,
                     }}
                   >
-                    {selectedConversation.online
+                    {chatParticipant?.status === 'online'
                       ? 'Online'
                       : 'Last seen recently'}
                   </Typography>
                 </Box>
               </Box>
               <IconButton
+                aria-label="More options"
                 sx={{
                   backgroundColor: 'rgba(255, 215, 0, 0.1)',
                   color: '#FFD700',
-                  width: 40,
-                  height: 40,
+                  minWidth: 44,
+                  minHeight: 44,
                 }}
               >
                 <MoreVertIcon sx={{ fontSize: 20 }} />
               </IconButton>
             </Box>
 
-            {/* Messages Area */}
+            {/* Messages Area — Real Data */}
             <Box
               sx={{
                 flex: 1,
                 p: 2,
                 overflowY: 'auto',
-                minHeight: 'calc(100vh - 160px)',
+                minHeight: 'calc(100vh - 220px)',
               }}
             >
-              {/* Sample Messages */}
-              {[
-                {
-                  id: 1,
-                  text: "Hello! I saw your profile and I'm interested in hiring you for a carpentry project.",
-                  sender: 'them',
-                  time: '10:25 AM',
-                },
-                {
-                  id: 2,
-                  text: "Hi! Thank you for reaching out. I'd be happy to help. Could you tell me more about the project?",
-                  sender: 'me',
-                  time: '10:27 AM',
-                },
-                {
-                  id: 3,
-                  text: 'We need custom kitchen cabinets installed. The project should take about a week. When can you start?',
-                  sender: 'them',
-                  time: '10:30 AM',
-                },
-              ].map((message) => (
+              {messages.length === 0 && (
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography sx={{ color: '#b2afa3', fontSize: '0.9rem' }}>
+                    No messages yet. Start the conversation!
+                  </Typography>
+                </Box>
+              )}
+              {messages.map((message) => {
+                const isOwn = message.sender === user?.id;
+                return (
                 <Box
                   key={message.id}
                   sx={{
                     display: 'flex',
-                    justifyContent:
-                      message.sender === 'me' ? 'flex-end' : 'flex-start',
+                    justifyContent: isOwn ? 'flex-end' : 'flex-start',
                     mb: 1,
                   }}
                 >
@@ -1722,29 +1712,32 @@ const EnhancedMessagingPage = () => {
                       maxWidth: '75%',
                       p: 1.5,
                       borderRadius: '12px',
-                      backgroundColor:
-                        message.sender === 'me' ? '#FFD700' : '#35332c',
-                      color: message.sender === 'me' ? '#161513' : 'white',
+                      backgroundColor: isOwn ? '#FFD700' : '#35332c',
+                      color: isOwn ? '#161513' : 'white',
                     }}
                   >
-                    <Typography sx={{ fontSize: '0.875rem', mb: 0.5 }}>
+                    <Typography sx={{ fontSize: '0.875rem', mb: 0.5, wordBreak: 'break-word' }}>
                       {message.text}
                     </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: '0.7rem',
-                        opacity: 0.7,
-                        textAlign: 'right',
-                      }}
-                    >
-                      {message.time}
-                    </Typography>
+                    <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={0.5}>
+                      <Typography
+                        sx={{
+                          fontSize: '0.7rem',
+                          opacity: 0.7,
+                        }}
+                      >
+                        {message.timestamp ? format(new Date(message.timestamp), 'HH:mm') : ''}
+                      </Typography>
+                      {isOwn && getMessageStatus(message)}
+                    </Stack>
                   </Box>
                 </Box>
-              ))}
+                );
+              })}
+              <div ref={messagesEndRef} />
             </Box>
 
-            {/* Message Input */}
+            {/* Message Input — Wired to real handlers */}
             <Box
               sx={{
                 position: 'sticky',
@@ -1752,6 +1745,7 @@ const EnhancedMessagingPage = () => {
                 backgroundColor: '#161513',
                 p: 2,
                 borderTop: '1px solid #35332c',
+                paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
               }}
             >
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -1759,7 +1753,16 @@ const EnhancedMessagingPage = () => {
                   fullWidth
                   placeholder="Type a message..."
                   value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
+                  onChange={(e) => {
+                    setMessageText(e.target.value);
+                    handleTyping();
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       backgroundColor: '#24231e',
@@ -1770,19 +1773,26 @@ const EnhancedMessagingPage = () => {
                     },
                     '& .MuiInputBase-input': {
                       color: 'white',
-                      fontSize: '0.875rem',
+                      fontSize: '1rem',
                       py: 1,
                     },
                   }}
                 />
                 <IconButton
+                  onClick={handleSendMessage}
+                  disabled={!messageText.trim() && selectedFiles.length === 0}
+                  aria-label="Send message"
                   sx={{
                     backgroundColor: '#FFD700',
                     color: '#161513',
-                    width: 40,
-                    height: 40,
+                    minWidth: 44,
+                    minHeight: 44,
                     '&:hover': {
                       backgroundColor: '#FFC000',
+                    },
+                    '&:disabled': {
+                      backgroundColor: 'rgba(255,255,255,0.1)',
+                      color: 'rgba(255,255,255,0.3)',
                     },
                   }}
                 >
@@ -1792,8 +1802,10 @@ const EnhancedMessagingPage = () => {
             </Box>
 
             {/* Bottom spacing for mobile nav */}
-            <Box sx={{ height: '80px' }} />
+            <Box sx={{ height: '70px' }} />
           </>
+            );
+          })()
         )}
       </Box>
     );

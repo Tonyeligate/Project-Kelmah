@@ -35,7 +35,8 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
   // Only show footer on homepage
   const isHomePage = location.pathname === '/' || location.pathname === '/home';
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
-  const isActualMobile = useMediaQuery('(max-width: 768px)');
+  // ✅ MOBILE-AUDIT FIX: Use MUI breakpoint instead of custom query to avoid 769-899px dead zone
+  const isMobile = !isMdUp;
   // 🎯 ENHANCED: Comprehensive dashboard page detection
   // FIX: Added missing paths that should render with dashboard sidebar layout
   const currentPath = location.pathname || '';
@@ -64,8 +65,6 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
       currentPath === '/profile' ||
       currentPath === '/messages' ||
       currentPath.startsWith('/messages'));
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const handleDrawerToggle = () => setMobileOpen((prev) => !prev);
 
   // Session expired banner state - moved outside conditional blocks
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -77,8 +76,9 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
 
   // Dashboard layout
   if (isDashboardPage) {
-    // On mobile, render children directly (no sidebar) + bottom nav + auto-show header
-    if (isActualMobile) {
+    // ✅ MOBILE-AUDIT FIX: Two-state layout — mobile (<md) and desktop (>=md)
+    // Eliminated the 769-899px "tablet gap" dead zone
+    if (isMobile) {
       return (
         <Box
           sx={{
@@ -88,6 +88,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             display: 'flex',
             flexDirection: 'column',
             bgcolor: theme.palette.background.default,
+            overflowX: 'hidden',
           }}
         >
           <Header
@@ -95,14 +96,15 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             mode={mode}
             setThemeMode={setThemeMode}
           />
-          {/* Main content area with proper spacing for header and bottom nav */}
+          {/* Main content area — flex-based height, safe-area aware */}
           <Box
             component="main"
             sx={{
               flex: 1,
               width: '100%',
-              pt: '44px', // Space for fixed header
-              pb: '72px', // Space for bottom nav (56px + safe area)
+              pt: '48px', // Matches header minHeight on mobile
+              // ✅ MOBILE-AUDIT FIX: Account for safe-area-inset-bottom on notched phones
+              pb: 'calc(56px + env(safe-area-inset-bottom, 0px) + 16px)',
               px: 1.5,
               overflowY: 'auto',
               overflowX: 'hidden',
@@ -116,100 +118,50 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
       );
     }
 
-    // Desktop: permanent sidebar + auto-show header
-    if (isMdUp) {
-      return (
-        <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
-          <Header
-            toggleTheme={toggleTheme}
-            mode={mode}
-            autoShowMode={true}
-            setThemeMode={setThemeMode}
-          />
-          <Sidebar variant="permanent" />
-          {/* ✅ REMOVED: BreadcrumbNavigation - sidebar already shows current location */}
-          <Box
-            component="main"
-            sx={{
-              flexGrow: 1,
-              width: '100%',
-              minWidth: 0, // Prevents flex item from growing beyond container
-              pt: { xs: '48px', sm: '52px', md: '56px' }, // Add top padding for fixed header
-              px: { xs: 1, sm: 2, md: 3 }, // Only horizontal padding
-              pb: { xs: 1, sm: 2, md: 3 }, // Bottom padding
-            }}
-          >
-            {sessionExpired && (
-              <Box
-                sx={{
-                  mb: 2,
-                  p: 2,
-                  borderRadius: 1,
-                  bgcolor: 'warning.light',
-                  color: 'black',
-                  border: '1px solid',
-                  borderColor: 'warning.main',
-                }}
-              >
-                <Typography variant="body2" fontWeight="bold">
-                  Session expired
-                </Typography>
-                <Typography variant="caption">
-                  Please log in again to continue.
-                </Typography>
-              </Box>
-            )}
-            {content}
-          </Box>
-          <SmartNavigation />
-        </Box>
-      );
-    }
-
-    // Mobile: temporary drawer + bottom nav + auto-show header (NO DUPLICATE APP BAR)
+    // Desktop (>=md): permanent sidebar + auto-show header
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100vh',
-          bgcolor: theme.palette.grey[900],
-          color: theme.palette.common.white,
-          overflowX: 'hidden',
-          overflowY: 'auto',
-        }}
-      >
+      <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
         <Header
           toggleTheme={toggleTheme}
           mode={mode}
+          autoShowMode={true}
           setThemeMode={setThemeMode}
         />
-        {/* ✅ REMOVED: BreadcrumbNavigation - sidebar already shows current location */}
-        <Sidebar
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-        />
+        <Sidebar variant="permanent" />
         <Box
           component="main"
           sx={{
             flexGrow: 1,
             width: '100%',
             minWidth: 0,
-            pt: '48px', // Further reduced from 56px to match new header height
-            pb: '56px',
-            px: { xs: 1, sm: 2 },
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            WebkitOverflowScrolling: 'touch',
-            // Fix mobile scroll issues
-            maxHeight: 'calc(100vh - 104px)', // Reduced from 112px
-            position: 'relative',
+            pt: { md: '56px' }, // Matches header minHeight on desktop
+            px: { md: 3 },
+            pb: { md: 3 },
           }}
         >
+          {sessionExpired && (
+            <Box
+              sx={{
+                mb: 2,
+                p: 2,
+                borderRadius: 1,
+                bgcolor: 'warning.light',
+                color: 'black',
+                border: '1px solid',
+                borderColor: 'warning.main',
+              }}
+            >
+              <Typography variant="body2" fontWeight="bold">
+                Session expired
+              </Typography>
+              <Typography variant="caption">
+                Please log in again to continue.
+              </Typography>
+            </Box>
+          )}
           {content}
         </Box>
-        <MobileBottomNav />
+        <SmartNavigation />
       </Box>
     );
   }
@@ -247,8 +199,8 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
               maxWidth: '100vw',
               boxSizing: 'border-box',
             },
-            // Mobile-specific improvements - remove all padding for auth pages
-            '@media (max-width: 768px)': {
+            // ✅ MOBILE-AUDIT FIX: Use consistent breakpoint for mobile padding reset
+            '@media (max-width: 899px)': {
               py: 0,
               px: 0,
             },

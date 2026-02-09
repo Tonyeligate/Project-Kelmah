@@ -218,13 +218,14 @@ const MobileRegister = () => {
     '& .MuiOutlinedInput-root': {
       backgroundColor: 'rgba(255, 255, 255, 0.06)',
       borderRadius: 2,
+      minHeight: 44,
       '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
       '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.4)' },
       '&.Mui-focused fieldset': { borderColor: '#FFD700', borderWidth: 2 },
     },
     '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)', fontSize: '14px' },
     '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
-    '& .MuiOutlinedInput-input': { color: 'white', fontSize: '15px' },
+    '& .MuiOutlinedInput-input': { color: 'white', fontSize: '16px' },
   };
 
   // Render step content
