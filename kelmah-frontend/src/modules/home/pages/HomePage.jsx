@@ -322,7 +322,7 @@ const HomePage = () => {
     const timer = setTimeout(() => {
       setIsLoading(false);
       setError(null); // ✅ Clear any initialization errors
-    }, 2000);
+    }, 500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -519,7 +519,7 @@ const HomePage = () => {
                 '@media (max-width: 320px)': {
                   top: 8,
                   right: 8,
-                  fontSize: '0.65rem',
+                  fontSize: '0.7rem',
                   '& .MuiChip-label': {
                     padding: '0 6px',
                   },
@@ -672,7 +672,7 @@ const HomePage = () => {
                         </Typography>
                         <Typography
                           sx={{
-                            fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                            fontSize: { xs: '0.875rem', sm: '0.85rem' },
                             color: '#FFFFFF',
                             opacity: 0.9,
                           }}
@@ -693,7 +693,7 @@ const HomePage = () => {
                         </Typography>
                         <Typography
                           sx={{
-                            fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                            fontSize: { xs: '0.875rem', sm: '0.85rem' },
                             color: '#FFFFFF',
                             opacity: 0.9,
                           }}
@@ -714,7 +714,7 @@ const HomePage = () => {
                         </Typography>
                         <Typography
                           sx={{
-                            fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                            fontSize: { xs: '0.875rem', sm: '0.85rem' },
                             color: '#FFFFFF',
                             opacity: 0.9,
                           }}
@@ -1148,7 +1148,7 @@ const HomePage = () => {
                                 sx={{
                                   backgroundColor: 'rgba(255,215,0,0.2)',
                                   color: '#FFD700',
-                                  fontSize: '0.75rem',
+                                  fontSize: { xs: '0.8rem', sm: '0.75rem' },
                                   fontWeight: 600,
                                 }}
                               />
@@ -1363,7 +1363,7 @@ const HomePage = () => {
                             <Typography
                               sx={{
                                 color: 'rgba(255,255,255,0.7)',
-                                fontSize: { xs: '0.8rem', sm: '0.85rem' },
+                                fontSize: { xs: '0.875rem', sm: '0.85rem' },
                               }}
                             >
                               {item.desc}

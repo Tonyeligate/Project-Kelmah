@@ -4,6 +4,7 @@ import {
   Grid,
   Typography,
   Paper,
+  Button,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -45,11 +46,18 @@ const DashboardPage = () => {
   // Show error if there was a problem loading data
   if (dataError) {
     return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
+      <Box sx={{ p: 3, textAlign: 'center', minHeight: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <Typography variant="h6" color="error" gutterBottom>
           There was a problem loading your dashboard
         </Typography>
-        <Typography variant="body1">{dataError}</Typography>
+        <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary' }}>{dataError}</Typography>
+        <Button
+          variant="contained"
+          onClick={() => dispatch(fetchDashboardData())}
+          sx={{ minHeight: 44, px: 4 }}
+        >
+          Try Again
+        </Button>
       </Box>
     );
   }
@@ -58,10 +66,20 @@ const DashboardPage = () => {
   const renderDashboard = () => {
     if (!user) {
       return (
-        <Box sx={{ p: 3, textAlign: 'center' }}>
-          <Typography variant="h6" color="error">
+        <Box sx={{ p: 3, textAlign: 'center', minHeight: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <Typography variant="h6" color="error" gutterBottom>
             Authentication required to view dashboard
           </Typography>
+          <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+            Please sign in to access your dashboard.
+          </Typography>
+          <Button
+            variant="contained"
+            href="/login"
+            sx={{ minHeight: 44, px: 4 }}
+          >
+            Sign In
+          </Button>
         </Box>
       );
     }

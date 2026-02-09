@@ -364,7 +364,7 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
         sx={{
           color: 'rgba(255,255,255,0.8)',
           fontWeight: 'medium',
-          fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }, // ✅ Responsive font size
+          fontSize: { xs: '0.875rem', sm: '0.9rem', md: '1rem' },
           position: 'relative',
           zIndex: 1,
         }}
@@ -406,7 +406,7 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
             variant="caption"
             sx={{
               color: '#4ade80',
-              fontSize: '0.65rem',
+              fontSize: '0.7rem',
               fontWeight: 'medium',
             }}
           >
@@ -1172,9 +1172,9 @@ const JobsPage = () => {
                         size="small"
                         sx={{
                           color: '#D4AF37',
-                          fontSize: { xs: '0.8rem', sm: '0.75rem' }, // ✅ Responsive font size
-                          padding: { xs: '6px 12px', sm: '4px 8px' }, // ✅ Better mobile padding
-                          minHeight: { xs: '36px', sm: 'auto' }, // ✅ Minimum touch target
+                          fontSize: { xs: '0.875rem', sm: '0.75rem' },
+                          padding: { xs: '8px 14px', sm: '4px 8px' },
+                          minHeight: { xs: '44px', sm: 'auto' },
                           '&:hover': {
                             bgcolor: 'rgba(212,175,55,0.1)',
                           },
@@ -1283,7 +1283,7 @@ const JobsPage = () => {
                                 sx={{
                                   borderColor: '#D4AF37',
                                   color: '#D4AF37',
-                                  fontSize: '0.7rem',
+                                  fontSize: '0.8rem',
                                   '&:hover': {
                                     bgcolor: 'rgba(212,175,55,0.1)',
                                   },
@@ -1296,7 +1296,7 @@ const JobsPage = () => {
                                 sx={{
                                   borderColor: '#D4AF37',
                                   color: '#D4AF37',
-                                  fontSize: '0.7rem',
+                                  fontSize: '0.8rem',
                                   '&:hover': {
                                     bgcolor: 'rgba(212,175,55,0.1)',
                                   },
@@ -1309,7 +1309,7 @@ const JobsPage = () => {
                                 sx={{
                                   borderColor: '#D4AF37',
                                   color: '#D4AF37',
-                                  fontSize: '0.7rem',
+                                  fontSize: '0.8rem',
                                   '&:hover': {
                                     bgcolor: 'rgba(212,175,55,0.1)',
                                   },
@@ -1322,7 +1322,7 @@ const JobsPage = () => {
                                 sx={{
                                   borderColor: '#D4AF37',
                                   color: '#D4AF37',
-                                  fontSize: '0.7rem',
+                                  fontSize: '0.8rem',
                                   '&:hover': {
                                     bgcolor: 'rgba(212,175,55,0.1)',
                                   },
@@ -1760,7 +1760,7 @@ const JobsPage = () => {
                                   variant="body2"
                                   sx={{
                                     color: 'rgba(255,255,255,0.7)',
-                                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                                    fontSize: { xs: '0.875rem', sm: '0.875rem' },
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap',
@@ -1981,7 +1981,7 @@ const JobsPage = () => {
                                   sx={{
                                     bgcolor: 'rgba(255,255,255,0.1)',
                                     color: 'white',
-                                    fontSize: '0.75rem',
+                                    fontSize: { xs: '0.8rem', sm: '0.75rem' },
                                   }}
                                 />
                               ))}
@@ -2163,6 +2163,8 @@ const JobsPage = () => {
                             }}
                             sx={{
                               color: '#D4AF37',
+                              minWidth: { xs: '44px', sm: '40px' },
+                              minHeight: { xs: '44px', sm: '40px' },
                               '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
                             }}
                           >
@@ -2188,7 +2190,7 @@ const JobsPage = () => {
                   variant="body2"
                   sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}
                 >
-                  Showing {uniqueJobs.length} of 12 total opportunities
+                  Showing {uniqueJobs.length} of {uniqueJobs.length} total opportunities
                 </Typography>
                 <Button
                   variant="outlined"

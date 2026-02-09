@@ -159,8 +159,8 @@ const MobileLogin = ({ registrationSuccess = false }) => {
           </Typography>
           <Typography
             sx={{
-              color: 'rgba(255, 255, 255, 0.6)',
-              fontSize: '13px',
+              color: 'rgba(255, 255, 255, 0.7)',
+              fontSize: '14px',
             }}
           >
             Ghana's Skilled Trades Platform
@@ -186,9 +186,9 @@ const MobileLogin = ({ registrationSuccess = false }) => {
             sx={{
               backgroundColor: 'rgba(255, 215, 0, 0.15)',
               color: '#FFD700',
-              fontSize: '11px',
+              fontSize: '12px',
               fontWeight: 600,
-              height: 24,
+              height: 28,
             }}
           />
         ))}
@@ -230,7 +230,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
               >
                 Welcome back
               </Typography>
-              <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>
+              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
                 Sign in to continue
               </Typography>
             </Box>
@@ -253,7 +253,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                     color: '#4caf50',
                     borderRadius: 2,
                     py: 0.5,
-                    '& .MuiAlert-message': { fontSize: '13px' },
+                    '& .MuiAlert-message': { fontSize: '14px' },
                   }}
                 >
                   {showSuccess ? 'Login successful!' : 'Account created! Please sign in.'}
@@ -274,7 +274,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                     color: '#f44336',
                     borderRadius: 2,
                     py: 0.5,
-                    '& .MuiAlert-message': { fontSize: '13px' },
+                    '& .MuiAlert-message': { fontSize: '14px' },
                   }}
                 >
                   {submitError}
@@ -358,7 +358,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                     />
                   }
                   label={
-                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>
+                    <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
                       Remember me
                     </Typography>
                   }
@@ -368,9 +368,11 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                   to="/forgot-password"
                   sx={{
                     color: '#FFD700',
-                    fontSize: '12px',
+                    fontSize: '14px',
                     textTransform: 'none',
-                    p: 0,
+                    py: 1,
+                    px: 1,
+                    minHeight: 44,
                     minWidth: 'auto',
                     '&:hover': { textDecoration: 'underline', backgroundColor: 'transparent' },
                   }}
@@ -414,31 +416,38 @@ const MobileLogin = ({ registrationSuccess = false }) => {
           </Box>
 
           {/* Sign Up Link */}
-          <Typography
+          <Box
             sx={{
               textAlign: 'center',
               mt: 3,
-              color: 'rgba(255,255,255,0.6)',
-              fontSize: '13px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 0.5,
+              minHeight: 44,
             }}
           >
-            Don't have an account?{' '}
+            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
+              Don't have an account?
+            </Typography>
             <Button
               component={RouterLink}
               to="/register"
               sx={{
                 color: '#FFD700',
                 fontWeight: 700,
-                fontSize: '13px',
+                fontSize: '14px',
                 textTransform: 'none',
-                p: 0,
+                py: 1,
+                px: 1,
+                minHeight: 44,
                 minWidth: 'auto',
                 '&:hover': { textDecoration: 'underline', backgroundColor: 'transparent' },
               }}
             >
               Sign Up
             </Button>
-          </Typography>
+          </Box>
         </Box>
       </motion.div>
 

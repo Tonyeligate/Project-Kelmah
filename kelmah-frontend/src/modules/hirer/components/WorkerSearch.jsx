@@ -568,8 +568,8 @@ const WorkerSearch = () => {
       )}
 
       {/* Search Statistics */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: 4 }}>
+        <Grid item xs={6} sm={6} md={3}>
           <Card
             sx={{
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -597,7 +597,7 @@ const WorkerSearch = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <Card
             sx={{
               background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
@@ -625,7 +625,7 @@ const WorkerSearch = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <Card
             sx={{
               background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
@@ -653,7 +653,7 @@ const WorkerSearch = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <Card
             sx={{
               background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
@@ -692,6 +692,7 @@ const WorkerSearch = () => {
                 placeholder="Search workers by name, skills, or title..."
                 value={searchQuery}
                 onChange={handleSearch}
+                inputProps={{ style: { fontSize: 16 } }}
                 InputProps={{
                   startAdornment: (
                     <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
@@ -700,8 +701,8 @@ const WorkerSearch = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box display="flex" gap={2} alignItems="center">
-                <FormControl size="small" sx={{ minWidth: 200 }}>
+              <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
+                <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 200 }, flex: { xs: '1 1 100%', sm: '0 0 auto' } }}>
                   <InputLabel id="worker-sort-label">Sort By</InputLabel>
                   <Select
                     labelId="worker-sort-label"
@@ -720,7 +721,7 @@ const WorkerSearch = () => {
                   variant="outlined"
                   startIcon={<FilterIcon />}
                   onClick={() => setFilterOpen(!filterOpen)}
-                  fullWidth={isMobile}
+                  sx={{ minHeight: 44, flex: { xs: 1, sm: '0 0 auto' } }}
                 >
                   Filters
                 </Button>
@@ -1108,7 +1109,7 @@ const WorkerSearch = () => {
                         color="primary"
                         size="small"
                         startIcon={<MessageIcon />}
-                        sx={{ flexGrow: 1, minWidth: 110 }}
+                        sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 110 }, minHeight: 44 }}
                         onClick={async () => {
                           try {
                             const convo =
@@ -1135,7 +1136,7 @@ const WorkerSearch = () => {
                         color="secondary"
                         size="small"
                         startIcon={<WorkIcon />}
-                        sx={{ flexGrow: 1, minWidth: 120 }}
+                        sx={{ flexGrow: 1, minWidth: { xs: 'calc(50% - 4px)', sm: 120 }, minHeight: 44 }}
                         onClick={() =>
                           navigate(`/hirer/jobs?inviteWorker=${worker.id}`)
                         }
@@ -1146,7 +1147,7 @@ const WorkerSearch = () => {
                         variant="outlined"
                         size="small"
                         startIcon={<ViewIcon />}
-                        sx={{ flexGrow: 1, minWidth: 110 }}
+                        sx={{ flexGrow: 1, minWidth: { xs: 'calc(50% - 4px)', sm: 110 }, minHeight: 44 }}
                         onClick={() => handleDialogOpen(worker)}
                       >
                         View Profile
@@ -1154,6 +1155,7 @@ const WorkerSearch = () => {
                       <IconButton
                         size="small"
                         onClick={() => handleSaveWorker(worker.id)}
+                        sx={{ minWidth: 44, minHeight: 44 }}
                         color={
                           savedWorkers.includes(worker.id)
                             ? 'primary'

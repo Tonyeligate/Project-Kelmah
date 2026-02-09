@@ -276,14 +276,14 @@ const MobileRegister = () => {
                     </Box>
                     <Box>
                       <Typography sx={{ color: 'white', fontWeight: 600 }}>{option.label}</Typography>
-                      <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>{option.desc}</Typography>
+                      <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>{option.desc}</Typography>
                     </Box>
                   </Box>
                 </Box>
               ))}
             </Stack>
             {errors.role && (
-              <Typography sx={{ color: '#f44336', fontSize: '12px', mt: 1, textAlign: 'center' }}>
+              <Typography sx={{ color: '#f44336', fontSize: '14px', mt: 1, textAlign: 'center' }}>
                 {errors.role}
               </Typography>
             )}
@@ -428,7 +428,7 @@ const MobileRegister = () => {
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)} sx={{ color: 'rgba(255,255,255,0.4)' }}>
+                    <IconButton onClick={() => setShowPassword(!showPassword)} sx={{ color: 'rgba(255,255,255,0.4)', minWidth: 44, minHeight: 44 }}>
                       {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                     </IconButton>
                   </InputAdornment>
@@ -442,15 +442,15 @@ const MobileRegister = () => {
                   variant="determinate"
                   value={(passwordStrength / 5) * 100}
                   sx={{
-                    height: 4,
-                    borderRadius: 2,
+                    height: 6,
+                    borderRadius: 3,
                     backgroundColor: 'rgba(255,255,255,0.1)',
                     '& .MuiLinearProgress-bar': {
                       backgroundColor: passwordStrength <= 2 ? '#f44336' : passwordStrength <= 3 ? '#ff9800' : '#4caf50',
                     },
                   }}
                 />
-                <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', mt: 0.5 }}>
+                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', mt: 0.5 }}>
                   Strength: {passwordStrength <= 2 ? 'Weak' : passwordStrength <= 3 ? 'Medium' : 'Strong'}
                 </Typography>
               </Box>
@@ -472,7 +472,7 @@ const MobileRegister = () => {
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} sx={{ color: 'rgba(255,255,255,0.4)' }}>
+                    <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} sx={{ color: 'rgba(255,255,255,0.4)', minWidth: 44, minHeight: 44 }}>
                       {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                     </IconButton>
                   </InputAdornment>
@@ -490,20 +490,20 @@ const MobileRegister = () => {
                 />
               }
               label={
-                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>
+                <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
                   I accept the{' '}
-                  <Button component={RouterLink} to="/terms" sx={{ color: '#FFD700', fontSize: '12px', p: 0, minWidth: 'auto', textTransform: 'none' }}>
+                  <Button component={RouterLink} to="/terms" sx={{ color: '#FFD700', fontSize: '14px', py: 0.5, px: 0.5, minWidth: 'auto', textTransform: 'none', verticalAlign: 'baseline' }}>
                     Terms
                   </Button>{' '}
                   &{' '}
-                  <Button component={RouterLink} to="/privacy" sx={{ color: '#FFD700', fontSize: '12px', p: 0, minWidth: 'auto', textTransform: 'none' }}>
+                  <Button component={RouterLink} to="/privacy" sx={{ color: '#FFD700', fontSize: '14px', py: 0.5, px: 0.5, minWidth: 'auto', textTransform: 'none', verticalAlign: 'baseline' }}>
                     Privacy Policy
                   </Button>
                 </Typography>
               }
             />
             {errors.acceptTerms && (
-              <Typography sx={{ color: '#f44336', fontSize: '12px' }}>{errors.acceptTerms}</Typography>
+              <Typography sx={{ color: '#f44336', fontSize: '14px' }}>{errors.acceptTerms}</Typography>
             )}
           </Stack>
         );
@@ -524,10 +524,10 @@ const MobileRegister = () => {
       {/* Progress */}
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>
+          <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>
             Step {step} of {totalSteps}
           </Typography>
-          <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px' }}>
+          <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>
             {step === 1 ? 'Account Type' : step === 2 ? 'Your Info' : 'Security'}
           </Typography>
         </Box>
@@ -600,6 +600,7 @@ const MobileRegister = () => {
             startIcon={<ArrowBackIcon />}
             sx={{
               flex: 1,
+              minHeight: 44,
               borderColor: 'rgba(255,255,255,0.2)',
               color: 'rgba(255,255,255,0.7)',
               '&:hover': { borderColor: 'rgba(255,255,255,0.4)' },
@@ -614,6 +615,7 @@ const MobileRegister = () => {
             disabled={isSubmitting || authLoading}
             sx={{
               flex: 2,
+              minHeight: 44,
               background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
               color: '#000',
               fontWeight: 700,
@@ -632,12 +634,14 @@ const MobileRegister = () => {
         </Box>
 
         {/* Login Link */}
-        <Typography sx={{ textAlign: 'center', mt: 2, color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>
-          Already have an account?{' '}
-          <Button component={RouterLink} to="/login" sx={{ color: '#FFD700', fontWeight: 700, fontSize: '13px', p: 0, minWidth: 'auto', textTransform: 'none' }}>
+        <Box sx={{ textAlign: 'center', mt: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, minHeight: 44 }}>
+          <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
+            Already have an account?
+          </Typography>
+          <Button component={RouterLink} to="/login" sx={{ color: '#FFD700', fontWeight: 700, fontSize: '14px', py: 1, px: 1, minHeight: 44, minWidth: 'auto', textTransform: 'none' }}>
             Sign In
           </Button>
-        </Typography>
+        </Box>
       </Box>
     </Box>
   );
