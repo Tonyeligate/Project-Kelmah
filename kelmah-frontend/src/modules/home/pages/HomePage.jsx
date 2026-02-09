@@ -63,6 +63,40 @@ const staggerContainer = {
   },
 };
 
+// Animated counter hook for scroll-triggered stats
+const useCountUp = (end, duration = 2000) => {
+  const [count, setCount] = React.useState(0);
+  const [started, setStarted] = React.useState(false);
+  const ref = React.useRef(null);
+
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) setStarted(true); },
+      { threshold: 0.3 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  React.useEffect(() => {
+    if (!started) return;
+    const num = parseFloat(String(end).replace(/[^0-9.]/g, ''));
+    if (!num) return;
+    const t0 = performance.now();
+    const tick = (now) => {
+      const p = Math.min((now - t0) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      setCount(Math.round(num * ease));
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [started, end, duration]);
+
+  return { count, ref };
+};
+
 // ─── HERO SECTION ─────────────────────────────────────────
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -232,6 +266,15 @@ const HeroSection = () => {
                       borderRadius: 2,
                       fontSize: '1rem',
                       fontWeight: 700,
+                      background: 'linear-gradient(135deg, #FFD700 0%, #FFC107 100%)',
+                      color: '#000',
+                      boxShadow: '0 8px 30px rgba(255, 215, 0, 0.3)',
+                      transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #FFE55C 0%, #FFD700 100%)',
+                        boxShadow: '0 12px 40px rgba(255, 215, 0, 0.45)',
+                        transform: 'translateY(-2px)',
+                      },
                     }}
                   >
                     Find Talent
@@ -271,6 +314,22 @@ const HeroSection = () => {
                   ))}
                 </Stack>
               </motion.div>
+
+              {/* Trusted across industries */}
+              <motion.div variants={fadeInUp}>
+                <Box sx={{ mt: 5, pt: 4, borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}` }}>
+                  <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1.5, display: 'block', mb: 2, fontSize: '0.68rem' }}>
+                    Trusted across Ghana&apos;s key industries
+                  </Typography>
+                  <Stack direction="row" spacing={{ xs: 2, sm: 3.5 }} sx={{ flexWrap: 'wrap', rowGap: 1.5, alignItems: 'center' }}>
+                    {['CONSTRUCTION', 'REAL ESTATE', 'MANUFACTURING', 'HOSPITALITY', 'AGRICULTURE', 'ENERGY'].map((ind) => (
+                      <Typography key={ind} sx={{ fontWeight: 800, fontSize: '0.7rem', letterSpacing: 2.5, color: 'text.disabled', whiteSpace: 'nowrap' }}>
+                        {ind}
+                      </Typography>
+                    ))}
+                  </Stack>
+                </Box>
+              </motion.div>
             </motion.div>
           </Grid>
 
@@ -283,6 +342,22 @@ const HeroSection = () => {
                 transition={{ duration: 0.7, delay: 0.3 }}
               >
                 <Box sx={{ position: 'relative' }}>
+                  {/* Ambient glow behind card */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: '110%',
+                      height: '110%',
+                      borderRadius: '50%',
+                      background: (t) => `radial-gradient(circle, ${alpha(t.palette.primary.main, 0.1)} 0%, transparent 70%)`,
+                      filter: 'blur(50px)',
+                      zIndex: 0,
+                      pointerEvents: 'none',
+                    }}
+                  />
                   {/* Floating stat cards */}
                   <FloatingStatCard
                     top="10%"
@@ -621,52 +696,77 @@ const HowItWorksSection = () => {
 };
 
 // ─── STATS / SOCIAL PROOF SECTION ─────────────────────────
+const AnimatedStat = ({ end, suffix = '', label, icon }) => {
+  const { count, ref } = useCountUp(end);
+  const theme = useTheme();
+  return (
+    <Box ref={ref} sx={{ textAlign: 'center' }}>
+      <Avatar
+        sx={{
+          width: 60,
+          height: 60,
+          mx: 'auto',
+          mb: 2,
+          bgcolor: alpha(theme.palette.primary.main, 0.1),
+          color: 'primary.main',
+          '& svg': { fontSize: 28 },
+        }}
+      >
+        {icon}
+      </Avatar>
+      <Typography
+        variant="h3"
+        fontWeight={800}
+        sx={{
+          color: 'primary.main',
+          fontSize: { xs: '2.2rem', md: '3rem' },
+          mb: 0.5,
+          fontFeatureSettings: '"tnum"',
+        }}
+      >
+        {count.toLocaleString()}{suffix}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" fontWeight={500}>
+        {label}
+      </Typography>
+    </Box>
+  );
+};
+
 const StatsSection = () => {
   const theme = useTheme();
 
   const stats = [
-    { value: '5,000+', label: 'Verified Workers', icon: <GroupsIcon /> },
-    { value: '12,000+', label: 'Jobs Completed', icon: <TaskAltIcon /> },
-    { value: '4.8/5', label: 'Average Rating', icon: <StarIcon /> },
-    { value: '16', label: 'Regions Covered', icon: <LocationIcon /> },
+    { end: 5000, suffix: '+', label: 'Verified Workers', icon: <GroupsIcon /> },
+    { end: 12000, suffix: '+', label: 'Jobs Completed', icon: <TaskAltIcon /> },
+    { end: 98, suffix: '%', label: 'Satisfaction Rate', icon: <StarIcon /> },
+    { end: 16, suffix: '', label: 'Regions Covered', icon: <LocationIcon /> },
   ];
 
   return (
-    <Box sx={{ py: { xs: 6, md: 10 } }}>
+    <Box
+      sx={{
+        py: { xs: 8, md: 12 },
+        position: 'relative',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '80%',
+          height: '1px',
+          background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.2)}, transparent)`,
+        },
+      }}
+    >
       <Container maxWidth="lg">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
           <Grid container spacing={4}>
             {stats.map((stat, i) => (
               <Grid item xs={6} md={3} key={stat.label}>
                 <motion.div variants={fadeInUp} custom={i}>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Avatar
-                      sx={{
-                        width: 56,
-                        height: 56,
-                        mx: 'auto',
-                        mb: 2,
-                        bgcolor: alpha(theme.palette.primary.main, 0.1),
-                        color: 'primary.main',
-                      }}
-                    >
-                      {stat.icon}
-                    </Avatar>
-                    <Typography
-                      variant="h3"
-                      fontWeight={800}
-                      sx={{
-                        color: 'primary.main',
-                        fontSize: { xs: '2rem', md: '2.75rem' },
-                        mb: 0.5,
-                      }}
-                    >
-                      {stat.value}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                      {stat.label}
-                    </Typography>
-                  </Box>
+                  <AnimatedStat {...stat} />
                 </motion.div>
               </Grid>
             ))}
@@ -893,7 +993,22 @@ const CTASection = () => {
                 variant="contained"
                 size="large"
                 onClick={() => navigate('/register')}
-                sx={{ py: 1.8, px: 5, borderRadius: 2, fontSize: '1.05rem', fontWeight: 700 }}
+                sx={{
+                  py: 1.8,
+                  px: 5,
+                  borderRadius: 2,
+                  fontSize: '1.05rem',
+                  fontWeight: 700,
+                  background: 'linear-gradient(135deg, #FFD700 0%, #FFC107 100%)',
+                  color: '#000',
+                  boxShadow: '0 8px 30px rgba(255, 215, 0, 0.3)',
+                  transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #FFE55C 0%, #FFD700 100%)',
+                    boxShadow: '0 12px 40px rgba(255, 215, 0, 0.45)',
+                    transform: 'translateY(-2px)',
+                  },
+                }}
               >
                 Sign Up Free
               </Button>
