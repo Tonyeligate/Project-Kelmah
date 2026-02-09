@@ -6,14 +6,11 @@ import {
   Button,
   Grid,
   Card,
-  CardContent,
   Stack,
   useTheme,
   useMediaQuery,
   Avatar,
-  Chip,
   Rating,
-  IconButton,
   TextField,
   InputAdornment,
 } from '@mui/material';
@@ -27,934 +24,533 @@ import {
   ElectricalServices as ElectricianIcon,
   Brush as PainterIcon,
   Roofing as RoofingIcon,
-  Work as WorkIcon,
-  PersonSearch as FindTalentIcon,
-  VerifiedUser as VerifiedIcon,
-  Payments as PaymentIcon,
-  ChatBubbleOutline as ChatIcon,
-  Speed as SpeedIcon,
-  Shield as ShieldIcon,
-  Star as StarIcon,
-  TrendingUp as TrendingUpIcon,
   ArrowForward as ArrowForwardIcon,
   CheckCircle as CheckIcon,
-  LocationOn as LocationIcon,
-  Groups as GroupsIcon,
-  TaskAlt as TaskAltIcon,
+  Work as WorkIcon,
+  PersonSearch as FindTalentIcon,
+  ChatBubbleOutline as ChatIcon,
+  Payments as PaymentIcon,
+  Speed as SpeedIcon,
   Handshake as HandshakeIcon,
 } from '@mui/icons-material';
 import { alpha } from '@mui/material/styles';
 
-// Animation variants
-const fadeInUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (i = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.55, delay: i * 0.1, ease: [0.25, 0.46, 0.45, 0.94] },
-  }),
+/* =================================================================
+ * DESIGN-SYSTEM PRIMITIVES
+ *
+ * Three reusable layout helpers used on this page and suitable for
+ * extraction to src/components/common/ for reuse on other pages.
+ *
+ * Spacing scale (MUI 8 px base):
+ *   0.5 = 4 px | 1 = 8 | 1.5 = 12 | 2 = 16 | 3 = 24 | 4 = 32
+ *
+ * Typography contract — only three levels on this page:
+ *   H1  →  hero headline (variant="h2", component="h1")
+ *   H2  →  section titles (variant="h4", component="h2")
+ *   Body → everything else (body1 / body2)
+ * ================================================================= */
+
+/**
+ * Reveal — scroll-triggered fade-in.
+ * Wrap any block to animate on viewport entry.
+ * Stagger siblings with `delay={index * 0.06}`.
+ */
+const Reveal = ({ children, delay = 0 }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true, margin: '-40px' }}
+    transition={{ duration: 0.4, delay, ease: 'easeOut' }}
+  >
+    {children}
+  </motion.div>
+);
+
+/**
+ * Section — consistent vertical rhythm and container width.
+ *
+ * Props
+ *   alt  — subtle tinted background for visual separation
+ *   sx   — MUI sx overrides (merged last, wins on conflict)
+ *
+ * Rhythm: xs → 48 px (py 6) | md → 80 px (py 10)
+ *
+ * Usage:
+ *   <Section>…</Section>           default bg
+ *   <Section alt>…</Section>       tinted bg
+ *   <Section sx={{ py: 8 }}>…</Section>   override spacing
+ */
+const Section = ({ children, alt = false, sx: sxOverride, ...rest }) => {
+  const theme = useTheme();
+  return (
+    <Box
+      component="section"
+      sx={{
+        py: { xs: 6, md: 10 },
+        bgcolor: alt
+          ? theme.palette.mode === 'dark'
+            ? alpha(theme.palette.common.white, 0.02)
+            : alpha(theme.palette.common.black, 0.02)
+          : 'transparent',
+        ...sxOverride,
+      }}
+      {...rest}
+    >
+      <Container maxWidth="lg">{children}</Container>
+    </Box>
+  );
 };
 
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.15 },
-  },
+/**
+ * SectionHeader — consistent H2 heading + optional subtitle.
+ *
+ * Usage:
+ *   <SectionHeader title="Browse by category" />
+ *   <SectionHeader title="…" subtitle="…" align="center" />
+ */
+const SectionHeader = ({ title, subtitle, align = 'left' }) => (
+  <Box sx={{ mb: { xs: 4, md: 6 }, textAlign: align }}>
+    <Typography
+      variant="h4"
+      component="h2"
+      sx={{
+        fontWeight: 700,
+        fontSize: { xs: '1.5rem', md: '2rem' },
+        lineHeight: 1.3,
+        mb: subtitle ? 1.5 : 0,
+      }}
+    >
+      {title}
+    </Typography>
+    {subtitle && (
+      <Typography
+        variant="body1"
+        color="text.secondary"
+        sx={{
+          maxWidth: align === 'center' ? 520 : 480,
+          mx: align === 'center' ? 'auto' : 0,
+          lineHeight: 1.6,
+        }}
+      >
+        {subtitle}
+      </Typography>
+    )}
+  </Box>
+);
+
+/* =================================================================
+ * SHARED STYLE TOKENS — single source of truth for this page.
+ * Keeps card / button styling identical across every section.
+ * ================================================================= */
+const CARD_SX = {
+  p: 3,
+  borderRadius: 1.5,
+  border: '1px solid',
+  borderColor: 'divider',
+  boxShadow: 'none',
+  height: '100%',
 };
 
-// Animated counter hook for scroll-triggered stats
-const useCountUp = (end, duration = 2000) => {
-  const [count, setCount] = React.useState(0);
-  const [started, setStarted] = React.useState(false);
-  const ref = React.useRef(null);
-
-  React.useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) setStarted(true); },
-      { threshold: 0.3 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  React.useEffect(() => {
-    if (!started) return;
-    const num = parseFloat(String(end).replace(/[^0-9.]/g, ''));
-    if (!num) return;
-    const t0 = performance.now();
-    const tick = (now) => {
-      const p = Math.min((now - t0) / duration, 1);
-      const ease = 1 - Math.pow(1 - p, 3);
-      setCount(Math.round(num * ease));
-      if (p < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  }, [started, end, duration]);
-
-  return { count, ref };
+const BTN_SX = {
+  minHeight: 48,
+  px: 4,
+  borderRadius: 1.5,
+  fontSize: '0.95rem',
+  fontWeight: 600,
+  textTransform: 'none',
 };
 
-// ─── HERO SECTION ─────────────────────────────────────────
+/* =================================================================
+ * PAGE SECTIONS
+ * ================================================================= */
+
+// ─── HERO ─────────────────────────────────────────────────
+// Centered layout — works well without hero imagery.
+// One primary action (search), dual CTAs beneath, compact trust bar.
 const HeroSection = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isMd = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
     <Box
-      sx={{
-        position: 'relative',
-        minHeight: { xs: 'auto', md: '88vh' },
-        display: 'flex',
-        alignItems: 'center',
-        pt: { xs: 6, sm: 8, md: 0 },
-        pb: { xs: 8, sm: 10, md: 0 },
-        overflow: 'hidden',
-        // Subtle gradient background instead of garish colors
-        background: theme.palette.mode === 'dark'
-          ? 'radial-gradient(ellipse at 20% 50%, rgba(255,215,0,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(255,215,0,0.04) 0%, transparent 50%)'
-          : 'radial-gradient(ellipse at 20% 50%, rgba(255,215,0,0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(255,193,7,0.06) 0%, transparent 50%)',
-      }}
+      component="section"
+      sx={{ pt: { xs: 6, sm: 8, md: 10 }, pb: { xs: 6, sm: 8, md: 10 }, textAlign: 'center' }}
     >
       <Container maxWidth="lg">
-        <Grid container spacing={{ xs: 4, md: 6 }} alignItems="center">
-          {/* Left — Copy */}
-          <Grid item xs={12} md={7}>
-            <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
-              {/* Top badge */}
-              <motion.div variants={fadeInUp}>
-                <Chip
-                  icon={<LocationIcon sx={{ fontSize: 16 }} />}
-                  label="Ghana's #1 Skilled Trades Platform"
-                  size="small"
-                  sx={{
-                    mb: 3,
-                    bgcolor: alpha(theme.palette.primary.main, 0.12),
-                    color: 'primary.main',
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
-                    '& .MuiChip-icon': { color: 'primary.main' },
-                  }}
-                />
-              </motion.div>
-
-              {/* Headline */}
-              <motion.div variants={fadeInUp}>
-                <Typography
-                  variant="h1"
-                  sx={{
-                    fontWeight: 800,
-                    fontSize: { xs: '2.2rem', sm: '3rem', md: '3.75rem' },
-                    lineHeight: 1.12,
-                    letterSpacing: '-0.025em',
-                    color: 'text.primary',
-                    mb: 2.5,
-                  }}
-                >
-                  Find skilled workers{' '}
-                  <Box
-                    component="span"
-                    sx={{
-                      color: 'primary.main',
-                      position: 'relative',
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 2,
-                        left: 0,
-                        width: '100%',
-                        height: '6px',
-                        bgcolor: alpha(theme.palette.primary.main, 0.25),
-                        borderRadius: 2,
-                      },
-                    }}
-                  >
-                    you can trust
-                  </Box>
-                </Typography>
-              </motion.div>
-
-              {/* Subheadline */}
-              <motion.div variants={fadeInUp}>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    color: 'text.secondary',
-                    fontWeight: 400,
-                    lineHeight: 1.6,
-                    fontSize: { xs: '1rem', sm: '1.15rem', md: '1.3rem' },
-                    mb: 4,
-                    maxWidth: 520,
-                  }}
-                >
-                  Connect with verified carpenters, electricians, plumbers, masons
-                  and more — hire with confidence or find your next job.
-                </Typography>
-              </motion.div>
-
-              {/* Search / CTA */}
-              <motion.div variants={fadeInUp}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', sm: 'row' },
-                    gap: 1.5,
-                    mb: 4,
-                    maxWidth: 560,
-                  }}
-                >
-                  <TextField
-                    fullWidth
-                    placeholder={isMobile ? 'Search skills…' : 'Try "plumber in Accra" or "electrician"'}
-                    variant="outlined"
-                    size="medium"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon sx={{ color: 'text.secondary' }} />
-                        </InputAdornment>
-                      ),
-                      sx: {
-                        borderRadius: 2,
-                        bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.06)' : '#fff',
-                        '& fieldset': {
-                          borderColor: theme.palette.mode === 'dark'
-                            ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)',
-                        },
-                      },
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && e.target.value.trim()) {
-                        navigate(`/search?q=${encodeURIComponent(e.target.value.trim())}`);
-                      }
-                    }}
-                  />
-                  <Button
-                    variant="contained"
-                    size="large"
-                    sx={{
-                      minWidth: { xs: '100%', sm: 150 },
-                      py: 1.5,
-                      fontSize: '1rem',
-                      borderRadius: 2,
-                      textTransform: 'none',
-                      fontWeight: 700,
-                    }}
-                    onClick={() => navigate('/search')}
-                  >
-                    Search
-                  </Button>
-                </Box>
-              </motion.div>
-
-              {/* Dual CTA */}
-              <motion.div variants={fadeInUp}>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 4 }}>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    startIcon={<FindTalentIcon />}
-                    onClick={() => navigate('/search')}
-                    sx={{
-                      py: 1.5,
-                      px: 3.5,
-                      borderRadius: 2,
-                      fontSize: '1rem',
-                      fontWeight: 700,
-                      background: 'linear-gradient(135deg, #FFD700 0%, #FFC107 100%)',
-                      color: '#000',
-                      boxShadow: '0 8px 30px rgba(255, 215, 0, 0.3)',
-                      transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #FFE55C 0%, #FFD700 100%)',
-                        boxShadow: '0 12px 40px rgba(255, 215, 0, 0.45)',
-                        transform: 'translateY(-2px)',
-                      },
-                    }}
-                  >
-                    Find Talent
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    startIcon={<WorkIcon />}
-                    onClick={() => navigate('/jobs')}
-                    sx={{
-                      py: 1.5,
-                      px: 3.5,
-                      borderRadius: 2,
-                      fontSize: '1rem',
-                      fontWeight: 700,
-                    }}
-                  >
-                    Browse Jobs
-                  </Button>
-                </Stack>
-              </motion.div>
-
-              {/* Trust bar */}
-              <motion.div variants={fadeInUp}>
-                <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', gap: 1.5 }}>
-                  {[
-                    { icon: <VerifiedIcon sx={{ fontSize: 18 }} />, text: 'Verified Pros' },
-                    { icon: <ShieldIcon sx={{ fontSize: 18 }} />, text: 'Secure Payments' },
-                    { icon: <StarIcon sx={{ fontSize: 18 }} />, text: 'Rated & Reviewed' },
-                  ].map((item) => (
-                    <Stack key={item.text} direction="row" alignItems="center" spacing={0.75}>
-                      <Box sx={{ color: 'primary.main', display: 'flex' }}>{item.icon}</Box>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, fontSize: '0.85rem' }}>
-                        {item.text}
-                      </Typography>
-                    </Stack>
-                  ))}
-                </Stack>
-              </motion.div>
-
-              {/* Trusted across industries */}
-              <motion.div variants={fadeInUp}>
-                <Box sx={{ mt: 5, pt: 4, borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}` }}>
-                  <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1.5, display: 'block', mb: 2, fontSize: '0.68rem' }}>
-                    Trusted across Ghana&apos;s key industries
-                  </Typography>
-                  <Stack direction="row" spacing={{ xs: 2, sm: 3.5 }} sx={{ flexWrap: 'wrap', rowGap: 1.5, alignItems: 'center' }}>
-                    {['CONSTRUCTION', 'REAL ESTATE', 'MANUFACTURING', 'HOSPITALITY', 'AGRICULTURE', 'ENERGY'].map((ind) => (
-                      <Typography key={ind} sx={{ fontWeight: 800, fontSize: '0.7rem', letterSpacing: 2.5, color: 'text.disabled', whiteSpace: 'nowrap' }}>
-                        {ind}
-                      </Typography>
-                    ))}
-                  </Stack>
-                </Box>
-              </motion.div>
-            </motion.div>
-          </Grid>
-
-          {/* Right — Hero visual (desktop only) */}
-          {!isMd && (
-            <Grid item md={5}>
-              <motion.div
-                initial={{ opacity: 0, x: 40 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.7, delay: 0.3 }}
-              >
-                <Box sx={{ position: 'relative' }}>
-                  {/* Ambient glow behind card */}
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      width: '110%',
-                      height: '110%',
-                      borderRadius: '50%',
-                      background: (t) => `radial-gradient(circle, ${alpha(t.palette.primary.main, 0.1)} 0%, transparent 70%)`,
-                      filter: 'blur(50px)',
-                      zIndex: 0,
-                      pointerEvents: 'none',
-                    }}
-                  />
-                  {/* Floating stat cards */}
-                  <FloatingStatCard
-                    top="10%"
-                    right="-5%"
-                    icon={<GroupsIcon />}
-                    value="5,000+"
-                    label="Active Workers"
-                    delay={0.5}
-                  />
-                  <FloatingStatCard
-                    bottom="15%"
-                    left="-5%"
-                    icon={<TaskAltIcon />}
-                    value="12,000+"
-                    label="Jobs Completed"
-                    delay={0.7}
-                  />
-                  {/* Main visual card */}
-                  <Card
-                    sx={{
-                      borderRadius: 4,
-                      overflow: 'hidden',
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                      bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : '#fff',
-                    }}
-                  >
-                    <CardContent sx={{ p: 4 }}>
-                      <Stack spacing={3}>
-                        <Typography variant="h6" fontWeight={700}>
-                          🔥 Top Workers This Week
-                        </Typography>
-                        {[
-                          { name: 'Kwame Asante', skill: 'Master Electrician', rating: 4.9, jobs: 127, color: '#FFD700' },
-                          { name: 'Ama Mensah', skill: 'Expert Plumber', rating: 4.8, jobs: 98, color: '#4169E1' },
-                          { name: 'Kofi Boateng', skill: 'Carpenter', rating: 4.9, jobs: 156, color: '#8B4513' },
-                        ].map((worker) => (
-                          <Stack key={worker.name} direction="row" alignItems="center" spacing={2}>
-                            <Avatar sx={{ bgcolor: worker.color, width: 48, height: 48, fontWeight: 700 }}>
-                              {worker.name.charAt(0)}
-                            </Avatar>
-                            <Box sx={{ flex: 1 }}>
-                              <Stack direction="row" alignItems="center" spacing={1}>
-                                <Typography variant="subtitle2" fontWeight={700}>
-                                  {worker.name}
-                                </Typography>
-                                <VerifiedIcon sx={{ fontSize: 16, color: 'primary.main' }} />
-                              </Stack>
-                              <Typography variant="caption" color="text.secondary">
-                                {worker.skill}
-                              </Typography>
-                            </Box>
-                            <Stack alignItems="flex-end">
-                              <Stack direction="row" alignItems="center" spacing={0.5}>
-                                <StarIcon sx={{ fontSize: 14, color: '#FFD700' }} />
-                                <Typography variant="caption" fontWeight={700}>{worker.rating}</Typography>
-                              </Stack>
-                              <Typography variant="caption" color="text.secondary">
-                                {worker.jobs} jobs
-                              </Typography>
-                            </Stack>
-                          </Stack>
-                        ))}
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                </Box>
-              </motion.div>
-            </Grid>
-          )}
-        </Grid>
-      </Container>
-    </Box>
-  );
-};
-
-// Floating stat card component
-const FloatingStatCard = ({ icon, value, label, delay = 0, ...positionProps }) => {
-  const theme = useTheme();
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, delay }}
-      style={{
-        position: 'absolute',
-        zIndex: 2,
-        ...positionProps,
-      }}
-    >
-      <Card
-        sx={{
-          px: 2.5,
-          py: 2,
-          borderRadius: 3,
-          bgcolor: theme.palette.mode === 'dark' ? 'rgba(15,16,22,0.95)' : 'rgba(255,255,255,0.97)',
-          backdropFilter: 'blur(12px)',
-          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-          boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.2)}`,
-        }}
-      >
-        <Stack direction="row" alignItems="center" spacing={1.5}>
-          <Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.15), color: 'primary.main', width: 40, height: 40 }}>
-            {icon}
-          </Avatar>
-          <Box>
-            <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1.2 }}>{value}</Typography>
-            <Typography variant="caption" color="text.secondary">{label}</Typography>
-          </Box>
-        </Stack>
-      </Card>
-    </motion.div>
-  );
-};
-
-// ─── CATEGORIES SECTION (like Upwork's "Explore millions of pros") ──
-const CategoriesSection = () => {
-  const navigate = useNavigate();
-  const theme = useTheme();
-
-  const categories = [
-    { icon: <CarpenterIcon />, name: 'Carpentry', color: '#8B4513', jobs: '800+', path: '/search?category=carpentry' },
-    { icon: <ElectricianIcon />, name: 'Electrical', color: '#FFB300', jobs: '650+', path: '/search?category=electrical' },
-    { icon: <PlumberIcon />, name: 'Plumbing', color: '#1E88E5', jobs: '520+', path: '/search?category=plumbing' },
-    { icon: <MasonIcon />, name: 'Masonry', color: '#757575', jobs: '430+', path: '/search?category=masonry' },
-    { icon: <PainterIcon />, name: 'Painting', color: '#E91E63', jobs: '380+', path: '/search?category=painting' },
-    { icon: <RoofingIcon />, name: 'Roofing', color: '#795548', jobs: '290+', path: '/search?category=roofing' },
-  ];
-
-  return (
-    <Box sx={{ py: { xs: 8, md: 12 } }}>
-      <Container maxWidth="lg">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={staggerContainer}>
-          <motion.div variants={fadeInUp}>
+        <Box sx={{ maxWidth: 640, mx: 'auto' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+          >
+            {/* H1 — hero headline */}
             <Typography
-              variant="overline"
+              variant="h2"
+              component="h1"
               sx={{
-                color: 'primary.main',
-                fontWeight: 700,
-                letterSpacing: 2,
-                mb: 1,
-                display: 'block',
+                fontWeight: 800,
+                fontSize: { xs: '2rem', sm: '2.75rem', md: '3.25rem' },
+                lineHeight: 1.15,
+                letterSpacing: '-0.02em',
+                mb: 2,
               }}
             >
-              EXPLORE BY CATEGORY
+              Find skilled workers{' '}
+              <Box component="span" sx={{ color: 'primary.main' }}>
+                you can trust
+              </Box>
             </Typography>
-            <Typography variant="h3" fontWeight={700} sx={{ mb: 1.5 }}>
-              Browse talent by trade
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 6, maxWidth: 500 }}>
-              Find the right professional for your project from our growing community of verified tradespeople.
-            </Typography>
-          </motion.div>
 
-          <Grid container spacing={2.5}>
-            {categories.map((cat, i) => (
-              <Grid item xs={6} sm={4} md={2} key={cat.name}>
-                <motion.div variants={fadeInUp} custom={i}>
-                  <Card
-                    onClick={() => navigate(cat.path)}
-                    sx={{
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      py: { xs: 3, md: 4 },
-                      px: 2,
-                      borderRadius: 3,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-6px)',
-                        borderColor: alpha(cat.color, 0.5),
-                        boxShadow: `0 12px 40px ${alpha(cat.color, 0.15)}`,
-                        '& .cat-icon': {
-                          bgcolor: cat.color,
-                          color: '#fff',
-                          transform: 'scale(1.1)',
-                        },
-                      },
-                    }}
-                  >
-                    <Avatar
-                      className="cat-icon"
-                      sx={{
-                        width: 56,
-                        height: 56,
-                        mx: 'auto',
-                        mb: 2,
-                        bgcolor: alpha(cat.color, 0.12),
-                        color: cat.color,
-                        transition: 'all 0.3s ease',
-                        '& svg': { fontSize: 28 },
-                      }}
-                    >
-                      {cat.icon}
-                    </Avatar>
-                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5 }}>
-                      {cat.name}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {cat.jobs} jobs
-                    </Typography>
-                  </Card>
-                </motion.div>
-              </Grid>
-            ))}
-          </Grid>
-
-          <Box sx={{ textAlign: 'center', mt: 5 }}>
-            <Button
-              variant="outlined"
-              endIcon={<ArrowForwardIcon />}
-              onClick={() => navigate('/search')}
-              sx={{ borderRadius: 2, px: 4, py: 1.2 }}
+            {/* Subtitle — one sentence, comfortable line-height */}
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.125rem' },
+                lineHeight: 1.6,
+                maxWidth: 520,
+                mx: 'auto',
+                mb: 4,
+              }}
             >
-              View All Categories
-            </Button>
-          </Box>
-        </motion.div>
-      </Container>
-    </Box>
-  );
-};
-
-// ─── HOW IT WORKS SECTION ─────────────────────────────────
-const HowItWorksSection = () => {
-  const theme = useTheme();
-  const [activeTab, setActiveTab] = React.useState('hiring');
-
-  const hiringSteps = [
-    { icon: <WorkIcon />, title: 'Post Your Job', desc: 'Describe what you need — it\'s free and takes 2 minutes.' },
-    { icon: <FindTalentIcon />, title: 'Get Matched', desc: 'Receive bids from verified workers near you, often within minutes.' },
-    { icon: <ChatIcon />, title: 'Chat & Hire', desc: 'Compare profiles, reviews and quotes. Hire the right person.' },
-    { icon: <PaymentIcon />, title: 'Pay Securely', desc: 'Pay only when you\'re satisfied — your money is protected.' },
-  ];
-
-  const workingSteps = [
-    { icon: <SearchIcon />, title: 'Create Profile', desc: 'Showcase your skills, certifications and portfolio for free.' },
-    { icon: <SpeedIcon />, title: 'Browse Jobs', desc: 'Find work that matches your skills and location.' },
-    { icon: <HandshakeIcon />, title: 'Apply & Work', desc: 'Submit bids, get hired, and deliver great work.' },
-    { icon: <PaymentIcon />, title: 'Get Paid', desc: 'Receive secure payments directly to your account.' },
-  ];
-
-  const steps = activeTab === 'hiring' ? hiringSteps : workingSteps;
-
-  return (
-    <Box
-      sx={{
-        py: { xs: 8, md: 12 },
-        bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-      }}
-    >
-      <Container maxWidth="lg">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={staggerContainer}>
-          <motion.div variants={fadeInUp}>
-            <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: 2, mb: 1, display: 'block' }}>
-              HOW IT WORKS
-            </Typography>
-            <Typography variant="h3" fontWeight={700} sx={{ mb: 2 }}>
-              Simple steps to get started
+              Connect with verified carpenters, electricians, plumbers and more
+              across Ghana — hire with confidence or land your next job.
             </Typography>
 
-            {/* Tab switcher like Upwork */}
-            <Stack direction="row" spacing={1} sx={{ mb: 6 }}>
-              {['hiring', 'working'].map((tab) => (
-                <Button
-                  key={tab}
-                  variant={activeTab === tab ? 'contained' : 'text'}
-                  onClick={() => setActiveTab(tab)}
-                  sx={{
-                    borderRadius: 6,
-                    px: 3,
-                    py: 1,
-                    fontWeight: 600,
-                    fontSize: '0.95rem',
-                    textTransform: 'none',
-                    ...(activeTab !== tab && {
-                      color: 'text.secondary',
-                      '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.08) },
-                    }),
-                  }}
-                >
-                  {tab === 'hiring' ? 'For Hiring' : 'For Finding Work'}
-                </Button>
+            {/* Search bar — primary hero interaction */}
+            <Box sx={{ maxWidth: 520, mx: 'auto', mb: 3 }}>
+              <TextField
+                fullWidth
+                placeholder={
+                  isMobile
+                    ? 'Search skills or location…'
+                    : 'Try "plumber in Accra" or "electrician"'
+                }
+                variant="outlined"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && e.target.value.trim()) {
+                    navigate(`/search?q=${encodeURIComponent(e.target.value.trim())}`);
+                  }
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: 'text.disabled' }} />
+                    </InputAdornment>
+                  ),
+                  sx: {
+                    borderRadius: 1.5,
+                    bgcolor: 'background.paper',
+                    height: 52,
+                    '& fieldset': { borderColor: 'divider' },
+                  },
+                }}
+              />
+            </Box>
+
+            {/* Dual CTAs */}
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1.5}
+              justifyContent="center"
+              sx={{ mb: 4 }}
+            >
+              <Button variant="contained" size="large" onClick={() => navigate('/search')} sx={BTN_SX}>
+                Find Talent
+              </Button>
+              <Button variant="outlined" size="large" onClick={() => navigate('/jobs')} sx={BTN_SX}>
+                Browse Jobs
+              </Button>
+            </Stack>
+
+            {/* Trust metrics — compact proof points */}
+            <Stack
+              direction="row"
+              spacing={{ xs: 1.5, sm: 3 }}
+              justifyContent="center"
+              flexWrap="wrap"
+              useFlexGap
+            >
+              {[
+                '5,000+ verified workers',
+                '12,000+ jobs completed',
+                '98% satisfaction',
+              ].map((text) => (
+                <Stack key={text} direction="row" alignItems="center" spacing={0.75}>
+                  <CheckIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                  >
+                    {text}
+                  </Typography>
+                </Stack>
               ))}
             </Stack>
           </motion.div>
-
-          <Grid container spacing={3}>
-            {steps.map((step, i) => (
-              <Grid item xs={12} sm={6} md={3} key={step.title}>
-                <motion.div variants={fadeInUp} custom={i}>
-                  <Box sx={{ position: 'relative' }}>
-                    {/* Step number */}
-                    <Typography
-                      sx={{
-                        position: 'absolute',
-                        top: -8,
-                        left: 0,
-                        fontSize: '4.5rem',
-                        fontWeight: 900,
-                        color: alpha(theme.palette.primary.main, 0.08),
-                        lineHeight: 1,
-                        zIndex: 0,
-                        userSelect: 'none',
-                      }}
-                    >
-                      {i + 1}
-                    </Typography>
-                    <Box sx={{ position: 'relative', zIndex: 1, pt: 3 }}>
-                      <Avatar
-                        sx={{
-                          width: 52,
-                          height: 52,
-                          bgcolor: alpha(theme.palette.primary.main, 0.12),
-                          color: 'primary.main',
-                          mb: 2.5,
-                          '& svg': { fontSize: 26 },
-                        }}
-                      >
-                        {step.icon}
-                      </Avatar>
-                      <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
-                        {step.title}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                        {step.desc}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </motion.div>
-              </Grid>
-            ))}
-          </Grid>
-        </motion.div>
+        </Box>
       </Container>
     </Box>
   );
 };
 
-// ─── STATS / SOCIAL PROOF SECTION ─────────────────────────
-const AnimatedStat = ({ end, suffix = '', label, icon }) => {
-  const { count, ref } = useCountUp(end);
-  const theme = useTheme();
+// ─── CATEGORIES ───────────────────────────────────────────
+// 6-column grid on desktop, 2-col on mobile. Consistent card style.
+const CATEGORIES = [
+  { icon: <CarpenterIcon />, name: 'Carpentry', jobs: '800+', color: '#8B4513', path: '/search?category=carpentry' },
+  { icon: <ElectricianIcon />, name: 'Electrical', jobs: '650+', color: '#E5A100', path: '/search?category=electrical' },
+  { icon: <PlumberIcon />, name: 'Plumbing', jobs: '520+', color: '#1976D2', path: '/search?category=plumbing' },
+  { icon: <MasonIcon />, name: 'Masonry', jobs: '430+', color: '#616161', path: '/search?category=masonry' },
+  { icon: <PainterIcon />, name: 'Painting', jobs: '380+', color: '#C62828', path: '/search?category=painting' },
+  { icon: <RoofingIcon />, name: 'Roofing', jobs: '290+', color: '#5D4037', path: '/search?category=roofing' },
+];
+
+const CategoriesSection = () => {
+  const navigate = useNavigate();
+
   return (
-    <Box ref={ref} sx={{ textAlign: 'center' }}>
-      <Avatar
-        sx={{
-          width: 60,
-          height: 60,
-          mx: 'auto',
-          mb: 2,
-          bgcolor: alpha(theme.palette.primary.main, 0.1),
-          color: 'primary.main',
-          '& svg': { fontSize: 28 },
-        }}
-      >
-        {icon}
-      </Avatar>
-      <Typography
-        variant="h3"
-        fontWeight={800}
-        sx={{
-          color: 'primary.main',
-          fontSize: { xs: '2.2rem', md: '3rem' },
-          mb: 0.5,
-          fontFeatureSettings: '"tnum"',
-        }}
-      >
-        {count.toLocaleString()}{suffix}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" fontWeight={500}>
-        {label}
-      </Typography>
-    </Box>
+    <Section alt>
+      <Reveal>
+        <SectionHeader
+          title="Browse by category"
+          subtitle="Find the right professional for your project from our growing community of verified tradespeople."
+        />
+      </Reveal>
+
+      <Grid container spacing={2}>
+        {CATEGORIES.map((cat, i) => (
+          <Grid item xs={6} sm={4} md={2} key={cat.name}>
+            <Reveal delay={i * 0.06}>
+              <Card
+                onClick={() => navigate(cat.path)}
+                sx={{
+                  ...CARD_SX,
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.2s',
+                  '&:hover': {
+                    borderColor: alpha(cat.color, 0.5),
+                    boxShadow: `0 4px 20px ${alpha(cat.color, 0.1)}`,
+                    transform: 'translateY(-2px)',
+                  },
+                }}
+              >
+                <Avatar
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    mx: 'auto',
+                    mb: 1.5,
+                    bgcolor: alpha(cat.color, 0.1),
+                    color: cat.color,
+                    '& svg': { fontSize: 24 },
+                  }}
+                >
+                  {cat.icon}
+                </Avatar>
+                <Typography variant="body2" fontWeight={600} sx={{ mb: 0.25 }}>
+                  {cat.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                  {cat.jobs} jobs
+                </Typography>
+              </Card>
+            </Reveal>
+          </Grid>
+        ))}
+      </Grid>
+
+      <Box sx={{ textAlign: 'center', mt: 4 }}>
+        <Button
+          variant="text"
+          endIcon={<ArrowForwardIcon />}
+          onClick={() => navigate('/search')}
+          sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.875rem' }}
+        >
+          View all categories
+        </Button>
+      </Box>
+    </Section>
   );
 };
 
-const StatsSection = () => {
-  const theme = useTheme();
-
-  const stats = [
-    { end: 5000, suffix: '+', label: 'Verified Workers', icon: <GroupsIcon /> },
-    { end: 12000, suffix: '+', label: 'Jobs Completed', icon: <TaskAltIcon /> },
-    { end: 98, suffix: '%', label: 'Satisfaction Rate', icon: <StarIcon /> },
-    { end: 16, suffix: '', label: 'Regions Covered', icon: <LocationIcon /> },
-  ];
-
-  return (
-    <Box
-      sx={{
-        py: { xs: 8, md: 12 },
-        position: 'relative',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '80%',
-          height: '1px',
-          background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.2)}, transparent)`,
-        },
-      }}
-    >
-      <Container maxWidth="lg">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
-          <Grid container spacing={4}>
-            {stats.map((stat, i) => (
-              <Grid item xs={6} md={3} key={stat.label}>
-                <motion.div variants={fadeInUp} custom={i}>
-                  <AnimatedStat {...stat} />
-                </motion.div>
-              </Grid>
-            ))}
-          </Grid>
-        </motion.div>
-      </Container>
-    </Box>
-  );
+// ─── HOW IT WORKS ─────────────────────────────────────────
+// Tab toggle distinguishes hirer / worker flows. 4-column on desktop.
+const STEPS = {
+  hiring: [
+    { icon: <WorkIcon />, title: 'Post a job', desc: 'Describe what you need — free, takes 2 minutes.' },
+    { icon: <FindTalentIcon />, title: 'Get matched', desc: 'Receive bids from verified workers near you.' },
+    { icon: <ChatIcon />, title: 'Chat & hire', desc: 'Compare profiles, reviews and quotes.' },
+    { icon: <PaymentIcon />, title: 'Pay securely', desc: 'Release payment only when satisfied.' },
+  ],
+  working: [
+    { icon: <FindTalentIcon />, title: 'Create profile', desc: 'Showcase skills and portfolio for free.' },
+    { icon: <SpeedIcon />, title: 'Browse jobs', desc: 'Find work matching your skills and location.' },
+    { icon: <HandshakeIcon />, title: 'Apply & deliver', desc: 'Submit bids, get hired, do great work.' },
+    { icon: <PaymentIcon />, title: 'Get paid', desc: 'Receive secure payments to your account.' },
+  ],
 };
 
-// ─── WHY KELMAH SECTION (Trust / Value props) ─────────────
-const WhyKelmahSection = () => {
+const HowItWorksSection = () => {
   const theme = useTheme();
-
-  const features = [
-    {
-      icon: <VerifiedIcon sx={{ fontSize: 32 }} />,
-      title: 'Verified Professionals',
-      desc: 'Every worker is identity-verified and skill-assessed before joining our platform.',
-    },
-    {
-      icon: <ShieldIcon sx={{ fontSize: 32 }} />,
-      title: 'Secure Payments',
-      desc: 'Your money is held safely until the job is done to your satisfaction.',
-    },
-    {
-      icon: <SpeedIcon sx={{ fontSize: 32 }} />,
-      title: 'Fast Matching',
-      desc: 'Post a job and receive bids from qualified workers, often within minutes.',
-    },
-    {
-      icon: <ChatIcon sx={{ fontSize: 32 }} />,
-      title: 'Real-Time Chat',
-      desc: 'Communicate instantly with workers — discuss details, share photos, stay updated.',
-    },
-    {
-      icon: <StarIcon sx={{ fontSize: 32 }} />,
-      title: 'Transparent Reviews',
-      desc: 'Read honest reviews from real clients. No surprises — hire based on track record.',
-    },
-    {
-      icon: <TrendingUpIcon sx={{ fontSize: 32 }} />,
-      title: 'Growing Opportunities',
-      desc: 'New jobs posted daily across all 16 regions of Ghana. Your next gig is waiting.',
-    },
-  ];
+  const [tab, setTab] = React.useState('hiring');
 
   return (
-    <Box
-      sx={{
-        py: { xs: 8, md: 12 },
-        bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)',
-      }}
-    >
-      <Container maxWidth="lg">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={staggerContainer}>
-          <motion.div variants={fadeInUp}>
-            <Box sx={{ textAlign: 'center', mb: 8 }}>
-              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: 2, mb: 1, display: 'block' }}>
-                WHY KELMAH
-              </Typography>
-              <Typography variant="h3" fontWeight={700} sx={{ mb: 2 }}>
-                Built for Ghana's workforce
-              </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 580, mx: 'auto' }}>
-                We understand the unique needs of skilled tradespeople and the businesses that hire them.
-              </Typography>
-            </Box>
-          </motion.div>
+    <Section>
+      <Reveal>
+        <SectionHeader title="How Kelmah works" />
+      </Reveal>
 
-          <Grid container spacing={3}>
-            {features.map((feat, i) => (
-              <Grid item xs={12} sm={6} md={4} key={feat.title}>
-                <motion.div variants={fadeInUp} custom={i}>
-                  <Card
-                    sx={{
-                      p: 3.5,
-                      height: '100%',
-                      borderRadius: 3,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        borderColor: alpha(theme.palette.primary.main, 0.3),
-                      },
-                    }}
-                  >
-                    <Box sx={{ color: 'primary.main', mb: 2, display: 'flex' }}>
-                      {feat.icon}
-                    </Box>
-                    <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
-                      {feat.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                      {feat.desc}
-                    </Typography>
-                  </Card>
-                </motion.div>
-              </Grid>
-            ))}
+      {/* Tab toggle — same button tokens as rest of page */}
+      <Reveal>
+        <Stack direction="row" spacing={1} sx={{ mb: { xs: 4, md: 6 } }}>
+          {[
+            { key: 'hiring', label: 'I want to hire' },
+            { key: 'working', label: 'I want to work' },
+          ].map((t) => (
+            <Button
+              key={t.key}
+              variant={tab === t.key ? 'contained' : 'outlined'}
+              onClick={() => setTab(t.key)}
+              size="small"
+              sx={{
+                minHeight: 40,
+                px: 2.5,
+                borderRadius: 1.5,
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                textTransform: 'none',
+                ...(tab !== t.key && { borderColor: 'divider', color: 'text.secondary' }),
+              }}
+            >
+              {t.label}
+            </Button>
+          ))}
+        </Stack>
+      </Reveal>
+
+      <Grid container spacing={{ xs: 3, md: 4 }}>
+        {STEPS[tab].map((step, i) => (
+          <Grid item xs={12} sm={6} md={3} key={step.title}>
+            <Reveal delay={i * 0.08}>
+              <Box>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 700,
+                    color: 'primary.main',
+                    mb: 1.5,
+                    fontSize: '0.75rem',
+                    letterSpacing: 1,
+                  }}
+                >
+                  STEP {i + 1}
+                </Typography>
+                <Avatar
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    bgcolor: alpha(theme.palette.primary.main, 0.1),
+                    color: 'primary.main',
+                    mb: 2,
+                    '& svg': { fontSize: 24 },
+                  }}
+                >
+                  {step.icon}
+                </Avatar>
+                <Typography variant="body1" fontWeight={600} sx={{ mb: 1 }}>
+                  {step.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                  {step.desc}
+                </Typography>
+              </Box>
+            </Reveal>
           </Grid>
-        </motion.div>
-      </Container>
-    </Box>
+        ))}
+      </Grid>
+    </Section>
   );
 };
 
 // ─── TESTIMONIALS ─────────────────────────────────────────
-const TestimonialsSection = () => {
-  const theme = useTheme();
+// 3-column on desktop, full-width stacked on mobile. Same CARD_SX.
+const TESTIMONIALS = [
+  {
+    name: 'Akua Darkowaa',
+    role: 'Business Owner, Kumasi',
+    text: 'I found a reliable electrician for my shop renovation within an hour. The quality of work was excellent and the whole process was transparent.',
+    rating: 5,
+  },
+  {
+    name: 'Emmanuel Tetteh',
+    role: 'Master Carpenter',
+    text: 'Kelmah has transformed how I find work. I get steady jobs, clients can see my portfolio, and I get paid on time every time.',
+    rating: 5,
+  },
+  {
+    name: 'Nana Adwoa Serwaa',
+    role: 'Property Manager, Accra',
+    text: 'Managing maintenance for multiple properties used to be a nightmare. Now I have a trusted network just a tap away.',
+    rating: 5,
+  },
+];
 
-  const testimonials = [
-    {
-      name: 'Akua Darkowaa',
-      role: 'Business Owner, Kumasi',
-      text: 'I found a reliable electrician for my shop renovation within an hour. The quality of work was excellent and the whole process was transparent.',
-      rating: 5,
-      avatar: 'A',
-    },
-    {
-      name: 'Emmanuel Tetteh',
-      role: 'Master Carpenter',
-      text: 'Kelmah has transformed how I find work. I get steady jobs, clients can see my portfolio, and I get paid on time every time.',
-      rating: 5,
-      avatar: 'E',
-    },
-    {
-      name: 'Nana Adwoa Serwaa',
-      role: 'Property Manager, Accra',
-      text: 'Managing maintenance for multiple properties used to be a nightmare. Now I have a network of trusted workers just a tap away.',
-      rating: 5,
-      avatar: 'N',
-    },
-  ];
+const TestimonialsSection = () => (
+  <Section alt>
+    <Reveal>
+      <SectionHeader title="What our users say" align="center" />
+    </Reveal>
 
-  return (
-    <Box sx={{ py: { xs: 8, md: 12 } }}>
-      <Container maxWidth="lg">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }} variants={staggerContainer}>
-          <motion.div variants={fadeInUp}>
-            <Box sx={{ textAlign: 'center', mb: 7 }}>
-              <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: 2, mb: 1, display: 'block' }}>
-                TESTIMONIALS
+    <Grid container spacing={3}>
+      {TESTIMONIALS.map((t, i) => (
+        <Grid item xs={12} md={4} key={t.name}>
+          <Reveal delay={i * 0.08}>
+            <Card
+              sx={{
+                ...CARD_SX,
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <Rating value={t.rating} readOnly size="small" sx={{ mb: 2 }} />
+              <Typography
+                variant="body2"
+                sx={{ flex: 1, mb: 3, lineHeight: 1.7, color: 'text.secondary' }}
+              >
+                &ldquo;{t.text}&rdquo;
               </Typography>
-              <Typography variant="h3" fontWeight={700} sx={{ mb: 2 }}>
-                Real results from real people
-              </Typography>
-            </Box>
-          </motion.div>
-
-          <Grid container spacing={3}>
-            {testimonials.map((t, i) => (
-              <Grid item xs={12} md={4} key={t.name}>
-                <motion.div variants={fadeInUp} custom={i}>
-                  <Card
-                    sx={{
-                      p: 3.5,
-                      height: '100%',
-                      borderRadius: 3,
-                      display: 'flex',
-                      flexDirection: 'column',
-                    }}
-                  >
-                    <Rating value={t.rating} readOnly size="small" sx={{ mb: 2 }} />
-                    <Typography
-                      variant="body1"
-                      sx={{ mb: 3, flex: 1, fontStyle: 'italic', lineHeight: 1.7, color: 'text.secondary' }}
-                    >
-                      "{t.text}"
-                    </Typography>
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                      <Avatar sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 700 }}>
-                        {t.avatar}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="subtitle2" fontWeight={700}>{t.name}</Typography>
-                        <Typography variant="caption" color="text.secondary">{t.role}</Typography>
-                      </Box>
-                    </Stack>
-                  </Card>
-                </motion.div>
-              </Grid>
-            ))}
-          </Grid>
-        </motion.div>
-      </Container>
-    </Box>
-  );
-};
+              <Stack direction="row" alignItems="center" spacing={1.5}>
+                <Avatar
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    bgcolor: 'primary.main',
+                    color: 'primary.contrastText',
+                    fontSize: '0.875rem',
+                    fontWeight: 700,
+                  }}
+                >
+                  {t.name.charAt(0)}
+                </Avatar>
+                <Box>
+                  <Typography variant="body2" fontWeight={600}>
+                    {t.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                    {t.role}
+                  </Typography>
+                </Box>
+              </Stack>
+            </Card>
+          </Reveal>
+        </Grid>
+      ))}
+    </Grid>
+  </Section>
+);
 
 // ─── CTA BANNER ───────────────────────────────────────────
 const CTASection = () => {
@@ -962,88 +558,69 @@ const CTASection = () => {
   const theme = useTheme();
 
   return (
-    <Box
+    <Section
       sx={{
-        py: { xs: 8, md: 10 },
-        background: theme.palette.mode === 'dark'
-          ? `linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,215,0,0.02) 100%)`
-          : `linear-gradient(135deg, rgba(255,215,0,0.12) 0%, rgba(255,193,7,0.04) 100%)`,
+        bgcolor:
+          theme.palette.mode === 'dark'
+            ? alpha(theme.palette.primary.main, 0.04)
+            : alpha(theme.palette.primary.main, 0.04),
       }}
     >
-      <Container maxWidth="md">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="h3" fontWeight={800} sx={{ mb: 2 }}>
-              Ready to get started?
-            </Typography>
-            <Typography variant="h6" color="text.secondary" fontWeight={400} sx={{ mb: 5, maxWidth: 500, mx: 'auto' }}>
-              Join thousands of skilled workers and businesses already on Kelmah.
-            </Typography>
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={2}
-              justifyContent="center"
-            >
-              <Button
-                variant="contained"
-                size="large"
-                onClick={() => navigate('/register')}
-                sx={{
-                  py: 1.8,
-                  px: 5,
-                  borderRadius: 2,
-                  fontSize: '1.05rem',
-                  fontWeight: 700,
-                  background: 'linear-gradient(135deg, #FFD700 0%, #FFC107 100%)',
-                  color: '#000',
-                  boxShadow: '0 8px 30px rgba(255, 215, 0, 0.3)',
-                  transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #FFE55C 0%, #FFD700 100%)',
-                    boxShadow: '0 12px 40px rgba(255, 215, 0, 0.45)',
-                    transform: 'translateY(-2px)',
-                  },
-                }}
-              >
-                Sign Up Free
-              </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                onClick={() => navigate('/login')}
-                sx={{ py: 1.8, px: 5, borderRadius: 2, fontSize: '1.05rem', fontWeight: 700 }}
-              >
-                Log In
-              </Button>
-            </Stack>
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 3, display: 'block' }}>
-              No credit card required · Free for workers · Post your first job in minutes
-            </Typography>
-          </Box>
-        </motion.div>
-      </Container>
-    </Box>
+      <Reveal>
+        <Box sx={{ textAlign: 'center', maxWidth: 520, mx: 'auto' }}>
+          <Typography
+            variant="h4"
+            component="h2"
+            sx={{ fontWeight: 700, fontSize: { xs: '1.5rem', md: '2rem' }, mb: 2 }}
+          >
+            Ready to get started?
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 4, lineHeight: 1.6 }}>
+            Join thousands of skilled workers and businesses already on Kelmah.
+          </Typography>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.5}
+            justifyContent="center"
+          >
+            <Button variant="contained" size="large" onClick={() => navigate('/register')} sx={BTN_SX}>
+              Sign up free
+            </Button>
+            <Button variant="outlined" size="large" onClick={() => navigate('/login')} sx={BTN_SX}>
+              Log in
+            </Button>
+          </Stack>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2.5, fontSize: '0.8rem' }}>
+            No credit card required · Free for workers
+          </Typography>
+        </Box>
+      </Reveal>
+    </Section>
   );
 };
 
-// ─── MAIN HOME PAGE ───────────────────────────────────────
-const HomePage = () => {
-  return (
-    <Box sx={{ width: '100%', overflow: 'hidden' }}>
-      <HeroSection />
-      <CategoriesSection />
-      <StatsSection />
-      <HowItWorksSection />
-      <WhyKelmahSection />
-      <TestimonialsSection />
-      <CTASection />
-    </Box>
-  );
-};
+/* =================================================================
+ * MAIN PAGE COMPOSITION
+ *
+ * 5 sections — same count as Upwork:
+ *   Hero → Categories → How It Works → Testimonials → CTA
+ *
+ * Removed from previous version:
+ *   - StatsSection (metrics now inline in hero trust bar)
+ *   - WhyKelmahSection (overlapped How It Works messaging)
+ *   - Floating stat cards + Top Workers card (fake data / gimmick)
+ *   - Industry name strip ("CONSTRUCTION", "REAL ESTATE" etc.)
+ *   - Animated counter hook (unnecessary complexity)
+ *   - Per-child stagger animations (animation fatigue)
+ * ================================================================= */
+const HomePage = () => (
+  <Box>
+    <HeroSection />
+    <CategoriesSection />
+    <HowItWorksSection />
+    <TestimonialsSection />
+    <CTASection />
+  </Box>
+);
 
 export default HomePage;
