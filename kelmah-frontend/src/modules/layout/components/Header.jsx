@@ -359,6 +359,7 @@ const AuthButton = styled(Button)(({ theme, variant }) => ({
     padding: '6px 12px',
     fontSize: '0.8rem',
     minWidth: 'auto',
+    minHeight: 44,
   },
   ...(variant === 'outlined' && {
     borderColor:
@@ -708,7 +709,7 @@ const Header = ({
   const currentPage = getCurrentPageInfo();
 
   // ✅ ENHANCED: Dynamic data based on user state and current page
-  const { unreadCount: notifUnreadCount, notifications: notifList = [] } =
+  const { unreadCount: notifUnreadCount, notifications: notifList = [], markAllAsRead } =
     useNotifications();
   const unreadNotifications = showUserFeatures ? notifUnreadCount || 0 : 0;
   // ✅ MOBILE-AUDIT FIX: Wire to real message context (was hardcoded to 2)
@@ -1116,9 +1117,8 @@ const Header = ({
       <MenuItem
         onClick={() => {
           try {
-            // Use NotificationContext to mark all as read
-            const ctx = useNotifications();
-            ctx.markAllAsRead?.();
+            // Use markAllAsRead extracted at component top level
+            markAllAsRead?.();
           } catch (_) {}
           handleNotificationsClose();
         }}
@@ -1213,8 +1213,8 @@ const Header = ({
           },
         }}
       >
-        {/* Mobile Menu Button */}
-        {isMobile && authState.isAuthenticated && (
+        {/* Mobile Menu Button — shown for all mobile users (auth + guest) */}
+        {isMobile && (
           <ActionButton
             edge="start"
             aria-label="menu"

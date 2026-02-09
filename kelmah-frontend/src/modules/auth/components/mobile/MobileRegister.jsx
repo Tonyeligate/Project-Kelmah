@@ -293,7 +293,7 @@ const MobileRegister = () => {
       case 2:
         return (
           <Stack spacing={1.5}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', '@media (max-width: 360px)': { flexDirection: 'column' } }}>
               <TextField
                 fullWidth
                 label="First Name"
@@ -302,7 +302,8 @@ const MobileRegister = () => {
                 error={Boolean(errors.firstName)}
                 helperText={errors.firstName}
                 size="small"
-                sx={inputStyles}
+                inputProps={{ style: { fontSize: 16 } }}
+                sx={{ ...inputStyles, flex: '1 1 140px' }}
               />
               <TextField
                 fullWidth
@@ -312,7 +313,8 @@ const MobileRegister = () => {
                 error={Boolean(errors.lastName)}
                 helperText={errors.lastName}
                 size="small"
-                sx={inputStyles}
+                inputProps={{ style: { fontSize: 16 } }}
+                sx={{ ...inputStyles, flex: '1 1 140px' }}
               />
             </Box>
             <TextField

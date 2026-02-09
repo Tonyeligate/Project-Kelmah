@@ -202,7 +202,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             // ✅ MOBILE-AUDIT FIX: Use consistent breakpoint for mobile padding reset
             '@media (max-width: 899px)': {
               py: 0,
-              px: 0,
+              px: 1,
             },
             // No bottom padding needed since footer is now dynamic and fixed
             pb: { xs: 0, sm: 2, md: 3 },

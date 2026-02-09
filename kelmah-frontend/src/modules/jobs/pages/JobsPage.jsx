@@ -957,7 +957,7 @@ const JobsPage = () => {
                               },
                             },
                             '& .MuiInputBase-input': {
-                              fontSize: { xs: '0.95rem', sm: '0.875rem' }, // ✅ Larger text on mobile
+                              fontSize: { xs: '1rem', sm: '0.875rem' }, // ✅ 16px on mobile prevents iOS auto-zoom
                               padding: { xs: '10px 14px', sm: '8.5px 14px' }, // ✅ Comfortable padding
                               '&::placeholder': {
                                 color: 'rgba(255,255,255,0.6)',
@@ -1005,7 +1005,7 @@ const JobsPage = () => {
                             }}
                             sx={{
                               color: 'white',
-                              fontSize: { xs: '0.9rem', sm: '0.875rem' }, // ✅ Larger text on mobile
+                              fontSize: { xs: '1rem', sm: '0.875rem' }, // ✅ Larger text on mobile
                               height: { xs: '44px', sm: '40px' }, // ✅ Match TextField height
                               '& .MuiOutlinedInput-notchedOutline': {
                                 borderColor: 'rgba(212,175,55,0.3)',
@@ -1076,7 +1076,7 @@ const JobsPage = () => {
                             }}
                             sx={{
                               color: 'white',
-                              fontSize: { xs: '0.9rem', sm: '0.875rem' }, // ✅ Larger text on mobile
+                              fontSize: { xs: '1rem', sm: '0.875rem' }, // ✅ Larger text on mobile
                               height: { xs: '44px', sm: '40px' }, // ✅ Match TextField height
                               '& .MuiOutlinedInput-notchedOutline': {
                                 borderColor: 'rgba(212,175,55,0.3)',
@@ -1134,7 +1134,7 @@ const JobsPage = () => {
                               bgcolor: '#D4AF37',
                               color: 'black',
                               fontWeight: 'bold',
-                              fontSize: { xs: '0.9rem', sm: '0.875rem' }, // ✅ Slightly larger on mobile
+                              fontSize: { xs: '1rem', sm: '0.875rem' }, // ✅ Slightly larger on mobile
                               height: { xs: '44px', sm: '40px' }, // ✅ Match other elements (44px for mobile touch)
                               minWidth: { xs: '100%', sm: 'auto' },
                               padding: { xs: '10px 20px', sm: '8px 12px' }, // ✅ More comfortable mobile padding
@@ -1219,6 +1219,15 @@ const JobsPage = () => {
                                 color: '#D4AF37',
                                 '& .MuiSlider-thumb': {
                                   bgcolor: '#D4AF37',
+                                  width: { xs: 28, sm: 20 },
+                                  height: { xs: 28, sm: 20 },
+                                  '&::before': {
+                                    content: '""',
+                                    position: 'absolute',
+                                    width: 44,
+                                    height: 44,
+                                    borderRadius: '50%',
+                                  },
                                 },
                                 '& .MuiSlider-track': {
                                   bgcolor: '#D4AF37',
@@ -2060,7 +2069,7 @@ const JobsPage = () => {
                               bgcolor: '#D4AF37',
                               color: 'black',
                               fontWeight: 'bold',
-                              fontSize: { xs: '0.9rem', sm: '0.875rem' }, // ✅ Slightly larger on mobile
+                              fontSize: { xs: '1rem', sm: '0.875rem' }, // ✅ Slightly larger on mobile
                               padding: { xs: '10px 16px', sm: '8px 16px' }, // ✅ Better mobile padding
                               minHeight: { xs: '44px', sm: '40px' }, // ✅ Touch-friendly height
                               '&:hover': {

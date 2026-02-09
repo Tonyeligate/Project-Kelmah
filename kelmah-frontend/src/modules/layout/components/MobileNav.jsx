@@ -254,6 +254,8 @@ const MobileNav = ({ open, onClose }) => {
                 theme.palette.mode === 'dark'
                   ? BRAND_COLORS.gold
                   : BRAND_COLORS.black,
+              minWidth: 44,
+              minHeight: 44,
             }}
           >
             <CloseIcon />

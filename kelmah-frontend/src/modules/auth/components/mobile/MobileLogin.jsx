@@ -333,7 +333,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                       <IconButton
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
-                        sx={{ color: 'rgba(255,255,255,0.4)' }}
+                        sx={{ color: 'rgba(255,255,255,0.4)', minWidth: 44, minHeight: 44 }}
                       >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>

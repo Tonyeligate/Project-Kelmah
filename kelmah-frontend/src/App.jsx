@@ -86,7 +86,7 @@ const App = () => {
       <GlobalErrorBoundary>
         {/* Service wake-up indicator */}
         {servicesWakingUp && (
-          <Box sx={{ width: '100%', position: 'fixed', top: 0, left: 0, zIndex: 9999 }}>
+          <Box sx={{ width: '100%', position: 'fixed', top: 0, left: 0, zIndex: 1300 }}>
             <LinearProgress color="warning" />
             <Alert severity="info" sx={{ borderRadius: 0 }}>
               ⏳ Waking up backend services... This may take up to 30 seconds on first load.

@@ -511,7 +511,7 @@ const HirerDashboardPage = () => {
   // LC Portal-inspired Dashboard Overview - IMPROVED with empty state CTAs
   const renderDashboardOverview = () => (
     <Fade in timeout={500}>
-      <Box sx={{ bgcolor: '#F5F5F5', minHeight: '100vh', mx: { xs: -2, sm: -3, md: -4 }, mt: { xs: -1, md: -3 }, p: { xs: 2, sm: 3, md: 4 } }}>
+      <Box sx={{ bgcolor: '#F5F5F5', minHeight: '100vh', mx: { xs: -1, sm: -2, md: -4 }, mt: { xs: -1, md: -3 }, p: { xs: 1.5, sm: 2, md: 4 }, overflowX: 'hidden' }}>
         {/* Breadcrumb - LC Portal Style */}
         <Breadcrumbs sx={{ mb: 3 }} aria-label="breadcrumb">
           <MUILink

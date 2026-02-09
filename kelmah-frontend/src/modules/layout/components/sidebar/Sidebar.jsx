@@ -160,9 +160,8 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
         [`& .MuiDrawer-paper`]: {
           width: 260,
           boxSizing: 'border-box',
-          // FIX: Dark theme sidebar to match content area
-          backgroundColor: '#1a1a1a',
-          color: '#E0E0E0',
+          backgroundColor: (theme) => theme.palette.background.paper,
+          color: (theme) => theme.palette.text.primary,
           display: 'flex',
           flexDirection: 'column',
           borderRight: '1px solid rgba(255, 215, 0, 0.2)',
@@ -193,19 +192,19 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
             width: 40,
             height: 40,
             bgcolor: '#FFD700',
-            color: '#1a1a1a',
+            color: (theme) => theme.palette.getContrastText('#FFD700'),
             fontWeight: 700,
           }}
         >
           {user?.firstName?.[0] || 'U'}
         </Avatar>
         <Box sx={{ flex: 1 }}>
-          <Typography variant="body2" fontWeight={600} sx={{ color: '#E0E0E0' }}>
+          <Typography variant="body2" fontWeight={600} sx={{ color: 'text.primary' }}>
             Hi, {user?.firstName || 'User'}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <FiberManualRecordIcon sx={{ fontSize: 10, color: '#4CAF50' }} />
-            <Typography variant="caption" sx={{ color: '#4CAF50' }}>
+            <FiberManualRecordIcon sx={{ fontSize: 10, color: 'success.main' }} />
+            <Typography variant="caption" sx={{ color: 'success.main' }}>
               Online
             </Typography>
           </Box>

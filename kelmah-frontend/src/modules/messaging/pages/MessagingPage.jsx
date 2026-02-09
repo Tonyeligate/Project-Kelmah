@@ -1336,7 +1336,7 @@ const EnhancedMessagingPage = () => {
     return (
       <Box
         sx={{
-          height: 'calc(100vh - 64px)',
+          height: 'calc(100dvh - 64px)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -1353,7 +1353,7 @@ const EnhancedMessagingPage = () => {
     return (
       <Box
         sx={{
-          minHeight: '100vh',
+          minHeight: '100dvh',
           backgroundColor: '#161513',
           color: 'white',
           fontFamily: 'Manrope, "Noto Sans", sans-serif',
@@ -1686,7 +1686,7 @@ const EnhancedMessagingPage = () => {
                 flex: 1,
                 p: 2,
                 overflowY: 'auto',
-                minHeight: 'calc(100vh - 220px)',
+                minHeight: 'calc(100dvh - 220px)',,
               }}
             >
               {messages.length === 0 && (
@@ -1820,7 +1820,7 @@ const EnhancedMessagingPage = () => {
       />
       <Box
         sx={{
-          height: 'calc(100vh - 64px)',
+          height: 'calc(100dvh - 64px)',
           p: { xs: 1, sm: 2, md: 3 },
           background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
         }}

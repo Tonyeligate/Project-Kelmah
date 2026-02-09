@@ -920,7 +920,7 @@ const HomePage = () => {
                     <Box
                       sx={{
                         mt: { xs: 2, sm: 3, md: 8 },
-                        display: { xs: 'none', sm: 'block' }, // Hide on mobile, show on larger screens
+                        display: 'block',
                       }}
                     >
                       {features.map((feature, index) => (

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import AuthWrapper from '../components/common/AuthWrapper';
-import { Box, Typography, Button, TextField, Alert } from '@mui/material';
+import { Box, Typography, Button, TextField, Alert, useMediaQuery, useTheme } from '@mui/material';
 import { useAuth } from '../hooks/useAuth';
 
 const MfaSetupPage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [secret, setSecret] = useState('');
   const [qrCode, setQrCode] = useState('');
   const [token, setToken] = useState('');
@@ -37,11 +39,11 @@ const MfaSetupPage = () => {
   };
 
   return (
-    <AuthWrapper>
+  const mfaContent = (
       <Box
         sx={{ width: '100%', maxWidth: 400, mx: 'auto', textAlign: 'center' }}
       >
-        <Typography variant="h5" gutterBottom>
+        <Typography variant="h5" gutterBottom sx={isMobile ? { color: '#fff', fontWeight: 700 } : {}}>
           Setup Two-Factor Authentication
         </Typography>
         {error && (
@@ -62,7 +64,7 @@ const MfaSetupPage = () => {
               alt="2FA QR Code"
               sx={{ mb: 2, maxWidth: '100%' }}
             />
-            <Typography variant="body2" gutterBottom>
+            <Typography variant="body2" gutterBottom sx={isMobile ? { color: 'rgba(255,255,255,0.7)' } : {}}>
               Scan this QR code with your authenticator app, then enter the code
               below to verify.
             </Typography>
@@ -73,17 +75,31 @@ const MfaSetupPage = () => {
                 required
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
-                sx={{ mb: 2 }}
+                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 6, style: { fontSize: 16, letterSpacing: '0.3em', textAlign: 'center' } }}
+                sx={isMobile ? { mb: 2, '& .MuiOutlinedInput-root': { backgroundColor: 'rgba(255,255,255,0.08)', color: '#fff' }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.6)' } } : { mb: 2 }}
               />
-              <Button type="submit" variant="contained" fullWidth sx={{ minHeight: 44 }}>
+              <Button type="submit" variant="contained" fullWidth sx={{ minHeight: 48, borderRadius: isMobile ? '24px' : 1 }}>
                 Enable 2FA
               </Button>
             </Box>
           </>
         ) : (
-          <Typography>Loading two-factor setup...</Typography>
+          <Typography sx={isMobile ? { color: 'rgba(255,255,255,0.7)' } : {}}>Loading two-factor setup...</Typography>
         )}
       </Box>
+  );
+
+  if (isMobile) {
+    return (
+      <Box sx={{ minHeight: '100vh', backgroundColor: '#0a0a0a', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', px: 3, py: 4 }}>
+        {mfaContent}
+      </Box>
+    );
+  }
+
+  return (
+    <AuthWrapper>
+      {mfaContent}
     </AuthWrapper>
   );
 };

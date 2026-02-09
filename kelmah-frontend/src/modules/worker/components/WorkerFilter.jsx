@@ -119,6 +119,7 @@ const WorkerFilter = ({ onFilterChange }) => {
                 </InputAdornment>
               ),
             }}
+            inputProps={{ style: { fontSize: 16 } }}
             size="small"
           />
 
@@ -134,6 +135,7 @@ const WorkerFilter = ({ onFilterChange }) => {
                 </InputAdornment>
               ),
             }}
+            inputProps={{ style: { fontSize: 16 } }}
             size="small"
           />
 
@@ -236,7 +238,7 @@ const WorkerFilter = ({ onFilterChange }) => {
                   min={0}
                   max={5}
                   sx={{
-                    width: 200,
+                    width: { xs: '100%', sm: 200 },
                     color: theme.palette.secondary.main,
                     '& .MuiSlider-valueLabel': {
                       backgroundColor: theme.palette.primary.main,

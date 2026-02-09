@@ -29,7 +29,7 @@ import { motion } from 'framer-motion';
 
 const Footer = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const currentYear = new Date().getFullYear();
   const [expandedSection, setExpandedSection] = useState(null);
@@ -248,8 +248,11 @@ const Footer = () => {
                               textDecoration: 'none',
                               fontSize: '0.9rem',
                               fontWeight: 500,
-                              py: 0.5,
+                              py: 1.25,
                               px: 1,
+                              minHeight: 44,
+                              display: 'flex',
+                              alignItems: 'center',
                               borderRadius: 1,
                               transition: 'all 0.3s ease',
                               '&:hover': {
@@ -472,12 +475,14 @@ const Footer = () => {
                               textDecoration: 'none',
                               fontSize: '0.9rem',
                               fontWeight: 500,
-                              py: 0.5,
+                              py: 1.25,
                               px: 1,
+                              minHeight: 44,
+                              display: 'flex',
+                              alignItems: 'center',
                               borderRadius: 1,
                               transition:
                                 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                              display: 'block',
                               '&:hover': {
                                 color: '#FFD700',
                                 background: 'rgba(255,215,0,0.08)',

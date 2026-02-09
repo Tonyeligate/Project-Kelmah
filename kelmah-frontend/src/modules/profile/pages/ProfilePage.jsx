@@ -21,6 +21,10 @@ import {
   useMediaQuery,
   useTheme,
   Avatar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -71,6 +75,14 @@ const ProfilePage = () => {
     bio: '',
     location: '',
   });
+
+  // Inline add-item dialog state (replaces window.prompt)
+  const [addSkillOpen, setAddSkillOpen] = useState(false);
+  const [newSkill, setNewSkill] = useState('');
+  const [addEduOpen, setAddEduOpen] = useState(false);
+  const [newEdu, setNewEdu] = useState({ degree: '', institution: '', year: '' });
+  const [addExpOpen, setAddExpOpen] = useState(false);
+  const [newExp, setNewExp] = useState({ title: '', company: '', duration: '' });
 
   // Load profile on mount if not already loaded
   useEffect(() => {
@@ -209,15 +221,20 @@ const ProfilePage = () => {
                         label="Email"
                         name="email"
                         type="email"
+                        autoComplete="email"
                         value={formData.email}
                         onChange={handleChange}
+                        inputProps={{ style: { fontSize: 16 } }}
                       />
                       <TextField
                         fullWidth
                         label="Phone"
                         name="phone"
+                        type="tel"
+                        autoComplete="tel"
                         value={formData.phone}
                         onChange={handleChange}
+                        inputProps={{ style: { fontSize: 16 }, inputMode: 'tel' }}
                       />
                       <TextField
                         fullWidth
@@ -238,12 +255,13 @@ const ProfilePage = () => {
                       <Box
                         sx={{
                           display: 'flex',
+                          flexDirection: { xs: 'column', sm: 'row' },
                           gap: 2,
-                          justifyContent: 'flex-end',
+                          justifyContent: { sm: 'flex-end' },
                         }}
                       >
-                        <Button onClick={handleCancel}>Cancel</Button>
-                        <Button variant="contained" onClick={handleSave}>
+                        <Button onClick={handleCancel} sx={{ minHeight: 44 }}>Cancel</Button>
+                        <Button variant="contained" onClick={handleSave} sx={{ minHeight: 44 }}>
                           Save
                         </Button>
                       </Box>
@@ -341,18 +359,32 @@ const ProfilePage = () => {
                       <Chip
                         icon={<AddIcon />}
                         label="Add Skill"
-                        onClick={() => {
-                          const skill = prompt('Enter skill:');
-                          if (skill) {
-                            const currentSkills = Array.isArray(profile.skills)
-                              ? profile.skills
-                              : [];
-                            updateSkills([...currentSkills, skill]);
-                          }
-                        }}
+                        onClick={() => setAddSkillOpen(true)}
                         color="primary"
                         variant="outlined"
                       />
+                    </Box>
+                    {/* Add Skill Dialog */}
+                    <Dialog open={addSkillOpen} onClose={() => setAddSkillOpen(false)} fullWidth maxWidth="xs"
+                      PaperProps={{ sx: { mx: 2, borderRadius: 2 } }}
+                    >
+                      <DialogTitle>Add Skill</DialogTitle>
+                      <DialogContent>
+                        <TextField
+                          autoFocus fullWidth label="Skill name" margin="dense"
+                          value={newSkill} onChange={(e) => setNewSkill(e.target.value)}
+                          inputProps={{ style: { fontSize: 16 } }}
+                        />
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={() => { setAddSkillOpen(false); setNewSkill(''); }}>Cancel</Button>
+                        <Button variant="contained" disabled={!newSkill.trim()} onClick={() => {
+                          const currentSkills = Array.isArray(profile.skills) ? profile.skills : [];
+                          updateSkills([...currentSkills, newSkill.trim()]);
+                          setNewSkill(''); setAddSkillOpen(false);
+                        }}>Add</Button>
+                      </DialogActions>
+                    </Dialog>
                     </Box>
                   </Box>
                 )}
@@ -394,25 +426,36 @@ const ProfilePage = () => {
                     </List>
                     <Button
                       startIcon={<AddIcon />}
-                      onClick={() => {
-                        const degree = prompt('Enter degree:');
-                        const institution = prompt('Enter institution:');
-                        const year = prompt('Enter year:');
-                        if (degree && institution && year) {
-                          const currentEducation = Array.isArray(
-                            profile.education,
-                          )
-                            ? profile.education
-                            : [];
-                          updateEducation([
-                            ...currentEducation,
-                            { degree, institution, year },
-                          ]);
-                        }
-                      }}
+                      onClick={() => setAddEduOpen(true)}
                     >
                       Add Education
                     </Button>
+                    {/* Add Education Dialog */}
+                    <Dialog open={addEduOpen} onClose={() => setAddEduOpen(false)} fullWidth maxWidth="xs"
+                      PaperProps={{ sx: { mx: 2, borderRadius: 2 } }}
+                    >
+                      <DialogTitle>Add Education</DialogTitle>
+                      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: '8px !important' }}>
+                        <TextField autoFocus fullWidth label="Degree" value={newEdu.degree}
+                          onChange={(e) => setNewEdu(p => ({ ...p, degree: e.target.value }))}
+                          inputProps={{ style: { fontSize: 16 } }} />
+                        <TextField fullWidth label="Institution" value={newEdu.institution}
+                          onChange={(e) => setNewEdu(p => ({ ...p, institution: e.target.value }))}
+                          inputProps={{ style: { fontSize: 16 } }} />
+                        <TextField fullWidth label="Year" value={newEdu.year}
+                          onChange={(e) => setNewEdu(p => ({ ...p, year: e.target.value }))}
+                          inputProps={{ style: { fontSize: 16 }, inputMode: 'numeric' }} />
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={() => { setAddEduOpen(false); setNewEdu({ degree: '', institution: '', year: '' }); }}>Cancel</Button>
+                        <Button variant="contained" disabled={!newEdu.degree.trim() || !newEdu.institution.trim() || !newEdu.year.trim()}
+                          onClick={() => {
+                            const currentEducation = Array.isArray(profile.education) ? profile.education : [];
+                            updateEducation([...currentEducation, { ...newEdu }]);
+                            setNewEdu({ degree: '', institution: '', year: '' }); setAddEduOpen(false);
+                          }}>Add</Button>
+                      </DialogActions>
+                    </Dialog>
                   </Box>
                 )}
 
@@ -453,25 +496,36 @@ const ProfilePage = () => {
                     </List>
                     <Button
                       startIcon={<AddIcon />}
-                      onClick={() => {
-                        const title = prompt('Enter job title:');
-                        const company = prompt('Enter company:');
-                        const duration = prompt('Enter duration:');
-                        if (title && company && duration) {
-                          const currentExperience = Array.isArray(
-                            profile.experience,
-                          )
-                            ? profile.experience
-                            : [];
-                          updateExperience([
-                            ...currentExperience,
-                            { title, company, duration },
-                          ]);
-                        }
-                      }}
+                      onClick={() => setAddExpOpen(true)}
                     >
                       Add Experience
                     </Button>
+                    {/* Add Experience Dialog */}
+                    <Dialog open={addExpOpen} onClose={() => setAddExpOpen(false)} fullWidth maxWidth="xs"
+                      PaperProps={{ sx: { mx: 2, borderRadius: 2 } }}
+                    >
+                      <DialogTitle>Add Experience</DialogTitle>
+                      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: '8px !important' }}>
+                        <TextField autoFocus fullWidth label="Job Title" value={newExp.title}
+                          onChange={(e) => setNewExp(p => ({ ...p, title: e.target.value }))}
+                          inputProps={{ style: { fontSize: 16 } }} />
+                        <TextField fullWidth label="Company" value={newExp.company}
+                          onChange={(e) => setNewExp(p => ({ ...p, company: e.target.value }))}
+                          inputProps={{ style: { fontSize: 16 } }} />
+                        <TextField fullWidth label="Duration (e.g. 2 years)" value={newExp.duration}
+                          onChange={(e) => setNewExp(p => ({ ...p, duration: e.target.value }))}
+                          inputProps={{ style: { fontSize: 16 } }} />
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={() => { setAddExpOpen(false); setNewExp({ title: '', company: '', duration: '' }); }}>Cancel</Button>
+                        <Button variant="contained" disabled={!newExp.title.trim() || !newExp.company.trim() || !newExp.duration.trim()}
+                          onClick={() => {
+                            const currentExperience = Array.isArray(profile.experience) ? profile.experience : [];
+                            updateExperience([...currentExperience, { ...newExp }]);
+                            setNewExp({ title: '', company: '', duration: '' }); setAddExpOpen(false);
+                          }}>Add</Button>
+                      </DialogActions>
+                    </Dialog>
                   </Box>
                 )}
 

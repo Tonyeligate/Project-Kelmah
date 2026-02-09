@@ -159,7 +159,12 @@ const SimplifiedHero = () => {
               </Stack>
 
               {/* Login/Register for new users */}
-              <Stack direction="row" spacing={2} alignItems="center">
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                sx={{ flexWrap: 'wrap', rowGap: 1 }}
+              >
                 <Typography color="white" variant="body1">
                   New here?
                 </Typography>
@@ -169,6 +174,7 @@ const SimplifiedHero = () => {
                   sx={{
                     color: '#FFD700',
                     fontWeight: 'bold',
+                    minHeight: 44,
                   }}
                 >
                   Sign Up Free
@@ -180,6 +186,7 @@ const SimplifiedHero = () => {
                   sx={{
                     color: 'white',
                     fontWeight: 'bold',
+                    minHeight: 44,
                   }}
                 >
                   Login

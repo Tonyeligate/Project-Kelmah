@@ -189,7 +189,7 @@ const JobDetailsPage = () => {
             textAlign: 'center',
           }}
         >
-          <Paper elevation={3} sx={{ p: 4, maxWidth: 500 }}>
+          <Paper elevation={3} sx={{ p: { xs: 2.5, sm: 3, md: 4 }, maxWidth: 500 }}>
             <Typography variant="h5" gutterBottom color="primary">
               Authentication Required
             </Typography>
@@ -320,8 +320,8 @@ const JobDetailsPage = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        py: 8,
-        px: 2,
+        py: { xs: 3, sm: 5, md: 8 },
+        px: { xs: 1.5, sm: 2 },
         background: '#1a1a1a',
       }}
     >
@@ -362,7 +362,7 @@ const JobDetailsPage = () => {
                   <Box
                     sx={{
                       width: '100%',
-                      height: 300,
+                      height: { xs: 200, sm: 250, md: 300 },
                       mb: 3,
                       borderRadius: 2,
                       overflow: 'hidden',

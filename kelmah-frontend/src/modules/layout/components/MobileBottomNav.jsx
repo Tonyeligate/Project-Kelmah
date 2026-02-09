@@ -55,7 +55,7 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
     '&.Mui-selected': {
       color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
       '& .MuiBottomNavigationAction-label': {
-        fontSize: '0.7rem',
+        fontSize: '0.75rem',
         fontWeight: 700,
         opacity: 1,
       },
@@ -64,7 +64,7 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
       },
     },
     '& .MuiBottomNavigationAction-label': {
-      fontSize: '0.65rem',
+      fontSize: '0.7rem',
       fontWeight: 500,
       marginTop: 2,
       opacity: 0.9,
