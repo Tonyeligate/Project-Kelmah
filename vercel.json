@@ -1,9 +1,8 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "installCommand": "echo 'Skipping root install'",
   "buildCommand": "cd kelmah-frontend && npm install --legacy-peer-deps && npm run build",
   "outputDirectory": "kelmah-frontend/build",
-  "installCommand": "echo 'Skipping root install'",
-  "framework": "vite",
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -11,13 +10,13 @@
     },
     {
       "source": "/socket.io/:path*",
-      "destination": "https://kelmah-api-gateway-6yoy.onrender.com/socket.io/:path*"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": "https://kelmah-api-gateway-6yoy.onrender.com/socket.io/$1"
     }
   ],
+  "env": {
+    "VITE_API_URL": "https://kelmah-api-gateway-6yoy.onrender.com",
+    "VITE_WS_URL": "https://kelmah-api-gateway-6yoy.onrender.com"
+  },
   "build": {
     "env": {
       "VITE_API_URL": "https://kelmah-api-gateway-6yoy.onrender.com",
