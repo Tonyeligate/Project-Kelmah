@@ -5,7 +5,7 @@ import ProtectedRoute from '../modules/auth/components/common/ProtectedRoute';
 import LoadingScreen from '../modules/common/components/loading/LoadingScreen';
 
 // Public Pages
-const LandingPage = lazy(() => import('../modules/home/pages/HomePage'));
+const LandingPage = lazy(() => import('../pages/HomeLanding'));
 const LoginPage = lazy(() => import('../modules/auth/pages/LoginPage'));
 const RegisterPage = lazy(() => import('../modules/auth/pages/RegisterPage'));
 const DashboardPage = lazy(

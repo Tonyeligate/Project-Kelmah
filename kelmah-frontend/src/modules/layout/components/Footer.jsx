@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Box,
   Typography,
@@ -8,14 +8,10 @@ import {
   IconButton,
   useTheme,
   useMediaQuery,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Stack,
   Divider,
 } from '@mui/material';
 import {
-  ExpandMore as ExpandMoreIcon,
   Facebook as FacebookIcon,
   Twitter as TwitterIcon,
   LinkedIn as LinkedInIcon,
@@ -31,7 +27,6 @@ const Footer = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const currentYear = new Date().getFullYear();
-  const [expandedSection, setExpandedSection] = useState(null);
 
   const footerSections = [
     {
@@ -89,16 +84,16 @@ const Footer = () => {
     >
       <Box
         sx={{
-          py: { xs: 5, md: 8 },
+          py: { xs: 4, md: 6 },
           bgcolor: theme.palette.mode === 'dark' ? '#0A0B10' : '#1a1a2e',
           borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
         }}
       >
         <Container maxWidth="lg">
           {isMobile ? (
-            /* ─── Mobile: Accordion layout ─── */
+            /* ─── Mobile: Compact grid layout ─── */
             <Box>
-              <Stack spacing={2} alignItems="center" sx={{ mb: 4 }}>
+              <Stack spacing={1.5} alignItems="center" sx={{ mb: 3 }}>
                 <Typography
                   variant="h5"
                   sx={{
@@ -122,15 +117,15 @@ const Footer = () => {
                 </Typography>
               </Stack>
 
-              <Stack direction="row" spacing={1.5} justifyContent="center" sx={{ mb: 4 }}>
+              <Stack direction="row" spacing={1.25} justifyContent="center" sx={{ mb: 3 }}>
                 {socialLinks.map((social) => (
                   <IconButton
                     key={social.label}
                     href={social.href}
                     aria-label={social.label}
                     sx={{
-                      width: 44,
-                      height: 44,
+                      width: 40,
+                      height: 40,
                       bgcolor: 'rgba(255,255,255,0.06)',
                       border: '1px solid rgba(255,255,255,0.1)',
                       color: 'rgba(255,255,255,0.7)',
@@ -142,41 +137,21 @@ const Footer = () => {
                       },
                     }}
                   >
-                    <social.icon sx={{ fontSize: 20 }} />
+                    <social.icon sx={{ fontSize: 18 }} />
                   </IconButton>
                 ))}
               </Stack>
 
-              {footerSections.map((section, index) => (
-                <Accordion
-                  key={section.title}
-                  expanded={expandedSection === index}
-                  onChange={() =>
-                    setExpandedSection(expandedSection === index ? null : index)
-                  }
-                  disableGutters
-                  elevation={0}
-                  sx={{
-                    bgcolor: 'transparent',
-                    borderBottom: '1px solid rgba(255,255,255,0.08)',
-                    '&:before': { display: 'none' },
-                    '&.Mui-expanded': { bgcolor: 'transparent' },
-                  }}
-                >
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon sx={{ color: 'rgba(255,255,255,0.5)' }} />}
-                    sx={{
-                      px: 0,
-                      minHeight: 52,
-                      '& .MuiAccordionSummary-content': { my: 1 },
-                    }}
-                  >
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#fff' }}>
+              <Grid container spacing={2} sx={{ mb: 3 }}>
+                {footerSections.map((section) => (
+                  <Grid key={section.title} item xs={6}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: 700, color: '#fff', mb: 1.5, fontSize: '0.85rem' }}
+                    >
                       {section.title}
                     </Typography>
-                  </AccordionSummary>
-                  <AccordionDetails sx={{ px: 0, pt: 0, pb: 2 }}>
-                    <Stack spacing={0}>
+                    <Stack spacing={0.25}>
                       {section.links.map((link) => (
                         <Link
                           key={link.label}
@@ -185,8 +160,8 @@ const Footer = () => {
                           sx={{
                             color: 'rgba(255,255,255,0.55)',
                             textDecoration: 'none',
-                            fontSize: '0.9rem',
-                            py: 1,
+                            fontSize: '0.85rem',
+                            py: 0.5,
                             display: 'block',
                             transition: 'color 0.2s ease',
                             '&:hover': { color: theme.palette.primary.main },
@@ -196,11 +171,11 @@ const Footer = () => {
                         </Link>
                       ))}
                     </Stack>
-                  </AccordionDetails>
-                </Accordion>
-              ))}
+                  </Grid>
+                ))}
+              </Grid>
 
-              <Stack spacing={1.5} alignItems="center" sx={{ mt: 4 }}>
+              <Stack spacing={1} alignItems="flex-start" sx={{ mt: 1 }}>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <EmailIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }} />
                   <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.55)' }}>
@@ -217,9 +192,9 @@ const Footer = () => {
             </Box>
           ) : (
             /* ─── Desktop: Grid layout ─── */
-            <Grid container spacing={5}>
+            <Grid container spacing={4}>
               <Grid item xs={12} md={3.5}>
-                <Stack spacing={2.5}>
+                <Stack spacing={2}>
                   <Typography
                     variant="h5"
                     sx={{
@@ -250,8 +225,8 @@ const Footer = () => {
                         aria-label={social.label}
                         size="small"
                         sx={{
-                          width: 38,
-                          height: 38,
+                          width: 34,
+                          height: 34,
                           bgcolor: 'rgba(255,255,255,0.05)',
                           border: '1px solid rgba(255,255,255,0.08)',
                           color: 'rgba(255,255,255,0.6)',
@@ -296,7 +271,7 @@ const Footer = () => {
                 <Grid key={section.title} item xs={6} sm={3} md={2.125}>
                   <Typography
                     variant="subtitle2"
-                    sx={{ fontWeight: 700, color: '#fff', mb: 2.5, fontSize: '0.9rem' }}
+                    sx={{ fontWeight: 700, color: '#fff', mb: 2, fontSize: '0.9rem' }}
                   >
                     {section.title}
                   </Typography>
@@ -326,7 +301,7 @@ const Footer = () => {
           )}
 
           {/* Bottom bar */}
-          <Divider sx={{ mt: { xs: 4, md: 6 }, mb: 3, borderColor: 'rgba(255,255,255,0.08)' }} />
+          <Divider sx={{ mt: { xs: 3, md: 4 }, mb: 2, borderColor: 'rgba(255,255,255,0.08)' }} />
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             justifyContent="space-between"

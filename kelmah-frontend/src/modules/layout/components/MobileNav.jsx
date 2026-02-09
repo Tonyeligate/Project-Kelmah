@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import {
   Close as CloseIcon,
@@ -102,6 +102,7 @@ const MobileNav = ({ open, onClose }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const authState = useAuthCheck();
   const { unreadCount = 0 } = useNotifications();
 
@@ -112,6 +113,33 @@ const MobileNav = ({ open, onClose }) => {
   const userRole = user?.role || 'user';
   const isWorker = userRole === 'worker';
   const isHirer = userRole === 'hirer';
+  const isOnAuthPage =
+    location.pathname.includes('/login') ||
+    location.pathname.includes('/register') ||
+    location.pathname.includes('/forgot-password') ||
+    location.pathname.includes('/reset-password') ||
+    location.pathname.includes('/verify-email');
+  const isLoginPage = location.pathname.includes('/login');
+  const isRegisterPage = location.pathname.includes('/register');
+
+  const authCtas = useMemo(() => {
+    if (!showAuthButtons) return [];
+
+    if (isOnAuthPage) {
+      if (isLoginPage) {
+        return [{ label: 'Get Started', path: '/register', tone: 'primary' }];
+      }
+      if (isRegisterPage) {
+        return [{ label: 'Sign In', path: '/login', tone: 'primary' }];
+      }
+      return [{ label: 'Sign In', path: '/login', tone: 'primary' }];
+    }
+
+    return [
+      { label: 'Sign In', path: '/login', tone: 'secondary' },
+      { label: 'Get Started', path: '/register', tone: 'primary' },
+    ];
+  }, [showAuthButtons, isOnAuthPage, isLoginPage, isRegisterPage]);
 
   const formatRoleLabel = () => {
     if (isWorker) return 'Skilled Worker';
@@ -402,40 +430,35 @@ const MobileNav = ({ open, onClose }) => {
             }}
           >
             <Stack spacing={1}>
-              <StyledListItemButton
-                onClick={() => handleNavigate('/login')}
-                sx={{ justifyContent: 'center' }}
-              >
-                <ListItemText
-                  primary="Sign In"
-                  primaryTypographyProps={{
-                    textAlign: 'center',
-                    fontWeight: 600,
+              {authCtas.map((cta) => (
+                <StyledListItemButton
+                  key={cta.path}
+                  onClick={() => handleNavigate(cta.path)}
+                  sx={{
+                    justifyContent: 'center',
+                    ...(cta.tone === 'primary' && {
+                      backgroundColor:
+                        theme.palette.mode === 'dark'
+                          ? alpha(BRAND_COLORS.gold, 0.15)
+                          : alpha(BRAND_COLORS.black, 0.08),
+                    }),
                   }}
-                />
-              </StyledListItemButton>
-              <StyledListItemButton
-                onClick={() => handleNavigate('/register')}
-                sx={{
-                  justifyContent: 'center',
-                  backgroundColor:
-                    theme.palette.mode === 'dark'
-                      ? alpha(BRAND_COLORS.gold, 0.15)
-                      : alpha(BRAND_COLORS.black, 0.08),
-                }}
-              >
-                <ListItemText
-                  primary="Get Started"
-                  primaryTypographyProps={{
-                    textAlign: 'center',
-                    fontWeight: 600,
-                    color:
-                      theme.palette.mode === 'dark'
-                        ? BRAND_COLORS.gold
-                        : BRAND_COLORS.black,
-                  }}
-                />
-              </StyledListItemButton>
+                >
+                  <ListItemText
+                    primary={cta.label}
+                    primaryTypographyProps={{
+                      textAlign: 'center',
+                      fontWeight: 600,
+                      ...(cta.tone === 'primary' && {
+                        color:
+                          theme.palette.mode === 'dark'
+                            ? BRAND_COLORS.gold
+                            : BRAND_COLORS.black,
+                      }),
+                    }}
+                  />
+                </StyledListItemButton>
+              ))}
             </Stack>
           </Box>
         )}

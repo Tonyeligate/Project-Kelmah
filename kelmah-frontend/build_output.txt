@@ -1,0 +1,3 @@
+npm warn config ignoring workspace config at C:\Users\aship\Desktop\Project-Kelmah\kelmah-frontend/.npmrc
+[36mvite v5.4.19 [32mbuilding for production...[36m[39m
+transforming...

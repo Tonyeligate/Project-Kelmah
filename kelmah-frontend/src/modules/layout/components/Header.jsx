@@ -519,6 +519,28 @@ const Header = ({
     isAuthenticated,
   ]);
 
+  const authCta = React.useMemo(() => {
+    if (!showAuthButtons) return null;
+
+    const isLoginPage = location.pathname.includes('/login');
+    const isRegisterPage = location.pathname.includes('/register');
+
+    if (isOnAuthPage) {
+      if (isLoginPage) {
+        return { primary: { label: 'Get Started', to: '/register' } };
+      }
+      if (isRegisterPage) {
+        return { primary: { label: 'Sign In', to: '/login' } };
+      }
+      return { primary: { label: 'Sign In', to: '/login' } };
+    }
+
+    return {
+      secondary: { label: 'Sign In', to: '/login' },
+      primary: { label: 'Get Started', to: '/register' },
+    };
+  }, [showAuthButtons, isOnAuthPage, location.pathname]);
+
   const showAuthSpinner = !showUserFeatures && !showAuthButtons && isLoading;
 
   // 🎯 AUTO-HIDE HEADER FUNCTIONALITY
@@ -1204,7 +1226,7 @@ const Header = ({
           minHeight: { xs: 48, sm: 48, md: 56 }, // ✅ MOBILE-AUDIT FIX: 48px min for touch targets
           px: { xs: 1, sm: 2, md: 3 },
           py: { xs: 0.25, sm: 0.25 },
-          gap: { xs: 0.75, sm: 1 }, // ✅ MOBILE-AUDIT FIX: wider gap between items
+          gap: { xs: 0.5, sm: 0.75, md: 1 },
           // ✅ MOBILE-AUDIT FIX: Min 48px for touch-target compliance (was 36px)
           '@media (max-width: 899px)': {
             minHeight: '48px',
@@ -1505,24 +1527,28 @@ const Header = ({
                 </Box>
               </Tooltip>
             </>
-          ) : showAuthButtons ? (
+          ) : showAuthButtons && !isMobile && authCta ? (
             <Stack direction="row" spacing={1} sx={{ ml: 1 }}>
-              <AuthButton
-                component={RouterLink}
-                to="/login"
-                variant="outlined"
-                size="small"
-              >
-                Sign In
-              </AuthButton>
-              <AuthButton
-                component={RouterLink}
-                to="/register"
-                variant="contained"
-                size="small"
-              >
-                Get Started
-              </AuthButton>
+              {authCta.secondary && (
+                <AuthButton
+                  component={RouterLink}
+                  to={authCta.secondary.to}
+                  variant="outlined"
+                  size="small"
+                >
+                  {authCta.secondary.label}
+                </AuthButton>
+              )}
+              {authCta.primary && (
+                <AuthButton
+                  component={RouterLink}
+                  to={authCta.primary.to}
+                  variant="contained"
+                  size="small"
+                >
+                  {authCta.primary.label}
+                </AuthButton>
+              )}
             </Stack>
           ) : showAuthSpinner ? (
             <Box sx={{ ml: 2, display: 'flex', alignItems: 'center' }}>

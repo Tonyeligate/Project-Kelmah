@@ -1,5 +1,51 @@
 # Kelmah Platform - Current Status & Development Log
 
+## Investigation Intake (Feb 9, 2026 – Homepage Mobile Marketing Gap) 🔄
+- 🎯 **Scope Restatement**: Identify why the mobile homepage is missing background imagery and Kelmah marketing content, map the full frontend file surface and data flow involved in the homepage render, and propose fixes that restore visual storytelling and brand messaging without breaking existing routing/layout behavior.
+- ✅ **Success Criteria**:
+  1. The exact homepage component(s), layout wrapper(s), and any theme/global style files governing mobile render are documented with file paths.
+  2. Root cause(s) for missing background imagery and “about Kelmah” content are identified with code references.
+  3. A clear fix plan is documented (and, if approved, implemented) that restores branded imagery/content on mobile while preserving responsive layout and performance.
+  4. STATUS_LOG and any supporting spec-kit notes capture findings and verification steps.
+- 🗂️ **Initial File Surface for Dry Audit**:
+  - `kelmah-frontend/src/modules/home/pages/HomePage.jsx`
+  - `kelmah-frontend/src/modules/home/components/SimplifiedHero.jsx`
+  - `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+  - `kelmah-frontend/src/routes/config.jsx`
+
+### Implementation Update (Feb 9, 2026 – Homepage Marketing & Imagery Restore)
+- ✅ Routed the landing page to a new non-module `HomeLanding` component that restores branded imagery, a clear "What Kelmah does" value block, and an About-style narrative section tuned for mobile.
+- ✅ Added hero background imagery, category imagery cards, and an assurance banner to re-establish Kelmah's marketing message while keeping actions for hirers and workers prominent.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/pages/HomeLanding.jsx`
+  - `kelmah-frontend/src/routes/config.jsx`
+- 🧪 Verification: Not run (UI-only changes; recommend visual check on mobile and desktop breakpoints).
+
+## Investigation Intake (Feb 9, 2026 – Header/Footer CTA & Layout Audit) 🔄
+- 🎯 **Scope Restatement**: Map the visible design/UX issues in the live header/footer (mobile + desktop) to exact frontend components/files, then propose a tightened layout system and CTA hierarchy without touching `@/modules` code.
+- ✅ **Success Criteria**:
+  1. Each issue is mapped to a concrete component and file path with exact UI responsibility.
+  2. Proposed fixes define CTA hierarchy, spacing scale, and responsive layout adjustments aligned to the current design system.
+  3. Findings are documented for follow-up implementation without modifying protected module files.
+- 🗂️ **Initial File Surface for Dry Audit**:
+  - `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+  - `kelmah-frontend/src/modules/layout/components/Header.jsx`
+  - `kelmah-frontend/src/modules/layout/components/Footer.jsx`
+  - `kelmah-frontend/src/modules/common/components/layout/PageHeader.jsx`
+  - `kelmah-frontend/src/hooks/useAutoShowHeader.js`
+
+### Implementation Update (Feb 9, 2026 – Header/Footer CTA & Layout Fixes)
+- ✅ Simplified auth CTAs: auth pages now show only the complementary action, and mobile header no longer duplicates CTAs already present in the drawer.
+- ✅ Tightened header/nav density: reduced desktop nav padding/icon presence for narrower screens and standardized toolbar spacing.
+- ✅ Simplified mobile footer: replaced accordion layout with a compact two-column link grid and reduced spacing across desktop/footer sections.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/layout/components/Header.jsx`
+  - `kelmah-frontend/src/modules/layout/components/DesktopNav.jsx`
+  - `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
+  - `kelmah-frontend/src/modules/layout/components/Footer.jsx`
+- 🧪 Verification: Not run (UI-only changes; recommend visual check on mobile and desktop breakpoints).
+
+
 ## Protected Quick-Hire System Implementation COMPLETE ✅ (Dec 2025)
 
 ### Executive Summary

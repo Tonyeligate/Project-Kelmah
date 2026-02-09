@@ -16,12 +16,12 @@ const StyledNavLink = styled(NavLink)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: '6px',
-  margin: '0 8px',
-  padding: '8px 16px',
+  margin: '0 4px',
+  padding: '6px 12px',
   borderRadius: '24px',
   textDecoration: 'none',
   fontWeight: 600,
-  fontSize: '0.95rem',
+  fontSize: '0.9rem',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   '&:hover': {
@@ -71,7 +71,13 @@ const StyledNavLink = styled(NavLink)(({ theme }) => ({
         : 'rgba(0, 0, 0, 0.85)',
   },
   '& svg': {
-    fontSize: '1.1rem',
+    fontSize: '1rem',
+    opacity: 0.85,
+  },
+  '@media (max-width: 1100px)': {
+    '& svg': {
+      display: 'none',
+    },
   },
 }));
 
