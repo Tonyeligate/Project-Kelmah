@@ -7,6 +7,7 @@ import { api } from '../../../services/apiClient';
 import { io } from 'socket.io-client';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 import { WS_CONFIG } from '../../../config/environment';
+import { getWebSocketUrl } from '../../../services/socketUrl';
 
 class NotificationService {
   constructor() {
@@ -23,85 +24,7 @@ class NotificationService {
         return;
       }
 
-      const normalizeUrl = (url) => {
-        if (!url) {
-          return null;
-        }
-
-        const trimmed = url.trim();
-        if (!trimmed) {
-          return null;
-        }
-
-        if (/^https?:/i.test(trimmed) || /^wss?:/i.test(trimmed)) {
-          return trimmed;
-        }
-
-        if (typeof window !== 'undefined' && window.location?.origin) {
-          return `${window.location.origin.replace(/\/$/, '')}/${trimmed.replace(/^\//, '')}`;
-        }
-
-        return `https://${trimmed.replace(/^\//, '')}`;
-      };
-
-      const preferSecureScheme = (url) => {
-        if (!url) {
-          return null;
-        }
-        if (url.startsWith('wss://') || url.startsWith('ws://')) {
-          return url;
-        }
-        if (url.startsWith('https://')) {
-          return url;
-        }
-        if (url.startsWith('http://')) {
-          // Allow explicit http for localhost development
-          return url;
-        }
-        return url;
-      };
-
-      const deriveDefaultUrl = () => {
-        if (WS_CONFIG?.url) {
-          return WS_CONFIG.url;
-        }
-        if (typeof window !== 'undefined' && window.location?.origin) {
-          return window.location.origin;
-        }
-        return 'http://localhost:5000';
-      };
-
-      // Get backend WebSocket URL from runtime config
-      let wsUrl = deriveDefaultUrl();
-      try {
-        const response = await fetch('/runtime-config.json');
-        if (response.ok) {
-          const config = await response.json();
-          wsUrl =
-            config.websocketUrl ||
-            config.localtunnelUrl ||
-            config.ngrokUrl ||
-            config.WS_URL ||
-            config.API_URL ||
-            wsUrl;
-        }
-      } catch (configError) {
-        console.warn(
-          '⚠️ Notifications: Failed to load runtime config, using fallback URL:',
-          wsUrl,
-          configError,
-        );
-      }
-
-      wsUrl = preferSecureScheme(normalizeUrl(wsUrl));
-
-      if (!wsUrl) {
-        console.error(
-          'Notifications: No valid WebSocket URL resolved; skipping socket connection',
-        );
-        return;
-      }
-
+      const wsUrl = await getWebSocketUrl();
       console.log('📡 Notifications WebSocket connecting to:', wsUrl);
 
       // Connect to backend messaging service via API Gateway

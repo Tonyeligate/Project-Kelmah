@@ -5,6 +5,7 @@ import ProtectedRoute from '../modules/auth/components/common/ProtectedRoute';
 import LoadingScreen from '../modules/common/components/loading/LoadingScreen';
 import { PaymentProvider } from '../modules/payment/contexts/PaymentContext';
 import { ContractProvider } from '../modules/contracts/contexts/ContractContext';
+import RouteErrorBoundary from '../modules/common/components/RouteErrorBoundary';
 
 // Public Pages
 const LandingPage = lazy(() => import('../pages/HomeLanding'));
@@ -170,7 +171,9 @@ const routes = [
         path: 'dashboard',
         element: (
           <ProtectedRoute>
-            <DashboardPage />
+            <RouteErrorBoundary label="Dashboard">
+              <DashboardPage />
+            </RouteErrorBoundary>
           </ProtectedRoute>
         ),
       },
@@ -199,7 +202,9 @@ const routes = [
         path: 'messages',
         element: (
           <ProtectedRoute>
-            <MessagesPage />
+            <RouteErrorBoundary label="Messages">
+              <MessagesPage />
+            </RouteErrorBoundary>
           </ProtectedRoute>
         ),
       },
@@ -214,7 +219,9 @@ const routes = [
             path: 'dashboard',
             element: (
               <ProtectedRoute>
-                <HirerDashboardPage />
+                <RouteErrorBoundary label="Hirer Dashboard">
+                  <HirerDashboardPage />
+                </RouteErrorBoundary>
               </ProtectedRoute>
             ),
           },
@@ -276,7 +283,9 @@ const routes = [
             path: 'dashboard',
             element: (
               <ProtectedRoute>
-                <WorkerDashboardPage />
+                <RouteErrorBoundary label="Worker Dashboard">
+                  <WorkerDashboardPage />
+                </RouteErrorBoundary>
               </ProtectedRoute>
             ),
           },
@@ -371,7 +380,9 @@ const routes = [
             path: 'earnings',
             element: (
               <ProtectedRoute>
-                <EarningsAnalytics />
+                <RouteErrorBoundary label="Earnings">
+                  <EarningsAnalytics />
+                </RouteErrorBoundary>
               </ProtectedRoute>
             ),
           },
@@ -395,9 +406,11 @@ const routes = [
             path: 'contracts',
             element: (
               <ProtectedRoute>
-                <ContractProvider>
-                  <ContractManagementPage />
-                </ContractProvider>
+                <RouteErrorBoundary label="Contracts">
+                  <ContractProvider>
+                    <ContractManagementPage />
+                  </ContractProvider>
+                </RouteErrorBoundary>
               </ProtectedRoute>
             ),
           },
@@ -430,9 +443,11 @@ const routes = [
             path: 'wallet',
             element: (
               <ProtectedRoute>
-                <PaymentProvider>
-                  <WalletPage />
-                </PaymentProvider>
+                <RouteErrorBoundary label="Wallet">
+                  <PaymentProvider>
+                    <WalletPage />
+                  </PaymentProvider>
+                </RouteErrorBoundary>
               </ProtectedRoute>
             ),
           },
@@ -568,9 +583,11 @@ const routes = [
         path: 'wallet',
         element: (
           <ProtectedRoute>
-            <PaymentProvider>
-              <WalletPage />
-            </PaymentProvider>
+            <RouteErrorBoundary label="Wallet">
+              <PaymentProvider>
+                <WalletPage />
+              </PaymentProvider>
+            </RouteErrorBoundary>
           </ProtectedRoute>
         ),
       },

@@ -72,6 +72,19 @@ apiClient.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
+        // Graceful degradation for sleeping Render backend (free tier)
+        const status = error.response?.status;
+        if (status === 502 || status === 503 || status === 504) {
+            // Attach a user-friendly message so consumers can display it
+            error.isBackendSleeping = true;
+            error.friendlyMessage =
+                'The server is waking up — this usually takes 15-30 seconds. Please try again shortly.';
+            console.warn(
+                `⏳ Backend returned ${status} — likely waking from sleep`,
+            );
+            return Promise.reject(error);
+        }
+
         // Handle 401 Token Refresh
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;

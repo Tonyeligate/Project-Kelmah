@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import authService from '../modules/auth/services/authService';
 import { io } from 'socket.io-client';
+import { getWebSocketUrl } from '../services/socketUrl';
 
 // Socket.IO based WebSocket compatibility hook
 export const useWebSocket = () => {
@@ -17,22 +18,8 @@ export const useWebSocket = () => {
         return;
       }
 
-      // Get backend WebSocket URL from runtime config
-      let wsUrl = 'https://kelmah-api-gateway-6yoy.onrender.com'; // Production fallback
-      try {
-        const response = await fetch('/runtime-config.json');
-        if (response.ok) {
-          const config = await response.json();
-          wsUrl =
-            config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
-          console.log('📡 WebSocket connecting to backend:', wsUrl);
-        }
-      } catch (configError) {
-        console.warn(
-          '⚠️ Failed to load runtime config, using fallback:',
-          wsUrl,
-        );
-      }
+      const wsUrl = await getWebSocketUrl();
+      console.log('📡 WebSocket connecting to backend:', wsUrl);
 
       // Connect to backend server - Socket.IO handles /socket.io path automatically
       const socket = io(wsUrl, {

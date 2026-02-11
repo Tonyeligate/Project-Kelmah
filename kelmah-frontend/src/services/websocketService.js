@@ -6,6 +6,7 @@ import {
 } from '../store/slices/notificationSlice';
 import { WS_CONFIG } from '../config/environment';
 import { API_ENDPOINTS } from '../config/services';
+import { getWebSocketUrl } from './socketUrl';
 
 /**
  * WebSocket service for real-time communication
@@ -42,21 +43,8 @@ class WebSocketService {
         this.disconnect();
       }
 
-      // Get backend WebSocket URL from runtime config
-      let wsUrl = 'https://kelmah-api-gateway-6yoy.onrender.com'; // Production fallback
-      try {
-        const response = await fetch('/runtime-config.json');
-        if (response.ok) {
-          const config = await response.json();
-          wsUrl =
-            config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
-        }
-      } catch (configError) {
-        console.warn(
-          '⚠️ WebSocketService: Failed to load runtime config, using fallback',
-        );
-      }
-
+      // Get backend WebSocket URL from shared utility
+      const wsUrl = await getWebSocketUrl();
       console.log('🔌 WebSocket Service connecting to backend:', wsUrl);
 
       // Create Socket.io connection to backend server

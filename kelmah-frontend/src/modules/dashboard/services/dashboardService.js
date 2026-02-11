@@ -1,6 +1,7 @@
 import { api } from '../../../services/apiClient';
 import { WS_CONFIG } from '../../../config/environment';
 import { io } from 'socket.io-client';
+import { getWebSocketUrl } from '../../../services/socketUrl';
 
 /**
  * Dashboard service to handle dashboard data fetching and real-time updates
@@ -29,24 +30,8 @@ class DashboardService {
 
     if (!this.token) return;
 
-    // Get WebSocket URL from runtime config
-    let wsUrl = 'https://kelmah-api-gateway-6yoy.onrender.com'; // Production fallback
-    try {
-      const response = await fetch('/runtime-config.json');
-      if (response.ok) {
-        const config = await response.json();
-        // Use websocketUrl, ngrokUrl, or API_URL from runtime config
-        wsUrl =
-          config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
-        console.log('📡 Dashboard WebSocket connecting to:', wsUrl);
-      }
-    } catch (error) {
-      console.warn(
-        '⚠️ Failed to load runtime config for WebSocket, using fallback:',
-        wsUrl,
-        error,
-      );
-    }
+    const wsUrl = await getWebSocketUrl();
+    console.log('📡 Dashboard WebSocket connecting to:', wsUrl);
 
     // Connect to backend WebSocket server
     // When passing full URL, Socket.IO automatically handles the path

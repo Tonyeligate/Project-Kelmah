@@ -9,128 +9,60 @@ import {
   Grid,
   Card,
   CardContent,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Button,
-  Chip,
   Avatar,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  Divider,
   Alert,
   CircularProgress,
-  LinearProgress,
-  Stack,
   useTheme,
   alpha,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TablePagination,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
   AccountBalance as BankIcon,
-  Work as WorkIcon,
-  Schedule as TimeIcon,
-  Star as RatingIcon,
-  Payment as PaymentIcon,
-  Analytics as AnalyticsIcon,
-  GetApp as DownloadIcon,
-  DateRange as CalendarIcon,
   MonetizationOn as MoneyIcon,
-  Assessment as ReportIcon,
+  CalendarMonth as CalendarIcon,
+  DateRange as WeekIcon,
 } from '@mui/icons-material';
 import {
-  LineChart,
-  Line,
   AreaChart,
   Area,
   BarChart,
   Bar,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
 import { useSnackbar } from 'notistack';
-import {
-  formatCurrency,
-  formatDate,
-  formatPercentage,
-} from '../../../utils/formatters';
+import { formatCurrency } from '../../../utils/formatters';
+
+const MONTH_NAMES = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
 
 const EarningsAnalytics = () => {
-  // FIXED: Use standardized user normalization for consistent user data access
   const { user: rawUser } = useSelector((state) => state.auth);
   const user = normalizeUser(rawUser);
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
 
-  // State management
   const [earningsData, setEarningsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [timeRange, setTimeRange] = useState('12months');
-  const [selectedMetric, setSelectedMetric] = useState('earnings');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const timeRanges = [
-    { value: '7days', label: 'Last 7 Days' },
-    { value: '30days', label: 'Last 30 Days' },
-    { value: '3months', label: 'Last 3 Months' },
-    { value: '6months', label: 'Last 6 Months' },
-    { value: '12months', label: 'Last 12 Months' },
-    { value: 'all', label: 'All Time' },
-  ];
+  // Transform backend byMonth array into chart-friendly data
+  const buildChartData = (byMonth = []) =>
+    byMonth.map((entry) => ({
+      month: MONTH_NAMES[(entry.month - 1) % 12] || `M${entry.month}`,
+      amount: entry.amount ?? 0,
+    }));
 
-  const metrics = [
-    { value: 'earnings', label: 'Earnings', icon: MoneyIcon },
-    { value: 'jobs', label: 'Jobs Completed', icon: WorkIcon },
-    { value: 'hours', label: 'Hours Worked', icon: TimeIcon },
-    { value: 'rating', label: 'Average Rating', icon: RatingIcon },
-  ];
-
-  // Chart colors
-  const COLORS = {
-    primary: theme.palette.primary.main,
-    secondary: theme.palette.secondary.main,
-    success: theme.palette.success.main,
-    warning: theme.palette.warning.main,
-    error: theme.palette.error.main,
-    info: theme.palette.info.main,
-  };
-
-  const pieColors = [
-    COLORS.primary,
-    COLORS.secondary,
-    COLORS.success,
-    COLORS.warning,
-    COLORS.info,
-  ];
-
-  // Load earnings data
   const loadEarningsData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await earningsService.getEarningsAnalytics(
-        user.id,
-        timeRange,
-      );
+      const response = await earningsService.getEarnings(user.id);
       setEarningsData(response.data);
       setError(null);
     } catch (err) {
@@ -141,7 +73,7 @@ const EarningsAnalytics = () => {
     } finally {
       setLoading(false);
     }
-  }, [user.id, timeRange, enqueueSnackbar]);
+  }, [user.id, enqueueSnackbar]);
 
   useEffect(() => {
     if (user?.id) {
@@ -149,59 +81,56 @@ const EarningsAnalytics = () => {
     }
   }, [loadEarningsData, user]);
 
-  // Handle export data
-  const handleExportData = async () => {
-    try {
-      const blob = await earningsService.exportEarningsData(user.id, timeRange);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `earnings_report_${timeRange}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      enqueueSnackbar('Earnings report exported successfully', {
-        variant: 'success',
-      });
-    } catch (error) {
-      enqueueSnackbar('Failed to export earnings report', { variant: 'error' });
-    }
-  };
-
-  // Render summary cards
+  // Summary cards derived from backend totals
   const renderSummaryCards = () => {
-    if (!earningsData) return null;
+    if (!earningsData?.totals) return null;
+    const { totals } = earningsData;
 
-    const { summary } = earningsData;
+    // Derive a simple change indicator: last30Days as % of allTime
+    const changePercent =
+      totals.allTime > 0
+        ? ((totals.last30Days / totals.allTime) * 100).toFixed(1)
+        : 0;
+
+    const monthlyAvg =
+      earningsData.breakdown?.byMonth?.length > 0
+        ? (
+            earningsData.breakdown.byMonth.reduce(
+              (sum, m) => sum + (m.amount || 0),
+              0,
+            ) / earningsData.breakdown.byMonth.length
+          ).toFixed(2)
+        : 0;
 
     const cards = [
       {
         title: 'Total Earnings',
-        value: formatCurrency(summary.totalEarnings),
-        change: summary.earningsChange,
+        value: formatCurrency(totals.allTime),
+        subtitle: totals.currency || 'GHS',
         icon: MoneyIcon,
         color: 'primary',
       },
       {
-        title: 'Jobs Completed',
-        value: summary.jobsCompleted,
-        change: summary.jobsChange,
-        icon: WorkIcon,
+        title: 'Last 30 Days',
+        value: formatCurrency(totals.last30Days),
+        subtitle: `${changePercent}% of all-time`,
+        icon: CalendarIcon,
         color: 'success',
+        change: totals.last30Days > 0 ? 1 : 0,
       },
       {
-        title: 'Hours Worked',
-        value: `${summary.hoursWorked}h`,
-        change: summary.hoursChange,
-        icon: TimeIcon,
+        title: 'Last 7 Days',
+        value: formatCurrency(totals.last7Days),
+        subtitle: 'Recent activity',
+        icon: WeekIcon,
         color: 'info',
+        change: totals.last7Days > 0 ? 1 : 0,
       },
       {
-        title: 'Average Rating',
-        value: summary.averageRating.toFixed(1),
-        change: summary.ratingChange,
-        icon: RatingIcon,
+        title: 'Monthly Average',
+        value: formatCurrency(Number(monthlyAvg)),
+        subtitle: `Over ${earningsData.breakdown?.byMonth?.length || 0} months`,
+        icon: BankIcon,
         color: 'warning',
       },
     ];
@@ -228,24 +157,25 @@ const EarningsAnalytics = () => {
                     <Typography variant="h4" component="div">
                       {card.value}
                     </Typography>
-                    {card.change !== undefined && (
-                      <Box display="flex" alignItems="center" mt={1}>
-                        {card.change >= 0 ? (
-                          <TrendingUpIcon color="success" fontSize="small" />
+                    <Box display="flex" alignItems="center" mt={1}>
+                      {card.change !== undefined &&
+                        (card.change > 0 ? (
+                          <TrendingUpIcon
+                            color="success"
+                            fontSize="small"
+                            sx={{ mr: 0.5 }}
+                          />
                         ) : (
-                          <TrendingDownIcon color="error" fontSize="small" />
-                        )}
-                        <Typography
-                          variant="body2"
-                          color={
-                            card.change >= 0 ? 'success.main' : 'error.main'
-                          }
-                          sx={{ ml: 0.5 }}
-                        >
-                          {formatPercentage(Math.abs(card.change))}
-                        </Typography>
-                      </Box>
-                    )}
+                          <TrendingDownIcon
+                            color="error"
+                            fontSize="small"
+                            sx={{ mr: 0.5 }}
+                          />
+                        ))}
+                      <Typography variant="body2" color="text.secondary">
+                        {card.subtitle}
+                      </Typography>
+                    </Box>
                   </Box>
                   <Avatar
                     sx={{
@@ -269,59 +199,30 @@ const EarningsAnalytics = () => {
     );
   };
 
-  // Render earnings trend chart
+  // Monthly earnings area chart
   const renderEarningsTrend = () => {
-    if (!earningsData?.chartData) return null;
+    const chartData = buildChartData(earningsData?.breakdown?.byMonth);
+    if (!chartData.length) return null;
 
     return (
       <Paper sx={{ p: 3, mb: 3 }}>
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={3}
-        >
-          <Typography variant="h6">Earnings Trend</Typography>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Metric</InputLabel>
-            <Select
-              value={selectedMetric}
-              onChange={(e) => setSelectedMetric(e.target.value)}
-              label="Metric"
-            >
-              {metrics.map((metric) => (
-                <MenuItem key={metric.value} value={metric.value}>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <metric.icon fontSize="small" />
-                    {metric.label}
-                  </Box>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
-
+        <Typography variant="h6" gutterBottom>
+          Monthly Earnings Trend
+        </Typography>
         <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={earningsData.chartData}>
+          <AreaChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="period" tick={{ fontSize: 12 }} />
+            <XAxis dataKey="month" tick={{ fontSize: 12 }} />
             <YAxis
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) =>
-                selectedMetric === 'earnings' ? formatCurrency(value) : value
-              }
+              tickFormatter={(v) => formatCurrency(v)}
             />
-            <Tooltip
-              formatter={(value) => [
-                selectedMetric === 'earnings' ? formatCurrency(value) : value,
-                metrics.find((m) => m.value === selectedMetric)?.label,
-              ]}
-            />
+            <Tooltip formatter={(v) => [formatCurrency(v), 'Earnings']} />
             <Area
               type="monotone"
-              dataKey={selectedMetric}
-              stroke={COLORS.primary}
-              fill={alpha(COLORS.primary, 0.3)}
+              dataKey="amount"
+              stroke={theme.palette.primary.main}
+              fill={alpha(theme.palette.primary.main, 0.3)}
               strokeWidth={2}
             />
           </AreaChart>
@@ -330,300 +231,33 @@ const EarningsAnalytics = () => {
     );
   };
 
-  // Render category breakdown
-  const renderCategoryBreakdown = () => {
-    if (!earningsData?.categoryBreakdown) return null;
-
-    return (
-      <Grid container spacing={3} mb={3}>
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Earnings by Category
-            </Typography>
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={earningsData.categoryBreakdown}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name} (${formatPercentage(percent * 100)})`
-                  }
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="earnings"
-                >
-                  {earningsData.categoryBreakdown.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={pieColors[index % pieColors.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => formatCurrency(value)} />
-              </PieChart>
-            </ResponsiveContainer>
-          </Paper>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Category Details
-            </Typography>
-            <List>
-              {earningsData.categoryBreakdown.map((category, index) => (
-                <React.Fragment key={category.name}>
-                  <ListItem>
-                    <ListItemIcon>
-                      <Box
-                        sx={{
-                          width: 12,
-                          height: 12,
-                          borderRadius: '50%',
-                          backgroundColor: pieColors[index % pieColors.length],
-                        }}
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={category.name}
-                      secondary={`${category.jobs} jobs • ${formatCurrency(category.earnings)}`}
-                    />
-                    <Typography variant="body2" color="text.secondary">
-                      {formatPercentage(
-                        (category.earnings /
-                          earningsData.summary.totalEarnings) *
-                          100,
-                      )}
-                    </Typography>
-                  </ListItem>
-                  {index < earningsData.categoryBreakdown.length - 1 && (
-                    <Divider />
-                  )}
-                </React.Fragment>
-              ))}
-            </List>
-          </Paper>
-        </Grid>
-      </Grid>
-    );
-  };
-
-  // Render recent transactions
-  const renderRecentTransactions = () => {
-    if (!earningsData?.recentTransactions) return null;
-
-    const handleChangePage = (event, newPage) => {
-      setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-      setRowsPerPage(parseInt(event.target.value, 10));
-      setPage(0);
-    };
-
-    const paginatedTransactions = earningsData.recentTransactions.slice(
-      page * rowsPerPage,
-      page * rowsPerPage + rowsPerPage,
-    );
+  // Monthly bar chart
+  const renderMonthlyBars = () => {
+    const chartData = buildChartData(earningsData?.breakdown?.byMonth);
+    if (!chartData.length) return null;
 
     return (
       <Paper sx={{ p: 3 }}>
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={3}
-        >
-          <Typography variant="h6">Recent Transactions</Typography>
-          <Button
-            startIcon={<DownloadIcon />}
-            onClick={handleExportData}
-            variant="outlined"
-            size="small"
-          >
-            Export
-          </Button>
-        </Box>
-
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Date</TableCell>
-                <TableCell>Job Title</TableCell>
-                <TableCell>Category</TableCell>
-                <TableCell>Client</TableCell>
-                <TableCell align="right">Amount</TableCell>
-                <TableCell>Status</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedTransactions.map((transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell>{formatDate(transaction.date)}</TableCell>
-                  <TableCell>
-                    <Typography variant="body2" noWrap>
-                      {transaction.jobTitle}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={transaction.category}
-                      size="small"
-                      variant="outlined"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {transaction.clientName}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography
-                      variant="body2"
-                      color={
-                        transaction.amount > 0 ? 'success.main' : 'error.main'
-                      }
-                      fontWeight="medium"
-                    >
-                      {formatCurrency(transaction.amount)}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={transaction.status}
-                      size="small"
-                      color={
-                        transaction.status === 'completed'
-                          ? 'success'
-                          : transaction.status === 'pending'
-                            ? 'warning'
-                            : 'default'
-                      }
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={earningsData.recentTransactions.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
+        <Typography variant="h6" gutterBottom>
+          Earnings by Month
+        </Typography>
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+            <YAxis
+              tick={{ fontSize: 12 }}
+              tickFormatter={(v) => formatCurrency(v)}
+            />
+            <Tooltip formatter={(v) => [formatCurrency(v), 'Earnings']} />
+            <Bar
+              dataKey="amount"
+              fill={theme.palette.success.main}
+              radius={[4, 4, 0, 0]}
+            />
+          </BarChart>
+        </ResponsiveContainer>
       </Paper>
-    );
-  };
-
-  // Render performance metrics
-  const renderPerformanceMetrics = () => {
-    if (!earningsData?.performance) return null;
-
-    const { performance } = earningsData;
-
-    return (
-      <Grid container spacing={3} mb={3}>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Performance Score
-              </Typography>
-              <Box display="flex" alignItems="center" mb={2}>
-                <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-                  <CircularProgress
-                    variant="determinate"
-                    value={performance.score}
-                    size={80}
-                    thickness={4}
-                    color="primary"
-                  />
-                  <Box
-                    sx={{
-                      top: 0,
-                      left: 0,
-                      bottom: 0,
-                      right: 0,
-                      position: 'absolute',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Typography variant="h6" component="div">
-                      {performance.score}
-                    </Typography>
-                  </Box>
-                </Box>
-                <Box ml={2}>
-                  <Typography variant="body2" color="text.secondary">
-                    Overall Performance
-                  </Typography>
-                  <Typography variant="body2">{performance.level}</Typography>
-                </Box>
-              </Box>
-              <LinearProgress
-                variant="determinate"
-                value={performance.score}
-                sx={{ height: 8, borderRadius: 4 }}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Key Metrics
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    Response Rate
-                  </Typography>
-                  <Typography variant="h6">
-                    {formatPercentage(performance.responseRate)}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    Completion Rate
-                  </Typography>
-                  <Typography variant="h6">
-                    {formatPercentage(performance.completionRate)}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    On-Time Delivery
-                  </Typography>
-                  <Typography variant="h6">
-                    {formatPercentage(performance.onTimeRate)}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    Client Satisfaction
-                  </Typography>
-                  <Typography variant="h6">
-                    {formatPercentage(performance.satisfactionRate)}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
     );
   };
 
@@ -650,46 +284,20 @@ const EarningsAnalytics = () => {
 
   return (
     <Box>
-      {/* Header */}
-      <Box
-        mb={3}
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-      >
+      <Box mb={3}>
         <Typography variant="h4" component="h1">
           Earnings Analytics
         </Typography>
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Time Range</InputLabel>
-          <Select
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value)}
-            label="Time Range"
-          >
-            {timeRanges.map((range) => (
-              <MenuItem key={range.value} value={range.value}>
-                {range.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        {earningsData?.source && (
+          <Typography variant="body2" color="text.secondary">
+            Data source: {earningsData.source}
+          </Typography>
+        )}
       </Box>
 
-      {/* Summary Cards */}
       {renderSummaryCards()}
-
-      {/* Performance Metrics */}
-      {renderPerformanceMetrics()}
-
-      {/* Earnings Trend Chart */}
       {renderEarningsTrend()}
-
-      {/* Category Breakdown */}
-      {renderCategoryBreakdown()}
-
-      {/* Recent Transactions */}
-      {renderRecentTransactions()}
+      {renderMonthlyBars()}
     </Box>
   );
 };

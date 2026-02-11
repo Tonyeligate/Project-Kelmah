@@ -10,6 +10,7 @@ import { messagingService } from '../services/messagingService';
 import { useAuth } from '../../auth/hooks/useAuth';
 import io from 'socket.io-client';
 import { normalizeAttachmentListVirusScan } from '../utils/virusScanUtils';
+import { getWebSocketUrl } from '../../../services/socketUrl';
 
 const MessageContext = createContext(null);
 
@@ -76,21 +77,7 @@ export const MessageProvider = ({ children }) => {
     if (connectWebSocket._connecting) return;
     connectWebSocket._connecting = true;
 
-    // Get backend WebSocket URL from runtime config
-    let wsUrl = 'https://kelmah-api-gateway-6yoy.onrender.com'; // Production fallback
-    try {
-      const response = await fetch('/runtime-config.json');
-      if (response.ok) {
-        const config = await response.json();
-        wsUrl =
-          config.websocketUrl || config.ngrokUrl || config.API_URL || wsUrl;
-      }
-    } catch (configError) {
-      console.warn(
-        '⚠️ MessageContext: Failed to load runtime config, using fallback',
-      );
-    }
-
+    const wsUrl = await getWebSocketUrl();
     console.log('🔌 Connecting to messaging WebSocket backend:', wsUrl);
 
     const newSocket = io(wsUrl, {
