@@ -126,6 +126,37 @@ router.get('/contracts', async (req, res) => {
   await forwardToJobService(req, res, '/api/jobs/contracts', 'GET');
 });
 
+// GET /api/jobs/assigned - Get worker's assigned jobs (protected)
+router.get('/assigned', authenticate, async (req, res) => {
+  const queryString = new URLSearchParams(req.query).toString();
+  const path = `/api/jobs/assigned${queryString ? '?' + queryString : ''}`;
+  await forwardToJobService(req, res, path, 'GET');
+});
+
+// GET /api/jobs/applications/me - Get worker's own applications (protected)
+router.get('/applications/me', authenticate, async (req, res) => {
+  const queryString = new URLSearchParams(req.query).toString();
+  const path = `/api/jobs/applications/me${queryString ? '?' + queryString : ''}`;
+  await forwardToJobService(req, res, path, 'GET');
+});
+
+// GET /api/jobs/proposals - Get hirer's proposals (protected)
+router.get('/proposals', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, '/api/jobs/proposals', 'GET');
+});
+
+// GET /api/jobs/analytics - Get job analytics (protected, admin)
+router.get('/analytics', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, '/api/jobs/analytics', 'GET');
+});
+
+// GET /api/jobs/recommendations - Get recommended jobs (protected)
+router.get('/recommendations', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, '/api/jobs/recommendations', 'GET');
+});
+
+// ===== PARAMETERIZED ROUTES BELOW — /:id must be LAST to avoid shadowing =====
+
 // GET /api/jobs/:id - Get job details (public)
 router.get('/:id', async (req, res) => {
   await forwardToJobService(req, res, `/api/jobs/${req.params.id}`, 'GET');
@@ -156,7 +187,7 @@ router.post('/:id/publish', authenticate, async (req, res) => {
   await forwardToJobService(req, res, `/api/jobs/${req.params.id}/publish`, 'POST');
 });
 
-// GET /api/jobs/:id/applications - Get applications (protected)
+// GET /api/jobs/:id/applications - Get applications for specific job (protected)
 router.get('/:id/applications', authenticate, async (req, res) => {
   await forwardToJobService(req, res, `/api/jobs/${req.params.id}/applications`, 'GET');
 });
@@ -169,11 +200,6 @@ router.post('/:id/save', authenticate, async (req, res) => {
 // DELETE /api/jobs/:id/save - Unsave job (protected)
 router.delete('/:id/save', authenticate, async (req, res) => {
   await forwardToJobService(req, res, `/api/jobs/${req.params.id}/save`, 'DELETE');
-});
-
-// GET /api/jobs/recommendations - Get recommended jobs (protected)
-router.get('/recommendations', authenticate, async (req, res) => {
-  await forwardToJobService(req, res, '/api/jobs/recommendations', 'GET');
 });
 
 module.exports = router;

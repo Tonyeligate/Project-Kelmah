@@ -9,7 +9,7 @@ import { getApiBaseUrl } from '../config/environment';
 
 const WARMUP_ENDPOINTS = [
   '/health',
-  '/api/health/aggregate'
+  '/health/aggregate'
 ];
 
 const WARMUP_TIMEOUT = 30000; // 30 seconds for cold starts

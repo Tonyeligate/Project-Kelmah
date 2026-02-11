@@ -16,6 +16,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useNotifications } from '../../../notifications/contexts/NotificationContext';
 import { useMessages } from '../../../messaging/contexts/MessageContext';
+import kelmahLogo from '../../../../assets/images/logo.png';
 
 // --- ICONS ---
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -70,7 +71,7 @@ const KelmahLogo = () => {
       ) : (
         <Box
           component="img"
-          src="/kelmah-logo.png"
+          src={kelmahLogo}
           alt="Kelmah"
           sx={{
             width: 48,
