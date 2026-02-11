@@ -138,7 +138,6 @@ const JobSearchForm = ({
                 const nextKeyword = e.target.value;
                 setKeyword(nextKeyword);
               }}
-              onBlur={() => emitSearch()}
               placeholder="e.g., Carpenter, Plumber"
             />
           </Grid>
@@ -154,7 +153,6 @@ const JobSearchForm = ({
                 const nextLocation = e.target.value;
                 setLocation(nextLocation);
               }}
-              onBlur={() => emitSearch()}
               placeholder="e.g., Accra, Kumasi"
             />
           </Grid>

@@ -27,7 +27,7 @@ import {
   WorkspacePremium as WorkspacePremiumIcon,
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
-import { useLocation, useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 
 const WorkerCard = ({ worker }) => {
@@ -288,13 +288,11 @@ const WorkerCard = ({ worker }) => {
 
   // Handle view profile - used for card click navigation
   const handleViewProfile = useCallback((e) => {
-    // Prevent any default behavior and stop propagation
     if (e) {
-      e.preventDefault();
       e.stopPropagation();
     }
 
-    const targetId = worker.id || worker._id || worker.userId;
+    const targetId = resolvedWorkerId;
     console.log('🟡 WorkerCard CLICKED! Target ID:', targetId);
     console.log('🟡 Attempting navigation to:', `/worker-profile/${targetId}`);
 
@@ -375,36 +373,54 @@ const WorkerCard = ({ worker }) => {
     };
   }, [handleMessage, isAuthenticated, isHirer, isViewingSelf]);
 
-  const profileUrl = `/worker-profile/${worker.id || worker._id || worker.userId}`;
+  const profileUrl = resolvedWorkerId
+    ? `/worker-profile/${resolvedWorkerId}`
+    : null;
 
   return (
-    <RouterLink
-      to={profileUrl}
-      style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
-      onClick={() => console.log('🟡 RouterLink clicked! Going to:', profileUrl)}
+    <Card
+      elevation={2}
+      role="link"
+      tabIndex={0}
+      aria-label={
+        profileUrl ? `View worker profile ${worker.name || ''}` : 'Worker profile'
+      }
+      onClick={(e) => {
+        if (!profileUrl) {
+          e.stopPropagation();
+          return;
+        }
+        handleViewProfile(e);
+      }}
+      onKeyDown={(e) => {
+        if (!profileUrl) {
+          return;
+        }
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleViewProfile(e);
+        }
+      }}
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        cursor: profileUrl ? 'pointer' : 'default',
+        transition: 'transform 0.2s, box-shadow 0.2s',
+        '&:hover': {
+          transform: profileUrl ? 'translateY(-4px)' : 'none',
+          boxShadow: profileUrl ? 6 : undefined,
+        },
+      }}
     >
-      <Card
-        elevation={2}
+      <CardContent
         sx={{
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          cursor: 'pointer',
-          transition: 'transform 0.2s, box-shadow 0.2s',
-          '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: 6,
-          },
+          flexGrow: 1,
+          textDecoration: 'none',
+          color: 'inherit',
+          display: 'block',
         }}
       >
-        <CardContent
-          sx={{
-            flexGrow: 1,
-            textDecoration: 'none',
-            color: 'inherit',
-            display: 'block',
-          }}
-        >
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Avatar
               src={worker.profileImage}
@@ -551,19 +567,14 @@ const WorkerCard = ({ worker }) => {
         </CardContent>
 
         {/* Contact Action Buttons */}
-        <CardActions
-          sx={{ justifyContent: 'space-between', px: 2, pb: 2, pt: 0 }}
+      <CardActions
+        sx={{ justifyContent: 'space-between', px: 2, pb: 2, pt: 0 }}
+      >
+        <Button
           onClick={(e) => {
-            e.preventDefault();
             e.stopPropagation();
+            handleViewProfile(e);
           }}
-        >
-          <Button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleViewProfile(e);
-            }}
             variant="outlined"
             startIcon={<VisibilityIcon />}
             size="small"
@@ -582,41 +593,39 @@ const WorkerCard = ({ worker }) => {
           >
             View Profile
           </Button>
-          <Tooltip title={messageCta.tooltip} arrow>
-            <span style={{ flex: 1 }}>
-              <Button
-                variant="contained"
-                startIcon={<MessageIcon />}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  messageCta.handler(e);
-                }}
-                disabled={messageCta.disabled}
-                size="small"
-                fullWidth
-                sx={{
-                  minHeight: '44px',
-                  bgcolor: messageCta.disabled
-                    ? 'action.disabledBackground'
-                    : '#FFD700',
-                  color: messageCta.disabled ? 'text.disabled' : '#000',
-                  '&:hover': {
-                    bgcolor: messageCta.disabled ? undefined : '#FFC700',
-                  },
-                  '&.Mui-disabled': {
-                    bgcolor: 'action.disabledBackground',
-                    color: 'text.disabled',
-                  },
-                }}
-              >
-                {messageCta.label}
-              </Button>
-            </span>
-          </Tooltip>
-        </CardActions>
-      </Card>
-    </RouterLink>
+        <Tooltip title={messageCta.tooltip} arrow>
+          <span style={{ flex: 1 }}>
+            <Button
+              variant="contained"
+              startIcon={<MessageIcon />}
+              onClick={(e) => {
+                e.stopPropagation();
+                messageCta.handler(e);
+              }}
+              disabled={messageCta.disabled}
+              size="small"
+              fullWidth
+              sx={{
+                minHeight: '44px',
+                bgcolor: messageCta.disabled
+                  ? 'action.disabledBackground'
+                  : '#FFD700',
+                color: messageCta.disabled ? 'text.disabled' : '#000',
+                '&:hover': {
+                  bgcolor: messageCta.disabled ? undefined : '#FFC700',
+                },
+                '&.Mui-disabled': {
+                  bgcolor: 'action.disabledBackground',
+                  color: 'text.disabled',
+                },
+              }}
+            >
+              {messageCta.label}
+            </Button>
+          </span>
+        </Tooltip>
+      </CardActions>
+    </Card>
   );
 };
 

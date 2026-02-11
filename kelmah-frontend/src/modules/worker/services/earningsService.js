@@ -1,6 +1,7 @@
 import { api } from '../../../services/apiClient';
 
-const API_URL = '/workers';
+// Must route through /users/workers to match API gateway proxy
+const API_URL = '/users/workers';
 
 /**
  * Service for managing worker earnings and analytics

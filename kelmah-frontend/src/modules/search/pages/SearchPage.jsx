@@ -365,6 +365,12 @@ const SearchPage = () => {
 
   // Parse search parameters from URL on component mount
   useEffect(() => {
+    // Guard: only run when we are still on a search route
+    const currentPath = location.pathname || '';
+    if (!currentPath.startsWith('/find-talents') && !currentPath.startsWith('/search')) {
+      return;
+    }
+
     const queryParams = new URLSearchParams(location.search);
     const params = {};
 

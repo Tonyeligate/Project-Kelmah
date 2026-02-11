@@ -3,6 +3,8 @@ import { lazy, Suspense } from 'react';
 import Layout from '../modules/layout/components/Layout';
 import ProtectedRoute from '../modules/auth/components/common/ProtectedRoute';
 import LoadingScreen from '../modules/common/components/loading/LoadingScreen';
+import { PaymentProvider } from '../modules/payment/contexts/PaymentContext';
+import { ContractProvider } from '../modules/contracts/contexts/ContractContext';
 
 // Public Pages
 const LandingPage = lazy(() => import('../pages/HomeLanding'));
@@ -393,7 +395,9 @@ const routes = [
             path: 'contracts',
             element: (
               <ProtectedRoute>
-                <ContractManagementPage />
+                <ContractProvider>
+                  <ContractManagementPage />
+                </ContractProvider>
               </ProtectedRoute>
             ),
           },
@@ -404,7 +408,9 @@ const routes = [
                 index: true,
                 element: (
                   <ProtectedRoute>
-                    <PaymentCenterPage />
+                    <PaymentProvider>
+                      <PaymentCenterPage />
+                    </PaymentProvider>
                   </ProtectedRoute>
                 ),
               },
@@ -412,7 +418,9 @@ const routes = [
                 path: 'escrows',
                 element: (
                   <ProtectedRoute>
-                    <EscrowManager />
+                    <PaymentProvider>
+                      <EscrowManager />
+                    </PaymentProvider>
                   </ProtectedRoute>
                 ),
               },
@@ -422,7 +430,9 @@ const routes = [
             path: 'wallet',
             element: (
               <ProtectedRoute>
-                <WalletPage />
+                <PaymentProvider>
+                  <WalletPage />
+                </PaymentProvider>
               </ProtectedRoute>
             ),
           },
@@ -558,7 +568,9 @@ const routes = [
         path: 'wallet',
         element: (
           <ProtectedRoute>
-            <WalletPage />
+            <PaymentProvider>
+              <WalletPage />
+            </PaymentProvider>
           </ProtectedRoute>
         ),
       },

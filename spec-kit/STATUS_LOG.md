@@ -57,6 +57,83 @@
   - `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
 - 🧪 Verification: Not run (UI-only changes; recommend visual check on mobile).
 
+## Investigation Intake (Feb 11, 2026 – Find Workers Navigation Stuck) 🔄
+- 🎯 **Scope Restatement**: Investigate why clicking from the Find Workers page does not redirect (navigation appears stuck), trace the UI → router flow, and identify any search-side effects that override or block navigation.
+- ✅ **Success Criteria**:
+  1. Exact UI elements and routes involved in Find Workers navigation are mapped with file/line references.
+  2. Root cause(s) for blocked navigation are identified with code evidence (no assumptions).
+  3. A fix plan is documented with minimal, targeted changes.
+  4. STATUS_LOG captures the dry audit, data flow map, and verification steps.
+- 🗂️ **Initial File Surface for Dry Audit**:
+  - `kelmah-frontend/src/modules/search/pages/SearchPage.jsx`
+  - `kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx`
+  - `kelmah-frontend/src/modules/worker/components/WorkerCard.jsx`
+  - `kelmah-frontend/src/routes/config.jsx`
+  - `kelmah-frontend/src/hooks/useNavLinks.js`
+  - `kelmah-frontend/src/modules/layout/components/DesktopNav.jsx`
+  - `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
+  - `kelmah-frontend/src/components/common/SmartNavigation.jsx`
+  - `kelmah-frontend/src/modules/worker/pages/WorkerProfilePage.jsx`
+  - `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+
+### Dry Audit Findings (Feb 11, 2026)
+- ✅ Find Workers route uses `SearchPage` at `/find-talents` and worker profiles are routed at `/worker-profile/:workerId` in `routes/config.jsx`.
+- ✅ `WorkerCard` wraps the card in a `RouterLink` and also triggers `navigate()` inside the action buttons; the action area uses a `CardActions` click handler that calls `preventDefault()` + `stopPropagation()`.
+- ✅ `JobSearchForm` triggers `emitSearch()` on input `onBlur`, which calls `handleSearch()` → `updateSearchURL()`; this performs a `navigate(..., { replace: true })` while still on `/find-talents`.
+- ✅ `SearchPage` only guards `updateSearchURL()` by checking it is still on a search context; it does not detect outbound navigation intent when a nav link is clicked while a field is focused.
+
+### UI Data Flow Map (Find Workers → Worker Profile)
+```
+UI Component: SearchPage.jsx (`kelmah-frontend/src/modules/search/pages/SearchPage.jsx`)
+User Action: Click worker card or View Profile button
+↓
+WorkerSearchResults.jsx renders WorkerCard
+↓
+WorkerCard.jsx uses RouterLink → /worker-profile/:workerId
+↓
+Router resolves to routes/config.jsx: worker-profile/:workerId
+↓
+WorkerProfilePage.jsx loads WorkerProfile.jsx
+↓
+WorkerProfile.jsx fetches worker data via workerService.getWorkerById(workerId)
+↓
+UI Render: Worker profile page
+```
+
+### Implementation Update (Feb 11, 2026 – Find Workers Navigation Stuck)
+- ✅ Removed `onBlur` auto-search triggers in `JobSearchForm` to prevent blur-driven URL replaces from overriding outbound navigation.
+- ✅ Removed `CardActions`-level `preventDefault/stopPropagation` in `WorkerCard` so the surrounding `RouterLink` can handle navigation consistently.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/search/components/common/JobSearchForm.jsx`
+  - `kelmah-frontend/src/modules/worker/components/WorkerCard.jsx`
+- 🧪 Verification: Not run (UI behavior change; recommend clicking header links + worker cards on `/find-talents`).
+
+## Investigation Intake (Feb 11, 2026 – Find Workers Navigation Still Stuck) 🔄
+- 🎯 **Scope Restatement**: Re-audit Find Workers navigation failures after user reports the issue persists, focusing on worker card routing, header/nav clicks on `/find-talents`, and any event-handling that blocks router navigation.
+- ✅ **Success Criteria**:
+  1. Confirm the exact click targets that fail (worker cards, header links, CTAs) and map their handlers.
+  2. Identify the blocking event logic or route mismatch with file/line references.
+  3. Implement a targeted fix that allows navigation to succeed from `/find-talents`.
+  4. Verify navigation to `/worker-profile/:workerId` and at least one header route.
+- 🗂️ **Initial File Surface for Dry Audit**:
+  - `kelmah-frontend/src/modules/worker/components/WorkerCard.jsx`
+  - `kelmah-frontend/src/modules/search/pages/SearchPage.jsx`
+  - `kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx`
+  - `kelmah-frontend/src/routes/config.jsx`
+  - `kelmah-frontend/src/components/common/SmartNavigation.jsx`
+  - `kelmah-frontend/src/hooks/useNavLinks.js`
+
+### Dry Audit Findings (Feb 11, 2026 – Recheck)
+- ✅ `WorkerCard` wraps the entire card in a `RouterLink`, while action buttons inside the card call `stopPropagation`/`preventDefault`. This makes navigation dependent on link behavior and nested event handling.
+- ✅ `SearchPage` does not explicitly block navigation, and `routes/config.jsx` confirms `/worker-profile/:workerId` is a valid public route.
+
+### Implementation Update (Feb 11, 2026 – Make WorkerCard Navigation Explicit)
+- ✅ Removed the `RouterLink` wrapper and moved navigation onto the card itself using `navigate()` and keyboard support.
+- ✅ Simplified action button handlers to stop propagation only (no redundant `preventDefault` on non-link buttons).
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/worker/components/WorkerCard.jsx`
+- 🧪 Verification: Not run (UI change; verify by clicking worker card and header nav from `/find-talents`).
+
 ## Investigation Intake (Feb 9, 2026 – Homepage Mobile Marketing Gap) 🔄
 - 🎯 **Scope Restatement**: Identify why the mobile homepage is missing background imagery and Kelmah marketing content, map the full frontend file surface and data flow involved in the homepage render, and propose fixes that restore visual storytelling and brand messaging without breaking existing routing/layout behavior.
 - ✅ **Success Criteria**:
