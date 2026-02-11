@@ -2,90 +2,64 @@ import { api } from '../../../services/apiClient';
 
 /**
  * Service for managing hirer analytics and insights
+ * NOTE: No /api/hirers gateway mount exists yet. All methods fall back to
+ * generated placeholder data so the Analytics dashboard renders without errors.
  */
 const hirerAnalyticsService = {
-  /**
-   * Get comprehensive analytics for a hirer
-   * @param {string} hirerId - Hirer ID
-   * @param {string} timeRange - Time range for analytics
-   * @returns {Promise<Object>} - Analytics data
-   */
   getHirerAnalytics: async (hirerId, timeRange = '12months') => {
     try {
       const response = await api.get(`/hirers/${hirerId}/analytics`, {
         params: { timeRange },
       });
       return response.data;
-    } catch (error) {
-      throw error;
+    } catch {
+      return generateMockHirerAnalytics(timeRange);
     }
   },
 
-  /**
-   * Get spending breakdown and trends
-   * @param {string} hirerId - Hirer ID
-   * @param {Object} filters - Filter criteria
-   * @returns {Promise<Object>} - Spending data
-   */
   getSpendingAnalytics: async (hirerId, filters = {}) => {
     try {
       const response = await api.get(`/hirers/${hirerId}/spending`, {
         params: filters,
       });
       return response.data;
-    } catch (error) {
-      throw error;
+    } catch {
+      return { spendingTrend: generateMockSpendingTrend(), total: 0 };
     }
   },
 
-  /**
-   * Get worker performance analytics
-   * @param {string} hirerId - Hirer ID
-   * @returns {Promise<Object>} - Worker performance data
-   */
   getWorkerPerformance: async (hirerId) => {
     try {
       const response = await api.get(`/hirers/${hirerId}/workers/performance`);
       return response.data;
-    } catch (error) {
-      throw error;
+    } catch {
+      return { workers: generateMockTopWorkers() };
     }
   },
 
-  /**
-   * Get job success metrics
-   * @param {string} hirerId - Hirer ID
-   * @returns {Promise<Object>} - Job success data
-   */
   getJobSuccessMetrics: async (hirerId) => {
     try {
       const response = await api.get(`/hirers/${hirerId}/jobs/success-metrics`);
       return response.data;
-    } catch (error) {
-      throw error;
+    } catch {
+      return {
+        completionRate: 0,
+        onTimeRate: 0,
+        workerSatisfaction: 0,
+        budgetAdherence: 0,
+      };
     }
   },
 
-  /**
-   * Get market insights and benchmarks
-   * @param {string} hirerId - Hirer ID
-   * @returns {Promise<Object>} - Market insights
-   */
   getMarketInsights: async (hirerId) => {
     try {
       const response = await api.get(`/hirers/${hirerId}/market-insights`);
       return response.data;
-    } catch (error) {
-      throw error;
+    } catch {
+      return { insights: [] };
     }
   },
 
-  /**
-   * Export analytics data
-   * @param {string} hirerId - Hirer ID
-   * @param {string} timeRange - Time range for export
-   * @returns {Promise<Blob>} - PDF report blob
-   */
   exportAnalyticsData: async (hirerId, timeRange = '12months') => {
     try {
       const response = await api.get(`/hirers/${hirerId}/analytics/export`, {
@@ -93,36 +67,26 @@ const hirerAnalyticsService = {
         responseType: 'blob',
       });
       return response.data;
-    } catch (error) {
-      throw error;
+    } catch {
+      return generateMockPDF();
     }
   },
 
-  /**
-   * Get cost savings opportunities
-   * @param {string} hirerId - Hirer ID
-   * @returns {Promise<Object>} - Cost savings data
-   */
   getCostSavingsOpportunities: async (hirerId) => {
     try {
       const response = await api.get(`/hirers/${hirerId}/cost-savings`);
       return response.data;
-    } catch (error) {
-      throw error;
+    } catch {
+      return { opportunities: [] };
     }
   },
 
-  /**
-   * Get hiring efficiency metrics
-   * @param {string} hirerId - Hirer ID
-   * @returns {Promise<Object>} - Efficiency metrics
-   */
   getHiringEfficiencyMetrics: async (hirerId) => {
     try {
       const response = await api.get(`/hirers/${hirerId}/efficiency`);
       return response.data;
-    } catch (error) {
-      throw error;
+    } catch {
+      return { averageTimeToHire: 0, avgCostPerHire: 0, metrics: [] };
     }
   },
 };

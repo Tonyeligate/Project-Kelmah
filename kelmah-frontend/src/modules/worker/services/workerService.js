@@ -431,7 +431,7 @@ const workerService = {
       throw new Error('workerId is required to fetch analytics');
     }
 
-    const response = await api.get(`/analytics/worker/${workerId}`);
+    const response = await api.get(`/users/analytics/worker/${workerId}`);
 
     return response?.data?.data ?? response?.data ?? {};
   },

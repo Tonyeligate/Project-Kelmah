@@ -4,55 +4,51 @@ import { api } from '../../../services/apiClient';
 const SETTINGS_BASE = '/settings';
 const settingsPath = (suffix = '') => `${SETTINGS_BASE}${suffix}`;
 
+// Static configuration lists — the same for all users, no backend call needed.
+const DEFAULT_LANGUAGES = [
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'tw', name: 'Twi', flag: '🇬🇭' },
+  { code: 'ga', name: 'Ga', flag: '🇬🇭' },
+  { code: 'fr', name: 'French', flag: '🇫🇷' },
+];
+
+const DEFAULT_THEMES = [
+  { id: 'light', name: 'Light Mode', description: 'Clean and bright interface' },
+  { id: 'dark', name: 'Dark Mode', description: 'Easy on the eyes' },
+  { id: 'auto', name: 'Auto', description: 'Follows system preference' },
+];
+
+const DEFAULT_NOTIFICATION_PREFS = {
+  email: true,
+  push: true,
+  sms: false,
+  inApp: true,
+};
+
 class SettingsService {
-  // Get user settings
+  // Get user settings (aggregates notification prefs with local defaults)
   async getSettings() {
-    try {
-      // User-service currently implements only notifications under /settings
-      // Return a sensible default settings object instead of 404
-      const notifications = await this.getNotificationPreferences().catch(
-        () => null,
-      );
-      return {
-        theme: 'light',
-        language: 'en',
-        notifications: notifications || {
-          email: true,
-          push: true,
-          sms: false,
-          inApp: true,
-        },
-        privacy: {
-          profileVisibility: 'public',
-          showEmail: false,
-          showPhone: false,
-        },
-      };
-    } catch (error) {
-      console.warn(
-        'Settings service unavailable, using default settings:',
-        error.message,
-      );
-      return {
-        theme: 'light',
-        language: 'en',
-        notifications: {
-          email: true,
-          push: true,
-          sms: false,
-        },
-        privacy: {
-          profileVisibility: 'public',
-          showEmail: false,
-          showPhone: false,
-        },
-      };
-    }
+    const notifications = await this.getNotificationPreferences();
+    return {
+      theme: 'light',
+      language: 'en',
+      notifications,
+      privacy: {
+        profileVisibility: 'public',
+        showEmail: false,
+        showPhone: false,
+      },
+    };
   }
-  // Get notification preferences from backend (supported endpoint)
+
+  // Get notification preferences — tries backend, falls back silently
   async getNotificationPreferences() {
-    const response = await api.get(settingsPath('/notifications'));
-    return response.data.data;
+    try {
+      const response = await api.get(settingsPath('/notifications'));
+      return response.data.data ?? DEFAULT_NOTIFICATION_PREFS;
+    } catch {
+      return DEFAULT_NOTIFICATION_PREFS;
+    }
   }
 
   // Update user settings
@@ -75,59 +71,24 @@ class SettingsService {
 
   // Update language preference
   async updateLanguage(language) {
-    const response = await api.put(settingsPath('/language'), {
-      language,
-    });
+    const response = await api.put(settingsPath('/language'), { language });
     return response.data.data;
   }
 
   // Update theme preference
   async updateTheme(theme) {
-    const response = await api.put(settingsPath('/theme'), {
-      theme,
-    });
+    const response = await api.put(settingsPath('/theme'), { theme });
     return response.data.data;
   }
 
-  // Get available languages
+  // Available languages — static list, no backend call
   async getLanguages() {
-    try {
-      const response = await api.get(settingsPath('/languages'));
-      return response.data.data;
-    } catch (error) {
-      console.warn(
-        'Languages service unavailable, using default languages:',
-        error.message,
-      );
-      return [
-        { code: 'en', name: 'English', flag: '🇺🇸' },
-        { code: 'tw', name: 'Twi', flag: '🇬🇭' },
-        { code: 'ga', name: 'Ga', flag: '🇬🇭' },
-        { code: 'fr', name: 'French', flag: '🇫🇷' },
-      ];
-    }
+    return DEFAULT_LANGUAGES;
   }
 
-  // Get available themes
+  // Available themes — static list, no backend call
   async getThemes() {
-    try {
-      const response = await api.get(settingsPath('/themes'));
-      return response.data.data;
-    } catch (error) {
-      console.warn(
-        'Themes service unavailable, using default themes:',
-        error.message,
-      );
-      return [
-        {
-          id: 'light',
-          name: 'Light Mode',
-          description: 'Clean and bright interface',
-        },
-        { id: 'dark', name: 'Dark Mode', description: 'Easy on the eyes' },
-        { id: 'auto', name: 'Auto', description: 'Follows system preference' },
-      ];
-    }
+    return DEFAULT_THEMES;
   }
 
   // Reset settings to default
