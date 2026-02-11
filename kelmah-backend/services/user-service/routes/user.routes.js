@@ -29,17 +29,17 @@ const {
 const WorkerController = require('../controllers/worker.controller');
 const workerDetailRouter = require('./worker-detail.routes');
 
-// User CRUD routes
-router.get("/", getAllUsers);
-router.post("/", createLimiter('admin'), createUser);
+// User CRUD routes (protected — admin only)
+router.get("/", verifyGatewayRequest, getAllUsers);
+router.post("/", verifyGatewayRequest, createLimiter('admin'), createUser);
 
 // Dashboard routes - Protected with gateway authentication
 router.get("/dashboard/metrics", verifyGatewayRequest, getDashboardMetrics);
 router.get("/dashboard/workers", verifyGatewayRequest, getDashboardWorkers);
 router.get("/dashboard/analytics", verifyGatewayRequest, getDashboardAnalytics);
 
-// Database cleanup endpoint (development/admin use)
-router.post("/database/cleanup", cleanupDatabase);
+// Database cleanup endpoint (protected — admin only)
+router.post("/database/cleanup", verifyGatewayRequest, cleanupDatabase);
 
 // 🔥 FIX: Recent jobs route MUST come BEFORE parameterized routes
 // to prevent "/workers/jobs" being matched as "/workers/:id" where id="jobs"

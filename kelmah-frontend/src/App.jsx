@@ -58,7 +58,7 @@ const App = () => {
   useEffect(() => {
     if (!initialized.current) {
       initialized.current = true;
-      const token = secureStorage.getItem(AUTH_CONFIG.TOKEN_KEY);
+      const token = secureStorage.getItem(AUTH_CONFIG.tokenKey);
       if (token) {
         dispatch(verifyAuth());
       }

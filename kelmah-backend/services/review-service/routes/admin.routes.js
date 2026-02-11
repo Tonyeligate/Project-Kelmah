@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { verifyGatewayRequest } = require('../../../shared/middlewares/serviceTrust');
 let adminLimiter = null;
 try {
   const { createLimiter } = require('../../../shared/middlewares/rateLimiter');
@@ -11,7 +12,8 @@ try {
 // Import shared models
 const { Review } = require('../models');
 
-// Auth middleware is expected to be applied at app level for /api/admin
+// All admin routes require gateway authentication
+router.use(verifyGatewayRequest);
 
 // GET /api/admin/reviews/queue?status=pending&page=1&limit=20
 router.get('/reviews/queue', adminLimiter, async (req, res) => {

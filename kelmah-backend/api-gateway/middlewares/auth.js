@@ -8,9 +8,20 @@ const jwtUtils = require('../../shared/utils/jwt');
 const { User } = require('../../shared/models');
 const { AppError, AuthenticationError, AuthorizationError } = require('../../shared/utils/errorTypes');
 
-// User cache to reduce database lookups
+// User cache to reduce database lookups (bounded LRU)
+const MAX_CACHE_SIZE = 500;
 const userCache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// LRU-style set: evict oldest entry when cache exceeds max size
+function cacheSet(key, value) {
+  if (userCache.size >= MAX_CACHE_SIZE) {
+    // Map iterates in insertion order — delete the oldest
+    const oldestKey = userCache.keys().next().value;
+    userCache.delete(oldestKey);
+  }
+  userCache.set(key, value);
+}
 
 /**
  * Main authentication middleware
@@ -80,7 +91,7 @@ const authenticate = async (req, res, next) => {
         }
 
         // Cache user for performance
-        userCache.set(cacheKey, { ...user.toObject(), cachedAt: Date.now() });
+        cacheSet(cacheKey, { ...user.toObject(), cachedAt: Date.now() });
       } catch (dbError) {
         console.error('Database error during authentication:', dbError);
         return res.status(500).json({ 

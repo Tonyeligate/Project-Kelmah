@@ -226,11 +226,8 @@ app.use(cors({
   exposedHeaders: ['ngrok-skip-browser-warning', 'x-request-id']
 }));
 
-// Add ngrok-skip-browser-warning header to all responses
-app.use((req, res, next) => {
-  res.setHeader('ngrok-skip-browser-warning', 'true');
-  next();
-});
+// Request sanitization — strip XSS payloads from input
+app.use(requestValidator.sanitizeRequest);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -275,10 +272,7 @@ app.get('/', (req, res) => {
       authentication: '/api/auth/*',
       main_services: ['/api/users', '/api/jobs', '/api/payments', '/api/messages']
     },
-    services: {
-      total: Object.keys(services).length,
-      available: Object.keys(services)
-    },
+
     features: [
       'Microservices Architecture',
       'Authentication & Authorization',
@@ -295,7 +289,6 @@ const healthResponse = (req, res) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     services: Object.keys(services),
-    serviceUrls: services,
     version: '2.0.0',
     uptime: process.uptime(),
     keepAlive: internalKeepAlive ? internalKeepAlive.getStatus() : { enabled: false }

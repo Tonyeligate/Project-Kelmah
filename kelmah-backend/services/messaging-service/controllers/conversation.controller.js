@@ -523,7 +523,8 @@ class ConversationController {
         .limit(pageSize)
         .lean();
 
-      const regex = new RegExp(query, "i");
+      const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escapedQuery, "i");
       const matched = [];
       for (const conv of conversations) {
         const found = await Message.findOne({

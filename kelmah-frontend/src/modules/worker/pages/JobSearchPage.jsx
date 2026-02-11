@@ -1,2226 +1,1060 @@
-import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+/**
+ * JobSearchPage — Worker "Find Work" page
+ *
+ * Redesigned: Feb 2026
+ * Philosophy: search-first, professional, no marketing splash.
+ * Workers visit daily — get them to results fast.
+ *
+ * DATA FLOW:
+ *   useJobsQuery(filters) → jobsService.getJobs() → GET /api/jobs
+ *   useSavedJobsQuery()   → jobsService.getSavedJobs() → GET /api/jobs/saved
+ *   useSaveJobMutation()  → jobsService.saveJob()   → POST /api/jobs/:id/save
+ *   useUnsaveJobMutation()→ jobsService.unsaveJob()  → DELETE /api/jobs/:id/save
+ */
+
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
-  Alert,
-  Avatar,
   Box,
   Button,
   Card,
-  CardActions,
   CardContent,
   Chip,
-  Collapse,
   Container,
   Divider,
   FormControl,
-  FormControlLabel,
   Grid,
   IconButton,
   InputAdornment,
   InputLabel,
-  LinearProgress,
   MenuItem,
+  Pagination,
   Paper,
-  Rating,
   Select,
   Skeleton,
-  Slider,
-  SpeedDial,
-  SpeedDialAction,
-  SpeedDialIcon,
   Stack,
-  Switch,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
-  alpha,
   useMediaQuery,
   useTheme,
+  alpha,
+  Badge,
+  Drawer,
+  Slider,
+  Tooltip,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  Refresh as RefreshIcon,
+  FilterList as FilterListIcon,
+  ViewModule as GridViewIcon,
+  ViewList as ListViewIcon,
+  Close as CloseIcon,
+  BookmarkBorder as BookmarkBorderIcon,
+  Bookmark as BookmarkIcon,
+  LocationOn as LocationOnIcon,
+  AttachMoney as MoneyIcon,
+  AccessTime as TimeIcon,
+  WorkOutline as WorkIcon,
+  TuneRounded as TuneIcon,
+  SortRounded as SortIcon,
+  Clear as ClearIcon,
+  ElectricalServices as ElectricalIcon,
+  Plumbing as PlumbingIcon,
+  Construction as ConstructionIcon,
+  Handyman as HandymanIcon,
+  FormatPaint as PaintIcon,
+  Roofing as RoofingIcon,
+  Thermostat as HvacIcon,
+  HomeRepairService as HomeIcon,
+  Verified as VerifiedIcon,
 } from '@mui/icons-material';
-import ElectricalIcon from '@mui/icons-material/ElectricalServices';
-import PlumbingIcon from '@mui/icons-material/Plumbing';
-import ConstructionIcon from '@mui/icons-material/Construction';
-import SpeedIcon from '@mui/icons-material/Speed';
-import HomeIcon from '@mui/icons-material/Home';
-import PsychologyIcon from '@mui/icons-material/Psychology';
-import WorkIcon from '@mui/icons-material/Work';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import StarIcon from '@mui/icons-material/Star';
-import RocketIcon from '@mui/icons-material/RocketLaunch';
-import DiamondIcon from '@mui/icons-material/Diamond';
-import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
-import ViewModuleIcon from '@mui/icons-material/ViewModule';
-import ViewListIcon from '@mui/icons-material/ViewList';
-import MapIcon from '@mui/icons-material/Map';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ClearIcon from '@mui/icons-material/Clear';
-import VerifiedIcon from '@mui/icons-material/Verified';
-import BookmarkIcon from '@mui/icons-material/Bookmark';
-import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import HandshakeIcon from '@mui/icons-material/Handshake';
-import ShareIcon from '@mui/icons-material/Share';
-import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import { motion } from 'framer-motion';
-import { styled, keyframes } from '@mui/material/styles';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectJobFilters, setFilters } from '../../jobs/services/jobSlice';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   useJobsQuery,
-  useSavedJobIds,
   useSavedJobsQuery,
   useSaveJobMutation,
   useUnsaveJobMutation,
+  useSavedJobIds,
 } from '../../jobs/hooks/useJobsQuery';
-// TODO: Integrate bid and user performance functionality into appropriate module services
-// Removed AuthContext import to prevent dual state management conflicts
-// import useAuth from '../../auth/hooks/useAuth';
-import { useAuthCheck } from '../../../hooks/useAuthCheck';
-import { EXTERNAL_SERVICES } from '../../../config/services';
-import { formatJobLocation } from '../../../utils/formatters';
+import tradeCategories from '../../jobs/data/tradeCategories.json';
+import ghanaLocations from '../../jobs/data/ghanaLocations.json';
 
-// Enhanced Animations with Worker-focused Themes
-const float = keyframes`
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  25% { transform: translateY(-12px) rotate(1deg); }
-  50% { transform: translateY(-18px) rotate(0deg); }
-  75% { transform: translateY(-12px) rotate(-1deg); }
-`;
+// ─── Constants ──────────────────────────────────────────────
+const ITEMS_PER_PAGE = 12;
 
-// AnimatedButton styled component
-const AnimatedButton = styled(Button)(({ theme }) => ({
-  borderRadius: 25,
-  padding: '12px 24px',
-  fontWeight: 600,
-  textTransform: 'none',
-  transition: 'all 0.3s ease-in-out',
-  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: theme.shadows[12],
-  },
-}));
+const CATEGORY_ICONS = {
+  Electrical: ElectricalIcon,
+  Plumbing: PlumbingIcon,
+  Construction: ConstructionIcon,
+  Carpentry: HandymanIcon,
+  Painting: PaintIcon,
+  Roofing: RoofingIcon,
+  HVAC: HvacIcon,
+  Masonry: HomeIcon,
+};
 
-// StatCard styled component for statistics display
-const StatCard = styled(motion.div)(({ theme }) => ({
-  background: 'rgba(255, 255, 255, 0.1)',
-  backdropFilter: 'blur(20px)',
-  border: '1px solid rgba(255, 255, 255, 0.2)',
-  borderRadius: 20,
-  padding: theme.spacing(3),
-  textAlign: 'center',
-  position: 'relative',
-  overflow: 'hidden',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background:
-      'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-    pointerEvents: 'none',
-  },
-}));
-
-// SearchInterface styled component for search interface wrapper
-const SearchInterface = styled(Paper)(({ theme }) => ({
-  background: 'rgba(255, 255, 255, 0.95)',
-  backdropFilter: 'blur(20px)',
-  border: '1px solid rgba(255, 255, 255, 0.3)',
-  borderRadius: { xs: 12, md: 24 },
-  padding: theme.spacing(2),
-  [theme.breakpoints.up('md')]: {
-    padding: theme.spacing(4),
-    borderRadius: 24,
-  },
-  position: 'relative',
-  overflow: 'hidden',
-  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-}));
-
-// GlassCard styled component for glass morphism effect
-const GlassCard = styled(Card)(({ theme }) => ({
-  background: alpha(theme.palette.background.paper, 0.9),
-  backdropFilter: 'blur(20px)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  borderRadius: 16,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: theme.shadows[20],
-    background: alpha(theme.palette.background.paper, 0.95),
-  },
-}));
-
-// JobOpportunityCard styled component for job listings
-const JobOpportunityCard = styled(Card)(
-  ({ theme, featured, urgent, premium }) => ({
-    background:
-      'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
-    border: `1px solid ${alpha(featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.divider, 0.2)}`,
-    borderRadius: 16,
-    overflow: 'hidden',
-    position: 'relative',
-    cursor: 'pointer',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    '&:hover': {
-      transform: 'translateY(-4px)',
-      boxShadow: `0 8px 25px ${alpha(featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.primary.main, 0.3)}`,
-      border: `1px solid ${alpha(featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.primary.main, 0.4)}`,
-    },
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: '3px',
-      background: `linear-gradient(90deg, ${featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.primary.main} 0%, ${alpha(featured ? '#FFD700' : urgent ? '#FF5722' : premium ? '#9C27B0' : theme.palette.primary.main, 0.8)} 100%)`,
-    },
-  }),
-);
-
-const shimmer = keyframes`
-  0% { background-position: -200px 0; }
-  100% { background-position: calc(200px + 100%) 0; }
-`;
-
-const pulse = keyframes`
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
-  50% { transform: scale(1.08); box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
-`;
-
-const gradientShift = keyframes`
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-`;
-
-const sparkle = keyframes`
-  0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
-  50% { opacity: 1; transform: scale(1) rotate(180deg); }
-`;
-
-const rotateGlow = keyframes`
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-`;
-
-const heartbeat = keyframes`
-  0% { transform: scale(1); }
-  14% { transform: scale(1.1); }
-  28% { transform: scale(1); }
-  42% { transform: scale(1.1); }
-  70% { transform: scale(1); }
-`;
-
-// Professional Worker-focused Styled Components
-const HeroGradientSection = styled(Box)(({ theme }) => {
-  return {
-    background: `linear-gradient(135deg, 
-      ${theme.palette.primary.main} 0%, 
-      ${theme.palette.secondary.main} 25%,
-      ${theme.palette.primary.dark} 50%,
-      ${theme.palette.secondary.dark} 75%,
-      ${theme.palette.primary.main} 100%)`,
-    backgroundSize: '400% 400%',
-    color: 'white',
-    padding: theme.spacing(6, 0),
-    [theme.breakpoints.up('md')]: {
-      padding: theme.spacing(12, 0),
-      minHeight: '90vh',
-      animation: `${gradientShift} 20s ease infinite`,
-    },
-    position: 'relative',
-    overflow: 'hidden',
-    display: 'flex',
-    alignItems: 'center',
-    '@media (prefers-reduced-motion: reduce)': {
-      animation: 'none !important',
-      '&::before, &::after': { animation: 'none !important' },
-    },
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: `radial-gradient(circle at 25% 75%, ${alpha('#4ECDC4', 0.3)} 0%, transparent 50%),
-                  radial-gradient(circle at 75% 25%, ${alpha('#FFD700', 0.3)} 0%, transparent 50%),
-                  radial-gradient(circle at 50% 50%, ${alpha('#FF6B6B', 0.2)} 0%, transparent 70%)`,
-      [theme.breakpoints.up('md')]: {
-        animation: `${float} 25s ease-in-out infinite`,
-      },
-    },
-    '&::after': {
-      content: '""',
-      position: 'absolute',
-      top: '-30%',
-      left: '-20%',
-      width: '140%',
-      height: '160%',
-      background: `conic-gradient(from 45deg at 50% 50%, transparent 0deg, ${alpha('#FFD700', 0.15)} 90deg, transparent 180deg, ${alpha('#4ECDC4', 0.15)} 270deg, transparent 360deg)`,
-      [theme.breakpoints.up('md')]: {
-        animation: `${rotateGlow} 40s linear infinite`,
-      },
-    },
-  };
-});
-
-const jobCategories = [
-  {
-    name: 'Electrical',
-    icon: <ElectricalIcon />,
-    count: 18450,
-    color: '#FFD700',
-    trending: true,
-    description: 'Smart systems, renewable energy & automation',
-    avgSalary: '$85,000',
-    growth: '+28%',
-    demandLevel: 'Explosive',
-    topSkills: ['Smart Home Tech', 'Solar Systems', 'Industrial Automation'],
-  },
-  {
-    name: 'Plumbing',
-    icon: <PlumbingIcon />,
-    count: 14240,
-    color: '#4A90E2',
-    hot: true,
-    description: 'Water systems, green solutions & emergency response',
-    avgSalary: '$78,000',
-    growth: '+22%',
-    demandLevel: 'Very High',
-    topSkills: ['Green Plumbing', 'Emergency Repair', 'Water Treatment'],
-  },
-  {
-    name: 'Construction',
-    icon: <ConstructionIcon />,
-    count: 32890,
-    color: '#E74C3C',
-    description: 'Smart buildings, infrastructure & sustainable construction',
-    avgSalary: '$82,000',
-    growth: '+18%',
-    demandLevel: 'Very High',
-    topSkills: [
-      'Smart Buildings',
-      'Sustainable Construction',
-      'Project Management',
-    ],
-  },
-  {
-    name: 'HVAC',
-    icon: <SpeedIcon />,
-    count: 11560,
-    color: '#2ECC71',
-    description: 'Climate control, energy efficiency & smart systems',
-    avgSalary: '$80,000',
-    growth: '+25%',
-    demandLevel: 'High',
-    topSkills: ['Smart Climate', 'Energy Efficiency', 'System Integration'],
-  },
-  {
-    name: 'Smart Tech',
-    icon: <HomeIcon />,
-    count: 8780,
-    color: '#9B59B6',
-    newest: true,
-    description: 'IoT integration, automation & AI systems',
-    avgSalary: '$95,000',
-    growth: '+52%',
-    demandLevel: 'Explosive',
-    topSkills: ['IoT Systems', 'AI Integration', 'Home Automation'],
-  },
-  {
-    name: 'Design',
-    icon: <PsychologyIcon />,
-    count: 12340,
-    color: '#E67E22',
-    description: 'Interior design, space planning & creative solutions',
-    avgSalary: '$72,000',
-    growth: '+19%',
-    demandLevel: 'High',
-    topSkills: ['Space Planning', '3D Design', 'Sustainable Design'],
-  },
+const SORT_OPTIONS = [
+  { value: 'newest', label: 'Newest First' },
+  { value: 'budget_high', label: 'Budget: High → Low' },
+  { value: 'budget_low', label: 'Budget: Low → High' },
+  { value: 'deadline', label: 'Deadline Soon' },
 ];
 
-const workerStats = [
-  {
-    icon: <WorkIcon sx={{ fontSize: 56 }} />,
-    value: '125,000+',
-    label: 'Dream Opportunities',
-    subtitle: 'Updated every minute',
-    color: '#FFD700',
-    trend: '+23% this month',
-    description: 'From entry-level to industry-leading positions',
-    animation: pulse,
-    gradient: 'primary',
-  },
-  {
-    icon: <AttachMoneyIcon sx={{ fontSize: 56 }} />,
-    value: '$145K',
-    label: 'Average Salary',
-    subtitle: 'For skilled professionals',
-    color: '#2ECC71',
-    trend: '+18% year over year',
-    description: 'Industry-leading compensation packages',
-    animation: float,
-    gradient: 'success',
-  },
-  {
-    icon: <TrendingUpIcon sx={{ fontSize: 56 }} />,
-    value: '3.2x',
-    label: 'Career Growth Rate',
-    subtitle: 'Faster than other industries',
-    color: '#3498DB',
-    trend: 'Accelerating rapidly',
-    description: 'Unmatched professional development',
-    animation: shimmer,
-    gradient: 'info',
-  },
-  {
-    icon: <StarIcon sx={{ fontSize: 56 }} />,
-    value: '4.92/5',
-    label: 'Worker Satisfaction',
-    subtitle: 'Job fulfillment rating',
-    color: '#E74C3C',
-    trend: '+0.08 this quarter',
-    description: 'Love what you do, every day',
-    animation: sparkle,
-    gradient: 'error',
-  },
-  {
-    icon: <RocketIcon sx={{ fontSize: 56 }} />,
-    value: '24hrs',
-    label: 'Average Hire Time',
-    subtitle: 'From application to offer',
-    color: '#9C27B0',
-    trend: '67% faster',
-    description: 'Lightning-fast job matching',
-    animation: rotateGlow,
-    gradient: 'primary',
-  },
-  {
-    icon: <DiamondIcon sx={{ fontSize: 56 }} />,
-    value: '89%',
-    label: 'Premium Job Rate',
-    subtitle: 'High-quality opportunities',
-    color: '#FF5722',
-    trend: 'Industry leading',
-    description: 'Exceptional career opportunities',
-    animation: heartbeat,
-    gradient: 'error',
-  },
-];
-
-// Sample creative job opportunities for demonstration
-const creativeJobOpportunities = [
-  {
-    id: 1,
-    title: 'Senior Smart Home Integration Specialist',
-    company: { name: 'TechHomes Ghana', logo: null },
-    location: 'Accra, Ghana',
-    type: 'Full-time',
-    budget: { min: 8000, max: 12000, type: 'monthly', currency: 'GHS' },
-    description:
-      'Lead smart home automation projects for luxury residential and commercial properties.',
-    skills: [
-      'IoT Systems',
-      'Home Automation',
-      'Smart Home Integration',
-      'Project Management',
-    ],
-    benefits: [
-      'Health Insurance',
-      'Flexible Hours',
-      'Professional Development',
-      'Performance Bonus',
-    ],
-    featured: true,
-    urgent: false,
-    premium: true,
-    coordinates: { lat: 5.6037, lng: -0.187 },
-    postedDate: new Date('2024-01-15'),
-    urgency: 'medium',
-  },
-  {
-    id: 2,
-    title: 'Renewable Energy Installation Expert',
-    company: { name: 'GreenPower Solutions', logo: null },
-    location: 'Kumasi, Ghana',
-    type: 'Contract',
-    budget: { min: 15000, max: 25000, type: 'project', currency: 'GHS' },
-    description:
-      'Install and maintain solar panel systems for residential and commercial clients.',
-    skills: [
-      'Solar Installation',
-      'Electrical Systems',
-      'Renewable Energy',
-      'Safety Protocols',
-    ],
-    benefits: [
-      'Project Bonuses',
-      'Equipment Provided',
-      'Training Opportunities',
-    ],
-    featured: false,
-    urgent: true,
-    premium: false,
-    coordinates: { lat: 6.6885, lng: -1.6244 },
-    postedDate: new Date('2024-01-14'),
-    urgency: 'high',
-  },
-  {
-    id: 3,
-    title: 'Custom Furniture Designer & Maker',
-    company: { name: 'Artisan Craft Co.', logo: null },
-    location: 'Cape Coast, Ghana',
-    type: 'Part-time',
-    budget: { min: 5000, max: 8000, type: 'monthly', currency: 'GHS' },
-    description:
-      'Create bespoke furniture pieces using traditional and modern techniques.',
-    skills: ['Woodworking', 'Furniture Design', 'Carpentry', '3D Design'],
-    benefits: ['Creative Freedom', 'Flexible Schedule', 'Material Allowance'],
-    featured: true,
-    urgent: false,
-    premium: false,
-    coordinates: { lat: 5.1053, lng: -1.2466 },
-    postedDate: new Date('2024-01-13'),
-    urgency: 'low',
-  },
-  {
-    id: 4,
-    title: 'Industrial Automation Technician',
-    company: { name: 'Manufacturing Plus', logo: null },
-    location: 'Tema, Ghana',
-    type: 'Full-time',
-    budget: { min: 10000, max: 15000, type: 'monthly', currency: 'GHS' },
-    description: 'Maintain and upgrade automated manufacturing systems.',
-    skills: [
-      'Industrial Automation',
-      'PLC Programming',
-      'Mechanical Systems',
-      'Troubleshooting',
-    ],
-    benefits: [
-      'Health Insurance',
-      'Retirement Plan',
-      'Overtime Pay',
-      'Safety Equipment',
-    ],
-    featured: false,
-    urgent: false,
-    premium: true,
-    coordinates: { lat: 5.6833, lng: -0.0167 },
-    postedDate: new Date('2024-01-12'),
-    urgency: 'medium',
-  },
-  {
-    id: 5,
-    title: 'Sustainable Building Consultant',
-    company: { name: 'EcoBuild Ghana', logo: null },
-    location: 'Tamale, Ghana',
-    type: 'Contract',
-    budget: { min: 12000, max: 18000, type: 'monthly', currency: 'GHS' },
-    description:
-      'Advise on sustainable construction practices and green building materials.',
-    skills: [
-      'Sustainable Building',
-      'Construction',
-      'Environmental Design',
-      'Project Management',
-    ],
-    benefits: [
-      'Travel Allowance',
-      'Professional Development',
-      'Flexible Hours',
-    ],
-    featured: true,
-    urgent: true,
-    premium: false,
-    coordinates: { lat: 9.4008, lng: -0.8393 },
-    postedDate: new Date('2024-01-11'),
-    urgency: 'high',
-  },
-  {
-    id: 6,
-    title: 'Advanced HVAC Systems Specialist',
-    company: { name: 'Climate Control Pro', logo: null },
-    location: 'Takoradi, Ghana',
-    type: 'Full-time',
-    budget: { min: 9000, max: 13000, type: 'monthly', currency: 'GHS' },
-    description:
-      'Install and maintain advanced heating, ventilation, and air conditioning systems.',
-    skills: [
-      'HVAC Systems',
-      'Climate Control',
-      'Energy Efficiency',
-      'System Design',
-    ],
-    benefits: [
-      'Company Vehicle',
-      'Tool Allowance',
-      'Health Insurance',
-      'Performance Bonus',
-    ],
-    featured: false,
-    urgent: false,
-    premium: true,
-    coordinates: { lat: 4.8845, lng: -1.7553 },
-    postedDate: new Date('2024-01-10'),
-    urgency: 'medium',
-  },
-];
-
-const deriveCompanyInfo = (job = {}) => {
-  const company = job.company || {};
-  const hirer = job.hirer || {};
-  const contact = job.contactPerson || job.client || {};
-
-  return {
-    name:
-      company.name ||
-      hirer.name ||
-      hirer.displayName ||
-      job.hirer_name ||
-      contact.name ||
-      job.organization ||
-      job.clientName ||
-      'Unknown Company',
-    logo:
-      company.logo ||
-      hirer.logo ||
-      hirer.profileImage ||
-      job.companyLogo ||
-      job.logo ||
-      null,
-    rating: company.rating ?? hirer.rating ?? contact.rating ?? job.rating ?? 0,
-    verified:
-      company.verified ??
-      hirer.verified ??
-      contact.verified ??
-      job.verified ??
-      false,
-  };
+// ─── Utility: format relative time ─────────────────────────
+const timeAgo = (date) => {
+  if (!date) return '';
+  const diff = Date.now() - new Date(date).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(date).toLocaleDateString('en-GH', { month: 'short', day: 'numeric' });
 };
 
-const normalizeSkills = (skills) => {
-  if (Array.isArray(skills)) return skills.filter(Boolean);
-  if (typeof skills === 'string') {
-    return skills
-      .split(',')
-      .map((skill) => skill.trim())
-      .filter(Boolean);
-  }
-  if (skills && typeof skills === 'object') {
-    return Object.values(skills)
-      .map((skill) => (typeof skill === 'string' ? skill.trim() : skill))
-      .filter(Boolean);
-  }
-  return [];
+// ─── Utility: format currency ───────────────────────────────
+const formatBudget = (budget, currency = 'GHS') => {
+  if (!budget && budget !== 0) return 'Negotiable';
+  const num = typeof budget === 'object' ? budget.max || budget.min || 0 : budget;
+  return `${currency === 'GHS' ? 'GH₵' : '$'}${Number(num).toLocaleString()}`;
 };
 
-const extractBudgetRange = (job) => {
-  const budget =
-    job.budget ||
-    job.paymentDetails?.budget ||
-    job.budgetRange ||
-    job.salaryRange ||
-    job.payRange;
-  if (!budget) {
-    if (typeof job.budgetAmount === 'number') {
-      return { min: job.budgetAmount, max: job.budgetAmount };
-    }
-    if (typeof job.budget === 'number') {
-      return { min: job.budget, max: job.budget };
-    }
-    return null;
-  }
-
-  if (typeof budget === 'number') {
-    return { min: budget, max: budget };
-  }
-
-  const min = budget.min ?? budget.amount ?? budget.start ?? budget.from ?? 0;
-  const max = budget.max ?? budget.amount ?? budget.end ?? budget.to ?? min;
-  const currency = budget.currency || job.currency || 'GHS';
-  const type = budget.type || job.paymentType || 'fixed';
-
-  return { min, max, currency, type };
-};
-
-const normalizeJobForUi = (job) => {
-  if (!job) return null;
-
-  const normalizedBudget = extractBudgetRange(job);
-  const locationValue = (() => {
-    if (typeof job.location === 'string') return job.location;
-    if (job.location?.city || job.location?.region || job.location?.country) {
-      return [job.location.city, job.location.region, job.location.country]
-        .filter(Boolean)
-        .join(', ');
-    }
-    if (job.locationDetails?.city || job.locationDetails?.region) {
-      return [job.locationDetails.city, job.locationDetails.region]
-        .filter(Boolean)
-        .join(', ');
-    }
-    if (job.location?.name) return job.location.name;
-    return job.remote ? 'Remote' : 'Location not specified';
-  })();
-
-  return {
-    ...job,
-    id: job.id || job._id || job.jobId,
-    company: deriveCompanyInfo(job),
-    skills: normalizeSkills(job.skills || job.skills_required),
-    location: locationValue,
-    postedDate: job.postedDate
-      ? new Date(job.postedDate)
-      : job.createdAt
-        ? new Date(job.createdAt)
-        : job.created_at
-          ? new Date(job.created_at)
-          : undefined,
-    deadline: job.deadline
-      ? new Date(job.deadline)
-      : job.endDate
-        ? new Date(job.endDate)
-        : job.closingDate
-          ? new Date(job.closingDate)
-          : undefined,
-    budget: normalizedBudget,
-  };
-};
-
-const mapSortOptionToApi = (value) => {
-  switch (value) {
-    case 'newest':
-      return '-createdAt';
-    case 'salary_high':
-      return '-budget.max';
-    case 'salary_low':
-      return 'budget.min';
-    case 'deadline':
-      return 'deadline';
-    default:
-      return '-createdAt';
-  }
-};
-
-const buildQueryFilters = (filters = {}) => {
-  const params = {
-    page: filters.page || 1,
-    limit: filters.limit || 12,
-    status: filters.status || 'open',
-  };
-
-  if (filters.search) {
-    params.search = filters.search;
-  }
-  if (filters.profession) {
-    params.category = filters.profession;
-  }
-  if (filters.job_type) {
-    params.type = filters.job_type;
-  }
-
-  const parseBudget = (value) => {
-    if (value === undefined || value === null || value === '') {
-      return undefined;
-    }
-    const numeric = Number(value);
-    return Number.isFinite(numeric) ? numeric : undefined;
-  };
-
-  const minBudget = parseBudget(filters.min_budget);
-  const maxBudget = parseBudget(filters.max_budget);
-  if (minBudget !== undefined || maxBudget !== undefined) {
-    const normalizedMin = Math.max(minBudget ?? 0, 0);
-    if (maxBudget !== undefined) {
-      params.budget = `${normalizedMin}-${maxBudget}`;
-    } else {
-      params.budget = `${normalizedMin}-`;
-    }
-  }
-
-  if (filters.sort) {
-    params.sort = mapSortOptionToApi(filters.sort);
-  }
-
-  return params;
-};
-
-const isRemoteJob = (job) => {
-  if (job.remote === true) return true;
-  const location =
-    typeof job.location === 'string' ? job.location : job.location?.name;
-  return (
-    typeof location === 'string' && location.toLowerCase().includes('remote')
-  );
-};
-
-const JobSearchPage = () => {
+// ─── Subcomponent: Search Header ────────────────────────────
+const SearchHeader = ({ search, setSearch, onSearch, resultCount, isLoading }) => {
   const theme = useTheme();
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  // Use ONLY Redux auth state to prevent dual state management conflicts
-  const { user, isAuthenticated } = useSelector((state) => state.auth);
-  const authState = useAuthCheck();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const heroRef = useRef(null);
-  const searchRef = useRef(null);
-
-  // Job + saved-job data sourced via React Query
-  const rawFilters = useSelector(selectJobFilters);
-  const filters = useMemo(() => rawFilters ?? {}, [rawFilters]);
-
-  const queryFilters = useMemo(() => buildQueryFilters(filters), [filters]);
-
-  const {
-    data: jobsData,
-    isLoading: isJobsLoading,
-    isFetching: isJobsFetching,
-  } = useJobsQuery(queryFilters, { keepPreviousData: true });
-
-  const { data: savedJobsData } = useSavedJobsQuery(
-    {},
-    { enabled: Boolean(isAuthenticated) },
-  );
-
-  const savedJobIds = useSavedJobIds(savedJobsData);
-  const saveJobMutation = useSaveJobMutation();
-  const unsaveJobMutation = useUnsaveJobMutation();
-
-  const jobsFromQuery = useMemo(
-    () => jobsData?.jobs ?? jobsData?.data ?? [],
-    [jobsData],
-  );
-  const normalizedJobs = useMemo(
-    () => jobsFromQuery.map(normalizeJobForUi).filter(Boolean),
-    [jobsFromQuery],
-  );
-  const fallbackJobs = useMemo(
-    () => creativeJobOpportunities.map(normalizeJobForUi).filter(Boolean),
-    [],
-  );
-  const hasLiveJobs = normalizedJobs.length > 0;
-  const loading = isJobsLoading || isJobsFetching;
-
-  // Enhanced local state for better UX
-  const [viewMode, setViewMode] = useState(isMobile ? 'list' : 'grid');
-  const [userPosition, setUserPosition] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(filters.search || '');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [sortBy, setSortBy] = useState('relevance');
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [salaryRange, setSalaryRange] = useState([0, 200]);
-  const [onlyRemote, setOnlyRemote] = useState(false);
-  const [onlyUrgent, setOnlyUrgent] = useState(false);
-  const [onlyFeatured, setOnlyFeatured] = useState(false);
-  const [experienceLevel, setExperienceLevel] = useState('');
-  const [jobType, setJobType] = useState('');
-  const [selectedSkills, setSelectedSkills] = useState([]);
-  const [matchingJobs, setMatchingJobs] = useState([]);
-  const [showSampleData, setShowSampleData] = useState(true);
-
-  const jobsToRender = useMemo(() => {
-    if (showSampleData) {
-      return matchingJobs.length > 0 ? matchingJobs : fallbackJobs;
-    }
-    if (matchingJobs.length > 0) {
-      return matchingJobs;
-    }
-    return normalizedJobs;
-  }, [showSampleData, matchingJobs, fallbackJobs, normalizedJobs]);
-  const totalJobsFound = jobsToRender.length;
-
-  // Get user location for personalized job matching
-  useEffect(() => {
-    if (navigator.geolocation && authState.isAuthenticated) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setUserPosition([pos.coords.latitude, pos.coords.longitude]);
-        },
-        (error) => {
-          console.log('Location access denied:', error);
-        },
-      );
-    }
-  }, [authState.isAuthenticated]);
-
-  // Fetch enhanced data when component mounts
-  // Responsive view mode adjustment
-  useEffect(() => {
-    if (isMobile && viewMode === 'grid') {
-      setViewMode('list');
-    }
-  }, [isMobile, viewMode]);
-
-  // Enhanced search with AI-powered matching
-  const handleSearch = useCallback(() => {
-    const params = {
-      search: searchQuery.trim() || undefined,
-      category: selectedCategory || undefined,
-      type: jobType || undefined,
-      remote: onlyRemote ? 'true' : undefined,
-      urgent: onlyUrgent ? 'true' : undefined,
-      featured: onlyFeatured ? 'true' : undefined,
-      experience: experienceLevel || undefined,
-      skills: selectedSkills.length ? selectedSkills.join(',') : undefined,
-      sort: mapSortOptionToApi(sortBy),
-      page: 1,
-    };
-
-    if (Array.isArray(salaryRange) && salaryRange.length === 2) {
-      const [minSalary, maxSalary] = salaryRange;
-      if (minSalary || maxSalary) {
-        const normalizedMin =
-          typeof minSalary === 'number' ? Math.max(minSalary, 0) : 0;
-        const normalizedMax =
-          typeof maxSalary === 'number' && maxSalary > 0
-            ? maxSalary
-            : undefined;
-        params.budget = normalizedMax
-          ? `${normalizedMin}-${normalizedMax}`
-          : `${normalizedMin}-`;
-      }
-    }
-
-    if (userPosition) {
-      params.latitude = userPosition[0];
-      params.longitude = userPosition[1];
-    }
-
-    const cleanedParams = Object.fromEntries(
-      Object.entries(params).filter(
-        ([, value]) =>
-          value !== undefined &&
-          value !== '' &&
-          !(Array.isArray(value) && value.length === 0),
-      ),
-    );
-
-    dispatch(
-      setFilters({
-        ...filters,
-        search: searchQuery.trim(),
-        profession: selectedCategory || '',
-        job_type: jobType || '',
-        min_budget: salaryRange?.[0] ?? '',
-        max_budget: salaryRange?.[1] ?? '',
-        sort: sortBy,
-        page: 1,
-      }),
-    );
-
-    if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-      window.gtag('event', 'job_search', {
-        search_term: searchQuery,
-        category: selectedCategory,
-        skills_count: selectedSkills.length,
-        filters_applied: Object.keys(cleanedParams).length,
-      });
-    }
-
-    if (authState.isAuthenticated && user) {
-      // Future personalization hooks integrate here
-    }
-  }, [
-    dispatch,
-    filters,
-    searchQuery,
-    selectedCategory,
-    sortBy,
-    jobType,
-    onlyRemote,
-    onlyUrgent,
-    onlyFeatured,
-    experienceLevel,
-    salaryRange,
-    selectedSkills,
-    userPosition,
-    authState.isAuthenticated,
-    user,
-  ]);
-
-  useEffect(() => {
-    setShowSampleData(!hasLiveJobs);
-  }, [hasLiveJobs]);
-
-  useEffect(() => {
-    const dataset = hasLiveJobs ? normalizedJobs : fallbackJobs;
-    if (!Array.isArray(dataset) || dataset.length === 0) {
-      setMatchingJobs([]);
-      return;
-    }
-
-    const searchTerm = searchQuery.trim().toLowerCase();
-    const normalizedCategory = selectedCategory.toLowerCase();
-    const normalizedExperience = experienceLevel.toLowerCase();
-    const normalizedJobType = jobType.toLowerCase();
-    const salaryRangeMin = Array.isArray(salaryRange) ? salaryRange[0] : 0;
-    const salaryRangeMax = Array.isArray(salaryRange) ? salaryRange[1] : 0;
-
-    const filteredJobs = dataset.filter((job) => {
-      const title = job.title?.toLowerCase() || '';
-      const companyName = job.company?.name?.toLowerCase() || '';
-      const description = job.description?.toLowerCase() || '';
-      const jobCategory = job.category?.toLowerCase() || '';
-      const jobExperience = (
-        job.experienceLevel ||
-        job.experience ||
-        ''
-      ).toLowerCase();
-      const jobTypeValue = (
-        job.type ||
-        job.jobType ||
-        job.employmentType ||
-        ''
-      ).toLowerCase();
-      const jobSkills = Array.isArray(job.skills) ? job.skills : [];
-      const jobBudget = job.budget || {};
-      const jobMinBudget = jobBudget?.min ?? jobBudget?.amount ?? 0;
-      const jobMaxBudget = jobBudget?.max ?? jobBudget?.amount ?? jobMinBudget;
-
-      if (searchTerm) {
-        const matchesSearch =
-          title.includes(searchTerm) ||
-          companyName.includes(searchTerm) ||
-          description.includes(searchTerm) ||
-          jobSkills.some((skill) => skill.toLowerCase().includes(searchTerm));
-        if (!matchesSearch) return false;
-      }
-
-      if (selectedCategory && jobCategory !== normalizedCategory) {
-        return false;
-      }
-
-      if (onlyRemote && !isRemoteJob(job)) {
-        return false;
-      }
-
-      if (onlyUrgent && !(job.urgent || job.urgency === 'high')) {
-        return false;
-      }
-
-      if (onlyFeatured && !job.featured) {
-        return false;
-      }
-
-      if (experienceLevel && jobExperience !== normalizedExperience) {
-        return false;
-      }
-
-      if (jobType && jobTypeValue !== normalizedJobType) {
-        return false;
-      }
-
-      if (Array.isArray(salaryRange) && (salaryRangeMin || salaryRangeMax)) {
-        if (jobMinBudget < salaryRangeMin) return false;
-        if (salaryRangeMax && jobMaxBudget > salaryRangeMax) return false;
-      }
-
-      if (selectedSkills.length > 0) {
-        const matchesSkills = selectedSkills.every((skill) =>
-          jobSkills.some((jobSkill) =>
-            jobSkill.toLowerCase().includes(skill.toLowerCase()),
-          ),
-        );
-        if (!matchesSkills) return false;
-      }
-
-      return true;
-    });
-
-    const sortedJobs = [...filteredJobs].sort((a, b) => {
-      const toTimestamp = (value) => {
-        if (!value) return 0;
-        const date = value instanceof Date ? value : new Date(value);
-        return Number.isNaN(date.getTime()) ? 0 : date.getTime();
-      };
-      const maxBudget = (job) => {
-        const budget = job.budget || {};
-        return budget?.max ?? budget?.amount ?? budget?.min ?? 0;
-      };
-      const minBudget = (job) => {
-        const budget = job.budget || {};
-        return budget?.min ?? budget?.amount ?? budget?.max ?? 0;
-      };
-
-      switch (sortBy) {
-        case 'newest':
-          return toTimestamp(b.postedDate) - toTimestamp(a.postedDate);
-        case 'salary_high':
-          return maxBudget(b) - maxBudget(a);
-        case 'salary_low':
-          return minBudget(a) - minBudget(b);
-        case 'match':
-          return (b.matchScore || 0) - (a.matchScore || 0);
-        case 'deadline':
-          return toTimestamp(a.deadline) - toTimestamp(b.deadline);
-        default:
-          return 0;
-      }
-    });
-
-    setMatchingJobs(sortedJobs);
-  }, [
-    fallbackJobs,
-    hasLiveJobs,
-    normalizedJobs,
-    searchQuery,
-    selectedCategory,
-    onlyRemote,
-    onlyUrgent,
-    onlyFeatured,
-    experienceLevel,
-    jobType,
-    salaryRange,
-    selectedSkills,
-    sortBy,
-  ]);
-
-  const clearFilters = useCallback(() => {
-    setSearchQuery('');
-    setSelectedCategory('');
-    setSortBy('relevance');
-    setOnlyRemote(false);
-    setOnlyUrgent(false);
-    setOnlyFeatured(false);
-    setExperienceLevel('');
-    setJobType('');
-    setSalaryRange([0, 200]);
-    setSelectedSkills([]);
-    setMatchingJobs([]);
-    dispatch(
-      setFilters({
-        search: '',
-        profession: '',
-        job_type: '',
-        min_budget: '',
-        max_budget: '',
-        sort: 'relevance',
-        page: 1,
-      }),
-    );
-  }, [dispatch]);
-
-  const toggleSaveJob = useCallback(
-    async (job) => {
-      const jobId = job?._id || job?.id || job;
-      if (!jobId) return;
-
-      if (!isAuthenticated) {
-        navigate('/login', { state: { from: `/jobs/${jobId}` } });
-        return;
-      }
-
-      const isCurrentlySaved = savedJobIds.has(jobId);
-      try {
-        if (isCurrentlySaved) {
-          await unsaveJobMutation.mutateAsync({ jobId });
-        } else {
-          await saveJobMutation.mutateAsync({ jobId, job });
-        }
-      } catch (error) {
-        console.error('Failed to toggle save job:', error);
-      }
-    },
-    [
-      isAuthenticated,
-      navigate,
-      savedJobIds,
-      saveJobMutation,
-      unsaveJobMutation,
-    ],
-  );
-
-  // Enhanced keyboard shortcuts
-  useEffect(() => {
-    const handleKeyPress = (e) => {
-      if (e.ctrlKey || e.metaKey) {
-        switch (e.key) {
-          case 'k':
-            e.preventDefault();
-            searchRef.current?.querySelector('input')?.focus();
-            break;
-          case 'f':
-            e.preventDefault();
-            setShowAdvancedFilters((prev) => !prev);
-            break;
-          case 's':
-            e.preventDefault();
-            handleSearch();
-            break;
-          default:
-            break;
-        }
-      }
-      if (e.key === 'Escape') {
-        setShowAdvancedFilters(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [handleSearch]);
-
-  // Auto-save user preferences
-  useEffect(() => {
-    if (authState.isAuthenticated) {
-      const preferences = {
-        viewMode,
-        sortBy,
-        salaryRange,
-        selectedSkills,
-        experienceLevel,
-        jobType,
-      };
-      localStorage.setItem(
-        'workerJobSearchPreferences',
-        JSON.stringify(preferences),
-      );
-    }
-  }, [
-    viewMode,
-    sortBy,
-    salaryRange,
-    selectedSkills,
-    experienceLevel,
-    jobType,
-    authState.isAuthenticated,
-  ]);
-
-  // Load saved preferences
-  useEffect(() => {
-    if (authState.isAuthenticated) {
-      try {
-        const saved = localStorage.getItem('workerJobSearchPreferences');
-        if (saved) {
-          const preferences = JSON.parse(saved);
-          setViewMode(preferences.viewMode || (isMobile ? 'list' : 'grid'));
-          setSortBy(preferences.sortBy || 'relevance');
-          setSalaryRange(preferences.salaryRange || [0, 200]);
-          setSelectedSkills(preferences.selectedSkills || []);
-          setExperienceLevel(preferences.experienceLevel || '');
-          setJobType(preferences.jobType || '');
-        }
-      } catch (error) {
-        console.error('Error loading preferences:', error);
-      }
-    }
-  }, [authState.isAuthenticated, isMobile]);
-
-  const renderHeroSection = () => (
-    <HeroGradientSection ref={heroRef}>
-      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 2 }}>
-        <Grid container spacing={6} alignItems="center">
-          <Grid item xs={12} lg={6}>
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <Typography
-                variant="h1"
-                sx={{
-                  fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
-                  fontWeight: 900,
-                  mb: 3,
-                  background:
-                    'linear-gradient(135deg, #FFD700, #FFA500, #FF6B6B)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  textShadow: '0 4px 8px rgba(0,0,0,0.3)',
-                }}
-              >
-                Find Your Dream Work
-              </Typography>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem' },
-                  fontWeight: 400,
-                  mb: 4,
-                  opacity: 0.9,
-                  lineHeight: 1.4,
-                }}
-              >
-                🚀 Discover amazing opportunities in skilled trades
-                <br />
-                💰 Unlock your earning potential with top employers
-                <br />
-                🌟 Build your career with meaningful work
-              </Typography>
-
-              <Stack
-                direction={{ xs: 'column', sm: 'row' }}
-                spacing={3}
-                sx={{ mb: 6 }}
-              >
-                <AnimatedButton
-                  size="large"
-                  startIcon={<SearchIcon />}
-                  onClick={() =>
-                    window.scrollTo({
-                      top: heroRef.current?.offsetHeight || 600,
-                      behavior: 'smooth',
-                    })
-                  }
-                >
-                  Explore Opportunities
-                </AnimatedButton>
-                <AnimatedButton
-                  variant="outlined"
-                  size="large"
-                  startIcon={<WorkspacePremiumIcon />}
-                  sx={{
-                    borderColor: 'white',
-                    color: 'white',
-                    '&:hover': {
-                      borderColor: theme.palette.secondary.main,
-                      backgroundColor: alpha('#ffffff', 0.1),
-                    },
-                  }}
-                  onClick={() => navigate('/worker/profile')}
-                >
-                  Build Your Profile
-                </AnimatedButton>
-              </Stack>
-
-              <Box sx={{ mb: 4 }}>
-                <Typography variant="h6" sx={{ mb: 2, opacity: 0.8 }}>
-                  🏆 Join professionals working with:
-                </Typography>
-                <Stack
-                  direction="row"
-                  spacing={3}
-                  sx={{ opacity: 0.7, flexWrap: 'wrap' }}
-                >
-                  {['Tesla', 'Apple', 'Google', 'Microsoft', 'SpaceX'].map(
-                    (company) => (
-                      <Typography key={company} variant="h6" fontWeight={300}>
-                        {company}
-                      </Typography>
-                    ),
-                  )}
-                </Stack>
-              </Box>
-            </motion.div>
-          </Grid>
-
-          {/* Stats grid — hidden on mobile to reduce scroll depth */}
-          <Grid item xs={12} lg={6} sx={{ display: { xs: 'none', md: 'block' } }}>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              <Grid container spacing={3}>
-                {workerStats.map((stat, index) => (
-                  <Grid item xs={6} key={index}>
-                    <StatCard
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-                      whileHover={{ scale: 1.05, rotateY: 5 }}
-                    >
-                      <Box sx={{ color: stat.color, mb: 2 }}>{stat.icon}</Box>
-                      <Typography
-                        variant="h3"
-                        fontWeight={900}
-                        sx={{ color: stat.color, mb: 1 }}
-                      >
-                        {stat.value}
-                      </Typography>
-                      <Typography
-                        variant="h6"
-                        fontWeight={600}
-                        color="white"
-                        sx={{ mb: 0.5 }}
-                      >
-                        {stat.label}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="rgba(255,255,255,0.8)"
-                        sx={{ mb: 1 }}
-                      >
-                        {stat.subtitle}
-                      </Typography>
-                      <Chip
-                        label={stat.trend}
-                        size="small"
-                        sx={{
-                          bgcolor: alpha('#ffffff', 0.2),
-                          color: 'white',
-                          fontWeight: 600,
-                        }}
-                      />
-                    </StatCard>
-                  </Grid>
-                ))}
-              </Grid>
-            </motion.div>
-          </Grid>
-        </Grid>
-      </Container>
-    </HeroGradientSection>
-  );
-
-  const renderSearchInterface = () => (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <SearchInterface elevation={12}>
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        p: { xs: 2, md: 3 },
+        borderRadius: 3,
+        background: alpha(theme.palette.background.paper, 0.6),
+        backdropFilter: 'blur(12px)',
+        border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+      }}
+    >
+      <Stack spacing={1.5}>
         <Typography
-          variant="h4"
+          variant="h5"
           fontWeight={700}
-          textAlign="center"
-          sx={{ mb: 4, color: theme.palette.secondary.main }}
+          sx={{ display: { xs: 'none', md: 'block' } }}
         >
-          🎯 Smart Job Discovery Engine
+          Find Work
         </Typography>
-
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
-            <TextField
-              fullWidth
-              placeholder="Search jobs by title, company, or skills..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon sx={{ color: theme.palette.secondary.main }} />
-                  </InputAdornment>
-                ),
-                sx: {
-                  borderRadius: 3,
-                  '& fieldset': {
-                    borderColor: alpha(theme.palette.secondary.main, 0.3),
-                  },
-                  bgcolor: alpha(theme.palette.background.default, 0.5),
-                },
-              }}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={2}>
-            <FormControl fullWidth>
-              <Select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                displayEmpty
-                sx={{
-                  borderRadius: 3,
-                  '& fieldset': {
-                    borderColor: alpha(theme.palette.secondary.main, 0.3),
-                  },
-                  bgcolor: alpha(theme.palette.background.default, 0.5),
-                }}
-              >
-                <MenuItem value="relevance">Most Relevant</MenuItem>
-                <MenuItem value="newest">Newest First</MenuItem>
-                <MenuItem value="salary_high">Highest Salary</MenuItem>
-                <MenuItem value="salary_low">Lowest Salary</MenuItem>
-                <MenuItem value="match">Best Match</MenuItem>
-                <MenuItem value="deadline">Deadline Soon</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={12} md={3}>
-            <Stack direction="row" spacing={1}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={onlyRemote}
-                    onChange={(e) => setOnlyRemote(e.target.checked)}
-                    color="secondary"
-                  />
-                }
-                label="Remote Only"
-              />
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={onlyUrgent}
-                    onChange={(e) => setOnlyUrgent(e.target.checked)}
-                    color="error"
-                  />
-                }
-                label="Urgent"
-              />
-            </Stack>
-          </Grid>
-
-          <Grid item xs={12} md={3}>
-            <Stack direction="row" spacing={1}>
-              <Button
-                variant="contained"
-                onClick={() => handleSearch()}
-                fullWidth
-                startIcon={<SearchIcon />}
-                sx={{
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                  '&:hover': {
-                    background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
-                  },
-                }}
-              >
-                Find Jobs
-              </Button>
-
-              <ToggleButtonGroup
-                value={viewMode}
-                exclusive
-                onChange={(e, newView) => newView && setViewMode(newView)}
-                size="small"
-              >
-                <ToggleButton value="grid">
-                  <ViewModuleIcon />
-                </ToggleButton>
-                <ToggleButton value="list">
-                  <ViewListIcon />
-                </ToggleButton>
-                <ToggleButton value="map">
-                  <MapIcon />
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </Stack>
-          </Grid>
-        </Grid>
-
-        {/* Advanced Filters */}
-        <Collapse in={showAdvancedFilters}>
-          <Divider sx={{ my: 3 }} />
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Experience Level</InputLabel>
-                <Select
-                  value={experienceLevel}
-                  label="Experience Level"
-                  onChange={(e) => setExperienceLevel(e.target.value)}
-                  sx={{ borderRadius: 2 }}
-                >
-                  <MenuItem value="">All Levels</MenuItem>
-                  <MenuItem value="entry">Entry Level</MenuItem>
-                  <MenuItem value="mid">Mid Level</MenuItem>
-                  <MenuItem value="senior">Senior Level</MenuItem>
-                  <MenuItem value="expert">Expert Level</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Job Type</InputLabel>
-                <Select
-                  value={jobType}
-                  label="Job Type"
-                  onChange={(e) => setJobType(e.target.value)}
-                  sx={{ borderRadius: 2 }}
-                >
-                  <MenuItem value="">All Types</MenuItem>
-                  <MenuItem value="full-time">Full Time</MenuItem>
-                  <MenuItem value="part-time">Part Time</MenuItem>
-                  <MenuItem value="contract">Contract</MenuItem>
-                  <MenuItem value="freelance">Freelance</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Typography gutterBottom>
-                Hourly Rate: ${salaryRange[0]} - ${salaryRange[1]}
-              </Typography>
-              <Slider
-                value={salaryRange}
-                onChange={(e, newValue) => setSalaryRange(newValue)}
-                valueLabelDisplay="auto"
-                min={0}
-                max={300}
-                step={5}
-                marks={[
-                  { value: 0, label: '$0' },
-                  { value: 100, label: '$100' },
-                  { value: 200, label: '$200' },
-                  { value: 300, label: '$300+' },
-                ]}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Stack direction="row" spacing={1} justifyContent="flex-end">
-                <Button
-                  onClick={clearFilters}
-                  startIcon={<ClearIcon />}
-                  variant="outlined"
-                >
-                  Clear All
-                </Button>
-                <AnimatedButton
-                  onClick={handleSearch}
-                  startIcon={<SearchIcon />}
-                >
-                  Apply Filters
-                </AnimatedButton>
-              </Stack>
-            </Grid>
-          </Grid>
-        </Collapse>
-
-        <Box sx={{ textAlign: 'center', mt: 2 }}>
+        <Stack direction="row" spacing={1}>
+          <TextField
+            fullWidth
+            placeholder="Search by job title, skill, or keyword…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+            size="small"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: 'text.secondary' }} />
+                </InputAdornment>
+              ),
+              endAdornment: search ? (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      setSearch('');
+                      onSearch('');
+                    }}
+                  >
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ) : null,
+              sx: {
+                borderRadius: 2,
+                bgcolor: alpha(theme.palette.background.default, 0.5),
+              },
+            }}
+          />
           <Button
-            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            endIcon={
-              showAdvancedFilters ? <ExpandLessIcon /> : <ExpandMoreIcon />
-            }
-            sx={{ color: theme.palette.secondary.main }}
-          >
-            {showAdvancedFilters ? 'Hide' : 'Show'} Advanced Filters
-          </Button>
-        </Box>
-      </SearchInterface>
-    </Container>
-  );
-
-  const renderCategories = () => (
-    <Container maxWidth="xl" sx={{ py: 6 }}>
-      <Typography
-        variant="h3"
-        fontWeight={700}
-        textAlign="center"
-        sx={{ mb: 6, color: theme.palette.secondary.main }}
-      >
-        🎯 Explore Job Categories
-      </Typography>
-
-      <Grid container spacing={3} justifyContent="center">
-        {jobCategories.map((category, index) => (
-          <Grid item xs={6} sm={6} md={4} lg={2} key={category.name}>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-              whileHover={{ scale: 1.05, rotateY: 5 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <GlassCard
-                sx={{
-                  p: 3,
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  background:
-                    selectedCategory === category.name
-                      ? `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.2)}, ${alpha(theme.palette.primary.main, 0.1)})`
-                      : 'background.paper',
-                  border:
-                    selectedCategory === category.name
-                      ? `2px solid ${theme.palette.secondary.main}`
-                      : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                  minHeight: 180,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                }}
-                onClick={() =>
-                  setSelectedCategory(
-                    category.name === selectedCategory ? '' : category.name,
-                  )
-                }
-              >
-                <Box sx={{ color: category.color, mb: 2, fontSize: 48 }}>
-                  {category.icon}
-                </Box>
-                <Typography variant="h6" fontWeight={700} gutterBottom>
-                  {category.name}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mb: 1 }}
-                >
-                  {category.description}
-                </Typography>
-                <Chip
-                  label={`${category.count.toLocaleString()} jobs`}
-                  size="small"
-                  sx={{ mb: 1 }}
-                />
-                <Box>
-                  {category.trending && (
-                    <Chip label="🔥" size="small" sx={{ m: 0.25 }} />
-                  )}
-                  {category.hot && (
-                    <Chip label="💎" size="small" sx={{ m: 0.25 }} />
-                  )}
-                  {category.newest && (
-                    <Chip label="✨" size="small" sx={{ m: 0.25 }} />
-                  )}
-                  {category.premium && (
-                    <Chip label="👑" size="small" sx={{ m: 0.25 }} />
-                  )}
-                </Box>
-              </GlassCard>
-            </motion.div>
-          </Grid>
-        ))}
-      </Grid>
-    </Container>
-  );
-
-  const renderJobCard = (job, index) => (
-    <Grid item xs={12} sm={6} lg={viewMode === 'list' ? 12 : 4} key={job.id}>
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: index * 0.1 }}
-      >
-        <JobOpportunityCard
-          featured={job.featured}
-          urgent={job.urgency === 'high'}
-          premium={job.premium}
-          trending={job.matchScore >= 90}
-          matchScore={job.matchScore}
-          elevation={job.featured ? 12 : 4}
-          sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-        >
-          <CardContent
+            variant="contained"
+            onClick={() => onSearch()}
             sx={{
-              p: 3,
-              pt:
-                job.featured && job.premium
-                  ? 7
-                  : job.featured || job.premium
-                    ? 5
-                    : 3,
-              pb: 2,
-              flexGrow: 1,
-              display: 'flex',
-              flexDirection: 'column',
+              minWidth: { xs: 44, md: 100 },
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 600,
             }}
           >
-            {/* Job Header */}
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
-              <Avatar
-                src={job.company.logo}
-                sx={{
-                  width: 60,
-                  height: 60,
-                  mr: 2,
-                  border: `3px solid ${theme.palette.secondary.main}`,
-                  boxShadow: `0 8px 20px ${alpha(theme.palette.secondary.main, 0.3)}`,
-                }}
-              />
+            <SearchIcon sx={{ display: { md: 'none' } }} />
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>Search</Box>
+          </Button>
+        </Stack>
+        {!isLoading && (
+          <Typography variant="body2" color="text.secondary">
+            {resultCount} {resultCount === 1 ? 'job' : 'jobs'} available
+          </Typography>
+        )}
+      </Stack>
+    </Paper>
+  );
+};
 
-              <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                <Typography variant="h6" fontWeight={700} gutterBottom>
-                  {job.title}
+// ─── Subcomponent: Category Chips ───────────────────────────
+const CategoryChips = ({ selected, onChange }) => {
+  const theme = useTheme();
+  const categories = tradeCategories.filter((c) => c.value);
+  return (
+    <Stack
+      direction="row"
+      spacing={1}
+      sx={{
+        overflowX: 'auto',
+        py: 1,
+        px: 0.5,
+        '&::-webkit-scrollbar': { display: 'none' },
+        scrollbarWidth: 'none',
+      }}
+    >
+      <Chip
+        label="All"
+        variant={!selected ? 'filled' : 'outlined'}
+        onClick={() => onChange('')}
+        sx={{
+          fontWeight: 600,
+          ...(!selected && {
+            bgcolor: alpha(theme.palette.primary.main, 0.15),
+            color: theme.palette.primary.main,
+            borderColor: theme.palette.primary.main,
+          }),
+        }}
+      />
+      {categories.map((cat) => {
+        const Icon = CATEGORY_ICONS[cat.value];
+        const isActive = selected === cat.value;
+        return (
+          <Chip
+            key={cat.value}
+            icon={Icon ? <Icon sx={{ fontSize: 16, ml: 0.5 }} /> : undefined}
+            label={cat.value}
+            variant={isActive ? 'filled' : 'outlined'}
+            onClick={() => onChange(isActive ? '' : cat.value)}
+            sx={{
+              fontWeight: 500,
+              whiteSpace: 'nowrap',
+              ...(isActive && {
+                bgcolor: alpha(theme.palette.primary.main, 0.15),
+                color: theme.palette.primary.main,
+                borderColor: theme.palette.primary.main,
+              }),
+            }}
+          />
+        );
+      })}
+    </Stack>
+  );
+};
+
+// ─── Subcomponent: Filter Panel ─────────────────────────────
+const FilterPanel = ({
+  location,
+  setLocation,
+  budgetRange,
+  setBudgetRange,
+  sortBy,
+  setSortBy,
+  onReset,
+}) => {
+  const theme = useTheme();
+  return (
+    <Stack spacing={2.5}>
+      {/* Location */}
+      <FormControl size="small" fullWidth>
+        <InputLabel>Location</InputLabel>
+        <Select
+          value={location}
+          label="Location"
+          onChange={(e) => setLocation(e.target.value)}
+          sx={{ borderRadius: 2 }}
+        >
+          {ghanaLocations.map((loc) => (
+            <MenuItem key={loc.value} value={loc.value}>
+              {loc.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      {/* Budget Range */}
+      <Box>
+        <Typography variant="body2" color="text.secondary" gutterBottom>
+          Budget Range (GH₵)
+        </Typography>
+        <Slider
+          value={budgetRange}
+          onChange={(_, v) => setBudgetRange(v)}
+          valueLabelDisplay="auto"
+          min={0}
+          max={50000}
+          step={500}
+          valueLabelFormat={(v) => `GH₵${v.toLocaleString()}`}
+          sx={{
+            color: theme.palette.primary.main,
+            '& .MuiSlider-thumb': { width: 16, height: 16 },
+          }}
+        />
+        <Stack direction="row" justifyContent="space-between">
+          <Typography variant="caption" color="text.secondary">
+            GH₵{budgetRange[0].toLocaleString()}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            GH₵{budgetRange[1].toLocaleString()}
+          </Typography>
+        </Stack>
+      </Box>
+
+      {/* Sort */}
+      <FormControl size="small" fullWidth>
+        <InputLabel>Sort By</InputLabel>
+        <Select
+          value={sortBy}
+          label="Sort By"
+          onChange={(e) => setSortBy(e.target.value)}
+          sx={{ borderRadius: 2 }}
+        >
+          {SORT_OPTIONS.map((opt) => (
+            <MenuItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <Button
+        variant="text"
+        size="small"
+        onClick={onReset}
+        sx={{ alignSelf: 'flex-start', textTransform: 'none', color: 'text.secondary' }}
+      >
+        Reset Filters
+      </Button>
+    </Stack>
+  );
+};
+
+// ─── Subcomponent: Job Card (clean, professional) ───────────
+const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const handleClick = () => navigate(`/jobs/${job.id}`);
+  const handleSaveToggle = (e) => {
+    e.stopPropagation();
+    if (isSaved) {
+      onUnsave({ jobId: job.id });
+    } else {
+      onSave({ jobId: job.id, job });
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+      layout
+    >
+      <Card
+        onClick={handleClick}
+        sx={{
+          cursor: 'pointer',
+          borderRadius: 3,
+          border: `1px solid ${alpha(theme.palette.divider, 0.6)}`,
+          bgcolor: theme.palette.background.paper,
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            borderColor: alpha(theme.palette.primary.main, 0.4),
+            transform: 'translateY(-2px)',
+            boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.08)}`,
+          },
+        }}
+      >
+        <CardContent
+          sx={{ p: { xs: 2, md: 2.5 }, '&:last-child': { pb: { xs: 2, md: 2.5 } } }}
+        >
+          {/* Top row: title + save */}
+          <Stack
+            direction="row"
+            alignItems="flex-start"
+            justifyContent="space-between"
+            spacing={1}
+          >
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography
+                variant="subtitle1"
+                fontWeight={700}
+                noWrap
+                sx={{ color: 'text.primary', mb: 0.25 }}
+              >
+                {job.title}
+              </Typography>
+              <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                <Typography variant="caption" color="text.secondary">
+                  {job.hirerName || job.employer?.name || 'Employer'}
                 </Typography>
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  alignItems="center"
-                  sx={{ mb: 1 }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    {job.company.name}
-                  </Typography>
-                  {job.company.verified && (
-                    <VerifiedIcon
-                      sx={{ fontSize: 16, color: theme.palette.secondary.main }}
-                    />
-                  )}
-                  <Rating
-                    value={job.company.rating}
-                    precision={0.1}
-                    size="small"
-                    readOnly
-                  />
-                </Stack>
-
-                {job.matchScore && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <Typography variant="body2" sx={{ mr: 1 }}>
-                      Match Score:
-                    </Typography>
-                    <LinearProgress
-                      variant="determinate"
-                      value={job.matchScore}
-                      sx={{
-                        flexGrow: 1,
-                        mr: 1,
-                        height: 8,
-                        borderRadius: 4,
-                        bgcolor: alpha(theme.palette.secondary.main, 0.2),
-                        '& .MuiLinearProgress-bar': {
-                          bgcolor:
-                            job.matchScore >= 90
-                              ? theme.palette.success.main
-                              : job.matchScore >= 70
-                                ? theme.palette.warning.main
-                                : theme.palette.error.main,
-                          borderRadius: 4,
-                        },
-                      }}
-                    />
-                    <Typography
-                      variant="body2"
-                      fontWeight={600}
-                      color="secondary.main"
-                    >
-                      {job.matchScore}%
-                    </Typography>
-                  </Box>
+                {(job.hirerVerified || job.employer?.verified) && (
+                  <VerifiedIcon sx={{ fontSize: 14, color: theme.palette.info.main }} />
                 )}
-              </Box>
-
+                <Typography variant="caption" color="text.secondary">
+                  · {timeAgo(job.postedDate)}
+                </Typography>
+              </Stack>
+            </Box>
+            <Tooltip title={isSaved ? 'Unsave' : 'Save job'}>
               <IconButton
-                onClick={() => toggleSaveJob(job)}
+                size="small"
+                onClick={handleSaveToggle}
                 sx={{
-                  color: savedJobIds.has(job.id)
-                    ? theme.palette.secondary.main
-                    : theme.palette.text.secondary,
+                  color: isSaved ? theme.palette.primary.main : 'text.secondary',
+                  '&:hover': { color: theme.palette.primary.main },
                 }}
               >
-                {savedJobIds.has(job.id) ? (
-                  <BookmarkIcon />
+                {isSaved ? (
+                  <BookmarkIcon fontSize="small" />
                 ) : (
-                  <BookmarkBorderIcon />
+                  <BookmarkBorderIcon fontSize="small" />
                 )}
               </IconButton>
-            </Box>
+            </Tooltip>
+          </Stack>
 
-            {/* Job Description */}
-            <Typography
-              variant="body2"
-              sx={{
-                mb: 3,
-                lineHeight: 1.6,
-                display: '-webkit-box',
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}
+          {/* Description */}
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              mt: 1,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              lineHeight: 1.5,
+            }}
+          >
+            {job.description || 'No description provided.'}
+          </Typography>
+
+          {/* Skills */}
+          {job.skills?.length > 0 && (
+            <Stack
+              direction="row"
+              spacing={0.5}
+              sx={{ mt: 1.5, flexWrap: 'wrap', gap: 0.5 }}
             >
-              {job.description}
-            </Typography>
-
-            {/* Skills */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                Required Skills
-              </Typography>
-              <Stack
-                direction="row"
-                spacing={0.5}
-                sx={{ flexWrap: 'wrap', gap: 0.5 }}
-              >
-                {job.skills.slice(0, 4).map((skill) => (
-                  <Chip
-                    key={skill}
-                    label={skill}
-                    size="small"
-                    sx={{
-                      bgcolor: alpha(theme.palette.secondary.main, 0.1),
-                      color: theme.palette.secondary.main,
-                      fontWeight: 600,
-                      fontSize: '0.75rem',
-                    }}
-                  />
-                ))}
-                {job.skills.length > 4 && (
-                  <Chip
-                    label={`+${job.skills.length - 4} more`}
-                    size="small"
-                    variant="outlined"
-                  />
-                )}
-              </Stack>
-            </Box>
-
-            {/* Job Details Grid */}
-            <Grid container spacing={2} sx={{ mb: 3 }}>
-              <Grid item xs={6}>
-                <Box sx={{ textAlign: 'center' }}>
-                  <Typography
-                    variant="h5"
-                    fontWeight={700}
-                    color="secondary.main"
-                  >
-                    ${job.budget?.min || 'N/A'}-{job.budget?.max || 'N/A'}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    per {job.budget?.type || 'N/A'}
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={6}>
-                <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="h6" fontWeight={600}>
-                    {job.applicants}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    applicants
-                  </Typography>
-                </Box>
-              </Grid>
-            </Grid>
-
-            {/* Location & Details */}
-            <Stack spacing={1} sx={{ mb: 3 }}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <LocationOnIcon fontSize="small" color="secondary" />
-                <Typography variant="body2">{formatJobLocation(job.location)}</Typography>
-                {job.remote && (
-                  <Chip label="Remote" size="small" color="success" />
-                )}
-              </Stack>
-
-              <Stack direction="row" spacing={1} alignItems="center">
-                <ScheduleIcon fontSize="small" color="secondary" />
-                <Typography variant="body2">{job.estimatedDuration}</Typography>
-              </Stack>
-
-              <Stack direction="row" spacing={1} alignItems="center">
-                <AccessTimeIcon fontSize="small" color="secondary" />
-                <Typography variant="body2">{job.responseTime}</Typography>
-              </Stack>
+              {job.skills.slice(0, isMobile ? 3 : 5).map((skill) => (
+                <Chip
+                  key={skill}
+                  label={skill}
+                  size="small"
+                  sx={{
+                    height: 24,
+                    fontSize: '0.7rem',
+                    bgcolor: alpha(theme.palette.primary.main, 0.08),
+                    color: theme.palette.primary.main,
+                    fontWeight: 500,
+                  }}
+                />
+              ))}
+              {job.skills.length > (isMobile ? 3 : 5) && (
+                <Chip
+                  label={`+${job.skills.length - (isMobile ? 3 : 5)}`}
+                  size="small"
+                  sx={{ height: 24, fontSize: '0.7rem' }}
+                />
+              )}
             </Stack>
-
-            {/* Tags */}
-            {job.tags && (
-              <Stack
-                direction="row"
-                spacing={0.5}
-                sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}
-              >
-                {job.tags.map((tag) => (
-                  <Chip
-                    key={tag}
-                    label={tag}
-                    size="small"
-                    variant="outlined"
-                    sx={{ fontSize: '0.7rem' }}
-                  />
-                ))}
-              </Stack>
-            )}
-
-            {/* Benefits Preview */}
-            {job.benefits && (
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                  Benefits & Perks
-                </Typography>
-                <Stack
-                  direction="row"
-                  spacing={0.5}
-                  sx={{ flexWrap: 'wrap', gap: 0.5 }}
-                >
-                  {job.benefits.slice(0, 3).map((benefit) => (
-                    <Chip
-                      key={benefit}
-                      label={benefit}
-                      size="small"
-                      sx={{
-                        bgcolor: alpha(theme.palette.success.main, 0.1),
-                        color: theme.palette.success.main,
-                        fontSize: '0.7rem',
-                      }}
-                    />
-                  ))}
-                  {job.benefits.length > 3 && (
-                    <Chip
-                      label={`+${job.benefits.length - 3} more`}
-                      size="small"
-                      variant="outlined"
-                    />
-                  )}
-                </Stack>
-              </Box>
-            )}
-          </CardContent>
-
-          <CardActions sx={{ p: 2, pt: 0, justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', gap: 1, flex: 1 }}>
-              <Button
-                variant="contained"
-                size="small"
-                startIcon={<VisibilityIcon />}
-                onClick={() => navigate(`/jobs/${job.id}`)}
-                sx={{ flex: 1 }}
-              >
-                View Details
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<HandshakeIcon />}
-                onClick={() => {
-                  if (!authState.isAuthenticated) {
-                    navigate('/login', {
-                      state: {
-                        from: `/jobs/${job.id}/apply`,
-                        message: 'Please sign in to apply for this job',
-                      },
-                    });
-                    return;
-                  }
-                  navigate(`/jobs/${job.id}/apply`);
-                }}
-                sx={{
-                  flex: 1,
-                  borderColor: theme.palette.secondary.main,
-                  color: theme.palette.secondary.main,
-                  '&:hover': {
-                    borderColor: theme.palette.secondary.dark,
-                    backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-                  },
-                }}
-              >
-                {authState.isAuthenticated ? 'Apply Now' : 'Sign In to Apply'}
-              </Button>
-            </Box>
-            <IconButton
-              color="primary"
-              size="small"
-              onClick={() => {
-                if (navigator.share) {
-                  navigator.share({
-                    title: job.title,
-                    text: `Check out this job opportunity: ${job.title} at ${job.company.name}`,
-                    url: window.location.href,
-                  });
-                } else {
-                  // Fallback: copy to clipboard
-                  navigator.clipboard.writeText(
-                    `${job.title} at ${job.company.name} - ${window.location.origin}/jobs/${job.id}`,
-                  );
-                }
-              }}
-            >
-              <ShareIcon />
-            </IconButton>
-          </CardActions>
-        </JobOpportunityCard>
-      </motion.div>
-    </Grid>
-  );
-
-  const renderMapView = (mapJobs = []) => (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Box sx={{ height: { xs: 350, md: 600 }, borderRadius: 3, overflow: 'hidden' }}>
-        <MapContainer
-          center={userPosition || [39.8283, -98.5795]} // Center of USA if no user location
-          zoom={userPosition ? 13 : 4}
-          style={{ height: '100%', width: '100%' }}
-        >
-          <TileLayer url={EXTERNAL_SERVICES.OPENSTREETMAP.TILES} />
-
-          {/* User Location Marker */}
-          {userPosition && (
-            <Marker position={userPosition}>
-              <Popup>📍 You are here</Popup>
-            </Marker>
           )}
 
-          {/* Job Markers */}
-          {mapJobs
-            .filter((job) => job?.coordinates)
-            .map((job) => (
-              <Marker
-                key={job.id}
-                position={[
-                  job.coordinates?.lat || 37.7749,
-                  job.coordinates?.lng || -122.4194,
-                ]}
-              >
-                <Popup>
-                  <Box sx={{ minWidth: 200 }}>
-                    <Typography variant="h6" fontWeight="bold" gutterBottom>
-                      {job.title}
-                    </Typography>
-                    <Typography variant="body2" gutterBottom>
-                      {job.company?.name || 'Company Name'}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="secondary.main"
-                      fontWeight="bold"
-                    >
-                      ${job.budget?.min || 'N/A'}-{job.budget?.max || 'N/A'}/
-                      {job.budget?.type || 'N/A'}
-                    </Typography>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      sx={{ mt: 1 }}
-                      onClick={() => navigate(`/jobs/${job.id}`)}
-                    >
-                      View Details
-                    </Button>
-                  </Box>
-                </Popup>
-              </Marker>
-            ))}
-        </MapContainer>
-      </Box>
-    </Container>
+          {/* Meta row: budget, location, category, urgency */}
+          <Divider sx={{ my: 1.5, borderColor: alpha(theme.palette.divider, 0.4) }} />
+          <Stack
+            direction="row"
+            spacing={2}
+            alignItems="center"
+            flexWrap="wrap"
+            sx={{ gap: 1 }}
+          >
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              <MoneyIcon sx={{ fontSize: 16, color: theme.palette.primary.main }} />
+              <Typography variant="body2" fontWeight={600} color="primary.main">
+                {formatBudget(job.budget, job.currency)}
+              </Typography>
+            </Stack>
+            {job.location && (
+              <Stack direction="row" spacing={0.5} alignItems="center">
+                <LocationOnIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <Typography variant="body2" color="text.secondary">
+                  {job.location}
+                </Typography>
+              </Stack>
+            )}
+            {job.category && (
+              <Chip
+                label={job.category}
+                size="small"
+                variant="outlined"
+                sx={{ height: 22, fontSize: '0.7rem', borderRadius: 1 }}
+              />
+            )}
+            {job.urgent && (
+              <Chip
+                label="Urgent"
+                size="small"
+                sx={{
+                  height: 22,
+                  fontSize: '0.7rem',
+                  bgcolor: alpha(theme.palette.error.main, 0.1),
+                  color: theme.palette.error.main,
+                  fontWeight: 600,
+                }}
+              />
+            )}
+          </Stack>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
+
+// ─── Subcomponent: Stats Bar ────────────────────────────────
+const StatsBar = ({ data }) => {
+  const theme = useTheme();
+  const stats = useMemo(() => {
+    const jobs = data?.jobs || data?.data || [];
+    const totalJobs = data?.totalJobs || jobs.length;
+    const categories = new Set(jobs.map((j) => j.category).filter(Boolean));
+    const locations = new Set(jobs.map((j) => j.location).filter(Boolean));
+    return [
+      { label: 'Open Jobs', value: totalJobs, icon: WorkIcon },
+      { label: 'Categories', value: categories.size, icon: TuneIcon },
+      { label: 'Locations', value: locations.size, icon: LocationOnIcon },
+    ];
+  }, [data]);
+
+  return (
+    <Stack
+      direction="row"
+      spacing={2}
+      sx={{
+        py: 1.5,
+        px: 2,
+        borderRadius: 2,
+        bgcolor: alpha(theme.palette.primary.main, 0.04),
+        border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
+      }}
+    >
+      {stats.map((s) => (
+        <Stack key={s.label} direction="row" spacing={0.75} alignItems="center">
+          <s.icon sx={{ fontSize: 18, color: theme.palette.primary.main }} />
+          <Typography variant="body2" fontWeight={600}>
+            {s.value}
+          </Typography>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: { xs: 'none', sm: 'block' } }}
+          >
+            {s.label}
+          </Typography>
+        </Stack>
+      ))}
+    </Stack>
+  );
+};
+
+// ─── Skeleton Loader ────────────────────────────────────────
+const JobCardSkeleton = () => (
+  <Card sx={{ borderRadius: 3, p: 2.5 }}>
+    <Skeleton variant="text" width="70%" height={24} />
+    <Skeleton variant="text" width="40%" height={16} sx={{ mt: 0.5 }} />
+    <Skeleton variant="text" width="100%" height={16} sx={{ mt: 1.5 }} />
+    <Skeleton variant="text" width="90%" height={16} />
+    <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
+      <Skeleton variant="rounded" width={60} height={24} />
+      <Skeleton variant="rounded" width={60} height={24} />
+      <Skeleton variant="rounded" width={60} height={24} />
+    </Stack>
+    <Divider sx={{ my: 1.5 }} />
+    <Stack direction="row" spacing={2}>
+      <Skeleton variant="text" width={80} height={20} />
+      <Skeleton variant="text" width={100} height={20} />
+    </Stack>
+  </Card>
+);
+
+// ─── Empty State ────────────────────────────────────────────
+const EmptyState = ({ hasFilters, onReset }) => (
+  <Box sx={{ textAlign: 'center', py: 8 }}>
+    <WorkIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
+    <Typography variant="h6" fontWeight={600} gutterBottom>
+      {hasFilters ? 'No jobs match your filters' : 'No jobs available yet'}
+    </Typography>
+    <Typography
+      variant="body2"
+      color="text.secondary"
+      sx={{ mb: 3, maxWidth: 400, mx: 'auto' }}
+    >
+      {hasFilters
+        ? 'Try adjusting your search terms or filters to find more opportunities.'
+        : 'Check back soon — new jobs are posted regularly by hirers across Ghana.'}
+    </Typography>
+    {hasFilters && (
+      <Button
+        variant="outlined"
+        onClick={onReset}
+        sx={{ textTransform: 'none', borderRadius: 2 }}
+      >
+        Clear All Filters
+      </Button>
+    )}
+  </Box>
+);
+
+// ═══════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ═══════════════════════════════════════════════════════════
+const JobSearchPage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Auth state
+  const { user } = useSelector((state) => state.auth || {});
+
+  // ─── Filter state (synced with URL params) ────────────────
+  const [searchText, setSearchText] = useState(searchParams.get('search') || '');
+  const [activeSearch, setActiveSearch] = useState(searchParams.get('search') || '');
+  const [category, setCategory] = useState(searchParams.get('category') || '');
+  const [location, setLocation] = useState(searchParams.get('location') || '');
+  const [budgetRange, setBudgetRange] = useState([0, 50000]);
+  const [sortBy, setSortBy] = useState('newest');
+  const [page, setPage] = useState(1);
+  const [viewMode, setViewMode] = useState('grid');
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
+
+  // ─── Build query filters ─────────────────────────────────
+  const queryFilters = useMemo(() => {
+    const f = {};
+    if (activeSearch) f.search = activeSearch;
+    if (category) f.category = category;
+    if (location) f.location = location;
+    f.page = page;
+    f.limit = ITEMS_PER_PAGE;
+    return f;
+  }, [activeSearch, category, location, page]);
+
+  // ─── Queries ──────────────────────────────────────────────
+  const {
+    data: jobsData,
+    isLoading,
+    isFetching,
+    error,
+  } = useJobsQuery(queryFilters);
+  const { data: savedData } = useSavedJobsQuery({}, { enabled: Boolean(user) });
+  const savedIds = useSavedJobIds(savedData);
+
+  const saveMutation = useSaveJobMutation({
+    onSuccess: () =>
+      setSnackbar({ open: true, message: 'Job saved!', severity: 'success' }),
+    onError: () =>
+      setSnackbar({ open: true, message: 'Could not save job', severity: 'error' }),
+  });
+  const unsaveMutation = useUnsaveJobMutation({
+    onSuccess: () =>
+      setSnackbar({
+        open: true,
+        message: 'Job removed from saved',
+        severity: 'info',
+      }),
+    onError: () =>
+      setSnackbar({
+        open: true,
+        message: 'Could not unsave job',
+        severity: 'error',
+      }),
+  });
+
+  // ─── Derived data ────────────────────────────────────────
+  const jobs = useMemo(() => {
+    const items = jobsData?.jobs || jobsData?.data || [];
+    const sorted = [...items];
+    switch (sortBy) {
+      case 'budget_high':
+        sorted.sort((a, b) => (b.budget || 0) - (a.budget || 0));
+        break;
+      case 'budget_low':
+        sorted.sort((a, b) => (a.budget || 0) - (b.budget || 0));
+        break;
+      case 'deadline':
+        sorted.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+        break;
+      default:
+        sorted.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
+    }
+    // Client-side budget filter
+    return sorted.filter((j) => {
+      const b =
+        typeof j.budget === 'object'
+          ? j.budget.max || j.budget.min || 0
+          : j.budget || 0;
+      return b >= budgetRange[0] && (budgetRange[1] >= 50000 || b <= budgetRange[1]);
+    });
+  }, [jobsData, sortBy, budgetRange]);
+
+  const totalPages =
+    jobsData?.totalPages || Math.ceil(jobs.length / ITEMS_PER_PAGE) || 1;
+  const hasFilters = Boolean(
+    activeSearch ||
+      category ||
+      location ||
+      budgetRange[0] > 0 ||
+      budgetRange[1] < 50000,
   );
 
+  // ─── Handlers ─────────────────────────────────────────────
+  const handleSearch = useCallback(
+    (override) => {
+      const value = typeof override === 'string' ? override : searchText;
+      setActiveSearch(value);
+      setPage(1);
+      const params = new URLSearchParams();
+      if (value) params.set('search', value);
+      if (category) params.set('category', category);
+      if (location) params.set('location', location);
+      setSearchParams(params, { replace: true });
+    },
+    [searchText, category, location, setSearchParams],
+  );
+
+  const handleCategoryChange = useCallback(
+    (cat) => {
+      setCategory(cat);
+      setPage(1);
+      const params = new URLSearchParams(window.location.search);
+      if (cat) params.set('category', cat);
+      else params.delete('category');
+      setSearchParams(params, { replace: true });
+    },
+    [setSearchParams],
+  );
+
+  const handleResetFilters = useCallback(() => {
+    setSearchText('');
+    setActiveSearch('');
+    setCategory('');
+    setLocation('');
+    setBudgetRange([0, 50000]);
+    setSortBy('newest');
+    setPage(1);
+    setSearchParams({}, { replace: true });
+  }, [setSearchParams]);
+
+  // Sync URL params on mount
+  useEffect(() => {
+    const cat = searchParams.get('category');
+    if (cat && cat !== category) setCategory(cat);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ─── Filter panel content ────────────────────────────────
+  const filterContent = (
+    <FilterPanel
+      location={location}
+      setLocation={(v) => {
+        setLocation(v);
+        setPage(1);
+      }}
+      budgetRange={budgetRange}
+      setBudgetRange={setBudgetRange}
+      sortBy={sortBy}
+      setSortBy={setSortBy}
+      onReset={handleResetFilters}
+    />
+  );
+
+  // ─── Render ───────────────────────────────────────────────
   return (
     <>
       <Helmet>
-        <title>
-          Find Your Dream Job - Professional Opportunities for Workers | Kelmah
-        </title>
+        <title>Find Work | Kelmah</title>
         <meta
           name="description"
-          content="Discover high-paying jobs in skilled trades. Find opportunities in electrical, plumbing, construction, HVAC, and specialized fields. Build your career with top employers."
+          content="Browse available jobs and find work opportunities across Ghana on Kelmah."
         />
       </Helmet>
 
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-        {/* Authentication Notice */}
-        {!authState.isAuthenticated && (
-          <Alert
-            severity="info"
-            sx={{
-              borderRadius: 0,
-              '& .MuiAlert-message': {
-                width: '100%',
-                textAlign: 'center',
-              },
-            }}
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: 6 }}>
+        <Container maxWidth="lg" sx={{ pt: { xs: 2, md: 3 } }}>
+          {/* ─── Search Header ─────────────────────────── */}
+          <SearchHeader
+            search={searchText}
+            setSearch={setSearchText}
+            onSearch={handleSearch}
+            resultCount={jobsData?.totalJobs || jobs.length}
+            isLoading={isLoading}
+          />
+
+          {/* ─── Category Chips ────────────────────────── */}
+          <Box sx={{ mt: 2 }}>
+            <CategoryChips selected={category} onChange={handleCategoryChange} />
+          </Box>
+
+          {/* ─── Stats Bar ─────────────────────────────── */}
+          {!isLoading && jobs.length > 0 && (
+            <Box sx={{ mt: 2 }}>
+              <StatsBar data={jobsData} />
+            </Box>
+          )}
+
+          {/* ─── Toolbar: view toggle + filter button ──── */}
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ mt: 2 }}
           >
-            <Typography variant="body2">
-              <strong>Sign in to apply for jobs!</strong> Create an account or
-              log in to start applying for opportunities.
-            </Typography>
-          </Alert>
-        )}
-
-        {renderHeroSection()}
-        {renderSearchInterface()}
-        {renderCategories()}
-
-        {/* Content Area */}
-        {viewMode === 'map' ? (
-          renderMapView(jobsToRender)
-        ) : loading ? (
-          <Container maxWidth="xl" sx={{ py: 4 }}>
-            <Grid container spacing={3}>
-              {Array.from(new Array(6)).map((_, idx) => (
-                <Grid item xs={12} sm={6} lg={4} key={idx}>
-                  <Skeleton
-                    variant="rectangular"
-                    height={450}
-                    sx={{ borderRadius: 3 }}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          </Container>
-        ) : (
-          <Container maxWidth="xl" sx={{ py: 4 }}>
-            <Typography variant="h4" gutterBottom>
-              {showSampleData && !hasLiveJobs
-                ? 'Sample Opportunities'
-                : 'Search Results'}{' '}
-              ({totalJobsFound} jobs found)
-            </Typography>
-            {totalJobsFound > 0 ? (
-              <Grid container spacing={3}>
-                {jobsToRender.map((job, index) => renderJobCard(job, index))}
-              </Grid>
-            ) : (
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 6,
-                  borderRadius: 4,
-                  textAlign: 'center',
-                  border: (theme) =>
-                    `1px dashed ${alpha(theme.palette.primary.main, 0.3)}`,
-                  backgroundColor: (theme) =>
-                    alpha(theme.palette.primary.main, 0.04),
-                }}
-              >
-                <Typography variant="h5" gutterBottom fontWeight={700}>
-                  No jobs match your filters yet
-                </Typography>
-                <Typography
-                  variant="body1"
-                  color="text.secondary"
-                  sx={{ maxWidth: 520, mx: 'auto' }}
-                >
-                  Try adjusting your filters or keywords to explore more
-                  opportunities. You can also clear all filters to restart your
-                  search.
-                </Typography>
+            <Stack direction="row" spacing={1} alignItems="center">
+              {isMobile && (
                 <Button
-                  variant="contained"
-                  sx={{ mt: 3 }}
-                  onClick={clearFilters}
-                  startIcon={<RefreshIcon />}
+                  variant="outlined"
+                  size="small"
+                  startIcon={<FilterListIcon />}
+                  onClick={() => setFilterDrawerOpen(true)}
+                  sx={{ textTransform: 'none', borderRadius: 2 }}
                 >
-                  Clear Filters
+                  Filters
+                  {hasFilters && <Badge color="primary" variant="dot" sx={{ ml: 1 }} />}
                 </Button>
-              </Paper>
-            )}
-          </Container>
-        )}
+              )}
+              <FormControl
+                size="small"
+                sx={{ minWidth: 150, display: { xs: 'none', md: 'flex' } }}
+              >
+                <Select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  displayEmpty
+                  startAdornment={
+                    <SortIcon
+                      sx={{ mr: 0.5, fontSize: 18, color: 'text.secondary' }}
+                    />
+                  }
+                  sx={{ borderRadius: 2, fontSize: '0.85rem' }}
+                >
+                  {SORT_OPTIONS.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Stack>
 
-        {/* Floating Actions */}
-        <SpeedDial
-          ariaLabel="Quick Actions"
-          sx={{ position: 'fixed', bottom: { xs: 80, md: 16 }, right: 16 }}
-          icon={<SpeedDialIcon />}
-        >
-          <SpeedDialAction
-            icon={<RefreshIcon />}
-            tooltipTitle="Refresh Jobs"
-            onClick={handleSearch}
-          />
-          <SpeedDialAction
-            icon={<BookmarkIcon />}
-            tooltipTitle="Saved Jobs"
-            onClick={() => navigate('/worker/saved-jobs')}
-          />
-          <SpeedDialAction
-            icon={<NotificationsActiveIcon />}
-            tooltipTitle="Job Alerts"
-            onClick={() => navigate('/worker/job-alerts')}
-          />
-          <SpeedDialAction
-            icon={<DashboardIcon />}
-            tooltipTitle="Dashboard"
-            onClick={() => navigate('/worker/dashboard')}
-          />
-        </SpeedDial>
+            <ToggleButtonGroup
+              value={viewMode}
+              exclusive
+              onChange={(_, v) => v && setViewMode(v)}
+              size="small"
+            >
+              <ToggleButton value="grid" sx={{ px: 1.5 }}>
+                <GridViewIcon fontSize="small" />
+              </ToggleButton>
+              <ToggleButton value="list" sx={{ px: 1.5 }}>
+                <ListViewIcon fontSize="small" />
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Stack>
+
+          {/* ─── Main Content: Sidebar + Jobs Grid ─────── */}
+          <Grid container spacing={3} sx={{ mt: 0.5 }}>
+            {/* Desktop Sidebar Filters */}
+            {!isMobile && (
+              <Grid item xs={12} md={3}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 2.5,
+                    borderRadius: 3,
+                    border: `1px solid ${alpha(theme.palette.divider, 0.6)}`,
+                    position: 'sticky',
+                    top: 80,
+                  }}
+                >
+                  <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 2 }}>
+                    <FilterListIcon
+                      sx={{ fontSize: 18, mr: 0.5, verticalAlign: 'middle' }}
+                    />
+                    Filters
+                  </Typography>
+                  {filterContent}
+                </Paper>
+              </Grid>
+            )}
+
+            {/* Jobs Grid */}
+            <Grid item xs={12} md={isMobile ? 12 : 9}>
+              {/* Loading skeletons */}
+              {isLoading && (
+                <Grid container spacing={2}>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Grid
+                      item
+                      xs={12}
+                      sm={viewMode === 'grid' ? 6 : 12}
+                      key={i}
+                    >
+                      <JobCardSkeleton />
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
+
+              {/* Fetching indicator */}
+              {!isLoading && isFetching && (
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ mb: 1, display: 'block' }}
+                >
+                  Updating results…
+                </Typography>
+              )}
+
+              {/* Error state */}
+              {error && !isLoading && (
+                <Alert severity="warning" sx={{ borderRadius: 2, mb: 2 }}>
+                  Could not load jobs. Please try again.
+                </Alert>
+              )}
+
+              {/* Empty state */}
+              {!isLoading && !error && jobs.length === 0 && (
+                <EmptyState hasFilters={hasFilters} onReset={handleResetFilters} />
+              )}
+
+              {/* Job Cards */}
+              {!isLoading && jobs.length > 0 && (
+                <>
+                  <AnimatePresence mode="popLayout">
+                    <Grid container spacing={2}>
+                      {jobs.map((job) => (
+                        <Grid
+                          item
+                          xs={12}
+                          sm={viewMode === 'grid' ? 6 : 12}
+                          lg={viewMode === 'grid' ? 6 : 12}
+                          key={job.id}
+                        >
+                          <FindWorkJobCard
+                            job={job}
+                            isSaved={savedIds.has(job.id)}
+                            onSave={(payload) => saveMutation.mutate(payload)}
+                            onUnsave={(payload) => unsaveMutation.mutate(payload)}
+                          />
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </AnimatePresence>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <Stack alignItems="center" sx={{ mt: 4 }}>
+                      <Pagination
+                        count={totalPages}
+                        page={page}
+                        onChange={(_, p) => {
+                          setPage(p);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        color="primary"
+                        shape="rounded"
+                        size={isMobile ? 'small' : 'medium'}
+                      />
+                    </Stack>
+                  )}
+                </>
+              )}
+            </Grid>
+          </Grid>
+        </Container>
       </Box>
+
+      {/* ─── Mobile Filter Drawer ──────────────────────── */}
+      <Drawer
+        anchor="bottom"
+        open={filterDrawerOpen}
+        onClose={() => setFilterDrawerOpen(false)}
+        PaperProps={{
+          sx: {
+            borderTopLeftRadius: 16,
+            borderTopRightRadius: 16,
+            maxHeight: '75vh',
+            p: 3,
+          },
+        }}
+      >
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ mb: 2 }}
+        >
+          <Typography variant="subtitle1" fontWeight={700}>
+            Filters
+          </Typography>
+          <IconButton onClick={() => setFilterDrawerOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Stack>
+        {filterContent}
+        <Button
+          variant="contained"
+          fullWidth
+          sx={{ mt: 3, borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+          onClick={() => setFilterDrawerOpen(false)}
+        >
+          Apply Filters
+        </Button>
+      </Drawer>
+
+      {/* ─── Snackbar ──────────────────────────────────── */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          severity={snackbar.severity}
+          onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+          sx={{ borderRadius: 2 }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
