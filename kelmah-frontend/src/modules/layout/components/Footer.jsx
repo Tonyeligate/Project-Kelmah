@@ -80,22 +80,28 @@ const Footer = () => {
   return (
     <Box
       component="footer"
-      sx={{ width: '100%', mt: 'auto' }}
+      sx={{ width: '100%', flexShrink: 0 }}
     >
       <Box
         sx={{
-          py: { xs: 4, md: 6 },
+          py: { xs: 2.5, md: 6 },
           bgcolor: theme.palette.mode === 'dark' ? '#0A0B10' : '#1a1a2e',
           borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
         }}
       >
         <Container maxWidth="lg">
           {isMobile ? (
-            /* ─── Mobile: Compact grid layout ─── */
+            /* ─── Mobile: Minimal footer like freelancer.com ─── */
             <Box>
-              <Stack spacing={1.5} alignItems="center" sx={{ mb: 3 }}>
+              {/* Brand + socials — single compact row */}
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                sx={{ mb: 2.5 }}
+              >
                 <Typography
-                  variant="h5"
+                  variant="h6"
                   sx={{
                     fontWeight: 800,
                     color: theme.palette.primary.main,
@@ -104,90 +110,55 @@ const Footer = () => {
                 >
                   Kelmah
                 </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    textAlign: 'center',
-                    color: 'rgba(255,255,255,0.6)',
-                    maxWidth: 300,
-                    lineHeight: 1.6,
-                  }}
-                >
-                  Ghana's premier platform for connecting skilled tradespeople with opportunities.
-                </Typography>
+                <Stack direction="row" spacing={1}>
+                  {socialLinks.map((social) => (
+                    <IconButton
+                      key={social.label}
+                      href={social.href}
+                      aria-label={social.label}
+                      sx={{
+                        width: 36,
+                        height: 36,
+                        bgcolor: 'rgba(255,255,255,0.06)',
+                        color: 'rgba(255,255,255,0.6)',
+                        p: 0.75,
+                      }}
+                    >
+                      <social.icon sx={{ fontSize: 16 }} />
+                    </IconButton>
+                  ))}
+                </Stack>
               </Stack>
 
-              <Stack direction="row" spacing={1.25} justifyContent="center" sx={{ mb: 3 }}>
-                {socialLinks.map((social) => (
-                  <IconButton
-                    key={social.label}
-                    href={social.href}
-                    aria-label={social.label}
+              {/* Key links — single compact row of the most important links */}
+              <Stack
+                direction="row"
+                spacing={2}
+                flexWrap="wrap"
+                useFlexGap
+                sx={{ mb: 2 }}
+              >
+                {[
+                  { label: 'Find Work', href: '/jobs' },
+                  { label: 'Find Talent', href: '/search' },
+                  { label: 'Help', href: '/support' },
+                  { label: 'About', href: '/about' },
+                  { label: 'Contact', href: '/contact' },
+                ].map((link) => (
+                  <Link
+                    key={link.label}
+                    component={RouterLink}
+                    to={link.href}
                     sx={{
-                      width: 40,
-                      height: 40,
-                      bgcolor: 'rgba(255,255,255,0.06)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      color: 'rgba(255,255,255,0.7)',
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        bgcolor: alpha(theme.palette.primary.main, 0.15),
-                        color: theme.palette.primary.main,
-                        borderColor: alpha(theme.palette.primary.main, 0.3),
-                      },
+                      color: 'rgba(255,255,255,0.55)',
+                      textDecoration: 'none',
+                      fontSize: '0.8rem',
+                      '&:hover': { color: theme.palette.primary.main },
                     }}
                   >
-                    <social.icon sx={{ fontSize: 18 }} />
-                  </IconButton>
+                    {link.label}
+                  </Link>
                 ))}
-              </Stack>
-
-              <Grid container spacing={2} sx={{ mb: 3 }}>
-                {footerSections.map((section) => (
-                  <Grid key={section.title} item xs={6}>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ fontWeight: 700, color: '#fff', mb: 1.5, fontSize: '0.85rem' }}
-                    >
-                      {section.title}
-                    </Typography>
-                    <Stack spacing={0.25}>
-                      {section.links.map((link) => (
-                        <Link
-                          key={link.label}
-                          component={RouterLink}
-                          to={link.href}
-                          sx={{
-                            color: 'rgba(255,255,255,0.55)',
-                            textDecoration: 'none',
-                            fontSize: '0.85rem',
-                            py: 0.5,
-                            display: 'block',
-                            transition: 'color 0.2s ease',
-                            '&:hover': { color: theme.palette.primary.main },
-                          }}
-                        >
-                          {link.label}
-                        </Link>
-                      ))}
-                    </Stack>
-                  </Grid>
-                ))}
-              </Grid>
-
-              <Stack spacing={1} alignItems="flex-start" sx={{ mt: 1 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <EmailIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }} />
-                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.55)' }}>
-                    support@kelmah.com
-                  </Typography>
-                </Stack>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <PhoneIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }} />
-                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.55)' }}>
-                    +233 24 123 4567
-                  </Typography>
-                </Stack>
               </Stack>
             </Box>
           ) : (
@@ -301,7 +272,7 @@ const Footer = () => {
           )}
 
           {/* Bottom bar */}
-          <Divider sx={{ mt: { xs: 3, md: 4 }, mb: 2, borderColor: 'rgba(255,255,255,0.08)' }} />
+          <Divider sx={{ mt: { xs: 2, md: 4 }, mb: 1.5, borderColor: 'rgba(255,255,255,0.08)' }} />
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             justifyContent="space-between"

@@ -1,5 +1,62 @@
 # Kelmah Platform - Current Status & Development Log
 
+## Investigation Intake (Feb 10, 2026 – Mobile Footer Covers Viewport) 🔄
+- 🎯 **Scope Restatement**: Identify the exact layout/footer relationship causing the mobile homepage footer to appear immediately and dominate the viewport, and document the true root cause with file/line references before any fixes.
+- ✅ **Success Criteria**:
+  1. Layout, header, footer, and homepage components involved are enumerated with file paths.
+  2. Root cause(s) are documented with precise code references (no assumptions).
+  3. A verified fix plan is proposed (edits only after approval).
+  4. STATUS_LOG records the investigation findings and any verification steps.
+- 🗂️ **Initial File Surface for Dry Audit**:
+  - `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+  - `kelmah-frontend/src/modules/layout/components/Header.jsx`
+  - `kelmah-frontend/src/modules/layout/components/Footer.jsx`
+  - `kelmah-frontend/src/pages/HomeLanding.jsx`
+  - `kelmah-frontend/src/routes/config.jsx`
+
+### Implementation Update (Feb 10, 2026 – Mobile Footer Covers Viewport)
+- ✅ Root cause confirmed: public layout uses `minHeight: 100vh` with a flex-growing main, while the mobile header is fixed and the hero was sized to `calc(100vh - 48px)`, making the first viewport fully consumed and the footer appear immediately on mobile.
+- ✅ Adjusted the layout so the homepage handles header compensation locally: removed home-page top padding from the public layout and made the hero a true 100vh section with `pt` + `boxSizing: 'border-box'` to account for the fixed header without shrinking the hero.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+  - `kelmah-frontend/src/pages/HomeLanding.jsx`
+- 🧪 Verification: Not run (UI-only changes; recommend visual check on mobile and desktop breakpoints).
+
+### Follow-up Update (Feb 10, 2026 – Deeper Layout Audit)
+- ✅ Verified the deeper root cause: the public layout wraps header, main, and footer in a flex column with `minHeight: 100vh` and `flexGrow: 1` on the main, which forces the footer to consume part of the first viewport even when content should flow below.
+- ✅ Implemented the structural fix: removed the public layout flex/minHeight behavior and the main flexGrow so the footer renders only after full homepage content (natural document flow).
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+- 🧪 Verification: Not run (UI-only changes; recommend visual check on mobile and desktop breakpoints).
+
+## Investigation Intake (Feb 11, 2026 – Mobile Header Menu Alignment & Header Bugs) 🔄
+- 🎯 **Scope Restatement**: Move the mobile menu trigger to the right and perform a dry audit of header behavior for duplicate actions, layout bugs, and runtime errors. Map the file surface and document findings before any edits.
+- ✅ **Success Criteria**:
+  1. Mobile header menu alignment issue is traced to exact component code and CSS.
+  2. Any duplicate button handlers or conflicting UI logic in the header are identified with file/line references.
+  3. A proposed fix plan is documented; edits only after confirmation.
+  4. STATUS_LOG captures the audit and findings.
+- 🗂️ **Initial File Surface for Dry Audit**:
+  - `kelmah-frontend/src/modules/layout/components/Header.jsx`
+  - `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
+  - `kelmah-frontend/src/modules/layout/components/DesktopNav.jsx`
+  - `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+  - `kelmah-frontend/src/hooks/useAutoShowHeader.js`
+
+### Dry Audit Findings (Feb 11, 2026)
+- ✅ Mobile menu button is rendered before the brand section in the header toolbar, which anchors it to the left on mobile. This is the direct cause of the “menu should be on the right” request.
+- ✅ Header logout handler performs both `navigate('/')` and a forced `window.location.href = '/'`, which is a double navigation path and can look like duplicate button behavior when clicked.
+- ✅ Mobile drawer logout repeats a similar “navigate then reload” pattern; same double-action risk when triggered from the drawer.
+- ✅ No other duplicate click handlers found in header/menu buttons; most actions are single onClick callbacks wired to routing.
+
+### Implementation Update (Feb 11, 2026 – Mobile Header Menu Alignment & Logout Fix)
+- ✅ Moved the mobile menu trigger into the right-side action cluster so it renders on the far right of the header.
+- ✅ Removed hard reloads from header and mobile drawer logout flows to avoid double navigation behavior.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/layout/components/Header.jsx`
+  - `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
+- 🧪 Verification: Not run (UI-only changes; recommend visual check on mobile).
+
 ## Investigation Intake (Feb 9, 2026 – Homepage Mobile Marketing Gap) 🔄
 - 🎯 **Scope Restatement**: Identify why the mobile homepage is missing background imagery and Kelmah marketing content, map the full frontend file surface and data flow involved in the homepage render, and propose fixes that restore visual storytelling and brand messaging without breaking existing routing/layout behavior.
 - ✅ **Success Criteria**:

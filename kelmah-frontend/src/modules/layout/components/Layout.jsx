@@ -170,12 +170,9 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
   return (
     <Box
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
         width: '100%',
         overflowX: 'hidden', // Prevents horizontal scroll only
-        overflowY: 'auto', // Allow natural vertical scrolling
+        overflowY: 'visible', // Let body handle vertical scrolling
       }}
     >
       <Header
@@ -187,12 +184,14 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
         <Box
           component="main"
           sx={{
-            flexGrow: 1,
             width: '100%',
             minWidth: 0,
-            // Homepage gets full-bleed treatment (no padding) like Upwork/Freelancer
-            // Other public pages get standard padding
-            py: isHomePage ? 0 : { xs: 1, sm: 2, md: 3 },
+            // Fixed header on mobile (48px) needs padding-top so content isn't hidden
+            // Desktop header is static so no compensation needed (except standard spacing)
+            pt: isHomePage
+              ? 0
+              : { xs: 'calc(48px + 8px)', sm: 'calc(48px + 16px)', md: 3 },
+            pb: isHomePage ? 0 : { xs: 1, sm: 2, md: 3 },
             px: isHomePage ? 0 : { xs: 1, sm: 2, md: 3 },
             overflowX: 'hidden',
             overflowY: 'visible',

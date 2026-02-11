@@ -791,10 +791,7 @@ const Header = ({
       console.log('🔄 Navigating to home...');
       navigate('/', { replace: true });
 
-      // Force page reload to ensure clean state
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
+      // Avoid hard reloads to prevent double navigation
     } catch (error) {
       console.error('❌ Logout error:', error);
 
@@ -811,10 +808,7 @@ const Header = ({
       console.log('🔄 Force navigating to home despite logout error...');
       navigate('/', { replace: true });
 
-      // Force page reload
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
+      // Avoid hard reloads to prevent double navigation
     }
   };
 
@@ -1235,27 +1229,6 @@ const Header = ({
           },
         }}
       >
-        {/* Mobile Menu Button — shown for all mobile users (auth + guest) */}
-        {isMobile && (
-          <ActionButton
-            edge="start"
-            aria-label="menu"
-            onClick={() => setMobileMenuOpen(true)}
-            sx={{
-              mr: { xs: 0.5, sm: 1 },
-              p: { xs: 1, sm: 1.5 },
-              '&:hover': {
-                backgroundColor:
-                  theme.palette.mode === 'dark'
-                    ? 'rgba(255, 215, 0, 0.15)'
-                    : 'rgba(0, 0, 0, 0.15)',
-              },
-            }}
-          >
-            <MenuIcon sx={{ fontSize: { xs: '1.3rem', sm: '1.5rem' } }} />
-          </ActionButton>
-        )}
-
         {/* ✅ ENHANCED: Smart Brand/Page Title Section */}
         <Box
           sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}
@@ -1555,6 +1528,26 @@ const Header = ({
               <CircularProgress color="inherit" size={24} thickness={5} />
             </Box>
           ) : null}
+
+          {/* Mobile Menu Button — right-aligned */}
+          {isMobile && (
+            <ActionButton
+              aria-label="menu"
+              onClick={() => setMobileMenuOpen(true)}
+              sx={{
+                ml: { xs: 0.5, sm: 1 },
+                p: { xs: 1, sm: 1.5 },
+                '&:hover': {
+                  backgroundColor:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 215, 0, 0.15)'
+                      : 'rgba(0, 0, 0, 0.15)',
+                },
+              }}
+            >
+              <MenuIcon sx={{ fontSize: { xs: '1.3rem', sm: '1.5rem' } }} />
+            </ActionButton>
+          )}
         </Box>
       </Toolbar>
 

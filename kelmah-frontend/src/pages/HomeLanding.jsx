@@ -72,9 +72,11 @@ const HomeLanding = () => {
         component="section"
         sx={{
           position: 'relative',
-          minHeight: { xs: 'calc(100vh - 48px)', md: 'calc(100vh - 56px)' },
+          minHeight: { xs: '100vh', md: '100vh' },
           display: 'flex',
           alignItems: 'center',
+          pt: { xs: '48px', md: '56px' },
+          boxSizing: 'border-box',
           color: '#fff',
           backgroundImage: `linear-gradient(160deg, rgba(5,5,7,0.93) 0%, rgba(5,5,7,0.6) 50%, rgba(5,5,7,0.35) 100%), url(${heroBg})`,
           backgroundSize: 'cover',

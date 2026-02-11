@@ -171,9 +171,6 @@ const MobileNav = ({ open, onClose }) => {
       console.error('Logout dispatch error:', error);
     } finally {
       navigate('/', { replace: true });
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
     }
   };
 
