@@ -586,6 +586,48 @@ const platformMetrics = [
   },
 ];
 
+// Class-based Error Boundary — React requires class components for getDerivedStateFromError
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('JobsPage Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        this.props.fallback || (
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <Typography variant="h5" sx={{ color: '#fff', mb: 2 }}>
+              Something went wrong
+            </Typography>
+            <Typography variant="body1" sx={{ color: '#ccc', mb: 3 }}>
+              We&apos;re having trouble loading jobs. Please try refreshing the page.
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => window.location.reload()}
+              sx={{ bgcolor: '#D4AF37', color: 'black' }}
+            >
+              Refresh Page
+            </Button>
+          </Box>
+        )
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 const JobsPage = () => {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const theme = useTheme();
@@ -749,45 +791,6 @@ const JobsPage = () => {
     const interval = setInterval(fetchStats, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []); // Empty dependency - only fetch once on mount and then refresh via interval
-
-  // Error boundary component for better error handling
-  const ErrorBoundary = ({ children, fallback }) => {
-    const [hasError, setHasError] = useState(false);
-
-    useEffect(() => {
-      const handleError = (error) => {
-        console.error('JobsPage Error:', error);
-        setHasError(true);
-      };
-
-      window.addEventListener('error', handleError);
-      return () => window.removeEventListener('error', handleError);
-    }, []);
-
-    if (hasError) {
-      return (
-        fallback || (
-          <Box sx={{ textAlign: 'center', py: 8 }}>
-            <Typography variant="h5" sx={{ color: '#fff', mb: 2 }}>
-              Something went wrong
-            </Typography>
-            <Typography variant="body1" sx={{ color: '#ccc', mb: 3 }}>
-              We're having trouble loading jobs. Please try refreshing the page.
-            </Typography>
-            <Button
-              variant="contained"
-              onClick={() => window.location.reload()}
-              sx={{ bgcolor: '#D4AF37', color: 'black' }}
-            >
-              Refresh Page
-            </Button>
-          </Box>
-        )
-      );
-    }
-
-    return children;
-  };
 
   const filteredJobs = jobs.filter((job) => {
     const matchesSearch =

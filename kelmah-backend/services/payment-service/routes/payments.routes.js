@@ -160,7 +160,13 @@ router.get('/paystack/verify/:reference', async (req, res) => {
   }
 });
 
-// Admin payout queue endpoints
-router.post('/admin/payouts/queue', payoutAdminController.enqueuePayout);
-router.post('/admin/payouts/process', payoutAdminController.processBatch);
-router.get('/admin/payouts', payoutAdminController.listPayouts);
+// Admin payout queue endpoints — require admin role
+const requireAdmin = (req, res, next) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: { message: 'Admin access required', code: 'FORBIDDEN' } });
+  }
+  next();
+};
+router.post('/admin/payouts/queue', requireAdmin, payoutAdminController.enqueuePayout);
+router.post('/admin/payouts/process', requireAdmin, payoutAdminController.processBatch);
+router.get('/admin/payouts', requireAdmin, payoutAdminController.listPayouts);

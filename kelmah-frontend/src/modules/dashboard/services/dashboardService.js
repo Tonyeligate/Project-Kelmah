@@ -12,6 +12,8 @@ class DashboardService {
     this.socket = null;
     this.listeners = {};
     this.connected = false;
+    this._overviewCache = null;
+    this._overviewCacheTime = 0;
   }
 
   /**
@@ -127,8 +129,12 @@ class DashboardService {
     });
   }
 
-  // Get dashboard overview data
+  // Get dashboard overview data (cached for 5 seconds to avoid redundant API calls)
   async getOverview() {
+    const now = Date.now();
+    if (this._overviewCache && now - this._overviewCacheTime < 5000) {
+      return this._overviewCache;
+    }
     try {
       const [metricsRes, jobsRes, analyticsRes, workersRes] =
         await Promise.allSettled([
@@ -166,12 +172,10 @@ class DashboardService {
           ? workersRes.value.data?.workers || workersRes.value.data || []
           : [];
 
-      return {
-        metrics,
-        jobs: jobsData,
-        analytics,
-        workers,
-      };
+      const result = { metrics, jobs: jobsData, analytics, workers };
+      this._overviewCache = result;
+      this._overviewCacheTime = Date.now();
+      return result;
     } catch (error) {
       console.error('Error fetching dashboard overview:', error);
       return {

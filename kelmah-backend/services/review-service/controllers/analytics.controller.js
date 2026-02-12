@@ -20,13 +20,13 @@ exports.getReviewAnalytics = async (req, res) => {
     ] = await Promise.all([
       Review.countDocuments(),
       Review.aggregate([
-        { $group: { _id: null, avgRating: { $avg: '$ratings.overall' } } }
+        { $group: { _id: null, avgRating: { $avg: '$rating' } } }
       ]),
       Review.aggregate([
         { $group: { _id: '$status', count: { $sum: 1 } } }
       ]),
       Review.aggregate([
-        { $group: { _id: '$jobCategory', count: { $sum: 1 }, avgRating: { $avg: '$ratings.overall' } } },
+        { $group: { _id: '$jobCategory', count: { $sum: 1 }, avgRating: { $avg: '$rating' } } },
         { $sort: { count: -1 } },
         { $limit: 10 }
       ]),
@@ -35,7 +35,7 @@ exports.getReviewAnalytics = async (req, res) => {
         { $group: {
           _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
           count: { $sum: 1 },
-          avgRating: { $avg: '$ratings.overall' }
+          avgRating: { $avg: '$rating' }
         }},
         { $sort: { _id: 1 } }
       ])

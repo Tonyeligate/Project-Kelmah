@@ -1,4 +1,148 @@
 const { Wallet, Transaction, PaymentMethod, User } = require("../models");
+const { validateWallet } = require('../utils/validation');
+const { handleError } = require('../utils/controllerUtils');
+
+// Get user's wallet balance
+exports.getBalance = async (req, res) => {
+  try {
+    let wallet = await Wallet.findOne({ user: req.user._id });
+
+    if (!wallet) {
+      // Auto-provision an empty wallet on first access
+      wallet = new Wallet({ user: req.user._id, balance: 0 });
+      await wallet.save();
+    }
+
+    res.json({
+      success: true,
+      data: {
+        balance: wallet.balance,
+        currency: wallet.currency,
+        status: wallet.status,
+      },
+    });
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
+// Deposit funds into wallet
+exports.deposit = async (req, res) => {
+  try {
+    const { amount, currency, paymentMethodId, reference } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'A positive amount is required',
+      });
+    }
+
+    let wallet = await Wallet.findOne({ user: req.user._id });
+    if (!wallet) {
+      wallet = new Wallet({ user: req.user._id, balance: 0, currency: currency || 'GHS' });
+      await wallet.save();
+    }
+
+    if (wallet.status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        message: 'Wallet is not active',
+      });
+    }
+
+    // Create a deposit transaction
+    const transaction = await Transaction.create({
+      sender: req.user._id,
+      recipient: req.user._id,
+      amount,
+      type: 'deposit',
+      status: 'completed',
+      reference: reference || `dep_${Date.now()}`,
+      description: 'Wallet deposit',
+    });
+
+    await wallet.addFunds(amount, transaction);
+
+    res.status(201).json({
+      success: true,
+      message: 'Deposit successful',
+      data: {
+        balance: wallet.balance,
+        transaction: transaction._id,
+      },
+    });
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
+// Withdraw funds from wallet
+exports.withdraw = async (req, res) => {
+  try {
+    const { amount, paymentMethodId, reference } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'A positive amount is required',
+      });
+    }
+
+    const wallet = await Wallet.findOne({ user: req.user._id });
+    if (!wallet) {
+      return res.status(404).json({
+        success: false,
+        message: 'Wallet not found',
+      });
+    }
+
+    if (wallet.status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        message: 'Wallet is not active',
+      });
+    }
+
+    if (wallet.balance < amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Insufficient funds',
+      });
+    }
+
+    if (amount > wallet.metadata.withdrawalLimit) {
+      return res.status(400).json({
+        success: false,
+        message: `Amount exceeds withdrawal limit of ${wallet.metadata.withdrawalLimit}`,
+      });
+    }
+
+    // Create a withdrawal transaction
+    const transaction = await Transaction.create({
+      sender: req.user._id,
+      recipient: req.user._id,
+      amount,
+      type: 'withdrawal',
+      status: 'completed',
+      reference: reference || `wdr_${Date.now()}`,
+      description: 'Wallet withdrawal',
+    });
+
+    await wallet.deductFunds(amount, transaction);
+
+    res.json({
+      success: true,
+      message: 'Withdrawal successful',
+      data: {
+        balance: wallet.balance,
+        transaction: transaction._id,
+      },
+    });
+  } catch (error) {
+    handleError(res, error);
+  }
+};
 
 // Get user's wallet
 exports.getWallet = async (req, res) => {

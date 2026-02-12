@@ -81,7 +81,11 @@ router.post('/register', async (req, res) => {
       timeout: 45000,
       validateStatus: () => true,
     });
-    res.status(r.status).set(r.headers).send(r.data);
+    // Only forward safe headers — avoid leaking internal upstream headers
+    const safeHeaders = {};
+    if (r.headers['content-type']) safeHeaders['content-type'] = r.headers['content-type'];
+    if (r.headers['set-cookie']) safeHeaders['set-cookie'] = r.headers['set-cookie'];
+    res.status(r.status).set(safeHeaders).send(r.data);
   } catch (e) {
     const status = e.response?.status || 504;
     res.status(status).json({ success: false, message: e.message || 'Auth service unavailable' });

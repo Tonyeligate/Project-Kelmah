@@ -10,6 +10,7 @@ router.use(verifyGatewayRequest);
 router.get("/", paymentMethodController.getPaymentMethods);
 router.post("/", paymentMethodController.addPaymentMethod);
 router.patch("/:paymentMethodId", paymentMethodController.updatePaymentMethod);
+router.put("/:paymentMethodId", paymentMethodController.updatePaymentMethod); // PUT alias for gateway compatibility
 router.delete("/:paymentMethodId", paymentMethodController.removePaymentMethod);
 router.post(
   "/:paymentMethodId/verify",

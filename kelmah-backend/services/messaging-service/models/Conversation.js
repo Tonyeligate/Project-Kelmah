@@ -55,6 +55,7 @@ ConversationSchema.index({ relatedContract: 1 });
 ConversationSchema.index({ status: 1 });
 
 // Helper methods
+// NOTE: These methods mutate the document in-place. Callers MUST call .save() themselves.
 ConversationSchema.methods.incrementUnreadCount = function (userId) {
   const unreadCount = this.unreadCounts.find(
     (count) => count.user.toString() === userId.toString(),
@@ -64,7 +65,6 @@ ConversationSchema.methods.incrementUnreadCount = function (userId) {
   } else {
     this.unreadCounts.push({ user: userId, count: 1 });
   }
-  return this.save();
 };
 
 ConversationSchema.methods.resetUnreadCount = function (userId) {
@@ -74,7 +74,6 @@ ConversationSchema.methods.resetUnreadCount = function (userId) {
   if (unreadCount) {
     unreadCount.count = 0;
   }
-  return this.save();
 };
 
 const Conversation = mongoose.model("Conversation", ConversationSchema);

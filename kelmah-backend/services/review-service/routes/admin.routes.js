@@ -19,9 +19,10 @@ router.use(verifyGatewayRequest);
 router.get('/reviews/queue', adminLimiter, async (req, res) => {
   try {
     const { status = 'pending', page = 1, limit = 20, category, minRating } = req.query;
-    const filter = { status };
+    const filter = {};
+    if (status && status !== 'all') filter.status = status;
     if (category) filter.jobCategory = category;
-    if (minRating) filter['ratings.overall'] = { $gte: parseInt(minRating) };
+    if (minRating) filter.rating = { $gte: parseInt(minRating) };
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const [reviews, total] = await Promise.all([

@@ -34,7 +34,9 @@ const walletSchema = Joi.object({
 
 // Payment method validation schema
 const paymentMethodSchema = Joi.object({
-  type: Joi.string().valid("credit_card", "bank_account", "paypal").required(),
+  type: Joi.string()
+    .valid("credit_card", "bank_account", "paypal", "mobile_money")
+    .required(),
   isDefault: Joi.boolean().default(false),
   cardDetails: Joi.object({
     number: Joi.string().when("type", {
@@ -64,15 +66,28 @@ const paymentMethodSchema = Joi.object({
       otherwise: Joi.forbidden(),
     }),
   }),
-  billingAddress: Joi.object({
-    street: Joi.string().required(),
-    city: Joi.string().required(),
-    state: Joi.string().required(),
-    country: Joi.string().required(),
-    postalCode: Joi.string().required(),
+  mobileDetails: Joi.object({
+    provider: Joi.string().when("type", {
+      is: "mobile_money",
+      then: Joi.required(),
+      otherwise: Joi.forbidden(),
+    }),
+    phoneNumber: Joi.string().when("type", {
+      is: "mobile_money",
+      then: Joi.required(),
+      otherwise: Joi.forbidden(),
+    }),
+    name: Joi.string(),
   }),
+  billingAddress: Joi.object({
+    street: Joi.string(),
+    city: Joi.string(),
+    state: Joi.string(),
+    country: Joi.string(),
+    postalCode: Joi.string(),
+  }).optional(),
   metadata: Joi.object({
-    provider: Joi.string().valid("stripe", "paypal", "bank"),
+    provider: Joi.string().valid("stripe", "paypal", "bank", "mobile_money"),
     providerId: Joi.string(),
   }),
 });

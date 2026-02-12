@@ -1,15 +1,45 @@
 const { PaymentMethod, User } = require("../models");
 const stripe = require("../services/stripe");
 const paypal = require("../services/paypal");
+const { validatePaymentMethod } = require('../utils/validation');
+const { handleError } = require('../utils/controllerUtils');
+
+const maskPhoneNumber = (phoneNumber) => {
+  if (!phoneNumber) return '';
+  const digits = String(phoneNumber).replace(/\s+/g, '');
+  const last4 = digits.slice(-4);
+  return `${digits.slice(0, 4)} •••• ${last4}`;
+};
 
 // Get user's payment methods
 exports.getPaymentMethods = async (req, res) => {
   try {
     const paymentMethods = await PaymentMethod.find({
       user: req.user._id,
-    }).select("-cardDetails -bankDetails -paypalDetails");
+    })
+      .select("-cardDetails -bankDetails -paypalDetails")
+      .lean();
 
-    res.json(paymentMethods);
+    const sanitized = (paymentMethods || []).map((pm) => {
+      if (pm?.type !== 'mobile_money') return pm;
+
+      const provider =
+        pm?.mobileDetails?.provider ||
+        pm?.metadata?.providerName ||
+        pm?.metadata?.provider ||
+        'Mobile Money';
+      const masked = maskPhoneNumber(pm?.mobileDetails?.phoneNumber);
+
+      const { mobileDetails, ...rest } = pm;
+      return {
+        ...rest,
+        name: pm?.name || `${provider} Mobile Money`,
+        phoneNumber: masked,
+        displayValue: masked,
+      };
+    });
+
+    res.json(sanitized);
   } catch (error) {
     handleError(res, error);
   }
@@ -29,6 +59,7 @@ exports.addPaymentMethod = async (req, res) => {
       cardDetails,
       bankDetails,
       paypalDetails,
+      mobileDetails,
       billingAddress,
       metadata,
     } = req.body;
@@ -45,6 +76,12 @@ exports.addPaymentMethod = async (req, res) => {
       case "paypal":
         processedDetails = await paypal.addPayPalAccount(paypalDetails);
         break;
+      case "mobile_money":
+        processedDetails = {
+          provider: 'mobile_money',
+          providerId: `momo:${mobileDetails?.provider || 'unknown'}:${mobileDetails?.phoneNumber || ''}`,
+        };
+        break;
       default:
         throw new Error("Invalid payment method type");
     }
@@ -56,9 +93,15 @@ exports.addPaymentMethod = async (req, res) => {
       cardDetails: type === "credit_card" ? processedDetails : undefined,
       bankDetails: type === "bank_account" ? processedDetails : undefined,
       paypalDetails: type === "paypal" ? processedDetails : undefined,
+      mobileDetails: type === "mobile_money" ? mobileDetails : undefined,
       billingAddress,
       metadata: {
         ...metadata,
+        provider: metadata?.provider || processedDetails.provider || 'stripe',
+        providerName:
+          type === 'mobile_money'
+            ? mobileDetails?.provider
+            : metadata?.providerName,
         providerId: processedDetails.providerId,
       },
     });
@@ -127,7 +170,8 @@ exports.removePaymentMethod = async (req, res) => {
     }
 
     // Remove from payment provider
-    switch (paymentMethod.metadata.provider) {
+    const provider = paymentMethod?.metadata?.provider;
+    switch (provider) {
       case "stripe":
         await stripe.removePaymentMethod(paymentMethod.metadata.providerId);
         break;

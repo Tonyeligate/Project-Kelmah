@@ -61,7 +61,7 @@ exports.createMessage = async (req, res) => {
     }
 
     conversation.lastMessage = message._id;
-    await conversation.incrementUnreadCount(recipient);
+    conversation.incrementUnreadCount(recipient);
     await conversation.save();
 
     // Create notification for recipient
@@ -140,8 +140,9 @@ exports.getConversationMessages = async (req, res) => {
       },
     );
 
-    // Reset unread count
-    await conversation.resetUnreadCount(req.user._id);
+    // Reset unread count (method mutates in-place; must save afterward)
+    conversation.resetUnreadCount(req.user._id);
+    await conversation.save();
 
     const nextCursor =
       messages.length > 0 ? messages[messages.length - 1].createdAt : null;
@@ -177,7 +178,7 @@ exports.deleteMessage = async (req, res) => {
         .json({ message: "Not authorized to delete this message" });
     }
 
-    await message.remove();
+    await message.deleteOne();
 
     res.json({ message: "Message deleted successfully" });
   } catch (error) {

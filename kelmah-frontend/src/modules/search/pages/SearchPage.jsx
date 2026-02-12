@@ -213,6 +213,10 @@ const SearchPage = () => {
 
   // Debug logging for navigation issues
   useEffect(() => {
+    if (!import.meta.env.DEV) {
+      return undefined;
+    }
+
     console.log('🟢 SearchPage MOUNTED');
     console.log('🟢 location.pathname:', location.pathname);
     return () => {
@@ -253,7 +257,7 @@ const SearchPage = () => {
     }
 
     try {
-      const response = await api.get('/search/suggestions', {
+      const response = await api.get('/jobs/suggestions', {
         params: { query },
       });
 
@@ -386,7 +390,14 @@ const SearchPage = () => {
       } else if (key === 'categories' || key === 'skills') {
         params[key] = value.split(',').filter(Boolean);
       } else if (key === 'location') {
-        const decodedValue = value?.trim?.() ?? value;
+        let decodedValue = value?.trim?.() ?? value;
+
+        // Support legacy/double-encoded values (%7B...%7D or %257B...%257D)
+        try {
+          decodedValue = decodeURIComponent(decodedValue);
+        } catch (_) {
+          // Ignore decode failures; keep raw string
+        }
         if (
           decodedValue &&
           decodedValue.startsWith('{') &&
@@ -506,7 +517,8 @@ const SearchPage = () => {
       }
 
       if (key === 'location' && typeof value === 'object') {
-        queryParams.set(key, encodeURIComponent(JSON.stringify(value)));
+        // URLSearchParams will encode as needed; avoid double-encoding.
+        queryParams.set(key, JSON.stringify(value));
       } else if (Array.isArray(value)) {
         if (value.length > 0) {
           queryParams.set(key, value.join(','));

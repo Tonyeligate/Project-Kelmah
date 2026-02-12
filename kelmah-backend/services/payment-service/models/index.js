@@ -9,6 +9,7 @@ const { User, Job, Application } = require('../../../shared/models');
 // Import service-specific models
 const Transaction = require('./Transaction');
 const Wallet = require('./Wallet');
+const Payment = require('./Payment');
 const PaymentMethod = require('./PaymentMethod');
 const Escrow = require('./Escrow');
 const Bill = require('./Bill');
@@ -26,6 +27,7 @@ module.exports = {
   // Service-specific models
   Transaction,
   Wallet,
+  Payment,
   PaymentMethod,
   Escrow,
   Bill,

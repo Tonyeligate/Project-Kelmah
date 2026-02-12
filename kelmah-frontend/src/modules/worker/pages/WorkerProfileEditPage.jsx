@@ -57,6 +57,50 @@ const Input = styled('input')({
   display: 'none',
 });
 
+const DEFAULT_AVAILABLE_HOURS = {
+  monday: { start: '09:00', end: '17:00', available: true },
+  tuesday: { start: '09:00', end: '17:00', available: true },
+  wednesday: { start: '09:00', end: '17:00', available: true },
+  thursday: { start: '09:00', end: '17:00', available: true },
+  friday: { start: '09:00', end: '17:00', available: true },
+  saturday: { start: '09:00', end: '13:00', available: false },
+  sunday: { start: '09:00', end: '13:00', available: false },
+};
+
+const mapAvailabilityApiToForm = (data) => {
+  const dayOrder = [
+    'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+  ];
+
+  const availableHours = { ...DEFAULT_AVAILABLE_HOURS };
+  const daySlots = Array.isArray(data?.daySlots) ? data.daySlots : [];
+
+  daySlots.forEach((entry) => {
+    const dayName = dayOrder[entry?.dayOfWeek];
+    if (!dayName || !availableHours[dayName]) return;
+
+    const firstSlot = Array.isArray(entry?.slots) ? entry.slots[0] : null;
+    availableHours[dayName] = {
+      ...availableHours[dayName],
+      available: Boolean(firstSlot),
+      start: firstSlot?.start || availableHours[dayName].start,
+      end: firstSlot?.end || availableHours[dayName].end,
+    };
+  });
+
+  return {
+    availabilityStatus: data?.status || 'available',
+    availableHours,
+    pausedUntil: data?.pausedUntil ? String(data.pausedUntil).slice(0, 10) : '',
+  };
+};
+
 const WorkerProfileEditPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -92,13 +136,7 @@ const WorkerProfileEditPage = () => {
     portfolio: [],
     availabilityStatus: 'available',
     availableHours: {
-      monday: { start: '09:00', end: '17:00', available: true },
-      tuesday: { start: '09:00', end: '17:00', available: true },
-      wednesday: { start: '09:00', end: '17:00', available: true },
-      thursday: { start: '09:00', end: '17:00', available: true },
-      friday: { start: '09:00', end: '17:00', available: true },
-      saturday: { start: '09:00', end: '13:00', available: false },
-      sunday: { start: '09:00', end: '13:00', available: false },
+      ...DEFAULT_AVAILABLE_HOURS,
     },
     pausedUntil: '',
   });
@@ -137,11 +175,8 @@ const WorkerProfileEditPage = () => {
       try {
         const id = user?.id;
         if (!id) return;
-        const resp = await fetch(`/api/users/workers/${id}/completeness`, {
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-        });
-        const json = await resp.json();
+        const resp = await api.get(`/users/workers/${id}/completeness`);
+        const json = resp.data;
         if (json?.success) {
           setCompleteness(json.data?.completion ?? 0);
           setSuggestions(json.data?.suggestions ?? []);
@@ -174,15 +209,7 @@ const WorkerProfileEditPage = () => {
           profileImage: null, // Will be populated only when user changes it
           portfolio: Array.isArray(profile.portfolio) ? profile.portfolio : [],
           availabilityStatus: profile?.availability?.status || 'available',
-          availableHours: profile?.availability?.schedule || {
-            monday: { start: '09:00', end: '17:00', available: true },
-            tuesday: { start: '09:00', end: '17:00', available: true },
-            wednesday: { start: '09:00', end: '17:00', available: true },
-            thursday: { start: '09:00', end: '17:00', available: true },
-            friday: { start: '09:00', end: '17:00', available: true },
-            saturday: { start: '09:00', end: '13:00', available: false },
-            sunday: { start: '09:00', end: '13:00', available: false },
-          },
+          availableHours: DEFAULT_AVAILABLE_HOURS,
           pausedUntil: '',
         });
 
@@ -207,14 +234,13 @@ const WorkerProfileEditPage = () => {
         const resp = await api.get(`/users/workers/${id}/availability`);
         const data = resp.data?.data || resp.data;
         if (data) {
+          const mappedAvailability = mapAvailabilityApiToForm(data);
           setFormData((prev) => ({
             ...prev,
             availabilityStatus:
-              data.availabilityStatus || prev.availabilityStatus,
-            availableHours: data.availableHours || prev.availableHours,
-            pausedUntil: data.pausedUntil
-              ? String(data.pausedUntil).slice(0, 10)
-              : '',
+              mappedAvailability.availabilityStatus || prev.availabilityStatus,
+            availableHours: mappedAvailability.availableHours || prev.availableHours,
+            pausedUntil: mappedAvailability.pausedUntil,
           }));
         }
       } catch (e) {
@@ -373,36 +399,32 @@ const WorkerProfileEditPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Create FormData for file uploads
-    const profileFormData = new FormData();
-
-    // Add profile fields
-    Object.keys(formData).forEach((key) => {
-      if (key === 'profileImage' && formData[key]) {
-        profileFormData.append('profileImage', formData[key]);
-      } else if (
-        key === 'skills' ||
-        key === 'education' ||
-        key === 'languages' ||
-        key === 'portfolio'
-      ) {
-        profileFormData.append(key, JSON.stringify(formData[key]));
-      } else {
-        profileFormData.append(key, formData[key]);
-      }
-    });
-
-    // Add portfolio images if any
-    formData.portfolio.forEach((item, index) => {
-      if (item.image) {
-        profileFormData.append(`portfolioImage${index}`, item.image);
-      }
-    });
+    const profilePayload = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      title: formData.title,
+      bio: formData.bio,
+      hourlyRate: formData.hourlyRate,
+      experience: formData.experience,
+      skills: Array.isArray(formData.skills) ? formData.skills : [],
+      education: Array.isArray(formData.education) ? formData.education : [],
+      languages: Array.isArray(formData.languages) ? formData.languages : [],
+      location: formData.location,
+      phone: formData.phone,
+      portfolio: Array.isArray(formData.portfolio)
+        ? formData.portfolio.map((item) => ({
+          title: item?.title || '',
+          description: item?.description || '',
+          imageUrl:
+            typeof item?.imageUrl === 'string' ? item.imageUrl : '',
+        }))
+        : [],
+    };
 
     try {
       const id = user?.id;
       await dispatch(
-        updateWorkerProfile({ workerId: id, profileData: profileFormData }),
+        updateWorkerProfile({ workerId: id, profileData: profilePayload }),
       ).unwrap();
       setSnackbar({
         open: true,

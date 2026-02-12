@@ -8,7 +8,10 @@ router.use(verifyGatewayRequest);
 
 // Wallet routes
 router.get("/", walletController.getWallet);
+router.get("/balance", walletController.getBalance);
 router.post("/", walletController.createOrUpdateWallet);
+router.post("/deposit", walletController.deposit);
+router.post("/withdraw", walletController.withdraw);
 router.post("/payment-methods", walletController.addPaymentMethod);
 router.delete(
   "/payment-methods/:paymentMethodId",

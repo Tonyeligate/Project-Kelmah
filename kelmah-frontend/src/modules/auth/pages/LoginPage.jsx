@@ -8,6 +8,7 @@ import { Alert, useMediaQuery, useTheme } from '@mui/material';
 const LoginPage = () => {
   const location = useLocation();
   const registered = location.state?.registered;
+  const infoMessage = location.state?.message;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -23,6 +24,11 @@ const LoginPage = () => {
         <Alert severity="success" sx={{ mb: 2 }}>
           Registration successful! Please check your email to verify your
           account.
+        </Alert>
+      )}
+      {!registered && infoMessage && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          {infoMessage}
         </Alert>
       )}
       <Login />

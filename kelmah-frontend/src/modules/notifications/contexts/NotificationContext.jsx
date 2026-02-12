@@ -53,7 +53,7 @@ export const NotificationProvider = ({ children }) => {
   const MIN_FETCH_INTERVAL = 30000; // 30 seconds minimum between fetches
 
   const fetchNotifications = useCallback(
-    async ({ limit = 20, skip = 0 } = {}) => {
+    async ({ page = 1, limit = 20, unreadOnly = false, type } = {}) => {
       // Rate limiting check - prevent rapid re-fetches
       const now = Date.now();
       if (now - lastFetchRef.current < MIN_FETCH_INTERVAL) {
@@ -76,12 +76,21 @@ export const NotificationProvider = ({ children }) => {
 
         const { data, pagination: paginationData } =
           await notificationServiceUser.getNotifications({
+            page,
             limit,
-            skip,
+            unreadOnly,
+            type,
           });
 
-        setNotifications(data);
-        setPagination(paginationData);
+        setNotifications(Array.isArray(data) ? data : []);
+        setPagination(
+          paginationData || {
+            page,
+            limit,
+            total: Array.isArray(data) ? data.length : 0,
+            pages: Array.isArray(data) && data.length > 0 ? 1 : 0,
+          },
+        );
         // unreadCount is computed from notifications, no need for separate setter
         setError(null);
       } catch (err) {
@@ -124,7 +133,17 @@ export const NotificationProvider = ({ children }) => {
           );
         } else {
           notificationService.onNotification = (payload) => {
-            setNotifications((prev) => [{ ...payload, read: false }, ...prev]);
+            const normalizedPayload = {
+              ...payload,
+              id: payload?.id || payload?._id,
+              read: false,
+              date:
+                payload?.date ||
+                payload?.createdAt ||
+                payload?.timestamp ||
+                new Date().toISOString(),
+            };
+            setNotifications((prev) => [normalizedPayload, ...prev]);
           };
           notificationService.connect(token);
         }

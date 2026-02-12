@@ -5,7 +5,8 @@
  * Values can be overridden by environment variables.
  */
 
-import { getApiBaseUrl, SERVICES } from './environment';
+import { getApiBaseUrl, SERVICES, API_BASE_URL, WS_CONFIG } from './environment';
+import { API_ENDPOINTS } from './services';
 
 // Read Vite environment variables at build time
 const {
@@ -20,12 +21,9 @@ const {
   VITE_DEBUG_MODE,
 } = import.meta.env;
 
-// Get API base URL from centralized config
-const getApiBase = async () => await getApiBaseUrl();
-
-// Import centralized services
-import { getApiBaseUrl } from './environment';
-import { API_ENDPOINTS } from './services';
+// Derive websocket URL from API base
+const WS_URL = WS_CONFIG?.url || API_BASE_URL?.replace(/^http/, 'ws') || '/ws';
+const USE_MOCK_DATA = VITE_USE_MOCK_DATA === 'true';
 
 // Async function to get API base URL
 const getAPIBaseUrl = async () => {
@@ -40,8 +38,6 @@ const getAPIBaseUrl = async () => {
 // Construct API and WebSocket URLs using centralized config
 const getEnvConfig = async () => {
   const apiBaseUrl = await getAPIBaseUrl();
-  const isHttps =
-    typeof window !== 'undefined' && window.location.protocol === 'https:';
 
   return {
     // API configuration

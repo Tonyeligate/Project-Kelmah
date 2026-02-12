@@ -168,6 +168,42 @@ export const hirerService = {
     }
   },
 
+  // Applications for a specific job (hirer)
+  async getJobApplications(jobId, status) {
+    try {
+      if (!jobId) return [];
+      const params = {};
+      if (status) params.status = status;
+      const response = await api.get(`/jobs/${jobId}/applications`, { params });
+      const payload = response.data;
+      const data = payload?.data || payload;
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.warn('Failed to fetch job applications:', error.message);
+      return [];
+    }
+  },
+
+  async updateApplicationStatus(jobId, applicationId, status, feedback) {
+    try {
+      if (!jobId || !applicationId) {
+        throw new Error('jobId and applicationId are required');
+      }
+      const body = { status };
+      if (typeof feedback === 'string' && feedback.trim()) {
+        body.feedback = feedback.trim();
+      }
+      const response = await api.put(
+        `/jobs/${jobId}/applications/${applicationId}`,
+        body,
+      );
+      return response.data;
+    } catch (error) {
+      console.warn('Failed to update application status:', error.message);
+      throw error;
+    }
+  },
+
   searchWorkers: async (searchParams = {}) => {
     try {
       const response = await api.get(USER.WORKERS_SEARCH, {

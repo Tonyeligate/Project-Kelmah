@@ -153,7 +153,7 @@ const JobSchema = new mongoose.Schema(
     locationDetails: {
       region: {
         type: String,
-        enum: ["Greater Accra", "Ashanti", "Western", "Eastern", "Central", "Volta", "Northern", "Upper East", "Upper West", "Brong-Ahafo"],
+        enum: ["Greater Accra", "Ashanti", "Western", "Eastern", "Central", "Volta", "Northern", "Upper East", "Upper West", "Brong-Ahafo", "Oti", "Bono East", "North East", "Savannah", "Western North", "Ahafo"],
         default: "Greater Accra" // Default region, controller can override
       },
       district: {

@@ -1,55 +1,36 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Box,
-  Container,
   Typography,
   ToggleButton,
   ToggleButtonGroup,
-  Fab,
   Snackbar,
   Alert,
-  Backdrop,
-  CircularProgress,
   useMediaQuery,
   useTheme,
-  Paper,
   Chip,
   Button,
-  Card,
-  CardContent,
-  Grid,
-  Avatar,
-  Badge,
   IconButton,
   Tooltip,
   LinearProgress,
   Divider,
   Stack,
-  Zoom,
-  Slide,
-  Grow,
   TextField,
   InputAdornment,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemAvatar,
-  ListItemSecondaryAction,
-  Switch,
-  FormControlLabel,
-  Slider,
-  Select,
-  MenuItem,
+  Collapse,
   FormControl,
   InputLabel,
-  Collapse,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Select,
+  MenuItem,
+  CircularProgress,
+  Paper,
+  Card,
+  CardContent,
+  Avatar,
+  Badge,
+  Skeleton,
+  Rating,
+  Slide,
 } from '@mui/material';
 import {
   Work as JobIcon,
@@ -57,968 +38,964 @@ import {
   Search as SearchIcon,
   FilterList as FilterIcon,
   Refresh as RefreshIcon,
-  TrendingUp as TrendingUpIcon,
-  Timeline as TimelineIcon,
-  Analytics as AnalyticsIcon,
-  Speed as SpeedIcon,
   Star as StarIcon,
   Verified as VerifiedIcon,
   LocationOn as LocationOnIcon,
   AttachMoney as MoneyIcon,
-  Schedule as ScheduleIcon,
-  Visibility as VisibilityIcon,
-  PeopleAlt as PeopleIcon,
-  BusinessCenter as BusinessIcon,
-  Assessment as AssessmentIcon,
-  FlashOn as FlashOnIcon,
-  EmojiNature as EcoIcon,
-  Security as SecurityIcon,
-  Build as BuildIcon,
-  Home as HomeIcon,
-  LocalFireDepartment as FireIcon,
-  ElectricalServices as ElectricalIcon,
-  Palette as PaletteIcon,
-  Construction as ConstructionIcon,
   Close as CloseIcon,
-  Fullscreen as FullscreenIcon,
-  FullscreenExit as FullscreenExitIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
-  Clear as ClearIcon,
-  CheckCircle as CheckCircleIcon,
-  Warning as WarningIcon,
-  PriorityHigh as PriorityHighIcon,
-  LocalOffer as LocalOfferIcon,
-  Category as CategoryIcon,
-  BarChart as BarChartIcon,
-  PieChart as PieChartIcon,
-  TrendingDown as TrendingDownIcon,
-  Add as AddIcon,
-  Remove as RemoveIcon,
-  ZoomIn as ZoomInIcon,
-  ZoomOut as ZoomOutIcon,
-  Layers as LayersIcon,
-  Settings as SettingsIcon,
-  Notifications as NotificationsIcon,
-  Chat as ChatIcon,
-  Error as ErrorIcon,
   MyLocation as MyLocationIcon,
+  Clear as ClearIcon,
+  Navigation as NavigationIcon,
+  Chat as ChatIcon,
+  Map as MapViewIcon,
+  ViewList as ListViewIcon,
+  GpsFixed as GpsFixedIcon,
+  NearMe as NearMeIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import InteractiveMap from '../components/common/InteractiveMap';
+import mapService from '../services/mapService';
 
-// Mock data for demonstration
-const mockMapData = {
-  jobs: [],
-  workers: [],
-  analytics: {
-    responseTime: { value: '< 2 min', trend: -5, color: '#4CAF50' },
-    successRate: { value: '94%', trend: 2, color: '#2196F3' },
-    avgRating: { value: '4.8', trend: 1, color: '#FFC107' },
-    onlineNow: { value: '847', trend: 8, color: '#9C27B0' },
-  },
-  categories: [
-    { name: 'Carpentry', count: 124, percentage: 124, color: '#FF9800' },
-    { name: 'Electrical', count: 89, percentage: 89, color: '#FFC107' },
-    { name: 'Plumbing', count: 67, percentage: 67, color: '#2196F3' },
-    { name: 'Catering', count: 45, percentage: 45, color: '#4CAF50' },
-    { name: 'Painting', count: 34, percentage: 34, color: '#9C27B0' },
-  ],
-  status: {
-    active: { count: 0, trend: 15, color: '#4CAF50' },
-    verified: { count: 34, trend: 8, color: '#2196F3' },
-    urgent: { count: 7, trend: -5, color: '#F44336' },
-    topRated: { count: 0, trend: 12, color: '#FFC107' },
-  },
-};
-
-// Interactive Map Component
-const InteractiveMap = ({
-  data,
-  viewType,
-  onMarkerClick,
-  center,
-  zoom = 12,
-  loading = false,
-}) => {
+// ────────────────────────────────────────────────────────────
+//  Bottom Sheet – Uber/Bolt-style pull-up results panel
+// ────────────────────────────────────────────────────────────
+const BottomSheet = ({ open, onToggle, children, title, count, loading }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  if (!isMobile) return null;
 
+  return (
+    <Slide direction="up" in={open} mountOnEnter unmountOnExit>
+      <Paper
+        elevation={16}
+        sx={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          maxHeight: '65vh',
+          zIndex: 1200,
+          borderRadius: '20px 20px 0 0',
+          overflow: 'hidden',
+          bgcolor: theme.palette.background.paper,
+        }}
+      >
+        <Box
+          onClick={onToggle}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            pt: 1,
+            pb: 1.5,
+            cursor: 'pointer',
+          }}
+        >
+          <Box
+            sx={{
+              width: 40,
+              height: 4,
+              borderRadius: 2,
+              bgcolor: theme.palette.divider,
+              mb: 1,
+            }}
+          />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="subtitle1" fontWeight="bold">
+              {title}
+            </Typography>
+            {count > 0 && <Chip label={count} size="small" color="primary" />}
+            {loading && <CircularProgress size={16} />}
+          </Box>
+        </Box>
+        <Divider />
+        <Box sx={{ overflow: 'auto', maxHeight: 'calc(65vh - 60px)', pb: 2 }}>
+          {children}
+        </Box>
+      </Paper>
+    </Slide>
+  );
+};
+
+// ────────────────────────────────────────────────────────────
+//  Result Card – compact job/worker card for the list
+// ────────────────────────────────────────────────────────────
+const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
+  const theme = useTheme();
+  const isJob = viewType === 'jobs';
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -16 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 16 }}
+      layout
+    >
+      <Card
+        onClick={() => onSelect(item)}
+        sx={{
+          mx: 2,
+          mb: 1.5,
+          cursor: 'pointer',
+          border: `1px solid ${theme.palette.divider}`,
+          borderRadius: 3,
+          transition: 'all 0.25s ease',
+          '&:hover': {
+            borderColor: theme.palette.primary.main,
+            boxShadow: `0 4px 20px ${theme.palette.primary.main}22`,
+            transform: 'translateY(-2px)',
+          },
+        }}
+      >
+        <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+            <Avatar
+              src={!isJob ? item.profileImage : undefined}
+              sx={{
+                width: 48,
+                height: 48,
+                bgcolor: isJob
+                  ? theme.palette.secondary.main + '22'
+                  : theme.palette.primary.main + '22',
+                color: isJob
+                  ? theme.palette.secondary.main
+                  : theme.palette.primary.main,
+              }}
+            >
+              {isJob ? <JobIcon /> : <WorkerIcon />}
+            </Avatar>
+
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.25 }}>
+                <Typography variant="subtitle2" noWrap fontWeight="bold">
+                  {isJob ? item.title : item.name}
+                </Typography>
+                {item.verified && (
+                  <VerifiedIcon sx={{ fontSize: 16, color: '#4CAF50' }} />
+                )}
+                {item.urgent && (
+                  <Chip
+                    label="URGENT"
+                    size="small"
+                    sx={{
+                      height: 18,
+                      fontSize: '0.6rem',
+                      bgcolor: '#FF5722',
+                      color: '#fff',
+                      fontWeight: 'bold',
+                    }}
+                  />
+                )}
+              </Box>
+              <Typography variant="caption" color="text.secondary" noWrap>
+                {item.category}
+                {item.distance != null &&
+                  ` · ${mapService.formatDistance(item.distance)}`}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1.5, mt: 0.75, alignItems: 'center' }}>
+                {isJob ? (
+                  <Chip
+                    icon={<MoneyIcon sx={{ fontSize: 14 }} />}
+                    label={`GHS ${item.budget?.toLocaleString() ?? '—'}`}
+                    size="small"
+                    variant="outlined"
+                    sx={{ height: 24 }}
+                  />
+                ) : (
+                  <>
+                    {item.rating > 0 && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                        <StarIcon sx={{ fontSize: 14, color: '#FF9800' }} />
+                        <Typography variant="caption" fontWeight="bold">
+                          {item.rating.toFixed(1)}
+                        </Typography>
+                      </Box>
+                    )}
+                    {item.hourlyRate && (
+                      <Typography variant="caption" color="secondary">
+                        GHS {item.hourlyRate}/hr
+                      </Typography>
+                    )}
+                    {item.online && (
+                      <Chip
+                        label="Online"
+                        size="small"
+                        sx={{
+                          height: 18,
+                          fontSize: '0.6rem',
+                          bgcolor: '#4CAF5022',
+                          color: '#4CAF50',
+                          fontWeight: 'bold',
+                        }}
+                      />
+                    )}
+                  </>
+                )}
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, ml: 'auto' }}>
+              <Tooltip title="Get Directions">
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onNavigate(item);
+                  }}
+                  sx={{
+                    bgcolor: theme.palette.primary.main + '15',
+                    color: theme.palette.primary.main,
+                    width: 32,
+                    height: 32,
+                  }}
+                >
+                  <NavigationIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Message">
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMessage(item);
+                  }}
+                  sx={{
+                    bgcolor: theme.palette.secondary.main + '15',
+                    color: theme.palette.secondary.main,
+                    width: 32,
+                    height: 32,
+                  }}
+                >
+                  <ChatIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
+
+// ────────────────────────────────────────────────────────────
+//  MAIN PAGE – Professional Uber/Bolt-style Map
+// ────────────────────────────────────────────────────────────
+const ProfessionalMapPage = () => {
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const refreshTimer = useRef(null);
+
+  // State
+  const [viewType, setViewType] = useState(searchParams.get('view') || 'jobs');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [filters, setFilters] = useState({
+    category: searchParams.get('category') || '',
+    distance: Number(searchParams.get('radius')) || 25,
+    sortBy: 'distance',
+  });
+  const [markers, setMarkers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [sheetOpen, setSheetOpen] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+  const [snack, setSnack] = useState({ open: false, message: '', severity: 'info' });
+  const [locating, setLocating] = useState(true);
+  const [listMode, setListMode] = useState(false);
+
+  const mapCenter = useMemo(
+    () =>
+      userLocation
+        ? [userLocation.latitude, userLocation.longitude]
+        : [5.6037, -0.187],
+    [userLocation],
+  );
+
+  // Get location on mount
+  useEffect(() => {
+    setLocating(true);
+    mapService
+      .getCurrentLocation()
+      .then((loc) => {
+        setUserLocation(loc);
+        setLocating(false);
+      })
+      .catch(() => {
+        setLocating(false);
+        setSnack({
+          open: true,
+          message: 'Could not detect your location — showing Accra',
+          severity: 'warning',
+        });
+      });
+  }, []);
+
+  // Fetch live data
+  const fetchData = useCallback(async () => {
+    const loc = userLocation || { latitude: 5.6037, longitude: -0.187 };
+    setLoading(true);
+    try {
+      const params = {
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+        radius: filters.distance,
+        category: filters.category || undefined,
+      };
+      const data =
+        viewType === 'jobs'
+          ? await mapService.searchJobsNearLocation(params)
+          : await mapService.searchWorkersNearLocation(params);
+      setMarkers(data);
+    } catch {
+      setMarkers([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [userLocation, viewType, filters.distance, filters.category]);
+
+  useEffect(() => {
+    if (!locating) fetchData();
+  }, [fetchData, locating]);
+
+  // Auto-refresh every 30s
+  useEffect(() => {
+    refreshTimer.current = setInterval(() => {
+      if (!locating) fetchData();
+    }, 30_000);
+    return () => clearInterval(refreshTimer.current);
+  }, [fetchData, locating]);
+
+  // Handlers
+  const handleMarkerClick = useCallback(
+    (marker) => {
+      setSelectedItem(marker);
+      if (isMobile) setSheetOpen(true);
+    },
+    [isMobile],
+  );
+
+  const handleViewDetails = useCallback(
+    (item) => {
+      if (item.type === 'job') navigate(`/jobs/${item.id}`);
+      else navigate(`/workers/${item.id}`);
+    },
+    [navigate],
+  );
+
+  const handleNavigate = useCallback((item) => {
+    if (!item.coordinates) return;
+    const { latitude, longitude } = item.coordinates;
+    window.open(
+      `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`,
+      '_blank',
+    );
+  }, []);
+
+  const handleMessage = useCallback(
+    (item) => {
+      const userId =
+        item.type === 'job' ? item.hirer?.id || item.hirer : item.id;
+      if (!userId) {
+        setSnack({
+          open: true,
+          message: 'Unable to identify recipient for this conversation.',
+          severity: 'warning',
+        });
+        return;
+      }
+
+      navigate(`/messages?recipient=${userId}`);
+    },
+    [navigate],
+  );
+
+  const handleClearFilters = useCallback(() => {
+    setFilters({ category: '', distance: 25, sortBy: 'distance' });
+    setSearchQuery('');
+  }, []);
+
+  const filtered = useMemo(() => {
+    if (!searchQuery.trim()) return markers;
+    const q = searchQuery.toLowerCase();
+    return markers.filter(
+      (m) =>
+        (m.title || '').toLowerCase().includes(q) ||
+        (m.name || '').toLowerCase().includes(q) ||
+        (m.category || '').toLowerCase().includes(q) ||
+        (m.skills || []).some((s) => s.toLowerCase().includes(q)),
+    );
+  }, [markers, searchQuery]);
+
+  const categories = mapService.getVocationalCategories();
+
+  // ── Render ──
   return (
     <Box
       sx={{
-        position: 'relative',
-        height: '100%',
-        width: '100%',
-        borderRadius: 2,
+        height: 'calc(100vh - 64px)',
+        display: 'flex',
+        flexDirection: 'column',
         overflow: 'hidden',
-        background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
-        border: `1px solid ${theme.palette.divider}`,
+        position: 'relative',
+        bgcolor: theme.palette.background.default,
       }}
     >
-      {/* Map Placeholder with Professional Styling */}
+      {/* TOP BAR */}
       <Box
         sx={{
-          height: '100%',
-          width: '100%',
-          background: `linear-gradient(45deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.main} 100%)`,
+          px: { xs: 1.5, md: 3 },
+          py: 1,
           display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
           alignItems: 'center',
-          position: 'relative',
-          overflow: 'hidden',
+          gap: 1,
+          flexWrap: { xs: 'wrap', md: 'nowrap' },
+          bgcolor: theme.palette.background.paper,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          zIndex: 10,
         }}
       >
-        {/* Animated Background Pattern */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: `
-              radial-gradient(circle at 20% 80%, ${theme.palette.primary.main}22 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, ${theme.palette.secondary.main}22 0%, transparent 50%),
-              radial-gradient(circle at 40% 40%, ${theme.palette.primary.light}11 0%, transparent 50%)
-            `,
-            animation: 'pulse 4s ease-in-out infinite alternate',
-            '@keyframes pulse': {
-              '0%': { opacity: 0.3 },
-              '100%': { opacity: 0.7 },
-            },
-          }}
-        />
-
-        {/* Map Content */}
-        <Box
-          sx={{
-            position: 'relative',
-            zIndex: 2,
-            textAlign: 'center',
-            color: 'white',
-          }}
-        >
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <LocationOnIcon
-              sx={{ fontSize: 64, mb: 2, color: theme.palette.secondary.main }}
-            />
-            <Typography variant="h4" sx={{ mb: 1, fontWeight: 'bold', fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
-              Kelmah Professional Map
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 3, opacity: 0.9 }}>
-              Live tracking • {data.length} {viewType} found
-            </Typography>
-          </motion.div>
-
-          {/* Interactive Markers */}
-          <Box sx={{ position: 'relative', height: 300, width: '100%' }}>
-            {data.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                style={{
-                  position: 'absolute',
-                  left: `${20 + ((index * 15) % 60)}%`,
-                  top: `${30 + ((index * 20) % 40)}%`,
-                }}
-              >
-                <Tooltip
-                  title={`${item.title || item.name} - ${item.location.address}`}
-                >
-                  <IconButton
-                    onClick={() => onMarkerClick(item)}
-                    sx={{
-                      background:
-                        viewType === 'jobs'
-                          ? theme.palette.primary.main
-                          : theme.palette.secondary.main,
-                      color: 'white',
-                      '&:hover': {
-                        background:
-                          viewType === 'jobs'
-                            ? theme.palette.primary.dark
-                            : theme.palette.secondary.dark,
-                        transform: 'scale(1.1)',
-                      },
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    {viewType === 'jobs' ? <JobIcon /> : <WorkerIcon />}
-                  </IconButton>
-                </Tooltip>
-              </motion.div>
-            ))}
-          </Box>
-
-          {/* Map Controls */}
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: 16,
-              right: 16,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 1,
-            }}
-          >
-            <IconButton sx={{ background: 'rgba(0,0,0,0.3)', color: 'white' }}>
-              <ZoomInIcon />
-            </IconButton>
-            <IconButton sx={{ background: 'rgba(0,0,0,0.3)', color: 'white' }}>
-              <ZoomOutIcon />
-            </IconButton>
-            <IconButton sx={{ background: 'rgba(0,0,0,0.3)', color: 'white' }}>
-              <MyLocationIcon />
-            </IconButton>
-          </Box>
-        </Box>
-      </Box>
-
-      {/* Loading Overlay */}
-      {loading && (
-        <Backdrop
-          sx={{
-            position: 'absolute',
-            zIndex: 3,
-            color: theme.palette.secondary.main,
-            background: 'rgba(0,0,0,0.7)',
-          }}
-          open={loading}
-        >
-          <CircularProgress color="inherit" />
-        </Backdrop>
-      )}
-    </Box>
-  );
-};
-
-// Live Analytics Component
-const LiveAnalytics = ({ analytics, onClose }) => {
-  const theme = useTheme();
-
-  return (
-    <Paper
-      sx={{
-        position: 'absolute',
-        top: 16,
-        right: 16,
-        width: 320,
-        maxHeight: 'calc(100vh - 32px)',
-        overflow: 'auto',
-        background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
-        border: `1px solid ${theme.palette.divider}`,
-        borderRadius: 2,
-        zIndex: 10,
-      }}
-    >
-      <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-            Live Analytics
-          </Typography>
-          <IconButton onClick={onClose} size="small" aria-label="Close analytics" sx={{ minWidth: 44, minHeight: 44 }}>
-            <CloseIcon />
-          </IconButton>
-        </Box>
-      </Box>
-
-      <Box sx={{ p: 2 }}>
-        <Grid container spacing={2}>
-          {Object.entries(analytics).map(([key, data]) => (
-            <Grid item xs={6} key={key}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card
-                  sx={{
-                    background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${data.color}11 100%)`,
-                    border: `1px solid ${data.color}33`,
-                    borderRadius: 2,
-                    p: 2,
-                    textAlign: 'center',
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      mb: 1,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: '50%',
-                        background: data.color,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        mr: 1,
-                      }}
-                    >
-                      {key === 'responseTime' && (
-                        <SpeedIcon sx={{ color: 'white', fontSize: 20 }} />
-                      )}
-                      {key === 'successRate' && (
-                        <TimelineIcon sx={{ color: 'white', fontSize: 20 }} />
-                      )}
-                      {key === 'avgRating' && (
-                        <StarIcon sx={{ color: 'white', fontSize: 20 }} />
-                      )}
-                      {key === 'onlineNow' && (
-                        <PeopleIcon sx={{ color: 'white', fontSize: 20 }} />
-                      )}
-                    </Box>
-                  </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                    {data.value}
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    {data.trend > 0 ? (
-                      <TrendingUpIcon
-                        sx={{ color: '#4CAF50', fontSize: 16, mr: 0.5 }}
-                      />
-                    ) : (
-                      <TrendingDownIcon
-                        sx={{ color: '#F44336', fontSize: 16, mr: 0.5 }}
-                      />
-                    )}
-                    <Typography
-                      variant="caption"
-                      sx={{ color: data.trend > 0 ? '#4CAF50' : '#F44336' }}
-                    >
-                      {Math.abs(data.trend)}%
-                    </Typography>
-                  </Box>
-                </Card>
-              </motion.div>
-            </Grid>
-          ))}
-        </Grid>
-
-        <Divider sx={{ my: 2 }} />
-
-        {/* Category Performance */}
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-          Category Performance
-        </Typography>
-        <Box sx={{ maxHeight: 200, overflow: 'auto' }}>
-          {mockMapData.categories.map((category, index) => (
-            <motion.div
-              key={category.name}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  mb: 1,
-                }}
-              >
-                <Typography variant="body2">{category.name}</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                  {category.percentage}%
-                </Typography>
-              </Box>
-              <LinearProgress
-                variant="determinate"
-                value={category.percentage}
-                sx={{
-                  height: 6,
-                  borderRadius: 3,
-                  backgroundColor: `${category.color}22`,
-                  '& .MuiLinearProgress-bar': {
-                    backgroundColor: category.color,
-                  },
-                }}
-              />
-            </motion.div>
-          ))}
-        </Box>
-      </Box>
-    </Paper>
-  );
-};
-
-// Search and Filter Panel
-const SearchFilterPanel = ({
-  searchQuery,
-  setSearchQuery,
-  filters,
-  setFilters,
-  onSearch,
-  onClearFilters,
-  viewType,
-  setViewType,
-  status,
-  resultsCount,
-}) => {
-  const theme = useTheme();
-  const [expandedFilters, setExpandedFilters] = useState(false);
-
-  return (
-    <Paper
-      sx={{
-        position: 'absolute',
-        top: 16,
-        left: 16,
-        width: 350,
-        maxHeight: 'calc(100vh - 32px)',
-        overflow: 'auto',
-        background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
-        border: `1px solid ${theme.palette.divider}`,
-        borderRadius: 2,
-        zIndex: 10,
-      }}
-    >
-      <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-          Search & Filters
-        </Typography>
-
-        {/* Search Bar */}
         <TextField
-          fullWidth
-          placeholder="Search jobs, workers, location..."
+          size="small"
+          placeholder={
+            viewType === 'jobs'
+              ? 'Search jobs near you…'
+              : 'Search workers near you…'
+          }
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon />
+                <SearchIcon fontSize="small" />
               </InputAdornment>
             ),
-            endAdornment: (
+            endAdornment: searchQuery && (
               <InputAdornment position="end">
-                <IconButton size="small" onClick={onSearch} aria-label="Refresh search" sx={{ minWidth: 44, minHeight: 44 }}>
-                  <RefreshIcon />
+                <IconButton size="small" onClick={() => setSearchQuery('')}>
+                  <ClearIcon fontSize="small" />
                 </IconButton>
               </InputAdornment>
             ),
           }}
-          sx={{ mb: 2 }}
+          sx={{ flex: 1, minWidth: 180 }}
         />
 
-        {/* Status Cards */}
-        <Grid container spacing={1} sx={{ mb: 2 }}>
-          {Object.entries(status).map(([key, data]) => (
-            <Grid item xs={6} key={key}>
-              <Card
-                sx={{
-                  background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${data.color}11 100%)`,
-                  border: `1px solid ${data.color}33`,
-                  borderRadius: 2,
-                  p: 1.5,
-                  textAlign: 'center',
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  sx={{ fontWeight: 'bold', color: data.color }}
-                >
-                  {data.count}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ textTransform: 'capitalize' }}
-                >
-                  {key}
-                </Typography>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mt: 0.5,
-                  }}
-                >
-                  {data.trend > 0 ? (
-                    <TrendingUpIcon sx={{ color: '#4CAF50', fontSize: 12 }} />
-                  ) : (
-                    <TrendingDownIcon sx={{ color: '#F44336', fontSize: 12 }} />
-                  )}
-                  <Typography
-                    variant="caption"
-                    sx={{ color: data.trend > 0 ? '#4CAF50' : '#F44336' }}
-                  >
-                    {Math.abs(data.trend)}%
-                  </Typography>
-                </Box>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-
-        {/* View Type Toggle */}
         <ToggleButtonGroup
           value={viewType}
           exclusive
-          onChange={(e, newValue) => newValue && setViewType(newValue)}
-          sx={{ mb: 2, width: '100%' }}
+          onChange={(_, v) => v && setViewType(v)}
+          size="small"
         >
-          <ToggleButton value="jobs" sx={{ flex: 1 }}>
-            <JobIcon sx={{ mr: 1 }} />
-            Jobs
+          <ToggleButton value="jobs" sx={{ px: 1.5 }}>
+            <JobIcon sx={{ mr: 0.5, fontSize: 18 }} /> Jobs
           </ToggleButton>
-          <ToggleButton value="workers" sx={{ flex: 1 }}>
-            <WorkerIcon sx={{ mr: 1 }} />
-            Workers
+          <ToggleButton value="workers" sx={{ px: 1.5 }}>
+            <WorkerIcon sx={{ mr: 0.5, fontSize: 18 }} /> Workers
           </ToggleButton>
         </ToggleButtonGroup>
 
-        {/* Results Summary */}
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Box
-            sx={{
-              width: 12,
-              height: 12,
-              borderRadius: '50%',
-              backgroundColor: '#4CAF50',
-              mr: 1,
-            }}
-          />
-          <Typography variant="body2">Live Results {resultsCount}</Typography>
-        </Box>
-
-        {/* Advanced Filters Button */}
-        <Button
-          fullWidth
-          variant="outlined"
-          startIcon={<FilterIcon />}
-          onClick={() => setExpandedFilters(!expandedFilters)}
-          sx={{ mb: 2 }}
-        >
-          Advanced Filters
-        </Button>
-
-        {/* Advanced Filters */}
-        <Collapse in={expandedFilters}>
-          <Box sx={{ mb: 2 }}>
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Category</InputLabel>
-              <Select
-                value={filters.category || ''}
-                onChange={(e) =>
-                  setFilters({ ...filters, category: e.target.value })
-                }
-                label="Category"
-              >
-                <MenuItem value="">All Categories</MenuItem>
-                {mockMapData.categories.map((cat) => (
-                  <MenuItem key={cat.name} value={cat.name}>
-                    {cat.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Distance</InputLabel>
-              <Select
-                value={filters.distance || 50}
-                onChange={(e) =>
-                  setFilters({ ...filters, distance: e.target.value })
-                }
-                label="Distance"
-              >
-                <MenuItem value={10}>Within 10km</MenuItem>
-                <MenuItem value={25}>Within 25km</MenuItem>
-                <MenuItem value={50}>Within 50km</MenuItem>
-                <MenuItem value={100}>Within 100km</MenuItem>
-              </Select>
-            </FormControl>
-
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Sort By</InputLabel>
-              <Select
-                value={filters.sortBy || 'relevance'}
-                onChange={(e) =>
-                  setFilters({ ...filters, sortBy: e.target.value })
-                }
-                label="Sort By"
-              >
-                <MenuItem value="relevance">Relevance</MenuItem>
-                <MenuItem value="distance">Distance</MenuItem>
-                <MenuItem value="rating">Rating</MenuItem>
-                <MenuItem value="price">Price</MenuItem>
-                <MenuItem value="date">Date Posted</MenuItem>
-              </Select>
-            </FormControl>
-
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<ClearIcon />}
-                onClick={onClearFilters}
-              >
-                Clear
-              </Button>
-              <Button fullWidth variant="contained" onClick={onSearch}>
-                Apply
-              </Button>
-            </Box>
-          </Box>
-        </Collapse>
-      </Box>
-
-      {/* Live Results List */}
-      <Box sx={{ p: 2 }}>
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-          Live Results
-        </Typography>
-        <List sx={{ maxHeight: 300, overflow: 'auto' }}>
-          {mockMapData[viewType].slice(0, 5).map((item, index) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <ListItem
-                sx={{
-                  mb: 1,
-                  borderRadius: 2,
-                  background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
-                  border: `1px solid ${theme.palette.divider}`,
-                  '&:hover': {
-                    background: `linear-gradient(135deg, ${theme.palette.action.hover} 0%, ${theme.palette.background.paper} 100%)`,
-                  },
-                }}
-              >
-                <ListItemAvatar>
-                  <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
-                    {viewType === 'jobs' ? <JobIcon /> : <WorkerIcon />}
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText
-                  primary={item.title || item.name}
-                  secondary={`${item.location.address} • ${item.category}`}
-                />
-                <ListItemSecondaryAction>
-                  <Chip
-                    label={viewType === 'jobs' ? item.budget : item.hourlyRate}
-                    size="small"
-                    color="primary"
-                  />
-                </ListItemSecondaryAction>
-              </ListItem>
-            </motion.div>
-          ))}
-        </List>
-      </Box>
-    </Paper>
-  );
-};
-
-// Main Professional Map Page
-const ProfessionalMapPage = () => {
-  const theme = useTheme();
-  const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-  // State management
-  const [viewType, setViewType] = useState('jobs');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState({
-    category: '',
-    distance: 50,
-    sortBy: 'relevance',
-  });
-  const [loading, setLoading] = useState(false);
-  const [showAnalytics, setShowAnalytics] = useState(true);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [mapCenter, setMapCenter] = useState({ lat: 5.56, lng: -0.2057 });
-  const [mapZoom, setMapZoom] = useState(12);
-
-  // Computed values
-  const currentData = useMemo(() => mockMapData[viewType], [viewType]);
-  const resultsCount = currentData.length;
-
-  // Handlers
-  const handleSearch = useCallback(() => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
-
-  const handleClearFilters = useCallback(() => {
-    setFilters({
-      category: '',
-      distance: 50,
-      sortBy: 'relevance',
-    });
-    setSearchQuery('');
-  }, []);
-
-  const handleMarkerClick = useCallback((item) => {
-    setSelectedItem(item);
-  }, []);
-
-  const handleViewTypeChange = useCallback((newType) => {
-    setViewType(newType);
-    setSelectedItem(null);
-  }, []);
-
-  // Effects
-  useEffect(() => {
-    handleSearch();
-  }, [viewType, filters]);
-
-  return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
-        position: 'relative',
-      }}
-    >
-      {/* Header */}
-      <Box
-        sx={{
-          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-          color: 'white',
-          p: 2,
-          position: 'sticky',
-          top: 0,
-          zIndex: 1000,
-        }}
-      >
-        <Container maxWidth="xl">
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: { xs: 'flex-start', md: 'center' },
-              flexDirection: { xs: 'column', md: 'row' },
-              gap: { xs: 2, md: 0 },
-            }}
+        <Tooltip title="Filters">
+          <IconButton
+            onClick={() => setShowFilters(!showFilters)}
+            color={showFilters ? 'primary' : 'default'}
+            size="small"
           >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Avatar sx={{ bgcolor: theme.palette.secondary.main, mr: 2 }}>
-                K
-              </Avatar>
-              <Box>
-                <Typography variant="h5" sx={{ fontWeight: 'bold', fontSize: { xs: '1.25rem', md: '1.5rem' } }}>
-                  Kelmah Professional Map
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  Live tracking • {resultsCount} results found
-                </Typography>
-              </Box>
-            </Box>
+            <FilterIcon />
+          </IconButton>
+        </Tooltip>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-              {/* Key Metrics */}
-              <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
-                <Chip
-                  label={`${mockMapData.jobs.length} Jobs`}
-                  icon={<JobIcon />}
-                  sx={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}
-                />
-                <Chip
-                  label={`${mockMapData.workers.length} Workers`}
-                  icon={<WorkerIcon />}
-                  sx={{
-                    background:
-                      viewType === 'workers'
-                        ? theme.palette.secondary.main
-                        : 'rgba(255,255,255,0.1)',
-                    color: 'white',
-                  }}
-                />
-                <Chip
-                  label="161 Completed"
-                  icon={<CheckCircleIcon />}
-                  sx={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}
-                />
-              </Box>
+        <Tooltip title="Refresh">
+          <IconButton onClick={fetchData} disabled={loading} size="small">
+            {loading ? <CircularProgress size={18} /> : <RefreshIcon />}
+          </IconButton>
+        </Tooltip>
 
-              {/* View Type Toggle */}
-              <ToggleButtonGroup
-                value={viewType}
-                exclusive
-                onChange={(e, newValue) =>
-                  newValue && handleViewTypeChange(newValue)
-                }
-                size="small"
-              >
-                <ToggleButton
-                  value="jobs"
-                  sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)', minHeight: 44 }}
-                >
-                  Jobs
-                  <Badge
-                    badgeContent={mockMapData.jobs.length}
-                    color="secondary"
-                    sx={{ ml: 1 }}
-                  />
-                </ToggleButton>
-                <ToggleButton
-                  value="workers"
-                  sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)', minHeight: 44 }}
-                >
-                  Workers
-                  <Badge
-                    badgeContent={mockMapData.workers.length}
-                    color="secondary"
-                    sx={{ ml: 1 }}
-                  />
-                </ToggleButton>
-              </ToggleButtonGroup>
+        {isMobile && (
+          <Tooltip title={listMode ? 'Map View' : 'List View'}>
+            <IconButton
+              size="small"
+              onClick={() => setListMode(!listMode)}
+              color="primary"
+            >
+              {listMode ? <MapViewIcon /> : <ListViewIcon />}
+            </IconButton>
+          </Tooltip>
+        )}
 
-              {/* Action Buttons */}
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <IconButton sx={{ color: 'white', minWidth: 44, minHeight: 44 }} aria-label="Refresh map">
-                  <RefreshIcon />
-                </IconButton>
-                <IconButton sx={{ color: 'white', minWidth: 44, minHeight: 44 }} aria-label="Toggle fullscreen">
-                  <FullscreenIcon />
-                </IconButton>
-              </Box>
-            </Box>
-          </Box>
-        </Container>
+        <Chip
+          label={`${filtered.length} found`}
+          size="small"
+          color="primary"
+          variant="outlined"
+          sx={{ display: { xs: 'none', sm: 'flex' } }}
+        />
       </Box>
 
-      {/* Main Content */}
-      <Container maxWidth="xl" sx={{ py: 2 }}>
+      {/* FILTER BAR */}
+      <Collapse in={showFilters}>
         <Box
           sx={{
-            position: 'relative',
-            height: 'calc(100vh - 200px)',
-            minHeight: 600,
+            px: { xs: 1.5, md: 3 },
+            py: 1.5,
+            display: 'flex',
+            gap: 2,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            bgcolor: theme.palette.background.paper,
+            borderBottom: `1px solid ${theme.palette.divider}`,
           }}
         >
-          {/* Interactive Map */}
-          <InteractiveMap
-            data={currentData}
-            viewType={viewType}
-            onMarkerClick={handleMarkerClick}
-            center={mapCenter}
-            zoom={mapZoom}
-            loading={loading}
-          />
+          <FormControl size="small" sx={{ minWidth: 140 }}>
+            <InputLabel>Category</InputLabel>
+            <Select
+              value={filters.category}
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, category: e.target.value }))
+              }
+              label="Category"
+            >
+              <MenuItem value="">All Categories</MenuItem>
+              {categories.map((cat) => (
+                <MenuItem key={cat} value={cat}>
+                  {cat}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-          {/* Search and Filter Panel */}
-          <SearchFilterPanel
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            filters={filters}
-            setFilters={setFilters}
-            onSearch={handleSearch}
-            onClearFilters={handleClearFilters}
-            viewType={viewType}
-            setViewType={setViewType}
-            status={mockMapData.status}
-            resultsCount={resultsCount}
-          />
+          <FormControl size="small" sx={{ minWidth: 130 }}>
+            <InputLabel>Radius</InputLabel>
+            <Select
+              value={filters.distance}
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, distance: e.target.value }))
+              }
+              label="Radius"
+            >
+              {[5, 10, 25, 50, 100].map((r) => (
+                <MenuItem key={r} value={r}>
+                  Within {r} km
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-          {/* Live Analytics Panel */}
-          {showAnalytics && (
-            <LiveAnalytics
-              analytics={mockMapData.analytics}
-              onClose={() => setShowAnalytics(false)}
-            />
-          )}
+          <FormControl size="small" sx={{ minWidth: 130 }}>
+            <InputLabel>Sort</InputLabel>
+            <Select
+              value={filters.sortBy}
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, sortBy: e.target.value }))
+              }
+              label="Sort"
+            >
+              <MenuItem value="distance">Nearest</MenuItem>
+              <MenuItem value="rating">Top Rated</MenuItem>
+              <MenuItem value="price">Price</MenuItem>
+              <MenuItem value="date">Newest</MenuItem>
+            </Select>
+          </FormControl>
 
-          {/* Floating Action Button */}
-          <Fab
-            color="secondary"
-            aria-label="add"
-            sx={{
-              position: 'absolute',
-              bottom: 16,
-              right: 16,
-              zIndex: 10,
-            }}
+          <Button
+            size="small"
+            startIcon={<ClearIcon />}
+            onClick={handleClearFilters}
           >
-            <AddIcon />
-          </Fab>
+            Clear
+          </Button>
         </Box>
-      </Container>
+      </Collapse>
 
-      {/* Selected Item Dialog */}
-      <Dialog
-        open={!!selectedItem}
-        onClose={() => setSelectedItem(null)}
-        maxWidth="sm"
-        fullWidth
-        fullScreen={isMobile}
+      {/* MAIN CONTENT */}
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          overflow: 'hidden',
+          position: 'relative',
+        }}
       >
-        <DialogTitle>
+        {/* SIDE PANEL (desktop) */}
+        {!isMobile && (
           <Box
             sx={{
+              width: 380,
+              flexShrink: 0,
               display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              flexDirection: 'column',
+              borderRight: `1px solid ${theme.palette.divider}`,
+              bgcolor: theme.palette.background.paper,
             }}
           >
-            <Typography variant="h6">
-              {selectedItem?.title || selectedItem?.name}
-            </Typography>
-            <IconButton onClick={() => setSelectedItem(null)} aria-label="Close dialog" sx={{ minWidth: 44, minHeight: 44 }}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          {selectedItem && (
-            <Box>
-              <Typography variant="body1" sx={{ mb: 2 }}>
-                {selectedItem.description ||
-                  `${selectedItem.category} professional`}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                {selectedItem.skills?.map((skill) => (
-                  <Chip key={skill} label={skill} size="small" />
-                ))}
+            <Box
+              sx={{
+                px: 2,
+                py: 1.5,
+                borderBottom: `1px solid ${theme.palette.divider}`,
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Typography variant="subtitle1" fontWeight="bold">
+                  {viewType === 'jobs' ? 'Nearby Jobs' : 'Nearby Workers'}
+                </Typography>
+                <Chip
+                  icon={<GpsFixedIcon sx={{ fontSize: 14 }} />}
+                  label={
+                    locating ? 'Locating…' : `${filtered.length} results`
+                  }
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                />
               </Box>
-              <Typography variant="body2" color="text.secondary">
-                Location: {selectedItem.location.address}
-              </Typography>
+              {loading && <LinearProgress sx={{ mt: 1, borderRadius: 1 }} />}
+            </Box>
+
+            <Box sx={{ flex: 1, overflow: 'auto', py: 1 }}>
+              {loading && filtered.length === 0 ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <Box key={i} sx={{ px: 2, mb: 1.5 }}>
+                    <Skeleton variant="rounded" height={80} />
+                  </Box>
+                ))
+              ) : filtered.length === 0 ? (
+                <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
+                  <NearMeIcon
+                    sx={{
+                      fontSize: 48,
+                      color: theme.palette.text.disabled,
+                      mb: 1,
+                    }}
+                  />
+                  <Typography variant="body1" color="text.secondary">
+                    No {viewType} found nearby
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Try increasing your search radius or changing filters
+                  </Typography>
+                </Box>
+              ) : (
+                <AnimatePresence mode="popLayout">
+                  {filtered.map((item) => (
+                    <ResultCard
+                      key={item.id}
+                      item={item}
+                      viewType={viewType}
+                      onSelect={handleMarkerClick}
+                      onNavigate={handleNavigate}
+                      onMessage={handleMessage}
+                    />
+                  ))}
+                </AnimatePresence>
+              )}
+            </Box>
+          </Box>
+        )}
+
+        {/* MAP */}
+        <Box
+          sx={{
+            flex: 1,
+            position: 'relative',
+            display: isMobile && listMode ? 'none' : 'flex',
+          }}
+        >
+          <InteractiveMap
+            center={mapCenter}
+            zoom={14}
+            markers={filtered}
+            onMarkerClick={handleMarkerClick}
+            showUserLocation
+            showSearchRadius
+            searchRadius={filters.distance}
+            height="100%"
+            controls={{
+              location: true,
+              zoom: true,
+              layers: true,
+              fullscreen: true,
+            }}
+          />
+
+          {locating && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 1100,
+              }}
+            >
+              <motion.div
+                animate={{ scale: [1, 1.4, 1], opacity: [1, 0.4, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                <MyLocationIcon
+                  sx={{ fontSize: 48, color: theme.palette.primary.main }}
+                />
+              </motion.div>
             </Box>
           )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSelectedItem(null)} sx={{ minHeight: 44 }}>Close</Button>
-          <Button variant="contained" sx={{ minHeight: 44 }}>View Details</Button>
-        </DialogActions>
-      </Dialog>
+        </Box>
 
-      {/* Notifications */}
-      <Snackbar open={false} autoHideDuration={6000} onClose={() => {}}>
-        <Alert severity="info" sx={{ width: '100%' }}>
-          Map data updated successfully
+        {/* MOBILE LIST VIEW */}
+        {isMobile && listMode && (
+          <Box sx={{ flex: 1, overflow: 'auto', py: 1 }}>
+            {loading && filtered.length === 0 ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <Box key={i} sx={{ px: 2, mb: 1.5 }}>
+                  <Skeleton variant="rounded" height={80} />
+                </Box>
+              ))
+            ) : filtered.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
+                <NearMeIcon
+                  sx={{
+                    fontSize: 48,
+                    color: theme.palette.text.disabled,
+                    mb: 1,
+                  }}
+                />
+                <Typography variant="body1" color="text.secondary">
+                  No {viewType} found nearby
+                </Typography>
+              </Box>
+            ) : (
+              <AnimatePresence mode="popLayout">
+                {filtered.map((item) => (
+                  <ResultCard
+                    key={item.id}
+                    item={item}
+                    viewType={viewType}
+                    onSelect={handleMarkerClick}
+                    onNavigate={handleNavigate}
+                    onMessage={handleMessage}
+                  />
+                ))}
+              </AnimatePresence>
+            )}
+          </Box>
+        )}
+      </Box>
+
+      {/* MOBILE BOTTOM SHEET */}
+      {isMobile && !listMode && (
+        <BottomSheet
+          open={sheetOpen}
+          onToggle={() => setSheetOpen(!sheetOpen)}
+          title={viewType === 'jobs' ? 'Nearby Jobs' : 'Nearby Workers'}
+          count={filtered.length}
+          loading={loading}
+        >
+          {filtered.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography variant="body2" color="text.secondary">
+                No {viewType} found nearby
+              </Typography>
+            </Box>
+          ) : (
+            filtered.map((item) => (
+              <ResultCard
+                key={item.id}
+                item={item}
+                viewType={viewType}
+                onSelect={handleViewDetails}
+                onNavigate={handleNavigate}
+                onMessage={handleMessage}
+              />
+            ))
+          )}
+        </BottomSheet>
+      )}
+
+      {/* SELECTED-ITEM FLYOUT (desktop) */}
+      {!isMobile && selectedItem && (
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 40 }}
+            style={{
+              position: 'absolute',
+              bottom: 24,
+              right: 24,
+              zIndex: 1100,
+              width: 360,
+            }}
+          >
+            <Card
+              elevation={12}
+              sx={{
+                borderRadius: 3,
+                border: `2px solid ${theme.palette.primary.main}33`,
+                overflow: 'hidden',
+              }}
+            >
+              <Box
+                sx={{
+                  height: 4,
+                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                }}
+              />
+              <CardContent sx={{ p: 2.5 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    mb: 1.5,
+                  }}
+                >
+                  <Box
+                    sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                  >
+                    <Avatar
+                      src={selectedItem.profileImage}
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        bgcolor: theme.palette.primary.main + '22',
+                        color: theme.palette.primary.main,
+                      }}
+                    >
+                      {selectedItem.type === 'job' ? (
+                        <JobIcon />
+                      ) : (
+                        <WorkerIcon />
+                      )}
+                    </Avatar>
+                    <Box>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="bold"
+                        noWrap
+                        sx={{ maxWidth: 200 }}
+                      >
+                        {selectedItem.title || selectedItem.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {selectedItem.category}
+                        {selectedItem.distance != null &&
+                          ` · ${mapService.formatDistance(selectedItem.distance)}`}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <IconButton
+                    size="small"
+                    onClick={() => setSelectedItem(null)}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+
+                {selectedItem.skills?.length > 0 && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: 0.5,
+                      flexWrap: 'wrap',
+                      mb: 1.5,
+                    }}
+                  >
+                    {selectedItem.skills.slice(0, 4).map((s) => (
+                      <Chip
+                        key={s}
+                        label={s}
+                        size="small"
+                        variant="outlined"
+                      />
+                    ))}
+                  </Box>
+                )}
+
+                <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                  {selectedItem.budget && (
+                    <Chip
+                      icon={<MoneyIcon />}
+                      label={`GHS ${selectedItem.budget.toLocaleString()}`}
+                      size="small"
+                      color="secondary"
+                    />
+                  )}
+                  {selectedItem.rating > 0 && (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                      }}
+                    >
+                      <Rating
+                        value={selectedItem.rating}
+                        precision={0.5}
+                        size="small"
+                        readOnly
+                      />
+                      <Typography variant="caption">
+                        ({selectedItem.reviewCount || 0})
+                      </Typography>
+                    </Box>
+                  )}
+                </Stack>
+
+                <Stack direction="row" spacing={1}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    fullWidth
+                    onClick={() => handleViewDetails(selectedItem)}
+                    sx={{ textTransform: 'none', borderRadius: 2 }}
+                  >
+                    {selectedItem.type === 'job'
+                      ? 'View Job'
+                      : 'View Profile'}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => handleNavigate(selectedItem)}
+                    sx={{ borderRadius: 2, minWidth: 44 }}
+                  >
+                    <NavigationIcon />
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => handleMessage(selectedItem)}
+                    sx={{ borderRadius: 2, minWidth: 44 }}
+                  >
+                    <ChatIcon />
+                  </Button>
+                </Stack>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </AnimatePresence>
+      )}
+
+      {/* SNACKBAR */}
+      <Snackbar
+        open={snack.open}
+        autoHideDuration={4000}
+        onClose={() => setSnack((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnack((s) => ({ ...s, open: false }))}
+          severity={snack.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snack.message}
         </Alert>
       </Snackbar>
     </Box>

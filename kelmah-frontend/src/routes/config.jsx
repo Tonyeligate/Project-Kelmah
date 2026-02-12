@@ -11,6 +11,18 @@ import RouteErrorBoundary from '../modules/common/components/RouteErrorBoundary'
 const LandingPage = lazy(() => import('../pages/HomeLanding'));
 const LoginPage = lazy(() => import('../modules/auth/pages/LoginPage'));
 const RegisterPage = lazy(() => import('../modules/auth/pages/RegisterPage'));
+const ForgotPasswordPage = lazy(
+  () => import('../modules/auth/pages/ForgotPasswordPage'),
+);
+// NOTE: Use non-module page to avoid importing broken legacy module ResetPasswordPage
+const ResetPasswordPage = lazy(() => import('../pages/ResetPassword'));
+const VerifyEmailPage = lazy(
+  () => import('../modules/auth/pages/VerifyEmailPage'),
+);
+const RoleSelectionPage = lazy(
+  () => import('../modules/auth/pages/RoleSelectionPage'),
+);
+const MfaSetupPage = lazy(() => import('../modules/auth/pages/MfaSetupPage'));
 const DashboardPage = lazy(
   () => import('../modules/dashboard/pages/DashboardPage'),
 );
@@ -97,8 +109,13 @@ const ContractManagementPage = lazy(
 const PaymentCenterPage = lazy(
   () => import('../modules/payment/pages/PaymentCenterPage'),
 );
+const PaymentsPage = lazy(() => import('../modules/payment/pages/PaymentsPage'));
+const BillPage = lazy(() => import('../modules/payment/pages/BillPage'));
 const WalletPage = lazy(
   () => import('../modules/payment/pages/WalletPage'),
+);
+const PaymentMethodsPage = lazy(
+  () => import('../modules/payment/pages/PaymentMethodsPage'),
 );
 const EscrowManager = lazy(
   () => import('../modules/payment/components/EscrowManager'),
@@ -151,9 +168,59 @@ const QuickJobTrackingPage = lazy(
   () => import('../modules/quickjobs/pages/QuickJobTrackingPage'),
 );
 
+// Contract Pages (full CRUD)
+const ContractsPage = lazy(
+  () => import('../modules/contracts/pages/ContractsPage'),
+);
+const ContractDetailsPage = lazy(
+  () => import('../modules/contracts/pages/ContractDetailsPage'),
+);
+const CreateContractPage = lazy(
+  () => import('../modules/contracts/pages/CreateContractPage'),
+);
+const EditContractPage = lazy(
+  () => import('../modules/contracts/pages/EditContractPage'),
+);
+
+// Map (Professional Uber/Bolt-style)
+const ProfessionalMapPage = lazy(
+  () => import('../modules/map/pages/ProfessionalMapPage'),
+);
+
+// Premium
+const PremiumPage = lazy(
+  () => import('../modules/premium/pages/PremiumPage'),
+);
+
+// Reviews (Enhanced)
+const ReviewsPage = lazy(
+  () => import('../modules/reviews/pages/ReviewsPage'),
+);
+
+// Payment extra pages
+const PaymentSettingsPage = lazy(
+  () => import('../modules/payment/pages/PaymentSettingsPage'),
+);
+const EscrowDetailsPage = lazy(
+  () => import('../modules/payment/pages/EscrowDetailsPage'),
+);
+
+// Scheduling
+const TempSchedulingPage = lazy(
+  () => import('../modules/scheduling/pages/TempSchedulingPage'),
+);
+
+// Admin Pages
+const SkillsAssessmentManagement = lazy(
+  () => import('../modules/admin/pages/SkillsAssessmentManagement'),
+);
+const PayoutQueuePage = lazy(
+  () => import('../modules/admin/pages/PayoutQueuePage'),
+);
+
 // Role-based route protection wrapper
 const RoleProtectedRoute = ({ children, allowedRoles }) => (
-  <ProtectedRoute allowedRoles={allowedRoles}>
+  <ProtectedRoute roles={allowedRoles}>
     {children}
   </ProtectedRoute>
 );
@@ -167,6 +234,20 @@ const routes = [
       { index: true, element: <LandingPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'register', element: <RegisterPage /> },
+      { path: 'forgot-password', element: <ForgotPasswordPage /> },
+      // Support /reset-password/:token and /reset-password?token=...
+      { path: 'reset-password', element: <ResetPasswordPage /> },
+      { path: 'reset-password/:token', element: <ResetPasswordPage /> },
+      { path: 'verify-email/:token', element: <VerifyEmailPage /> },
+      { path: 'role-selection', element: <RoleSelectionPage /> },
+      {
+        path: 'mfa/setup',
+        element: (
+          <ProtectedRoute>
+            <MfaSetupPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: 'dashboard',
         element: (
@@ -181,7 +262,14 @@ const routes = [
         path: 'jobs',
         children: [
           { index: true, element: <JobsPage /> },
-          { path: ':id', element: <JobDetailsPage /> },
+          {
+            path: ':id',
+            element: (
+              <ProtectedRoute>
+                <JobDetailsPage />
+              </ProtectedRoute>
+            ),
+          },
         ],
       },
       {
@@ -198,12 +286,36 @@ const routes = [
         path: 'find-talents',
         element: <FindWorkersPage />,
       },
+      // Alias: /search → same SearchPage (HomeLanding CTAs navigate here)
+      {
+        path: 'search',
+        element: <FindWorkersPage />,
+      },
+      // Professional Map – Uber/Bolt-style live map for jobs & workers
+      {
+        path: 'map',
+        element: <ProfessionalMapPage />,
+      },
       {
         path: 'messages',
         element: (
           <ProtectedRoute>
             <RouteErrorBoundary label="Messages">
               <MessagesPage />
+            </RouteErrorBoundary>
+          </ProtectedRoute>
+        ),
+      },
+
+      // Payments (shared)
+      {
+        path: 'payments',
+        element: (
+          <ProtectedRoute roles={['worker', 'hirer', 'admin']}>
+            <RouteErrorBoundary label="Payments">
+              <PaymentProvider>
+                <PaymentsPage />
+              </PaymentProvider>
             </RouteErrorBoundary>
           </ProtectedRoute>
         ),
@@ -218,7 +330,7 @@ const routes = [
           {
             path: 'dashboard',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['hirer', 'admin']}>
                 <RouteErrorBoundary label="Hirer Dashboard">
                   <HirerDashboardPage />
                 </RouteErrorBoundary>
@@ -231,7 +343,7 @@ const routes = [
               {
                 index: true,
                 element: (
-                  <ProtectedRoute>
+                  <ProtectedRoute roles={['hirer', 'admin']}>
                     <JobManagementPage />
                   </ProtectedRoute>
                 ),
@@ -239,7 +351,15 @@ const routes = [
               {
                 path: 'post',
                 element: (
-                  <ProtectedRoute>
+                  <ProtectedRoute roles={['hirer', 'admin']}>
+                    <JobPostingPage />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'edit/:jobId',
+                element: (
+                  <ProtectedRoute roles={['hirer', 'admin']}>
                     <JobPostingPage />
                   </ProtectedRoute>
                 ),
@@ -249,7 +369,7 @@ const routes = [
           {
             path: 'applications',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['hirer', 'admin']}>
                 <ApplicationManagementPage />
               </ProtectedRoute>
             ),
@@ -257,7 +377,7 @@ const routes = [
           {
             path: 'find-talent',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['hirer', 'admin']}>
                 <WorkerSearchPage />
               </ProtectedRoute>
             ),
@@ -265,8 +385,22 @@ const routes = [
           {
             path: 'tools',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['hirer', 'admin']}>
                 <HirerToolsPage />
+              </ProtectedRoute>
+            ),
+          },
+
+          // Payments (linked from Hirer dashboard)
+          {
+            path: 'payments',
+            element: (
+              <ProtectedRoute roles={['hirer', 'admin']}>
+                <RouteErrorBoundary label="Hirer Payments">
+                  <PaymentProvider>
+                    <PaymentsPage />
+                  </PaymentProvider>
+                </RouteErrorBoundary>
               </ProtectedRoute>
             ),
           },
@@ -282,7 +416,7 @@ const routes = [
           {
             path: 'dashboard',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <RouteErrorBoundary label="Worker Dashboard">
                   <WorkerDashboardPage />
                 </RouteErrorBoundary>
@@ -292,7 +426,7 @@ const routes = [
           {
             path: 'find-work',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <JobSearchPage />
               </ProtectedRoute>
             ),
@@ -300,7 +434,7 @@ const routes = [
           {
             path: 'applications',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <MyApplicationsPage />
               </ProtectedRoute>
             ),
@@ -311,7 +445,7 @@ const routes = [
               {
                 index: true,
                 element: (
-                  <ProtectedRoute>
+                  <ProtectedRoute roles={['worker', 'admin']}>
                     <WorkerProfile />
                   </ProtectedRoute>
                 ),
@@ -319,7 +453,7 @@ const routes = [
               {
                 path: 'edit',
                 element: (
-                  <ProtectedRoute>
+                  <ProtectedRoute roles={['worker', 'admin']}>
                     <WorkerProfileEditPage />
                   </ProtectedRoute>
                 ),
@@ -332,7 +466,7 @@ const routes = [
               {
                 index: true,
                 element: (
-                  <ProtectedRoute>
+                  <ProtectedRoute roles={['worker', 'admin']}>
                     <PortfolioPage />
                   </ProtectedRoute>
                 ),
@@ -340,7 +474,7 @@ const routes = [
               {
                 path: 'manage',
                 element: (
-                  <ProtectedRoute>
+                  <ProtectedRoute roles={['worker', 'admin']}>
                     <PortfolioManager />
                   </ProtectedRoute>
                 ),
@@ -353,7 +487,7 @@ const routes = [
               {
                 index: true,
                 element: (
-                  <ProtectedRoute>
+                  <ProtectedRoute roles={['worker', 'admin']}>
                     <SkillsAssessmentPage />
                   </ProtectedRoute>
                 ),
@@ -361,7 +495,7 @@ const routes = [
               {
                 path: 'test/:testId',
                 element: (
-                  <ProtectedRoute>
+                  <ProtectedRoute roles={['worker', 'admin']}>
                     <SkillsAssessmentPage />
                   </ProtectedRoute>
                 ),
@@ -371,7 +505,7 @@ const routes = [
           {
             path: 'certificates',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <CertificateUploader />
               </ProtectedRoute>
             ),
@@ -379,7 +513,7 @@ const routes = [
           {
             path: 'earnings',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <RouteErrorBoundary label="Earnings">
                   <EarningsAnalytics />
                 </RouteErrorBoundary>
@@ -389,7 +523,7 @@ const routes = [
           {
             path: 'availability',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <AvailabilityCalendar />
               </ProtectedRoute>
             ),
@@ -397,7 +531,7 @@ const routes = [
           {
             path: 'schedule',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <SchedulingPage />
               </ProtectedRoute>
             ),
@@ -405,7 +539,7 @@ const routes = [
           {
             path: 'contracts',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <RouteErrorBoundary label="Contracts">
                   <ContractProvider>
                     <ContractManagementPage />
@@ -420,7 +554,7 @@ const routes = [
               {
                 index: true,
                 element: (
-                  <ProtectedRoute>
+                  <ProtectedRoute roles={['worker', 'admin']}>
                     <PaymentProvider>
                       <PaymentCenterPage />
                     </PaymentProvider>
@@ -430,7 +564,7 @@ const routes = [
               {
                 path: 'escrows',
                 element: (
-                  <ProtectedRoute>
+                  <ProtectedRoute roles={['worker', 'admin']}>
                     <PaymentProvider>
                       <EscrowManager />
                     </PaymentProvider>
@@ -442,7 +576,7 @@ const routes = [
           {
             path: 'wallet',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <RouteErrorBoundary label="Wallet">
                   <PaymentProvider>
                     <WalletPage />
@@ -454,7 +588,7 @@ const routes = [
           {
             path: 'reviews',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <WorkerReviewsPage />
               </ProtectedRoute>
             ),
@@ -462,7 +596,7 @@ const routes = [
           {
             path: 'saved-jobs',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <SavedJobs />
               </ProtectedRoute>
             ),
@@ -470,7 +604,7 @@ const routes = [
           {
             path: 'job-alerts',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <JobAlertsPage />
               </ProtectedRoute>
             ),
@@ -487,7 +621,7 @@ const routes = [
           {
             index: true,
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <QuickJobRequestPage />
               </ProtectedRoute>
             ),
@@ -495,7 +629,7 @@ const routes = [
           {
             path: 'request',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <QuickJobRequestPage />
               </ProtectedRoute>
             ),
@@ -503,7 +637,7 @@ const routes = [
           {
             path: 'request/:category',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <QuickJobRequestPage />
               </ProtectedRoute>
             ),
@@ -511,7 +645,7 @@ const routes = [
           {
             path: 'nearby',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <NearbyJobsPage />
               </ProtectedRoute>
             ),
@@ -519,7 +653,7 @@ const routes = [
           {
             path: 'track/:jobId',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <QuickJobTrackingPage />
               </ProtectedRoute>
             ),
@@ -528,12 +662,31 @@ const routes = [
             // Payment callback route for Paystack redirects
             path: 'payment/:jobId',
             element: (
-              <ProtectedRoute>
+              <ProtectedRoute roles={['worker', 'admin']}>
                 <QuickJobTrackingPage />
               </ProtectedRoute>
             ),
           },
         ],
+      },
+
+      // Compatibility aliases for existing QuickJobs module navigation
+      // (module currently navigates to /quick-job/:jobId and /worker/quick-jobs)
+      {
+        path: 'quick-job/:jobId',
+        element: (
+          <ProtectedRoute roles={['worker', 'admin']}>
+            <QuickJobTrackingPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'worker/quick-jobs',
+        element: (
+          <ProtectedRoute roles={['worker', 'admin']}>
+            <NearbyJobsPage />
+          </ProtectedRoute>
+        ),
       },
 
       // ==========================================
@@ -590,6 +743,220 @@ const routes = [
             </RouteErrorBoundary>
           </ProtectedRoute>
         ),
+      },
+
+      // Payment methods (linked from PaymentCenter)
+      {
+        path: 'payment/methods',
+        element: (
+          <ProtectedRoute roles={['worker', 'admin']}>
+            <RouteErrorBoundary label="Payment Methods">
+              <PaymentProvider>
+                <PaymentMethodsPage />
+              </PaymentProvider>
+            </RouteErrorBoundary>
+          </ProtectedRoute>
+        ),
+      },
+
+      // Bills (linked from PaymentsPage menu)
+      {
+        path: 'payment/bill',
+        element: (
+          <ProtectedRoute roles={['worker', 'hirer', 'admin']}>
+            <RouteErrorBoundary label="Bills">
+              <PaymentProvider>
+                <BillPage />
+              </PaymentProvider>
+            </RouteErrorBoundary>
+          </ProtectedRoute>
+        ),
+      },
+
+      // Payment settings (admin/worker)
+      {
+        path: 'payment/settings',
+        element: (
+          <ProtectedRoute roles={['admin']}>
+            <RouteErrorBoundary label="Payment Settings">
+              <PaymentProvider>
+                <PaymentSettingsPage />
+              </PaymentProvider>
+            </RouteErrorBoundary>
+          </ProtectedRoute>
+        ),
+      },
+
+      // Escrow details (linked from PaymentCenter escrow items)
+      {
+        path: 'payment/escrow/:escrowId',
+        element: (
+          <ProtectedRoute roles={['worker', 'hirer', 'admin']}>
+            <RouteErrorBoundary label="Escrow Details">
+              <PaymentProvider>
+                <EscrowDetailsPage />
+              </PaymentProvider>
+            </RouteErrorBoundary>
+          </ProtectedRoute>
+        ),
+      },
+
+      // ==========================================
+      // CONTRACTS – TOP-LEVEL ALIASES
+      // (ContractManagementPage, PaymentCenter, etc. link here)
+      // ==========================================
+      {
+        path: 'contracts',
+        children: [
+          {
+            index: true,
+            element: (
+              <ProtectedRoute roles={['worker', 'hirer', 'admin']}>
+                <RouteErrorBoundary label="Contracts">
+                  <ContractProvider>
+                    <ContractsPage />
+                  </ContractProvider>
+                </RouteErrorBoundary>
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'create',
+            element: (
+              <ProtectedRoute roles={['hirer', 'admin']}>
+                <RouteErrorBoundary label="Create Contract">
+                  <ContractProvider>
+                    <CreateContractPage />
+                  </ContractProvider>
+                </RouteErrorBoundary>
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: ':id',
+            element: (
+              <ProtectedRoute roles={['worker', 'hirer', 'admin']}>
+                <RouteErrorBoundary label="Contract Details">
+                  <ContractProvider>
+                    <ContractDetailsPage />
+                  </ContractProvider>
+                </RouteErrorBoundary>
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: ':id/edit',
+            element: (
+              <ProtectedRoute roles={['hirer', 'admin']}>
+                <RouteErrorBoundary label="Edit Contract">
+                  <ContractProvider>
+                    <EditContractPage />
+                  </ContractProvider>
+                </RouteErrorBoundary>
+              </ProtectedRoute>
+            ),
+          },
+        ],
+      },
+
+      // ==========================================
+      // REVIEWS – TOP-LEVEL
+      // ==========================================
+      {
+        path: 'reviews',
+        element: (
+          <ProtectedRoute>
+            <RouteErrorBoundary label="Reviews">
+              <ReviewsPage />
+            </RouteErrorBoundary>
+          </ProtectedRoute>
+        ),
+      },
+
+      // ==========================================
+      // PREMIUM
+      // ==========================================
+      {
+        path: 'premium',
+        element: (
+          <ProtectedRoute>
+            <RouteErrorBoundary label="Premium">
+              <PremiumPage />
+            </RouteErrorBoundary>
+          </ProtectedRoute>
+        ),
+      },
+
+      // ==========================================
+      // PROFILE ALIASES
+      // ==========================================
+      // /profile/upload-cv → redirect to worker profile edit (JobsPage CTA)
+      {
+        path: 'profile/upload-cv',
+        element: (
+          <ProtectedRoute roles={['worker', 'admin']}>
+            <WorkerProfileEditPage />
+          </ProtectedRoute>
+        ),
+      },
+
+      // ==========================================
+      // SUPPORT ALIASES (docs / community)
+      // ==========================================
+      {
+        path: 'docs',
+        element: <HelpCenterPage />,
+      },
+      {
+        path: 'community',
+        element: <HelpCenterPage />,
+      },
+
+      // ==========================================
+      // SCHEDULING ALIASES
+      // ==========================================
+      {
+        path: 'schedule',
+        element: (
+          <ProtectedRoute>
+            <SchedulingPage />
+          </ProtectedRoute>
+        ),
+      },
+
+      // ==========================================
+      // ADMIN ROUTES
+      // ==========================================
+      {
+        path: 'admin',
+        children: [
+          {
+            path: 'skills-management',
+            element: (
+              <ProtectedRoute roles={['admin']}>
+                <RouteErrorBoundary label="Skills Management">
+                  <SkillsAssessmentManagement />
+                </RouteErrorBoundary>
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'payouts',
+            element: (
+              <ProtectedRoute roles={['admin']}>
+                <RouteErrorBoundary label="Payout Queue">
+                  <PayoutQueuePage />
+                </RouteErrorBoundary>
+              </ProtectedRoute>
+            ),
+          },
+        ],
+      },
+
+      // Auth aliases (some external links use /auth/login)
+      {
+        path: 'auth/login',
+        element: <LoginPage />,
       },
 
       // Catch-all 404

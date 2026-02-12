@@ -38,7 +38,6 @@ const MfaSetupPage = () => {
     }
   };
 
-  return (
   const mfaContent = (
       <Box
         sx={{ width: '100%', maxWidth: 400, mx: 'auto', textAlign: 'center' }}

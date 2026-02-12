@@ -12,13 +12,18 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
-import { useSettings } from '../../hooks/useSettings';
+import PropTypes from 'prop-types';
 
-const NotificationSettings = () => {
-  const { settings, loading, updateNotificationPreferences } = useSettings();
+const NotificationSettings = ({
+  settings,
+  loading,
+  updateNotificationPreferences,
+}) => {
   const [localSettings, setLocalSettings] = useState({
     email: false,
-    realtime: false,
+    push: false,
+    sms: false,
+    inApp: true,
   });
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -28,7 +33,10 @@ const NotificationSettings = () => {
 
   useEffect(() => {
     if (settings?.notifications) {
-      setLocalSettings(settings.notifications);
+      setLocalSettings((prev) => ({
+        ...prev,
+        ...settings.notifications,
+      }));
     }
   }, [settings]);
 
@@ -81,12 +89,32 @@ const NotificationSettings = () => {
         <FormControlLabel
           control={
             <Switch
-              checked={Boolean(localSettings.realtime)}
+              checked={Boolean(localSettings.push)}
               onChange={handleChange}
-              name="realtime"
+              name="push"
             />
           }
           label="Push Notifications"
+        />
+        <FormControlLabel
+          control={
+            <Switch
+              checked={Boolean(localSettings.inApp)}
+              onChange={handleChange}
+              name="inApp"
+            />
+          }
+          label="In-App Notifications"
+        />
+        <FormControlLabel
+          control={
+            <Switch
+              checked={Boolean(localSettings.sms)}
+              onChange={handleChange}
+              name="sms"
+            />
+          }
+          label="SMS Notifications"
         />
       </FormGroup>
       <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
@@ -109,6 +137,17 @@ const NotificationSettings = () => {
       </Snackbar>
     </Paper>
   );
+};
+
+NotificationSettings.propTypes = {
+  settings: PropTypes.object,
+  loading: PropTypes.bool,
+  updateNotificationPreferences: PropTypes.func.isRequired,
+};
+
+NotificationSettings.defaultProps = {
+  settings: null,
+  loading: false,
 };
 
 export default NotificationSettings;

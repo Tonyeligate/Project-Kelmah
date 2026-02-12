@@ -57,16 +57,27 @@ const validatePayment = (req, res, next) => {
 
 /**
  * Validate webhook requests
+ *
+ * NOTE: The primary Stripe / Paystack / QuickJobs webhook routes are now
+ * mounted BEFORE the body parser in server.js so that raw bytes are
+ * preserved for HMAC signature verification.  This middleware is kept as
+ * a fallback validator for any other webhook traffic that still flows
+ * through the generic /api/webhooks mount.
  */
 const validateWebhook = (req, res, next) => {
-  const signature = req.headers['x-webhook-signature'] || req.headers['x-signature'];
+  // Check provider-specific signature headers first, then generic ones
+  const signature =
+    req.headers['stripe-signature'] ||
+    req.headers['x-paystack-signature'] ||
+    req.headers['x-webhook-signature'] ||
+    req.headers['x-signature'];
   const timestamp = req.headers['x-webhook-timestamp'] || req.headers['timestamp'];
-  
+
   // Allow webhooks without signature in development
   if (process.env.NODE_ENV === 'development' && !signature) {
     return next();
   }
-  
+
   if (!signature) {
     return res.status(401).json({
       success: false,
@@ -74,12 +85,13 @@ const validateWebhook = (req, res, next) => {
       code: 'MISSING_SIGNATURE'
     });
   }
-  
-  // Validate timestamp to prevent replay attacks
+
+  // Validate timestamp to prevent replay attacks (generic webhooks only;
+  // Stripe and Paystack use their own timestamp mechanisms inside their SDKs)
   if (timestamp) {
     const now = Math.floor(Date.now() / 1000);
     const webhookTime = parseInt(timestamp);
-    
+
     if (Math.abs(now - webhookTime) > 300) { // 5 minutes tolerance
       return res.status(401).json({
         success: false,
@@ -88,10 +100,12 @@ const validateWebhook = (req, res, next) => {
       });
     }
   }
-  
-  // Store raw body for signature verification
-  req.rawBody = JSON.stringify(req.body);
-  
+
+  // NOTE: Do NOT set req.rawBody = JSON.stringify(req.body) here.
+  // Re-serialising a parsed object produces different bytes than the
+  // original payload, which breaks HMAC signature verification.
+  // The raw-body routes mounted before the body parser handle this.
+
   next();
 };
 

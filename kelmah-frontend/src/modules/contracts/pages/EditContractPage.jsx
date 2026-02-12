@@ -8,7 +8,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { Link as RouterLink, useParams } from 'react-router-dom';
-import ContractForm from '../../../components/contracts/ContractForm';
+import ContractForm from '../components/common/ContractForm';
 
 const EditContractPage = () => {
   const { id } = useParams();

@@ -22,7 +22,7 @@ const initialState = {
   typingIndicators: {},
 
   // User presence
-  onlineUsers: new Set(),
+  onlineUsers: [],
   userStatuses: {},
 
   // Connection status
@@ -209,7 +209,9 @@ const notificationSlice = createSlice({
 
       switch (type) {
         case 'online':
-          state.onlineUsers.add(userId);
+          if (!state.onlineUsers.includes(userId)) {
+            state.onlineUsers.push(userId);
+          }
           state.userStatuses[userId] = {
             status: 'online',
             lastSeen: new Date().toISOString(),
@@ -217,7 +219,7 @@ const notificationSlice = createSlice({
           break;
 
         case 'offline':
-          state.onlineUsers.delete(userId);
+          state.onlineUsers = state.onlineUsers.filter(id => id !== userId);
           state.userStatuses[userId] = {
             status: 'offline',
             lastSeen: new Date().toISOString(),
@@ -225,9 +227,9 @@ const notificationSlice = createSlice({
           break;
 
         case 'bulk':
-          state.onlineUsers = new Set(users);
-          users.forEach((userId) => {
-            state.userStatuses[userId] = {
+          state.onlineUsers = [...new Set(users)];
+          users.forEach((uid) => {
+            state.userStatuses[uid] = {
               status: 'online',
               lastSeen: new Date().toISOString(),
             };
@@ -249,9 +251,11 @@ const notificationSlice = createSlice({
       };
 
       if (status === 'online') {
-        state.onlineUsers.add(userId);
+        if (!state.onlineUsers.includes(userId)) {
+          state.onlineUsers.push(userId);
+        }
       } else {
-        state.onlineUsers.delete(userId);
+        state.onlineUsers = state.onlineUsers.filter(id => id !== userId);
       }
     },
 
@@ -425,7 +429,7 @@ export const selectConversations = (state) => state.notifications.conversations;
 export const selectUnreadMessages = (state) =>
   state.notifications.unreadMessages;
 export const selectOnlineUsers = (state) =>
-  Array.from(state.notifications.onlineUsers);
+  state.notifications.onlineUsers;
 export const selectUserStatuses = (state) => state.notifications.userStatuses;
 export const selectTypingIndicators = (state) =>
   state.notifications.typingIndicators;
@@ -451,7 +455,7 @@ export const selectTotalUnreadMessages = (state) =>
   );
 
 export const selectIsUserOnline = (userId) => (state) =>
-  state.notifications.onlineUsers.has(userId);
+  state.notifications.onlineUsers.includes(userId);
 
 export const selectUserStatus = (userId) => (state) =>
   state.notifications.userStatuses[userId] || {

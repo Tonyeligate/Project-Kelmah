@@ -5,6 +5,61 @@
 
 import { api } from '../../../services/apiClient';
 
+const normalizePaymentMethod = (raw) => {
+  if (!raw || typeof raw !== 'object') return null;
+
+  const id = raw.id || raw._id || raw.paymentMethodId;
+  const type = raw.type || raw.methodType;
+  const isDefault = Boolean(raw.isDefault);
+
+  let icon = raw.icon;
+  if (!icon) {
+    if (type === 'bank_account' || type === 'bank') icon = 'bank';
+    else if (type === 'mobile_money' || type === 'mobile') icon = 'mobile';
+    else icon = 'credit';
+  }
+
+  let name = raw.name;
+  if (!name) {
+    if (type === 'credit_card') name = 'Card';
+    else if (type === 'bank_account') name = 'Bank Account';
+    else if (type === 'paypal') name = 'PayPal';
+    else if (type === 'mobile_money') name = 'Mobile Money';
+    else name = 'Payment Method';
+  }
+
+  const displayValue =
+    raw.cardNumber ||
+    raw.phoneNumber ||
+    raw.accountNumber ||
+    raw.email ||
+    raw.displayValue ||
+    raw.masked ||
+    raw.last4 ||
+    '';
+
+  return {
+    ...raw,
+    id,
+    type,
+    icon,
+    name,
+    isDefault,
+    displayValue,
+  };
+};
+
+const normalizePaymentMethodsResponse = (payload) => {
+  const list = Array.isArray(payload)
+    ? payload
+    : payload?.data && Array.isArray(payload.data)
+      ? payload.data
+      : payload?.paymentMethods && Array.isArray(payload.paymentMethods)
+        ? payload.paymentMethods
+        : [];
+  return list.map(normalizePaymentMethod).filter(Boolean);
+};
+
 const paymentService = {
   // Wallet operations
   getWallet: async () => {
@@ -14,50 +69,20 @@ const paymentService = {
       return data;
     } catch (error) {
       console.warn('Wallet service unavailable:', error.message);
-      // Return comprehensive mock wallet data
+      // Return empty wallet state — do NOT show fake balances
       return {
-        id: 'wallet_mock_1',
-        userId: '6892b90b66a1e818f0c46161',
+        id: null,
+        userId: null,
         balance: {
-          total: 2540.5,
-          available: 2340.5,
-          pending: 200.0,
+          total: 0,
+          available: 0,
+          pending: 0,
           currency: 'GHS',
         },
-        accounts: [
-          {
-            id: 'acc_1',
-            type: 'earnings',
-            balance: 1840.5,
-            currency: 'GHS',
-            name: 'Job Earnings',
-          },
-          {
-            id: 'acc_2',
-            type: 'escrow',
-            balance: 500.0,
-            currency: 'GHS',
-            name: 'Escrow Balance',
-          },
-          {
-            id: 'acc_3',
-            type: 'bonus',
-            balance: 200.0,
-            currency: 'GHS',
-            name: 'Performance Bonus',
-          },
-        ],
-        recentActivity: [
-          {
-            id: 'activity_1',
-            type: 'payment_received',
-            amount: 800.0,
-            description: 'Payment for Plumbing Job #PL-2024-001',
-            date: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
-            status: 'completed',
-          },
-        ],
-        lastUpdated: new Date().toISOString(),
+        accounts: [],
+        recentActivity: [],
+        lastUpdated: null,
+        _serviceUnavailable: true,
       };
     }
   },
@@ -65,17 +90,18 @@ const paymentService = {
   // Payment methods
   getPaymentMethods: async () => {
     const { data } = await api.get('/payments/methods');
-    return data;
+    return normalizePaymentMethodsResponse(data);
   },
 
   addPaymentMethod: async (methodData) => {
     const { data } = await api.post('/payments/methods', methodData);
-    return data;
+    const created = data?.data || data;
+    return normalizePaymentMethod(created);
   },
 
   setDefaultPaymentMethod: async (methodId) => {
     const { data } = await api.put(`/payments/methods/${methodId}/default`);
-    return data;
+    return data?.data ? normalizePaymentMethod(data.data) : data;
   },
 
   deletePaymentMethod: async (methodId) => {
@@ -121,84 +147,8 @@ const paymentService = {
       return data;
     } catch (error) {
       console.warn('Escrow service unavailable:', error.message);
-      // Return comprehensive mock escrow data
-      return [
-        {
-          id: 'escrow_1',
-          jobId: 'job_1',
-          jobTitle: 'Residential Plumbing Repair',
-          amount: 1200.0,
-          currency: 'GHS',
-          status: 'active',
-          createdDate: new Date(
-            Date.now() - 1000 * 60 * 60 * 24 * 2,
-          ).toISOString(), // 2 days ago
-          releaseDate: null,
-          disputeDate: null,
-          worker: {
-            id: '6892b90b66a1e818f0c46161',
-            name: 'Kwaku Osei',
-          },
-          client: {
-            id: 'client_1',
-            name: 'Sarah Johnson',
-          },
-          milestones: [
-            {
-              id: 'milestone_1',
-              description: 'Initial assessment and pipe repair',
-              amount: 600.0,
-              status: 'completed',
-              completedDate: new Date(
-                Date.now() - 1000 * 60 * 60 * 24,
-              ).toISOString(),
-            },
-            {
-              id: 'milestone_2',
-              description: 'Fixture installation and final testing',
-              amount: 600.0,
-              status: 'pending',
-              dueDate: new Date(
-                Date.now() + 1000 * 60 * 60 * 24 * 2,
-              ).toISOString(),
-            },
-          ],
-        },
-        {
-          id: 'escrow_2',
-          jobId: 'job_2',
-          jobTitle: 'Electrical Installation',
-          amount: 2500.0,
-          currency: 'GHS',
-          status: 'completed',
-          createdDate: new Date(
-            Date.now() - 1000 * 60 * 60 * 24 * 7,
-          ).toISOString(), // 1 week ago
-          releaseDate: new Date(
-            Date.now() - 1000 * 60 * 60 * 24 * 2,
-          ).toISOString(), // 2 days ago
-          disputeDate: null,
-          worker: {
-            id: '6892b90b66a1e818f0c46161',
-            name: 'Kwaku Osei',
-          },
-          client: {
-            id: 'client_2',
-            name: 'TechCorp Ghana',
-          },
-          milestones: [
-            {
-              id: 'milestone_3',
-              description: 'Complete electrical setup',
-              amount: 2500.0,
-              status: 'completed',
-              completedDate: new Date(
-                Date.now() - 1000 * 60 * 60 * 24 * 2,
-              ).toISOString(),
-            },
-          ],
-        },
-      ];
+      // Return empty array — do NOT show fake escrow data
+      return [];
     }
   },
 

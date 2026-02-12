@@ -74,6 +74,19 @@ export const createHirerJob = createAsyncThunk(
   },
 );
 
+export const updateHirerJob = createAsyncThunk(
+  'hirer/updateJob',
+  async ({ jobId, updates }) => {
+    try {
+      const response = await api.put(`/jobs/${jobId}`, updates);
+      return response.data.data || response.data;
+    } catch (error) {
+      console.warn('Job service unavailable for job update:', error.message);
+      throw error;
+    }
+  },
+);
+
 export const updateHirerProfile = createAsyncThunk(
   'hirer/updateProfile',
   async (profileData) => {
@@ -452,6 +465,43 @@ const hirerSlice = createSlice({
       .addCase(createHirerJob.rejected, (state, action) => {
         state.loading.jobs = false;
         state.error.jobs = action.payload || 'Failed to create job';
+      })
+
+      // Update Hirer Job
+      .addCase(updateHirerJob.pending, (state) => {
+        state.loading.jobs = true;
+        state.error.jobs = null;
+      })
+      .addCase(updateHirerJob.fulfilled, (state, action) => {
+        state.loading.jobs = false;
+        const updatedJob = action.payload?.data || action.payload;
+        const updatedId = updatedJob?.id;
+        if (!updatedJob || !updatedId) {
+          return;
+        }
+
+        let placed = false;
+        Object.keys(state.jobs).forEach((status) => {
+          const idx = state.jobs[status].findIndex((j) => j.id === updatedId);
+          if (idx !== -1) {
+            state.jobs[status][idx] = {
+              ...state.jobs[status][idx],
+              ...updatedJob,
+            };
+            placed = true;
+          }
+        });
+
+        if (!placed) {
+          const target = updatedJob.status && state.jobs[updatedJob.status]
+            ? updatedJob.status
+            : 'draft';
+          state.jobs[target].unshift(updatedJob);
+        }
+      })
+      .addCase(updateHirerJob.rejected, (state, action) => {
+        state.loading.jobs = false;
+        state.error.jobs = action.payload || 'Failed to update job';
       })
 
       // Update Job Status

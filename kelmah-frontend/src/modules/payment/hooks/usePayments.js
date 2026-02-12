@@ -102,7 +102,7 @@ export const usePayments = () => {
       try {
         dispatch(setLoading(true));
         const payment = await paymentService.createPayment(paymentData);
-        dispatch(setPayments((prev) => [...prev, payment]));
+        dispatch(setPayments([payment]));
         return payment;
       } catch (error) {
         dispatch(setError(error.message));

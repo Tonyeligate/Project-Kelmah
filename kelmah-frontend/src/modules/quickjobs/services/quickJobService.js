@@ -3,9 +3,9 @@
  * Frontend API service for quick job operations
  */
 
-import api from '../../../services/apiClient';
+import { api } from '../../../services/apiClient';
 
-const API_BASE = '/api/quick-jobs';
+const API_BASE = '/quick-jobs';
 
 /**
  * Service categories available for quick jobs

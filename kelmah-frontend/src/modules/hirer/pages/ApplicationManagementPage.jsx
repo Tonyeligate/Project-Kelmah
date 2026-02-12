@@ -38,10 +38,29 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
 import { hirerService } from '../services/hirerService';
 import { useSelector } from 'react-redux';
-import { selectHirerJobs } from '../services/hirerSlice';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../../auth/hooks/useAuth';
 import { messagingService } from '../../messaging/services/messagingService';
+
+const normalizeApplication = (raw, jobIdFallback) => {
+  const worker = raw?.worker || {};
+  const workerName =
+    raw?.workerName ||
+    worker?.name ||
+    [worker?.firstName, worker?.lastName].filter(Boolean).join(' ').trim() ||
+    'Worker';
+
+  return {
+    ...raw,
+    id: raw?.id || raw?._id,
+    jobId: raw?.jobId || raw?.job || jobIdFallback,
+    workerId: raw?.workerId || worker?.id || worker?._id,
+    workerName,
+    workerAvatar: raw?.workerAvatar || worker?.avatar || worker?.profileImage,
+    workerRating: Number(raw?.workerRating ?? worker?.rating ?? 0),
+    coverLetter: raw?.coverLetter || raw?.coverLetterPreview || '',
+  };
+};
 
 const ApplicationCard = ({ application, isSelected, onSelect }) => {
   const theme = useTheme();
@@ -85,7 +104,16 @@ function ApplicationManagementPage() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const { user, token } = useAuth();
-  const activeJobs = useSelector((state) => state.hirer.jobs.active);
+  const jobsByStatus = useSelector((state) => state.hirer?.jobs);
+  const jobsForApplications = React.useMemo(() => {
+    const all = Object.values(jobsByStatus || {}).flatMap((v) =>
+      Array.isArray(v) ? v : [],
+    );
+    const filtered = all.filter((j) =>
+      ['open', 'in-progress', 'active'].includes(String(j?.status || '')),
+    );
+    return filtered.length ? filtered : all;
+  }, [jobsByStatus]);
   const [activeTab, setActiveTab] = useState('pending');
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -99,12 +127,22 @@ function ApplicationManagementPage() {
   useEffect(() => {
     const fetchAllApplications = async () => {
       setLoading(true);
-      if (activeJobs && Array.isArray(activeJobs) && activeJobs.length > 0) {
+      if (
+        jobsForApplications &&
+        Array.isArray(jobsForApplications) &&
+        jobsForApplications.length > 0
+      ) {
         try {
           const allApplications = await Promise.all(
-            activeJobs.map((job) =>
-              hirerService.getJobApplications(job.id, activeTab),
-            ),
+            jobsForApplications.map(async (job) => {
+              const list = await hirerService.getJobApplications(
+                job.id,
+                activeTab,
+              );
+              return (Array.isArray(list) ? list : []).map((app) =>
+                normalizeApplication(app, job.id),
+              );
+            }),
           );
           const flattenedApplications = allApplications.flat();
           setApplications(flattenedApplications);
@@ -123,7 +161,7 @@ function ApplicationManagementPage() {
       setLoading(false);
     };
     fetchAllApplications();
-  }, [activeTab, activeJobs]);
+  }, [activeTab, jobsForApplications]);
 
   const handleStatusUpdate = async () => {
     if (!selectedApplication) return;
@@ -160,12 +198,24 @@ function ApplicationManagementPage() {
   // Handler to start or navigate to direct chat with selected applicant
   const handleMessage = async () => {
     if (!selectedApplication) return;
-    messagingService.initialize(user.id, token);
     try {
       const conv = await messagingService.createDirectConversation(
         selectedApplication.workerId,
       );
-      navigate(`/messages/${conv.id}`);
+      const conversationId =
+        conv?.id ||
+        conv?._id ||
+        conv?.data?.id ||
+        conv?.data?._id ||
+        conv?.conversation?.id ||
+        conv?.conversation?._id;
+
+      if (conversationId) {
+        navigate(`/messages?conversation=${conversationId}`);
+        return;
+      }
+
+      setError('Unable to start chat. Please try again later.');
     } catch (err) {
       console.error('Error creating direct conversation:', err);
       setError('Unable to start chat. Please try again later.');

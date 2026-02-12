@@ -37,7 +37,7 @@ class ChatService {
   async getMessages(conversationId, page = 1, limit = 20) {
     try {
       const response = await api.get(
-        `/messaging/messages/conversations/${conversationId}/messages`,
+        `/messaging/conversations/${conversationId}/messages`,
         { params: { page, limit } },
       );
       return response.data.data;

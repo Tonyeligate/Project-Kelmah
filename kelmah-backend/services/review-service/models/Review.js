@@ -33,11 +33,70 @@ const ReviewSchema = new Schema(
       trim: true,
       default: "",
     },
+    jobCategory: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected', 'flagged'],
+      default: 'approved',
+    },
+    response: {
+      comment: {
+        type: String,
+        trim: true,
+      },
+      timestamp: {
+        type: Date,
+      },
+      workerId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    },
+    reportCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    moderationNotes: [
+      {
+        note: {
+          type: String,
+          trim: true,
+          default: '',
+        },
+        moderatorId: {
+          type: Schema.Types.ObjectId,
+          ref: 'User',
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    helpfulVoters: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   {
     timestamps: true,
   },
 );
+
+// Virtual for helpful votes count
+ReviewSchema.virtual('helpfulVotes').get(function () {
+  return this.helpfulVoters ? this.helpfulVoters.length : 0;
+});
+
+ReviewSchema.set('toJSON', { virtuals: true });
+ReviewSchema.set('toObject', { virtuals: true });
 
 // Index for fast lookup
 ReviewSchema.index({ reviewee: 1 });

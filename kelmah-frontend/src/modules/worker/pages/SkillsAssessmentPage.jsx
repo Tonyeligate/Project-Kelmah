@@ -281,6 +281,7 @@ const SkillsAssessmentPage = () => {
         setAssessmentInProgress(false);
         setTestStarted(false);
         setTimerActive(false);
+        setPaused(false);
         setTimeRemaining((test.duration || 30) * 60);
       } catch (err) {
         console.error('Failed to load test details', err);
@@ -298,6 +299,7 @@ const SkillsAssessmentPage = () => {
     setAssessmentInProgress(false);
     setTestStarted(false);
     setTimerActive(false);
+    setPaused(false);
     setStartTestDialog(true);
     setTimeRemaining((test.duration || 30) * 60);
   };
@@ -323,6 +325,7 @@ const SkillsAssessmentPage = () => {
     setAssessmentInProgress(true);
     setTestStarted(true);
     setTimerActive(true);
+    setPaused(false);
     setCurrentQuestion(0);
     setAnswers({});
     setTimeRemaining((currentTest.duration || 30) * 60);
@@ -367,6 +370,7 @@ const SkillsAssessmentPage = () => {
     setAssessmentInProgress(false);
     setTestStarted(false);
     setTimerActive(false);
+    setPaused(false);
     setCurrentTest(null);
     navigate('/worker/skills');
   };
@@ -415,6 +419,7 @@ const SkillsAssessmentPage = () => {
       setResultsDialog(true);
       setAssessmentInProgress(false);
       setTestStarted(false);
+      setPaused(false);
 
       // Update completed tests
       setCompletedTests((prev) => [

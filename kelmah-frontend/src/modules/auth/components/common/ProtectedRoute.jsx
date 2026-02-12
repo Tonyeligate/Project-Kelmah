@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { hasRole as userHasRole } from '../../../../utils/userUtils';
@@ -17,6 +17,7 @@ const ProtectedRoute = ({
   children,
   loading = false,
 }) => {
+  const location = useLocation();
   // Use ONLY Redux auth state - removed dual AuthContext/Redux conflicts
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
@@ -49,7 +50,16 @@ const ProtectedRoute = ({
 
   // Redirect if not authenticated or not authorized
   if (!computedAllowance) {
-    return <Navigate to={redirectPath} replace />;
+    return (
+      <Navigate
+        to={redirectPath}
+        replace
+        state={{
+          from: `${location.pathname || '/'}${location.search || ''}`,
+          message: 'Please sign in to continue.',
+        }}
+      />
+    );
   }
 
   // Render the protected content

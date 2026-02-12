@@ -469,6 +469,213 @@ const createContractDispute = async (req, res, next) => {
 };
 
 /**
+ * Update a contract (hirer or worker on contract)
+ * @route PUT /api/jobs/contracts/:id
+ * @access Private
+ */
+const updateContract = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+    const contract = await Contract.findById(id);
+    if (!contract) return errorResponse(res, 404, 'Contract not found');
+    if (String(contract.hirer) !== String(userId) && String(contract.worker) !== String(userId)) {
+      return errorResponse(res, 403, 'Only contract parties can update this contract');
+    }
+
+    // Allowed fields for update
+    const allowedFields = ['title', 'description', 'startDate', 'endDate', 'value', 'paymentTerms', 'deliverables', 'termsAndConditions'];
+    const update = {};
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) update[field] = req.body[field];
+    }
+
+    const updated = await Contract.findByIdAndUpdate(id, { $set: update }, { new: true })
+      .populate('job', 'title category')
+      .populate('hirer', 'firstName lastName')
+      .populate('worker', 'firstName lastName');
+
+    return successResponse(res, 200, 'Contract updated', updated);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Approve a milestone in a contract (hirer only)
+ * @route PUT /api/jobs/contracts/:contractId/milestones/:milestoneId/approve
+ * @access Private (Hirer)
+ */
+const approveMilestone = async (req, res, next) => {
+  try {
+    const { contractId, milestoneId } = req.params;
+    const userId = req.user?.id;
+    const contract = await Contract.findById(contractId);
+    if (!contract) return errorResponse(res, 404, 'Contract not found');
+    if (String(contract.hirer) !== String(userId)) {
+      return errorResponse(res, 403, 'Only the hirer can approve milestones');
+    }
+
+    const milestone = contract.milestones.id(milestoneId);
+    if (!milestone) return errorResponse(res, 404, 'Milestone not found');
+    if (milestone.status !== 'completed') {
+      return errorResponse(res, 400, 'Milestone must be in "completed" status before approval');
+    }
+
+    milestone.status = 'approved';
+    milestone.completionDate = new Date();
+    await contract.save();
+
+    return successResponse(res, 200, 'Milestone approved', contract);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ==================== Milestone CRUD ====================
+
+/**
+ * Get milestones for a contract
+ * @route GET /api/milestones/contract/:contractId
+ * @access Private
+ */
+const getContractMilestones = async (req, res, next) => {
+  try {
+    const contract = await Contract.findById(req.params.contractId).lean();
+    if (!contract) return errorResponse(res, 404, 'Contract not found');
+    return successResponse(res, 200, 'Milestones retrieved', contract.milestones || []);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get a single milestone
+ * @route GET /api/milestones/:milestoneId
+ * @access Private
+ */
+const getMilestoneById = async (req, res, next) => {
+  try {
+    const contracts = await Contract.find({ 'milestones._id': req.params.milestoneId }).lean();
+    if (!contracts.length) return errorResponse(res, 404, 'Milestone not found');
+    const contract = contracts[0];
+    const milestone = contract.milestones.find(m => String(m._id) === req.params.milestoneId);
+    return successResponse(res, 200, 'Milestone retrieved', { ...milestone, contractId: contract._id });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Create a milestone for a contract
+ * @route POST /api/milestones/contract/:contractId
+ * @access Private (contract parties)
+ */
+const createMilestone = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    const contract = await Contract.findById(req.params.contractId);
+    if (!contract) return errorResponse(res, 404, 'Contract not found');
+    if (String(contract.hirer) !== String(userId) && String(contract.worker) !== String(userId)) {
+      return errorResponse(res, 403, 'Only contract parties can add milestones');
+    }
+
+    const { title, description, amount, dueDate } = req.body;
+    if (!title) return errorResponse(res, 400, 'Milestone title is required');
+
+    contract.milestones.push({ title, description, amount, dueDate, status: 'pending' });
+    await contract.save();
+
+    const newMilestone = contract.milestones[contract.milestones.length - 1];
+    return successResponse(res, 201, 'Milestone created', newMilestone);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Update a milestone
+ * @route PUT /api/milestones/:milestoneId
+ * @access Private (contract parties)
+ */
+const updateMilestone = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    const contracts = await Contract.find({ 'milestones._id': req.params.milestoneId });
+    if (!contracts.length) return errorResponse(res, 404, 'Milestone not found');
+    const contract = contracts[0];
+    if (String(contract.hirer) !== String(userId) && String(contract.worker) !== String(userId)) {
+      return errorResponse(res, 403, 'Only contract parties can update milestones');
+    }
+
+    const milestone = contract.milestones.id(req.params.milestoneId);
+    const { title, description, amount, dueDate, status } = req.body;
+    if (title) milestone.title = title;
+    if (description) milestone.description = description;
+    if (amount !== undefined) milestone.amount = amount;
+    if (dueDate) milestone.dueDate = dueDate;
+    if (status) milestone.status = status;
+
+    await contract.save();
+    return successResponse(res, 200, 'Milestone updated', milestone);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Delete a milestone
+ * @route DELETE /api/milestones/:milestoneId
+ * @access Private (contract parties)
+ */
+const deleteMilestone = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    const contracts = await Contract.find({ 'milestones._id': req.params.milestoneId });
+    if (!contracts.length) return errorResponse(res, 404, 'Milestone not found');
+    const contract = contracts[0];
+    if (String(contract.hirer) !== String(userId) && String(contract.worker) !== String(userId)) {
+      return errorResponse(res, 403, 'Only contract parties can delete milestones');
+    }
+
+    contract.milestones.pull({ _id: req.params.milestoneId });
+    await contract.save();
+    return successResponse(res, 200, 'Milestone deleted');
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Mark a milestone as paid
+ * @route PATCH /api/milestones/:milestoneId/pay
+ * @access Private (hirer only)
+ */
+const payMilestone = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    const contracts = await Contract.find({ 'milestones._id': req.params.milestoneId });
+    if (!contracts.length) return errorResponse(res, 404, 'Milestone not found');
+    const contract = contracts[0];
+    if (String(contract.hirer) !== String(userId)) {
+      return errorResponse(res, 403, 'Only the hirer can pay milestones');
+    }
+
+    const milestone = contract.milestones.id(req.params.milestoneId);
+    if (milestone.status !== 'approved') {
+      return errorResponse(res, 400, 'Milestone must be approved before payment');
+    }
+
+    milestone.status = 'paid';
+    milestone.paymentDate = new Date();
+    await contract.save();
+    return successResponse(res, 200, 'Milestone marked as paid', milestone);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Get search suggestions for job queries
  * @route GET /api/jobs/suggestions
  * @access Public
@@ -2907,6 +3114,15 @@ module.exports = {
   getContracts,
   getContractById,
   createContractDispute,
+  updateContract,
+  approveMilestone,
+  // Milestone CRUD
+  getContractMilestones,
+  getMilestoneById,
+  createMilestone,
+  updateMilestone,
+  deleteMilestone,
+  payMilestone,
   getJobRecommendations,
   getWorkerMatches,
   advancedJobSearch,

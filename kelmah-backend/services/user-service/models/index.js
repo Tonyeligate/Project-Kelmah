@@ -14,6 +14,7 @@ const Certificate = require('./Certificate');
 const Availability = require('./Availability');
 const Bookmark = require('./Bookmark');
 const Portfolio = require('./Portfolio');
+const Settings = require('./Settings');
 
 // Skill models are deprecated - skills are now embedded in User/WorkerProfile
 const Skill = null;
@@ -36,5 +37,6 @@ module.exports = {
   WorkerSkill,
   Availability,
   Bookmark,
+  Settings,
   loadModels
 };

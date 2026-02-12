@@ -3,12 +3,15 @@ const router = express.Router();
 const reviewController = require('../controllers/review.controller');
 const ratingController = require('../controllers/rating.controller');
 const analyticsController = require('../controllers/analytics.controller');
-const { verifyGatewayRequest, optionalGatewayVerification } = require('../../../shared/middlewares/serviceTrust');
+const { verifyGatewayRequest } = require('../../../shared/middlewares/serviceTrust');
 
 // ==================== REVIEW ROUTES ====================
 
 // Submit a new review (authenticated)
 router.post('/', verifyGatewayRequest, reviewController.submitReview);
+
+// Check review eligibility for a worker (authenticated) — must be before /worker/:workerId
+router.get('/worker/:workerId/eligibility', verifyGatewayRequest, reviewController.checkEligibility);
 
 // Get reviews for a specific worker (public)
 router.get('/worker/:workerId', reviewController.getWorkerReviews);
@@ -18,6 +21,9 @@ router.get('/job/:jobId', reviewController.getJobReviews);
 
 // Get reviews authored by a specific user (public)
 router.get('/user/:userId', reviewController.getUserReviews);
+
+// Get review analytics (admin only)
+router.get('/analytics', verifyGatewayRequest, analyticsController.getReviewAnalytics);
 
 // Get specific review details (public)
 router.get('/:reviewId', reviewController.getReview);
@@ -38,11 +44,6 @@ router.get('/ratings/worker/:workerId', ratingController.getWorkerRating);
 
 // Lightweight ranking signals endpoint (public, for search service)
 router.get('/ratings/worker/:workerId/signals', ratingController.getWorkerRankSignals);
-
-// ==================== ANALYTICS ROUTES ====================
-
-// Get review analytics (admin only)
-router.get('/analytics', verifyGatewayRequest, analyticsController.getReviewAnalytics);
 
 // Admin: Moderate review
 router.put('/:reviewId/moderate', verifyGatewayRequest, analyticsController.moderateReview);

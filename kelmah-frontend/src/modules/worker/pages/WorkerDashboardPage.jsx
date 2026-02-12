@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { normalizeUser } from '../../../utils/userUtils';
 import {
@@ -68,16 +68,31 @@ const WorkerDashboardPage = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('info');
+  const loadingTimeoutRef = useRef(null);
   const MAX_RETRIES = 3;
   const LOADING_TIMEOUT = 15000; // 15 seconds
+
+  useEffect(() => {
+    return () => {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+        loadingTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   // Fetch data with retry logic
   const fetchDashboardData = useCallback(async () => {
     setLoadingTimeout(false);
 
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
+    }
+
     const timeoutId = setTimeout(() => {
       setLoadingTimeout(true);
     }, LOADING_TIMEOUT);
+    loadingTimeoutRef.current = timeoutId;
 
     try {
       await Promise.all([
@@ -88,6 +103,9 @@ const WorkerDashboardPage = () => {
         dispatch(fetchWorkerJobs('completed')),
       ]);
       clearTimeout(timeoutId);
+      if (loadingTimeoutRef.current === timeoutId) {
+        loadingTimeoutRef.current = null;
+      }
       setLoadingTimeout(false);
       if (retryCount > 0) {
         setSnackbarMessage('Dashboard data loaded successfully!');
@@ -96,6 +114,9 @@ const WorkerDashboardPage = () => {
       }
     } catch (err) {
       clearTimeout(timeoutId);
+      if (loadingTimeoutRef.current === timeoutId) {
+        loadingTimeoutRef.current = null;
+      }
       console.error('Dashboard data fetch error:', err);
     }
   }, [dispatch, retryCount]);

@@ -13,7 +13,7 @@ export const fetchEvents = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const events = await eventsService.getEvents();
-      console.log('Fetched events:', events);
+      if (import.meta.env?.DEV) console.log('Fetched events:', events);
       return events;
     } catch (error) {
       console.error('Error in fetchEvents thunk:', error);

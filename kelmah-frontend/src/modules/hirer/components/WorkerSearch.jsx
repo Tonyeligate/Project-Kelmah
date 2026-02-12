@@ -259,54 +259,56 @@ const WorkerSearch = () => {
       setLoading(true);
       console.log('WorkerSearch - fetchWorkers called');
 
-      // ✅ FIXED: Build query params with correct backend parameter names
-      const queryParams = new URLSearchParams({
-        page: page.toString(),
-        limit: '20',
-      });
+      const sortMap = {
+        relevance: 'relevance',
+        rating_desc: 'rating',
+        rating_asc: 'rating',
+        price_low: 'price_low',
+        price_high: 'price_high',
+        experience_desc: 'experience',
+      };
 
-      // Add search/keywords parameter
-      if (searchQuery) {
-        queryParams.append('keywords', searchQuery); // Backend accepts 'keywords' or 'search'
+      const params = {
+        page,
+        limit: 20,
+        sortBy: sortMap[sortOption] || 'relevance',
+      };
+
+      const searchTerms = [searchQuery, filters.primaryTrade]
+        .map((value) => String(value || '').trim())
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+
+      if (searchTerms) {
+        params.query = searchTerms;
       }
 
-      // Add location filter (backend accepts 'city' or 'location')
       if (filters.location) {
-        queryParams.append('city', filters.location.split(',')[0].trim()); // Extract city name
+        params.location = filters.location.split(',')[0].trim();
       }
 
-      // ✅ CRITICAL FIX: Add primaryTrade filter for specialization
-      if (filters.primaryTrade) {
-        queryParams.append('primaryTrade', filters.primaryTrade);
-      }
-
-      // Add skills filter
       if (filters.skills && filters.skills.length > 0) {
-        queryParams.append('skills', filters.skills.join(','));
+        params.skills = filters.skills.join(',');
       }
 
-      // Add rating filter
       if (filters.minRating > 0) {
-        queryParams.append('rating', filters.minRating.toString());
+        params.minRating = filters.minRating;
       }
 
-      // Add max rate filter
       if (filters.maxRate < 100) {
-        queryParams.append('maxRate', filters.maxRate.toString());
+        params.maxRate = filters.maxRate;
       }
 
-      // Add availability filter
       if (filters.availability && filters.availability !== 'all') {
-        queryParams.append('availability', filters.availability);
+        params.availability = filters.availability;
       }
 
-      console.log(
-        'WorkerSearch - making API call to:',
-        `/workers?${queryParams.toString()}`,
-      );
+      console.log('WorkerSearch - making API call to:', API_ENDPOINTS.USER.WORKERS_SEARCH, params);
 
-      // ✅ FIXED: Use correct endpoint path (baseURL already includes /api)
-      const response = await api.get(`/workers?${queryParams.toString()}`);
+      const response = await api.get(API_ENDPOINTS.USER.WORKERS_SEARCH, {
+        params,
+      });
 
       if (response.data) {
         const workersData =

@@ -186,6 +186,14 @@ const fetchRuntimeHints = async () => {
 
 const isBrowserEnvironment = () => typeof window !== 'undefined';
 
+const applyInlineStyles = (element, cssText) => {
+  if (!element) {
+    return element;
+  }
+  element.style.cssText = cssText;
+  return element;
+};
+
 // Dismiss update notification (local helper)
 const dismissUpdateNotification = () => {
   if (!isBrowserEnvironment()) return;
@@ -198,51 +206,71 @@ const dismissUpdateNotification = () => {
 
 // Show update notification to user
 const showUpdateNotification = () => {
+  if (!isBrowserEnvironment()) return;
+
+  // Ensure only one instance exists
+  dismissUpdateNotification();
+
   // Create custom update notification
   const notification = document.createElement('div');
   notification.id = 'pwa-update-notification';
-  notification.innerHTML = `
-    <div style="
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(135deg, #FFD700 0%, #FFC000 100%);
-      color: #000;
-      padding: 16px 24px;
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(255,215,0,0.3);
-      z-index: 10000;
-      font-weight: 600;
-      max-width: 90vw;
-      text-align: center;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    ">
-      <div style="margin-bottom: 8px;">🚀 New Kelmah Update Available!</div>
-      <div style="font-size: 12px; opacity: 0.8; margin-bottom: 12px;">
-        Enhanced performance and new features
-      </div>
-      <button onclick="updatePWA()" style="
-        background: #000;
-        color: #FFD700;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-        margin-right: 8px;
-      ">Update Now</button>
-      <button onclick="dismissUpdate()" style="
-        background: transparent;
-        color: #000;
-        border: 1px solid #000;
-        padding: 8px 16px;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-      ">Later</button>
-    </div>
-  `;
+
+  const card = applyInlineStyles(
+    document.createElement('div'),
+    [
+      'position: fixed',
+      'bottom: 20px',
+      'left: 50%',
+      'transform: translateX(-50%)',
+      'background: linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+      'color: #000',
+      'padding: 16px 24px',
+      'border-radius: 12px',
+      'box-shadow: 0 8px 32px rgba(255,215,0,0.3)',
+      'z-index: 10000',
+      'font-weight: 600',
+      'max-width: 90vw',
+      'text-align: center',
+      "font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    ].join('; '),
+  );
+
+  const title = applyInlineStyles(
+    document.createElement('div'),
+    'margin-bottom: 8px',
+  );
+  title.textContent = '🚀 New Kelmah Update Available!';
+
+  const subtitle = applyInlineStyles(
+    document.createElement('div'),
+    'font-size: 12px; opacity: 0.8; margin-bottom: 12px',
+  );
+  subtitle.textContent = 'Enhanced performance and new features';
+
+  const actions = applyInlineStyles(
+    document.createElement('div'),
+    'display: flex; justify-content: center; gap: 8px',
+  );
+
+  const updateButton = applyInlineStyles(
+    document.createElement('button'),
+    'background: #000; color: #FFD700; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer',
+  );
+  updateButton.type = 'button';
+  updateButton.textContent = 'Update Now';
+  updateButton.addEventListener('click', updatePWA);
+
+  const laterButton = applyInlineStyles(
+    document.createElement('button'),
+    'background: transparent; color: #000; border: 1px solid #000; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer',
+  );
+  laterButton.type = 'button';
+  laterButton.textContent = 'Later';
+  laterButton.addEventListener('click', dismissUpdateNotification);
+
+  actions.append(updateButton, laterButton);
+  card.append(title, subtitle, actions);
+  notification.append(card);
 
   document.body.appendChild(notification);
 
@@ -289,54 +317,82 @@ window.addEventListener('beforeinstallprompt', (e) => {
 const showInstallBanner = () => {
   if (isAppInstalled()) return;
 
+  // Ensure only one instance exists
+  dismissInstallBanner();
+
   const banner = document.createElement('div');
   banner.id = 'pwa-install-banner';
-  banner.innerHTML = `
-    <div style="
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-      color: #FFD700;
-      padding: 12px 16px;
-      z-index: 10000;
-      border-bottom: 2px solid #FFD700;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    ">
-      <div style="display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <span style="font-size: 20px;">📱</span>
-          <div>
-            <div style="font-weight: 700; font-size: 14px;">Install Kelmah App</div>
-            <div style="font-size: 11px; opacity: 0.8;">Works offline • Fast loading • Save data</div>
-          </div>
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <button onclick="installPWA()" style="
-            background: #FFD700;
-            color: #000;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 12px;
-            cursor: pointer;
-          ">Install</button>
-          <button onclick="dismissInstallBanner()" style="
-            background: transparent;
-            color: #FFD700;
-            border: 1px solid #FFD700;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 12px;
-            cursor: pointer;
-          ">×</button>
-        </div>
-      </div>
-    </div>
-  `;
+
+  const bar = applyInlineStyles(
+    document.createElement('div'),
+    [
+      'position: fixed',
+      'top: 0',
+      'left: 0',
+      'right: 0',
+      'background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+      'color: #FFD700',
+      'padding: 12px 16px',
+      'z-index: 10000',
+      'border-bottom: 2px solid #FFD700',
+      "font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    ].join('; '),
+  );
+
+  const inner = applyInlineStyles(
+    document.createElement('div'),
+    'display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto',
+  );
+
+  const left = applyInlineStyles(
+    document.createElement('div'),
+    'display: flex; align-items: center; gap: 12px',
+  );
+
+  const icon = applyInlineStyles(document.createElement('span'), 'font-size: 20px');
+  icon.textContent = '📱';
+
+  const textWrap = document.createElement('div');
+  const heading = applyInlineStyles(
+    document.createElement('div'),
+    'font-weight: 700; font-size: 14px',
+  );
+  heading.textContent = 'Install Kelmah App';
+  const subheading = applyInlineStyles(
+    document.createElement('div'),
+    'font-size: 11px; opacity: 0.8',
+  );
+  subheading.textContent = 'Works offline • Fast loading • Save data';
+  textWrap.append(heading, subheading);
+  left.append(icon, textWrap);
+
+  const right = applyInlineStyles(
+    document.createElement('div'),
+    'display: flex; gap: 8px',
+  );
+
+  const installButton = applyInlineStyles(
+    document.createElement('button'),
+    'background: #FFD700; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer',
+  );
+  installButton.type = 'button';
+  installButton.textContent = 'Install';
+  installButton.addEventListener('click', () => {
+    installPWA();
+  });
+
+  const dismissButton = applyInlineStyles(
+    document.createElement('button'),
+    'background: transparent; color: #FFD700; border: 1px solid #FFD700; padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer',
+  );
+  dismissButton.type = 'button';
+  dismissButton.textContent = '×';
+  dismissButton.addEventListener('click', dismissInstallBanner);
+
+  right.append(installButton, dismissButton);
+  inner.append(left, right);
+  bar.append(inner);
+  banner.append(bar);
 
   document.body.appendChild(banner);
 
@@ -593,38 +649,57 @@ export const handleAppLifecycle = () => {
 // Show welcome message after install
 const showWelcomeMessage = () => {
   const welcome = document.createElement('div');
-  welcome.innerHTML = `
-    <div style="
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-      color: #FFD700;
-      padding: 32px;
-      border-radius: 16px;
-      border: 2px solid #FFD700;
-      text-align: center;
-      z-index: 10000;
-      max-width: 90vw;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-    ">
-      <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
-      <div style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Welcome to Kelmah!</div>
-      <div style="font-size: 14px; opacity: 0.8; margin-bottom: 20px;">
-        App installed successfully. Now you can access Kelmah even when offline!
-      </div>
-      <button onclick="this.parentElement.parentElement.remove()" style="
-        background: #FFD700;
-        color: #000;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-      ">Get Started</button>
-    </div>
-  `;
+
+  const modal = applyInlineStyles(
+    document.createElement('div'),
+    [
+      'position: fixed',
+      'top: 50%',
+      'left: 50%',
+      'transform: translate(-50%, -50%)',
+      'background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+      'color: #FFD700',
+      'padding: 32px',
+      'border-radius: 16px',
+      'border: 2px solid #FFD700',
+      'text-align: center',
+      'z-index: 10000',
+      'max-width: 90vw',
+      'box-shadow: 0 20px 40px rgba(0,0,0,0.5)',
+    ].join('; '),
+  );
+
+  const emoji = applyInlineStyles(
+    document.createElement('div'),
+    'font-size: 48px; margin-bottom: 16px',
+  );
+  emoji.textContent = '🎉';
+
+  const headline = applyInlineStyles(
+    document.createElement('div'),
+    'font-size: 20px; font-weight: 700; margin-bottom: 8px',
+  );
+  headline.textContent = 'Welcome to Kelmah!';
+
+  const message = applyInlineStyles(
+    document.createElement('div'),
+    'font-size: 14px; opacity: 0.8; margin-bottom: 20px',
+  );
+  message.textContent =
+    'App installed successfully. Now you can access Kelmah even when offline!';
+
+  const closeButton = applyInlineStyles(
+    document.createElement('button'),
+    'background: #FFD700; color: #000; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer',
+  );
+  closeButton.type = 'button';
+  closeButton.textContent = 'Get Started';
+  closeButton.addEventListener('click', () => {
+    welcome.remove();
+  });
+
+  modal.append(emoji, headline, message, closeButton);
+  welcome.append(modal);
 
   document.body.appendChild(welcome);
 
@@ -654,6 +729,11 @@ const checkForUpdates = async () => {
 export const initializePWA = async () => {
   console.log('Initializing PWA features for Ghana 🇬🇭');
 
+  const isDev =
+    typeof import.meta !== 'undefined' &&
+    import.meta.env &&
+    Boolean(import.meta.env.DEV);
+
   // Prime runtime config + cached gateway before app boot
   const cachedGateway = await Promise.race([
     requestCachedGatewayFromSW(),
@@ -680,7 +760,14 @@ export const initializePWA = async () => {
   fetchRuntimeHints();
 
   // Register service worker
-  await registerServiceWorker();
+  // NOTE: In development, Service Workers commonly cause blank-screen failures
+  // (e.g., cached HTML/offline fallback served for JS modules -> "Invalid or unexpected token").
+  // Keep SW behavior for production builds only.
+  if (!isDev) {
+    await registerServiceWorker();
+  } else {
+    console.log('[PWA] DEV mode detected: skipping Service Worker registration');
+  }
 
   // Optimize for Ghana networks
   optimizeForGhanaNetworks();
@@ -693,16 +780,12 @@ export const initializePWA = async () => {
     // Will show install banner if appropriate
   }
 
-  // Register background sync
-  await registerBackgroundSync('kelmah-background-sync');
+  // Register background sync (production only; relies on SW)
+  if (!isDev) {
+    await registerBackgroundSync('kelmah-background-sync');
+  }
 
   console.log('PWA initialization complete');
 };
 
-// Expose selected helpers on window for inline handlers when running in browser
-if (isBrowserEnvironment()) {
-  window.updatePWA = updatePWA;
-  window.dismissUpdate = dismissUpdate;
-  window.installPWA = installPWA;
-  window.dismissInstallBanner = dismissInstallBanner;
-}
+// No window-level exports needed (avoid inline handlers for better security)

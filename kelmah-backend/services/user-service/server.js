@@ -212,21 +212,23 @@ app.get("/dashboard/metrics", getDashboardMetrics);
 app.get("/dashboard/workers", getDashboardWorkers);
 app.get("/dashboard/analytics", getDashboardAnalytics);
 
-// Debug middleware to log all incoming requests
-app.use((req, res, next) => {
-  console.log('🌐 [USER-SERVICE] Incoming request:', {
-    method: req.method,
-    originalUrl: req.originalUrl,
-    path: req.path,
-    url: req.url,
-    headers: {
-      'x-authenticated-user': !!req.headers['x-authenticated-user'],
-      'x-auth-source': req.headers['x-auth-source'] || 'none',
-      authorization: req.headers.authorization ? 'Bearer ***' : 'none'
-    }
+// Debug middleware to log all incoming requests (development only)
+if (process.env.NODE_ENV === 'development') {
+  app.use((req, res, next) => {
+    console.log('🌐 [USER-SERVICE] Incoming request:', {
+      method: req.method,
+      originalUrl: req.originalUrl,
+      path: req.path,
+      url: req.url,
+      headers: {
+        'x-authenticated-user': !!req.headers['x-authenticated-user'],
+        'x-auth-source': req.headers['x-auth-source'] || 'none',
+        authorization: req.headers.authorization ? 'Bearer ***' : 'none'
+      }
+    });
+    next();
   });
-  next();
-});
+}
 
 // Direct worker routes for public access (needed for frontend /api/workers calls)
 // ✅ FIX: Handle both with and without trailing slash due to proxy forwarding
@@ -248,7 +250,8 @@ app.get(['/api/workers/search', '/api/workers/search/'], (req, res) => {
 
 // Removed temporary worker endpoints for applications and saved-jobs
 
-// Fix: Add missing appointments endpoint
+// Mock appointments endpoint — development only
+if (process.env.NODE_ENV === 'development') {
 app.get('/api/appointments', (req, res) => {
   const appointments = [
     {
@@ -289,6 +292,7 @@ app.get('/api/appointments', (req, res) => {
     data: appointments,
   });
 });
+} // end development-only appointments
 app.use("/api/profile", profileRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/analytics", analyticsRoutes);

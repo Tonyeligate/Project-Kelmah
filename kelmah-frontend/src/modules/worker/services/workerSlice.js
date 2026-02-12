@@ -141,11 +141,52 @@ export const updateWorkerAvailability = createAsyncThunk(
   'worker/updateAvailability',
   async ({ workerId, availabilityData }, { rejectWithValue }) => {
     try {
-      const response = await api.put(
-        `/users/workers/${workerId}/availability`,
-        availabilityData,
+      const dayOrder = [
+        'sunday',
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+      ];
+
+      const availableHours = availabilityData?.availableHours || {};
+      const availabilityStatus = availabilityData?.availabilityStatus || 'available';
+      const isAvailable = !['unavailable', 'vacation'].includes(
+        String(availabilityStatus).toLowerCase(),
       );
-      return response.data;
+
+      const daySlots = dayOrder.map((day, dayOfWeek) => {
+        const dayData = availableHours?.[day] || {};
+        const hasSlot = Boolean(dayData?.available);
+
+        return {
+          dayOfWeek,
+          slots: hasSlot
+            ? [
+              {
+                start: dayData?.start || '09:00',
+                end: dayData?.end || '17:00',
+              },
+            ]
+            : [],
+        };
+      });
+
+      const payload = {
+        timezone: 'Africa/Accra',
+        isAvailable,
+        pausedUntil: availabilityData?.pausedUntil || null,
+        daySlots,
+      };
+
+      const response = await api.put(
+        `/availability/${workerId}`,
+        payload,
+      );
+
+      return response.data?.data || response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to update availability',

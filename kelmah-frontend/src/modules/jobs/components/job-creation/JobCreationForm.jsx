@@ -216,8 +216,7 @@ const JobCreationForm = ({ open, onClose }) => {
         hirer: user?.id,
         status: 'open',
         visibility: 'public',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        // createdAt/updatedAt removed — server handles timestamps
       };
 
       console.log('Submitting job data:', jobData);

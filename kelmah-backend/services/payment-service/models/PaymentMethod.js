@@ -6,13 +6,14 @@ const PaymentMethodSchema = new Schema(
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     type: {
       type: String,
-      enum: ["credit_card", "bank_account", "paypal"],
+      enum: ["credit_card", "bank_account", "paypal", "mobile_money"],
       required: true,
     },
     isDefault: { type: Boolean, default: false },
     cardDetails: { type: Schema.Types.Mixed },
     bankDetails: { type: Schema.Types.Mixed },
     paypalDetails: { type: Schema.Types.Mixed },
+    mobileDetails: { type: Schema.Types.Mixed },
     billingAddress: { type: Schema.Types.Mixed },
     metadata: { type: Schema.Types.Mixed },
     verified: {

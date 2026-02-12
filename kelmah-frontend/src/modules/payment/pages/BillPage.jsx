@@ -37,6 +37,13 @@ const currencyFormatter = new Intl.NumberFormat('en-GH', {
 
 const BillPage = () => {
   const { bills, loading, payBill, actionLoading, error } = usePayments();
+  const billsArray = Array.isArray(bills)
+    ? bills
+    : bills?.bills && Array.isArray(bills.bills)
+      ? bills.bills
+      : bills?.data && Array.isArray(bills.data)
+        ? bills.data
+        : [];
   // Filters & pagination state
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -67,7 +74,7 @@ const BillPage = () => {
     setPage(1);
   };
   // Filter bills
-  const filteredBills = bills.filter((b) => {
+  const filteredBills = billsArray.filter((b) => {
     let ok = true;
     if (appliedStartDate)
       ok = ok && new Date(b.dueDate) >= new Date(appliedStartDate);

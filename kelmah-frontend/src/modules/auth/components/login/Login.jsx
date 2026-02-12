@@ -34,7 +34,7 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { FEATURES, getApiBaseUrl } from '../../../../config/environment';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 // Removed AuthContext import to use Redux auth system
 // import { useAuth } from '../../contexts/AuthContext';
 import { checkApiHealth } from '../../../common/utils/apiUtils';
@@ -67,11 +67,32 @@ const Login = () => {
   }, []);
 
   const navigate = useNavigate();
+  const location = useLocation();
   // Use Redux auth system instead of AuthContext
   const dispatch = useDispatch();
   const { loading: authLoading, error: authError } = useSelector(
     (state) => state.auth,
   );
+
+  const getDefaultRouteByRole = (role) => {
+    if (role === 'worker') return '/worker/dashboard';
+    if (role === 'hirer') return '/hirer/dashboard';
+    if (role === 'admin') return '/admin/skills-management';
+    return '/dashboard';
+  };
+
+  const resolveLoginRedirect = (user) => {
+    const requestedPath = location.state?.from || location.state?.redirectTo;
+    if (
+      typeof requestedPath === 'string' &&
+      requestedPath.startsWith('/') &&
+      !requestedPath.startsWith('/login') &&
+      !requestedPath.startsWith('/register')
+    ) {
+      return requestedPath;
+    }
+    return getDefaultRouteByRole(user?.role);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -117,8 +138,9 @@ const Login = () => {
         }),
       ).unwrap();
 
-      console.log('Login successful, redirecting to dashboard');
-      navigate('/dashboard');
+      const destination = resolveLoginRedirect(result?.user);
+      console.log(`Login successful, redirecting to ${destination}`);
+      navigate(destination, { replace: true });
     } catch (err) {
       console.error('Login error:', err);
       const errorMessage =

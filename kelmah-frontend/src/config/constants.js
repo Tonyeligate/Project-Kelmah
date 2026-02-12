@@ -59,6 +59,9 @@ export const TOKEN_KEY = 'kelmah_auth_token';
 export const REFRESH_TOKEN_KEY = 'kelmah_refresh_token';
 export const USER_KEY = 'kelmah_user';
 export const TOKEN_EXPIRY_KEY = 'kelmah_token_expiry';
+// Aliases for backward compatibility
+export const JWT_LOCAL_STORAGE_KEY = TOKEN_KEY;
+export const AUTH_USER_KEY = USER_KEY;
 export const AUTH_ROLES = {
   WORKER: 'worker',
   HIRER: 'hirer',

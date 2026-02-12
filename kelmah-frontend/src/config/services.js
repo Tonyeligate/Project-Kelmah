@@ -101,13 +101,13 @@ export const API_ENDPOINTS = {
   // Auth Service
   AUTH: {
     BASE: getServicePath('AUTH_SERVICE', ''),
-    REGISTER: getServicePath('AUTH_SERVICE', '/auth/register'),
-    LOGIN: getServicePath('AUTH_SERVICE', '/auth/login'),
-    VERIFY: getServicePath('AUTH_SERVICE', '/auth/verify'),
-    REFRESH: getServicePath('AUTH_SERVICE', '/auth/refresh-token'),
-    LOGOUT: getServicePath('AUTH_SERVICE', '/auth/logout'),
-    FORGOT_PASSWORD: getServicePath('AUTH_SERVICE', '/auth/forgot-password'),
-    RESET_PASSWORD: getServicePath('AUTH_SERVICE', '/auth/reset-password'),
+    REGISTER: getServicePath('AUTH_SERVICE', '/register'),
+    LOGIN: getServicePath('AUTH_SERVICE', '/login'),
+    VERIFY: getServicePath('AUTH_SERVICE', '/verify'),
+    REFRESH: getServicePath('AUTH_SERVICE', '/refresh-token'),
+    LOGOUT: getServicePath('AUTH_SERVICE', '/logout'),
+    FORGOT_PASSWORD: getServicePath('AUTH_SERVICE', '/forgot-password'),
+    RESET_PASSWORD: getServicePath('AUTH_SERVICE', '/reset-password'),
   },
 
   // User Service

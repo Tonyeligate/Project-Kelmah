@@ -291,7 +291,8 @@ const CreateContractPage = () => {
       dispatch(createContract(contract))
         .unwrap()
         .then((response) => {
-          navigate(`/contracts/${response.id}`, {
+          const newContractId = response?.id || response?._id;
+          navigate(newContractId ? `/contracts/${newContractId}` : '/contracts', {
             state: {
               toast: {
                 open: true,

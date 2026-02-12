@@ -76,22 +76,13 @@ export const fetchDashboardData = createAsyncThunk(
         api.get(USER.DASHBOARD_ANALYTICS),
       ]);
 
-      // Extract successful responses or use enhanced mock data
+      // Extract successful responses or use empty defaults on failure
       const metrics =
         metricsResponse.status === 'fulfilled'
           ? metricsResponse.value.data
           : {
             ...initialState.data.metrics,
-            totalJobs: Math.floor(Math.random() * 50) + 10,
-            activeJobs: Math.floor(Math.random() * 15) + 3,
-            completedJobs: Math.floor(Math.random() * 35) + 5,
-            totalEarnings: Math.floor(Math.random() * 5000) + 1000,
-            profileViews: Math.floor(Math.random() * 200) + 50,
-            weeklyViews: Math.floor(Math.random() * 50) + 10,
-            jobsChange: Math.floor(Math.random() * 20) - 5,
-            applicationsChange: Math.floor(Math.random() * 30) - 10,
-            earningsChange: Math.floor(Math.random() * 25) + 5,
-            viewsChange: Math.floor(Math.random() * 15) + 2,
+            _serviceUnavailable: true,
           };
 
       const recentJobs =
@@ -101,29 +92,7 @@ export const fetchDashboardData = createAsyncThunk(
             : Array.isArray(jobsResponse.value.data?.jobs)
               ? jobsResponse.value.data.jobs
               : []
-          : [
-            {
-              id: 1,
-              title: 'Web Development Project',
-              location: 'Accra, Ghana',
-              budget: 2500,
-              status: 'Active',
-            },
-            {
-              id: 2,
-              title: 'Mobile App Design',
-              location: 'Kumasi, Ghana',
-              budget: 1800,
-              status: 'Pending',
-            },
-            {
-              id: 3,
-              title: 'Content Writing',
-              location: 'Takoradi, Ghana',
-              budget: 800,
-              status: 'Active',
-            },
-          ];
+          : [];
 
       const activeWorkers =
         workersResponse.status === 'fulfilled'
@@ -140,27 +109,11 @@ export const fetchDashboardData = createAsyncThunk(
             ...analyticsResponse.value.data,
             topSkills: Array.isArray(analyticsResponse.value.data?.topSkills)
               ? analyticsResponse.value.data.topSkills
-              : ['Web Development', 'Mobile Apps', 'Design', 'Writing'],
+              : [],
           }
           : {
             ...initialState.data.analytics,
-            jobsThisMonth: Math.floor(Math.random() * 20) + 5,
-            applicationsThisMonth: Math.floor(Math.random() * 80) + 20,
-            earningsThisMonth: Math.floor(Math.random() * 3000) + 500,
-            averageResponseTime: '2 hours',
-            completionRate: 95,
-            clientSatisfaction: 4.8,
-            monthlyGrowth: {
-              jobs: Math.floor(Math.random() * 15) + 5,
-              earnings: Math.floor(Math.random() * 25) + 10,
-              applications: Math.floor(Math.random() * 20) + 8,
-            },
-            topSkills: [
-              'Web Development',
-              'Mobile Apps',
-              'Design',
-              'Writing',
-            ],
+            _serviceUnavailable: true,
           };
 
       // Log which services are using mock data
@@ -187,54 +140,21 @@ export const fetchDashboardData = createAsyncThunk(
       };
     } catch (error) {
       console.warn(
-        'All dashboard services unavailable, using mock data:',
+        'All dashboard services unavailable:',
         error.message,
       );
 
-      // Return comprehensive mock data as fallback
+      // Return empty state with unavailable flag instead of fake data
       return {
         metrics: {
           ...initialState.data.metrics,
-          totalJobs: 25,
-          activeJobs: 8,
-          completedJobs: 15,
-          totalEarnings: 3200,
-          profileViews: 156,
-          weeklyViews: 24,
-          jobsChange: 12,
-          applicationsChange: 18,
-          earningsChange: 15,
-          viewsChange: 8,
+          _serviceUnavailable: true,
         },
-        recentJobs: [
-          {
-            id: 1,
-            title: 'Web Development Project',
-            location: 'Accra, Ghana',
-            budget: 2500,
-            status: 'Active',
-          },
-          {
-            id: 2,
-            title: 'Mobile App Design',
-            location: 'Kumasi, Ghana',
-            budget: 1800,
-            status: 'Pending',
-          },
-        ],
+        recentJobs: [],
         activeWorkers: [],
         analytics: {
           ...initialState.data.analytics,
-          jobsThisMonth: 12,
-          applicationsThisMonth: 45,
-          earningsThisMonth: 1800,
-          completionRate: 95,
-          clientSatisfaction: 4.8,
-          monthlyGrowth: {
-            jobs: 15,
-            earnings: 22,
-            applications: 12,
-          },
+          _serviceUnavailable: true,
         },
       };
     }
@@ -266,6 +186,28 @@ const dashboardSlice = createSlice({
     },
     setSelectedWorker: (state, action) => {
       state.selectedWorker = action.payload;
+    },
+    setDashboardData: (state, action) => {
+      // Merge payload into state.data (supports partial updates)
+      if (typeof action.payload === 'object' && action.payload !== null) {
+        state.data = { ...state.data, ...action.payload };
+        state.lastUpdated = new Date().toISOString();
+      }
+    },
+    setLoading: (state, action) => {
+      // Accepts boolean or object map like { overview: true }
+      if (typeof action.payload === 'boolean') {
+        state.loading = action.payload;
+      } else if (typeof action.payload === 'object') {
+        state.loading = Object.values(action.payload).some(Boolean);
+      }
+    },
+    setError: (state, action) => {
+      if (typeof action.payload === 'string') {
+        state.error = action.payload;
+      } else if (typeof action.payload === 'object' && action.payload !== null) {
+        state.error = Object.values(action.payload).find(Boolean) || null;
+      }
     },
     clearDashboardError: (state) => {
       state.error = null;
@@ -314,6 +256,9 @@ const dashboardSlice = createSlice({
 export const {
   setSelectedJob,
   setSelectedWorker,
+  setDashboardData,
+  setLoading,
+  setError,
   clearDashboardError,
   setRefreshing,
   updateMetrics,

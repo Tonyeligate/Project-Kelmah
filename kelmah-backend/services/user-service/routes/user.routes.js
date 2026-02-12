@@ -5,7 +5,21 @@ const router = express.Router();
 const { verifyGatewayRequest, optionalGatewayVerification } = require('../../../shared/middlewares/serviceTrust');
 const { validateAvailabilityPayload } = require('../middlewares/auth');
 // Rate limiter - simple implementation for user service
-const createLimiter = (options) => (req, res, next) => next(); // Simplified for containerized deployment
+// Rate limiter - use express-rate-limit or fall back to pass-through
+let createLimiter;
+try {
+  const rateLimit = require('express-rate-limit');
+  createLimiter = (preset) => {
+    const configs = {
+      admin: { windowMs: 15 * 60 * 1000, max: 50 },
+      default: { windowMs: 15 * 60 * 1000, max: 100 },
+    };
+    const cfg = configs[preset] || configs.default;
+    return rateLimit({ ...cfg, standardHeaders: true, legacyHeaders: false });
+  };
+} catch (_) {
+  createLimiter = () => (req, res, next) => next();
+}
 
 // Import controllers for user operations
 const {
@@ -53,6 +67,14 @@ router.get("/workers/jobs/recent", verifyGatewayRequest, (req, res, next) => {
 
 // 🔥 FIX: Worker search and list routes MUST come BEFORE parameterized /:id routes
 // to prevent "/workers/search" being matched as "/workers/:id" where id="search"
+router.get('/workers/search/location', (req, res, next) => {
+  console.log('✅ [USER-ROUTES] /workers/search/location route hit (alias → searchWorkers):', {
+    query: req.query,
+    fullPath: req.originalUrl
+  });
+  next();
+}, WorkerController.searchWorkers);
+
 router.get('/workers/search', (req, res, next) => {
   console.log('✅ [USER-ROUTES] /workers/search route hit:', {
     query: req.query,
@@ -69,24 +91,7 @@ router.get('/workers', (req, res, next) => {
   next();
 }, WorkerController.getAllWorkers);
 
-router.get('/workers/:id', (req, res, next) => {
-  console.log('✅ [USER-ROUTES] /workers/:id route hit:', {
-    workerId: req.params.id,
-    fullPath: req.originalUrl
-  });
-  next();
-}, WorkerController.getWorkerById);
-
-// 🔥 FIX: Add PUT route for worker profile updates
-router.put('/workers/:id', verifyGatewayRequest, (req, res, next) => {
-  console.log('✅ [USER-ROUTES] PUT /workers/:id route hit:', {
-    workerId: req.params.id,
-    fullPath: req.originalUrl
-  });
-  next();
-}, WorkerController.updateWorkerProfile);
-
-// Worker-specific parameterized routes (MUST be after specific routes like /search)
+// Worker-specific debug route (MUST be before /workers/:id)
 router.get("/workers/debug/models", verifyGatewayRequest, (req, res) => {
   const modelsModule = require('../models');
   res.json({
@@ -108,6 +113,23 @@ router.get("/workers/debug/models", verifyGatewayRequest, (req, res) => {
     }
   });
 });
+
+router.get('/workers/:id', (req, res, next) => {
+  console.log('✅ [USER-ROUTES] /workers/:id route hit:', {
+    workerId: req.params.id,
+    fullPath: req.originalUrl
+  });
+  next();
+}, WorkerController.getWorkerById);
+
+// 🔥 FIX: Add PUT route for worker profile updates
+router.put('/workers/:id', verifyGatewayRequest, (req, res, next) => {
+  console.log('✅ [USER-ROUTES] PUT /workers/:id route hit:', {
+    workerId: req.params.id,
+    fullPath: req.originalUrl
+  });
+  next();
+}, WorkerController.updateWorkerProfile);
 
 router.get("/workers/:id/availability", optionalGatewayVerification, (req, res, next) => {
   console.log('✅ [USER-ROUTES] /workers/:id/availability route hit:', {

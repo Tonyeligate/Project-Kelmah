@@ -73,7 +73,15 @@ export const PaymentProvider = ({ children }) => {
 
       // Bills
       if (billsRes.status === 'fulfilled') {
-        setBills(billsRes.value || []);
+        const payload = billsRes.value;
+        const normalized = Array.isArray(payload)
+          ? payload
+          : payload?.bills && Array.isArray(payload.bills)
+            ? payload.bills
+            : payload?.data && Array.isArray(payload.data)
+              ? payload.data
+              : [];
+        setBills(normalized);
       }
 
       setError(null);
@@ -179,6 +187,42 @@ export const PaymentProvider = ({ children }) => {
     [fetchData, showToast],
   );
 
+  const setDefaultPaymentMethod = useCallback(
+    async (paymentMethodId) => {
+      if (!paymentMethodId) return;
+      setLoading(true);
+      try {
+        await paymentService.setDefaultPaymentMethod(paymentMethodId);
+        showToast('Default payment method updated.', 'success');
+        await fetchData();
+      } catch (err) {
+        console.error('Failed to set default payment method:', err);
+        showToast('Failed to set default payment method.', 'error');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchData, showToast],
+  );
+
+  const deletePaymentMethod = useCallback(
+    async (paymentMethodId) => {
+      if (!paymentMethodId) return;
+      setLoading(true);
+      try {
+        await paymentService.deletePaymentMethod(paymentMethodId);
+        showToast('Payment method removed.', 'success');
+        await fetchData();
+      } catch (err) {
+        console.error('Failed to delete payment method:', err);
+        showToast('Failed to delete payment method.', 'error');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchData, showToast],
+  );
+
   const payBill = useCallback(
     async (billId) => {
       setActionLoading(billId);
@@ -209,6 +253,8 @@ export const PaymentProvider = ({ children }) => {
     addFunds,
     withdrawFunds,
     addPaymentMethod,
+    setDefaultPaymentMethod,
+    deletePaymentMethod,
     payBill,
     refresh: fetchData,
     fetchTransactions,

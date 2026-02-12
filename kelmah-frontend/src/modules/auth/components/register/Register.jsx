@@ -251,7 +251,8 @@ const Register = () => {
           state: {
             registered: true,
             message: 'Registration successful! Please verify your email.',
-            redirectTo: location.state?.redirectTo || '/login',
+            redirectTo:
+              location.state?.from || location.state?.redirectTo || '/dashboard',
           },
         });
       }, 1200);

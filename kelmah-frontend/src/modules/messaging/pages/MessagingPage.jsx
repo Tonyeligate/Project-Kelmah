@@ -207,19 +207,24 @@ const EnhancedMessagingPage = () => {
 
   // Filter conversations based on search and filter
   useEffect(() => {
-    let filtered = conversations;
+    let filtered = Array.isArray(conversations) ? [...conversations] : [];
 
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((conv) => {
-        const otherParticipant = conv.participants.find(
-          (p) => p.id !== user?.id,
-        );
+        const participants = Array.isArray(conv?.participants)
+          ? conv.participants
+          : [];
+        const otherParticipant = participants.find((p) => p?.id !== user?.id);
+
+        const participantName = String(otherParticipant?.name || '').toLowerCase();
+        const lastMessageText = String(conv?.lastMessage?.text || '').toLowerCase();
+        const jobTitle = String(conv?.jobRelated?.title || '').toLowerCase();
         return (
-          otherParticipant?.name.toLowerCase().includes(query) ||
-          conv.lastMessage?.text.toLowerCase().includes(query) ||
-          conv.jobRelated?.title.toLowerCase().includes(query)
+          participantName.includes(query) ||
+          lastMessageText.includes(query) ||
+          jobTitle.includes(query)
         );
       });
     }

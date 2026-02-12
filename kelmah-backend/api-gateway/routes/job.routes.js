@@ -122,8 +122,29 @@ router.get('/location', async (req, res) => {
 });
 
 // GET /api/jobs/contracts - Get contracts (public)
+// GET /api/jobs/contracts - Get contracts (public)
 router.get('/contracts', async (req, res) => {
   await forwardToJobService(req, res, '/api/jobs/contracts', 'GET');
+});
+
+// GET /api/jobs/contracts/:id - Get contract details (public)
+router.get('/contracts/:id', async (req, res) => {
+  await forwardToJobService(req, res, `/api/jobs/contracts/${req.params.id}`, 'GET');
+});
+
+// PUT /api/jobs/contracts/:id - Update contract (protected)
+router.put('/contracts/:id', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, `/api/jobs/contracts/${req.params.id}`, 'PUT');
+});
+
+// POST /api/jobs/contracts/:id/disputes - Create dispute (protected)
+router.post('/contracts/:id/disputes', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, `/api/jobs/contracts/${req.params.id}/disputes`, 'POST');
+});
+
+// PUT /api/jobs/contracts/:contractId/milestones/:milestoneId/approve - Approve milestone (protected)
+router.put('/contracts/:contractId/milestones/:milestoneId/approve', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, `/api/jobs/contracts/${req.params.contractId}/milestones/${req.params.milestoneId}/approve`, 'PUT');
 });
 
 // GET /api/jobs/assigned - Get worker's assigned jobs (protected)
@@ -177,9 +198,10 @@ router.post('/:id/apply', authenticate, async (req, res) => {
   await forwardToJobService(req, res, `/api/jobs/${req.params.id}/apply`, 'POST');
 });
 
-// PUT /api/jobs/:id/status - Update job status (protected)
-router.put('/:id/status', authenticate, async (req, res) => {
-  await forwardToJobService(req, res, `/api/jobs/${req.params.id}/status`, 'PUT');
+// PATCH /api/jobs/:id/status - Update job status (protected)
+// ⚠️ Must use PATCH to match job-service handler (not PUT)
+router.patch('/:id/status', authenticate, async (req, res) => {
+  await forwardToJobService(req, res, `/api/jobs/${req.params.id}/status`, 'PATCH');
 });
 
 // POST /api/jobs/:id/publish - Publish job (protected)

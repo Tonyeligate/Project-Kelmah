@@ -178,21 +178,12 @@ const jobsApi = {
         jobsNeedingReview: jobsNeedingReview.length, // Include count in response
       };
     } catch (error) {
-      console.error('❌ Job service API error:', error);
-      console.error('❌ Error details:', {
-        message: error.message,
+      console.warn('❌ Job service API error:', error.message, {
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data,
       });
-      // No mock data fallback; return empty results to reflect real state
-      return {
-        data: [],
-        jobs: [],
-        totalPages: 1,
-        totalJobs: 0,
-        currentPage: 1,
-      };
+      throw error;
     }
   },
 

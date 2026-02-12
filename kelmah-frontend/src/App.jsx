@@ -11,7 +11,6 @@ import { Box, CircularProgress, Alert, Snackbar, LinearProgress } from '@mui/mat
 import { KelmahThemeProvider, useThemeMode } from './theme/ThemeProvider';
 import { AppRoutes } from './routes/config';
 import { verifyAuth } from './modules/auth/services/authSlice';
-import { AUTH_CONFIG } from './config/environment';
 import { secureStorage } from './utils/secureStorage';
 import { initializePWA } from './utils/pwaHelpers';
 import GlobalErrorBoundary from './modules/common/components/GlobalErrorBoundary';
@@ -21,13 +20,14 @@ import { warmUpServices } from './utils/serviceWarmUp';
 // Main App Component
 const App = () => {
   const dispatch = useDispatch();
-  const { isAuthenticated, loading: authLoading } = useSelector(
+  const { isAuthenticated } = useSelector(
     (state) => state.auth,
   );
   const { isHealthy } = useApiHealth();
   const location = useLocation();
   const initialized = useRef(false);
   const [servicesWakingUp, setServicesWakingUp] = useState(false);
+  const [authBootstrapLoading, setAuthBootstrapLoading] = useState(true);
 
   // Initialize PWA
   useEffect(() => {
@@ -58,14 +58,23 @@ const App = () => {
   useEffect(() => {
     if (!initialized.current) {
       initialized.current = true;
-      const token = secureStorage.getItem(AUTH_CONFIG.tokenKey);
-      if (token) {
-        dispatch(verifyAuth());
+      const token = secureStorage.getAuthToken();
+      if (!token) {
+        setAuthBootstrapLoading(false);
+        return;
       }
+
+      Promise.resolve(dispatch(verifyAuth()))
+        .catch(() => {
+          // verifyAuth thunk already handles cleanup/state updates
+        })
+        .finally(() => {
+          setAuthBootstrapLoading(false);
+        });
     }
   }, [dispatch]);
 
-  if (authLoading) {
+  if (authBootstrapLoading) {
     return (
       <Box
         sx={{

@@ -55,7 +55,7 @@ import {
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { usePayments } from '../contexts/PaymentContext';
 import TransactionsList from '../components/TransactionsList';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { glowPulse } from '../../../styles/animations';
 
@@ -155,7 +155,7 @@ const TransactionHistory = ({ transactions }) => (
   </Paper>
 );
 
-const PaymentMethodsView = ({ methods }) => {
+const PaymentMethodsView = ({ methods, onEditMethod, onRequestDelete }) => {
   // Empty state
   if (!methods || methods.length === 0) {
     return (
@@ -199,7 +199,7 @@ const PaymentMethodsView = ({ methods }) => {
 
       <Grid container spacing={2}>
         {methods.map((method) => (
-          <Grid item xs={12} md={6} key={method.id}>
+          <Grid item xs={12} md={6} key={method.id || method._id}>
             <Card variant="outlined" sx={{ p: 1, position: 'relative' }}>
               {method.isDefault && (
                 <Tooltip title="Default method">
@@ -215,10 +215,16 @@ const PaymentMethodsView = ({ methods }) => {
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <Tooltip
                     title={
-                      method.type === 'card' ? 'Card payment' : 'Mobile money'
+                      method.type === 'card' || method.type === 'credit_card'
+                        ? 'Card payment'
+                        : method.type === 'bank_account'
+                          ? 'Bank account'
+                          : method.type === 'paypal'
+                            ? 'PayPal'
+                            : 'Payment method'
                     }
                   >
-                    {method.type === 'card' ? (
+                    {method.type === 'card' || method.type === 'credit_card' ? (
                       <CreditCardIcon
                         sx={{ mr: 1.5, fontSize: 30 }}
                         color="action"
@@ -230,12 +236,22 @@ const PaymentMethodsView = ({ methods }) => {
                       />
                     )}
                   </Tooltip>
-                  <Typography variant="subtitle1">{method.name}</Typography>
+                  <Typography variant="subtitle1">
+                    {method.name || 'Payment Method'}
+                  </Typography>
                 </Box>
 
-                <Typography color="text.secondary" sx={{ ml: '38px' }}>
-                  {method.cardNumber || method.phoneNumber}
-                </Typography>
+                {(method.cardNumber ||
+                  method.phoneNumber ||
+                  method.accountNumber ||
+                  method.displayValue) && (
+                  <Typography color="text.secondary" sx={{ ml: '38px' }}>
+                    {method.cardNumber ||
+                      method.phoneNumber ||
+                      method.accountNumber ||
+                      method.displayValue}
+                  </Typography>
+                )}
 
                 <Box
                   sx={{
@@ -246,12 +262,23 @@ const PaymentMethodsView = ({ methods }) => {
                   }}
                 >
                   <Tooltip title="Edit this method">
-                    <IconButton size="small" aria-label="Edit payment method" sx={{ minWidth: 44, minHeight: 44 }}>
+                    <IconButton
+                      size="small"
+                      aria-label="Edit payment method"
+                      onClick={() => onEditMethod?.(method)}
+                      sx={{ minWidth: 44, minHeight: 44 }}
+                    >
                       <EditIcon />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Delete this method">
-                    <IconButton size="small" color="error" aria-label="Delete payment method" sx={{ minWidth: 44, minHeight: 44 }}>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      aria-label="Delete payment method"
+                      onClick={() => onRequestDelete?.(method)}
+                      sx={{ minWidth: 44, minHeight: 44 }}
+                    >
                       <DeleteIcon />
                     </IconButton>
                   </Tooltip>
@@ -530,7 +557,9 @@ const PaymentCenterPage = () => {
     addFunds,
     withdrawFunds,
     fetchTransactions,
+    deletePaymentMethod,
   } = usePayments();
+  const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [tabIndex, setTabIndex] = useState(0);
@@ -538,6 +567,24 @@ const PaymentCenterPage = () => {
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [amount, setAmount] = useState('');
   const [methodId, setMethodId] = useState('');
+
+  const [deleteMethodOpen, setDeleteMethodOpen] = useState(false);
+  const [methodPendingDelete, setMethodPendingDelete] = useState(null);
+  const requestDeleteMethod = (method) => {
+    setMethodPendingDelete(method || null);
+    setDeleteMethodOpen(true);
+  };
+  const confirmDeleteMethod = async () => {
+    const id = methodPendingDelete?.id || methodPendingDelete?._id;
+    if (!id) {
+      setDeleteMethodOpen(false);
+      setMethodPendingDelete(null);
+      return;
+    }
+    await deletePaymentMethod(id);
+    setDeleteMethodOpen(false);
+    setMethodPendingDelete(null);
+  };
   // Transaction filters
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -809,7 +856,46 @@ const PaymentCenterPage = () => {
               )}
             </>
           )}
-          {tabIndex === 1 && <PaymentMethodsView methods={paymentMethods} />}
+          {tabIndex === 1 && (
+            <>
+              <PaymentMethodsView
+                methods={paymentMethods}
+                onEditMethod={() => navigate('/payment/methods')}
+                onRequestDelete={requestDeleteMethod}
+              />
+
+              <Dialog
+                open={deleteMethodOpen}
+                onClose={() => setDeleteMethodOpen(false)}
+                maxWidth="xs"
+                fullWidth
+              >
+                <DialogTitle>Remove payment method?</DialogTitle>
+                <DialogContent>
+                  <Typography color="text.secondary">
+                    This will remove the selected payment method from your
+                    account.
+                  </Typography>
+                </DialogContent>
+                <DialogActions>
+                  <Button
+                    onClick={() => setDeleteMethodOpen(false)}
+                    disabled={loading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={confirmDeleteMethod}
+                    color="error"
+                    variant="contained"
+                    disabled={loading}
+                  >
+                    Remove
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </>
+          )}
           {tabIndex === 2 && (
             <>
               {/* Escrows filters */}

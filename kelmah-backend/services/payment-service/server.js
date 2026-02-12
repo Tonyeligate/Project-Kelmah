@@ -127,6 +127,7 @@ app.use("/api/payments/wallet", walletRoutes);
 app.use("/api/payments/methods", paymentMethodRoutes);
 app.use("/api/payments/escrows", escrowRoutes);
 app.use("/api/payments/bills", billRoutes);
+app.use("/api/payments/subscriptions", require('./routes/subscription.routes'));
 app.use("/api/payments", paymentsRoutes);
 // Webhooks are mounted above JSON parser
 

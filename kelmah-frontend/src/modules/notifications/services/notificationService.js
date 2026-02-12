@@ -13,6 +13,9 @@ class NotificationService {
   constructor() {
     // Use messaging service for notifications (now that CORS is fixed)
     this.client = api;
+    this.socket = null;
+    this.isConnected = false;
+    this.onNotification = null;
   }
 
   // Connect to notification socket
@@ -22,6 +25,12 @@ class NotificationService {
       if (!token) {
         console.warn('Notifications: connect skipped - missing auth token');
         return;
+      }
+
+      // Disconnect any stale socket before reconnecting
+      if (this.socket) {
+        this.socket.disconnect();
+        this.socket = null;
       }
 
       const wsUrl = await getWebSocketUrl();
@@ -83,35 +92,57 @@ class NotificationService {
           },
         },
       });
-      // Normalize to { notifications, pagination }
-      const data = response.data;
-      if (Array.isArray(data)) {
-        return {
-          notifications: data,
-          pagination: {
+      const normalizeNotification = (notification = {}) => ({
+        ...notification,
+        id: notification?.id || notification?._id,
+        read:
+          typeof notification?.read === 'boolean'
+            ? notification.read
+            : Boolean(notification?.readStatus?.isRead),
+        date:
+          notification?.date ||
+          notification?.createdAt ||
+          notification?.timestamp ||
+          new Date().toISOString(),
+      });
+
+      // Normalize to { notifications, data, pagination }
+      const payload = response.data;
+      let notifications = [];
+      let pagination = null;
+
+      if (Array.isArray(payload)) {
+        notifications = payload;
+        pagination = {
+          page: 1,
+          limit: payload.length,
+          total: payload.length,
+          pages: 1,
+        };
+      } else if (payload?.data && Array.isArray(payload.data)) {
+        notifications = payload.data;
+        pagination = payload.pagination;
+      } else if (payload?.data?.notifications) {
+        notifications = payload.data.notifications;
+        pagination = payload.data.pagination || payload.pagination;
+      } else if (payload?.notifications) {
+        notifications = payload.notifications;
+        pagination = payload.pagination;
+      }
+
+      const normalizedNotifications = notifications.map(normalizeNotification);
+
+      return {
+        notifications: normalizedNotifications,
+        data: normalizedNotifications,
+        pagination:
+          pagination || {
             page: 1,
-            limit: data.length,
-            total: data.length,
-            pages: 1,
+            limit: normalizedNotifications.length,
+            total: normalizedNotifications.length,
+            pages: normalizedNotifications.length > 0 ? 1 : 0,
           },
-        };
-      }
-      if (data?.data && Array.isArray(data.data)) {
-        return { notifications: data.data, pagination: data.pagination };
-      }
-      if (data?.data?.notifications) {
-        return {
-          notifications: data.data.notifications,
-          pagination: data.data.pagination || data.pagination,
-        };
-      }
-      if (data?.notifications) {
-        return {
-          notifications: data.notifications,
-          pagination: data.pagination,
-        };
-      }
-      return data;
+      };
     } catch (error) {
       const statusMsg = getServiceStatusMessage();
 
@@ -141,6 +172,7 @@ class NotificationService {
       }
       return {
         notifications: [],
+        data: [],
         pagination: { page: 1, limit: 20, total: 0, pages: 0 },
       };
     }

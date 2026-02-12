@@ -48,7 +48,14 @@ function Messages() {
     try {
       // Use centralized WebSocket URL from config
       const wsBaseUrl = API_ENDPOINTS.WEBSOCKET.MESSAGING || '/socket.io';
-      ws.current = new WebSocket(`${wsBaseUrl}/ws?token=${token}`);
+      if (!token) {
+        setError('Sign in to enable real-time messaging.');
+        return;
+      }
+
+      // Avoid putting tokens in the URL query string (leaks via logs/proxies/referrers).
+      // If the backend supports it, tokens can be sent via WebSocket subprotocol.
+      ws.current = new WebSocket(`${wsBaseUrl}/ws`, [`bearer.${token}`]);
 
       ws.current.onopen = () => {
         console.log('WebSocket connection established');

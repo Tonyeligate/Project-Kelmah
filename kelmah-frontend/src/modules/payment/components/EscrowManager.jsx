@@ -91,7 +91,7 @@ const EscrowManager = () => {
         });
       } else if (form.provider === 'paystack') {
         const resp = await paymentService.processPaystackPayment({
-          email: form.email || 'test@example.com',
+          email: form.email,
           amount: Number(form.amount),
           currency: 'GHS',
           metadata: { escrowReference },

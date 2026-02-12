@@ -9,7 +9,6 @@ import {
   selectSettingsLoading,
   selectSettingsError,
 } from '../../../store/slices/settingsSlice';
-import useAuth from '../../auth/hooks/useAuth';
 
 export const useSettings = () => {
   const dispatch = useDispatch();
@@ -20,6 +19,18 @@ export const useSettings = () => {
   const { isAuthenticated } = useSelector((state) => state.auth);
   const [languages, setLanguages] = useState([]);
   const [themes, setThemes] = useState([]);
+
+  const mergeAndSetSettings = useCallback(
+    (partialSettings = {}) => {
+      const nextSettings = {
+        ...(settings || {}),
+        ...partialSettings,
+      };
+      dispatch(setSettings(nextSettings));
+      return nextSettings;
+    },
+    [dispatch, settings],
+  );
 
   const loadSettings = useCallback(async () => {
     try {
@@ -57,10 +68,9 @@ export const useSettings = () => {
     async (preferences) => {
       try {
         dispatch(setLoading(true));
-        const updatedSettings =
+        const updatedNotifications =
           await settingsService.updateNotificationPreferences(preferences);
-        dispatch(setSettings(updatedSettings));
-        return updatedSettings;
+        return mergeAndSetSettings({ notifications: updatedNotifications });
       } catch (error) {
         dispatch(setError(error.message));
         throw error;
@@ -68,17 +78,16 @@ export const useSettings = () => {
         dispatch(setLoading(false));
       }
     },
-    [dispatch],
+    [dispatch, mergeAndSetSettings],
   );
 
   const updatePrivacySettings = useCallback(
-    async (settings) => {
+    async (privacySettings) => {
       try {
         dispatch(setLoading(true));
-        const updatedSettings =
-          await settingsService.updatePrivacySettings(settings);
-        dispatch(setSettings(updatedSettings));
-        return updatedSettings;
+        const updatedPrivacy =
+          await settingsService.updatePrivacySettings(privacySettings);
+        return mergeAndSetSettings({ privacy: updatedPrivacy });
       } catch (error) {
         dispatch(setError(error.message));
         throw error;
@@ -86,16 +95,15 @@ export const useSettings = () => {
         dispatch(setLoading(false));
       }
     },
-    [dispatch],
+    [dispatch, mergeAndSetSettings],
   );
 
   const updateLanguage = useCallback(
     async (language) => {
       try {
         dispatch(setLoading(true));
-        const updatedSettings = await settingsService.updateLanguage(language);
-        dispatch(setSettings(updatedSettings));
-        return updatedSettings;
+        const updatedLanguage = await settingsService.updateLanguage(language);
+        return mergeAndSetSettings(updatedLanguage);
       } catch (error) {
         dispatch(setError(error.message));
         throw error;
@@ -103,16 +111,15 @@ export const useSettings = () => {
         dispatch(setLoading(false));
       }
     },
-    [dispatch],
+    [dispatch, mergeAndSetSettings],
   );
 
   const updateTheme = useCallback(
     async (theme) => {
       try {
         dispatch(setLoading(true));
-        const updatedSettings = await settingsService.updateTheme(theme);
-        dispatch(setSettings(updatedSettings));
-        return updatedSettings;
+        const updatedTheme = await settingsService.updateTheme(theme);
+        return mergeAndSetSettings(updatedTheme);
       } catch (error) {
         dispatch(setError(error.message));
         throw error;
@@ -120,7 +127,7 @@ export const useSettings = () => {
         dispatch(setLoading(false));
       }
     },
-    [dispatch],
+    [dispatch, mergeAndSetSettings],
   );
 
   const loadLanguages = useCallback(async () => {

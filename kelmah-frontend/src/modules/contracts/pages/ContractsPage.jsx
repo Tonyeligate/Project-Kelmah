@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -6,6 +6,7 @@ import {
   CardActions,
   CardContent,
   Chip,
+  CircularProgress,
   Divider,
   Grid,
   IconButton,
@@ -13,6 +14,7 @@ import {
   Stack,
   TextField,
   Typography,
+  Alert,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
@@ -25,7 +27,9 @@ import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { formatDistanceToNow } from 'date-fns';
 import { alpha } from '@mui/material/styles';
+import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
+import { contractService } from '../services/contractService';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All contracts' },
@@ -40,60 +44,6 @@ const SORT_OPTIONS = [
   { value: 'oldest', label: 'Oldest first' },
   { value: 'value-high', label: 'Value high → low' },
   { value: 'value-low', label: 'Value low → high' },
-];
-
-const MOCK_CONTRACTS = [
-  {
-    id: '1',
-    title: 'Premium Plumbing Installation',
-    status: 'active',
-    budget: 1200,
-    currency: 'GH₵',
-    lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 6),
-    client: {
-      name: 'Ama Mensah',
-      company: 'Crystal Clear Properties',
-    },
-    milestones: [
-      { id: 'm1', title: 'Pipe Installation', status: 'completed' },
-      { id: 'm2', title: 'Quality Assurance', status: 'in-progress' },
-      { id: 'm3', title: 'Final Sign-off', status: 'pending' },
-    ],
-  },
-  {
-    id: '2',
-    title: 'Electrical Safety Upgrade',
-    status: 'pending',
-    budget: 850,
-    currency: 'GH₵',
-    lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-    client: {
-      name: 'Kwesi Ofori',
-      company: 'SafeHome Living',
-    },
-    milestones: [
-      { id: 'm1', title: 'Site Audit', status: 'completed' },
-      { id: 'm2', title: 'Wiring Upgrade', status: 'pending' },
-      { id: 'm3', title: 'Certification', status: 'pending' },
-    ],
-  },
-  {
-    id: '3',
-    title: 'Carpentry Finishing Package',
-    status: 'completed',
-    budget: 2100,
-    currency: 'GH₵',
-    lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10),
-    client: {
-      name: 'Kofi Boateng',
-      company: 'Primed Interiors',
-    },
-    milestones: [
-      { id: 'm1', title: 'Cabinet Installation', status: 'completed' },
-      { id: 'm2', title: 'Polishing & Finishes', status: 'completed' },
-      { id: 'm3', title: 'Client Handover', status: 'completed' },
-    ],
-  },
 ];
 
 const statusIconMap = {
@@ -118,9 +68,32 @@ const ContractsPage = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortOption, setSortOption] = useState('newest');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [contracts, setContracts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchContracts = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await contractService.getContracts();
+      const data = result?.contracts || result?.data || (Array.isArray(result) ? result : []);
+      setContracts(data);
+    } catch (err) {
+      console.error('Failed to load contracts:', err);
+      setError('Unable to load contracts. Please try again.');
+      setContracts([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchContracts();
+  }, [fetchContracts]);
 
   const filteredContracts = useMemo(() => {
-    const list = [...MOCK_CONTRACTS];
+    const list = [...contracts];
 
     const matchesSearch = (contract) => {
       if (!searchQuery.trim()) return true;
@@ -161,11 +134,10 @@ const ContractsPage = () => {
     });
   }, [searchQuery, statusFilter, sortOption]);
 
-  const refreshContracts = () => {
+  const refreshContracts = async () => {
     setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 800);
+    await fetchContracts();
+    setIsRefreshing(false);
   };
 
   const renderMilestones = (milestones) => (
@@ -214,7 +186,12 @@ const ContractsPage = () => {
           >
             {isRefreshing ? 'Refreshing…' : 'Refresh'}
           </Button>
-          <Button variant="contained" color="secondary">
+          <Button
+            variant="contained"
+            color="secondary"
+            component={RouterLink}
+            to="/contracts/create"
+          >
             New Contract
           </Button>
         </Stack>
@@ -275,7 +252,19 @@ const ContractsPage = () => {
         </Grid>
       </Paper>
 
-      <Grid container spacing={3}>
+      {loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress />
+        </Box>
+      )}
+
+      {error && !loading && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+
+      {!loading && <Grid container spacing={3}>
         {filteredContracts.map((contract) => (
           <Grid item key={contract.id} xs={12} md={6} lg={4}>
             <Card
@@ -335,10 +324,20 @@ const ContractsPage = () => {
               <CardActions
                 sx={{ justifyContent: 'space-between', px: 3, py: 2 }}
               >
-                <Button startIcon={<VisibilityIcon />} size="small">
+                <Button
+                  startIcon={<VisibilityIcon />}
+                  size="small"
+                  component={RouterLink}
+                  to={`/contracts/${contract.id}`}
+                >
                   View Details
                 </Button>
-                <IconButton size="small">
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    window.open(`/api/jobs/contracts/${contract.id}`, '_blank')
+                  }
+                >
                   <DownloadIcon fontSize="small" />
                 </IconButton>
               </CardActions>
@@ -367,13 +366,18 @@ const ContractsPage = () => {
                 Try adjusting your search or create a new contract to get
                 started.
               </Typography>
-              <Button variant="contained" sx={{ mt: 3 }}>
+              <Button
+                variant="contained"
+                sx={{ mt: 3 }}
+                component={RouterLink}
+                to="/contracts/create"
+              >
                 Create Contract
               </Button>
             </Box>
           </Grid>
         )}
-      </Grid>
+      </Grid>}
     </Box>
   );
 };

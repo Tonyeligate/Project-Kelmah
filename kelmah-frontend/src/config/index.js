@@ -12,7 +12,7 @@ import env, {
   USE_MOCK_DATA as envUseMockData,
 } from './env';
 import * as constants from './constants';
-import { JWT_LOCAL_STORAGE_KEY, AUTH_USER_KEY } from './config';
+import { JWT_LOCAL_STORAGE_KEY, AUTH_USER_KEY } from './constants';
 
 // Export renamed imports to avoid conflicts
 export const API_BASE_URL = envApiBaseUrl;

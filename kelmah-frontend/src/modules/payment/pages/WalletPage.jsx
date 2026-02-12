@@ -141,11 +141,14 @@ const WalletPage = () => {
         </Button>
       </Box>
       {/* Summary above transactions list */}
-      {transactions.length > 0 && (
+      {(Array.isArray(transactions) ? transactions.length : 0) > 0 && (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Showing {(page - 1) * perPage + 1} -{' '}
-          {Math.min(transactions.length, page * perPage)} of{' '}
-          {transactions.length} transactions
+          {Math.min(
+            Array.isArray(transactions) ? transactions.length : 0,
+            page * perPage,
+          )}{' '}
+          of {Array.isArray(transactions) ? transactions.length : 0} transactions
         </Typography>
       )}
       {/* Transactions List */}

@@ -73,14 +73,15 @@ const statusColors = {
 };
 
 const ContractDetailsPage = () => {
-  const { contractId } = useParams();
+  const { contractId, id } = useParams();
+  const resolvedContractId = contractId || id;
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
   const contract = useSelector(selectCurrentContract);
   const milestones = useSelector((state) =>
-    selectContractMilestones(state, contractId),
+    selectContractMilestones(state, resolvedContractId),
   );
   const loading = useSelector(selectContractsLoading);
   const error = useSelector(selectContractsError);
@@ -105,9 +106,10 @@ const ContractDetailsPage = () => {
 
   // Load contract and milestones on mount
   useEffect(() => {
-    dispatch(fetchContractById(contractId));
-    dispatch(fetchContractMilestones(contractId));
-  }, [dispatch, contractId]);
+    if (!resolvedContractId) return;
+    dispatch(fetchContractById(resolvedContractId));
+    dispatch(fetchContractMilestones(resolvedContractId));
+  }, [dispatch, resolvedContractId]);
 
   // Show creation success toast if navigated with state
   useEffect(() => {
@@ -131,12 +133,12 @@ const ContractDetailsPage = () => {
 
   // Navigate to edit contract page
   const handleEditContract = () => {
-    navigate(`/contracts/${contractId}/edit`);
+    navigate(`/contracts/${resolvedContractId}/edit`);
   };
 
   // Handle contract cancellation
   const handleCancelContract = () => {
-    dispatch(cancelContract({ contractId, reason: cancelReason }))
+    dispatch(cancelContract({ contractId: resolvedContractId, reason: cancelReason }))
       .unwrap()
       .then(() => {
         setCancelDialogOpen(false);
@@ -158,7 +160,7 @@ const ContractDetailsPage = () => {
 
   // Handle contract signature
   const handleSignContract = () => {
-    dispatch(signContract({ contractId, signatureData: { signature } }))
+    dispatch(signContract({ contractId: resolvedContractId, signatureData: { signature } }))
       .unwrap()
       .then(() => {
         setSignDialogOpen(false);
@@ -180,7 +182,7 @@ const ContractDetailsPage = () => {
 
   // Handle send for signature
   const handleSendForSignature = () => {
-    dispatch(sendContractForSignature(contractId))
+    dispatch(sendContractForSignature(resolvedContractId))
       .unwrap()
       .then(() => {
         setToast({
@@ -200,7 +202,7 @@ const ContractDetailsPage = () => {
 
   // Handle milestone completion
   const handleCompleteMilestone = (milestoneId) => {
-    dispatch(completeMilestone({ contractId, milestoneId }))
+    dispatch(completeMilestone({ contractId: resolvedContractId, milestoneId }))
       .unwrap()
       .then(() => {
         setToast({
@@ -220,7 +222,7 @@ const ContractDetailsPage = () => {
 
   // Handle dispute creation
   const handleCreateDispute = () => {
-    dispatch(createDispute({ contractId, disputeData }))
+    dispatch(createDispute({ contractId: resolvedContractId, disputeData }))
       .unwrap()
       .then(() => {
         setDisputeDialogOpen(false);
@@ -242,7 +244,8 @@ const ContractDetailsPage = () => {
 
   // Handle download contract
   const handleDownloadContract = () => {
-    window.open(`/api/contracts/${contractId}/download`, '_blank');
+    if (!resolvedContractId) return;
+    window.open(`/api/jobs/contracts/${resolvedContractId}`, '_blank');
   };
 
   // Calculate contract progress based on milestones

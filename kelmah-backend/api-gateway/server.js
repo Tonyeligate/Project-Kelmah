@@ -35,9 +35,15 @@ const {
 
 /**
  * Dynamic Proxy Middleware Creator
- * Creates proxy middleware that resolves service URLs at runtime
+ * Creates proxy middleware that resolves service URLs at runtime.
+ * Caches proxy instances per service+options to avoid per-request allocation.
  */
+const proxyCache = new Map();
+
 const createDynamicProxy = (serviceName, options = {}) => {
+  // Build a stable cache key from service name + serialized options
+  const cacheKey = `${serviceName}:${JSON.stringify(options)}`;
+
   return (req, res, next) => {
     try {
       const targetUrl = services[serviceName] || getServiceUrl(serviceName);
@@ -50,11 +56,16 @@ const createDynamicProxy = (serviceName, options = {}) => {
         });
       }
 
-      const proxy = createProxyMiddleware({
-        target: targetUrl,
-        changeOrigin: true,
-        ...options
-      });
+      const instanceKey = `${cacheKey}:${targetUrl}`;
+      let proxy = proxyCache.get(instanceKey);
+      if (!proxy) {
+        proxy = createProxyMiddleware({
+          target: targetUrl,
+          changeOrigin: true,
+          ...options
+        });
+        proxyCache.set(instanceKey, proxy);
+      }
 
       return proxy(req, res, next);
     } catch (error) {
@@ -229,6 +240,57 @@ app.use(cors({
 // Request sanitization — strip XSS payloads from input
 app.use(requestValidator.sanitizeRequest);
 
+// ============================================================
+// RAW WEBHOOK ROUTES — mounted BEFORE body parser
+// Stripe & Paystack require the original raw request body for
+// HMAC signature verification.  express.json() would parse the
+// body into an object, destroying the bytes that the downstream
+// services need for `stripe.webhooks.constructEvent()` and
+// Paystack's `processWebhook()`.  By mounting these routes here
+// the proxy streams the untouched raw body to the service.
+// ============================================================
+
+// Stripe webhooks → payment-service (public, no auth)
+app.post('/api/webhooks/stripe', createDynamicProxy('payment', {
+  pathRewrite: { '^/api/webhooks': '/api/webhooks' },
+  onError: (err, req, res) => {
+    console.error('[API Gateway] Stripe webhook proxy error:', err.message);
+    res.status(503).json({
+      success: false,
+      error: { message: 'Payment service unavailable', code: 'SERVICE_UNAVAILABLE' }
+    });
+  }
+}));
+
+// Paystack webhooks → payment-service (public, no auth)
+app.post('/api/webhooks/paystack', createDynamicProxy('payment', {
+  pathRewrite: { '^/api/webhooks': '/api/webhooks' },
+  onError: (err, req, res) => {
+    console.error('[API Gateway] Paystack webhook proxy error:', err.message);
+    res.status(503).json({
+      success: false,
+      error: { message: 'Payment service unavailable', code: 'SERVICE_UNAVAILABLE' }
+    });
+  }
+}));
+
+// QuickJobs Paystack webhook → job-service (public, no auth)
+// The job-service QuickJob route mounts POST /payment/webhook
+// BEFORE verifyGatewayRequest, so it is intentionally public.
+app.post('/api/quick-jobs/payment/webhook', createDynamicProxy('job', {
+  pathRewrite: { '^/api/quick-jobs': '/api/quick-jobs' },
+  onError: (err, req, res) => {
+    console.error('[API Gateway] QuickJobs webhook proxy error:', err.message);
+    res.status(503).json({
+      success: false,
+      error: { message: 'QuickJob service unavailable', code: 'SERVICE_UNAVAILABLE' }
+    });
+  }
+}));
+
+// ============================================================
+// Body parsers — AFTER raw webhook routes
+// ============================================================
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(loggingMiddleware(logger));
@@ -332,9 +394,6 @@ if (internalKeepAlive) {
     }
   });
 }
-
-app.get('/health', healthResponse);
-app.get('/api/health', healthResponse);
 
 // Aggregated health (services + providers) - Both /health/aggregate and /api/health/aggregate
 const aggregatedHealthHandler = async (req, res) => {
@@ -677,6 +736,19 @@ const { getRateLimiter } = require('./middlewares/rate-limiter');
 const jobRouter = require('./routes/job.routes');
 app.use('/api/jobs', jobRouter);
 
+// Milestones routes — proxy to job-service /api/jobs/milestones/*
+// Frontend calls /api/milestones/* which gateway rewrites to job-service
+app.use('/api/milestones', authenticate, createDynamicProxy('job', {
+  pathRewrite: { '^/api/milestones': '/api/jobs/milestones' },
+  onError: (err, req, res) => {
+    console.error('[API Gateway] Milestone service error:', err.message);
+    res.status(503).json({
+      success: false,
+      error: { message: 'Milestone service temporarily unavailable', code: 'SERVICE_UNAVAILABLE' }
+    });
+  }
+}));
+
 // Search routes (public) with rate limiting
 app.use('/api/search', getRateLimiter('search'));
 app.use('/api/search', createDynamicProxy('job', {
@@ -741,6 +813,20 @@ app.use('/api/payments',
 const messagingRouter = require('./routes/messaging.routes');
 app.use('/api/messages', authenticate, messagingRouter);
 
+// Messaging health alias for diagnostics → proxies to messaging-service /api/health
+// IMPORTANT: Must be mounted BEFORE the catch-all /api/messaging router to avoid shadowing
+app.use('/api/messaging/health', (req, res, next) => {
+  if (!services.messaging || typeof services.messaging !== 'string' || services.messaging.length === 0) {
+    return res.status(503).json({ error: 'Messaging service unavailable' });
+  }
+  const proxy = createProxyMiddleware({
+    target: services.messaging,
+    changeOrigin: true,
+    pathRewrite: { '^/api/messaging/health': '/api/health' }
+  });
+  return proxy(req, res, next);
+});
+
 // IMPORTANT: Also mount at /api/messaging to match frontend API calls
 // Frontend uses /api/messaging/conversations, /api/messaging/messages, etc.
 app.use('/api/messaging', authenticate, messagingRouter);
@@ -761,18 +847,7 @@ app.use('/api/uploads',
   }
 );
 
-// Messaging health alias for diagnostics → proxies to messaging-service /api/health
-app.use('/api/messaging/health', (req, res, next) => {
-  if (!services.messaging || typeof services.messaging !== 'string' || services.messaging.length === 0) {
-    return res.status(503).json({ error: 'Messaging service unavailable' });
-  }
-  const proxy = createProxyMiddleware({
-    target: services.messaging,
-    changeOrigin: true,
-    pathRewrite: { '^/api/messaging/health': '/api/health' }
-  });
-  return proxy(req, res, next);
-});
+// (Messaging health route moved above /api/messaging mount to prevent shadowing)
 
 // Socket.IO WebSocket proxy to messaging-service
 // IMPORTANT: Always mount on '/socket.io' path to avoid intercepting unrelated routes
@@ -876,7 +951,7 @@ app.use('/api/notifications', authenticate, async (req, res, next) => {
       });
     }
 
-    const messagingUrl = process.env.MESSAGING_SERVICE_CLOUD_URL || 'http://localhost:5005';
+    const messagingUrl = services.messaging || 'http://localhost:5005';
     const targetUrl = `${messagingUrl}/api/notifications${req.url}`;
 
     console.log('[NOTIFICATIONS MANUAL PROXY] Request:', {
@@ -972,17 +1047,23 @@ app.use('/api/admin/reviews',
 // Review routes (mixed protection)
 app.use('/api/reviews',
   (req, res, next) => {
-    // Public routes: GET reviews for workers and public analytics/user profiles
+    const isEligibilityRoute =
+      req.method === 'GET' &&
+      /^\/worker\/[^/]+\/eligibility$/.test(req.path);
+
+    // Public routes: GET review collections (worker/user/job)
     if (
-      req.method === 'GET' && (
+      req.method === 'GET' &&
+      !isEligibilityRoute &&
+      (
         req.path.includes('/worker/') ||
-        req.path.includes('/analytics') ||
-        req.path.includes('/user/')
+        req.path.includes('/user/') ||
+        req.path.includes('/job/')
       )
     ) {
       return next();
     }
-    // Protected routes: Submit, respond, helpful/report, can-review (requires identity)
+    // Protected routes: submit/respond/helpful/report/eligibility/analytics/moderation
     return authenticate(req, res, next);
   },
   rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }), // Review-specific rate limiting

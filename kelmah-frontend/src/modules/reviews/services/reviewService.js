@@ -3,6 +3,72 @@ import { api } from '../../../services/apiClient';
 const unwrapData = (response) => response?.data?.data ?? response?.data ?? {};
 const unwrapResponse = (response) => response?.data ?? {};
 
+const normalizeReview = (review = {}, index = 0) => {
+  const reviewerName =
+    review?.reviewer?.name ||
+    review?.reviewerName ||
+    (review?.hirerId
+      ? `${review.hirerId.firstName || ''} ${review.hirerId.lastName || ''}`.trim()
+      : '') ||
+    'Reviewer';
+
+  const jobTitle =
+    review?.job?.title ||
+    review?.jobTitle ||
+    review?.projectTitle ||
+    'Completed Job';
+
+  return {
+    ...review,
+    id: review?.id || review?._id || `review-${index}`,
+    title: review?.title || 'Review',
+    comment: review?.comment || review?.description || '',
+    rating: Number(review?.rating || review?.ratings?.overall || 0),
+    createdAt: review?.createdAt || review?.date || new Date().toISOString(),
+    helpfulVotes: Number(review?.helpfulVotes || 0),
+    unhelpfulVotes: Number(review?.unhelpfulVotes || 0),
+    hasReply: Boolean(review?.hasReply || review?.response?.comment),
+    reply: review?.reply || review?.response || null,
+    categories: Array.isArray(review?.categories) ? review.categories : [],
+    reviewer: {
+      name: reviewerName,
+      isVerified: Boolean(
+        review?.reviewer?.isVerified || review?.hirerId?.isVerified,
+      ),
+      avatar:
+        review?.reviewer?.avatar ||
+        review?.hirerId?.profilePicture ||
+        review?.reviewer?.profilePicture ||
+        '',
+    },
+    job: {
+      title: jobTitle,
+      id: review?.job?.id || review?.job?._id || review?.jobId || null,
+      completedDate:
+        review?.job?.completedDate ||
+        review?.completedDate ||
+        review?.createdAt ||
+        new Date().toISOString(),
+      budget: review?.job?.budget || review?.budget || 'N/A',
+    },
+  };
+};
+
+const normalizeReviewCollection = (payload) => {
+  const reviewsArray = Array.isArray(payload?.reviews)
+    ? payload.reviews
+    : Array.isArray(payload)
+      ? payload
+      : [];
+
+  return {
+    ...payload,
+    reviews: reviewsArray.map((review, index) =>
+      normalizeReview(review, index),
+    ),
+  };
+};
+
 /**
  * Review Service - gateway for review, rating, and moderation APIs
  */
@@ -13,7 +79,7 @@ class ReviewService {
     }
     try {
       const response = await api.get(`/reviews/worker/${workerId}`, { params });
-      return unwrapData(response);
+      return normalizeReviewCollection(unwrapData(response));
     } catch (error) {
       console.error('Error fetching worker reviews:', error);
       throw error;
@@ -28,7 +94,7 @@ class ReviewService {
       const response = await api.get(`/reviews/user/${userId}`, {
         params: { page, limit, ...filters },
       });
-      return unwrapData(response);
+      return normalizeReviewCollection(unwrapData(response));
     } catch (error) {
       console.error('Error fetching user reviews:', error);
       throw error;
@@ -43,7 +109,7 @@ class ReviewService {
       const response = await api.get(`/reviews/job/${jobId}`, {
         params: { page, limit, ...filters },
       });
-      return unwrapData(response);
+      return normalizeReviewCollection(unwrapData(response));
     } catch (error) {
       console.error('Error fetching job reviews:', error);
       throw error;
@@ -148,7 +214,7 @@ class ReviewService {
   async getReview(reviewId) {
     try {
       const response = await api.get(`/reviews/${reviewId}`);
-      return unwrapData(response);
+      return normalizeReview(unwrapData(response));
     } catch (error) {
       console.error('Error fetching review:', error);
       throw error;

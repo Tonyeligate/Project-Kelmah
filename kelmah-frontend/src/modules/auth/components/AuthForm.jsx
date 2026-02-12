@@ -8,15 +8,15 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-import { useAuth } from '../../../hooks/useAuth';
-import { useSelector } from 'react-redux';
-import { selectAuthLoading, selectAuthError } from '../../services/authSlice';
+import { useAuth } from '../hooks/useAuth';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectAuthLoading, selectAuthError, login, register } from '../services/authSlice';
 
 const AuthForm = ({ mode = 'login', onSuccess }) => {
-  // Use Redux auth system instead of AuthContext
+  // Use Redux auth system
   const dispatch = useDispatch();
-  const loginUser = (credentials) => dispatch(loginAction(credentials));
-  const registerUser = (userData) => dispatch(registerAction(userData));
+  const loginUser = (credentials) => dispatch(login(credentials));
+  const registerUser = (userData) => dispatch(register(userData));
   const loading = useSelector(selectAuthLoading);
   const error = useSelector(selectAuthError);
 
@@ -72,12 +72,12 @@ const AuthForm = ({ mode = 'login', onSuccess }) => {
 
     try {
       if (mode === 'login') {
-        await login({
+        await loginUser({
           email: formData.email,
           password: formData.password,
         });
       } else {
-        await register({
+        await registerUser({
           email: formData.email,
           password: formData.password,
           firstName: formData.firstName,

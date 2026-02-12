@@ -63,7 +63,11 @@ const NotificationItem = ({ notification }) => (
     secondaryAction={
       <Typography variant="caption" color="text.secondary" sx={{ pr: 1 }}>
         {formatDistanceToNow(
-          new Date(notification.createdAt || notification.date),
+          new Date(
+            notification.createdAt ||
+              notification.date ||
+              new Date().toISOString(),
+          ),
           { addSuffix: true },
         )}
       </Typography>
@@ -111,8 +115,11 @@ const NotificationItem = ({ notification }) => (
 
 const ActivityFeed = ({ notifications }) => (
   <List>
-    {notifications.map((notification) => (
-      <NotificationItem key={notification.id} notification={notification} />
+    {notifications.map((notification, index) => (
+      <NotificationItem
+        key={notification.id || notification._id || `notif-${index}`}
+        notification={notification}
+      />
     ))}
   </List>
 );
@@ -279,9 +286,9 @@ const NotificationsPage = () => {
           </Box>
         ) : filteredNotifications.length > 0 ? (
           <List sx={{ p: 0 }}>
-            {filteredNotifications.map((notification) => (
+            {filteredNotifications.map((notification, index) => (
               <NotificationItem
-                key={notification.id}
+                key={notification.id || notification._id || `notif-${index}`}
                 notification={notification}
               />
             ))}

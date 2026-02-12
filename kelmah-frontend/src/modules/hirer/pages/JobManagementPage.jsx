@@ -138,6 +138,7 @@ const JobManagementPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [uiMessage, setUiMessage] = useState(null);
 
   // Fetch jobs by status on mount (canonical statuses)
   useEffect(() => {
@@ -192,7 +193,13 @@ const JobManagementPage = () => {
   };
 
   const handleEditJob = (jobId) => {
-    navigate(`/jobs/edit/${jobId}`);
+    const job = jobs.find((j) => j?.id === jobId);
+    if (job?.status && job.status !== 'draft') {
+      setUiMessage('Only draft jobs can be edited at the moment.');
+      handleMenuClose();
+      return;
+    }
+    navigate(`/hirer/jobs/edit/${jobId}`);
     handleMenuClose();
   };
 
@@ -331,6 +338,12 @@ const JobManagementPage = () => {
       <Helmet>
         <title>Manage Jobs | Kelmah</title>
       </Helmet>
+
+      {uiMessage && (
+        <Alert severity="info" sx={{ mb: 2 }} onClose={() => setUiMessage(null)}>
+          {uiMessage}
+        </Alert>
+      )}
       
       {/* Mobile-optimized header */}
       <Box sx={{ mb: { xs: 2, md: 4 }, px: { xs: 0.5, md: 0 } }}>

@@ -324,9 +324,7 @@ async function startServerWithDbRetry() {
         });
       }
       // Mount API routes once DB connection is ready
-      console.log('[DB CONNECTION] About to mount API routes...');
-      mountApiRoutes();
-      console.log('[DB CONNECTION] Routes mounted, breaking retry loop');
+      // Routes already mounted at startup (EMERGENCY FIX below), no need to re-mount here
       break;
     } catch (err) {
       attempt += 1;

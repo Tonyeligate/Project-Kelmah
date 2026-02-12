@@ -14,14 +14,16 @@ const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
-    // ✅ ENHANCED: Better logging for debugging 401 errors
-    console.log("🔐 Auth Check:", {
-      url: req.url,
-      method: req.method,
-      hasAuthHeader: !!authHeader,
-      headerFormat: authHeader ? authHeader.substring(0, 20) + "..." : "none",
-      userAgent: req.get("User-Agent")?.substring(0, 50),
-    });
+    // Auth debug logging — only in development to avoid leaking info in production
+    if (process.env.NODE_ENV === "development") {
+      console.log("🔐 Auth Check:", {
+        url: req.url,
+        method: req.method,
+        hasAuthHeader: !!authHeader,
+        headerFormat: authHeader ? authHeader.substring(0, 20) + "..." : "none",
+        userAgent: req.get("User-Agent")?.substring(0, 50),
+      });
+    }
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       console.warn("❌ Auth Failed: No token or invalid format:", {
@@ -50,11 +52,13 @@ const authenticate = async (req, res, next) => {
     // Verify JWT token using shared utility
     const decoded = verifyAccessToken(token);
 
-    console.log("🔓 Token decoded successfully:", {
-      userId: decoded.sub || decoded.id || decoded.userId,
-      email: decoded.email,
-      exp: new Date(decoded.exp * 1000).toISOString(),
-    });
+    if (process.env.NODE_ENV === "development") {
+      console.log("🔓 Token decoded successfully:", {
+        userId: decoded.sub || decoded.id || decoded.userId,
+        email: decoded.email,
+        exp: new Date(decoded.exp * 1000).toISOString(),
+      });
+    }
 
     // Get user details with timeout to prevent buffering issues
     const userId = decoded.sub || decoded.id || decoded.userId;

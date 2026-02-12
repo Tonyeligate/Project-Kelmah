@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Container,
@@ -44,6 +44,7 @@ import {
 import { Helmet } from 'react-helmet-async';
 import {
   createHirerJob,
+  updateHirerJob,
   selectHirerLoading,
   selectHirerError,
 } from '../services/hirerSlice';
@@ -179,6 +180,9 @@ const JobPostingPage = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { jobId } = useParams();
+  const isEditMode = Boolean(jobId);
+  const hirerJobsByStatus = useSelector((state) => state.hirer?.jobs);
   const isLoading = useSelector(selectHirerLoading('jobs'));
   const error = useSelector(selectHirerError('jobs'));
   const [activeStep, setActiveStep] = useState(0);
@@ -198,6 +202,52 @@ const JobPostingPage = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
   const [stepAttempts, setStepAttempts] = useState({});
+
+  useEffect(() => {
+    if (!isEditMode) return;
+    if (!hirerJobsByStatus || typeof hirerJobsByStatus !== 'object') return;
+
+    const allJobs = Object.values(hirerJobsByStatus).flatMap((v) =>
+      Array.isArray(v) ? v : [],
+    );
+    const existing = allJobs.find((j) => String(j?.id) === String(jobId));
+    if (!existing) return;
+
+    const locationType =
+      existing?.location?.type || existing?.locationType || 'remote';
+    const locationAddress =
+      typeof existing?.location === 'string'
+        ? existing.location
+        : existing?.location?.address || existing?.location?.text || '';
+
+    const durationValue =
+      typeof existing?.duration === 'string'
+        ? existing.duration
+        : existing?.duration?.value && existing?.duration?.unit
+          ? `${existing.duration.value} ${existing.duration.unit}`
+          : '';
+
+    setFormData((prev) => ({
+      ...prev,
+      title: existing?.title || prev.title,
+      category: existing?.category || prev.category,
+      skills: Array.isArray(existing?.skills)
+        ? existing.skills
+        : typeof existing?.skills === 'string'
+          ? existing.skills.split(',').map((s) => s.trim()).filter(Boolean)
+          : prev.skills,
+      description: existing?.description || prev.description,
+      requirements: existing?.requirements || prev.requirements,
+      paymentType: existing?.paymentType || prev.paymentType,
+      budget:
+        (existing?.paymentType || prev.paymentType) === 'hourly'
+          ? { ...prev.budget, max: String(existing?.budget ?? ''), fixed: '' }
+          : { ...prev.budget, fixed: String(existing?.budget ?? ''), min: '', max: '' },
+      duration: durationValue || prev.duration,
+      locationType,
+      location: locationAddress,
+    }));
+  }, [isEditMode, hirerJobsByStatus, jobId]);
   const previewSnapshot = useMemo(() => {
     const normalized = normalizeDescription(formData.description || '');
     const cleanSkills = Array.isArray(formData.skills)
@@ -489,7 +539,11 @@ const JobPostingPage = () => {
       status: asDraft ? 'draft' : 'open',
     };
 
-    dispatch(createHirerJob(payload))
+    const action = isEditMode
+      ? updateHirerJob({ jobId, updates: payload })
+      : createHirerJob(payload);
+
+    dispatch(action)
       .unwrap()
       .then(() => setSubmitSuccess(true))
       .catch(() => { });
@@ -510,7 +564,7 @@ const JobPostingPage = () => {
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 }, textAlign: 'center' }}>
         <CheckCircle color="success" sx={{ fontSize: { xs: 60, md: 80 }, mb: 2 }} />
         <Typography variant="h4" gutterBottom>
-          Job Posted Successfully!
+          {isEditMode ? 'Job Updated Successfully!' : 'Job Posted Successfully!'}
         </Typography>
         <Button
           variant="contained"

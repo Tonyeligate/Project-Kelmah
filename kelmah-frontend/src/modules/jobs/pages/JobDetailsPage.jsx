@@ -87,7 +87,8 @@ const ProfileLink = styled(Box)(({ theme }) => ({
 }));
 
 const JobDetailsPage = () => {
-  const { search } = useLocation();
+  const location = useLocation();
+  const { search } = location;
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -169,7 +170,7 @@ const JobDetailsPage = () => {
   };
 
   const handleSignIn = () => {
-    navigate('/auth/login', {
+    navigate('/login', {
       state: { from: location.pathname + location.search },
     });
   };

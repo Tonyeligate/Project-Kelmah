@@ -1,17 +1,22 @@
+/**
+ * Settings Routes — MongoDB-backed user preferences
+ * ✅ FIXED: Replaced in-memory Map with MongoDB Settings model.
+ * User preferences now persist across service restarts.
+ */
 const router = require('express').Router();
 
 // Service trust middleware - verify requests from API Gateway
 const { verifyGatewayRequest } = require('../../../shared/middlewares/serviceTrust');
 
-// Simple in-memory store until Mongo-backed preferences are available
-const userPrefs = new Map();
+// MongoDB Settings model
+const { Settings } = require('../models');
 
 const DEFAULT_NOTIFICATIONS = {
   email: true,
   push: true,
   sms: false,
   inApp: true,
-  quietHours: null,
+  quietHours: { enabled: false, start: null, end: null },
 };
 
 const DEFAULT_PRIVACY = {
@@ -42,117 +47,164 @@ const AVAILABLE_THEMES = [
 
 const getUserId = (req) => req.user?.id || req.headers['x-user-id'] || null;
 
-const clone = (v) => JSON.parse(JSON.stringify(v));
-
-// Retrieve user settings. If `createIfMissing` is false and the userId
-// is not present, return a non-persistent clone of defaults instead
-// of creating an in-memory entry for anonymous requests.
-const getUserSettings = (userId, createIfMissing = true) => {
-  if (!userId) {
-    return clone(DEFAULT_SETTINGS);
-  }
-
-  if (!userPrefs.has(userId)) {
-    if (!createIfMissing) return clone(DEFAULT_SETTINGS);
-    userPrefs.set(userId, {
-      ...clone(DEFAULT_SETTINGS),
-      notifications: clone(DEFAULT_NOTIFICATIONS),
-      privacy: clone(DEFAULT_PRIVACY),
-    });
-  }
-  return userPrefs.get(userId);
-};
-
 const respond = (res, data) => res.json({ success: true, data });
 
-// Base settings endpoints
-// Public: return user settings when authenticated, otherwise return defaults
-router.get('/', (req, res) => {
-  const userId = getUserId(req);
-  const settings = getUserSettings(userId, !!userId);
-  respond(res, settings);
+/**
+ * Get or create settings for a user. Returns defaults for anonymous requests.
+ */
+const getOrCreateSettings = async (userId) => {
+  if (!userId) return { ...DEFAULT_SETTINGS };
+
+  let settings = await Settings.findOne({ userId }).lean();
+  if (!settings) {
+    settings = (await Settings.create({ userId, ...DEFAULT_SETTINGS })).toObject();
+  }
+  return settings;
+};
+
+// ==================== Base settings endpoints ====================
+
+router.get('/', async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    const settings = await getOrCreateSettings(userId);
+    respond(res, settings);
+  } catch (err) {
+    console.error('[SETTINGS] GET / error:', err.message);
+    res.status(500).json({ success: false, error: { message: 'Failed to retrieve settings' } });
+  }
 });
 
-router.put('/', verifyGatewayRequest, (req, res) => {
-  const userId = getUserId(req);
-  const current = getUserSettings(userId);
-  const next = {
-    ...current,
-    ...req.body,
-    notifications: {
-      ...current.notifications,
-      ...(req.body?.notifications || {}),
-    },
-    privacy: {
-      ...current.privacy,
-      ...(req.body?.privacy || {}),
-    },
-  };
-  userPrefs.set(userId, next);
-  respond(res, next);
+router.put('/', verifyGatewayRequest, async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ success: false, error: { message: 'Authentication required' } });
+
+    const update = {};
+    if (req.body.theme) update.theme = req.body.theme;
+    if (req.body.language) update.language = req.body.language;
+    if (req.body.notifications) update.notifications = { ...DEFAULT_NOTIFICATIONS, ...req.body.notifications };
+    if (req.body.privacy) update.privacy = { ...DEFAULT_PRIVACY, ...req.body.privacy };
+
+    const settings = await Settings.findOneAndUpdate(
+      { userId },
+      { $set: update },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    ).lean();
+
+    respond(res, settings);
+  } catch (err) {
+    console.error('[SETTINGS] PUT / error:', err.message);
+    res.status(500).json({ success: false, error: { message: 'Failed to update settings' } });
+  }
 });
 
-// Notification preferences
-// Public-safe notifications read: returns user-specific prefs when authenticated,
-// otherwise returns default notification settings without creating persistent entries.
-router.get('/notifications', (req, res) => {
-  const userId = getUserId(req);
-  const settings = getUserSettings(userId, !!userId);
-  respond(res, settings.notifications || DEFAULT_NOTIFICATIONS);
+// ==================== Notification preferences ====================
+
+router.get('/notifications', async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    const settings = await getOrCreateSettings(userId);
+    respond(res, settings.notifications || DEFAULT_NOTIFICATIONS);
+  } catch (err) {
+    console.error('[SETTINGS] GET /notifications error:', err.message);
+    res.status(500).json({ success: false, error: { message: 'Failed to retrieve notification preferences' } });
+  }
 });
 
-router.put('/notifications', verifyGatewayRequest, (req, res) => {
-  const userId = getUserId(req);
-  const settings = getUserSettings(userId);
-  settings.notifications = {
-    ...DEFAULT_NOTIFICATIONS,
-    ...settings.notifications,
-    ...(req.body || {}),
-  };
-  userPrefs.set(userId, settings);
-  respond(res, settings.notifications);
+router.put('/notifications', verifyGatewayRequest, async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ success: false, error: { message: 'Authentication required' } });
+
+    const notifications = { ...DEFAULT_NOTIFICATIONS, ...req.body };
+    const settings = await Settings.findOneAndUpdate(
+      { userId },
+      { $set: { notifications } },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    ).lean();
+
+    respond(res, settings.notifications);
+  } catch (err) {
+    console.error('[SETTINGS] PUT /notifications error:', err.message);
+    res.status(500).json({ success: false, error: { message: 'Failed to update notification preferences' } });
+  }
 });
 
-// Privacy settings
-// Public-safe privacy read
-router.get('/privacy', (req, res) => {
-  const userId = getUserId(req);
-  const settings = getUserSettings(userId, !!userId);
-  respond(res, settings.privacy || DEFAULT_PRIVACY);
+// ==================== Privacy settings ====================
+
+router.get('/privacy', async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    const settings = await getOrCreateSettings(userId);
+    respond(res, settings.privacy || DEFAULT_PRIVACY);
+  } catch (err) {
+    console.error('[SETTINGS] GET /privacy error:', err.message);
+    res.status(500).json({ success: false, error: { message: 'Failed to retrieve privacy settings' } });
+  }
 });
 
-router.put('/privacy', verifyGatewayRequest, (req, res) => {
-  const userId = getUserId(req);
-  const settings = getUserSettings(userId);
-  settings.privacy = {
-    ...DEFAULT_PRIVACY,
-    ...settings.privacy,
-    ...(req.body || {}),
-  };
-  userPrefs.set(userId, settings);
-  respond(res, settings.privacy);
+router.put('/privacy', verifyGatewayRequest, async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ success: false, error: { message: 'Authentication required' } });
+
+    const privacy = { ...DEFAULT_PRIVACY, ...req.body };
+    const settings = await Settings.findOneAndUpdate(
+      { userId },
+      { $set: { privacy } },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    ).lean();
+
+    respond(res, settings.privacy);
+  } catch (err) {
+    console.error('[SETTINGS] PUT /privacy error:', err.message);
+    res.status(500).json({ success: false, error: { message: 'Failed to update privacy settings' } });
+  }
 });
 
-// Language & theme helpers
-router.put('/language', verifyGatewayRequest, (req, res) => {
-  const userId = getUserId(req);
-  const settings = getUserSettings(userId);
-  const language = req.body?.language || settings.language;
-  settings.language = language;
-  userPrefs.set(userId, settings);
-  respond(res, { language });
+// ==================== Language & Theme helpers ====================
+
+router.put('/language', verifyGatewayRequest, async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ success: false, error: { message: 'Authentication required' } });
+
+    const language = req.body?.language || 'en';
+    const settings = await Settings.findOneAndUpdate(
+      { userId },
+      { $set: { language } },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    ).lean();
+
+    respond(res, { language: settings.language });
+  } catch (err) {
+    console.error('[SETTINGS] PUT /language error:', err.message);
+    res.status(500).json({ success: false, error: { message: 'Failed to update language' } });
+  }
 });
 
-router.put('/theme', verifyGatewayRequest, (req, res) => {
-  const userId = getUserId(req);
-  const settings = getUserSettings(userId);
-  const theme = req.body?.theme || settings.theme;
-  settings.theme = theme;
-  userPrefs.set(userId, settings);
-  respond(res, { theme });
+router.put('/theme', verifyGatewayRequest, async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ success: false, error: { message: 'Authentication required' } });
+
+    const theme = req.body?.theme || 'light';
+    const settings = await Settings.findOneAndUpdate(
+      { userId },
+      { $set: { theme } },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    ).lean();
+
+    respond(res, { theme: settings.theme });
+  } catch (err) {
+    console.error('[SETTINGS] PUT /theme error:', err.message);
+    res.status(500).json({ success: false, error: { message: 'Failed to update theme' } });
+  }
 });
 
-// Public metadata endpoints
+// ==================== Public metadata endpoints ====================
+
 router.get('/languages', (req, res) => {
   respond(res, AVAILABLE_LANGUAGES);
 });
@@ -161,10 +213,18 @@ router.get('/themes', (req, res) => {
   respond(res, AVAILABLE_THEMES);
 });
 
-router.post('/reset', verifyGatewayRequest, (req, res) => {
-  const userId = getUserId(req);
-  userPrefs.delete(userId);
-  respond(res, getUserSettings(userId));
+router.post('/reset', verifyGatewayRequest, async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId) return res.status(401).json({ success: false, error: { message: 'Authentication required' } });
+
+    await Settings.findOneAndDelete({ userId });
+    const settings = await getOrCreateSettings(userId);
+    respond(res, settings);
+  } catch (err) {
+    console.error('[SETTINGS] POST /reset error:', err.message);
+    res.status(500).json({ success: false, error: { message: 'Failed to reset settings' } });
+  }
 });
 
 module.exports = router;

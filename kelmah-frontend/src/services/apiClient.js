@@ -140,16 +140,14 @@ const retryRequest = async (fn, retries = 3, delay = 1000) => {
     }
 };
 
-// Export methods with retry logic
+// Export methods — only GET/HEAD use retry logic; mutations are not retried
 export const api = {
     get: (url, config) => retryRequest(() => apiClient.get(url, config)),
-    post: (url, data, config) =>
-        retryRequest(() => apiClient.post(url, data, config)),
-    put: (url, data, config) =>
-        retryRequest(() => apiClient.put(url, data, config)),
-    patch: (url, data, config) =>
-        retryRequest(() => apiClient.patch(url, data, config)),
-    delete: (url, config) => retryRequest(() => apiClient.delete(url, config)),
+    head: (url, config) => retryRequest(() => apiClient.head(url, config)),
+    post: (url, data, config) => apiClient.post(url, data, config),
+    put: (url, data, config) => apiClient.put(url, data, config),
+    patch: (url, data, config) => apiClient.patch(url, data, config),
+    delete: (url, config) => apiClient.delete(url, config),
 };
 
 export default apiClient;

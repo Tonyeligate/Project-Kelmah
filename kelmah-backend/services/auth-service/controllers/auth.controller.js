@@ -162,6 +162,12 @@ exports.login = async (req, res, next) => {
       return next(new AppError("Please verify your email before logging in", 403));
     }
 
+    // AUTH-1/2 FIX: Check account lock BEFORE bcrypt to avoid wasting CPU on locked accounts
+    if (user.accountLockedUntil && user.accountLockedUntil > new Date()) {
+      const minutesLeft = Math.ceil((user.accountLockedUntil - new Date()) / (60 * 1000));
+      return next(new AppError(`Account locked. Try again in ${minutesLeft} minutes`, 423));
+    }
+
     // Verify password using bcrypt directly
     const bcrypt = require('bcryptjs');
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -191,12 +197,6 @@ exports.login = async (req, res, next) => {
         { $set: { failedLoginAttempts: failedAttempts } }
       );
       return next(new AppError("Incorrect email or password", 401));
-    }
-
-    // Check if account is locked
-    if (user.accountLockedUntil && user.accountLockedUntil > new Date()) {
-      const minutesLeft = Math.ceil((user.accountLockedUntil - new Date()) / (60 * 1000));
-      return next(new AppError(`Account locked. Try again in ${minutesLeft} minutes`, 423));
     }
 
     // Reset failed login attempts and unlock account (direct update)
@@ -541,10 +541,9 @@ exports.changePassword = async (req, res, next) => {
 
     await user.save();
 
-    // Invalidate all refresh tokens except current one
+    // AUTH-3 FIX: Invalidate all refresh tokens for user (tokenVersion bump handles current session)
     await RefreshToken.deleteMany({
-      userId: user.id,
-      token: { $ne: req.body.refreshToken },
+      userId: user._id,
     });
 
     // Send password changed confirmation email

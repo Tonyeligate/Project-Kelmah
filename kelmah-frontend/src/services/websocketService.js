@@ -1,5 +1,5 @@
 import io from 'socket.io-client';
-import { store } from '../store/store';
+import store from '../store';
 import {
   addNotification,
   updateOnlineUsers,

@@ -1,5 +1,471 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Implementation Update (Feb 12, 2026 – Review Service + Gateway Contract Alignment) ✅
+- 🎯 **Scope Restatement**: Continue the iterative reviews audit by fixing backend contract drift causing inconsistent review retrieval, auth context loss on protected review actions, and route shadowing.
+- ✅ **Fixes applied**:
+  - Updated `review-service` `Review` schema with moderation/response fields used by controllers: `status`, `response`, `reportCount`, `moderationNotes`, and `jobCategory`.
+  - Corrected review controller query/populate fields to the real schema contract (`reviewee/reviewer/job/rating` instead of legacy `workerId/hirerId/jobId/ratings.overall`).
+  - Added reviewer auth guard handling in protected controller paths (`submitReview`, `addReviewResponse`).
+  - Fixed analytics aggregates to use `rating` field.
+  - Fixed admin moderation queue filtering to use `rating` and support `status=all`.
+  - Hardened gateway review auth classification: `GET /api/reviews/worker/:id/eligibility` and analytics are now protected while standard review listing paths remain public.
+  - Fixed review-service route specificity: analytics route now declared before parameterized `/:reviewId` to prevent shadowing.
+  - Applied `verifyGatewayRequest` middleware to protected review-service direct routes in `server.js` to ensure `req.user` hydration from gateway headers.
+- 🧾 Files updated:
+  - `kelmah-backend/services/review-service/models/Review.js`
+  - `kelmah-backend/services/review-service/controllers/review.controller.js`
+  - `kelmah-backend/services/review-service/controllers/analytics.controller.js`
+  - `kelmah-backend/services/review-service/routes/admin.routes.js`
+  - `kelmah-backend/services/review-service/routes/review.routes.js`
+  - `kelmah-backend/services/review-service/server.js`
+  - `kelmah-backend/api-gateway/server.js`
+- 🧪 Verification:
+  - VS Code diagnostics: no compile errors in modified backend files.
+  - Smoke curl via `localhost:5000` attempted for public vs protected review endpoints but local gateway was unreachable in this session (HTTP `000`), so route behavior runtime-check is pending service-up validation.
+
+### Implementation Update (Feb 12, 2026 – Reviews Page Contract Hardening) ✅
+- 🎯 **Scope Restatement**: Continue iterative frontend page audit by fixing runtime mismatches in the Reviews page caused by unstable backend payload shapes and delayed auth initialization.
+- ✅ **Fixes applied**:
+  - Added service-level review normalization in `kelmah-frontend/src/modules/reviews/services/reviewService.js` so review cards always receive stable fields (`id`, `title`, `comment`, `rating`, `reviewer`, `job`, `categories`, `reply`, vote counters).
+  - Hardened `kelmah-frontend/src/modules/reviews/pages/ReviewsPage.jsx` with safe derived stats defaults (`overallStats`) to prevent `.toFixed()` and distribution indexing crashes when stats are missing.
+  - Updated initial reviews load effect dependency to `[user?.id]` so data fetch runs when authenticated user context becomes available after mount.
+  - Added null-safe filtering guards for search and verified-review filtering paths.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/reviews/services/reviewService.js`
+  - `kelmah-frontend/src/modules/reviews/pages/ReviewsPage.jsx`
+- 🧪 Verification:
+  - Frontend production build passes (`vite build`): `✓ built in 1m 41s`.
+
+## Documentation Consolidation (Feb 12, 2026 – Early Decisions → Super Doc) ✅
+- 🎯 **Scope Restatement**: Read all early-stage documentation in backup/root cleanup archives + spec-kit and consolidate the key architectural/product decisions into a single final “super documentation”, with references back to the original decision sources.
+- ✅ **Success Criteria**:
+  1. All files under the requested directories are inventoried and read for evidence extraction.
+  2. A single authoritative super document is produced in spec-kit with source links.
+  3. Conflicting historical decisions are explicitly marked as superseded and a final stance is stated.
+- 📌 **Outputs**:
+  - Super documentation: `spec-kit/KELMAH_SUPER_DOCUMENTATION_FINAL_DECISIONS.md`
+  - Evidence extract: `DataAnalysisExpert/kelmah_decisions_extracted_2026-02-11.md`
+  - Full manifest: `DataAnalysisExpert/kelmah_docs_manifest_2026-02-11.txt`
+- 🧪 **Evidence Extraction Summary** (from evidence footer): 2,139 files read OK, 80 unreadable/binary, 1,368 extracted blocks.
+
+### Implementation Fix (Feb 12, 2026 – Post-Login / Registration Redirect Audit) ✅
+- 🎯 **Scope Restatement**: Audit after-login and after-registration redirect/routing behavior end-to-end and fix navigation bugs causing non-smooth flows.
+- ✅ **Findings fixed**:
+  - `ProtectedRoute` redirected to `/login` without preserving intended destination (`from`), so users lost their original target page.
+  - Both desktop and mobile login components always redirected to `/dashboard` after login, ignoring `location.state.from` / `redirectTo`.
+  - Registration flow persisted auth token/user and set `isAuthenticated=true` even though UX redirects to login (inconsistent state).
+  - Mobile login did not surface redirect context message sent from protected actions.
+- ✅ **Fixes applied**:
+  - Added `useLocation` state forwarding in `ProtectedRoute`: unauthenticated redirects now include `state.from` and message.
+  - Updated desktop/mobile login to resolve redirect in priority order: `state.from` → `state.redirectTo` → role default (`/worker/dashboard`, `/hirer/dashboard`, `/admin/skills-management`, fallback `/dashboard`).
+  - Updated registration auth flow to avoid auto-login side effects: register now does not persist auth token/user, and `register.fulfilled` keeps Redux auth state unauthenticated.
+  - Updated desktop/mobile register success navigation to preserve intended route in login state.
+  - Added contextual info alert display on mobile login for protected-route redirect messages.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/auth/components/common/ProtectedRoute.jsx`
+  - `kelmah-frontend/src/modules/auth/components/login/Login.jsx`
+  - `kelmah-frontend/src/modules/auth/components/mobile/MobileLogin.jsx`
+  - `kelmah-frontend/src/modules/auth/components/register/Register.jsx`
+  - `kelmah-frontend/src/modules/auth/components/mobile/MobileRegister.jsx`
+  - `kelmah-frontend/src/modules/auth/services/authService.js`
+  - `kelmah-frontend/src/modules/auth/services/authSlice.js`
+  - `kelmah-frontend/src/modules/auth/pages/LoginPage.jsx`
+- 🧪 Verification:
+  - Frontend production build completes successfully (`vite build`): `built in 1m 58s`.
+
+### Documentation Deepening (Feb 12, 2026 – Gateway API Surface + API Alignment + Frontend BaseURL) ✅
+- 🎯 **Scope Restatement**: Expand the super doc to include concrete “how it actually works” behavior for frontend networking + canonical gateway endpoints, and explicitly document contract mismatches discovered in code.
+- ✅ **Updates applied**:
+  - Added a verified “Canonical Public API Surface (Gateway)” section (mounts + key endpoints).
+  - Added an “API Alignment Matrix (Current vs Required)” highlighting high-impact mismatches (notably job status `PUT` vs `PATCH`).
+  - Added a “Frontend API Base URL Resolution” section documenting the actual runtime priority order and the `/api` baseURL contract.
+  - Documented canonical job statuses (`draft/open/in-progress/completed/cancelled`) from the shared Job model + job-service validation.
+- 🧾 Files updated:
+  - `spec-kit/KELMAH_SUPER_DOCUMENTATION_FINAL_DECISIONS.md`
+- 🔎 Primary verification sources:
+  - `kelmah-backend/api-gateway/server.js`
+  - `kelmah-backend/api-gateway/routes/{auth,job,messaging,payment}.routes.js`
+  - `kelmah-backend/services/job-service/routes/job.routes.js`
+  - `kelmah-backend/shared/models/Job.js`
+  - `kelmah-frontend/src/config/environment.js`
+  - `kelmah-frontend/src/services/apiClient.js`
+
+### Documentation Deepening (Feb 12, 2026 – Notifications + Mapping/Geo Behavior) ✅
+- 🎯 **Scope Restatement**: Add concrete, code-verified “how it works today” documentation for notifications and map/geolocation behavior, and clearly separate historical workflow diagrams from current consolidated implementation.
+- ✅ **Updates applied**:
+  - Documented Notifications as messaging-service-owned (`/api/notifications`) with gateway proxy, Socket.IO `notification` event, and full REST surface (read, unread count, mark read, clear, preferences).
+  - Documented Mapping/Geo as Leaflet + OpenStreetMap/Nominatim with current job location search aliases, and called out the worker geo-search path mismatch.
+  - Added a new API Alignment Matrix item for worker geo-search (`/workers/search/location` vs `/workers/search` with lat/lng params).
+- 🧾 Files updated:
+  - `spec-kit/KELMAH_SUPER_DOCUMENTATION_FINAL_DECISIONS.md`
+- 🔎 Primary verification sources:
+  - `kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx`
+  - `kelmah-frontend/src/modules/notifications/services/notificationService.js`
+  - `kelmah-backend/services/messaging-service/routes/notification.routes.js`
+  - `kelmah-backend/services/messaging-service/controllers/notification.controller.js`
+  - `kelmah-backend/services/messaging-service/models/Notification.js`
+  - `kelmah-frontend/src/modules/map/services/mapService.js`
+  - `kelmah-backend/services/user-service/routes/user.routes.js`
+  - `kelmah-backend/services/user-service/controllers/worker.controller.js`
+  - `backup/root_cleanup_20260201/Kelmaholddocs/old-docs/NOTIFICATION SYSTEM .txt`
+  - `backup/root_cleanup_20260201/Kelmaholddocs/old-docs/MAPPING AND TRACKING SYSTEM.txt`
+
+### Documentation Deepening (Feb 12, 2026 – User/Worker/Profile/Settings Contracts) ✅
+- 🎯 **Scope Restatement**: Expand the super doc with verified worker discovery/profile and settings behavior, including the real gateway mounts/aliases and the actual frontend service callers.
+- ✅ **Updates applied**:
+  - Added a verified Users/Workers/Profile/Settings API surface to the Gateway API section.
+  - Added concrete frontend behavior sections for Worker Discovery & Profiles and Settings.
+  - Documented the current limitation: user-service settings are stored in-memory and are not durable across service restarts.
+- 🧾 Files updated:
+  - `spec-kit/KELMAH_SUPER_DOCUMENTATION_FINAL_DECISIONS.md`
+- 🔎 Primary verification sources:
+  - `kelmah-backend/api-gateway/server.js`
+  - `kelmah-backend/services/user-service/routes/user.routes.js`
+  - `kelmah-backend/services/user-service/controllers/worker.controller.js`
+  - `kelmah-backend/services/user-service/routes/profile.routes.js`
+  - `kelmah-backend/services/user-service/routes/settings.routes.js`
+  - `kelmah-frontend/src/modules/worker/services/workerService.js`
+  - `kelmah-frontend/src/modules/profile/services/profileService.js`
+  - `kelmah-frontend/src/modules/settings/services/settingsService.js`
+
+### Documentation Deepening (Feb 12, 2026 – Connectivity Model Clarification) ✅
+- 🎯 **Scope Restatement**: Prevent routing regressions by explicitly documenting which historical “service connections” model is superseded.
+- ✅ **Updates applied**:
+  - Added a “Superseded Connectivity Model” note: older Vite-proxy/direct-to-microservices guidance is historical, current approach is API Gateway + unified LocalTunnel runtime-config + rewrites.
+- 🧾 Files updated:
+  - `spec-kit/KELMAH_SUPER_DOCUMENTATION_FINAL_DECISIONS.md`
+- 🔎 Primary sources:
+  - `backup/root_cleanup_20260201/Kelmaholddocs/planning-docs/AUTHENTICATION_FLOW_GUIDE.md`
+  - `backup/root_cleanup_20260201/Kelmaholddocs/planning-docs/SERVICE_CONNECTIONS_GUIDE.md`
+  - `backup/root_cleanup_20260201/Kelmaholddocs/old-docs/diagrams/03-data-flow-sequence.md`
+
+### Documentation Deepening (Feb 12, 2026 – Contracts/Milestones + Reviews/Ratings) ✅
+- 🎯 **Scope Restatement**: Read deeper into contracts/milestones/disputes and reviews/ratings across frontend + gateway + services, and document the real implemented surface vs planned behavior.
+- ✅ **Updates applied**:
+  - Added verified gateway API surface items for contracts, reviews, ratings, and admin moderation.
+  - Added concrete frontend behavior sections for Contracts/Milestones/Disputes and Reviews/Ratings.
+  - Documented current backend reality: contracts list endpoint returns mock contract data (`source: mock-data`).
+  - Expanded API Alignment Matrix with remaining mismatches:
+    - Missing contract mutation endpoints used by frontend (`PUT /jobs/contracts/:id`, milestone approval route)
+    - No `/api/milestones` gateway/service surface despite frontend milestoneService calls
+    - Missing review eligibility endpoint (`/reviews/worker/:id/eligibility`)
+- 🧾 Files updated:
+  - `spec-kit/KELMAH_SUPER_DOCUMENTATION_FINAL_DECISIONS.md`
+- 🔎 Primary verification sources:
+  - `kelmah-backend/services/job-service/routes/job.routes.js`
+  - `kelmah-backend/services/job-service/controllers/job.controller.js`
+  - `kelmah-frontend/src/modules/contracts/contexts/ContractContext.jsx`
+  - `kelmah-frontend/src/modules/contracts/services/contractService.js`
+  - `kelmah-frontend/src/modules/contracts/services/milestoneService.js`
+  - `kelmah-backend/services/review-service/server.js`
+  - `kelmah-backend/services/review-service/routes/{review,admin}.routes.js`
+  - `kelmah-frontend/src/modules/reviews/services/reviewService.js`
+  - `kelmah-backend/api-gateway/server.js`
+
+### Documentation Deepening (Feb 12, 2026 – Payments/Webhooks/Escrow + QuickJobs) ✅
+- 🎯 **Scope Restatement**: Deepen the super doc with code-verified payment-service behavior (wallet, methods, transactions, escrow milestones, Ghana provider endpoints, webhooks) and add QuickJobs (Protected Quick-Hire) behavior and gateway routing.
+- ✅ **Updates applied**:
+  - Added `/api/quick-jobs/*` and `/api/webhooks/*` to the verified gateway mount list.
+  - Expanded Payments & Escrow section with the actual payment-service route surface (methods, wallet, transactions, escrow milestones, Ghana MoMo/Vodafone/AirtelTigo, Paystack init/verify, bills, idempotent payment intent creation).
+  - Added a new QuickJobs section documenting the implemented route surface, status model, and key controller constraints (required location fields, quote visibility rules).
+  - Expanded API Alignment Matrix with high-impact mismatches impacting runtime correctness:
+    - Gateway wallet balance/deposit/withdraw routes vs payment-service wallet implementation
+    - PUT vs PATCH mismatch for payment method update
+    - Webhook header validation + raw-body preservation issues for Stripe/Paystack signature verification
+    - QuickJobs Paystack webhook being public in job-service but blocked by gateway auth
+- 🧾 Files updated:
+  - `spec-kit/KELMAH_SUPER_DOCUMENTATION_FINAL_DECISIONS.md`
+- 🔎 Primary verification sources:
+  - `kelmah-backend/api-gateway/server.js`
+  - `kelmah-backend/api-gateway/routes/payment.routes.js`
+  - `kelmah-backend/api-gateway/middlewares/request-validator.js`
+  - `kelmah-backend/services/payment-service/server.js`
+  - `kelmah-backend/services/payment-service/routes/{payments,paymentMethod,wallet,transactions,escrow,webhooks,bill}.routes.js`
+  - `kelmah-backend/services/payment-service/controllers/{payment,ghana,escrow,transaction,paymentMethod}.controller.js`
+  - `kelmah-backend/services/job-service/routes/quickJobRoutes.js`
+  - `kelmah-backend/services/job-service/controllers/{quickJobController,quickJobPaymentController,disputeController}.js`
+  - `kelmah-backend/shared/models/QuickJob.js`
+
+### Documentation Deepening (Feb 12, 2026 – QuickJobs Frontend Wiring + Premium Subscriptions Gap) ✅
+- 🎯 **Scope Restatement**: Verify frontend QuickJobs module wiring (routes + services) and Premium page billing wiring, then update the super doc with “what works today vs what is missing”, and apply minimal non-module fixes to prevent obvious 404 navigation failures.
+- ✅ **Updates applied**:
+  - Documented QuickJobs frontend module → apiClient calls and the current routing/navigation mismatches (`/quick-hire/*` vs `/quick-job/:id`, `/worker/quick-jobs` missing, Paystack callback path mismatch).
+  - Documented Premium subscriptions reality: PremiumPage is UI-only and payment-service does not implement `/api/payments/subscriptions` routes despite gateway exposing them.
+- 🧩 **Small runtime fix**:
+  - Added router aliases to match existing QuickJobs module navigation (no module code changed):
+    - `/quick-job/:jobId` → QuickJobTrackingPage
+    - `/worker/quick-jobs` → NearbyJobsPage
+- 🧾 Files updated:
+  - `spec-kit/KELMAH_SUPER_DOCUMENTATION_FINAL_DECISIONS.md`
+  - `kelmah-frontend/src/routes/config.jsx`
+- 🔎 Primary verification sources:
+  - `kelmah-frontend/src/modules/quickjobs/services/quickJobService.js`
+  - `kelmah-frontend/src/modules/quickjobs/pages/{QuickJobRequestPage,NearbyJobsPage,QuickJobTrackingPage}.jsx`
+  - `kelmah-frontend/src/routes/config.jsx`
+  - `kelmah-frontend/src/modules/premium/pages/PremiumPage.jsx`
+  - `kelmah-backend/api-gateway/routes/payment.routes.js`
+
+### Implementation Fix (Feb 12, 2026 – Gateway Webhook Raw Body + QuickJobs Public Webhook) ✅
+- 🎯 **Scope Restatement**: Fix two runtime-breaking gateway mismatches: (1) Stripe/Paystack webhook requests have their raw body destroyed by `express.json()` before reaching the payment/job service, breaking HMAC signature verification; (2) QuickJobs Paystack webhook (`POST /api/quick-jobs/payment/webhook`) is blocked by the blanket `authenticate` middleware on `/api/quick-jobs`.
+- ✅ **Fixes applied**:
+  - **Raw webhook routes mounted BEFORE body parser** (`server.js` lines 243–291): Three new `app.post()` routes handle `POST /api/webhooks/stripe`, `POST /api/webhooks/paystack`, and `POST /api/quick-jobs/payment/webhook` BEFORE `express.json()` is applied. This lets `http-proxy-middleware` stream the raw bytes to downstream services, preserving the original payload for `stripe.webhooks.constructEvent()` and Paystack's HMAC verification.
+  - **Public QuickJobs webhook**: The early `POST /api/quick-jobs/payment/webhook` route has NO `authenticate` middleware, matching the job-service design where `handlePaystackWebhook` is mounted BEFORE `verifyGatewayRequest`.
+  - **Fixed `validateWebhook` middleware** (`request-validator.js`): Updated to check correct provider-specific headers (`stripe-signature`, `x-paystack-signature`) in addition to generic fallbacks. Removed the broken `req.rawBody = JSON.stringify(req.body)` assignment that would produce different bytes than the original payload.
+  - **Existing `/api/webhooks` catch-all preserved**: The generic mount at line ~1124 remains as a fallback for future webhook providers; it runs after the body parser but now correctly checks provider-specific signature headers.
+- 🧾 Files updated:
+  - `kelmah-backend/api-gateway/server.js` — 3 raw webhook routes inserted before body parser
+  - `kelmah-backend/api-gateway/middlewares/request-validator.js` — `validateWebhook` signature header fix + rawBody removal
+- 🧪 Verification: Syntax check passed (`node -c`) for both files.
+- 📌 Resolves API Alignment Matrix mismatches #8 (webhook raw body) and #9 (QuickJobs public webhook).
+
+### Implementation Fix (Feb 12, 2026 – Remaining API Mismatches #6, #7, #10, #11) ✅
+- 🎯 **Scope Restatement**: Fix the four remaining API alignment mismatches documented in the super doc.
+- ✅ **Fixes applied**:
+  - **Mismatch #6 — Wallet balance/deposit/withdraw**: Added `getBalance`, `deposit`, `withdraw` controller methods to `wallet.controller.js` using the Wallet model's existing `addFunds`/`deductFunds` helpers. Added `GET /balance`, `POST /deposit`, `POST /withdraw` routes to `wallet.routes.js`.
+  - **Mismatch #7 — PUT vs PATCH payment method**: Added `router.put("/:paymentMethodId", ...)` alias in `paymentMethod.routes.js` alongside existing `PATCH` route, both delegating to the same `updatePaymentMethod` handler.
+  - **Mismatch #10 — Review eligibility**: `checkEligibility` already existed in the controller and `server.js` direct mounts (line 281) but was missing from `review.routes.js`. Added `router.get('/worker/:workerId/eligibility', verifyGatewayRequest, reviewController.checkEligibility)` BEFORE the generic `/worker/:workerId` route.
+  - **Mismatch #11 — Subscriptions stubs**: Created `subscription.routes.js` with stub handlers (GET returns empty list + available tiers; POST/PUT/DELETE return 501 "coming soon"). Mounted in payment-service `server.js` at `/api/payments/subscriptions`.
+- 🧾 Files changed:
+  - `kelmah-backend/services/payment-service/controllers/wallet.controller.js` — 3 new methods
+  - `kelmah-backend/services/payment-service/routes/wallet.routes.js` — 3 new routes
+  - `kelmah-backend/services/payment-service/routes/paymentMethod.routes.js` — PUT alias added
+  - `kelmah-backend/services/payment-service/routes/subscription.routes.js` — new file
+  - `kelmah-backend/services/payment-service/server.js` — subscriptions mount added
+  - `kelmah-backend/services/review-service/routes/review.routes.js` — eligibility route added
+- 🧪 Verification: All 6 files pass `node -c` syntax check.
+- 📌 All 6 API alignment mismatches (#6–#11) in the super doc are now ✅ FIXED.
+
+## Investigation Intake (Feb 11, 2026 – Full Frontend Page + Security Audit) 🔄
+- 🎯 **Scope Restatement**: Audit every active frontend page and core cross-cutting infrastructure (routing, auth, API client, storage, websocket) to find bugs, UI/UX issues, security issues, and maintenance risks; document each finding with file references and actionable fixes.
+- ✅ **Success Criteria**:
+  1. All active page components are inventoried (single checklist) and each is reviewed for runtime bugs, broken UI states, and unsafe patterns.
+  2. Cross-cutting issues (auth/token storage, API client, routing, error boundaries, websocket) are audited first because they impact many pages.
+  3. Findings are categorized by severity (Critical/High/Medium/Low) with “what’s wrong / why it matters / how to fix”.
+  4. Any changes made are minimal, verified (lint/tests where available), and recorded here.
+- 🗂️ **Primary Audit Doc**:
+  - `spec-kit/FRONTEND_PAGE_AUDIT_20260211.md`
+
+### Implementation Update (Feb 11, 2026 – Auth Bootstrap Token Detection)
+- ✅ Fixed `App` bootstrap auth detection to use `secureStorage.getAuthToken()` (actual source of truth) instead of reading `AUTH_CONFIG.tokenKey` (which may not match secureStorage keys).
+- 🧾 Files updated:
+  - `kelmah-frontend/src/App.jsx`
+- 🧪 Verification: Not run yet (recommended: reload app with an active session and confirm protected routes work and `verifyAuth` runs).
+
+### Implementation Update (Feb 11, 2026 – Messaging/Search Crash + URL Fixes)
+- ✅ Messaging: hardened conversation filtering in the Messages page to prevent null/undefined crashes when payloads are incomplete.
+- ✅ Search: fixed location query param round-trip (avoid double encoding) and switched suggestions call to the backend-supported `/jobs/suggestions` endpoint.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+  - `kelmah-frontend/src/modules/search/pages/SearchPage.jsx`
+- 🧪 Verification: Not run yet (recommended: load `/messages` with empty/partial conversations; use `/find-talents` with location filters and confirm URL parsing works after refresh).
+
+### Implementation Update (Feb 12, 2026 – PWA Helper XSS Hardening)
+- ✅ Refactored PWA banners/modals to avoid `innerHTML` + inline `onclick` handlers; now uses DOM node creation + `addEventListener`.
+- ✅ Removed `window.updatePWA` / `window.installPWA` global exports (no longer needed).
+- 🧾 Files updated:
+  - `kelmah-frontend/src/utils/pwaHelpers.js`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – MFA Route Protection + Wallet Crash Hardening)
+- ✅ Protected `/mfa/setup` route with `ProtectedRoute` to prevent unauthenticated MFA enrollment attempts.
+- ✅ Hardened Wallet transactions summary rendering to avoid `transactions.length` crashes when `transactions` is not an array.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/routes/config.jsx`
+  - `kelmah-frontend/src/modules/payment/pages/WalletPage.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Fix Missing /payment/methods Route)
+- ✅ Added a protected `/payment/methods` route to match existing UI links from Payment Center (prevents 404 navigation failure).
+- 🧾 Files updated:
+  - `kelmah-frontend/src/routes/config.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Wire Payment Center Method Actions)
+- ✅ Wired Payment Center payment method actions so:
+  - “Edit” navigates to `/payment/methods`
+  - “Delete” prompts for confirmation and then removes the method via API
+- ✅ Normalized payment method shapes in the frontend service so pages can rely on a stable `id` field.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/payment/services/paymentService.js`
+  - `kelmah-frontend/src/modules/payment/contexts/PaymentContext.jsx`
+  - `kelmah-frontend/src/modules/payment/pages/PaymentCenterPage.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Logout Storage Cleanup + WS Token Leak Hardening)
+- ✅ Logout: ensured `logoutUser` clears `secureStorage` even when the logout API call fails (prevents “partial logout” with encrypted token remaining).
+- ✅ Messaging: removed `?token=` WebSocket URL usage from legacy `Messages` component to reduce token leakage risk if re-imported.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/auth/services/authSlice.js`
+  - `kelmah-frontend/src/modules/messaging/components/common/Messages.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Job Details Sign-in Redirect Crash Fix)
+- ✅ Fixed `JobDetailsPage` to define `location` before using `location.pathname` in `handleSignIn()`.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Payments API Runtime Fixes + UI Guard)
+- ✅ Backend: fixed payment-service controller runtime errors by importing missing validators + shared `handleError` helper.
+- ✅ Backend: relaxed payment method `billingAddress` validation (now optional) to match current frontend payloads.
+- ✅ Frontend: disabled “Add mobile money” payment method button (backend does not support `type: mobile_money` yet).
+- 🧾 Files updated:
+  - `kelmah-backend/services/payment-service/utils/controllerUtils.js`
+  - `kelmah-backend/services/payment-service/controllers/paymentMethod.controller.js`
+  - `kelmah-backend/services/payment-service/controllers/wallet.controller.js`
+  - `kelmah-backend/services/payment-service/controllers/transaction.controller.js`
+  - `kelmah-backend/services/payment-service/utils/validation.js`
+  - `kelmah-frontend/src/modules/payment/pages/PaymentMethodsPage.jsx`
+- 🧪 Verification:
+  - Controllers load via `node -e "require(...)"` (no ReferenceError)
+  - `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Fix Broken Legacy ResetPasswordPage Module)
+- ✅ Replaced the syntactically broken legacy module page with a thin re-export to the active reset password page (prevents future accidental imports from breaking builds).
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/auth/pages/ResetPasswordPage.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Add Mobile Money Saved Payment Methods)
+- ✅ Backend: added `mobile_money` support for saved payment methods (schema + validation + controller create/list).
+- ✅ Backend: mobile money methods are returned with masked phone display fields to reduce PII exposure.
+- ✅ Frontend: re-enabled “Add mobile money” payment method flow.
+- 🧾 Files updated:
+  - `kelmah-backend/services/payment-service/models/PaymentMethod.js`
+  - `kelmah-backend/services/payment-service/utils/validation.js`
+  - `kelmah-backend/services/payment-service/controllers/paymentMethod.controller.js`
+  - `kelmah-frontend/src/modules/payment/pages/PaymentMethodsPage.jsx`
+- 🧪 Verification:
+  - Backend modules load via `node -e "require(...)"`
+  - `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Fix Hirer Dashboard Payment Navigation)
+- ✅ Added routes for `/hirer/payments` and `/payments` using the existing `PaymentsPage` (wrapped in `PaymentProvider`) so Hirer dashboard payment buttons don’t 404.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/routes/config.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Worker Dashboard Timeout Cleanup)
+- ✅ Prevented Worker dashboard loading timeout from firing after unmount (clears pending `setTimeout`), reducing runtime warnings and intermittent UI glitches.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Hirer Dashboard Remove Hard Reload)
+- ✅ Replaced `window.location.reload()` in the Hirer dashboard loading-timeout alert with the existing in-app `handleRefresh()`.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Fix Missing /payment/bill Route + Bills Normalization)
+- ✅ Added `/payment/bill` route (used by Payments actions menu) and wrapped it with `PaymentProvider`.
+- ✅ Normalized Bills payload shape so `bills` is always an array (prevents `.filter` crashes).
+- 🧾 Files updated:
+  - `kelmah-frontend/src/routes/config.jsx`
+  - `kelmah-frontend/src/modules/payment/contexts/PaymentContext.jsx`
+  - `kelmah-frontend/src/modules/payment/pages/BillPage.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Hirer Edit Job Flow (Fix /jobs/edit 404))
+- ✅ Added `/hirer/jobs/edit/:jobId` route and implemented edit mode in `JobPostingPage`.
+- ✅ Added `updateHirerJob` thunk (PUT `/jobs/:id`) so edits update the existing job instead of creating duplicates.
+- ✅ Updated `JobManagementPage` Edit action to use the new route and show a message when editing is not allowed.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/routes/config.jsx`
+  - `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`
+  - `kelmah-frontend/src/modules/hirer/pages/JobManagementPage.jsx`
+  - `kelmah-frontend/src/modules/hirer/pages/JobPostingPage.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Fix Hirer Application Management Runtime Errors)
+- ✅ Added missing `hirerService.getJobApplications` and `hirerService.updateApplicationStatus` methods (backed by `/jobs/:id/applications` endpoints).
+- ✅ Normalized application objects so the page can render worker name/avatar/rating reliably.
+- ✅ Fixed messaging navigation to use `/messages?conversation=...` (router-supported deep link) and removed unsupported `messagingService.initialize()` call.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/hirer/services/hirerService.js`
+  - `kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Fix Worker Profile Edit Save/Availability Contract Mismatch)
+- ✅ Reworked `WorkerProfileEditPage` profile submit flow to send JSON payload compatible with `PUT /api/users/workers/:id` (previous multipart `FormData` path was not parsed by the current backend route).
+- ✅ Normalized availability API mapping (`daySlots`/`status`) into page state (`availableHours`/`availabilityStatus`) so edit UI now loads real backend availability consistently.
+- ✅ Updated worker availability save thunk to call active user-service availability endpoint (`PUT /api/availability/:userId`) and translate UI schedule into backend `daySlots` payload.
+- ✅ Replaced direct `fetch('/api/...')` completeness request with authenticated `api` client for consistent gateway/token behavior.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/worker/pages/WorkerProfileEditPage.jsx`
+  - `kelmah-frontend/src/modules/worker/services/workerSlice.js`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Fix WorkerSearch API Endpoint/Filter Contract)
+- ✅ Updated hirer `WorkerSearch` data fetch to use canonical endpoint `GET /users/workers/search` instead of `/workers`.
+- ✅ Aligned query params to backend contract (`query`, `location`, `skills`, `minRating`, `maxRate`, `availability`, `sortBy`, `page`, `limit`) and mapped UI sort options accordingly.
+- ✅ Included `primaryTrade` in text search terms to keep specialization filtering effective with current backend API.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – SkillsAssessment Pause-State Reset Hardening)
+- ✅ Added explicit `setPaused(false)` when loading a test via `fetchTestDetails()` so deep-linking/opening another assessment cannot inherit stale paused state.
+- ✅ Confirmed timer/test flow compiles cleanly with no page-level errors.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/worker/pages/SkillsAssessmentPage.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Fix Map "Message" Action Deep-Link)
+- ✅ Fixed `ProfessionalMapPage` messaging navigation to use `/messages?recipient=<userId>` (MessagingPage-supported) instead of incorrectly using `/messages?conversation=<userId>`.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/map/pages/ProfessionalMapPage.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – Contracts Flow Runtime Hardening)
+- ✅ Implemented missing `contractService` methods used by `contractSlice` (`createContract`, `signContract`, `sendContractForSignature`, milestones CRUD helpers, cancel, dispute, templates) to prevent runtime `undefined is not a function` failures.
+- ✅ Added contract/milestone response normalization in `contractService` so pages/components receive stable fields (`id`, `client`, `hirer`, `budget`, `value`, `milestones`, `lastUpdated`) from current job-service payloads.
+- ✅ Fixed `ContractDetailsPage` route-param mismatch (`:id` vs `contractId`) and updated all action dispatches/navigation to use resolved id.
+- ✅ Updated contract download action to existing gateway job-contract endpoint path.
+- ✅ Hardened create-contract redirect to handle both `id` and `_id` in response.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/contracts/services/contractService.js`
+  - `kelmah-frontend/src/modules/contracts/pages/ContractDetailsPage.jsx`
+  - `kelmah-frontend/src/modules/contracts/pages/CreateContractPage.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 12, 2026 – ContractsPage Action Wiring)
+- ✅ Fixed malformed `New Contract` CTA JSX and wired it to `/contracts/create`.
+- ✅ Wired contract card actions:
+  - `View Details` now routes to `/contracts/:id`
+  - Download icon now opens existing `/api/jobs/contracts/:id` endpoint.
+- ✅ Wired empty-state `Create Contract` button to `/contracts/create`.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/contracts/pages/ContractsPage.jsx`
+- 🧪 Verification: `kelmah-frontend` production build **PASS** (`vite build`).
+
+### Implementation Update (Feb 11, 2026 – Auth Route Wiring + Job Details Guard)
+- ✅ Added missing auth/account recovery routes that are already linked from the UI: `/forgot-password`, `/reset-password` (and `/:token`), `/verify-email/:token`, `/role-selection`, `/mfa/setup`.
+- ✅ Wrapped `/jobs/:id` in `ProtectedRoute` to match current page behavior and avoid an auth-required crash path.
+- ✅ Added a non-module reset page to avoid importing a syntactically broken legacy module file.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/routes/config.jsx`
+  - `kelmah-frontend/src/pages/ResetPassword.jsx`
+- 🧪 Verification: Not run yet (recommended: click “Forgot password” from login, open reset link route, and visit `/jobs/:id` while logged out to confirm redirect).
+
+## Investigation Update (Feb 12, 2026 – Full Frontend Page Audit Pass) ✅
+- 🎯 **Scope Restatement**: Re-audit active frontend pages route-by-route for bugs, UI/UX navigation issues, security leaks, and performance/maintainability risks.
+- ✅ **Dry Audit Coverage**:
+  - Active route map reviewed from `kelmah-frontend/src/routes/config.jsx`
+  - Page modules under `kelmah-frontend/src/**/pages/*.jsx` reviewed for risky patterns and broken links
+  - Cross-cutting checks included logging, reload patterns, direct fetch usage, and route target validity
+- 🚨 **Top findings captured** (see `spec-kit/FRONTEND_PAGE_AUDIT_20260211.md` for line-level details):
+  1. Missing `/search` route while core CTAs navigate to `/search`
+  2. Contract links target `/contracts/*` routes not mounted in active router
+  3. Jobs CTA targets missing `/profile/upload-cv`
+  4. Help Center links to non-existent `/docs` and `/community`
+  5. Direct `fetch()` bypassing API client in WorkerProfileEdit completeness flow
+  6. Unguarded debug logging in `SearchPage` and `JobsPage`
+  7. Hard reload fallbacks (`window.location.reload`) in user flows
+  8. Quick-hire role guard mismatch vs backend model semantics
+- 🧾 Documentation updated:
+  - `spec-kit/FRONTEND_PAGE_AUDIT_20260211.md`
+
 ## Investigation Intake (Feb 10, 2026 – Mobile Footer Covers Viewport) 🔄
 - 🎯 **Scope Restatement**: Identify the exact layout/footer relationship causing the mobile homepage footer to appear immediately and dominate the viewport, and document the true root cause with file/line references before any fixes.
 - ✅ **Success Criteria**:

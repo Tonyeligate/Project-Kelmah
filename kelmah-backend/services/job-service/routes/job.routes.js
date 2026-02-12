@@ -49,8 +49,22 @@ router.get("/contracts", jobController.getContracts); // ✅ MOVED: Make contrac
 router.get("/contracts/:id", jobController.getContractById);
 router.post("/contracts/:id/disputes", verifyGatewayRequest, jobController.createContractDispute);
 
+// Milestone routes (publicly accessible reads, protected writes)
+router.get("/milestones/contract/:contractId", jobController.getContractMilestones);
+router.get("/milestones/:milestoneId", jobController.getMilestoneById);
+
 // Protected routes
 router.use(verifyGatewayRequest);
+
+// Contract mutation routes (protected)
+router.put("/contracts/:id", jobController.updateContract);
+router.put("/contracts/:contractId/milestones/:milestoneId/approve", jobController.approveMilestone);
+
+// Milestone CRUD (protected writes)
+router.post("/milestones/contract/:contractId", jobController.createMilestone);
+router.put("/milestones/:milestoneId", jobController.updateMilestone);
+router.delete("/milestones/:milestoneId", jobController.deleteMilestone);
+router.patch("/milestones/:milestoneId/pay", jobController.payMilestone);
 
 // Hirer only routes
 router.post(

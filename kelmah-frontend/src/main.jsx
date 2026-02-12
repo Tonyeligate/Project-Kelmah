@@ -15,9 +15,11 @@ import { NotificationProvider } from './modules/notifications/contexts/Notificat
 import { MessageProvider } from './modules/messaging/contexts/MessageContext';
 
 // Version 1.0.4 - Force fresh bundle generation
-console.log('🔧 Main.jsx v1.0.4 - Kelmah PWA with 50z3 gateway');
-console.log('🔧 Store initialized:', !!store);
-console.log('🔧 All imports successful');
+if (import.meta.env.DEV) {
+  console.log('🔧 Main.jsx v1.0.4 - Kelmah PWA with 50z3 gateway');
+  console.log('🔧 Store initialized:', !!store);
+  console.log('🔧 All imports successful');
+}
 
 
 const ErrorFallback = ({ error }) => (
@@ -102,7 +104,7 @@ const ErrorFallback = ({ error }) => (
         }}
       >
         {error.message}
-        {error.stack && '\n\nStack Trace:\n' + error.stack}
+        {import.meta.env.DEV && error.stack && '\n\nStack Trace:\n' + error.stack}
       </pre>
     </details>
   </div>

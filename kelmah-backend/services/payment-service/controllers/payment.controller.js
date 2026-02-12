@@ -6,7 +6,7 @@
 const MTNMoMoService = require('../integrations/mtn-momo');
 const VodafoneCashService = require('../integrations/vodafone-cash');
 const PaystackService = require('../integrations/paystack');
-const { Transaction, Wallet, Escrow, User } = require('../models');
+const { Transaction, Wallet, Escrow, User, Payment } = require('../models');
 const { notifyPaymentEvent } = require('../utils/notifier');
 const { v4: uuidv4 } = require('uuid');
 const auditLogger = require('../../../shared/utils/audit-logger');
@@ -56,7 +56,6 @@ class PaymentController {
 
       // Create payment record
       const payment = await Payment.create({
-        id: paymentId,
         userId,
         amount: parseFloat(amount),
         currency: currency.toUpperCase(),
@@ -147,11 +146,12 @@ class PaymentController {
 
       if (!result.success) {
         // Update payment status to failed
-        await payment.update({
+        Object.assign(payment, {
           status: 'FAILED',
           failureReason: result.error.message || 'Payment initialization failed',
           providerResponse: result.error
         });
+        await payment.save();
 
         return res.status(400).json({
           success: false,
@@ -162,11 +162,12 @@ class PaymentController {
       }
 
       // Update payment with provider response
-      await payment.update({
+      Object.assign(payment, {
         providerTransactionId: result.data.referenceId || result.data.paymentId,
         providerResponse: result.data,
         status: 'INITIALIZED'
       });
+      await payment.save();
 
       // Log payment initiation
       await auditLogger.log({
@@ -216,7 +217,7 @@ class PaymentController {
 
       // Find payment record
       const payment = await Payment.findOne({
-        where: { id: paymentId, userId }
+        _id: paymentId, userId
       });
 
       if (!payment) {
@@ -259,11 +260,12 @@ class PaymentController {
         const newStatus = this.normalizePaymentStatus(statusResult.data.status);
         
         if (payment.status !== newStatus) {
-          await payment.update({
+          Object.assign(payment, {
             status: newStatus,
             providerResponse: statusResult.data,
             completedAt: newStatus === 'COMPLETED' ? new Date() : null
           });
+          await payment.save();
 
           // Create transaction record for successful payments
           if (newStatus === 'COMPLETED') {
@@ -341,7 +343,7 @@ class PaymentController {
       }
 
       // Check user wallet balance
-      const wallet = await Wallet.findOne({ where: { userId } });
+      const wallet = await Wallet.findOne({ userId });
       if (!wallet || wallet.balance < amount) {
         return res.status(400).json({
           success: false,
@@ -352,7 +354,6 @@ class PaymentController {
 
       // Create payout record
       const payout = await Payment.create({
-        id: payoutId,
         userId,
         amount: parseFloat(amount),
         currency: 'GHS',
@@ -450,11 +451,12 @@ class PaymentController {
       }
 
       if (!result.success) {
-        await payout.update({
+        Object.assign(payout, {
           status: 'FAILED',
           failureReason: result.error.message || 'Payout initialization failed',
           providerResponse: result.error
         });
+        await payout.save();
 
         return res.status(400).json({
           success: false,
@@ -465,17 +467,17 @@ class PaymentController {
       }
 
       // Update payout with provider response
-      await payout.update({
+      Object.assign(payout, {
         providerTransactionId: result.data.referenceId || result.data.payoutId || result.data.transfer_code,
         providerResponse: result.data,
         status: 'PROCESSING'
       });
+      await payout.save();
 
       // Deduct from wallet (pending final confirmation)
-      await wallet.update({
-        balance: wallet.balance - amount,
-        pendingWithdrawals: (wallet.pendingWithdrawals || 0) + amount
-      });
+      wallet.balance = wallet.balance - amount;
+      wallet.pendingWithdrawals = (wallet.pendingWithdrawals || 0) + amount;
+      await wallet.save();
 
       // Create transaction record
       await Transaction.create({
@@ -768,7 +770,7 @@ class PaymentController {
   async createTransactionRecord(payment, providerData) {
     try {
       // Find or create wallet
-      let wallet = await Wallet.findOne({ where: { userId: payment.userId } });
+      let wallet = await Wallet.findOne({ userId: payment.userId });
       if (!wallet) {
         wallet = await Wallet.create({
           userId: payment.userId,
@@ -779,9 +781,8 @@ class PaymentController {
 
       // Update wallet balance for successful payments
       if (payment.type !== 'PAYOUT') {
-        await wallet.update({
-          balance: wallet.balance + payment.amount
-        });
+        wallet.balance = wallet.balance + payment.amount;
+        await wallet.save();
       }
 
       // Create transaction record

@@ -30,13 +30,35 @@ import {
   ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 import logoIcon from '../../../../assets/images/logo.png';
 
 const MobileLogin = ({ registrationSuccess = false }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const infoMessage = location.state?.message;
   const dispatch = useDispatch();
   const { loading: authLoading } = useSelector((state) => state.auth);
+
+  const getDefaultRouteByRole = (role) => {
+    if (role === 'worker') return '/worker/dashboard';
+    if (role === 'hirer') return '/hirer/dashboard';
+    if (role === 'admin') return '/admin/skills-management';
+    return '/dashboard';
+  };
+
+  const resolveLoginRedirect = (user) => {
+    const requestedPath = location.state?.from || location.state?.redirectTo;
+    if (
+      typeof requestedPath === 'string' &&
+      requestedPath.startsWith('/') &&
+      !requestedPath.startsWith('/login') &&
+      !requestedPath.startsWith('/register')
+    ) {
+      return requestedPath;
+    }
+    return getDefaultRouteByRole(user?.role);
+  };
 
   // Form state
   const [email, setEmail] = useState('');
@@ -78,7 +100,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
     setSubmitError('');
 
     try {
-      await dispatch(
+      const result = await dispatch(
         loginAction({
           email: email.trim(),
           password,
@@ -87,7 +109,8 @@ const MobileLogin = ({ registrationSuccess = false }) => {
       ).unwrap();
 
       setShowSuccess(true);
-      setTimeout(() => navigate('/dashboard'), 800);
+      const destination = resolveLoginRedirect(result?.user);
+      navigate(destination, { replace: true });
     } catch (error) {
       setSubmitError(error.message || 'Login failed. Please try again.');
     } finally {
@@ -261,6 +284,22 @@ const MobileLogin = ({ registrationSuccess = false }) => {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {!showSuccess && !registrationSuccess && infoMessage && (
+            <Alert
+              severity="info"
+              sx={{
+                mb: 2,
+                backgroundColor: 'rgba(33, 150, 243, 0.12)',
+                color: '#64b5f6',
+                borderRadius: 2,
+                py: 0.5,
+                '& .MuiAlert-message': { fontSize: '14px' },
+              }}
+            >
+              {infoMessage}
+            </Alert>
+          )}
 
           {/* Error Alert */}
           <Fade in={Boolean(submitError)}>

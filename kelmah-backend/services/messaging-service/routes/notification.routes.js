@@ -11,16 +11,18 @@ router.use(createLimiter("notifications"));
 // Authentication middleware is applied in server.js
 
 // Notification routes
+// ⚠️ ROUTE ORDER: Literal paths MUST come before parameterized /:notificationId
+// to prevent Express from matching literals like "read" or "clear-all" as IDs
 router.get("/", notificationController.getUserNotifications);
 router.get("/unread/count", notificationController.getUnreadCount);
 router.get("/preferences", notificationController.getPreferences);
 router.put("/preferences", notificationController.updatePreferences);
+router.patch("/read/all", notificationController.markAllNotificationsAsRead);
+router.delete("/clear-all", notificationController.clearAllNotifications);
 router.patch(
   "/:notificationId/read",
   notificationController.markNotificationAsRead,
 );
-router.patch("/read/all", notificationController.markAllNotificationsAsRead);
 router.delete("/:notificationId", notificationController.deleteNotification);
-router.delete("/clear-all", notificationController.clearAllNotifications);
 
 module.exports = router;

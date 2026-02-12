@@ -76,8 +76,7 @@ const EnhancedReviewsPage = () => {
   // State management
   const [reviews, setReviews] = useState([]);
   const [filteredReviews, setFilteredReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isLoading, setIsLoading] = useState(true); // Fix: Added missing isLoading state
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
@@ -97,6 +96,21 @@ const EnhancedReviewsPage = () => {
     severity: 'success',
   });
 
+  const overallStats = useMemo(
+    () => ({
+      averageRating: Number(reviewStats?.overall?.averageRating || 0),
+      totalReviews: Number(reviewStats?.overall?.totalReviews || 0),
+      ratingDistribution: reviewStats?.overall?.ratingDistribution || {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+      },
+    }),
+    [reviewStats],
+  );
+
   // Real review data is fetched from backend (mocks disabled in production)
 
   // Utility functions
@@ -108,7 +122,6 @@ const EnhancedReviewsPage = () => {
   useEffect(() => {
     const loadReviews = async () => {
       setIsLoading(true);
-      setLoading(true);
       try {
         if (!user?.id) {
           setReviews([]);
@@ -134,12 +147,11 @@ const EnhancedReviewsPage = () => {
         showFeedback('Failed to load reviews', 'error');
       } finally {
         setIsLoading(false);
-        setLoading(false);
       }
     };
 
     loadReviews();
-  }, []);
+  }, [user?.id]);
 
   // Filter and sort reviews
   useEffect(() => {
@@ -150,10 +162,10 @@ const EnhancedReviewsPage = () => {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (review) =>
-          review.title.toLowerCase().includes(query) ||
-          review.comment.toLowerCase().includes(query) ||
-          review.reviewer.name.toLowerCase().includes(query) ||
-          review.job.title.toLowerCase().includes(query),
+          (review?.title || '').toLowerCase().includes(query) ||
+          (review?.comment || '').toLowerCase().includes(query) ||
+          (review?.reviewer?.name || '').toLowerCase().includes(query) ||
+          (review?.job?.title || '').toLowerCase().includes(query),
       );
     }
 
@@ -173,7 +185,7 @@ const EnhancedReviewsPage = () => {
         break;
       }
       case 'verified':
-        filtered = filtered.filter((review) => review.reviewer.isVerified);
+        filtered = filtered.filter((review) => review?.reviewer?.isVerified);
         break;
       case 'with-reply':
         filtered = filtered.filter((review) => review.hasReply);
@@ -306,10 +318,10 @@ const EnhancedReviewsPage = () => {
                 mb: 1,
               }}
             >
-              {reviewStats.overall?.averageRating.toFixed(1)}
+              {overallStats.averageRating.toFixed(1)}
             </Typography>
             <Rating
-              value={reviewStats.overall?.averageRating || 0}
+              value={overallStats.averageRating}
               precision={0.1}
               readOnly
               size="large"
@@ -321,7 +333,7 @@ const EnhancedReviewsPage = () => {
               }}
             />
             <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-              Based on {reviewStats.overall?.totalReviews} reviews
+              Based on {overallStats.totalReviews} reviews
             </Typography>
           </Box>
         </Grid>
@@ -346,9 +358,11 @@ const EnhancedReviewsPage = () => {
                 <LinearProgress
                   variant="determinate"
                   value={
-                    (reviewStats.overall?.ratingDistribution[rating] /
-                      reviewStats.overall?.totalReviews) *
-                    100
+                    overallStats.totalReviews > 0
+                      ? (overallStats.ratingDistribution[rating] /
+                          overallStats.totalReviews) *
+                        100
+                      : 0
                   }
                   sx={{
                     flex: 1,
@@ -365,7 +379,7 @@ const EnhancedReviewsPage = () => {
                   variant="body2"
                   sx={{ color: 'rgba(255,255,255,0.7)', minWidth: '30px' }}
                 >
-                  {reviewStats.overall?.ratingDistribution[rating] || 0}
+                  {overallStats.ratingDistribution[rating] || 0}
                 </Typography>
               </Stack>
             ))}
@@ -415,7 +429,7 @@ const EnhancedReviewsPage = () => {
                         minWidth: '30px',
                       }}
                     >
-                      {rating.toFixed(1)}
+                      {Number(rating || 0).toFixed(1)}
                     </Typography>
                   </Stack>
                 </Stack>

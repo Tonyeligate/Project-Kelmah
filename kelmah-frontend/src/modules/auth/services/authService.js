@@ -149,12 +149,10 @@ const authService = {
         userData,
       );
       const { token, user } = response.data.data || response.data;
-      const normalizedUser = persistNormalizedUser(user);
+      const normalizedUser = normalizeUser(user?._raw || user);
 
-      if (token) {
-        secureStorage.setAuthToken(token);
-      }
-
+      // Registration UX intentionally redirects to login.
+      // Do not persist auth state/tokens here to avoid confusing route behavior.
       return { token, user: normalizedUser || user, success: true };
     } catch (error) {
       console.error('Registration error:', error);

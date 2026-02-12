@@ -38,7 +38,7 @@ import {
   ArrowForward as ArrowForwardIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useLocation, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   register as registerAction,
@@ -74,6 +74,7 @@ const COMMON_TRADES = [
 
 const MobileRegister = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const authLoading = useSelector(selectAuthLoading);
   const authError = useSelector(selectAuthError);
@@ -204,7 +205,14 @@ const MobileRegister = () => {
       await dispatch(registerAction(userData)).unwrap();
       setShowSuccess(true);
       setTimeout(() => {
-        navigate('/login', { state: { registered: true } });
+        navigate('/login', {
+          state: {
+            registered: true,
+            message: 'Registration successful! Please verify your email.',
+            redirectTo:
+              location.state?.from || location.state?.redirectTo || '/dashboard',
+          },
+        });
       }, 1500);
     } catch (error) {
       setSubmitError(error.message || 'Registration failed');

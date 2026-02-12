@@ -56,7 +56,7 @@ const validateFile = (file) => {
   if (file.size > MAX_FILE_SIZE) {
     return {
       valid: false,
-      error: `File size exceeds the maximum allowed size (10MB)`,
+      error: `File size exceeds the maximum allowed size (${Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB)`,
     };
   }
 

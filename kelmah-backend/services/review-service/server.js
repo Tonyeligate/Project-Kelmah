@@ -9,6 +9,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const { verifyGatewayRequest } = require('../../shared/middlewares/serviceTrust');
 
 // Import centralized logger
 const { createLogger, createHttpLogger, createErrorLogger, setupGlobalErrorHandlers } = require('./utils/logger');
@@ -234,6 +235,30 @@ app.get('/', (req, res) => {
 app.get('/health', healthHandler);
 app.get('/api/health', healthHandler);
 
+// Health readiness and liveness endpoints (required by docs)
+app.get('/health/ready', (req, res) => {
+  const mongoState = require('mongoose').connection.readyState;
+  if (mongoState === 1) {
+    res.json({ status: 'ready', database: 'connected' });
+  } else {
+    res.status(503).json({ status: 'not-ready', database: 'disconnected' });
+  }
+});
+app.get('/api/health/ready', (req, res) => {
+  const mongoState = require('mongoose').connection.readyState;
+  if (mongoState === 1) {
+    res.json({ status: 'ready', database: 'connected' });
+  } else {
+    res.status(503).json({ status: 'not-ready', database: 'disconnected' });
+  }
+});
+app.get('/health/live', (req, res) => {
+  res.json({ status: 'ok' });
+});
+app.get('/api/health/live', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
 // Keep-alive endpoints
 if (keepAliveManager) {
   app.get('/health/keepalive', (req, res) => {
@@ -251,22 +276,24 @@ if (keepAliveManager) {
 }
 
 // Review routes
-app.post('/api/reviews', reviewController.submitReview);
+// ⚠️ ROUTE ORDER: Specific paths before parameterized
+app.post('/api/reviews', verifyGatewayRequest, reviewController.submitReview);
+app.get('/api/reviews/worker/:workerId/eligibility', verifyGatewayRequest, reviewController.checkEligibility);
 app.get('/api/reviews/worker/:workerId', reviewController.getWorkerReviews);
 app.get('/api/reviews/job/:jobId', reviewController.getJobReviews);
 app.get('/api/reviews/user/:userId', reviewController.getUserReviews);
+app.get('/api/reviews/analytics', verifyGatewayRequest, analyticsController.getReviewAnalytics);
 app.get('/api/reviews/:reviewId', reviewController.getReview);
-app.put('/api/reviews/:reviewId/response', reviewController.addReviewResponse);
-app.post('/api/reviews/:reviewId/helpful', reviewController.voteHelpful);
-app.post('/api/reviews/:reviewId/report', reviewController.reportReview);
+app.put('/api/reviews/:reviewId/response', verifyGatewayRequest, reviewController.addReviewResponse);
+app.post('/api/reviews/:reviewId/helpful', verifyGatewayRequest, reviewController.voteHelpful);
+app.post('/api/reviews/:reviewId/report', verifyGatewayRequest, reviewController.reportReview);
 
 // Rating routes
 app.get('/api/ratings/worker/:workerId', ratingController.getWorkerRating);
 app.get('/api/ratings/worker/:workerId/signals', ratingController.getWorkerRankSignals);
 
 // Analytics routes
-app.get('/api/reviews/analytics', analyticsController.getReviewAnalytics);
-app.put('/api/reviews/:reviewId/moderate', analyticsController.moderateReview);
+app.put('/api/reviews/:reviewId/moderate', verifyGatewayRequest, analyticsController.moderateReview);
 
 // Admin routes (existing)
 app.use('/api/admin', require('./routes/admin.routes'));

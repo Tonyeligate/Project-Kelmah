@@ -89,7 +89,7 @@ const PricingTier = ({ plan, price, isYearly, onUpgrade }) => (
 
     <Box display="flex" alignItems="baseline" my={2}>
       <Typography variant="h3" fontWeight="bold">
-        ${price}
+        GH₵{price}
       </Typography>
       <Typography variant="subtitle1" color="text.secondary">
         /{isYearly ? 'year' : 'month'}
@@ -144,7 +144,7 @@ const tiers = [
   },
   {
     title: 'Pro',
-    price: '15',
+    price: '225',
     subheader: 'Most Popular',
     description:
       'For professionals aiming to maximize their opportunities and stand out.',
@@ -161,7 +161,7 @@ const tiers = [
   },
   {
     title: 'Business',
-    price: '45',
+    price: '675',
     description:
       'For established freelancers and businesses managing multiple projects.',
     features: [
@@ -222,7 +222,7 @@ const PricingCard = ({ tier, isAnnual, onUpgrade }) => (
     </Typography>
     <Box sx={{ display: 'flex', alignItems: 'baseline', my: 2 }}>
       <Typography variant="h3" component="p" fontWeight="bold">
-        ${isAnnual ? (tier.price * 10).toFixed(0) : tier.price}
+        GH₵{isAnnual ? (tier.price * 10).toFixed(0) : tier.price}
       </Typography>
       <Typography color="text.secondary" ml={0.5}>
         /{isAnnual ? 'year' : 'month'}
@@ -273,12 +273,12 @@ const PremiumPage = () => {
 
   const plans = {
     monthly: {
-      pro: 29,
-      business: 79,
+      pro: 449,
+      business: 1199,
     },
     yearly: {
-      pro: 290,
-      business: 790,
+      pro: 4490,
+      business: 11990,
     },
   };
 

@@ -51,15 +51,6 @@ export const register = createAsyncThunk(
       const response = await authService.register(userData);
       const normalizedUser = normalizeAuthUser(response.user);
 
-      // Store auth data
-      if (response.token) {
-        secureStorage.setAuthToken(response.token);
-      }
-
-      if (normalizedUser) {
-        secureStorage.setUserData(normalizedUser);
-      }
-
       return {
         ...response,
         user: normalizedUser,
@@ -225,6 +216,7 @@ export const logoutUser = createAsyncThunk(
       return { success: true };
     } catch (error) {
       // Regardless of API call success/failure, we remove local data
+      secureStorage.clear();
       localStorage.removeItem(AUTH_CONFIG.tokenKey);
       localStorage.removeItem('user');
       return rejectWithValue(error.message || 'Logout failed');
@@ -281,9 +273,10 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(register.fulfilled, (state, action) => {
-        state.isAuthenticated = true;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
+        // Registration flow redirects to login; keep user unauthenticated
+        state.isAuthenticated = false;
+        state.user = null;
+        state.token = null;
         state.loading = false;
         state.error = null;
       })

@@ -927,7 +927,8 @@ const HirerDashboardPage = () => {
                 <Button
                   color="inherit"
                   size="small"
-                  onClick={() => window.location.reload()}
+                  onClick={handleRefresh}
+                  disabled={refreshing}
                 >
                   Refresh
                 </Button>
