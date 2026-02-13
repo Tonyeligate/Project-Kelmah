@@ -232,7 +232,8 @@ app.use(cors({
     'ngrok-skip-browser-warning',
     'x-requested-with',
     'x-frontend-health-probe',  // ✅ FIXED: Allow frontend health probe header
-    'x-request-id'              // ✅ FIXED: Allow Axios request ID header
+    'x-request-id',             // ✅ FIXED: Allow Axios request ID header
+    'x-retry-limit'             // ✅ FIXED: Allow retry-limit header from notification service
   ],
   exposedHeaders: ['ngrok-skip-browser-warning', 'x-request-id']
 }));

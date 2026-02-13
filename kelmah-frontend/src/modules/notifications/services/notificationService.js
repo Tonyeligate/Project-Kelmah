@@ -75,9 +75,6 @@ class NotificationService {
       // Add retry-control header to prevent excessive retries on rate limit
       const response = await this.client.get('/notifications', {
         params,
-        headers: {
-          'X-Retry-Limit': '2', // Limit retries for this endpoint
-        },
         // Disable automatic retries for this endpoint to prevent rate limiting
         'axios-retry': {
           retries: 2, // Max 2 retries instead of default
