@@ -25,7 +25,7 @@ import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   checkServiceHealth,
   getServiceStatusMessage,
@@ -57,8 +57,10 @@ const contactChannels = [
   },
 ];
 
-const quickActions = (navigate) => [
+const quickActions = (navigate, mode) =>
+  [
   {
+    key: 'support',
     title: 'Open Support Ticket',
     description: 'Submit detailed requests and track responses in one place.',
     icon: SupportAgentIcon,
@@ -66,6 +68,7 @@ const quickActions = (navigate) => [
     chip: 'SLA 8h',
   },
   {
+    key: 'docs',
     title: 'Live Knowledge Base',
     description: 'Browse deployment, payments, and verification guides.',
     icon: LiveHelpIcon,
@@ -73,13 +76,15 @@ const quickActions = (navigate) => [
     chip: 'Updated hourly',
   },
   {
+    key: 'community',
     title: 'Community Forum',
     description: 'Learn from 4,000+ hirers and technicians across Ghana.',
     icon: ForumIcon,
     onClick: () => navigate('/community'),
     chip: 'Beta',
   },
-];
+]
+  .filter((action) => action.key !== mode);
 
 const faqs = [
   {
@@ -102,11 +107,54 @@ const faqs = [
 const HelpCenterPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const [healthStatus, setHealthStatus] = useState({
     status: 'checking',
     message: 'Checking live system status…',
     action: 'Please hold while we confirm every service.',
   });
+
+  const supportMode = useMemo(() => {
+    if (location.pathname === '/docs') return 'docs';
+    if (location.pathname === '/community') return 'community';
+    return 'support';
+  }, [location.pathname]);
+
+  const pageCopy = useMemo(() => {
+    if (supportMode === 'docs') {
+      return {
+        title: 'Documentation Hub',
+        subtitle:
+          'Find support playbooks, setup guides, and troubleshooting references for the Kelmah platform.',
+        primaryLabel: 'Open Help Center',
+        primaryAction: () => navigate('/support/help-center'),
+        secondaryLabel: 'Visit Community',
+        secondaryAction: () => navigate('/community'),
+      };
+    }
+
+    if (supportMode === 'community') {
+      return {
+        title: 'Community & Peer Support',
+        subtitle:
+          'Learn from other hirers and vocational workers, and follow practical community-tested workflows.',
+        primaryLabel: 'Open Help Center',
+        primaryAction: () => navigate('/support/help-center'),
+        secondaryLabel: 'View Documentation',
+        secondaryAction: () => navigate('/docs?category=support'),
+      };
+    }
+
+    return {
+      title: 'Help Center & Status Desk',
+      subtitle:
+        'Reach the Kelmah support pod, open priority tickets, and review live service status without leaving the marketplace.',
+      primaryLabel: 'Contact Support',
+      primaryAction: () => navigate('/messages?tab=support'),
+      secondaryLabel: 'View Documentation',
+      secondaryAction: () => navigate('/docs?category=support'),
+    };
+  }, [navigate, supportMode]);
 
   useEffect(() => {
     let isMounted = true;
@@ -230,28 +278,27 @@ const HelpCenterPage = () => {
             </Stack>
             <Box>
               <Typography variant="h3" fontWeight={800} gutterBottom>
-                Help Center & Status Desk
+                {pageCopy.title}
               </Typography>
               <Typography variant="h6" maxWidth="720px">
-                Reach the Kelmah support pod, open priority tickets, and review
-                live service status without leaving the marketplace.
+                {pageCopy.subtitle}
               </Typography>
             </Box>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <Button
                 variant="contained"
                 size="large"
-                onClick={() => navigate('/messages?tab=support')}
+                onClick={pageCopy.primaryAction}
                 endIcon={<ArrowForwardIcon />}
               >
-                Contact Support
+                {pageCopy.primaryLabel}
               </Button>
               <Button
                 variant="outlined"
                 size="large"
-                onClick={() => navigate('/docs?category=support')}
+                onClick={pageCopy.secondaryAction}
               >
-                View Documentation
+                {pageCopy.secondaryLabel}
               </Button>
             </Stack>
             <Typography variant="body2">
@@ -261,7 +308,7 @@ const HelpCenterPage = () => {
         </Box>
 
         <Grid container spacing={3} mb={4}>
-          {quickActions(navigate).map((action) => (
+          {quickActions(navigate, supportMode).map((action) => (
             <Grid item xs={12} md={4} key={action.title}>
               <Card
                 sx={{

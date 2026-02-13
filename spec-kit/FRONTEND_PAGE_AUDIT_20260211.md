@@ -1,5 +1,27 @@
 # Kelmah Frontend – Page + Security Audit
 
+## Iteration Update (Feb 13, 2026 – Help/Docs/Community Route-Context Alignment) ✅
+
+- **Scope**:
+  - `kelmah-frontend/src/modules/support/pages/HelpCenterPage.jsx`
+  - `kelmah-frontend/src/routes/config.jsx` (route surface validation)
+- **Data-flow audit (UI → route-state → action)**:
+  - User opens `/support`, `/docs`, or `/community`.
+  - Router resolves all three to `HelpCenterPage`.
+  - `HelpCenterPage` now derives `supportMode` from pathname and renders mode-specific hero/title/actions.
+  - Quick-action buttons dispatch navigation via `navigate(...)` to support, docs, or community destinations excluding the current mode.
+  - Health status remains: `HelpCenterPage` → `checkServiceHealth('aggregate')` → gateway health endpoint.
+- **Root cause**:
+  - `/docs` and `/community` were valid aliases but rendered identical generic help content, so navigation changed URL without context-specific UX.
+  - Quick actions could include the current destination mode, creating effectively no-op loops.
+- **Fixes implemented**:
+  - Added route-context rendering for support/docs/community modes with mode-specific title, subtitle, and top CTA actions.
+  - Filtered quick actions to hide the current mode and keep navigation outcomes meaningful.
+- **Verification**:
+  - VS Code diagnostics: no errors in `HelpCenterPage.jsx`.
+  - Frontend production build passed (`npx vite build`, `built in 1m 20s`).
+  - Remote auth smoke checks remain rate-limited (`429`) at gateway login endpoint.
+
 ## Iteration Update (Feb 13, 2026 – Notification Payload Mapping Alignment) ✅
 
 - **Scope**:

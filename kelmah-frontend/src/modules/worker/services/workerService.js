@@ -107,22 +107,19 @@ const workerService = {
    * @returns {Promise<{ skills: Array, licenses: Array, certifications: Array }>}
    */
   getMyCredentials: async () => {
+    // Canonical endpoint: /users/me/credentials (verified in user-service routes)
     let payload = {};
-    const credentialPaths = [
-      '/users/me/credentials',
-      '/users/profile/credentials',
-      '/users/profile',
-      '/auth/me',
-      '/auth/profile',
-    ];
-
-    for (const path of credentialPaths) {
+    try {
+      const response = await api.get('/users/me/credentials');
+      payload = response?.data?.data ?? response?.data ?? {};
+    } catch (error) {
+      console.warn('Credentials endpoint unavailable:', error.message);
+      // Fallback: try /users/profile
       try {
-        const response = await api.get(path);
-        payload = response?.data?.data ?? response?.data ?? {};
-        break;
+        const fallback = await api.get('/users/profile');
+        payload = fallback?.data?.data ?? fallback?.data ?? {};
       } catch (_) {
-        // try next fallback path
+        // Return empty credentials
       }
     }
 

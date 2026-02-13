@@ -9,8 +9,12 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 // Override with MongoDB Atlas URI if not in environment
+if (!process.env.MONGODB_URI && process.env.JOB_MONGO_URI) {
+  process.env.MONGODB_URI = process.env.JOB_MONGO_URI;
+}
 if (!process.env.MONGODB_URI) {
-  process.env.MONGODB_URI = 'mongodb+srv://TonyGate:0553366244Aj@kelmah-messaging.xyqcurn.mongodb.net/kelmah_platform?retryWrites=true&w=majority&appName=Kelmah-messaging';
+  console.error('❌ Missing MongoDB connection string. Set JOB_MONGO_URI or MONGODB_URI.');
+  process.exit(1);
 }
 
 const { connectDB, mongoose } = require('../config/db');

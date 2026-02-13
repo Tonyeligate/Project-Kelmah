@@ -15,6 +15,18 @@ const { Review } = require('../models');
 // All admin routes require gateway authentication
 router.use(verifyGatewayRequest);
 
+// All admin routes require admin role
+router.use((req, res, next) => {
+  const role = req.user?.role;
+  if (role !== 'admin' && role !== 'super_admin') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Admin access required', code: 'FORBIDDEN' }
+    });
+  }
+  next();
+});
+
 // GET /api/admin/reviews/queue?status=pending&page=1&limit=20
 router.get('/reviews/queue', adminLimiter, async (req, res) => {
   try {

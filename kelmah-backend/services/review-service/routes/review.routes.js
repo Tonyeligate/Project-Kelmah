@@ -5,6 +5,17 @@ const ratingController = require('../controllers/rating.controller');
 const analyticsController = require('../controllers/analytics.controller');
 const { verifyGatewayRequest } = require('../../../shared/middlewares/serviceTrust');
 
+const requireAdmin = (req, res, next) => {
+	const role = req.user?.role;
+	if (role !== 'admin' && role !== 'super_admin') {
+		return res.status(403).json({
+			success: false,
+			error: { message: 'Admin access required', code: 'FORBIDDEN' }
+		});
+	}
+	next();
+};
+
 // ==================== REVIEW ROUTES ====================
 
 // Submit a new review (authenticated)
@@ -23,7 +34,7 @@ router.get('/job/:jobId', reviewController.getJobReviews);
 router.get('/user/:userId', reviewController.getUserReviews);
 
 // Get review analytics (admin only)
-router.get('/analytics', verifyGatewayRequest, analyticsController.getReviewAnalytics);
+router.get('/analytics', verifyGatewayRequest, requireAdmin, analyticsController.getReviewAnalytics);
 
 // Get specific review details (public)
 router.get('/:reviewId', reviewController.getReview);
@@ -46,6 +57,6 @@ router.get('/ratings/worker/:workerId', ratingController.getWorkerRating);
 router.get('/ratings/worker/:workerId/signals', ratingController.getWorkerRankSignals);
 
 // Admin: Moderate review
-router.put('/:reviewId/moderate', verifyGatewayRequest, analyticsController.moderateReview);
+router.put('/:reviewId/moderate', verifyGatewayRequest, requireAdmin, analyticsController.moderateReview);
 
 module.exports = router;

@@ -9,7 +9,12 @@
 const mongoose = require('mongoose');
 const axios = require('axios');
 
-const MONGODB_URI = 'mongodb+srv://TonyGate:0553366244Aj@kelmah-messaging.xyqcurn.mongodb.net/kelmah_platform?retryWrites=true&w=majority&appName=Kelmah-messaging';
+const MONGODB_URI = process.env.JOB_MONGO_URI || process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error('❌ Missing MongoDB connection string. Set JOB_MONGO_URI or MONGODB_URI.');
+  process.exit(1);
+}
 
 // API endpoint (adjust based on your setup)
 const API_BASE_URL = process.env.API_URL || 'http://localhost:5003';

@@ -25,25 +25,22 @@ const workerBookmarkPath = (workerId) => {
 export const hirerService = {
   // Profile Management
   async getProfile() {
-    const profilePaths = ['/users/profile/credentials', USER.ME_CREDENTIALS, '/users/profile', '/auth/me', '/auth/profile'];
-    for (const path of profilePaths) {
-      try {
-        const response = await api.get(path);
-        return response?.data?.data || response?.data || {};
-      } catch (_) {
-        // try next path
-      }
-    }
-
+    // Canonical endpoint: /users/me/credentials (verified in user-service routes)
     try {
       const response = await api.get(USER.ME_CREDENTIALS);
-      return response.data;
+      return response?.data?.data || response?.data || {};
     } catch (error) {
       console.warn(
         'User service unavailable for hirer profile:',
         error.message,
       );
-      throw error;
+      // Fallback: try /users/profile as secondary endpoint
+      try {
+        const fallback = await api.get('/users/profile');
+        return fallback?.data?.data || fallback?.data || {};
+      } catch (_) {
+        throw error;
+      }
     }
   },
 

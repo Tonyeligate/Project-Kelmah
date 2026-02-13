@@ -1,5 +1,73 @@
 # Kelmah Platform - Current Status & Development Log
 
+### P0 Implementation (Feb 13, 2026 – Admin Route Authorization + Secret Hygiene Hardening) ✅
+- 🎯 **Scope Restatement**: Start executing P0 remediation backlog by enforcing authorization on sensitive user-service endpoints and removing hardcoded DB credentials from scripts.
+- 🔍 **Dry-audit findings**:
+  - `user.routes.js` marked `/`, `POST /`, and `/database/cleanup` as “admin only” but only enforced `verifyGatewayRequest` (authentication), not role authorization.
+  - `workers/debug/models` also exposed internal model/connection diagnostics to any authenticated role.
+  - `populate-worker-fields.js` contained a hardcoded MongoDB Atlas URI fallback with embedded credentials.
+- ✅ **Fixes applied**:
+  - Added role enforcement middleware (`authorizeRoles('admin')`) to:
+    - `GET /` (all users)
+    - `POST /` (create user)
+    - `POST /database/cleanup`
+    - `GET /workers/debug/models`
+  - Removed hardcoded Mongo URI from `populate-worker-fields.js` and switched to env-only resolution:
+    - `USER_MONGO_URI || MONGODB_URI`
+    - explicit startup failure if neither is set.
+- 🧾 **Files updated**:
+  - `kelmah-backend/services/user-service/routes/user.routes.js`
+  - `kelmah-backend/services/user-service/scripts/populate-worker-fields.js`
+- 🧪 **Verification**:
+  - VS Code diagnostics (`get_errors`) report no errors in both modified files.
+
+### Backlog Planning (Feb 13, 2026 – Execution-Ready Remediation Backlog) ✅
+- 🎯 **Scope Restatement**: Proceed with the next step after super-document consolidation by producing a strict, owner-ready remediation backlog with priorities, SLAs, and release-blocking criteria.
+- ✅ **Deliverable created**:
+  - `spec-kit/KELMAH_REMEDIATION_BACKLOG_2026-02-13.md`
+- 📌 **Backlog structure included**:
+  - P0 (48h), P1 (7 days), P2 (14 days), P3 (30 days)
+  - Ownership matrix (Backend Lead, API Gateway Owner, Service Owners, Frontend Lead, Platform Owner, DevOps, QA)
+  - Verification gates and release-blocking criteria
+  - Recommended execution sequence (security → gateway/routes → contract hardening → debt/automation)
+- 🧪 **Execution note**:
+  - Backlog is designed to be actioned immediately and tracked in `STATUS_LOG.md` per completed remediation item with evidence.
+
+### Documentation Consolidation (Feb 13, 2026 – Refined Final Decision Super-Doc + Prompt1–8 Audit Alignment) ✅
+- 🎯 **Scope Restatement**: Re-scan requested early-stage documentation directories (`backup/root_cleanup_20260201`, `spec-kit`, `backup/root_cleanup_20260201/Kelmaholddocs`) and produce a refined single super-document of final Kelmah decisions, explicitly mapping where each decision was made, agreed, and confirmed.
+- 🔍 **Dry-audit / corpus scan performed**:
+  - Total files inventoried: **1,939**
+  - Text-readable files fully scanned: **1,623**
+  - Decision-evidence lines extracted: **42,168**
+  - Generated scan artifacts:
+    - `spec-kit/generated/decision_inventory.json`
+    - `spec-kit/generated/decision_evidence.json`
+    - `spec-kit/generated/decision_strong_summary.txt`
+- ✅ **Deliverables created**:
+  - `spec-kit/KELMAH_SUPER_DOCUMENTATION_FINAL_DECISIONS_REFINED_2026-02-13.md`
+    - Includes authority ordering, decision lifecycle matrix (Made → Agreed → Confirmed), superseded decisions, and final canonical decision set.
+    - Includes Prompt1–Prompt8 aligned audit sections for bugs, security, performance, maintainability, migration, and architecture review framing.
+- 🧪 **Verification note**:
+  - Frontend build attempted (`npx vite build`) but environment-level constraint blocked completion: `ENOSPC: no space left on device`.
+  - Existing diagnostics were collected; no runtime module code changes were applied in this documentation pass.
+
+### Implementation Update (Feb 13, 2026 – Help/Docs/Community Route-Context Alignment) ✅
+- 🎯 **Scope Restatement**: Continue iterative frontend page sweep by validating Help Center quick-action navigation and route behavior for `/support`, `/docs`, and `/community`.
+- 🔍 **Dry-audit findings**:
+  - Active route surface confirmed in `kelmah-frontend/src/routes/config.jsx` and `kelmah-frontend/src/modules/support/pages/HelpCenterPage.jsx`.
+  - `/docs` and `/community` are valid aliases to `HelpCenterPage`, but the page currently renders identical content for all three paths and does not use route/query context.
+  - Quick actions navigate to `/docs?category=support` and `/community`, which changes URL but not contextual page behavior.
+- ✅ **Fixes applied**:
+  - Added pathname-based support mode detection (`support`, `docs`, `community`) in Help Center.
+  - Added mode-specific page copy and CTA actions so `/docs` and `/community` render context-appropriate content.
+  - Filtered quick-action cards to omit the current mode and prevent self-referential navigation.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/support/pages/HelpCenterPage.jsx`
+- 🧪 Verification:
+  - VS Code diagnostics: no errors in modified file.
+  - Frontend production build passed: `npx vite build` (`✓ built in 1m 20s`).
+  - Remote login smoke checks still return `429` at gateway auth endpoint; protected-route probe remains pending cooldown.
+
 ### Investigation + Fix (Feb 13, 2026 – Worker Search 404 + Bookmarks 400 Console Errors) ✅
 - 🎯 **Scope Restatement**: Investigate WorkerSearch runtime failures reported from deployed frontend logs (`/api/users/bookmarks` 400 and `/api/users/workers/search` 404 with doubled backend path in response payload).
 - 🔍 **Root causes identified**:

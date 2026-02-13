@@ -46,13 +46,13 @@ function signRefreshToken(payload, options = {}) {
 function verifyAccessToken(token, options = {}) {
   const secret = ensureSecret('JWT_SECRET');
   const { issuer = DEFAULT_ISSUER, audience = DEFAULT_AUDIENCE } = options;
-  return jwt.verify(token, secret, { issuer, audience });
+  return jwt.verify(token, secret, { issuer, audience, algorithms: ['HS256'] });
 }
 
 function verifyRefreshToken(token, options = {}) {
   const secret = ensureSecret('JWT_REFRESH_SECRET');
   const { issuer = DEFAULT_ISSUER, audience = DEFAULT_AUDIENCE } = options;
-  return jwt.verify(token, secret, { issuer, audience });
+  return jwt.verify(token, secret, { issuer, audience, algorithms: ['HS256'] });
 }
 
 function generateAuthTokens(user) {

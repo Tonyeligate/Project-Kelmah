@@ -8,7 +8,12 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 // Use the same connection string as the service
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://TonyGate:0553366244Aj@kelmah-messaging.xyqcurn.mongodb.net/kelmah_platform?retryWrites=true&w=majority&appName=Kelmah-messaging';
+const MONGODB_URI = process.env.USER_MONGO_URI || process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error('❌ Missing MongoDB connection string. Set USER_MONGO_URI or MONGODB_URI in environment.');
+  process.exit(1);
+}
 
 // Simple schema for updates
 const userSchema = new mongoose.Schema({}, {strict: false});

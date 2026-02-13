@@ -162,8 +162,6 @@ const useEnhancedApi = (options = {}) => {
           signal: abortControllerRef.current.signal,
           headers: {
             ...headers,
-            'X-Priority': priority,
-            'X-Retry-Count': retryCount.toString(),
           },
         };
 

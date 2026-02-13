@@ -3,7 +3,7 @@ const router = express.Router();
 
 // Service trust middleware - verify requests from API Gateway
 const { verifyGatewayRequest, optionalGatewayVerification } = require('../../../shared/middlewares/serviceTrust');
-const { validateAvailabilityPayload } = require('../middlewares/auth');
+const { validateAvailabilityPayload, authorizeRoles } = require('../middlewares/auth');
 // Rate limiter - simple implementation for user service
 // Rate limiter - use express-rate-limit or fall back to pass-through
 let createLimiter;
@@ -44,8 +44,8 @@ const WorkerController = require('../controllers/worker.controller');
 const workerDetailRouter = require('./worker-detail.routes');
 
 // User CRUD routes (protected — admin only)
-router.get("/", verifyGatewayRequest, getAllUsers);
-router.post("/", verifyGatewayRequest, createLimiter('admin'), createUser);
+router.get("/", verifyGatewayRequest, authorizeRoles('admin'), getAllUsers);
+router.post("/", verifyGatewayRequest, authorizeRoles('admin'), createLimiter('admin'), createUser);
 
 // Dashboard routes - Protected with gateway authentication
 router.get("/dashboard/metrics", verifyGatewayRequest, getDashboardMetrics);
@@ -53,7 +53,7 @@ router.get("/dashboard/workers", verifyGatewayRequest, getDashboardWorkers);
 router.get("/dashboard/analytics", verifyGatewayRequest, getDashboardAnalytics);
 
 // Database cleanup endpoint (protected — admin only)
-router.post("/database/cleanup", verifyGatewayRequest, cleanupDatabase);
+router.post("/database/cleanup", verifyGatewayRequest, authorizeRoles('admin'), cleanupDatabase);
 
 // 🔥 FIX: Recent jobs route MUST come BEFORE parameterized routes
 // to prevent "/workers/jobs" being matched as "/workers/:id" where id="jobs"
@@ -92,7 +92,7 @@ router.get('/workers', (req, res, next) => {
 }, WorkerController.getAllWorkers);
 
 // Worker-specific debug route (MUST be before /workers/:id)
-router.get("/workers/debug/models", verifyGatewayRequest, (req, res) => {
+router.get("/workers/debug/models", verifyGatewayRequest, authorizeRoles('admin'), (req, res) => {
   const modelsModule = require('../models');
   res.json({
     success: true,

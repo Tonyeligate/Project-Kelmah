@@ -382,8 +382,8 @@ async function handleStaleWhileRevalidate(request) {
 
   // Return cached version immediately if available
   if (cachedResponse) {
-    // Kick off background update without awaiting to avoid double-consuming body
-    networkResponsePromise;
+    // Kick off background update — catch to prevent unhandled rejection
+    networkResponsePromise.catch(() => {});
     return cachedResponse;
   }
 
@@ -438,7 +438,13 @@ async function syncJobApplications() {
 
     for (const application of offlineApplications) {
       try {
-        const response = await fetch('/api/jobs/apply', {
+        // Job application endpoint requires jobId in path: POST /api/jobs/:jobId/apply
+        const jobId = application.data?.jobId || application.data?.job;
+        if (!jobId) {
+          console.error('Missing jobId for offline application:', application.id);
+          continue;
+        }
+        const response = await fetch(`/api/jobs/${jobId}/apply`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

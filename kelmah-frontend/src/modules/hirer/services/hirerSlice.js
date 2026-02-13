@@ -7,25 +7,22 @@ import { api } from '../../../services/apiClient';
 export const fetchHirerProfile = createAsyncThunk(
   'hirer/fetchProfile',
   async () => {
-    const profilePaths = ['/users/profile/credentials', '/users/me/credentials', '/users/profile', '/auth/me', '/auth/profile'];
-    for (const path of profilePaths) {
-      try {
-        const response = await api.get(path);
-        return response?.data?.data || response?.data || {};
-      } catch (_) {
-        // try next path
-      }
-    }
-
+    // Canonical endpoint: /users/me/credentials (verified in user-service routes)
     try {
       const response = await api.get('/users/me/credentials');
-      return response.data.data || response.data;
+      return response?.data?.data || response?.data || {};
     } catch (error) {
       console.warn(
         'User service unavailable for hirer profile:',
         error.message,
       );
-      return getRealUserData();
+      // Fallback: try /users/profile as secondary endpoint
+      try {
+        const fallback = await api.get('/users/profile');
+        return fallback?.data?.data || fallback?.data || {};
+      } catch (_) {
+        return {};
+      }
     }
   },
 );
