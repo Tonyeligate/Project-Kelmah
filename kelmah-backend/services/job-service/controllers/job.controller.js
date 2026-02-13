@@ -1182,8 +1182,9 @@ const updateJob = async (req, res, next) => {
       return errorResponse(res, 403, "Not authorized to update this job");
     }
 
-    // Check if job can be updated
-    if (job.status !== "draft" && job.status !== "Open") {
+    // Check if job can be updated (canonical statuses are lowercase)
+    const currentStatus = String(job.status || '').toLowerCase();
+    if (currentStatus !== "draft" && currentStatus !== "open") {
       return errorResponse(
         res,
         400,
@@ -1251,8 +1252,9 @@ const deleteJob = async (req, res, next) => {
       return errorResponse(res, 403, "Not authorized to delete this job");
     }
 
-    // Check if job can be deleted
-    if (job.status !== "draft" && job.status !== "Open") {
+    // Check if job can be deleted (canonical statuses are lowercase)
+    const currentStatus = String(job.status || '').toLowerCase();
+    if (currentStatus !== "draft" && currentStatus !== "open") {
       return errorResponse(
         res,
         400,

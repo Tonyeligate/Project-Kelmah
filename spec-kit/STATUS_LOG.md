@@ -1,5 +1,57 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Runtime Hotfix (Feb 13, 2026 – Hirer Job Edit Save/Publish 400) ✅
+- 🎯 **Scope Restatement**: Investigate repeated `PUT /api/jobs/:id` 400 errors when hirers try to save/publish edited jobs.
+- 🔍 **Reproduced with direct API call**:
+  - Endpoint: `PUT /api/jobs/692a9e756e71839af3a8d7bf`
+  - Response: `400 Cannot update job that is already in progress or completed`
+- 🧠 **Root cause**:
+  - In `job.controller.js` (`updateJob` + `deleteJob`), editability checks used mixed-case comparison against `"Open"`.
+  - Canonical model status values are lowercase (`draft`, `open`, `in-progress`, `completed`, `cancelled`), so valid `open` jobs were incorrectly rejected.
+- ✅ **Fix applied**:
+  - File: `kelmah-backend/services/job-service/controllers/job.controller.js`
+  - Normalized status with `String(job.status || '').toLowerCase()` and allowed updates/deletes only for `draft` or `open`.
+- 📌 **Related console note**:
+  - `inject.js:304 ... className.indexOf is not a function` is browser-extension injected script behavior, not Kelmah app source.
+
+### Implementation Update (Feb 13, 2026 – Messaging Reconnect Lifecycle Stabilization) ✅
+- 🎯 **Scope Restatement**: Continue iterative module hardening by auditing realtime messaging reconnect behavior and console noise under connection instability.
+- 🔍 **Dry-audit findings**:
+  - Active flow traced in `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`, `.../pages/MessagingPage.jsx`, and `.../services/messagingService.js`.
+  - WebSocket connect/disconnect lifecycle is coupled to callback dependencies that include conversation/socket state, causing repeated effect re-runs and unnecessary reconnect churn.
+  - Existing realtime degradation UX is present (`realtimeIssue` banners), but lifecycle coupling still risks avoidable reconnect noise.
+- ✅ **Fixes applied**:
+  - Refactored `MessageContext` socket lifecycle to use stable refs (`socketRef`, `connectingRef`, `selectedConversationRef`) so conversation changes do not trigger connection churn.
+  - Removed function-property connection guard pattern and replaced with explicit ref-based guard to prevent concurrent connection attempts.
+  - Decoupled event handlers from stale closure state by reading current selected conversation from ref during `new_message` and `messages_read` handling.
+  - Added ref-backed token getter indirection to avoid reconnect loops from unstable callback identities.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`
+- 🧪 Verification:
+  - VS Code diagnostics: no errors in modified messaging context file.
+  - Frontend production build passed: `npx vite build` (`✓ built in 3m 25s`).
+  - Remote login check succeeded (`/api/auth/login` → `200`), but `/api/messages/conversations` probe did not return within bounded terminal run and was interrupted; deployment-side runtime verification for that endpoint remains pending.
+
+### Implementation Update (Feb 13, 2026 – Worker Search + Bookmarks Flow Resilience) ✅
+- 🎯 **Scope Restatement**: Continue iterative page hardening by stabilizing worker-search bookmark hydration against gateway user-shape drift and mixed bookmarks payload contracts.
+- 🔍 **Root causes identified**:
+  - User-service bookmark handlers relied on `req.user.id` only, while trusted gateway payloads can expose `_id`.
+  - Worker search bookmark hydration accepted only one response shape (`data.workerIds`) and attempted hydration on any non-empty token string.
+  - Hirer service saved-workers loader lacked route-shape fallback + payload normalization for alternate bookmark response formats.
+- ✅ **Fixes applied**:
+  - Backend: added requester-id resolver (`id || _id`) in bookmark handlers.
+  - Frontend `WorkerSearch`: added JWT-shape guard before bookmark hydration and robust bookmark payload normalization.
+  - Frontend `hirerService.getSavedWorkers()`: added `/bookmarks` fallback on 404 and normalized array/object bookmark payload variants.
+- 🧾 Files updated:
+  - `kelmah-backend/services/user-service/controllers/user.controller.js`
+  - `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx`
+  - `kelmah-frontend/src/modules/hirer/services/hirerService.js`
+- 🧪 Verification:
+  - Backend syntax check passed: `node -c services/user-service/controllers/user.controller.js`.
+  - VS Code diagnostics: no errors in modified frontend files.
+  - Frontend production build passed: `npx vite build` (`✓ built in 2m 36s`).
+  - Remote gateway smoke checks: `GET /api/workers/search?query=carpenter&limit=1` → `200`; authenticated `GET /api/users/bookmarks` → `200`.
+
 ### Runtime Hotfix (Feb 13, 2026 – Job Details React #31 on "See Job") ✅
 - 🎯 **Scope Restatement**: Investigate and fix production crash on job details page when hirers click **See Job**.
 - 🔍 **Root cause**:
