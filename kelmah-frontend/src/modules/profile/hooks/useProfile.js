@@ -9,8 +9,10 @@ import {
 import useAuth from '../../auth/hooks/useAuth';
 
 const PROFILE_REQUEST_TIMEOUT_MS = 5000;
+let profileInitPromise = null;
 
-export const useProfile = () => {
+export const useProfile = (options = {}) => {
+  const { autoInitialize = true } = options;
   const dispatch = useDispatch();
   const { isAuthenticated } = useAuth();
   const [statistics, setStatistics] = useState(null);
@@ -197,41 +199,41 @@ export const useProfile = () => {
 
   // Load profile when authenticated
   useEffect(() => {
-    if (isAuthenticated) {
-      // ✅ FIXED: Add try-catch to prevent uncaught promise rejections
-      const initializeProfile = async () => {
-        try {
-          // Load all profile data concurrently
-          await Promise.allSettled([
-            loadProfile().catch((error) => {
-              console.warn(
-                'Profile loading failed (gracefully handled):',
-                error.message,
-              );
-            }),
-            loadStatistics().catch((error) => {
-              console.warn(
-                'Statistics loading failed (gracefully handled):',
-                error.message,
-              );
-            }),
-            loadActivity().catch((error) => {
-              console.warn(
-                'Activity loading failed (gracefully handled):',
-                error.message,
-              );
-            }),
-          ]);
-          console.log('🎯 Profile initialization completed with fallback data');
-        } catch (error) {
-          console.error('Profile initialization error:', error);
-          // Error is already handled by individual catch blocks
-        }
-      };
+    if (isAuthenticated && autoInitialize) {
+      if (!profileInitPromise) {
+        profileInitPromise = (async () => {
+          try {
+            const profile = await loadProfile();
 
-      initializeProfile();
+            if (profile) {
+              await Promise.allSettled([
+                loadStatistics().catch((error) => {
+                  console.warn(
+                    'Statistics loading failed (gracefully handled):',
+                    error.message,
+                  );
+                }),
+                loadActivity().catch((error) => {
+                  console.warn(
+                    'Activity loading failed (gracefully handled):',
+                    error.message,
+                  );
+                }),
+              ]);
+            }
+
+            console.log('🎯 Profile initialization completed');
+          } catch (error) {
+            console.error('Profile initialization error:', error);
+          } finally {
+            profileInitPromise = null;
+          }
+        })();
+      }
+
+      profileInitPromise.catch(() => {});
     }
-  }, [isAuthenticated, loadProfile, loadStatistics, loadActivity]);
+  }, [isAuthenticated, autoInitialize, loadProfile, loadStatistics, loadActivity]);
 
   return {
     loadProfile,

@@ -326,13 +326,6 @@ async function handleNetworkFirstRequest(request) {
   } catch (error) {
     clearTimeout(timeoutId);
 
-    // Handle timeout and network errors gracefully
-    if (error.name === 'AbortError') {
-      console.log('⏰ Request timeout, checking cache:', request.url);
-    } else {
-      console.log('🌐 Network failed, checking cache:', request.url);
-    }
-
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
       return cachedResponse;
@@ -375,7 +368,7 @@ async function handleStaleWhileRevalidate(request) {
       }
       return response;
     } catch (error) {
-      console.log('Network update failed:', error);
+      // Silent fail: stale-while-revalidate should not spam console on transient failures
       return null;
     }
   })();
@@ -400,7 +393,7 @@ async function updateCacheInBackground(request) {
       cache.put(request, response.clone());
     }
   } catch (error) {
-    console.log('Background cache update failed:', error);
+    // Silent fail for non-critical background update
   }
 }
 

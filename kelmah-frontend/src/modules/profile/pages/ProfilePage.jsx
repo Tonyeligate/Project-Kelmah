@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Container,
   Grid,
@@ -59,6 +59,7 @@ const ProfilePage = () => {
     statistics,
     activity,
   } = useProfile();
+  const hasAttemptedInitialLoad = useRef(false);
 
   const profile = useSelector(selectProfile);
   const loading = useSelector(selectProfileLoading);
@@ -86,7 +87,8 @@ const ProfilePage = () => {
 
   // Load profile on mount if not already loaded
   useEffect(() => {
-    if (!profile && !loading) {
+    if (!hasAttemptedInitialLoad.current && !profile && !loading) {
+      hasAttemptedInitialLoad.current = true;
       loadProfile();
     }
   }, [profile, loading, loadProfile]);

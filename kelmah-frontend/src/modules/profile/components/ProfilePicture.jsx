@@ -20,7 +20,7 @@ import { useSelector } from 'react-redux';
 import { selectProfile } from '../../../store/slices/profileSlice.js';
 
 const ProfilePicture = ({ size = 120, editable = true }) => {
-  const { uploadProfilePicture } = useProfile();
+  const { uploadProfilePicture } = useProfile({ autoInitialize: false });
   const profile = useSelector(selectProfile);
   const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);

@@ -285,9 +285,13 @@ const buildProfileActivity = (workerDoc, userDoc) => {
     .slice(0, 20);
 };
 
+const resolveRequesterId = (req) => {
+  return req?.user?.id || req?.user?._id || null;
+};
+
 exports.toggleBookmark = async (req, res) => {
   try {
-    const userId = req.user?.id;
+    const userId = resolveRequesterId(req);
     const { id: workerId } = req.params;
     if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
     if (!workerId) return res.status(400).json({ success: false, message: 'workerId required' });
@@ -308,7 +312,7 @@ exports.toggleBookmark = async (req, res) => {
 
 exports.getBookmarks = async (req, res) => {
   try {
-    const userId = req.user?.id;
+    const userId = resolveRequesterId(req);
     if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
     const docs = await Bookmark.find({ userId }).select('workerId');
     const workerIds = docs.map(d => String(d.workerId));

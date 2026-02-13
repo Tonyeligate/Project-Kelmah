@@ -228,9 +228,37 @@ export const hirerService = {
 
   async getSavedWorkers() {
     try {
-      const response = await api.get(USER.BOOKMARKS);
+      let response;
+      try {
+        response = await api.get(USER.BOOKMARKS);
+      } catch (primaryError) {
+        if (primaryError?.response?.status !== 404) {
+          throw primaryError;
+        }
+        response = await api.get('/bookmarks');
+      }
+
       const payload = response.data?.data || response.data || {};
-      return payload.workerIds || [];
+
+      if (Array.isArray(payload.workerIds)) {
+        return payload.workerIds.map((id) => String(id));
+      }
+
+      if (Array.isArray(payload.bookmarks)) {
+        return payload.bookmarks
+          .map((entry) => entry?.workerId || entry?.worker?._id || entry?.worker?.id)
+          .filter(Boolean)
+          .map((id) => String(id));
+      }
+
+      if (Array.isArray(payload)) {
+        return payload
+          .map((entry) => entry?.workerId || entry?._id || entry?.id)
+          .filter(Boolean)
+          .map((id) => String(id));
+      }
+
+      return [];
     } catch (error) {
       console.warn('Saved workers unavailable:', error.message);
       return [];

@@ -1,5 +1,44 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Investigation + Fix (Feb 13, 2026 – Profile Page Slow Load + Console Flood) ✅
+- 🎯 **Scope Restatement**: Resolve production profile page slowness and repeated console warnings (`Profile initialization completed with fallback data` loops, stale-while-revalidate fetch noise, socket churn side-effects).
+- 🔍 **Root causes identified**:
+  - `ProfilePage.jsx` retried `loadProfile()` on every render cycle whenever profile stayed null and loading returned false, creating repeated fetch loops and delayed UI.
+  - `useProfile` auto-initialized in multiple consumers (`ProfilePage` + nested `ProfilePicture`, and also `AccountSettings`) which could duplicate initialization work.
+  - `useProfile` launched secondary statistics/activity loads even when primary profile load failed, increasing unnecessary load under degraded network.
+  - Service worker stale-while-revalidate path logged network update failures on each transient fetch miss, creating heavy console noise.
+- ✅ **Fixes applied**:
+  - `kelmah-frontend/src/modules/profile/pages/ProfilePage.jsx`
+    - Added one-time guard (`hasAttemptedInitialLoad`) so initial `loadProfile()` runs once instead of looping.
+  - `kelmah-frontend/src/modules/profile/hooks/useProfile.js`
+    - Added `autoInitialize` option (`true` by default).
+    - Added module-level in-flight dedupe (`profileInitPromise`) to prevent duplicate concurrent initialization across consumers.
+    - Initialization now loads statistics/activity only when profile load succeeds.
+  - `kelmah-frontend/src/modules/profile/components/ProfilePicture.jsx`
+    - Uses `useProfile({ autoInitialize: false })` to prevent nested duplicate init.
+  - `kelmah-frontend/src/modules/settings/components/common/AccountSettings.jsx`
+    - Uses `useProfile({ autoInitialize: false })` to rely on explicit local load flow.
+  - `kelmah-frontend/public/sw.js`
+    - Removed repeated console logging for transient stale-while-revalidate/background update failures to reduce log flood.
+- 🧪 **Verification**:
+  - VS Code diagnostics show no errors in modified files.
+  - Frontend production build succeeded: `npx vite build` (`✓ built in 3m 21s`).
+- 📌 **Important note on one console error**:
+  - `FILE_ERROR_NO_SPACE` comes from browser storage (Chrome LevelDB) and is environment-side, not app logic; app changes reduce noise/retries but local browser storage pressure may still require manual cache/storage cleanup.
+
+### Runtime Hotfix (Feb 13, 2026 – Job Posting `trim` Crash in Edit Flow) ✅
+- 🎯 **Scope Restatement**: Resolve production runtime crash `TypeError: i.trim is not a function` thrown from `JobPostingPage` during edit/review rendering.
+- 🔍 **Root cause**:
+  - `JobPostingPage` called `.trim()`/`.replace()` on values assumed to be strings (`title`, `requirements`, `location`, `duration`, `description`) while edit payloads can contain non-string values.
+  - Crash occurred inside `useMemo` preview snapshot calculation and field validation when non-string values reached those code paths.
+- ✅ **Fixes applied**:
+  - Added `toSafeText()` coercion helper and hardened `normalizeDescription()` to safely handle non-string inputs.
+  - Replaced unsafe direct `.trim()` calls in preview snapshot and `getFieldError()` with normalized safe string helpers.
+  - File updated: `kelmah-frontend/src/modules/hirer/pages/JobPostingPage.jsx`.
+- 🧪 **Verification**:
+  - Frontend build completes successfully after patch (`npx vite build`).
+  - Expected result: job edit/review page no longer crashes when payload fields are non-string.
+
 ### P0 Execution Wave (Feb 13, 2026 – “Fix All Now” Security + AuthZ Hardening) ✅
 - 🎯 **Scope Restatement**: Execute full immediate hardening pass for critical risks without stopping: close protected-route authz gaps, remove hardcoded DB credentials from backend scripts, and verify frontend env exposure status.
 - 🔍 **Dry-audit completed across high-risk files**:

@@ -62,7 +62,14 @@ const steps = [
 const DESCRIPTION_MIN_CHARS = 120;
 const DESCRIPTION_MAX_CHARS = 1200;
 
-const normalizeDescription = (value = '') => value.replace(/\s+/g, ' ').trim();
+const toSafeText = (value = '') => {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return String(value);
+  return '';
+};
+
+const normalizeDescription = (value = '') =>
+  toSafeText(value).replace(/\s+/g, ' ').trim();
 
 const formatCurrency = (value) => {
   const numeric = Number(value);
@@ -256,11 +263,13 @@ const JobPostingPage = () => {
         .filter(Boolean)
         .slice(0, 8)
       : [];
-    const safeRequirements = formData.requirements?.trim();
-    const safeLocation = (formData.location || '').trim();
+    const safeRequirements = normalizeDescription(formData.requirements);
+    const safeLocation = normalizeDescription(formData.location);
+    const safeTitle = normalizeDescription(formData.title);
+    const safeDuration = normalizeDescription(formData.duration);
 
     return {
-      title: formData.title?.trim() || 'Job Title',
+      title: safeTitle || 'Job Title',
       category: formData.category || 'Category',
       description: normalized || 'Job description will appear here.',
       requirements:
@@ -271,7 +280,7 @@ const JobPostingPage = () => {
       skills: cleanSkills,
       paymentType: formData.paymentType,
       budget: formData.budget,
-      duration: formData.duration?.trim?.() ? formData.duration : '',
+      duration: safeDuration,
       locationType: formData.locationType,
       location:
         formData.locationType === 'remote'
@@ -298,7 +307,9 @@ const JobPostingPage = () => {
   const getFieldError = (field, data = formData) => {
     switch (field) {
       case 'title':
-        return data.title.trim() ? '' : 'Job title is required.';
+        return normalizeDescription(data.title)
+          ? ''
+          : 'Job title is required.';
       case 'category':
         return data.category ? '' : 'Select a category to continue.';
       case 'description': {
@@ -349,7 +360,7 @@ const JobPostingPage = () => {
           ? ''
           : 'Share the expected duration so workers can plan.';
       case 'location': {
-        const trimmed = data.location.trim();
+        const trimmed = normalizeDescription(data.location);
         if (trimmed) return '';
         return data.locationType === 'remote'
           ? 'Add the primary region or time zone for remote collaboration.'

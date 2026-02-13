@@ -28,7 +28,7 @@ const AccountSettings = () => {
   const loading = useSelector(selectProfileLoading);
   const error = useSelector(selectProfileError);
   const { user } = useSelector((state) => state.auth);
-  const { updateProfile, loadProfile } = useProfile();
+  const { updateProfile, loadProfile } = useProfile({ autoInitialize: false });
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({

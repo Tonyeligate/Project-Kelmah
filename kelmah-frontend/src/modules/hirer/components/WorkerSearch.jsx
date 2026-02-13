@@ -55,6 +55,33 @@ import messagingService from '../../messaging/services/messagingService';
 
 // No mock data - using real API data only
 
+const isLikelyJwt = (token) =>
+  typeof token === 'string' && token.split('.').length === 3;
+
+const extractWorkerIdsFromBookmarks = (payload) => {
+  const nested = payload?.data?.data || payload?.data || payload || {};
+
+  if (Array.isArray(nested.workerIds)) {
+    return nested.workerIds.map((id) => String(id));
+  }
+
+  if (Array.isArray(nested.bookmarks)) {
+    return nested.bookmarks
+      .map((entry) => entry?.workerId || entry?.worker?._id || entry?.worker?.id)
+      .filter(Boolean)
+      .map((id) => String(id));
+  }
+
+  if (Array.isArray(nested)) {
+    return nested
+      .map((entry) => entry?.workerId || entry?._id || entry?.id)
+      .filter(Boolean)
+      .map((id) => String(id));
+  }
+
+  return [];
+};
+
 const WorkerSearch = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -246,7 +273,7 @@ const WorkerSearch = () => {
     (async () => {
       try {
         const token = secureStorage.getAuthToken();
-        if (!token) {
+        if (!isLikelyJwt(token)) {
           return;
         }
 
@@ -262,7 +289,7 @@ const WorkerSearch = () => {
           }
         }
 
-        const ids = res?.data?.data?.workerIds || [];
+        const ids = extractWorkerIdsFromBookmarks(res?.data);
         setSavedWorkers(ids);
       } catch (err) {
         console.log('WorkerSearch - bookmarks fetch failed:', err.message);
