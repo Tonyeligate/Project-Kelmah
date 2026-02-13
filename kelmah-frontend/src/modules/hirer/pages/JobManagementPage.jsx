@@ -194,8 +194,9 @@ const JobManagementPage = () => {
 
   const handleEditJob = (jobId) => {
     const job = jobs.find((j) => j?.id === jobId);
-    if (job?.status && job.status !== 'draft') {
-      setUiMessage('Only draft jobs can be edited at the moment.');
+    const editableStatuses = ['draft', 'open'];
+    if (job?.status && !editableStatuses.includes(job.status.toLowerCase())) {
+      setUiMessage('Only draft and open jobs can be edited.');
       handleMenuClose();
       return;
     }
