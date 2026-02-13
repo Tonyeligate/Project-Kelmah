@@ -490,6 +490,12 @@ app.use(
     if (req.method === 'GET') {
       const p = req.path || '';
       if (p === '/workers' || /^\/workers\//.test(p)) {
+        // Protected worker sub-resources that require authentication
+        // (earnings is personal data; bookmark state is user-specific)
+        if (/\/(earnings|bookmark)(\/|$)/.test(p)) {
+          console.log('🔒 [API Gateway] Protected worker route - requiring auth:', p);
+          return authenticate(req, res, next);
+        }
         console.log('✅ [API Gateway] Public worker route - skipping auth:', p);
         return next();
       }
