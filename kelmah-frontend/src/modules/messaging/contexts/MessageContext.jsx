@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useContext,
   useCallback,
+  useRef,
 } from 'react';
 import PropTypes from 'prop-types';
 import { messagingService } from '../services/messagingService';
@@ -36,6 +37,8 @@ export const MessageProvider = ({ children }) => {
   // Real-time WebSocket state
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [realtimeIssue, setRealtimeIssue] = useState(null);
+  const socketErrorLoggedRef = useRef(false);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   // Map<conversationId, Map<userId, userInfo>>
   const [typingUsers, setTypingUsers] = useState(new Map());
@@ -90,7 +93,7 @@ export const MessageProvider = ({ children }) => {
       upgrade: true,
       timeout: 20000,
       reconnection: true,
-      reconnectionAttempts: 3, // Reduced to prevent spam
+      reconnectionAttempts: 2, // Keep retries low to reduce noisy failures on sleeping backends
       reconnectionDelay: 2000, // Increased delay
       reconnectionDelayMax: 5000,
       maxReconnectionAttempts: 3,
@@ -100,17 +103,26 @@ export const MessageProvider = ({ children }) => {
     newSocket.on('connect', () => {
       console.log('✅ WebSocket connected for messaging');
       setIsConnected(true);
+      setRealtimeIssue(null);
+      socketErrorLoggedRef.current = false;
       connectWebSocket._connecting = false;
     });
 
-    newSocket.on('disconnect', () => {
+    newSocket.on('disconnect', (reason) => {
       console.log('❌ WebSocket disconnected');
       setIsConnected(false);
+      if (reason && reason !== 'io client disconnect') {
+        setRealtimeIssue('Real-time updates are temporarily unavailable.');
+      }
       connectWebSocket._connecting = false;
     });
 
     newSocket.on('connect_error', (error) => {
-      console.error('🚨 WebSocket connection error:', error);
+      if (!socketErrorLoggedRef.current) {
+        console.error('🚨 WebSocket connection error:', error);
+        socketErrorLoggedRef.current = true;
+      }
+      setRealtimeIssue('Real-time connection failed. Using standard refresh mode.');
       connectWebSocket._connecting = false;
     });
 
@@ -239,6 +251,7 @@ export const MessageProvider = ({ children }) => {
       socket.disconnect();
       setSocket(null);
       setIsConnected(false);
+      setRealtimeIssue(null);
     }
   }, [socket]);
 
@@ -529,6 +542,7 @@ export const MessageProvider = ({ children }) => {
 
     // Real-time WebSocket features
     isConnected,
+    realtimeIssue,
     onlineUsers,
     typingUsers,
     startTyping,

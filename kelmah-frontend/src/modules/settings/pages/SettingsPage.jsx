@@ -25,7 +25,13 @@ import PrivacySettings from '../components/common/PrivacySettings';
 import { useSettings } from '../hooks/useSettings';
 
 const SettingsPage = () => {
-  const { settings, loading, error, updateNotificationPreferences } =
+  const {
+    settings,
+    loading,
+    error,
+    updateNotificationPreferences,
+    updatePrivacySettings,
+  } =
     useSettings();
   const [tabValue, setTabValue] = useState(0);
   const theme = useTheme();
@@ -58,7 +64,17 @@ const SettingsPage = () => {
       label: 'Security & Password',
       icon: <SecurityIcon />,
     },
-    { component: <PrivacySettings />, label: 'Privacy', icon: <ShieldIcon /> },
+    {
+      component: (
+        <PrivacySettings
+          settings={settings}
+          loading={loading}
+          updatePrivacySettings={updatePrivacySettings}
+        />
+      ),
+      label: 'Privacy',
+      icon: <ShieldIcon />,
+    },
   ];
 
   return (

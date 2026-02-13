@@ -434,7 +434,15 @@ const createJob = async (req, res, next) => {
  */
 const getContractById = async (req, res, next) => {
   try {
-    const contract = await Contract.findById(req.params.id)
+    const { id } = req.params;
+
+    // Guard against invalid Mongo ObjectId values (e.g. mock ids like "contract-1")
+    // to avoid CastError -> 500 and retry storms on the client.
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return errorResponse(res, 404, 'Contract not found');
+    }
+
+    const contract = await Contract.findById(id)
       .populate('job', 'title category')
       .populate('hirer', 'firstName lastName')
       .populate('worker', 'firstName lastName');

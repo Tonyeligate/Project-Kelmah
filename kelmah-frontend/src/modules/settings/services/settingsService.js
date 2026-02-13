@@ -28,17 +28,35 @@ const DEFAULT_NOTIFICATION_PREFS = {
 class SettingsService {
   // Get user settings (aggregates notification prefs with local defaults)
   async getSettings() {
-    const notifications = await this.getNotificationPreferences();
-    return {
-      theme: 'light',
-      language: 'en',
-      notifications,
-      privacy: {
-        profileVisibility: 'public',
-        showEmail: false,
-        showPhone: false,
-      },
-    };
+    try {
+      const response = await api.get(settingsPath());
+      const payload = response?.data?.data || {};
+      return {
+        theme: payload.theme || 'light',
+        language: payload.language || 'en',
+        notifications: {
+          ...DEFAULT_NOTIFICATION_PREFS,
+          ...(payload.notifications || {}),
+        },
+        privacy: {
+          profileVisibility: 'public',
+          showEmail: false,
+          showPhone: false,
+          ...(payload.privacy || {}),
+        },
+      };
+    } catch {
+      return {
+        theme: 'light',
+        language: 'en',
+        notifications: DEFAULT_NOTIFICATION_PREFS,
+        privacy: {
+          profileVisibility: 'public',
+          showEmail: false,
+          showPhone: false,
+        },
+      };
+    }
   }
 
   // Get notification preferences — tries backend, falls back silently

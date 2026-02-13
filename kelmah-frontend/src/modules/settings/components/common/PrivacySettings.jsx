@@ -9,10 +9,9 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
-import { useSettings } from '../../hooks/useSettings';
+import PropTypes from 'prop-types';
 
-const PrivacySettings = () => {
-  const { settings, loading, updatePrivacySettings } = useSettings();
+const PrivacySettings = ({ settings, loading, updatePrivacySettings }) => {
 
   const [localPrivacy, setLocalPrivacy] = useState({
     profileVisibility: 'public',
@@ -121,6 +120,19 @@ const PrivacySettings = () => {
       </Snackbar>
     </Box>
   );
+};
+
+PrivacySettings.propTypes = {
+  settings: PropTypes.shape({
+    privacy: PropTypes.object,
+  }),
+  loading: PropTypes.bool,
+  updatePrivacySettings: PropTypes.func.isRequired,
+};
+
+PrivacySettings.defaultProps = {
+  settings: null,
+  loading: false,
 };
 
 export default PrivacySettings;

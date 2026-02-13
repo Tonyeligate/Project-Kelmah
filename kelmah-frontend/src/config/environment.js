@@ -270,7 +270,7 @@ export const API_ENDPOINTS = {
     WORKERS: buildEndpoint(SERVICES.USER_SERVICE, '/users/workers'),
     WORKERS_SEARCH: buildEndpoint(
       SERVICES.USER_SERVICE,
-      '/users/workers/search',
+      '/workers/search',
     ),
     WORKER_DETAIL: (workerId) =>
       buildEndpoint(SERVICES.USER_SERVICE, `/users/workers/${workerId}`),

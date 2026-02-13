@@ -50,13 +50,17 @@ export const NotificationProvider = ({ children }) => {
 
   // Track last fetch timestamp to prevent rapid re-fetches
   const lastFetchRef = useRef(0);
+  const lastFetchKeyRef = useRef('');
   const MIN_FETCH_INTERVAL = 30000; // 30 seconds minimum between fetches
 
   const fetchNotifications = useCallback(
-    async ({ page = 1, limit = 20, unreadOnly = false, type } = {}) => {
+    async ({ page = 1, limit = 20, unreadOnly = false, type, force = false } = {}) => {
+      const fetchKey = `${userId || 'anon'}|${page}|${limit}|${String(unreadOnly)}|${type || 'all'}`;
+
       // Rate limiting check - prevent rapid re-fetches
       const now = Date.now();
-      if (now - lastFetchRef.current < MIN_FETCH_INTERVAL) {
+      const withinInterval = now - lastFetchRef.current < MIN_FETCH_INTERVAL;
+      if (!force && withinInterval && fetchKey === lastFetchKeyRef.current) {
         console.log(
           '⏱️ Skipping notification fetch - too soon since last fetch',
         );
@@ -64,7 +68,7 @@ export const NotificationProvider = ({ children }) => {
       }
 
       // Only fetch if we have a user ID and token
-      const currentToken = secureStorage.getItem('token');
+      const currentToken = secureStorage.getAuthToken();
       if (!userId || !currentToken) {
         setLoading(false);
         return; // Not logged in
@@ -73,6 +77,7 @@ export const NotificationProvider = ({ children }) => {
       try {
         setLoading(true);
         lastFetchRef.current = now; // Update last fetch timestamp
+        lastFetchKeyRef.current = fetchKey;
 
         const { data, pagination: paginationData } =
           await notificationServiceUser.getNotifications({

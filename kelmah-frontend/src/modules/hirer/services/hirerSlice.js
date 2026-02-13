@@ -7,8 +7,17 @@ import { api } from '../../../services/apiClient';
 export const fetchHirerProfile = createAsyncThunk(
   'hirer/fetchProfile',
   async () => {
+    const profilePaths = ['/users/profile/credentials', '/users/me/credentials', '/users/profile', '/auth/me', '/auth/profile'];
+    for (const path of profilePaths) {
+      try {
+        const response = await api.get(path);
+        return response?.data?.data || response?.data || {};
+      } catch (_) {
+        // try next path
+      }
+    }
+
     try {
-      // Align with user-service: profile is served under /api/profile
       const response = await api.get('/users/me/credentials');
       return response.data.data || response.data;
     } catch (error) {

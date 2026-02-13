@@ -1,13 +1,20 @@
 const { Notification, NotificationPreference } = require("../models");
 const { handleError } = require("../utils/errorHandler");
 
+const getRequesterId = (req) => req?.user?._id || req?.user?.id;
+
 // Get user notifications
 exports.getUserNotifications = async (req, res) => {
   try {
     const { page = 1, limit = 20, unreadOnly = false, type } = req.query;
+    const requesterId = getRequesterId(req);
+
+    if (!requesterId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
 
     const query = {
-      recipient: req.user._id,
+      recipient: requesterId,
     };
 
     if (unreadOnly === "true") {
@@ -51,10 +58,15 @@ exports.getUserNotifications = async (req, res) => {
 exports.markNotificationAsRead = async (req, res) => {
   try {
     const { notificationId } = req.params;
+    const requesterId = getRequesterId(req);
+
+    if (!requesterId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
 
     const notification = await Notification.findOne({
       _id: notificationId,
-      recipient: req.user._id,
+      recipient: requesterId,
     });
 
     if (!notification) {
@@ -72,9 +84,15 @@ exports.markNotificationAsRead = async (req, res) => {
 // Mark all notifications as read
 exports.markAllNotificationsAsRead = async (req, res) => {
   try {
+    const requesterId = getRequesterId(req);
+
+    if (!requesterId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
     await Notification.updateMany(
       {
-        recipient: req.user._id,
+        recipient: requesterId,
         "readStatus.isRead": false,
       },
       {
@@ -95,10 +113,15 @@ exports.markAllNotificationsAsRead = async (req, res) => {
 exports.deleteNotification = async (req, res) => {
   try {
     const { notificationId } = req.params;
+    const requesterId = getRequesterId(req);
+
+    if (!requesterId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
 
     const notification = await Notification.findOne({
       _id: notificationId,
-      recipient: req.user._id,
+      recipient: requesterId,
     });
 
     if (!notification) {
@@ -116,8 +139,14 @@ exports.deleteNotification = async (req, res) => {
 // Clear all notifications for current user
 exports.clearAllNotifications = async (req, res) => {
   try {
+    const requesterId = getRequesterId(req);
+
+    if (!requesterId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
     await Notification.deleteMany({
-      recipient: req.user._id,
+      recipient: requesterId,
     });
 
     res.json({ message: "All notifications cleared" });
@@ -129,8 +158,14 @@ exports.clearAllNotifications = async (req, res) => {
 // Get unread notification count
 exports.getUnreadCount = async (req, res) => {
   try {
+    const requesterId = getRequesterId(req);
+
+    if (!requesterId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
     const count = await Notification.countDocuments({
-      recipient: req.user._id,
+      recipient: requesterId,
       "readStatus.isRead": false,
     });
 
@@ -143,9 +178,15 @@ exports.getUnreadCount = async (req, res) => {
 // Get or initialize notification preferences for current user
 exports.getPreferences = async (req, res) => {
   try {
-    let prefs = await NotificationPreference.findOne({ user: req.user._id });
+    const requesterId = getRequesterId(req);
+
+    if (!requesterId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    let prefs = await NotificationPreference.findOne({ user: requesterId });
     if (!prefs) {
-      prefs = await NotificationPreference.create({ user: req.user._id });
+      prefs = await NotificationPreference.create({ user: requesterId });
     }
     res.json({ success: true, data: prefs });
   } catch (error) {
@@ -156,9 +197,15 @@ exports.getPreferences = async (req, res) => {
 // Update notification preferences
 exports.updatePreferences = async (req, res) => {
   try {
+    const requesterId = getRequesterId(req);
+
+    if (!requesterId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
     const updates = req.body || {};
     const prefs = await NotificationPreference.findOneAndUpdate(
-      { user: req.user._id },
+      { user: requesterId },
       { $set: updates },
       { new: true, upsert: true },
     );

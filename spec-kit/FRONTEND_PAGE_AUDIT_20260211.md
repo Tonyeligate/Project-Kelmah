@@ -1,5 +1,63 @@
 # Kelmah Frontend – Page + Security Audit
 
+## Iteration Update (Feb 13, 2026 – Notification Payload Mapping Alignment) ✅
+
+- **Scope**:
+  - `kelmah-frontend/src/modules/notifications/services/notificationService.js`
+  - `kelmah-frontend/src/modules/notifications/pages/NotificationsPage.jsx` (consumer validation)
+- **Root cause**:
+  - Backend notification payloads include `content` and `actionUrl`, while frontend consumers expect `message` and `link`, causing blank notification text and missing action links in parts of the UI.
+- **Fixes implemented**:
+  - Normalized notification entities in service adapter to map `content -> message` and `actionUrl -> link`.
+  - Added resilient title/message fallbacks to support mixed payload variants without breaking existing UI paths.
+- **Verification**:
+  - Frontend production build passed (`npx vite build`, `built in 1m 20s`).
+  - Remote gateway login probe returned `429 Too Many Requests`; deployment verification for authenticated endpoint responses is pending rate-limit cooldown.
+
+## Iteration Update (Feb 12, 2026 – Profile Module API Contract Alignment) ✅
+
+- **Scope**:
+  - `kelmah-frontend/src/modules/profile/services/profileService.js`
+  - `kelmah-frontend/src/modules/profile/components/ProfilePicture.jsx`
+- **Root cause**:
+  - Profile service called unsupported endpoints (`/users/profile/skills`, `/users/profile/education`, `/users/profile/experience`, `/users/profile/preferences`) while backend currently exposes a consolidated `PUT /users/profile` update path.
+  - Profile picture UI rendered only local preview state and ignored persisted profile avatar data.
+- **Fixes implemented**:
+  - Consolidated profile sub-updates to `PUT /users/profile` payload updates for skills/education/experience/preferences.
+  - Added profile picture fallback persistence for unavailable upload endpoint and rendered stored/persisted avatar in profile UI.
+  - Added blob URL cleanup in picture component to avoid memory leaks.
+- **Verification**:
+  - Frontend production build passed (`npx vite build`, `built in 2m 9s`).
+
+## Iteration Update (Feb 12, 2026 – Scheduling Page Service Contract Resilience) ✅
+
+- **Scope**:
+  - `kelmah-frontend/src/modules/scheduling/services/schedulingService.js`
+  - `kelmah-frontend/src/modules/scheduling/pages/SchedulingPage.jsx` (consumer validation)
+- **Root cause**:
+  - Scheduling module called `/appointments` APIs that are not currently mounted in the active gateway/service surface, causing hard failures and non-functional create/update/delete flows.
+- **Fixes implemented**:
+  - Added local-storage fallback CRUD in scheduling service when appointment endpoints are unavailable.
+  - Normalized appointment entities (`id`, `date`) across API and fallback paths for stable rendering.
+  - Added fallback filtering and status-update paths for user/job-specific and status operations.
+- **Verification**:
+  - Frontend production build passed (`npx vite build`, `built in 2m 7s`).
+
+## Iteration Update (Feb 12, 2026 – Notifications + Settings Data-Flow Hardening) ✅
+
+- **Scope**:
+  - `kelmah-frontend/src/modules/settings/services/settingsService.js`
+  - `kelmah-backend/services/messaging-service/controllers/notification.controller.js`
+- **Root cause**:
+  - Notification endpoints depended on `req.user._id` only, while gateway-auth user payloads can provide `id`.
+  - Settings frontend `getSettings()` ignored persisted backend settings and returned static defaults, causing user preference drift after refresh.
+- **Fixes implemented**:
+  - Notification controller now resolves requester identity from `req.user._id || req.user.id` and enforces auth checks consistently.
+  - Settings service now hydrates from `GET /settings` and merges sane defaults only as fallback.
+- **Verification**:
+  - Messaging notification controller syntax check passed.
+  - Frontend production build passed (`npx vite build`, `built in 2m 34s`).
+
 ## Iteration Update (Feb 12, 2026 – Reviews Backend/Gateway Flow Alignment) ✅
 
 - **Scope**:

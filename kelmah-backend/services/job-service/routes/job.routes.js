@@ -48,6 +48,7 @@ router.get("/stats", jobController.getPlatformStats); // ✅ PUBLIC: Platform st
 router.get("/contracts", jobController.getContracts); // ✅ MOVED: Make contracts publicly accessible
 router.get("/contracts/:id", jobController.getContractById);
 router.post("/contracts/:id/disputes", verifyGatewayRequest, jobController.createContractDispute);
+router.get('/:id([a-fA-F0-9]{24})', jobController.getJobById);
 
 // Milestone routes (publicly accessible reads, protected writes)
 router.get("/milestones/contract/:contractId", jobController.getContractMilestones);
@@ -134,8 +135,5 @@ router.patch('/:id/renew', authorizeRoles('hirer'), jobController.renewJob);
 
 // Admin routes
 router.get('/expired', authorizeRoles('admin'), jobController.getExpiredJobs);
-
-// Keep the catch-all ID route LAST to avoid shadowing specific routes like /my-jobs
-router.get('/:id', jobController.getJobById);
 
 module.exports = router;

@@ -89,6 +89,8 @@ const EnhancedMessagingPage = () => {
     selectConversation,
     clearConversation,
     typingUsers,
+    isConnected,
+    realtimeIssue,
   } = useMessages();
 
   // Local state for UI
@@ -1424,6 +1426,14 @@ const EnhancedMessagingPage = () => {
 
             {/* Search Bar */}
             <Box sx={{ p: 2 }}>
+              {(realtimeIssue || !isConnected) && (
+                <Alert
+                  severity="warning"
+                  sx={{ mb: 2 }}
+                >
+                  {realtimeIssue || 'Live updates are reconnecting. Messages still load normally.'}
+                </Alert>
+              )}
               <TextField
                 id="mobile-search-input"
                 fullWidth
@@ -1830,6 +1840,11 @@ const EnhancedMessagingPage = () => {
           background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
         }}
       >
+        {(realtimeIssue || !isConnected) && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {realtimeIssue || 'Live updates are reconnecting. You can still open conversations and send messages.'}
+          </Alert>
+        )}
         <Grid container spacing={2} sx={{ height: '100%' }}>
           {isMobile ? (
             selectedConversation ? (

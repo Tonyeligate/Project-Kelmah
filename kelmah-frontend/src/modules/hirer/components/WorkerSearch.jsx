@@ -50,6 +50,7 @@ import {
 } from '@mui/icons-material';
 import { API_ENDPOINTS } from '../../../config/environment';
 import { api } from '../../../services/apiClient';
+import { secureStorage } from '../../../utils/secureStorage';
 import messagingService from '../../messaging/services/messagingService';
 
 // No mock data - using real API data only
@@ -244,8 +245,23 @@ const WorkerSearch = () => {
     // Hydrate saved bookmarks
     (async () => {
       try {
+        const token = secureStorage.getAuthToken();
+        if (!token) {
+          return;
+        }
+
         console.log('WorkerSearch - fetching bookmarks');
-        const res = await api.get(API_ENDPOINTS.USER.BOOKMARKS);
+        let res;
+        try {
+          res = await api.get(API_ENDPOINTS.USER.BOOKMARKS);
+        } catch (bookmarkError) {
+          if (bookmarkError?.response?.status === 404) {
+            res = await api.get('/bookmarks');
+          } else {
+            throw bookmarkError;
+          }
+        }
+
         const ids = res?.data?.data?.workerIds || [];
         setSavedWorkers(ids);
       } catch (err) {
@@ -306,9 +322,22 @@ const WorkerSearch = () => {
 
       console.log('WorkerSearch - making API call to:', API_ENDPOINTS.USER.WORKERS_SEARCH, params);
 
-      const response = await api.get(API_ENDPOINTS.USER.WORKERS_SEARCH, {
-        params,
-      });
+      let response;
+      try {
+        response = await api.get(API_ENDPOINTS.USER.WORKERS_SEARCH, {
+          params,
+        });
+      } catch (primaryError) {
+        const shouldFallback =
+          primaryError?.response?.status === 404 &&
+          API_ENDPOINTS.USER.WORKERS_SEARCH !== '/workers/search';
+
+        if (!shouldFallback) {
+          throw primaryError;
+        }
+
+        response = await api.get('/workers/search', { params });
+      }
 
       if (response.data) {
         const workersData =

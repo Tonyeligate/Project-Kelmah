@@ -25,6 +25,16 @@ const workerBookmarkPath = (workerId) => {
 export const hirerService = {
   // Profile Management
   async getProfile() {
+    const profilePaths = ['/users/profile/credentials', USER.ME_CREDENTIALS, '/users/profile', '/auth/me', '/auth/profile'];
+    for (const path of profilePaths) {
+      try {
+        const response = await api.get(path);
+        return response?.data?.data || response?.data || {};
+      } catch (_) {
+        // try next path
+      }
+    }
+
     try {
       const response = await api.get(USER.ME_CREDENTIALS);
       return response.data;

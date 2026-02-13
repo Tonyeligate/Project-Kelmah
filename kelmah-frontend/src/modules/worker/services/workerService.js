@@ -107,8 +107,24 @@ const workerService = {
    * @returns {Promise<{ skills: Array, licenses: Array, certifications: Array }>}
    */
   getMyCredentials: async () => {
-    const response = await api.get('/users/me/credentials');
-    const payload = response?.data?.data ?? response?.data ?? {};
+    let payload = {};
+    const credentialPaths = [
+      '/users/me/credentials',
+      '/users/profile/credentials',
+      '/users/profile',
+      '/auth/me',
+      '/auth/profile',
+    ];
+
+    for (const path of credentialPaths) {
+      try {
+        const response = await api.get(path);
+        payload = response?.data?.data ?? response?.data ?? {};
+        break;
+      } catch (_) {
+        // try next fallback path
+      }
+    }
 
     return {
       skills: Array.isArray(payload.skills) ? payload.skills : [],

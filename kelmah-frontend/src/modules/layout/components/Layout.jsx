@@ -40,6 +40,8 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
   // 🎯 ENHANCED: Comprehensive dashboard page detection
   // FIX: Added missing paths that should render with dashboard sidebar layout
   const currentPath = location.pathname || '';
+  const isMessagesPage =
+    currentPath === '/messages' || currentPath.startsWith('/messages');
   const isPublicWorkerProfile = currentPath.startsWith('/worker-profile');
   const isDashboardPage =
     !isPublicWorkerProfile &&
@@ -91,18 +93,20 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             overflowX: 'hidden',
           }}
         >
-          <Header
-            toggleTheme={toggleTheme}
-            mode={mode}
-            setThemeMode={setThemeMode}
-          />
+          {!isMessagesPage && (
+            <Header
+              toggleTheme={toggleTheme}
+              mode={mode}
+              setThemeMode={setThemeMode}
+            />
+          )}
           {/* Main content area — flex-based height, safe-area aware */}
           <Box
             component="main"
             sx={{
               flex: 1,
               width: '100%',
-              pt: '48px', // Matches header minHeight on mobile
+              pt: isMessagesPage ? 0 : '48px', // Messages page renders its own mobile header
               // ✅ MOBILE-AUDIT FIX: Account for safe-area-inset-bottom on notched phones
               pb: 'calc(56px + env(safe-area-inset-bottom, 0px) + 16px)',
               px: 1.5,

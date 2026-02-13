@@ -95,6 +95,13 @@ class NotificationService {
       const normalizeNotification = (notification = {}) => ({
         ...notification,
         id: notification?.id || notification?._id,
+        title: notification?.title || notification?.message || '',
+        message:
+          notification?.message ||
+          notification?.content ||
+          notification?.title ||
+          '',
+        link: notification?.link || notification?.actionUrl || null,
         read:
           typeof notification?.read === 'boolean'
             ? notification.read

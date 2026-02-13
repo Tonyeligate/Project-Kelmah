@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Avatar,
@@ -16,9 +16,12 @@ import {
   Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { useProfile } from '../hooks/useProfile';
+import { useSelector } from 'react-redux';
+import { selectProfile } from '../../../store/slices/profileSlice.js';
 
 const ProfilePicture = ({ size = 120, editable = true }) => {
   const { uploadProfilePicture } = useProfile();
+  const profile = useSelector(selectProfile);
   const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -36,6 +39,14 @@ const ProfilePicture = ({ size = 120, editable = true }) => {
       setOpenDialog(true);
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const handleUpload = async () => {
     if (!selectedFile) return;
@@ -70,7 +81,7 @@ const ProfilePicture = ({ size = 120, editable = true }) => {
   return (
     <Box sx={{ position: 'relative', width: size, height: size }}>
       <Avatar
-        src={previewUrl}
+        src={previewUrl || profile?.profilePicture || profile?.avatar || ''}
         sx={{
           width: size,
           height: size,

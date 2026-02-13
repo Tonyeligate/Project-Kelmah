@@ -61,11 +61,36 @@ const AvailabilityCalendar = () => {
   const fetchAvailability = async () => {
     try {
       setLoading(true);
+      const userId = user?.id || user?._id;
+      if (!userId) {
+        setAvailability([]);
+        setError('User context is missing. Please log in again.');
+        return;
+      }
+
       const response = await fetch(
-        `/api/workers/${user.id}/availability?date=${format(selectedDate, 'yyyy-MM-dd')}`,
+        `/api/availability/${userId}`,
       );
+      if (!response.ok) {
+        throw new Error(`Failed to load availability (${response.status})`);
+      }
       const data = await response.json();
-      setAvailability(data);
+
+      // Backend returns { success, data: { daySlots: [...] } }
+      const normalizedSlots = Array.isArray(data?.data?.daySlots)
+        ? data.data.daySlots.flatMap((day) => {
+          const daySlots = Array.isArray(day?.slots) ? day.slots : [];
+          const currentDate = format(selectedDate, 'yyyy-MM-dd');
+          return daySlots.map((slot, index) => ({
+            id: `${day.dayOfWeek}-${index}`,
+            startTime: `${currentDate}T${slot.start || '09:00'}:00`,
+            endTime: `${currentDate}T${slot.end || '17:00'}:00`,
+            status: data?.data?.isAvailable ? 'available' : 'unavailable',
+          }));
+        })
+        : [];
+
+      setAvailability(normalizedSlots);
       setError(null);
     } catch (err) {
       setError('Failed to load availability');
@@ -117,21 +142,35 @@ const AvailabilityCalendar = () => {
   const handleSubmit = async () => {
     try {
       setLoading(true);
-      const url = editingSlot
-        ? `/api/workers/${user.id}/availability/${editingSlot.id}`
-        : `/api/workers/${user.id}/availability`;
+      const userId = user?.id || user?._id;
+      if (!userId) {
+        throw new Error('Missing user id');
+      }
 
-      const method = editingSlot ? 'PUT' : 'POST';
+      const dayOfWeek = selectedDate.getDay();
+      const nextSlot = {
+        start: formData?.startTime ? format(formData.startTime, 'HH:mm') : '09:00',
+        end: formData?.endTime ? format(formData.endTime, 'HH:mm') : '17:00',
+      };
 
-      const response = await fetch(url, {
-        method,
+      // Backend supports upsert via PUT /api/availability/:userId
+      const payload = {
+        timezone: 'Africa/Accra',
+        isAvailable: formData.status !== 'unavailable',
+        daySlots: [
+          {
+            dayOfWeek,
+            slots: [nextSlot],
+          },
+        ],
+      };
+
+      const response = await fetch(`/api/availability/${userId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          date: format(selectedDate, 'yyyy-MM-dd'),
-          ...formData,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -150,19 +189,9 @@ const AvailabilityCalendar = () => {
 
   const handleDelete = async (slotId) => {
     try {
-      setLoading(true);
-      const response = await fetch(
-        `/api/workers/${user.id}/availability/${slotId}`,
-        {
-          method: 'DELETE',
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to delete availability slot');
-      }
-
-      fetchAvailability();
+      // Current backend exposes delete for holidays, not per-slot delete.
+      // Keep UX stable by showing guidance instead of calling a non-existent endpoint.
+      setError('Direct slot delete is not supported yet. Edit the slot and set unavailable instead.');
     } catch (err) {
       setError('Failed to delete availability slot');
       console.error(err);

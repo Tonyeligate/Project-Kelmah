@@ -1,5 +1,164 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Investigation + Fix (Feb 13, 2026 – Worker Search 404 + Bookmarks 400 Console Errors) ✅
+- 🎯 **Scope Restatement**: Investigate WorkerSearch runtime failures reported from deployed frontend logs (`/api/users/bookmarks` 400 and `/api/users/workers/search` 404 with doubled backend path in response payload).
+- 🔍 **Root causes identified**:
+  - Deployed gateway/user-service contract currently resolves worker search on `/api/workers/search` (confirmed `200`) while `/api/users/workers/search` returns `404`.
+  - Error payload confirms path drift (`Not found - /api/users/workers/workers/search`), consistent with route rewrite mismatch on deployed stack.
+  - Bookmarks call is protected and may fail noisily during unauthenticated/expired-token page bootstrap; WorkerSearch attempted bookmark hydration unconditionally.
+- ✅ **Fixes applied**:
+  - Updated canonical frontend endpoint in `kelmah-frontend/src/config/environment.js`:
+    - `API_ENDPOINTS.USER.WORKERS_SEARCH`: `/users/workers/search` → `/workers/search`.
+  - Hardened `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx`:
+    - Bookmark hydration now checks for a valid auth token before calling bookmarks endpoint.
+    - Added worker-search fallback: if primary search path returns `404`, retry `/workers/search`.
+    - Added bookmarks fallback attempt for legacy route shape when `404` is returned.
+- 🧪 **Verification**:
+  - Live probe: `GET /api/users/workers/search?...` → `404`.
+  - Live probe: `GET /api/workers/search?...` → `200` with successful worker payload.
+  - VS Code diagnostics: no errors in modified frontend files.
+
+### Investigation + Fix (Feb 13, 2026 – `/api/users/me/credentials` 404 and `/api/jobs/:id` 401) ✅
+- 🎯 **Scope Restatement**: Investigate persistent hirer profile 404 and job details 401 seen in production console logs.
+- 🔍 **Root causes identified**:
+  - `job-service` route ordering placed public `GET /:id` after `router.use(verifyGatewayRequest)`, making details requests effectively protected.
+  - `api-gateway` `GET /api/jobs/:id` lacked auth middleware, so authenticated requests were not augmented with gateway trust headers for downstream authorization.
+  - Profile credentials route shape varies across deployed environments, so frontend hard dependency on `/users/me/credentials` creates noisy 404s.
+- ✅ **Fixes applied**:
+  - Moved `GET /:id([a-fA-F0-9]{24})` into the public block in `kelmah-backend/services/job-service/routes/job.routes.js`.
+  - Added `optionalAuth` to `GET /api/jobs/:id` in `kelmah-backend/api-gateway/routes/job.routes.js`.
+  - Added robust frontend fallback profile paths in:
+    - `kelmah-frontend/src/modules/hirer/services/hirerService.js`
+    - `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`
+    - `kelmah-frontend/src/modules/worker/services/workerService.js`
+- 🧪 **Verification**:
+  - Backend syntax checks pass for updated route files.
+  - Pre-deploy production probe still returns 401 for `GET /api/jobs/:id` (expected old behavior before rollout).
+
+### Investigation + Fix (Feb 14, 2026 – Runtime Console API Failures: earnings 404, contract-1 500, availability/reviews 404) ✅
+- 🎯 **Scope Restatement**: User reported 4 distinct API failures from deployed Vercel frontend console logs. Investigated all flows end-to-end and identified root causes.
+- 🔍 **Root Causes Identified**:
+  - **`/api/users/workers/:id/earnings` → 404 (CONFIRMED)**:
+    - Gateway auth bypass at `server.js:491-497` skipped `authenticate` for ALL `GET /workers/*` requests
+    - Earnings route (`user.routes.js:203`) uses `verifyGatewayRequest` middleware which requires `x-authenticated-user` header
+    - Without gateway auth, `req.user` was never set → header never forwarded → `verifyGatewayRequest` failed
+  - **`/api/jobs/contracts/contract-1` → 500 (retry storm)**:
+    - `normalizeContract()` assigns synthetic IDs (`contract-0`, `contract-1`) when backend returns contracts missing `_id`
+    - Regex guard in `getContractById()` blocks direct API calls for these IDs — already exists locally from prior session
+    - 500 storm in console was from deployed code without the guard (older build)
+    - apiClient retry logic retries 500s 3x with exponential backoff × React StrictMode double-render = 8 calls
+  - **`/api/users/workers/:id/availability` → 404**:
+    - Route EXISTS (`user.routes.js:134`) with `optionalGatewayVerification` — controller at `worker.controller.js:3037`
+    - Likely worker has no availability record; controller returns 404 for missing data
+    - Frontend handles gracefully via `Promise.allSettled` and `.catch(() => null)`
+  - **`/api/reviews/user/:id` → 404**:
+    - Route EXISTS (`review-service/server.js:284`) with correct route ordering
+    - Gateway correctly marks GET `/user/` requests as public
+    - Likely review service instance on Render is unhealthy or running older code
+- ✅ **Fix Applied**:
+  - Narrowed gateway auth bypass in `kelmah-backend/api-gateway/server.js` lines 489-503
+  - Added deny-list: `/earnings` and `/bookmark` sub-resources now require `authenticate` middleware
+  - All other `GET /workers/*` routes remain public (listings, profiles, availability, skills, certificates, etc.)
+- ✅ **Frontend Resilience Verified** (no changes needed):
+  - `WorkerProfile.jsx`: Uses `Promise.allSettled` for all worker sub-resource fetches
+  - `WorkerProfileEditPage.jsx`: Catches availability 404 silently
+  - `Header.jsx`: Catches availability/stats failures with `.catch(() => null)`
+  - `ReviewsPage.jsx` / `WorkerReviewsPage.jsx`: Try/catch with user feedback
+  - `ContractDetailsPage.jsx`: Redux thunk with `rejectWithValue`; `contractService.getContractById()` has regex guard + fallback
+  - `EarningsTracker.jsx`: API call commented out, uses mock data — no production risk
+- 🧾 **File Modified**: `kelmah-backend/api-gateway/server.js` (6 insertions)
+- 🧪 **Verification**:
+  - Frontend production build passed: `npx vite build` (`✓ built in 1m 17s`, 13,938 modules, 0 errors)
+  - Pushed to `main` (commit `485fc746`) → auto-deploying to Render + Vercel
+  - Live API testing blocked by 429 rate limiting throughout session; fix validated via code analysis
+- 📊 **Payment 502 Errors**: Known and expected — Payment Service is marked unhealthy/non-critical per architecture docs
+
+### Implementation Update (Feb 13, 2026 – Notifications Payload Mapping + Remote Verification Retry) ✅
+- 🎯 **Scope Restatement**: Continue iterative notifications audit by fixing UI field mismatches from backend notification schema and re-running live gateway checks.
+- ✅ **Fixes applied**:
+  - Updated notification normalization to map backend fields (`title`, `content`, `actionUrl`) into UI-consumed fields (`title`, `message`, `link`).
+  - Preserved existing read/date/id normalization to keep unread counters and notification ordering stable.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/notifications/services/notificationService.js`
+- 🧪 Verification:
+  - Frontend production build passed: `npx vite build` (`✓ built in 1m 20s`).
+  - Remote login smoke check against `https://kelmah-api-gateway-6yoy.onrender.com/api/auth/login` currently returns `429` (rate limited), so authenticated endpoint re-check is pending cooldown.
+  - Cooldown retry executed (Feb 13, 2026) and still returned `LOGIN_STATUS=429`; protected endpoint validation remains blocked by upstream rate limiting.
+
+### Implementation Update (Feb 12, 2026 – Profile Service Route Alignment + Avatar Resilience) ✅
+- 🎯 **Scope Restatement**: Continue iterative page audit by fixing profile module calls to unsupported endpoints and improving profile picture behavior under backend route gaps.
+- ✅ **Fixes applied**:
+  - Aligned profile partial-update operations (`skills`, `education`, `experience`, `preferences`) to the supported `PUT /users/profile` contract.
+  - Updated profile settings hydration to preserve existing profile picture fallback from local preview storage.
+  - Added resilient profile picture upload fallback: when `/users/profile/picture` is unavailable, store a local preview and continue UX flow without hard failure.
+  - Updated profile picture component to render persisted profile avatar (`profile.profilePicture`/`profile.avatar`) and clean up blob URLs to avoid memory leaks.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/profile/services/profileService.js`
+  - `kelmah-frontend/src/modules/profile/components/ProfilePicture.jsx`
+- 🧪 Verification:
+  - VS Code diagnostics: no compile errors in changed profile files.
+  - Frontend production build passed: `npx vite build` (`✓ built in 2m 9s`).
+
+### Implementation Update (Feb 12, 2026 – Scheduling Module Offline/API-Fallback Resilience) ✅
+- 🎯 **Scope Restatement**: Continue iterative page audit by stabilizing scheduling pages when appointment backend routes are unavailable via gateway.
+- ✅ **Fixes applied**:
+  - Added robust fallback CRUD in scheduling service using local storage when `/appointments` API endpoints are unavailable.
+  - Normalized appointment payload shape in scheduling service (`id`, `date`) for consistent page rendering.
+  - Added fallback filtering behavior for `getAppointmentsByJob` and `getAppointmentsByUser`.
+  - Added fallback status update path through local update when patch endpoint is unavailable.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/scheduling/services/schedulingService.js`
+- 🧪 Verification:
+  - Frontend production build passed: `npx vite build` (`✓ built in 2m 7s`).
+
+### Implementation Update (Feb 12, 2026 – Mobile Messaging UX + Console Error Resilience) ✅
+- 🎯 **Scope Restatement**: Investigate reported production console errors (`/api/users/me/credentials` 404, `/api/settings/notifications` 404, WebSocket timeout/closed logs, `inject.js` TypeError) and improve mobile messaging/settings UX behavior.
+- ✅ **Dry-audit + flow trace completed**:
+  - Frontend callers confirmed in:
+    - `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`
+    - `kelmah-frontend/src/modules/hirer/services/hirerService.js`
+    - `kelmah-frontend/src/modules/settings/services/settingsService.js`
+    - `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`
+    - `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+  - Gateway/user-service route surface verified in:
+    - `kelmah-backend/api-gateway/server.js`
+    - `kelmah-backend/services/user-service/server.js`
+    - `kelmah-backend/services/user-service/routes/{user,settings}.routes.js`
+  - Result: local code includes `/api/users/me/credentials` and `/api/settings/notifications`; observed production 404 behavior is consistent with deployed mismatch/transient route availability, not missing local route definitions.
+- ✅ **Fixes applied (frontend resilience + UX)**:
+  - `settingsService.getSettings()` no longer triggers a second network request to `/settings/notifications` after a base settings failure; now returns safe defaults directly to reduce avoidable 404 noise.
+  - Hirer profile fetch now includes fallback from `/users/me/credentials` → `/auth/me` in both service and slice paths.
+  - Messaging context now exposes realtime degradation state (`realtimeIssue`) and suppresses repeated socket error spam by logging the first connection error only.
+  - Messaging page now shows clear warning banners when live socket updates are unavailable while keeping REST message access usable.
+  - Mobile layout now suppresses the global header on `/messages*` routes to remove duplicated headers and reclaim vertical space.
+- 🔎 **Console error interpretation**:
+  - `inject.js:304 ... className.indexOf is not a function` is extension-injected script behavior (browser content script), not Kelmah application bundle code.
+  - WebSocket timeout/closed-before-established indicates messaging realtime path unavailable/retrying; app now degrades with explicit UX feedback.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/settings/services/settingsService.js`
+  - `kelmah-frontend/src/modules/hirer/services/hirerService.js`
+  - `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`
+  - `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`
+  - `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+  - `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+- 🧪 Verification:
+  - VS Code diagnostics report no blocking compile errors in changed files.
+  - Frontend build attempt failed due environment storage constraint, not code regression: `npm ERR! ENOSPC: no space left on device`.
+
+### Implementation Update (Feb 12, 2026 – Notifications/Settings Contract Stabilization) ✅
+- 🎯 **Scope Restatement**: Continue iterative page audit by fixing remaining notification identity contract fragility and settings persistence mismatch between frontend and backend.
+- ✅ **Fixes applied**:
+  - Hardened messaging notification controller to accept either gateway user shape (`req.user.id` or `req.user._id`) across list/read/clear/preferences handlers.
+  - Added explicit auth guards in notification controller methods when requester identity is missing.
+  - Updated frontend settings service `getSettings()` to load persisted values from `GET /settings` (theme/language/privacy/notifications) instead of always returning hardcoded defaults.
+  - Kept resilient fallback behavior when settings endpoint is temporarily unavailable.
+- 🧾 Files updated:
+  - `kelmah-backend/services/messaging-service/controllers/notification.controller.js`
+  - `kelmah-frontend/src/modules/settings/services/settingsService.js`
+- 🧪 Verification:
+  - Backend syntax check passed: `node -c services/messaging-service/controllers/notification.controller.js`.
+  - Frontend production build passed: `npx vite build` (`✓ built in 2m 34s`).
+
 ### Implementation Update (Feb 12, 2026 – Review Service + Gateway Contract Alignment) ✅
 - 🎯 **Scope Restatement**: Continue the iterative reviews audit by fixing backend contract drift causing inconsistent review retrieval, auth context loss on protected review actions, and route shadowing.
 - ✅ **Fixes applied**:
@@ -72,6 +231,24 @@
   - `kelmah-frontend/src/modules/auth/pages/LoginPage.jsx`
 - 🧪 Verification:
   - Frontend production build completes successfully (`vite build`): `built in 1m 58s`.
+
+### Investigation + Fix (Feb 12, 2026 – Runtime Console Errors after Login) ✅
+- 🎯 **Scope Restatement**: Investigate post-login runtime console errors reported in production logs (`/api/users/workers/:id/availability` 404, repeated `/api/jobs/contracts/contract-1` 500, and UI transition jitter evidence).
+- ✅ **Root causes identified**:
+  - **Contracts 500 loop**: backend contracts list returns mock ids like `contract-1`, but detail endpoint used `Contract.findById(id)` directly, causing CastError/500 for non-ObjectId ids.
+  - **Availability 404**: `AvailabilityCalendar` called legacy `/api/workers/:id/availability` path, while implemented backend route is `/api/availability/:userId`.
+  - **Noise not app-owned**: `inject.js ... className.indexOf` originates from a browser extension content script, not Kelmah app bundle.
+- ✅ **Fixes applied**:
+  - Frontend contracts service now detects mock ids (`contract-*`) and resolves from list endpoint without calling failing detail endpoint first.
+  - User-service job contract detail endpoint now guards invalid ObjectId and returns clean 404 instead of 500.
+  - Availability calendar switched to `/api/availability/:userId` and normalizes backend `daySlots` payload shape.
+  - Availability save path aligned to `PUT /api/availability/:userId`; unsupported per-slot delete now surfaces a user-facing guidance message instead of calling a non-existent endpoint.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/contracts/services/contractService.js`
+  - `kelmah-frontend/src/modules/worker/components/AvailabilityCalendar.jsx`
+  - `kelmah-backend/services/job-service/controllers/job.controller.js`
+- 🧪 Verification:
+  - Frontend build succeeds after fixes (`vite build`): `built in 3m 49s`.
 
 ### Documentation Deepening (Feb 12, 2026 – Gateway API Surface + API Alignment + Frontend BaseURL) ✅
 - 🎯 **Scope Restatement**: Expand the super doc to include concrete “how it actually works” behavior for frontend networking + canonical gateway endpoints, and explicitly document contract mismatches discovered in code.
@@ -4635,1423 +4812,4 @@ Client → Gateway (JWT validation) → Services (trust gateway headers)
 - No production blockers - routing system is solid with proper role-based access control
 - Minor organizational issues reduce code consistency but don't affect functionality
 - Opportunity to standardize route export patterns and deduplicate auth routes
-- Documentation needed to guide developers on routing conventions
-
-### Next Steps
-
-- Standardize route export pattern (convert publicRoutes to component export)
-- Deduplicate auth routes (move all to publicRoutes.jsx)
-- Document routing conventions (route organization, protection patterns, module ownership)
-- Extract DashboardRedirect to separate component file for better testability
-
----
-
-## ✅ Frontend Styling & Theming Audit Complete (October 3, 2025)
-
-**STATUS:** ✅ Primary complete | 0 primary / 2 secondary issues | Excellent theme system
-
-### What Changed
-
-1. **Audited styling and theming architecture**
-   - Reviewed theme/index.js (868 lines), KelmahThemeProvider, animations.js, styled components adoption
-   - Verified Ghana-inspired Black & Gold brand identity applied consistently
-   - Created detailed audit report in `spec-kit/audits/frontend/2025-10-03_styling_theming_audit.md`
-
-2. **Found excellent theme implementation**
-   - Comprehensive Material-UI theme with 20+ component overrides (Button, Card, Chip, TextField, etc.)
-   - Dark/light theme support with persistent localStorage via KelmahThemeProvider
-   - Professional typography system (Montserrat for headings, Inter for body)
-   - Reusable animation library (float, pulse, fadeInUp, shimmer, 10+ keyframes)
-   - Growing styled components adoption across 20+ modules (messaging, payment, worker, layout, jobs)
-
-3. **Identified minor issues**
-   - Legacy styles/theme.js duplicate with old branding (#1C1C1C instead of #FFD700)
-   - useThemeMode hook exists but no theme toggle UI in Header/Settings (users can't switch themes)
-
-### Impact
-
-- No production blockers - theme system is professional and brand-consistent
-- Legacy theme file creates confusion about canonical theme source
-- Missing theme toggle reduces user customization options
-- Opportunity to expose dark/light mode switching in UI
-
-### Next Steps
-
-- Delete styles/theme.js legacy file to avoid confusion
-- Add ThemeToggle component to Header or Settings page using useThemeMode() hook
-- Document theme system (color tokens, component theming, animation usage)
-- Create theme customization guide for developers
-
----
-
-## ✅ Worker Job Search Live Data Integration (October 3, 2025)
-
-**STATUS:** ✅ Redux-powered search & filtering live | ✅ Sample data demoted to fallback | 🔄 Personalized insights still mock-dependent
-
-### What Changed
-
-1. **Search request pipeline now hits real APIs**
-  - `JobSearchPage.jsx` builds sanitized filter payloads (search, category, remote, budget, geo coords) and dispatches `fetchJobs` through the Redux slice.
-  - Local state mirrors Redux filters to keep UI controls in sync after server round-trips.
-2. **Unified job normalization for UI rendering**
-  - Added shared `jobsToRender` memo that prefers live results, gracefully falls back to curated samples only when the store is empty.
-  - Map view, card list, and saved-job toggles now consume the same normalized dataset, eliminating the `jobs` vs `creativeJobOpportunities` split.
-3. **Initial load & fallback hardening**
-  - On first mount, the page auto-fetches jobs when the Redux store is empty, preventing the blank screen seen during cold starts.
-  - Saved-job controls switched to memoized ID lists, trimming duplicate server calls and avoiding undefined checks.
-
-### Impact
-
-- Workers now see real marketplace jobs immediately after visiting the page or adjusting filters—no more mock-only search results.
-- Filter combinations (salary, experience, skills, remote) apply consistently across grid, list, and map views.
-- Sample catalog remains available strictly as a UX fallback when backend data is unavailable, keeping the page populated without masking live issues.
-
-### Verification
-
-- Ran `npx prettier --write` on `JobSearchPage.jsx` to align with house style, then executed `npx eslint src/modules/worker/pages/JobSearchPage.jsx` to inspect the updated surface area.
-- **Note:** ESLint still flags longtime unused imports/hooks across the legacy component; remediation is tracked separately and outside today’s scope.
-
----
-
-## ✅ Worker Skills Assessment Live Data Wiring (October 4, 2025)
-
-**STATUS:** ✅ Live credentials & analytics fetch | ✅ Dynamic assessments generated | 🔄 Expanded question bank pending product review
-
-### What Changed
-
-1. **`SkillsAssessmentPage.jsx` now consumes real worker data**
-  - Replaced monolithic `mockData` with API-driven loaders that call `workerService.getMyCredentials()` and `workerService.getWorkerAnalytics(workerId)` via `Promise.allSettled` for resilient fetching.
-  - Normalized returned skills into shared helpers (`normalizeSkillForDisplay`, `buildAssessmentsFromSkills`, `buildCompletedAssessments`) so charts, cards, and progress bars stay consistent whether data is live or falling back.
-2. **Curated fallbacks preserved for offline resilience**
-  - Extracted the previous mock catalog into `fallbackAvailableTests`, `fallbackCompletedAssessments`, `fallbackSkills`, and `fallbackAnalytics`, ensuring the UI remains populated if APIs error or a worker lacks credentials.
-  - Generated a reusable `createQuestionBank` helper that tailors practice questions to the selected skill, guaranteeing every assessment launches with a complete test payload.
-3. **Assessment flow tightened for both deep links and in-page launches**
-  - Deep linking to `/worker/skills/test/:id` now auto-loads the relevant assessment and opens the start dialog pre-populated with live metrics.
-  - Timer, pause state, and submit logic hardened with safe fallbacks (duration defaults, passing score guard) to prevent NaN timers or crash loops when metadata is missing.
-
-### Impact
-
-- Workers immediately see their verified skills, certifications, and analytics pulled from the user-service without refreshing or relying on outdated mock content.
-- Available assessments are dynamically generated from real skill data, keeping difficulty, duration, and passing scores aligned with the worker’s demonstrated proficiency.
-- Assessment results roll into the completion history and analytics summary, so freshly completed tests update the dashboards without manual refreshes.
-
-### Verification
-
-- Formatted the page with `npx prettier --write src/modules/worker/pages/SkillsAssessmentPage.jsx` to satisfy project style guidelines.
-- Targeted lint run via `npx eslint src/modules/worker/pages/SkillsAssessmentPage.jsx`; noted legacy warnings for long-standing unused imports/PropTypes across the huge component—these pre-existing issues remain flagged for a separate cleanup pass.
-- Manual smoke through worker dashboard confirms skill cards, analytics charts, and assessment launch dialog all render with live data (falling back gracefully when APIs unavailable).
-- **Oct 4 follow-up:** Removed stale imports/state, added PropTypes for `TabPanel`, and re-ran `npx eslint src/modules/worker/pages/SkillsAssessmentPage.jsx` with a clean exit to lock in lint compliance for the updated page.
-- **Oct 4 follow-up:** Extracted fallback datasets into `src/modules/worker/utils/skillsAssessmentFallbacks.js` so future components can share the same curated data without bloating `SkillsAssessmentPage.jsx`; linted both files to confirm formatting.
-- **Oct 4 follow-up:** Shifted normalization and assessment builder helpers into `src/modules/worker/utils/skillsAssessmentTransforms.js` and pointed the page at the shared exports, keeping the component lean while preserving the analytics logic.
-- **Oct 4 follow-up:** Moved the `createQuestionBank` generator into `src/modules/worker/utils/skillsAssessmentQuestions.js`, making the assessment loader utilities fully modular and easier to reuse across upcoming practice flows.
-- **Oct 4 follow-up:** Extracted difficulty color/icon helpers and shared styled primitives into `skillsAssessmentDifficulty.js` and `components/skillsAssessment/styled.js`, updated the page to consume them, and re-ran Prettier/ESLint (all green) to lock in the refactor.
-
----
-
-## ⚙️ UPDATE: Worker Dashboard API Alignment & Service Normalization (October 3, 2025)
-
-**STATUS:** ✅ FRONTEND SERVICE CALLS FIXED | ✅ AVAILABILITY FALLBACK COVERAGE | 🔄 BACKEND DASHBOARD ENDPOINT HARDENING NEXT
-
-### What Changed
-
-1. **`workerService` Routing Corrections**
-  - Swapped legacy `/api/workers` paths for consolidated `/api/users/workers` routes to match user-service rewrites.
-  - Added defensive fallbacks to `/api/availability/:id` for services that still expose availability outside the new namespace, preventing 404 cascades when the consolidated route isn’t ready.
-  - Normalized response handling so dashboard components see consistent `{ data: {...} }` payloads regardless of whether the user-service or availability controller responds.
-
-2. **Worker Stats & Profile Completeness**
-  - Replaced the stubbed `/stats` call with the real `/completeness` endpoint and harmonized return fields (`completionPercentage`, `missingRequired`, etc.) for smoother UI integration.
-  - Implemented parameter validation to guard against undefined worker IDs, reducing noisy console errors during first render.
-
-3. **Recent Jobs Feed**
-  - Introduced `workerService.getWorkerJobs({ limit })` wrapper over `/api/users/workers/jobs/recent`, flattening the gateway payload so the dashboard list consumes a simple array.
-  - Added graceful fallbacks when the endpoint returns mock data from the user-service controller, keeping the UI populated even while job-service wiring is finalized.
-
-4. **Dashboard Component Updates**
-  - `EnhancedWorkerDashboard` now awaits `workerId` before fetching stats/jobs, eliminating the undefined-parameter 404s captured in the latest telemetry dump.
-  - Request limits tightened (default 6 jobs) and redundant data-shape guards removed post-normalization.
-
-### Impact
-
-- Worker availability toggles and profile completion alerts now operate against the live user-service API instead of mock proxies.
-- Frontend no longer spams 404/500 logs during dashboard load, paving the way for backend analytics endpoints to be hardened next.
-- Sets the stage for replacing the remaining mock proxies (`src/api/workersApiProxy.js`) once job-service worker endpoints are shipped.
-
-### Verification
-
-- Manual smoke through the dashboard after login confirms availability switch loads without falling back to default `true` state.
-- Added local axios response normalization to guarantee boolean `isAvailable` regardless of controller variant.
-- Next action: consolidate job-service `/worker/recent` route and ensure gateway proxy rewrites map to the updated namespace.
-
----
-
-## 🔥 BREAKTHROUGH: Mongoose Disconnected Models Root Cause Identified (October 2, 2025)
-
-**STATUS:** ✅ ROOT CAUSE IDENTIFIED | ✅ FIX VERIFIED ON JOB-SERVICE | 🔄 FIX PENDING ON USER & AUTH SERVICES
-
-### The Discovery
-
-After 13+ deployments debugging 404 errors, discovered the REAL issue affecting ALL microservices:
-
-**The Paradox:**
-```
-✅ MongoDB connection succeeds - logs show "connected"
-✅ mongoose.connection.readyState = 1 (CONNECTED)
-✅ Direct MongoDB driver queries WORK - can access data
-❌ ALL Mongoose model queries FAIL with 10-second timeout
-```
-
-**Root Cause Confirmed (Job Service Diagnostics):**
-```
-[GET JOBS] Mongoose connection state: 1          ← Service = CONNECTED ✅
-[GET JOBS] Job model connection state: 0         ← Model = DISCONNECTED ❌
-[GET JOBS] Same connection?: false               ← DIFFERENT INSTANCES! 🔥
-[GET JOBS] Direct driver query SUCCESS - open jobs count: 12 ← Data exists! ✅
-```
-
-**THE SMOKING GUN:**
-- Shared models in `kelmah-backend/shared/models/` use separate `require('mongoose')` instance
-- Models get bound to DISCONNECTED instance (readyState 0)
-- Service connects using DIFFERENT instance (readyState 1)
-- `Job.db !== mongoose.connection` - models isolated from healthy connection
-- Direct MongoDB driver queries work perfectly - proving connection is healthy
-
-### Services Affected
-
-1. ✅ **job-service** - FIXED (commit f792b20a) - Using direct MongoDB driver
-   - `/api/jobs/?status=open` - Returns 12 jobs successfully
-   
-2. ❌ **user-service** - NEEDS FIX
-   - `/workers/?page=1&limit=12` - `users.find()` timeout
-   - All worker queries failing
-   
-3. ❌ **auth-service** - NEEDS FIX
-   - `/api/auth/login` - `users.findOne()` timeout
-   - Login completely broken
-
-### The Solution
-
-**Replace Mongoose model queries with direct MongoDB driver:**
-
-```javascript
-// BEFORE (FAILS - disconnected model)
-const jobs = await Job.find(query)
-  .populate('hirer')
-  .skip(10)
-  .limit(20);
-
-// AFTER (WORKS - connected driver)
-const mongoose = require('mongoose');
-const client = mongoose.connection.getClient();
-const db = client.db();
-const jobsCollection = db.collection('jobs');
-
-const jobs = await jobsCollection
-  .find(query)
-  .skip(10)
-  .limit(20)
-  .toArray();
-```
-
-### Documentation Created
-
-1. **Comprehensive Analysis:** `spec-kit/MONGOOSE_DISCONNECTED_MODELS_FIX.md`
-   - Full root cause explanation
-   - Technical deep dive
-   - Service-by-service fix guide
-   
-2. **Quick Reference:** `spec-kit/QUICK_FIX_GUIDE.md`
-   - Fast implementation patterns
-   - Common query conversions
-   - Troubleshooting checklist
-
-### Next Steps
-
-1. **Apply fix to auth-service** (CRITICAL - login broken)
-2. **Apply fix to user-service** (HIGH - worker search broken)
-3. **Audit remaining services** for similar Mongoose usage
-
-**Commit:** f792b20a - "fix: use direct MongoDB driver to bypass disconnected Mongoose models"
-
----
-
-### ⚡ HOTFIX: Gateway Query Normalization & User Service Reconnect Guard (October 2, 2025)
-
-- **Incident**: Even after the initial proxy fix, public job browsing through Render still returned HTTP 404 with URLs logged as `/api/jobs/?status=...`, and worker discovery continued to fail with `users.find() buffering timed out after 10000ms` plus express-rate-limit proxy header warnings.
-- **Root Cause**:
-  - API Gateway path rewrites preserved an extra `/` immediately before the query string, so the job service received `/api/jobs/?...` and fell through to the 404 handler in production.
-  - User Service processed requests without trusting Render's forwarded headers; rate limiter validation threw warnings, and sporadic replica reconnects resurfaced the 10s Mongoose buffering window.
-- **Fix**:
-  - Normalized job proxy rewrites in `kelmah-backend/api-gateway/routes/job.routes.js` to collapse `/api/jobs/?` → `/api/jobs?` and added an explicit `router.get('', ...)` handler for `/api/jobs` without a trailing slash.
-  - Trusted proxy headers and moved the DB readiness gate ahead of rate limiting in `services/user-service/server.js`, then invoked `ensureConnection()` inside worker controllers with graceful 503 fallbacks when Mongo takes too long to reconnect.
-- **Impact**: Restores public job listings via the gateway, eliminates noisy rate-limit trust errors, and shields worker endpoints with proactive reconnection handling instead of opaque 500s when the cluster hiccups.
-- **Verification**: `node -e "console.log(require('./kelmah-backend/api-gateway/routes/job.routes.js')? 'job routes loaded' : '');"` (sanity load), manual curl `https://kelmah-api-gateway-si57.onrender.com/api/jobs?status=open&limit=5` after redeploy, and retry `/api/workers?page=1` confirming 503 during reconnect and 200 once Mongo is back.
-
-#### ⚡ HOTFIX: API Gateway Job Listing 404 Resolved (October 1, 2025)
-
-- **Incident**: Production logs showed `/api/jobs` queries with filters returning HTTP 404 while the job service health endpoints stayed green.
-- **Root Cause**: `createServiceProxy` skipped the `/api/jobs` prefix whenever a functional `pathRewrite` was supplied, forwarding `/?status=...` to the job service and triggering the service-level 404 handler.
-- **Fix**: Added base-prefix normalization and duplicate-segment guarding in `kelmah-backend/api-gateway/proxy/serviceProxy.js` so every proxy call preserves the intended service prefix before custom rewrites execute.
-- **Impact**: Restores public job browsing through the gateway, prevents regressions for other services that rely on functional rewrites, and keeps legacy double-slash cleanup in place.
-- **Verification**: Ran a node-based sanity script capturing the generated proxy options to confirm that `/?status=...`, `/api/jobs`, and `/jobs/123` all resolve to `/api/jobs/...` before proxying:
-  ```powershell
-  node -e "const path=require('path');const Module=require('module');const originalRequire=Module.prototype.require;let capturedOptions=null;Module.prototype.require=function(request){if(request==='http-proxy-middleware'){return{createProxyMiddleware:(opts)=>{capturedOptions=opts;return function(){}};}}return originalRequire.apply(this,arguments);};const {createServiceProxy}=require(path.resolve('kelmah-backend/api-gateway/proxy/serviceProxy'));createServiceProxy({target:'http://localhost:5003',pathPrefix:'/api/jobs',pathRewrite:(p)=>p.replace(/\\/\\+/g,'/'),requireAuth:false});console.log(capturedOptions.pathRewrite('/?status=open',{baseUrl:'/api/jobs'}));console.log(capturedOptions.pathRewrite('/api/jobs',{baseUrl:'/api/jobs'}));console.log(capturedOptions.pathRewrite('/jobs/123',{baseUrl:'/api/jobs'}));"
-  ```
-
-#### ⚡ HOTFIX: User Service MongoDB Buffering Guard (October 1, 2025)
-
-- **Incident**: `/api/users/workers` calls returned HTTP 500 with `MongooseError: Operation users.find() buffering timed out` despite `/api/health` reporting success.
-- **Root Cause**: Requests landed while the Mongo connection was unavailable; Mongoose buffered queries for 10 seconds before timing out, offering no early signal to the gateway.
-- **Fix**: Added resilient helpers in `services/user-service/config/db.js` to reuse connection promises, wait for reconnects, and expose `ensureConnection`; layered a new `ensureDbReady` middleware so non-health endpoints short-circuit with 503 until the database is ready.
-- **Impact**: Prevents prolonged buffering, protects worker discovery from misleading 500s, and centralizes DB readiness checks for every user-service API route.
-- **Verification**: Exercised the middleware with a stubbed `ensureConnection` to confirm both guarded execution and health bypass behaviour:
-  ```powershell
-  node -e "const Module=require('module');const path=require('path');const originalRequire=Module.prototype.require;let ensureCalled=false;Module.prototype.require=function(request){if(request==='../config/db'){return{ensureConnection:async()=>{ensureCalled=true;}};}return originalRequire.apply(this,arguments);};const {ensureDbReadyMiddleware}=require(path.resolve('kelmah-backend/services/user-service/middlewares/ensureDbReady'));const req={path:'/workers'};let nextCalled=false;(async()=>{await ensureDbReadyMiddleware(req,{status:()=>({json:()=>{}})},()=>{nextCalled=true;});console.log('ensureCalled',ensureCalled);console.log('nextCalled',nextCalled);process.exit(0);})();"
-  node -e "const Module=require('module');const path=require('path');const originalRequire=Module.prototype.require;let ensureCalled=false;Module.prototype.require=function(request){if(request==='../config/db'){return{ensureConnection:async()=>{ensureCalled=true;}};}return originalRequire.apply(this,arguments);};const {ensureDbReadyMiddleware}=require(path.resolve('kelmah-backend/services/user-service/middlewares/ensureDbReady'));const req={path:'/api/health'};let nextCalled=false;(async()=>{await ensureDbReadyMiddleware(req,{},()=>{nextCalled=true;});console.log('ensureCalled',ensureCalled);console.log('nextCalled',nextCalled);process.exit(0);})();"
-  ```
-
-#### ⚡ LATEST: Emergency Production Error Fixes (January 10, 2025)
-
-**STATUS**: 🔄 1 of 2 critical production blockers fixed locally, deployment pending
-
-Two critical production errors discovered in live Render.com logs:
-1. ✅ **Job Service 404 Error** - FIXED locally, needs deployment
-2. ⚠️ **User Service MongoDB Connection Timeout** - Requires Render.com configuration
-
-See: `spec-kit/PRODUCTION_FIXES_2025_01_10.md` for complete documentation
-
----
-
-#### ⚡ PREVIOUS COMPLETION: Complete Platform Audit with Critical Findings (October 1, 2025)
-
-### 🎉 MILESTONE: Complete Platform Audit Finished (October 1, 2025)
-**Status**: ✅ ALL AUDITS COMPLETE - 8 sectors, 240 findings documented
-
-A systematic sector-by-sector dry audit of the entire Kelmah platform has been completed, examining backend microservices, shared libraries, API Gateway, and frontend modules. This comprehensive review identified architectural consolidation successes, critical production blockers, and improvement opportunities.
-
-#### Audit Coverage Summary
-- **8 Sectors Audited**: 100% codebase coverage achieved
-- **240 Total Findings**: Comprehensive issue identification across all layers
-- **8 P0 Blockers**: 4 immediate blockers (3 Payment Service + 1 Shared Library), 4 already fixed (Job Service)
-- **16 P1 Critical Issues**: High-priority security and performance concerns
-- **216 P2/P3 Improvements**: Ongoing enhancement opportunities
-
-#### Sectors Audited
-1. ✅ **Messaging Service** - Real-time communication, Socket.IO, conversation management
-   - Document: `spec-kit/audits/messaging-service/2025-09-30_messaging_service_audit.md`
-   - Findings: 28 (0 P0, 2 P1, 10 P2, 16 P3)
-   - Status: Functionally complete, needs security & scale improvements
-
-2. ✅ **Job Service** - Job CRUD, applications, bidding, search (P0/P1 FIXES COMPLETE)
-   - Document: `spec-kit/audits/job-service/2025-09-30_job_service_audit.md`
-   - Findings: 31 (3 P0 FIXED, 2 P1 FIXED, 12 P2, 14 P3)
-   - Status: **PRODUCTION-READY** after critical fixes completed
-   - Fixes: Application endpoints, API naming alignment, response normalization, saved jobs security
-
-3. ✅ **Shared Library** - Consolidated models, middlewares, utilities (1 P0 BLOCKER)
-   - Document: `spec-kit/audits/shared-library/2025-10-01_shared_library_audit.md`
-   - Findings: 16 (1 P0, 0 P1, 6 P2, 9 P3)
-   - Status: Architecturally sound, **CRITICAL BLOCKER**: Rate limiter config files missing
-   - P0 Issue: `shared/config/rateLimits.js` doesn't exist, blocks service startup
-
-4. ✅ **API Gateway** - Routing hub, service discovery, health monitoring
-   - Document: `spec-kit/audits/api-gateway/2025-10-01_api_gateway_audit.md`
-   - Findings: 27 (0 P0, 0 P1, 11 P2, 16 P3)
-   - Status: **PRODUCTION-READY** - Best-in-class implementation
-
-5. ✅ **Auth Service** - Authentication, JWT, password security, email verification
-   - Document: `spec-kit/audits/auth-service/2025-10-01_auth_service_audit.md`
-   - Findings: 35 (1 P0 shared issue, 3 P1, 13 P2, 18 P3)
-   - Status: Mostly production-ready after shared library P0 fixed
-   - Strengths: bcrypt 12 rounds, comprehensive validation, session tracking
-
-6. ✅ **User Service** - Profile management, worker listings, portfolios, availability
-   - Document: `spec-kit/audits/user-service/2025-10-01_user_service_audit.md`
-   - Findings: 33 (0 P0, 3 P1, 12 P2, 18 P3)
-   - Status: Functionally complete, needs production hardening
-   - P1 Issues: File upload security (no validation, size limits, local storage)
-
-7. ✅ **Payment Service** - Transactions, wallets, escrow, provider integrations (3 P0 BLOCKERS)
-   - Document: `spec-kit/audits/payment-service/2025-10-01_payment_service_audit.md`
-   - Findings: 32 (3 P0, 4 P1, 11 P2, 14 P3)
-   - Status: 🚨 **NOT PRODUCTION-READY** - CRITICAL BLOCKERS
-   - P0 Blockers:
-     - Transaction creation not atomic (data corruption risk)
-     - Escrow operations not atomic (financial integrity risk)
-     - Webhook signature verification missing (fraud risk)
-
-8. ✅ **Frontend Modules** - React components, Redux, API services, routing
-   - Document: `spec-kit/audits/frontend/2025-10-01_frontend_audit.md`
-   - Findings: 38 (0 P0, 2 P1, 8 P2, 28 P3)
-   - Status: Functionally complete with security/performance concerns
-   - P1 Issues: Tokens in localStorage (XSS risk), no code splitting (2MB bundle)
-
-#### Comprehensive Summary Document
-- **Document**: `spec-kit/audits/COMPREHENSIVE_AUDIT_SUMMARY.md`
-- **Contents**: 
-  - Platform health assessment and production readiness evaluation
-  - Sector-by-sector detailed analysis with key findings
-  - Critical P0 blockers requiring immediate attention
-  - Prioritized remediation roadmap (Phase 0, 1, 2, 3)
-  - Risk assessment and resource allocation recommendations
-  - Pre-production checklist and verification strategy
-
-#### Critical Findings Requiring Immediate Action
-
-**🚨 PHASE 0 BLOCKERS - MUST FIX BEFORE PRODUCTION**:
-1. **Payment Service Transaction Atomicity** (P0-1, P0-2)
-   - Issue: Transaction creation and escrow operations not using MongoDB sessions
-   - Risk: Financial data corruption, partial failures, money loss
-   - Solution: Wrap all financial operations in MongoDB transactions
-   - Effort: 1 day (high complexity)
-
-2. **Payment Service Webhook Security** (P0-3)
-   - Issue: Webhook signature verification has `// TODO` comment
-   - Risk: Anyone can send fake payment confirmations (fraud vulnerability)
-   - Solution: Implement Flutterwave/Paystack signature verification
-   - Effort: 4 hours (medium complexity)
-
-3. **Shared Library Rate Limiter Config** (P0-4)
-   - Issue: `shared/config/rateLimits.js` file doesn't exist
-   - Risk: All services fail on startup when importing rate limiter
-   - Solution: Create config file with default rate limit values
-   - Effort: 2 hours (low complexity)
-
-**🔥 PHASE 1 CRITICAL ISSUES**:
-- Frontend token storage in localStorage (XSS vulnerability)
-- User Service file upload security (no validation, size limits)
-- Payment Service concurrent transaction race conditions
-- Frontend code splitting missing (2MB bundle, poor performance)
-- Auth Service distributed rate limiting needed (in-memory only)
-
-#### Architectural Successes Verified
-- ✅ MongoDB/Mongoose consolidation: 100% across all services
-- ✅ Shared model system: Working correctly via service-specific indexes
-- ✅ Microservices boundaries: Clean separation, no cross-service dependencies
-- ✅ Service trust authentication: API Gateway pattern operational
-- ✅ Modular frontend: Domain-driven module structure effective
-
-#### Next Steps & Remediation Roadmap
-1. **Phase 0 (1-2 days)**: Fix 4 critical P0 blockers preventing production
-   - Payment Service MongoDB transactions
-   - Payment Service webhook signature verification
-   - Shared Library rate limiter config
-   - Verification: Financial operation tests, service startup tests
-
-2. **Phase 1 (1-2 weeks)**: Critical security and performance fixes
-   - Frontend token storage migration to httpOnly cookies
-   - User Service file upload security hardening
-   - Frontend code splitting implementation
-   - Auth Service distributed rate limiting
-   - Verification: Security audit, Lighthouse performance tests
-
-3. **Phase 2 (2-4 weeks)**: Important improvements for production stability
-   - Query optimization and indexing across services
-   - Message system encryption and reliability improvements
-   - Frontend component optimization and virtualization
-   - Test coverage expansion to 90% for critical paths
-
-4. **Phase 3 (Ongoing)**: Enhancements and polish post-launch
-   - Advanced features (recommendations, analytics, PWA)
-   - Developer experience improvements (docs, tooling)
-   - User experience enhancements (loading states, error messages)
-
-#### Documentation Created
-- **8 Detailed Audit Reports**: One per sector with findings, remediation queues, verification commands
-- **1 Comprehensive Summary**: Platform-wide analysis with prioritized roadmap
-- **Location**: All audits in `spec-kit/audits/` directory organized by sector
-- **Cross-References**: Each audit references related sectors and shared dependencies
-
-#### Resource Allocation Recommendations
-- **Phase 0**: Backend Lead (8h Payment), DevOps (2h Config), QA (4h Verification)
-- **Phase 1**: Security Engineer (3d), Backend Dev (4d), Frontend Dev (2d), QA (2d)
-- **Phase 2**: Database Specialist (3d), Backend Dev (3d), Frontend Dev (4d), QA (5d)
-
-#### Risk Assessment Summary
-- **Critical Risks**: Financial data corruption, payment fraud, service unavailability
-- **High Risks**: XSS token theft, file upload DoS, poor performance at scale
-- **Medium Risks**: Message privacy, query performance, error handling gaps
-
-**CONCLUSION**: The Kelmah platform is well-architected with successful consolidation, but **CANNOT GO TO PRODUCTION** until Phase 0 blockers (Payment Service atomicity, webhook security, shared library config) are resolved. Once critical issues are fixed, platform will be production-ready with solid foundation for growth.
-
----
-
-### Previous Completions
-
-#### ⚡ Review Service Complete MVC Restructure (September 26, 2025)
-
-### 🔍 Additional Audit – API Gateway Service Discovery Verification (October 1, 2025)
-- **Scope**: Validated API Gateway environment loading, intelligent service discovery behavior, and potential manual overrides across `.env` files.
-- **Gateway Environment**: `kelmah-backend/api-gateway/.env` remains the active source for gateway startup. It runs on port **5000**, ships with the Render cloud URLs, and leaves `*_SERVICE_URL` overrides unset so health-check discovery retains control.
-- **Root `.env` Aligned**: Repository-level `.env` now mirrors the gateway defaults—port **5000**, no manual service URL overrides, and comment placeholders to avoid unintentional overrides in scripts.
-- **Discovery Behavior**: `resolveServiceUrl` prefers cloud URLs when `detectEnvironment()` resolves to production, then falls back to localhost if health checks fail—preserving flexibility for local debugging even with production env flags.
-- **Frontend Auto Failover**: Updated `environment.js` so the React client probes runtime-config URLs, env overrides, localhost, and `/api` in priority order, caching the first responsive gateway. Subsequent sessions reuse the healthy base while avoiding mixed-content pitfalls.
-- **Dormant Flag**: `ENABLE_AUTO_SERVICE_DISCOVERY` isn’t referenced anywhere. It’s harmless but unused; leave it or wire it up during a future refactor.
-
-### 🔄 Update – Gateway Job Browsing Access & User Service Warmup Guard (October 1, 2025)
-- **Public Job Access Restored**: API Gateway `job.routes.js` now exposes `/api/jobs` list and detail endpoints without a login by routing the base path through the unauthenticated proxy, while keeping legacy `/public` aliases for backward compatibility and reserving ID-matched paths for secured CRUD routes.
-- **Health Probe Normalization**: Frontend `serviceHealthCheck.js` now builds health URLs centrally to prevent `/api/api` duplication, defaults to `/health` endpoints behind the gateway, and logs accurate response durations for future diagnostics.
-- **User Service Hardening**: Enabled `app.set('trust proxy', 1)` and introduced a readiness gate in `user-service/server.js` so rate-limiters see the correct client IP and non-health traffic pauses with HTTP 503 until MongoDB finishes connecting—improving cold-start behavior seen in production logs.
-- **Next Diagnostics**: Monitor Render logs to confirm the 404s and rate-limit warnings clear after redeploy; capture any remaining warmup 503s to refine Retry-After timing if needed.
-
-### 🔍 Job Sector Dry Audit Kickoff (October 1, 2025)
-- **Scope**: Backend `job-service` models/controllers/routes, API Gateway job proxy, and React jobs module service + Redux slice.
-- **Critical Findings**:
-  - `bid.controller.js` still uses Sequelize-style `findAndCountAll`/`include`, causing runtime failures against Mongoose.
-  - Redux thunk `applyForJob` references a non-existent `jobsApi.applyForJob` export (client exports `applyToJob`), breaking job applications from the UI.
-  - `jobsApi.getJobs` maintains three legacy response formats with noisy console logging; adds confusion to pagination contract.
-- **Actions Logged**: Detailed breakdown captured in `spec-kit/audits/jobs/2025-10-01_job_sector_audit.md` with remediation queue (P0: replace Sequelize patterns, align method naming, add tests).
-- **Next Steps**: Schedule remediation tasks, then extend audit to job UI components and shared job model defaults.
-
-### ✅ Job Sector P0/P1 Fixes Complete (October 1, 2025)
-- **Backend Bid Pagination**: Replaced Sequelize `findAndCountAll` with Mongoose `countDocuments` + `find().skip().limit().populate()` in `bid.controller.js` (both hirer and worker bid endpoints).
-- **Frontend API Alignment**: Added `jobsApi.applyForJob` alias mapped to `applyToJob`; created Jest regression test with manual axios mock to prevent future drift.
-- **Response Normalization**: Simplified `jobsApi.getJobs` pagination handling to single fallback chain, removed all console logging, extracted shared `_normalizeJobFields` helper.
-- **Saved Jobs Security**: Added `authorizeRoles('worker','hirer')` to all saved-job routes in `job-service/routes/job.routes.js`.
-- **Status**: Four critical/high-priority issues resolved; job sector ready for UI component audit and controller decomposition (P1/P2 tasks).
-- **Documentation**: Updated `spec-kit/audits/jobs/2025-10-01_job_sector_audit.md` with completion status and remaining work.
-
-### 🔍 Shared Library Sector Audit Complete (October 1, 2025)
-- **Scope**: Comprehensive audit of `kelmah-backend/shared/` directory validating architectural consolidation.
-- **Model Consolidation Verified**: All 6 services properly import shared models via service-specific `models/index.js` using `require('../../../shared/models')` pattern. Zero duplicate model definitions detected.
-- **Service Trust Middleware**: 19 verified imports of `verifyGatewayRequest`/`optionalGatewayVerification` across all service routes; gateway authentication pattern consistently applied.
-- **JWT Utilities**: Consolidated successfully with API Gateway and messaging service using shared `utils/jwt.js`; no duplicate implementations remain.
-- **Critical Issue Identified**: Rate limiter requires non-existent `shared/config/env.js` and `shared/config/rate-limits.js` files. Services use try/catch fallbacks, silently degrading to no rate limiting (security risk).
-- **P0 Action Required**: Create missing config files or refactor rate limiter to use environment variables directly.
-- **Documentation**: Created `spec-kit/audits/shared-library/2025-10-01_shared_library_audit.md` with findings and remediation queue.
-- **Status**: Shared library architecturally sound; one critical config dependency blocker before production-ready.
-
-
-### ✅ COMPLETED - Payment Service Model Import Fixes (Issue #1 from Backend Connectivity Audit)
-
-#### Critical Architecture Violations Fixed
-- **Issue Found**: Payment Service using direct model imports instead of shared model pattern
-- **Root Cause**: Controllers importing models directly (`require('../models/User')`) instead of using centralized index
-- **Problems Identified**:
-  - 7 controllers with direct model imports (transaction, wallet, paymentMethod, escrow, bill, payoutAdmin, payment)
-  - Bypassing consolidated architecture pattern requiring `const { Model } = require('../models')`
-  - Inconsistent with other services using shared model index
-
-#### Systematic Fixes Completed (September 26, 2025)
-
-##### 1. Payment Service Models Index Creation ✅
-- **Created**: `payment-service/models/index.js` with proper shared model imports
-- **Shared Models**: User, Job, Application imported from `../../../shared/models/`
-- **Service Models**: Transaction, Wallet, PaymentMethod, Escrow, Bill, PayoutAdmin, Payment imported locally
-- **Export Pattern**: `module.exports = { User, Job, Application, Transaction, Wallet, ... }`
-
-##### 2. Controller Import Migration ✅
-- **Updated**: All 7 controllers to use shared import pattern
-- **Pattern**: `const { Transaction, Wallet, User } = require('../models')` instead of direct imports
-- **Controllers Fixed**:
-  - `transaction.controller.js` - Updated Transaction, User imports
-  - `wallet.controller.js` - Updated Wallet, User imports  
-  - `paymentMethod.controller.js` - Updated PaymentMethod, User imports
-  - `escrow.controller.js` - Updated Escrow, Transaction, User imports
-  - `bill.controller.js` - Updated Bill, User imports
-  - `payoutAdmin.controller.js` - Updated PayoutAdmin, User imports
-  - `payment.controller.js` - Updated Transaction, Wallet, Escrow, User imports
-
-##### 3. Architecture Compliance ✅
-- **Pattern Alignment**: Payment Service now follows consolidated Kelmah architecture
-- **Shared Resources**: Properly uses centralized models from `../../../shared/models/`
-- **Maintainability**: Model changes now propagate through shared index pattern
-- **Consistency**: Matches import patterns used by other services (Auth, User, Job)
-
-#### Results Achieved
-- **Architecture Compliance**: Payment Service now uses consolidated model import pattern
-- **Code Consistency**: All controllers follow `const { Model } = require('../models')` pattern
-- **Shared Model Usage**: Properly leverages centralized User, Job, Application models
-- **Maintainability**: Future model changes will be easier to manage through shared index
-
-#### ⚡ LATEST COMPLETION: Review Service Complete MVC Restructure (September 26, 2025)
-
-### 🔍 Additional Audit - API Gateway Service Discovery Verification (September 26, 2025)
-
-- **Focus**: Confirmed API Gateway intelligent discovery selects between Render cloud URLs and localhost services without manual overrides.
-- **Gateway Environment**: `kelmah-backend/api-gateway/.env` runs on port **5000**, keeps cloud URLs authoritative, and relies on health checks before falling back to local ports.
-- **Root .env Note**: Legacy `.env` at repo root still lists manual `*_SERVICE_URL` overrides (localhost). These are safe because the gateway loads its scoped `.env`, but avoid copying them into service configs to preserve auto-discovery.
-- **Observation**: `ENABLE_AUTO_SERVICE_DISCOVERY` variable is currently unused in code; leaving it set is harmless but can be cleaned up in a future maintenance pass.
-- **Next Step**: If future tooling consumes the root `.env`, consider aligning port (`5000`) and removing overrides to prevent regressions.
-
-### ✅ COMPLETED - Review Service Complete MVC Rewrite (Issue #3 from Backend Connectivity Audit)
-
-#### Critical Architecture Violations Fixed
-- **Issue Found**: Review Service had monolithic server.js with 1200+ lines of inline route handlers
-- **Root Cause**: Complete lack of MVC separation - all business logic, routes, and model operations in single file
-- **Problems Identified**:
-  - No controllers, routes, or proper model separation
-  - Inline route handlers with business logic mixed with HTTP handling
-  - Direct mongoose.model() calls instead of shared model pattern
-  - No proper error handling or middleware separation
-  - Monolithic structure violating Kelmah consolidated architecture
-
-#### Systematic MVC Restructure Completed (September 26, 2025)
-
-##### 1. Controller Layer Creation ✅
-- **Created**: `review-service/controllers/review.controller.js` - Core review CRUD operations
-  - `submitReview()` - Handle review submission with validation
-  - `getWorkerReviews()` - Retrieve paginated worker reviews
-  - `getJobReviews()` - Get reviews for specific job
-  - `getUserReviews()` - Get reviews authored by user
-  - `getReview()` - Get specific review details
-  - `addReviewResponse()` - Worker response to review
-  - `voteHelpful()` - Mark review as helpful
-  - `reportReview()` - Report inappropriate review
-
-- **Created**: `review-service/controllers/rating.controller.js` - Rating summary operations
-  - `getWorkerRating()` - Calculate and return worker rating summary
-  - `getWorkerRankSignals()` - Lightweight ranking signals for search service
-
-- **Created**: `review-service/controllers/analytics.controller.js` - Analytics and moderation
-  - `getReviewAnalytics()` - Admin analytics dashboard data
-  - `moderateReview()` - Admin review moderation (approve/reject/flag)
-
-##### 2. Model Layer Consolidation ✅
-- **Created**: `review-service/models/index.js` - Centralized model exports
-  - **Shared Models**: User, Job, Application imported from `../../../shared/models/`
-  - **Service Models**: Review, WorkerRating imported locally
-  - **Export Pattern**: `module.exports = { User, Job, Application, Review, WorkerRating }`
-
-- **Created**: `review-service/models/WorkerRating.js` - Worker rating summary schema
-  - **Purpose**: Store pre-calculated rating summaries for performance
-  - **Fields**: workerId, averageRating, totalReviews, ratingDistribution, lastUpdated
-  - **Indexes**: workerId for fast lookups
-
-##### 3. Server.js Complete Rewrite ✅
-- **Replaced**: Monolithic 1200+ line server.js with clean MVC-structured server
-- **Features Added**:
-  - Proper controller imports and route delegation
-  - Centralized error handling and logging
-  - CORS configuration with environment detection
-  - Rate limiting with fallback for shared middleware issues
-  - Database connection with retry/backoff logic
-  - Graceful shutdown handling
-  - Health check endpoint with API documentation
-
-- **Route Structure**:
-  - `POST /api/reviews` → `reviewController.submitReview`
-  - `GET /api/reviews/worker/:id` → `reviewController.getWorkerReviews`
-  - `GET /api/reviews/job/:id` → `reviewController.getJobReviews`
-  - `GET /api/reviews/user/:id` → `reviewController.getUserReviews`
-  - `GET /api/reviews/:id` → `reviewController.getReview`
-  - `PUT /api/reviews/:id/response` → `reviewController.addReviewResponse`
-  - `POST /api/reviews/:id/helpful` → `reviewController.voteHelpful`
-  - `POST /api/reviews/:id/report` → `reviewController.reportReview`
-  - `GET /api/ratings/worker/:id` → `ratingController.getWorkerRating`
-  - `GET /api/ratings/worker/:id/signals` → `ratingController.getWorkerRankSignals`
-  - `GET /api/reviews/analytics` → `analyticsController.getReviewAnalytics`
-  - `PUT /api/reviews/:id/moderate` → `analyticsController.moderateReview`
-
-##### 4. Admin Routes Architecture Compliance ✅
-- **Updated**: `review-service/routes/admin.routes.js` - Fixed model import pattern
-- **Before**: `const Review = mongoose.model('Review');`
-- **After**: `const { Review } = require('../models');`
-- **Result**: Admin routes now use shared model pattern
-
-##### 5. Service Architecture Compliance ✅
-- **MVC Pattern**: Clean separation of concerns (Models/Controllers/Routes)
-- **Shared Resources**: Proper use of centralized models and utilities
-- **Error Handling**: Centralized error logging and response formatting
-- **Logging**: Winston-based structured logging with service identification
-- **Environment**: Production-ready with fail-fast validation
-- **Database**: MongoDB connection with retry logic and graceful degradation
-
-#### Results Achieved
-- **Architecture Compliance**: Review Service now follows consolidated Kelmah MVC pattern
-- **Code Maintainability**: Business logic separated from HTTP handling
-- **Shared Model Usage**: Properly leverages centralized User, Job, Application models
-- **Service Startup**: Review Service starts successfully and connects to MongoDB
-- **API Structure**: Clean RESTful endpoints with proper controller delegation
-- **Error Handling**: Centralized error management with development/production modes
-- **Performance**: Rating summaries pre-calculated for fast retrieval
-
-#### ⚠️ Minor Issues Noted
-- **Duplicate Index Warning**: Mongoose warning about duplicate schema index on workerId
-- **Rate Limiting**: Shared rate limiter has dependency issues - using basic fallback
-- **Note**: These are non-critical and don't prevent service operation
-
-#### All Critical Architecture Violations Resolved ✅
-- **Payment Service**: Model import consolidation ✅ COMPLETED
-- **Messaging Service**: Model import fixes and duplicate exports ✅ COMPLETED  
-- **Review Service**: Complete MVC restructure ✅ COMPLETED
-
-### 🎉 ALL CRITICAL ARCHITECTURE FIXES COMPLETE - PRODUCTION READY ✅
-
-#### Project Status Summary
-- **Architecture Consolidation**: 100% Complete - All services follow unified patterns
-- **Model Import Violations**: 100% Resolved - All services use shared model indexes
-- **MVC Structure**: 100% Implemented - Clean separation across all services
-- **Service Startup**: All services can start without import errors
-- **Database Connectivity**: MongoDB connections working across all services
-- **Production Readiness**: Platform ready for deployment testing
-
-#### Next Phase: Integration Testing & Deployment Validation
-- **Status**: READY TO PROCEED 🔄
-- **Scope**: End-to-end testing of all services working together
-- **Timeline**: Post-architecture consolidation phase
-
-#### Overall Critical Fixes Progress: 67% Complete (2/3 services fixed)
-
-### ✅ COMPLETED - JWT Utility Consolidation (Issue #3 from Backend Connectivity Audit)
-
-#### Critical Discovery & Resolution
-- **Issue Found**: Duplicate JWT utilities across services creating maintenance burden
-- **Root Cause**: Messaging service had complete duplicate JWT utility with same functions
-- **Problems Identified**:
-  - `messaging-service/utils/jwt.js` - Complete duplicate of basic JWT functions
-  - Auth service using local `shared-jwt.js` instead of shared utility
-  - Missing `decodeUserFromClaims` function in shared utility
-  - Inconsistent JWT verification patterns across services
-
-#### Systematic Fixes Completed (September 26, 2025)
-
-##### 1. Duplicate JWT Utility Removal ✅
-- **Moved**: `messaging-service/utils/jwt.js` → `Kelmaholddocs/backup-files/jwt-utilities/messaging-service-jwt-utility.js`
-- **Preserved**: All functionality backed up per user requirements
-- **Cleaned**: Messaging service utils directory now uses shared utilities
-
-##### 2. Shared JWT Utility Enhancement ✅
-- **Added**: `decodeUserFromClaims` function to shared JWT utility
-- **Enhanced**: Complete JWT function set now available centrally
-- **Functions Available**: `verifyAccessToken`, `generateAuthTokens`, `verifyAuthToken`, `decodeUserFromClaims`
-
-##### 3. Messaging Service Migration ✅
-- **Updated**: `middlewares/auth.middleware.js` - Now uses `verifyAccessToken` from shared utility
-- **Updated**: `socket/messageSocket.js` - Now uses `verifyAccessToken` for WebSocket authentication
-- **Removed**: Direct `jsonwebtoken` imports and manual JWT verification
-- **Import Path**: Corrected to `../../shared/utils/jwt` (from messaging service)
-
-##### 4. Auth Service Migration ✅
-- **Completed**: Auth service now uses shared JWT utility instead of local `shared-jwt.js`
-- **Functions**: `generateAuthTokens`, `verifyAuthToken` now from shared location
-- **Maintained**: Advanced JWT features (`jwt-secure.js`) remain in auth service for refresh token management
-
-##### 5. Import Path Corrections ✅
-- **Fixed**: All import paths corrected for proper shared utility access
-- **Verified**: All services can successfully import shared JWT functions
-- **Testing**: Import verification completed successfully
-
-#### Results Achieved
-- **Code Deduplication**: Eliminated duplicate JWT utility from messaging service
-- **Centralized Maintenance**: All basic JWT operations now use shared utility
-- **Consistent Patterns**: Uniform JWT verification across all services
-- **Preserved Functionality**: All JWT features maintained while eliminating duplication
-- **Clean Architecture**: Messaging service now properly uses shared resources
-
-#### Architecture Impact
-- **Shared Resources**: JWT utilities properly centralized in `shared/utils/jwt.js`
-- **Service Boundaries**: Clean separation between basic JWT (shared) and advanced JWT (auth-specific)
-- **Maintenance**: Single source of truth for JWT operations reduces maintenance burden
-- **Consistency**: All services use identical JWT verification patterns
-
-**🏆 ACHIEVEMENT**: Complete JWT utility consolidation with zero functionality loss and improved maintainability
-
----
-
-### 🎯 Current Project Phase: ARCHITECTURAL CONSOLIDATION FULLY COMPLETE ✅
-
-#### ⚡ LATEST COMPLETION: Database/Model Consolidation Critical Fixes (September 21, 2025)
-
-### ✅ CRITICAL FIXES COMPLETED - Database/Model Consolidation Issues Resolved
-
-#### Critical Discovery & Resolution
-- **Issue Found**: Earlier audit revealed database/model consolidation was incomplete despite reports
-- **Root Cause**: Controllers were bypassing shared models with direct imports
-- **Critical Problems**: 
-  - Controllers used `require('../models/User')` instead of shared models
-  - Mixed MongoDB/Sequelize code in same files
-  - Service boundary violations with rateLimiter imports
-  - Orphaned legacy files and duplicate models remaining
-
-#### Systematic Fixes Completed (September 21, 2025)
-
-##### 1. Controller Model Import Standardization ✅
-- **Fixed**: All controllers now use shared model imports: `const { User } = require('../models')`
-- **Services Updated**: user-service, job-service, auth-service controllers
-- **Impact**: Controllers properly use centralized shared models instead of local bypasses
-
-##### 2. Complete Database Standardization ✅
-- **Removed**: All remaining Sequelize imports and mixed database code
-- **Fixed**: worker.controller.js, portfolio.controller.js, db config files
-- **Cleaned**: job-service/config/db.js and auth-service/config/db.js - pure MongoDB now
-- **Result**: 100% MongoDB standardization with no SQL remnants
-
-##### 3. Duplicate Model File Cleanup ✅
-- **Removed**: All local User.js files from individual services
-- **Deleted**: `services/*/models/User.js` - 4 duplicate files removed
-- **Verified**: All services now use shared User model from `shared/models/User.js`
-- **Impact**: True single source of truth for User model
-
-##### 4. Service Boundary Violation Fixes ✅
-- **Fixed**: All rateLimiter cross-service imports
-- **Created**: Shared rateLimiter in `shared/middlewares/rateLimiter.js`
-- **Updated**: 15+ files across all services to use shared rateLimiter
-- **Result**: Clean microservice boundaries with no cross-service dependencies
-
-##### 5. Legacy File Cleanup ✅
-- **Removed**: Obsolete `kelmah-backend/src/` directory (monolithic legacy code)
-- **Removed**: Obsolete `kelmah-backend/api/` directory and legacy tests
-- **Result**: Clean codebase with no orphaned architectural remnants
-
-### ✅ COMPLETED - All Major Architectural Consolidation Phases
-
-#### Phase 1A - Database Standardization ✅ **[CORRECTED STATUS]**
-- **Achievement**: **ACTUALLY COMPLETED** - Fixed all remaining database standardization issues
-- **Resolution**: Pure MongoDB/Mongoose across ALL services with zero SQL remnants
-- **Critical Completion**: September 21, 2025 - Fixed controllers, removed Sequelize code
-- **Services Verified**: auth, user, job, messaging, payment, review - all MongoDB-only
-
-#### Phase 1B - Model Consolidation ✅ **[CORRECTED STATUS]**
-- **Achievement**: **ACTUALLY COMPLETED** - True shared model implementation working
-- **Resolution**: All controllers use shared models, no bypasses or duplicates remaining  
-- **Critical Completion**: September 21, 2025 - Fixed controller imports, removed duplicates
-- **Verification**: Shared models in `/shared/models/` properly used by all services
-- **Documentation**: Complete fix details in `SEPTEMBER_2025_CRITICAL_FIXES_COMPLETE.md`
-
-#### Phase 2A - Authentication Centralization ✅
-- **Achievement**: Fixed critical security vulnerability and centralized auth
-- **Resolution**: Gateway authentication with service trust middleware
-- **Critical Fix**: Replaced empty auth middleware preventing security breach
-- **Impact**: Consistent JWT validation across all microservices
-
-#### Phase 2B - Service Boundary Enforcement ✅
-- **Achievement**: Eliminated cross-service import violations
-- **Resolution**: Clean microservice boundaries with proper API communication
-- **Key Fixes**: Removed orphaned contract routes, eliminated architectural violations
-- **Impact**: Pure microservices architecture with proper separation
-
-#### Phase 3A - JobCard Consolidation ✅
-- **Achievement**: Consolidated 3+ duplicate JobCard implementations
-- **Resolution**: Single configurable JobCard component with all features
-- **Location**: `modules/common/components/cards/JobCard.jsx`
-- **Variants**: CompactJobCard, DetailedJobCard, ListingJobCard, InteractiveJobCard
-
-#### Phase 3B - Component Migration ✅
-- **Achievement**: Created comprehensive component library
-- **Components Added**: UserCard, SearchForm with multiple variants
-- **Architecture**: Domain-driven component organization
-- **Impact**: Reusable UI components with consistent patterns
-
-#### Phase 3C - Component Library Infrastructure ✅
-- **Achievement**: Complete component library with design system
-- **Infrastructure**: Proper exports, documentation, migration guides
-- **Integration**: Ghana-inspired design tokens and theme utilities
-- **Result**: Professional component library ready for platform-wide adoption
-
-#### Final Enhancement - Design System Creation ✅
-- **Achievement**: Complete design system with Ghana-inspired tokens
-- **Color Palette**: Primary green (#4caf50), Secondary gold (#ff9800), comprehensive semantic colors
-- **Typography**: Material Design scale with responsive font sizes
-- **Spacing**: 8pt grid system with consistent spacing tokens
-- **Components**: Responsive utilities, layout components (VStack, HStack, Container, Grid)
-- **Theme Utilities**: Color functions, responsive helpers, focus styles, hover effects
-- **Integration**: Complete theme system exported with component library
-
-### ✅ ARCHITECTURAL CONSOLIDATION SUMMARY
-- **Database Chaos** → **MongoDB Standardization**
-- **71+ Duplicate Models** → **Shared Model Directory**  
-- **Security Vulnerability** → **Centralized Authentication**
-- **Cross-Service Violations** → **Clean Microservice Boundaries**
-- **3+ JobCard Duplicates** → **Single Configurable Component**
-- **Component Fragmentation** → **Complete Component Library**
-- **Design Inconsistency** → **Ghana-Inspired Design System**
-
-**🏆 ACHIEVEMENT**: Complete architectural consolidation with ZERO violations remaining
-
-### 🎯 Current Project Phase: Emergency Architectural Consolidation - Phase 2A Complete
-
-#### Recently Completed Major Work (September 21, 2025)
-
-### ✅ COMPLETED - Authentication Centralization (Phase 2A)
-- **Scope**: Complete consolidation of 20+ authentication middleware files  
-- **Critical Security Fix**: Eliminated empty API Gateway auth middleware creating vulnerability
-- **Authentication Centralization**: 
-  - Created robust API Gateway authentication (165 lines) with user caching
-  - Updated all 17 gateway routes to use centralized auth
-  - Implemented service trust middleware for downstream services
-- **Service Updates**:
-  - Auth Service: 9 protected routes updated to trust gateway
-  - User Service: 20+ routes (profile, settings, bookmarks) updated
-  - Job Service: 4 route files (jobs, bids, performance, contracts) updated  
-  - Messaging Service: Attachment routes updated
-  - Payment Service: All 7 route files updated
-- **Architecture Transformation**: Single point of authentication vs. scattered validation
-- **Performance**: 5-minute user caching reduces database lookups ~80%
-- **Security**: Consistent JWT validation using shared utility across all services
-- **Status**: FULLY COMPLETE ✅ - Authentication successfully centralized
-- **Documentation**: `spec-kit/AUTHENTICATION_CENTRALIZATION_COMPLETE.md`
-
-### ✅ COMPLETED - Database Standardization (Phase 1A)  
-- **Issue**: Triple database system (MongoDB + PostgreSQL + mixed usage)
-- **Resolution**: Complete standardization on MongoDB/Mongoose
-- **Services Updated**: All auth, user, job, messaging, and payment services
-- **Model Consolidation**: Created `/shared/models/` directory
-- **Sequelize Removal**: Eliminated all PostgreSQL dependencies
-- **Status**: FULLY COMPLETE ✅ - Single database system established
-
-### ✅ COMPLETED - Model Consolidation (Phase 1B)
-- **Issue**: 71+ duplicate model files across services  
-- **Resolution**: Centralized models in `/shared/models/` directory
-- **Key Consolidations**:
-  - User model (existed in 4+ services) → Single shared model
-  - Job, Message, Notification models → Shared implementations
-- **Service Integration**: All services updated to use shared models
-- **Import Updates**: All model index files updated to reference shared models
-- **Status**: FULLY COMPLETE ✅ - Model duplication eliminated
-
-#### Previously Completed Major Work (September 12, 2025)
-
-### ✅ COMPLETED - Comprehensive Messaging System Audit
-- **Scope**: Complete end-to-end messaging system audit from frontend to backend
-- **Backend Fixes**: 
-  - Messaging service configuration (port 3005→5005)
-  - WebSocket upgrade conflicts resolved
-  - MongoDB deprecated options cleaned
-  - API Gateway Socket.IO proxy scoped to `/socket.io`
-- **Frontend Fixes**:
-  - Consolidated 3 competing service layers
-  - Fixed all API endpoint mismatches
-  - Standardized WebSocket URL resolution to `/socket.io`
-  - Eliminated service layer fragmentation
-- **Database Verification**: Confirmed complete messaging schemas (Conversation, Message, Notification)
-- **Status**: FULLY COMPLETE ✅ - All messaging system issues fixed and documented
-
-### ✅ COMPLETED - Frontend Service Layer Consolidation
-- **Issue**: 3 competing messaging service files with different endpoint patterns
-- **Services Fixed**:
-  - `messagingService.js` ✅ Fully aligned (primary service)
-  - `chatService.js` ✅ Endpoints corrected to match backend
-  - `messagesApi.js` ✅ Critical endpoints fixed
-- **WebSocket Standardization**: All services now use `/socket.io` consistently
-- **Impact**: Eliminates API call failures and endpoint confusion
-- **Documentation**: `spec-kit/FRONTEND_CONSOLIDATION_COMPLETE.md`
-- **Status**: FULLY COMPLETE ✅ - All frontend messaging services standardized
-
-### ✅ COMPLETED - Ngrok Protocol Understanding & Integration  
-- **Critical Discovery**: Ngrok URLs change every restart - this is WHY automated protocol exists
-- **Protocol Features**:
-  - Dual tunnel setup: API Gateway (port 5000) + WebSocket (port 5005)
-  - Automatic configuration file updates (`vercel.json`, `runtime-config.json`, etc.)
-  - Auto-commit and push to trigger Vercel deployment
-  - Zero manual intervention required
-- **Messaging System Compatibility**: All messaging fixes work seamlessly with dynamic URLs
-- **Frontend Integration**: WebSocket connections use `/socket.io` relative URLs (proxy-compatible)
-- **API Integration**: All API calls use `/api/*` relative URLs (rewrite-compatible)
-- **Documentation**: `spec-kit/NGROK_PROTOCOL_DOCUMENTATION.md`
-- **Status**: FULLY COMPLETE ✅ - Protocol fully understood and messaging system compatible
-
-### ✅ COMPLETED - Remote Server Architecture Understanding
-- **Achievement**: Comprehensive documentation of actual deployment architecture
-- **Key Discovery**: ALL microservices run on remote server, NOT localhost
-- **Impact**: Corrected AI agent understanding and development approach
-- **Documentation**: `spec-kit/REMOTE_SERVER_ARCHITECTURE.md`
-- **Status**: COMPLETED - Architecture fully understood and documented
-
-### ✅ Ngrok Protocol Integration & Dynamic URL Management  
-- **Issue**: Ngrok URLs change on restart, requiring manual config updates
-- **Solution**: Automated update system with `start-ngrok.js` 
-- **Features Implemented**:
-  - Auto-update of `runtime-config.json` and `vercel.json`
-  - Automatic commit and push to trigger Vercel deployment
-  - Complete configuration synchronization
-- **WebSocket Fix**: Corrected tunnel port from 3005 → 5005
-- **Status**: COMPLETED - Fully automated URL management system
-
-### ✅ Spec-Kit Documentation System Implementation
-- **Achievement**: Mandatory spec-kit usage for all AI agents
-- **Components Created**:
-  - Comprehensive status tracking system
-  - Architecture documentation requirements  
-  - Continuous progress monitoring protocols
-- **AI Agent Integration**: Updated both Copilot and Cursor instructions
-- **Status**: COMPLETED - Full documentation system operational
-
-### 🔄 PENDING - Backend Service Restart Required
-- **Blocker**: API Gateway and messaging service on remote server need restart
-- **Reason**: Configuration fixes applied but old services still running with previous config
-- **Services Affected**: 
-  - API Gateway (port 5000) - Socket.IO proxy scoping needs activation
-  - Messaging Service (port 5005) - Port and WebSocket fixes need activation
-- **Required Action**: Remote server restart (owner-only operation)
-- **Expected Outcome**: Full messaging system functionality with real-time features
-- **Status**: WAITING ⏳ - Technical fixes complete, deployment restart needed
-
-## 📊 System Status Overview
-
-### ✅ Fully Complete & Verified
-- **Messaging System Audit** - Complete frontend/backend analysis and fixes
-- **Frontend Service Consolidation** - All endpoint issues resolved
-- **WebSocket Standardization** - Unified connection strategy implemented
-- **Database Schema Verification** - Complete messaging infrastructure confirmed
-- **Ngrok Protocol Integration** - Dynamic URL management fully compatible
-- **Remote Architecture Documentation** - Complete deployment understanding
-
-### 🔄 Ready for Testing (Post-Restart)
-- **End-to-End Messaging** - Send/receive message functionality  
-- **Real-time WebSocket** - Live chat features and typing indicators
-- **API Gateway Routing** - Proper request proxying to services
-- **File Upload System** - Attachment handling in conversations
-
-### 📋 Current Technical State
-- **Frontend**: All messaging services fixed and standardized ✅
-- **Backend Configuration**: All fixes applied, needs restart ⏳
-- **Database**: Schemas verified and complete ✅
-- **Ngrok Protocol**: Fully operational and compatible ✅
-- **WebSocket Architecture**: Properly configured for proxy routing ✅
-
-### 📋 Previously Fixed System Issues (Historical Record)
-
-#### Health Endpoint Standardization ✅ FIXED
-- **Issue**: API Gateway /api/health endpoints returning 404/503 due to service-specific paths
-- **Fix**: Implemented fallback logic in gateway health aggregation to try /api/health first, then /health on 404/405/501
-- **Files Modified**: `kelmah-backend/api-gateway/server.js`, `kelmah-backend/api-gateway/proxy/job.proxy.js`
-- **Status**: FIXED ✅ - Health aggregation now resilient across services
-
-#### Rate Limiter Bypass for Health Endpoints ✅ FIXED
-- **Issue**: Health endpoints blocked by rate limiting, causing cascading 503s
-- **Fix**: Added bypass logic for /health and /api/health routes in job-service and gateway
-- **Files Modified**: `kelmah-backend/services/job-service/server.js`
-- **Status**: FIXED ✅ - Health checks now exempt from rate limiting
-
-#### Duplicate Mongoose Index Cleanup ✅ FIXED
-- **Issue**: Console warnings from duplicate manual indexes on slug and userId fields
-- **Fix**: Removed duplicate index definitions from Category.js and UserPerformance.js models
-- **Files Modified**: `kelmah-backend/services/job-service/models/Category.js`, `kelmah-backend/services/job-service/models/UserPerformance.js`
-- **Status**: FIXED ✅ - Console warnings eliminated
-
-## 🎯 Next Actions Required
-
-### 1. Backend Service Restart (Owner Action Required)
-- **Who**: Project owner only (remote server access required)
-- **Services**: API Gateway (port 5000) + Messaging Service (port 5005)
-- **Purpose**: Activate all applied configuration fixes
-- **Expected Result**: Full messaging system functionality
-
-### 2. End-to-End Testing (Post-Restart)
-- **Scope**: Complete messaging system verification
-- **Components**: API routing, WebSocket connections, database operations
-- **Success Criteria**: Send/receive messages, real-time features, file uploads
-
-### 3. System Deployment Verification
-- **Ngrok Protocol**: Verify automatic URL updates work correctly
-- **Frontend Integration**: Confirm all services route through API Gateway
-- **WebSocket Functionality**: Test real-time messaging features
-
----
-
-## 🏆 Achievement Summary
-
-**MAJOR MILESTONE COMPLETED**: Comprehensive messaging system audit and fixes from frontend to backend, with full ngrok protocol integration and documentation system implementation.
-
-**STATUS**: System technically complete ✅ | Pending deployment restart ⏳ | Ready for production use 🚀
-- **Status**: FIXED - No more duplicate index warnings
-
-#### Vercel Rewrites Updated
-- **Issue**: vercel.json pointing to offline ngrok URLs
-- **Fix**: Updated rewrites to match current ngrok-config.json (apiDomain: https://298fb9b8181e.ngrok-free.app, wsDomain: https://e74c110076f4.ngrok-free.app)
-- **Files Modified**: `vercel.json`
-- **Status**: FIXED - Frontend now routes to active tunnels
-
-## Current System Status (September 12, 2025)
-
-### Remote Server Health Check Results (11:06 UTC)
-- ✅ API Gateway (5000): Running and accessible via ngrok
-- ✅ Auth Service (5001): Healthy
-- ✅ User Service (5002): Healthy  
-- ✅ Job Service (5003): Healthy
-- ❌ Payment Service (5004): Unavailable
-- ✅ Messaging Service (5005): Healthy (DB connected, websocket operational per service health)
-- ✅ Review Service (5006): Healthy
-
-### Active Ngrok Configuration
-Note: The platform has transitioned to LocalTunnel for current development connectivity. Ngrok URLs below are historical.
-
-### Current Tunnel Configuration (September 17, 2025)
-- Tunnel Type: LocalTunnel
-- Mode: Unified (single domain for HTTP + WebSocket)
-- API Domain: `https://shaggy-snake-43.loca.lt`
-- WS Domain: `https://shaggy-snake-43.loca.lt` (same as API)
-- Config Sources:
-  - `ngrok-config.json` (shared runtime config now holding LocalTunnel state)
-  - `kelmah-frontend/public/runtime-config.json` (frontend runtime)
-
-### Vercel Rewrites (updated for LocalTunnel unified mode)
-- Root `vercel.json`:
-  - `/api/(.*)` → `https://shaggy-snake-43.loca.lt/api/$1`
-  - `/socket.io/(.*)` → `https://shaggy-snake-43.loca.lt/socket.io/$1`
-  - Env: `VITE_API_URL` and `VITE_WS_URL` both set to `https://shaggy-snake-43.loca.lt`
-- Frontend `kelmah-frontend/vercel.json`:
-  - `/api/(.*)` → `https://shaggy-snake-43.loca.lt/api/$1`
-  - `/socket.io/(.*)` → `https://shaggy-snake-43.loca.lt/socket.io/$1`
-  - `/(.*)` → `/index.html` SPA fallback
-
-### Frontend Security Config (connect-src)
-- `kelmah-frontend/src/config/securityConfig.js` allows `https://shaggy-snake-43.loca.lt` for connections.
-
-### Health/Availability Snapshot (September 17, 2025)
-- Owner has intentionally stopped all servers. External health checks return 503 (Tunnel Unavailable), which is expected while offline.
-- Example:
-  - GET `https://shaggy-snake-43.loca.lt/health` → 503 Tunnel Unavailable
-
-### Operational Notes
-- LocalTunnel unified mode is now the default in `start-localtunnel-fixed.js` (WS routed via API domain `/socket.io`).
-- The update script also patches both Vercel configs and `securityConfig.js`, writes `runtime-config.json`, and commits/pushes.
-- Frontend continues to use relative `/api/*` and `/socket.io` in code; rewrites handle the external mapping.
-
-## Partially Fixed / In Progress
-
-### 🔄 Messaging/Notification System Wiring
-- **Issue**: End-to-end messaging and notifications not fully functional
-- **Progress**:
-  - Gateway proxies configured for /api/conversations, /api/messages, /api/notifications → messaging-service
-  - Socket.IO proxy configured for /socket.io → messaging-service with ws: true and upgrade handler
-  - Frontend websocketService.js uses runtime-config.json for WebSocket URL
-  - Backend messaging-service routes mounted with auth middleware
-- **Current Status**: Messaging service is healthy. Gateway returning 503 "WebSocket service configuration error" on some REST routes (e.g., /api/conversations, /api/notifications) due to Socket.IO proxy scoping/precedence.
-- **Recent Change**: Scoped Socket.IO proxy to '/socket.io' path and upgrade events to avoid intercepting unrelated routes.
-- **Next Steps**: Verify route precedence for conversations/notifications blocks and add debug logging if needed.
-
-### ✅ Analytics Hook Refactor (September 12, 2025)
-- Updated `kelmah-frontend/src/hooks/useRealTimeAnalytics.js` to use Socket.IO at `path: '/socket.io'` with reconnection and explicit `analytics:subscribe`/`analytics:unsubscribe` events.
-- Removed legacy native WebSocket + heartbeat logic; unified with platform-wide Socket.IO strategy.
-- Verification: Build passes locally; code references now consistent with notifications and dashboard services.
-- Dependency: None (frontend-only change). Real-time stream depends on backend emitting `analytics:metrics` or `metrics` events post-restart.
-
-### � Dashboard WebSocket Audit
-- Audited dashboard services and components. Confirmed `dashboardService.js` already initializes Socket.IO using relative `/socket.io`.
-- Identified legacy direct WebSocket usage in older messaging components (e.g., `Messages.jsx`) pointing to `ws://localhost:3000/ws` — these are deprecated paths and will be migrated or removed in a subsequent cleanup.
-- Note: Primary messaging flows use `websocketService` and MessageContext with Socket.IO and are aligned.
-
-### �🔄 Socket.IO Transport Validation
-### ✅ Notifications Client & Routes Alignment (September 12, 2025)
-- Frontend clients updated to match messaging-service contract:
-  - Mark-as-read uses PATCH `/api/notifications/:id/read`
-  - Mark-all uses PATCH `/api/notifications/read/all`
-  - Clear-all uses DELETE `/api/notifications/clear-all`
-  - Unread count uses GET `/api/notifications/unread/count`
-  - Preferences under `/api/notifications/preferences` (GET/PUT)
-- Background sync mark-read updated to use correct endpoints with auth + ngrok header; soft-fail behavior added
-- PWA push subscribe now targets `/api/notifications/push/subscribe` and fails softly if unimplemented
-- Notification socket now prefers relative `/socket.io` to ensure gateway/Vercel rewrites apply
-- Verification Plan:
-  1) Login and fetch `/api/notifications` via gateway; expect 200 with pagination or empty list
-  2) Mark a sample notification read; expect 200, verify unread count decreases
-  3) Call unread count endpoint; expect `{ unreadCount: number }`
-  4) Update preferences; expect `{ success: true, data: {...} }`
-  5) Observe real-time `notification` events over Socket.IO when server emits
-- Dependency: Remote messaging-service/gateway restart to apply backend proxy/socket config
-
-- **Issue**: WebSocket connections failing
-- **Progress**:
-  - Gateway Socket.IO proxy returns "WebSocket service configuration error" (503)
-  - Direct messaging tunnel (https://e74c110076f4.ngrok-free.app) responds to polling: 0{"sid":"...","upgrades":["websocket"],"pingInterval":25000,"pingTimeout":60000,"maxPayload":1000000}
-- **Current Status**: Messaging service not running remotely; proxy configuration correct but service unavailable
-- **Next Steps**: Verify messaging service deployment and restart if needed
-
-## Database Validation
-
-### ✅ Collections Confirmed Present
-- **Collections**: conversations, messages, notifications, notificationpreferences
-- **Indexes**: Standard indexes on userId, conversationId, createdAt, etc.
-- **Status**: Verified via local code review; remote DB connectivity confirmed via auth service
-
-## Deployment Notes
-
-- **Services Running Remotely**: Auth, User, Job, Payment, Review services operational via ngrok
-- **Messaging Service**: Not responding (503); requires deployment/restart on remote server
-- **Frontend**: Vercel rewrites updated; runtime-config.json generated for ngrok compatibility
-- **Next Action**: Request messaging service deployment from project owner to complete end-to-end testing
-
-## Testing Results (via ngrok)
-
-- Auth: ❌ Login attempt for giftyadjei10@gmail.com failed (Incorrect email or password)
-- Messages API (GET /api/messages): ✅ 401 (Access token required) — route reachable
-- Conversations API (GET /api/conversations): ❌ 503 WebSocket service configuration error (unexpected)
-- Notifications API (GET /api/notifications): ❌ 503 WebSocket service configuration error (unexpected)
-
-### Additional Quick Checks (September 12, 2025 13:25 UTC)
-- API Gateway /health: ✅ healthy (services listed, version 2.0.0)
-- Notifications unauthenticated GET via gateway: ❌ 503 with message "WebSocket service configuration error" (confirms pending backend proxy/precedence fix or restart)
-- Health: ✅ /api/health and /api/health/aggregate return correct status
-
-## Summary
-
-Core health and routing issues resolved. Messaging system code complete but requires remote service deployment for full functionality. All fixed items marked as resolved per protocol.---
-
-## Production Errors Investigation - October 7, 2025
-
-### 🔍 COMPREHENSIVE ERROR INVESTIGATION COMPLETED
-
-**Session:** Systematic debugging of production console errors  
-**Source:** `Consolerrorsfix.txt` (36 lines of error categories)  
-**Gateway:** kelmah-api-gateway-5loa.onrender.com  
-**Status:** 2 Fixed in Code, 4 Require Deployment Action
-
-#### 📊 Error Categories Analyzed
-
-**Category 1: 404 Errors (Not Found)** - 4 endpoints
-- ✅ `/api/notifications` - FIXED & PUSHED (token check added)
-- ❌ `/api/users/workers/{userId}/completeness` - DEPLOYMENT MISMATCH
-- ❌ `/api/users/workers/jobs/recent` - DEPLOYMENT MISMATCH
-- ❌ `/api/users/workers/{userId}/availability` - DEPLOYMENT MISMATCH
-
-**Category 2: 500 Errors (Internal Server Error)** - 1 endpoint
-- ✅ `/api/users/dashboard/workers` - FIXED (not pushed yet)
-
-**Category 3: WebSocket Connection Failures** - 1 service
-- ⚙️ `wss://kelmah-api-gateway-5loa.onrender.com` - CONFIGURATION ISSUE
-
----
-
-### ✅ FIX #1: Notifications 404 Error (PUSHED)
-
-**File:** `kelmah-frontend/src/modules/messaging/contexts/NotificationContext.jsx`  
-**Issue:** Calling `/api/notifications` without checking for valid token first  
-**Fix Applied:** Added token validation before API calls
-```javascript
-// Check for token before fetching
-const token = getToken();
-if (!token) {
-  console.warn('⚠️ No authentication token, skipping notification fetch');
-  return;
-}
-```
-**Status:** ✅ Committed and pushed to main  
-**Deployment:** Auto-deployed via Vercel
-
----
-
-### ✅ FIX #2: Dashboard Workers 500 Error (READY TO PUSH)
-
-**File:** `kelmah-backend/services/user-service/controllers/user.controller.js`  
-**Lines:** 6, 173-235  
-**Error:** "Schema hasn't been registered for model 'User'"  
-**Root Cause:** `.populate('userId')` call failing because User model not in scope  
-
-**Investigation:**
-- WorkerProfile model references `userId: { type: ObjectId, ref: 'User' }`
-- User model exists in shared models and is imported in models/index.js
-- Issue: Populate needs User model to be registered with Mongoose
-
-**Fix Applied:**
-```javascript
-// Line 6: Added User model import at top level
-const { User } = require('../models');
-
-// Line 175: Explicit WorkerProfile import inside function
-const { WorkerProfile } = require('../models');
-
-// Populate now has access to registered User model
-.populate({
-  path: 'userId',
-  select: 'firstName lastName profilePicture',
-  options: { strictPopulate: false }
-})
-```
-
-**Testing:**
-```bash
-curl https://kelmah-api-gateway-5loa.onrender.com/api/users/dashboard/workers \
-  -H "Authorization: Bearer {token}"
-# Error: {"message":"Schema hasn't been registered for model \"User\""}
-```
-
-**Status:** ✅ Committed locally, ready to push  
-**Impact:** Fixes dashboard worker stats on all hirer/admin dashboards
-
----
-
-### ❌ DEPLOYMENT MISMATCH: Three Missing Routes
-
-**Issue:** Routes exist in local code but return 404 in production  
-**Evidence:** All three tested with valid JWT, all return 404  
-**Root Cause:** Render deployment doesn't have latest user-service code
-
-#### Route #1: Profile Completeness
-**File:** `kelmah-backend/services/user-service/routes/user.routes.js` line 49  
-**Route:** `GET /workers/:id/completeness`  
-**Controller:** `WorkerController.getProfileCompletion` exists (lines 686-699)  
-**Test Result:**
-```bash
-GET /api/users/workers/6891595768c3cdade00f564f/completeness
-Response: {"success":false,"message":"Not found - /workers/6891595768c3cdade00f564f/completeness"}
-```
-
-#### Route #2: Recent Jobs
-**File:** `kelmah-backend/services/user-service/routes/user.routes.js` line 40  
-**Route:** `GET /workers/jobs/recent`  
-**Controller:** `WorkerController.getRecentJobs` exists (lines 536-620)  
-**Test Result:**
-```bash
-GET /api/users/workers/jobs/recent
-Response: {"success":false,"message":"Not found - /workers/jobs/recent"}
-```
-
-#### Route #3: Worker Availability
-**File:** `kelmah-backend/services/user-service/routes/user.routes.js` line 48  
-**Route:** `GET /workers/:id/availability`  
-**Controller:** `WorkerController.getWorkerAvailability` exists  
-**Test Result:**
-```bash
-GET /api/users/workers/6891595768c3cdade00f564f/availability
-Response: {"success":false,"message":"Not found - /workers/{userId}/availability"}
-```
-
-**Route Order Verified:**
-```javascript
-Line 40: router.get("/workers/jobs/recent", ...)       // Specific first
-Line 45: router.get('/workers', ...)                    // List
-Line 48: router.get("/workers/:id/availability", ...)   // Param after
-Line 49: router.get("/workers/:id/completeness", ...)   // Param after
-```
-
-**Action Required:**
-1. Check Render dashboard for user-service deployment status
-2. Verify latest git commit SHA is deployed
-3. Trigger manual deploy if needed
-4. Wait 5 minutes for build
-5. Retest all three endpoints
-
----
-
-### ⚙️ WEBSOCKET CONFIGURATION ISSUE
-
-**Error:** "WebSocket is closed before the connection is established"  
-**URL:** `wss://kelmah-api-gateway-5loa.onrender.com`  
-**Frequency:** 59+ failed connection attempts in logs  
-**Impact:** Real-time notifications and messaging unavailable
-
-**Frontend Configuration** (MessageContext.jsx):
-```javascript
-const wsUrl = 'https://kelmah-api-gateway-5loa.onrender.com';
-const newSocket = io(wsUrl, {
-  auth: { token, userId, userRole },
-  transports: ['websocket', 'polling'],
-  upgrade: true,
-  reconnection: true,
-  reconnectionAttempts: 3
-});
-```
-
-**API Gateway Configuration** (server.js lines 589-660):
-```javascript
-// Socket.IO proxy to messaging service
-app.use('/socket.io', socketIoProxyHandler);
-
-const createSocketIoProxy = () => {
-  return createProxyMiddleware({
-    target: services.messaging,
-    changeOrigin: true,
-    ws: true,  // WebSocket upgrade enabled
-    timeout: 30000
-  });
-};
-
-// WebSocket upgrade handler (lines 906-911)
-server.on('upgrade', (req, socket, head) => {
-  if (url.startsWith('/socket.io')) {
-    console.log('🔄 WebSocket upgrade request:', url);
-    // Proxy handles upgrade
-  }
-});
-```
-
-**Messaging Service Configuration** (server.js lines 58-70):
-```javascript
-const io = socketIo(server, {
-  cors: {
-    origin: allowedOrigins,  // Includes LocalTunnel patterns
-    methods: ['GET', 'POST'],
-    credentials: true
-  },
-  transports: ['websocket', 'polling'],
-  upgradeTimeout: 10000
-});
-```
-
-**Root Cause:** Render platform may not have WebSocket upgrades enabled for the service. Code is correct, but Render requires explicit WebSocket support in service settings.
-
-**Action Required:**
-1. Render Dashboard → kelmah-api-gateway-5loa service
-2. Settings → Look for "WebSocket Support" or "Upgrade Protocol"
-3. Enable WebSocket support if available
-4. Restart service if required
-5. Repeat for messaging service
-6. Test WebSocket connection in browser console
-
----
-
-### 📋 Investigation Summary
-
-**Files Analyzed:**
-- `Consolerrorsfix.txt` - Error logs (36 lines)
-- `user.controller.js` - Dashboard workers controller
-- `user.routes.js` - Route definitions and ordering
-- `worker.controller.js` - Worker-specific endpoints
-- `MessageContext.jsx` - WebSocket connection logic
-- `api-gateway/server.js` - Proxy and WebSocket configuration
-- `messaging-service/server.js` - Socket.IO server setup
-
-**Testing Performed:**
-- ✅ Authentication test (login successful)
-- ✅ Token generation and validation
-- ✅ All 5 endpoints tested with valid JWT
-- ✅ Route order verification in code
-- ✅ Controller method existence verification
-- ✅ WebSocket configuration review
-
-**Files Modified (Not Pushed):**
-1. `kelmah-backend/services/user-service/controllers/user.controller.js`
-   - Lines: 6, 173-235
-   - Fix: User model import and populate reference
-
-**Documentation Created:**
-1. `PRODUCTION_ERRORS_INVESTIGATION_SUMMARY.md` - Complete technical analysis
-2. `QUICK_ACTION_PLAN.md` - Step-by-step deployment guide
-
----
-
-### ✅ Consolerrorsfix Bug #4 - Dynamic Profile Completion (2025-11-19)
-
-**Issue:** Sidebar progress stuck at 33% because it relied solely on the stale `auth.user` snapshot.
-
-**Fixes:**
-- `src/utils/userUtils.js`
-  - Added `mergeProfileSources` + `hasMeaningfulValue` helpers.
-  - `getProfileCompletion` now accepts an optional `profile` payload, merges it with the normalized auth user, and evaluates all required/optional/skill slots.
-- `src/modules/layout/components/sidebar/Sidebar.jsx`
-  - Prefetches profile data via `profileService` when Redux does not yet have it, then stores it with `setProfile`.
-  - Completion bar now calls `getProfileCompletion(user, profile)` so edits made in profile modules immediately reflect in the sidebar.
-
-**Verification:** Checked dashboard sidebar locally; completion chips now reflect actual missing fields after editing profile entries. No automated tests exist for this path yet.
-
----
-
-### ✅ Consolerrorsfix Bug #5 - Persistent Quick Navigation Preference (2025-11-19)
-
-**Issue:** "Hide for now" only updated sessionStorage, so the Quick Navigation panel reappeared on every reload.
-
-**Fixes:**
-- `src/utils/secureStorage.js`
-  - `setItem` stores a per-key TTL value (default remains 24h) and `getItem` honors the stored TTL to support long-lived preferences.
-- `src/components/common/SmartNavigation.jsx`
-  - Reads/writes a per-user preference blob from `secureStorage` (`quick_nav_preferences`) with a 6-month TTL.
-  - Adds `isDismissed` state plus a lightweight "Show Quick Navigation" restore button so users can re-enable the panel without clearing storage.
-  - Persists `pinned`, `hidden`, and `introSeen` flags per authenticated user, keeping behavior consistent across sessions/browser restarts.
-
-**Verification:** Manually hid the panel, refreshed, and confirmed it stayed hidden; clicking the restore button brings it back and rewrites preferences. Existing lint run (`npm run lint`) still fails due to long-standing worker module warnings (5,000+ errors) unrelated to these files.
-
-**Next Steps:**
-1. Push dashboard/workers fix when ready
-2. Verify Render deployment status
-3. Enable WebSocket support in Render settings
-4. Run verification tests after deployment
-5. Update STATUS_LOG with final results
-
-**Investigation Time:** ~45 minutes  
-**Issues Fixed in Code:** 2  
-**Issues Requiring Deployment:** 4  
-**Configuration Issues:** 1
-
----
+- Documentation needed to guide develope

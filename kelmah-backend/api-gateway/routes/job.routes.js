@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const { authenticate } = require('../middlewares/auth');
+const { authenticate, optionalAuth } = require('../middlewares/auth');
 
 // Get service URLs from app context
 const getServiceUrl = (req) => req.app.get('serviceUrls').JOB_SERVICE;
@@ -179,7 +179,7 @@ router.get('/recommendations', authenticate, async (req, res) => {
 // ===== PARAMETERIZED ROUTES BELOW — /:id must be LAST to avoid shadowing =====
 
 // GET /api/jobs/:id - Get job details (public)
-router.get('/:id', async (req, res) => {
+router.get('/:id', optionalAuth, async (req, res) => {
   await forwardToJobService(req, res, `/api/jobs/${req.params.id}`, 'GET');
 });
 

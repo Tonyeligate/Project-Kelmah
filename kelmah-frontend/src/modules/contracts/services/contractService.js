@@ -90,6 +90,14 @@ export const contractService = {
   // Get contract by ID
   async getContractById(id) {
     try {
+      // Mock contracts from backend list currently use ids like "contract-1".
+      // Avoid hitting detail endpoint for those non-ObjectId ids (it returns server error).
+      if (typeof id === 'string' && /^contract-\d+$/i.test(id)) {
+        const all = await this.getContracts();
+        const contracts = Array.isArray(all) ? all : [];
+        return contracts.find((c) => c._id === id || c.id === id) || null;
+      }
+
       const response = await api.get(`/jobs/contracts/${id}`);
       const payload = unwrapPayload(response);
       return normalizeContract(payload, 0);
