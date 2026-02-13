@@ -13,13 +13,17 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { HelmetProvider } from 'react-helmet-async';
 import { NotificationProvider } from './modules/notifications/contexts/NotificationContext';
 import { MessageProvider } from './modules/messaging/contexts/MessageContext';
+import { checkStorageQuota } from './utils/storageQuota';
 
-// Version 1.0.4 - Force fresh bundle generation
+// Version 1.0.5 - Force fresh bundle generation
 if (import.meta.env.DEV) {
-  console.log('🔧 Main.jsx v1.0.4 - Kelmah PWA with 50z3 gateway');
+  console.log('🔧 Main.jsx v1.0.5 - Kelmah PWA with storage monitoring');
   console.log('🔧 Store initialized:', !!store);
   console.log('🔧 All imports successful');
 }
+
+// Check browser storage quota on startup (non-blocking)
+checkStorageQuota();
 
 
 const ErrorFallback = ({ error }) => (

@@ -1,5 +1,28 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Implementation Update (Feb 13, 2026 – Notifications Context/Realtime Consistency Stabilization) ✅
+- 🎯 **Scope Restatement**: Continue iterative frontend hardening by auditing notifications context + realtime socket payload handling against page/component consumers.
+- 🔍 **Dry-audit findings**:
+  - `NotificationItem` consumes `deleteNotification` from notifications context, but provider value does not expose this action.
+  - Realtime socket payload handler in notifications context normalizes only `id/read/date`, while REST flow normalization includes `title/message/link`, producing potential UI inconsistency for live events.
+  - Notifications settings and list pages are wired to context/service correctly; issue is action/payload consistency at context boundary.
+- ✅ **Fixes applied**:
+  - Added unified notification payload normalization in `NotificationContext` for realtime socket notifications to align with REST shape (`id/title/message/link/read/date`).
+  - Added `deleteNotification` action in provider state and exposed it via context value for `NotificationItem` consumer compatibility.
+  - Added duplicate-prevention merge logic for incoming realtime notifications by identifier.
+  - Updated mark-all-as-read local state update to keep both `read` and `readStatus` synchronized.
+  - Tightened notification socket disconnect lifecycle to clear stale socket references.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx`
+  - `kelmah-frontend/src/modules/notifications/services/notificationService.js`
+- 🧪 Verification:
+  - VS Code diagnostics: no errors in changed notifications files.
+  - Frontend build command currently blocked by environment storage limit (`ENOSPC: no space left on device`), not compile errors.
+  - Remote gateway checks with authenticated session:
+    - `GET /api/notifications?page=1&limit=5` → `200`
+    - `GET /api/notifications/preferences` → `200`
+    - `GET /api/notifications/unread/count` → `200`
+
 ### Runtime Hotfix (Feb 13, 2026 – Hirer Job Edit Save/Publish 400) ✅
 - 🎯 **Scope Restatement**: Investigate repeated `PUT /api/jobs/:id` 400 errors when hirers try to save/publish edited jobs.
 - 🔍 **Reproduced with direct API call**:

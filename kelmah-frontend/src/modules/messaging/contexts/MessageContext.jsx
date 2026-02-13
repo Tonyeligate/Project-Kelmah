@@ -33,6 +33,10 @@ export const useMessages = () => {
 
 export const MessageProvider = ({ children }) => {
   const { user, getToken } = useAuth();
+  const socketRef = useRef(null);
+  const connectingRef = useRef(false);
+  const selectedConversationRef = useRef(null);
+  const getTokenRef = useRef(getToken);
 
   // Real-time WebSocket state
   const [socket, setSocket] = useState(null);
@@ -50,6 +54,14 @@ export const MessageProvider = ({ children }) => {
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
+
+  useEffect(() => {
+    selectedConversationRef.current = selectedConversation;
+  }, [selectedConversation]);
+
+  useEffect(() => {
+    getTokenRef.current = getToken;
+  }, [getToken]);
 
   // Load the current user's conversations
   const loadConversations = useCallback(async () => {
@@ -71,107 +83,103 @@ export const MessageProvider = ({ children }) => {
 
   // WebSocket connection setup with singleton pattern to prevent multiple connections
   const connectWebSocket = useCallback(async () => {
-    if (!user || socket) return;
+    if (!user) return;
+    if (socketRef.current || connectingRef.current) return;
 
-    const token = getToken();
+    const token = getTokenRef.current?.();
     if (!token) return;
+    connectingRef.current = true;
 
-    // Prevent multiple concurrent connection attempts
-    if (connectWebSocket._connecting) return;
-    connectWebSocket._connecting = true;
+    try {
+      const wsUrl = await getWebSocketUrl();
+      console.log('🔌 Connecting to messaging WebSocket backend:', wsUrl);
 
-    const wsUrl = await getWebSocketUrl();
-    console.log('🔌 Connecting to messaging WebSocket backend:', wsUrl);
-
-    const newSocket = io(wsUrl, {
-      auth: {
-        token,
-        userId: user.id,
-        userRole: user.role,
-      },
-      transports: ['websocket', 'polling'],
-      upgrade: true,
-      timeout: 20000,
-      reconnection: true,
-      reconnectionAttempts: 2, // Keep retries low to reduce noisy failures on sleeping backends
-      reconnectionDelay: 2000, // Increased delay
-      reconnectionDelayMax: 5000,
-      maxReconnectionAttempts: 3,
-    });
+      const newSocket = io(wsUrl, {
+        auth: {
+          token,
+          userId: user.id,
+          userRole: user.role,
+        },
+        transports: ['websocket', 'polling'],
+        upgrade: true,
+        timeout: 20000,
+        reconnection: true,
+        reconnectionAttempts: 2, // Keep retries low to reduce noisy failures on sleeping backends
+        reconnectionDelay: 2000, // Increased delay
+        reconnectionDelayMax: 5000,
+        maxReconnectionAttempts: 3,
+      });
 
     // Connection events
-    newSocket.on('connect', () => {
-      console.log('✅ WebSocket connected for messaging');
-      setIsConnected(true);
-      setRealtimeIssue(null);
-      socketErrorLoggedRef.current = false;
-      connectWebSocket._connecting = false;
-    });
+      newSocket.on('connect', () => {
+        console.log('✅ WebSocket connected for messaging');
+        setIsConnected(true);
+        setRealtimeIssue(null);
+        socketErrorLoggedRef.current = false;
+        connectingRef.current = false;
+      });
 
-    newSocket.on('disconnect', (reason) => {
-      console.log('❌ WebSocket disconnected');
-      setIsConnected(false);
-      if (reason && reason !== 'io client disconnect') {
-        setRealtimeIssue('Real-time updates are temporarily unavailable.');
-      }
-      connectWebSocket._connecting = false;
-    });
+      newSocket.on('disconnect', (reason) => {
+        console.log('❌ WebSocket disconnected');
+        setIsConnected(false);
+        if (reason && reason !== 'io client disconnect') {
+          setRealtimeIssue('Real-time updates are temporarily unavailable.');
+        }
+        connectingRef.current = false;
+      });
 
-    newSocket.on('connect_error', (error) => {
-      if (!socketErrorLoggedRef.current) {
-        console.error('🚨 WebSocket connection error:', error);
-        socketErrorLoggedRef.current = true;
-      }
-      setRealtimeIssue('Real-time connection failed. Using standard refresh mode.');
-      connectWebSocket._connecting = false;
-    });
+      newSocket.on('connect_error', (error) => {
+        if (!socketErrorLoggedRef.current) {
+          console.error('🚨 WebSocket connection error:', error);
+          socketErrorLoggedRef.current = true;
+        }
+        setRealtimeIssue('Real-time connection failed. Using standard refresh mode.');
+        connectingRef.current = false;
+      });
 
-    newSocket.on('connected', (data) => {
-      console.log('🎉 Messaging service connected:', data);
-      // Update conversations with real-time data
-      if (data.conversations) {
-        setConversations(data.conversations);
-      }
-    });
+      newSocket.on('connected', (data) => {
+        console.log('🎉 Messaging service connected:', data);
+        if (data.conversations) {
+          setConversations(data.conversations);
+        }
+      });
 
     // Real-time message events
-    newSocket.on('new_message', (messageData) => {
-      console.log('📨 New message received:', messageData);
-      const hydratedMessage = normalizeMessageAttachments(messageData);
+      newSocket.on('new_message', (messageData) => {
+        console.log('📨 New message received:', messageData);
+        const hydratedMessage = normalizeMessageAttachments(messageData);
+        const activeConversation = selectedConversationRef.current;
 
-      // Add to messages if it's for the current conversation
-      if (
-        selectedConversation &&
-        messageData.conversationId === selectedConversation.id
-      ) {
-        setMessages((prev) => {
-          // If an optimistic message exists with the same clientId, replace it
-          const clientId = hydratedMessage.clientId;
-          if (clientId) {
-            const index = prev.findIndex((m) => m.id === clientId);
-            if (index !== -1) {
-              const updated = [...prev];
-              updated[index] = { ...hydratedMessage, status: 'sent' };
-              return updated;
+        if (
+          activeConversation &&
+          messageData.conversationId === activeConversation.id
+        ) {
+          setMessages((prev) => {
+            const { clientId } = hydratedMessage;
+            if (clientId) {
+              const index = prev.findIndex((m) => m.id === clientId);
+              if (index !== -1) {
+                const updated = [...prev];
+                updated[index] = { ...hydratedMessage, status: 'sent' };
+                return updated;
+              }
             }
-          }
-          return [...prev, hydratedMessage];
-        });
-      }
+            return [...prev, hydratedMessage];
+          });
+        }
 
-      // Update conversation's last message
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.id === hydratedMessage.conversationId
-            ? {
-              ...conv,
-              lastMessage: hydratedMessage,
-              updatedAt: hydratedMessage.createdAt,
-            }
-            : conv,
-        ),
-      );
-    });
+        setConversations((prev) =>
+          prev.map((conv) =>
+            conv.id === hydratedMessage.conversationId
+              ? {
+                ...conv,
+                lastMessage: hydratedMessage,
+                updatedAt: hydratedMessage.createdAt,
+              }
+              : conv,
+          ),
+        );
+      });
 
     // Typing indicators
     newSocket.on('user_typing', (data) => {
@@ -197,68 +205,82 @@ export const MessageProvider = ({ children }) => {
     });
 
     // Read receipts
-    newSocket.on('messages_read', (data) => {
-      console.log('📖 Messages marked as read:', data);
-      // Update message read status
-      if (
-        selectedConversation &&
-        data.conversationId === selectedConversation.id
-      ) {
-        setMessages((prev) =>
-          prev.map((msg) =>
-            data.messageIds === 'all_unread' || data.messageIds.includes(msg.id)
-              ? { ...msg, isRead: true, readAt: data.readAt }
-              : msg,
-          ),
-        );
-      }
-    });
+      newSocket.on('messages_read', (data) => {
+        console.log('📖 Messages marked as read:', data);
+        const activeConversation = selectedConversationRef.current;
+        if (
+          activeConversation &&
+          data.conversationId === activeConversation.id
+        ) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              data.messageIds === 'all_unread' || data.messageIds.includes(msg.id)
+                ? { ...msg, isRead: true, readAt: data.readAt }
+                : msg,
+            ),
+          );
+        }
+      });
 
     // User status updates
-    newSocket.on('user_status_changed', (data) => {
-      const { userId, status } = data;
-      setOnlineUsers((prev) => {
-        const newSet = new Set(prev);
-        if (status === 'online') {
-          newSet.add(userId);
-        } else {
-          newSet.delete(userId);
-        }
-        return newSet;
+      newSocket.on('user_status_changed', (data) => {
+        const { userId, status } = data;
+        setOnlineUsers((prev) => {
+          const newSet = new Set(prev);
+          if (status === 'online') {
+            newSet.add(userId);
+          } else {
+            newSet.delete(userId);
+          }
+          return newSet;
+        });
       });
-    });
 
     // Error handling
-    newSocket.on('error', (error) => {
-      console.error('🚨 WebSocket error:', error);
-    });
+      newSocket.on('error', (error) => {
+        console.error('🚨 WebSocket error:', error);
+      });
 
-    setSocket(newSocket);
-  }, [user, getToken, socket, selectedConversation]);
+      socketRef.current = newSocket;
+      setSocket(newSocket);
+    } catch (error) {
+      console.error('Failed to initialize messaging socket:', error);
+      setRealtimeIssue('Real-time connection failed. Using standard refresh mode.');
+      connectingRef.current = false;
+    }
+  }, [user]);
 
   // Disconnect WebSocket
   const disconnectWebSocket = useCallback(() => {
-    if (socket) {
+    const activeSocket = socketRef.current;
+    if (activeSocket) {
       console.log('🔌 Disconnecting WebSocket');
       try {
-        socket.removeAllListeners && socket.removeAllListeners();
+        activeSocket.removeAllListeners && activeSocket.removeAllListeners();
       } catch (error) {
         console.warn(
           'Failed to remove socket listeners before disconnect',
           error,
         );
       }
-      socket.disconnect();
+      activeSocket.disconnect();
       setSocket(null);
       setIsConnected(false);
       setRealtimeIssue(null);
     }
-  }, [socket]);
+    socketRef.current = null;
+    connectingRef.current = false;
+  }, []);
 
   useEffect(() => {
     if (user) {
       loadConversations();
       connectWebSocket();
+    } else {
+      disconnectWebSocket();
+      setConversations([]);
+      setSelectedConversation(null);
+      setMessages([]);
     }
 
     return () => {

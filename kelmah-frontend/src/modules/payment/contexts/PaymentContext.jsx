@@ -16,6 +16,7 @@ export const PaymentProvider = ({ children }) => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [serviceUnavailable, setServiceUnavailable] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -42,6 +43,20 @@ export const PaymentProvider = ({ children }) => {
 
       const [walletRes, methodsRes, transactionsRes, escrowsRes, billsRes] =
         results;
+
+      // Detect if payment service is completely unavailable (all 502/503/504)
+      const serverErrorCodes = [502, 503, 504];
+      const allDown = results.every(
+        (r) =>
+          r.status === 'rejected' &&
+          serverErrorCodes.includes(r.reason?.response?.status)
+      );
+      if (allDown) {
+        setServiceUnavailable(true);
+        setLoading(false);
+        return;
+      }
+      setServiceUnavailable(false);
 
       // Wallet (404 -> zero balance)
       if (walletRes.status === 'fulfilled') {
@@ -245,6 +260,7 @@ export const PaymentProvider = ({ children }) => {
     loading,
     actionLoading,
     error,
+    serviceUnavailable,
     walletBalance,
     paymentMethods,
     transactions,

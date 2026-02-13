@@ -1,5 +1,80 @@
 # Kelmah Frontend – Page + Security Audit
 
+## Iteration Update (Feb 13, 2026 – Notifications Context + Realtime Payload Consistency) ✅
+
+- **Scope**:
+  - `kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx`
+  - `kelmah-frontend/src/modules/notifications/services/notificationService.js`
+  - `kelmah-frontend/src/modules/notifications/components/NotificationItem.jsx` (consumer compatibility validation)
+- **Data-flow audit (UI → context → service/socket → backend)**:
+  - `NotificationsPage` and notification components consume actions/state from `NotificationContext`.
+  - Context fetches via REST (`notificationService.getNotifications`) and subscribes realtime via socket callback (`notificationService.onNotification`).
+  - Incoming realtime payloads are now normalized to same UI contract as REST list payloads before state merge.
+  - Action handlers (`markAsRead`, `markAllAsRead`, `deleteNotification`) now map cleanly to backend routes (`PATCH /notifications/:id/read`, `PATCH /notifications/read/all`, `DELETE /notifications/:id`).
+- **Root cause**:
+  - Context value/action surface drift (`deleteNotification` missing) broke component expectations.
+  - Realtime payload normalization drift from REST shape risked inconsistent rendering for live notifications.
+- **Fixes implemented**:
+  - Added provider-level `deleteNotification` action and exposed it in context value.
+  - Added unified normalization for realtime notifications (`id/title/message/link/read/date`) and duplicate-safe merge by id.
+  - Synchronized mark-all-read local state for both `read` and `readStatus`.
+  - Cleared stale socket reference on disconnect in notification service.
+- **Verification**:
+  - VS Code diagnostics: no errors in modified notification files.
+  - Remote authenticated endpoint checks passed:
+    - `/api/notifications?page=1&limit=5` → `200`
+    - `/api/notifications/preferences` → `200`
+    - `/api/notifications/unread/count` → `200`
+  - Local frontend build blocked by environment disk-space issue (`ENOSPC`), unrelated to notification code changes.
+
+## Iteration Update (Feb 13, 2026 – Messaging Reconnect Lifecycle Stabilization) ✅
+
+- **Scope**:
+  - `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`
+  - `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx` (consumer validation)
+- **Data-flow audit (UI → context → socket/service)**:
+  - User opens `/messages` → `MessagingPage` consumes `MessageContext` realtime state.
+  - `MessageContext` initializes conversations via REST and establishes socket session for authenticated user.
+  - Socket events (`new_message`, `messages_read`, typing/online updates) mutate context state consumed by page UI banners/lists.
+  - Degraded realtime mode still falls back to REST (`messagingService`) while preserving user workflow.
+- **Root cause**:
+  - Socket lifecycle callbacks were coupled to mutable conversation/socket state dependencies, causing avoidable disconnect/reconnect churn and reconnect-noise under state updates.
+- **Fixes implemented**:
+  - Introduced ref-based socket lifecycle guards and current-conversation references to keep connection setup stable and independent of conversation selection.
+  - Replaced callback-attached `_connecting` flag with explicit `connectingRef` guard.
+  - Added ref-backed token retrieval to avoid lifecycle churn from unstable callback identity changes.
+- **Verification**:
+  - VS Code diagnostics: no errors in `MessageContext.jsx`.
+  - Frontend production build passed (`npx vite build`, `built in 3m 25s`).
+  - Remote login endpoint check passed (`200`), while remote `/api/messages/conversations` probe remained non-responsive during bounded terminal check.
+
+## Iteration Update (Feb 13, 2026 – Worker Search + Bookmarks Contract Hardening) ✅
+
+- **Scope**:
+  - `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx`
+  - `kelmah-frontend/src/modules/hirer/services/hirerService.js`
+  - `kelmah-backend/services/user-service/controllers/user.controller.js`
+- **Data-flow audit (UI → state → service → gateway → microservice)**:
+  - User opens worker search page (`WorkerSearchPage` → `WorkerSearch`).
+  - `WorkerSearch` effect triggers:
+    - workers fetch: `api.get(API_ENDPOINTS.USER.WORKERS_SEARCH)` (fallback `/workers/search` on 404).
+    - bookmark hydration: `api.get(API_ENDPOINTS.USER.BOOKMARKS)` (fallback `/bookmarks` on 404).
+  - API Gateway routes `/api/workers/search` (public) and `/api/users/bookmarks` (authenticated) to user-service.
+  - User-service bookmark controllers now resolve requester from trusted gateway payload `req.user.id || req.user._id`.
+  - UI state updates: normalized worker IDs populate `savedWorkers`; worker cards reflect bookmark state consistently.
+- **Root cause**:
+  - Bookmark data flow relied on a single auth/user shape and a single response payload shape, creating fragility across environments.
+- **Fixes implemented**:
+  - Added JWT-shape precheck before bookmark hydration calls.
+  - Added robust workerId extraction for multiple bookmark payload forms (`workerIds`, `bookmarks[]`, raw arrays).
+  - Added backend requester id fallback (`id || _id`) for bookmark read/toggle handlers.
+- **Verification**:
+  - Backend syntax check passed (`node -c ...user.controller.js`).
+  - Frontend production build passed (`npx vite build`, `built in 2m 36s`).
+  - Remote checks passed:
+    - `GET /api/workers/search?query=carpenter&limit=1` → `200`
+    - `GET /api/users/bookmarks` (authenticated) → `200`
+
 ## Iteration Update (Feb 13, 2026 – Help/Docs/Community Route-Context Alignment) ✅
 
 - **Scope**:

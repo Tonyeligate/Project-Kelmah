@@ -153,7 +153,6 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
       variant={variant}
       open={variant === 'temporary' ? open : undefined}
       onClose={variant === 'temporary' ? onClose : undefined}
-      ModalProps={{ keepMounted: true }}
       aria-label="Sidebar navigation"
       sx={{
         width: 260,

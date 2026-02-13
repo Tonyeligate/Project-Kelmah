@@ -210,10 +210,15 @@ function sanitizeObject(obj, depth = 0) {
   
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === 'string') {
-      // Basic XSS prevention
+      // Comprehensive XSS prevention — strip all HTML tags and dangerous patterns
       obj[key] = value
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-        .replace(/javascript:/gi, '')
+        .replace(/<[^>]*>/g, '')                              // Strip all HTML tags
+        .replace(/javascript\s*:/gi, '')                       // javascript: URIs
+        .replace(/data\s*:[^,]*;base64/gi, '')                 // data: base64 URIs
+        .replace(/on\w+\s*=\s*(['"]?).*?\1/gi, '')            // Event handlers (onclick=, onerror=, etc.)
+        .replace(/expression\s*\(/gi, '')                      // CSS expression()
+        .replace(/url\s*\(\s*['"]?\s*javascript/gi, '')        // url(javascript:...)
+        .replace(/vbscript\s*:/gi, '')                         // vbscript: URIs
         .trim();
     } else if (typeof value === 'object' && value !== null) {
       sanitizeObject(value, depth + 1);

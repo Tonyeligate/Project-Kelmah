@@ -119,9 +119,16 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then((cache) => {
+      .then(async (cache) => {
         console.log('📦 Caching core resources for offline access');
-        return cache.addAll(PRECACHE_URLS);
+        // Cache each resource individually — SPA routes may fail and that's OK
+        const results = await Promise.allSettled(
+          PRECACHE_URLS.map((url) => cache.add(url).catch(() => null))
+        );
+        const failed = results.filter((r) => r.status === 'rejected');
+        if (failed.length > 0) {
+          console.warn(`⚠️ ${failed.length}/${PRECACHE_URLS.length} precache URLs skipped (SPA routes)`);
+        }
       })
       .then(() => fetchAndCacheGatewayStatus())
       .then(() => {

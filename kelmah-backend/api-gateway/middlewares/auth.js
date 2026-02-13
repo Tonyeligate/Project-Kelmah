@@ -4,6 +4,7 @@
  * Uses shared JWT utility for consistency across services
  */
 
+const crypto = require('crypto');
 const jwtUtils = require('../../shared/utils/jwt');
 const { User } = require('../../shared/models');
 const { AppError, AuthenticationError, AuthorizationError } = require('../../shared/utils/errorTypes');
@@ -113,8 +114,13 @@ const authenticate = async (req, res, next) => {
     };
 
     // Add authentication headers for service-to-service communication
-    req.headers['x-authenticated-user'] = JSON.stringify(req.user);
+    const userPayload = JSON.stringify(req.user);
+    req.headers['x-authenticated-user'] = userPayload;
     req.headers['x-auth-source'] = 'api-gateway';
+    // HMAC signature to prevent header spoofing on direct service access
+    const hmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET || '';
+    const signature = crypto.createHmac('sha256', hmacSecret).update(userPayload).digest('hex');
+    req.headers['x-gateway-signature'] = signature;
 
     next();
   } catch (error) {

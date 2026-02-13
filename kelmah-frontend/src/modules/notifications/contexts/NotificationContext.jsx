@@ -17,6 +17,24 @@ import notificationServiceUser, {
 import { secureStorage } from '../../../utils/secureStorage';
 const NotificationContext = createContext(null);
 
+const normalizeNotificationPayload = (notification = {}) => ({
+  ...notification,
+  id: notification?.id || notification?._id,
+  title: notification?.title || notification?.message || '',
+  message:
+    notification?.message || notification?.content || notification?.title || '',
+  link: notification?.link || notification?.actionUrl || null,
+  read:
+    typeof notification?.read === 'boolean'
+      ? notification.read
+      : Boolean(notification?.readStatus?.isRead),
+  date:
+    notification?.date ||
+    notification?.createdAt ||
+    notification?.timestamp ||
+    new Date().toISOString(),
+});
+
 export const NotificationProvider = ({ children }) => {
   // FIXED: Use standardized user normalization for consistent user data access
   const { user: rawUser } = useSelector((state) => state.auth);
@@ -139,16 +157,27 @@ export const NotificationProvider = ({ children }) => {
         } else {
           notificationService.onNotification = (payload) => {
             const normalizedPayload = {
-              ...payload,
-              id: payload?.id || payload?._id,
+              ...normalizeNotificationPayload(payload),
               read: false,
-              date:
-                payload?.date ||
-                payload?.createdAt ||
-                payload?.timestamp ||
-                new Date().toISOString(),
+              readStatus: {
+                ...(payload?.readStatus || {}),
+                isRead: false,
+              },
             };
-            setNotifications((prev) => [normalizedPayload, ...prev]);
+
+            setNotifications((prev) => {
+              const exists = prev.some(
+                (n) => (n.id || n._id) === normalizedPayload.id,
+              );
+              if (exists) {
+                return prev.map((n) =>
+                  (n.id || n._id) === normalizedPayload.id
+                    ? { ...n, ...normalizedPayload }
+                    : n,
+                );
+              }
+              return [normalizedPayload, ...prev];
+            });
           };
           notificationService.connect(token);
         }
@@ -199,10 +228,32 @@ export const NotificationProvider = ({ children }) => {
   const markAllAsRead = async () => {
     try {
       await notificationServiceUser.markAllAsRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setNotifications((prev) =>
+        prev.map((n) => ({
+          ...n,
+          read: true,
+          readStatus: {
+            ...(n.readStatus || {}),
+            isRead: true,
+            readAt: new Date().toISOString(),
+          },
+        })),
+      );
     } catch (err) {
       console.error('Failed to mark all notifications as read:', err);
       setError('Failed to update notifications.');
+    }
+  };
+
+  const deleteNotification = async (id) => {
+    try {
+      await notificationServiceUser.deleteNotification(id);
+      setNotifications((prev) =>
+        prev.filter((n) => (n.id || n._id) !== id),
+      );
+    } catch (err) {
+      console.error('Failed to delete notification:', err);
+      setError('Failed to delete notification.');
     }
   };
 
@@ -232,6 +283,7 @@ export const NotificationProvider = ({ children }) => {
     pagination,
     markAsRead,
     markAllAsRead,
+    deleteNotification,
     clearAllNotifications,
     refresh: fetchNotifications,
     showToast,

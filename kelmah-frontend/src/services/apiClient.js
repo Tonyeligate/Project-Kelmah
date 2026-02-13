@@ -11,8 +11,8 @@ const uuidv4 = () => {
     });
 };
 
-// Request deduplication map
-const pendingRequests = new Map();
+// GET request deduplication — concurrent identical GETs share one in-flight promise
+const inflightGets = new Map();
 
 // Create axios instance
 const apiClient = axios.create({
@@ -24,8 +24,8 @@ const apiClient = axios.create({
 });
 
 // Helper to generate request key for deduplication
-const getRequestKey = (config) => {
-    return `${config.method}:${config.url}:${JSON.stringify(config.params)}`;
+const getRequestKey = (method, url, params) => {
+    return `${method}:${url}:${JSON.stringify(params || '')}`;
 };
 
 // Request interceptor
@@ -40,23 +40,6 @@ apiClient.interceptors.request.use(
             config.headers.Authorization = `Bearer ${token}`;
         }
 
-        // Request Deduplication for GET requests
-        if (config.method === 'get') {
-            const key = getRequestKey(config);
-            if (pendingRequests.has(key)) {
-                return pendingRequests.get(key);
-            }
-
-            // Create a promise that will be resolved/rejected by the actual request
-            const source = axios.CancelToken.source();
-            config.cancelToken = source.token;
-
-            // Store the promise in the map (we can't easily share the promise here with axios interceptors structure
-            // without more complex logic, so for now we'll skip strict promise sharing in this simple implementation
-            // and focus on the retry/auth logic which is more critical.
-            // True deduplication usually requires wrapping the axios call, not just interceptors.)
-        }
-
         return config;
     },
     (error) => {
@@ -67,6 +50,11 @@ apiClient.interceptors.request.use(
 // Response interceptor
 apiClient.interceptors.response.use(
     (response) => {
+        // Clean up dedup entry on success
+        if (response.config?.method === 'get') {
+            const key = getRequestKey('get', response.config.url, response.config.params);
+            inflightGets.delete(key);
+        }
         return response;
     },
     async (error) => {
@@ -125,9 +113,10 @@ const retryRequest = async (fn, retries = 3, delay = 1000) => {
     try {
         return await fn();
     } catch (error) {
-        // Don't retry 4xx errors (client errors)
+        // Don't retry 4xx errors (client errors) or sleeping backend (502/503/504)
         if (
             retries === 0 ||
+            error.isBackendSleeping ||
             (error.response &&
                 error.response.status >= 400 &&
                 error.response.status < 500)
@@ -140,9 +129,22 @@ const retryRequest = async (fn, retries = 3, delay = 1000) => {
     }
 };
 
+// Deduplicated GET — concurrent calls to the same URL share one in-flight promise
+const deduplicatedGet = (url, config) => {
+    const key = getRequestKey('get', url, config?.params);
+    if (inflightGets.has(key)) {
+        return inflightGets.get(key);
+    }
+    const promise = retryRequest(() => apiClient.get(url, config)).finally(() => {
+        inflightGets.delete(key);
+    });
+    inflightGets.set(key, promise);
+    return promise;
+};
+
 // Export methods — only GET/HEAD use retry logic; mutations are not retried
 export const api = {
-    get: (url, config) => retryRequest(() => apiClient.get(url, config)),
+    get: deduplicatedGet,
     head: (url, config) => retryRequest(() => apiClient.head(url, config)),
     post: (url, data, config) => apiClient.post(url, data, config),
     put: (url, data, config) => apiClient.put(url, data, config),

@@ -65,8 +65,9 @@ class NotificationService {
   disconnect() {
     if (this.socket) {
       this.socket.disconnect();
-      this.isConnected = false;
+      this.socket = null;
     }
+    this.isConnected = false;
   }
 
   // Get notifications
@@ -82,7 +83,7 @@ class NotificationService {
           retryCondition: (error) => {
             // Don't retry on 429 (rate limit) or 4xx errors except 408, 429, 503
             if (error.response) {
-              const status = error.response.status;
+              const { status } = error.response;
               return status === 408 || status === 503; // Only retry timeouts and service unavailable
             }
             return false;

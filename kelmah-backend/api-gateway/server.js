@@ -184,16 +184,15 @@ const corsOriginHandler = (origin, callback) => {
     return callback(new Error('CORS not configured'));
   }
 
-  // Allow Vercel preview URLs
+  // Allow Vercel preview URLs — restricted to Kelmah project deployments only
   const vercelPatterns = [
-    /^https:\/\/.*\.vercel\.app$/,
-    /^https:\/\/.*-kelmahs-projects\.vercel\.app$/,
-    /^https:\/\/project-kelmah.*\.vercel\.app$/,
-    /^https:\/\/kelmah-frontend.*\.vercel\.app$/
+    /^https:\/\/kelmah-frontend(-[a-z0-9]+)?\.vercel\.app$/,
+    /^https:\/\/kelmah-frontend-[a-z0-9]+-kelmahs-projects\.vercel\.app$/,
+    /^https:\/\/project-kelmah(-[a-z0-9]+)?\.vercel\.app$/
   ];
 
-  // Allow LocalTunnel domains
-  const localtunnelPatterns = [
+  // Allow LocalTunnel / ngrok domains only in non-production
+  const localtunnelPatterns = process.env.NODE_ENV === 'production' ? [] : [
     /^https:\/\/.*\.loca\.lt$/,
     /^https:\/\/.*\.ngrok-free\.app$/
   ];
@@ -988,7 +987,7 @@ app.use('/api/admin/reviews',
     const proxy = createProxyMiddleware({
       target: services.review,
       changeOrigin: true,
-      pathRewrite: { '^/api/admin/reviews': '/api/admin/reviews' }
+      pathRewrite: (path) => `/api/admin/reviews${path}`
     });
     return proxy(req, res, next);
   }
@@ -1024,7 +1023,7 @@ app.use('/api/reviews',
     const proxy = createProxyMiddleware({
       target: services.review,
       changeOrigin: true,
-      pathRewrite: { '^/api/reviews': '/api/reviews' },
+      pathRewrite: (path) => `/api/reviews${path}`,
       onProxyReq: (proxyReq, req) => {
         if (req.user) {
           proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
@@ -1033,7 +1032,9 @@ app.use('/api/reviews',
       },
       onError: (err, req, res) => {
         logger.error('Review service error:', err);
-        res.status(503).json({ error: 'Review service unavailable' });
+        if (!res.headersSent) {
+          res.status(503).json({ error: 'Review service unavailable' });
+        }
       }
     });
     return proxy(req, res, next);

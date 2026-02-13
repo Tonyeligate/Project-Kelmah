@@ -55,19 +55,20 @@ const createErrorHandler = (logger) => {
       code = err.code || 'HTTP_ERROR';
     }
     
-    // Don't expose internal errors in production
-    if (process.env.NODE_ENV === 'production' && statusCode === 500) {
+    // Don't expose internal errors in production (default to production-safe)
+    const isDevMode = process.env.NODE_ENV === 'development';
+    if (!isDevMode && statusCode === 500) {
       message = 'An unexpected error occurred';
     }
     
-    // Send error response
+    // Send error response — only include stack traces in explicit development mode
     res.status(statusCode).json({
       success: false,
       message,
       code,
       requestId: req.id,
       timestamp: new Date().toISOString(),
-      ...(process.env.NODE_ENV === 'development' && {
+      ...(isDevMode && {
         stack: err.stack,
         details: err.details
       })

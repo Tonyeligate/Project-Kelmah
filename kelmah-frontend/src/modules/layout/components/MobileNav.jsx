@@ -241,7 +241,6 @@ const MobileNav = ({ open, onClose }) => {
       open={open}
       onClose={onClose}
       variant="temporary"
-      ModalProps={{ keepMounted: true }}
     >
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
