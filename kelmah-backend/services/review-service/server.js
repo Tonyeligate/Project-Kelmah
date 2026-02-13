@@ -277,12 +277,23 @@ if (keepAliveManager) {
 
 // Review routes
 // ⚠️ ROUTE ORDER: Specific paths before parameterized
+const requireAdmin = (req, res, next) => {
+  const role = req.user?.role;
+  if (role !== 'admin' && role !== 'super_admin') {
+    return res.status(403).json({
+      success: false,
+      error: { message: 'Admin access required', code: 'FORBIDDEN' }
+    });
+  }
+  return next();
+};
+
 app.post('/api/reviews', verifyGatewayRequest, reviewController.submitReview);
 app.get('/api/reviews/worker/:workerId/eligibility', verifyGatewayRequest, reviewController.checkEligibility);
 app.get('/api/reviews/worker/:workerId', reviewController.getWorkerReviews);
 app.get('/api/reviews/job/:jobId', reviewController.getJobReviews);
 app.get('/api/reviews/user/:userId', reviewController.getUserReviews);
-app.get('/api/reviews/analytics', verifyGatewayRequest, analyticsController.getReviewAnalytics);
+app.get('/api/reviews/analytics', verifyGatewayRequest, requireAdmin, analyticsController.getReviewAnalytics);
 app.get('/api/reviews/:reviewId', reviewController.getReview);
 app.put('/api/reviews/:reviewId/response', verifyGatewayRequest, reviewController.addReviewResponse);
 app.post('/api/reviews/:reviewId/helpful', verifyGatewayRequest, reviewController.voteHelpful);
@@ -293,7 +304,7 @@ app.get('/api/ratings/worker/:workerId', ratingController.getWorkerRating);
 app.get('/api/ratings/worker/:workerId/signals', ratingController.getWorkerRankSignals);
 
 // Analytics routes
-app.put('/api/reviews/:reviewId/moderate', verifyGatewayRequest, analyticsController.moderateReview);
+app.put('/api/reviews/:reviewId/moderate', verifyGatewayRequest, requireAdmin, analyticsController.moderateReview);
 
 // Admin routes (existing)
 app.use('/api/admin', require('./routes/admin.routes'));
