@@ -86,6 +86,56 @@ const ProfileLink = styled(Box)(({ theme }) => ({
   },
 }));
 
+const toDisplayText = (value, fallback = '') => {
+  if (typeof value === 'string') return value.trim() || fallback;
+  if (typeof value === 'number') return String(value);
+  return fallback;
+};
+
+const getJobLocationLabel = (job) => {
+  const locationValue = job?.location;
+
+  if (typeof locationValue === 'string') {
+    return locationValue.trim() || 'Location not specified';
+  }
+
+  if (locationValue && typeof locationValue === 'object') {
+    const address = toDisplayText(locationValue.address);
+    const city = toDisplayText(locationValue.city);
+    const region = toDisplayText(locationValue.region);
+    const type = toDisplayText(locationValue.type);
+
+    if (address) return address;
+    if (city) return city;
+    if (region) return region;
+    if (type) {
+      if (type.toLowerCase() === 'remote') return 'Remote';
+      return type;
+    }
+  }
+
+  return 'Location not specified';
+};
+
+const normalizeSkillLabels = (skills) => {
+  if (!Array.isArray(skills)) return [];
+
+  return skills
+    .map((skill) => {
+      if (typeof skill === 'string') return skill.trim();
+      if (skill && typeof skill === 'object') {
+        return (
+          toDisplayText(skill.name) ||
+          toDisplayText(skill.label) ||
+          toDisplayText(skill.type) ||
+          ''
+        );
+      }
+      return '';
+    })
+    .filter(Boolean);
+};
+
 const JobDetailsPage = () => {
   const location = useLocation();
   const { search } = location;
@@ -98,6 +148,8 @@ const JobDetailsPage = () => {
   const [saved, setSaved] = useState(false);
   const [applicationOpen, setApplicationOpen] = useState(false);
   const [authRequired, setAuthRequired] = useState(false);
+  const locationLabel = getJobLocationLabel(job);
+  const skillLabels = normalizeSkillLabels(job?.skills);
 
   useEffect(() => {
     const token = secureStorage.getAuthToken();
@@ -371,7 +423,7 @@ const JobDetailsPage = () => {
                   >
                     <iframe
                       title="Job Location"
-                      src={`${EXTERNAL_SERVICES.GOOGLE_MAPS.EMBED}?q=${encodeURIComponent(job.location?.address || job.location?.city || job.location || 'Ghana')}&output=embed`}
+                      src={`${EXTERNAL_SERVICES.GOOGLE_MAPS.EMBED}?q=${encodeURIComponent(locationLabel || 'Ghana')}&output=embed`}
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}
@@ -399,10 +451,7 @@ const JobDetailsPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <LocationOn sx={{ color: '#FFD700', mr: 0.5 }} />
                       <Typography variant="body1" sx={{ color: '#fff' }}>
-                        {job.location?.address ||
-                          job.location?.city ||
-                          job.location ||
-                          'Location not specified'}
+                        {locationLabel}
                       </Typography>
                     </Box>
 
@@ -497,7 +546,7 @@ const JobDetailsPage = () => {
                     </Typography>
 
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                      {(job?.skills || []).map((skill, index) => (
+                      {skillLabels.map((skill, index) => (
                         <SkillChip key={index} label={skill} />
                       ))}
                     </Box>

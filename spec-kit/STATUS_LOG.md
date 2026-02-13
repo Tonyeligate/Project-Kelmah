@@ -1,5 +1,21 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Runtime Hotfix (Feb 13, 2026 – Job Details React #31 on "See Job") ✅
+- 🎯 **Scope Restatement**: Investigate and fix production crash on job details page when hirers click **See Job**.
+- 🔍 **Root cause**:
+  - `JobDetailsPage.jsx` rendered `job.location` directly in JSX fallback paths.
+  - For some records, `location` is an object shape like `{ type: 'remote' }`.
+  - React attempted to render that object as a child, causing minified React error #31 (`object with keys {type}`).
+- ✅ **Fixes applied**:
+  - Added safe text normalization helpers in `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`:
+    - `toDisplayText()`
+    - `getJobLocationLabel()`
+    - `normalizeSkillLabels()`
+  - Replaced direct location render with normalized `locationLabel`.
+  - Hardened skills chip rendering to map object skills (`{ name }`, `{ label }`, `{ type }`) into string labels.
+- 🧪 **Verification**:
+  - Frontend production build succeeds after patch: `npx vite build` (`✓ built in 3m 25s`).
+
 ### Investigation + Fix (Feb 13, 2026 – Profile Page Slow Load + Console Flood) ✅
 - 🎯 **Scope Restatement**: Resolve production profile page slowness and repeated console warnings (`Profile initialization completed with fallback data` loops, stale-while-revalidate fetch noise, socket churn side-effects).
 - 🔍 **Root causes identified**:
