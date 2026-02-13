@@ -1,5 +1,28 @@
 # Kelmah Frontend – Page + Security Audit
 
+## Iteration Update (Feb 13, 2026 – Notification Link Routing Consistency) ✅
+
+- **Scope**:
+  - `kelmah-frontend/src/modules/notifications/services/notificationService.js`
+  - `kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx`
+  - `kelmah-frontend/src/routes/config.jsx` (route compatibility audit)
+- **Data-flow audit (backend payload → frontend normalization → route navigation)**:
+  - Messaging/payment services persist notifications with optional `actionUrl` + `relatedEntity` metadata.
+  - Frontend notifications service/context normalize payloads before rendering in notifications pages.
+  - Notification cards navigate via `notification.link` in `NotificationsPage`.
+  - Link-normalization now translates backend path variants into valid frontend route targets.
+- **Root cause**:
+  - Backend message notification links used `/messages/:conversationId`, but frontend route surface expects `/messages?conversation=...` (single page with query-based selection).
+  - Some payment/contract notification payloads can lack direct link and need deterministic route inference.
+- **Fixes implemented**:
+  - Added route-aware `normalizeNotificationLink` for both REST and realtime notification normalization paths.
+  - Added mapping for message links and fallback route inference for contract/payment notification categories.
+  - Kept absolute external URLs unchanged.
+- **Verification**:
+  - VS Code diagnostics: no errors in modified files.
+  - Remote notifications endpoints healthy (authenticated `200` responses for list/preferences/unread count).
+  - Local build command remains blocked by environment storage limit (`ENOSPC`).
+
 ## Iteration Update (Feb 13, 2026 – Notifications Context + Realtime Payload Consistency) ✅
 
 - **Scope**:

@@ -40,8 +40,12 @@ const normalizeNotificationLink = (notification = {}) => {
     return `/contracts/${entityId}`;
   }
 
-  if ((entityType === 'payment' || entityType === 'escrow') && entityId) {
+  if (entityType === 'escrow' && entityId) {
     return `/payment/escrow/${entityId}`;
+  }
+
+  if (entityType === 'payment') {
+    return '/wallet';
   }
 
   if (type === 'contract_update') {

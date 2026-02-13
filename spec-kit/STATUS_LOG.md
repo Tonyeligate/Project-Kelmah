@@ -1,5 +1,25 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Implementation Update (Feb 13, 2026 – Notification Link Routing Consistency) ✅
+- 🎯 **Scope Restatement**: Ensure payment/contract/message notification links resolve to valid frontend routes from both REST and realtime payloads.
+- 🔍 **Root causes identified**:
+  - Backend message notifications emit `/messages/:conversationId`, but frontend route selection is query-based (`/messages?conversation=...`).
+  - Contract/payment notifications may not include a directly routable `link` and need deterministic fallback route mapping.
+- ✅ **Fixes applied**:
+  - Added `normalizeNotificationLink` in notifications service and context normalization paths.
+  - Rewrote message links from `/messages/:id` to `/messages?conversation=:id`.
+  - Added fallback route inference:
+    - `contract`/`contract_update` → `/contracts/:id` or `/contracts`
+    - `payment`/`escrow`/`payment_received` → `/payment/escrow/:id` or `/wallet`
+  - Preserved external absolute URLs without rewriting.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/notifications/services/notificationService.js`
+  - `kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx`
+- 🧪 Verification:
+  - VS Code diagnostics: no errors in changed files.
+  - Remote authenticated checks: `/api/notifications`, `/api/notifications/preferences`, `/api/notifications/unread/count` all returned `200`.
+  - Local `vite build` remains environment-blocked by `ENOSPC` (disk full), unrelated to code semantics.
+
 ### Implementation Update (Feb 13, 2026 – Notifications Context/Realtime Consistency Stabilization) ✅
 - 🎯 **Scope Restatement**: Continue iterative frontend hardening by auditing notifications context + realtime socket payload handling against page/component consumers.
 - 🔍 **Dry-audit findings**:
