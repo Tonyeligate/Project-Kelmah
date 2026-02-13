@@ -59,7 +59,7 @@ const JobCreationForm = ({ open, onClose }) => {
       currency: 'GHS',
       paymentType: 'fixed',
       location: {
-        type: 'on-site',
+        type: 'onsite',
         address: '',
         city: '',
         region: '',
@@ -190,6 +190,12 @@ const JobCreationForm = ({ open, onClose }) => {
     'Upper East',
     'Upper West',
     'Brong-Ahafo',
+    'Oti',
+    'Bono East',
+    'North East',
+    'Savannah',
+    'Western North',
+    'Ahafo',
   ];
 
   const ghanaCities = [
@@ -386,7 +392,11 @@ const JobCreationForm = ({ open, onClose }) => {
               <Controller
                 name="title"
                 control={control}
-                rules={{ required: 'Job title is required' }}
+                rules={{
+                  required: 'Job title is required',
+                  minLength: { value: 5, message: 'Title must be at least 5 characters' },
+                  maxLength: { value: 100, message: 'Title cannot exceed 100 characters' },
+                }}
                 render={({ field }) => (
                   <TextField
                     {...field}
@@ -568,7 +578,6 @@ const JobCreationForm = ({ open, onClose }) => {
                           >
                             <MenuItem value="fixed">Fixed Price</MenuItem>
                             <MenuItem value="hourly">Hourly Rate</MenuItem>
-                            <MenuItem value="daily">Daily Rate</MenuItem>
                           </Select>
                         </FormControl>
                       )}
@@ -732,7 +741,7 @@ const JobCreationForm = ({ open, onClose }) => {
                               },
                             }}
                           >
-                            <MenuItem value="on-site">On-Site</MenuItem>
+                            <MenuItem value="onsite">On-Site</MenuItem>
                             <MenuItem value="remote">Remote</MenuItem>
                             <MenuItem value="hybrid">Hybrid</MenuItem>
                           </Select>
@@ -823,7 +832,11 @@ const JobCreationForm = ({ open, onClose }) => {
               <Controller
                 name="description"
                 control={control}
-                rules={{ required: 'Job description is required' }}
+                rules={{
+                  required: 'Job description is required',
+                  minLength: { value: 20, message: 'Description must be at least 20 characters' },
+                  maxLength: { value: 5000, message: 'Description cannot exceed 5000 characters' },
+                }}
                 render={({ field }) => (
                   <TextField
                     {...field}
@@ -965,13 +978,13 @@ const JobCreationForm = ({ open, onClose }) => {
                           },
                         }}
                       >
-                        <MenuItem value="entry">
+                        <MenuItem value="beginner">
                           Entry Level (0-2 years)
                         </MenuItem>
                         <MenuItem value="intermediate">
                           Intermediate (2-5 years)
                         </MenuItem>
-                        <MenuItem value="senior">Senior (5-10 years)</MenuItem>
+                        <MenuItem value="advanced">Senior (5-10 years)</MenuItem>
                         <MenuItem value="expert">Expert (10+ years)</MenuItem>
                       </Select>
                     </FormControl>

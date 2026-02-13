@@ -1130,9 +1130,8 @@ const getJobById = async (req, res, next) => {
       return errorResponse(res, 404, "Job not found");
     }
 
-    // Increment view count
-    job.viewCount += 1;
-    await job.save();
+    // Increment view count atomically (avoids full-document write + race conditions)
+    Job.findByIdAndUpdate(req.params.id, { $inc: { viewCount: 1 } }).catch(() => {});
 
     // Transform job data to match frontend expectations
     const transformedJob = {
@@ -1262,7 +1261,7 @@ const deleteJob = async (req, res, next) => {
       );
     }
 
-    await job.remove();
+    await Job.findByIdAndDelete(req.params.id);
 
     return successResponse(res, 200, "Job deleted successfully");
   } catch (error) {
@@ -1480,7 +1479,7 @@ const getDashboardJobs = async (req, res) => {
   let recentJobs = [];
 
   try {
-    recentJobs = await Job.find({ status: 'Open', visibility: 'public' })
+    recentJobs = await Job.find({ status: 'open', visibility: 'public' })
       .sort({ createdAt: -1 })
       .limit(10)
       .populate('hirer', 'firstName lastName companyName')
@@ -1503,7 +1502,7 @@ const getDashboardJobs = async (req, res) => {
   }
 
   const [totalOpenResult, totalTodayResult] = await Promise.allSettled([
-    Job.countDocuments({ status: 'Open', visibility: 'public' }),
+    Job.countDocuments({ status: 'open', visibility: 'public' }),
     Job.countDocuments({
       status: 'open',
       createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) },
@@ -1679,7 +1678,7 @@ const getJobRecommendations = async (req, res, next) => {
     }
 
     const query = {
-      status: 'Open',
+      status: 'open',
       visibility: 'public',
       'applications.applicant': { $ne: workerId },
     };
@@ -2386,9 +2385,16 @@ const applyToJob = async (req, res, next) => {
     const job = await Job.findById(jobId);
     if (!job) return errorResponse(res, 404, 'Job not found');
 
-    // Only allow applying to open/public jobs
-    if (job.status !== 'Open' || job.visibility === 'private') {
+    // Only allow applying to open/public jobs (canonical status is lowercase)
+    const jobStatus = String(job.status || '').toLowerCase();
+    if (jobStatus !== 'open' || job.visibility === 'private') {
       return errorResponse(res, 400, 'Job is not open for applications');
+    }
+
+    // Check for duplicate application before creating
+    const existingApp = await Application.findOne({ job: jobId, worker: workerId });
+    if (existingApp) {
+      return errorResponse(res, 409, 'You already applied to this job');
     }
 
     const app = await Application.create({

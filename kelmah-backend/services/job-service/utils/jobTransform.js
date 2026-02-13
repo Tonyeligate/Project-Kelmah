@@ -75,7 +75,11 @@ function transformJobForFrontend(job) {
       : 'Ghana');
 
   // Transform job object
+  // IMPORTANT: Spread raw job FIRST so our normalized fields take precedence
   const transformed = {
+    // Raw fields as base (overridden by explicit mappings below)
+    ...job,
+
     // IDs
     _id: jobId,
     id: jobId,
@@ -150,9 +154,6 @@ function transformJobForFrontend(job) {
 
     // Bidding info
     bidding: job.bidding || null,
-
-    // Keep original fields for backward compatibility
-    ...job
   };
 
   return transformed;

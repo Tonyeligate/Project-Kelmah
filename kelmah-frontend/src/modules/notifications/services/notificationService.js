@@ -9,6 +9,44 @@ import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 import { WS_CONFIG } from '../../../config/environment';
 import { getWebSocketUrl } from '../../../services/socketUrl';
 
+const normalizeNotificationLink = (notification = {}) => {
+  const rawLink = notification?.link || notification?.actionUrl || null;
+  const entityType = notification?.relatedEntity?.type;
+  const entityId = notification?.relatedEntity?.id;
+  const type = notification?.type;
+
+  if (typeof rawLink === 'string' && rawLink.length > 0) {
+    if (/^https?:\/\//i.test(rawLink)) {
+      return rawLink;
+    }
+
+    const messageMatch = rawLink.match(/^\/messages\/([^/?#]+)$/);
+    if (messageMatch) {
+      return `/messages?conversation=${messageMatch[1]}`;
+    }
+
+    return rawLink;
+  }
+
+  if (entityType === 'contract' && entityId) {
+    return `/contracts/${entityId}`;
+  }
+
+  if ((entityType === 'payment' || entityType === 'escrow') && entityId) {
+    return `/payment/escrow/${entityId}`;
+  }
+
+  if (type === 'contract_update') {
+    return '/contracts';
+  }
+
+  if (type === 'payment_received') {
+    return '/wallet';
+  }
+
+  return null;
+};
+
 class NotificationService {
   constructor() {
     // Use messaging service for notifications (now that CORS is fixed)
@@ -99,7 +137,7 @@ class NotificationService {
           notification?.content ||
           notification?.title ||
           '',
-        link: notification?.link || notification?.actionUrl || null,
+        link: normalizeNotificationLink(notification),
         read:
           typeof notification?.read === 'boolean'
             ? notification.read

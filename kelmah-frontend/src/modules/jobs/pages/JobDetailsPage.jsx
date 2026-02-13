@@ -42,6 +42,7 @@ import {
 } from '../services/jobSlice';
 import { secureStorage } from '../../../utils/secureStorage';
 import { EXTERNAL_SERVICES } from '../../../config/services';
+import jobsApi from '../services/jobsService';
 
 // Styled components
 const DetailsPaper = styled(Paper)(({ theme }) => ({
@@ -146,29 +147,20 @@ const JobDetailsPage = () => {
   const loading = useSelector(selectJobsLoading);
   const error = useSelector(selectJobsError);
   const [saved, setSaved] = useState(false);
+  const [savingBookmark, setSavingBookmark] = useState(false);
   const [applicationOpen, setApplicationOpen] = useState(false);
-  const [authRequired, setAuthRequired] = useState(false);
   const locationLabel = getJobLocationLabel(job);
   const skillLabels = normalizeSkillLabels(job?.skills);
+  const isAuthenticated = !!secureStorage.getAuthToken();
 
   useEffect(() => {
-    const token = secureStorage.getAuthToken();
-    if (!token) {
-      console.log(
-        '🔒 No auth token found, authentication required for job details',
-      );
-      setAuthRequired(true);
-      return;
-    }
-
     // Validate jobId before fetching
     if (!id || id === 'undefined' || id === 'null') {
       console.error('❌ Invalid job ID:', id);
-      setAuthRequired(false); // Don't show auth message, show error instead
       return;
     }
 
-    // Only fetch job if authenticated and valid jobId
+    // Fetch job details (public endpoint — no auth required for viewing)
     dispatch(fetchJobById(id));
   }, [dispatch, id]);
 
@@ -190,6 +182,10 @@ const JobDetailsPage = () => {
   }, [search]);
 
   const handleApplyNow = () => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location.pathname + '?apply=true' } });
+      return;
+    }
     setApplicationOpen(true);
   };
 
@@ -202,9 +198,26 @@ const JobDetailsPage = () => {
     navigate(`/messages?participantId=${job.hirer?._id || job.hirer?.id}`);
   };
 
-  const handleToggleSave = () => {
-    setSaved(!saved);
-    // In a real app, would call API to save/unsave the job
+  const handleToggleSave = async () => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location.pathname } });
+      return;
+    }
+    if (savingBookmark) return;
+    setSavingBookmark(true);
+    try {
+      if (saved) {
+        await jobsApi.unsaveJob(id);
+        setSaved(false);
+      } else {
+        await jobsApi.saveJob(id);
+        setSaved(true);
+      }
+    } catch (err) {
+      console.error('Failed to toggle bookmark:', err);
+    } finally {
+      setSavingBookmark(false);
+    }
   };
 
   const handleShareJob = () => {
@@ -226,53 +239,6 @@ const JobDetailsPage = () => {
       state: { from: location.pathname + location.search },
     });
   };
-
-  // Show authentication required message if no token
-  if (authRequired) {
-    return (
-      <Container maxWidth="lg">
-        <Box
-          sx={{
-            mt: 4,
-            minHeight: '60vh',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            textAlign: 'center',
-          }}
-        >
-          <Paper elevation={3} sx={{ p: { xs: 2.5, sm: 3, md: 4 }, maxWidth: 500 }}>
-            <Typography variant="h5" gutterBottom color="primary">
-              Authentication Required
-            </Typography>
-            <Typography variant="body1" paragraph>
-              Please sign in to view job details and apply for positions.
-            </Typography>
-            <Box
-              sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}
-            >
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSignIn}
-                size="large"
-              >
-                Sign In
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={() => navigate(-1)}
-                size="large"
-              >
-                Go Back
-              </Button>
-            </Box>
-          </Paper>
-        </Box>
-      </Container>
-    );
-  }
 
   if (loading) {
     // Show skeleton placeholders for job details
@@ -497,10 +463,10 @@ const JobDetailsPage = () => {
                     label={job?.status || 'Unknown'}
                     sx={{
                       background:
-                        job?.status === 'Open'
+                        String(job?.status || '').toLowerCase() === 'open'
                           ? 'rgba(76, 175, 80, 0.2)'
                           : 'rgba(255, 152, 0, 0.2)',
-                      color: job?.status === 'Open' ? '#4caf50' : '#ff9800',
+                      color: String(job?.status || '').toLowerCase() === 'open' ? '#4caf50' : '#ff9800',
                       fontWeight: 'bold',
                     }}
                   />
