@@ -32,6 +32,16 @@ const normalizeNotificationLink = (notification = {}) => {
       return rawLink;
     }
 
+    const legacyJobMatch = rawLink.match(/^\/job\/([^/?#]+)$/);
+    if (legacyJobMatch) {
+      return `/jobs/${legacyJobMatch[1]}`;
+    }
+
+    const jobApplicationsMatch = rawLink.match(/^\/jobs\/([^/?#]+)\/applications(?:\?.*)?$/);
+    if (jobApplicationsMatch) {
+      return `/jobs/${jobApplicationsMatch[1]}`;
+    }
+
     const messageMatch = rawLink.match(/^\/messages\/([^/?#]+)$/);
     if (messageMatch) {
       return `/messages?conversation=${messageMatch[1]}`;
@@ -42,6 +52,10 @@ const normalizeNotificationLink = (notification = {}) => {
 
   if (entityType === 'contract' && entityId) {
     return `/contracts/${entityId}`;
+  }
+
+  if (entityType === 'job' && entityId) {
+    return `/jobs/${entityId}`;
   }
 
   if (entityType === 'escrow' && entityId) {
@@ -58,6 +72,10 @@ const normalizeNotificationLink = (notification = {}) => {
 
   if (type === 'payment_received') {
     return '/wallet';
+  }
+
+  if (type === 'job_application' || type === 'job_offer') {
+    return '/jobs';
   }
 
   return null;

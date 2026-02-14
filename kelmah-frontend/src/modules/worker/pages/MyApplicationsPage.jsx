@@ -101,47 +101,55 @@ const MyApplicationsPage = () => {
   };
 
   // Filter applications based on current tab
+  // Backend Application model statuses: pending, under_review, accepted, rejected, withdrawn
   const filteredApplications = Array.isArray(applications)
     ? applications.filter((app) => {
       if (tabValue === 0) return true; // All applications
       if (tabValue === 1) return app.status === 'pending';
-      if (tabValue === 2) return app.status === 'interview';
-      if (tabValue === 3) return app.status === 'offer';
+      if (tabValue === 2) return app.status === 'under_review';
+      if (tabValue === 3) return app.status === 'accepted';
       if (tabValue === 4) return app.status === 'rejected';
+      if (tabValue === 5) return app.status === 'withdrawn';
       return false;
     })
     : [];
 
-  // Status label and color mapping
+  // Status label and color mapping — matches Application model enum
   const getStatusInfo = (status) => {
     switch (status) {
       case 'pending':
         return {
-          label: 'Application Pending',
+          label: 'Pending',
           color: 'info',
           icon: <AccessTimeIcon fontSize="small" />,
         };
-      case 'interview':
+      case 'under_review':
         return {
-          label: 'Interview Scheduled',
+          label: 'Under Review',
           color: 'primary',
           icon: <PersonIcon fontSize="small" />,
         };
-      case 'offer':
+      case 'accepted':
         return {
-          label: 'Offer Received',
+          label: 'Accepted',
           color: 'success',
           icon: <CheckCircleIcon fontSize="small" />,
         };
       case 'rejected':
         return {
-          label: 'Application Rejected',
+          label: 'Rejected',
           color: 'error',
+          icon: <CancelIcon fontSize="small" />,
+        };
+      case 'withdrawn':
+        return {
+          label: 'Withdrawn',
+          color: 'warning',
           icon: <CancelIcon fontSize="small" />,
         };
       default:
         return {
-          label: 'Unknown',
+          label: status || 'Unknown',
           color: 'default',
           icon: <AccessTimeIcon fontSize="small" />,
         };
@@ -215,7 +223,7 @@ const MyApplicationsPage = () => {
         {/* Status Tabs */}
         <Box sx={{ px: 2, pt: 2 }}>
           <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 2 }}>
-            {['All', 'Pending', 'Interview', 'Offer', 'Rejected'].map(
+            {['All', 'Pending', 'Under Review', 'Accepted', 'Rejected', 'Withdrawn'].map(
               (status, index) => (
                 <Chip
                   key={status}
@@ -267,9 +275,10 @@ const MyApplicationsPage = () => {
               const statusInfo = getStatusInfo(application.status);
               const statusColors = {
                 pending: '#ff9800',
-                interview: '#2196f3',
-                offer: '#4caf50',
+                under_review: '#2196f3',
+                accepted: '#4caf50',
                 rejected: '#f44336',
+                withdrawn: '#9e9e9e',
               };
 
               return (
@@ -407,9 +416,10 @@ const MyApplicationsPage = () => {
         >
           <Tab label="All Applications" />
           <Tab label="Pending" />
-          <Tab label="Interviews" />
-          <Tab label="Offers" />
+          <Tab label="Under Review" />
+          <Tab label="Accepted" />
           <Tab label="Rejected" />
+          <Tab label="Withdrawn" />
         </Tabs>
 
         {loading ? (
@@ -427,7 +437,7 @@ const MyApplicationsPage = () => {
             <Typography color="textSecondary" paragraph>
               You haven't applied to any jobs in this category yet
             </Typography>
-            <Button variant="contained" color="primary">
+            <Button variant="contained" color="primary" onClick={() => navigate('/worker/find-work')}>
               Browse Jobs
             </Button>
           </Box>
@@ -437,7 +447,7 @@ const MyApplicationsPage = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>Job</TableCell>
-                  <TableCell>Company</TableCell>
+                  <TableCell>Category</TableCell>
                   <TableCell>Applied Date</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell align="right">Actions</TableCell>
@@ -448,28 +458,19 @@ const MyApplicationsPage = () => {
                   const statusInfo = getStatusInfo(application.status);
 
                   return (
-                    <TableRow key={application.id}>
+                    <TableRow key={application.id || application._id}>
                       <TableCell>
                         <Typography variant="subtitle2">
-                          {application.job.title}
+                          {application.job?.title || 'Untitled Job'}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          {application.job.location.city},{' '}
-                          {application.job.location.country}
+                          {application.job?.location?.city || application.job?.location || 'Unknown'}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Avatar
-                            src={application.companyLogo}
-                            alt={application.company}
-                            variant="square"
-                            sx={{ width: 30, height: 30, mr: 1 }}
-                          />
-                          <Typography variant="body2">
-                            {application.company}
-                          </Typography>
-                        </Box>
+                        <Typography variant="body2">
+                          {application.job?.category || '—'}
+                        </Typography>
                       </TableCell>
                       <TableCell>
                         {new Date(application.createdAt).toLocaleDateString()}
@@ -524,7 +525,7 @@ const MyApplicationsPage = () => {
               <Card variant="outlined" sx={{ mb: 3 }}>
                 <CardContent>
                   <Typography variant="h5" gutterBottom>
-                    {selectedApplication.jobTitle}
+                    {selectedApplication.job?.title || selectedApplication.jobTitle || 'Untitled Job'}
                   </Typography>
                   <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -533,7 +534,7 @@ const MyApplicationsPage = () => {
                         sx={{ mr: 0.5, color: 'text.secondary' }}
                       />
                       <Typography variant="body2">
-                        {selectedApplication.company}
+                        {selectedApplication.job?.category || '\u2014'}
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -542,7 +543,7 @@ const MyApplicationsPage = () => {
                         sx={{ mr: 0.5, color: 'text.secondary' }}
                       />
                       <Typography variant="body2">
-                        {selectedApplication.salary}
+                        {selectedApplication.proposedRate ? `GH\u20B5${selectedApplication.proposedRate}` : (selectedApplication.job?.budget || '\u2014')}
                       </Typography>
                     </Box>
                   </Stack>
@@ -595,7 +596,7 @@ const MyApplicationsPage = () => {
                 </CardContent>
               </Card>
 
-              {selectedApplication.status === 'offer' && (
+              {selectedApplication.status === 'accepted' && (
                 <Card
                   variant="outlined"
                   sx={{ mb: 3, bgcolor: 'success.light' }}
@@ -605,11 +606,11 @@ const MyApplicationsPage = () => {
                       <CheckCircleIcon
                         sx={{ mr: 1, verticalAlign: 'text-bottom' }}
                       />
-                      Congratulations! You have received a job offer.
+                      Congratulations! Your application was accepted.
                     </Typography>
                     <Typography variant="body2">
-                      Please check your messages for details about the offer.
-                      You can accept or negotiate the terms.
+                      Please check your messages for details. You can discuss
+                      terms with the hirer.
                     </Typography>
                   </CardContent>
                 </Card>
@@ -672,10 +673,9 @@ const MyApplicationsPage = () => {
                   </Box>
                 )}
 
-                {(selectedApplication.status === 'interview' ||
-                  selectedApplication.status === 'offer' ||
-                  selectedApplication.status === 'rejected') &&
-                  selectedApplication.interviewDate && (
+                {(selectedApplication.status === 'under_review' ||
+                  selectedApplication.status === 'accepted' ||
+                  selectedApplication.status === 'rejected') && (
                     <Box sx={{ mb: 2, position: 'relative' }}>
                       <Box
                         sx={{
@@ -689,17 +689,17 @@ const MyApplicationsPage = () => {
                         }}
                       />
                       <Typography variant="subtitle2">
-                        Interview Scheduled
+                        Under Review
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         {new Date(
-                          selectedApplication.interviewDate,
+                          selectedApplication.updatedAt || selectedApplication.createdAt,
                         ).toLocaleDateString()}
                       </Typography>
                     </Box>
                   )}
 
-                {selectedApplication.status === 'offer' && (
+                {selectedApplication.status === 'accepted' && (
                   <Box sx={{ mb: 2, position: 'relative' }}>
                     <Box
                       sx={{
@@ -712,11 +712,10 @@ const MyApplicationsPage = () => {
                         top: 6,
                       }}
                     />
-                    <Typography variant="subtitle2">Offer Received</Typography>
+                    <Typography variant="subtitle2">Accepted</Typography>
                     <Typography variant="body2" color="text.secondary">
                       {new Date(
-                        new Date(selectedApplication.interviewDate).getTime() +
-                        5 * 24 * 60 * 60 * 1000,
+                        selectedApplication.updatedAt || selectedApplication.createdAt,
                       ).toLocaleDateString()}
                     </Typography>
                   </Box>
@@ -740,8 +739,31 @@ const MyApplicationsPage = () => {
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {new Date(
-                        new Date(selectedApplication.interviewDate).getTime() +
-                        2 * 24 * 60 * 60 * 1000,
+                        selectedApplication.updatedAt || selectedApplication.createdAt,
+                      ).toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                )}
+
+                {selectedApplication.status === 'withdrawn' && (
+                  <Box sx={{ mb: 2, position: 'relative' }}>
+                    <Box
+                      sx={{
+                        width: 10,
+                        height: 10,
+                        bgcolor: 'warning.main',
+                        borderRadius: '50%',
+                        position: 'absolute',
+                        left: -28,
+                        top: 6,
+                      }}
+                    />
+                    <Typography variant="subtitle2">
+                      Application Withdrawn
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {new Date(
+                        selectedApplication.updatedAt || selectedApplication.createdAt,
                       ).toLocaleDateString()}
                     </Typography>
                   </Box>
@@ -775,14 +797,13 @@ const MyApplicationsPage = () => {
       >
         {selectedApplication && (
           <>
-            <DialogTitle>Message to {selectedApplication.company}</DialogTitle>
+            <DialogTitle>Message about {selectedApplication.job?.title || 'Application'}</DialogTitle>
             <DialogContent>
               <Typography variant="subtitle2" gutterBottom>
-                Regarding: {selectedApplication.jobTitle}
+                Regarding: {selectedApplication.job?.title || selectedApplication.jobTitle || 'Job Application'}
               </Typography>
               <Typography variant="body2" color="text.secondary" paragraph>
-                Your message will be sent to the hiring manager at{' '}
-                {selectedApplication.company}.
+                Your message will be sent to the hirer.
               </Typography>
               <TextField
                 autoFocus

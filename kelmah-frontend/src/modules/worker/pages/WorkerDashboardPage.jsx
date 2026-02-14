@@ -12,7 +12,6 @@ import {
   IconButton,
   Skeleton,
   Button,
-  Chip,
   useTheme,
   useMediaQuery,
   Alert,
@@ -29,8 +28,6 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import StarIcon from '@mui/icons-material/Star';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip } from 'recharts';
@@ -57,7 +54,6 @@ const WorkerDashboardPage = () => {
   const pendingApplications = useSelector(selectWorkerApplications('pending')) || [];
   const acceptedApplications = useSelector(selectWorkerApplications('accepted')) || [];
   const rejectedApplications = useSelector(selectWorkerApplications('rejected')) || [];
-  const activeJobs = useSelector(selectWorkerJobs('active')) || [];
   const completedJobs = useSelector(selectWorkerJobs('completed')) || [];
   const isLoading = useSelector(selectWorkerLoading('applications'));
   const error = useSelector(selectWorkerError('applications'));
@@ -99,7 +95,6 @@ const WorkerDashboardPage = () => {
         dispatch(fetchWorkerApplications('pending')),
         dispatch(fetchWorkerApplications('accepted')),
         dispatch(fetchWorkerApplications('rejected')),
-        dispatch(fetchWorkerJobs('active')),
         dispatch(fetchWorkerJobs('completed')),
       ]);
       clearTimeout(timeoutId);

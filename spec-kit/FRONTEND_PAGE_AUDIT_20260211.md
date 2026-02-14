@@ -1,5 +1,29 @@
 # Kelmah Frontend – Page + Security Audit
 
+## Iteration Update (Feb 14, 2026 – Job Notification Action-Link Consistency) ✅
+
+- **Scope**:
+  - `kelmah-frontend/src/modules/notifications/services/notificationService.js`
+  - `kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx`
+  - `kelmah-frontend/src/routes/config.jsx` (job-route compatibility confirmation)
+- **Data-flow audit (notification payload → link normalization → navigation target)**:
+  - Notifications render links via normalized `notification.link` in notifications UI.
+  - Backend payloads may carry `actionUrl` variants or only `relatedEntity` metadata for job notifications.
+  - Normalization now aligns job notification links with active route surface (`/jobs`, `/jobs/:id`).
+- **Root cause**:
+  - Job notification types (`job_application`, `job_offer`) had no route fallback when `actionUrl` was missing.
+  - Legacy/variant job paths (`/job/:id`, `/jobs/:id/applications`) were not canonicalized.
+- **Fixes implemented**:
+  - Added canonical mapping:
+    - `/job/:id` → `/jobs/:id`
+    - `/jobs/:id/applications` → `/jobs/:id`
+  - Added entity-based fallback (`relatedEntity.type === 'job'`) to `/jobs/:id`.
+  - Added type fallback (`job_application`/`job_offer`) to `/jobs`.
+  - Applied same logic in service and context normalizers to keep REST and realtime behavior consistent.
+- **Verification**:
+  - VS Code diagnostics: no errors in changed files.
+  - Frontend production build passed (`npm run build`, `built in 6m 43s`).
+
 ## Iteration Update (Feb 14, 2026 – Contracts/Payments Deep-Link ID Hardening) ✅
 
 - **Scope**:
@@ -957,3 +981,98 @@ User opens /jobs/:id → ProtectedRoute → JobDetailsPage
 - VS Code diagnostics: no errors in modified files
 - Route wiring verified: `/hirer/jobs` → JobManagementPage, `/hirer/jobs/post` → JobPostingPage, `/hirer/jobs/edit/:jobId` → JobPostingPage, `/jobs/:id` → JobDetailsPage
 - Backend route order verified: no shadowing issues between specific and parameterized routes
+---
+
+## Worker Flow Audit (Dashboard, Find Work, My Applications)
+
+**Audit Date**: 2025-06-13
+**Auditor**: AI Agent
+**Scope**: WorkerDashboardPage, JobSearchPage, MyApplicationsPage + workerSlice.js, applicationsService.js
+**Build**: PASS (exit 0, ~2min)
+
+### Files Audited
+- `WorkerDashboardPage.jsx` (573->569 lines)
+- `JobSearchPage.jsx` (1063 lines, read-only)
+- `MyApplicationsPage.jsx` (819->860 lines)
+- `workerSlice.js` (400 lines, read-only)
+- `applicationsService.js` (106 lines, read-only)
+- `Application.js` (model status enum verified)
+- `config.jsx` (worker route wiring verified)
+
+### Data Flow Traces
+
+#### Worker Dashboard
+Page mounts -> dispatches fetchWorkerApplications(pending/accepted/rejected) + fetchWorkerJobs(completed)
+-> workerSlice thunks -> GET /api/jobs/applications/me?status=X, GET /api/jobs/assigned?status=X
+-> Redux state.worker.applications/jobs -> Stats + Pie charts
+
+#### Job Search (Find Work)
+Page mounts -> useJobsQuery(filters) -> jobsService.getJobs() -> GET /api/jobs?params
+-> useSavedJobsQuery() -> GET /api/jobs/saved
+-> Client-side sort + budget filter -> FindWorkJobCard renders
+
+#### My Applications
+Page mounts -> applicationsService.getMyApplications() -> GET /api/jobs/applications/me
+-> Backend Application[] populated with job {title, category, budget, location, status}
+-> Filtered by tab status (pending|under_review|accepted|rejected|withdrawn)
+
+### Fixed Findings (10 items)
+
+1) MyApplicationsPage - Status tabs mismatched backend enum (HIGH) FIXED
+   - Tabs used interview/offer but model enum is pending/under_review/accepted/rejected/withdrawn
+
+2) MyApplicationsPage - Status labels wrong for backend values (HIGH) FIXED
+   - getStatusInfo() remapped to match Application model statuses
+
+3) MyApplicationsPage - Desktop table crashes on null job (HIGH) FIXED
+   - Added optional chaining: application.job?.title, application.job?.location?.city
+
+4) MyApplicationsPage - Desktop table used nonexistent company field (MEDIUM) FIXED
+   - Changed Company column to Category showing application.job?.category
+
+5) MyApplicationsPage - Desktop row key unsafe (MEDIUM) FIXED
+   - Changed to application.id || application._id
+
+6) MyApplicationsPage - Browse Jobs button non-functional (MEDIUM) FIXED
+   - Added onClick navigate to /worker/find-work
+
+7) MyApplicationsPage - Timeline used fake interviewDate calculations (MEDIUM) FIXED
+   - Rewrote to use real updatedAt/createdAt and correct statuses
+
+8) MyApplicationsPage - Detail dialog used nonexistent fields (MEDIUM) FIXED
+   - Changed jobTitle/company/salary to job?.title/job?.category/proposedRate
+
+9) WorkerDashboardPage - Dead imports removed (LOW) FIXED
+   - Removed Chip, HelpOutlineIcon, TrendingUpIcon
+
+10) WorkerDashboardPage - Unused activeJobs variable + wasted API call (MEDIUM) FIXED
+    - Removed variable and dispatch(fetchWorkerJobs('active'))
+
+### Open Findings (8 items, not fixed)
+
+11) WorkerDashboardPage - Earnings chart always zeros (HIGH)
+    - earningsData reads user.monthlyEarnings etc. which don't exist on auth user
+
+12) WorkerDashboardPage - Stats earnings card always GH0 (MEDIUM)
+    - user.totalEarnings doesn't exist on auth user
+
+13) workerSlice - updateWorkerSkills thunk is GET pretending to be update (HIGH)
+    - Receives skills param but just does a GET
+
+14) workerSlice - submitWorkerApplication.fulfilled pushes wrong shape (MEDIUM)
+    - Should return response.data.data not response.data
+
+15) workerSlice - jobs.available never populated (LOW, dead state)
+
+16) workerSlice - Portfolio reducers have no async thunks (LOW)
+
+17) MyApplicationsPage - handleSendMessage non-functional (MEDIUM)
+    - Only closes dialog, doesn't call messaging API
+
+18) JobSearchPage - Clean, no issues found (PASS)
+
+### Verification
+- Frontend production build: PASS (exit code 0, ~2min)
+- VS Code diagnostics: no errors in modified files
+- Routes verified: /worker/dashboard, /worker/find-work, /worker/applications
+- Application model enum confirmed: pending, under_review, accepted, rejected, withdrawn

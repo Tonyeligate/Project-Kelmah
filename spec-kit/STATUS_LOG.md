@@ -1,5 +1,26 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Implementation Update (Feb 14, 2026 – Job Notification Action-Link Consistency) ✅
+- 🎯 **Scope Restatement**: Continue notification deep-link hardening by aligning job-related notification links with active frontend job routes.
+- 🔍 **Root causes identified**:
+  - Notification link normalization did not infer routes for job-specific notification categories (`job_application`, `job_offer`) when `actionUrl` was absent.
+  - Legacy/variant job links (e.g., `/job/:id`, `/jobs/:id/applications`) could resolve to non-canonical paths for the current route surface.
+- ✅ **Fixes applied**:
+  - Added route normalization for legacy job links:
+    - `/job/:id` → `/jobs/:id`
+    - `/jobs/:id/applications` → `/jobs/:id`
+  - Added fallback routing by related entity:
+    - `relatedEntity.type === 'job'` + id → `/jobs/:id`
+  - Added type-based fallback for job notifications without resolvable entity id:
+    - `job_application`/`job_offer` → `/jobs`
+  - Applied consistently in both REST and realtime normalization paths.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/notifications/services/notificationService.js`
+  - `kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx`
+- 🧪 Verification:
+  - VS Code diagnostics: no errors in changed files.
+  - Frontend production build passed: `npm run build` (`✓ built in 6m 43s`).
+
 ### Implementation Update (Feb 14, 2026 – Contracts/Payments Deep-Link ID Hardening) ✅
 - 🎯 **Scope Restatement**: Continue route-link consistency work by hardening contract/payment notification deep links when backend `relatedEntity.id` shape is not a primitive string.
 - 🔍 **Root cause identified**:
