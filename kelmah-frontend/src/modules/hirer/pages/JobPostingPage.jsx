@@ -248,8 +248,18 @@ const JobPostingPage = () => {
       paymentType: existing?.paymentType || prev.paymentType,
       budget:
         (existing?.paymentType || prev.paymentType) === 'hourly'
-          ? { ...prev.budget, max: String(existing?.budget ?? ''), fixed: '' }
-          : { ...prev.budget, fixed: String(existing?.budget ?? ''), min: '', max: '' },
+          ? {
+            ...prev.budget,
+            min: String(existing?.budget?.min ?? existing?.budget ?? ''),
+            max: String(existing?.budget?.max ?? existing?.budget ?? ''),
+            fixed: '',
+          }
+          : {
+            ...prev.budget,
+            fixed: String(existing?.budget?.amount ?? existing?.budget ?? ''),
+            min: '',
+            max: '',
+          },
       duration: durationValue || prev.duration,
       locationType,
       location: locationAddress,
@@ -987,12 +997,12 @@ const JobPostingPage = () => {
         </Alert>
       )}
       <Helmet>
-        <title>Post a Job | Kelmah</title>
+        <title>{isEditMode ? 'Edit Job' : 'Post a Job'} | Kelmah</title>
       </Helmet>
 
       <Box sx={{ mb: { xs: 2, md: 4 } }}>
         <Typography variant={isMobile ? 'h5' : 'h4'} component="h1" gutterBottom>
-          Post a Job
+          {isEditMode ? 'Edit Job' : 'Post a Job'}
         </Typography>
         {!isMobile && (
           <Typography variant="body1" color="text.secondary">

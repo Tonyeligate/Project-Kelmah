@@ -164,9 +164,9 @@ const JobDetailsPage = () => {
     dispatch(fetchJobById(id));
   }, [dispatch, id]);
 
-  // Debug logging
+  // Debug logging (dev only)
   useEffect(() => {
-    if (job) {
+    if (import.meta.env.DEV && job) {
       console.log('🔍 Job object in JobDetailsPage:', job);
       console.log('🔍 Job budget:', job.budget);
       console.log('🔍 Job budget type:', typeof job.budget);
@@ -195,7 +195,7 @@ const JobDetailsPage = () => {
 
   const handleMessageHirer = () => {
     if (!job) return;
-    navigate(`/messages?participantId=${job.hirer?._id || job.hirer?.id}`);
+    navigate(`/messages?recipient=${job.hirer?._id || job.hirer?.id}`);
   };
 
   const handleToggleSave = async () => {
@@ -697,7 +697,7 @@ const JobDetailsPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Star sx={{ color: '#FFD700', fontSize: 18, mr: 0.5 }} />
                       <Typography variant="body2" sx={{ color: '#fff', mr: 1 }}>
-                        {job.hirer?.rating?.toFixed(1) || 'N/A'}
+                        {typeof job.hirer?.rating === 'number' ? job.hirer.rating.toFixed(1) : 'N/A'}
                       </Typography>
                       <Typography
                         variant="body2"

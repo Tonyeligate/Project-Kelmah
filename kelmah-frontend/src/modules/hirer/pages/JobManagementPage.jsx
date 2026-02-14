@@ -284,13 +284,13 @@ const JobManagementPage = () => {
         </Box>
         
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-          {formatJobLocation(job.location)} • ${job.hourlyRate}/hr
+          {formatJobLocation(job.location)} {job.budget != null ? `• GH₵${typeof job.budget === 'object' ? (job.budget.max || job.budget.min || job.budget.amount || 0) : job.budget}${job.paymentType === 'hourly' ? '/hr' : ''}` : ''}
         </Typography>
         
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Badge
-              badgeContent={job.applications?.length || 0}
+              badgeContent={job.applicantCount || job.proposalCount || job.applications?.length || 0}
               color="primary"
               max={99}
               showZero
@@ -694,7 +694,7 @@ const JobManagementPage = () => {
                                 variant="caption"
                                 color="text.secondary"
                               >
-                                ${job.hourlyRate}/hr
+                                {job.budget != null ? `GH₵${typeof job.budget === 'object' ? (job.budget.max || job.budget.min || job.budget.amount || 0) : job.budget}${job.paymentType === 'hourly' ? '/hr' : ''}` : ''}
                               </Typography>
                             </Box>
                           </TableCell>
@@ -703,7 +703,7 @@ const JobManagementPage = () => {
                           </TableCell>
                           <TableCell>
                             <Badge
-                              badgeContent={job.applications?.length || 0}
+                              badgeContent={job.applicantCount || job.proposalCount || job.applications?.length || 0}
                               color="primary"
                               max={999}
                               showZero
@@ -711,8 +711,8 @@ const JobManagementPage = () => {
                               <ApplicationIcon color="action" />
                             </Badge>
                           </TableCell>
-                          <TableCell>{job.postedDate}</TableCell>
-                          <TableCell>{job.expiryDate}</TableCell>
+                          <TableCell>{job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '—'}</TableCell>
+                          <TableCell>{job.endDate ? new Date(job.endDate).toLocaleDateString() : '—'}</TableCell>
                           <TableCell align="right">
                             <Box
                               sx={{

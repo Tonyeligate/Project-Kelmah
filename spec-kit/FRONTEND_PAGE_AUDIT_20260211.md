@@ -770,3 +770,170 @@ UI page → module service/hook → `api` (axios wrapper) → API Gateway `/api/
 3. Replace direct `fetch` in profile edit flow with shared API client
 4. Decide and enforce Quick-hire role policy
 5. Either mount or archive dormant page modules to reduce maintenance ambiguity
+
+---
+
+## Hirer Flow Audit (Feb 13, 2026 – Job Posting / Job Management / Job Details)
+
+### Scope
+- `kelmah-frontend/src/modules/hirer/pages/JobPostingPage.jsx` (1113 lines)
+- `kelmah-frontend/src/modules/hirer/pages/JobManagementPage.jsx` (873 lines)
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx` (738 lines)
+- `kelmah-frontend/src/modules/hirer/services/hirerSlice.js` (674 lines)
+- `kelmah-frontend/src/modules/jobs/services/jobsService.js` (405 lines)
+- `kelmah-frontend/src/modules/jobs/services/jobSlice.js` (200 lines)
+- `kelmah-frontend/src/modules/jobs/components/job-application/JobApplication.jsx` (1035 lines)
+- `kelmah-frontend/src/routes/config.jsx` (routing verification)
+- `kelmah-backend/services/job-service/routes/job.routes.js` (route surface)
+- `kelmah-backend/services/job-service/controllers/job.controller.js` (getMyJobs response shape)
+
+### Data Flow Traces
+
+#### Job Posting (Create Flow)
+```
+Hirer clicks "Post a New Job" on JobManagementPage
+  → navigate('/hirer/jobs/post')
+  → Router: ProtectedRoute(roles=['hirer','admin']) → JobPostingPage
+  → Multi-step wizard: title/category → description/skills → budget/duration → location → review
+  → handleSubmit(asDraft=false) builds canonical payload
+  → dispatch(createHirerJob(payload))
+  → hirerSlice.js: api.post('/jobs', jobData)
+  → Gateway → job-service POST / → createJob controller
+  → Response: job doc → state.jobs.draft.unshift(newJob)
+  → UI: success screen with "Manage Jobs" / "Post Another Job" CTAs
+```
+
+#### Job Posting (Edit Flow)
+```
+Hirer clicks "Edit Job" on JobManagementPage
+  → navigate(`/hirer/jobs/edit/${jobId}`)
+  → Router: ProtectedRoute(roles=['hirer','admin']) → JobPostingPage (isEditMode=true)
+  → useEffect hydrates formData from Redux store hirerJobsByStatus
+  → handleSubmit() builds payload
+  → dispatch(updateHirerJob({ jobId, updates: payload }))
+  → hirerSlice.js: api.put(`/jobs/${jobId}`, updates)
+  → Gateway → job-service PUT /:id → updateJob controller
+  → Response: updated job → hirerSlice places in correct status bucket
+```
+
+#### Job Management (List/Filter/Actions)
+```
+Hirer opens /hirer/jobs → JobManagementPage
+  → useEffect: dispatch fetchHirerJobs for each canonical status
+  → hirerSlice: api.get('/jobs/my-jobs', { params: { status, role: 'hirer' } })
+  → Gateway → job-service GET /my-jobs → getMyJobs controller (native MongoDB)
+  → Response: paginatedResponse with normalized jobs (id + _id both present)
+  → Redux: state.jobs[status] = jobs[]
+  → UI: Object.values(jobsByStatus).flat() → tabs/search filter → table/cards
+```
+
+#### Job Details (Public View)
+```
+User opens /jobs/:id → ProtectedRoute → JobDetailsPage
+  → dispatch(fetchJobById(id))
+  → jobSlice → jobsService.getJobById(id) → api.get(`/jobs/${id}`)
+  → Gateway → job-service GET /:id([a-fA-F0-9]{24}) → getJobById (PUBLIC)
+  → Non-destructive normalization: skills/dates/hirer_name compatibility
+  → Redux: state.currentJob = normalized job
+  → UI: details paper with map embed, budget, skills, hirer profile, apply/save/share
+```
+
+### Findings – Fixed ✅
+
+#### 1) JobDetailsPage: `handleMessageHirer` used wrong query param
+- **Severity**: High
+- **Where**: JobDetailsPage.jsx
+- **Root cause**: navigated to `/messages?participantId=...` but MessageContext expects `?recipient=...`
+- **Fix**: changed to `navigate(\`/messages?recipient=\${...}\`)`
+- **Status**: Fixed ✅
+
+#### 2) JobDetailsPage: debug `console.log` in production
+- **Severity**: Medium
+- **Where**: JobDetailsPage.jsx (budget debug logging effect)
+- **Fix**: wrapped in `import.meta.env.DEV` guard
+- **Status**: Fixed ✅
+
+#### 3) JobDetailsPage: `job.hirer?.rating?.toFixed(1)` crash risk
+- **Severity**: Medium
+- **Where**: JobDetailsPage.jsx (sidebar "About the Client")
+- **Root cause**: `toFixed(1)` crashes if `rating` is a string/null/non-number
+- **Fix**: added explicit `typeof === 'number'` guard
+- **Status**: Fixed ✅
+
+#### 4) JobManagementPage: `job.hourlyRate` undefined → `$undefined/hr`
+- **Severity**: High
+- **Where**: JobManagementPage.jsx (MobileJobCard + desktop table)
+- **Root cause**: backend returns `budget` (object or number) + `paymentType`, not `hourlyRate`
+- **Fix**: replaced with proper budget shape extraction and paymentType-aware formatting
+- **Status**: Fixed ✅
+
+#### 5) JobManagementPage: `job.postedDate` / `job.expiryDate` undefined
+- **Severity**: High
+- **Where**: JobManagementPage.jsx (desktop table cells)
+- **Root cause**: backend returns `createdAt` and `endDate`, not `postedDate`/`expiryDate`
+- **Fix**: mapped to `toLocaleDateString()` with `—` fallbacks
+- **Status**: Fixed ✅
+
+#### 6) JobManagementPage: `job.applications?.length` always 0
+- **Severity**: Medium
+- **Where**: JobManagementPage.jsx (badge counts)
+- **Root cause**: `getMyJobs` doesn't populate `applications` array
+- **Fix**: added fallback chain `applicantCount || proposalCount || applications?.length || 0`
+- **Status**: Fixed ✅
+
+#### 7) JobPostingPage: page title shows "Post a Job" in edit mode
+- **Severity**: Medium
+- **Where**: JobPostingPage.jsx (Helmet + heading)
+- **Fix**: conditional text based on `isEditMode`
+- **Status**: Fixed ✅
+
+#### 8) JobPostingPage: edit-mode budget hydration lossy for hourly
+- **Severity**: Medium
+- **Where**: JobPostingPage.jsx (edit mode useEffect)
+- **Root cause**: only set `max` from existing data; `min` stayed empty
+- **Fix**: hydrates both `min` and `max` from `existing.budget.min/max` with fallback
+- **Status**: Fixed ✅
+
+### Findings – Open ❌
+
+#### 9) JobApplication component doesn't honor `open`/`onClose`/`jobId` props
+- **Severity**: Critical (UX)
+- **Where**: JobDetailsPage + JobApplication.jsx
+- **What**: `JobDetailsPage` renders `<JobApplication open={applicationOpen} onClose={...} jobId={...} />` but `JobApplication` ignores all props — uses `useParams()` for `jobId` and renders as inline page form, not a dialog. The `open` state from "Apply Now" click has no effect; form is always visible when `job` exists.
+- **Fix needed**: refactor `JobApplication` to accept props and render inside `<Dialog>`, or gate rendering with `{applicationOpen && <JobApplication />}`
+
+#### 10) JobDetailsPage: hardcoded dark theme colors throughout
+- **Severity**: Medium
+- **What**: `#FFD700`, `#1a1a1a`, `#fff`, `#4caf50`, `#ff9800` used everywhere; breaks theme switching
+- **Fix needed**: replace with `theme.palette.*` tokens
+
+#### 11) Google Maps embed shown even for remote jobs
+- **Severity**: Low
+- **What**: iframe renders with fallback "Ghana" for vague/remote locations
+- **Fix needed**: conditionally hide when `locationType === 'remote'`
+
+#### 12) JobPostingPage: skills input accepts unlimited skills
+- **Severity**: Low
+- **What**: helper says "up to five" but no limit enforced
+- **Fix needed**: cap `newSkills.slice(0, 5)` in `handleSkillsChange`
+
+#### 13) No loading guard in edit mode before Redux hydration
+- **Severity**: Low
+- **What**: direct navigation to edit URL with empty Redux store shows blank form
+- **Fix needed**: dispatch fetch + show loader until data arrives
+
+#### 14) hirerSlice `initialState.jobs` has stale `active` key
+- **Severity**: Low
+- **What**: `active: []` never populated; all fetches use canonical statuses (`open`, etc.)
+- **Fix needed**: rename to `open` or remove
+
+#### 15) Tab badge counts recompute on every render
+- **Severity**: Low
+- **What**: six `jobs.filter(...)` calls inline per render
+- **Fix needed**: memoize counts via `useMemo`
+
+### Verification
+- Frontend production build: **PASS** (`npx vite build`, built in 5m 4s)
+- VS Code diagnostics: no errors in modified files
+- Route wiring verified: `/hirer/jobs` → JobManagementPage, `/hirer/jobs/post` → JobPostingPage, `/hirer/jobs/edit/:jobId` → JobPostingPage, `/jobs/:id` → JobDetailsPage
+- Backend route order verified: no shadowing issues between specific and parameterized routes
