@@ -20,7 +20,11 @@ const NotificationContext = createContext(null);
 const normalizeNotificationLink = (notification = {}) => {
   const rawLink = notification?.link || notification?.actionUrl || null;
   const entityType = notification?.relatedEntity?.type;
-  const entityId = notification?.relatedEntity?.id;
+  const rawEntityId = notification?.relatedEntity?.id;
+  const entityId =
+    typeof rawEntityId === 'string' || typeof rawEntityId === 'number'
+      ? String(rawEntityId)
+      : rawEntityId?._id || rawEntityId?.id || null;
   const type = notification?.type;
 
   if (typeof rawLink === 'string' && rawLink.length > 0) {

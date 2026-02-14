@@ -1,5 +1,25 @@
 # Kelmah Frontend – Page + Security Audit
 
+## Iteration Update (Feb 14, 2026 – Contracts/Payments Deep-Link ID Hardening) ✅
+
+- **Scope**:
+  - `kelmah-frontend/src/modules/notifications/services/notificationService.js`
+  - `kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx`
+  - `kelmah-frontend/src/routes/config.jsx` (route compatibility confirmation)
+- **Data-flow audit (notification payload → link normalization → route target)**:
+  - Backend notifications can include `relatedEntity.id` as primitive id or object-like ref payload.
+  - Notification normalization now resolves entity IDs safely before contract/payment path construction.
+  - UI navigation remains through `notification.link`, now guaranteed to avoid malformed object-string paths.
+- **Root cause**:
+  - Link normalization assumed primitive `relatedEntity.id`, risking malformed deep links when id payload shape varied.
+- **Fixes implemented**:
+  - Added resilient entity-id extraction from primitive and nested object forms (`_id`/`id`) in both REST and realtime normalization paths.
+  - Kept previous route mapping logic intact for contracts (`/contracts/:id`) and payment/escrow destinations.
+- **Verification**:
+  - VS Code diagnostics: no errors in changed files.
+  - Frontend production build passed (`npx vite build`, `built in 3m 1s`).
+  - Remote notification endpoint check was rate-limited (`429`) in this run.
+
 ## Iteration Update (Feb 13, 2026 – Notification Link Routing Consistency) ✅
 
 - **Scope**:

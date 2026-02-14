@@ -1,5 +1,20 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Implementation Update (Feb 14, 2026 – Contracts/Payments Deep-Link ID Hardening) ✅
+- 🎯 **Scope Restatement**: Continue route-link consistency work by hardening contract/payment notification deep links when backend `relatedEntity.id` shape is not a primitive string.
+- 🔍 **Root cause identified**:
+  - Notification link normalization assumed `relatedEntity.id` is always string/number; object-shaped IDs (e.g., populated refs) can produce malformed paths.
+- ✅ **Fixes applied**:
+  - Added robust entity-id extraction (`string/number` or nested `_id`/`id`) in both REST and realtime notification link-normalization paths.
+  - Preserved existing message link rewrite (`/messages/:id` → `/messages?conversation=:id`) and contract/payment route inference.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/notifications/services/notificationService.js`
+  - `kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx`
+- 🧪 Verification:
+  - VS Code diagnostics: no errors in changed files.
+  - Frontend production build passed: `npx vite build` (`✓ built in 3m 1s`).
+  - Remote notifications probe currently returns `429` due gateway rate limiting during this run.
+
 ### Implementation Update (Feb 13, 2026 – Notification Link Routing Consistency) ✅
 - 🎯 **Scope Restatement**: Ensure payment/contract/message notification links resolve to valid frontend routes from both REST and realtime payloads.
 - 🔍 **Root causes identified**:
