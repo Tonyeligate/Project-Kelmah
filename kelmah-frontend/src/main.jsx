@@ -13,6 +13,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { HelmetProvider } from 'react-helmet-async';
 import { NotificationProvider } from './modules/notifications/contexts/NotificationContext';
 import { MessageProvider } from './modules/messaging/contexts/MessageContext';
+import BidNotificationListener from './modules/notifications/components/BidNotificationListener';
 import { checkStorageQuota } from './utils/storageQuota';
 
 // Version 1.0.5 - Force fresh bundle generation
@@ -135,6 +136,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
               <HelmetProvider>
                 <NotificationProvider>
                   <MessageProvider>
+                    <BidNotificationListener />
                     <App />
                   </MessageProvider>
                 </NotificationProvider>

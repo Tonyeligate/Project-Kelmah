@@ -1533,100 +1533,41 @@ const getDashboardJobs = async (req, res) => {
  */
 const getContracts = async (req, res, next) => {
   try {
-    console.log('📋 GET /api/jobs/contracts - Contracts endpoint called');
-    console.log('🔍 Request details:', {
-      method: req.method,
-      url: req.originalUrl,
-      userAgent: req.get('User-Agent'),
-      origin: req.get('Origin'),
-      service: 'job-service'
-    });
+    const userId = req.user?.id;
+    const { status, page = 1, limit = 20 } = req.query;
+    const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
 
-    // Enhanced mock contracts data with more realistic details
-    const contracts = [
-      {
-        id: "contract-1",
-        title: "Kitchen Renovation Contract",
-        status: "active",
-        client: "Sarah Mitchell",
-        worker: "John Contractor",
-        amount: 5500,
-        currency: "GHS",
-        startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
-        endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
-        progress: 65,
-        description: "Complete kitchen renovation including cabinets, countertops, and appliances",
-        milestones: [
-          {
-            id: "milestone-1",
-            title: "Demolition Complete",
-            amount: 1500,
-            status: "completed",
-            dueDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3)
-          },
-          {
-            id: "milestone-2",
-            title: "Cabinet Installation",
-            amount: 2500,
-            status: "in_progress",
-            dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7)
-          }
-        ]
-      },
-      {
-        id: "contract-2",
-        title: "Office Interior Design",
-        status: "pending",
-        client: "Tech Solutions Ltd",
-        worker: "Maria Designer",
-        amount: 8000,
-        currency: "GHS",
-        startDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
-        endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 28),
-        progress: 0,
-        description: "Modern office interior design with ergonomic workspace solutions",
-        milestones: [
-          {
-            id: "milestone-3",
-            title: "Design Approval",
-            amount: 2000,
-            status: "pending",
-            dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5)
-          }
-        ]
-      },
-      {
-        id: "contract-3",
-        title: "Plumbing System Upgrade",
-        status: "completed",
-        client: "Residential Complex Ltd",
-        worker: "Expert Plumbers Co",
-        amount: 3200,
-        currency: "GHS",
-        startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
-        endDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-        progress: 100,
-        description: "Complete plumbing system upgrade for 10-unit residential building",
-        milestones: [
-          {
-            id: "milestone-4",
-            title: "System Installation",
-            amount: 3200,
-            status: "completed",
-            dueDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
-          }
-        ]
-      }
-    ];
+    // Build query — show contracts where the user is hirer or worker
+    const query = {};
+    if (userId) {
+      query.$or = [{ hirer: userId }, { worker: userId }];
+    }
+    if (status) {
+      query.status = status;
+    }
 
-    console.log(`✅ Returning ${contracts.length} contracts from Job Service`);
+    const [contracts, total] = await Promise.all([
+      Contract.find(query)
+        .populate('hirer', 'firstName lastName profilePicture')
+        .populate('worker', 'firstName lastName profilePicture')
+        .populate('job', 'title category budget currency')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit, 10))
+        .lean(),
+      Contract.countDocuments(query),
+    ]);
+
     return successResponse(res, 200, "Contracts retrieved successfully", {
       contracts,
       meta: {
-        total: contracts.length,
+        total,
+        page: parseInt(page, 10),
+        limit: parseInt(limit, 10),
+        totalPages: Math.ceil(total / parseInt(limit, 10)),
         service: 'job-service',
         timestamp: new Date().toISOString(),
-        source: 'mock-data' // Will be 'database' when real implementation is done
+        source: 'database'
       }
     });
   } catch (error) {
@@ -3013,63 +2954,45 @@ const getPlatformStats = async (req, res, next) => {
   try {
     await ensureConnection();
 
-    // Use native driver to avoid model buffering issues
-    const mongoose = require('mongoose');
-    const db = mongoose.connection.db;
-    const jobsCol = db.collection('jobs');
-    const usersCol = db.collection('users');
-    const applicationsCol = db.collection('applications');
-
-    const now = new Date();
     const THIRTY_DAYS_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-    // Run all queries in parallel for better performance
+    // Run all queries in parallel using Mongoose models
     const [
       availableJobs,
-      activeEmployersResult,
+      activeEmployers,
       skilledWorkers,
       completedJobs,
       cancelledJobs,
       totalApplications,
       successfulPlacements
     ] = await Promise.all([
-      // Available jobs: open status (simplified - count all open jobs first, then refine)
-      // Check all possible status values and count open jobs
-      jobsCol.countDocuments({
-        status: { $in: ['open', 'Open', 'OPEN'] } // Handle case variations
+      // Available jobs: open status
+      Job.countDocuments({
+        status: { $in: ['open', 'Open', 'OPEN'] }
       }),
 
-      // Active employers: distinct hirers with ANY jobs (remove time restriction for now)
-      // FIX: Original query filtered by last 30 days, but test jobs are from September
-      jobsCol.aggregate([
-        {
-          $match: {
-            status: { $in: ['open', 'Open', 'OPEN', 'in-progress', 'completed'] }
-          }
-        },
-        { $group: { _id: '$hirer' } },
-        { $count: 'count' }
-      ]).toArray(),
+      // Active employers: distinct hirers with any jobs
+      Job.distinct('hirer', {
+        status: { $in: ['open', 'Open', 'OPEN', 'in-progress', 'completed'] }
+      }).then(ids => ids.length),
 
-      // Skilled workers: active workers (don't require email verification - too strict)
-      usersCol.countDocuments({
+      // Skilled workers: active workers
+      User.countDocuments({
         role: 'worker',
-        isActive: { $ne: false } // Include true or undefined
+        isActive: { $ne: false }
       }),
 
       // Completed jobs for success rate calculation
-      jobsCol.countDocuments({ status: 'completed' }),
+      Job.countDocuments({ status: 'completed' }),
 
       // Cancelled jobs for success rate calculation
-      jobsCol.countDocuments({ status: 'cancelled' }),
+      Job.countDocuments({ status: 'cancelled' }),
 
-      // Total applications for success rate
-      applicationsCol.countDocuments({}),
+      // Total applications
+      Application.countDocuments({}),
 
-      // Successful placements (applications that led to completed jobs)
-      applicationsCol.countDocuments({
-        status: 'accepted'
-      })
+      // Successful placements (accepted applications)
+      Application.countDocuments({ status: 'accepted' })
     ]);
 
     // Calculate success rate based on completed vs cancelled jobs
@@ -3088,7 +3011,7 @@ const getPlatformStats = async (req, res, next) => {
 
     const stats = {
       availableJobs: availableJobs || 0,
-      activeEmployers: activeEmployersResult?.[0]?.count || 0,
+      activeEmployers: activeEmployers || 0,
       skilledWorkers: skilledWorkers || 0,
       successRate: successRate || 0,
       lastUpdated: new Date().toISOString()

@@ -188,6 +188,27 @@ class WebSocketService {
       this.handleJobStatusUpdate(data);
     });
 
+    // Bid notification events (real-time)
+    this.socket.on('bid:received', (data) => {
+      this.triggerEvent('bid:received', data);
+    });
+
+    this.socket.on('bid:accepted', (data) => {
+      this.triggerEvent('bid:accepted', data);
+    });
+
+    this.socket.on('bid:rejected', (data) => {
+      this.triggerEvent('bid:rejected', data);
+    });
+
+    this.socket.on('bid:withdrawn', (data) => {
+      this.triggerEvent('bid:withdrawn', data);
+    });
+
+    this.socket.on('bid:expired', (data) => {
+      this.triggerEvent('bid:expired', data);
+    });
+
     // Payment notification events
     this.socket.on('payment-notification', (data) => {
       this.handlePaymentNotification(data);

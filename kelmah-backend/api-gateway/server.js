@@ -712,6 +712,10 @@ const { getRateLimiter } = require('./middlewares/rate-limiter');
 const jobRouter = require('./routes/job.routes');
 app.use('/api/jobs', jobRouter);
 
+// Bid routes - Forward to job-service bid endpoints
+const bidRouter = require('./routes/bid.routes');
+app.use('/api/bids', bidRouter);
+
 // Milestones routes — proxy to job-service /api/jobs/milestones/*
 // Frontend calls /api/milestones/* which gateway rewrites to job-service
 app.use('/api/milestones', authenticate, createDynamicProxy('job', {

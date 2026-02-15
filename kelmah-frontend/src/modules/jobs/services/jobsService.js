@@ -98,6 +98,7 @@ const transformJobListItem = (job) => {
     verified: job.verified || employer.verified,
     paymentType: job.paymentType || 'fixed',
     duration: job.duration,
+    coverImage: job.coverImage || '',
   };
 };
 
@@ -397,6 +398,19 @@ const jobsApi = {
         error.message,
       );
       return [];
+    }
+  },
+  /**
+   * Get platform statistics (available jobs, active employers, skilled workers, success rate)
+   * @returns {Promise<Object>} Platform statistics
+   */
+  async getPlatformStats() {
+    try {
+      const response = await api.get('/jobs/stats');
+      return response.data?.data || response.data || {};
+    } catch (error) {
+      console.warn('Job service unavailable for platform stats:', error.message);
+      return null;
     }
   },
 };

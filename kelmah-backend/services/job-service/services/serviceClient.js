@@ -22,6 +22,8 @@ const createServiceClient = (baseURL) => {
     headers: {
       "Content-Type": "application/json",
       "X-Service-Key": process.env.INTER_SERVICE_API_KEY,
+      "x-internal-key": process.env.INTERNAL_API_KEY || process.env.INTER_SERVICE_API_KEY,
+      "x-internal-request": process.env.INTERNAL_API_KEY || process.env.INTER_SERVICE_API_KEY,
     },
   });
 
@@ -135,6 +137,34 @@ const ServiceClient = {
         return response.data;
       } catch (error) {
         throw new Error(`Messaging service error: ${error.message}`);
+      }
+    },
+
+    /**
+     * Send real-time bid notification via Socket.IO through messaging service.
+     * Uses the /api/socket/send-to-user endpoint.
+     * @param {string} recipientId - User ID to notify
+     * @param {string} event - Socket event name (bid:received, bid:accepted, etc.)
+     * @param {Object} payload - Notification payload
+     */
+    sendBidNotification: async (recipientId, event, payload) => {
+      try {
+        const response = await messagingServiceClient.post(
+          "/socket/send-to-user",
+          {
+            userId: recipientId,
+            event,
+            data: {
+              ...payload,
+              timestamp: new Date().toISOString(),
+            },
+          },
+        );
+        return response.data;
+      } catch (error) {
+        // Non-critical: log but don't throw — bid action already succeeded
+        console.error(`[Bid Notification] Failed to notify ${recipientId} for ${event}:`, error.message);
+        return { success: false, delivered: false };
       }
     },
   },

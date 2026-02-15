@@ -99,6 +99,14 @@ const AvailabilityCalendar = lazy(
   () => import('../modules/worker/components/AvailabilityCalendar'),
 );
 
+// Bid Pages
+const MyBidsPage = lazy(
+  () => import('../modules/worker/pages/MyBidsPage'),
+);
+const JobBidsPage = lazy(
+  () => import('../modules/hirer/pages/JobBidsPage'),
+);
+
 // Scheduling, Contracts, Payment pages
 const SchedulingPage = lazy(
   () => import('../modules/scheduling/pages/SchedulingPage'),
@@ -364,6 +372,16 @@ const routes = [
                   </ProtectedRoute>
                 ),
               },
+              {
+                path: ':jobId/bids',
+                element: (
+                  <ProtectedRoute roles={['hirer', 'admin']}>
+                    <RouteErrorBoundary label="Job Bids">
+                      <JobBidsPage />
+                    </RouteErrorBoundary>
+                  </ProtectedRoute>
+                ),
+              },
             ],
           },
           {
@@ -436,6 +454,16 @@ const routes = [
             element: (
               <ProtectedRoute roles={['worker', 'admin']}>
                 <MyApplicationsPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'bids',
+            element: (
+              <ProtectedRoute roles={['worker', 'admin']}>
+                <RouteErrorBoundary label="My Bids">
+                  <MyBidsPage />
+                </RouteErrorBoundary>
               </ProtectedRoute>
             ),
           },

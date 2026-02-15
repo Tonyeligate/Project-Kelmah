@@ -11,6 +11,7 @@ import {
   Button,
   Card,
   CardContent,
+  CardMedia,
   IconButton,
   Chip,
   TextField,
@@ -275,6 +276,15 @@ const JobManagementPage = () => {
       }}
       onClick={() => handleViewJob(job.id)}
     >
+      {job.coverImage && (
+        <CardMedia
+          component="img"
+          height={120}
+          image={job.coverImage}
+          alt={job.title || 'Job image'}
+          sx={{ objectFit: 'cover' }}
+        />
+      )}
       <CardContent sx={{ pb: '12px !important' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
           <Typography variant="subtitle1" fontWeight={600} sx={{ flex: 1, pr: 1 }}>

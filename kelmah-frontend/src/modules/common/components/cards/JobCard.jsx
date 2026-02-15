@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
   Card,
+  CardMedia,
   CardContent,
   CardActions,
   Typography,
@@ -92,6 +93,7 @@ const JobCard = ({
     hirerAvatar,
     urgency,
     applications = 0,
+    coverImage,
   } = job;
 
   // Handle save/unsave job
@@ -169,6 +171,19 @@ const JobCard = ({
 
   return (
     <Card sx={getCardSx()} onClick={handleCardClick}>
+      {/* Cover image */}
+      {coverImage && variant !== 'compact' && (
+        <CardMedia
+          component="img"
+          height={variant === 'detailed' ? 200 : 160}
+          image={coverImage}
+          alt={title || 'Job image'}
+          sx={{
+            objectFit: 'cover',
+            borderBottom: `1px solid ${theme.palette.divider}`,
+          }}
+        />
+      )}
       <CardContent sx={{ pb: variant === 'compact' ? 1 : 2 }}>
         {/* Header with title and category */}
         <Box
@@ -368,6 +383,7 @@ JobCard.propTypes = {
     hirerAvatar: PropTypes.string,
     urgency: PropTypes.string,
     applications: PropTypes.number,
+    coverImage: PropTypes.string,
     isSaved: PropTypes.bool,
     status: PropTypes.string,
   }),

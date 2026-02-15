@@ -373,8 +373,8 @@ app.get("/api/socket/status", authenticate, (req, res) => {
   });
 });
 
-// Send message to user via API (for system messages)
-app.post("/api/socket/send-to-user", authenticate, (req, res) => {
+// Send message to user via API (for system messages and inter-service notifications)
+app.post("/api/socket/send-to-user", verifyGatewayRequest, (req, res) => {
   try {
     const { userId, event, data } = req.body;
 

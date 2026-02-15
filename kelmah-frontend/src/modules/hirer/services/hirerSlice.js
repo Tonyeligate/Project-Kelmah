@@ -82,13 +82,18 @@ export const createHirerJob = createAsyncThunk(
 
 export const updateHirerJob = createAsyncThunk(
   'hirer/updateJob',
-  async ({ jobId, updates }) => {
+  async ({ jobId, updates }, { rejectWithValue }) => {
     try {
       const response = await api.put(`/jobs/${jobId}`, updates);
       return response.data.data || response.data;
     } catch (error) {
       console.warn('Job service unavailable for job update:', error.message);
-      throw error;
+      const backendMessage =
+        error?.response?.data?.error?.message ||
+        error?.response?.data?.message ||
+        error?.message ||
+        'Failed to update job';
+      return rejectWithValue(backendMessage);
     }
   },
 );

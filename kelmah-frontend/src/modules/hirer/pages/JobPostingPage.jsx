@@ -27,6 +27,9 @@ import {
   CircularProgress,
   Alert,
   LinearProgress,
+  Switch,
+  Divider,
+  Slider,
 } from '@mui/material';
 import {
   Work,
@@ -40,6 +43,8 @@ import {
   CheckCircle,
   Add,
   Save,
+  AddPhotoAlternate,
+  Close,
 } from '@mui/icons-material';
 import { Helmet } from 'react-helmet-async';
 import {
@@ -120,6 +125,20 @@ const JobPreview = ({ snapshot }) => {
       <Typography variant="h5" gutterBottom>
         Job Preview
       </Typography>
+      {snapshot.coverImage && (
+        <Box
+          component="img"
+          src={snapshot.coverImage}
+          alt="Cover"
+          sx={{
+            width: '100%',
+            maxHeight: 180,
+            objectFit: 'cover',
+            borderRadius: 1.5,
+            mb: 2,
+          }}
+        />
+      )}
       <Typography variant="h6">{snapshot.title}</Typography>
       <Typography variant="subtitle1" color="text.secondary">
         {snapshot.location}
@@ -204,7 +223,11 @@ const JobPostingPage = () => {
     duration: '',
     locationType: 'remote',
     location: '',
+    biddingEnabled: false,
+    biddingMaxBidders: 5,
+    coverImage: '',
   });
+  const [coverImagePreview, setCoverImagePreview] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
@@ -296,8 +319,9 @@ const JobPostingPage = () => {
         formData.locationType === 'remote'
           ? safeLocation || 'Remote collaboration'
           : safeLocation || 'Add the job site or landmark',
+      coverImage: coverImagePreview,
     };
-  }, [formData]);
+  }, [formData, coverImagePreview]);
 
   const normalizedDescription = useMemo(
     () => normalizeDescription(formData.description || ''),
@@ -497,6 +521,25 @@ const JobPostingPage = () => {
     setFormData(nextData);
     setTouchedFields((prev) => ({ ...prev, skills: true }));
   };
+
+  const handleCoverImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return;
+    if (file.size > 5 * 1024 * 1024) return; // 5MB max
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCoverImagePreview(reader.result);
+      setFormData((prev) => ({ ...prev, coverImage: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveCoverImage = () => {
+    setCoverImagePreview('');
+    setFormData((prev) => ({ ...prev, coverImage: '' }));
+  };
+
   const handleSubmit = (asDraft = false) => {
     if (!asDraft) {
       const requiredSteps = [0, 1, 2, 3];
@@ -558,6 +601,24 @@ const JobPostingPage = () => {
       },
       visibility: 'public',
       status: asDraft ? 'draft' : 'open',
+      ...(formData.coverImage && { coverImage: formData.coverImage }),
+      ...(formData.biddingEnabled && {
+        bidding: {
+          maxBidders: Number(formData.biddingMaxBidders) || 5,
+          minBidAmount:
+            formData.paymentType === 'hourly'
+              ? Number(formData.budget.min || 0)
+              : Math.round(Number(formData.budget.fixed || 0) * 0.7),
+          maxBidAmount:
+            formData.paymentType === 'hourly'
+              ? Number(formData.budget.max || 0)
+              : Number(formData.budget.fixed || 0),
+          bidDeadline: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
+          bidStatus: 'open',
+        },
+      }),
     };
 
     const action = isEditMode
@@ -599,6 +660,7 @@ const JobPostingPage = () => {
           onClick={() => {
             setSubmitSuccess(false);
             setActiveStep(0);
+            setCoverImagePreview('');
             setFormData({
               title: '',
               category: '',
@@ -610,6 +672,7 @@ const JobPostingPage = () => {
               duration: '',
               locationType: 'remote',
               location: '',
+              coverImage: '',
             });
           }}
         >
@@ -694,6 +757,61 @@ const JobPostingPage = () => {
                   'Choose the trade that best matches this project'}
               </FormHelperText>
             </FormControl>
+
+            {/* Cover Image Upload */}
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                Cover Image (optional)
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                Add a photo of the job site or project to attract more workers
+              </Typography>
+              {coverImagePreview ? (
+                <Box sx={{ position: 'relative', maxWidth: 400 }}>
+                  <Box
+                    component="img"
+                    src={coverImagePreview}
+                    alt="Cover preview"
+                    sx={{
+                      width: '100%',
+                      maxHeight: 200,
+                      objectFit: 'cover',
+                      borderRadius: 2,
+                      border: `1px solid ${theme.palette.divider}`,
+                    }}
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={handleRemoveCoverImage}
+                    sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      bgcolor: 'rgba(0,0,0,0.6)',
+                      color: 'white',
+                      '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' },
+                    }}
+                  >
+                    <Close fontSize="small" />
+                  </IconButton>
+                </Box>
+              ) : (
+                <Button
+                  component="label"
+                  variant="outlined"
+                  startIcon={<AddPhotoAlternate />}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Upload Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={handleCoverImageChange}
+                  />
+                </Button>
+              )}
+            </Box>
           </>
         );
       case 1:
@@ -923,6 +1041,49 @@ const JobPostingPage = () => {
                 sx={REQUIRED_LABEL_SX}
               />
             </Box>
+
+            {/* Bidding Section */}
+            <Divider sx={{ my: 3 }} />
+            <Typography variant="subtitle1" gutterBottom>
+              Bidding
+            </Typography>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.biddingEnabled}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      biddingEnabled: e.target.checked,
+                    }))
+                  }
+                  color="primary"
+                />
+              }
+              label="Enable bidding — let workers compete with price proposals"
+            />
+            {formData.biddingEnabled && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  Maximum bidders allowed (1–10)
+                </Typography>
+                <Slider
+                  value={formData.biddingMaxBidders}
+                  onChange={(_, val) =>
+                    setFormData((prev) => ({ ...prev, biddingMaxBidders: val }))
+                  }
+                  min={1}
+                  max={10}
+                  step={1}
+                  marks
+                  valueLabelDisplay="auto"
+                  sx={{ maxWidth: 300 }}
+                />
+                <Typography variant="caption" color="text.secondary">
+                  Workers will submit bids within your budget range. You choose the best one.
+                </Typography>
+              </Box>
+            )}
           </>
         );
       case 3:
@@ -1098,7 +1259,13 @@ const JobPostingPage = () => {
                   color="primary"
                   sx={{ minHeight: 44, flex: { xs: 1, sm: 'none' } }}
                 >
-                  {isLoading ? <CircularProgress size={24} /> : 'Post Job'}
+                  {isLoading ? (
+                    <CircularProgress size={24} />
+                  ) : isEditMode ? (
+                    'Save Changes'
+                  ) : (
+                    'Post Job'
+                  )}
                 </Button>
               </>
             ) : (

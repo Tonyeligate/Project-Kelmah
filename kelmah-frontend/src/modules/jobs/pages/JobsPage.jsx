@@ -69,6 +69,7 @@ import JobResultsSection from '../components/JobResultsSection';
 import tradeCategoriesData from '../data/tradeCategories.json';
 import ghanaLocations from '../data/ghanaLocations.json';
 import { useJobsQuery } from '../hooks/useJobsQuery';
+import jobsApi from '../services/jobsService';
 import {
   Container,
   Grid,
@@ -149,9 +150,11 @@ import {
   Construction as ConstructionIcon,
   Thermostat as HvacIcon,
   Handyman as CarpenterIcon,
-  Home as HomeIcon,
-  LocalFireDepartment as WhatshotIcon,
-  Psychology as PsychologyIcon,
+  FormatPaint as PaintingIcon,
+  Hardware as WeldingIcon,
+  Layers as MasonryIcon,
+  Roofing as RoofingIcon,
+  GridOn as FlooringIcon,
   AttachMoney as AttachMoneyIcon,
   TrendingUp as TrendingUpIcon,
   FlashOn as FlashOnIcon,
@@ -193,15 +196,9 @@ import CountUp from 'react-countup';
 import { useInView } from 'react-intersection-observer';
 // Auth state via Redux only
 // import useAuth from '../../auth/hooks/useAuth';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
-  fetchJobs,
-  setFilters,
-  selectJobs,
-  selectJobsLoading,
-  selectJobsError,
   selectJobFilters,
-  selectJobsPagination,
 } from '../services/jobSlice';
 import { InteractiveJobCard as JobCard } from '../../common/components/cards';
 import { useNavigate } from 'react-router-dom';
@@ -418,103 +415,69 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
   );
 };
 
+// Ghana vocational trade categories — matches backend Job.requirements.primarySkills enum
 const categoryData = [
-  {
-    name: 'Electrical',
-    icon: <ElectricalIcon />,
-    count: 15420,
-    color: '#FFD700',
-    trending: true,
-    description: 'Smart systems, renewable energy & power solutions',
-    growth: '+23%',
-    avgSalary: '$75,000',
-    demandLevel: 'Very High',
-  },
   {
     name: 'Plumbing',
     icon: <PlumbingIcon />,
-    count: 12890,
     color: '#4A90E2',
-    hot: true,
-    description: 'Water systems, emergency repairs & green solutions',
-    growth: '+18%',
-    avgSalary: '$68,000',
-    demandLevel: 'High',
+    description: 'Pipe fitting, water systems & repairs',
   },
   {
-    name: 'Construction',
-    icon: <ConstructionIcon />,
-    count: 28560,
-    color: '#E74C3C',
-    description: 'Building, renovation & infrastructure projects',
-    growth: '+15%',
-    avgSalary: '$72,000',
-    demandLevel: 'Very High',
-  },
-  {
-    name: 'HVAC',
-    icon: <HvacIcon />,
-    count: 9340,
-    color: '#2ECC71',
-    description: 'Climate control, energy efficiency & smart systems',
-    growth: '+20%',
-    avgSalary: '$70,000',
-    demandLevel: 'High',
+    name: 'Electrical',
+    icon: <ElectricalIcon />,
+    color: '#FFD700',
+    description: 'Wiring, installations & power systems',
   },
   {
     name: 'Carpentry',
     icon: <CarpenterIcon />,
-    count: 14230,
     color: '#8B4513',
-    premium: true,
-    description: 'Custom woodwork, furniture & architectural details',
-    growth: '+12%',
-    avgSalary: '$65,000',
-    demandLevel: 'Moderate',
+    description: 'Woodwork, furniture & fittings',
   },
   {
-    name: 'Smart Home',
-    icon: <HomeIcon />,
-    count: 6780,
+    name: 'Construction',
+    icon: <ConstructionIcon />,
+    color: '#E74C3C',
+    description: 'Building, renovation & structural work',
+  },
+  {
+    name: 'Painting',
+    icon: <PaintingIcon />,
     color: '#9B59B6',
-    newest: true,
-    description: 'IoT integration, automation & tech installation',
-    growth: '+45%',
-    avgSalary: '$85,000',
-    demandLevel: 'Explosive',
+    description: 'Interior & exterior painting',
   },
   {
-    name: 'Solar Energy',
-    icon: <WhatshotIcon />,
-    count: 4560,
+    name: 'Welding',
+    icon: <WeldingIcon />,
     color: '#F39C12',
-    trending: true,
-    description: 'Solar installation, battery systems & green tech',
-    growth: '+38%',
-    avgSalary: '$78,000',
-    demandLevel: 'Very High',
+    description: 'Metal fabrication & welding',
   },
   {
-    name: 'Design',
-    icon: <PsychologyIcon />,
-    count: 8920,
+    name: 'Masonry',
+    icon: <MasonryIcon />,
     color: '#E67E22',
-    description: 'Interior design, space planning & creative solutions',
-    growth: '+16%',
-    avgSalary: '$62,000',
-    demandLevel: 'High',
+    description: 'Block laying, tiling & stonework',
+  },
+  {
+    name: 'Roofing',
+    icon: <RoofingIcon />,
+    color: '#2ECC71',
+    description: 'Roof installation & repair',
   },
 ];
 
 const CATEGORY_ICON_MAP = {
-  Electrical: ElectricalIcon,
   Plumbing: PlumbingIcon,
+  Electrical: ElectricalIcon,
   Carpentry: CarpenterIcon,
-  HVAC: HvacIcon,
   Construction: ConstructionIcon,
-  Painting: WorkIcon,
-  Roofing: WorkIcon,
-  Masonry: WorkIcon,
+  Painting: PaintingIcon,
+  Welding: WeldingIcon,
+  Masonry: MasonryIcon,
+  HVAC: HvacIcon,
+  Roofing: RoofingIcon,
+  Flooring: FlooringIcon,
   '': WorkIcon,
 };
 
@@ -523,68 +486,8 @@ const tradeCategories = tradeCategoriesData.map((category) => ({
   icon: CATEGORY_ICON_MAP[category.value] || WorkIcon,
 }));
 
-const platformMetrics = [
-  {
-    icon: <WorkIcon sx={{ fontSize: 56 }} />,
-    value: '125,000+',
-    label: 'Active Opportunities',
-    subtitle: 'Updated every minute',
-    color: '#FFD700',
-    trend: '+18% this month',
-    description: 'From entry-level to executive positions',
-    animation: pulse,
-  },
-  {
-    icon: <CheckCircle sx={{ fontSize: 56 }} />,
-    value: '99.2%',
-    label: 'Success Rate',
-    subtitle: 'Completed projects',
-    color: '#2ECC71',
-    trend: '+2.3% improvement',
-    description: 'Industry-leading completion rate',
-    animation: float,
-  },
-  {
-    icon: <Group sx={{ fontSize: 56 }} />,
-    value: '450K+',
-    label: 'Skilled Professionals',
-    subtitle: 'Verified experts worldwide',
-    color: '#3498DB',
-    trend: '+12% growth',
-    description: 'Background-checked talent pool',
-    animation: shimmer,
-  },
-  {
-    icon: <Star sx={{ fontSize: 56 }} />,
-    value: '4.95/5',
-    label: 'Platform Rating',
-    subtitle: 'Client satisfaction score',
-    color: '#E74C3C',
-    trend: '+0.05 this quarter',
-    description: 'Consistently excellent reviews',
-    animation: sparkle,
-  },
-  {
-    icon: <AttachMoneyIcon sx={{ fontSize: 56 }} />,
-    value: '$2.8B+',
-    label: 'Total Earnings',
-    subtitle: 'Paid to professionals',
-    color: '#9C27B0',
-    trend: '+34% annually',
-    description: 'Life-changing income opportunities',
-    animation: rotateGlow,
-  },
-  {
-    icon: <TrendingUpIcon sx={{ fontSize: 56 }} />,
-    value: '156%',
-    label: 'Career Growth',
-    subtitle: 'Average salary increase',
-    color: '#FF5722',
-    trend: 'Year over year',
-    description: 'Accelerated professional development',
-    animation: gradientShift,
-  },
-];
+// Platform metrics are now derived from real data inside the component via platformStats state.
+// No hardcoded vanity numbers — stats are computed from actual job counts.
 
 // Class-based Error Boundary — React requires class components for getDerivedStateFromError
 class ErrorBoundary extends React.Component {
@@ -758,30 +661,33 @@ const JobsPage = () => {
     return () => cancelPrefetch?.();
   }, [loading]);
 
-  // Fetch platform statistics
+  // Fetch platform statistics from the real API endpoint
   useEffect(() => {
+    let cancelled = false;
+
     const fetchStats = async () => {
       try {
-        console.log('📊 Fetching platform statistics...');
-        // Use hardcoded fallback stats since /jobs/stats endpoint may not exist on backend
-        // TODO: Implement proper /jobs/stats endpoint on job-service
-        setPlatformStats({
-          availableJobs: jobs?.length || 0,
-          activeEmployers: 50,
-          skilledWorkers: 200,
-          successRate: 95,
-          loading: false,
-        });
-      } catch (err) {
-        console.error('❌ Failed to fetch platform stats:', err);
-        // Fallback to reasonable defaults if API fails
-        setPlatformStats({
-          availableJobs: 0,
-          activeEmployers: 0,
-          skilledWorkers: 0,
-          successRate: 0,
-          loading: false,
-        });
+        const data = await jobsApi.getPlatformStats();
+        if (!cancelled && data) {
+          setPlatformStats({
+            availableJobs: data.availableJobs || 0,
+            activeEmployers: data.activeEmployers || 0,
+            skilledWorkers: data.skilledWorkers || 0,
+            successRate: data.successRate || 0,
+            loading: false,
+          });
+        } else if (!cancelled) {
+          // API unavailable — derive available-jobs count from loaded data
+          setPlatformStats((prev) => ({
+            ...prev,
+            availableJobs: jobs.length,
+            loading: false,
+          }));
+        }
+      } catch {
+        if (!cancelled) {
+          setPlatformStats((prev) => ({ ...prev, loading: false }));
+        }
       }
     };
 
@@ -789,8 +695,11 @@ const JobsPage = () => {
 
     // Refresh stats every 5 minutes
     const interval = setInterval(fetchStats, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []); // Empty dependency - only fetch once on mount and then refresh via interval
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []); // Fetch once on mount, refresh via interval
 
   const filteredJobs = jobs.filter((job) => {
     const matchesSearch =

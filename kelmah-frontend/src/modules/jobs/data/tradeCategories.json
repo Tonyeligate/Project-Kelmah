@@ -1,11 +1,13 @@
 [
   { "value": "", "label": "All Trades" },
-  { "value": "Electrical", "label": "Electrical Work" },
-  { "value": "Plumbing", "label": "Plumbing Services" },
-  { "value": "Carpentry", "label": "Carpentry & Woodwork" },
-  { "value": "HVAC", "label": "HVAC & Climate Control" },
-  { "value": "Construction", "label": "Construction & Building" },
-  { "value": "Painting", "label": "Painting & Decoration" },
-  { "value": "Roofing", "label": "Roofing Services" },
-  { "value": "Masonry", "label": "Masonry & Stonework" }
+  { "value": "Plumbing", "label": "Plumbing" },
+  { "value": "Electrical", "label": "Electrical" },
+  { "value": "Carpentry", "label": "Carpentry" },
+  { "value": "Construction", "label": "Construction" },
+  { "value": "Painting", "label": "Painting" },
+  { "value": "Welding", "label": "Welding" },
+  { "value": "Masonry", "label": "Masonry" },
+  { "value": "HVAC", "label": "HVAC" },
+  { "value": "Roofing", "label": "Roofing" },
+  { "value": "Flooring", "label": "Flooring" }
 ]

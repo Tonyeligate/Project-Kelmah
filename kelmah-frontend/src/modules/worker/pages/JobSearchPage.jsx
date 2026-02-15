@@ -18,6 +18,7 @@ import {
   Button,
   Card,
   CardContent,
+  CardMedia,
   Chip,
   Container,
   Divider,
@@ -386,6 +387,15 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
           },
         }}
       >
+        {job.coverImage && (
+          <CardMedia
+            component="img"
+            height={140}
+            image={job.coverImage}
+            alt={job.title || 'Job image'}
+            sx={{ objectFit: 'cover' }}
+          />
+        )}
         <CardContent
           sx={{ p: { xs: 2, md: 2.5 }, '&:last-child': { pb: { xs: 2, md: 2.5 } } }}
         >

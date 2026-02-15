@@ -4,6 +4,7 @@
 
 const { Bid, Job, UserPerformance } = require('../models');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
+const ServiceClient = require('../services/serviceClient');
 
 // Create a new bid
 exports.createBid = async (req, res, next) => {
@@ -88,6 +89,19 @@ exports.createBid = async (req, res, next) => {
       { path: 'job', select: 'title category locationDetails.region' },
       { path: 'worker', select: 'firstName lastName profilePicture' }
     ]);
+
+    // Notify the hirer that a new bid was received
+    ServiceClient.messaging.sendBidNotification(
+      job.hirer.toString(),
+      'bid:received',
+      {
+        bidId: bid._id,
+        jobId: job._id,
+        jobTitle: job.title,
+        workerName: bid.worker ? `${bid.worker.firstName} ${bid.worker.lastName}` : 'A worker',
+        bidAmount: bidAmount,
+      }
+    ).catch(() => {}); // Fire-and-forget
 
     return successResponse(res, 201, 'Bid created successfully', bid);
   } catch (error) {
@@ -223,6 +237,18 @@ exports.acceptBid = async (req, res, next) => {
     bid.job.bidding.bidStatus = 'closed';
     await bid.job.save();
 
+    // Notify the worker whose bid was accepted
+    ServiceClient.messaging.sendBidNotification(
+      bid.worker.toString(),
+      'bid:accepted',
+      {
+        bidId: bid._id,
+        jobId: bid.job._id,
+        jobTitle: bid.job.title,
+        bidAmount: bid.bidAmount,
+      }
+    ).catch(() => {});
+
     return successResponse(res, 200, 'Bid accepted successfully', bid);
   } catch (error) {
     next(error);
@@ -250,6 +276,19 @@ exports.rejectBid = async (req, res, next) => {
     }
 
     await bid.reject(hirerNotes);
+
+    // Notify the worker whose bid was rejected
+    ServiceClient.messaging.sendBidNotification(
+      bid.worker.toString(),
+      'bid:rejected',
+      {
+        bidId: bid._id,
+        jobId: bid.job._id,
+        jobTitle: bid.job.title,
+        bidAmount: bid.bidAmount,
+        reason: hirerNotes || '',
+      }
+    ).catch(() => {});
 
     return successResponse(res, 200, 'Bid rejected successfully', bid);
   } catch (error) {
@@ -281,6 +320,18 @@ exports.withdrawBid = async (req, res, next) => {
 
     // Update job bid count
     await bid.job.updateBidCount();
+
+    // Notify the hirer that a bidder withdrew
+    ServiceClient.messaging.sendBidNotification(
+      bid.job.hirer.toString(),
+      'bid:withdrawn',
+      {
+        bidId: bid._id,
+        jobId: bid.job._id,
+        jobTitle: bid.job.title,
+        workerName: 'A bidder',
+      }
+    ).catch(() => {});
 
     return successResponse(res, 200, 'Bid withdrawn successfully', bid);
   } catch (error) {

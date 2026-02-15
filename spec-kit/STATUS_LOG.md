@@ -1,5 +1,21 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Implementation Update (Feb 15, 2026 – Edit Job Save Failure Investigation + Error Visibility Fix) ✅
+- 🎯 **Scope Restatement**: Investigate reported "save edited job" failure and determine whether `inject.js` console error is app-related.
+- 🔍 **Root causes identified**:
+  - Browser-console error `inject.js:304 ... className.indexOf is not a function` is from an injected script context (extension/third-party), not Kelmah frontend source.
+  - Edit-job submit path (`JobPostingPage` → `updateHirerJob`) returned rejected async thunk errors without preserving backend message details.
+  - UI therefore surfaced only a generic `Failed to update job` message, obscuring the actionable backend failure reason during edit saves.
+- ✅ **Fixes applied**:
+  - Updated `updateHirerJob` thunk to use `rejectWithValue(...)` and propagate backend error text (`error.response.data.error.message` / `message` fallback).
+  - Updated edit mode primary submit button label from generic "Post Job" to "Save Changes" for clearer user intent alignment.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`
+  - `kelmah-frontend/src/modules/hirer/pages/JobPostingPage.jsx`
+- 🧪 Verification:
+  - VS Code diagnostics: no compile errors introduced in changed files (non-blocking style suggestions only).
+  - Frontend now preserves backend update error detail for investigation and user feedback.
+
 ### Implementation Update (Feb 14, 2026 – Worker Slice Dead-State Cleanup Finalization) ✅
 - 🎯 **Scope Restatement**: Complete remaining low-priority worker-flow cleanup by removing unused slice surface and enforcing stable job-state buckets.
 - 🔍 **Findings addressed**:

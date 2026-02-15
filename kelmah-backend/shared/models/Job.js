@@ -80,6 +80,11 @@ const JobSchema = new mongoose.Schema(
       enum: ["public", "private", "invite-only"],
       default: "public",
     },
+    coverImage: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     attachments: [
       {
         name: String,

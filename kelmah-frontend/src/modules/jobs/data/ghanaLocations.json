@@ -1,11 +1,22 @@
 [
   { "value": "", "label": "All Locations" },
   { "value": "Accra", "label": "Accra, Greater Accra" },
-  { "value": "Kumasi", "label": "Kumasi, Ashanti Region" },
+  { "value": "Kumasi", "label": "Kumasi, Ashanti" },
   { "value": "Tema", "label": "Tema, Greater Accra" },
-  { "value": "Takoradi", "label": "Takoradi, Western Region" },
-  { "value": "Cape Coast", "label": "Cape Coast, Central Region" },
-  { "value": "Tamale", "label": "Tamale, Northern Region" },
-  { "value": "Ho", "label": "Ho, Volta Region" },
-  { "value": "Koforidua", "label": "Koforidua, Eastern Region" }
+  { "value": "Takoradi", "label": "Takoradi, Western" },
+  { "value": "Cape Coast", "label": "Cape Coast, Central" },
+  { "value": "Tamale", "label": "Tamale, Northern" },
+  { "value": "Ho", "label": "Ho, Volta" },
+  { "value": "Koforidua", "label": "Koforidua, Eastern" },
+  { "value": "Kasoa", "label": "Kasoa, Central" },
+  { "value": "Madina", "label": "Madina, Greater Accra" },
+  { "value": "Obuasi", "label": "Obuasi, Ashanti" },
+  { "value": "Ejisu", "label": "Ejisu, Ashanti" },
+  { "value": "Sekondi", "label": "Sekondi, Western" },
+  { "value": "Tarkwa", "label": "Tarkwa, Western" },
+  { "value": "Sunyani", "label": "Sunyani, Bono" },
+  { "value": "Wa", "label": "Wa, Upper West" },
+  { "value": "Bolgatanga", "label": "Bolgatanga, Upper East" },
+  { "value": "Nkawkaw", "label": "Nkawkaw, Eastern" },
+  { "value": "Winneba", "label": "Winneba, Central" }
 ]

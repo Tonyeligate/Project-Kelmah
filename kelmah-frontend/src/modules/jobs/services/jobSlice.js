@@ -40,7 +40,7 @@ export const applyForJob = createAsyncThunk(
   'jobs/applyForJob',
   async ({ jobId, applicationData }, { rejectWithValue }) => {
     try {
-      return await jobsApi.applyForJob(jobId, applicationData);
+      return await jobsApi.applyToJob(jobId, applicationData);
     } catch (error) {
       return rejectWithValue(error.message);
     }

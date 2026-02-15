@@ -33,6 +33,7 @@ import {
 import { motion } from 'framer-motion';
 import { styled } from '@mui/material/styles';
 import JobApplication from '../components/job-application/JobApplication';
+import BidSubmissionForm from '../components/BidSubmissionForm';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchJobById,
@@ -149,6 +150,7 @@ const JobDetailsPage = () => {
   const [saved, setSaved] = useState(false);
   const [savingBookmark, setSavingBookmark] = useState(false);
   const [applicationOpen, setApplicationOpen] = useState(false);
+  const [bidDialogOpen, setBidDialogOpen] = useState(false);
   const locationLabel = getJobLocationLabel(job);
   const skillLabels = normalizeSkillLabels(job?.skills);
   const isAuthenticated = !!secureStorage.getAuthToken();
@@ -618,23 +620,52 @@ const JobDetailsPage = () => {
                     fontWeight: 'medium',
                   }}
                 >
-                  Apply Now
+                  {job?.bidding?.bidStatus === 'open' ? 'Place a Bid' : 'Apply Now'}
                 </Typography>
 
-                <ActionButton
-                  variant="contained"
-                  fullWidth
-                  size="large"
-                  onClick={handleApplyNow}
-                  startIcon={<NoteAlt />}
-                  sx={{
-                    mb: 2,
-                    background: 'linear-gradient(45deg, #FFD700, #FFA500)',
-                    color: '#000',
-                  }}
-                >
-                  Apply for this Job
-                </ActionButton>
+                {job?.bidding?.bidStatus === 'open' ? (
+                  <>
+                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 2 }}>
+                      Budget range: GHS {(job.bidding.minBidAmount || job.budget?.min || 0).toLocaleString()} – {(job.bidding.maxBidAmount || job.budget?.max || 0).toLocaleString()}
+                      {' · '}{job.bidding.currentBidders || 0}/{job.bidding.maxBidders || 5} bids placed
+                    </Typography>
+                    <ActionButton
+                      variant="contained"
+                      fullWidth
+                      size="large"
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          navigate('/login', { state: { from: location.pathname } });
+                          return;
+                        }
+                        setBidDialogOpen(true);
+                      }}
+                      startIcon={<NoteAlt />}
+                      sx={{
+                        mb: 2,
+                        background: 'linear-gradient(45deg, #FFD700, #FFA500)',
+                        color: '#000',
+                      }}
+                    >
+                      Place Your Bid
+                    </ActionButton>
+                  </>
+                ) : (
+                  <ActionButton
+                    variant="contained"
+                    fullWidth
+                    size="large"
+                    onClick={handleApplyNow}
+                    startIcon={<NoteAlt />}
+                    sx={{
+                      mb: 2,
+                      background: 'linear-gradient(45deg, #FFD700, #FFA500)',
+                      color: '#000',
+                    }}
+                  >
+                    Apply for this Job
+                  </ActionButton>
+                )}
 
                 <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
                   <IconButton
@@ -727,6 +758,15 @@ const JobDetailsPage = () => {
             onClose={handleCloseApplication}
             jobId={job?.id}
             jobTitle={job?.title}
+          />
+        )}
+
+        {/* Bid submission dialog */}
+        {job && (
+          <BidSubmissionForm
+            open={bidDialogOpen}
+            onClose={() => setBidDialogOpen(false)}
+            job={job}
           />
         )}
       </Container>

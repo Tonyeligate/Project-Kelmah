@@ -9,6 +9,7 @@ import { normalizeUser } from '../../../utils/userUtils';
 import {
   Card,
   CardContent,
+  CardMedia,
   CardActions,
   Typography,
   Box,
@@ -199,6 +200,16 @@ const EnhancedJobCard = ({
             },
           }}
         >
+          {/* Cover Image */}
+          {job?.coverImage && (
+            <CardMedia
+              component="img"
+              height={160}
+              image={job.coverImage}
+              alt={job?.title || 'Job image'}
+              sx={{ objectFit: 'cover' }}
+            />
+          )}
           {/* Header with Performance Tier */}
           <Box
             sx={{
