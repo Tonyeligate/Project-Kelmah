@@ -2036,9 +2036,9 @@ const advancedJobSearch = async (req, res, next) => {
     // Build aggregation pipeline for advanced search
     const pipeline = [];
 
-    // Match stage - basic filters - FIXED: Use capitalized "Open" status
+    // Match stage - basic filters (tolerate legacy status case variants)
     const matchStage = {
-      status: 'Open',
+      status: { $in: ['open', 'Open'] },
       visibility: 'public'
     };
 
@@ -2304,7 +2304,7 @@ const getJobAnalytics = async (req, res, next) => {
       topSkills
     ] = await Promise.all([
       Job.countDocuments({ visibility: 'public' }),
-      Job.countDocuments({ status: 'Open', visibility: 'public' }),
+      Job.countDocuments({ status: { $in: ['open', 'Open'] }, visibility: 'public' }),
       Job.countDocuments({ status: 'completed', visibility: 'public' }),
       Job.countDocuments({
         createdAt: { $gte: startDate },
@@ -2942,7 +2942,7 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
         { 'requirements.secondarySkills': { $in: allSkills } },
         { skills: { $in: allSkills } }
       ],
-      status: 'Open',
+      status: { $in: ['open', 'Open'] },
       'bidding.bidStatus': 'open'
     })
       .populate('hirer', 'firstName lastName profilePicture')
@@ -2986,7 +2986,7 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
         { 'requirements.secondarySkills': { $in: allSkills } },
         { skills: { $in: allSkills } }
       ],
-      status: 'Open',
+      status: { $in: ['open', 'Open'] },
       'bidding.bidStatus': 'open'
     });
 

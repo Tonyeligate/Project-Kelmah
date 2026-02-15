@@ -1,5 +1,14 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Implementation Update (Feb 15, 2026 – Job Controller Status Case Normalization Sweep) ✅
+- 🎯 **Scope**: Remove remaining `status: 'Open'` query hotspots that can fail against canonical lowercase status data.
+- ✅ **Fixes applied** (file: `kelmah-backend/services/job-service/controllers/job.controller.js`):
+  - `advancedJobSearch` match stage now uses `status: { $in: ['open', 'Open'] }`.
+  - `getJobAnalytics` active jobs count now uses case-tolerant status filter.
+  - `getPersonalizedJobRecommendations` (list + totalCount queries) now use case-tolerant status filter.
+- 📌 **Outcome**:
+  - Eliminates remaining case-sensitivity drift in job-search and recommendation paths.
+
 ### Implementation Update (Feb 15, 2026 – Render Job-Service Boot Crash Fix: Missing Module) ✅
 - 🎯 **Scope**: Resolve Render deployment crash in job-service startup caused by missing module import.
 - 🔍 **Root cause**:
