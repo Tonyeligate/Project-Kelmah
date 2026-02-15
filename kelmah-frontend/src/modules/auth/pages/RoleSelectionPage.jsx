@@ -18,8 +18,8 @@ const RoleSelectionPage = () => {
       <Box
         sx={{
           minHeight: '100vh',
-          backgroundColor: '#181611',
-          color: 'white',
+          bgcolor: 'background.default',
+          color: 'text.primary',
           fontFamily: 'Manrope, "Noto Sans", sans-serif',
           display: 'flex',
           flexDirection: 'column',
@@ -38,7 +38,7 @@ const RoleSelectionPage = () => {
             <Typography
               variant="h6"
               sx={{
-                color: 'white',
+                color: 'text.primary',
                 fontWeight: 'bold',
                 fontSize: '18px',
                 textAlign: 'center',
@@ -53,7 +53,7 @@ const RoleSelectionPage = () => {
             >
               <Button
                 sx={{
-                  color: 'white',
+                  color: 'text.primary',
                   minWidth: 44,
                   minHeight: 44,
                   p: 0,
@@ -87,7 +87,7 @@ const RoleSelectionPage = () => {
           <Typography
             variant="h4"
             sx={{
-              color: 'white',
+              color: 'text.primary',
               fontWeight: 'bold',
               fontSize: '28px',
               textAlign: 'center',
@@ -99,7 +99,7 @@ const RoleSelectionPage = () => {
 
           <Typography
             sx={{
-              color: 'white',
+              color: 'text.secondary',
               fontSize: '16px',
               textAlign: 'center',
               mb: 3,
@@ -122,8 +122,8 @@ const RoleSelectionPage = () => {
             <Button
               onClick={() => handleRoleSelection('worker')}
               sx={{
-                backgroundColor: '#deae10',
-                color: '#181611',
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
                 height: '48px',
                 borderRadius: '24px',
                 fontSize: '16px',
@@ -131,7 +131,7 @@ const RoleSelectionPage = () => {
                 textTransform: 'none',
                 width: '100%',
                 '&:hover': {
-                  backgroundColor: '#c49a0e',
+                  bgcolor: 'primary.dark',
                 },
               }}
             >
@@ -142,8 +142,8 @@ const RoleSelectionPage = () => {
             <Button
               onClick={() => handleRoleSelection('hirer')}
               sx={{
-                backgroundColor: '#393528',
-                color: 'white',
+                bgcolor: 'background.paper',
+                color: 'text.primary',
                 height: '48px',
                 borderRadius: '24px',
                 fontSize: '16px',
@@ -151,7 +151,7 @@ const RoleSelectionPage = () => {
                 textTransform: 'none',
                 width: '100%',
                 '&:hover': {
-                  backgroundColor: '#4a4436',
+                  bgcolor: 'action.hover',
                 },
               }}
             >
@@ -161,7 +161,7 @@ const RoleSelectionPage = () => {
         </Box>
 
         {/* Spacer to replace removed decorative bottom nav */}
-        <Box sx={{ height: '20px', backgroundColor: '#27241c' }} />
+        <Box sx={{ height: '20px', bgcolor: 'background.default' }} />
       </Box>
     );
   }

@@ -42,7 +42,7 @@ const MfaSetupPage = () => {
       <Box
         sx={{ width: '100%', maxWidth: 400, mx: 'auto', textAlign: 'center' }}
       >
-        <Typography variant="h5" gutterBottom sx={isMobile ? { color: '#fff', fontWeight: 700 } : {}}>
+        <Typography variant="h5" gutterBottom sx={isMobile ? { color: 'text.primary', fontWeight: 700 } : {}}>
           Setup Two-Factor Authentication
         </Typography>
         {error && (
@@ -63,7 +63,7 @@ const MfaSetupPage = () => {
               alt="2FA QR Code"
               sx={{ mb: 2, maxWidth: '100%' }}
             />
-            <Typography variant="body2" gutterBottom sx={isMobile ? { color: 'rgba(255,255,255,0.7)' } : {}}>
+            <Typography variant="body2" gutterBottom sx={isMobile ? { color: 'text.secondary' } : {}}>
               Scan this QR code with your authenticator app, then enter the code
               below to verify.
             </Typography>
@@ -75,7 +75,7 @@ const MfaSetupPage = () => {
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 6, style: { fontSize: 16, letterSpacing: '0.3em', textAlign: 'center' } }}
-                sx={isMobile ? { mb: 2, '& .MuiOutlinedInput-root': { backgroundColor: 'rgba(255,255,255,0.08)', color: '#fff' }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.6)' } } : { mb: 2 }}
+                sx={isMobile ? { mb: 2, '& .MuiOutlinedInput-root': { backgroundColor: 'action.hover', color: 'text.primary' }, '& .MuiInputLabel-root': { color: 'text.secondary' } } : { mb: 2 }}
               />
               <Button type="submit" variant="contained" fullWidth sx={{ minHeight: 48, borderRadius: isMobile ? '24px' : 1 }}>
                 Enable 2FA
@@ -83,14 +83,14 @@ const MfaSetupPage = () => {
             </Box>
           </>
         ) : (
-          <Typography sx={isMobile ? { color: 'rgba(255,255,255,0.7)' } : {}}>Loading two-factor setup...</Typography>
+          <Typography sx={isMobile ? { color: 'text.secondary' } : {}}>Loading two-factor setup...</Typography>
         )}
       </Box>
   );
 
   if (isMobile) {
     return (
-      <Box sx={{ minHeight: '100vh', backgroundColor: '#0a0a0a', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', px: 3, py: 4 }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', px: 3, py: 4 }}>
         {mfaContent}
       </Box>
     );

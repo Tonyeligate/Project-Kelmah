@@ -590,10 +590,17 @@ const EnhancedMessagingPage = () => {
                 transition={{ duration: 0.2, delay: index * 0.05 }}
               >
                 <Box
+                  component="button"
+                  type="button"
                   onClick={() => handleConversationSelect(conversation)}
+                  aria-label={`Open conversation with ${otherParticipant?.name || 'participant'}`}
                   sx={{
                     p: 2,
                     cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left',
+                    backgroundColor: 'transparent',
+                    border: 'none',
                     borderBottom: '1px solid rgba(255,255,255,0.05)',
                     background: isSelected
                       ? 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)'
@@ -604,6 +611,10 @@ const EnhancedMessagingPage = () => {
                     transition: 'all 0.2s ease',
                     '&:hover': {
                       background: 'rgba(255,255,255,0.03)',
+                    },
+                    '&:focus-visible': {
+                      outline: '2px solid rgba(255,215,0,0.8)',
+                      outlineOffset: -2,
                     },
                   }}
                 >
@@ -655,7 +666,10 @@ const EnhancedMessagingPage = () => {
                             fontSize: '0.95rem',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
+                            whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                            display: { xs: '-webkit-box', sm: 'block' },
+                            WebkitLineClamp: { xs: 2, sm: 'unset' },
+                            WebkitBoxOrient: { xs: 'vertical', sm: 'unset' },
                             flex: 1,
                           }}
                         >
@@ -707,7 +721,10 @@ const EnhancedMessagingPage = () => {
                             fontSize: '0.85rem',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
+                            whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                            display: { xs: '-webkit-box', sm: 'block' },
+                            WebkitLineClamp: { xs: 2, sm: 'unset' },
+                            WebkitBoxOrient: { xs: 'vertical', sm: 'unset' },
                             flex: 1,
                           }}
                         >
@@ -1035,7 +1052,7 @@ const EnhancedMessagingPage = () => {
                     <Box
                       sx={{
                         maxWidth: { xs: '85%', sm: '70%' },
-                        minWidth: '120px',
+                        minWidth: { xs: '84px', sm: '120px' },
                       }}
                     >
                       <Paper
@@ -1205,7 +1222,7 @@ const EnhancedMessagingPage = () => {
                       borderRadius: 2,
                       background: 'rgba(255,215,0,0.1)',
                       border: '1px solid rgba(255,215,0,0.3)',
-                      minWidth: '120px',
+                      minWidth: { xs: '92px', sm: '120px' },
                       position: 'relative',
                     }}
                   >
@@ -1222,14 +1239,14 @@ const EnhancedMessagingPage = () => {
                         right: -8,
                         background: '#F44336',
                         color: '#fff',
-                        width: 20,
-                        height: 20,
+                        width: 28,
+                        height: 28,
                         '&:hover': {
                           background: '#D32F2F',
                         },
                       }}
                     >
-                      <CloseIcon sx={{ fontSize: 12 }} />
+                      <CloseIcon sx={{ fontSize: 14 }} />
                     </IconButton>
 
                     {file.type.startsWith('image/') ? (
@@ -1512,6 +1529,8 @@ const EnhancedMessagingPage = () => {
                 const otherParticipant = getOtherParticipant(conversation);
                 return (
                 <Paper
+                  component="button"
+                  type="button"
                   key={conversation.id}
                   sx={{
                     backgroundColor: '#24231e',
@@ -1520,10 +1539,18 @@ const EnhancedMessagingPage = () => {
                     mb: 1.5,
                     border: '1px solid #35332c',
                     cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left',
+                    color: 'inherit',
                     '&:hover': {
                       backgroundColor: '#2a2926',
                     },
+                    '&:focus-visible': {
+                      outline: '2px solid rgba(255,215,0,0.8)',
+                      outlineOffset: 2,
+                    },
                   }}
+                  aria-label={`Open conversation with ${otherParticipant?.name || 'participant'}`}
                   onClick={() => handleConversationSelect(conversation)}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -1571,7 +1598,10 @@ const EnhancedMessagingPage = () => {
                             fontWeight: 'bold',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
+                            whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                            display: { xs: '-webkit-box', sm: 'block' },
+                            WebkitLineClamp: { xs: 2, sm: 'unset' },
+                            WebkitBoxOrient: { xs: 'vertical', sm: 'unset' },
                           }}
                         >
                           {otherParticipant?.name || 'Unknown'}
@@ -1602,7 +1632,10 @@ const EnhancedMessagingPage = () => {
                             fontSize: '0.875rem',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
+                            whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                            display: { xs: '-webkit-box', sm: 'block' },
+                            WebkitLineClamp: { xs: 2, sm: 'unset' },
+                            WebkitBoxOrient: { xs: 'vertical', sm: 'unset' },
                             flex: 1,
                           }}
                         >
@@ -1930,6 +1963,7 @@ const EnhancedMessagingPage = () => {
           onClose={() => setNewChatDialog(false)}
           maxWidth="sm"
           fullWidth
+          fullScreen={isMobile}
           PaperProps={{
             sx: {
               background:

@@ -39,6 +39,7 @@ router.put('/methods/:methodId/default', paymentProxy); // Set default payment m
 
 // Transaction routes
 router.get('/transactions', paymentProxy); // Get user transactions
+router.get('/transactions/history', paymentProxy); // Transaction history alias expected by FE
 router.get('/transactions/:transactionId', paymentProxy); // Get specific transaction
 router.post('/transactions', paymentProxy); // Create transaction
 
@@ -100,8 +101,6 @@ router.get('/disputes/:disputeId', paymentProxy); // Get dispute details
 router.get('/bills', paymentProxy);
 router.post('/bills/:billId/pay', paymentProxy);
 
-// Transaction history alias expected by FE
-router.get('/transactions/history', paymentProxy);
 router.post('/admin/payouts/queue', paymentProxy);
 router.post('/admin/payouts/process', paymentProxy);
 router.get('/admin/payouts', paymentProxy);

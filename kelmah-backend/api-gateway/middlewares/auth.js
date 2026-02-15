@@ -24,6 +24,16 @@ function cacheSet(key, value) {
   userCache.set(key, value);
 }
 
+const sendAuthError = (res, status, message, code = 'AUTHENTICATION_ERROR') => {
+  return res.status(status).json({
+    success: false,
+    error: {
+      message,
+      code,
+    },
+  });
+};
+
 /**
  * Main authentication middleware
  * Validates JWT tokens and populates req.user for downstream services
@@ -33,18 +43,12 @@ const authenticate = async (req, res, next) => {
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ 
-        error: 'Authentication required',
-        message: 'No token provided' 
-      });
+      return sendAuthError(res, 401, 'No token provided', 'AUTH_REQUIRED');
     }
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
     if (!token) {
-      return res.status(401).json({ 
-        error: 'Authentication required',
-        message: 'Invalid token format' 
-      });
+      return sendAuthError(res, 401, 'Invalid token format', 'INVALID_TOKEN_FORMAT');
     }
 
     // Verify JWT token using shared utility
@@ -53,16 +57,10 @@ const authenticate = async (req, res, next) => {
       decoded = jwtUtils.verifyAccessToken(token);
     } catch (jwtError) {
       if (jwtError.name === 'TokenExpiredError') {
-        return res.status(401).json({ 
-          error: 'Token expired',
-          message: 'Please refresh your token' 
-        });
+        return sendAuthError(res, 401, 'Please refresh your token', 'TOKEN_EXPIRED');
       }
       if (jwtError.name === 'JsonWebTokenError') {
-        return res.status(401).json({ 
-          error: 'Invalid token',
-          message: 'Token verification failed' 
-        });
+        return sendAuthError(res, 401, 'Token verification failed', 'INVALID_TOKEN');
       }
       throw jwtError; // Re-throw unexpected errors
     }
@@ -70,10 +68,7 @@ const authenticate = async (req, res, next) => {
     // Extract user ID from token
     const userId = decoded.sub || decoded.id;
     if (!userId) {
-      return res.status(401).json({ 
-        error: 'Invalid token',
-        message: 'Token missing user ID' 
-      });
+      return sendAuthError(res, 401, 'Token missing user ID', 'INVALID_TOKEN_PAYLOAD');
     }
 
     // Check cache first
@@ -85,20 +80,14 @@ const authenticate = async (req, res, next) => {
       try {
         user = await User.findById(userId).select('-password');
         if (!user) {
-          return res.status(401).json({ 
-            error: 'User not found',
-            message: 'Token references non-existent user' 
-          });
+          return sendAuthError(res, 401, 'Token references non-existent user', 'USER_NOT_FOUND');
         }
 
         // Cache user for performance
         cacheSet(cacheKey, { ...user.toObject(), cachedAt: Date.now() });
       } catch (dbError) {
         console.error('Database error during authentication:', dbError);
-        return res.status(500).json({ 
-          error: 'Authentication error',
-          message: 'Unable to verify user' 
-        });
+        return sendAuthError(res, 500, 'Unable to verify user', 'AUTH_DB_ERROR');
       }
     }
 
@@ -125,10 +114,7 @@ const authenticate = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Authentication middleware error:', error);
-    return res.status(500).json({ 
-      error: 'Authentication error',
-      message: 'Internal authentication failure' 
-    });
+    return sendAuthError(res, 500, 'Internal authentication failure', 'AUTH_INTERNAL_ERROR');
   }
 };
 

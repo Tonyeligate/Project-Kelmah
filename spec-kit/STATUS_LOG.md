@@ -1,5 +1,67 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Implementation Update (Feb 15, 2026 – Suggestions Multi-Prefix Probe + Recall Hardening Patch) ✅
+- 🎯 **Scope**: Execute targeted live probe for vocational suggestion prefixes and apply backend recall hardening.
+- 🧪 **Live probe (deployed gateway)**:
+  - `GET /api/jobs/suggestions?q=plumb` → `200`, `COUNT=0`
+  - `GET /api/jobs/suggestions?q=carp` → `200`, `COUNT=0`
+  - `GET /api/jobs/suggestions?q=elect` → `200`, `COUNT=0`
+- ✅ **Backend hardening applied (local code)**:
+  - File: `kelmah-backend/services/job-service/controllers/job.controller.js`
+  - Expanded suggestions matching to include contains-pattern search for title/category/skills/requirements and location details fields.
+  - Added tolerant visibility handling (`public` + missing/null metadata).
+  - Added fallback status-only query when strict pass yields zero matches.
+  - Added `locationDetails.region/district` to suggestion generation.
+- 📌 **Outcome**:
+  - Live endpoint is healthy but under-returning; recall hardening is implemented locally and will reflect after deployment.
+
+### Implementation Update (Feb 15, 2026 – Job/Marketing Post-Deploy Verification Checkpoint) ✅
+- 🎯 **Scope**: Re-verify deployed gateway behavior for public job detail access and suggestions after the dry-audit fix pass.
+- 🧪 **Verification (deployed gateway)**:
+  - `GET /api/jobs/suggestions?q=plum` → `200` with `data: []` (deployed runtime still not reflecting local suggestions improvement).
+  - `GET /api/jobs?limit=1` → `200`, sample job id resolved: `692a9e756e71839af3a8d7bf`.
+  - `GET /api/jobs/692a9e756e71839af3a8d7bf` (unauthenticated) → `200` (public job detail access confirmed live).
+- 📌 **Conclusion**:
+  - Public marketing funnel route behavior is now confirmed in deployed runtime for job detail access.
+  - Suggestions behavior remains `200`/empty in deployed runtime and still depends on deployment state alignment.
+
+### Implementation Update (Feb 15, 2026 – Job/Marketing Dry Audit + Mobile/Backend Fix Pass Complete) ✅
+- 🎯 **Scope**: Mobile-first dry audit + targeted fixes across public job marketing flow and worker find-work flow, including backend filter/suggestion behavior.
+- ✅ **Frontend fixes applied**:
+  - Opened `/jobs/:id` as public route (removed frontend auth gate).
+  - Added mobile accessibility/touch-target hardening in worker find-work search and save actions.
+  - Added bottom safe-area padding to mobile filter drawer.
+  - Added `aria-label` to jobs card view/save/share icon actions.
+- ✅ **Backend fixes applied**:
+  - Fixed search suggestions status mismatch (`Open` vs canonical `open`).
+  - Expanded location filter matching fields to include `location.address`, `locationDetails.region`, and `locationDetails.district`.
+- 🧾 **Files updated**:
+  - `kelmah-frontend/src/routes/config.jsx`
+  - `kelmah-frontend/src/modules/worker/pages/JobSearchPage.jsx`
+  - `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+  - `kelmah-backend/services/job-service/controllers/job.controller.js`
+  - `spec-kit/JOB_MARKETING_DRY_AUDIT_FEB15_2026.md`
+- 🧪 **Verification**:
+  - Diagnostics: no new compile/runtime errors in modified files.
+  - API smoke via gateway:
+    - `GET /api/jobs?location=Accra&limit=3` → `200` with jobs returned.
+    - `GET /api/jobs/suggestions?q=plum` → `200` (empty on current deployed runtime; local fix is in code and applies after deployment).
+
+### Implementation Update (Feb 15, 2026 – Job/Marketing Dry Audit + Mobile/Backend Fix Pass) 🔄
+- 🎯 **Scope**: Dry-audit job + marketing discovery flow (`/jobs`, `/worker/find-work`) and fix high-impact mobile UX + backend filtering/suggestions defects.
+- 📁 **Audit doc created**:
+  - `spec-kit/JOB_MARKETING_DRY_AUDIT_FEB15_2026.md`
+- 🔍 **Dry-audit completed on file surface**:
+  - Frontend routes/pages/services/layout nav for jobs/marketing
+  - Gateway job forwarding and job-service routes/controllers/validations
+- 🧭 **Root causes identified for fix pass**:
+  - Public job detail route is auth-gated in frontend routing.
+  - Suggestions endpoint queries `status: 'Open'` instead of canonical lowercase status.
+  - Location filtering misses canonical location fields (`location.address`, `locationDetails.region/district`).
+  - Mobile touch-target/accessibility gaps in worker find-work controls.
+  - Mobile filter drawer lacks safe-area bottom spacing.
+- ⏭️ **Next**: apply minimal code fixes and verify via diagnostics + API smoke checks.
+
 ### Implementation Update (Feb 15, 2026 – Theme Toggle Runtime Crash Fix) ✅
 - 🎯 **Scope**: Investigate production `onClick` runtime failure (`TypeError: t is not a function`) and restore light/dark mode switching.
 - 🔍 **Root cause**:

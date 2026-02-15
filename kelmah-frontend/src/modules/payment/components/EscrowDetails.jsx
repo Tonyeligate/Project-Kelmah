@@ -12,6 +12,11 @@ import {
   Box,
   LinearProgress,
   Link as MuiLink,
+  Card,
+  CardContent,
+  Stack,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 
@@ -26,12 +31,53 @@ const getStatusChip = (status) => {
 };
 
 const EscrowDetails = ({ escrows }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  if (isMobile) {
+    return (
+      <Stack spacing={1.5}>
+        {escrows.map((row) => {
+          const progress = row.totalAmount > 0
+            ? (row.releasedAmount / row.totalAmount) * 100
+            : 0;
+          return (
+            <Card key={row.id} variant="outlined">
+              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                <Stack spacing={1}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
+                    <MuiLink component={Link} to={`/jobs/${row.jobId}`} underline="hover" sx={{ fontWeight: 600 }}>
+                      {row.jobTitle}
+                    </MuiLink>
+                    {getStatusChip(row.status)}
+                  </Stack>
+                  <Typography variant="body2" color="text.secondary">
+                    Hirer: {row.hirer?.name || 'Unknown'}
+                  </Typography>
+                  <Typography variant="subtitle2" fontWeight="bold">
+                    Total: ${row.totalAmount.toFixed(2)}
+                  </Typography>
+                  <Box>
+                    <LinearProgress variant="determinate" value={progress} />
+                    <Typography variant="caption" color="text.secondary">
+                      ${row.releasedAmount.toFixed(2)} Released
+                    </Typography>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </Stack>
+    );
+  }
+
   return (
     <TableContainer
       component={Paper}
       sx={{ boxShadow: 'none', borderRadius: 0 }}
     >
-      <Table sx={{ minWidth: 650 }} aria-label="escrow details table">
+      <Table sx={{ minWidth: { xs: 0, md: 650 } }} aria-label="escrow details table">
         <TableHead>
           <TableRow>
             <TableCell>Job</TableCell>

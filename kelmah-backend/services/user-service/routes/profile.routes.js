@@ -12,12 +12,12 @@ try {
 
   // Get worker portfolio (public read)
   router.get('/workers/:workerId/portfolio', PortfolioController.getWorkerPortfolio);
-  // Get single portfolio item (public read)
-  router.get('/portfolio/:id', PortfolioController.getPortfolioItem);
   // Search featured
   router.get('/portfolio/featured', PortfolioController.getFeaturedPortfolio);
   // Search portfolio
   router.get('/portfolio/search', PortfolioController.searchPortfolio);
+  // Get single portfolio item (public read)
+  router.get('/portfolio/:id', PortfolioController.getPortfolioItem);
   router.get('/workers/:workerId/portfolio/stats', PortfolioController.getPortfolioStats);
   // Manage portfolio
   router.post('/portfolio', verifyGatewayRequest, PortfolioController.createPortfolioItem);

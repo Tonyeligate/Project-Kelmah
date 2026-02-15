@@ -435,7 +435,7 @@ const ProfessionalMapPage = () => {
   return (
     <Box
       sx={{
-        height: 'calc(100vh - 64px)',
+        height: 'calc(100dvh - 64px)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',

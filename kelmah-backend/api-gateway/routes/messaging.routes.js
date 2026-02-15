@@ -28,8 +28,8 @@ const conversationProxy = (req, res, next) => {
     target: getServiceUrl(req),
     requireAuth: true,
     pathRewrite: {
-      '^/api/messages/conversations$': '/api/conversations',
-      '^/api/messages/conversations/': '/api/conversations/'
+      '^/api/messages/conversations': '/api/conversations',
+      '^/api/messaging/conversations': '/api/conversations'
     }
   });
   return proxy(req, res, next);
@@ -78,7 +78,7 @@ router.delete('/messages/:messageId', messagingProxy); // Delete message
 
 // Message status
 router.put('/messages/:messageId/read', messagingProxy); // Mark message as read
-router.put('/conversations/:conversationId/read', messagingProxy); // Mark all messages as read
+router.put('/conversations/:conversationId/read', conversationProxy); // Mark all messages as read
 
 // File attachments (aliases)
 router.post('/attachments/upload', messagingProxy); // Alias for dev uploads

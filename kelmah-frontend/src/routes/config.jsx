@@ -270,14 +270,7 @@ const routes = [
         path: 'jobs',
         children: [
           { index: true, element: <JobsPage /> },
-          {
-            path: ':id',
-            element: (
-              <ProtectedRoute>
-                <JobDetailsPage />
-              </ProtectedRoute>
-            ),
-          },
+          { path: ':id', element: <JobDetailsPage /> },
         ],
       },
       {

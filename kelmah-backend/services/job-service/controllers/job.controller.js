@@ -714,20 +714,39 @@ const getSearchSuggestions = async (req, res, next) => {
     const jobsCollection = db.collection('jobs');
     const usersCollection = db.collection('users');
 
-    const jobs = await jobsCollection
+    const searchMatch = {
+      $or: [
+        { title: startsWithRegex },
+        { title: containsRegex },
+        { category: startsWithRegex },
+        { category: containsRegex },
+        { 'requirements.primarySkills': startsWithRegex },
+        { 'requirements.primarySkills': containsRegex },
+        { 'requirements.secondarySkills': startsWithRegex },
+        { 'requirements.secondarySkills': containsRegex },
+        { skills: startsWithRegex },
+        { skills: containsRegex },
+        { 'location.city': startsWithRegex },
+        { 'location.region': startsWithRegex },
+        { 'location.address': containsRegex },
+        { 'locationDetails.region': containsRegex },
+        { 'locationDetails.district': containsRegex }
+      ]
+    };
+
+    const strictVisibilityMatch = {
+      status: { $in: ['open', 'Open'] },
+      $or: [
+        { visibility: 'public' },
+        { visibility: { $exists: false } },
+        { visibility: null }
+      ]
+    };
+
+    let jobs = await jobsCollection
       .find({
-        status: 'Open',
-        visibility: 'public',
-        $or: [
-          { title: startsWithRegex },
-          { category: startsWithRegex },
-          { 'requirements.primarySkills': startsWithRegex },
-          { 'requirements.secondarySkills': startsWithRegex },
-          { skills: startsWithRegex },
-          { 'location.city': startsWithRegex },
-          { 'location.region': startsWithRegex },
-          { 'location.address': containsRegex }
-        ]
+        ...strictVisibilityMatch,
+        ...searchMatch
       })
       .project({
         title: 1,
@@ -735,11 +754,35 @@ const getSearchSuggestions = async (req, res, next) => {
         skills: 1,
         requirements: 1,
         location: 1,
+        locationDetails: 1,
         hirer: 1,
         createdAt: 1
       })
       .limit(40)
       .toArray();
+
+    // Fallback: if strict public visibility pass returns nothing, retry with status-only.
+    // This preserves user experience when older records are missing visibility metadata.
+    if (jobs.length === 0) {
+      jobs = await jobsCollection
+        .find({
+          status: { $in: ['open', 'Open'] },
+          ...searchMatch
+        })
+        .project({
+          title: 1,
+          category: 1,
+          skills: 1,
+          requirements: 1,
+          location: 1,
+          locationDetails: 1,
+          hirer: 1,
+          createdAt: 1,
+          visibility: 1
+        })
+        .limit(40)
+        .toArray();
+    }
 
     const hirerIds = Array.from(
       new Set(
@@ -819,6 +862,9 @@ const getSearchSuggestions = async (req, res, next) => {
         registerSuggestion('location', location.region);
         registerSuggestion('location', location.country);
       }
+      const locationDetails = job.locationDetails || {};
+      registerSuggestion('location', locationDetails.region);
+      registerSuggestion('location', locationDetails.district);
       if (job.hirer) {
         const hirer = hirerMap.get(job.hirer.toString());
         if (hirer) {
@@ -889,14 +935,22 @@ const getSearchSuggestions = async (req, res, next) => {
 const getJobs = async (req, res, next) => {
   try {
     const mongoose = require('mongoose');
-    console.log('[GET JOBS] Starting getJobs function');
-    console.log('[GET JOBS] Mongoose connection state:', mongoose.connection.readyState);
+    const isDebugJobs = process.env.JOB_SERVICE_DEBUG === 'true';
+    const escapeRegex = (value) =>
+      String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    if (isDebugJobs) {
+      console.log('[GET JOBS] Starting getJobs function');
+      console.log('[GET JOBS] Mongoose connection state:', mongoose.connection.readyState);
+    }
 
     // CHECK IF JOB MODEL IS USING THE CONNECTED MONGOOSE INSTANCE
-    console.log('[GET JOBS] Job model database:', Job.db ? Job.db.databaseName : 'NO DB');
-    console.log('[GET JOBS] Job model connection state:', Job.db ? Job.db.readyState : 'NO DB');
-    console.log('[GET JOBS] Main mongoose database:', mongoose.connection.name);
-    console.log('[GET JOBS] Same connection?:', Job.db === mongoose.connection);
+    if (isDebugJobs) {
+      console.log('[GET JOBS] Job model database:', Job.db ? Job.db.databaseName : 'NO DB');
+      console.log('[GET JOBS] Job model connection state:', Job.db ? Job.db.readyState : 'NO DB');
+      console.log('[GET JOBS] Main mongoose database:', mongoose.connection.name);
+      console.log('[GET JOBS] Same connection?:', Job.db === mongoose.connection);
+    }
 
     // Try direct MongoDB driver query to bypass Mongoose
     try {
@@ -904,28 +958,41 @@ const getJobs = async (req, res, next) => {
       const db = client.db();
       const jobsCollection = db.collection('jobs');
       const directCount = await jobsCollection.countDocuments({ status: 'open', visibility: 'public' });
-      console.log('[GET JOBS] Direct driver query SUCCESS - open jobs count:', directCount);
+      if (isDebugJobs) {
+        console.log('[GET JOBS] Direct driver query SUCCESS - open jobs count:', directCount);
+      }
 
       // If direct query works, try to use it
       if (directCount > 0) {
-        console.log('[GET JOBS] USING DIRECT DRIVER QUERY as workaround');
+        if (isDebugJobs) {
+          console.log('[GET JOBS] USING DIRECT DRIVER QUERY as workaround');
+        }
       }
     } catch (clientError) {
-      console.error('[GET JOBS] Error with direct driver query:', clientError.message);
+      if (isDebugJobs) {
+        console.error('[GET JOBS] Error with direct driver query:', clientError.message);
+      }
     }
 
-    console.log('[GET JOBS] Query params:', JSON.stringify(req.query));
+    if (isDebugJobs) {
+      console.log('[GET JOBS] Query params:', JSON.stringify(req.query));
+    }
 
     // Pagination
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const requestedLimit = parseInt(req.query.limit, 10) || 10;
+    const limit = Math.min(Math.max(requestedLimit, 1), 50);
     const startIndex = (page - 1) * limit;
 
-    console.log('[GET JOBS] Pagination:', { page, limit, startIndex });
+    if (isDebugJobs) {
+      console.log('[GET JOBS] Pagination:', { page, limit, startIndex });
+    }
 
     // Build query - Use lowercase "open" status (matches database canonical values)
     let query = { status: "open", visibility: "public" };
-    console.log('[GET JOBS] Initial query:', JSON.stringify(query));
+    if (isDebugJobs) {
+      console.log('[GET JOBS] Initial query:', JSON.stringify(query));
+    }
 
     // Filtering
     if (req.query.category) {
@@ -958,14 +1025,21 @@ const getJobs = async (req, res, next) => {
         query.$or = [
           { "location.city": { $in: locations } },
           { "location.region": { $in: locations } },
-          { "location.country": { $in: locations } }
+          { "location.country": { $in: locations } },
+          { "location.address": { $in: locations } },
+          { "locationDetails.region": { $in: locations } },
+          { "locationDetails.district": { $in: locations } }
         ];
       } else {
         // Single location - search across city, region, country
+        const safeLocation = escapeRegex(req.query.location);
         query.$or = [
-          { "location.city": { $regex: req.query.location, $options: "i" } },
-          { "location.region": { $regex: req.query.location, $options: "i" } },
-          { "location.country": { $regex: req.query.location, $options: "i" } }
+          { "location.city": { $regex: safeLocation, $options: "i" } },
+          { "location.region": { $regex: safeLocation, $options: "i" } },
+          { "location.country": { $regex: safeLocation, $options: "i" } },
+          { "location.address": { $regex: safeLocation, $options: "i" } },
+          { "locationDetails.region": { $regex: safeLocation, $options: "i" } },
+          { "locationDetails.district": { $regex: safeLocation, $options: "i" } }
         ];
       }
     }
@@ -1023,12 +1097,17 @@ const getJobs = async (req, res, next) => {
 
     // Search with advanced text search
     if (req.query.search) {
-      const searchTerms = req.query.search.trim().split(' ');
+      const normalizedSearch = String(req.query.search).trim().slice(0, 120);
+      const safeSearch = escapeRegex(normalizedSearch);
+      const searchTerms = normalizedSearch
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 8);
       const searchConditions = [
-        { title: { $regex: req.query.search, $options: "i" } },
-        { description: { $regex: req.query.search, $options: "i" } },
-        { skills: { $in: searchTerms.map(term => new RegExp(term, 'i')) } },
-        { category: { $regex: req.query.search, $options: "i" } }
+        { title: { $regex: safeSearch, $options: "i" } },
+        { description: { $regex: safeSearch, $options: "i" } },
+        { skills: { $in: searchTerms.map((term) => new RegExp(escapeRegex(term), 'i')) } },
+        { category: { $regex: safeSearch, $options: "i" } }
       ];
       // If location filter already set $or, combine with $and to prevent conflict
       if (query.$or) {
@@ -1044,9 +1123,11 @@ const getJobs = async (req, res, next) => {
     }
 
     // Execute query with pagination
-    console.log('[GET JOBS] About to execute query...');
-    console.log('[GET JOBS] Final query:', JSON.stringify(query));
-    console.log('[GET JOBS] Sort:', req.query.sort || "-createdAt");
+    if (isDebugJobs) {
+      console.log('[GET JOBS] About to execute query...');
+      console.log('[GET JOBS] Final query:', JSON.stringify(query));
+      console.log('[GET JOBS] Sort:', req.query.sort || "-createdAt");
+    }
 
     // WORKAROUND: Use direct MongoDB driver because Mongoose model is disconnected
     const client = mongoose.connection.getClient();
@@ -1083,8 +1164,10 @@ const getJobs = async (req, res, next) => {
       .maxTimeMS(20000);
 
     const jobs = await jobsCursor.toArray();
-    console.log('[GET JOBS] Direct driver query executed successfully');
-    console.log('[GET JOBS] Jobs found:', jobs.length);
+    if (isDebugJobs) {
+      console.log('[GET JOBS] Direct driver query executed successfully');
+      console.log('[GET JOBS] Jobs found:', jobs.length);
+    }
 
     // Manually populate hirer data with all required fields
     const hirerIds = [...new Set(jobs.map(j => j.hirer).filter(Boolean))];
@@ -1122,7 +1205,9 @@ const getJobs = async (req, res, next) => {
     let total = startIndex + jobs.length;
     const shouldGetTotal = jobs.length === limit || page > 1;
     if (shouldGetTotal) {
-      console.log('[GET JOBS] Getting total count...');
+      if (isDebugJobs) {
+        console.log('[GET JOBS] Getting total count...');
+      }
       const countOptions = {};
       if (!req.query.search && !req.query.location && !req.query.skills) {
         countOptions.hint = { status: 1, visibility: 1, createdAt: -1 };
@@ -1133,16 +1218,24 @@ const getJobs = async (req, res, next) => {
           ...countOptions,
           maxTimeMS: 5000,
         });
-        console.log('[GET JOBS] Total jobs:', total);
+        if (isDebugJobs) {
+          console.log('[GET JOBS] Total jobs:', total);
+        }
       } catch (countError) {
-        console.warn('[GET JOBS] countDocuments timed out, using fallback total:', countError.message);
+        if (isDebugJobs) {
+          console.warn('[GET JOBS] countDocuments timed out, using fallback total:', countError.message);
+        }
         total = startIndex + jobs.length + (jobs.length === limit ? limit : 0);
       }
     } else {
-      console.log('[GET JOBS] Skipping total count lookup; derived total:', total);
+      if (isDebugJobs) {
+        console.log('[GET JOBS] Skipping total count lookup; derived total:', total);
+      }
     }
 
-    console.log('[GET JOBS] Sending response...');
+    if (isDebugJobs) {
+      console.log('[GET JOBS] Sending response...');
+    }
     return paginatedResponse(
       res,
       200,

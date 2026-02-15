@@ -39,31 +39,37 @@ const SERVICE_CONFIG = {
   auth: {
     local: 'http://localhost:5001',
     cloud: process.env.AUTH_SERVICE_CLOUD_URL,
+    cloudFallbacks: ['https://kelmah-auth-service.onrender.com'],
     name: 'Auth Service'
   },
   user: {
     local: 'http://localhost:5002',
     cloud: process.env.USER_SERVICE_CLOUD_URL,
+    cloudFallbacks: ['https://kelmah-user-service.onrender.com'],
     name: 'User Service'
   },
   job: {
     local: 'http://localhost:5003',
     cloud: process.env.JOB_SERVICE_CLOUD_URL,
+    cloudFallbacks: ['https://kelmah-job-service.onrender.com'],
     name: 'Job Service'
   },
   payment: {
     local: 'http://localhost:5004',
     cloud: process.env.PAYMENT_SERVICE_CLOUD_URL,
+    cloudFallbacks: ['https://kelmah-payment-service.onrender.com'],
     name: 'Payment Service'
   },
   messaging: {
     local: 'http://localhost:5005',
     cloud: process.env.MESSAGING_SERVICE_CLOUD_URL,
+    cloudFallbacks: ['https://kelmah-messaging-service.onrender.com'],
     name: 'Messaging Service'
   },
   review: {
     local: 'http://localhost:5006',
     cloud: process.env.REVIEW_SERVICE_CLOUD_URL,
+    cloudFallbacks: ['https://kelmah-review-service.onrender.com'],
     name: 'Review Service'
   }
 };
@@ -102,19 +108,34 @@ const resolveServiceUrl = async (serviceName) => {
   // Flexible URL selection for production - both local and cloud are valid options
   let urlsToTry;
 
+  const fallbackCloudUrls = Array.isArray(config.cloudFallbacks)
+    ? config.cloudFallbacks.filter(Boolean)
+    : [];
+
+  const unique = (options) => {
+    const seen = new Set();
+    return options.filter((option) => {
+      if (!option?.url || seen.has(option.url)) return false;
+      seen.add(option.url);
+      return true;
+    });
+  };
+
   if (environment === 'production') {
     // In production, try both cloud and local - use whichever is available
     // This allows local testing and cloud deployment flexibility
-    urlsToTry = [
+    urlsToTry = unique([
       { url: config.cloud, type: 'cloud' },
+      ...fallbackCloudUrls.map((url) => ({ url, type: 'cloud-fallback' })),
       { url: config.local, type: 'local' }
-    ].filter(option => option.url); // Remove null/undefined URLs
+    ]);
   } else {
     // In development, prefer local, fallback to cloud
-    urlsToTry = [
+    urlsToTry = unique([
       { url: config.local, type: 'local' },
-      { url: config.cloud, type: 'cloud' }
-    ].filter(option => option.url);
+      { url: config.cloud, type: 'cloud' },
+      ...fallbackCloudUrls.map((url) => ({ url, type: 'cloud-fallback' }))
+    ]);
   }
 
   // Manual override via environment variables (highest priority)

@@ -568,7 +568,7 @@ const JobManagementPage = () => {
           <Tab
             label={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <span>{isMobile ? 'X' : 'Cancelled'}</span>
+                <span>{isMobile ? 'Closed' : 'Cancelled'}</span>
                 {jobs.filter((job) => job.status === 'cancelled').length >
                   0 && (
                     <Chip

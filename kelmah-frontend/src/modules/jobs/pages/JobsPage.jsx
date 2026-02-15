@@ -766,7 +766,7 @@ const JobsPage = () => {
 
   return (
     <ErrorBoundary>
-      <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', color: 'white' }}>
+      <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', color: 'text.primary' }}>
         {/* Breadcrumb Navigation */}
         <BreadcrumbNavigation />
 
@@ -2137,6 +2137,7 @@ const JobsPage = () => {
                               }
                               navigate(`/jobs/${job.id}`);
                             }}
+                            aria-label="View job details"
                             sx={{
                               color: '#D4AF37',
                               minWidth: { xs: '44px', sm: '40px' }, // ✅ Touch-friendly size
@@ -2167,6 +2168,7 @@ const JobsPage = () => {
                                 'Bookmark functionality to be implemented',
                               );
                             }}
+                            aria-label="Save job"
                             sx={{
                               color: '#D4AF37',
                               minWidth: { xs: '44px', sm: '40px' }, // ✅ Touch-friendly size
@@ -2200,6 +2202,7 @@ const JobsPage = () => {
                                 console.log('Job link copied to clipboard');
                               }
                             }}
+                            aria-label="Share job"
                             sx={{
                               color: '#D4AF37',
                               minWidth: { xs: '44px', sm: '40px' },

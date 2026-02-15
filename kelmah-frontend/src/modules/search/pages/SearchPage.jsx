@@ -31,7 +31,7 @@ const PageWrapper = styled(Box)(({ theme }) => ({
   padding: theme.spacing(0, 0, 4),
   backgroundColor: theme.palette.background.default,
   color: theme.palette.text.primary,
-  minHeight: 'calc(100vh - 64px)',
+  minHeight: 'calc(100dvh - 64px)',
 }));
 
 const extractLocationString = (location) => {

@@ -42,8 +42,8 @@ const ForgotPasswordPage = () => {
       <Box
         sx={{
           minHeight: '100vh',
-          backgroundColor: '#181611',
-          color: 'white',
+          bgcolor: 'background.default',
+          color: 'text.primary',
           fontFamily: 'Manrope, "Noto Sans", sans-serif',
           display: 'flex',
           flexDirection: 'column',
@@ -61,7 +61,7 @@ const ForgotPasswordPage = () => {
           >
             <IconButton
               onClick={() => navigate('/login')}
-              sx={{ color: 'white', mr: 2, minWidth: 44, minHeight: 44 }}
+              sx={{ color: 'text.primary', mr: 2, minWidth: 44, minHeight: 44 }}
               aria-label="Back to login"
             >
               <ArrowBack />
@@ -69,7 +69,7 @@ const ForgotPasswordPage = () => {
             <Typography
               variant="h6"
               sx={{
-                color: 'white',
+                color: 'text.primary',
                 fontWeight: 'bold',
                 fontSize: '18px',
                 textAlign: 'center',
@@ -87,7 +87,7 @@ const ForgotPasswordPage = () => {
           <Typography
             variant="h5"
             sx={{
-              color: 'white',
+              color: 'text.primary',
               fontWeight: 'bold',
               fontSize: '24px',
               mb: 2,
@@ -99,7 +99,7 @@ const ForgotPasswordPage = () => {
 
           <Typography
             sx={{
-              color: 'white',
+              color: 'text.secondary',
               fontSize: '16px',
               mb: 3,
               lineHeight: 1.5,
@@ -115,11 +115,11 @@ const ForgotPasswordPage = () => {
               severity="success"
               sx={{
                 mb: 2,
-                backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                color: '#4caf50',
-                border: '1px solid rgba(76, 175, 80, 0.3)',
+                bgcolor: (t) => `${t.palette.success.main}14`,
+                color: 'success.main',
+                border: (t) => `1px solid ${t.palette.success.main}4D`,
                 borderRadius: '12px',
-                '& .MuiAlert-icon': { color: '#4caf50' },
+                '& .MuiAlert-icon': { color: 'success.main' },
               }}
             >
               {status}
@@ -132,11 +132,11 @@ const ForgotPasswordPage = () => {
               severity="error"
               sx={{
                 mb: 2,
-                backgroundColor: 'rgba(244, 67, 54, 0.1)',
-                color: '#f44336',
-                border: '1px solid rgba(244, 67, 54, 0.3)',
+                bgcolor: (t) => `${t.palette.error.main}14`,
+                color: 'error.main',
+                border: (t) => `1px solid ${t.palette.error.main}4D`,
                 borderRadius: '12px',
-                '& .MuiAlert-icon': { color: '#f44336' },
+                '& .MuiAlert-icon': { color: 'error.main' },
               }}
             >
               {error}
@@ -154,7 +154,7 @@ const ForgotPasswordPage = () => {
                 required
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#393528',
+                    bgcolor: 'background.paper',
                     borderRadius: '12px',
                     height: '56px',
                     border: 'none',
@@ -163,11 +163,11 @@ const ForgotPasswordPage = () => {
                     '&.Mui-focused fieldset': { border: 'none' },
                   },
                   '& .MuiOutlinedInput-input': {
-                    color: 'white',
+                    color: 'text.primary',
                     fontSize: '16px',
                     padding: '16px',
                     '&::placeholder': {
-                      color: '#b9b29d',
+                      color: 'text.secondary',
                       opacity: 1,
                     },
                   },
@@ -180,8 +180,8 @@ const ForgotPasswordPage = () => {
               type="submit"
               fullWidth
               sx={{
-                backgroundColor: '#deae10',
-                color: '#181611',
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
                 height: '48px',
                 borderRadius: '24px',
                 fontSize: '16px',
@@ -189,7 +189,7 @@ const ForgotPasswordPage = () => {
                 textTransform: 'none',
                 mb: 3,
                 '&:hover': {
-                  backgroundColor: '#c49a0e',
+                  bgcolor: 'primary.dark',
                 },
               }}
             >
@@ -204,19 +204,19 @@ const ForgotPasswordPage = () => {
             component={Link}
             to="/login"
             sx={{
-              color: '#b9b29d',
+              color: 'text.secondary',
               fontSize: '14px',
               textAlign: 'center',
               display: 'block',
               textDecoration: 'underline',
               '&:hover': {
-                color: '#deae10',
+                color: 'primary.main',
               },
             }}
           >
             Back to Login
           </Typography>
-          <Box sx={{ height: '20px', backgroundColor: '#181611' }} />
+          <Box sx={{ height: '20px', bgcolor: 'background.default' }} />
         </Box>
       </Box>
     );

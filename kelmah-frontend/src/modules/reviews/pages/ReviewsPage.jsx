@@ -264,9 +264,9 @@ const EnhancedReviewsPage = () => {
                 helpfulVotes: isHelpful
                   ? review.helpfulVotes + 1
                   : review.helpfulVotes,
-                unhelpfulVotes: !isHelpful
-                  ? review.unhelpfulVotes + 1
-                  : review.unhelpfulVotes,
+                unhelpfulVotes: isHelpful
+                  ? review.unhelpfulVotes
+                  : review.unhelpfulVotes + 1,
               }
             : review,
         ),
@@ -833,9 +833,10 @@ const EnhancedReviewsPage = () => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
         p: { xs: 2, md: 3 },
+        pb: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
       }}
     >
       {/* Header */}

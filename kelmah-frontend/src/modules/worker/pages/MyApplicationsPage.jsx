@@ -193,9 +193,10 @@ const MyApplicationsPage = () => {
     return (
       <Box
         sx={{
-          minHeight: '100vh',
+          minHeight: '100dvh',
           bgcolor: 'background.default',
           color: 'text.primary',
+          pb: 'env(safe-area-inset-bottom, 0px)',
         }}
       >
         {/* Mobile Header */}
@@ -424,8 +425,8 @@ const MyApplicationsPage = () => {
             </Button>
           </Box>
         ) : (
-          <TableContainer>
-            <Table>
+          <TableContainer sx={{ overflowX: 'auto' }}>
+            <Table sx={{ minWidth: 760 }}>
               <TableHead>
                 <TableRow>
                   <TableCell>Job</TableCell>
@@ -442,7 +443,7 @@ const MyApplicationsPage = () => {
                   return (
                     <TableRow key={application.id || application._id}>
                       <TableCell>
-                        <Typography variant="subtitle2">
+                        <Typography variant="subtitle2" sx={{ wordBreak: 'break-word' }}>
                           {application.job?.title || 'Untitled Job'}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
@@ -466,22 +467,31 @@ const MyApplicationsPage = () => {
                         />
                       </TableCell>
                       <TableCell align="right">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleOpenDetails(application)}
-                          aria-label="View application details"
-                          sx={{ minWidth: 44, minHeight: 44 }}
+                        <Box
+                          sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                            flexWrap: 'nowrap',
+                          }}
                         >
-                          <VisibilityIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleOpenMessage(application)}
-                          aria-label="Send message to employer"
-                          sx={{ minWidth: 44, minHeight: 44 }}
-                        >
-                          <MessageIcon fontSize="small" />
-                        </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleOpenDetails(application)}
+                            aria-label="View application details"
+                            sx={{ minWidth: 44, minHeight: 44 }}
+                          >
+                            <VisibilityIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleOpenMessage(application)}
+                            aria-label="Send message to employer"
+                            sx={{ minWidth: 44, minHeight: 44 }}
+                          >
+                            <MessageIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   );

@@ -46,7 +46,6 @@ router.post('/login', async (req, res) => {
     const url = `${upstream}/api/auth/login`;
 
     console.log(`[LOGIN] Attempting login to: ${url}`);
-    console.log(`[LOGIN] Body:`, JSON.stringify(req.body));
 
     const r = await axios.post(url, req.body, {
       headers: {
@@ -66,8 +65,7 @@ router.post('/login', async (req, res) => {
     console.error(`[LOGIN] Stack:`, e.stack);
     res.status(504).json({
       success: false,
-      message: 'Authentication service temporarily unavailable',
-      debug: e.message
+      message: 'Authentication service temporarily unavailable'
     });
   }
 });

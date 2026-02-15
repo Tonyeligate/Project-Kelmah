@@ -16,6 +16,12 @@ import {
   Chip,
   Avatar,
   alpha,
+  useTheme,
+  useMediaQuery,
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon as MenuListItemIcon,
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
@@ -30,6 +36,7 @@ import {
   Work as WorkIcon,
   Gavel as GavelIcon,
   Settings as SettingsIcon,
+  MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { useNotifications } from '../contexts/NotificationContext';
 import { Pagination, FormControlLabel, Switch } from '@mui/material';
@@ -54,27 +61,14 @@ const NotificationItem = ({ notification }) => (
       backgroundColor: theme.palette.background.paper,
       mb: 1.5,
       borderRadius: 2,
-      border: `2px solid ${theme.palette.secondary.main}`,
-      boxShadow: `inset 0 0 8px rgba(255, 215, 0, 0.5)`,
-      transition: 'box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out',
+      borderLeft: notification.read ? 'none' : `4px solid ${theme.palette.secondary.main}`,
+      border: `1px solid ${theme.palette.divider}`,
+      transition: 'background-color 0.2s ease',
+      cursor: notification.link ? 'pointer' : 'default',
       '&:hover': {
-        boxShadow: `0 0 12px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.5)`,
-        borderColor: theme.palette.secondary.light,
-        backgroundColor: alpha(theme.palette.primary.main, 0.05),
+        backgroundColor: alpha(theme.palette.action.hover, 0.08),
       },
     })}
-    secondaryAction={
-      <Typography variant="caption" color="text.secondary" sx={{ pr: 1 }}>
-        {formatDistanceToNow(
-          new Date(
-            notification.createdAt ||
-              notification.date ||
-              new Date().toISOString(),
-          ),
-          { addSuffix: true },
-        )}
-      </Typography>
-    }
   >
     <ListItemIcon>
       <Avatar
@@ -89,34 +83,46 @@ const NotificationItem = ({ notification }) => (
     <ListItemText
       primary={notification.message}
       secondary={
-        notification.link ? (
-          isExternalLink(notification.link) ? (
-            <Typography
-              component="a"
-              href={notification.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              variant="body2"
-              color="primary.main"
-              sx={{ textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
-            >
-              View Details
-            </Typography>
-          ) : (
-            <Link
-              to={notification.link}
-              style={{ textDecoration: 'none', color: 'inherit' }}
-            >
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 0.5, mt: 0.5, alignItems: { xs: 'flex-start', sm: 'center' } }}>
+          <Typography variant="caption" color="text.secondary">
+            {formatDistanceToNow(
+              new Date(
+                notification.createdAt ||
+                  notification.date ||
+                  new Date().toISOString(),
+              ),
+              { addSuffix: true },
+            )}
+          </Typography>
+          {notification.link ? (
+            isExternalLink(notification.link) ? (
               <Typography
+                component="a"
+                href={notification.link}
+                target="_blank"
+                rel="noopener noreferrer"
                 variant="body2"
                 color="primary.main"
-                sx={{ '&:hover': { textDecoration: 'underline' } }}
+                sx={{ textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
               >
                 View Details
               </Typography>
-            </Link>
-          )
-        ) : null
+            ) : (
+              <Link
+                to={notification.link}
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
+                <Typography
+                  variant="body2"
+                  color="primary.main"
+                  sx={{ '&:hover': { textDecoration: 'underline' } }}
+                >
+                  View Details
+                </Typography>
+              </Link>
+            )
+          ) : null}
+        </Box>
       }
     />
     {!notification.read && (
@@ -153,8 +159,11 @@ const NotificationsPage = () => {
     clearAllNotifications,
     refresh,
   } = useNotifications();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [filter, setFilter] = useState('all');
   const [unreadOnly, setUnreadOnly] = useState(false);
+  const [actionsAnchor, setActionsAnchor] = useState(null);
 
   const handleFilterChange = (event, newValue) => {
     setFilter(newValue);
@@ -194,49 +203,95 @@ const NotificationsPage = () => {
     );
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 }, pb: { xs: 'calc(72px + env(safe-area-inset-bottom, 0px))', md: 4 } }}>
+      {/* Header — stacks vertically on mobile */}
       <Box
         sx={{
           display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
           justifyContent: 'space-between',
-          alignItems: 'center',
-          mb: 4,
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          gap: { xs: 1.5, sm: 0 },
+          mb: { xs: 2, md: 4 },
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <NotificationsIcon
-            sx={{ fontSize: 36, mr: 1.5, color: 'secondary.main' }}
+            sx={{ fontSize: { xs: 28, md: 36 }, mr: 1, color: 'secondary.main' }}
           />
-          <Typography variant="h4" fontWeight="bold" sx={{ mr: 2 }}>
+          <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight="bold">
             Notifications
           </Typography>
-          <Button
-            variant="outlined"
-            startIcon={<SettingsIcon />}
-            component={Link}
-            to="/notifications/settings"
-          >
-            Settings
-          </Button>
         </Box>
-        <Box>
-          <Button
-            variant="outlined"
-            onClick={markAllAsRead}
-            disabled={unreadCount === 0}
-            sx={{ mr: 1 }}
-          >
-            Mark All as Read
-          </Button>
-          <Button
-            onClick={clearAllNotifications}
-            color="error"
-            variant="outlined"
-            disabled={notifications.length === 0}
-          >
-            Clear All
-          </Button>
-        </Box>
+        {/* Mobile: overflow menu for actions */}
+        {isMobile ? (
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<SettingsIcon />}
+              component={Link}
+              to="/notifications/settings"
+              sx={{ minHeight: 44 }}
+            >
+              Settings
+            </Button>
+            <IconButton
+              onClick={(e) => setActionsAnchor(e.currentTarget)}
+              aria-label="More actions"
+              sx={{ minWidth: 44, minHeight: 44 }}
+            >
+              <MoreVertIcon />
+            </IconButton>
+            <Menu
+              anchorEl={actionsAnchor}
+              open={Boolean(actionsAnchor)}
+              onClose={() => setActionsAnchor(null)}
+            >
+              <MenuItem
+                onClick={() => { markAllAsRead(); setActionsAnchor(null); }}
+                disabled={unreadCount === 0}
+              >
+                <MarkChatReadIcon sx={{ mr: 1 }} fontSize="small" />
+                Mark All as Read
+              </MenuItem>
+              <MenuItem
+                onClick={() => { clearAllNotifications(); setActionsAnchor(null); }}
+                disabled={notifications.length === 0}
+                sx={{ color: 'error.main' }}
+              >
+                <ClearAllIcon sx={{ mr: 1 }} fontSize="small" />
+                Clear All
+              </MenuItem>
+            </Menu>
+          </Box>
+        ) : (
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Button
+              variant="outlined"
+              startIcon={<SettingsIcon />}
+              component={Link}
+              to="/notifications/settings"
+            >
+              Settings
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={markAllAsRead}
+              disabled={unreadCount === 0}
+            >
+              Mark All as Read
+            </Button>
+            <Button
+              onClick={clearAllNotifications}
+              color="error"
+              variant="outlined"
+              disabled={notifications.length === 0}
+            >
+              Clear All
+            </Button>
+          </Box>
+        )}
       </Box>
 
       {/* Summary line for notification counts */}
@@ -263,18 +318,10 @@ const NotificationsPage = () => {
       <Paper
         elevation={0}
         sx={(theme) => ({
-          p: 2,
-          backgroundColor: alpha(theme.palette.primary.main, 0.7),
-          backdropFilter: 'blur(10px)',
+          p: { xs: 1.5, md: 2 },
+          backgroundColor: alpha(theme.palette.primary.main, 0.06),
           borderRadius: theme.spacing(2),
-          border: `2px solid ${theme.palette.secondary.main}`,
-          boxShadow: `inset 0 0 8px rgba(255, 215, 0, 0.5)`,
-          transition:
-            'box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out',
-          '&:hover': {
-            boxShadow: `0 0 12px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.5)`,
-            borderColor: theme.palette.secondary.light,
-          },
+          border: `1px solid ${theme.palette.divider}`,
         })}
       >
         <Tabs
@@ -282,7 +329,10 @@ const NotificationsPage = () => {
           onChange={handleFilterChange}
           indicatorColor="secondary"
           textColor="secondary"
-          sx={{ mb: 3 }}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{ mb: 2 }}
         >
           <Tab label="All" value="all" />
           <Tab label="Messages" value="message" />

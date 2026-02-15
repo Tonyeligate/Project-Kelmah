@@ -43,10 +43,10 @@ const VerifyEmailPage = () => {
     <Box sx={{ width: '100%', maxWidth: 400, textAlign: 'center', mx: 'auto' }}>
       {status && (
         <Box sx={{ mb: 3 }}>
-          <CheckCircleOutline sx={{ fontSize: 56, color: '#4caf50', mb: 1 }} />
+          <CheckCircleOutline sx={{ fontSize: 56, color: 'success.main', mb: 1 }} />
           <Alert severity="success" sx={{
             borderRadius: 2,
-            ...(isMobile && { backgroundColor: 'rgba(76,175,80,0.12)', color: '#fff' }),
+            ...(isMobile && { bgcolor: (t) => `${t.palette.success.main}1F`, color: 'text.primary' }),
           }}>
             {status}
           </Alert>
@@ -55,17 +55,17 @@ const VerifyEmailPage = () => {
       {error && (
         <>
           <Box sx={{ mb: 3 }}>
-            <ErrorOutline sx={{ fontSize: 56, color: '#f44336', mb: 1 }} />
+            <ErrorOutline sx={{ fontSize: 56, color: 'error.main', mb: 1 }} />
             <Alert severity="error" sx={{
               borderRadius: 2,
-              ...(isMobile && { backgroundColor: 'rgba(244,67,54,0.12)', color: '#fff' }),
+              ...(isMobile && { bgcolor: (t) => `${t.palette.error.main}1F`, color: 'text.primary' }),
             }}>
               {error}
             </Alert>
           </Box>
           <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-            <MailOutline sx={{ color: isMobile ? '#FFD700' : 'text.secondary', fontSize: 20 }} />
-            <Typography variant="body1" sx={{ color: isMobile ? '#ccc' : 'text.primary' }}>
+            <MailOutline sx={{ color: isMobile ? 'primary.main' : 'text.secondary', fontSize: 20 }} />
+            <Typography variant="body1" sx={{ color: isMobile ? 'text.secondary' : 'text.primary' }}>
               Enter your email to resend verification link:
             </Typography>
           </Box>
@@ -81,15 +81,15 @@ const VerifyEmailPage = () => {
               inputProps={{ inputMode: 'email', autoComplete: 'email', style: { fontSize: 16 } }}
               sx={isMobile ? {
                 '& .MuiOutlinedInput-root': {
-                  backgroundColor: 'rgba(255,255,255,0.06)',
+                  bgcolor: 'action.hover',
                   borderRadius: 2,
-                  color: '#fff',
-                  '& fieldset': { borderColor: 'rgba(255,215,0,0.3)' },
-                  '&:hover fieldset': { borderColor: '#FFD700' },
-                  '&.Mui-focused fieldset': { borderColor: '#FFD700' },
+                  color: 'text.primary',
+                  '& fieldset': { borderColor: 'divider' },
+                  '&:hover fieldset': { borderColor: 'primary.main' },
+                  '&.Mui-focused fieldset': { borderColor: 'primary.main' },
                 },
-                '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.6)' },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
+                '& .MuiInputLabel-root': { color: 'text.secondary' },
+                '& .MuiInputLabel-root.Mui-focused': { color: 'primary.main' },
               } : {}}
             />
             <Button
@@ -102,9 +102,9 @@ const VerifyEmailPage = () => {
                 borderRadius: 6,
                 fontWeight: 600,
                 fontSize: '1rem',
-                backgroundColor: '#FFD700',
-                color: '#1a1a1a',
-                '&:hover': { backgroundColor: '#e6c200' },
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
+                '&:hover': { bgcolor: 'primary.dark' },
               }}
             >
               Resend Link
@@ -114,7 +114,7 @@ const VerifyEmailPage = () => {
             <Alert severity="success" sx={{
               mt: 2,
               borderRadius: 2,
-              ...(isMobile && { backgroundColor: 'rgba(76,175,80,0.12)', color: '#fff' }),
+              ...(isMobile && { bgcolor: (t) => `${t.palette.success.main}1F`, color: 'text.primary' }),
             }}>
               Link sent! Check your email.
             </Alert>
@@ -122,9 +122,9 @@ const VerifyEmailPage = () => {
         </>
       )}
       <Box sx={{ mt: 3 }}>
-        <Typography variant="body2" sx={{ color: isMobile ? '#aaa' : 'text.secondary' }}>
+        <Typography variant="body2" sx={{ color: isMobile ? 'text.disabled' : 'text.secondary' }}>
           Go to{' '}
-          <Link to="/login" style={{ color: '#FFD700', fontWeight: 600, textDecoration: 'none' }}>
+          <Link to="/login" style={{ color: 'inherit', fontWeight: 600, textDecoration: 'none' }}>
             Login
           </Link>
         </Typography>
@@ -136,7 +136,7 @@ const VerifyEmailPage = () => {
     return (
       <Box sx={{
         minHeight: '100dvh',
-        backgroundColor: '#0a0a0a',
+        bgcolor: 'background.default',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

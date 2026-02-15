@@ -84,7 +84,7 @@ const AuthWrapper = ({ children }) => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         width: '100%',
         position: 'relative',
         display: 'flex',
@@ -95,6 +95,7 @@ const AuthWrapper = ({ children }) => {
         px: { xs: 1, sm: 2, md: 3 },
         overflowY: 'auto',
         overflowX: 'hidden',
+        pb: 'env(safe-area-inset-bottom)',
       }}
     >
       {/* Enhanced background with animated overlay */}
@@ -104,7 +105,7 @@ const AuthWrapper = ({ children }) => {
           top: 0,
           left: 0,
           width: '100vw',
-          height: '100vh',
+          height: '100dvh',
           zIndex: 0,
           backgroundImage: `url(${backgroundImg})`,
           backgroundSize: 'cover',

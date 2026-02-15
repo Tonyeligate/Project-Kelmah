@@ -481,15 +481,34 @@ const HirerJobManagement = () => {
                 No {getStatusForTab(activeTab)} jobs found
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                {activeTab === 2
-                  ? 'Start by creating a new job posting'
-                  : `You don't have any ${getStatusForTab(activeTab)} jobs yet`}
+                {analytics.totalJobs > 0
+                  ? `You have ${analytics.totalJobs} total job${analytics.totalJobs !== 1 ? 's' : ''} — check other tabs`
+                  : activeTab === 2
+                    ? 'Start by creating a new job posting'
+                    : "You haven't posted any jobs yet"}
               </Typography>
-              {activeTab === 2 && (
-                <Button variant="contained" color="primary" onClick={() => navigate('/hirer/jobs/post')}>
-                  Post New Job
-                </Button>
+              {analytics.totalJobs > 0 && (
+                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap', mb: 1 }}>
+                  {activeTab !== 0 && activeJobs?.length > 0 && (
+                    <Button variant="outlined" size="small" onClick={() => setActiveTab(0)}>
+                      Active ({activeJobs.length})
+                    </Button>
+                  )}
+                  {activeTab !== 1 && completedJobs?.length > 0 && (
+                    <Button variant="outlined" size="small" onClick={() => setActiveTab(1)}>
+                      Completed ({completedJobs.length})
+                    </Button>
+                  )}
+                  {activeTab !== 2 && draftJobs?.length > 0 && (
+                    <Button variant="outlined" size="small" onClick={() => setActiveTab(2)}>
+                      Drafts ({draftJobs.length})
+                    </Button>
+                  )}
+                </Box>
               )}
+              <Button variant="contained" color="primary" onClick={() => navigate('/hirer/jobs/post')} sx={{ mt: 1 }}>
+                Post New Job
+              </Button>
             </Box>
           ) : (
             <>
@@ -677,7 +696,7 @@ const HirerJobManagement = () => {
       </Menu>
 
       {/* Confirmation Dialogs */}
-      <Dialog open={dialogOpen} onClose={handleDialogClose}>
+      <Dialog open={dialogOpen} onClose={handleDialogClose} fullScreen={isMobile}>
         <DialogTitle>
           {dialogType === 'delete' && 'Delete Job'}
           {dialogType === 'publish' && 'Publish Job'}

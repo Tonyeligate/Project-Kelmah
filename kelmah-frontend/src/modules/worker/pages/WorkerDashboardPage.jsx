@@ -369,7 +369,14 @@ const WorkerDashboardPage = () => {
   );
 
   return (
-    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', p: { xs: 1.5, sm: 2, md: 3 } }}>
+    <Box
+      sx={{
+        bgcolor: 'background.default',
+        minHeight: '100dvh',
+        p: { xs: 1.5, sm: 2, md: 3 },
+        pb: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
+      }}
+    >
       {/* Snackbar for notifications */}
       <Snackbar
         open={snackbarOpen}
@@ -403,8 +410,8 @@ const WorkerDashboardPage = () => {
 
       {/* Breadcrumb Navigation */}
       <Breadcrumbs
-        separator={<NavigateNextIcon fontSize="small" sx={{ color: '#999' }} />}
-        sx={{ mb: 2 }}
+        separator={<NavigateNextIcon fontSize="small" />}
+        sx={{ mb: 2, display: { xs: 'none', md: 'flex' } }}
         aria-label="breadcrumb navigation"
       >
         <Link
@@ -413,15 +420,15 @@ const WorkerDashboardPage = () => {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            color: '#666',
+            color: 'text.secondary',
             textDecoration: 'none',
-            '&:hover': { color: '#1976D2' },
+            '&:hover': { color: 'primary.main' },
           }}
         >
           <HomeIcon sx={{ fontSize: 18, mr: 0.5 }} />
           Home
         </Link>
-        <Typography sx={{ color: '#333', fontWeight: 500 }}>
+        <Typography sx={{ color: 'text.primary', fontWeight: 500 }}>
           Dashboard
         </Typography>
       </Breadcrumbs>
@@ -429,9 +436,9 @@ const WorkerDashboardPage = () => {
       {/* Header with Greeting and Actions */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Typography
-          variant="h5"
+          variant={isMobile ? 'h6' : 'h5'}
           sx={{
-            color: '#333',
+            color: 'text.primary',
             fontWeight: 600,
           }}
         >
@@ -442,12 +449,9 @@ const WorkerDashboardPage = () => {
           <Tooltip title="Find new jobs to apply for" arrow>
             <Button
               variant="contained"
+              color="primary"
               startIcon={<SearchIcon />}
               onClick={() => navigate('/worker/find-work')}
-              sx={{
-                bgcolor: '#1976D2',
-                '&:hover': { bgcolor: '#1565C0' },
-              }}
             >
               {isMobile ? 'Find Work' : 'Find New Jobs'}
             </Button>
@@ -456,7 +460,7 @@ const WorkerDashboardPage = () => {
             <IconButton
               onClick={handleRefresh}
               disabled={isLoading}
-              sx={{ color: '#666' }}
+              sx={{ color: 'text.secondary' }}
               aria-label="Refresh dashboard"
             >
               <RefreshIcon sx={{ animation: isLoading ? 'spin 1s linear infinite' : 'none' }} />
@@ -491,7 +495,7 @@ const WorkerDashboardPage = () => {
                       color: '#fff',
                       position: 'relative',
                       overflow: 'hidden',
-                      height: 120,
+                      minHeight: 120,
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
@@ -549,13 +553,14 @@ const WorkerDashboardPage = () => {
             sx={{
               p: 3,
               borderRadius: 2,
-              backgroundColor: '#fff',
-              border: '1px solid #E0E0E0',
+              backgroundColor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
             }}
           >
             <Typography
               variant="h6"
-              sx={{ color: '#333', fontWeight: 600, mb: 2 }}
+              sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}
             >
               Earnings Overview
             </Typography>
@@ -566,8 +571,8 @@ const WorkerDashboardPage = () => {
                     data={earningsData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
+                    innerRadius={isMobile ? 40 : 60}
+                    outerRadius={isMobile ? 70 : 100}
                     paddingAngle={2}
                     dataKey="value"
                   >
@@ -578,8 +583,8 @@ const WorkerDashboardPage = () => {
                   <RechartsTooltip
                     formatter={(value) => [`GH₵${value}`, '']}
                     contentStyle={{
-                      backgroundColor: '#fff',
-                      border: '1px solid #E0E0E0',
+                      backgroundColor: theme.palette.background.paper,
+                      border: `1px solid ${theme.palette.divider}`,
                       borderRadius: 8,
                     }}
                   />
@@ -587,7 +592,7 @@ const WorkerDashboardPage = () => {
                     verticalAlign="bottom"
                     height={36}
                     formatter={(value) => (
-                      <span style={{ color: '#666', fontSize: 12 }}>{value}</span>
+                      <span style={{ color: theme.palette.text.secondary, fontSize: 12 }}>{value}</span>
                     )}
                   />
                 </PieChart>
@@ -603,13 +608,14 @@ const WorkerDashboardPage = () => {
             sx={{
               p: 3,
               borderRadius: 2,
-              backgroundColor: '#fff',
-              border: '1px solid #E0E0E0',
+              backgroundColor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
             }}
           >
             <Typography
               variant="h6"
-              sx={{ color: '#333', fontWeight: 600, mb: 2 }}
+              sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}
             >
               Applications Overview
             </Typography>
@@ -620,8 +626,8 @@ const WorkerDashboardPage = () => {
                     data={applicationsData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
+                    innerRadius={isMobile ? 40 : 60}
+                    outerRadius={isMobile ? 70 : 100}
                     paddingAngle={2}
                     dataKey="value"
                   >
@@ -631,8 +637,8 @@ const WorkerDashboardPage = () => {
                   </Pie>
                   <RechartsTooltip
                     contentStyle={{
-                      backgroundColor: '#fff',
-                      border: '1px solid #E0E0E0',
+                      backgroundColor: theme.palette.background.paper,
+                      border: `1px solid ${theme.palette.divider}`,
                       borderRadius: 8,
                     }}
                   />
@@ -640,7 +646,7 @@ const WorkerDashboardPage = () => {
                     verticalAlign="bottom"
                     height={36}
                     formatter={(value) => (
-                      <span style={{ color: '#666', fontSize: 12 }}>{value}</span>
+                      <span style={{ color: theme.palette.text.secondary, fontSize: 12 }}>{value}</span>
                     )}
                   />
                 </PieChart>

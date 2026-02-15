@@ -488,7 +488,18 @@ const SkillsAssessmentPage = () => {
                       {getDifficultyIcon(test.difficulty)}
                     </Avatar>
                     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                      <Typography variant="h6" fontWeight={700} noWrap>
+                      <Typography
+                        variant="h6"
+                        fontWeight={700}
+                        sx={{
+                          whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                          display: '-webkit-box',
+                          WebkitLineClamp: { xs: 2, sm: 1 },
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
                         {test.title}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">

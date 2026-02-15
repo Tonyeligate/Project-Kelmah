@@ -137,9 +137,10 @@ const ProjectGallery = ({
           backgroundColor: 'rgba(0, 0, 0, 0.9)',
           backgroundImage: 'none',
           maxWidth: isMobile ? '100vw' : '90vw',
-          maxHeight: isMobile ? '100vh' : '90vh',
+          maxHeight: isMobile ? '100dvh' : '90vh',
           width: isMobile ? '100vw' : 'auto',
-          height: isMobile ? '100vh' : 'auto',
+          height: isMobile ? '100dvh' : 'auto',
+          pb: isMobile ? 'env(safe-area-inset-bottom, 0px)' : 0,
         },
       }}
       BackdropComponent={Backdrop}
@@ -161,7 +162,18 @@ const ProjectGallery = ({
         }}
       >
         <Box>
-          <Typography variant="h6" component="div" noWrap>
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{
+              whiteSpace: { xs: 'normal', sm: 'nowrap' },
+              display: '-webkit-box',
+              WebkitLineClamp: { xs: 2, sm: 1 },
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
             {projectTitle}
           </Typography>
           <Typography variant="body2" sx={{ opacity: 0.7 }}>

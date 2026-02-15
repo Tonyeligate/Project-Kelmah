@@ -630,14 +630,16 @@ const EarningsTracker = () => {
           sx={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: 1.5,
             mb: 3,
           }}
         >
           <Typography variant="h5" fontWeight={700}>
             Recent Transactions
           </Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
             <AnimatedButton
               variant="outlined"
               startIcon={<FileDownloadIcon />}
@@ -652,41 +654,65 @@ const EarningsTracker = () => {
           </Box>
         </Box>
 
-        <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Date</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Client</TableCell>
-                <TableCell align="right">Amount</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {transactions.map((transaction) => (
-                <TableRow key={transaction.id} hover>
-                  <TableCell>
-                    {format(parseISO(transaction.date), 'MMM dd, yyyy')}
-                  </TableCell>
-                  <TableCell>
-                    <Box>
-                      <Typography variant="body2" fontWeight={600}>
+        {isMobile ? (
+          <Stack spacing={1.5}>
+            {transactions.map((transaction) => (
+              <Paper key={transaction.id} sx={{ p: 2, borderRadius: 2 }}>
+                <Stack spacing={1}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'space-between',
+                      gap: 1,
+                    }}
+                  >
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography
+                        variant="body2"
+                        fontWeight={600}
+                        sx={{
+                          whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                          display: '-webkit-box',
+                          WebkitLineClamp: { xs: 2, sm: 1 },
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
                         {transaction.description}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         Job ID: {transaction.jobId}
                       </Typography>
                     </Box>
-                  </TableCell>
-                  <TableCell>{transaction.client}</TableCell>
-                  <TableCell align="right">
+                    <Tooltip title="View Details">
+                      <IconButton
+                        size="small"
+                        sx={{ minWidth: 44, minHeight: 44 }}
+                        onClick={() => {
+                          setSelectedTransaction(transaction);
+                          setDetailsDialog(true);
+                        }}
+                      >
+                        <VisibilityIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                  <Typography variant="caption" color="text.secondary">
+                    {format(parseISO(transaction.date), 'MMM dd, yyyy')} • {transaction.client}
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
                     <Typography variant="h6" fontWeight={600} color="primary">
                       ${transaction.amount.toFixed(2)}
                     </Typography>
-                  </TableCell>
-                  <TableCell>
                     <Chip
                       icon={getStatusIcon(transaction.status)}
                       label={
@@ -696,25 +722,76 @@ const EarningsTracker = () => {
                       color={getStatusColor(transaction.status)}
                       size="small"
                     />
-                  </TableCell>
-                  <TableCell>
-                    <Tooltip title="View Details">
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          setSelectedTransaction(transaction);
-                          setDetailsDialog(true);
-                        }}
-                      >
-                        <VisibilityIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
+                  </Box>
+                </Stack>
+              </Paper>
+            ))}
+          </Stack>
+        ) : (
+          <TableContainer component={Paper} sx={{ borderRadius: 2, overflowX: 'auto' }}>
+            <Table sx={{ minWidth: 720 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Date</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>Client</TableCell>
+                  <TableCell align="right">Amount</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {transactions.map((transaction) => (
+                  <TableRow key={transaction.id} hover>
+                    <TableCell>
+                      {format(parseISO(transaction.date), 'MMM dd, yyyy')}
+                    </TableCell>
+                    <TableCell>
+                      <Box>
+                        <Typography variant="body2" fontWeight={600}>
+                          {transaction.description}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Job ID: {transaction.jobId}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>{transaction.client}</TableCell>
+                    <TableCell align="right">
+                      <Typography variant="h6" fontWeight={600} color="primary">
+                        ${transaction.amount.toFixed(2)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        icon={getStatusIcon(transaction.status)}
+                        label={
+                          transaction.status.charAt(0).toUpperCase() +
+                          transaction.status.slice(1)
+                        }
+                        color={getStatusColor(transaction.status)}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Tooltip title="View Details">
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            setSelectedTransaction(transaction);
+                            setDetailsDialog(true);
+                          }}
+                        >
+                          <VisibilityIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
       </CardContent>
     </GlassCard>
   );

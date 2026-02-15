@@ -1236,7 +1236,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 ? new Date(availability.pausedUntil).toLocaleString()
                 : 'Immediately'}
             </Typography>
-            {!isOwner ? null : (
+            {isOwner && (
               <Box sx={{ mt: 2 }}>
                 <Button
                   size="small"
@@ -1372,7 +1372,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   pausedUntil: e.target.value,
                 }))
               }
-              sx={{ minWidth: 320 }}
+              sx={{ minWidth: { xs: '100%', sm: 320 }, flex: 1 }}
             />
           </Box>
           <Grid container spacing={2}>

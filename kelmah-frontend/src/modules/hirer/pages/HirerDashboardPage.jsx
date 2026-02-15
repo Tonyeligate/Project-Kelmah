@@ -511,7 +511,7 @@ const HirerDashboardPage = () => {
   // LC Portal-inspired Dashboard Overview - IMPROVED with empty state CTAs
   const renderDashboardOverview = () => (
     <Fade in timeout={500}>
-      <Box sx={{ bgcolor: '#F5F5F5', minHeight: '100vh', mx: { xs: -1, sm: -2, md: -4 }, mt: { xs: -1, md: -3 }, p: { xs: 1.5, sm: 2, md: 4 }, overflowX: 'hidden' }}>
+      <Box sx={{ bgcolor: 'background.default', minHeight: '100dvh', mx: 0, mt: { xs: 0, md: -3 }, p: { xs: 1.5, sm: 2, md: 4 }, overflowX: 'hidden' }}>
         {/* Breadcrumb - LC Portal Style */}
         <Breadcrumbs sx={{ mb: 3 }} aria-label="breadcrumb">
           <MUILink
@@ -530,7 +530,7 @@ const HirerDashboardPage = () => {
           variant="h4"
           sx={{
             mb: 4,
-            color: '#333',
+            color: 'text.primary',
             fontWeight: 400,
             fontSize: { xs: '1.5rem', md: '2rem' },
           }}
@@ -759,11 +759,11 @@ const HirerDashboardPage = () => {
               sx={{
                 p: 3,
                 borderRadius: 2,
-                bgcolor: 'white',
+                bgcolor: 'background.paper',
                 height: 350,
               }}
             >
-              <Typography variant="h6" fontWeight={600} sx={{ mb: 3, color: '#333' }}>
+              <Typography variant="h6" fontWeight={600} sx={{ mb: 3, color: 'text.primary' }}>
                 Spending Overview
               </Typography>
               {/* Simple Chart Placeholder */}
@@ -831,11 +831,11 @@ const HirerDashboardPage = () => {
               sx={{
                 p: 3,
                 borderRadius: 2,
-                bgcolor: 'white',
+                bgcolor: 'background.paper',
                 height: 350,
               }}
             >
-              <Typography variant="h6" fontWeight={600} sx={{ mb: 3, color: '#333' }}>
+              <Typography variant="h6" fontWeight={600} sx={{ mb: 3, color: 'text.primary' }}>
                 Applications Overview
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, height: { xs: 'auto', sm: 250 } }}>
@@ -885,13 +885,13 @@ const HirerDashboardPage = () => {
                         width: 120,
                         height: 120,
                         borderRadius: '50%',
-                        bgcolor: 'white',
+                        bgcolor: 'background.paper',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}
                     >
-                      <Typography variant="h4" fontWeight={600} color="#666">
+                      <Typography variant="h4" fontWeight={600} color="text.secondary">
                         {summaryData.activeJobs + summaryData.completedJobs}
                       </Typography>
                     </Box>
@@ -968,7 +968,7 @@ const HirerDashboardPage = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'flex-end',
-            px: 4,
+            px: { xs: 2, md: 4 },
             py: 1,
             borderBottom: '1px solid',
             borderColor: 'divider',

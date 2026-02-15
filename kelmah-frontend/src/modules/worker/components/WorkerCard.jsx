@@ -423,10 +423,32 @@ const WorkerCard = ({ worker }) => {
               sx={{ width: 56, height: 56, mr: 2 }}
             />
             <Box>
-              <Typography variant="h6" component="h2" noWrap>
+              <Typography
+                variant="h6"
+                component="h2"
+                sx={{
+                  whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                  display: '-webkit-box',
+                  WebkitLineClamp: { xs: 2, sm: 1 },
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
                 {worker.name}
               </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                  display: '-webkit-box',
+                  WebkitLineClamp: { xs: 2, sm: 1 },
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
                 {worker.title || 'Freelancer'}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
@@ -552,7 +574,18 @@ const WorkerCard = ({ worker }) => {
                     fontSize="small"
                     sx={{ mr: 0.5, color: 'text.secondary' }}
                   />
-                  <Typography variant="body2" color="text.secondary" noWrap>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                      display: '-webkit-box',
+                      WebkitLineClamp: { xs: 2, sm: 1 },
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
                     {worker.location}
                   </Typography>
                 </Box>

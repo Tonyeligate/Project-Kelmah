@@ -186,8 +186,10 @@ const SearchHeader = ({ search, setSearch, onSearch, resultCount, isLoading }) =
           <Button
             variant="contained"
             onClick={() => onSearch()}
+            aria-label="Search jobs"
             sx={{
               minWidth: { xs: 44, md: 100 },
+              minHeight: 44,
               borderRadius: 2,
               textTransform: 'none',
               fontWeight: 600,
@@ -225,7 +227,7 @@ const CategoryChips = ({ selected, onChange }) => {
     >
       <Chip
         label="All"
-        variant={!selected ? 'filled' : 'outlined'}
+        variant={selected ? 'outlined' : 'filled'}
         onClick={() => onChange('')}
         sx={{
           fontWeight: 600,
@@ -410,8 +412,16 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
               <Typography
                 variant="subtitle1"
                 fontWeight={700}
-                noWrap
-                sx={{ color: 'text.primary', mb: 0.25 }}
+                sx={{
+                  color: 'text.primary',
+                  mb: 0.25,
+                  whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                  display: '-webkit-box',
+                  WebkitLineClamp: { xs: 2, sm: 1 },
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
               >
                 {job.title}
               </Typography>
@@ -431,8 +441,11 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
               <IconButton
                 size="small"
                 onClick={handleSaveToggle}
+                aria-label={isSaved ? 'Unsave job' : 'Save job'}
                 sx={{
                   color: isSaved ? theme.palette.primary.main : 'text.secondary',
+                  minWidth: 44,
+                  minHeight: 44,
                   '&:hover': { color: theme.palette.primary.main },
                 }}
               >
@@ -816,7 +829,13 @@ const JobSearchPage = () => {
         />
       </Helmet>
 
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: 6 }}>
+      <Box
+        sx={{
+          minHeight: '100dvh',
+          bgcolor: 'background.default',
+          pb: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
+        }}
+      >
         <Container maxWidth="lg" sx={{ pt: { xs: 2, md: 3 } }}>
           {/* ─── Search Header ─────────────────────────── */}
           <SearchHeader
@@ -1023,6 +1042,7 @@ const JobSearchPage = () => {
             borderTopRightRadius: 16,
             maxHeight: '75vh',
             p: 3,
+            pb: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
           },
         }}
       >

@@ -31,11 +31,6 @@ router.get('/profile/:userId', userProxy);
 
 // User management routes
 router.get('/', userProxy);
-router.get('/:userId', userProxy);
-router.put('/:userId', userProxy);
-router.delete('/:userId', userProxy);
-
-// Worker-specific routes
 router.get('/workers', userProxy);
 router.get('/workers/:workerId', userProxy);
 router.put('/workers/:workerId', userProxy); // 🔥 FIX: Add worker profile update route
@@ -51,6 +46,7 @@ router.delete('/workers/:workerId/skills/:skillId', userProxy);
 router.get('/workers/:workerId/stats', userProxy);
 router.get('/workers/:workerId/earnings', userProxy);
 router.post('/workers/nearby', userProxy);
+
 // Analytics proxy (admin + worker self)
 router.get('/analytics/platform', userProxy);
 router.get('/analytics/system-metrics', userProxy);
@@ -73,6 +69,11 @@ router.get('/settings', userProxy);
 router.put('/settings', userProxy);
 router.put('/settings/notifications', userProxy);
 router.put('/settings/privacy', userProxy);
+
+// User management routes (parameterized routes must come after specific literals)
+router.get('/:userId', userProxy);
+router.put('/:userId', userProxy);
+router.delete('/:userId', userProxy);
 
 // Fallback: proxy any other /api/users/* paths to user-service preserving prefix
 router.use('/', userProxy);

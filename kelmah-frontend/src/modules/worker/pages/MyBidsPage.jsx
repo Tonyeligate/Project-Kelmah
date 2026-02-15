@@ -38,6 +38,7 @@ import {
   useTheme,
   alpha,
   Paper,
+  ButtonBase,
   Skeleton,
 } from '@mui/material';
 import {
@@ -103,14 +104,41 @@ const BidCard = ({ bid, onWithdraw, onViewJob }) => {
       <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
         {/* Header: job title + bid status */}
         <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1}>
-          <Box sx={{ flex: 1, minWidth: 0, cursor: 'pointer' }} onClick={() => onViewJob(job._id || job.id)}>
-            <Typography variant="subtitle1" fontWeight={700} noWrap>
+          <ButtonBase
+            onClick={() => onViewJob(job._id || job.id)}
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              textAlign: 'left',
+              borderRadius: 1,
+              alignItems: 'flex-start',
+              justifyContent: 'flex-start',
+              display: 'block',
+              '&:focus-visible': {
+                outline: `2px solid ${alpha(theme.palette.primary.main, 0.7)}`,
+                outlineOffset: 2,
+              },
+            }}
+            aria-label={`View job ${job.title || 'details'}`}
+          >
+            <Typography
+              variant="subtitle1"
+              fontWeight={700}
+              sx={{
+                whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                display: '-webkit-box',
+                WebkitLineClamp: { xs: 2, sm: 1 },
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
               {job.title || 'Job Title'}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {job.category || ''} · Bid placed {formatDate(bid.createdAt)}
             </Typography>
-          </Box>
+          </ButtonBase>
           <Chip
             icon={status.icon}
             label={status.label}
@@ -142,7 +170,18 @@ const BidCard = ({ bid, onWithdraw, onViewJob }) => {
           {(job.location?.address || job.location) && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <LocationIcon fontSize="small" color="action" />
-              <Typography variant="body2" color="text.secondary" noWrap>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                  display: '-webkit-box',
+                  WebkitLineClamp: { xs: 2, sm: 1 },
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
                 {typeof job.location === 'string' ? job.location : job.location?.address || ''}
               </Typography>
             </Box>
@@ -312,7 +351,7 @@ const MyBidsPage = () => {
   };
 
   const handleWithdrawConfirm = async () => {
-    const bid = withdrawDialog.bid;
+    const { bid } = withdrawDialog;
     if (!bid) return;
     setWithdrawing(true);
     try {
