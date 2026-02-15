@@ -821,6 +821,7 @@ const ProposalReview = () => {
               size="small"
               color={statusFilter === value ? 'secondary' : 'inherit'}
               onClick={() => handleStatusChange(value)}
+              aria-pressed={statusFilter === value}
               sx={{ textTransform: 'none' }}
             >
               {label}
@@ -1039,11 +1040,8 @@ const ProposalReview = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose} disabled={actionInProgress}>
-            Cancel
+            {dialogType === 'view' ? 'Close' : 'Cancel'}
           </Button>
-          {dialogType === 'view' && (
-            <Button onClick={handleDialogClose}>Close</Button>
-          )}
           {dialogType === 'accept' && (
             <Button
               onClick={() => handleProposalAction('accepted')}

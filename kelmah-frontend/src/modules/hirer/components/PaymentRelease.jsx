@@ -27,6 +27,7 @@ import {
   Tooltip,
   Paper,
   Skeleton,
+  Snackbar,
   useTheme,
   useMediaQuery,
   Stack,
@@ -75,6 +76,7 @@ const PaymentRelease = () => {
   const [manualRefreshPending, setManualRefreshPending] = useState(false);
   const [summaryTimeout, setSummaryTimeout] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   const lastFetchRef = useRef(0);
   const summaryTimeoutRef = useRef(null);
@@ -260,8 +262,10 @@ const PaymentRelease = () => {
         });
       }
       handleDialogClose();
+      setSnackbar({ open: true, message: 'Payment released successfully', severity: 'success' });
     } catch (error) {
       console.error('Error releasing payment:', error);
+      setSnackbar({ open: true, message: error?.message || 'Failed to release payment', severity: 'error' });
     } finally {
       setLoading(false);
     }
@@ -480,48 +484,81 @@ const PaymentRelease = () => {
                 All payments are up to date
               </Typography>
             </Box>
+          ) : isMobile ? (
+            /* Mobile card view for pending payments */
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {(pendingPayments || []).map((payment) => (
+                <Card key={payment.id || payment._id} variant="outlined">
+                  <CardContent sx={{ pb: '12px !important' }}>
+                    <Box display="flex" alignItems="center" gap={2} mb={1}>
+                      <Avatar src={payment.worker?.avatar} sx={{ width: 40, height: 40 }}>
+                        {(payment.worker?.name || 'W').charAt(0)}
+                      </Avatar>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="subtitle2" fontWeight="bold">
+                          {payment.jobTitle}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {payment.worker?.name || 'Unknown Worker'}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Box display="flex" flexWrap="wrap" gap={1} alignItems="center" mb={1}>
+                      <Typography variant="body2" color="text.secondary">{payment.milestone}</Typography>
+                      <Chip label={getStatusLabel(payment.status)} color={getStatusColor(payment.status)} size="small" />
+                      <Typography variant="subtitle2" fontWeight="bold" color="primary.main" sx={{ ml: 'auto' }}>
+                        {formatCurrency(payment.amount)}
+                      </Typography>
+                    </Box>
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                      <Typography variant="caption" color="text.secondary">
+                        Due: {formatDate(payment.dueDate)}
+                      </Typography>
+                      <Box display="flex" gap={1}>
+                        <IconButton size="small" onClick={() => handleDialogOpen('view', payment)} aria-label="View details">
+                          <ViewIcon />
+                        </IconButton>
+                        {payment.status === 'ready_for_release' && (
+                          <Button size="small" variant="contained" color="primary" startIcon={<MoneyIcon />} onClick={() => handleDialogOpen('release', payment)}>
+                            Release
+                          </Button>
+                        )}
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
           ) : (
             <TableContainer>
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>
-                      <strong>Job & Worker</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Milestone</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Amount</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Status</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Due Date</strong>
-                    </TableCell>
-                    <TableCell align="center">
-                      <strong>Actions</strong>
-                    </TableCell>
+                    <TableCell><strong>Job & Worker</strong></TableCell>
+                    <TableCell><strong>Milestone</strong></TableCell>
+                    <TableCell><strong>Amount</strong></TableCell>
+                    <TableCell><strong>Status</strong></TableCell>
+                    <TableCell><strong>Due Date</strong></TableCell>
+                    <TableCell align="center"><strong>Actions</strong></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {(pendingPayments || []).map((payment) => (
-                    <TableRow key={payment.id} hover>
+                    <TableRow key={payment.id || payment._id} hover>
                       <TableCell>
                         <Box display="flex" alignItems="center" gap={2}>
                           <Avatar
-                            src={payment.worker.avatar}
+                            src={payment.worker?.avatar}
                             sx={{ width: 40, height: 40 }}
                           >
-                            {payment.worker.name.charAt(0)}
+                            {(payment.worker?.name || 'W').charAt(0)}
                           </Avatar>
                           <Box>
                             <Typography variant="subtitle2" fontWeight="bold">
                               {payment.jobTitle}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              {payment.worker.name}
+                              {payment.worker?.name || 'Unknown Worker'}
                             </Typography>
                           </Box>
                         </Box>
@@ -619,21 +656,21 @@ const PaymentRelease = () => {
               </TableHead>
               <TableBody>
                 {(paymentHistory || []).map((payment) => (
-                  <TableRow key={payment.id} hover>
+                  <TableRow key={payment.id || payment._id} hover>
                     <TableCell>
                       <Box display="flex" alignItems="center" gap={2}>
                         <Avatar
-                          src={payment.worker.avatar}
+                          src={payment.worker?.avatar}
                           sx={{ width: 32, height: 32 }}
                         >
-                          {payment.worker.name.charAt(0)}
+                          {(payment.worker?.name || 'W').charAt(0)}
                         </Avatar>
                         <Box>
                           <Typography variant="body2" fontWeight="bold">
                             {payment.jobTitle}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {payment.worker.name}
+                            {payment.worker?.name || 'Unknown Worker'}
                           </Typography>
                         </Box>
                       </Box>
@@ -703,12 +740,12 @@ const PaymentRelease = () => {
                   Payment Details
                 </Typography>
                 <Box display="flex" alignItems="center" gap={2} mb={2}>
-                  <Avatar src={selectedPayment.worker.avatar}>
-                    {selectedPayment.worker.name.charAt(0)}
+                  <Avatar src={selectedPayment.worker?.avatar}>
+                    {(selectedPayment.worker?.name || 'W').charAt(0)}
                   </Avatar>
                   <Box>
                     <Typography variant="body1" fontWeight="bold">
-                      {selectedPayment.worker.name}
+                      {selectedPayment.worker?.name || 'Unknown Worker'}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {selectedPayment.jobTitle}
@@ -764,7 +801,7 @@ const PaymentRelease = () => {
             onClick={handlePaymentRelease}
             variant="contained"
             disabled={loading}
-            startIcon={loading ? <LinearProgress /> : <MoneyIcon />}
+            startIcon={loading ? <CircularProgress size={18} /> : <MoneyIcon />}
           >
             {loading ? 'Processing...' : 'Release Payment'}
           </Button>
@@ -796,11 +833,11 @@ const PaymentRelease = () => {
                     Worker
                   </Typography>
                   <Box display="flex" alignItems="center" gap={2}>
-                    <Avatar src={selectedPayment.worker.avatar}>
-                      {selectedPayment.worker.name.charAt(0)}
+                    <Avatar src={selectedPayment.worker?.avatar}>
+                      {(selectedPayment.worker?.name || 'W').charAt(0)}
                     </Avatar>
                     <Typography variant="body2">
-                      {selectedPayment.worker.name}
+                      {selectedPayment.worker?.name || 'Unknown Worker'}
                     </Typography>
                   </Box>
                 </Grid>
@@ -838,6 +875,23 @@ const PaymentRelease = () => {
           <Button onClick={handleDialogClose}>Close</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Snackbar for action feedback */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

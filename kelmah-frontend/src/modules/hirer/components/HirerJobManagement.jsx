@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Card,
@@ -29,6 +30,7 @@ import {
   LinearProgress,
   Skeleton,
   Alert,
+  Snackbar,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -52,39 +54,13 @@ import {
   selectHirerError,
 } from '../services/hirerSlice';
 
-// Mock analytics data for comprehensive dashboard
-const mockAnalytics = {
-  summary: {
-    totalJobs: 45,
-    activeJobs: 8,
-    completedJobs: 32,
-    draftJobs: 5,
-    totalSpent: 125000,
-    averageJobValue: 3289,
-    totalApplications: 284,
-    hireSuccessRate: 84,
-  },
-  monthlyData: [
-    { month: 'Jan', jobs: 6, spending: 18500, applications: 45 },
-    { month: 'Feb', jobs: 4, spending: 12000, applications: 32 },
-    { month: 'Mar', jobs: 7, spending: 21500, applications: 58 },
-    { month: 'Apr', jobs: 5, spending: 15000, applications: 38 },
-    { month: 'May', jobs: 8, spending: 23500, applications: 67 },
-    { month: 'Jun', jobs: 6, spending: 18200, applications: 44 },
-  ],
-  topCategories: [
-    { category: 'Carpentry', jobs: 12, spending: 35000, avgRate: 2917 },
-    { category: 'Plumbing', jobs: 8, spending: 28000, avgRate: 3500 },
-    { category: 'Electrical', jobs: 6, spending: 22000, avgRate: 3667 },
-    { category: 'Painting', jobs: 5, spending: 15000, avgRate: 3000 },
-    { category: 'Landscaping', jobs: 4, spending: 12000, avgRate: 3000 },
-  ],
-};
+
 
 const HirerJobManagement = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -93,6 +69,7 @@ const HirerJobManagement = () => {
   const [dialogType, setDialogType] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   // Redux selectors
   const activeJobs = useSelector(selectHirerJobs('active'));
@@ -102,11 +79,25 @@ const HirerJobManagement = () => {
   const error = useSelector(selectHirerError('jobs'));
 
   useEffect(() => {
-    // Fetch jobs for all statuses
     dispatch(fetchHirerJobs('active'));
     dispatch(fetchHirerJobs('completed'));
     dispatch(fetchHirerJobs('draft'));
   }, [dispatch]);
+
+  // Compute real analytics from Redux data
+  const analytics = useMemo(() => {
+    const allJobs = [
+      ...(Array.isArray(activeJobs) ? activeJobs : []),
+      ...(Array.isArray(completedJobs) ? completedJobs : []),
+      ...(Array.isArray(draftJobs) ? draftJobs : []),
+    ];
+    const totalJobs = allJobs.length;
+    const totalSpent = allJobs.reduce((sum, job) => sum + (job.budget || 0), 0);
+    const totalApplications = allJobs.reduce((sum, job) => sum + (job.applicationsCount || 0), 0);
+    const completed = Array.isArray(completedJobs) ? completedJobs.length : 0;
+    const hireSuccessRate = totalJobs > 0 ? Math.round((completed / totalJobs) * 100) : 0;
+    return { totalJobs, totalSpent, totalApplications, hireSuccessRate };
+  }, [activeJobs, completedJobs, draftJobs]);
 
   const getCurrentJobs = () => {
     switch (activeTab) {
@@ -150,6 +141,17 @@ const HirerJobManagement = () => {
   };
 
   const handleAction = (action) => {
+    const jobId = selectedJob?.id || selectedJob?._id;
+    if (action === 'view') {
+      handleMenuClose();
+      navigate(`/hirer/jobs/${jobId}`);
+      return;
+    }
+    if (action === 'edit') {
+      handleMenuClose();
+      navigate(`/hirer/jobs/${jobId}/edit`);
+      return;
+    }
     setDialogType(action);
     setDialogOpen(true);
     handleMenuClose();
@@ -164,10 +166,12 @@ const HirerJobManagement = () => {
   const handleDeleteJob = async () => {
     if (selectedJob) {
       try {
-        await dispatch(deleteHirerJob(selectedJob.id)).unwrap();
+        await dispatch(deleteHirerJob(selectedJob.id || selectedJob._id)).unwrap();
+        setSnackbar({ open: true, message: 'Job deleted successfully', severity: 'success' });
         handleDialogClose();
-      } catch (error) {
-        console.error('Error deleting job:', error);
+      } catch (err) {
+        setSnackbar({ open: true, message: err?.message || 'Failed to delete job', severity: 'error' });
+        handleDialogClose();
       }
     }
   };
@@ -177,13 +181,15 @@ const HirerJobManagement = () => {
       try {
         await dispatch(
           updateJobStatus({
-            jobId: selectedJob.id,
+            jobId: selectedJob.id || selectedJob._id,
             status: 'active',
           }),
         ).unwrap();
+        setSnackbar({ open: true, message: 'Job published successfully', severity: 'success' });
         handleDialogClose();
-      } catch (error) {
-        console.error('Error publishing job:', error);
+      } catch (err) {
+        setSnackbar({ open: true, message: err?.message || 'Failed to publish job', severity: 'error' });
+        handleDialogClose();
       }
     }
   };
@@ -250,7 +256,7 @@ const HirerJobManagement = () => {
                     wordBreak: 'break-word',
                   }}
                 >
-                  {mockAnalytics.summary.totalJobs}
+                  {analytics.totalJobs}
                 </Typography>
                 <Typography
                   variant="body2"
@@ -293,7 +299,7 @@ const HirerJobManagement = () => {
                     wordBreak: 'break-word',
                   }}
                 >
-                  {formatCurrency(mockAnalytics.summary.totalSpent)}
+                  {formatCurrency(analytics.totalSpent)}
                 </Typography>
                 <Typography
                   variant="body2"
@@ -336,7 +342,7 @@ const HirerJobManagement = () => {
                     wordBreak: 'break-word',
                   }}
                 >
-                  {mockAnalytics.summary.totalApplications}
+                  {analytics.totalApplications}
                 </Typography>
                 <Typography
                   variant="body2"
@@ -379,7 +385,7 @@ const HirerJobManagement = () => {
                     wordBreak: 'break-word',
                   }}
                 >
-                  {mockAnalytics.summary.hireSuccessRate}%
+                  {analytics.hireSuccessRate}%
                 </Typography>
                 <Typography
                   variant="body2"
@@ -480,14 +486,53 @@ const HirerJobManagement = () => {
                   : `You don't have any ${getStatusForTab(activeTab)} jobs yet`}
               </Typography>
               {activeTab === 2 && (
-                <Button variant="contained" color="primary">
+                <Button variant="contained" color="primary" onClick={() => navigate('/hirer/jobs/post')}>
                   Post New Job
                 </Button>
               )}
             </Box>
           ) : (
             <>
-              <TableContainer>
+              {isMobile ? (
+                /* Mobile card view */
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {paginatedJobs.map((job) => (
+                    <Card key={job.id || job._id} variant="outlined">
+                      <CardContent sx={{ pb: '12px !important' }}>
+                        <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
+                          <Box sx={{ flex: 1, mr: 1 }}>
+                            <Typography variant="subtitle2" fontWeight="bold">
+                              {job.title}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" noWrap>
+                              {job.description?.substring(0, 60)}...
+                            </Typography>
+                          </Box>
+                          <IconButton size="small" onClick={(e) => handleMenuOpen(e, job)} aria-label="Job actions">
+                            <MoreVertIcon />
+                          </IconButton>
+                        </Box>
+                        <Box display="flex" flexWrap="wrap" gap={1} alignItems="center">
+                          <Chip label={job.category} size="small" variant="outlined" color="primary" />
+                          <Chip label={job.status?.toUpperCase()} size="small" color={getStatusColor(job.status)} variant="filled" />
+                          <Typography variant="subtitle2" fontWeight="bold" sx={{ ml: 'auto' }}>
+                            {formatCurrency(job.budget)}
+                          </Typography>
+                        </Box>
+                        <Box display="flex" justifyContent="space-between" mt={1}>
+                          <Typography variant="caption" color="text.secondary">
+                            {job.applicationsCount || 0} applications
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {formatDate(job.createdAt)}
+                          </Typography>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </Box>
+              ) : (
+                <TableContainer>
                 <Table>
                   <TableHead>
                     <TableRow>
@@ -516,7 +561,7 @@ const HirerJobManagement = () => {
                   </TableHead>
                   <TableBody>
                     {paginatedJobs.map((job) => (
-                      <TableRow key={job.id} hover>
+                      <TableRow key={job.id || job._id} hover>
                         <TableCell>
                           <Typography variant="subtitle2" fontWeight="bold">
                             {job.title}
@@ -583,6 +628,7 @@ const HirerJobManagement = () => {
                   </TableBody>
                 </Table>
               </TableContainer>
+              )
 
               <TablePagination
                 component="div"
@@ -657,6 +703,23 @@ const HirerJobManagement = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Snackbar for action feedback */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

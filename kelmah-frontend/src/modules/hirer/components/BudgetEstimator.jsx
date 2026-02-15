@@ -7,10 +7,12 @@ const BudgetEstimator = () => {
   const [materials, setMaterials] = useState(500);
   const [contingency, setContingency] = useState(10);
 
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
   const estimate = useMemo(() => {
-    const labor = rate * hours;
-    const base = labor + materials;
-    return Math.round(base * (1 + contingency / 100));
+    const labor = Math.max(0, rate) * Math.max(0, hours);
+    const base = labor + Math.max(0, materials);
+    return Math.round(base * (1 + clamp(contingency, 0, 100) / 100));
   }, [rate, hours, materials, contingency]);
 
   return (
@@ -26,7 +28,8 @@ const BudgetEstimator = () => {
               type="number"
               fullWidth
               value={rate}
-              onChange={(e) => setRate(Number(e.target.value))}
+              onChange={(e) => setRate(Math.max(0, Number(e.target.value)))}
+              inputProps={{ min: 0 }}
             />
           </Grid>
           <Grid item xs={12} sm={3}>
@@ -35,7 +38,8 @@ const BudgetEstimator = () => {
               type="number"
               fullWidth
               value={hours}
-              onChange={(e) => setHours(Number(e.target.value))}
+              onChange={(e) => setHours(Math.max(0, Number(e.target.value)))}
+              inputProps={{ min: 0 }}
             />
           </Grid>
           <Grid item xs={12} sm={3}>
@@ -44,7 +48,8 @@ const BudgetEstimator = () => {
               type="number"
               fullWidth
               value={materials}
-              onChange={(e) => setMaterials(Number(e.target.value))}
+              onChange={(e) => setMaterials(Math.max(0, Number(e.target.value)))}
+              inputProps={{ min: 0 }}
             />
           </Grid>
           <Grid item xs={12} sm={3}>
@@ -53,11 +58,12 @@ const BudgetEstimator = () => {
               type="number"
               fullWidth
               value={contingency}
-              onChange={(e) => setContingency(Number(e.target.value))}
+              onChange={(e) => setContingency(clamp(Number(e.target.value), 0, 100))}
+              inputProps={{ min: 0, max: 100 }}
             />
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="subtitle1">
+            <Typography variant="subtitle1" aria-live="polite">
               Estimated Budget: GHS {estimate.toLocaleString()}
             </Typography>
           </Grid>

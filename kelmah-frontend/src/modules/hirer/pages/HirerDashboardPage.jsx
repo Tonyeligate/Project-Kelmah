@@ -597,6 +597,7 @@ const HirerDashboardPage = () => {
               }}
               role="button"
               tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/hirer/jobs'); } }}
               aria-label={`Active Jobs: ${summaryData.activeJobs}. Click to view jobs.`}
             >
               <Box>
@@ -640,6 +641,7 @@ const HirerDashboardPage = () => {
               }}
               role="button"
               tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/hirer/jobs'); } }}
               aria-label={`Completed Jobs: ${summaryData.completedJobs}. Click to view progress.`}
             >
               <Box>
@@ -683,6 +685,7 @@ const HirerDashboardPage = () => {
               }}
               role="button"
               tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/hirer/applications'); } }}
               aria-label={`Applications: ${summaryData.pendingProposals}. Click to review applications.`}
             >
               <Box>
@@ -726,6 +729,7 @@ const HirerDashboardPage = () => {
               }}
               role="button"
               tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/hirer/payments'); } }}
               aria-label={`Needs Attention: ${summaryData.pendingPayments}. Click to view payments.`}
             >
               <Box>
@@ -774,7 +778,7 @@ const HirerDashboardPage = () => {
                 }}
               >
                 {summaryData.totalSpent > 0 ? (
-                  <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', gap: 4 }}>
+                  <Box role="img" aria-label={`Spending chart: ${summaryData.completedJobs} completed, ${summaryData.activeJobs} active jobs`} sx={{ width: '100%', display: 'flex', justifyContent: 'center', gap: 4 }}>
                     <Box sx={{ textAlign: 'center' }}>
                       <Box
                         sx={{
@@ -853,15 +857,23 @@ const HirerDashboardPage = () => {
                 {/* Donut Chart Placeholder */}
                 <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Box
+                    role="img"
+                    aria-label={`Applications donut chart: ${summaryData.completedJobs} completed, ${summaryData.pendingProposals} submitted, ${summaryData.pendingPayments} pending`}
                     sx={{
                       width: 180,
                       height: 180,
                       borderRadius: '50%',
-                      background: `conic-gradient(
-                        #4CAF50 0deg ${summaryData.completedJobs * 36}deg,
-                        #2196F3 ${summaryData.completedJobs * 36}deg ${(summaryData.completedJobs + summaryData.pendingProposals) * 36}deg,
-                        #F44336 ${(summaryData.completedJobs + summaryData.pendingProposals) * 36}deg 360deg
-                      )`,
+                      background: (() => {
+                        const total = summaryData.completedJobs + summaryData.pendingProposals + summaryData.pendingPayments;
+                        if (total === 0) return '#e0e0e0';
+                        const d1 = (summaryData.completedJobs / total) * 360;
+                        const d2 = d1 + (summaryData.pendingProposals / total) * 360;
+                        return `conic-gradient(
+                          #4CAF50 0deg ${d1}deg,
+                          #2196F3 ${d1}deg ${d2}deg,
+                          #F44336 ${d2}deg 360deg
+                        )`;
+                      })(),
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',

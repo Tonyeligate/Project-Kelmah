@@ -14,10 +14,6 @@ import {
   Rating,
   Pagination,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Slider,
   FormControl,
   InputLabel,
@@ -92,8 +88,6 @@ const WorkerSearch = () => {
   const [workers, setWorkers] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [savedWorkers, setSavedWorkers] = useState([]);
-  const [selectedWorker, setSelectedWorker] = useState(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOption, setSortOption] = useState('relevance');
 
@@ -555,13 +549,7 @@ const WorkerSearch = () => {
   };
 
   const handleDialogOpen = (worker) => {
-    // Navigate to worker profile page instead of opening dialog
-    navigate(`/worker-profile/${worker.id}`);
-  };
-
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    setSelectedWorker(null);
+    navigate(`/worker-profile/${worker.id || worker._id}`);
   };
 
   const getAvailabilityColor = (availability) => {
@@ -1248,193 +1236,7 @@ const WorkerSearch = () => {
         </>
       )}
 
-      {/* Worker Details Dialog */}
-      <Dialog
-        open={dialogOpen}
-        onClose={handleDialogClose}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box display="flex" alignItems="center" gap={2}>
-            {selectedWorker && (
-              <>
-                <Avatar
-                  src={selectedWorker.avatar}
-                  sx={{ width: 56, height: 56 }}
-                >
-                  {selectedWorker.name.charAt(0)}
-                </Avatar>
-                <Box>
-                  <Typography variant="h6">{selectedWorker.name}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {selectedWorker.title}
-                  </Typography>
-                </Box>
-              </>
-            )}
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          {selectedWorker && (
-            <Box>
-              {/* Stats */}
-              <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid item xs={6} sm={3}>
-                  <Typography variant="caption" color="text.secondary">
-                    Rating
-                  </Typography>
-                  <Box display="flex" alignItems="center" gap={0.5}>
-                    <StarIcon sx={{ fontSize: 20, color: 'gold' }} />
-                    <Typography variant="h6">
-                      {selectedWorker.rating}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      ({selectedWorker.reviewCount})
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <Typography variant="caption" color="text.secondary">
-                    Completed Jobs
-                  </Typography>
-                  <Typography variant="h6">
-                    {selectedWorker.completedJobs}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <Typography variant="caption" color="text.secondary">
-                    Response Time
-                  </Typography>
-                  <Typography variant="h6">
-                    {selectedWorker.responseTime}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <Typography variant="caption" color="text.secondary">
-                    Hourly Rate
-                  </Typography>
-                  <Typography variant="h6" color="primary.main">
-                    {formatCurrency(selectedWorker.hourlyRate)}
-                  </Typography>
-                </Grid>
-              </Grid>
-
-              <Divider sx={{ my: 2 }} />
-
-              {/* Bio */}
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                About
-              </Typography>
-              <Typography variant="body2" paragraph>
-                {selectedWorker.bio}
-              </Typography>
-
-              {/* Skills */}
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Skills & Expertise
-              </Typography>
-              <Box display="flex" gap={1} flexWrap="wrap" mb={3}>
-                {Array.isArray(selectedWorker?.skills) &&
-                  selectedWorker.skills.map((skill, index) => (
-                    <Chip
-                      key={index}
-                      label={skill}
-                      color="primary"
-                      variant="outlined"
-                    />
-                  ))}
-              </Box>
-
-              {/* Certifications */}
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Certifications
-              </Typography>
-              <Box mb={3}>
-                {Array.isArray(selectedWorker?.certifications) &&
-                  selectedWorker.certifications.map((cert, index) => (
-                    <Typography key={index} variant="body2" gutterBottom>
-                      • {cert}
-                    </Typography>
-                  ))}
-              </Box>
-
-              {/* Languages */}
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Languages
-              </Typography>
-              <Typography variant="body2" paragraph>
-                {Array.isArray(selectedWorker?.languages)
-                  ? selectedWorker.languages.join(', ')
-                  : ''}
-              </Typography>
-
-              {/* Portfolio Preview */}
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Portfolio
-              </Typography>
-              <Grid container spacing={2}>
-                {Array.isArray(selectedWorker?.portfolio) &&
-                  selectedWorker.portfolio.map((item, index) => (
-                    <Grid item xs={4} key={index}>
-                      <Paper
-                        sx={{
-                          height: 120,
-                          backgroundImage: `url(${item.image})`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                          position: 'relative',
-                          borderRadius: 2,
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            background:
-                              'linear-gradient(transparent, rgba(0,0,0,0.7))',
-                            color: 'white',
-                            p: 1,
-                            borderRadius: '0 0 8px 8px',
-                          }}
-                        >
-                          <Typography variant="caption">
-                            {item.title}
-                          </Typography>
-                        </Box>
-                      </Paper>
-                    </Grid>
-                  ))}
-              </Grid>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDialogClose}>Close</Button>
-          <Button
-            variant="outlined"
-            startIcon={
-              selectedWorker && savedWorkers.includes(selectedWorker.id) ? (
-                <BookmarkIcon />
-              ) : (
-                <BookmarkBorderIcon />
-              )
-            }
-            onClick={() =>
-              selectedWorker && handleSaveWorker(selectedWorker.id)
-            }
-          >
-            {selectedWorker && savedWorkers.includes(selectedWorker.id)
-              ? 'Saved'
-              : 'Save Worker'}
-          </Button>
-          <Button variant="contained" startIcon={<MessageIcon />}>
-            Send Message
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Worker Details - navigates to profile page via handleDialogOpen */}
     </Box>
   );
 };

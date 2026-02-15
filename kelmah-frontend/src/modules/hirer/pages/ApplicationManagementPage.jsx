@@ -39,7 +39,6 @@ import { Helmet } from 'react-helmet-async';
 import { hirerService } from '../services/hirerService';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import useAuth from '../../auth/hooks/useAuth';
 import { messagingService } from '../../messaging/services/messagingService';
 
 const normalizeApplication = (raw, jobIdFallback) => {
@@ -67,6 +66,10 @@ const ApplicationCard = ({ application, isSelected, onSelect }) => {
   return (
     <Card
       onClick={() => onSelect(application)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(application); } }}
+      role="button"
+      tabIndex={0}
+      aria-label={`Application from ${application.workerName}`}
       sx={{
         mb: 2,
         cursor: 'pointer',
@@ -103,7 +106,6 @@ function ApplicationManagementPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
-  const { user, token } = useAuth();
   const jobsByStatus = useSelector((state) => state.hirer?.jobs);
   const jobsForApplications = React.useMemo(() => {
     const all = Object.values(jobsByStatus || {}).flatMap((v) =>
