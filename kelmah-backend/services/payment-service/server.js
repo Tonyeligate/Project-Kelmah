@@ -47,15 +47,16 @@ try {
   const { requireEnv } = require('../../shared/utils/envValidator');
   if (process.env.NODE_ENV === 'production') {
     requireEnv(['JWT_SECRET', 'MONGODB_URI'], 'payment-service');
-    // At least one provider key must be present for payments
+    // Warn (but don't crash) if no payment provider keys are configured
+    // The service should still start so it can respond to health checks and
+    // keep-alive pings — payment operations will fail gracefully at runtime.
     if (!(
       process.env.STRIPE_SECRET_KEY ||
       process.env.PAYSTACK_SECRET_KEY ||
       process.env.MTN_MOMO_PRIMARY_KEY || process.env.MTN_SUBSCRIPTION_KEY ||
       process.env.VODAFONE_CLIENT_ID || process.env.AIRTELTIGO_CLIENT_ID
     )) {
-      console.error('payment-service: No payment provider keys configured');
-      process.exit(1);
+      logger.warn('⚠️ payment-service: No payment provider keys configured — payment operations will be unavailable');
     }
   } else if (!process.env.JWT_SECRET) {
     console.error('Payment Service missing JWT_SECRET. Exiting.');
