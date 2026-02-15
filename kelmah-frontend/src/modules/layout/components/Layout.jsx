@@ -19,6 +19,7 @@ import Sidebar from './sidebar/Sidebar';
 import MobileBottomNav from './MobileBottomNav';
 // import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigation'; // ✅ REMOVED: Breadcrumb navigation taking up too much space
 import SmartNavigation from '../../../components/common/SmartNavigation';
+import { useThemeMode } from '../../../theme/ThemeProvider';
 // Header functionality integrated into Header component
 
 /**
@@ -28,6 +29,17 @@ import SmartNavigation from '../../../components/common/SmartNavigation';
 const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
   const location = useLocation();
   const theme = useTheme();
+  const themeModeContext = useThemeMode();
+
+  const resolvedToggleTheme =
+    typeof toggleTheme === 'function'
+      ? toggleTheme
+      : themeModeContext.toggleTheme;
+  const resolvedSetThemeMode =
+    typeof setThemeMode === 'function'
+      ? setThemeMode
+      : themeModeContext.setThemeMode;
+  const resolvedMode = mode || themeModeContext.mode;
 
   // Use Outlet for React Router nested routes, fallback to children prop
   const content = children || <Outlet />;
@@ -95,9 +107,9 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
         >
           {!isMessagesPage && (
             <Header
-              toggleTheme={toggleTheme}
-              mode={mode}
-              setThemeMode={setThemeMode}
+              toggleTheme={resolvedToggleTheme}
+              mode={resolvedMode}
+              setThemeMode={resolvedSetThemeMode}
             />
           )}
           {/* Main content area — flex-based height, safe-area aware */}
@@ -126,10 +138,10 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
     return (
       <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
         <Header
-          toggleTheme={toggleTheme}
-          mode={mode}
+          toggleTheme={resolvedToggleTheme}
+          mode={resolvedMode}
           autoShowMode={true}
-          setThemeMode={setThemeMode}
+          setThemeMode={resolvedSetThemeMode}
         />
         <Sidebar variant="permanent" />
         <Box
@@ -180,9 +192,9 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
       }}
     >
       <Header
-        toggleTheme={toggleTheme}
-        mode={mode}
-        setThemeMode={setThemeMode}
+        toggleTheme={resolvedToggleTheme}
+        mode={resolvedMode}
+        setThemeMode={resolvedSetThemeMode}
       />
       <Fade in timeout={500}>
         <Box

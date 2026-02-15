@@ -1,5 +1,103 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Implementation Update (Feb 15, 2026 – Theme Toggle Runtime Crash Fix) ✅
+- 🎯 **Scope**: Investigate production `onClick` runtime failure (`TypeError: t is not a function`) and restore light/dark mode switching.
+- 🔍 **Root cause**:
+  - Routes mount layout as `<Layout />` (without theme props).
+  - `Header` actions call `toggleTheme`/`setThemeMode` from layout props; these were `undefined`, causing click-time crashes.
+- ✅ **Fix applied**:
+  - `Layout` now resolves theme controls from context (`useThemeMode`) when props are absent.
+  - Added safe resolved handlers: `resolvedToggleTheme`, `resolvedSetThemeMode`, `resolvedMode` and wired them to `Header` in mobile/desktop/public branches.
+- 🧾 File updated:
+  - `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+- 🧪 **Verification**:
+  - VS Code diagnostics on updated layout file: no errors.
+
+### Implementation Update (Feb 15, 2026 – Final Fix Pass: Diagnostics Cleanup + Live Recheck) ✅
+- 🎯 **Scope**: Complete remaining fix pass for touched files and re-run live endpoint checks.
+- ✅ **Code cleanup completed**:
+  - Resolved remaining style diagnostics in touched frontend files:
+    - `kelmah-frontend/src/modules/reviews/pages/ReviewsPage.jsx`
+    - `kelmah-frontend/src/modules/worker/pages/JobSearchPage.jsx`
+    - `kelmah-frontend/src/modules/worker/pages/MyBidsPage.jsx`
+    - `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+- 🧪 **Live recheck snapshot (gateway)**:
+  - `GET /api/auth/me` → `200`
+  - `GET /api/messages/conversations?limit=1` → `404`
+  - `GET /api/messaging/conversations?limit=1` → `404`
+  - (Payment remains unhealthy per aggregate health evidence from prior checks)
+- 🧪 **Verification**:
+  - Modified backend and frontend files in this pass are diagnostics-clean for compile/runtime.
+- 📝 **External blocker note**:
+  - Current messaging/payment live failures reflect deployed runtime state; local gateway fixes are complete and require deployment propagation to affect live behavior.
+
+### Implementation Update (Feb 15, 2026 – Messaging/Payment Blocker Fixes) ✅
+- 🎯 **Scope**: Fix remaining backend blockers reported from live smoke checks (`messages conversations 404`, `payments 502`).
+- ✅ **Messaging fix applied**:
+  - Updated gateway conversation proxy rewrite rules to map both `/api/messages/conversations*` and `/api/messaging/conversations*` to `/api/conversations*` in messaging-service.
+  - Updated `/conversations/:conversationId/read` to proxy through `conversationProxy` so it lands on conversation routes.
+  - File: `kelmah-backend/api-gateway/routes/messaging.routes.js`
+- ✅ **Payment resiliency fix applied**:
+  - Enhanced service discovery with per-service `cloudFallbacks` and URL de-duplication, reducing outage impact from stale cloud env URLs.
+  - File: `kelmah-backend/api-gateway/utils/serviceDiscovery.js`
+- 🧪 **Endpoint evidence**:
+  - `kelmah-payment-service-fnqn.onrender.com/health` → `503`
+  - `kelmah-payment-service.onrender.com/health` → `404`
+  - `kelmah-messaging-service-kbis.onrender.com/health` → healthy JSON
+- 🧪 **Verification**:
+  - Diagnostics on modified backend files: no compile/runtime errors.
+- 📝 **Deployment note**:
+  - These fixes are in local code and take effect in live gateway after deployment of this revision.
+
+### Implementation Update (Feb 15, 2026 – Worker/Reviews Completion Sweep) ✅
+- 🎯 **Scope**: Finish remaining high-impact mobile issues in worker/reviews (viewport locks, nowrap clipping pressure, and fixed-width form constraints).
+- ✅ **Worker fixes applied**:
+  1. Viewport hardening:
+     - `ProjectGallery` full-screen dialog: `100vh` → `100dvh` + safe-area bottom padding.
+     - `WorkerDashboardPage` root: `100vh` → `100dvh` + safe-area bottom padding.
+     - `JobSearchPage` root: `100vh` → `100dvh` + safe-area bottom padding.
+  2. Text-overflow hardening:
+     - `MyBidsPage` title/location moved to responsive clamp behavior.
+     - `WorkerCard` name/title/location moved to responsive clamp behavior.
+     - `SkillsAssessmentPage` test title moved to responsive clamp behavior.
+     - `EarningsTracker` mobile transaction description moved to responsive clamp behavior.
+     - `ProjectGallery` title moved to responsive clamp behavior.
+  3. Form width hardening:
+     - `WorkerProfile` availability editor changed fixed `minWidth: 320` field to responsive width (`xs: 100%`, `sm: 320`).
+- ✅ **Reviews status in this sweep**:
+  - No additional active reviews table/nowrap/viewport blockers found beyond already-fixed `ReviewsPage` viewport update.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/worker/components/ProjectGallery.jsx`
+  - `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
+  - `kelmah-frontend/src/modules/worker/pages/JobSearchPage.jsx`
+  - `kelmah-frontend/src/modules/worker/pages/MyBidsPage.jsx`
+  - `kelmah-frontend/src/modules/worker/components/WorkerCard.jsx`
+  - `kelmah-frontend/src/modules/worker/pages/SkillsAssessmentPage.jsx`
+  - `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+  - `kelmah-frontend/src/modules/worker/components/EarningsTracker.jsx`
+- 🧪 **Verification**:
+  - Diagnostics on modified files: no compile/runtime errors introduced.
+  - Remaining reported items are non-blocking style-only Sourcery suggestions.
+
+### Implementation Update (Feb 15, 2026 – Worker/Reviews Unresolved Mobile Batch) ✅
+- 🎯 **Scope**: Continue unresolved mobile-first pass in worker/reviews with focus on table/card parity and nowrap pressure reduction.
+- ✅ **Worker fixes applied**:
+  1. `MyApplications` desktop table responsiveness hardened:
+     - Added overflow-safe table container and stable table `minWidth`.
+     - Grouped action buttons in inline flex container for consistent spacing.
+     - Added mobile-shell viewport hardening (`100dvh` + safe-area padding).
+     - File: `kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx`
+  2. `JobSearch` title nowrap pressure reduced:
+     - Replaced strict `noWrap` title with responsive clamp (`xs` multiline clamp, `sm+` single line).
+     - File: `kelmah-frontend/src/modules/worker/pages/JobSearchPage.jsx`
+- ✅ **Reviews fix applied**:
+  1. `ReviewsPage` viewport hardening:
+     - Updated root layout to `100dvh` and added safe-area bottom padding.
+     - File: `kelmah-frontend/src/modules/reviews/pages/ReviewsPage.jsx`
+- 🧪 **Verification**:
+  - Diagnostics for modified files show no compile/runtime errors.
+  - Remaining warnings are non-blocking style-only Sourcery suggestions.
+
 ### Implementation Update (Feb 15, 2026 – Worker Find Work React #31 Crash Fix) ✅
 - 🎯 **Scope**: Investigate repeated production crashes on `/worker/find-work` (`Minified React error #31`, objects with keys `{type}` / `{type,country,city}`) and harden list rendering.
 - 🔍 **Root cause**:
@@ -22,7 +120,9 @@
   - `GET /api/auth/me` → `200`
   - `GET /api/jobs/my-jobs?limit=1` → `200`
   - `GET /api/messages/conversations?limit=1` → `404` (`ENDPOINT_NOT_FOUND`)
+  - `GET /api/messaging/conversations?limit=1` → `404` (`ENDPOINT_NOT_FOUND`)
   - `GET /api/payments/transactions/history?limit=1` → `502`
+  - `GET /api/payments/transactions?limit=1` → `502`
   - Aggregate health confirms gateway + messaging healthy, payment service unhealthy (`/api/health/aggregate`).
 - ✅ **Next unresolved module batch fix applied**:
   - Worker earnings transactions UI now uses mobile card fallback on small screens and desktop table on larger screens.
@@ -30,6 +130,16 @@
   - File: `kelmah-frontend/src/modules/worker/components/EarningsTracker.jsx`
 - 🧪 **Verification**:
   - VS Code diagnostics for changed worker component: no compile/runtime errors.
+
+### Implementation Update (Feb 15, 2026 – Messaging Gateway Conversation Proxy Hardening) ✅
+- 🎯 **Scope**: Address conversation-route mismatch risk discovered during live smoke checks by hardening gateway proxy behavior.
+- ✅ **Backend fix applied**:
+  - Updated conversation proxy to forward using explicit service prefix (`/api/conversations`) instead of regex rewrite rules.
+  - File: `kelmah-backend/api-gateway/routes/messaging.routes.js`
+- 🧪 **Verification**:
+  - VS Code diagnostics on modified gateway route file: no errors.
+- 📝 **Runtime note**:
+  - Current 404 smoke result reflects deployed Render instance at test time; local fix is ready in workspace and requires deployment to impact live responses.
 
 ### Implementation Update (Feb 15, 2026 – Platform-Wide Mobile/Backend Audit Phase-2 Delta) ✅
 - 🎯 **Scope**: Complete pending high-impact refinements after initial platform pass (messaging mobile truncation, payment table usability on mobile, and gateway auth error response consistency).
