@@ -834,7 +834,7 @@ const EnhancedReviewsPage = () => {
     <Box
       sx={{
         minHeight: '100dvh',
-        background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+        bgcolor: 'background.default',
         p: { xs: 2, md: 3 },
         pb: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
       }}

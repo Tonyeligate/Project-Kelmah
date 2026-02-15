@@ -309,7 +309,7 @@ const FilterPanel = ({
           valueLabelFormat={(v) => `GH₵${v.toLocaleString()}`}
           sx={{
             color: theme.palette.primary.main,
-            '& .MuiSlider-thumb': { width: 16, height: 16 },
+            '& .MuiSlider-thumb': { width: 24, height: 24 },
           }}
         />
         <Stack direction="row" justifyContent="space-between">

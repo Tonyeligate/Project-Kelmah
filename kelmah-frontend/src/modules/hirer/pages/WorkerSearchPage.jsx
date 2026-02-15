@@ -35,7 +35,7 @@ const WorkerSearchPage = () => {
 
   // Show the actual search interface if authenticated
   return (
-    <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', color: 'white' }}>
+    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', color: 'text.primary' }}>
       <Helmet>
         <title>Find Talent | Kelmah</title>
       </Helmet>

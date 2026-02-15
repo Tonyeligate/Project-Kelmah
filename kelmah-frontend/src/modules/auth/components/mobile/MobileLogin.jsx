@@ -20,7 +20,9 @@ import {
   Stack,
   Fade,
   Chip,
+  useTheme,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import {
   Visibility,
   VisibilityOff,
@@ -36,6 +38,8 @@ import logoIcon from '../../../../assets/images/logo.png';
 const MobileLogin = ({ registrationSuccess = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const infoMessage = location.state?.message;
   const dispatch = useDispatch();
   const { loading: authLoading } = useSelector((state) => state.auth);
@@ -118,22 +122,22 @@ const MobileLogin = ({ registrationSuccess = false }) => {
     }
   };
 
-  // Shared input styles
+  // Shared input styles — theme-aware
   const inputStyles = {
     '& .MuiOutlinedInput-root': {
-      backgroundColor: 'rgba(255, 255, 255, 0.06)',
+      backgroundColor: alpha(theme.palette.text.primary, 0.06),
       borderRadius: 2,
-      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
-      '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.4)' },
-      '&.Mui-focused fieldset': { borderColor: '#FFD700', borderWidth: 2 },
+      '& fieldset': { borderColor: alpha(theme.palette.text.primary, 0.15) },
+      '&:hover fieldset': { borderColor: alpha(theme.palette.primary.main, 0.4) },
+      '&.Mui-focused fieldset': { borderColor: theme.palette.primary.main, borderWidth: 2 },
     },
     '& .MuiInputLabel-root': {
-      color: 'rgba(255, 255, 255, 0.7)',
+      color: theme.palette.text.secondary,
       fontSize: '14px',
     },
-    '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
+    '& .MuiInputLabel-root.Mui-focused': { color: theme.palette.primary.main },
     '& .MuiOutlinedInput-input': {
-      color: 'white',
+      color: theme.palette.text.primary,
       fontSize: '16px',
       py: 1.5,
     },
@@ -143,7 +147,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
     <Box
       sx={{
         minHeight: '100vh',
-        backgroundColor: '#0a0a0a',
+        backgroundColor: theme.palette.background.default,
         display: 'flex',
         flexDirection: 'column',
         px: 3,
@@ -166,13 +170,13 @@ const MobileLogin = ({ registrationSuccess = false }) => {
               height: 70,
               mb: 2,
               borderRadius: '50%',
-              boxShadow: '0 4px 20px rgba(255, 215, 0, 0.3)',
+              boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.3)}`,
             }}
           />
           <Typography
             variant="h5"
             sx={{
-              color: '#FFD700',
+              color: 'primary.main',
               fontWeight: 800,
               letterSpacing: 1,
               mb: 0.5,
@@ -182,7 +186,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
           </Typography>
           <Typography
             sx={{
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: 'text.secondary',
               fontSize: '14px',
             }}
           >
@@ -207,8 +211,8 @@ const MobileLogin = ({ registrationSuccess = false }) => {
             label={label}
             size="small"
             sx={{
-              backgroundColor: 'rgba(255, 215, 0, 0.15)',
-              color: '#FFD700',
+              backgroundColor: alpha(theme.palette.primary.main, 0.15),
+              color: 'primary.main',
               fontSize: '12px',
               fontWeight: 600,
               height: 28,
@@ -225,10 +229,10 @@ const MobileLogin = ({ registrationSuccess = false }) => {
       >
         <Box
           sx={{
-            backgroundColor: 'rgba(20, 20, 20, 0.9)',
+            backgroundColor: alpha(theme.palette.background.paper, 0.9),
             borderRadius: 3,
             p: 3,
-            border: '1px solid rgba(255, 215, 0, 0.2)',
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
           }}
         >
           {/* Back button & Title */}
@@ -236,11 +240,11 @@ const MobileLogin = ({ registrationSuccess = false }) => {
             <IconButton
               onClick={() => navigate('/')}
               sx={{
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: 'text.secondary',
                 mr: 1,
                 minWidth: 44,
                 minHeight: 44,
-                '&:hover': { color: '#FFD700' },
+                '&:hover': { color: 'primary.main' },
               }}
               aria-label="Go back to home"
             >
@@ -249,11 +253,11 @@ const MobileLogin = ({ registrationSuccess = false }) => {
             <Box>
               <Typography
                 variant="h6"
-                sx={{ color: 'white', fontWeight: 700, fontSize: '18px' }}
+                sx={{ color: 'text.primary', fontWeight: 700, fontSize: '18px' }}
               >
                 Welcome back
               </Typography>
-              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
+              <Typography sx={{ color: 'text.secondary', fontSize: '14px' }}>
                 Sign in to continue
               </Typography>
             </Box>
@@ -341,7 +345,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <EmailIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 20 }} />
+                      <EmailIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
                     </InputAdornment>
                   ),
                 }}
@@ -364,7 +368,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <LockIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 20 }} />
+                      <LockIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -372,7 +376,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                       <IconButton
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
-                        sx={{ color: 'rgba(255,255,255,0.4)', minWidth: 44, minHeight: 44 }}
+                        sx={{ color: 'text.disabled', minWidth: 44, minHeight: 44 }}
                       >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
@@ -389,15 +393,15 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                     <Checkbox
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      size="small"
                       sx={{
-                        color: 'rgba(255,255,255,0.4)',
-                        '&.Mui-checked': { color: '#FFD700' },
+                        color: 'text.disabled',
+                        p: 1,
+                        '&.Mui-checked': { color: 'primary.main' },
                       }}
                     />
                   }
                   label={
-                    <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
+                    <Typography sx={{ color: 'text.secondary', fontSize: '14px' }}>
                       Remember me
                     </Typography>
                   }
@@ -406,7 +410,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                   component={RouterLink}
                   to="/forgot-password"
                   sx={{
-                    color: '#FFD700',
+                    color: 'primary.main',
                     fontSize: '14px',
                     textTransform: 'none',
                     py: 1,
@@ -466,14 +470,14 @@ const MobileLogin = ({ registrationSuccess = false }) => {
               minHeight: 44,
             }}
           >
-            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
+            <Typography sx={{ color: 'text.secondary', fontSize: '14px' }}>
               Don't have an account?
             </Typography>
             <Button
               component={RouterLink}
               to="/register"
               sx={{
-                color: '#FFD700',
+                color: 'primary.main',
                 fontWeight: 700,
                 fontSize: '14px',
                 textTransform: 'none',

@@ -24,7 +24,9 @@ import {
   Chip,
   InputAdornment,
   IconButton,
+  useTheme,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import {
   Gavel as GavelIcon,
   Close as CloseIcon,
@@ -35,6 +37,7 @@ import {
 import bidApi from '../services/bidService';
 
 const BidSubmissionForm = ({ open, onClose, job }) => {
+  const theme = useTheme();
   const minBid = job?.bidding?.minBidAmount || job?.budget?.min || 100;
   const maxBid = job?.bidding?.maxBidAmount || job?.budget?.max || 50000;
   const currentBidders = job?.bidding?.currentBidders || 0;
@@ -95,20 +98,20 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
   if (success) {
     return (
       <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ bgcolor: '#1a1a1a', color: '#FFD700' }}>
+        <DialogTitle sx={{ bgcolor: 'background.paper', color: 'primary.main' }}>
           Bid Submitted!
         </DialogTitle>
-        <DialogContent sx={{ bgcolor: '#1a1a1a', pt: 3 }}>
+        <DialogContent sx={{ bgcolor: 'background.paper', pt: 3 }}>
           <Alert severity="success" sx={{ mb: 2 }}>
             Your bid of <strong>GHS {bidAmount.toLocaleString()}</strong> has been
             submitted. The hirer will review all bids and select a worker.
           </Alert>
-          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             You can view and manage your bids from your dashboard.
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ bgcolor: '#1a1a1a', p: 2 }}>
-          <Button onClick={onClose} variant="contained" sx={{ bgcolor: '#FFD700', color: '#000' }}>
+        <DialogActions sx={{ bgcolor: 'background.paper', p: 2 }}>
+          <Button onClick={onClose} variant="contained" color="primary">
             Done
           </Button>
         </DialogActions>
@@ -120,8 +123,8 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle
         sx={{
-          bgcolor: '#1a1a1a',
-          color: '#FFD700',
+          bgcolor: 'background.paper',
+          color: 'primary.main',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -131,12 +134,12 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
           <GavelIcon />
           Place Your Bid
         </Box>
-        <IconButton onClick={onClose} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+        <IconButton onClick={onClose} sx={{ color: 'text.secondary' }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ bgcolor: '#1a1a1a', pt: 3 }}>
+      <DialogContent sx={{ bgcolor: 'background.paper', pt: 3 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
@@ -144,8 +147,8 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
         )}
 
         {/* Job info summary */}
-        <Box sx={{ mb: 3, p: 2, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 1 }}>
-          <Typography variant="subtitle1" sx={{ color: '#FFD700', fontWeight: 'bold', mb: 0.5 }}>
+        <Box sx={{ mb: 3, p: 2, bgcolor: alpha(theme.palette.text.primary, 0.05), borderRadius: 1 }}>
+          <Typography variant="subtitle1" sx={{ color: 'primary.main', fontWeight: 'bold', mb: 0.5 }}>
             {job?.title}
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
@@ -153,19 +156,19 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
               size="small"
               icon={<AttachMoney sx={{ fontSize: 14 }} />}
               label={`GHS ${minBid.toLocaleString()} – ${maxBid.toLocaleString()}`}
-              sx={{ bgcolor: 'rgba(255,215,0,0.15)', color: '#FFD700' }}
+              sx={{ bgcolor: alpha(theme.palette.primary.main, 0.15), color: 'primary.main' }}
             />
             <Chip
               size="small"
               icon={<Info sx={{ fontSize: 14 }} />}
               label={`${currentBidders}/${maxBidders} bidders`}
-              sx={{ bgcolor: 'rgba(255,255,255,0.1)', color: '#fff' }}
+              sx={{ bgcolor: alpha(theme.palette.text.primary, 0.1), color: 'text.primary' }}
             />
           </Box>
         </Box>
 
         {/* Bid amount slider */}
-        <Typography variant="subtitle2" sx={{ color: '#FFD700', mb: 1 }}>
+        <Typography variant="subtitle2" sx={{ color: 'primary.main', mb: 1 }}>
           Your Bid Amount (GHS)
         </Typography>
         <Box sx={{ px: 1, mb: 1 }}>
@@ -178,8 +181,8 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
             valueLabelDisplay="on"
             valueLabelFormat={(v) => `GHS ${v.toLocaleString()}`}
             sx={{
-              color: '#FFD700',
-              '& .MuiSlider-valueLabel': { bgcolor: '#FFD700', color: '#000' },
+              color: theme.palette.primary.main,
+              '& .MuiSlider-valueLabel': { bgcolor: theme.palette.primary.main, color: theme.palette.primary.contrastText },
             }}
           />
         </Box>
@@ -198,8 +201,8 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
           sx={{
             mb: 3,
             '& .MuiOutlinedInput-root': {
-              color: '#fff',
-              '& fieldset': { borderColor: 'rgba(255,215,0,0.3)' },
+              color: theme.palette.text.primary,
+              '& fieldset': { borderColor: alpha(theme.palette.primary.main, 0.3) },
             },
           }}
         />
@@ -214,15 +217,15 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
           sx={{
             mb: 3,
             '& .MuiOutlinedInput-root': {
-              color: '#fff',
-              '& fieldset': { borderColor: 'rgba(255,215,0,0.3)' },
+              color: theme.palette.text.primary,
+              '& fieldset': { borderColor: alpha(theme.palette.primary.main, 0.3) },
             },
-            '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.5)' },
+            '& .MuiInputLabel-root': { color: theme.palette.text.secondary },
           }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <Schedule sx={{ color: 'rgba(255,215,0,0.5)' }} />
+                <Schedule sx={{ color: alpha(theme.palette.primary.main, 0.5) }} />
               </InputAdornment>
             ),
           }}
@@ -241,20 +244,20 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
           sx={{
             mb: 2,
             '& .MuiOutlinedInput-root': {
-              color: '#fff',
-              '& fieldset': { borderColor: 'rgba(255,215,0,0.3)' },
+              color: theme.palette.text.primary,
+              '& fieldset': { borderColor: alpha(theme.palette.primary.main, 0.3) },
             },
-            '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.5)' },
+            '& .MuiInputLabel-root': { color: theme.palette.text.secondary },
           }}
         />
 
-        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+        <Typography variant="caption" sx={{ color: 'text.disabled' }}>
           You can submit up to 5 bids per month. Bids can be modified before the deadline.
         </Typography>
       </DialogContent>
 
-      <DialogActions sx={{ bgcolor: '#1a1a1a', p: 2 }}>
-        <Button onClick={onClose} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+      <DialogActions sx={{ bgcolor: 'background.paper', p: 2 }}>
+        <Button onClick={onClose} sx={{ color: 'text.secondary' }}>
           Cancel
         </Button>
         <Button
@@ -262,11 +265,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
           variant="contained"
           disabled={loading}
           startIcon={loading ? <CircularProgress size={16} /> : <GavelIcon />}
-          sx={{
-            bgcolor: '#FFD700',
-            color: '#000',
-            '&:hover': { bgcolor: '#FFA500' },
-          }}
+          color="primary"
         >
           {loading ? 'Submitting...' : `Submit Bid — GHS ${bidAmount.toLocaleString()}`}
         </Button>

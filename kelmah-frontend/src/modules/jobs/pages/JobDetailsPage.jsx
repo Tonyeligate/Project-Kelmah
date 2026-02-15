@@ -343,7 +343,7 @@ const JobDetailsPage = () => {
         minHeight: '100vh',
         py: { xs: 3, sm: 5, md: 8 },
         px: { xs: 1.5, sm: 2 },
-        background: '#1a1a1a',
+        bgcolor: 'background.default',
       }}
     >
       <Container maxWidth="lg">

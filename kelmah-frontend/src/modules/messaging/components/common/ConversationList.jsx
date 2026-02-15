@@ -34,6 +34,7 @@ import {
   CircularProgress,
   FormControlLabel,
   Switch,
+  useTheme,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -208,6 +209,7 @@ const StatusDot = styled('div')(({ theme, status }) => {
  * Component that displays a list of conversations
  */
 const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
+  const theme = useTheme();
   const [userOptions, setUserOptions] = useState([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [userSearchText, setUserSearchText] = useState('');
@@ -493,7 +495,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
           borderBottom: `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
         })}
       >
-        <Typography variant="h6" sx={{ color: '#FFD700' }}>
+        <Typography variant="h6" sx={{ color: 'primary.main' }}>
           Messages
         </Typography>
         <Box>
@@ -534,7 +536,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
           startAdornment: (
             <InputAdornment position="start">
               <SearchIcon
-                sx={{ color: 'alpha(theme.palette.secondary.main, 0.7)' }}
+                sx={{ color: alpha(theme.palette.primary.main, 0.7) }}
               />
             </InputAdornment>
           ),
@@ -643,7 +645,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                                   fontSize: '0.875rem',
                                   verticalAlign: 'middle',
                                   color:
-                                    'alpha(theme.palette.secondary.main, 0.7)',
+                                    alpha(theme.palette.primary.main, 0.7),
                                 }}
                               />
                             )}
@@ -849,17 +851,17 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
         fullWidth
         PaperProps={{
           sx: {
-            bgcolor: '#1a1a1a',
-            color: '#fff',
+            bgcolor: 'background.paper',
+            color: 'text.primary',
           },
         }}
       >
-        <DialogTitle sx={{ color: '#FFD700' }}>New Conversation</DialogTitle>
+        <DialogTitle sx={{ color: 'primary.main' }}>New Conversation</DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 1, mb: 2 }}>
             <Typography
               variant="subtitle2"
-              sx={{ mb: 1, color: 'alpha(theme.palette.common.white, 0.7)' }}
+              sx={{ mb: 1, color: 'text.secondary' }}
             >
               Conversation Type
             </Typography>
@@ -874,16 +876,16 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                   flexGrow: 1,
                   bgcolor:
                     newConversationType === 'direct'
-                      ? 'alpha(theme.palette.secondary.main, 0.2)'
+                      ? alpha(theme.palette.primary.main, 0.2)
                       : 'transparent',
-                  color: '#FFD700',
-                  borderColor: 'alpha(theme.palette.secondary.main, 0.5)',
+                  color: 'primary.main',
+                  borderColor: alpha(theme.palette.primary.main, 0.5),
                   '&:hover': {
                     bgcolor:
                       newConversationType === 'direct'
-                        ? 'alpha(theme.palette.secondary.main, 0.3)'
-                        : 'alpha(theme.palette.secondary.main, 0.1)',
-                    borderColor: '#FFD700',
+                        ? alpha(theme.palette.primary.main, 0.3)
+                        : alpha(theme.palette.primary.main, 0.1),
+                    borderColor: theme.palette.primary.main,
                   },
                 }}
               >
@@ -899,16 +901,16 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                   flexGrow: 1,
                   bgcolor:
                     newConversationType === 'group'
-                      ? 'alpha(theme.palette.secondary.main, 0.2)'
+                      ? alpha(theme.palette.primary.main, 0.2)
                       : 'transparent',
-                  color: '#FFD700',
-                  borderColor: 'alpha(theme.palette.secondary.main, 0.5)',
+                  color: 'primary.main',
+                  borderColor: alpha(theme.palette.primary.main, 0.5),
                   '&:hover': {
                     bgcolor:
                       newConversationType === 'group'
-                        ? 'alpha(theme.palette.secondary.main, 0.3)'
-                        : 'alpha(theme.palette.secondary.main, 0.1)',
-                    borderColor: '#FFD700',
+                        ? alpha(theme.palette.primary.main, 0.3)
+                        : alpha(theme.palette.primary.main, 0.1),
+                    borderColor: theme.palette.primary.main,
                   },
                 }}
               >
@@ -926,21 +928,21 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
               margin="normal"
               variant="outlined"
               InputLabelProps={{
-                sx: { color: 'alpha(theme.palette.common.white, 0.7)' },
+                sx: { color: 'text.secondary' },
               }}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   '& fieldset': {
-                    borderColor: 'alpha(theme.palette.secondary.main, 0.3)',
+                    borderColor: alpha(theme.palette.primary.main, 0.3),
                   },
                   '&:hover fieldset': {
-                    borderColor: 'alpha(theme.palette.secondary.main, 0.5)',
+                    borderColor: alpha(theme.palette.primary.main, 0.5),
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#FFD700',
+                    borderColor: theme.palette.primary.main,
                   },
                   '& input': {
-                    color: '#fff',
+                    color: theme.palette.text.primary,
                   },
                 },
               }}
@@ -965,7 +967,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                     alt={option.name}
                     sx={{ width: 24, height: 24, mr: 1 }}
                   />
-                  <Typography variant="body2" sx={{ color: '#fff' }}>
+                  <Typography variant="body2" sx={{ color: 'text.primary' }}>
                     {option.name}
                   </Typography>
                 </Box>
@@ -991,11 +993,11 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                 variant="outlined"
                 fullWidth
                 InputLabelProps={{
-                  sx: { color: 'alpha(theme.palette.common.white, 0.7)' },
+                  sx: { color: 'text.secondary' },
                 }}
                 InputProps={{
                   ...params.InputProps,
-                  sx: { color: '#fff' },
+                  sx: { color: theme.palette.text.primary },
                   endAdornment: (
                     <>
                       {usersLoading ? (
@@ -1008,13 +1010,13 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     '& fieldset': {
-                      borderColor: 'alpha(theme.palette.secondary.main, 0.3)',
+                      borderColor: alpha(theme.palette.primary.main, 0.3),
                     },
                     '&:hover fieldset': {
-                      borderColor: 'alpha(theme.palette.secondary.main, 0.5)',
+                      borderColor: alpha(theme.palette.primary.main, 0.5),
                     },
-                    '&.Mui-focused fieldset': { borderColor: '#FFD700' },
-                    '& input': { color: '#fff' },
+                    '&.Mui-focused fieldset': { borderColor: theme.palette.primary.main },
+                    '& input': { color: theme.palette.text.primary },
                   },
                 }}
               />
@@ -1029,10 +1031,10 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                 color="primary"
                 sx={{
                   '& .MuiSwitch-switchBase.Mui-checked': {
-                    color: '#FFD700',
+                    color: theme.palette.primary.main,
                   },
                   '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                    backgroundColor: 'alpha(theme.palette.secondary.main, 0.5)',
+                    backgroundColor: alpha(theme.palette.primary.main, 0.5),
                   },
                 }}
               />
@@ -1044,12 +1046,12 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                   sx={{
                     mr: 1,
                     color: enableEncryption
-                      ? '#FFD700'
-                      : 'alpha(theme.palette.common.white, 0.5)',
+                      ? theme.palette.primary.main
+                      : theme.palette.text.disabled,
                   }}
                 />
                 <Typography
-                  sx={{ color: 'alpha(theme.palette.common.white, 0.7)' }}
+                  sx={{ color: 'text.secondary' }}
                 >
                   Enable end-to-end encryption
                 </Typography>
@@ -1061,7 +1063,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
         <DialogActions sx={{ p: 2 }}>
           <Button
             onClick={() => setShowNewConversationDialog(false)}
-            sx={{ color: 'alpha(theme.palette.common.white, 0.7)' }}
+            sx={{ color: 'text.secondary' }}
           >
             Cancel
           </Button>
@@ -1074,17 +1076,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
               (newConversationType === 'group' &&
                 (selectedUsers.length < 2 || !groupName))
             }
-            sx={{
-              bgcolor: 'alpha(theme.palette.secondary.main, 0.8)',
-              color: '#000',
-              '&:hover': {
-                bgcolor: '#FFD700',
-              },
-              '&.Mui-disabled': {
-                bgcolor: 'alpha(theme.palette.secondary.main, 0.3)',
-                color: 'rgba(0, 0, 0, 0.5)',
-              },
-            }}
+            color="primary"
           >
             Create
           </Button>

@@ -407,16 +407,16 @@ const EnhancedMessagingPage = () => {
     switch (message.status) {
       case 'sending':
         return (
-          <ScheduleIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.5)' }} />
+          <ScheduleIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
         );
       case 'delivered':
         return (
-          <CheckIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.7)' }} />
+          <CheckIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
         );
       case 'read':
-        return <DoneAllIcon sx={{ fontSize: 16, color: '#4CAF50' }} />;
+        return <DoneAllIcon sx={{ fontSize: 16, color: 'success.main' }} />;
       case 'failed':
-        return <CloseIcon sx={{ fontSize: 16, color: '#F44336' }} />;
+        return <CloseIcon sx={{ fontSize: 16, color: 'error.main' }} />;
       default:
         return null;
     }
@@ -427,9 +427,8 @@ const EnhancedMessagingPage = () => {
     <Paper
       sx={{
         height: '100%',
-        background:
-          'linear-gradient(135deg, rgba(20,20,20,0.98) 0%, rgba(30,30,30,0.98) 100%)',
-        border: '1px solid rgba(255,215,0,0.2)',
+        bgcolor: 'background.paper',
+        border: `1px solid ${theme.palette.divider}`,
         borderRadius: 3,
         overflow: 'hidden',
         display: 'flex',
@@ -440,9 +439,8 @@ const EnhancedMessagingPage = () => {
       <Box
         sx={{
           p: 2,
-          borderBottom: '1px solid rgba(255,215,0,0.1)',
-          background:
-            'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          background: alpha(theme.palette.primary.main, 0.06),
         }}
       >
         <Stack
@@ -454,7 +452,7 @@ const EnhancedMessagingPage = () => {
           <Typography
             variant="h6"
             sx={{
-              color: '#FFD700',
+              color: 'primary.main',
               fontWeight: 700,
               fontSize: { xs: '1.1rem', sm: '1.25rem' },
             }}
@@ -467,10 +465,10 @@ const EnhancedMessagingPage = () => {
                 size="small"
                 onClick={() => setNewChatDialog(true)}
                 sx={{
-                  color: '#FFD700',
-                  background: alpha('#FFD700', 0.1),
+                  color: 'primary.main',
+                  background: alpha(theme.palette.primary.main, 0.1),
                   '&:hover': {
-                    background: alpha('#FFD700', 0.2),
+                    background: alpha(theme.palette.primary.main, 0.2),
                   },
                 }}
               >
@@ -481,10 +479,10 @@ const EnhancedMessagingPage = () => {
               size="small"
               onClick={(e) => setMoreMenuAnchor(e.currentTarget)}
               sx={{
-                color: 'rgba(255,255,255,0.7)',
+                color: 'text.secondary',
                 '&:hover': {
-                  color: '#FFD700',
-                  background: alpha('#FFD700', 0.1),
+                  color: 'primary.main',
+                  background: alpha(theme.palette.primary.main, 0.1),
                 },
               }}
             >
@@ -502,29 +500,29 @@ const EnhancedMessagingPage = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
           sx={{
             '& .MuiOutlinedInput-root': {
-              backgroundColor: 'rgba(255,255,255,0.05)',
+              backgroundColor: alpha(theme.palette.background.default, 0.5),
               borderRadius: 2,
               '& fieldset': {
-                borderColor: 'rgba(255,215,0,0.3)',
+                borderColor: theme.palette.divider,
               },
               '&:hover fieldset': {
-                borderColor: 'rgba(255,215,0,0.5)',
+                borderColor: alpha(theme.palette.primary.main, 0.5),
               },
               '&.Mui-focused fieldset': {
-                borderColor: '#FFD700',
+                borderColor: theme.palette.primary.main,
               },
             },
             '& .MuiInputBase-input': {
-              color: '#fff',
+              color: 'text.primary',
               '&::placeholder': {
-                color: 'rgba(255,255,255,0.5)',
+                color: theme.palette.text.disabled,
               },
             },
           }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: 'rgba(255,255,255,0.5)' }} />
+                <SearchIcon sx={{ color: 'text.disabled' }} />
               </InputAdornment>
             ),
           }}
@@ -552,20 +550,20 @@ const EnhancedMessagingPage = () => {
               sx={{
                 backgroundColor:
                   selectedFilter === filter.value
-                    ? alpha('#FFD700', 0.2)
-                    : 'rgba(255,255,255,0.05)',
+                    ? alpha(theme.palette.primary.main, 0.2)
+                    : alpha(theme.palette.action.hover, 0.5),
                 color:
                   selectedFilter === filter.value
-                    ? '#FFD700'
-                    : 'rgba(255,255,255,0.7)',
+                    ? 'primary.main'
+                    : 'text.secondary',
                 border: `1px solid ${
                   selectedFilter === filter.value
-                    ? 'rgba(255,215,0,0.5)'
-                    : 'rgba(255,255,255,0.1)'
+                    ? alpha(theme.palette.primary.main, 0.5)
+                    : theme.palette.divider
                 }`,
                 '&:hover': {
-                  backgroundColor: alpha('#FFD700', 0.1),
-                  color: '#FFD700',
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  color: 'primary.main',
                 },
                 flexShrink: 0,
               }}
@@ -601,19 +599,19 @@ const EnhancedMessagingPage = () => {
                     textAlign: 'left',
                     backgroundColor: 'transparent',
                     border: 'none',
-                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                    borderBottom: `1px solid ${theme.palette.divider}`,
                     background: isSelected
-                      ? 'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)'
+                      ? alpha(theme.palette.primary.main, 0.08)
                       : 'transparent',
                     borderLeft: isSelected
-                      ? '3px solid #FFD700'
+                      ? `3px solid ${theme.palette.primary.main}`
                       : '3px solid transparent',
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      background: 'rgba(255,255,255,0.03)',
+                      background: alpha(theme.palette.action.hover, 0.5),
                     },
                     '&:focus-visible': {
-                      outline: '2px solid rgba(255,215,0,0.8)',
+                      outline: `2px solid ${alpha(theme.palette.primary.main, 0.8)}`,
                       outlineOffset: -2,
                     },
                   }}
@@ -629,8 +627,8 @@ const EnhancedMessagingPage = () => {
                               width: 12,
                               height: 12,
                               borderRadius: '50%',
-                              backgroundColor: '#4CAF50',
-                              border: '2px solid rgba(20,20,20,0.98)',
+                              backgroundColor: 'success.main',
+                              border: `2px solid ${theme.palette.background.paper}`,
                             }}
                           />
                         ) : null
@@ -641,8 +639,8 @@ const EnhancedMessagingPage = () => {
                         sx={{
                           width: 48,
                           height: 48,
-                          bgcolor: alpha('#FFD700', 0.2),
-                          color: '#FFD700',
+                          bgcolor: alpha(theme.palette.primary.main, 0.2),
+                          color: 'primary.main',
                           fontSize: '1.2rem',
                           fontWeight: 600,
                         }}
@@ -661,7 +659,7 @@ const EnhancedMessagingPage = () => {
                         <Typography
                           variant="subtitle1"
                           sx={{
-                            color: '#fff',
+                            color: 'text.primary',
                             fontWeight: 600,
                             fontSize: '0.95rem',
                             overflow: 'hidden',
@@ -676,14 +674,14 @@ const EnhancedMessagingPage = () => {
                           {otherParticipant?.name}
                           {conversation.isPinned && (
                             <StarIcon
-                              sx={{ fontSize: 16, color: '#FFD700', ml: 0.5 }}
+                              sx={{ fontSize: 16, color: 'primary.main', ml: 0.5 }}
                             />
                           )}
                         </Typography>
                         <Typography
                           variant="caption"
                           sx={{
-                            color: 'rgba(255,255,255,0.5)',
+                            color: 'text.disabled',
                             fontSize: '0.75rem',
                             flexShrink: 0,
                             ml: 1,
@@ -700,8 +698,8 @@ const EnhancedMessagingPage = () => {
                           label={conversation.jobRelated.title}
                           size="small"
                           sx={{
-                            backgroundColor: alpha('#2196F3', 0.2),
-                            color: '#2196F3',
+                            backgroundColor: alpha(theme.palette.info.main, 0.15),
+                            color: 'info.main',
                             fontSize: '0.7rem',
                             height: '20px',
                             mb: 0.5,
@@ -717,7 +715,7 @@ const EnhancedMessagingPage = () => {
                         <Typography
                           variant="body2"
                           sx={{
-                            color: 'rgba(255,255,255,0.7)',
+                            color: 'text.secondary',
                             fontSize: '0.85rem',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -767,11 +765,11 @@ const EnhancedMessagingPage = () => {
           <Box sx={{ p: 4, textAlign: 'center' }}>
             <Typography
               variant="h6"
-              sx={{ color: 'rgba(255,255,255,0.5)', mb: 1 }}
+              sx={{ color: 'text.disabled', mb: 1 }}
             >
               No conversations found
             </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.3)' }}>
+            <Typography variant="body2" sx={{ color: 'text.disabled' }}>
               {searchQuery
                 ? 'Try adjusting your search'
                 : 'Start a new conversation'}
@@ -792,9 +790,8 @@ const EnhancedMessagingPage = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background:
-              'linear-gradient(135deg, rgba(20,20,20,0.98) 0%, rgba(30,30,30,0.98) 100%)',
-            border: '1px solid rgba(255,215,0,0.2)',
+            bgcolor: 'background.paper',
+            border: `1px solid ${theme.palette.divider}`,
             borderRadius: 3,
           }}
         >
@@ -804,8 +801,7 @@ const EnhancedMessagingPage = () => {
                 width: 120,
                 height: 120,
                 borderRadius: '50%',
-                background:
-                  'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
+                background: alpha(theme.palette.primary.main, 0.08),
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -813,12 +809,12 @@ const EnhancedMessagingPage = () => {
                 mb: 3,
               }}
             >
-              <SendIcon sx={{ fontSize: 48, color: 'rgba(255,215,0,0.5)' }} />
+              <SendIcon sx={{ fontSize: 48, color: alpha(theme.palette.primary.main, 0.5) }} />
             </Box>
             <Typography
               variant="h6"
               sx={{
-                color: '#FFD700',
+                color: 'primary.main',
                 fontWeight: 600,
                 mb: 1,
               }}
@@ -828,7 +824,7 @@ const EnhancedMessagingPage = () => {
             <Typography
               variant="body1"
               sx={{
-                color: 'rgba(255,255,255,0.5)',
+                color: 'text.disabled',
                 maxWidth: '300px',
                 mx: 'auto',
               }}
@@ -849,9 +845,8 @@ const EnhancedMessagingPage = () => {
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          background:
-            'linear-gradient(135deg, rgba(20,20,20,0.98) 0%, rgba(30,30,30,0.98) 100%)',
-          border: '1px solid rgba(255,215,0,0.2)',
+          bgcolor: 'background.paper',
+          border: `1px solid ${theme.palette.divider}`,
           borderRadius: 3,
           overflow: 'hidden',
         }}
@@ -861,9 +856,8 @@ const EnhancedMessagingPage = () => {
           position="static"
           elevation={0}
           sx={{
-            background:
-              'linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.05) 100%)',
-            borderBottom: '1px solid rgba(255,215,0,0.2)',
+            background: alpha(theme.palette.primary.main, 0.06),
+            borderBottom: `1px solid ${theme.palette.divider}`,
           }}
         >
           <Toolbar>
@@ -872,7 +866,7 @@ const EnhancedMessagingPage = () => {
                 edge="start"
                 color="inherit"
                 onClick={() => clearConversation()}
-                sx={{ mr: 2, color: '#FFD700' }}
+                sx={{ mr: 2, color: 'primary.main' }}
               >
                 <ArrowBackIcon />
               </IconButton>
@@ -888,8 +882,8 @@ const EnhancedMessagingPage = () => {
                       width: 12,
                       height: 12,
                       borderRadius: '50%',
-                      backgroundColor: '#4CAF50',
-                      border: '2px solid rgba(20,20,20,0.98)',
+                      backgroundColor: 'success.main',
+                      border: `2px solid ${theme.palette.background.paper}`,
                     }}
                   />
                 ) : null
@@ -900,8 +894,8 @@ const EnhancedMessagingPage = () => {
                 sx={{
                   width: 40,
                   height: 40,
-                  bgcolor: alpha('#FFD700', 0.2),
-                  color: '#FFD700',
+                  bgcolor: alpha(theme.palette.primary.main, 0.2),
+                  color: 'primary.main',
                   mr: 2,
                 }}
               >
@@ -913,7 +907,7 @@ const EnhancedMessagingPage = () => {
               <Typography
                 variant="h6"
                 sx={{
-                  color: '#FFD700',
+                  color: 'primary.main',
                   fontWeight: 600,
                   fontSize: '1.1rem',
                 }}
@@ -924,7 +918,7 @@ const EnhancedMessagingPage = () => {
                 <Typography
                   variant="caption"
                   sx={{
-                    color: 'rgba(255,255,255,0.7)',
+                    color: 'text.secondary',
                     fontSize: '0.75rem',
                   }}
                 >
@@ -935,7 +929,7 @@ const EnhancedMessagingPage = () => {
                 <Typography
                   variant="caption"
                   sx={{
-                    color: '#4CAF50',
+                    color: 'success.main',
                     fontSize: '0.75rem',
                     fontStyle: 'italic',
                   }}
@@ -950,12 +944,12 @@ const EnhancedMessagingPage = () => {
                 <IconButton
                   aria-label="Voice call"
                   sx={{
-                    color: 'rgba(255,255,255,0.7)',
+                    color: 'text.secondary',
                     minWidth: 44,
                     minHeight: 44,
                     '&:hover': {
-                      color: '#FFD700',
-                      background: alpha('#FFD700', 0.1),
+                      color: 'primary.main',
+                      background: alpha(theme.palette.primary.main, 0.1),
                     },
                   }}
                 >
@@ -966,12 +960,12 @@ const EnhancedMessagingPage = () => {
                 <IconButton
                   aria-label="Video call"
                   sx={{
-                    color: 'rgba(255,255,255,0.7)',
+                    color: 'text.secondary',
                     minWidth: 44,
                     minHeight: 44,
                     '&:hover': {
-                      color: '#FFD700',
-                      background: alpha('#FFD700', 0.1),
+                      color: 'primary.main',
+                      background: alpha(theme.palette.primary.main, 0.1),
                     },
                   }}
                 >
@@ -983,12 +977,12 @@ const EnhancedMessagingPage = () => {
                   aria-label="More options"
                   onClick={(e) => setMoreMenuAnchor(e.currentTarget)}
                   sx={{
-                    color: 'rgba(255,255,255,0.7)',
+                    color: 'text.secondary',
                     minWidth: 44,
                     minHeight: 44,
                     '&:hover': {
-                      color: '#FFD700',
-                      background: alpha('#FFD700', 0.1),
+                      color: 'primary.main',
+                      background: alpha(theme.palette.primary.main, 0.1),
                     },
                   }}
                 >
@@ -1005,8 +999,7 @@ const EnhancedMessagingPage = () => {
             flex: 1,
             overflow: 'auto',
             p: 2,
-            background:
-              'linear-gradient(135deg, rgba(10,10,10,0.5) 0%, rgba(20,20,20,0.5) 100%)',
+            bgcolor: alpha(theme.palette.background.default, 0.5),
           }}
         >
           <AnimatePresence>
@@ -1039,8 +1032,8 @@ const EnhancedMessagingPage = () => {
                           width: 32,
                           height: 32,
                           mr: 1,
-                          bgcolor: alpha('#FFD700', 0.2),
-                          color: '#FFD700',
+                          bgcolor: alpha(theme.palette.primary.main, 0.2),
+                          color: 'primary.main',
                           fontSize: '0.9rem',
                         }}
                       >
@@ -1060,10 +1053,10 @@ const EnhancedMessagingPage = () => {
                           p: 1.5,
                           borderRadius: 3,
                           background: isOwn
-                            ? 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)'
-                            : 'linear-gradient(135deg, rgba(60,60,60,0.8) 0%, rgba(80,80,80,0.8) 100%)',
-                          color: isOwn ? '#000' : '#fff',
-                          border: `1px solid ${isOwn ? 'rgba(255,215,0,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                            ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark || '#FFC000'} 100%)`
+                            : alpha(theme.palette.text.primary, 0.08),
+                          color: isOwn ? theme.palette.primary.contrastText : 'text.primary',
+                          border: `1px solid ${isOwn ? alpha(theme.palette.primary.main, 0.3) : theme.palette.divider}`,
                           position: 'relative',
                           '&::before': isOwn
                             ? {
@@ -1073,7 +1066,7 @@ const EnhancedMessagingPage = () => {
                                 right: -8,
                                 width: 0,
                                 height: 0,
-                                borderLeft: '8px solid #FFD700',
+                                borderLeft: `8px solid ${theme.palette.primary.main}`,
                                 borderTop: '8px solid transparent',
                                 borderBottom: '8px solid transparent',
                               }
@@ -1084,7 +1077,7 @@ const EnhancedMessagingPage = () => {
                                 left: -8,
                                 width: 0,
                                 height: 0,
-                                borderRight: '8px solid rgba(60,60,60,0.8)',
+                                borderRight: `8px solid ${alpha(theme.palette.text.primary, 0.08)}`,
                                 borderTop: '8px solid transparent',
                                 borderBottom: '8px solid transparent',
                               },
@@ -1201,9 +1194,8 @@ const EnhancedMessagingPage = () => {
         <Box
           sx={{
             p: 2,
-            borderTop: '1px solid rgba(255,215,0,0.2)',
-            background:
-              'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.95) 100%)',
+            borderTop: `1px solid ${theme.palette.divider}`,
+            bgcolor: alpha(theme.palette.background.paper, 0.95),
           }}
         >
           {/* File Preview */}
@@ -1220,8 +1212,8 @@ const EnhancedMessagingPage = () => {
                     sx={{
                       p: 1,
                       borderRadius: 2,
-                      background: 'rgba(255,215,0,0.1)',
-                      border: '1px solid rgba(255,215,0,0.3)',
+                      background: alpha(theme.palette.primary.main, 0.1),
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
                       minWidth: { xs: '92px', sm: '120px' },
                       position: 'relative',
                     }}
@@ -1237,12 +1229,12 @@ const EnhancedMessagingPage = () => {
                         position: 'absolute',
                         top: -8,
                         right: -8,
-                        background: '#F44336',
-                        color: '#fff',
+                        background: 'error.main',
+                        color: 'error.contrastText',
                         width: 28,
                         height: 28,
                         '&:hover': {
-                          background: '#D32F2F',
+                          background: 'error.dark',
                         },
                       }}
                     >
@@ -1262,11 +1254,11 @@ const EnhancedMessagingPage = () => {
                       />
                     ) : (
                       <Stack direction="row" alignItems="center" spacing={1}>
-                        <FileIcon sx={{ color: '#FFD700' }} />
+                        <FileIcon sx={{ color: 'primary.main' }} />
                         <Typography
                           variant="caption"
                           sx={{
-                            color: '#fff',
+                            color: 'text.primary',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
@@ -1298,10 +1290,10 @@ const EnhancedMessagingPage = () => {
               <IconButton
                 onClick={() => fileInputRef.current?.click()}
                 sx={{
-                  color: 'rgba(255,255,255,0.7)',
+                  color: 'text.secondary',
                   '&:hover': {
-                    color: '#FFD700',
-                    background: alpha('#FFD700', 0.1),
+                    color: 'primary.main',
+                    background: alpha(theme.palette.primary.main, 0.1),
                   },
                 }}
               >
@@ -1327,22 +1319,22 @@ const EnhancedMessagingPage = () => {
               }}
               sx={{
                 '& .MuiOutlinedInput-root': {
-                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  backgroundColor: alpha(theme.palette.background.default, 0.5),
                   borderRadius: 3,
                   '& fieldset': {
-                    borderColor: 'rgba(255,215,0,0.3)',
+                    borderColor: theme.palette.divider,
                   },
                   '&:hover fieldset': {
-                    borderColor: 'rgba(255,215,0,0.5)',
+                    borderColor: alpha(theme.palette.primary.main, 0.5),
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#FFD700',
+                    borderColor: theme.palette.primary.main,
                   },
                 },
                 '& .MuiInputBase-input': {
-                  color: '#fff',
+                  color: 'text.primary',
                   '&::placeholder': {
-                    color: 'rgba(255,255,255,0.5)',
+                    color: theme.palette.text.disabled,
                   },
                 },
               }}
@@ -1354,15 +1346,15 @@ const EnhancedMessagingPage = () => {
                 disabled={!messageText.trim() && selectedFiles.length === 0}
                 sx={{
                   background:
-                    'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                  color: '#000',
+                    `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark || '#FFC000'} 100%)`,
+                  color: theme.palette.primary.contrastText,
                   '&:hover': {
                     background:
-                      'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
+                      `linear-gradient(135deg, ${theme.palette.primary.dark || '#FFC000'} 0%, ${theme.palette.primary.dark || '#FFB300'} 100%)`,
                   },
                   '&:disabled': {
-                    background: 'rgba(255,255,255,0.1)',
-                    color: 'rgba(255,255,255,0.3)',
+                    background: alpha(theme.palette.text.primary, 0.1),
+                    color: 'text.disabled',
                   },
                 }}
               >
@@ -1384,10 +1376,10 @@ const EnhancedMessagingPage = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+          bgcolor: 'background.default',
         }}
       >
-        <CircularProgress sx={{ color: '#FFD700' }} />
+        <CircularProgress sx={{ color: 'primary.main' }} />
       </Box>
     );
   }
@@ -1398,8 +1390,8 @@ const EnhancedMessagingPage = () => {
       <Box
         sx={{
           minHeight: '100dvh',
-          backgroundColor: '#161513',
-          color: 'white',
+          bgcolor: 'background.default',
+          color: 'text.primary',
           fontFamily: 'Manrope, "Noto Sans", sans-serif',
         }}
       >
@@ -1411,13 +1403,13 @@ const EnhancedMessagingPage = () => {
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                backgroundColor: '#161513',
+                bgcolor: 'background.default',
                 p: 2,
                 justifyContent: 'space-between',
                 position: 'sticky',
                 top: 0,
                 zIndex: 10,
-                borderBottom: '1px solid rgba(255, 215, 0, 0.2)',
+                borderBottom: `1px solid ${theme.palette.divider}`,
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1425,8 +1417,8 @@ const EnhancedMessagingPage = () => {
                   onClick={() => navigate(-1)}
                   aria-label="Go back"
                   sx={{
-                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                    color: '#FFD700',
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                    color: 'primary.main',
                     minWidth: 44,
                     minHeight: 44,
                   }}
@@ -1435,7 +1427,7 @@ const EnhancedMessagingPage = () => {
                 </IconButton>
                 <Typography
                   sx={{
-                    color: '#FFD700',
+                    color: 'primary.main',
                     fontSize: '1.125rem',
                     fontWeight: 'bold',
                   }}
@@ -1446,13 +1438,12 @@ const EnhancedMessagingPage = () => {
               <IconButton
                 aria-label="Search conversations"
                 onClick={() => {
-                  // Scroll to search input and focus it
                   const searchInput = document.querySelector('#mobile-search-input input');
                   if (searchInput) searchInput.focus();
                 }}
                 sx={{
-                  backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                  color: '#FFD700',
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  color: 'primary.main',
                   minWidth: 44,
                   minHeight: 44,
                 }}
@@ -1479,25 +1470,25 @@ const EnhancedMessagingPage = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#24231e',
+                    bgcolor: 'background.paper',
                     borderRadius: '12px',
-                    '& fieldset': { borderColor: '#35332c' },
-                    '&:hover fieldset': { borderColor: '#FFD700' },
-                    '&.Mui-focused fieldset': { borderColor: '#FFD700' },
+                    '& fieldset': { borderColor: theme.palette.divider },
+                    '&:hover fieldset': { borderColor: theme.palette.primary.main },
+                    '&.Mui-focused fieldset': { borderColor: theme.palette.primary.main },
                   },
                   '& .MuiInputBase-input': {
-                    color: 'white',
+                    color: 'text.primary',
                     fontSize: '0.875rem',
                   },
                   '& .MuiInputBase-input::placeholder': {
-                    color: '#b2afa3',
+                    color: theme.palette.text.secondary,
                     opacity: 1,
                   },
                 }}
                 InputProps={{
                   startAdornment: (
                     <SearchIcon
-                      sx={{ color: '#b2afa3', mr: 1, fontSize: 20 }}
+                      sx={{ color: 'text.secondary', mr: 1, fontSize: 20 }}
                     />
                   ),
                 }}
@@ -1508,7 +1499,7 @@ const EnhancedMessagingPage = () => {
             <Box sx={{ px: 2 }}>
               <Typography
                 sx={{
-                  color: 'white',
+                  color: 'text.primary',
                   fontSize: '1rem',
                   fontWeight: 'bold',
                   mb: 2,
@@ -1519,7 +1510,7 @@ const EnhancedMessagingPage = () => {
 
               {filteredConversations.length === 0 && (
                 <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography sx={{ color: '#b2afa3', fontSize: '0.9rem' }}>
+                  <Typography sx={{ color: 'text.secondary', fontSize: '0.9rem' }}>
                     {searchQuery ? 'No conversations match your search' : 'No conversations yet'}
                   </Typography>
                 </Box>
@@ -1533,20 +1524,20 @@ const EnhancedMessagingPage = () => {
                   type="button"
                   key={conversation.id}
                   sx={{
-                    backgroundColor: '#24231e',
+                    bgcolor: 'background.paper',
                     borderRadius: '12px',
                     p: 2,
                     mb: 1.5,
-                    border: '1px solid #35332c',
+                    border: `1px solid ${theme.palette.divider}`,
                     cursor: 'pointer',
                     width: '100%',
                     textAlign: 'left',
                     color: 'inherit',
                     '&:hover': {
-                      backgroundColor: '#2a2926',
+                      bgcolor: alpha(theme.palette.action.hover, 0.5),
                     },
                     '&:focus-visible': {
-                      outline: '2px solid rgba(255,215,0,0.8)',
+                      outline: `2px solid ${alpha(theme.palette.primary.main, 0.8)}`,
                       outlineOffset: 2,
                     },
                   }}
@@ -1558,8 +1549,8 @@ const EnhancedMessagingPage = () => {
                       <Avatar
                         src={otherParticipant?.avatar}
                         sx={{
-                          backgroundColor: '#FFD700',
-                          color: '#161513',
+                          backgroundColor: 'primary.main',
+                          color: theme.palette.primary.contrastText,
                           width: 48,
                           height: 48,
                           fontWeight: 'bold',
@@ -1575,9 +1566,9 @@ const EnhancedMessagingPage = () => {
                             right: 2,
                             width: 12,
                             height: 12,
-                            backgroundColor: '#4CAF50',
+                            backgroundColor: 'success.main',
                             borderRadius: '50%',
-                            border: '2px solid #24231e',
+                            border: `2px solid ${theme.palette.background.paper}`,
                           }}
                         />
                       )}
@@ -1593,7 +1584,7 @@ const EnhancedMessagingPage = () => {
                       >
                         <Typography
                           sx={{
-                            color: 'white',
+                            color: 'text.primary',
                             fontSize: '1rem',
                             fontWeight: 'bold',
                             overflow: 'hidden',
@@ -1608,7 +1599,7 @@ const EnhancedMessagingPage = () => {
                         </Typography>
                         <Typography
                           sx={{
-                            color: '#b2afa3',
+                            color: 'text.secondary',
                             fontSize: '0.75rem',
                             flexShrink: 0,
                             ml: 1,
@@ -1628,7 +1619,7 @@ const EnhancedMessagingPage = () => {
                       >
                         <Typography
                           sx={{
-                            color: '#b2afa3',
+                            color: 'text.secondary',
                             fontSize: '0.875rem',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -1647,8 +1638,8 @@ const EnhancedMessagingPage = () => {
                             badgeContent={conversation.unreadCount}
                             sx={{
                               '& .MuiBadge-badge': {
-                                backgroundColor: '#FFD700',
-                                color: '#161513',
+                                backgroundColor: 'primary.main',
+                                color: theme.palette.primary.contrastText,
                                 fontWeight: 'bold',
                                 fontSize: '0.65rem',
                               },
@@ -1677,13 +1668,13 @@ const EnhancedMessagingPage = () => {
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                backgroundColor: '#161513',
+                bgcolor: 'background.default',
                 p: 2,
                 justifyContent: 'space-between',
                 position: 'sticky',
                 top: 0,
                 zIndex: 10,
-                borderBottom: '1px solid rgba(255, 215, 0, 0.2)',
+                borderBottom: `1px solid ${theme.palette.divider}`,
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1691,8 +1682,8 @@ const EnhancedMessagingPage = () => {
                   onClick={() => clearConversation()}
                   aria-label="Back to conversations"
                   sx={{
-                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                    color: '#FFD700',
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                    color: 'primary.main',
                     minWidth: 44,
                     minHeight: 44,
                   }}
@@ -1702,8 +1693,8 @@ const EnhancedMessagingPage = () => {
                 <Avatar
                   src={chatParticipant?.avatar}
                   sx={{
-                    backgroundColor: '#FFD700',
-                    color: '#161513',
+                    backgroundColor: 'primary.main',
+                    color: theme.palette.primary.contrastText,
                     width: 36,
                     height: 36,
                     fontWeight: 'bold',
@@ -1714,7 +1705,7 @@ const EnhancedMessagingPage = () => {
                 <Box>
                   <Typography
                     sx={{
-                      color: 'white',
+                      color: 'text.primary',
                       fontSize: '1rem',
                       fontWeight: 'bold',
                       lineHeight: 1,
@@ -1724,7 +1715,7 @@ const EnhancedMessagingPage = () => {
                   </Typography>
                   <Typography
                     sx={{
-                      color: '#b2afa3',
+                      color: 'text.secondary',
                       fontSize: '0.75rem',
                       lineHeight: 1,
                     }}
@@ -1738,8 +1729,8 @@ const EnhancedMessagingPage = () => {
               <IconButton
                 aria-label="More options"
                 sx={{
-                  backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                  color: '#FFD700',
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  color: 'primary.main',
                   minWidth: 44,
                   minHeight: 44,
                 }}
@@ -1759,7 +1750,7 @@ const EnhancedMessagingPage = () => {
             >
               {messages.length === 0 && (
                 <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography sx={{ color: '#b2afa3', fontSize: '0.9rem' }}>
+                  <Typography sx={{ color: 'text.secondary', fontSize: '0.9rem' }}>
                     No messages yet. Start the conversation!
                   </Typography>
                 </Box>
@@ -1780,8 +1771,8 @@ const EnhancedMessagingPage = () => {
                       maxWidth: '75%',
                       p: 1.5,
                       borderRadius: '12px',
-                      backgroundColor: isOwn ? '#FFD700' : '#35332c',
-                      color: isOwn ? '#161513' : 'white',
+                      backgroundColor: isOwn ? 'primary.main' : 'background.paper',
+                      color: isOwn ? theme.palette.primary.contrastText : 'text.primary',
                     }}
                   >
                     <Typography sx={{ fontSize: '0.875rem', mb: 0.5, wordBreak: 'break-word' }}>
@@ -1810,9 +1801,9 @@ const EnhancedMessagingPage = () => {
               sx={{
                 position: 'sticky',
                 bottom: 0,
-                backgroundColor: '#161513',
+                bgcolor: 'background.default',
                 p: 2,
-                borderTop: '1px solid #35332c',
+                borderTop: `1px solid ${theme.palette.divider}`,
                 paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
               }}
             >
@@ -1833,14 +1824,14 @@ const EnhancedMessagingPage = () => {
                   }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      backgroundColor: '#24231e',
+                      bgcolor: 'background.paper',
                       borderRadius: '20px',
-                      '& fieldset': { borderColor: '#35332c' },
-                      '&:hover fieldset': { borderColor: '#FFD700' },
-                      '&.Mui-focused fieldset': { borderColor: '#FFD700' },
+                      '& fieldset': { borderColor: theme.palette.divider },
+                      '&:hover fieldset': { borderColor: theme.palette.primary.main },
+                      '&.Mui-focused fieldset': { borderColor: theme.palette.primary.main },
                     },
                     '& .MuiInputBase-input': {
-                      color: 'white',
+                      color: 'text.primary',
                       fontSize: '1rem',
                       py: 1,
                     },
@@ -1851,16 +1842,16 @@ const EnhancedMessagingPage = () => {
                   disabled={!messageText.trim() && selectedFiles.length === 0}
                   aria-label="Send message"
                   sx={{
-                    backgroundColor: '#FFD700',
-                    color: '#161513',
+                    backgroundColor: 'primary.main',
+                    color: theme.palette.primary.contrastText,
                     minWidth: 44,
                     minHeight: 44,
                     '&:hover': {
-                      backgroundColor: '#FFC000',
+                      backgroundColor: 'primary.dark',
                     },
                     '&:disabled': {
-                      backgroundColor: 'rgba(255,255,255,0.1)',
-                      color: 'rgba(255,255,255,0.3)',
+                      backgroundColor: alpha(theme.palette.text.primary, 0.1),
+                      color: 'text.disabled',
                     },
                   }}
                 >
@@ -1890,7 +1881,7 @@ const EnhancedMessagingPage = () => {
         sx={{
           height: 'calc(100dvh - 64px)',
           p: { xs: 1, sm: 2, md: 3 },
-          background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+          bgcolor: 'background.default',
         }}
       >
         {(realtimeIssue || !isConnected) && (
@@ -1948,10 +1939,10 @@ const EnhancedMessagingPage = () => {
           <Divider />
           <MenuItem
             onClick={() => setMoreMenuAnchor(null)}
-            sx={{ color: '#F44336' }}
+            sx={{ color: 'error.main' }}
           >
             <ListItemIcon>
-              <DeleteIcon sx={{ color: '#F44336' }} />
+              <DeleteIcon sx={{ color: 'error.main' }} />
             </ListItemIcon>
             <ListItemText>Delete Conversation</ListItemText>
           </MenuItem>
@@ -1966,13 +1957,12 @@ const EnhancedMessagingPage = () => {
           fullScreen={isMobile}
           PaperProps={{
             sx: {
-              background:
-                'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
-              border: '1px solid rgba(255,215,0,0.2)',
+              bgcolor: 'background.paper',
+              border: `1px solid ${theme.palette.divider}`,
             },
           }}
         >
-          <DialogTitle sx={{ color: '#FFD700' }}>
+          <DialogTitle sx={{ color: 'primary.main' }}>
             Start New Conversation
           </DialogTitle>
           <DialogContent>
@@ -1984,22 +1974,22 @@ const EnhancedMessagingPage = () => {
               variant="outlined"
               sx={{
                 '& .MuiOutlinedInput-root': {
-                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  bgcolor: alpha(theme.palette.background.default, 0.5),
                   '& fieldset': {
-                    borderColor: 'rgba(255,215,0,0.3)',
+                    borderColor: theme.palette.divider,
                   },
                   '&:hover fieldset': {
-                    borderColor: 'rgba(255,215,0,0.5)',
+                    borderColor: alpha(theme.palette.primary.main, 0.5),
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: '#FFD700',
+                    borderColor: theme.palette.primary.main,
                   },
                 },
                 '& .MuiInputBase-input': {
-                  color: '#fff',
+                  color: 'text.primary',
                 },
                 '& .MuiInputLabel-root': {
-                  color: 'rgba(255,255,255,0.7)',
+                  color: 'text.secondary',
                 },
               }}
             />
@@ -2007,20 +1997,14 @@ const EnhancedMessagingPage = () => {
           <DialogActions>
             <Button
               onClick={() => setNewChatDialog(false)}
-              sx={{ color: 'rgba(255,255,255,0.7)' }}
+              sx={{ color: 'text.secondary' }}
             >
               Cancel
             </Button>
             <Button
               onClick={() => setNewChatDialog(false)}
-              sx={{
-                background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-                color: '#000',
-                '&:hover': {
-                  background:
-                    'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
-                },
-              }}
+              variant="contained"
+              color="primary"
             >
               Start Chat
             </Button>

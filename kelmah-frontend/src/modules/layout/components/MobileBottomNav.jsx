@@ -50,6 +50,7 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
     color: theme.palette.mode === 'dark' ? '#888' : '#666',
     minWidth: 64,
     maxWidth: 120,
+    minHeight: 48,
     padding: '6px 12px 8px',
     transition: 'all 0.2s ease',
     '&.Mui-selected': {

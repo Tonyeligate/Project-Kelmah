@@ -177,7 +177,7 @@ const ResetPassword = () => {
       <Box
         sx={{
           minHeight: '100dvh',
-          backgroundColor: '#0a0a0a',
+          bgcolor: 'background.default',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',

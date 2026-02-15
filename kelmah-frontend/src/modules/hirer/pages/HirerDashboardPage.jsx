@@ -112,7 +112,8 @@ const DashboardCard = ({
           alignItems: 'center',
           justifyContent: 'center',
           boxShadow: '0px 6px 15px rgba(0, 0, 0, 0.2)',
-          border: '4px solid #1a1a1a',
+          border: '4px solid',
+          borderColor: 'background.default',
           zIndex: 1,
         }}
       >

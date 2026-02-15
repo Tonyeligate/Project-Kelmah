@@ -439,7 +439,7 @@ const GhanaJobCategoriesManagement = () => {
           onClick={() => handleOpenDialog('add')}
           sx={{
             background: 'linear-gradient(45deg, #FFD700, #DAA520)',
-            color: '#1a1a1a',
+            color: 'primary.contrastText',
             fontWeight: 600,
           }}
         >
@@ -453,7 +453,7 @@ const GhanaJobCategoriesManagement = () => {
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Avatar sx={{ bgcolor: '#FFD700', color: '#1a1a1a' }}>
+                <Avatar sx={{ bgcolor: '#FFD700', color: 'primary.contrastText' }}>
                   <WorkIcon />
                 </Avatar>
                 <Box>
@@ -852,7 +852,7 @@ const GhanaJobCategoriesManagement = () => {
               onClick={handleSaveCategory}
               sx={{
                 background: 'linear-gradient(45deg, #FFD700, #DAA520)',
-                color: '#1a1a1a',
+                color: 'primary.contrastText',
               }}
             >
               {dialogMode === 'add' ? 'Add Category' : 'Save Changes'}

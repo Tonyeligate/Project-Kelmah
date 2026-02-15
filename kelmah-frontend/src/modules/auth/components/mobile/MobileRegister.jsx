@@ -13,6 +13,7 @@ import {
   CircularProgress,
   IconButton,
   InputAdornment,
+  useTheme,
   FormControlLabel,
   Checkbox,
   Stack,
@@ -24,6 +25,7 @@ import {
   RadioGroup,
   FormControl,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import {
   Visibility,
   VisibilityOff,
@@ -46,6 +48,8 @@ import {
   selectAuthError,
 } from '../../services/authSlice';
 import logoIcon from '../../../../assets/images/logo.png';
+
+// Theme hook must be used inside the component
 
 // Ghana phone validation
 const validateGhanaPhone = (phone) => {
@@ -73,6 +77,7 @@ const COMMON_TRADES = [
 ];
 
 const MobileRegister = () => {
+  const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -224,16 +229,16 @@ const MobileRegister = () => {
   // Input styles
   const inputStyles = {
     '& .MuiOutlinedInput-root': {
-      backgroundColor: 'rgba(255, 255, 255, 0.06)',
+      backgroundColor: alpha(theme.palette.text.primary, 0.06),
       borderRadius: 2,
       minHeight: 44,
-      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
-      '&:hover fieldset': { borderColor: 'rgba(255, 215, 0, 0.4)' },
-      '&.Mui-focused fieldset': { borderColor: '#FFD700', borderWidth: 2 },
+      '& fieldset': { borderColor: alpha(theme.palette.text.primary, 0.15) },
+      '&:hover fieldset': { borderColor: alpha(theme.palette.primary.main, 0.4) },
+      '&.Mui-focused fieldset': { borderColor: theme.palette.primary.main, borderWidth: 2 },
     },
-    '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)', fontSize: '14px' },
-    '& .MuiInputLabel-root.Mui-focused': { color: '#FFD700' },
-    '& .MuiOutlinedInput-input': { color: 'white', fontSize: '16px' },
+    '& .MuiInputLabel-root': { color: theme.palette.text.secondary, fontSize: '14px' },
+    '& .MuiInputLabel-root.Mui-focused': { color: theme.palette.primary.main },
+    '& .MuiOutlinedInput-input': { color: theme.palette.text.primary, fontSize: '16px' },
   };
 
   // Render step content
@@ -242,7 +247,7 @@ const MobileRegister = () => {
       case 1:
         return (
           <Box>
-            <Typography sx={{ color: 'white', fontWeight: 600, mb: 2, textAlign: 'center' }}>
+            <Typography sx={{ color: 'text.primary', fontWeight: 600, mb: 2, textAlign: 'center' }}>
               I want to...
             </Typography>
             <Stack spacing={2}>
@@ -257,14 +262,14 @@ const MobileRegister = () => {
                     p: 2.5,
                     borderRadius: 2,
                     border: formData.role === option.value
-                      ? '2px solid #FFD700'
-                      : '2px solid rgba(255,255,255,0.15)',
+                      ? `2px solid ${theme.palette.primary.main}`
+                      : `2px solid ${alpha(theme.palette.text.primary, 0.15)}`,
                     backgroundColor: formData.role === option.value
-                      ? 'rgba(255, 215, 0, 0.1)'
-                      : 'rgba(255,255,255,0.03)',
+                      ? alpha(theme.palette.primary.main, 0.1)
+                      : alpha(theme.palette.text.primary, 0.03),
                     cursor: 'pointer',
                     transition: 'all 0.2s',
-                    '&:hover': { borderColor: 'rgba(255, 215, 0, 0.5)' },
+                    '&:hover': { borderColor: alpha(theme.palette.primary.main, 0.5) },
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -273,25 +278,25 @@ const MobileRegister = () => {
                         width: 45,
                         height: 45,
                         borderRadius: '50%',
-                        backgroundColor: formData.role === option.value ? '#FFD700' : 'rgba(255,255,255,0.1)',
+                        backgroundColor: formData.role === option.value ? theme.palette.primary.main : alpha(theme.palette.text.primary, 0.1),
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: formData.role === option.value ? '#000' : 'rgba(255,255,255,0.6)',
+                        color: formData.role === option.value ? theme.palette.primary.contrastText : theme.palette.text.secondary,
                       }}
                     >
                       {option.icon}
                     </Box>
                     <Box>
-                      <Typography sx={{ color: 'white', fontWeight: 600 }}>{option.label}</Typography>
-                      <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>{option.desc}</Typography>
+                      <Typography sx={{ color: 'text.primary', fontWeight: 600 }}>{option.label}</Typography>
+                      <Typography sx={{ color: 'text.secondary', fontSize: '14px' }}>{option.desc}</Typography>
                     </Box>
                   </Box>
                 </Box>
               ))}
             </Stack>
             {errors.role && (
-              <Typography sx={{ color: '#f44336', fontSize: '14px', mt: 1, textAlign: 'center' }}>
+              <Typography sx={{ color: 'error.main', fontSize: '14px', mt: 1, textAlign: 'center' }}>
                 {errors.role}
               </Typography>
             )}
@@ -337,7 +342,7 @@ const MobileRegister = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <EmailIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }} />
+                    <EmailIcon sx={{ color: 'text.disabled', fontSize: 18 }} />
                   </InputAdornment>
                 ),
               }}
@@ -355,7 +360,7 @@ const MobileRegister = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <PhoneIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }} />
+                    <PhoneIcon sx={{ color: 'text.disabled', fontSize: 18 }} />
                   </InputAdornment>
                 ),
               }}
@@ -373,7 +378,7 @@ const MobileRegister = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <BusinessIcon sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }} />
+                      <BusinessIcon sx={{ color: 'text.disabled', fontSize: 18 }} />
                     </InputAdornment>
                   ),
                 }}
@@ -392,7 +397,7 @@ const MobileRegister = () => {
                       label={option}
                       size="small"
                       {...getTagProps({ index })}
-                      sx={{ backgroundColor: 'rgba(255,215,0,0.2)', color: '#FFD700' }}
+                      sx={{ backgroundColor: alpha(theme.palette.primary.main, 0.2), color: 'primary.main' }}
                     />
                   ))
                 }
@@ -407,9 +412,9 @@ const MobileRegister = () => {
                   />
                 )}
                 sx={{
-                  '& .MuiAutocomplete-tag': { color: '#FFD700' },
-                  '& .MuiAutocomplete-popupIndicator': { color: 'rgba(255,255,255,0.5)' },
-                  '& .MuiAutocomplete-clearIndicator': { color: 'rgba(255,255,255,0.5)' },
+                  '& .MuiAutocomplete-tag': { color: theme.palette.primary.main },
+                  '& .MuiAutocomplete-popupIndicator': { color: theme.palette.text.disabled },
+                  '& .MuiAutocomplete-clearIndicator': { color: theme.palette.text.disabled },
                 }}
               />
             )}
@@ -494,24 +499,24 @@ const MobileRegister = () => {
                   checked={formData.acceptTerms}
                   onChange={handleChange('acceptTerms')}
                   size="small"
-                  sx={{ color: 'rgba(255,255,255,0.4)', '&.Mui-checked': { color: '#FFD700' } }}
+                  sx={{ color: theme.palette.text.disabled, '&.Mui-checked': { color: theme.palette.primary.main } }}
                 />
               }
               label={
-                <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
+                <Typography sx={{ color: 'text.secondary', fontSize: '14px' }}>
                   I accept the{' '}
-                  <Button component={RouterLink} to="/terms" sx={{ color: '#FFD700', fontSize: '14px', py: 0.5, px: 0.5, minWidth: 'auto', textTransform: 'none', verticalAlign: 'baseline' }}>
+                  <Button component={RouterLink} to="/terms" sx={{ color: 'primary.main', fontSize: '14px', py: 0.5, px: 0.5, minWidth: 'auto', textTransform: 'none', verticalAlign: 'baseline' }}>
                     Terms
                   </Button>{' '}
                   &{' '}
-                  <Button component={RouterLink} to="/privacy" sx={{ color: '#FFD700', fontSize: '14px', py: 0.5, px: 0.5, minWidth: 'auto', textTransform: 'none', verticalAlign: 'baseline' }}>
+                  <Button component={RouterLink} to="/privacy" sx={{ color: 'primary.main', fontSize: '14px', py: 0.5, px: 0.5, minWidth: 'auto', textTransform: 'none', verticalAlign: 'baseline' }}>
                     Privacy Policy
                   </Button>
                 </Typography>
               }
             />
             {errors.acceptTerms && (
-              <Typography sx={{ color: '#f44336', fontSize: '14px' }}>{errors.acceptTerms}</Typography>
+              <Typography sx={{ color: 'error.main', fontSize: '14px' }}>{errors.acceptTerms}</Typography>
             )}
           </Stack>
         );
@@ -522,20 +527,20 @@ const MobileRegister = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#0a0a0a', display: 'flex', flexDirection: 'column', px: 3, py: 3 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column', px: 3, py: 3 }}>
       {/* Header */}
       <Box sx={{ textAlign: 'center', mb: 3 }}>
         <Box component="img" src={logoIcon} alt="Kelmah" sx={{ width: 50, height: 50, mb: 1, borderRadius: '50%' }} />
-        <Typography sx={{ color: '#FFD700', fontWeight: 700, fontSize: '18px' }}>Join Kelmah</Typography>
+        <Typography sx={{ color: 'primary.main', fontWeight: 700, fontSize: '18px' }}>Join Kelmah</Typography>
       </Box>
 
       {/* Progress */}
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>
+          <Typography sx={{ color: 'text.secondary', fontSize: '13px' }}>
             Step {step} of {totalSteps}
           </Typography>
-          <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>
+          <Typography sx={{ color: 'text.secondary', fontSize: '13px' }}>
             {step === 1 ? 'Account Type' : step === 2 ? 'Your Info' : 'Security'}
           </Typography>
         </Box>
@@ -545,8 +550,8 @@ const MobileRegister = () => {
           sx={{
             height: 4,
             borderRadius: 2,
-            backgroundColor: 'rgba(255,255,255,0.1)',
-            '& .MuiLinearProgress-bar': { backgroundColor: '#FFD700' },
+            backgroundColor: alpha(theme.palette.text.primary, 0.1),
+            '& .MuiLinearProgress-bar': { backgroundColor: theme.palette.primary.main },
           }}
         />
       </Box>
@@ -555,10 +560,10 @@ const MobileRegister = () => {
       <Box
         sx={{
           flex: 1,
-          backgroundColor: 'rgba(20, 20, 20, 0.9)',
+          backgroundColor: alpha(theme.palette.background.paper, 0.9),
           borderRadius: 3,
           p: 2.5,
-          border: '1px solid rgba(255, 215, 0, 0.2)',
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -567,7 +572,7 @@ const MobileRegister = () => {
         <AnimatePresence>
           {showSuccess && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <Alert severity="success" icon={<CheckCircleIcon />} sx={{ mb: 2, backgroundColor: 'rgba(76,175,80,0.1)', color: '#4caf50', borderRadius: 2 }}>
+              <Alert severity="success" icon={<CheckCircleIcon />} sx={{ mb: 2, backgroundColor: alpha(theme.palette.success.main, 0.1), color: 'success.main', borderRadius: 2 }}>
                 Account created! Redirecting...
               </Alert>
             </motion.div>
@@ -578,7 +583,7 @@ const MobileRegister = () => {
         <Fade in={Boolean(submitError)}>
           <Box>
             {submitError && (
-              <Alert severity="error" sx={{ mb: 2, backgroundColor: 'rgba(244,67,54,0.1)', color: '#f44336', borderRadius: 2 }}>
+              <Alert severity="error" sx={{ mb: 2, backgroundColor: alpha(theme.palette.error.main, 0.1), color: 'error.main', borderRadius: 2 }}>
                 {submitError}
               </Alert>
             )}
@@ -609,9 +614,9 @@ const MobileRegister = () => {
             sx={{
               flex: 1,
               minHeight: 44,
-              borderColor: 'rgba(255,255,255,0.2)',
-              color: 'rgba(255,255,255,0.7)',
-              '&:hover': { borderColor: 'rgba(255,255,255,0.4)' },
+              borderColor: alpha(theme.palette.text.primary, 0.2),
+              color: theme.palette.text.secondary,
+              '&:hover': { borderColor: alpha(theme.palette.text.primary, 0.4) },
             }}
           >
             Back
@@ -624,15 +629,15 @@ const MobileRegister = () => {
             sx={{
               flex: 2,
               minHeight: 44,
-              background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-              color: '#000',
+              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark || '#FFC000'} 100%)`,
+              color: theme.palette.primary.contrastText,
               fontWeight: 700,
-              '&:hover': { background: 'linear-gradient(135deg, #FFC000 0%, #FFB000 100%)' },
-              '&:disabled': { background: 'rgba(255,215,0,0.3)', color: 'rgba(0,0,0,0.5)' },
+              '&:hover': { background: `linear-gradient(135deg, ${theme.palette.primary.dark || '#FFC000'} 0%, #FFB000 100%)` },
+              '&:disabled': { background: alpha(theme.palette.primary.main, 0.3), color: alpha(theme.palette.primary.contrastText, 0.5) },
             }}
           >
             {isSubmitting || authLoading ? (
-              <CircularProgress size={20} sx={{ color: '#000' }} />
+              <CircularProgress size={20} sx={{ color: theme.palette.primary.contrastText }} />
             ) : step === totalSteps ? (
               'Create Account'
             ) : (
@@ -643,10 +648,10 @@ const MobileRegister = () => {
 
         {/* Login Link */}
         <Box sx={{ textAlign: 'center', mt: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, minHeight: 44 }}>
-          <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
+          <Typography sx={{ color: 'text.secondary', fontSize: '14px' }}>
             Already have an account?
           </Typography>
-          <Button component={RouterLink} to="/login" sx={{ color: '#FFD700', fontWeight: 700, fontSize: '14px', py: 1, px: 1, minHeight: 44, minWidth: 'auto', textTransform: 'none' }}>
+          <Button component={RouterLink} to="/login" sx={{ color: 'primary.main', fontWeight: 700, fontSize: '14px', py: 1, px: 1, minHeight: 44, minWidth: 'auto', textTransform: 'none' }}>
             Sign In
           </Button>
         </Box>
