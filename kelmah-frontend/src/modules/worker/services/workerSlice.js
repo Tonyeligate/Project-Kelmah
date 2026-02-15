@@ -54,9 +54,109 @@ export const updateWorkerSkills = createAsyncThunk(
   'worker/updateSkills',
   async ({ workerId, skills }, { rejectWithValue }) => {
     try {
-      // Bulk update not supported; client should call add/update individually
-      const response = await api.get(`/users/workers/${workerId}/skills`);
-      return response.data;
+      if (!workerId) {
+        throw new Error('workerId is required');
+      }
+
+      const normalizedSkills = Array.isArray(skills)
+        ? skills
+            .map((skill) => {
+              if (typeof skill === 'string') {
+                const name = skill.trim();
+                return name ? { name } : null;
+              }
+
+              if (skill && typeof skill === 'object') {
+                const name = String(
+                  skill.name || skill.skillName || '',
+                ).trim();
+
+                if (!name) {
+                  return null;
+                }
+
+                return {
+                  name,
+                  level: skill.level,
+                  category: skill.category,
+                  yearsOfExperience: skill.yearsOfExperience,
+                  description: skill.description,
+                };
+              }
+
+              return null;
+            })
+            .filter(Boolean)
+        : [];
+
+      if (normalizedSkills.length === 0) {
+        return [];
+      }
+
+      const existingRes = await api.get(`/users/workers/${workerId}/skills`);
+      const existingSkills =
+        existingRes.data?.data?.skills ||
+        existingRes.data?.skills ||
+        existingRes.data ||
+        [];
+
+      const existingByName = new Map(
+        (Array.isArray(existingSkills) ? existingSkills : []).map((entry) => [
+          String(entry?.name || '').trim().toLowerCase(),
+          entry,
+        ]),
+      );
+
+      const mutationTasks = normalizedSkills.map(async (entry) => {
+        const key = entry.name.toLowerCase();
+        const current = existingByName.get(key);
+
+        if (!current) {
+          await api.post(`/users/workers/${workerId}/skills`, {
+            name: entry.name,
+            ...(entry.level ? { level: entry.level } : {}),
+            ...(entry.category ? { category: entry.category } : {}),
+            ...(Number.isFinite(Number(entry.yearsOfExperience))
+              ? { yearsOfExperience: Number(entry.yearsOfExperience) }
+              : {}),
+            ...(entry.description ? { description: entry.description } : {}),
+          });
+          return;
+        }
+
+        const skillId = current?.id || current?._id;
+        if (!skillId) {
+          return;
+        }
+
+        const updatePayload = {
+          ...(entry.level ? { level: entry.level } : {}),
+          ...(entry.category !== undefined ? { category: entry.category } : {}),
+          ...(entry.description !== undefined
+            ? { description: entry.description }
+            : {}),
+          ...(Number.isFinite(Number(entry.yearsOfExperience))
+            ? { yearsOfExperience: Number(entry.yearsOfExperience) }
+            : {}),
+        };
+
+        if (Object.keys(updatePayload).length > 0) {
+          await api.put(
+            `/users/workers/${workerId}/skills/${skillId}`,
+            updatePayload,
+          );
+        }
+      });
+
+      await Promise.all(mutationTasks);
+
+      const latestRes = await api.get(`/users/workers/${workerId}/skills`);
+      return (
+        latestRes.data?.data?.skills ||
+        latestRes.data?.skills ||
+        latestRes.data ||
+        []
+      );
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to update worker skills',
@@ -112,7 +212,7 @@ export const submitWorkerApplication = createAsyncThunk(
         `/jobs/${jobId}/apply`,
         applicationData,
       );
-      return response.data;
+      return response.data?.data || response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to submit application',
@@ -204,14 +304,12 @@ const workerSlice = createSlice({
     jobs: {
       active: [],
       completed: [],
-      available: [],
     },
     applications: {
       pending: [],
       accepted: [],
       rejected: [],
     },
-    portfolio: [],
     earnings: {
       totalEarned: 0,
       pendingPayments: 0,
@@ -249,22 +347,6 @@ const workerSlice = createSlice({
         earnings: null,
         availability: null,
       };
-    },
-    addPortfolioItem: (state, action) => {
-      state.portfolio.push(action.payload);
-    },
-    removePortfolioItem: (state, action) => {
-      state.portfolio = state.portfolio.filter(
-        (item) => item.id !== action.payload,
-      );
-    },
-    updatePortfolioItem: (state, action) => {
-      const index = state.portfolio.findIndex(
-        (item) => item.id === action.payload.id,
-      );
-      if (index !== -1) {
-        state.portfolio[index] = action.payload;
-      }
     },
   },
   extraReducers: (builder) => {
@@ -308,8 +390,17 @@ const workerSlice = createSlice({
         state.loading.skills = false;
         state.error.skills = action.payload;
       })
+      .addCase(updateWorkerSkills.pending, (state) => {
+        state.loading.skills = true;
+        state.error.skills = null;
+      })
       .addCase(updateWorkerSkills.fulfilled, (state, action) => {
+        state.loading.skills = false;
         state.skills = action.payload;
+      })
+      .addCase(updateWorkerSkills.rejected, (state, action) => {
+        state.loading.skills = false;
+        state.error.skills = action.payload;
       })
 
       // Jobs
@@ -320,7 +411,8 @@ const workerSlice = createSlice({
       .addCase(fetchWorkerJobs.fulfilled, (state, action) => {
         state.loading.jobs = false;
         const { jobs, status } = action.payload;
-        state.jobs[status] = jobs;
+        const normalizedStatus = status === 'completed' ? 'completed' : 'active';
+        state.jobs[normalizedStatus] = jobs;
       })
       .addCase(fetchWorkerJobs.rejected, (state, action) => {
         state.loading.jobs = false;
@@ -342,7 +434,12 @@ const workerSlice = createSlice({
         state.error.applications = action.payload;
       })
       .addCase(submitWorkerApplication.fulfilled, (state, action) => {
-        state.applications.pending.push(action.payload);
+        const application =
+          action.payload?.application || action.payload?.data || action.payload;
+
+        if (application && typeof application === 'object') {
+          state.applications.pending.push(application);
+        }
       })
 
       // Earnings
@@ -384,16 +481,12 @@ export const selectWorkerApplications = (status) => (state) =>
   state.worker.applications[status];
 export const selectWorkerEarnings = (state) => state.worker.earnings;
 export const selectWorkerAvailability = (state) => state.worker.availability;
-export const selectWorkerPortfolio = (state) => state.worker.portfolio;
 export const selectWorkerLoading = (key) => (state) =>
   state.worker.loading[key];
 export const selectWorkerError = (key) => (state) => state.worker.error[key];
 
 export const {
   clearWorkerErrors,
-  addPortfolioItem,
-  removePortfolioItem,
-  updatePortfolioItem,
 } = workerSlice.actions;
 
 export default workerSlice.reducer;

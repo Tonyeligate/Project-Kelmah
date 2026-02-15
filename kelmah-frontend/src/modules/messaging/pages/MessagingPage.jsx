@@ -207,6 +207,26 @@ const EnhancedMessagingPage = () => {
     runDeepLink();
   }, [user, search, conversations, navigate, selectConversation]);
 
+  useEffect(() => {
+    try {
+      const rawDraft = sessionStorage.getItem('kelmah_message_draft');
+      if (!rawDraft) {
+        return;
+      }
+
+      const parsedDraft = JSON.parse(rawDraft);
+      const draftText = String(parsedDraft?.text || '').trim();
+      if (draftText) {
+        setMessageText(draftText);
+        showFeedback('Message draft loaded. Select a chat to send it.', 'info');
+      }
+
+      sessionStorage.removeItem('kelmah_message_draft');
+    } catch (draftError) {
+      console.warn('Failed to load message draft from session storage', draftError);
+    }
+  }, []);
+
   // Filter conversations based on search and filter
   useEffect(() => {
     let filtered = Array.isArray(conversations) ? [...conversations] : [];

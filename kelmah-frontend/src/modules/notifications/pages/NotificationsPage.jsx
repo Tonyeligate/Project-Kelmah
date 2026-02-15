@@ -45,6 +45,9 @@ const notificationIcons = {
   default: <NotificationsIcon />,
 };
 
+const isExternalLink = (value) =>
+  typeof value === 'string' && /^https?:\/\//i.test(value);
+
 const NotificationItem = ({ notification }) => (
   <ListItem
     sx={(theme) => ({
@@ -87,18 +90,32 @@ const NotificationItem = ({ notification }) => (
       primary={notification.message}
       secondary={
         notification.link ? (
-          <Link
-            to={notification.link}
-            style={{ textDecoration: 'none', color: 'inherit' }}
-          >
+          isExternalLink(notification.link) ? (
             <Typography
+              component="a"
+              href={notification.link}
+              target="_blank"
+              rel="noopener noreferrer"
               variant="body2"
               color="primary.main"
-              sx={{ '&:hover': { textDecoration: 'underline' } }}
+              sx={{ textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
             >
               View Details
             </Typography>
-          </Link>
+          ) : (
+            <Link
+              to={notification.link}
+              style={{ textDecoration: 'none', color: 'inherit' }}
+            >
+              <Typography
+                variant="body2"
+                color="primary.main"
+                sx={{ '&:hover': { textDecoration: 'underline' } }}
+              >
+                View Details
+              </Typography>
+            </Link>
+          )
         ) : null
       }
     />

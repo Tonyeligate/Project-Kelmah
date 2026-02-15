@@ -5,7 +5,7 @@
  */
 
 import { getApiBaseUrl } from './environment';
-import { SERVICES } from './services';
+import SERVICES from './services';
 
 // Helper function to get allowed connect-src URLs
 const getAllowedConnectSrc = async () => {

@@ -6,21 +6,21 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://kelmah-api-gateway-6yoy.onrender.com/api/$1"
+      "destination": "https://kelmah-api-gateway-hkke.onrender.com/api/$1"
     },
     {
       "source": "/socket.io/:path*",
-      "destination": "https://kelmah-api-gateway-6yoy.onrender.com/socket.io/$1"
+      "destination": "https://kelmah-api-gateway-hkke.onrender.com/socket.io/$1"
     }
   ],
   "env": {
-    "VITE_API_URL": "https://kelmah-api-gateway-6yoy.onrender.com/api",
-    "VITE_WS_URL": "https://kelmah-api-gateway-6yoy.onrender.com"
+    "VITE_API_URL": "https://kelmah-api-gateway-hkke.onrender.com/api",
+    "VITE_WS_URL": "https://kelmah-api-gateway-hkke.onrender.com"
   },
   "build": {
     "env": {
-      "VITE_API_URL": "https://kelmah-api-gateway-6yoy.onrender.com/api",
-      "VITE_WS_URL": "https://kelmah-api-gateway-6yoy.onrender.com"
+      "VITE_API_URL": "https://kelmah-api-gateway-hkke.onrender.com/api",
+      "VITE_WS_URL": "https://kelmah-api-gateway-hkke.onrender.com"
     }
   }
 }

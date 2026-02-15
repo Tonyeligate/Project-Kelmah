@@ -95,9 +95,38 @@ const MyApplicationsPage = () => {
 
   // Send message
   const handleSendMessage = () => {
+    const trimmedMessage = message.trim();
+    if (!trimmedMessage) {
+      return;
+    }
+
+    const draftPayload = {
+      text: trimmedMessage,
+      source: 'my-applications',
+      applicationId: selectedApplication?.id || selectedApplication?._id || null,
+      jobId:
+        selectedApplication?.job?._id ||
+        selectedApplication?.job?.id ||
+        null,
+      jobTitle:
+        selectedApplication?.job?.title ||
+        selectedApplication?.jobTitle ||
+        'Job Application',
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      sessionStorage.setItem(
+        'kelmah_message_draft',
+        JSON.stringify(draftPayload),
+      );
+    } catch (storageError) {
+      console.warn('Failed to persist message draft:', storageError);
+    }
+
     setMessage('');
     setOpenMessageDialog(false);
-    // Here you would typically call an API to send the message
+    navigate('/messages');
   };
 
   // Filter applications based on current tab

@@ -68,6 +68,37 @@ const WorkerDashboardPage = () => {
   const MAX_RETRIES = 3;
   const LOADING_TIMEOUT = 15000; // 15 seconds
 
+  const getAmountValue = useCallback((value) => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      const parsed = Number(value.replace(/[^0-9.-]/g, ''));
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    if (value && typeof value === 'object') {
+      const candidates = [
+        value.amount,
+        value.total,
+        value.max,
+        value.min,
+        value.fixed,
+        value.value,
+      ];
+
+      for (const candidate of candidates) {
+        const normalized = getAmountValue(candidate);
+        if (normalized > 0) {
+          return normalized;
+        }
+      }
+    }
+
+    return 0;
+  }, []);
+
   useEffect(() => {
     return () => {
       if (loadingTimeoutRef.current) {
@@ -129,13 +160,71 @@ const WorkerDashboardPage = () => {
     return 'Good Evening';
   };
 
+  const earningsSummary = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const previousMonthDate = new Date(currentYear, currentMonth - 1, 1);
+    const previousMonth = previousMonthDate.getMonth();
+    const previousMonthYear = previousMonthDate.getFullYear();
+
+    const completedTotals = (Array.isArray(completedJobs) ? completedJobs : []).reduce(
+      (acc, job) => {
+        const amount = getAmountValue(
+          job?.payment?.amount ||
+            job?.paymentAmount ||
+            job?.finalAmount ||
+            job?.budget,
+        );
+
+        const referenceDate = new Date(
+          job?.completedAt || job?.updatedAt || job?.createdAt || Date.now(),
+        );
+
+        if (
+          referenceDate.getMonth() === currentMonth &&
+          referenceDate.getFullYear() === currentYear
+        ) {
+          acc.thisMonth += amount;
+        }
+
+        if (
+          referenceDate.getMonth() === previousMonth &&
+          referenceDate.getFullYear() === previousMonthYear
+        ) {
+          acc.lastMonth += amount;
+        }
+
+        acc.total += amount;
+        return acc;
+      },
+      { total: 0, thisMonth: 0, lastMonth: 0 },
+    );
+
+    const pendingEarnings = (Array.isArray(pendingApplications) ? pendingApplications : []).reduce(
+      (sum, application) => sum + getAmountValue(application?.proposedRate),
+      0,
+    );
+
+    const fallbackTotal = getAmountValue(user?.totalEarnings);
+    const total = Math.max(completedTotals.total, fallbackTotal);
+
+    return {
+      total,
+      thisMonth: completedTotals.thisMonth,
+      lastMonth: completedTotals.lastMonth,
+      pending: pendingEarnings,
+      withdrawn: 0,
+    };
+  }, [completedJobs, pendingApplications, user, getAmountValue]);
+
   // Calculate real stats from Redux state
   const stats = useMemo(() => ({
     applications: pendingApplications.length + acceptedApplications.length,
     completedJobs: completedJobs.length,
-    earnings: user?.totalEarnings || 0,
+    earnings: earningsSummary.total,
     rating: user?.rating || 0,
-  }), [pendingApplications, acceptedApplications, completedJobs, user]);
+  }), [pendingApplications, acceptedApplications, completedJobs, earningsSummary, user]);
 
   // Handle refresh with retry logic
   const handleRefresh = useCallback(() => {
@@ -157,13 +246,13 @@ const WorkerDashboardPage = () => {
     }
   }, [error, retryCount, isLoading, handleRefresh]);
 
-  // Chart data for Earnings Overview - using real or fallback data
+  // Chart data for Earnings Overview - derived from actual jobs/applications state
   const earningsData = useMemo(() => [
-    { name: 'This Month', value: user?.monthlyEarnings || 0, color: '#4CAF50' },
-    { name: 'Last Month', value: user?.lastMonthEarnings || 0, color: '#2196F3' },
-    { name: 'Pending', value: user?.pendingEarnings || 0, color: '#FF9800' },
-    { name: 'Withdrawn', value: user?.withdrawnEarnings || 0, color: '#9C27B0' },
-  ], [user]);
+    { name: 'This Month', value: earningsSummary.thisMonth, color: '#4CAF50' },
+    { name: 'Last Month', value: earningsSummary.lastMonth, color: '#2196F3' },
+    { name: 'Pending', value: earningsSummary.pending, color: '#FF9800' },
+    { name: 'Withdrawn', value: earningsSummary.withdrawn, color: '#9C27B0' },
+  ], [earningsSummary]);
 
   // Chart data for Applications Overview - using real data
   const applicationsData = useMemo(() => [

@@ -1,5 +1,75 @@
 # Kelmah Frontend – Page + Security Audit
 
+## Iteration Update (Feb 14, 2026 – Worker Slice Dead-State Cleanup Finalization) ✅
+
+- **Scope**:
+  - `kelmah-frontend/src/modules/worker/services/workerSlice.js`
+  - Usage validation across worker frontend modules (`pages/components/services`).
+- **Data-flow audit**:
+  - Worker dashboard/applications consume `applications` and `jobs.completed` paths.
+  - No active consumer references `jobs.available`.
+  - No active consumer imports/dispatches worker-slice portfolio reducers/selectors.
+- **Root cause**:
+  - Legacy state/reducer surface remained in slice after feature migrations, creating dead state and potential future drift.
+- **Fixes implemented**:
+  - Removed `jobs.available` and unused portfolio state/reducers/selectors from worker slice.
+  - Constrained job reducer mapping to known buckets (`active`, `completed`) to avoid uncontrolled dynamic keys.
+- **Verification**:
+  - VS Code diagnostics: no errors in modified slice file.
+  - Frontend production build passed (`npm run build`, `built in 2m 16s`).
+
+## Iteration Update (Feb 14, 2026 – Worker Flow Completion Pass: Contracts + Earnings + Messaging Action) ✅
+
+- **Scope**:
+  - `kelmah-frontend/src/modules/worker/services/workerSlice.js`
+  - `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
+  - `kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx`
+  - `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+  - Backend contract references validated in:
+    - `kelmah-backend/services/user-service/routes/user.routes.js`
+    - `kelmah-backend/services/user-service/controllers/worker.controller.js`
+    - `kelmah-backend/services/job-service/controllers/job.controller.js`
+- **Data-flow audit (UI/state → service → API → UI)**:
+  - Worker skills update path now uses supported API contract (`GET/POST/PUT /users/workers/:workerId/skills...`) instead of no-op fetch.
+  - Job application submission path normalizes payload (`POST /jobs/:id/apply`) before reducer insertion.
+  - Dashboard earnings visualization now derives from loaded worker domain data (completed jobs + pending applications) rather than optional auth-session fields.
+  - My Applications message action now flows into Messaging module through persisted draft context and route transition to `/messages`.
+  - Messaging page consumes draft and pre-fills composer for immediate user completion.
+- **Root causes**:
+  - Thunk/API contract mismatch for skills updates.
+  - Reducer payload shape mismatch for newly submitted applications.
+  - Earnings view bound to unreliable/non-canonical auth fields.
+  - Message action lacked any downstream integration.
+- **Fixes implemented**:
+  - Added full mutation loop + canonical re-fetch in `updateWorkerSkills`.
+  - Added skill loading/error lifecycle for update thunk.
+  - Normalized application payload handling in thunk/reducer.
+  - Added derived earnings summary computation and chart wiring in worker dashboard.
+  - Added message draft persistence in My Applications and draft hydration in Messaging page.
+- **Verification**:
+  - VS Code diagnostics: no errors in modified files (one non-blocking style advisory only).
+  - Frontend production build passed (`npm run build`, `built in 2m 30s`).
+
+## Iteration Update (Feb 14, 2026 – Notifications External-Link Safety) ✅
+
+- **Scope**:
+  - `kelmah-frontend/src/modules/notifications/pages/NotificationsPage.jsx`
+  - `kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx` (payload source validation)
+  - `kelmah-frontend/src/modules/notifications/services/notificationService.js` (link normalization source validation)
+- **Data-flow audit (payload → normalized link → UI navigation)**:
+  - Notification links are normalized in service/context and consumed by `NotificationsPage` list item rendering.
+  - `NotificationsPage` previously rendered all links through React Router `Link`.
+  - This can mis-handle absolute URLs and does not enforce safe external-navigation attributes.
+- **Root cause**:
+  - Missing bifurcation between internal SPA routes and external absolute links at render time.
+- **Fixes implemented**:
+  - Added external URL detection (`/^https?:\/\//i`).
+  - Render external links as anchor elements (`target="_blank"`, `rel="noopener noreferrer"`).
+  - Kept internal app links on React Router `Link` to preserve existing navigation UX.
+- **Verification**:
+  - VS Code diagnostics: no errors in modified file.
+  - Frontend production build passed (`npm run build`, `built in 2m 33s`).
+
 ## Iteration Update (Feb 14, 2026 – Job Notification Action-Link Consistency) ✅
 
 - **Scope**:

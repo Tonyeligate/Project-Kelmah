@@ -1,5 +1,72 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Implementation Update (Feb 14, 2026 – Worker Slice Dead-State Cleanup Finalization) ✅
+- 🎯 **Scope Restatement**: Complete remaining low-priority worker-flow cleanup by removing unused slice surface and enforcing stable job-state buckets.
+- 🔍 **Findings addressed**:
+  - `jobs.available` state branch was not consumed and remained unpopulated in current frontend flows.
+  - Portfolio reducers/selectors exported by `workerSlice` were unused by active frontend modules.
+- ✅ **Fixes applied**:
+  - Removed unused `jobs.available` from worker slice initial state.
+  - Removed unused portfolio slice state branch and reducer actions (`addPortfolioItem`, `removePortfolioItem`, `updatePortfolioItem`).
+  - Removed unused `selectWorkerPortfolio` selector export.
+  - Hardened `fetchWorkerJobs.fulfilled` to map responses into known buckets only (`active` or `completed`) to prevent accidental dynamic-key drift.
+- 🧾 File updated:
+  - `kelmah-frontend/src/modules/worker/services/workerSlice.js`
+- 🧪 Verification:
+  - VS Code diagnostics: no errors in modified slice file.
+  - Frontend production build passed: `npm run build` (`✓ built in 2m 16s`).
+
+### Implementation Update (Feb 14, 2026 – Worker Flow Completion Pass: Slice Contracts + Earnings + Messaging Action) ✅
+- 🎯 **Scope Restatement**: Complete all remaining high/medium worker-flow findings in one execution pass (state contract mismatches, earnings zeros, and non-functional message action).
+- 🔍 **Root causes identified**:
+  - `updateWorkerSkills` thunk performed a GET-only no-op instead of mutating skills through supported backend routes.
+  - `submitWorkerApplication` reducer path assumed raw response shape and could push invalid payload structure.
+  - Worker dashboard earnings relied on auth-user fields that are often absent (`monthlyEarnings`, `lastMonthEarnings`, etc.), resulting in persistent zero charts/cards.
+  - My Applications “Send Message” action only closed dialog without any handoff into messaging workflow.
+- ✅ **Fixes applied**:
+  - Implemented real skill mutation workflow in worker slice:
+    - Normalize requested skills,
+    - Fetch existing skills,
+    - POST missing skills,
+    - PUT updates to existing entries,
+    - Re-fetch and return canonical updated skills list.
+  - Added `updateWorkerSkills` pending/rejected handlers to keep loading/error state consistent.
+  - Normalized `submitWorkerApplication` thunk return payload to `response.data?.data || response.data` and guarded reducer insertion with object checks.
+  - Reworked worker dashboard earnings derivation:
+    - Compute totals from completed jobs/payment fields,
+    - Compute current/previous month values by completion/update dates,
+    - Compute pending earnings from pending applications,
+    - Use derived values for cards/charts with user-total fallback.
+  - Implemented My Applications message handoff:
+    - Persist composed message draft + application context to session storage,
+    - Navigate to `/messages`.
+  - Added messaging page draft consumption:
+    - Load `kelmah_message_draft` into composer on entry,
+    - Show informational feedback and clear consumed draft key.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/worker/services/workerSlice.js`
+  - `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
+  - `kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx`
+  - `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- 🧪 Verification:
+  - VS Code diagnostics: no compile/runtime errors in changed files (one non-blocking Sourcery style suggestion only).
+  - Frontend production build passed: `npm run build` (`✓ built in 2m 30s`).
+
+### Implementation Update (Feb 14, 2026 – Notifications External-Link Safety) ✅
+- 🎯 **Scope Restatement**: Continue notifications hardening by ensuring notification action links render safely for both internal app routes and external URLs.
+- 🔍 **Root cause identified**:
+  - `NotificationsPage` always rendered `notification.link` via React Router `Link`, including absolute `http/https` URLs.
+  - External URLs should be rendered as standard anchors to avoid router misuse and to enforce safe new-tab behavior.
+- ✅ **Fixes applied**:
+  - Added external-link detection in notifications page list item rendering.
+  - Render absolute URLs as `<a>` (`Typography component="a"`) with `target="_blank"` and `rel="noopener noreferrer"`.
+  - Preserved existing internal route behavior by keeping React Router `Link` for non-absolute paths.
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/notifications/pages/NotificationsPage.jsx`
+- 🧪 Verification:
+  - VS Code diagnostics: no errors in changed file.
+  - Frontend production build passed: `npm run build` (`✓ built in 2m 33s`).
+
 ### Implementation Update (Feb 14, 2026 – Job Notification Action-Link Consistency) ✅
 - 🎯 **Scope Restatement**: Continue notification deep-link hardening by aligning job-related notification links with active frontend job routes.
 - 🔍 **Root causes identified**:

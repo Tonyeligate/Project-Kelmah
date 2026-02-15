@@ -25,7 +25,7 @@ let runtimeConfig = null;
 
 // CRITICAL: Hardcoded production URL to bypass Vercel's cached environment variables
 // Include /api prefix since all API gateway routes are under /api/*
-const PRODUCTION_API_URL = 'https://kelmah-api-gateway-6yoy.onrender.com/api';
+const PRODUCTION_API_URL = 'https://kelmah-api-gateway-hkke.onrender.com/api';
 
 const loadRuntimeConfig = async () => {
   if (typeof window !== 'undefined' && !runtimeConfig) {
@@ -58,18 +58,18 @@ const getApiBaseUrl = () => {
 
   // Priority 3: Environment variable - BUT ONLY if it's NOT the old 5loa URL
   const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl && !envUrl.includes('5loa')) {
+  if (envUrl && !envUrl.includes('5loa') && !envUrl.includes('6yoy') && !envUrl.includes('50z3')) {
     return envUrl;
   }
 
   // Priority 4: Cached healthy URL from localStorage (but not if it's 5loa)
   if (typeof window !== 'undefined') {
     const cached = localStorage.getItem('kelmah:lastHealthyApiBase');
-    if (cached && !cached.includes('5loa')) {
+    if (cached && !cached.includes('5loa') && !cached.includes('6yoy') && !cached.includes('50z3')) {
       return cached;
     }
     // Clear bad cache if it exists
-    if (cached && cached.includes('5loa')) {
+    if (cached && (cached.includes('5loa') || cached.includes('6yoy') || cached.includes('50z3'))) {
       localStorage.removeItem('kelmah:lastHealthyApiBase');
     }
   }
