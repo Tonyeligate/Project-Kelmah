@@ -1,5 +1,18 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Implementation Update (Feb 15, 2026 – Render Job-Service Boot Crash Fix: Missing Module) ✅
+- 🎯 **Scope**: Resolve Render deployment crash in job-service startup caused by missing module import.
+- 🔍 **Root cause**:
+  - `kelmah-backend/services/job-service/services/serviceClient.js` imported `../utils/errorHandler`, but that file does not exist in job-service.
+  - Imported symbol was unused, causing startup to fail before server init.
+- ✅ **Fix applied**:
+  - Removed stale import line from `serviceClient.js`.
+- 🧪 **Verification**:
+  - File diagnostics: no errors in updated file.
+  - Local startup (`node start-job-service.js`) now passes previous crash point and fails only on expected env requirements (`JWT_SECRET`, `JWT_REFRESH_SECRET`), confirming module-resolution blocker is cleared.
+- 📌 **Deployment impact**:
+  - Render job-service should no longer exit on `Cannot find module '../utils/errorHandler'` after this patch is deployed.
+
 ### Implementation Update (Feb 15, 2026 – Suggestions Multi-Prefix Probe + Recall Hardening Patch) ✅
 - 🎯 **Scope**: Execute targeted live probe for vocational suggestion prefixes and apply backend recall hardening.
 - 🧪 **Live probe (deployed gateway)**:
