@@ -203,6 +203,7 @@ import {
 import { InteractiveJobCard as JobCard } from '../../common/components/cards';
 import { useNavigate } from 'react-router-dom';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
+import { useDebounce } from '../../../hooks/useDebounce';
 import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigation';
 
 // Advanced Animations with Smooth Transitions
@@ -541,13 +542,37 @@ const JobsPage = () => {
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 350);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
-  const [budgetRange, setBudgetRange] = useState([500, 10000]);
+  const [budgetRange, setBudgetRange] = useState([0, 50000]);
+  const [budgetFilterActive, setBudgetFilterActive] = useState(false);
+  const debouncedBudgetRange = useDebounce(budgetFilterActive ? budgetRange : null, 500);
+  const [sortBy, setSortBy] = useState('relevance');
+  const [quickFilters, setQuickFilters] = useState({ urgent: false, verified: false, fullTime: false, contract: false });
   const [showFilters, setShowFilters] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const toggleQuickFilter = useCallback((key) => {
+    setQuickFilters((prev) => ({ ...prev, [key]: !prev[key] }));
+  }, []);
+
+  const hasActiveFilters = Boolean(
+    debouncedSearch || selectedCategory || selectedLocation || budgetFilterActive ||
+    quickFilters.urgent || quickFilters.verified || quickFilters.fullTime || quickFilters.contract
+  );
+
+  const clearAllFilters = useCallback(() => {
+    setSearchQuery('');
+    setSelectedCategory('');
+    setSelectedLocation('');
+    setBudgetRange([0, 50000]);
+    setBudgetFilterActive(false);
+    setSortBy('relevance');
+    setQuickFilters({ urgent: false, verified: false, fullTime: false, contract: false });
+  }, []);
   const [platformStats, setPlatformStats] = useState({
     availableJobs: 0,
     activeEmployers: 0,
@@ -596,16 +621,28 @@ const JobsPage = () => {
   };
 
   const jobsQueryFilters = useMemo(
-    () => ({
-      status: 'open',
-      search: searchQuery || undefined,
-      category: selectedCategory || undefined,
-      location: selectedLocation || undefined,
-      min_budget: budgetRange?.[0],
-      max_budget: budgetRange?.[1],
-      limit: 50,
-    }),
-    [searchQuery, selectedCategory, selectedLocation, budgetRange],
+    () => {
+      const params = {
+        status: 'open',
+        search: debouncedSearch || undefined,
+        category: selectedCategory || undefined,
+        location: selectedLocation || undefined,
+        sort: sortBy !== 'relevance' ? sortBy : undefined,
+        limit: 50,
+      };
+      // Only send budget filter when user explicitly adjusts the slider
+      if (debouncedBudgetRange) {
+        params.min_budget = debouncedBudgetRange[0];
+        params.max_budget = debouncedBudgetRange[1];
+      }
+      // Quick filters
+      if (quickFilters.urgent) params.urgent = 'true';
+      if (quickFilters.verified) params.verified = 'true';
+      if (quickFilters.fullTime) params.paymentType = 'hourly';
+      if (quickFilters.contract) params.paymentType = 'fixed';
+      return params;
+    },
+    [debouncedSearch, selectedCategory, selectedLocation, debouncedBudgetRange, sortBy, quickFilters],
   );
 
   const {
@@ -701,32 +738,31 @@ const JobsPage = () => {
     };
   }, []); // Fetch once on mount, refresh via interval
 
-  const filteredJobs = jobs.filter((job) => {
-    const matchesSearch =
-      !searchQuery ||
-      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (job.employer?.name &&
-        job.employer.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (job.skills &&
-        job.skills.some((skill) =>
-          skill.toLowerCase().includes(searchQuery.toLowerCase()),
-        ));
+  // Deduplicate jobs by ID (server handles filtering; no redundant client-side filter)
+  const uniqueJobs = useMemo(() => {
+    const deduped = Array.from(
+      new Map(jobs.map((job) => [job.id, job])).values(),
+    );
 
-    const matchesCategory =
-      !selectedCategory || job.category === selectedCategory;
-    const matchesLocation =
-      !selectedLocation ||
-      (job.location?.city && job.location.city.includes(selectedLocation)) ||
-      (typeof job.location === 'string' &&
-        job.location.includes(selectedLocation));
-
-    return matchesSearch && matchesCategory && matchesLocation;
-  });
-
-  // Deduplicate jobs by ID to prevent showing same job multiple times
-  const uniqueJobs = Array.from(
-    new Map(filteredJobs.map((job) => [job.id, job])).values(),
-  );
+    // Client-side sort when server doesn't support sort param yet
+    if (sortBy === 'budget_high') {
+      deduped.sort((a, b) => {
+        const bBudget = typeof b.budget === 'object' ? (b.budget.amount || b.budget.max || 0) : (b.budget || 0);
+        const aBudget = typeof a.budget === 'object' ? (a.budget.amount || a.budget.max || 0) : (a.budget || 0);
+        return bBudget - aBudget;
+      });
+    } else if (sortBy === 'budget_low') {
+      deduped.sort((a, b) => {
+        const aBudget = typeof a.budget === 'object' ? (a.budget.amount || a.budget.min || 0) : (a.budget || 0);
+        const bBudget = typeof b.budget === 'object' ? (b.budget.amount || b.budget.min || 0) : (b.budget || 0);
+        return aBudget - bBudget;
+      });
+    } else if (sortBy === 'newest') {
+      deduped.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
+    }
+    // 'relevance' = server default order (no client re-sort)
+    return deduped;
+  }, [jobs, sortBy]);
 
   return (
     <ErrorBoundary>
@@ -1036,11 +1072,14 @@ const JobsPage = () => {
                             fullWidth
                             variant="contained"
                             size="medium"
-                            startIcon={<SearchIcon />}
+                            startIcon={isJobsFetching ? <CircularProgress size={16} sx={{ color: 'black' }} /> : <SearchIcon />}
+                            disabled={isJobsFetching}
                             onClick={() => {
-                              console.log('🔍 Search triggered!');
-                              // Trigger re-fetch with current filters
-                              // The useEffect will automatically trigger with updated state
+                              // Force re-fetch with current filters (debounce will fire immediately if search already settled)
+                              if (searchQuery && searchQuery !== debouncedSearch) {
+                                // User typed but debounce hasn't fired - search immediately
+                                setSearchQuery((prev) => prev); // force effect
+                              }
                             }}
                             sx={{
                               bgcolor: '#D4AF37',
@@ -1093,8 +1132,27 @@ const JobsPage = () => {
                         }}
                       >
                         {showFilters ? 'Hide' : 'Show'} Filters
+                        {hasActiveFilters && (
+                          <Badge 
+                            badgeContent={[debouncedSearch, selectedCategory, selectedLocation, budgetFilterActive, quickFilters.urgent, quickFilters.verified, quickFilters.fullTime, quickFilters.contract].filter(Boolean).length}
+                            sx={{ ml: 1, '& .MuiBadge-badge': { bgcolor: '#D4AF37', color: 'black', fontSize: '0.65rem', minWidth: 16, height: 16 } }}
+                          />
+                        )}
                       </Button>
                     </Box>
+
+                    {/* Fetching indicator */}
+                    {isJobsFetching && (
+                      <LinearProgress
+                        sx={{
+                          mt: 1,
+                          bgcolor: 'rgba(212,175,55,0.15)',
+                          '& .MuiLinearProgress-bar': { bgcolor: '#D4AF37' },
+                          height: 2,
+                          borderRadius: 1,
+                        }}
+                      />
+                    )}
 
                     {/* Advanced Filters - Compact */}
                     <Collapse in={showFilters}>
@@ -1107,30 +1165,46 @@ const JobsPage = () => {
                       >
                         <Grid container spacing={2}>
                           <Grid item xs={12} md={6}>
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                mb: 1,
-                                color: '#D4AF37',
-                                fontWeight: 'bold',
-                              }}
-                            >
-                              Salary Range (GHS)
-                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: '#D4AF37',
+                                  fontWeight: 'bold',
+                                }}
+                              >
+                                Budget Range (GHS)
+                              </Typography>
+                              <FormControlLabel
+                                control={
+                                  <Switch
+                                    checked={budgetFilterActive}
+                                    onChange={(e) => setBudgetFilterActive(e.target.checked)}
+                                    size="small"
+                                    sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#D4AF37' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#D4AF37' } }}
+                                  />
+                                }
+                                label={<Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>{budgetFilterActive ? 'On' : 'Off'}</Typography>}
+                                sx={{ m: 0 }}
+                              />
+                            </Box>
                             <Slider
                               value={budgetRange}
-                              onChange={(e, newValue) =>
-                                setBudgetRange(newValue)
-                              }
+                              onChange={(e, newValue) => {
+                                setBudgetRange(newValue);
+                                if (!budgetFilterActive) setBudgetFilterActive(true);
+                              }}
                               valueLabelDisplay="auto"
-                              min={500}
-                              max={10000}
-                              step={100}
+                              valueLabelFormat={(v) => `GHS ${v.toLocaleString()}`}
+                              min={0}
+                              max={50000}
+                              step={500}
+                              disabled={!budgetFilterActive}
                               size="small"
                               sx={{
-                                color: '#D4AF37',
+                                color: budgetFilterActive ? '#D4AF37' : 'grey.600',
                                 '& .MuiSlider-thumb': {
-                                  bgcolor: '#D4AF37',
+                                  bgcolor: budgetFilterActive ? '#D4AF37' : 'grey.500',
                                   width: { xs: 28, sm: 20 },
                                   height: { xs: 28, sm: 20 },
                                   '&::before': {
@@ -1142,7 +1216,7 @@ const JobsPage = () => {
                                   },
                                 },
                                 '& .MuiSlider-track': {
-                                  bgcolor: '#D4AF37',
+                                  bgcolor: budgetFilterActive ? '#D4AF37' : 'grey.600',
                                 },
                                 '& .MuiSlider-rail': {
                                   bgcolor: 'rgba(212,175,55,0.3)',
@@ -1160,17 +1234,17 @@ const JobsPage = () => {
                                 variant="caption"
                                 sx={{ color: 'rgba(255,255,255,0.7)' }}
                               >
-                                GHS {budgetRange[0]}
+                                GHS {budgetRange[0].toLocaleString()}
                               </Typography>
                               <Typography
                                 variant="caption"
                                 sx={{ color: 'rgba(255,255,255,0.7)' }}
                               >
-                                GHS {budgetRange[1]}+
+                                GHS {budgetRange[1].toLocaleString()}+
                               </Typography>
                             </Box>
                           </Grid>
-                          <Grid item xs={12} md={6}>
+                          <Grid item xs={12} md={3}>
                             <Typography
                               variant="body2"
                               sx={{
@@ -1188,59 +1262,80 @@ const JobsPage = () => {
                                 gap: 0.5,
                               }}
                             >
-                              <Chip
-                                label="Urgent"
-                                size="small"
-                                variant="outlined"
-                                sx={{
-                                  borderColor: '#D4AF37',
-                                  color: '#D4AF37',
-                                  fontSize: '0.8rem',
-                                  '&:hover': {
-                                    bgcolor: 'rgba(212,175,55,0.1)',
-                                  },
-                                }}
-                              />
-                              <Chip
-                                label="Verified"
-                                size="small"
-                                variant="outlined"
-                                sx={{
-                                  borderColor: '#D4AF37',
-                                  color: '#D4AF37',
-                                  fontSize: '0.8rem',
-                                  '&:hover': {
-                                    bgcolor: 'rgba(212,175,55,0.1)',
-                                  },
-                                }}
-                              />
-                              <Chip
-                                label="Full-time"
-                                size="small"
-                                variant="outlined"
-                                sx={{
-                                  borderColor: '#D4AF37',
-                                  color: '#D4AF37',
-                                  fontSize: '0.8rem',
-                                  '&:hover': {
-                                    bgcolor: 'rgba(212,175,55,0.1)',
-                                  },
-                                }}
-                              />
-                              <Chip
-                                label="Contract"
-                                size="small"
-                                variant="outlined"
-                                sx={{
-                                  borderColor: '#D4AF37',
-                                  color: '#D4AF37',
-                                  fontSize: '0.8rem',
-                                  '&:hover': {
-                                    bgcolor: 'rgba(212,175,55,0.1)',
-                                  },
-                                }}
-                              />
+                              {[
+                                { key: 'urgent', label: 'Urgent' },
+                                { key: 'verified', label: 'Verified Hirer' },
+                                { key: 'fullTime', label: 'Hourly' },
+                                { key: 'contract', label: 'Fixed Price' },
+                              ].map(({ key, label }) => (
+                                <Chip
+                                  key={key}
+                                  label={label}
+                                  size="small"
+                                  variant={quickFilters[key] ? 'filled' : 'outlined'}
+                                  onClick={() => toggleQuickFilter(key)}
+                                  sx={{
+                                    borderColor: '#D4AF37',
+                                    color: quickFilters[key] ? 'black' : '#D4AF37',
+                                    bgcolor: quickFilters[key] ? '#D4AF37' : 'transparent',
+                                    fontSize: '0.8rem',
+                                    cursor: 'pointer',
+                                    fontWeight: quickFilters[key] ? 'bold' : 'normal',
+                                    '&:hover': {
+                                      bgcolor: quickFilters[key] ? '#B8941F' : 'rgba(212,175,55,0.15)',
+                                    },
+                                    transition: 'all 0.2s ease',
+                                  }}
+                                />
+                              ))}
                             </Box>
+                          </Grid>
+                          <Grid item xs={12} md={3}>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                mb: 1,
+                                color: '#D4AF37',
+                                fontWeight: 'bold',
+                              }}
+                            >
+                              Sort By
+                            </Typography>
+                            <FormControl fullWidth size="small">
+                              <Select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                sx={{
+                                  color: 'white',
+                                  fontSize: '0.875rem',
+                                  height: '36px',
+                                  '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(212,175,55,0.3)' },
+                                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#D4AF37' },
+                                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#D4AF37' },
+                                  '& .MuiSvgIcon-root': { color: '#D4AF37' },
+                                }}
+                              >
+                                <MenuItem value="relevance">Most Relevant</MenuItem>
+                                <MenuItem value="newest">Newest First</MenuItem>
+                                <MenuItem value="budget_high">Budget: High → Low</MenuItem>
+                                <MenuItem value="budget_low">Budget: Low → High</MenuItem>
+                              </Select>
+                            </FormControl>
+                            {hasActiveFilters && (
+                              <Button
+                                size="small"
+                                onClick={clearAllFilters}
+                                sx={{
+                                  mt: 1,
+                                  color: '#ff6b6b',
+                                  fontSize: '0.75rem',
+                                  textTransform: 'none',
+                                  '&:hover': { bgcolor: 'rgba(255,107,107,0.1)' },
+                                }}
+                              >
+                                ✕ Clear All Filters
+                              </Button>
+                            )}
                           </Grid>
                         </Grid>
                       </Box>
@@ -1274,8 +1369,8 @@ const JobsPage = () => {
                 >
                   Featured Opportunities
                 </Typography>
-                {(searchQuery || selectedCategory || selectedLocation) && (
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                {hasActiveFilters && (
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
                     <Typography
                       variant="body2"
                       sx={{ color: 'rgba(255,255,255,0.7)' }}
@@ -1318,6 +1413,38 @@ const JobsPage = () => {
                         }}
                       />
                     )}
+                    {budgetFilterActive && (
+                      <Chip
+                        label={`Budget: GHS ${budgetRange[0].toLocaleString()} – ${budgetRange[1].toLocaleString()}`}
+                        size="small"
+                        onDelete={() => { setBudgetFilterActive(false); setBudgetRange([0, 50000]); }}
+                        sx={{
+                          bgcolor: 'rgba(212,175,55,0.2)',
+                          color: '#D4AF37',
+                          '& .MuiChip-deleteIcon': { color: '#D4AF37' },
+                        }}
+                      />
+                    )}
+                    {Object.entries(quickFilters).filter(([, v]) => v).map(([key]) => (
+                      <Chip
+                        key={key}
+                        label={key === 'fullTime' ? 'Hourly' : key === 'contract' ? 'Fixed Price' : key.charAt(0).toUpperCase() + key.slice(1)}
+                        size="small"
+                        onDelete={() => toggleQuickFilter(key)}
+                        sx={{
+                          bgcolor: 'rgba(212,175,55,0.2)',
+                          color: '#D4AF37',
+                          '& .MuiChip-deleteIcon': { color: '#D4AF37' },
+                        }}
+                      />
+                    ))}
+                    <Button
+                      size="small"
+                      onClick={clearAllFilters}
+                      sx={{ color: '#ff6b6b', fontSize: '0.75rem', textTransform: 'none', minWidth: 'auto' }}
+                    >
+                      Clear all
+                    </Button>
                   </Box>
                 )}
               </Box>

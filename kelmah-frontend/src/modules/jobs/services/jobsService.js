@@ -122,12 +122,21 @@ const jobsApi = {
       if (response.data) {
         // Check if response has pagination structure
         if (response.data.data && Array.isArray(response.data.data)) {
+          // Format: { data: [...jobs], pagination: {...} }
           jobs = response.data.data;
           totalPages = response.data.pagination?.totalPages || 1;
           totalJobs = response.data.pagination?.totalItems || jobs.length;
           currentPage = response.data.pagination?.currentPage || 1;
+        } else if (response.data.data && response.data.data.items && Array.isArray(response.data.data.items)) {
+          // Format: { data: { items: [...jobs], pagination: {...} }, meta: {...} }
+          // This is the paginatedResponse format from the job service
+          const paginated = response.data.data;
+          jobs = paginated.items;
+          totalPages = paginated.pagination?.totalPages || response.data.meta?.pagination?.totalPages || 1;
+          totalJobs = paginated.pagination?.total || response.data.meta?.pagination?.total || jobs.length;
+          currentPage = paginated.pagination?.page || response.data.meta?.pagination?.page || 1;
         } else if (response.data.items && Array.isArray(response.data.items)) {
-          // Handle the actual API response format: {success: true, items: [...], page: 1, total: 12}
+          // Format: { items: [...jobs], page: 1, total: 12 }
           jobs = response.data.items;
           totalPages =
             Math.ceil(response.data.total / response.data.limit) || 1;

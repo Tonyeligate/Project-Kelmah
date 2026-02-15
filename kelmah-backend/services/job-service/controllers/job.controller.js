@@ -943,6 +943,13 @@ const getJobs = async (req, res, next) => {
       if (max) query.budget.$lte = parseInt(max);
     }
 
+    // Also handle min_budget/max_budget as separate query params (frontend sends these)
+    if (req.query.min_budget || req.query.max_budget) {
+      if (!query.budget) query.budget = {};
+      if (req.query.min_budget) query.budget.$gte = parseInt(req.query.min_budget);
+      if (req.query.max_budget) query.budget.$lte = parseInt(req.query.max_budget);
+    }
+
     // Enhanced location filtering
     if (req.query.location) {
       if (req.query.location.includes(',')) {
@@ -986,6 +993,11 @@ const getJobs = async (req, res, next) => {
       query.urgency = { $in: ['high', 'urgent'] };
     }
 
+    // Payment type filter (hourly / fixed)
+    if (req.query.paymentType) {
+      query.paymentType = req.query.paymentType;
+    }
+
     // Remote work filter
     if (req.query.remote === 'true') {
       query.remote = true;
@@ -1012,13 +1024,23 @@ const getJobs = async (req, res, next) => {
     // Search with advanced text search
     if (req.query.search) {
       const searchTerms = req.query.search.trim().split(' ');
-      query.$or = [
-        { $text: { $search: req.query.search } },
+      const searchConditions = [
         { title: { $regex: req.query.search, $options: "i" } },
         { description: { $regex: req.query.search, $options: "i" } },
         { skills: { $in: searchTerms.map(term => new RegExp(term, 'i')) } },
         { category: { $regex: req.query.search, $options: "i" } }
       ];
+      // If location filter already set $or, combine with $and to prevent conflict
+      if (query.$or) {
+        const locationOr = query.$or;
+        delete query.$or;
+        query.$and = [
+          { $or: locationOr },
+          { $or: searchConditions }
+        ];
+      } else {
+        query.$or = searchConditions;
+      }
     }
 
     // Execute query with pagination
@@ -1032,14 +1054,30 @@ const getJobs = async (req, res, next) => {
     const jobsCollection = db.collection('jobs');
     const usersCollection = db.collection('users');
 
-    // Get jobs using native MongoDB driver
-    const sortField = req.query.sort || "-createdAt";
-    const sortOrder = sortField.startsWith('-') ? -1 : 1;
-    const sortKey = sortField.replace(/^-/, '');
+    // Determine sort strategy based on frontend sort parameter
+    const SORT_MAP = {
+      newest: { createdAt: -1 },
+      budget_high: { budget: -1, createdAt: -1 },
+      budget_low: { budget: 1, createdAt: -1 },
+      oldest: { createdAt: 1 },
+    };
+    let sortSpec;
+    if (req.query.sort && SORT_MAP[req.query.sort]) {
+      sortSpec = SORT_MAP[req.query.sort];
+    } else if (req.query.sort) {
+      // Legacy format: "-createdAt" or "createdAt"
+      const sortField = req.query.sort;
+      const sortOrder = sortField.startsWith('-') ? -1 : 1;
+      const sortKey = sortField.replace(/^-/, '');
+      sortSpec = { [sortKey]: sortOrder };
+    } else {
+      // Default: newest first
+      sortSpec = { createdAt: -1 };
+    }
 
     const jobsCursor = jobsCollection
       .find(query)
-      .sort({ [sortKey]: sortOrder })
+      .sort(sortSpec)
       .skip(startIndex)
       .limit(limit)
       .maxTimeMS(20000);
@@ -1071,8 +1109,14 @@ const getJobs = async (req, res, next) => {
       }
     });
 
+    // Post-population filter: verified employers only
+    let filteredJobs = jobs;
+    if (req.query.verified === 'true') {
+      filteredJobs = jobs.filter(job => job.hirer && (job.hirer.verified || job.hirer.isVerified));
+    }
+
     // Transform jobs to match frontend expectations (using shared transformation)
-    const transformedJobs = transformJobsForFrontend(jobs);
+    const transformedJobs = transformJobsForFrontend(filteredJobs);
 
     // Get total count using direct driver
     let total = startIndex + jobs.length;
