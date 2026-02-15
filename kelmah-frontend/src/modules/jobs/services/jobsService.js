@@ -3,6 +3,45 @@ import { api } from '../../../services/apiClient';
 // Use centralized jobServiceClient with auth/retry interceptors
 
 // Data transformation helpers
+const normalizeTextValue = (value, fallback = '') => {
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number') return String(value);
+  if (value && typeof value === 'object') {
+    if (typeof value.label === 'string') return value.label.trim();
+    if (typeof value.name === 'string') return value.name.trim();
+    if (typeof value.value === 'string') return value.value.trim();
+  }
+  return fallback;
+};
+
+const normalizeLocationValue = (location) => {
+  if (!location) return '';
+  if (typeof location === 'string') return location.trim();
+  if (typeof location !== 'object') return '';
+
+  const city = normalizeTextValue(location.city);
+  const region = normalizeTextValue(location.region);
+  const country = normalizeTextValue(location.country);
+  const address = normalizeTextValue(location.address);
+  const type = normalizeTextValue(location.type);
+
+  const parts = [city, region, country].filter(Boolean);
+  if (parts.length > 0) return parts.join(', ');
+  if (address) return address;
+  if (type) {
+    if (type.toLowerCase() === 'remote') return 'Remote';
+    return type;
+  }
+  return '';
+};
+
+const normalizeSkills = (skills) => {
+  if (!Array.isArray(skills)) return [];
+  return skills
+    .map((skill) => normalizeTextValue(skill))
+    .filter(Boolean);
+};
+
 const transformJobListItem = (job) => {
   if (!job) return null;
 
@@ -65,19 +104,21 @@ const transformJobListItem = (job) => {
 
   return {
     id: job._id || job.id, // Handle MongoDB _id or regular id
-    title: job.title,
-    description:
-      job.description?.substring(0, 150) +
-      (job.description?.length > 150 ? '...' : ''),
-    fullDescription: job.description, // Keep full description for detail view
-    category: job.category,
-    subcategory: job.subcategory,
-    type: job.type,
+    title: normalizeTextValue(job.title, 'Untitled Job'),
+    description: (() => {
+      const text = normalizeTextValue(job.description);
+      if (!text) return '';
+      return text.substring(0, 150) + (text.length > 150 ? '...' : '');
+    })(),
+    fullDescription: normalizeTextValue(job.description), // Keep full description for detail view
+    category: normalizeTextValue(job.category),
+    subcategory: normalizeTextValue(job.subcategory),
+    type: normalizeTextValue(job.type),
     budget: job.budget,
     currency: job.currency || 'GHS',
     status: job.status,
-    location: job.location,
-    skills: job.skills || [],
+    location: normalizeLocationValue(job.location || job.locationDetails),
+    skills: normalizeSkills(job.skills),
     // Map API date fields to frontend expected fields
     postedDate: job.createdAt ? new Date(job.createdAt) : new Date(),
     deadline: job.endDate

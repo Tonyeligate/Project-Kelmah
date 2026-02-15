@@ -1,5 +1,86 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Implementation Update (Feb 15, 2026 – Worker Find Work React #31 Crash Fix) ✅
+- 🎯 **Scope**: Investigate repeated production crashes on `/worker/find-work` (`Minified React error #31`, objects with keys `{type}` / `{type,country,city}`) and harden list rendering.
+- 🔍 **Root cause**:
+  - Job list payloads can include object-shaped fields (notably `location`, and occasionally typed metadata fields).
+  - Worker Find Work UI rendered these fields directly in JSX, which triggers React invariant #31 when an object is rendered as a child.
+- ✅ **Fix applied**:
+  - Added defensive normalization in job transformation pipeline so list-facing fields are always render-safe primitives.
+  - New normalizers in `jobsService`: `normalizeTextValue`, `normalizeLocationValue`, `normalizeSkills`.
+  - `transformJobListItem` now normalizes `title`, `description`, `fullDescription`, `category`, `subcategory`, `type`, `location`, and `skills`.
+- 🧾 File updated:
+  - `kelmah-frontend/src/modules/jobs/services/jobsService.js`
+- 🧪 **Verification**:
+  - VS Code diagnostics on affected files: no compile errors.
+  - Fix removes object-to-JSX render path that caused recurrent GlobalErrorBoundary crashes on Find Work.
+
+### Implementation Update (Feb 15, 2026 – Live Smoke Checks + Worker Unresolved Batch) ✅
+- 🎯 **Scope**: Run live gateway smoke checks on deployed Render endpoints and continue next unresolved mobile-first UI batch.
+- ✅ **Live smoke check outcomes**:
+  - `POST /api/auth/login` → `200`
+  - `GET /api/auth/me` → `200`
+  - `GET /api/jobs/my-jobs?limit=1` → `200`
+  - `GET /api/messages/conversations?limit=1` → `404` (`ENDPOINT_NOT_FOUND`)
+  - `GET /api/payments/transactions/history?limit=1` → `502`
+  - Aggregate health confirms gateway + messaging healthy, payment service unhealthy (`/api/health/aggregate`).
+- ✅ **Next unresolved module batch fix applied**:
+  - Worker earnings transactions UI now uses mobile card fallback on small screens and desktop table on larger screens.
+  - Improved action/header wrapping to prevent mobile clipping.
+  - File: `kelmah-frontend/src/modules/worker/components/EarningsTracker.jsx`
+- 🧪 **Verification**:
+  - VS Code diagnostics for changed worker component: no compile/runtime errors.
+
+### Implementation Update (Feb 15, 2026 – Platform-Wide Mobile/Backend Audit Phase-2 Delta) ✅
+- 🎯 **Scope**: Complete pending high-impact refinements after initial platform pass (messaging mobile truncation, payment table usability on mobile, and gateway auth error response consistency).
+- ✅ **Frontend mobile-first fixes applied**:
+  1. **Messaging nowrap pressure reduction**: switched key text nodes to responsive wrapping/clamping on `xs` while preserving compact `sm+` behavior.
+    - File: `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+  2. **Escrow details mobile readability**: added mobile card rendering path + responsive table min width.
+    - File: `kelmah-frontend/src/modules/payment/components/EscrowDetails.jsx`
+  3. **Transaction history mobile readability**: added mobile card rendering path + responsive table min width.
+    - File: `kelmah-frontend/src/modules/payment/components/TransactionHistory.jsx`
+- ✅ **Backend consistency fix applied**:
+  1. **Auth middleware envelope standardization**: unified `authenticate` error responses to structured format (`success: false`, `error: { message, code, details? }`) across auth failure branches.
+    - File: `kelmah-backend/api-gateway/middlewares/auth.js`
+- 🧪 **Verification**:
+  - VS Code diagnostics for modified files: no compile/runtime errors introduced.
+  - Remaining report: one non-blocking Sourcery style suggestion in messaging ternary expression.
+
+### Implementation Update (Feb 15, 2026 – Platform-Wide Mobile-First + Backend Route/Security Audit Pass) ✅
+- 🎯 **Scope**: Dry-audit active frontend pages/components and backend gateway/services for mobile UX, responsiveness, accessibility, route correctness, and security-sensitive logging.
+- 🔍 **Audit surface covered**:
+  - Frontend active modules in `kelmah-frontend/src` (pages/components focus; backups excluded)
+  - Backend active runtime APIs in `kelmah-backend/api-gateway` and `kelmah-backend/services/*` (spec-kit mirrors excluded)
+- ✅ **Critical backend fixes applied**:
+  1. **Route shadowing fixed** in API Gateway user routes: moved parameterized `/:userId` routes after `/workers/*` literals.
+    - File: `kelmah-backend/api-gateway/routes/user.routes.js`
+  2. **Route shadowing fixed** in API Gateway payment routes: moved `/transactions/history` before `/transactions/:transactionId`.
+    - File: `kelmah-backend/api-gateway/routes/payment.routes.js`
+  3. **Sensitive logging removed** from auth login gateway pass-through (removed raw request body logging and debug error echo in response).
+    - File: `kelmah-backend/api-gateway/routes/auth.routes.js`
+  4. **Route specificity fixed** in user-service profile routes: moved `/portfolio/featured` and `/portfolio/search` before `/portfolio/:id`.
+    - File: `kelmah-backend/services/user-service/routes/profile.routes.js`
+- ✅ **Backend hardening fix applied**:
+  - `getJobs` endpoint now clamps `limit` to max 50, sanitizes/escapes regex-bound search and location input, and gates verbose debug logs behind `JOB_SERVICE_DEBUG=true`.
+  - File: `kelmah-backend/services/job-service/controllers/job.controller.js`
+- ✅ **Mobile-first frontend fixes applied**:
+  1. **Viewport hardening** (`100vh` → `100dvh`) and safe-area bottom padding for auth wrapper.
+    - File: `kelmah-frontend/src/modules/auth/components/common/AuthWrapper.jsx`
+  2. **Search shell viewport fix** (`calc(100vh - 64px)` → `calc(100dvh - 64px)`).
+    - File: `kelmah-frontend/src/modules/search/pages/SearchPage.jsx`
+  3. **Map shell viewport fix** (`calc(100vh - 64px)` → `calc(100dvh - 64px)`).
+    - File: `kelmah-frontend/src/modules/map/pages/ProfessionalMapPage.jsx`
+  4. **Dashboard clipping fix**: removed negative horizontal margins causing edge clipping on small screens.
+    - File: `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx`
+  5. **Accessibility fix**: replaced clickable non-semantic job-title container with `ButtonBase` and focus-visible styling.
+    - File: `kelmah-frontend/src/modules/worker/pages/MyBidsPage.jsx`
+  6. **Messaging mobile/accessibility improvements**: semantic button containers for conversation rows + reduced mobile min-width pressure in message/file preview bubbles.
+    - File: `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- 🧪 **Verification**:
+  - VS Code diagnostics on all modified files: no compile errors introduced (remaining items are non-blocking style suggestions from Sourcery).
+
+
 ### Implementation Update (Feb 15, 2026 – Worker System Comprehensive Dry Audit & Fixes) ✅
 - 🎯 **Scope**: Full dry audit of entire worker module — UI/UX, mobile-first design, theme consistency, accessibility, and code quality.
 - 🔍 **Files audited** (complete read):
