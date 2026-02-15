@@ -34,7 +34,7 @@ logger.info('review-service starting...', {
 });
 
 const app = express();
-const PORT = process.env.REVIEW_SERVICE_PORT || 5006;
+const PORT = process.env.PORT || process.env.REVIEW_SERVICE_PORT || 5006;
 
 // Initialize keep-alive to prevent Render spin-down
 let keepAliveManager;

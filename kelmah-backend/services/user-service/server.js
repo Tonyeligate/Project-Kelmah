@@ -455,7 +455,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-const PORT = process.env.USER_SERVICE_PORT || 5002;
+const PORT = process.env.PORT || process.env.USER_SERVICE_PORT || 5002;
 
 // Only start the server if this file is run directly
 if (require.main === module) {

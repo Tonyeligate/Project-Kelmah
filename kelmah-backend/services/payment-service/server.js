@@ -27,6 +27,16 @@ const logger = createLogger('payment-service');
 // Setup global error handlers
 setupGlobalErrorHandlers(logger);
 
+// Initialize keep-alive to prevent Render spin-down
+let keepAliveManager;
+try {
+  const { initKeepAlive } = require('../../shared/utils/keepAlive');
+  keepAliveManager = initKeepAlive('payment-service', { logger });
+  logger.info('✅ Keep-alive manager initialized for payment-service');
+} catch (error) {
+  logger.warn('⚠️ Keep-alive manager not available:', error.message);
+}
+
 logger.info('payment-service starting...', { 
   nodeVersion: process.version,
   environment: process.env.NODE_ENV || 'development'
@@ -218,7 +228,7 @@ const mongoOptions = {
   dbName: 'kelmah_platform' // Ensure using correct database
 };
 
-const PORT = process.env.PORT || 3004;
+const PORT = process.env.PORT || process.env.PAYMENT_SERVICE_PORT || 5004;
 let httpServerStarted = false;
 
 async function connectDbWithRetry() {

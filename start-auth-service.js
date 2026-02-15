@@ -8,9 +8,9 @@ const authService = spawn('node', ['server.js'], {
   stdio: 'inherit',
   env: {
     ...process.env,
-    NODE_ENV: 'production',
-    PORT: '5001',
-    AUTH_SERVICE_PORT: '5001'
+    NODE_ENV: process.env.NODE_ENV || 'production',
+    PORT: process.env.PORT || '5001',
+    AUTH_SERVICE_PORT: process.env.PORT || '5001'
   },
   cwd: path.resolve(__dirname, 'kelmah-backend/services/auth-service')
 });

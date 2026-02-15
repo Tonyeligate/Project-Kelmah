@@ -72,7 +72,7 @@ const SERVICE_CONFIG = {
  * Health Check Function
  * Tests if a service URL is reachable
  */
-const checkServiceHealth = async (url, timeout = 3000) => {
+const checkServiceHealth = async (url, timeout = 15000) => {
   try {
     const response = await axios.get(`${url}/health`, {
       timeout,

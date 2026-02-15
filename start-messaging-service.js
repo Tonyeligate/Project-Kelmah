@@ -9,8 +9,8 @@ const messagingService = spawn('node', ['server.js'], {
   shell: true,
   env: {
     ...process.env,
-    NODE_ENV: 'production',
-    PORT: '5005'
+    NODE_ENV: process.env.NODE_ENV || 'production',
+    PORT: process.env.PORT || '5005'
   }
 });
 

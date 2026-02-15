@@ -296,7 +296,7 @@ app.get("/", (req, res) => {
 // Otherwise they catch requests before routes exist!
 
 // Start server
-const PORT = process.env.JOB_SERVICE_PORT || 5003;
+const PORT = process.env.PORT || process.env.JOB_SERVICE_PORT || 5003;
 
 let httpServerStarted = false;
 

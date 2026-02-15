@@ -9,8 +9,8 @@ const paymentService = spawn('node', ['server.js'], {
   shell: true,
   env: {
     ...process.env,
-    NODE_ENV: 'production',
-    PORT: '5004'
+    NODE_ENV: process.env.NODE_ENV || 'production',
+    PORT: process.env.PORT || '5004'
   }
 });
 

@@ -79,7 +79,7 @@ const createDynamicProxy = (serviceName, options = {}) => {
 };
 
 const app = express();
-const PORT = process.env.API_GATEWAY_PORT || 3000;
+const PORT = process.env.PORT || process.env.API_GATEWAY_PORT || 5000;
 
 // ✅ FIXED: Configure Express to trust proxy headers (for rate limiting and IP detection)
 app.set('trust proxy', 1);
@@ -146,6 +146,33 @@ const initializeServices = async () => {
     console.log('⚠️ Using fallback localhost URLs');
     return false;
   }
+};
+
+// Periodic service re-discovery: re-resolve URLs every 5 minutes so the
+// gateway picks up services that started after the gateway did.
+const SERVICE_REDISCOVERY_INTERVAL = parseInt(process.env.SERVICE_REDISCOVERY_INTERVAL_MS, 10) || 5 * 60 * 1000;
+let rediscoveryTimer = null;
+const startPeriodicRediscovery = () => {
+  if (rediscoveryTimer) return;
+  rediscoveryTimer = setInterval(async () => {
+    try {
+      logger.info('🔄 Running periodic service re-discovery...');
+      const freshServices = await initializeServiceRegistry();
+      // Only update if we got valid cloud URLs (don't regress to localhost)
+      const hasCloudUrls = Object.values(freshServices).some(u => u && !u.includes('localhost'));
+      if (hasCloudUrls) {
+        services = freshServices;
+        socketIoProxyInstance = null;
+        proxyCache.clear();
+        app.set('serviceUrls', getServiceUrlsForApp(services));
+        logger.info('✅ Service URLs refreshed via periodic re-discovery');
+      } else {
+        logger.debug('⏭️ Re-discovery found no new cloud URLs, keeping existing config');
+      }
+    } catch (err) {
+      logger.warn('⚠️ Periodic service re-discovery failed:', err.message);
+    }
+  }, SERVICE_REDISCOVERY_INTERVAL);
 };
 
 // Fail-fast: ensure critical environment variables are present
@@ -1182,6 +1209,9 @@ const startServer = async () => {
     // Initialize service discovery first
     await initializeServices();
     keepAliveManager.start();
+
+    // Start periodic re-discovery so gateway picks up late-starting services
+    startPeriodicRediscovery();
 
     // Job router already mounted above - no proxy middleware needed
 

@@ -8,9 +8,9 @@ const userService = spawn('node', ['server.js'], {
   stdio: 'inherit',
   env: {
     ...process.env,
-    NODE_ENV: 'production',
-    PORT: '5002',
-    USER_SERVICE_PORT: '5002'
+    NODE_ENV: process.env.NODE_ENV || 'production',
+    PORT: process.env.PORT || '5002',
+    USER_SERVICE_PORT: process.env.PORT || '5002'
   },
   cwd: path.resolve(__dirname, 'kelmah-backend/services/user-service')
 });

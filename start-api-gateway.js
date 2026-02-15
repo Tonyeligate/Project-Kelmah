@@ -8,9 +8,9 @@ const apiGateway = spawn('node', ['server.js'], {
   stdio: 'inherit',
   env: {
     ...process.env,
-    NODE_ENV: 'production',
-    PORT: '5000',
-    API_GATEWAY_PORT: '5000'
+    NODE_ENV: process.env.NODE_ENV || 'production',
+    PORT: process.env.PORT || '5000',
+    API_GATEWAY_PORT: process.env.PORT || '5000'
   },
   cwd: path.resolve(__dirname, 'kelmah-backend/api-gateway')
 });

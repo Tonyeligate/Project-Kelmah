@@ -9,8 +9,8 @@ const jobService = spawn('node', ['server.js'], {
   shell: true,
   env: {
     ...process.env,
-    NODE_ENV: 'production',
-    PORT: '5003'
+    NODE_ENV: process.env.NODE_ENV || 'production',
+    PORT: process.env.PORT || '5003'
   }
 });
 
