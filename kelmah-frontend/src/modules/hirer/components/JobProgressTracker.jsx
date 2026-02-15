@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Card,
@@ -25,6 +26,7 @@ import {
   Rating,
   Skeleton,
   Alert,
+  Snackbar,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -43,13 +45,13 @@ import {
   selectHirerJobs,
   selectHirerLoading,
 } from '../services/hirerSlice';
-
-// No mock data - using real API data only
+import { hirerService } from '../services/hirerService';
 
 const JobProgressTracker = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [selectedJob, setSelectedJob] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -57,6 +59,8 @@ const JobProgressTracker = () => {
   const [paymentAmount, setPaymentAmount] = useState('');
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   // Redux selectors
   const activeJobs = useSelector(selectHirerJobs('active'));
@@ -112,21 +116,49 @@ const JobProgressTracker = () => {
     setReviewComment('');
   };
 
-  const handlePaymentRelease = () => {
-    // Mock payment release
-    console.log(
-      `Releasing payment of ${paymentAmount} for job ${selectedJob.id}`,
-    );
-    handleDialogClose();
+  const handlePaymentRelease = async () => {
+    if (!selectedJob || !paymentAmount) return;
+    setActionLoading(true);
+    try {
+      await hirerService.releaseMilestonePayment(
+        selectedJob.id || selectedJob._id,
+        selectedJob.selectedMilestone?.id,
+        Number(paymentAmount),
+      );
+      setSnackbar({ open: true, message: 'Payment released successfully!', severity: 'success' });
+      dispatch(fetchHirerJobs('active'));
+      handleDialogClose();
+    } catch (err) {
+      setSnackbar({ open: true, message: err?.message || 'Failed to release payment', severity: 'error' });
+    } finally {
+      setActionLoading(false);
+    }
   };
 
-  const handleReviewSubmit = () => {
-    // Mock review submission
-    console.log(`Submitting review for worker ${selectedJob.worker.id}:`, {
-      rating: reviewRating,
-      comment: reviewComment,
-    });
-    handleDialogClose();
+  const handleReviewSubmit = async () => {
+    if (!selectedJob?.worker) return;
+    setActionLoading(true);
+    try {
+      const workerId = selectedJob.worker?.id || selectedJob.worker?._id;
+      await hirerService.createWorkerReview(
+        workerId,
+        selectedJob.id || selectedJob._id,
+        { rating: reviewRating, comment: reviewComment },
+      );
+      setSnackbar({ open: true, message: 'Review submitted successfully!', severity: 'success' });
+      handleDialogClose();
+    } catch (err) {
+      setSnackbar({ open: true, message: err?.message || 'Failed to submit review', severity: 'error' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleMessageWorker = (job) => {
+    const workerId = job?.worker?.id || job?.worker?._id;
+    if (workerId) {
+      navigate(`/messages?userId=${workerId}`);
+    }
   };
 
   // Build progress model from active jobs
@@ -252,10 +284,15 @@ const JobProgressTracker = () => {
                 <IconButton
                   size="small"
                   onClick={() => handleDialogOpen('view', job)}
+                  aria-label="View job details"
                 >
                   <ViewIcon />
                 </IconButton>
-                <IconButton size="small">
+                <IconButton
+                  size="small"
+                  onClick={() => handleMessageWorker(job)}
+                  aria-label="Message worker"
+                >
                   <MessageIcon />
                 </IconButton>
               </Box>
@@ -511,12 +548,27 @@ const JobProgressTracker = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogClose}>Cancel</Button>
-          <Button onClick={handleReviewSubmit} variant="contained">
-            Submit Review
+          <Button onClick={handleDialogClose} disabled={actionLoading}>Cancel</Button>
+          <Button onClick={handleReviewSubmit} variant="contained" disabled={actionLoading}>
+            {actionLoading ? 'Submitting...' : 'Submit Review'}
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

@@ -995,12 +995,13 @@ const WorkerProfileEditPage = () => {
                 placeholder="e.g. 2018"
               />
             </Grid>
-            <Grid item xs={12} sm={1}>
+            <Grid item xs={12} sm={1} sx={{ display: 'flex', alignItems: 'stretch' }}>
               <Button
                 variant="contained"
                 onClick={handleAddEducation}
                 fullWidth
-                sx={{ height: '100%' }}
+                sx={{ height: '100%', minHeight: 48, minWidth: 48 }}
+                aria-label="Add education entry"
               >
                 <AddIcon />
               </Button>
@@ -1096,12 +1097,13 @@ const WorkerProfileEditPage = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={1}>
+            <Grid item xs={12} sm={1} sx={{ display: 'flex', alignItems: 'stretch' }}>
               <Button
                 variant="contained"
                 onClick={handleAddLanguage}
                 fullWidth
-                sx={{ height: '100%' }}
+                sx={{ height: '100%', minHeight: 48, minWidth: 48 }}
+                aria-label="Add language entry"
               >
                 <AddIcon />
               </Button>
@@ -1177,9 +1179,9 @@ const WorkerProfileEditPage = () => {
             {Array.isArray(formData.portfolio) &&
               formData.portfolio.map((item, index) => (
                 <Grid item xs={12} sm={6} md={4} key={index}>
-                  <Card variant="outlined">
+                  <Card variant="outlined" sx={{ position: 'relative' }}>
                     <CardContent>
-                      <Box sx={{ mb: 2 }}>
+                      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <Typography variant="subtitle1" gutterBottom>
                           Portfolio Item #{index + 1}
                         </Typography>
@@ -1187,7 +1189,7 @@ const WorkerProfileEditPage = () => {
                           onClick={() => handleRemovePortfolioItem(index)}
                           color="error"
                           aria-label="Remove portfolio item"
-                          sx={{ position: 'absolute', top: 8, right: 8, minWidth: 44, minHeight: 44 }}
+                          sx={{ minWidth: 44, minHeight: 44 }}
                         >
                           <DeleteIcon />
                         </IconButton>

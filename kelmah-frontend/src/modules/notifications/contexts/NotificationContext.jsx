@@ -13,73 +13,10 @@ import { normalizeUser } from '../../../utils/userUtils';
 import { Snackbar, Alert } from '@mui/material';
 import notificationServiceUser, {
   notificationService,
+  normalizeNotificationLink,
 } from '../services/notificationService';
 import { secureStorage } from '../../../utils/secureStorage';
 const NotificationContext = createContext(null);
-
-const normalizeNotificationLink = (notification = {}) => {
-  const rawLink = notification?.link || notification?.actionUrl || null;
-  const entityType = notification?.relatedEntity?.type;
-  const rawEntityId = notification?.relatedEntity?.id;
-  const entityId =
-    typeof rawEntityId === 'string' || typeof rawEntityId === 'number'
-      ? String(rawEntityId)
-      : rawEntityId?._id || rawEntityId?.id || null;
-  const type = notification?.type;
-
-  if (typeof rawLink === 'string' && rawLink.length > 0) {
-    if (/^https?:\/\//i.test(rawLink)) {
-      return rawLink;
-    }
-
-    const legacyJobMatch = rawLink.match(/^\/job\/([^/?#]+)$/);
-    if (legacyJobMatch) {
-      return `/jobs/${legacyJobMatch[1]}`;
-    }
-
-    const jobApplicationsMatch = rawLink.match(/^\/jobs\/([^/?#]+)\/applications(?:\?.*)?$/);
-    if (jobApplicationsMatch) {
-      return `/jobs/${jobApplicationsMatch[1]}`;
-    }
-
-    const messageMatch = rawLink.match(/^\/messages\/([^/?#]+)$/);
-    if (messageMatch) {
-      return `/messages?conversation=${messageMatch[1]}`;
-    }
-
-    return rawLink;
-  }
-
-  if (entityType === 'contract' && entityId) {
-    return `/contracts/${entityId}`;
-  }
-
-  if (entityType === 'job' && entityId) {
-    return `/jobs/${entityId}`;
-  }
-
-  if (entityType === 'escrow' && entityId) {
-    return `/payment/escrow/${entityId}`;
-  }
-
-  if (entityType === 'payment') {
-    return '/wallet';
-  }
-
-  if (type === 'contract_update') {
-    return '/contracts';
-  }
-
-  if (type === 'payment_received') {
-    return '/wallet';
-  }
-
-  if (type === 'job_application' || type === 'job_offer') {
-    return '/jobs';
-  }
-
-  return null;
-};
 
 const normalizeNotificationPayload = (notification = {}) => ({
   ...notification,

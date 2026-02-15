@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
   Card,
@@ -27,6 +26,7 @@ import {
   Divider,
   Alert,
   Skeleton,
+  Snackbar,
   LinearProgress,
   useTheme,
   useMediaQuery,
@@ -42,10 +42,7 @@ import {
   AttachMoney as MoneyIcon,
 } from '@mui/icons-material';
 import { api } from '../../../services/apiClient';
-
-// Use centralized client
-
-// No mock data - using real API data only
+import { hirerService } from '../services/hirerService';
 
 const WorkerReview = () => {
   const theme = useTheme();
@@ -53,6 +50,7 @@ const WorkerReview = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [workers, setWorkers] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedWorker, setSelectedWorker] = useState(null);
@@ -142,41 +140,40 @@ const WorkerReview = () => {
   const handleReviewSubmit = async () => {
     if (selectedWorker && selectedJob) {
       try {
-        // Mock review submission
-        console.log(
-          'Submitting review for worker:',
-          selectedWorker.id,
-          'job:',
-          selectedJob.id,
-          reviewForm,
-        );
+        const workerId = selectedWorker.id || selectedWorker._id;
+        const jobId = selectedJob.id || selectedJob._id;
+        await hirerService.createWorkerReview(workerId, jobId, reviewForm);
 
         // Update local state
         setWorkers((prev) =>
           prev.map((worker) =>
-            worker.id === selectedWorker.id
+            (worker.id || worker._id) === workerId
               ? {
                 ...worker,
-                completedJobs: worker.completedJobs.map((job) =>
-                  job.id === selectedJob.id
-                    ? {
-                      ...job,
-                      review: {
-                        ...reviewForm,
-                        reviewDate: new Date(),
-                      },
-                    }
-                    : job,
-                ),
+                completedJobs: Array.isArray(worker.completedJobs)
+                  ? worker.completedJobs.map((job) =>
+                    (job.id || job._id) === jobId
+                      ? {
+                        ...job,
+                        review: {
+                          ...reviewForm,
+                          reviewDate: new Date(),
+                        },
+                      }
+                      : job,
+                  )
+                  : [],
               }
               : worker,
           ),
         );
 
+        setSnackbar({ open: true, message: 'Review submitted successfully!', severity: 'success' });
         handleDialogClose();
-      } catch (error) {
-        console.error('Error submitting review:', error);
-        setError('Failed to submit review');
+      } catch (err) {
+        console.error('Error submitting review:', err);
+        setSnackbar({ open: true, message: err?.message || 'Failed to submit review', severity: 'error' });
+      }
       }
     }
   };
@@ -788,6 +785,21 @@ const WorkerReview = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

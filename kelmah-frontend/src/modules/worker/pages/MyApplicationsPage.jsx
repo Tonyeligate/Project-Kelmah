@@ -188,15 +188,14 @@ const MyApplicationsPage = () => {
   // Mobile detection
   const isActualMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  // Mobile applications template
+  // Mobile applications view — uses MUI theme for consistency with desktop
   if (isActualMobile) {
     return (
       <Box
         sx={{
           minHeight: '100vh',
-          backgroundColor: '#161513',
-          color: 'white',
-          fontFamily: 'Manrope, "Noto Sans", sans-serif',
+          bgcolor: 'background.default',
+          color: 'text.primary',
         }}
       >
         {/* Mobile Header */}
@@ -204,46 +203,36 @@ const MyApplicationsPage = () => {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            backgroundColor: '#161513',
+            bgcolor: 'background.paper',
             p: 2,
             justifyContent: 'space-between',
             position: 'sticky',
             top: 0,
             zIndex: 10,
-            borderBottom: '1px solid rgba(255, 215, 0, 0.2)',
+            borderBottom: 1,
+            borderColor: 'divider',
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <IconButton
               onClick={() => navigate(-1)}
               aria-label="Go back"
-              sx={{
-                backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                color: '#FFD700',
-                minWidth: 44,
-                minHeight: 44,
-              }}
+              color="primary"
+              sx={{ minWidth: 44, minHeight: 44 }}
             >
               <ArrowBackIcon sx={{ fontSize: 20 }} />
             </IconButton>
             <Typography
-              sx={{
-                color: '#FFD700',
-                fontSize: '1.125rem',
-                fontWeight: 'bold',
-              }}
+              color="primary"
+              sx={{ fontSize: '1.125rem', fontWeight: 'bold' }}
             >
-              My Jobs
+              My Applications
             </Typography>
           </Box>
           <IconButton
             aria-label="Filter applications"
-            sx={{
-              backgroundColor: 'rgba(255, 215, 0, 0.1)',
-              color: '#FFD700',
-              minWidth: 44,
-              minHeight: 44,
-            }}
+            color="primary"
+            sx={{ minWidth: 44, minHeight: 44 }}
           >
             <FilterListIcon sx={{ fontSize: 20 }} />
           </IconButton>
@@ -258,9 +247,9 @@ const MyApplicationsPage = () => {
                   key={status}
                   label={status}
                   onClick={() => setTabValue(index)}
+                  color={tabValue === index ? 'primary' : 'default'}
+                  variant={tabValue === index ? 'filled' : 'outlined'}
                   sx={{
-                    backgroundColor: tabValue === index ? '#FFD700' : '#35332c',
-                    color: tabValue === index ? '#161513' : 'white',
                     fontWeight: 500,
                     fontSize: '0.75rem',
                     minWidth: 'fit-content',
@@ -275,50 +264,39 @@ const MyApplicationsPage = () => {
         {/* Applications List */}
         <Box sx={{ px: 2 }}>
           <Typography
-            sx={{
-              color: 'white',
-              fontSize: '1rem',
-              fontWeight: 'bold',
-              mb: 2,
-            }}
+            sx={{ fontSize: '1rem', fontWeight: 'bold', mb: 2 }}
           >
             {filteredApplications.length} Applications
           </Typography>
 
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress sx={{ color: '#FFD700' }} />
+              <CircularProgress color="primary" />
             </Box>
           ) : filteredApplications.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 6 }}>
-              <WorkOutlineIcon sx={{ fontSize: 60, color: '#b2afa3', mb: 2 }} />
-              <Typography sx={{ color: '#b2afa3', fontSize: '1rem', mb: 1 }}>
+              <WorkOutlineIcon sx={{ fontSize: 60, color: 'text.disabled', mb: 2 }} />
+              <Typography color="text.secondary" sx={{ fontSize: '1rem', mb: 1 }}>
                 No applications found
               </Typography>
-              <Typography sx={{ color: '#9e9e9e', fontSize: '0.875rem' }}>
+              <Typography color="text.disabled" sx={{ fontSize: '0.875rem' }}>
                 Start applying to jobs to see them here
               </Typography>
             </Box>
           ) : (
             filteredApplications.map((application) => {
               const statusInfo = getStatusInfo(application.status);
-              const statusColors = {
-                pending: '#ff9800',
-                under_review: '#2196f3',
-                accepted: '#4caf50',
-                rejected: '#f44336',
-                withdrawn: '#9e9e9e',
-              };
 
               return (
                 <Paper
                   key={application.id || application._id}
+                  elevation={1}
                   sx={{
-                    backgroundColor: '#24231e',
-                    borderRadius: '12px',
+                    borderRadius: 3,
                     p: 2,
                     mb: 2,
-                    border: '1px solid #35332c',
+                    border: 1,
+                    borderColor: 'divider',
                   }}
                 >
                   <Box>
@@ -332,30 +310,19 @@ const MyApplicationsPage = () => {
                     >
                       <Box sx={{ flex: 1 }}>
                         <Typography
-                          sx={{
-                            color: 'white',
-                            fontSize: '1rem',
-                            fontWeight: 'bold',
-                            mb: 0.5,
-                          }}
+                          sx={{ fontSize: '1rem', fontWeight: 'bold', mb: 0.5 }}
                         >
                           {application.job?.title || application.jobTitle || 'Untitled Job'}
                         </Typography>
                         <Typography
-                          sx={{
-                            color: '#b2afa3',
-                            fontSize: '0.875rem',
-                            mb: 0.5,
-                          }}
+                          color="text.secondary"
+                          sx={{ fontSize: '0.875rem', mb: 0.5 }}
                         >
                           {application.company || 'Unknown Company'}
                         </Typography>
                         <Typography
-                          sx={{
-                            color: '#9e9e9e',
-                            fontSize: '0.75rem',
-                            mb: 1,
-                          }}
+                          color="text.disabled"
+                          sx={{ fontSize: '0.75rem', mb: 1 }}
                         >
                           📍 {application.job?.location?.city || application.location || 'Unknown'} • Applied{' '}
                           {new Date(
@@ -365,32 +332,22 @@ const MyApplicationsPage = () => {
                       </Box>
                       <Chip
                         label={statusInfo.label}
+                        color={statusInfo.color}
                         size="small"
-                        sx={{
-                          backgroundColor: statusColors[application.status] || '#9e9e9e',
-                          color: 'white',
-                          fontSize: '0.65rem',
-                          fontWeight: 'bold',
-                          height: 22,
-                        }}
+                        sx={{ fontSize: '0.65rem', fontWeight: 'bold', height: 22 }}
                       />
                     </Box>
 
                     <Box sx={{ display: 'flex', gap: 1 }}>
                       <Button
                         variant="outlined"
+                        color="primary"
                         size="small"
                         sx={{
                           flex: 1,
-                          borderColor: '#FFD700',
-                          color: '#FFD700',
                           fontSize: '0.75rem',
                           textTransform: 'none',
                           minHeight: 44,
-                          '&:hover': {
-                            borderColor: '#FFC000',
-                            backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                          },
                         }}
                         onClick={() => handleOpenDetails(application)}
                       >
@@ -398,17 +355,13 @@ const MyApplicationsPage = () => {
                       </Button>
                       <Button
                         variant="contained"
+                        color="primary"
                         size="small"
                         sx={{
                           flex: 1,
-                          backgroundColor: '#FFD700',
-                          color: '#161513',
                           fontSize: '0.75rem',
                           textTransform: 'none',
                           minHeight: 44,
-                          '&:hover': {
-                            backgroundColor: '#FFC000',
-                          },
                         }}
                         onClick={() => handleOpenMessage(application)}
                       >

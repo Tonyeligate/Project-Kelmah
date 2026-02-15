@@ -525,8 +525,15 @@ const JobPostingPage = () => {
   const handleCoverImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) return;
-    if (file.size > 5 * 1024 * 1024) return; // 5MB max
+    if (!file.type.startsWith('image/')) {
+      setFieldErrors((prev) => ({ ...prev, coverImage: 'Please select a valid image file.' }));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setFieldErrors((prev) => ({ ...prev, coverImage: 'Image must be under 5MB.' }));
+      return;
+    }
+    setFieldErrors((prev) => { const { coverImage, ...rest } = prev; return rest; });
     const reader = new FileReader();
     reader.onload = () => {
       setCoverImagePreview(reader.result);
@@ -628,7 +635,12 @@ const JobPostingPage = () => {
     dispatch(action)
       .unwrap()
       .then(() => setSubmitSuccess(true))
-      .catch(() => { });
+      .catch((err) => {
+        setFieldErrors((prev) => ({
+          ...prev,
+          submit: err?.message || err || 'Failed to submit job. Please try again.',
+        }));
+      });
   };
 
   // Determine if Next button should be disabled
@@ -661,6 +673,7 @@ const JobPostingPage = () => {
             setSubmitSuccess(false);
             setActiveStep(0);
             setCoverImagePreview('');
+            setFieldErrors({});
             setFormData({
               title: '',
               category: '',
@@ -673,6 +686,8 @@ const JobPostingPage = () => {
               locationType: 'remote',
               location: '',
               coverImage: '',
+              biddingEnabled: false,
+              biddingMaxBidders: 5,
             });
           }}
         >
@@ -1185,7 +1200,7 @@ const JobPostingPage = () => {
       >
         {steps.map((step) => (
           <Step key={step.label}>
-            <StepLabel StepIconComponent={() => step.icon}>
+            <StepLabel icon={step.icon}>
               {step.label}
             </StepLabel>
           </Step>
@@ -1218,6 +1233,12 @@ const JobPostingPage = () => {
           </Grid>
         )}
       </Grid>
+
+      {fieldErrors.submit && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setFieldErrors((prev) => { const { submit, ...rest } = prev; return rest; })}>
+          {fieldErrors.submit}
+        </Alert>
+      )}
 
       {activeStep !== 5 && (
         <Box

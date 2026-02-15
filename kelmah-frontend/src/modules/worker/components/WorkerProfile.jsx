@@ -188,7 +188,8 @@ function WorkerProfile({ workerId: workerIdProp }) {
   const [portfolio, setPortfolio] = useState([]);
   const [certificates, setCertificates] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [ratingSummary] = useState(null);
+  const [ratingSummary, setRatingSummary] = useState(null);
+  const [workHistory, setWorkHistory] = useState([]);
   const [availability, setAvailability] = useState(null);
   const [stats, setStats] = useState({});
   const [earnings, setEarnings] = useState(null);
@@ -716,7 +717,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       color: theme.palette.primary.main,
                     }}
                   >
-                    ${last30}
+                    GHS {last30}
                   </Typography>
                   <Typography
                     sx={{
@@ -725,7 +726,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       fontWeight: 500,
                     }}
                   >
-                    7d: ${last7}
+                    7d: GHS {last7}
                   </Typography>
                 </Paper>
               </Grid>
@@ -751,16 +752,16 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       color: theme.palette.primary.main,
                     }}
                   >
-                    {stats.upcoming_jobs || '3'}
+                    {stats.upcoming_jobs || 0}
                   </Typography>
                   <Typography
                     sx={{
-                      color: '#4CAF50',
+                      color: 'text.secondary',
                       fontSize: '0.75rem',
                       fontWeight: 500,
                     }}
                   >
-                    +1
+                    upcoming
                   </Typography>
                 </Paper>
               </Grid>
@@ -786,16 +787,16 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       color: theme.palette.primary.main,
                     }}
                   >
-                    {stats.average_rating || '4.8'}
+                    {stats.average_rating || '0.0'}
                   </Typography>
                   <Typography
                     sx={{
-                      color: '#4CAF50',
+                      color: 'text.secondary',
                       fontSize: '0.75rem',
                       fontWeight: 500,
                     }}
                   >
-                    +0.2
+                    avg rating
                   </Typography>
                 </Paper>
               </Grid>
@@ -847,7 +848,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             color: theme.palette.primary.main,
                           }}
                         >
-                          ${stats.wallet_balance || '1,200'}
+                          GHS {stats.wallet_balance || 0}
                         </Typography>
                       </Box>
                     </Grid>
@@ -869,7 +870,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             color: '#ff9800',
                           }}
                         >
-                          ${stats.in_escrow || '800'}
+                          GHS {stats.in_escrow || 0}
                         </Typography>
                       </Box>
                     </Grid>
@@ -891,7 +892,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             color: '#2196f3',
                           }}
                         >
-                          ${stats.pending_payments || '400'}
+                          GHS {stats.pending_payments || 0}
                         </Typography>
                       </Box>
                     </Grid>
@@ -961,7 +962,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             <MetricCard>
               <PriceIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
               <Typography variant="h4" fontWeight={700} color="primary">
-                ${profile.hourly_rate || 0}
+                GHS {profile.hourly_rate || 0}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Per Hour
@@ -1023,7 +1024,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                           backgroundColor: theme.palette.primary.main,
                           borderRadius: 1,
                         }}
-                        title={`M${m.month}: $${m.amount}`}
+                        title={`M${m.month}: GHS ${m.amount}`}
                       />
                     );
                   })}
@@ -1227,7 +1228,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             />
 
             <Typography variant="body1" gutterBottom>
-              <strong>Response Time:</strong> {'Within 2 hours'}
+              <strong>Response Time:</strong> {availability?.responseTime || 'Not specified'}
             </Typography>
             <Typography variant="body1">
               <strong>Next Available:</strong>{' '}

@@ -9,7 +9,7 @@ import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 import { WS_CONFIG } from '../../../config/environment';
 import { getWebSocketUrl } from '../../../services/socketUrl';
 
-const normalizeNotificationLink = (notification = {}) => {
+export const normalizeNotificationLink = (notification = {}) => {
   const rawLink = notification?.link || notification?.actionUrl || null;
   const entityType = notification?.relatedEntity?.type;
   const rawEntityId = notification?.relatedEntity?.id;

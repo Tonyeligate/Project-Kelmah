@@ -22,6 +22,7 @@ import {
   Badge,
   CircularProgress,
   Alert,
+  Snackbar,
   Tooltip,
   Dialog,
   DialogTitle,
@@ -129,7 +130,6 @@ const JobManagementPage = () => {
     () => Object.values(jobsByStatus).flat(),
     [jobsByStatus],
   );
-  const { user } = useSelector((state) => state.auth);
 
   // Local state
   const [tabValue, setTabValue] = useState(0);
@@ -226,14 +226,20 @@ const JobManagementPage = () => {
 
   const handleStatusChange = (status) => {
     if (selectedJob) {
-      dispatch(updateJobStatus({ jobId: selectedJob.id, status }));
+      dispatch(updateJobStatus({ jobId: selectedJob.id || selectedJob._id, status }))
+        .unwrap()
+        .then(() => setUiMessage({ text: `Job status updated to ${status}`, severity: 'success' }))
+        .catch((err) => setUiMessage({ text: err?.message || 'Failed to update status', severity: 'error' }));
     }
     handleMenuClose();
   };
 
   const handleDeleteConfirm = () => {
     if (selectedJob) {
-      dispatch(deleteHirerJob(selectedJob.id));
+      dispatch(deleteHirerJob(selectedJob.id || selectedJob._id))
+        .unwrap()
+        .then(() => setUiMessage({ text: 'Job deleted successfully', severity: 'success' }))
+        .catch((err) => setUiMessage({ text: err?.message || 'Failed to delete job', severity: 'error' }));
       setDeleteDialogOpen(false);
     }
     handleMenuClose();
@@ -875,6 +881,24 @@ const JobManagementPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Feedback Snackbar */}
+      {uiMessage && typeof uiMessage === 'object' && uiMessage.severity && (
+        <Snackbar
+          open={Boolean(uiMessage?.severity)}
+          autoHideDuration={4000}
+          onClose={() => setUiMessage(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={() => setUiMessage(null)}
+            severity={uiMessage.severity}
+            sx={{ width: '100%' }}
+          >
+            {uiMessage.text}
+          </Alert>
+        </Snackbar>
+      )}
     </Box>
   );
 };

@@ -2,8 +2,7 @@ import io from 'socket.io-client';
 import store from '../store';
 import {
   addNotification,
-  updateOnlineUsers,
-} from '../store/slices/notificationSlice';
+} from '../modules/notifications/services/notificationSlice';
 import { WS_CONFIG } from '../config/environment';
 import { API_ENDPOINTS } from '../config/services';
 import { getWebSocketUrl } from './socketUrl';
@@ -218,21 +217,17 @@ class WebSocketService {
       this.handlePaymentStatusUpdate(data);
     });
 
-    // User presence events
+    // User presence events (handled by MessageContext socket — no-op here)
     this.socket.on('user-online', (data) => {
-      store.dispatch(
-        updateOnlineUsers({ type: 'online', userId: data.userId }),
-      );
+      this._emitEvent('user:online', data);
     });
 
     this.socket.on('user-offline', (data) => {
-      store.dispatch(
-        updateOnlineUsers({ type: 'offline', userId: data.userId }),
-      );
+      this._emitEvent('user:offline', data);
     });
 
     this.socket.on('online-users', (data) => {
-      store.dispatch(updateOnlineUsers({ type: 'bulk', users: data.users }));
+      this._emitEvent('users:online-list', data);
     });
 
     // System events

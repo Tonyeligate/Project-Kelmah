@@ -1306,7 +1306,8 @@ const SkillsAssessmentPage = () => {
                 </Grid>
 
                 <Alert severity="info" sx={{ mb: 2 }}>
-                  Once you start, you cannot pause or restart the assessment.
+                  Once you start, the timer will begin counting down. You may
+                  pause briefly, but the assessment cannot be restarted.
                   Make sure you have enough time to complete it.
                 </Alert>
 

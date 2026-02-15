@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useEffect } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -34,11 +34,6 @@ const WorkerCard = ({ worker }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, user } = useAuthCheck();
-
-  // Debug: Log when card is rendered (verifies latest code is deployed)
-  useEffect(() => {
-    console.log('🃏 WorkerCard v2 rendered for:', worker?.name || worker?.id);
-  }, [worker?.name, worker?.id]);
 
   const resolvedWorkerId = worker.id || worker._id || worker.userId;
   const resolvedViewerId = user?.id || user?._id || user?.userId;
@@ -533,7 +528,7 @@ const WorkerCard = ({ worker }) => {
                   sx={{ mr: 0.5, color: 'text.secondary' }}
                 />
                 <Typography variant="body2" color="text.primary">
-                  ${worker.hourlyRate || '--'}/hr
+                  GHS {worker.hourlyRate || '--'}/hr
                 </Typography>
               </Box>
             </Grid>
