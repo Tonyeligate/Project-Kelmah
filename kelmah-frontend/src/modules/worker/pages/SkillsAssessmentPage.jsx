@@ -847,15 +847,17 @@ const SkillsAssessmentPage = () => {
                 <Typography variant="h6" fontWeight={600} gutterBottom>
                   Skills Breakdown
                 </Typography>
-                <Box sx={{ height: 300 }}>
+                <Box sx={{ height: { xs: 260, sm: 300 } }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={skillsData}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis
                         dataKey="name"
-                        angle={-45}
+                        angle={isMobile ? -30 : -45}
                         textAnchor="end"
-                        height={100}
+                        height={isMobile ? 120 : 100}
+                        interval={0}
+                        tick={{ fontSize: isMobile ? 10 : 12 }}
                       />
                       <YAxis />
                       <ChartTooltip />

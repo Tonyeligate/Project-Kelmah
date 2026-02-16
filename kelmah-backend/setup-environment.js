@@ -14,9 +14,9 @@ const defaultEnv = {
   API_GATEWAY_PORT: '3000',
   INTERNAL_API_KEY: 'kelmah_internal_api_key_change_this',
 
-  // JWT Configuration
-  JWT_SECRET: process.env.JWT_SECRET || 'your_jwt_secret_key_change_this_in_production',
-  JWT_REFRESH_SECRET: 'your_refresh_token_secret_change_this_in_production',
+  // JWT Configuration — generate unique secrets per environment
+  JWT_SECRET: process.env.JWT_SECRET || require('crypto').randomBytes(32).toString('hex'),
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || require('crypto').randomBytes(32).toString('hex'),
   JWT_PUBLIC_KEY: 'public_key_here',
 
   // MongoDB Configuration

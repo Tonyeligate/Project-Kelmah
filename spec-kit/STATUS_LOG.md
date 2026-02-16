@@ -1,5 +1,22 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Implementation Update (Feb 16, 2026 – Worker Mobile Safe-Area & Chart Readability Polish) ✅
+- 🎯 **Scope**: Apply final low-risk mobile-first UI polish on worker pages after main audit fixes.
+- ✅ **Fixes applied**:
+  - Added mobile safe-area aware spacing in `MyApplicationsPage` sticky header and bottom spacer:
+    - `pt: max(12px, env(safe-area-inset-top, 0px))`
+    - bottom spacer uses `calc(100px + env(safe-area-inset-bottom, 0px))`
+  - Improved small-screen chart readability in `SkillsAssessmentPage` analytics:
+    - responsive chart height (`xs: 260, sm: 300`)
+    - mobile-aware X-axis angle/height/font size
+    - forced tick rendering with `interval={0}`
+- 🧾 Files updated:
+  - `kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx`
+  - `kelmah-frontend/src/modules/worker/pages/SkillsAssessmentPage.jsx`
+  - `spec-kit/STATUS_LOG.md`
+- 🧪 **Verification**:
+  - VS Code diagnostics: no errors in changed files.
+
 ### Implementation Update (Feb 15, 2026 – Git Push 403 Resolved + Post-Push Smoke) ✅
 - 🎯 **Scope**: Resolve `403 Permission denied to See-saw342` push blocker and verify immediate runtime status.
 - 🔍 **Root cause**:

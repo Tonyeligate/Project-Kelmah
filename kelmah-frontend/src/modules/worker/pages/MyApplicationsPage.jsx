@@ -206,6 +206,7 @@ const MyApplicationsPage = () => {
             alignItems: 'center',
             bgcolor: 'background.paper',
             p: 2,
+            pt: `max(12px, env(safe-area-inset-top, 0px))`,
             justifyContent: 'space-between',
             position: 'sticky',
             top: 0,
@@ -376,8 +377,8 @@ const MyApplicationsPage = () => {
           )}
         </Box>
 
-        {/* Bottom spacing for nav */}
-        <Box sx={{ height: '100px' }} />
+        {/* Bottom spacing for nav + safe area */}
+        <Box sx={{ height: `calc(100px + env(safe-area-inset-bottom, 0px))` }} />
       </Box>
     );
   }

@@ -239,10 +239,68 @@ const jobsApi = {
   },
 
   /**
+   * Normalize raw form data to match the canonical Job model shape.
+   * Maps flat UI fields to the nested objects the backend expects:
+   *   budget  → Number
+   *   duration → { value: Number, unit: String }
+   *   location → { type: String, country?: String, city?: String }
+   */
+  normalizeJobPayload(raw) {
+    const payload = { ...raw };
+
+    // budget: ensure it's a number
+    if (payload.budget != null) {
+      payload.budget = Number(payload.budget);
+    }
+
+    // currency: default to GHS
+    if (!payload.currency) {
+      payload.currency = 'GHS';
+    }
+
+    // duration: convert flat string/number into { value, unit } object
+    if (payload.duration && typeof payload.duration !== 'object') {
+      // Try to parse strings like "2 weeks" or plain numbers
+      const match = String(payload.duration).match(/(\d+)\s*(hour|day|week|month)?s?/i);
+      if (match) {
+        payload.duration = { value: Number(match[1]), unit: (match[2] || 'week').toLowerCase() };
+      } else {
+        payload.duration = { value: Number(payload.duration) || 1, unit: 'week' };
+      }
+    }
+    // Ensure value is a number if already an object
+    if (payload.duration && typeof payload.duration === 'object' && payload.duration.value != null) {
+      payload.duration.value = Number(payload.duration.value);
+    }
+
+    // location: convert flat string into { type, city/address } object
+    if (payload.location && typeof payload.location === 'string') {
+      const locationType = payload.locationType || payload.jobType || 'onsite';
+      payload.location = {
+        type: ['remote', 'onsite', 'hybrid'].includes(locationType) ? locationType : 'onsite',
+        city: payload.location,
+      };
+    }
+    // If locationType was a separate field, fold it in and clean up
+    if (payload.locationType && payload.location && typeof payload.location === 'object') {
+      payload.location.type = payload.locationType;
+    }
+    delete payload.locationType;
+
+    // visibility: default to public
+    if (!payload.visibility) {
+      payload.visibility = 'public';
+    }
+
+    return payload;
+  },
+
+  /**
    * Create a job (hirer)
    */
   async createJob(jobData) {
-    const response = await api.post('/jobs', jobData);
+    const normalized = this.normalizeJobPayload(jobData);
+    const response = await api.post('/jobs', normalized);
     return response.data?.data || response.data;
   },
 
