@@ -1,5 +1,86 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Frontend Dry Audit (Feb 16, 2026 – Full Page/Module Wiring, Security, and Performance Sweep) ✅
+- 🎯 **Scope**: End-to-end dry audit of frontend pages/modules/routing/wiring and supporting directories under `kelmah-frontend/src/*` (including backup audit tree review).
+- 📄 **Primary report**:
+  - `spec-kit/FRONTEND_DRY_AUDIT_FEB16_2026.md`
+- 🔍 **Key outcomes**:
+  - Identified high-impact route/wiring issue (`/jobs/:id/apply` navigation without active route declaration).
+  - Identified realtime wiring gap (`useBidNotifications` listeners attached without websocket connect lifecycle).
+  - Identified endpoint/config drift risk (multiple `API_ENDPOINTS` authorities and path composition defects in secondary config).
+  - Identified security/storage risk (client-side token persistence model remains XSS-exfiltration susceptible).
+  - Identified scalability risks (multiple socket clients + interval/listener lifecycle ownership gaps).
+- 📌 **Next implementation priority**:
+  1. Route compatibility fix (`/jobs/:id/apply`)
+  2. Single socket manager adoption
+  3. Endpoint map consolidation
+  4. Production log-redaction hardening
+
+### Documentation Sync (Feb 16, 2026 – Full Platform Audit Updated) ✅
+- 📚 Added a Feb 16 remediation delta to:
+  - `spec-kit/FULL_PLATFORM_AUDIT_FEBRUARY_2026.md`
+- ✅ Captured critical wiring fixes (payment route export order, optional auth behavior, refresh token parsing) and shared non-module UI hardening.
+- 🧪 Verification status mirrored from implementation pass (diagnostics clean, backend syntax checks pass, frontend build pass).
+
+### Implementation Update (Feb 16, 2026 – Critical Auth/Payment Wiring Fixes Applied) ✅
+- 🎯 **Scope**: Execute immediate fixes for top critical findings from dry audit (payment route reachability, optional auth behavior, and refresh token parsing).
+- ✅ **Backend fixes applied**:
+  - `kelmah-backend/services/payment-service/routes/payments.routes.js`
+    - Moved `module.exports = router` to end of file so Ghana MoMo, Paystack, and admin payout routes are exported and reachable.
+    - Removed redundant second `router.use(verifyGatewayRequest)` call.
+  - `kelmah-backend/api-gateway/middlewares/auth.js`
+    - Rewrote `optionalAuth` to validate token/user context opportunistically without emitting hard auth failures on invalid tokens.
+    - Preserved signed gateway header injection only when optional token is valid.
+- ✅ **Frontend fix applied**:
+  - `kelmah-frontend/src/services/apiClient.js`
+    - Fixed refresh-response token parsing to support nested API shape (`data.data.token`) with fallbacks.
+    - Added explicit guard for missing token in refresh response to prevent silent bad-state retries.
+- 🧪 **Verification**:
+  - VS Code diagnostics: no errors in changed files.
+  - Backend syntax checks: passed (`node --check` on both changed backend files).
+  - Frontend build: passed in repeated verification runs (`npm --prefix kelmah-frontend run build`).
+  - Note: direct backend module load requires payment env (`Paystack secret key`) and is expected to fail without that configuration.
+
+### Implementation Update (Feb 16, 2026 – Continue Pass: Shared Non-Module Components Hardened) ✅
+- 🎯 **Scope**: Continue “fix all now” pass on editable frontend surface outside `src/modules`, focusing on shared top-level components.
+- ✅ **Files improved**:
+  - `kelmah-frontend/src/components/common/BreadcrumbNavigation.jsx`
+    - Fixed mobile detection logic (`useMediaQuery`), added compact breadcrumb rendering for small screens, improved navigation accessibility labels.
+  - `kelmah-frontend/src/components/PaymentMethodCard.jsx`
+    - Added responsive layout (column on mobile), safer text wrapping, and full-width mobile action button.
+  - `kelmah-frontend/src/components/common/ErrorBoundary.jsx`
+    - Switched dev-only error detail guard from `process.env.NODE_ENV` to Vite-safe `import.meta.env.DEV`.
+  - `kelmah-frontend/src/components/common/InteractiveChart.jsx`
+    - Added safe defaults for `series`, proper pie/non-pie axis handling, and fallback series names/data keys.
+- 🧪 **Verification**:
+  - VS Code diagnostics: no errors in modified files.
+  - Frontend build: `npm --prefix kelmah-frontend run build` passed.
+
+### Implementation Update (Feb 16, 2026 – Public Page UX/Responsiveness Hardening Outside `src/modules`) ✅
+- 🎯 **Scope**: Deep scan and improvement pass limited to non-module frontend pages per instruction (`src/pages/*`), with focus on clarity for low-literacy users, click reliability, and mobile responsiveness.
+- ✅ **Dry audit completed**:
+  - Context sources reviewed: `spec-kit/Kelmaholddocs/old-docs/Kelma.txt`, `spec-kit/Kelmaholddocs/old-docs/Kelma docs.txt`.
+  - Route/layout flow reviewed (read-only): `src/App.jsx`, `src/routes/config.jsx`, `src/modules/layout/components/Layout.jsx`.
+  - Target editable pages audited: `src/pages/HomeLanding.jsx`, `src/pages/ResetPassword.jsx`.
+- ✅ **Fixes applied**:
+  - `HomeLanding.jsx`
+    - Reduced top hero spacing pressure on mobile (`100dvh` compensation + reduced top padding) to prevent perceived dead/empty space.
+    - Added explicit low-friction intent actions (`I need work`, `I want to hire`) for simpler navigation decisions.
+    - Improved CTA accessibility with `aria-label` and stronger tap-target behavior.
+    - Converted trade showcase cards to semantic button-cards with keyboard focus visibility and clear `View workers` action.
+    - Added ARIA labels to quick category chips and final CTA controls.
+  - `ResetPassword.jsx`
+    - Added submission loading state to prevent duplicate/reset spam clicks.
+    - Disabled inputs while request is processing.
+    - Added direct post-success navigation action (`Continue to Sign in`).
+    - Cleared sensitive form values after successful reset.
+- 🧪 **Verification**:
+  - VS Code diagnostics: no errors in modified files.
+  - Production build from frontend package: success (`npm --prefix kelmah-frontend run build`).
+  - Note: root-level workspace build command fails by design for frontend (`index.html` entry is inside `kelmah-frontend/`).
+- 📌 **UX diagnosis (red-marked empty space)**:
+  - The visible top gap is header-spacing compensation between public layout/header and landing hero spacing rules; this pass reduced that pressure in the landing page without changing module layout code.
+
 ### Implementation Update (Feb 16, 2026 – Worker Mobile Safe-Area & Chart Readability Polish) ✅
 - 🎯 **Scope**: Apply final low-risk mobile-first UI polish on worker pages after main audit fixes.
 - ✅ **Fixes applied**:

@@ -2089,7 +2089,8 @@ const advancedJobSearch = async (req, res, next) => {
 
     // Location and geographic filters
     if (location) {
-      const locationRegex = new RegExp(location, 'i');
+      const escapedLoc = location.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const locationRegex = new RegExp(escapedLoc, 'i');
       matchStage.$or = [
         { 'location.city': locationRegex },
         { 'location.region': locationRegex },
@@ -2112,13 +2113,15 @@ const advancedJobSearch = async (req, res, next) => {
 
     // Text search
     if (query) {
+      const escapeRx = (v) => String(v).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const safeQuery = escapeRx(query);
       const searchTerms = query.trim().split(' ');
       matchStage.$or = [
         { $text: { $search: query } },
-        { title: { $regex: query, $options: 'i' } },
-        { description: { $regex: query, $options: 'i' } },
-        { skills: { $in: searchTerms.map(term => new RegExp(term, 'i')) } },
-        { category: { $regex: query, $options: 'i' } }
+        { title: { $regex: safeQuery, $options: 'i' } },
+        { description: { $regex: safeQuery, $options: 'i' } },
+        { skills: { $in: searchTerms.map(term => new RegExp(escapeRx(term), 'i')) } },
+        { category: { $regex: safeQuery, $options: 'i' } }
       ];
     }
 

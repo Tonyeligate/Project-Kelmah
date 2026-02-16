@@ -2,6 +2,8 @@ import React from 'react';
 import { Box, Typography, Button, Alert, AlertTitle } from '@mui/material';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
 
+const isDev = typeof import.meta !== 'undefined' && import.meta.env?.DEV;
+
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -66,7 +68,7 @@ class ErrorBoundary extends React.Component {
             Refresh Page
           </Button>
 
-          {process.env.NODE_ENV === 'development' && this.state.error && (
+          {isDev && this.state.error && (
             <Box
               sx={{
                 mt: 3,

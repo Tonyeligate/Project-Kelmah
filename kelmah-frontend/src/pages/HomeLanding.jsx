@@ -10,7 +10,6 @@ import {
   Chip,
   Avatar,
   useTheme,
-  useMediaQuery,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -72,10 +71,10 @@ const HomeLanding = () => {
         component="section"
         sx={{
           position: 'relative',
-          minHeight: { xs: '100vh', md: '100vh' },
+          minHeight: { xs: 'calc(100dvh - 48px)', md: '100vh' },
           display: 'flex',
           alignItems: 'center',
-          pt: { xs: '48px', md: '56px' },
+          pt: { xs: '40px', md: '48px' },
           boxSizing: 'border-box',
           color: '#fff',
           backgroundImage: `linear-gradient(160deg, rgba(5,5,7,0.93) 0%, rgba(5,5,7,0.6) 50%, rgba(5,5,7,0.35) 100%), url(${heroBg})`,
@@ -147,6 +146,7 @@ const HomeLanding = () => {
                     variant="contained"
                     size="large"
                     startIcon={<SearchIcon />}
+                    aria-label="Find a worker"
                     onClick={() => navigate('/search')}
                     sx={{
                       bgcolor: '#FFD700',
@@ -165,6 +165,7 @@ const HomeLanding = () => {
                     variant="outlined"
                     size="large"
                     startIcon={<WorkIcon />}
+                    aria-label="Browse jobs"
                     onClick={() => navigate('/jobs')}
                     sx={{
                       borderColor: 'rgba(255,255,255,0.55)',
@@ -182,6 +183,43 @@ const HomeLanding = () => {
                     }}
                   >
                     Browse jobs
+                  </Button>
+                </Stack>
+
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={1}
+                  sx={{ mb: 2.5 }}
+                >
+                  <Button
+                    variant="text"
+                    size="small"
+                    startIcon={<WorkIcon />}
+                    onClick={() => navigate('/register')}
+                    sx={{
+                      justifyContent: { xs: 'flex-start', sm: 'center' },
+                      color: '#FFD700',
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      minHeight: 44,
+                    }}
+                  >
+                    I need work
+                  </Button>
+                  <Button
+                    variant="text"
+                    size="small"
+                    startIcon={<SearchIcon />}
+                    onClick={() => navigate('/search')}
+                    sx={{
+                      justifyContent: { xs: 'flex-start', sm: 'center' },
+                      color: '#FFD700',
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      minHeight: 44,
+                    }}
+                  >
+                    I want to hire
                   </Button>
                 </Stack>
 
@@ -207,6 +245,8 @@ const HomeLanding = () => {
             <Grid item xs={12} md={5}>
               <motion.div {...heroAnim} transition={{ duration: 0.6, delay: 0.15 }}>
                 <Card
+                  role="region"
+                  aria-label="Kelmah key benefits"
                   sx={{
                     bgcolor: 'rgba(14,15,20,0.88)',
                     backdropFilter: 'blur(12px)',
@@ -268,6 +308,9 @@ const HomeLanding = () => {
               <Grid item xs={12} sm={6} md={4} key={item.title}>
                 <motion.div {...scrollIn} transition={{ duration: 0.45, delay: i * 0.08 }}>
                   <Card
+                    component="button"
+                    type="button"
+                    aria-label={`Browse ${item.title}`}
                     onClick={() => navigate('/search')}
                     sx={{
                       height: '100%',
@@ -278,8 +321,16 @@ const HomeLanding = () => {
                       boxShadow: 'none',
                       bgcolor: 'background.paper',
                       cursor: 'pointer',
+                      textAlign: 'left',
+                      width: '100%',
+                      p: 0,
                       transition: 'transform 0.2s, box-shadow 0.2s',
                       '&:hover': { transform: 'translateY(-3px)', boxShadow: 6 },
+                      '&:focus-visible': {
+                        outline: '2px solid',
+                        outlineColor: 'primary.main',
+                        outlineOffset: 2,
+                      },
                     }}
                   >
                     <Box
@@ -296,6 +347,12 @@ const HomeLanding = () => {
                       <Typography variant="body2" color="text.secondary">
                         {item.tag}
                       </Typography>
+                      <Button
+                        size="small"
+                        sx={{ mt: 1.25, px: 0, textTransform: 'none', fontWeight: 700 }}
+                      >
+                        View workers
+                      </Button>
                     </Box>
                   </Card>
                 </motion.div>
@@ -324,6 +381,7 @@ const HomeLanding = () => {
                 icon={cat.icon}
                 label={cat.label}
                 clickable
+                aria-label={`Search ${cat.label} workers`}
                 onClick={() => navigate(`/search?category=${cat.label.toLowerCase()}`)}
                 variant="outlined"
                 size="small"
@@ -509,6 +567,7 @@ const HomeLanding = () => {
               <Button
                 variant="contained"
                 size="large"
+                aria-label="Sign up for Kelmah"
                 onClick={() => navigate('/register')}
                 sx={{
                   bgcolor: '#FFD700',
@@ -526,6 +585,7 @@ const HomeLanding = () => {
               <Button
                 variant="outlined"
                 size="large"
+                aria-label="Log in to Kelmah"
                 onClick={() => navigate('/login')}
                 sx={{
                   borderColor: 'rgba(255,255,255,0.45)',

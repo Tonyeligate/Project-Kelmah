@@ -24,7 +24,8 @@ const MfaSetupPage = () => {
       }
     };
     init();
-  }, [setupMFA]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleVerify = async (e) => {
     e.preventDefault();

@@ -302,24 +302,6 @@ class MapService {
   }
 
   /**
-   * Get authentication headers for API calls
-   */
-  getAuthHeaders() {
-    try {
-      // lazy access to avoid static require in ESM
-      const token = JSON.parse(
-        localStorage.getItem('kelmah_secure_data') || 'null',
-      );
-      // secureStorage is already used widely; keeping lightweight fallback here
-      if (token) {
-        // cannot decrypt here; rely on axios interceptors for auth in most cases
-        return {};
-      }
-    } catch {}
-    return {};
-  }
-
-  /**
    * Reverse geocoding using OpenStreetMap Nominatim
    */
   async reverseGeocode(latitude, longitude) {

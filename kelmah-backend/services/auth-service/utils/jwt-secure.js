@@ -206,29 +206,29 @@ class SecureJWT {
    */
   async rotateRefreshToken(user, oldTokenId, context = {}) {
     const { RefreshToken } = require('../models');
+    const mongoose = require('mongoose');
     
     // Generate new refresh token
     const newTokenData = await this.generateRefreshToken(user, context);
     
-    // Start transaction to ensure atomicity
-    const transaction = await RefreshToken.sequelize.transaction();
+    // Use MongoDB session for atomicity
+    const session = await mongoose.startSession();
+    session.startTransaction();
     
     try {
       // Invalidate old token
-      await RefreshToken.update(
+      await RefreshToken.updateOne(
+        { tokenId: oldTokenId },
         { 
           isRevoked: true,
           revokedAt: new Date(),
           revokedReason: 'Token rotated'
         },
-        { 
-          where: { tokenId: oldTokenId },
-          transaction 
-        }
+        { session }
       );
       
       // Store new token
-      await RefreshToken.create({
+      await RefreshToken.create([{
         userId: user.id,
         tokenId: newTokenData.tokenId,
         tokenHash: newTokenData.tokenHash,
@@ -237,13 +237,15 @@ class SecureJWT {
         ipAddress: newTokenData.ipAddress,
         isRevoked: false,
         version: user.tokenVersion || 1
-      }, { transaction });
+      }], { session });
       
-      await transaction.commit();
+      await session.commitTransaction();
+      session.endSession();
       
       return newTokenData;
     } catch (error) {
-      await transaction.rollback();
+      await session.abortTransaction();
+      session.endSession();
       throw error;
     }
   }
@@ -257,22 +259,20 @@ class SecureJWT {
   async revokeAllRefreshTokens(userId, reason = 'Manual revocation') {
     const { RefreshToken } = require('../models');
     
-    const [updatedCount] = await RefreshToken.update(
+    const result = await RefreshToken.updateMany(
+      {
+        userId,
+        isRevoked: false,
+        expiresAt: { $gt: new Date() }
+      },
       {
         isRevoked: true,
         revokedAt: new Date(),
         revokedReason: reason
-      },
-      {
-        where: {
-          userId,
-          isRevoked: false,
-          expiresAt: { [Op.gt]: new Date() }
-        }
       }
     );
     
-    return updatedCount;
+    return result.modifiedCount;
   }
   
   /**
@@ -282,19 +282,17 @@ class SecureJWT {
   async cleanupExpiredTokens() {
     const { RefreshToken } = require('../models');
     
-    const deletedCount = await RefreshToken.destroy({
-      where: {
-        [Op.or]: [
-          { expiresAt: { [Op.lt]: new Date() } },
-          { 
-            isRevoked: true,
-            revokedAt: { [Op.lt]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } // 30 days old
-          }
-        ]
-      }
+    const result = await RefreshToken.deleteMany({
+      $or: [
+        { expiresAt: { $lt: new Date() } },
+        { 
+          isRevoked: true,
+          revokedAt: { $lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } // 30 days old
+        }
+      ]
     });
     
-    return deletedCount;
+    return result.deletedCount;
   }
   
   /**

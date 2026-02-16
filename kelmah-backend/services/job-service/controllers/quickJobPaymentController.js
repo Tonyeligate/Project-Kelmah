@@ -7,6 +7,9 @@ const paystackService = require('../services/paystackService');
 const { QuickJob } = require('../models');
 const logger = require('../utils/logger');
 
+// Helper: get user ID compatible with both gateway (req.user.id) and local (getUserId(req))
+const getUserId = (req) => req.user?.id || req.user?._id;
+
 /**
  * Initialize escrow payment for a QuickJob
  * POST /api/quick-jobs/:id/pay
@@ -26,7 +29,7 @@ const initializePayment = async (req, res) => {
     }
 
     // Verify ownership
-    if (quickJob.client.toString() !== req.user._id.toString()) {
+    if (quickJob.client.toString() !== getUserId(req).toString()) {
       return res.status(403).json({
         success: false,
         error: { message: 'Only the job owner can make payment', code: 'FORBIDDEN' }
@@ -173,7 +176,7 @@ const releasePayment = async (req, res) => {
     }
 
     // Only allow release if approved or if client is manually releasing
-    const isClient = quickJob.client.toString() === req.user._id.toString();
+    const isClient = quickJob.client.toString() === getUserId(req).toString();
     const isAdmin = req.user.role === 'admin';
 
     if (!isClient && !isAdmin) {
@@ -236,7 +239,7 @@ const requestRefund = async (req, res) => {
     }
 
     // Verify permissions
-    const isClient = quickJob.client.toString() === req.user._id.toString();
+    const isClient = quickJob.client.toString() === getUserId(req).toString();
     const isAdmin = req.user.role === 'admin';
 
     if (!isClient && !isAdmin) {

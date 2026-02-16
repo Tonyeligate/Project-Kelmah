@@ -6,6 +6,9 @@
 const { QuickJob, User } = require('../models');
 const logger = require('../utils/logger');
 
+// Helper: get user ID compatible with both gateway (req.user.id) and local (getUserId(req))
+const getUserId = (req) => req.user?.id || req.user?._id;
+
 // Constants
 const PLATFORM_FEE_RATE = 0.15; // 15%
 const MIN_JOB_AMOUNT = 25; // GH₵25
@@ -54,7 +57,7 @@ const createQuickJob = async (req, res) => {
 
     // Create the QuickJob
     const quickJob = new QuickJob({
-      client: req.user._id,
+      client: getUserId(req),
       category,
       description,
       title: title || `${category.replace('_', ' ')} job`,
@@ -79,7 +82,7 @@ const createQuickJob = async (req, res) => {
     // Populate client info for response
     await quickJob.populate('client', 'firstName lastName profilePicture phoneNumber');
 
-    logger.info(`QuickJob created: ${quickJob._id} by client ${req.user._id}`);
+    logger.info(`QuickJob created: ${quickJob._id} by client ${getUserId(req)}`);
 
     // TODO: Trigger notification to nearby workers (Firebase + SMS)
     // This will be handled by the notification service
@@ -171,9 +174,9 @@ const getQuickJob = async (req, res) => {
 
     // Filter quotes visibility: workers can only see their own quotes
     // Client can see all quotes
-    if (req.user && req.user._id.toString() !== quickJob.client._id.toString()) {
+    if (req.user && getUserId(req).toString() !== quickJob.client._id.toString()) {
       quickJob.quotes = quickJob.quotes.filter(
-        q => q.worker._id.toString() === req.user._id.toString()
+        q => q.worker._id.toString() === getUserId(req).toString()
       );
     }
 
@@ -201,7 +204,7 @@ const getMyQuickJobs = async (req, res) => {
   try {
     const { status, page = 1, limit = 20 } = req.query;
 
-    const query = { client: req.user._id };
+    const query = { client: getUserId(req) };
     if (status) {
       query.status = status;
     }
@@ -246,8 +249,8 @@ const getMyQuotedJobs = async (req, res) => {
 
     const query = {
       $or: [
-        { 'quotes.worker': req.user._id },
-        { 'acceptedQuote.worker': req.user._id }
+        { 'quotes.worker': getUserId(req) },
+        { 'acceptedQuote.worker': getUserId(req) }
       ]
     };
 
@@ -330,7 +333,7 @@ const submitQuote = async (req, res) => {
 
     // Check if worker already quoted
     const existingQuote = quickJob.quotes.find(
-      q => q.worker.toString() === req.user._id.toString() && q.status !== 'withdrawn'
+      q => q.worker.toString() === getUserId(req).toString() && q.status !== 'withdrawn'
     );
 
     if (existingQuote) {
@@ -344,7 +347,7 @@ const submitQuote = async (req, res) => {
     }
 
     // Workers cannot quote on their own jobs
-    if (quickJob.client.toString() === req.user._id.toString()) {
+    if (quickJob.client.toString() === getUserId(req).toString()) {
       return res.status(400).json({
         success: false,
         error: {
@@ -356,7 +359,7 @@ const submitQuote = async (req, res) => {
 
     // Add the quote
     quickJob.quotes.push({
-      worker: req.user._id,
+      worker: getUserId(req),
       amount,
       message: message || '',
       availableAt: availableAt || 'today',
@@ -376,7 +379,7 @@ const submitQuote = async (req, res) => {
 
     // TODO: Notify client of new quote
 
-    logger.info(`Quote submitted on QuickJob ${id} by worker ${req.user._id}`);
+    logger.info(`Quote submitted on QuickJob ${id} by worker ${getUserId(req)}`);
 
     res.status(201).json({
       success: true,
@@ -432,7 +435,7 @@ const acceptQuote = async (req, res) => {
     }
 
     // Verify ownership
-    if (quickJob.client.toString() !== req.user._id.toString()) {
+    if (quickJob.client.toString() !== getUserId(req).toString()) {
       return res.status(403).json({
         success: false,
         error: {
@@ -553,7 +556,7 @@ const markOnWay = async (req, res) => {
 
     // Verify worker
     if (!quickJob.acceptedQuote.worker || 
-        quickJob.acceptedQuote.worker.toString() !== req.user._id.toString()) {
+        quickJob.acceptedQuote.worker.toString() !== getUserId(req).toString()) {
       return res.status(403).json({
         success: false,
         error: {
@@ -587,7 +590,7 @@ const markOnWay = async (req, res) => {
 
     // TODO: Notify client that worker is on the way
 
-    logger.info(`Worker ${req.user._id} on way to QuickJob ${id}`);
+    logger.info(`Worker ${getUserId(req)} on way to QuickJob ${id}`);
 
     res.json({
       success: true,
@@ -641,7 +644,7 @@ const markArrived = async (req, res) => {
 
     // Verify worker
     if (!quickJob.acceptedQuote.worker || 
-        quickJob.acceptedQuote.worker.toString() !== req.user._id.toString()) {
+        quickJob.acceptedQuote.worker.toString() !== getUserId(req).toString()) {
       return res.status(403).json({
         success: false,
         error: {
@@ -677,11 +680,11 @@ const markArrived = async (req, res) => {
 
     if (verification.verified) {
       quickJob.status = 'worker_arrived';
-      logger.info(`Worker ${req.user._id} arrived at QuickJob ${id} - GPS verified`);
+      logger.info(`Worker ${getUserId(req)} arrived at QuickJob ${id} - GPS verified`);
     } else {
       // Still allow but flag as not verified
       quickJob.status = 'worker_arrived';
-      logger.warn(`Worker ${req.user._id} arrived at QuickJob ${id} - GPS NOT verified (${verification.distance}m away)`);
+      logger.warn(`Worker ${getUserId(req)} arrived at QuickJob ${id} - GPS NOT verified (${verification.distance}m away)`);
     }
 
     await quickJob.save();
@@ -733,7 +736,7 @@ const startWork = async (req, res) => {
 
     // Verify worker
     if (!quickJob.acceptedQuote.worker || 
-        quickJob.acceptedQuote.worker.toString() !== req.user._id.toString()) {
+        quickJob.acceptedQuote.worker.toString() !== getUserId(req).toString()) {
       return res.status(403).json({
         success: false,
         error: {
@@ -760,7 +763,7 @@ const startWork = async (req, res) => {
 
     await quickJob.save();
 
-    logger.info(`Work started on QuickJob ${id} by worker ${req.user._id}`);
+    logger.info(`Work started on QuickJob ${id} by worker ${getUserId(req)}`);
 
     res.json({
       success: true,
@@ -815,7 +818,7 @@ const markComplete = async (req, res) => {
 
     // Verify worker
     if (!quickJob.acceptedQuote.worker || 
-        quickJob.acceptedQuote.worker.toString() !== req.user._id.toString()) {
+        quickJob.acceptedQuote.worker.toString() !== getUserId(req).toString()) {
       return res.status(403).json({
         success: false,
         error: {
@@ -854,7 +857,7 @@ const markComplete = async (req, res) => {
     // TODO: Notify client to approve and release payment
     // Set auto-release timer for 24 hours
 
-    logger.info(`Work completed on QuickJob ${id} by worker ${req.user._id}`);
+    logger.info(`Work completed on QuickJob ${id} by worker ${getUserId(req)}`);
 
     res.json({
       success: true,
@@ -900,7 +903,7 @@ const approveWork = async (req, res) => {
     }
 
     // Verify client
-    if (quickJob.client.toString() !== req.user._id.toString()) {
+    if (quickJob.client.toString() !== getUserId(req).toString()) {
       return res.status(403).json({
         success: false,
         error: {
@@ -991,9 +994,9 @@ const raiseDispute = async (req, res) => {
     }
 
     // Verify user is involved
-    const isClient = quickJob.client.toString() === req.user._id.toString();
+    const isClient = quickJob.client.toString() === getUserId(req).toString();
     const isWorker = quickJob.acceptedQuote.worker && 
-                     quickJob.acceptedQuote.worker.toString() === req.user._id.toString();
+                     quickJob.acceptedQuote.worker.toString() === getUserId(req).toString();
 
     if (!isClient && !isWorker) {
       return res.status(403).json({
@@ -1031,7 +1034,7 @@ const raiseDispute = async (req, res) => {
     quickJob.status = 'disputed';
     quickJob.dispute = {
       raisedBy: isClient ? 'client' : 'worker',
-      raisedByUser: req.user._id,
+      raisedByUser: getUserId(req),
       reason,
       description,
       evidence: evidence || [],
@@ -1092,9 +1095,9 @@ const cancelQuickJob = async (req, res) => {
       });
     }
 
-    const isClient = quickJob.client.toString() === req.user._id.toString();
+    const isClient = quickJob.client.toString() === getUserId(req).toString();
     const isWorker = quickJob.acceptedQuote.worker && 
-                     quickJob.acceptedQuote.worker.toString() === req.user._id.toString();
+                     quickJob.acceptedQuote.worker.toString() === getUserId(req).toString();
 
     if (!isClient && !isWorker) {
       return res.status(403).json({
@@ -1142,7 +1145,7 @@ const cancelQuickJob = async (req, res) => {
     quickJob.status = 'cancelled';
     quickJob.cancellation = {
       cancelledBy: isClient ? 'client' : 'worker',
-      cancelledByUser: req.user._id,
+      cancelledByUser: getUserId(req),
       reason: reason || '',
       cancelledAt: new Date(),
       workerCompensation

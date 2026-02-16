@@ -12,6 +12,9 @@ const { QuickJob, User } = require('../models');
 const paystackService = require('../services/paystackService');
 const logger = require('../utils/logger');
 
+// Helper: get user ID compatible with both gateway (req.user.id) and local (getUserId(req))
+const getUserId = (req) => req.user?.id || req.user?._id;
+
 // Dispute resolution percentages
 const RESOLUTION_PERCENTAGES = {
   worker_returns: 0,       // Worker returns to fix, no refund yet
@@ -100,8 +103,8 @@ const getDispute = async (req, res) => {
     }
 
     // Check authorization
-    const isClient = quickJob.client._id.toString() === req.user._id.toString();
-    const isWorker = quickJob.acceptedQuote?.worker?._id.toString() === req.user._id.toString();
+    const isClient = quickJob.client._id.toString() === getUserId(req).toString();
+    const isWorker = quickJob.acceptedQuote?.worker?._id.toString() === getUserId(req).toString();
     const isAdmin = req.user.role === 'admin';
 
     if (!isClient && !isWorker && !isAdmin) {
@@ -160,8 +163,8 @@ const addEvidence = async (req, res) => {
     }
 
     // Check authorization
-    const isClient = quickJob.client.toString() === req.user._id.toString();
-    const isWorker = quickJob.acceptedQuote?.worker?.toString() === req.user._id.toString();
+    const isClient = quickJob.client.toString() === getUserId(req).toString();
+    const isWorker = quickJob.acceptedQuote?.worker?.toString() === getUserId(req).toString();
 
     if (!isClient && !isWorker) {
       return res.status(403).json({
@@ -249,7 +252,7 @@ const resolveDispute = async (req, res) => {
     quickJob.dispute.resolution = resolution;
     quickJob.dispute.resolutionNote = note || '';
     quickJob.dispute.resolvedBy = 'staff';
-    quickJob.dispute.staffHandler = req.user._id;
+    quickJob.dispute.staffHandler = getUserId(req);
     quickJob.dispute.resolvedAt = new Date();
     quickJob.dispute.status = resolution === 'escalated_to_staff' ? 'escalated' : 'resolved';
 
@@ -295,7 +298,7 @@ const resolveDispute = async (req, res) => {
 
     logger.info(`Dispute resolved for QuickJob ${id}`, {
       resolution,
-      staffHandler: req.user._id
+      staffHandler: getUserId(req)
     });
 
     // TODO: Notify both parties of resolution

@@ -25,7 +25,44 @@ const router = express.Router();
 // All routes require authentication
 router.use(verifyGatewayRequest);
 
-// User performance management
+// Analytics and reporting (admin only) - literal routes BEFORE parameterized routes
+router.get(
+  "/top-performers",
+  authorizeRoles("admin"),
+  userPerformanceController.getTopPerformers
+);
+
+router.get(
+  "/analytics",
+  authorizeRoles("admin"),
+  userPerformanceController.getPerformanceAnalytics
+);
+
+router.patch(
+  "/recalculate-tiers",
+  authorizeRoles("admin"),
+  userPerformanceController.recalculateAllTiers
+);
+
+router.get(
+  "/tier/:tier",
+  authorizeRoles("admin"),
+  userPerformanceController.getUsersByTier
+);
+
+router.get(
+  "/location/:region",
+  authorizeRoles("admin"),
+  userPerformanceController.getUsersByLocation
+);
+
+router.get(
+  "/skill/:skill",
+  authorizeRoles("admin"),
+  userPerformanceController.getUsersBySkill
+);
+
+// User performance management - parameterized routes LAST
 router.get(
   "/:userId",
   userPerformanceController.getUserPerformance
@@ -53,43 +90,6 @@ router.patch(
   "/:userId/tier",
   authorizeRoles("admin"),
   userPerformanceController.updateUserTier
-);
-
-// Analytics and reporting (admin only)
-router.get(
-  "/tier/:tier",
-  authorizeRoles("admin"),
-  userPerformanceController.getUsersByTier
-);
-
-router.get(
-  "/top-performers",
-  authorizeRoles("admin"),
-  userPerformanceController.getTopPerformers
-);
-
-router.get(
-  "/location/:region",
-  authorizeRoles("admin"),
-  userPerformanceController.getUsersByLocation
-);
-
-router.get(
-  "/skill/:skill",
-  authorizeRoles("admin"),
-  userPerformanceController.getUsersBySkill
-);
-
-router.get(
-  "/analytics",
-  authorizeRoles("admin"),
-  userPerformanceController.getPerformanceAnalytics
-);
-
-router.patch(
-  "/recalculate-tiers",
-  authorizeRoles("admin"),
-  userPerformanceController.recalculateAllTiers
 );
 
 module.exports = router;

@@ -71,13 +71,15 @@ export default defineConfig({
             'react-error-boundary',
             'react-helmet-async',
           ],
-          'vendor-mui': [
+          'vendor-mui-core': [
             '@mui/material',
-            '@mui/icons-material',
             '@mui/lab',
             '@mui/x-date-pickers',
             '@emotion/react',
             '@emotion/styled',
+          ],
+          'vendor-mui-icons': [
+            '@mui/icons-material',
           ],
           'vendor-state': [
             '@reduxjs/toolkit',

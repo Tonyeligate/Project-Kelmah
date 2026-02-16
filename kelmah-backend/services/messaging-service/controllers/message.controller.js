@@ -102,8 +102,8 @@ exports.getConversationMessages = async (req, res) => {
     // Fetch strictly within the conversation participants, sorted desc
     const baseQuery = {
       $or: [
-        { sender: req.user._id, recipient: { $in: conversation.participants } },
-        { recipient: req.user._id, sender: { $in: conversation.participants } },
+        { sender: getUserId(req), recipient: { $in: conversation.participants } },
+        { recipient: getUserId(req), sender: { $in: conversation.participants } },
       ],
     };
     if (before) {
@@ -118,17 +118,17 @@ exports.getConversationMessages = async (req, res) => {
     // Mark messages as read
     await Message.updateMany(
       {
-        recipient: req.user._id,
+        recipient: getUserId(req),
         "readStatus.isRead": false,
         // Scope only to this conversation participants
         $or: [
           {
             sender: { $in: conversation.participants },
-            recipient: req.user._id,
+            recipient: getUserId(req),
           },
           {
             recipient: { $in: conversation.participants },
-            sender: req.user._id,
+            sender: getUserId(req),
           },
         ],
       },
@@ -141,7 +141,7 @@ exports.getConversationMessages = async (req, res) => {
     );
 
     // Reset unread count (method mutates in-place; must save afterward)
-    conversation.resetUnreadCount(req.user._id);
+    conversation.resetUnreadCount(getUserId(req));
     await conversation.save();
 
     const nextCursor =
@@ -172,7 +172,7 @@ exports.deleteMessage = async (req, res) => {
       return res.status(404).json({ message: "Message not found" });
     }
 
-    if (message.sender.toString() !== req.user._id.toString()) {
+    if (message.sender.toString() !== getUserId(req).toString()) {
       return res
         .status(403)
         .json({ message: "Not authorized to delete this message" });
@@ -196,7 +196,7 @@ exports.editMessage = async (req, res) => {
     }
     const message = await Message.findById(messageId);
     if (!message) return res.status(404).json({ message: "Message not found" });
-    if (String(message.sender) !== String(req.user._id)) {
+    if (String(message.sender) !== String(getUserId(req))) {
       return res
         .status(403)
         .json({ message: "Not authorized to edit this message" });
@@ -228,12 +228,12 @@ exports.addReaction = async (req, res) => {
     if (!message) return res.status(404).json({ message: "Message not found" });
     message.reactions = message.reactions || [];
     const existing = message.reactions.find(
-      (r) => r.emoji === emoji && String(r.user) === String(req.user._id),
+      (r) => r.emoji === emoji && String(r.user) === String(getUserId(req)),
     );
     if (!existing) {
       message.reactions.push({
         emoji,
-        user: req.user._id,
+        user: getUserId(req),
         addedAt: new Date(),
       });
       await message.save();
@@ -254,7 +254,7 @@ exports.removeReaction = async (req, res) => {
     const message = await Message.findById(messageId);
     if (!message) return res.status(404).json({ message: "Message not found" });
     message.reactions = (message.reactions || []).filter(
-      (r) => !(r.emoji === emoji && String(r.user) === String(req.user._id)),
+      (r) => !(r.emoji === emoji && String(r.user) === String(getUserId(req))),
     );
     await message.save();
     return res.json({
@@ -270,12 +270,12 @@ exports.removeReaction = async (req, res) => {
 exports.getUnreadCount = async (req, res) => {
   try {
     const conversations = await Conversation.find({
-      participants: req.user._id,
+      participants: getUserId(req),
     });
 
     const totalUnread = conversations.reduce((sum, conv) => {
       const unreadCount = conv.unreadCounts.find(
-        (count) => count.user.toString() === req.user._id.toString(),
+        (count) => count.user.toString() === getUserId(req).toString(),
       );
       return sum + (unreadCount ? unreadCount.count : 0);
     }, 0);
@@ -293,7 +293,7 @@ exports.searchMessages = async (req, res) => {
 
     // Scope: only messages involving the current user
     const baseScope = {
-      $or: [{ sender: req.user._id }, { recipient: req.user._id }],
+      $or: [{ sender: getUserId(req) }, { recipient: getUserId(req) }],
     };
 
     const andFilters = [];
@@ -339,7 +339,7 @@ exports.searchMessages = async (req, res) => {
         .limit(100)
         .populate("sender", "name profilePicture")
         .populate("recipient", "name profilePicture"),
-      Conversation.find({ participants: req.user._id }).select(
+      Conversation.find({ participants: getUserId(req) }).select(
         "_id participants title",
       ),
     ]);

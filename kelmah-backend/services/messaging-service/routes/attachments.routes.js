@@ -97,12 +97,18 @@ router.post(
       if (!fs.existsSync(base)) fs.mkdirSync(base, { recursive: true });
       const saved = [];
       for (const file of req.files || []) {
-        const filename = `${Date.now()}_${file.originalname}`;
+        // Sanitize filename to prevent path traversal
+        const safeName = path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_');
+        const filename = `${Date.now()}_${safeName}`;
         const dest = path.join(base, filename);
+        // Ensure dest is still within base directory
+        if (!dest.startsWith(base)) {
+          return res.status(400).json({ success: false, message: 'Invalid filename' });
+        }
         fs.writeFileSync(dest, file.buffer);
         const attachment = ensureAttachmentScanState({
           id: filename,
-          fileName: file.originalname,
+          fileName: safeName,
           originalname: file.originalname,
           url: `/uploads/attachments/${conversationId}/${filename}`,
           type: file.mimetype,

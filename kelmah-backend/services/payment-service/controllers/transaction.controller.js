@@ -34,7 +34,7 @@ exports.createTransaction = async (req, res) => {
       currency,
       type,
       paymentMethod,
-      sender: req.user._id,
+      sender: getUserId(req),
       recipient,
       relatedContract,
       relatedJob,
@@ -75,7 +75,7 @@ exports.getTransaction = async (req, res) => {
 
     const transaction = await Transaction.findOne({
       transactionId,
-      $or: [{ sender: req.user._id }, { recipient: req.user._id }],
+      $or: [{ sender: getUserId(req) }, { recipient: getUserId(req) }],
     }).populate("sender recipient relatedContract relatedJob");
 
     if (!transaction) {
@@ -94,7 +94,7 @@ exports.getTransactionHistory = async (req, res) => {
     const { page = 1, limit = 20, type, status } = req.query;
 
     const query = {
-      $or: [{ sender: req.user._id }, { recipient: req.user._id }],
+      $or: [{ sender: getUserId(req) }, { recipient: getUserId(req) }],
     };
 
     if (type) query.type = type;
@@ -159,7 +159,7 @@ exports.cancelTransaction = async (req, res) => {
 
     const transaction = await Transaction.findOne({
       transactionId,
-      sender: req.user._id,
+      sender: getUserId(req),
       status: "pending",
     });
 

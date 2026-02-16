@@ -2,7 +2,7 @@ const Availability = require('../models/Availability');
 
 exports.getAvailability = async (req, res) => {
   try {
-    const userId = req.params.userId || req.user._id;
+    const userId = req.params.userId || getUserId(req);
     const doc = await Availability.findOne({ user: userId });
     if (!doc) return res.json({ success: true, data: { user: userId, isAvailable: true, daySlots: [], holidays: [], dailyHours: 8 } });
     return res.json({ success: true, data: doc });
@@ -13,7 +13,7 @@ exports.getAvailability = async (req, res) => {
 
 exports.upsertAvailability = async (req, res) => {
   try {
-    const userId = req.params.userId || req.user._id;
+    const userId = req.params.userId || getUserId(req);
     const update = {};
     const allowed = ['timezone','isAvailable','pausedUntil','daySlots','holidays','notes','dailyHours','weeklyHoursCap'];
     for (const key of allowed) if (key in req.body) update[key] = req.body[key];
@@ -30,7 +30,7 @@ exports.upsertAvailability = async (req, res) => {
 
 exports.deleteHoliday = async (req, res) => {
   try {
-    const userId = req.params.userId || req.user._id;
+    const userId = req.params.userId || getUserId(req);
     const { date } = req.params;
     const doc = await Availability.findOneAndUpdate(
       { user: userId },

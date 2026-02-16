@@ -7,11 +7,13 @@ const messageController = require("../controllers/message.controller");
 // const { authenticate } = require("../middlewares/auth.middleware");
 // router.use(authenticate); // Authentication applied at server level
 
-// Message routes
+// Message routes — literal routes BEFORE parameterized routes
 router.post(
   "/",
   /* createLimiter('messaging'), */ messageController.createMessage,
 );
+router.get("/unread/count", messageController.getUnreadCount);
+router.get("/search", messageController.searchMessages);
 router.get(
   "/conversation/:conversationId",
   messageController.getConversationMessages,
@@ -23,7 +25,7 @@ router.post("/:messageId/read", async (req, res) => {
     const m = await Message.findById(req.params.messageId);
     if (!m)
       return res.status(404).json({ success: false, message: "Not found" });
-    if (String(m.recipient) !== String(req.user?._id))
+    if (String(m.recipient) !== String(req.user?.id || req.user?._id))
       return res.status(403).json({ success: false, message: "Forbidden" });
     await m.markAsRead();
     return res.json({ success: true });
@@ -42,9 +44,5 @@ router.post(
   /* createLimiter('messaging'), */ messageController.addReaction,
 );
 router.delete("/:messageId/reactions/:emoji", messageController.removeReaction);
-router.get("/unread/count", messageController.getUnreadCount);
-
-// Message search endpoint with basic filters
-router.get("/search", messageController.searchMessages);
 
 module.exports = router;

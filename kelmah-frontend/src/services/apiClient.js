@@ -88,7 +88,14 @@ apiClient.interceptors.response.use(
                         },
                     );
 
-                    const { token } = response.data;
+                    const token =
+                        response.data?.data?.token ||
+                        response.data?.token ||
+                        response.data?.accessToken ||
+                        null;
+                    if (!token) {
+                        throw new Error('Refresh response missing token');
+                    }
                     secureStorage.setAuthToken(token);
 
                     // Update header and retry original request

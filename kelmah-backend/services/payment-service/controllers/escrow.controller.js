@@ -13,8 +13,13 @@ exports.getEscrows = async (req, res, next) => {
 exports.getEscrowDetails = async (req, res, next) => {
   try {
     const { escrowId } = req.params;
+    const userId = req.user?.id;
     const escrow = await Escrow.findById(escrowId).populate('transactions');
     if (!escrow) return res.status(404).json({ success: false, message: 'Escrow not found' });
+    // Authorization: only parties or admin can view
+    if (escrow.hirerId.toString() !== userId && escrow.workerId.toString() !== userId && req.user?.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
     return res.json({ success: true, data: escrow });
   } catch (err) {
     next(err);
@@ -24,8 +29,13 @@ exports.getEscrowDetails = async (req, res, next) => {
 exports.releaseEscrow = async (req, res, next) => {
   try {
     const { escrowId } = req.params;
+    const userId = req.user?.id;
     const escrow = await Escrow.findById(escrowId);
     if (!escrow) return res.status(404).json({ success: false, message: 'Escrow not found' });
+    // Only hirer or admin can release escrow
+    if (escrow.hirerId.toString() !== userId && req.user?.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Only the hirer can release escrow' });
+    }
     if (escrow.status !== 'active') return res.status(400).json({ success: false, message: 'Escrow is not active' });
 
     const workerWallet = await Wallet.findOne({ user: escrow.workerId });
@@ -91,9 +101,14 @@ exports.fundEscrow = async (req, res, next) => {
 exports.refundEscrow = async (req, res, next) => {
   try {
     const { escrowId } = req.params;
+    const userId = req.user?.id;
     if (!escrowId) return res.status(400).json({ success: false, message: 'escrowId is required' });
     const escrow = await Escrow.findById(escrowId);
     if (!escrow) return res.status(404).json({ success: false, message: 'Escrow not found' });
+    // Only hirer or admin can refund
+    if (escrow.hirerId.toString() !== userId && req.user?.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Only the hirer or admin can refund escrow' });
+    }
     if (!['active', 'disputed'].includes(escrow.status)) return res.status(400).json({ success: false, message: 'Escrow is not refundable' });
 
     const hirerWallet = await Wallet.findOne({ user: escrow.hirerId });

@@ -291,6 +291,7 @@ class SecureStorage {
   clear() {
     try {
       localStorage.removeItem(this.storageKey);
+      localStorage.removeItem('kelmah_encryption_secret');
       sessionStorage.removeItem('session_id');
       return true;
     } catch (error) {

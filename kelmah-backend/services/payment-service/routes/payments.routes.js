@@ -115,12 +115,8 @@ router.get("/history", async (req, res, next) => {
   }
 });
 
-module.exports = router;
-
 // ---------------------------------------------
 // 🇬🇭 Ghana Mobile Money Endpoints (frontend expects these)
-// Apply auth to these routes as well
-router.use(verifyGatewayRequest);
 
 // MTN MoMo
 router.post('/mtn-momo/request-to-pay', createLimiter('payments'), ghanaPayments.mtnRequestToPay);
@@ -170,3 +166,5 @@ const requireAdmin = (req, res, next) => {
 router.post('/admin/payouts/queue', requireAdmin, payoutAdminController.enqueuePayout);
 router.post('/admin/payouts/process', requireAdmin, payoutAdminController.processBatch);
 router.get('/admin/payouts', requireAdmin, payoutAdminController.listPayouts);
+
+module.exports = router;

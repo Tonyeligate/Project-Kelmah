@@ -417,7 +417,7 @@ const jobsApi = {
       return normalized;
     } catch (error) {
       console.warn(`Job service unavailable for job ${jobId}:`, error.message);
-      return null;
+      throw error;
     }
   },
 

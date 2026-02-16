@@ -35,7 +35,7 @@ const seriesComponents = {
 const InteractiveChart = ({
   data,
   type = 'line',
-  series,
+  series = [],
   title,
   height = 400,
 }) => {
@@ -80,12 +80,16 @@ const InteractiveChart = ({
       <motion.div initial="hidden" animate="visible" variants={chartVariants}>
         <ResponsiveContainer width="100%" height={height}>
           <ChartComponent data={data}>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke={theme.palette.divider}
-            />
-            <XAxis dataKey="name" stroke={theme.palette.text.secondary} />
-            <YAxis stroke={theme.palette.text.secondary} />
+            {type !== 'pie' && (
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke={theme.palette.divider}
+              />
+            )}
+            {type !== 'pie' && (
+              <XAxis dataKey="name" stroke={theme.palette.text.secondary} />
+            )}
+            {type !== 'pie' && <YAxis stroke={theme.palette.text.secondary} />}
             <Tooltip
               contentStyle={{
                 backgroundColor: theme.palette.background.paper,
@@ -98,6 +102,8 @@ const InteractiveChart = ({
               <SeriesComponent
                 key={s.dataKey}
                 {...s}
+                dataKey={s.dataKey || (type === 'pie' ? 'value' : s.dataKey)}
+                name={s.name || s.dataKey || `Series ${index + 1}`}
                 stroke={s.color || theme.palette.secondary.main}
                 fill={s.color || theme.palette.secondary.main}
                 component={motion.path}

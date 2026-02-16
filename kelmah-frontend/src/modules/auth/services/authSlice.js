@@ -68,10 +68,7 @@ export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      console.log('Login attempt with:', credentials.email);
       const response = await authService.login(credentials);
-
-      console.log('Login response in authSlice:', response);
 
       // Handle different response structures - backend sends {success: true, data: {token, user}}
       const responseData = response.data || response;
@@ -82,9 +79,6 @@ export const login = createAsyncThunk(
 
       // Make sure we have a token and user data
       if (token) {
-        // Log the user data we're storing for debugging
-        console.log('Storing user data with role in authSlice:', user);
-
         // Store token and user data securely
         secureStorage.setAuthToken(token);
         if (normalizedUser) {

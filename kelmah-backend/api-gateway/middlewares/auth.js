@@ -152,14 +152,54 @@ const optionalAuth = async (req, res, next) => {
     return next(); // No token provided, continue without authentication
   }
 
-  // Use main authenticate middleware but suppress errors
-  authenticate(req, res, (err) => {
-    // If authentication fails, continue without user info
-    if (err || !req.user) {
-      req.user = null;
+  const token = authHeader.substring(7);
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const decoded = jwtUtils.verifyAccessToken(token);
+    const userId = decoded.sub || decoded.id;
+    if (!userId) {
+      return next();
     }
-    next();
-  });
+
+    const cacheKey = `user:${userId}`;
+    let user = userCache.get(cacheKey);
+
+    if (!user || Date.now() - user.cachedAt > CACHE_TTL) {
+      const dbUser = await User.findById(userId).select('-password');
+      if (!dbUser) {
+        return next();
+      }
+
+      user = { ...dbUser.toObject(), cachedAt: Date.now() };
+      cacheSet(cacheKey, user);
+    }
+
+    req.user = {
+      id: user._id || user.id,
+      email: user.email,
+      role: user.role,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      isEmailVerified: user.isEmailVerified,
+      tokenVersion: decoded.version || 0,
+    };
+
+    const userPayload = JSON.stringify(req.user);
+    req.headers['x-authenticated-user'] = userPayload;
+    req.headers['x-auth-source'] = 'api-gateway';
+    const hmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET || '';
+    const signature = crypto.createHmac('sha256', hmacSecret).update(userPayload).digest('hex');
+    req.headers['x-gateway-signature'] = signature;
+
+    return next();
+  } catch (_) {
+    // Optional authentication should never block request flow
+    req.user = null;
+    return next();
+  }
 };
 
 module.exports = {

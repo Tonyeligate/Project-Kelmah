@@ -11,12 +11,13 @@ import {
   useTheme,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import authService from '../modules/auth/services/authService';
 
 const ResetPassword = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const navigate = useNavigate();
 
   const { token: paramToken } = useParams();
   const [searchParams] = useSearchParams();
@@ -27,6 +28,7 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -51,10 +53,15 @@ const ResetPassword = () => {
     }
 
     try {
+      setLoading(true);
       const res = await authService.resetPassword(token, password);
       setStatus(res?.message || 'Password reset successful. You can now sign in.');
+      setPassword('');
+      setConfirmPassword('');
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || 'Password reset failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,6 +92,7 @@ const ResetPassword = () => {
         type={showPassword ? 'text' : 'password'}
         fullWidth
         required
+        disabled={loading}
         margin="normal"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
@@ -121,6 +129,7 @@ const ResetPassword = () => {
         type={showConfirm ? 'text' : 'password'}
         fullWidth
         required
+        disabled={loading}
         margin="normal"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
@@ -156,10 +165,22 @@ const ResetPassword = () => {
         type="submit"
         variant="contained"
         fullWidth
+        disabled={loading}
         sx={{ mt: 2, minHeight: 48, borderRadius: isMobile ? '24px' : 1 }}
       >
-        Reset Password
+        {loading ? 'Resetting password...' : 'Reset Password'}
       </Button>
+
+      {status && (
+        <Button
+          variant="outlined"
+          fullWidth
+          onClick={() => navigate('/login')}
+          sx={{ mt: 1.25, minHeight: 44 }}
+        >
+          Continue to Sign in
+        </Button>
+      )}
 
       <Box sx={{ mt: 2 }}>
         <Typography variant="body2" sx={isMobile ? { color: 'rgba(255,255,255,0.7)' } : {}}>

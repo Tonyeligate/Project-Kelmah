@@ -652,8 +652,8 @@ class PaystackService {
   verifyWebhookSignature(payload, signature) {
     try {
       if (!this.webhookSecret) {
-        console.warn('Paystack webhook secret not configured');
-        return true; // Skip verification if no secret configured
+        console.error('CRITICAL: Paystack webhook secret not configured — rejecting webhook');
+        return false;
       }
 
       const expectedSignature = crypto

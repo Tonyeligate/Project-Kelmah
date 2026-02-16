@@ -6,6 +6,58 @@
 
 ---
 
+## Implementation Delta — February 16, 2026 (Fix-All Continuation) ✅
+
+### Scope of this delta
+- Close critical runtime/wiring defects identified in the audit continuation pass.
+- Harden shared non-module frontend components for responsive behavior, navigation clarity, and safer runtime defaults.
+
+### Critical wiring fixes completed
+
+1) Payment routes export reachability
+- File: `kelmah-backend/services/payment-service/routes/payments.routes.js`
+- Issue: `module.exports = router` appeared before Ghana MoMo, Paystack, and admin payout routes, leaving those routes effectively unreachable.
+- Fix: moved export to file end and removed redundant duplicate auth middleware application.
+- Result: all declared payment subroutes are now mounted and reachable.
+
+2) Optional authentication behavior in gateway
+- File: `kelmah-backend/api-gateway/middlewares/auth.js`
+- Issue: `optionalAuth` reused strict auth behavior in a way that could block optional/public flows when malformed/expired tokens were present.
+- Fix: rewrote `optionalAuth` to opportunistically decode/attach user context and always continue request flow on failure.
+- Result: optional endpoints no longer hard-fail due to non-critical token issues.
+
+3) Frontend refresh-token response parsing
+- File: `kelmah-frontend/src/services/apiClient.js`
+- Issue: interceptor expected a single token shape and could miss nested responses.
+- Fix: added robust parsing for `data.data.token`, `data.token`, and `data.accessToken`, with explicit missing-token guard.
+- Result: refresh flow is resilient to backend response wrappers and avoids silent bad retries.
+
+### Shared frontend component hardening completed (outside `src/modules`)
+
+- `kelmah-frontend/src/components/common/BreadcrumbNavigation.jsx`
+	- Correct mobile detection via `useMediaQuery`.
+	- Added compact breadcrumb rendering for narrow screens.
+	- Improved click target semantics via aria labels.
+
+- `kelmah-frontend/src/components/PaymentMethodCard.jsx`
+	- Mobile-safe stacked layout and text wrapping.
+	- Full-width edit action on mobile for easier tapping.
+
+- `kelmah-frontend/src/components/common/ErrorBoundary.jsx`
+	- Switched dev-only condition to Vite-safe `import.meta.env.DEV`.
+
+- `kelmah-frontend/src/components/common/InteractiveChart.jsx`
+	- Added `series` default and pie/non-pie conditional axis/grid handling.
+	- Added fallback series naming/data key behavior.
+
+### Verification evidence
+- VS Code diagnostics on changed files: no reported errors.
+- Backend syntax checks (changed files): pass.
+- Frontend production build: pass (`npm --prefix kelmah-frontend run build`).
+- Known environment dependency note: direct payment-module load requires `PAYSTACK_SECRET_KEY`; failure without this variable is expected and not a code regression.
+
+---
+
 ## Executive Summary
 
 | Severity | Count | Key Risk |

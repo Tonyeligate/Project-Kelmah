@@ -174,7 +174,6 @@ const WorkerReview = () => {
         console.error('Error submitting review:', err);
         setSnackbar({ open: true, message: err?.message || 'Failed to submit review', severity: 'error' });
       }
-      }
     }
   };
 

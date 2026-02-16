@@ -771,16 +771,14 @@ const Header = ({
     try {
       console.log('🔄 Starting logout process...');
 
-      // Clear all storage immediately for better UX
+      // Clear all Kelmah storage (scoped removal - never wipe entire localStorage)
       try {
         secureStorage.clear();
         localStorage.removeItem('kelmah_auth_token');
         localStorage.removeItem('user');
-        localStorage.removeItem('kelmah_encryption_secret');
         sessionStorage.clear();
-        console.log('✅ Local storage cleared');
       } catch (storageError) {
-        console.warn('⚠️ Storage cleanup warning:', storageError);
+        console.warn('Storage cleanup warning:', storageError);
       }
 
       // Dispatch logout action
@@ -795,13 +793,14 @@ const Header = ({
     } catch (error) {
       console.error('❌ Logout error:', error);
 
-      // Force clear everything and navigate
+      // Force clear Kelmah data and navigate (scoped removal)
       try {
         secureStorage.clear();
-        localStorage.clear();
+        localStorage.removeItem('kelmah_auth_token');
+        localStorage.removeItem('user');
         sessionStorage.clear();
       } catch (clearError) {
-        console.warn('⚠️ Force clear warning:', clearError);
+        console.warn('Force clear warning:', clearError);
       }
 
       // Force navigation even if logout fails

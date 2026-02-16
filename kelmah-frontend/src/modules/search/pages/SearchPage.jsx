@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Container,
   Box,
@@ -69,7 +69,7 @@ const normalizeWorkerRecord = (worker = {}) => {
       : [];
 
   return {
-    id: id || `worker-${Date.now()}-${Math.random()}`,
+    id: id || `worker-${crypto.randomUUID()}`,
     userId: id || worker.userId,
     name:
       worker.name ||
@@ -248,6 +248,9 @@ const SearchPage = () => {
   const [showRecommendations, setShowRecommendations] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
+  // Ref for aborting stale search requests
+  const abortControllerRef = useRef(null);
+
   // Fetch search suggestions when user types
   const fetchSearchSuggestions = async (query) => {
     if (!query || query.length < 2) {
@@ -290,6 +293,13 @@ const SearchPage = () => {
 
   const executeWorkerSearch = useCallback(
     async (params = {}, { sortOption } = {}) => {
+      // Cancel any in-flight search request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
       const apiEndpoint = '/workers';
       const apiParams = buildWorkerQueryParams(params);
 
@@ -300,7 +310,10 @@ const SearchPage = () => {
       setError(null);
 
       try {
-        const response = await api.get(apiEndpoint, { params: apiParams });
+        const response = await api.get(apiEndpoint, {
+          params: apiParams,
+          signal: controller.signal,
+        });
         console.log('🔍 API response:', response.data);
 
         if (!response.data || !response.data.success) {
@@ -349,6 +362,8 @@ const SearchPage = () => {
           total: totalItems,
         });
       } catch (error) {
+        // Ignore aborted requests (superseded by a newer search)
+        if (error.name === 'AbortError' || error.name === 'CanceledError') return;
         console.error('Error searching:', error);
         setError(error.message || 'An error occurred while searching');
         setSearchResults([]);

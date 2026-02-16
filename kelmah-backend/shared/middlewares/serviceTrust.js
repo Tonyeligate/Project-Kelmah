@@ -18,8 +18,7 @@ function validateGatewayUser(parsed) {
   if (!id || typeof id !== 'string') return null;
   if (!role || typeof role !== 'string') return null;
 
-  const ALLOWED_ROLES = ['worker', 'hirer', 'admin', 'super_admin'];
-  if (!ALLOWED_ROLES.includes(role)) return null;
+  const ALLOWED_ROLES = ['worker', 'hirer', 'admin', 'super_admin', 'staff'];
 
   return {
     id,
@@ -87,13 +86,29 @@ const verifyGatewayRequest = (req, res, next) => {
     }
   }
 
-  // Check for legacy gateway headers (backward compatibility)
+  // Legacy gateway headers — require HMAC verification to prevent header spoofing
   const userId = req.headers['x-user-id'];
   const userRole = req.headers['x-user-role'];
   const userEmail = req.headers['x-user-email'];
 
   if (userId && userRole) {
-    const ALLOWED_ROLES = ['worker', 'hirer', 'admin', 'super_admin'];
+    // Verify HMAC signature for legacy headers too
+    const legacySignature = req.headers['x-gateway-signature'];
+    const legacyHmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET || '';
+    if (!legacyHmacSecret || !legacySignature) {
+      return res.status(401).json({
+        error: 'Legacy gateway headers require HMAC verification',
+        message: 'Missing signature for legacy service trust'
+      });
+    }
+    const expectedLegacy = crypto.createHmac('sha256', legacyHmacSecret).update(`${userId}:${userRole}`).digest('hex');
+    if (!timingSafeCompare(legacySignature, expectedLegacy)) {
+      return res.status(401).json({
+        error: 'Invalid legacy gateway signature',
+        message: 'Legacy header signature mismatch'
+      });
+    }
+    const ALLOWED_ROLES = ['worker', 'hirer', 'admin', 'super_admin', 'staff'];
     if (!ALLOWED_ROLES.includes(userRole)) {
       return res.status(403).json({
         error: 'Invalid role',

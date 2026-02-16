@@ -219,15 +219,15 @@ class WebSocketService {
 
     // User presence events (handled by MessageContext socket — no-op here)
     this.socket.on('user-online', (data) => {
-      this._emitEvent('user:online', data);
+      this.triggerEvent('user:online', data);
     });
 
     this.socket.on('user-offline', (data) => {
-      this._emitEvent('user:offline', data);
+      this.triggerEvent('user:offline', data);
     });
 
     this.socket.on('online-users', (data) => {
-      this._emitEvent('users:online-list', data);
+      this.triggerEvent('users:online-list', data);
     });
 
     // System events

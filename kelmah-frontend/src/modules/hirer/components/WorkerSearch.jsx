@@ -190,7 +190,7 @@ const WorkerSearch = () => {
       worker.workerId ||
       worker.email ||
       null;
-    const safeId = safeIdValue || `worker-${Date.now()}-${Math.random()}`;
+    const safeId = safeIdValue || `worker-${crypto.randomUUID()}`;
 
     const normalizedRate = Number(
       worker.hourlyRate ?? worker.rate ?? worker.minRate ?? 25,

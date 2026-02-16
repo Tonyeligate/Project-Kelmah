@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
@@ -82,7 +82,7 @@ const EnhancedMessagingPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
-  // State management - Get conversations from context
+  // State management - Get conversations and messages from context
   const {
     conversations,
     selectedConversation,
@@ -91,6 +91,11 @@ const EnhancedMessagingPage = () => {
     typingUsers,
     isConnected,
     realtimeIssue,
+    messages,
+    sendMessage: contextSendMessage,
+    unreadCount,
+    startTyping,
+    stopTyping,
   } = useMessages();
 
   // Local state for UI
@@ -98,8 +103,6 @@ const EnhancedMessagingPage = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [filteredConversations, setFilteredConversations] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [messages, setMessages] = useState([]);
 
   // Message composition state
   const [messageText, setMessageText] = useState('');
@@ -119,46 +122,55 @@ const EnhancedMessagingPage = () => {
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
+  const blobUrlsRef = useRef([]); // Track blob URLs for cleanup
+  const conversationsRef = useRef(conversations); // Stable ref for deep-link effect
+  conversationsRef.current = conversations;
+
+  // Memoize file preview URLs to avoid creating new blob URLs on every render
+  const filePreviewUrls = useMemo(
+    () => selectedFiles.map((file) =>
+      file.type.startsWith('image/') ? URL.createObjectURL(file) : null
+    ),
+    [selectedFiles],
+  );
+
+  // Revoke preview blob URLs when selectedFiles change or on unmount
+  useEffect(() => {
+    return () => {
+      filePreviewUrls.forEach((url) => { if (url) URL.revokeObjectURL(url); });
+    };
+  }, [filePreviewUrls]);
+
+  // Revoke message attachment blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      blobUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
 
   // Mock data for fallback
   const mockConversations = [];
   const mockMessages = {};
 
-  // Initialize messaging system
+  // Deep-link and initial load (runs once per URL change, not on every conversations update)
   useEffect(() => {
-    const initializeMessaging = async () => {
-      setIsLoading(true);
-      try {
-        // Real messaging initialization will be handled by the context
+    if (!user) return;
 
-        // Calculate total unread count from context conversations
-        const totalUnread = (conversations || []).reduce(
-          (sum, conv) => sum + (conv.unreadCount || 0),
-          0,
-        );
-        setUnreadCount(totalUnread);
-
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Failed to initialize messaging:', error);
-        showFeedback('Failed to connect to messaging service', 'error');
-        setIsLoading(false);
-      }
-    };
-
-    if (user) {
-      initializeMessaging();
-    }
+    setIsLoading(true);
+    // Short delay to allow context conversations to populate
+    const timer = setTimeout(() => setIsLoading(false), 500);
 
     // Deep-link: /messages?recipient=<userId> or /messages?conversation=<id>
+    const urlParams = new URLSearchParams(search);
+    const conversationId = urlParams.get('conversation');
+    const recipientId = urlParams.get('recipient');
+
     const runDeepLink = async () => {
-      const params = new URLSearchParams(search);
-      const conversationId = params.get('conversation');
-      const recipientId = params.get('recipient');
+      // Use ref for conversations to avoid triggering this effect on every message
+      const currentConversations = conversationsRef.current || [];
 
       if (conversationId) {
-        // Select if present in current list; otherwise just set URL
-        const existing = (conversations || []).find(
+        const existing = currentConversations.find(
           (c) => c.id === conversationId,
         );
         if (existing) {
@@ -173,8 +185,7 @@ const EnhancedMessagingPage = () => {
       }
 
       if (recipientId) {
-        // Try to find an existing direct conversation with this recipient
-        const existing = (conversations || []).find((c) =>
+        const existing = currentConversations.find((c) =>
           (c.participants || []).some(
             (p) => String(p.id) === String(recipientId),
           ),
@@ -185,7 +196,6 @@ const EnhancedMessagingPage = () => {
           navigate(`/messages?conversation=${existing.id}`, { replace: true });
           return;
         }
-        // Create new direct conversation
         try {
           const convo =
             await messagingService.createDirectConversation(recipientId);
@@ -205,7 +215,9 @@ const EnhancedMessagingPage = () => {
     };
 
     runDeepLink();
-  }, [user, search, conversations, navigate, selectConversation]);
+
+    return () => clearTimeout(timer);
+  }, [user, search, navigate, selectConversation]);
 
   useEffect(() => {
     try {
@@ -291,12 +303,6 @@ const EnhancedMessagingPage = () => {
   const handleConversationSelect = useCallback(
     (conversation) => {
       selectConversation(conversation);
-      setMessages([]);
-
-      // Mark as read
-      if (conversation.unreadCount > 0) {
-        setUnreadCount((prev) => prev - conversation.unreadCount);
-      }
 
       // Update URL
       navigate(`/messages?conversation=${conversation.id}`, { replace: true });
@@ -309,54 +315,35 @@ const EnhancedMessagingPage = () => {
     if (!messageText.trim() && selectedFiles.length === 0) return;
     if (!selectedConversation) return;
 
-    const newMessage = {
-      id: Date.now().toString(),
-      text: messageText.trim(),
-      sender: user?.id,
-      timestamp: new Date(),
-      status: 'sending',
-      type: selectedFiles.length > 0 ? 'mixed' : 'text',
-      attachments: selectedFiles.map((file) => ({
-        type: file.type.startsWith('image/') ? 'image' : 'file',
-        url: URL.createObjectURL(file),
-        name: file.name,
-        size: file.size,
-      })),
-    };
+    const text = messageText.trim();
+    const type = selectedFiles.length > 0 ? 'mixed' : 'text';
+    const attachments = selectedFiles.map((file) => ({
+      type: file.type.startsWith('image/') ? 'image' : 'file',
+      file,
+      name: file.name,
+      size: file.size,
+    }));
 
-    // Add message optimistically
-    setMessages((prev) => [...prev, newMessage]);
+    // Clear input immediately for responsiveness
     setMessageText('');
     setSelectedFiles([]);
 
-    // Update conversation last message would be handled by context
-
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Update message status
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === newMessage.id ? { ...msg, status: 'delivered' } : msg,
-        ),
-      );
+      // Use context's sendMessage (handles optimistic updates, WebSocket, REST fallback)
+      if (contextSendMessage) {
+        await contextSendMessage(text, type, attachments);
+      }
     } catch (error) {
       console.error('Failed to send message:', error);
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === newMessage.id ? { ...msg, status: 'failed' } : msg,
-        ),
-      );
       showFeedback('Failed to send message', 'error');
     }
-  }, [messageText, selectedFiles, selectedConversation, user]);
+  }, [messageText, selectedFiles, selectedConversation, contextSendMessage, showFeedback]);
 
   // Handle typing indicator
   const handleTyping = useCallback(() => {
     if (!isTyping) {
       setIsTyping(true);
-      // Emit typing start event
+      if (startTyping) startTyping();
     }
 
     // Clear existing timeout
@@ -367,7 +354,7 @@ const EnhancedMessagingPage = () => {
     // Set new timeout
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
-      // Emit typing stop event
+      if (stopTyping) stopTyping();
     }, 2000);
   }, [isTyping]);
 
@@ -1243,7 +1230,7 @@ const EnhancedMessagingPage = () => {
 
                     {file.type.startsWith('image/') ? (
                       <img
-                        src={URL.createObjectURL(file)}
+                        src={filePreviewUrls[index] || ''}
                         alt={file.name}
                         style={{
                           width: '100%',

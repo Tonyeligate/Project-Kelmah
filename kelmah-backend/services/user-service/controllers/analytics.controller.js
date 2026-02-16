@@ -59,41 +59,33 @@ class AnalyticsController {
         ratingDistribution
       ] = await Promise.all([
         // Total users
-        User.count({ where: { isActive: true } }),
+        User.countDocuments({ isActive: true }),
 
         // Active users (logged in within last 30 days)
-        User.count({
-          where: {
-            isActive: true,
-            lastLoginAt: { $gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) }
-          }
+        User.countDocuments({
+          isActive: true,
+          lastLoginAt: { $gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) }
         }),
 
         // New users in time range
-        User.count({
-          where: {
-            createdAt: { $gte: startDate },
-            isActive: true
-          }
+        User.countDocuments({
+          createdAt: { $gte: startDate },
+          isActive: true
         }),
 
         // Total workers
-        WorkerProfile.count({ where: { isActive: true } }),
+        WorkerProfile.countDocuments({ isActive: true }),
 
         // Active workers (available for work)
-        WorkerProfile.count({
-          where: {
-            isActive: true,
-            availabilityStatus: ['available', 'partially_available']
-          }
+        WorkerProfile.countDocuments({
+          isActive: true,
+          availabilityStatus: { $in: ['available', 'partially_available'] }
         }),
 
         // Verified workers
-        WorkerProfile.count({
-          where: {
-            isActive: true,
-            verificationStatus: 'verified'
-          }
+        WorkerProfile.countDocuments({
+          isActive: true,
+          verificationStatus: 'verified'
         }),
 
         // User growth data (last 12 months)
@@ -251,17 +243,13 @@ class AnalyticsController {
         responseTime
       ] = await Promise.all([
         // Users active in last hour
-        User.count({
-          where: {
-            lastLoginAt: { $gte: new Date(now.getTime() - 60 * 60 * 1000) }
-          }
+        User.countDocuments({
+          lastLoginAt: { $gte: new Date(now.getTime() - 60 * 60 * 1000) }
         }),
 
         // Signups in last 24h
-        User.count({
-          where: {
-            createdAt: { $gte: last24h }
-          }
+        User.countDocuments({
+          createdAt: { $gte: last24h }
         }),
 
         // System load (Node.js process info)

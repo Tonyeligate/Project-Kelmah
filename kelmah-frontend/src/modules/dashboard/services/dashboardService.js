@@ -50,8 +50,12 @@ class DashboardService {
       console.log('Dashboard socket connected');
 
       // Join dashboard channel
-      const userId = JSON.parse(atob(this.token.split('.')[1])).sub;
-      this.socket.emit('join:dashboard', userId);
+      try {
+        const userId = JSON.parse(atob(this.token.split('.')[1])).sub;
+        if (userId) this.socket.emit('join:dashboard', userId);
+      } catch (err) {
+        console.warn('Failed to decode token for dashboard join:', err.message);
+      }
     });
 
     this.socket.on('disconnect', () => {
@@ -80,8 +84,12 @@ class DashboardService {
     if (!this.socket) return;
 
     if (this.token) {
-      const userId = JSON.parse(atob(this.token.split('.')[1])).sub;
-      this.socket.emit('leave:dashboard', userId);
+      try {
+        const userId = JSON.parse(atob(this.token.split('.')[1])).sub;
+        if (userId) this.socket.emit('leave:dashboard', userId);
+      } catch (err) {
+        console.warn('Failed to decode token for dashboard leave:', err.message);
+      }
     }
 
     this.socket.disconnect();

@@ -45,8 +45,7 @@ router.get("/dashboard", verifyGatewayRequest, jobController.getDashboardJobs); 
 router.get("/categories", jobController.getJobCategories);
 router.get('/suggestions', jobController.getSearchSuggestions);
 router.get("/stats", jobController.getPlatformStats); // ✅ PUBLIC: Platform statistics
-router.get("/contracts", jobController.getContracts); // ✅ MOVED: Make contracts publicly accessible
-router.get("/contracts/:id", jobController.getContractById);
+// Contract read routes moved to protected section below
 router.post("/contracts/:id/disputes", verifyGatewayRequest, jobController.createContractDispute);
 router.get('/:id([a-fA-F0-9]{24})', jobController.getJobById);
 
@@ -57,7 +56,9 @@ router.get("/milestones/:milestoneId", jobController.getMilestoneById);
 // Protected routes
 router.use(verifyGatewayRequest);
 
-// Contract mutation routes (protected)
+// Contract routes (protected - require authentication)
+router.get("/contracts", jobController.getContracts);
+router.get("/contracts/:id", jobController.getContractById);
 router.put("/contracts/:id", jobController.updateContract);
 router.put("/contracts/:contractId/milestones/:milestoneId/approve", jobController.approveMilestone);
 

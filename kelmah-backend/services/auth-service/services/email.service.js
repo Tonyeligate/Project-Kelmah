@@ -8,11 +8,13 @@ const SMTP_PORT = config.SMTP_PORT || 465;
 const SMTP_USER = config.SMTP_USER;
 const SMTP_PASS = config.SMTP_PASSWORD || config.SMTP_PASS;
 
-// Safe debug logging for SMTP configuration (avoid printing secrets)
-console.log('SMTP config → host:', SMTP_HOST, 'port:', SMTP_PORT);
-console.log('EMAIL_FROM:', EMAIL_FROM);
-console.log('SMTP_USER:', SMTP_USER ? '[set]' : '[unset]');
-console.log('SMTP_PASS:', SMTP_PASS ? '[set]' : '[unset]');
+// Debug logging only in development
+if (process.env.NODE_ENV === 'development') {
+  console.log('SMTP config → host:', SMTP_HOST, 'port:', SMTP_PORT);
+  console.log('EMAIL_FROM:', EMAIL_FROM);
+  console.log('SMTP_USER:', SMTP_USER ? '[set]' : '[unset]');
+  console.log('SMTP_PASS:', SMTP_PASS ? '[set]' : '[unset]');
+}
 
 const smtpConfig = {
   host: SMTP_HOST || 'smtp.gmail.com',
@@ -22,10 +24,8 @@ const smtpConfig = {
     user: SMTP_USER || process.env.SMTP_USER,
     pass: SMTP_PASS || process.env.SMTP_PASS
   },
-  // Anti-spam configurations
   tls: {
-    rejectUnauthorized: false,
-    ciphers: 'SSLv3'
+    rejectUnauthorized: process.env.NODE_ENV !== 'development',
   },
   // Connection pooling for better delivery
   pool: true,
@@ -36,13 +36,15 @@ const smtpConfig = {
   rateLimit: 5
 };
 
-console.log('Using SMTP config:', {
-  host: smtpConfig.host,
-  port: smtpConfig.port,
-  secure: smtpConfig.secure,
-  user: smtpConfig.auth.user ? '[set]' : '[unset]',
-  pass: smtpConfig.auth.pass ? '[set]' : '[unset]'
-});
+if (process.env.NODE_ENV === 'development') {
+  console.log('Using SMTP config:', {
+    host: smtpConfig.host,
+    port: smtpConfig.port,
+    secure: smtpConfig.secure,
+    user: smtpConfig.auth.user ? '[set]' : '[unset]',
+    pass: smtpConfig.auth.pass ? '[set]' : '[unset]'
+  });
+}
 
 const transporter = nodemailer.createTransport(smtpConfig);
 

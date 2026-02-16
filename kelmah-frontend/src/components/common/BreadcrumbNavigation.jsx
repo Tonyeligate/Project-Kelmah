@@ -5,7 +5,6 @@ import {
   Link,
   Typography,
   Box,
-  useTheme,
   useMediaQuery,
 } from '@mui/material';
 import {
@@ -19,8 +18,7 @@ import {
 const BreadcrumbNavigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useTheme().breakpoints.down('sm');
+  const isMobile = useMediaQuery((muiTheme) => muiTheme.breakpoints.down('sm'));
 
   // Define breadcrumb mappings
   const getBreadcrumbItems = () => {
@@ -110,6 +108,10 @@ const BreadcrumbNavigation = () => {
 
   const breadcrumbItems = getBreadcrumbItems();
 
+  const visibleItems = isMobile && breadcrumbItems.length > 3
+    ? [breadcrumbItems[0], breadcrumbItems[breadcrumbItems.length - 2], breadcrumbItems[breadcrumbItems.length - 1]]
+    : breadcrumbItems;
+
   // Don't show breadcrumbs on home page or if only one item
   if (breadcrumbItems.length <= 1) {
     return null;
@@ -133,8 +135,8 @@ const BreadcrumbNavigation = () => {
           },
         }}
       >
-        {breadcrumbItems.map((item, index) => {
-          const isLast = item.isLast;
+        {visibleItems.map((item, index) => {
+          const { isLast, icon, label, path } = item;
 
           if (isLast) {
             return (
@@ -146,7 +148,7 @@ const BreadcrumbNavigation = () => {
                   gap: 0.5,
                 }}
               >
-                {item.icon}
+                {icon}
                 <Typography
                   variant="body2"
                   sx={{
@@ -155,7 +157,7 @@ const BreadcrumbNavigation = () => {
                     fontSize: { xs: '0.75rem', sm: '0.875rem' },
                   }}
                 >
-                  {item.label}
+                  {label}
                 </Typography>
               </Box>
             );
@@ -166,7 +168,8 @@ const BreadcrumbNavigation = () => {
               key={index}
               component="button"
               variant="body2"
-              onClick={() => navigate(item.path)}
+              onClick={() => navigate(path)}
+              aria-label={`Go to ${label}`}
               sx={{
                 display: 'flex',
                 alignItems: 'center',
@@ -185,8 +188,8 @@ const BreadcrumbNavigation = () => {
                 },
               }}
             >
-              {item.icon}
-              {item.label}
+              {icon}
+              {label}
             </Link>
           );
         })}

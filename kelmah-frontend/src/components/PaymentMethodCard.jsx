@@ -12,20 +12,24 @@ const PaymentMethodCard = ({ method, onEdit }) => {
         borderLeft: method.isDefault ? '4px solid #4caf50' : 'none',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: { xs: 'flex-start', sm: 'center' },
+        flexDirection: { xs: 'column', sm: 'row' },
+        gap: { xs: 1.5, sm: 0 },
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', minWidth: 0 }}>
         <CreditCardIcon sx={{ mr: 2, color: 'primary.main' }} />
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="subtitle1">{method.cardNumber}</Typography>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Typography variant="subtitle1" sx={{ overflowWrap: 'anywhere' }}>
+              {method.cardNumber}
+            </Typography>
             {method.isDefault && (
               <Chip
                 label="Default"
                 size="small"
                 color="success"
-                sx={{ ml: 1, height: 20 }}
+                sx={{ height: 20 }}
               />
             )}
           </Box>
@@ -38,8 +42,8 @@ const PaymentMethodCard = ({ method, onEdit }) => {
         </Box>
       </Box>
 
-      <Box>
-        <Button size="small" onClick={() => onEdit(method)}>
+      <Box sx={{ width: { xs: '100%', sm: 'auto' } }}>
+        <Button size="small" fullWidth onClick={() => onEdit(method)} aria-label="Edit payment method">
           Edit
         </Button>
       </Box>

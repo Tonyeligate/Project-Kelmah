@@ -2,14 +2,18 @@ const { Wallet, Transaction, PaymentMethod, User } = require("../models");
 const { validateWallet } = require('../utils/validation');
 const { handleError } = require('../utils/controllerUtils');
 
+// Helper: get user ID from gateway-authenticated request
+const getUserId = (req) => req.user?.id || req.user?._id;
+
 // Get user's wallet balance
 exports.getBalance = async (req, res) => {
   try {
-    let wallet = await Wallet.findOne({ user: req.user._id });
+    const userId = getUserId(req);
+    let wallet = await Wallet.findOne({ user: userId });
 
     if (!wallet) {
       // Auto-provision an empty wallet on first access
-      wallet = new Wallet({ user: req.user._id, balance: 0 });
+      wallet = new Wallet({ user: userId, balance: 0 });
       await wallet.save();
     }
 
@@ -30,6 +34,7 @@ exports.getBalance = async (req, res) => {
 exports.deposit = async (req, res) => {
   try {
     const { amount, currency, paymentMethodId, reference } = req.body;
+    const userId = getUserId(req);
 
     if (!amount || amount <= 0) {
       return res.status(400).json({
@@ -38,9 +43,17 @@ exports.deposit = async (req, res) => {
       });
     }
 
-    let wallet = await Wallet.findOne({ user: req.user._id });
+    // Require a verified payment reference to prevent unverified deposits
+    if (!reference) {
+      return res.status(400).json({
+        success: false,
+        message: 'A payment reference is required for deposits',
+      });
+    }
+
+    let wallet = await Wallet.findOne({ user: userId });
     if (!wallet) {
-      wallet = new Wallet({ user: req.user._id, balance: 0, currency: currency || 'GHS' });
+      wallet = new Wallet({ user: userId, balance: 0, currency: currency || 'GHS' });
       await wallet.save();
     }
 
@@ -51,14 +64,14 @@ exports.deposit = async (req, res) => {
       });
     }
 
-    // Create a deposit transaction
+    // Create a deposit transaction with pending status until payment verification
     const transaction = await Transaction.create({
-      sender: req.user._id,
-      recipient: req.user._id,
+      sender: userId,
+      recipient: userId,
       amount,
       type: 'deposit',
-      status: 'completed',
-      reference: reference || `dep_${Date.now()}`,
+      status: 'pending',
+      reference,
       description: 'Wallet deposit',
     });
 
@@ -81,6 +94,7 @@ exports.deposit = async (req, res) => {
 exports.withdraw = async (req, res) => {
   try {
     const { amount, paymentMethodId, reference } = req.body;
+    const userId = getUserId(req);
 
     if (!amount || amount <= 0) {
       return res.status(400).json({
@@ -89,47 +103,35 @@ exports.withdraw = async (req, res) => {
       });
     }
 
-    const wallet = await Wallet.findOne({ user: req.user._id });
+    // Atomic balance check and deduction to prevent race conditions
+    const wallet = await Wallet.findOneAndUpdate(
+      { user: userId, status: 'active', balance: { $gte: amount } },
+      { $inc: { balance: -amount } },
+      { new: true }
+    );
+
     if (!wallet) {
-      return res.status(404).json({
-        success: false,
-        message: 'Wallet not found',
-      });
-    }
-
-    if (wallet.status !== 'active') {
-      return res.status(403).json({
-        success: false,
-        message: 'Wallet is not active',
-      });
-    }
-
-    if (wallet.balance < amount) {
-      return res.status(400).json({
-        success: false,
-        message: 'Insufficient funds',
-      });
-    }
-
-    if (amount > wallet.metadata.withdrawalLimit) {
-      return res.status(400).json({
-        success: false,
-        message: `Amount exceeds withdrawal limit of ${wallet.metadata.withdrawalLimit}`,
-      });
+      // Determine specific error
+      const existingWallet = await Wallet.findOne({ user: userId });
+      if (!existingWallet) {
+        return res.status(404).json({ success: false, message: 'Wallet not found' });
+      }
+      if (existingWallet.status !== 'active') {
+        return res.status(403).json({ success: false, message: 'Wallet is not active' });
+      }
+      return res.status(400).json({ success: false, message: 'Insufficient funds' });
     }
 
     // Create a withdrawal transaction
     const transaction = await Transaction.create({
-      sender: req.user._id,
-      recipient: req.user._id,
+      sender: userId,
+      recipient: userId,
       amount,
       type: 'withdrawal',
       status: 'completed',
       reference: reference || `wdr_${Date.now()}`,
       description: 'Wallet withdrawal',
     });
-
-    await wallet.deductFunds(amount, transaction);
 
     res.json({
       success: true,
@@ -147,7 +149,8 @@ exports.withdraw = async (req, res) => {
 // Get user's wallet
 exports.getWallet = async (req, res) => {
   try {
-    let wallet = await Wallet.findOne({ user: req.user._id })
+    const userId = getUserId(req);
+    let wallet = await Wallet.findOne({ user: userId })
       .populate("paymentMethods")
       .populate({
         path: "transactionHistory.transaction",
@@ -159,7 +162,7 @@ exports.getWallet = async (req, res) => {
 
     if (!wallet) {
       // Auto-provision an empty wallet on first access
-      wallet = new Wallet({ user: req.user._id, balance: 0 });
+      wallet = new Wallet({ user: userId, balance: 0 });
       await wallet.save();
     }
 
@@ -178,8 +181,9 @@ exports.createOrUpdateWallet = async (req, res) => {
     }
 
     const { currency, paymentMethods } = req.body;
+    const userId = getUserId(req);
 
-    let wallet = await Wallet.findOne({ user: req.user._id });
+    let wallet = await Wallet.findOne({ user: userId });
 
     if (wallet) {
       // Update existing wallet
@@ -190,7 +194,7 @@ exports.createOrUpdateWallet = async (req, res) => {
     } else {
       // Create new wallet
       wallet = new Wallet({
-        user: req.user._id,
+        user: userId,
         currency,
         paymentMethods,
       });
@@ -212,7 +216,7 @@ exports.addPaymentMethod = async (req, res) => {
   try {
     const { paymentMethod } = req.body;
 
-    const wallet = await Wallet.findOne({ user: req.user._id });
+    const wallet = await Wallet.findOne({ user: getUserId(req) });
     if (!wallet) {
       return res.status(404).json({ message: "Wallet not found" });
     }
@@ -233,7 +237,7 @@ exports.removePaymentMethod = async (req, res) => {
   try {
     const { paymentMethodId } = req.params;
 
-    const wallet = await Wallet.findOne({ user: req.user._id });
+    const wallet = await Wallet.findOne({ user: getUserId(req) });
     if (!wallet) {
       return res.status(404).json({ message: "Wallet not found" });
     }
@@ -254,7 +258,7 @@ exports.setDefaultPaymentMethod = async (req, res) => {
   try {
     const { paymentMethodId } = req.params;
 
-    const wallet = await Wallet.findOne({ user: req.user._id });
+    const wallet = await Wallet.findOne({ user: getUserId(req) });
     if (!wallet) {
       return res.status(404).json({ message: "Wallet not found" });
     }
@@ -280,13 +284,14 @@ exports.getTransactionHistory = async (req, res) => {
   try {
     const { page = 1, limit = 20 } = req.query;
 
-    const wallet = await Wallet.findOne({ user: req.user._id });
+    const userId = getUserId(req);
+    const wallet = await Wallet.findOne({ user: userId });
     if (!wallet) {
       return res.status(404).json({ message: "Wallet not found" });
     }
 
     const transactions = await Transaction.find({
-      $or: [{ sender: req.user._id }, { recipient: req.user._id }],
+      $or: [{ sender: userId }, { recipient: userId }],
     })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -294,7 +299,7 @@ exports.getTransactionHistory = async (req, res) => {
       .populate("sender recipient relatedContract relatedJob");
 
     const total = await Transaction.countDocuments({
-      $or: [{ sender: req.user._id }, { recipient: req.user._id }],
+      $or: [{ sender: userId }, { recipient: userId }],
     });
 
     res.json({

@@ -15,7 +15,7 @@ const maskPhoneNumber = (phoneNumber) => {
 exports.getPaymentMethods = async (req, res) => {
   try {
     const paymentMethods = await PaymentMethod.find({
-      user: req.user._id,
+      user: getUserId(req),
     })
       .select("-cardDetails -bankDetails -paypalDetails")
       .lean();
@@ -87,7 +87,7 @@ exports.addPaymentMethod = async (req, res) => {
     }
 
     const paymentMethod = new PaymentMethod({
-      user: req.user._id,
+      user: getUserId(req),
       type,
       isDefault,
       cardDetails: type === "credit_card" ? processedDetails : undefined,
@@ -129,7 +129,7 @@ exports.updatePaymentMethod = async (req, res) => {
 
     const paymentMethod = await PaymentMethod.findOne({
       _id: paymentMethodId,
-      user: req.user._id,
+      user: getUserId(req),
     });
 
     if (!paymentMethod) {
@@ -162,7 +162,7 @@ exports.removePaymentMethod = async (req, res) => {
 
     const paymentMethod = await PaymentMethod.findOne({
       _id: paymentMethodId,
-      user: req.user._id,
+      user: getUserId(req),
     });
 
     if (!paymentMethod) {
@@ -196,7 +196,7 @@ exports.verifyPaymentMethod = async (req, res) => {
 
     const paymentMethod = await PaymentMethod.findOne({
       _id: paymentMethodId,
-      user: req.user._id,
+      user: getUserId(req),
     });
 
     if (!paymentMethod) {
