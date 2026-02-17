@@ -1,5 +1,30 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Comprehensive Frontend Audit - Batch 2 (July 2026 – Currency, Loops, State, API Wiring, Theme, Responsive) ✅
+- 🎯 **Scope**: 49 files fixed from comprehensive audit findings across all frontend modules
+- 📦 **Commit**: `445496e3` — 306 insertions, 243 deletions
+- ✅ **Categories of fixes**:
+  - **Currency standardization**: `$` → `GH₵` across 15 files (contracts, payments, search, worker, map)
+  - **Infinite loop prevention**: `useApiHealth`/`useServiceStatus` `retryCount` state → `useRef` (2 files)
+  - **State mutation fix**: `ContractContext` immutable milestone update via functional `setContracts` (1 file)
+  - **Redux fixes**: `calendarSlice` non-serializable `Date` → `.toISOString()`, `useDashboard` dispatch object (2 files)
+  - **API wiring**: `hirerService` real API calls for payments/reviews, `JobResultsSection` bookmark wired to `jobsApi.saveJob`, `ReviewsPage` real API calls replacing fake `setTimeout` (4 files)
+  - **React Query migration**: deprecated `cacheTime` → `gcTime`, `keepPreviousData` option → `placeholderData` (1 file)
+  - **Theme alignment**: breakpoints 900/1200/1536, responsive `clamp()` typography, iOS zoom prevention, spacing object → number, deprecated `theme.js` annotated (3 files)
+  - **Responsive**: HirerDashboard/WorkerDashboard 2-column mobile grid layout (2 files)
+  - **Null safety**: `ErrorBoundary` `errorInfo?.componentStack`, `ReviewSystem` `pros/cons` guards, `websocketService` null content/status guards (3 files)
+  - **PWA**: window guard for SSR compatibility, bounded warm-up retries max 5 (2 files)
+  - **API client**: 401 refresh race condition lock (shared promise), refresh token rotation storage (1 file)
+  - **Date formatting**: `WorkerReviewsPage` removed double `formatDistanceToNow` formatting (1 file)
+  - **ContractsPage**: null-safe `client?.name` access, proper date sorting, added `contracts` to `useMemo` deps (1 file)
+- 🧪 **Build verified**: 13,944 modules, 0 errors, 4m 19s
+
+### Comprehensive Frontend Audit - Batch 1 (July 2026 – Core Wiring, Security, Redux, WebSocket) ✅
+- 🎯 **Scope**: 19 files — original 10 audit findings + 4 critical fixes from comprehensive audit
+- 📦 **Commit**: `31a6d8c1` — 870 insertions, 83 deletions
+- ✅ **Fixes included**: Missing `/jobs/:id/apply` route, WebSocket singleton auto-connect hook, dual API_ENDPOINTS consolidation, `getServicePath` double-prefix fix, logout cleanup standardization, production console log suppression, interval cleanup, error boundaries on all protected routes, `secureStorage` key desync fix, volatile fingerprint removal, `useJobs` Redux dispatch bugs, `usePayments` method name alignment
+- 🧪 **Build verified**: 13,944 modules, 0 errors
+
 ### Frontend Dry Audit (Feb 16, 2026 – Full Page/Module Wiring, Security, and Performance Sweep) ✅
 - 🎯 **Scope**: End-to-end dry audit of frontend pages/modules/routing/wiring and supporting directories under `kelmah-frontend/src/*` (including backup audit tree review).
 - 📄 **Primary report**:
