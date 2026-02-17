@@ -320,14 +320,14 @@ const EarningsTracker = () => {
     const metrics = [
       {
         title: 'Total Earnings',
-        value: `$${summary.totalEarnings.toLocaleString()}`,
+        value: `GH₵${summary.totalEarnings.toLocaleString()}`,
         icon: <MoneyIcon />,
         growth: summary.growth,
         color: 'primary',
       },
       {
         title: 'This Month',
-        value: `$${summary.monthlyEarnings.toLocaleString()}`,
+        value: `GH₵${summary.monthlyEarnings.toLocaleString()}`,
         icon: <TrendingUpIcon />,
         growth: 8.3,
         color: 'success',
@@ -610,7 +610,7 @@ const EarningsTracker = () => {
                     />
                     <ListItemSecondaryAction>
                       <Typography variant="h6" fontWeight={600}>
-                        ${category.earnings.toLocaleString()}
+                        GH₵{category.earnings.toLocaleString()}
                       </Typography>
                     </ListItemSecondaryAction>
                   </ListItem>
@@ -711,7 +711,7 @@ const EarningsTracker = () => {
                     }}
                   >
                     <Typography variant="h6" fontWeight={600} color="primary">
-                      ${transaction.amount.toFixed(2)}
+                      GH₵{transaction.amount.toFixed(2)}
                     </Typography>
                     <Chip
                       icon={getStatusIcon(transaction.status)}
@@ -759,7 +759,7 @@ const EarningsTracker = () => {
                     <TableCell>{transaction.client}</TableCell>
                     <TableCell align="right">
                       <Typography variant="h6" fontWeight={600} color="primary">
-                        ${transaction.amount.toFixed(2)}
+                        GH₵{transaction.amount.toFixed(2)}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -889,7 +889,7 @@ const EarningsTracker = () => {
                   Amount
                 </Typography>
                 <Typography variant="h6" color="primary">
-                  ${selectedTransaction.amount.toFixed(2)}
+                  GH₵{selectedTransaction.amount.toFixed(2)}
                 </Typography>
               </Grid>
               <Grid item xs={12}>

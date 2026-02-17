@@ -271,6 +271,10 @@ const HeroSection = styled(Box)(({ theme }) => ({
     padding: theme.spacing(12, 0),
     minHeight: '85vh',
   },
+  [theme.breakpoints.up('lg')]: {
+    minHeight: '75vh',
+    padding: theme.spacing(12, 0),
+  },
   '&::before': {
     content: '""',
     position: 'absolute',

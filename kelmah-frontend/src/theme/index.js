@@ -303,18 +303,36 @@ const darkTheme = createTheme({
             borderColor: 'rgba(255, 215, 0, 0.35)',
             boxShadow: '0 30px 70px rgba(0, 0, 0, 0.65)',
           },
+          '@media (min-width: 900px)': {
+            boxShadow: '0 12px 30px rgba(3, 3, 5, 0.35)',
+            '&:hover': {
+              boxShadow: '0 18px 45px rgba(0, 0, 0, 0.45)',
+            },
+          },
         },
         elevation1: {
           boxShadow: '0 18px 35px rgba(6, 6, 9, 0.4)',
+          '@media (min-width: 900px)': {
+            boxShadow: '0 10px 20px rgba(6, 6, 9, 0.25)',
+          },
         },
         elevation4: {
           boxShadow: '0 30px 60px rgba(0, 0, 0, 0.55)',
+          '@media (min-width: 900px)': {
+            boxShadow: '0 15px 35px rgba(0, 0, 0, 0.35)',
+          },
         },
         elevation8: {
           boxShadow: '0 40px 85px rgba(0, 0, 0, 0.65)',
+          '@media (min-width: 900px)': {
+            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.45)',
+          },
         },
         elevation12: {
           boxShadow: '0 50px 100px rgba(0, 0, 0, 0.7)',
+          '@media (min-width: 900px)': {
+            boxShadow: '0 25px 60px rgba(0, 0, 0, 0.5)',
+          },
         },
       },
     },
@@ -341,8 +359,8 @@ const darkTheme = createTheme({
           borderRadius: 8,
           textTransform: 'none',
           fontWeight: 600,
-          padding: '10px 26px',
-          fontSize: '0.95rem',
+          padding: 'clamp(8px, 1vw, 10px) clamp(16px, 2vw, 26px)',
+          fontSize: 'clamp(0.875rem, 1vw, 0.95rem)',
           transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
           minHeight: '44px', // Better touch target
           letterSpacing: '0.02em',
@@ -804,8 +822,8 @@ const lightTheme = createTheme({
           borderRadius: 8,
           textTransform: 'none',
           fontWeight: 600,
-          padding: '10px 26px',
-          fontSize: '0.95rem',
+          padding: 'clamp(8px, 1vw, 10px) clamp(16px, 2vw, 26px)',
+          fontSize: 'clamp(0.875rem, 1vw, 0.95rem)',
           transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
           minHeight: '44px',
           letterSpacing: '0.02em',

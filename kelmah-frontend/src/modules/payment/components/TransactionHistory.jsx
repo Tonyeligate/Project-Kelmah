@@ -111,7 +111,7 @@ const TransactionHistory = ({ transactions }) => {
                     row.type === 'received' ? 'success.main' : 'error.main'
                   }
                 >
-                  {row.type === 'received' ? '+' : '-'}${row.amount.toFixed(2)}
+                  {row.type === 'received' ? '+' : '-'}GH₵{row.amount.toFixed(2)}
                 </Typography>
               </TableCell>
               <TableCell>{row.type}</TableCell>

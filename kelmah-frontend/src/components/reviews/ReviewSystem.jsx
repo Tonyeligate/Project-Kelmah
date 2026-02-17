@@ -605,7 +605,12 @@ const ReviewSystem = ({
               <Button
                 size="small"
                 startIcon={<ThumbUpIcon />}
-                onClick={() => reviewService.voteHelpful(review._id)}
+                onClick={async () => {
+                  try {
+                    await reviewService.voteHelpful(review._id);
+                    setReviews(prev => prev.map(r => r._id === review._id ? { ...r, helpfulVotes: (r.helpfulVotes || 0) + 1 } : r));
+                  } catch (e) { /* ignore */ }
+                }}
                 sx={{ color: 'rgba(255,255,255,0.7)' }}
               >
                 Helpful ({review.helpfulVotes})
@@ -923,6 +928,46 @@ const ReviewSystem = ({
       {/* Review Submission Dialog */}
       <ReviewSubmissionForm />
 
+      {/* Worker Response Dialog */}
+      <Dialog
+        open={responseDialogOpen}
+        onClose={() => setResponseDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            background: 'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
+            border: '1px solid rgba(255,215,0,0.2)',
+          },
+        }}
+      >
+        <DialogTitle sx={{ color: '#FFD700', fontWeight: 700 }}>Respond to Review</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Your Response"
+            fullWidth
+            multiline
+            rows={4}
+            variant="outlined"
+            id="worker-response-text"
+            sx={{ mt: 1, '& .MuiInputBase-root': { color: '#fff' }, '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' } }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setResponseDialogOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>Cancel</Button>
+          <Button
+            variant="contained"
+            sx={{ backgroundColor: '#FFD700', color: '#000', '&:hover': { backgroundColor: '#FFC107' } }}
+            onClick={() => {
+              const text = document.getElementById('worker-response-text')?.value?.trim();
+              if (text && selectedReview?._id) handleAddResponse(selectedReview._id, text);
+            }}
+          >Submit Response</Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Context Menu */}
       <Menu
         anchorEl={menuAnchor}
@@ -933,7 +978,14 @@ const ReviewSystem = ({
         }}
       >
         <MenuItem
-          onClick={() => reviewService.voteHelpful(selectedReview?._id)}
+          onClick={async () => {
+            try {
+              await reviewService.voteHelpful(selectedReview?._id);
+              setReviews(prev => prev.map(r => r._id === selectedReview?._id ? { ...r, helpfulVotes: (r.helpfulVotes || 0) + 1 } : r));
+            } catch (e) { /* ignore */ }
+            setMenuAnchor(null);
+            setSelectedReview(null);
+          }}
         >
           <ThumbUpIcon sx={{ mr: 1 }} /> Mark Helpful
         </MenuItem>

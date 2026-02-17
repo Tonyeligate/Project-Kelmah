@@ -51,7 +51,8 @@ class DashboardService {
 
       // Join dashboard channel
       try {
-        const userId = JSON.parse(atob(this.token.split('.')[1])).sub;
+        const base64 = this.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+        const userId = JSON.parse(atob(base64)).sub;
         if (userId) this.socket.emit('join:dashboard', userId);
       } catch (err) {
         console.warn('Failed to decode token for dashboard join:', err.message);
@@ -85,7 +86,8 @@ class DashboardService {
 
     if (this.token) {
       try {
-        const userId = JSON.parse(atob(this.token.split('.')[1])).sub;
+        const base64 = this.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+        const userId = JSON.parse(atob(base64)).sub;
         if (userId) this.socket.emit('leave:dashboard', userId);
       } catch (err) {
         console.warn('Failed to decode token for dashboard leave:', err.message);

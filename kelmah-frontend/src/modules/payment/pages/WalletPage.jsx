@@ -96,7 +96,7 @@ const WalletPage = () => {
         </Typography>
       </Paper>
       {/* Transaction Filters */}
-      <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 2 }, alignItems: 'center' }}>
+      <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 2, md: 2, lg: 1.5 }, alignItems: 'center' }}>
         <TextField
           label="Start Date"
           type="date"

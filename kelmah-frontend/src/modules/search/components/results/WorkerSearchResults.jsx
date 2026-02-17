@@ -106,7 +106,7 @@ const WorkerSearchResults = ({
     if (filters.budgetMin || filters.budgetMax || filters.maxRate) {
       activeFilters.push({
         key: 'budget',
-        value: `₵${filters.budgetMin || 0} - ₵${
+        value: `GH₵${filters.budgetMin || 0} - GH₵${
           filters.budgetMax || filters.maxRate || 'Any'
         }`,
       });

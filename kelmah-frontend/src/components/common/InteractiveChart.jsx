@@ -54,11 +54,6 @@ const InteractiveChart = ({
     },
   };
 
-  const seriesVariants = {
-    hidden: { opacity: 0, pathLength: 0 },
-    visible: { opacity: 1, pathLength: 1, transition: { duration: 1.5 } },
-  };
-
   return (
     <Paper
       elevation={3}
@@ -106,8 +101,7 @@ const InteractiveChart = ({
                 name={s.name || s.dataKey || `Series ${index + 1}`}
                 stroke={s.color || theme.palette.secondary.main}
                 fill={s.color || theme.palette.secondary.main}
-                component={motion.path}
-                variants={seriesVariants}
+                isAnimationActive={true}
               />
             ))}
           </ChartComponent>

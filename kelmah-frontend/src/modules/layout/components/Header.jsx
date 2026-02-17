@@ -734,8 +734,8 @@ const Header = ({
   const { unreadCount: notifUnreadCount, notifications: notifList = [], markAllAsRead } =
     useNotifications();
   const unreadNotifications = showUserFeatures ? notifUnreadCount || 0 : 0;
-  // ✅ MOBILE-AUDIT FIX: Wire to real message context (was hardcoded to 2)
-  const unreadMessages = showUserFeatures ? (notifUnreadCount || 0) : 0;
+  // TODO: Wire to messaging context (useMessages) for real unread message count
+  const unreadMessages = 0;
   const isUserOnline = showUserFeatures ? true : false;
 
   const handleProfileMenuOpen = (event) => {

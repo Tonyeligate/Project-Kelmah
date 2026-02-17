@@ -282,7 +282,7 @@ export const updateWorkerAvailability = createAsyncThunk(
       };
 
       const response = await api.put(
-        `/availability/${workerId}`,
+        `/users/workers/${workerId}/availability`,
         payload,
       );
 

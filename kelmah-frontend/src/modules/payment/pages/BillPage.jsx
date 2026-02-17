@@ -159,7 +159,7 @@ const BillPage = () => {
           Your Bills
         </Typography>
         {/* Filters */}
-        <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 2 }, alignItems: 'center' }}>
+        <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 2, md: 2, lg: 1.5 }, alignItems: 'center' }}>
           <Tooltip title="Filter bills due on or after this date">
             <TextField
               label="From"
@@ -259,7 +259,7 @@ const BillPage = () => {
                     }
                     secondary={`Due: ${new Date(bill.dueDate).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' })}`}
                   />
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, flexWrap: 'wrap', width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2, md: 2, lg: 1.5 }, flexWrap: 'wrap', width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
                     {getStatusChip(bill.status)}
                     <Typography variant="h6" fontWeight="medium">
                       {currencyFormatter.format(bill.amount)}

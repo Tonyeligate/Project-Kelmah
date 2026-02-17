@@ -1,3 +1,10 @@
+/* Kelmah theme CSS variables for FullCalendar integration */
+:root {
+  --primary-main: #FFD700;
+  --primary-dark: #C7A600;
+  --background-paper: #1e1e1e;
+}
+
 .fc {
   height: 100%;
   background: var(--background-paper);

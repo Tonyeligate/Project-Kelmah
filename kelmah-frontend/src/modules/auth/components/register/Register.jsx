@@ -727,7 +727,7 @@ const Register = () => {
         }}
       >
         <Typography variant="body2" sx={{ color: '#FFFFFF' }}>
-          By creating your account, you&apos;re joining Ghana&apos;s most
+          By creating your account, you're joining Ghana's most
           trusted platform for skilled trades and professional services.
         </Typography>
       </Box>
@@ -763,8 +763,8 @@ const Register = () => {
                 >
                   {renderRoleCard(
                     'worker',
-                    'I&apos;m a Skilled Worker',
-                    'I&apos;m a tradesperson looking for work opportunities',
+                    "I'm a Skilled Worker",
+                    "I'm a tradesperson looking for work opportunities",
                     <HandymanIcon
                       sx={{ fontSize: { xs: 30, sm: 40 }, color: '#000' }}
                     />,
@@ -953,7 +953,7 @@ const Register = () => {
                   variant="body2"
                   sx={{ color: '#FFFFFF', fontWeight: 500 }}
                 >
-                  Connect with Ghana&apos;s skilled trade professionals
+                  Connect with Ghana's skilled trade professionals
                 </Typography>
               </Stack>
             </Stack>

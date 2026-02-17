@@ -194,7 +194,7 @@ const JobManagement = () => {
             <Typography variant="body2" color="text.secondary">
               Budget
             </Typography>
-            <Typography variant="body1">${job.budget}</Typography>
+            <Typography variant="body1">GH₵{job.budget}</Typography>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="body2" color="text.secondary">

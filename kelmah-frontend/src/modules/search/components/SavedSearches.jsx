@@ -101,7 +101,7 @@ const SavedSearches = ({
     } finally {
       setLoading(false);
     }
-  }, [user.id, enqueueSnackbar]);
+  }, [user?.id, enqueueSnackbar]);
 
   useEffect(() => {
     if (user?.id) {
@@ -114,7 +114,7 @@ const SavedSearches = ({
     try {
       const searchData = {
         ...formData,
-        userId: user.id,
+        userId: user?.id,
       };
 
       if (isEditing && selectedSearch) {
@@ -126,7 +126,7 @@ const SavedSearches = ({
           variant: 'success',
         });
       } else {
-        await smartSearchService.createSavedSearch(user.id, searchData);
+        await smartSearchService.createSavedSearch(user?.id, searchData);
         enqueueSnackbar('Search saved successfully', { variant: 'success' });
       }
 
@@ -249,8 +249,8 @@ const SavedSearches = ({
     if (filters.location) parts.push(`📍 ${filters.location}`);
     if (filters.category) parts.push(`🔧 ${filters.category}`);
     if (filters.minBudget || filters.maxBudget) {
-      const min = filters.minBudget ? formatCurrency(filters.minBudget) : '₵0';
-      const max = filters.maxBudget ? formatCurrency(filters.maxBudget) : '₵∞';
+      const min = filters.minBudget ? formatCurrency(filters.minBudget) : 'GH₵0';
+      const max = filters.maxBudget ? formatCurrency(filters.maxBudget) : 'GH₵∞';
       parts.push(`💰 ${min} - ${max}`);
     }
     if (filters.urgency) parts.push(`⏰ ${filters.urgency}`);

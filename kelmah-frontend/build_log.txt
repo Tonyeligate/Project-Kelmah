@@ -1,0 +1,1 @@
+npm warn config ignoring workspace config at C:\Users\aship\Desktop\Project-Kelmah\kelmah-frontend/.npmrc

@@ -175,7 +175,6 @@ const EnhancedMessagingPage = () => {
         );
         if (existing) {
           selectConversation(existing);
-          setMessages([]);
         } else {
           navigate(`/messages?conversation=${conversationId}`, {
             replace: true,
@@ -192,7 +191,6 @@ const EnhancedMessagingPage = () => {
         );
         if (existing) {
           selectConversation(existing);
-          setMessages([]);
           navigate(`/messages?conversation=${existing.id}`, { replace: true });
           return;
         }

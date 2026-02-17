@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Box,
   Grid,
@@ -118,40 +118,41 @@ const EnhancedReviewsPage = () => {
     setFeedback({ open: true, message, severity });
   };
 
+  // Load reviews function (extracted for reuse by refresh button)
+  const loadReviews = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      if (!user?.id) {
+        setReviews([]);
+        setReviewStats({});
+      } else {
+        const [stats, workerReviews] = await Promise.all([
+          reviewService.getReviewStats(user.id),
+          reviewService.getUserReviews(user.id, 1, 20),
+        ]);
+        setReviewStats({
+          overall: {
+            averageRating: stats.averageRating,
+            totalReviews: stats.totalReviews,
+            ratingDistribution: stats.ratingDistribution,
+          },
+          categories: stats.categoryRatings || {},
+          recent: {},
+        });
+        setReviews(workerReviews?.reviews || []);
+      }
+    } catch (error) {
+      console.error('Failed to load reviews:', error);
+      showFeedback('Failed to load reviews', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user?.id]);
+
   // Initialize data
   useEffect(() => {
-    const loadReviews = async () => {
-      setIsLoading(true);
-      try {
-        if (!user?.id) {
-          setReviews([]);
-          setReviewStats({});
-        } else {
-          const [stats, workerReviews] = await Promise.all([
-            reviewService.getReviewStats(user.id),
-            reviewService.getUserReviews(user.id, 1, 20),
-          ]);
-          setReviewStats({
-            overall: {
-              averageRating: stats.averageRating,
-              totalReviews: stats.totalReviews,
-              ratingDistribution: stats.ratingDistribution,
-            },
-            categories: stats.categoryRatings || {},
-            recent: {},
-          });
-          setReviews(workerReviews?.reviews || []);
-        }
-      } catch (error) {
-        console.error('Failed to load reviews:', error);
-        showFeedback('Failed to load reviews', 'error');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     loadReviews();
-  }, [user?.id]);
+  }, [loadReviews]);
 
   // Filter and sort reviews
   useEffect(() => {
@@ -875,7 +876,7 @@ const EnhancedReviewsPage = () => {
           </Box>
 
           <IconButton
-            onClick={() => window.location.reload()}
+            onClick={() => loadReviews()}
             aria-label="Refresh reviews"
             sx={{
               background: alpha('#FFD700', 0.1),

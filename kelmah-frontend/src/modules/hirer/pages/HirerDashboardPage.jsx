@@ -230,7 +230,7 @@ const HirerDashboardPage = () => {
 
   // Summary skeleton for overview while data loads
   const LoadingOverviewSkeleton = () => (
-    <Grid container spacing={{ xs: 1.5, sm: 3 }}>
+    <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }}>
       {[...Array(4)].map((_, i) => (
         <Grid item xs={6} sm={6} md={3} key={i}>
           <Skeleton variant="rounded" height={180} animation="wave" />
@@ -573,7 +573,7 @@ const HirerDashboardPage = () => {
         )}
 
         {/* 4 METRIC CARDS IN ONE ROW - LC Portal Style with Click Actions */}
-        <Grid container spacing={{ xs: 1.5, sm: 3 }} sx={{ mb: 4 }}>
+        <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }} sx={{ mb: 4 }}>
           {/* Card 1 - Orange/Yellow - Active Jobs */}
           <Grid item xs={6} sm={6} md={3}>
             <Paper
@@ -752,7 +752,7 @@ const HirerDashboardPage = () => {
         </Grid>
 
         {/* TWO CHART SECTIONS - LC Portal Style */}
-        <Grid container spacing={3}>
+        <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }}>
           {/* Bills Chart / Spending Chart */}
           <Grid item xs={12} md={6}>
             <Paper

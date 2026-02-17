@@ -151,7 +151,7 @@ function SearchFilters({ filters, onFilterChange }) {
               onChange={handleChange('min_budget')}
               InputProps={{
                 startAdornment: (
-                  <InputAdornment position="start">$</InputAdornment>
+                  <InputAdornment position="start">GH₵</InputAdornment>
                 ),
               }}
             />
@@ -166,7 +166,7 @@ function SearchFilters({ filters, onFilterChange }) {
               onChange={handleChange('max_budget')}
               InputProps={{
                 startAdornment: (
-                  <InputAdornment position="start">$</InputAdornment>
+                  <InputAdornment position="start">GH₵</InputAdornment>
                 ),
               }}
             />

@@ -10,6 +10,10 @@ import { getWebSocketUrl } from './socketUrl';
  * WebSocket service for real-time communication
  * Handles Socket.io connection, messaging, notifications, and live updates
  */
+let _notifIdCounter = 0;
+/** Generate a unique notification ID that won't collide within the same millisecond */
+const uniqueNotifId = () => `${Date.now()}-${++_notifIdCounter}`;
+
 class WebSocketService {
   constructor() {
     this.socket = null;
@@ -98,7 +102,7 @@ class WebSocketService {
       // Dispatch connection success
       store.dispatch(
         addNotification({
-          id: Date.now(),
+          id: uniqueNotifId(),
           type: 'system',
           title: 'Connected',
           message: 'Real-time features activated',
@@ -116,7 +120,7 @@ class WebSocketService {
 
       store.dispatch(
         addNotification({
-          id: Date.now(),
+          id: uniqueNotifId(),
           type: 'system',
           title: 'Disconnected',
           message: 'Reconnecting to real-time services...',
@@ -136,7 +140,7 @@ class WebSocketService {
       console.log('🔄 WebSocket reconnected after', attemptNumber, 'attempts');
       store.dispatch(
         addNotification({
-          id: Date.now(),
+          id: uniqueNotifId(),
           type: 'system',
           title: 'Reconnected',
           message: 'Real-time features restored',
@@ -150,7 +154,7 @@ class WebSocketService {
       console.error('❌ WebSocket reconnection failed');
       store.dispatch(
         addNotification({
-          id: Date.now(),
+          id: uniqueNotifId(),
           type: 'system',
           title: 'Connection Failed',
           message: 'Unable to connect to real-time services',
@@ -237,7 +241,7 @@ class WebSocketService {
     this.socket.on('maintenance-notice', (data) => {
       store.dispatch(
         addNotification({
-          id: Date.now(),
+          id: uniqueNotifId(),
           type: 'system',
           title: 'Maintenance Notice',
           message: data.message,
@@ -332,7 +336,7 @@ class WebSocketService {
 
     store.dispatch(
       addNotification({
-        id: Date.now(),
+        id: uniqueNotifId(),
         type: 'job',
         title: config.title,
         message: data.message,
@@ -363,7 +367,7 @@ class WebSocketService {
 
     store.dispatch(
       addNotification({
-        id: Date.now(),
+        id: uniqueNotifId(),
         type: 'job-application',
         title:
           data.type === 'new-application'
@@ -404,7 +408,7 @@ class WebSocketService {
 
     store.dispatch(
       addNotification({
-        id: Date.now(),
+        id: uniqueNotifId(),
         type: 'job-status',
         title: `Job ${statusLabel}`,
         message: `${config.icon} ${data.message || 'Status changed'}`,
@@ -452,7 +456,7 @@ class WebSocketService {
 
     store.dispatch(
       addNotification({
-        id: Date.now(),
+        id: uniqueNotifId(),
         type: 'payment',
         title: config.title,
         message: `${config.icon} ${data.message}`,
@@ -491,7 +495,7 @@ class WebSocketService {
 
     store.dispatch(
       addNotification({
-        id: Date.now(),
+        id: uniqueNotifId(),
         type: 'system',
         title: data.title,
         message: data.message,
@@ -721,7 +725,7 @@ class WebSocketService {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       store.dispatch(
         addNotification({
-          id: Date.now(),
+          id: uniqueNotifId(),
           type: 'system',
           title: 'Connection Failed',
           message:

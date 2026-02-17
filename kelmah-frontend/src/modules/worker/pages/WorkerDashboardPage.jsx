@@ -299,7 +299,7 @@ const WorkerDashboardPage = () => {
 
   // Loading skeleton component
   const LoadingSkeleton = () => (
-    <Grid container spacing={{ xs: 1.5, sm: 3 }} sx={{ mb: 4 }}>
+    <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }} sx={{ mb: 4 }}>
       {[1, 2, 3, 4].map((item) => (
         <Grid item xs={6} sm={6} md={3} key={item}>
           <Skeleton variant="rounded" height={120} animation="wave" />
@@ -481,7 +481,7 @@ const WorkerDashboardPage = () => {
       ) : (
         <>
           {/* Metric Cards - 4 colored cards LC Portal style */}
-          <Grid container spacing={{ xs: 1.5, sm: 3 }} sx={{ mb: 4 }}>
+          <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }} sx={{ mb: 4 }}>
             {metricCards.map((card, index) => (
               <Grid item xs={6} sm={6} md={3} key={index}>
                 <Tooltip title={card.tooltip} arrow placement="top">

@@ -11,6 +11,7 @@ class MapService {
     this.defaultCenter = [5.6037, -0.187]; // Accra, Ghana default for West Africa
     this.watchId = null;
     this.locationCache = new Map();
+    this._maxCacheSize = 500;
 
     // Vocational job categories specific to the platform
     this.vocationalCategories = [
@@ -337,6 +338,10 @@ class MapService {
         coordinates: { latitude, longitude },
       };
 
+      if (this.locationCache.size >= this._maxCacheSize) {
+        const firstKey = this.locationCache.keys().next().value;
+        this.locationCache.delete(firstKey);
+      }
       this.locationCache.set(cacheKey, result);
       return result;
     } catch (error) {
@@ -383,6 +388,10 @@ class MapService {
       }));
 
       if (results.length > 0) {
+        if (this.locationCache.size >= this._maxCacheSize) {
+          const firstKey = this.locationCache.keys().next().value;
+          this.locationCache.delete(firstKey);
+        }
         this.locationCache.set(cacheKey, results);
       }
 
