@@ -71,6 +71,7 @@ import messagingService from '../services/messagingService';
 import ConversationList from '../components/common/ConversationList';
 import Chatbox from '../components/common/Chatbox';
 import SEO from '../../common/components/common/SEO';
+import EmptyState from '../../../components/common/EmptyState';
 
 // Enhanced Messaging Page with modern features
 const EnhancedMessagingPage = () => {
@@ -1494,11 +1495,11 @@ const EnhancedMessagingPage = () => {
               </Typography>
 
               {filteredConversations.length === 0 && (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography sx={{ color: 'text.secondary', fontSize: '0.9rem' }}>
-                    {searchQuery ? 'No conversations match your search' : 'No conversations yet'}
-                  </Typography>
-                </Box>
+                <EmptyState
+                  variant={searchQuery ? 'search' : 'messages'}
+                  title={searchQuery ? 'No conversations match your search' : 'No conversations yet'}
+                  subtitle={searchQuery ? 'Try different keywords' : 'Start chatting by finding a worker or hirer'}
+                />
               )}
 
               {filteredConversations.map((conversation) => {

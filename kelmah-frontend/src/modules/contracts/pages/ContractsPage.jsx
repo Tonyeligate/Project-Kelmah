@@ -33,6 +33,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { contractService } from '../services/contractService';
 import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
+import EmptyState from '../../../components/common/EmptyState';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All contracts' },
@@ -366,21 +367,13 @@ const ContractsPage = () => {
                 borderRadius: 3,
               }}
             >
-              <Typography variant="h6" sx={{ mb: 1 }}>
-                No contracts match your filters yet
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Try adjusting your search or create a new contract to get
-                started.
-              </Typography>
-              <Button
-                variant="contained"
-                sx={{ mt: 3 }}
-                component={RouterLink}
-                to="/contracts/create"
-              >
-                Create Contract
-              </Button>
+              <EmptyState
+                variant="contracts"
+                title="No contracts match your filters yet"
+                subtitle="Try adjusting your search or create a new contract to get started."
+                actionLabel="Create Contract"
+                onAction={() => {}}
+              />
             </Box>
           </Grid>
         )}

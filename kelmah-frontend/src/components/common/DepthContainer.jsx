@@ -25,7 +25,7 @@ const DepthContainer = ({
         position: 'relative',
         transformStyle: 'preserve-3d',
         perspective,
-        willChange: 'transform',
+        // willChange removed — wastes GPU memory when not actively animating
         boxShadow: shadowMap[depth] || shadowMap.medium,
         borderRadius: 2,
         ...sx,

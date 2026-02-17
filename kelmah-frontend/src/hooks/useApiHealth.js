@@ -24,9 +24,6 @@ export const useApiHealth = () => {
           try {
             const response = await fetch(healthUrl, {
               method: 'GET',
-              headers: {
-                'ngrok-skip-browser-warning': 'true',
-              },
               signal: AbortSignal.timeout(8000), // Increased timeout for cold starts
             });
 

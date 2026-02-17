@@ -151,7 +151,7 @@ const getCategoryIcon = (category) => CATEGORY_ICONS[category] || WorkIcon;
 const JobResultsSection = ({
   jobs,
   loading,
-  error,
+  error = null,
   searchQuery,
   selectedCategory,
   selectedLocation,
@@ -160,7 +160,7 @@ const JobResultsSection = ({
   onClearLocation,
   onClearAllFilters,
   navigate,
-  authState,
+  authState = { isAuthenticated: false },
   platformStats,
   isSmallMobile,
 }) => {
@@ -1109,11 +1109,6 @@ JobResultsSection.propTypes = {
     loading: PropTypes.bool,
   }).isRequired,
   isSmallMobile: PropTypes.bool.isRequired,
-};
-
-JobResultsSection.defaultProps = {
-  error: null,
-  authState: { isAuthenticated: false },
 };
 
 export default JobResultsSection;

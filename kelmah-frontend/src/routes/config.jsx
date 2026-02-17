@@ -220,7 +220,7 @@ const EscrowDetailsPage = lazy(
 
 // Scheduling
 const TempSchedulingPage = lazy(
-  () => import('../modules/scheduling/pages/TempSchedulingPage'),
+  () => import('../modules/scheduling/pages/SchedulingPage'),
 );
 
 // Admin Pages

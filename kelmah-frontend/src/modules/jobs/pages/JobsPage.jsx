@@ -852,6 +852,7 @@ const JobsPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
+            {...motionProps}
           >
             <Box
               sx={{
@@ -975,7 +976,7 @@ const JobsPage = () => {
                           size="small" // ✅ Changed from conditional to always "small" for consistency
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          onKeyPress={(e) => {
+                          onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                               console.log('🔍 Search triggered via Enter key!');
                               // Search is already triggered by state change
@@ -1452,6 +1453,7 @@ const JobsPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
+            {...motionProps}
           >
             <Box
               sx={{
@@ -1793,7 +1795,8 @@ const JobsPage = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: index * 0.1 }}
-                      whileHover={{ scale: isSmallMobile ? 1 : 1.02 }} // ✅ Disable scale on mobile
+                      whileHover={{ scale: isSmallMobile ? 1 : 1.02 }}
+                      {...motionProps} // ✅ Disable scale on mobile
                     >
                       <Card
                         sx={{
@@ -2393,6 +2396,7 @@ const JobsPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
+            {...motionProps}
           >
             <Box
               sx={{
@@ -2475,6 +2479,7 @@ const JobsPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.8 }}
+            {...motionProps}
           >
             <Paper
               sx={{

@@ -601,12 +601,19 @@ class WebSocketService {
   }
 
   /**
-   * Process queued messages
+   * Process queued messages (drops messages older than 30 seconds)
    */
   processMessageQueue() {
-    console.log('📨 Processing', this.messageQueue.length, 'queued messages');
+    const now = Date.now();
+    const STALE_MS = 30_000;
+    const fresh = this.messageQueue.filter((m) => now - m.timestamp < STALE_MS);
+    const stale = this.messageQueue.length - fresh.length;
+    if (stale > 0) {
+      console.log(`🗑️ Dropped ${stale} stale queued messages`);
+    }
+    console.log('📨 Processing', fresh.length, 'queued messages');
 
-    this.messageQueue.forEach(({ event, data }) => {
+    fresh.forEach(({ event, data }) => {
       this.socket.emit(event, data);
     });
 

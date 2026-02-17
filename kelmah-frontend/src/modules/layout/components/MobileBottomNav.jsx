@@ -20,6 +20,7 @@ import { useSelector } from 'react-redux';
 import { BRAND_COLORS } from '../../../theme';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
 import { Z_INDEX, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
+import useKeyboardVisible from '../../../hooks/useKeyboardVisible';
 
 // Styled Components - Clean mobile-first design
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -91,6 +92,7 @@ const MobileBottomNav = () => {
   const theme = useTheme();
   const path = location.pathname;
   const { unreadCount = 0 } = useNotifications();
+  const { isKeyboardVisible } = useKeyboardVisible();
   
   // Get user role from Redux auth state (not path-based)
   const { user, isAuthenticated } = useSelector((state) => state.auth);
@@ -201,6 +203,9 @@ const MobileBottomNav = () => {
       navigate(item.path);
     }
   };
+
+  // Hide bottom nav when virtual keyboard is open
+  if (isKeyboardVisible) return null;
 
   return (
     <StyledPaper elevation={0} component="nav" aria-label="Main navigation">

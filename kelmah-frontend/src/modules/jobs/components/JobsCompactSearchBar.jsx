@@ -43,7 +43,7 @@ const JobsCompactSearchBar = ({
           size="small"
           value={searchValue}
           onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-          onKeyPress={handleSearchKeyPress}
+          onKeyDown={handleSearchKeyPress}
           placeholder={placeholder}
           InputProps={{
             startAdornment: (

@@ -742,11 +742,4 @@ SmartJobRecommendations.propTypes = {
   filterCriteria: PropTypes.object,
 };
 
-SmartJobRecommendations.defaultProps = {
-  maxRecommendations: 6,
-  showHeader: true,
-  onJobSelect: null,
-  filterCriteria: {},
-};
-
 export default SmartJobRecommendations;

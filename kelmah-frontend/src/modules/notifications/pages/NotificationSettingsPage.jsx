@@ -123,7 +123,7 @@ const NotificationSettingsPage = () => {
                       }
                     />
                   }
-                  label={key.replace(/_/g, ' ')}
+                  label={key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
                 />
               ))}
             </FormGroup>

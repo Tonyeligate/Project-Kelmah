@@ -15,8 +15,8 @@ import {
 import PropTypes from 'prop-types';
 
 const NotificationSettings = ({
-  settings,
-  loading,
+  settings = null,
+  loading = false,
   updateNotificationPreferences,
 }) => {
   const [localSettings, setLocalSettings] = useState({
@@ -145,9 +145,6 @@ NotificationSettings.propTypes = {
   updateNotificationPreferences: PropTypes.func.isRequired,
 };
 
-NotificationSettings.defaultProps = {
-  settings: null,
-  loading: false,
-};
+
 
 export default NotificationSettings;

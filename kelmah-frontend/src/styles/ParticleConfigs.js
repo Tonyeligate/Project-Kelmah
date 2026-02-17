@@ -62,16 +62,4 @@ export const particleConfigs = {
       },
     },
   },
-
-  constellation: {
-    // ... constellation effect config
-  },
-
-  bubbles: {
-    // ... bubbles effect config
-  },
-
-  snow: {
-    // ... snow effect config
-  },
 };

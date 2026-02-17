@@ -50,11 +50,6 @@ apiClient.interceptors.request.use(
 // Response interceptor
 apiClient.interceptors.response.use(
     (response) => {
-        // Clean up dedup entry on success
-        if (response.config?.method === 'get') {
-            const key = getRequestKey('get', response.config.url, response.config.params);
-            inflightGets.delete(key);
-        }
         return response;
     },
     async (error) => {

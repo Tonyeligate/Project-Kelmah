@@ -164,7 +164,6 @@ export const warmUpService = async (serviceUrl) => {
       signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true',
       },
     });
 

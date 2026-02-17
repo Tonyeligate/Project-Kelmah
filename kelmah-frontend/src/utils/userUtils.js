@@ -58,6 +58,8 @@ export const getUserRoles = (rawUser) => {
  */
 export const normalizeUser = (rawUser) => {
   if (!rawUser) return null;
+  // Already normalized — return as-is to prevent _raw nesting chains
+  if (rawUser.__isNormalized) return rawUser;
 
   const splitName = rawUser.name?.split(' ') ?? [];
   const normalizedRoles = getUserRoles(rawUser);
@@ -209,13 +211,15 @@ export const hasRole = (user, roles) => {
 export const hasPermission = (user, permissions) => {
   if (!user || !user.permissions) return false;
 
+  const userPerms = user.permissions.map((p) => p.toLowerCase());
+
   if (Array.isArray(permissions)) {
     return permissions.some((permission) =>
-      user.permissions.includes(permission),
+      userPerms.includes(permission.toLowerCase()),
     );
   }
 
-  return user.permissions.includes(permissions);
+  return userPerms.includes(permissions.toLowerCase());
 };
 
 /**

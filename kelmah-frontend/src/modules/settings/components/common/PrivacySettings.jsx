@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import PropTypes from 'prop-types';
 
-const PrivacySettings = ({ settings, loading, updatePrivacySettings }) => {
+const PrivacySettings = ({ settings = null, loading = false, updatePrivacySettings }) => {
 
   const [localPrivacy, setLocalPrivacy] = useState({
     profileVisibility: 'public',
@@ -130,9 +130,6 @@ PrivacySettings.propTypes = {
   updatePrivacySettings: PropTypes.func.isRequired,
 };
 
-PrivacySettings.defaultProps = {
-  settings: null,
-  loading: false,
-};
+
 
 export default PrivacySettings;

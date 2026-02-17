@@ -48,7 +48,7 @@ const defaultFeatures = {
 };
 
 const JobCard = ({
-  job,
+  job = null,
   onViewDetails,
   features = defaultFeatures,
   variant = 'default',
@@ -400,12 +400,4 @@ JobCard.propTypes = {
   onToggleSave: PropTypes.func,
 };
 
-JobCard.defaultProps = {
-  job: null,
-  onViewDetails: undefined,
-  features: defaultFeatures,
-  variant: 'default',
-  isSaved: undefined,
-  isSaveLoading: false,
-  onToggleSave: undefined,
-};
+

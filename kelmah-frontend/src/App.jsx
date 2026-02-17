@@ -17,6 +17,7 @@ import GlobalErrorBoundary from './modules/common/components/GlobalErrorBoundary
 import { useApiHealth } from './hooks/useApiHealth';
 import { warmUpServices } from './utils/serviceWarmUp';
 import useWebSocketConnect from './hooks/useWebSocketConnect';
+import OfflineBanner from './components/common/OfflineBanner';
 
 // Main App Component
 const App = () => {
@@ -114,6 +115,7 @@ const App = () => {
           </Alert>
         )}
         <AppRoutes />
+        <OfflineBanner />
       </GlobalErrorBoundary>
     </KelmahThemeProvider>
   );

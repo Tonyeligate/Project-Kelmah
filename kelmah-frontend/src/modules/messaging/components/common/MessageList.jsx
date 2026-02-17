@@ -34,6 +34,7 @@ import { useInView } from 'react-intersection-observer';
 import Message from './Message';
 import TypingIndicator from './TypingIndicator';
 import MessageDateDivider from './MessageDateDivider';
+import EmptyState from '../../../../components/common/EmptyState';
 
 // Styled components
 const MessageListContainer = styled(Box)(({ theme }) => ({
@@ -397,12 +398,11 @@ const MessageList = ({
   // Render empty state
   const renderEmptyState = () => (
     <EmptyStateContainer>
-      <Typography variant="body1" color="textSecondary" gutterBottom>
-        No messages yet
-      </Typography>
-      <Typography variant="body2" color="textSecondary">
-        Start the conversation by sending a message
-      </Typography>
+      <EmptyState
+        variant="messages"
+        title="No messages yet"
+        subtitle="Start the conversation by sending a message"
+      />
     </EmptyStateContainer>
   );
 

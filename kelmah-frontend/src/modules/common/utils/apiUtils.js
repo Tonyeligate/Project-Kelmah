@@ -22,9 +22,6 @@ export const checkApiHealth = async (showLoading = true) => {
         timeout,
         skipAuthRefresh: true,
         skipErrorHandling: true,
-        headers: {
-          'ngrok-skip-browser-warning': 'true',
-        },
       });
       return response.status === 200;
     } catch (error) {

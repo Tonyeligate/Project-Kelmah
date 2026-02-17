@@ -23,6 +23,13 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { alpha } from '@mui/material/styles';
 
+// Centralised contact info — update here when details change
+const CONTACT = {
+  email: 'support@kelmah.com',
+  phone: '+233 24 123 4567',
+  location: 'Accra, Ghana',
+};
+
 const Footer = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -219,19 +226,19 @@ const Footer = () => {
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <EmailIcon sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 16 }} />
                       <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
-                        support@kelmah.com
+                        {CONTACT.email}
                       </Typography>
                     </Stack>
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <PhoneIcon sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 16 }} />
                       <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
-                        +233 24 123 4567
+                        {CONTACT.phone}
                       </Typography>
                     </Stack>
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <LocationIcon sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 16 }} />
                       <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
-                        Accra, Ghana
+                        {CONTACT.location}
                       </Typography>
                     </Stack>
                   </Stack>

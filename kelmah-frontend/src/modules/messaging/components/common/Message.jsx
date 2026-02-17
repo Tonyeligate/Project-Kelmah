@@ -87,7 +87,7 @@ const MessageStatus = styled(Box)(({ theme }) => ({
 const Message = ({
   message,
   isOwn,
-  showAvatar,
+  showAvatar = true,
   onReply,
   onDelete,
   onCopy,
@@ -458,8 +458,6 @@ Message.propTypes = {
   onResend: PropTypes.func,
 };
 
-Message.defaultProps = {
-  showAvatar: true,
-};
+
 
 export default Message;

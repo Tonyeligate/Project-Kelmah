@@ -328,7 +328,7 @@ function CreateJobDialog({
                 label="Required Skills"
                 value={skillInput}
                 onChange={(e) => setSkillInput(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
                 placeholder="Type skill and press Enter"
                 InputProps={{
                   endAdornment: (

@@ -299,9 +299,6 @@ const updatePWA = () => {
   window.location.reload();
 };
 
-// Dismiss update notification
-const dismissUpdate = dismissUpdateNotification;
-
 // Check if app is installed
 export const isAppInstalled = () => {
   return (
