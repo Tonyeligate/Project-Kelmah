@@ -33,25 +33,22 @@ const getWebSocketUrl = (service) => {
 };
 
 // Base API paths for each service
+const SERVICE_PREFIX = {
+  AUTH_SERVICE: '/auth',
+  USER_SERVICE: '/users',
+  JOB_SERVICE: '/jobs',
+  MESSAGING_SERVICE: '/messages',
+  PAYMENT_SERVICE: '/payments',
+  REVIEW_SERVICE: '/reviews',
+};
+
 const getServicePath = (service, path) => {
-  // ✅ Routes through API Gateway - removed /api/ prefix since service clients already have baseURL: '/api'
-  // This prevents double /api/api/ prefix issue
-  switch (service) {
-    case 'AUTH_SERVICE':
-      return `/auth${path}`;
-    case 'USER_SERVICE':
-      return `/users${path}`;
-    case 'JOB_SERVICE':
-      return `/jobs${path}`;
-    case 'MESSAGING_SERVICE':
-      return `/messages${path}`;
-    case 'PAYMENT_SERVICE':
-      return `/payments${path}`;
-    case 'REVIEW_SERVICE':
-      return `/reviews${path}`;
-    default:
-      return `${path}`;
+  const prefix = SERVICE_PREFIX[service] || '';
+  // Prevent double-prefix: if path already starts with the prefix segment, skip it
+  if (prefix && path.startsWith(prefix)) {
+    return path;
   }
+  return `${prefix}${path}`;
 };
 
 // External services (third-party APIs)
@@ -148,14 +145,6 @@ export const API_ENDPOINTS = {
   },
 };
 
-// Debugging helper
-if (isDevelopment) {
-  console.log('🔧 Development Mode - API Endpoints:', {
-    AUTH_REGISTER: API_ENDPOINTS.AUTH.REGISTER,
-    JOBS_LIST: API_ENDPOINTS.JOB.LIST,
-    MESSAGES_CONVERSATIONS: API_ENDPOINTS.MESSAGING.CONVERSATIONS,
-    PAYMENTS_METHODS: API_ENDPOINTS.PAYMENT.METHODS,
-  });
-}
+// Debugging helper (development only — suppressed in production via main.jsx log gate)\nif (isDevelopment) {\n  console.log('🔧 Development Mode - API Endpoints:', {\n    AUTH_REGISTER: API_ENDPOINTS.AUTH.REGISTER,\n    JOBS_LIST: API_ENDPOINTS.JOB.LIST,\n  });\n}
 
 export default SERVICES;

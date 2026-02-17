@@ -48,7 +48,7 @@ export const usePayments = () => {
     async (methodId) => {
       try {
         dispatch(setLoading(true));
-        await paymentService.removePaymentMethod(methodId);
+        await paymentService.deletePaymentMethod(methodId);
         setPaymentMethods((prev) =>
           prev.filter((method) => method.id !== methodId),
         );
@@ -67,7 +67,7 @@ export const usePayments = () => {
     async (filters = {}) => {
       try {
         dispatch(setLoading(true));
-        const payments = await paymentService.getPaymentHistory(filters);
+        const payments = await paymentService.getTransactionHistory(filters);
         dispatch(setPayments(payments));
         return payments;
       } catch (error) {
@@ -84,8 +84,9 @@ export const usePayments = () => {
     async (paymentId) => {
       try {
         dispatch(setLoading(true));
-        const payment = await paymentService.getPaymentDetails(paymentId);
-        setSelectedPayment(payment);
+        const payment = await paymentService.getTransactionHistory({ transactionId: paymentId });
+        const detail = Array.isArray(payment) ? payment[0] : payment;
+        setSelectedPayment(detail);
         return payment;
       } catch (error) {
         dispatch(setError(error.message));
@@ -101,7 +102,7 @@ export const usePayments = () => {
     async (paymentData) => {
       try {
         dispatch(setLoading(true));
-        const payment = await paymentService.createPayment(paymentData);
+        const payment = await paymentService.createTransaction(paymentData);
         dispatch(setPayments([payment]));
         return payment;
       } catch (error) {
@@ -118,7 +119,7 @@ export const usePayments = () => {
     async (escrowData) => {
       try {
         dispatch(setLoading(true));
-        const escrow = await paymentService.createEscrowPayment(escrowData);
+        const escrow = await paymentService.fundEscrow(escrowData);
         return escrow;
       } catch (error) {
         dispatch(setError(error.message));
@@ -134,7 +135,7 @@ export const usePayments = () => {
     async (escrowId) => {
       try {
         dispatch(setLoading(true));
-        const result = await paymentService.releaseEscrowPayment(escrowId);
+        const result = await paymentService.releaseEscrow(escrowId);
         return result;
       } catch (error) {
         dispatch(setError(error.message));
@@ -149,7 +150,8 @@ export const usePayments = () => {
   const loadWalletBalance = useCallback(async () => {
     try {
       dispatch(setLoading(true));
-      const balance = await paymentService.getWalletBalance();
+      const wallet = await paymentService.getWallet();
+      const balance = wallet?.balance ?? wallet?.data?.balance ?? 0;
       setWalletBalance(balance);
       return balance;
     } catch (error) {

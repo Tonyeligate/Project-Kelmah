@@ -16,6 +16,7 @@ import { initializePWA } from './utils/pwaHelpers';
 import GlobalErrorBoundary from './modules/common/components/GlobalErrorBoundary';
 import { useApiHealth } from './hooks/useApiHealth';
 import { warmUpServices } from './utils/serviceWarmUp';
+import useWebSocketConnect from './hooks/useWebSocketConnect';
 
 // Main App Component
 const App = () => {
@@ -28,6 +29,9 @@ const App = () => {
   const initialized = useRef(false);
   const [servicesWakingUp, setServicesWakingUp] = useState(false);
   const [authBootstrapLoading, setAuthBootstrapLoading] = useState(true);
+
+  // Auto-connect/disconnect the global websocket singleton based on auth state
+  useWebSocketConnect();
 
   // Initialize PWA
   useEffect(() => {

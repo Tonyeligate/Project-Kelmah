@@ -85,6 +85,19 @@ const jobSlice = createSlice({
     setJobs: (state, action) => {
       state.jobs = action.payload;
     },
+    addJob: (state, action) => {
+      state.jobs.push(action.payload);
+    },
+    updateJobInList: (state, action) => {
+      const { id, data } = action.payload;
+      const idx = state.jobs.findIndex((j) => j.id === id || j._id === id);
+      if (idx !== -1) state.jobs[idx] = { ...state.jobs[idx], ...data };
+    },
+    removeJob: (state, action) => {
+      state.jobs = state.jobs.filter(
+        (j) => j.id !== action.payload && j._id !== action.payload,
+      );
+    },
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
@@ -174,6 +187,9 @@ export const {
   clearJobError,
   setCurrentPage,
   setJobs,
+  addJob,
+  updateJobInList,
+  removeJob,
   setLoading,
   setError,
 } = jobSlice.actions;

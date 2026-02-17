@@ -769,13 +769,9 @@ const Header = ({
   const handleLogout = async () => {
     handleMenuClose();
     try {
-      console.log('🔄 Starting logout process...');
-
       // Clear all Kelmah storage (scoped removal - never wipe entire localStorage)
       try {
         secureStorage.clear();
-        localStorage.removeItem('kelmah_auth_token');
-        localStorage.removeItem('user');
         sessionStorage.clear();
       } catch (storageError) {
         console.warn('Storage cleanup warning:', storageError);
@@ -783,31 +779,20 @@ const Header = ({
 
       // Dispatch logout action
       await logout();
-      console.log('✅ Logout action dispatched');
 
       // Force navigation to home
-      console.log('🔄 Navigating to home...');
       navigate('/', { replace: true });
-
-      // Avoid hard reloads to prevent double navigation
     } catch (error) {
-      console.error('❌ Logout error:', error);
-
       // Force clear Kelmah data and navigate (scoped removal)
       try {
         secureStorage.clear();
-        localStorage.removeItem('kelmah_auth_token');
-        localStorage.removeItem('user');
         sessionStorage.clear();
       } catch (clearError) {
-        console.warn('Force clear warning:', clearError);
+        // Ignore — best-effort cleanup
       }
 
       // Force navigation even if logout fails
-      console.log('🔄 Force navigating to home despite logout error...');
       navigate('/', { replace: true });
-
-      // Avoid hard reloads to prevent double navigation
     }
   };
 

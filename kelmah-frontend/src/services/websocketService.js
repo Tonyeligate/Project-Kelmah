@@ -3,8 +3,7 @@ import store from '../store';
 import {
   addNotification,
 } from '../modules/notifications/services/notificationSlice';
-import { WS_CONFIG } from '../config/environment';
-import { API_ENDPOINTS } from '../config/services';
+import { WS_CONFIG, API_ENDPOINTS } from '../config/environment';
 import { getWebSocketUrl } from './socketUrl';
 
 /**

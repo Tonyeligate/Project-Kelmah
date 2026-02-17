@@ -5,8 +5,7 @@
  * Values can be overridden by environment variables.
  */
 
-import { getApiBaseUrl, SERVICES, API_BASE_URL, WS_CONFIG } from './environment';
-import { API_ENDPOINTS } from './services';
+import { getApiBaseUrl, SERVICES, API_BASE_URL, WS_CONFIG, API_ENDPOINTS } from './environment';
 
 // Read Vite environment variables at build time
 const {

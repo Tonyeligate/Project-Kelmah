@@ -282,6 +282,7 @@ export const getServiceStatusMessage = (serviceUrl) => {
 
 /**
  * Initialize service health monitoring
+ * Returns a cleanup function to stop monitoring and remove listeners.
  */
 export const initializeServiceHealth = () => {
   console.log('🏥 Initializing service health monitoring...');
@@ -290,7 +291,7 @@ export const initializeServiceHealth = () => {
   warmUpAllServices();
 
   // Set up periodic health checks
-  setInterval(() => {
+  const intervalId = setInterval(() => {
     console.log('🏥 Running periodic service health checks...');
     Object.values(SERVICES).forEach((service) => {
       checkServiceHealth(service);
@@ -298,12 +299,19 @@ export const initializeServiceHealth = () => {
   }, HEALTH_CHECK_INTERVAL);
 
   // Warm up services on page focus (user returns)
-  document.addEventListener('visibilitychange', () => {
+  const handleVisibility = () => {
     if (!document.hidden) {
       console.log('🏥 Page focused - warming up services...');
       warmUpAllServices();
     }
-  });
+  };
+  document.addEventListener('visibilitychange', handleVisibility);
+
+  // Return cleanup function
+  return () => {
+    clearInterval(intervalId);
+    document.removeEventListener('visibilitychange', handleVisibility);
+  };
 };
 
 /**
@@ -350,7 +358,4 @@ export const debugServiceHealth = () => {
   );
 };
 
-// Initialize on module load in production
-if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-  initializeServiceHealth();
-}
+// Initialize on module load in production (non-localhost)\n// Store cleanup handle so callers can tear down if needed\nlet _healthCleanup = null;\nif (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {\n  _healthCleanup = initializeServiceHealth();\n}\nexport const stopServiceHealth = () => { if (_healthCleanup) { _healthCleanup(); _healthCleanup = null; } };

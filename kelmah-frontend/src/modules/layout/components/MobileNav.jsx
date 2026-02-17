@@ -156,19 +156,15 @@ const MobileNav = ({ open, onClose }) => {
 
     try {
       secureStorage.clear();
-      localStorage.removeItem('kelmah_auth_token');
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      localStorage.removeItem('refreshToken');
       sessionStorage.clear();
     } catch (storageError) {
-      console.warn('⚠️ MobileNav storage cleanup warning:', storageError);
+      // Best-effort cleanup
     }
 
     try {
       await dispatch(logoutUser());
     } catch (error) {
-      console.error('Logout dispatch error:', error);
+      // Thunk handles its own cleanup
     } finally {
       navigate('/', { replace: true });
     }

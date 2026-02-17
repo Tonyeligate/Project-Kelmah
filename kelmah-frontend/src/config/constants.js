@@ -40,7 +40,7 @@ export const API_BASE_URL = '/api';
 export const API_URL = '/api';
 
 // Socket URL - use centralized messaging service
-import { API_ENDPOINTS } from './services';
+import { API_ENDPOINTS } from './environment';
 export const getSOCKET_URL = async () => {
   try {
     return API_ENDPOINTS.WEBSOCKET.MESSAGING || '/socket.io';

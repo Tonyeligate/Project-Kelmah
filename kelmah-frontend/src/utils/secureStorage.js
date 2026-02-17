@@ -90,12 +90,11 @@ class SecureStorage {
    */
   generateEncryptionKey() {
     const secret = this.getOrCreatePersistentSecret();
+    // Only use stable properties — avoid volatile ones (screen size, timezone, platform)
+    // that change when switching monitors, traveling, or on modern browsers
     const fingerprint = [
       navigator.userAgent,
       navigator.language,
-      screen.width + 'x' + screen.height,
-      new Date().getTimezoneOffset(),
-      navigator.platform,
       secret,
     ].join('|');
 
@@ -293,6 +292,9 @@ class SecureStorage {
       localStorage.removeItem(this.storageKey);
       localStorage.removeItem('kelmah_encryption_secret');
       sessionStorage.removeItem('session_id');
+      // Regenerate encryption key so subsequent writes in the same session
+      // use a key that matches the new persistent secret on next reload
+      this.encryptionKey = this.generateEncryptionKey();
       return true;
     } catch (error) {
       console.error('Failed to clear secure storage:', error);

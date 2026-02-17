@@ -1,7 +1,14 @@
 import { useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import jobService from '../services/jobsService';
-import { setJobs, setLoading, setError } from '../services/jobSlice';
+import {
+  setJobs,
+  addJob,
+  updateJobInList,
+  removeJob,
+  setLoading,
+  setError,
+} from '../services/jobSlice';
 
 export const useJobs = () => {
   const dispatch = useDispatch();
@@ -29,8 +36,8 @@ export const useJobs = () => {
     async (query) => {
       try {
         dispatch(setLoading(true));
-        const jobs = await jobService.searchJobs(query, filters);
-        dispatch(setJobs(jobs));
+        const result = await jobService.searchJobs({ search: query, ...filters });
+        dispatch(setJobs(result.jobs || []));
       } catch (error) {
         dispatch(setError(error.message));
       } finally {
@@ -62,7 +69,7 @@ export const useJobs = () => {
       try {
         dispatch(setLoading(true));
         const newJob = await jobService.createJob(jobData);
-        dispatch(setJobs((prev) => [...prev, newJob]));
+        dispatch(addJob(newJob));
         return newJob;
       } catch (error) {
         dispatch(setError(error.message));
@@ -79,11 +86,7 @@ export const useJobs = () => {
       try {
         dispatch(setLoading(true));
         const updatedJob = await jobService.updateJob(jobId, jobData);
-        dispatch(
-          setJobs((prev) =>
-            prev.map((job) => (job.id === jobId ? updatedJob : job)),
-          ),
-        );
+        dispatch(updateJobInList({ id: jobId, data: updatedJob }));
         return updatedJob;
       } catch (error) {
         dispatch(setError(error.message));
@@ -100,7 +103,7 @@ export const useJobs = () => {
       try {
         dispatch(setLoading(true));
         await jobService.deleteJob(jobId);
-        dispatch(setJobs((prev) => prev.filter((job) => job.id !== jobId)));
+        dispatch(removeJob(jobId));
         return true;
       } catch (error) {
         dispatch(setError(error.message));

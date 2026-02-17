@@ -4,10 +4,12 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { hasRole as userHasRole } from '../../../../utils/userUtils';
+import RouteErrorBoundary from '../../../common/components/RouteErrorBoundary';
 
 /**
  * A route wrapper that redirects unauthenticated users
  * Displays a loading indicator while authentication is being checked
+ * Includes built-in error boundary for crash resilience.
  * FIXED: Uses ONLY Redux authentication state to prevent dual state management conflicts
  */
 const ProtectedRoute = ({
@@ -62,8 +64,12 @@ const ProtectedRoute = ({
     );
   }
 
-  // Render the protected content
-  return children;
+  // Render the protected content with automatic error boundary
+  return (
+    <RouteErrorBoundary label={location.pathname}>
+      {children}
+    </RouteErrorBoundary>
+  );
 };
 
 ProtectedRoute.propTypes = {

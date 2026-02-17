@@ -227,6 +227,11 @@ const buildEndpoint = (serviceUrl, path) => {
 };
 
 export const API_ENDPOINTS = {
+  // WebSocket URLs (backward-compatible with services.js shape)
+  WEBSOCKET: {
+    MESSAGING: null, // Socket.IO uses same-origin by default; see socketUrl.js for runtime resolution
+  },
+
   // Auth Service Endpoints
   AUTH: {
     BASE: buildEndpoint(SERVICES.AUTH_SERVICE, ''),

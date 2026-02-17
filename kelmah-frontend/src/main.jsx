@@ -16,6 +16,20 @@ import { MessageProvider } from './modules/messaging/contexts/MessageContext';
 import BidNotificationListener from './modules/notifications/components/BidNotificationListener';
 import { checkStorageQuota } from './utils/storageQuota';
 
+// ─── Production log suppressor ───
+// Silence console.log and console.warn in production to prevent data leakage
+// and reduce noise. console.error is preserved for actionable diagnostics.
+if (import.meta.env.PROD) {
+  const noop = () => {};
+  console.log = noop;
+  console.warn = noop;
+  console.debug = noop;
+  console.info = noop;
+  console.group = noop;
+  console.groupEnd = noop;
+  console.table = noop;
+}
+
 // Version 1.0.5 - Force fresh bundle generation
 if (import.meta.env.DEV) {
   console.log('🔧 Main.jsx v1.0.5 - Kelmah PWA with storage monitoring');
