@@ -40,13 +40,13 @@ const ProfilePicture = ({ size = 120, editable = true }) => {
     }
   };
 
+  // Cleanup: previewUrl is a data: URI from FileReader, no revocation needed.
+  // If we switch to createObjectURL in the future, add revokeObjectURL here.
   useEffect(() => {
     return () => {
-      if (previewUrl && previewUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(previewUrl);
-      }
+      setPreviewUrl(null);
     };
-  }, [previewUrl]);
+  }, []);
 
   const handleUpload = async () => {
     if (!selectedFile) return;

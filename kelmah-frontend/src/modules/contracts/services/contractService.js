@@ -231,7 +231,30 @@ export const contractService = {
   },
 
   async getContractTemplates() {
-    return [];
+    // Default templates for common vocational contract types in Ghana
+    return [
+      {
+        id: 'fixed-price',
+        name: 'Fixed Price Contract',
+        description: 'Agree on a total price for the complete job',
+        paymentType: 'fixed',
+        defaultTerms: 'Payment upon satisfactory completion of all work.',
+      },
+      {
+        id: 'milestone-based',
+        name: 'Milestone-Based Contract',
+        description: 'Split work into milestones with payment at each stage',
+        paymentType: 'milestone',
+        defaultTerms: 'Payment released per milestone after approval.',
+      },
+      {
+        id: 'hourly-rate',
+        name: 'Hourly Rate Contract',
+        description: 'Pay based on hours worked at an agreed rate',
+        paymentType: 'hourly',
+        defaultTerms: 'Weekly timesheet submission. Payment bi-weekly.',
+      },
+    ];
   },
 
   // Approve milestone within a contract

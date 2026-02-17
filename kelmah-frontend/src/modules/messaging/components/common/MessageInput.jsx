@@ -63,9 +63,7 @@ const AttachmentButton = styled(IconButton)(({ theme }) => ({
   marginRight: theme.spacing(1),
 }));
 
-const EmojiButton = styled(IconButton)(({ theme }) => ({
-  marginRight: theme.spacing(1),
-}));
+// EmojiButton removed — unused styled component
 
 const SendButton = styled(IconButton)(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,

@@ -55,7 +55,7 @@ const notificationIcons = {
 const isExternalLink = (value) =>
   typeof value === 'string' && /^https?:\/\//i.test(value);
 
-const NotificationItem = ({ notification }) => (
+const PageNotificationItem = ({ notification }) => (
   <ListItem
     sx={(theme) => ({
       backgroundColor: theme.palette.background.paper,
@@ -139,7 +139,7 @@ const NotificationItem = ({ notification }) => (
 const ActivityFeed = ({ notifications }) => (
   <List>
     {notifications.map((notification, index) => (
-      <NotificationItem
+      <PageNotificationItem
         key={notification.id || notification._id || `notif-${index}`}
         notification={notification}
       />
@@ -354,7 +354,7 @@ const NotificationsPage = () => {
         ) : filteredNotifications.length > 0 ? (
           <List sx={{ p: 0 }}>
             {filteredNotifications.map((notification, index) => (
-              <NotificationItem
+              <PageNotificationItem
                 key={notification.id || notification._id || `notif-${index}`}
                 notification={notification}
               />

@@ -420,7 +420,7 @@ const WorkerCard = ({ worker }) => {
             <Avatar
               src={worker.profileImage}
               alt={worker.name}
-              sx={{ width: 56, height: 56, mr: 2 }}
+              sx={{ width: { xs: 48, md: 56 }, height: { xs: 48, md: 56 }, mr: 2 }}
             />
             <Box>
               <Typography

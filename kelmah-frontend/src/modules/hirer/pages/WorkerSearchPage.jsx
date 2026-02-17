@@ -58,22 +58,21 @@ const WorkerSearchPage = () => {
         </Box>
         <Typography
           variant={isMobile ? 'h4' : 'h2'}
-          sx={{
-            color: '#D4AF37',
+          sx={(theme) => ({
             textAlign: 'center',
             fontWeight: 'bold',
-            background: 'linear-gradient(45deg, #D4AF37 30%, #FFD700 90%)',
+            background: `linear-gradient(45deg, ${theme.palette.primary.dark} 30%, ${theme.palette.primary.main} 90%)`,
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-          }}
+          })}
         >
           Find Ghana's Top Skilled Workers
         </Typography>
         <Typography
           variant={isMobile ? 'body1' : 'h5'}
           sx={{
-            color: 'rgba(255,255,255,0.8)',
+            color: 'text.secondary',
             textAlign: 'center',
             mt: 2,
           }}

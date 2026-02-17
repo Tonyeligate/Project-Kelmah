@@ -21,7 +21,17 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
 // Define emoji categories
-const categories = [];
+const categories = [
+  { id: 'smileys', name: 'Smileys', icon: '😀' },
+  { id: 'people', name: 'People', icon: '👋' },
+  { id: 'animals', name: 'Animals', icon: '🐶' },
+  { id: 'food', name: 'Food', icon: '🍎' },
+  { id: 'travel', name: 'Travel', icon: '🚗' },
+  { id: 'activities', name: 'Activities', icon: '⚽' },
+  { id: 'objects', name: 'Objects', icon: '📱' },
+  { id: 'symbols', name: 'Symbols', icon: '❤️' },
+  { id: 'flags', name: 'Flags', icon: '🏁' },
+];
 
 // Sample emoji data (in a real app, this would be a more comprehensive dataset)
 const emojiData = {
@@ -243,17 +253,16 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
       return;
     }
 
-    // Search through all categories
+    // Search through all categories — filter by category name as a simple heuristic
+    const query = searchQuery.trim().toLowerCase();
     const results = [];
     Object.entries(emojiData).forEach(([category, emojis]) => {
-      emojis.forEach((emoji) => {
-        // In a real app, you would search emoji names and keywords
-        // For this demo, just include all emojis when searching
-        results.push(emoji);
-      });
+      if (category.toLowerCase().includes(query)) {
+        results.push(...emojis);
+      }
     });
-
-    setFilteredEmojis(results);
+    // If no category match, include all emojis (user can browse freely)
+    setFilteredEmojis(results.length > 0 ? results : Object.values(emojiData).flat());
   }, [searchQuery]);
 
   const handleToggle = () => {

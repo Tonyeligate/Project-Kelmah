@@ -316,24 +316,15 @@ const QuickJobRequestPage = () => {
               )}
             </Box>
 
-            {/* Voice note (placeholder) */}
+            {/* Voice note — not yet implemented */}
             <Button
               variant="outlined"
-              startIcon={isRecording ? <MicOffIcon /> : <MicIcon />}
-              onClick={handleVoiceToggle}
-              color={isRecording ? 'error' : 'primary'}
-              sx={{ mb: 2 }}
+              startIcon={<MicIcon />}
+              disabled
+              sx={{ mb: 2, opacity: 0.6 }}
             >
-              {isRecording ? 'Stop Recording' : 'Record Voice Note'}
+              Record Voice Note (Coming Soon)
             </Button>
-            {voiceNote && (
-              <Chip
-                label="Voice note recorded"
-                onDelete={() => setVoiceNote(null)}
-                color="success"
-                sx={{ ml: 1 }}
-              />
-            )}
           </Box>
         );
 

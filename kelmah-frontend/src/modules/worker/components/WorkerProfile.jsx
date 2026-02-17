@@ -103,6 +103,16 @@ const Input = styled('input')({
 const ProfileAvatar = styled(Avatar)(({ theme }) => ({
   width: 200,
   height: 200,
+  [theme.breakpoints.down('md')]: {
+    width: 120,
+    height: 120,
+    fontSize: '2.5rem',
+  },
+  [theme.breakpoints.down('sm')]: {
+    width: 96,
+    height: 96,
+    fontSize: '2rem',
+  },
   border: `6px solid ${theme.palette.background.paper}`,
   boxShadow: theme.shadows[20],
   margin: 'auto',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Grid,
@@ -67,8 +67,14 @@ const JobSearch = () => {
     'General Repairs',
   ]);
 
+  const debounceRef = useRef(null);
+
   useEffect(() => {
-    fetchJobs();
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchJobs();
+    }, 400);
+    return () => clearTimeout(debounceRef.current);
   }, [filters]);
 
   const fetchJobs = async () => {

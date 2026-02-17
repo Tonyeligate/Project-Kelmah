@@ -225,7 +225,6 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [groupName, setGroupName] = useState('');
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
-  const [enableEncryption, setEnableEncryption] = useState(false);
   const { messagingService, userStatuses } = useMessages();
   const [localConversations, setLocalConversations] = useState([]);
   const [localLoading, setLocalLoading] = useState(true);
@@ -1023,42 +1022,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
             )}
           />
 
-          <FormControlLabel
-            control={
-              <Switch
-                checked={enableEncryption}
-                onChange={(e) => setEnableEncryption(e.target.checked)}
-                color="primary"
-                sx={{
-                  '& .MuiSwitch-switchBase.Mui-checked': {
-                    color: theme.palette.primary.main,
-                  },
-                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.5),
-                  },
-                }}
-              />
-            }
-            label={
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <LockIcon
-                  fontSize="small"
-                  sx={{
-                    mr: 1,
-                    color: enableEncryption
-                      ? theme.palette.primary.main
-                      : theme.palette.text.disabled,
-                  }}
-                />
-                <Typography
-                  sx={{ color: 'text.secondary' }}
-                >
-                  Enable end-to-end encryption
-                </Typography>
-              </Box>
-            }
-            sx={{ mt: 2 }}
-          />
+          {/* Encryption toggle removed — E2E encryption not implemented */}
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button

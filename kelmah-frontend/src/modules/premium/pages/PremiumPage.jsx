@@ -289,11 +289,12 @@ const PremiumPage = () => {
 
   const handleConfirmUpgrade = () => {
     setIsUpgrading(true);
-    // Simulate API call
+    // TODO: Replace with actual payment API call when backend is ready
+    // e.g. paymentService.upgradePlan(selectedPlan, billingCycle)
     setTimeout(() => {
       setIsUpgrading(false);
       setOpenDialog(false);
-      // Here you would typically show a success notification
+      // Show success notification once integrated with payment service
     }, 1500);
   };
 

@@ -123,6 +123,11 @@ export default defineConfig({
     loader: 'jsx',
     include: /src\/.*\.[jt]sx?$/,
     exclude: [],
+    // Strip console.log and console.debug in production (keep warn/error)
+    ...(process.env.NODE_ENV === 'production' && {
+      drop: ['debugger'],
+      pure: ['console.log', 'console.debug'],
+    }),
   },
   test: {
     globals: true,

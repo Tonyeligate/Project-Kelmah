@@ -51,30 +51,7 @@ const MessagesContainer = styled(Box)(({ theme }) => ({
   flexDirection: 'column',
 }));
 
-const MessageBubble = styled(Paper)(({ theme, variant }) => ({
-  padding: theme.spacing(1.5),
-  maxWidth: '70%',
-  width: 'fit-content',
-  marginBottom: theme.spacing(1),
-  borderRadius:
-    variant === 'sender'
-      ? theme.spacing(2, 0, 2, 2)
-      : theme.spacing(0, 2, 2, 2),
-  backgroundColor:
-    variant === 'sender'
-      ? theme.palette.primary.light
-      : theme.palette.background.dark,
-  color: variant === 'sender' ? theme.palette.primary.contrastText : '#fff',
-  boxShadow: theme.shadows[1],
-  position: 'relative',
-}));
-
-const MessageTime = styled(Typography)(({ theme }) => ({
-  fontSize: '0.7rem',
-  color: theme.palette.text.secondary,
-  marginTop: theme.spacing(0.5),
-  textAlign: 'right',
-}));
+// MessageBubble and MessageTime removed — unused styled components
 
 const SystemMessage = styled(Box)(({ theme }) => ({
   textAlign: 'center',
@@ -121,21 +98,7 @@ const ImagePreview = styled('img')(({ theme }) => ({
   marginTop: theme.spacing(1),
 }));
 
-const DateDivider = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  margin: theme.spacing(2, 0),
-  color: theme.palette.text.secondary,
-  '&::before, &::after': {
-    content: '""',
-    flex: 1,
-    borderBottom: `1px solid ${theme.palette.divider}`,
-  },
-  '& > span': {
-    padding: theme.spacing(0, 2),
-    fontSize: '0.8rem',
-  },
-}));
+// DateDivider removed — unused styled component
 
 const EmptyStateContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
