@@ -15,6 +15,8 @@ import {
   TextField,
   Typography,
   Alert,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
@@ -30,6 +32,7 @@ import { alpha } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { contractService } from '../services/contractService';
+import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All contracts' },
@@ -64,6 +67,8 @@ const statusChipColor = {
 
 const ContractsPage = () => {
   const { user } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortOption, setSortOption] = useState('newest');
@@ -198,58 +203,60 @@ const ContractsPage = () => {
       </Stack>
 
       <Paper sx={{ p: 2, mb: 3 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={4}>
-            <TextField
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Search contracts"
-              fullWidth
-              size="small"
-              InputProps={{
-                startAdornment: (
-                  <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
-                    <SearchIcon fontSize="small" />
-                  </Box>
-                ),
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <TextField
-              select
-              value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value)}
-              fullWidth
-              size="small"
-              label="Status"
-              SelectProps={{ native: true }}
-            >
-              {STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </TextField>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <TextField
-              select
-              value={sortOption}
-              onChange={(event) => setSortOption(event.target.value)}
-              fullWidth
-              size="small"
-              label="Sort"
-              SelectProps={{ native: true }}
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </TextField>
-          </Grid>
-        </Grid>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <TextField
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search contracts"
+            fullWidth
+            size="small"
+            InputProps={{
+              startAdornment: (
+                <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                  <SearchIcon fontSize="small" />
+                </Box>
+              ),
+            }}
+          />
+          <MobileFilterSheet
+            title="Filters & Sort"
+            activeCount={(statusFilter !== 'all' ? 1 : 0) + (sortOption !== 'newest' ? 1 : 0)}
+            onReset={() => { setStatusFilter('all'); setSortOption('newest'); }}
+          >
+            <Stack spacing={2} sx={{ minWidth: isMobile ? 'auto' : 300 }}>
+              <TextField
+                select
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value)}
+                fullWidth
+                size="small"
+                label="Status"
+                SelectProps={{ native: true }}
+              >
+                {STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </TextField>
+              <TextField
+                select
+                value={sortOption}
+                onChange={(event) => setSortOption(event.target.value)}
+                fullWidth
+                size="small"
+                label="Sort"
+                SelectProps={{ native: true }}
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </TextField>
+            </Stack>
+          </MobileFilterSheet>
+        </Stack>
       </Paper>
 
       {loading && (

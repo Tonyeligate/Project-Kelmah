@@ -71,32 +71,57 @@ class SettingsService {
 
   // Update user settings
   async updateSettings(settings) {
-    const response = await api.put(settingsPath(), settings);
-    return response.data.data;
+    try {
+      const response = await api.put(settingsPath(), settings);
+      return response.data.data;
+    } catch (error) {
+      console.error('Failed to update settings:', error.message);
+      throw error;
+    }
   }
 
   // Update notification preferences
   async updateNotificationPreferences(preferences) {
-    const response = await api.put(settingsPath('/notifications'), preferences);
-    return response.data.data;
+    try {
+      const response = await api.put(settingsPath('/notifications'), preferences);
+      return response.data.data;
+    } catch (error) {
+      console.error('Failed to update notification preferences:', error.message);
+      throw error;
+    }
   }
 
   // Update privacy settings
   async updatePrivacySettings(settings) {
-    const response = await api.put(settingsPath('/privacy'), settings);
-    return response.data.data;
+    try {
+      const response = await api.put(settingsPath('/privacy'), settings);
+      return response.data.data;
+    } catch (error) {
+      console.error('Failed to update privacy settings:', error.message);
+      throw error;
+    }
   }
 
   // Update language preference
   async updateLanguage(language) {
-    const response = await api.put(settingsPath('/language'), { language });
-    return response.data.data;
+    try {
+      const response = await api.put(settingsPath('/language'), { language });
+      return response.data.data;
+    } catch (error) {
+      console.error('Failed to update language:', error.message);
+      throw error;
+    }
   }
 
   // Update theme preference
   async updateTheme(theme) {
-    const response = await api.put(settingsPath('/theme'), { theme });
-    return response.data.data;
+    try {
+      const response = await api.put(settingsPath('/theme'), { theme });
+      return response.data.data;
+    } catch (error) {
+      console.error('Failed to update theme:', error.message);
+      throw error;
+    }
   }
 
   // Available languages — static list, no backend call
@@ -111,8 +136,13 @@ class SettingsService {
 
   // Reset settings to default
   async resetSettings() {
-    const response = await api.post(settingsPath('/reset'));
-    return response.data.data;
+    try {
+      const response = await api.post(settingsPath('/reset'));
+      return response.data.data;
+    } catch (error) {
+      console.error('Failed to reset settings:', error.message);
+      throw error;
+    }
   }
 }
 

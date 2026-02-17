@@ -160,6 +160,15 @@ const JobManagementPage = () => {
     'draft',
   ];
 
+  // Memoize status counts to avoid repeated .filter() calls per render
+  const statusCounts = useMemo(() => {
+    const counts = { open: 0, 'in-progress': 0, completed: 0, cancelled: 0, draft: 0 };
+    for (const job of jobs) {
+      if (counts[job.status] !== undefined) counts[job.status]++;
+    }
+    return counts;
+  }, [jobs]);
+
   // Filter jobs based on tab and search
   const filteredJobs = jobs.filter((job) => {
     const matchesTab = tabValue === 0 || job.status === tabStatuses[tabValue];
@@ -518,9 +527,9 @@ const JobManagementPage = () => {
             label={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <span>Open</span>
-                {jobs.filter((job) => job.status === 'open').length > 0 && (
+                {statusCounts.open > 0 && (
                   <Chip
-                    label={jobs.filter((job) => job.status === 'open').length}
+                    label={statusCounts.open}
                     size="small"
                     color="success"
                     sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
@@ -533,12 +542,9 @@ const JobManagementPage = () => {
             label={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <span>{isMobile ? 'Active' : 'In Progress'}</span>
-                {jobs.filter((job) => job.status === 'in-progress').length >
-                  0 && (
+                {statusCounts['in-progress'] > 0 && (
                     <Chip
-                      label={
-                        jobs.filter((job) => job.status === 'in-progress').length
-                      }
+                      label={statusCounts['in-progress']}
                       size="small"
                       color="warning"
                       sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
@@ -551,12 +557,9 @@ const JobManagementPage = () => {
             label={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <span>Done</span>
-                {jobs.filter((job) => job.status === 'completed').length >
-                  0 && (
+                {statusCounts.completed > 0 && (
                     <Chip
-                      label={
-                        jobs.filter((job) => job.status === 'completed').length
-                      }
+                      label={statusCounts.completed}
                       size="small"
                       color="success"
                       sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
@@ -569,12 +572,9 @@ const JobManagementPage = () => {
             label={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <span>{isMobile ? 'Closed' : 'Cancelled'}</span>
-                {jobs.filter((job) => job.status === 'cancelled').length >
-                  0 && (
+                {statusCounts.cancelled > 0 && (
                     <Chip
-                      label={
-                        jobs.filter((job) => job.status === 'cancelled').length
-                      }
+                      label={statusCounts.cancelled}
                       size="small"
                       color="error"
                       sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
@@ -587,9 +587,9 @@ const JobManagementPage = () => {
             label={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <span>Drafts</span>
-                {jobs.filter((job) => job.status === 'draft').length > 0 && (
+                {statusCounts.draft > 0 && (
                   <Chip
-                    label={jobs.filter((job) => job.status === 'draft').length}
+                    label={statusCounts.draft}
                     size="small"
                     sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
                   />

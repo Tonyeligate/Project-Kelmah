@@ -9,6 +9,8 @@ import {
   Divider,
 } from '@mui/material';
 import NotificationItem from '../NotificationItem';
+import SwipeToAction from '../../../../components/common/SwipeToAction';
+import EmptyState from '../../../../components/common/EmptyState';
 import { useNotifications } from '../../contexts/NotificationContext';
 
 const NotificationList = () => {
@@ -17,6 +19,7 @@ const NotificationList = () => {
     loading,
     markAllAsRead,
     clearAllNotifications,
+    deleteNotification,
     unreadCount,
   } = useNotifications();
 
@@ -68,16 +71,22 @@ const NotificationList = () => {
       </Box>
       <Divider sx={{ mb: 2 }} />
       {notifications.length === 0 ? (
-        <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
-          You have no new notifications.
-        </Typography>
+        <EmptyState
+          variant="notifications"
+          title="All caught up!"
+          subtitle="You have no new notifications. We'll let you know when something happens."
+        />
       ) : (
         <List sx={{ maxHeight: 400, overflow: 'auto' }}>
           {notifications.map((notification) => (
-            <NotificationItem
+            <SwipeToAction
               key={notification.id || notification._id}
-              notification={notification}
-            />
+              onDelete={() => deleteNotification(notification.id || notification._id)}
+            >
+              <NotificationItem
+                notification={notification}
+              />
+            </SwipeToAction>
           ))}
         </List>
       )}

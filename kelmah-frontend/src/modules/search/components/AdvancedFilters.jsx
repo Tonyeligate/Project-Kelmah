@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -236,6 +236,18 @@ const AdvancedFilters = ({
     }
   };
 
+  // Debounced query change to avoid firing API on every keystroke
+  const queryTimerRef = useRef(null);
+  const handleQueryChange = useCallback((value) => {
+    setFilters((prev) => ({ ...prev, query: value }));
+    clearTimeout(queryTimerRef.current);
+    queryTimerRef.current = setTimeout(() => {
+      if (onFiltersChange) {
+        onFiltersChange({ ...filters, query: value });
+      }
+    }, 400);
+  }, [filters, onFiltersChange]);
+
   // Handle skills selection
   const handleSkillsChange = (event, newSkills) => {
     handleFilterChange('skills', newSkills);
@@ -407,7 +419,7 @@ const AdvancedFilters = ({
               label="Search Keywords"
               placeholder="e.g., kitchen renovation, emergency plumbing"
               value={filters.query}
-              onChange={(e) => handleFilterChange('query', e.target.value)}
+              onChange={(e) => handleQueryChange(e.target.value)}
             />
           </Grid>
           <Grid item xs={12} sm={6}>

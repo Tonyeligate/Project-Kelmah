@@ -35,43 +35,6 @@ import paymentService from '../services/paymentService';
 import { useTheme } from '@mui/material/styles';
 
 // Demo payment methods for initial display
-const DEMO_PAYMENT_METHODS = [
-  {
-    id: 1,
-    type: 'card',
-    name: 'Visa Card',
-    cardNumber: '•••• •••• •••• 4242',
-    expiryDate: '05/25',
-    isDefault: true,
-    icon: 'credit',
-  },
-  {
-    id: 2,
-    type: 'card',
-    name: 'Mastercard',
-    cardNumber: '•••• •••• •••• 5678',
-    expiryDate: '03/24',
-    isDefault: false,
-    icon: 'credit',
-  },
-  {
-    id: 3,
-    type: 'mobile',
-    name: 'MTN Mobile Money',
-    phoneNumber: '+233 •••• 7890',
-    isDefault: false,
-    icon: 'mobile',
-  },
-  {
-    id: 4,
-    type: 'bank',
-    name: 'Ghana Commercial Bank',
-    accountNumber: '•••• •••• 3456',
-    isDefault: false,
-    icon: 'bank',
-  },
-];
-
 const PaymentMethodsPage = () => {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(false);

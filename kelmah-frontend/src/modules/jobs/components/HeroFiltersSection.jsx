@@ -443,6 +443,8 @@ const HeroFiltersSection = ({
                               label={filter}
                               size="small"
                               variant="outlined"
+                              clickable
+                              onClick={() => onSearchChange(filter)}
                               sx={{
                                 borderColor: '#D4AF37',
                                 color: '#D4AF37',

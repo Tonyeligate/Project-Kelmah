@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
+import PullToRefresh from '../../../components/common/PullToRefresh';
 import {
   Box,
   Container,
@@ -957,6 +958,7 @@ const HirerDashboardPage = () => {
   }
 
   return (
+    <PullToRefresh onRefresh={() => fetchDashboardData('manual-refresh')}>
     <Grow in timeout={500}>
       <Box>
         {/* SEO & Document Title */}
@@ -1069,6 +1071,7 @@ const HirerDashboardPage = () => {
         </SpeedDial>
       </Box>
     </Grow>
+    </PullToRefresh>
   );
 };
 

@@ -65,6 +65,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useAuth } from '../../auth/hooks/useAuth';
 import reviewService from '../services/reviewService';
+import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
 
 // Enhanced Reviews Page with comprehensive review management
 const EnhancedReviewsPage = () => {
@@ -989,37 +990,51 @@ const EnhancedReviewsPage = () => {
                 }}
               />
 
-              <Button
-                variant="outlined"
-                startIcon={<FilterIcon />}
-                onClick={(e) => setFilterMenuAnchor(e.currentTarget)}
-                sx={{
-                  borderColor: 'rgba(255,215,0,0.3)',
-                  color: '#FFD700',
-                  '&:hover': {
-                    borderColor: '#FFD700',
-                    backgroundColor: alpha('#FFD700', 0.1),
-                  },
-                }}
+              <MobileFilterSheet
+                title="Filter & Sort"
+                activeCount={(selectedFilter !== 'all' ? 1 : 0) + (selectedSort !== 'newest' ? 1 : 0)}
+                onReset={() => { setSelectedFilter('all'); setSelectedSort('newest'); }}
               >
-                Filter
-              </Button>
-
-              <Button
-                variant="outlined"
-                startIcon={<SortIcon />}
-                onClick={(e) => setSortMenuAnchor(e.currentTarget)}
-                sx={{
-                  borderColor: 'rgba(255,215,0,0.3)',
-                  color: '#FFD700',
-                  '&:hover': {
-                    borderColor: '#FFD700',
-                    backgroundColor: alpha('#FFD700', 0.1),
-                  },
-                }}
-              >
-                Sort
-              </Button>
+                <Stack spacing={2}>
+                  <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>Filter</Typography>
+                  {[
+                    { value: 'all', label: 'All Reviews' },
+                    { value: '5-star', label: '5 Star Reviews' },
+                    { value: '4-star', label: '4 Star Reviews' },
+                    { value: 'recent', label: 'Recent (Last 7 days)' },
+                    { value: 'verified', label: 'Verified Reviewers' },
+                    { value: 'with-reply', label: 'With Reply' },
+                    { value: 'needs-reply', label: 'Needs Reply' },
+                  ].map((filter) => (
+                    <Chip
+                      key={filter.value}
+                      label={filter.label}
+                      variant={selectedFilter === filter.value ? 'filled' : 'outlined'}
+                      color={selectedFilter === filter.value ? 'primary' : 'default'}
+                      onClick={() => setSelectedFilter(filter.value)}
+                      sx={{ justifyContent: 'flex-start' }}
+                    />
+                  ))}
+                  <Divider sx={{ my: 1 }} />
+                  <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>Sort</Typography>
+                  {[
+                    { value: 'newest', label: 'Newest First' },
+                    { value: 'oldest', label: 'Oldest First' },
+                    { value: 'highest-rated', label: 'Highest Rated' },
+                    { value: 'lowest-rated', label: 'Lowest Rated' },
+                    { value: 'most-helpful', label: 'Most Helpful' },
+                  ].map((sort) => (
+                    <Chip
+                      key={sort.value}
+                      label={sort.label}
+                      variant={selectedSort === sort.value ? 'filled' : 'outlined'}
+                      color={selectedSort === sort.value ? 'primary' : 'default'}
+                      onClick={() => setSelectedSort(sort.value)}
+                      sx={{ justifyContent: 'flex-start' }}
+                    />
+                  ))}
+                </Stack>
+              </MobileFilterSheet>
             </Stack>
 
             <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>

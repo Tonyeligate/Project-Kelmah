@@ -119,6 +119,7 @@ export const formatRelativeTime = (date) => {
 
   const now = new Date();
   const targetDate = new Date(date);
+  if (isNaN(targetDate.getTime())) return '';
   const diffInSeconds = Math.floor((now - targetDate) / 1000);
   const diffInMinutes = Math.floor(diffInSeconds / 60);
   const diffInHours = Math.floor(diffInMinutes / 60);
@@ -249,14 +250,15 @@ export const formatRating = (rating, maxRating = 5) => {
     return '☆☆☆☆☆ (0.0)';
   }
 
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating % 1 >= 0.5;
+  const clamped = Math.max(0, Math.min(Number(rating), maxRating));
+  const fullStars = Math.floor(clamped);
+  const hasHalfStar = clamped % 1 >= 0.5;
   const emptyStars = maxRating - fullStars - (hasHalfStar ? 1 : 0);
 
   const stars =
     '★'.repeat(fullStars) + (hasHalfStar ? '½' : '') + '☆'.repeat(emptyStars);
 
-  return `${stars} (${Number(rating).toFixed(1)})`;
+  return `${stars} (${clamped.toFixed(1)})`;
 };
 
 /**

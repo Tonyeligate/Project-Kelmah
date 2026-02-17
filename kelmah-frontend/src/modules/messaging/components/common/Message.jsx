@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {
   Avatar,
@@ -14,9 +14,12 @@ import {
   Fade,
   Chip,
   Badge,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import { format } from 'date-fns';
+import useLongPress from '../../../../hooks/useLongPress';
 import {
   MoreVert as MoreIcon,
   ContentCopy as CopyIcon,
@@ -92,8 +95,22 @@ const Message = ({
   onResend,
 }) => {
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+  const [menuPosition, setMenuPosition] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
   const messageRef = useRef(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Long-press handler for mobile: opens context menu at touch coordinates
+  const handleLongPress = useCallback((e) => {
+    const touch = e.touches?.[0];
+    if (touch) {
+      setMenuPosition({ top: touch.clientY, left: touch.clientX });
+      setMenuAnchorEl(null); // use anchorPosition mode
+    }
+  }, []);
+
+  const longPressHandlers = useLongPress(handleLongPress, { delay: 500 });
 
   // Setup intersection observer to track when message is visible
   const { ref, inView } = useInView({
@@ -121,6 +138,7 @@ const Message = ({
 
   const handleMenuClose = () => {
     setMenuAnchorEl(null);
+    setMenuPosition(null);
   };
 
   const handleCopy = () => {
@@ -209,12 +227,15 @@ const Message = ({
       ref={setRefs}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      {...(isMobile ? longPressHandlers : {})}
       sx={{
         display: 'flex',
         flexDirection: isOwn ? 'row-reverse' : 'row',
         alignItems: 'flex-end',
         mb: 1,
         position: 'relative',
+        userSelect: isMobile ? 'none' : undefined, // prevent text-select during long press
+        WebkitUserSelect: isMobile ? 'none' : undefined,
       }}
     >
       {showAvatar && !isOwn && (
@@ -376,8 +397,10 @@ const Message = ({
 
       {/* Message menu */}
       <Menu
-        anchorEl={menuAnchorEl}
-        open={Boolean(menuAnchorEl)}
+        anchorReference={menuPosition ? 'anchorPosition' : 'anchorEl'}
+        anchorPosition={menuPosition || undefined}
+        anchorEl={menuPosition ? undefined : menuAnchorEl}
+        open={Boolean(menuAnchorEl) || Boolean(menuPosition)}
         onClose={handleMenuClose}
         anchorOrigin={{
           vertical: 'top',

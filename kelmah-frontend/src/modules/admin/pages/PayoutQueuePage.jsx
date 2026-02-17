@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useMediaQuery } from '@mui/material';
 import { adminService } from '../services/adminService';
 
 const StatusBadge = ({ status }) => {
@@ -25,6 +26,7 @@ const StatusBadge = ({ status }) => {
 };
 
 const PayoutQueuePage = () => {
+  const isMobile = useMediaQuery('(max-width:899px)');
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('queued');
@@ -122,6 +124,44 @@ const PayoutQueuePage = () => {
       {error && (
         <div style={{ color: '#da3633', marginBottom: 12 }}>{error}</div>
       )}
+      {/* Mobile card view */}
+      {isMobile ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {loading ? (
+            <div style={{ padding: 16, textAlign: 'center' }}>Loading…</div>
+          ) : items.length === 0 ? (
+            <div style={{ padding: 16, textAlign: 'center', color: '#8b949e' }}>No items</div>
+          ) : (
+            items.map((it) => (
+              <div
+                key={it._id}
+                style={{
+                  border: '1px solid #30363d',
+                  borderRadius: 8,
+                  padding: 12,
+                  background: '#161b22',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <strong>{it.user}</strong>
+                  <StatusBadge status={it.status} />
+                </div>
+                <div style={{ fontSize: '0.9em', color: '#8b949e' }}>
+                  {it.amount} {it.currency} • {it.provider}
+                </div>
+                <div style={{ fontSize: '0.8em', color: '#8b949e', marginTop: 4 }}>
+                  Attempts: {it.attempts} • {new Date(it.createdAt).toLocaleDateString()}
+                </div>
+                {it.lastError?.message && (
+                  <div style={{ fontSize: '0.8em', color: '#da3633', marginTop: 4 }}>
+                    {it.lastError.message}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      ) : (
       <div
         style={{
           border: '1px solid #30363d',
@@ -176,6 +216,7 @@ const PayoutQueuePage = () => {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 };

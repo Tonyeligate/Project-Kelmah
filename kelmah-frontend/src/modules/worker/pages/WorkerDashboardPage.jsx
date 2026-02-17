@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { normalizeUser } from '../../../utils/userUtils';
+import PullToRefresh from '../../../components/common/PullToRefresh';
 import {
   Box,
   Typography,
@@ -369,6 +370,7 @@ const WorkerDashboardPage = () => {
   );
 
   return (
+    <PullToRefresh onRefresh={fetchDashboardData}>
     <Box
       sx={{
         bgcolor: 'background.default',
@@ -656,6 +658,7 @@ const WorkerDashboardPage = () => {
         </Grid>
       </Grid>
     </Box>
+    </PullToRefresh>
   );
 };
 

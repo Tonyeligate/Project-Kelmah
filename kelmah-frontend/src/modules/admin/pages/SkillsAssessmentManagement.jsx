@@ -28,6 +28,7 @@ import {
   Card,
   CardContent,
   Tabs,
+  Stack,
   Tab,
   Divider,
 } from '@mui/material';
@@ -40,6 +41,7 @@ import {
   School as SchoolIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../../modules/auth/hooks/useAuth';
+import ResponsiveDataView from '../../../components/common/ResponsiveDataView';
 
 // Custom TabPanel component
 function TabPanel(props) {
@@ -158,6 +160,31 @@ const SkillsAssessmentManagement = () => {
               <CircularProgress />
             </Box>
           ) : (
+            <ResponsiveDataView
+              rows={tests}
+              emptyMessage="No assessment tests found. Create your first test to get started."
+              renderCard={(test) => (
+                <Stack spacing={0.5}>
+                  <Typography variant="subtitle2" fontWeight={600}>{test.title}</Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Chip label={test.category} size="small" />
+                    <Chip
+                      label={test.status || 'Draft'}
+                      color={test.status === 'Active' ? 'success' : 'default'}
+                      size="small"
+                    />
+                  </Stack>
+                  <Typography variant="caption" color="text.secondary">
+                    {test.questions?.length || 0} questions
+                  </Typography>
+                  <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
+                    <IconButton size="small"><ViewIcon /></IconButton>
+                    <IconButton size="small"><EditIcon /></IconButton>
+                    <IconButton size="small" color="error"><DeleteIcon /></IconButton>
+                  </Stack>
+                </Stack>
+              )}
+            >
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
@@ -213,6 +240,7 @@ const SkillsAssessmentManagement = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+            </ResponsiveDataView>
           )}
         </TabPanel>
 

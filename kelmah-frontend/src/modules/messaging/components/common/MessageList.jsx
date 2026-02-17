@@ -157,6 +157,7 @@ const MessageList = ({
   conversation,
   onMessageRead,
   deleteMessage,
+  onReply,
 }) => {
   const { user } = useAuth();
   const { getTypingUsers } = useMessages();
@@ -525,6 +526,11 @@ const MessageList = ({
                     onVisibilityChange={(isVisible) =>
                       updateVisibleMessages(message.id, isVisible)
                     }
+                    onCopy={(msg) => {
+                      navigator.clipboard.writeText(msg.content);
+                    }}
+                    onDelete={typeof deleteMessage === 'function' ? (msg) => deleteMessage(msg.id) : undefined}
+                    onReply={typeof onReply === 'function' ? (msg) => onReply(msg) : undefined}
                   />
                 );
               })}

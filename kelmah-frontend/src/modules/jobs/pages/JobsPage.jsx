@@ -207,6 +207,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 import { useDebounce } from '../../../hooks/useDebounce';
 import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigation';
+import PullToRefresh from '../../../components/common/PullToRefresh';
+import usePrefersReducedMotion from '../../../hooks/usePrefersReducedMotion';
 
 // Advanced Animations with Smooth Transitions
 const float = keyframes`
@@ -555,6 +557,11 @@ const JobsPage = () => {
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const prefersReducedMotion = usePrefersReducedMotion();
+  // When reduced motion is preferred, disable framer-motion transitions
+  const motionProps = prefersReducedMotion
+    ? { initial: false, animate: false, transition: { duration: 0 } }
+    : {};
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 350);
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -686,6 +693,7 @@ const JobsPage = () => {
     isLoading: isJobsLoading,
     isFetching: isJobsFetching,
     error: jobsQueryError,
+    refetch: refetchJobs,
   } = useJobsQuery(jobsQueryFilters, { keepPreviousData: true });
 
   // Infinite scroll: auto-load next page when sentinel enters viewport (mobile)
@@ -823,6 +831,7 @@ const JobsPage = () => {
 
   return (
     <ErrorBoundary>
+      <PullToRefresh onRefresh={async () => { setPage(1); await refetchJobs(); }}>
       <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', color: 'text.primary' }}>
         {/* Breadcrumb Navigation */}
         <BreadcrumbNavigation />
@@ -2584,6 +2593,7 @@ const JobsPage = () => {
           </motion.div>
         </Container>
       </Box>
+      </PullToRefresh>
     </ErrorBoundary>
   );
 };

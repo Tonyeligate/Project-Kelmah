@@ -1,8 +1,5 @@
 import { api as gatewayClient } from '../../../services/apiClient';
 
-// Use Node.js environment variables for tests
-const metaEnv = process.env;
-
 /**
  * Check if the API is reachable
  * @param {boolean} showLoading - Whether to show loading state in component

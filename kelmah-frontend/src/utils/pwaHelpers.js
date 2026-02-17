@@ -29,8 +29,9 @@ const openGatewayDb = () => {
 
 const saveHealthyGateway = async (origin) => {
   if (!origin) return;
+  let db;
   try {
-    const db = await openGatewayDb();
+    db = await openGatewayDb();
     const tx = db.transaction(HEALTHY_GATEWAY_STORE, 'readwrite');
     tx.objectStore(HEALTHY_GATEWAY_STORE).put(
       {
@@ -41,20 +42,30 @@ const saveHealthyGateway = async (origin) => {
     );
   } catch (error) {
     console.warn('[PWA] Failed to persist healthy gateway:', error);
+  } finally {
+    db?.close();
   }
 };
 
 const readHealthyGateway = async () => {
+  let db;
   try {
-    const db = await openGatewayDb();
+    db = await openGatewayDb();
     return new Promise((resolve, reject) => {
       const tx = db.transaction(HEALTHY_GATEWAY_STORE, 'readonly');
       const store = tx.objectStore(HEALTHY_GATEWAY_STORE);
       const request = store.get(HEALTHY_GATEWAY_KEY);
-      request.onsuccess = () => resolve(request.result || null);
-      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        db.close();
+        resolve(request.result || null);
+      };
+      request.onerror = () => {
+        db.close();
+        reject(request.error);
+      };
     });
   } catch (error) {
+    db?.close();
     console.warn('[PWA] Failed to read healthy gateway cache:', error);
     return null;
   }
@@ -590,26 +601,20 @@ const urlBase64ToUint8Array = (base64String) => {
   return outputArray;
 };
 
-// Send subscription to server
+// Send subscription to server using shared apiClient for auth/interceptors
+let _apiClient = null;
+const getApiClient = async () => {
+  if (!_apiClient) {
+    const mod = await import('../services/apiClient');
+    _apiClient = mod.api;
+  }
+  return _apiClient;
+};
+
 const sendSubscriptionToServer = async (subscription) => {
   try {
-    const response = await fetch('/notifications/push/subscribe', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true',
-      },
-      body: JSON.stringify(subscription),
-    });
-    if (!response.ok) {
-      // Fail softly; push endpoints may not be active yet
-      console.warn(
-        'Push subscribe endpoint not available:',
-        response.status,
-        await response.text().catch(() => ''),
-      );
-      return { success: false };
-    }
+    const api = await getApiClient();
+    await api.post('/notifications/push/subscribe', subscription);
     console.log('Subscription sent to server successfully');
     return { success: true };
   } catch (error) {

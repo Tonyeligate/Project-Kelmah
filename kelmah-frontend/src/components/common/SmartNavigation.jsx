@@ -176,14 +176,14 @@ const SmartNavigation = () => {
 
   const userRole = user.role || user.userType || user.userRole;
 
-  // Get contextual navigation suggestions based on current page and user role
-  const getNavigationSuggestions = () => {
-    const suggestions = [];
+  // Memoize contextual navigation suggestions based on current page and user role
+  const suggestions = useMemo(() => {
+    const result = [];
     const currentPath = location.pathname;
 
     // Common suggestions for all users
     if (currentPath === '/jobs' || currentPath.includes('/jobs/')) {
-      suggestions.push(
+      result.push(
         {
           label: 'Search Jobs',
           icon: <SearchIcon />,
@@ -202,7 +202,7 @@ const SmartNavigation = () => {
     }
 
     if (currentPath === '/search' || currentPath.includes('/search')) {
-      suggestions.push({
+      result.push({
         label: 'Browse All Jobs',
         icon: <WorkIcon />,
         path: '/jobs',
@@ -213,7 +213,7 @@ const SmartNavigation = () => {
 
     // Role-specific suggestions
     if (userRole === 'worker') {
-      suggestions.push(
+      result.push(
         {
           label: 'Worker Dashboard',
           icon: <PersonIcon />,
@@ -232,7 +232,7 @@ const SmartNavigation = () => {
     }
 
     if (userRole === 'hirer') {
-      suggestions.push(
+      result.push(
         {
           label: 'Hirer Dashboard',
           icon: <BusinessIcon />,
@@ -243,7 +243,7 @@ const SmartNavigation = () => {
         {
           label: 'Find Workers',
           icon: <SearchIcon />,
-          path: '/hirer/find-talent', // ✅ FIXED: Use correct authenticated route
+          path: '/hirer/find-talent',
           description: 'Search for skilled workers',
           color: '#00BCD4',
         },
@@ -251,7 +251,7 @@ const SmartNavigation = () => {
     }
 
     // Always include home
-    suggestions.push({
+    result.push({
       label: 'Home',
       icon: <HomeIcon />,
       path: '/',
@@ -259,10 +259,8 @@ const SmartNavigation = () => {
       color: '#607D8B',
     });
 
-    return suggestions.slice(0, 4); // Limit to 4 suggestions
-  };
-
-  const suggestions = getNavigationSuggestions();
+    return result.slice(0, 4);
+  }, [location.pathname, userRole]);
 
   const handleTogglePin = () => {
     setIsPinned((prev) => {
