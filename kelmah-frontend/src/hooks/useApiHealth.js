@@ -4,11 +4,13 @@ import { API_BASE_URL } from '../config/environment';
 export const useApiHealth = () => {
   const [isHealthy, setIsHealthy] = useState(true); // Optimistic default
   const [lastCheck, setLastCheck] = useState(null);
-  const [retryCount, setRetryCount] = useState(0);
   const isMountedRef = useRef(true);
+
+  const retryCountRef = useRef(0);
 
   useEffect(() => {
     isMountedRef.current = true;
+    retryCountRef.current = 0;
 
     const checkHealth = async (isRetry = false) => {
       try {
@@ -31,7 +33,7 @@ export const useApiHealth = () => {
             if (response.ok && isMountedRef.current) {
               setIsHealthy(true);
               setLastCheck(new Date());
-              setRetryCount(0);
+              retryCountRef.current = 0;
               // Cache healthy URL
               if (typeof window !== 'undefined') {
                 localStorage.setItem('kelmah:lastHealthyApiBase', API_BASE_URL);
@@ -51,9 +53,9 @@ export const useApiHealth = () => {
         if (!isMountedRef.current) return;
 
         // Retry logic - up to 3 retries with backoff
-        if (!isRetry && retryCount < 3) {
-          setRetryCount((prev) => prev + 1);
-          const backoffMs = Math.min(1000 * Math.pow(2, retryCount), 5000);
+        if (!isRetry && retryCountRef.current < 3) {
+          retryCountRef.current += 1;
+          const backoffMs = Math.min(1000 * Math.pow(2, retryCountRef.current), 5000);
           setTimeout(() => checkHealth(true), backoffMs);
           return;
         }
@@ -74,7 +76,7 @@ export const useApiHealth = () => {
       clearTimeout(initialDelay);
       clearInterval(interval);
     };
-  }, [retryCount]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { isHealthy, lastCheck };
 };

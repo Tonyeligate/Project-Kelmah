@@ -92,7 +92,7 @@ const PaymentsPage = () => {
   }, []);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
       <Box
         sx={{
           display: 'flex',
@@ -208,7 +208,7 @@ const PaymentsPage = () => {
               <Tab label="Settings" />
             </Tabs>
 
-            <Box sx={{ p: 3 }}>
+            <Box sx={{ p: { xs: 1.5, sm: 3 } }}>
               {selectedTab === 0 && (
                 <>
                   {/* Filters */}
@@ -216,7 +216,8 @@ const PaymentsPage = () => {
                     sx={{
                       mb: 3,
                       display: 'flex',
-                      gap: 2,
+                      flexWrap: 'wrap',
+                      gap: { xs: 1, sm: 2 },
                       alignItems: 'center',
                     }}
                   >
@@ -227,7 +228,7 @@ const PaymentsPage = () => {
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
-                      sx={{ backgroundColor: 'grey.800', borderRadius: 1 }}
+                      sx={{ backgroundColor: 'grey.800', borderRadius: 1, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
                     />
                     <TextField
                       variant="filled"
@@ -236,9 +237,9 @@ const PaymentsPage = () => {
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
-                      sx={{ backgroundColor: 'grey.800', borderRadius: 1 }}
+                      sx={{ backgroundColor: 'grey.800', borderRadius: 1, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
                     />
-                    <FormControl sx={{ minWidth: 140 }}>
+                    <FormControl sx={{ minWidth: { xs: 0, sm: 140 }, flex: { xs: '1 1 100%', sm: '0 1 auto' } }}>
                       <InputLabel>Type</InputLabel>
                       <Select
                         value={filterType}
@@ -256,6 +257,7 @@ const PaymentsPage = () => {
                       sx={{
                         borderWidth: 2,
                         boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
+                        flex: { xs: '1 1 100%', sm: '0 1 auto' },
                       }}
                       onClick={applyFilters}
                     >

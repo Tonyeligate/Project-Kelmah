@@ -3,6 +3,7 @@ import {
     useMutation,
     useQuery,
     useQueryClient,
+    keepPreviousData,
 } from '@tanstack/react-query';
 import jobsApi from '../services/jobsService';
 
@@ -92,8 +93,8 @@ export const useJobsQuery = (filters = {}, options = {}) => {
         queryKey: jobKeys.list(normalizedFilters),
         queryFn: () => jobsApi.getJobs(normalizedFilters),
         staleTime: 30 * 1000, // listings can refresh often without hammering the API
-        cacheTime: 2 * 60 * 1000,
-        keepPreviousData: true,
+        gcTime: 2 * 60 * 1000,
+        placeholderData: keepPreviousData,
         ...options,
     });
 };
@@ -104,7 +105,7 @@ export const useJobQuery = (jobId, options = {}) =>
         queryFn: () => jobsApi.getJobById(jobId),
         enabled: Boolean(jobId),
         staleTime: 30 * 1000,
-        cacheTime: 5 * 60 * 1000,
+        gcTime: 5 * 60 * 1000,
         ...options,
     });
 
@@ -113,7 +114,7 @@ export const useSavedJobsQuery = (params = {}, options = {}) =>
         queryKey: jobKeys.saved(params),
         queryFn: () => jobsApi.getSavedJobs(params),
         staleTime: 30 * 1000,
-        cacheTime: 2 * 60 * 1000,
+        gcTime: 2 * 60 * 1000,
         ...options,
     });
 

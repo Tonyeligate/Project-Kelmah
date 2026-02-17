@@ -659,7 +659,7 @@ const PremiumFilterPanel = ({
                       variant="body2"
                       sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}
                     >
-                      ${priceRange[0]} - ${priceRange[1]}
+                      GH₵{priceRange[0]} - GH₵{priceRange[1]}
                     </Typography>
                     <Slider
                       value={priceRange}
@@ -2193,7 +2193,7 @@ const MapSearchOverlay = ({
                               variant="caption"
                               color="rgba(0, 0, 0, 0.6)"
                             >
-                              📍 {result.distance} • 💰 ${result.price}
+                              📍 {result.distance} • 💰 GH₵{result.price}
                             </Typography>
                             <Box
                               sx={{

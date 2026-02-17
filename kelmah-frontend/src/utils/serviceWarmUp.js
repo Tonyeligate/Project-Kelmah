@@ -73,10 +73,19 @@ export const warmUpServices = async () => {
 
     console.log(`🔥 Service warm-up complete: ${successful}/${results.length} healthy, ${wakingUp} waking up (${elapsed}ms)`);
 
-    // If services are waking up, schedule a retry
+    // If services are waking up, schedule a limited retry (max 5 times)
     if (wakingUp > 0) {
-      console.log('⏳ Services are waking up, will retry in 10 seconds...');
-      setTimeout(() => warmUpServices(), 10000);
+      const currentAttempt = warmUpServices._retryCount || 0;
+      if (currentAttempt < 5) {
+        warmUpServices._retryCount = currentAttempt + 1;
+        console.log(`⏳ Services waking up, retry ${currentAttempt + 1}/5 in 10 seconds...`);
+        setTimeout(() => warmUpServices(), 10000);
+      } else {
+        console.warn('⚠️ Max warm-up retries reached. Some services may still be waking up.');
+        warmUpServices._retryCount = 0;
+      }
+    } else {
+      warmUpServices._retryCount = 0;
     }
 
     return {

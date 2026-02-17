@@ -37,7 +37,8 @@ import {
   Add as AddIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import Toast from '../../common/components/common/Toast';
 
 // Import contract slice actions and selectors
@@ -485,7 +486,7 @@ const CreateContractPage = () => {
                   type="number"
                   InputProps={{
                     startAdornment: (
-                      <InputAdornment position="start">$</InputAdornment>
+                      <InputAdornment position="start">GH₵</InputAdornment>
                     ),
                   }}
                   error={!!validationErrors.value}
@@ -611,7 +612,7 @@ const CreateContractPage = () => {
                         type="number"
                         InputProps={{
                           startAdornment: (
-                            <InputAdornment position="start">$</InputAdornment>
+                            <InputAdornment position="start">GH₵</InputAdornment>
                           ),
                         }}
                         error={validationErrors.milestones?.[index]?.amount}
@@ -657,7 +658,7 @@ const CreateContractPage = () => {
                       Value
                     </Typography>
                     <Typography variant="body1" gutterBottom>
-                      ${parseFloat(contract.value).toFixed(2)}
+                      GH₵{parseFloat(contract.value).toFixed(2)}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -732,7 +733,7 @@ const CreateContractPage = () => {
                         {milestone.title}
                       </Typography>
                       <Typography variant="subtitle1">
-                        ${parseFloat(milestone.amount).toFixed(2)}
+                        GH₵{parseFloat(milestone.amount).toFixed(2)}
                       </Typography>
                     </Box>
                     <Typography
@@ -757,7 +758,7 @@ const CreateContractPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 2, sm: 4 }, mb: { xs: 4, sm: 8 }, px: { xs: 0.5, sm: 2 } }}>
       {/* Error alert */}
       {error.createContract && (
         <Alert severity="error" sx={{ mb: 3 }}>
@@ -785,8 +786,8 @@ const CreateContractPage = () => {
       <Paper
         elevation={0}
         sx={(theme) => ({
-          p: 3,
-          mb: 4,
+          p: { xs: 1.5, sm: 3 },
+          mb: { xs: 2, sm: 4 },
           backgroundColor: alpha(theme.palette.primary.main, 0.7),
           backdropFilter: 'blur(10px)',
           borderRadius: theme.spacing(2),
@@ -798,9 +799,10 @@ const CreateContractPage = () => {
             boxShadow: `0 0 12px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.5)`,
             borderColor: theme.palette.secondary.light,
           },
+          overflowX: 'auto',
         })}
       >
-        <Stepper activeStep={activeStep} alternativeLabel>
+        <Stepper activeStep={activeStep} alternativeLabel sx={{ minWidth: { xs: 'max-content', sm: 'auto' }, '& .MuiStepLabel-label': { fontSize: { xs: '0.7rem', sm: '0.875rem' } } }}>
           {steps.map((label) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>
@@ -813,8 +815,8 @@ const CreateContractPage = () => {
       <Paper
         elevation={0}
         sx={(theme) => ({
-          p: 3,
-          mb: 4,
+          p: { xs: 1.5, sm: 3 },
+          mb: { xs: 2, sm: 4 },
           backgroundColor: alpha(theme.palette.primary.main, 0.7),
           backdropFilter: 'blur(10px)',
           borderRadius: theme.spacing(2),

@@ -131,28 +131,28 @@ export const formatRelativeTime = (date) => {
     return 'just now';
   } else if (Math.abs(diffInMinutes) < 60) {
     return diffInMinutes > 0
-      ? `${diffInMinutes} minutes ago`
-      : `in ${Math.abs(diffInMinutes)} minutes`;
+      ? `${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'} ago`
+      : `in ${Math.abs(diffInMinutes)} ${Math.abs(diffInMinutes) === 1 ? 'minute' : 'minutes'}`;
   } else if (Math.abs(diffInHours) < 24) {
     return diffInHours > 0
-      ? `${diffInHours} hours ago`
-      : `in ${Math.abs(diffInHours)} hours`;
+      ? `${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'} ago`
+      : `in ${Math.abs(diffInHours)} ${Math.abs(diffInHours) === 1 ? 'hour' : 'hours'}`;
   } else if (Math.abs(diffInDays) < 7) {
     return diffInDays > 0
-      ? `${diffInDays} days ago`
-      : `in ${Math.abs(diffInDays)} days`;
+      ? `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`
+      : `in ${Math.abs(diffInDays)} ${Math.abs(diffInDays) === 1 ? 'day' : 'days'}`;
   } else if (Math.abs(diffInWeeks) < 4) {
     return diffInWeeks > 0
-      ? `${diffInWeeks} weeks ago`
-      : `in ${Math.abs(diffInWeeks)} weeks`;
+      ? `${diffInWeeks} ${diffInWeeks === 1 ? 'week' : 'weeks'} ago`
+      : `in ${Math.abs(diffInWeeks)} ${Math.abs(diffInWeeks) === 1 ? 'week' : 'weeks'}`;
   } else if (Math.abs(diffInMonths) < 12) {
     return diffInMonths > 0
-      ? `${diffInMonths} months ago`
-      : `in ${Math.abs(diffInMonths)} months`;
+      ? `${diffInMonths} ${diffInMonths === 1 ? 'month' : 'months'} ago`
+      : `in ${Math.abs(diffInMonths)} ${Math.abs(diffInMonths) === 1 ? 'month' : 'months'}`;
   } else {
     return diffInYears > 0
-      ? `${diffInYears} years ago`
-      : `in ${Math.abs(diffInYears)} years`;
+      ? `${diffInYears} ${diffInYears === 1 ? 'year' : 'years'} ago`
+      : `in ${Math.abs(diffInYears)} ${Math.abs(diffInYears) === 1 ? 'year' : 'years'}`;
   }
 };
 
@@ -163,7 +163,7 @@ export const formatRelativeTime = (date) => {
  * @returns {string} Formatted file size
  */
 export const formatFileSize = (bytes, decimals = 2) => {
-  if (!bytes || bytes === 0) return '0 Bytes';
+  if (!bytes || bytes <= 0) return '0 Bytes';
 
   const k = 1024;
   const dm = decimals < 0 ? 0 : decimals;

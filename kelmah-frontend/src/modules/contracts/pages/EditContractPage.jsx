@@ -26,8 +26,8 @@ const EditContractPage = () => {
   }
 
   return (
-    <Container maxWidth="xl">
-      <Box sx={{ py: 3 }}>
+    <Container maxWidth="xl" sx={{ px: { xs: 0.5, sm: 2 } }}>
+      <Box sx={{ py: { xs: 2, sm: 3 } }}>
         <Breadcrumbs sx={{ mb: 2 }}>
           <Link component={RouterLink} to="/" underline="hover" color="inherit">
             Dashboard

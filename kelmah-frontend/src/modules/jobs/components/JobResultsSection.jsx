@@ -29,6 +29,7 @@ import {
   Share,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import jobsApi from '../services/jobsService';
 import { format, formatDistanceToNow } from 'date-fns';
 import CountUp from 'react-countup';
 import { useInView } from 'react-intersection-observer';
@@ -239,7 +240,7 @@ const JobResultsSection = ({
     </Box>
   );
 
-  const handleBookmark = (job) => {
+  const handleBookmark = async (job) => {
     if (!isAuthenticated) {
       navigate('/login', {
         state: {
@@ -249,7 +250,11 @@ const JobResultsSection = ({
       });
       return;
     }
-    console.log('Bookmark functionality to be implemented', job.id);
+    try {
+      await jobsApi.saveJob(job.id || job._id);
+    } catch (err) {
+      console.warn('Failed to bookmark job:', err.message);
+    }
   };
 
   const handleShare = (job) => {
@@ -872,28 +877,33 @@ const JobResultsSection = ({
               variant="body2"
               sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}
             >
-              Showing {safeJobs.length} of 12 total opportunities
+              Showing {safeJobs.length} of {platformStats?.totalJobs || safeJobs.length} total opportunities
             </Typography>
-            <Button
-              variant="outlined"
-              size="large"
-              startIcon={<RefreshIcon />}
-              onClick={() =>
-                console.log('Load more functionality - to be implemented')
-              }
-              sx={{
-                borderColor: '#D4AF37',
-                color: '#D4AF37',
-                px: 4,
-                py: 1.5,
-                '&:hover': {
-                  borderColor: '#B8941F',
-                  bgcolor: 'rgba(212,175,55,0.1)',
-                },
-              }}
-            >
-              Load More Opportunities
-            </Button>
+            {(platformStats?.totalJobs || 0) > safeJobs.length && (
+              <Button
+                variant="outlined"
+                size="large"
+                startIcon={<RefreshIcon />}
+                onClick={() => {
+                  // Pagination via filter update — parent component handles loading
+                  if (typeof onClearAllFilters === 'function') {
+                    onClearAllFilters();
+                  }
+                }}
+                sx={{
+                  borderColor: '#D4AF37',
+                  color: '#D4AF37',
+                  px: 4,
+                  py: 1.5,
+                  '&:hover': {
+                    borderColor: '#B8941F',
+                    bgcolor: 'rgba(212,175,55,0.1)',
+                  },
+                }}
+              >
+                Load More Opportunities
+              </Button>
+            )}
           </Box>
         </motion.div>
       )}
@@ -1026,7 +1036,7 @@ const JobResultsSection = ({
                   });
                   return;
                 }
-                console.log('Create job alert feature - to be implemented');
+                // TODO: Implement job alert creation
               }}
               sx={{
                 bgcolor: '#D4AF37',

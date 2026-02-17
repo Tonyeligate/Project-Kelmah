@@ -5,7 +5,7 @@ const initialState = {
   events: [],
   loading: false,
   error: null,
-  selectedDate: new Date(),
+  selectedDate: new Date().toISOString(),
 };
 
 export const fetchEvents = createAsyncThunk(

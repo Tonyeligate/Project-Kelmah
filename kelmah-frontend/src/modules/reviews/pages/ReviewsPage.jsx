@@ -225,8 +225,7 @@ const EnhancedReviewsPage = () => {
     if (!replyText.trim() || !selectedReview) return;
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await reviewService.addWorkerResponse(selectedReview.id, replyText.trim());
 
       // Update review with reply
       setReviews((prev) =>
@@ -256,6 +255,10 @@ const EnhancedReviewsPage = () => {
 
   const handleHelpfulVote = async (reviewId, isHelpful) => {
     try {
+      if (isHelpful) {
+        await reviewService.voteHelpful(reviewId);
+      }
+
       setReviews((prev) =>
         prev.map((review) =>
           review.id === reviewId

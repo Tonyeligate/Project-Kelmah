@@ -844,8 +844,8 @@ const SchedulingPage = () => {
       {viewMode === 'map' && (
         <Box sx={{ height: 500, mb: 4 }}>
           <MapContainer
-            center={[0, 0]}
-            zoom={2}
+            center={[7.9465, -1.0232]}
+            zoom={7}
             style={{ height: '100%', width: '100%' }}
           >
             <TileLayer url={EXTERNAL_SERVICES.OPENSTREETMAP.TILES} />

@@ -140,10 +140,10 @@ const BillPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
       <Paper
         sx={{
-          p: 4,
+          p: { xs: 2, sm: 4 },
           borderRadius: 2,
           background: 'linear-gradient(to right, #28313b, #485461, #ffd700)',
           color: 'white',
@@ -159,7 +159,7 @@ const BillPage = () => {
           Your Bills
         </Typography>
         {/* Filters */}
-        <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
+        <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 2 }, alignItems: 'center' }}>
           <Tooltip title="Filter bills due on or after this date">
             <TextField
               label="From"
@@ -167,6 +167,7 @@ const BillPage = () => {
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               InputLabelProps={{ shrink: true }}
+              sx={{ flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
             />
           </Tooltip>
           <Tooltip title="Filter bills due on or before this date">
@@ -176,10 +177,11 @@ const BillPage = () => {
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               InputLabelProps={{ shrink: true }}
+              sx={{ flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
             />
           </Tooltip>
           <Tooltip title="Filter by bill status">
-            <FormControl sx={{ minWidth: 140 }}>
+            <FormControl sx={{ minWidth: { xs: 0, sm: 140 }, flex: { xs: '1 1 100%', sm: '0 1 auto' } }}>
               <InputLabel>Status</InputLabel>
               <Select
                 value={statusFilter}
@@ -197,7 +199,7 @@ const BillPage = () => {
             <Button
               variant="outlined"
               color="secondary"
-              sx={{ borderWidth: 2 }}
+              sx={{ borderWidth: 2, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
               onClick={applyFilters}
             >
               Filter
@@ -207,7 +209,7 @@ const BillPage = () => {
             <Button
               variant="outlined"
               color="secondary"
-              sx={{ borderWidth: 2 }}
+              sx={{ borderWidth: 2, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
               onClick={clearFilters}
             >
               Clear
@@ -248,7 +250,7 @@ const BillPage = () => {
           <List>
             {pagedBills.map((bill, index) => (
               <React.Fragment key={bill.id}>
-                <ListItem>
+                <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 }, py: { xs: 1.5, sm: 1 } }}>
                   <ListItemText
                     primary={
                       <Typography variant="subtitle1" fontWeight="medium">
@@ -257,7 +259,7 @@ const BillPage = () => {
                     }
                     secondary={`Due: ${new Date(bill.dueDate).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' })}`}
                   />
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, flexWrap: 'wrap', width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
                     {getStatusChip(bill.status)}
                     <Typography variant="h6" fontWeight="medium">
                       {currencyFormatter.format(bill.amount)}

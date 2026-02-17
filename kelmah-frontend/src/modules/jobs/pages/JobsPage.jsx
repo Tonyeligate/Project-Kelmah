@@ -257,12 +257,20 @@ const HeroSection = styled(Box)(({ theme }) => ({
   backgroundSize: '400% 400%',
   // animation: `${gradientShift} 15s ease infinite`,
   color: 'white',
-  padding: theme.spacing(12, 0),
+  padding: theme.spacing(4, 0),
   position: 'relative',
   overflow: 'hidden',
-  minHeight: '85vh',
+  minHeight: '40vh',
   display: 'flex',
   alignItems: 'center',
+  [theme.breakpoints.up('sm')]: {
+    padding: theme.spacing(8, 0),
+    minHeight: '60vh',
+  },
+  [theme.breakpoints.up('md')]: {
+    padding: theme.spacing(12, 0),
+    minHeight: '85vh',
+  },
   '&::before': {
     content: '""',
     position: 'absolute',

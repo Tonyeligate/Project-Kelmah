@@ -130,10 +130,10 @@ const ContractCard = ({ contract }) => {
           alignItems="center"
         >
           <Typography variant="subtitle2" fontWeight="bold">
-            ${amountPaid.toFixed(2)}
+            GH₵{amountPaid.toFixed(2)}
           </Typography>
           <Typography variant="subtitle2" fontWeight="bold">
-            ${value.toFixed(2)}
+            GH₵{value.toFixed(2)}
           </Typography>
         </Stack>
       </Box>

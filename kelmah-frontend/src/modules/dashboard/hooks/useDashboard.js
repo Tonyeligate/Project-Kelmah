@@ -44,14 +44,13 @@ export const useDashboard = () => {
       };
 
       const handleNewJob = (job) => {
+        // Dispatch plain object — setDashboardData merges into state.data
         dispatch(
-          setDashboardData((prev) => ({
-            ...prev,
+          setDashboardData({
             quickActions: [
               { label: `New Job: ${job.title}`, ...job },
-              ...(prev.quickActions || []).slice(0, 4),
             ],
-          })),
+          }),
         );
       };
 

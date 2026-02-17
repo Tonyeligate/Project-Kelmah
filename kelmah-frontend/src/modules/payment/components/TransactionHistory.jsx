@@ -58,7 +58,7 @@ const TransactionHistory = ({ transactions }) => {
                     fontWeight={700}
                     color={row.type === 'received' ? 'success.main' : 'error.main'}
                   >
-                    {row.type === 'received' ? '+' : '-'}${row.amount.toFixed(2)}
+                    {row.type === 'received' ? '+' : '-'}GH₵{row.amount.toFixed(2)}
                   </Typography>
                   <Stack direction="row" alignItems="center" spacing={1}>
                     <Typography variant="caption" color="text.secondary">

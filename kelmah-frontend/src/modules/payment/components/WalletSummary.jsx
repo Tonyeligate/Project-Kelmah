@@ -27,7 +27,7 @@ const StatCard = ({ title, value, icon, color }) => (
         </Typography>
       </Box>
       <Typography variant="h5" component="div" color={color}>
-        ${value.toFixed(2)}
+        GH₵{value.toFixed(2)}
       </Typography>
     </CardContent>
   </Card>
@@ -73,7 +73,7 @@ const WalletSummary = ({
               Available Balance
             </Typography>
             <Typography variant="h3" color="black" fontWeight="bold">
-              ${walletBalance.toFixed(2)}
+              GH₵{walletBalance.toFixed(2)}
             </Typography>
             <Box
               sx={{

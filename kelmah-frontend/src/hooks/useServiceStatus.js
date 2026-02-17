@@ -5,7 +5,7 @@
  * and user-friendly error handling.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { serviceManager } from '../services/EnhancedServiceManager';
 
 export const useServiceStatus = (serviceName, options = {}) => {
@@ -27,6 +27,7 @@ export const useServiceStatus = (serviceName, options = {}) => {
   });
 
   const [autoRetryEnabled, setAutoRetryEnabled] = useState(autoRetry);
+  const retryCountRef = useRef(0);
 
   // Check service status
   const checkStatus = useCallback(
@@ -36,6 +37,7 @@ export const useServiceStatus = (serviceName, options = {}) => {
       try {
         const healthCheck = await serviceManager.healthCheck(serviceName);
 
+        retryCountRef.current = 0;
         setStatus((prev) => ({
           ...prev,
           isOnline: healthCheck.status === 'healthy',
@@ -54,24 +56,30 @@ export const useServiceStatus = (serviceName, options = {}) => {
           timestamp: Date.now(),
         };
 
+        if (isAutoRetry) {
+          retryCountRef.current += 1;
+        } else {
+          retryCountRef.current = 0;
+        }
+
         setStatus((prev) => ({
           ...prev,
           isOnline: false,
           loading: false,
           error: enhancedError,
-          retryCount: isAutoRetry ? prev.retryCount + 1 : 0,
+          retryCount: retryCountRef.current,
           lastChecked: Date.now(),
         }));
 
         if (onError) onError(enhancedError);
 
         // Disable auto-retry after max attempts
-        if (isAutoRetry && status.retryCount >= maxRetries - 1) {
+        if (isAutoRetry && retryCountRef.current >= maxRetries) {
           setAutoRetryEnabled(false);
         }
       }
     },
-    [serviceName, onError, onSuccess, status.retryCount, maxRetries],
+    [serviceName, onError, onSuccess, maxRetries],
   );
 
   // Manual retry function

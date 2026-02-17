@@ -51,9 +51,9 @@ const EscrowDetailsPage = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth="md" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
       {/* Page Heading */}
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'flex-start' }}>
+      <Box sx={{ mb: { xs: 2, sm: 4 }, display: 'flex', justifyContent: 'flex-start' }}>
         <Typography variant="h4" sx={{ color: 'secondary.main' }}>
           Escrow Details
         </Typography>
@@ -61,7 +61,7 @@ const EscrowDetailsPage = () => {
       <Paper
         elevation={3}
         sx={{
-          p: 4,
+          p: { xs: 2, sm: 4 },
           borderRadius: 2,
           background: 'linear-gradient(to right, #28313b, #485461, #ffd700)',
           color: 'white',

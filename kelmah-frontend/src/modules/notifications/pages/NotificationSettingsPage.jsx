@@ -51,11 +51,11 @@ const NotificationSettingsPage = () => {
   };
 
   return (
-    <Container sx={{ py: 4 }}>
+    <Container sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
       <Typography variant="h5" gutterBottom>
         Notification Preferences
       </Typography>
-      <Paper sx={{ p: 2 }}>
+      <Paper sx={{ p: { xs: 1.5, sm: 2 } }}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <Typography variant="subtitle1">Channels</Typography>

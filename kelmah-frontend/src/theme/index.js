@@ -73,9 +73,9 @@ const baseTheme = {
     values: {
       xs: 0,
       sm: 600,
-      md: 960,
-      lg: 1280,
-      xl: 1920,
+      md: 900,
+      lg: 1200,
+      xl: 1536,
     },
   },
   shape: {
@@ -85,39 +85,39 @@ const baseTheme = {
     fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
     h1: {
       fontFamily: '"Montserrat", sans-serif',
-      fontSize: '3.5rem',
+      fontSize: 'clamp(1.75rem, 4vw, 3.5rem)',
       fontWeight: 700,
       lineHeight: 1.2,
       letterSpacing: '-0.02em',
     },
     h2: {
       fontFamily: '"Montserrat", sans-serif',
-      fontSize: '2.75rem',
+      fontSize: 'clamp(1.5rem, 3.5vw, 2.75rem)',
       fontWeight: 600,
       lineHeight: 1.3,
       letterSpacing: '-0.01em',
     },
     h3: {
       fontFamily: '"Montserrat", sans-serif',
-      fontSize: '2.25rem',
+      fontSize: 'clamp(1.25rem, 3vw, 2.25rem)',
       fontWeight: 600,
       lineHeight: 1.3,
     },
     h4: {
       fontFamily: '"Montserrat", sans-serif',
-      fontSize: '1.75rem',
+      fontSize: 'clamp(1.125rem, 2.5vw, 1.75rem)',
       fontWeight: 600,
       lineHeight: 1.4,
     },
     h5: {
       fontFamily: '"Montserrat", sans-serif',
-      fontSize: '1.5rem',
+      fontSize: 'clamp(1rem, 2vw, 1.5rem)',
       fontWeight: 600,
       lineHeight: 1.4,
     },
     h6: {
       fontFamily: '"Montserrat", sans-serif',
-      fontSize: '1.25rem',
+      fontSize: 'clamp(0.9375rem, 1.5vw, 1.25rem)',
       fontWeight: 600,
       lineHeight: 1.4,
     },
@@ -325,10 +325,12 @@ const darkTheme = createTheme({
           border: '1px solid rgba(255, 255, 255, 0.07)',
           borderRadius: 18,
           transition: 'transform 0.3s ease, border-color 0.3s ease',
-          '&:hover': {
-            borderColor: 'rgba(255, 215, 0, 0.3)',
-            boxShadow: '0 25px 65px rgba(0, 0, 0, 0.65)',
-            transform: 'translateY(-4px)',
+          '@media (hover: hover)': {
+            '&:hover': {
+              borderColor: 'rgba(255, 215, 0, 0.3)',
+              boxShadow: '0 25px 65px rgba(0, 0, 0, 0.65)',
+              transform: 'translateY(-4px)',
+            },
           },
         },
       },
@@ -398,6 +400,7 @@ const darkTheme = createTheme({
           '& .MuiOutlinedInput-root': {
             backgroundColor: 'rgba(255, 255, 255, 0.04)',
             borderRadius: 8,
+            fontSize: '16px', // Prevents iOS zoom on focus
             '& fieldset': {
               borderColor: 'rgba(255, 255, 255, 0.1)',
             },

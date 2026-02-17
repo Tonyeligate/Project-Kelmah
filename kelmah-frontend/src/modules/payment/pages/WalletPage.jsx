@@ -58,19 +58,19 @@ const WalletPage = () => {
 
   if (loading)
     return (
-      <Container sx={{ py: 4 }}>
+      <Container sx={{ py: { xs: 2, sm: 4 } }}>
         <Skeleton variant="rectangular" height={300} />
       </Container>
     );
   if (error)
     return (
-      <Container sx={{ py: 4 }}>
+      <Container sx={{ py: { xs: 2, sm: 4 } }}>
         <Alert severity="error">{error}</Alert>
       </Container>
     );
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth="md" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
       {/* Wallet Summary */}
       <Paper
         elevation={4}
@@ -96,13 +96,14 @@ const WalletPage = () => {
         </Typography>
       </Paper>
       {/* Transaction Filters */}
-      <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
+      <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 2 }, alignItems: 'center' }}>
         <TextField
           label="Start Date"
           type="date"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
           InputLabelProps={{ shrink: true }}
+          sx={{ flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
         />
         <TextField
           label="End Date"
@@ -110,8 +111,9 @@ const WalletPage = () => {
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
           InputLabelProps={{ shrink: true }}
+          sx={{ flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
         />
-        <FormControl sx={{ minWidth: 140 }}>
+        <FormControl sx={{ minWidth: { xs: 0, sm: 140 }, flex: { xs: '1 1 100%', sm: '0 1 auto' } }}>
           <InputLabel>Type</InputLabel>
           <Select
             value={filterType}
@@ -126,7 +128,7 @@ const WalletPage = () => {
         <Button
           variant="outlined"
           color="secondary"
-          sx={{ borderWidth: 2 }}
+          sx={{ borderWidth: 2, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
           onClick={applyFilters}
         >
           Filter
@@ -134,7 +136,7 @@ const WalletPage = () => {
         <Button
           variant="outlined"
           color="secondary"
-          sx={{ borderWidth: 2 }}
+          sx={{ borderWidth: 2, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
           onClick={clearFilters}
         >
           Clear

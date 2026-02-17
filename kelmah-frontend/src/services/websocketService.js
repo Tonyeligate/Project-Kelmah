@@ -262,8 +262,8 @@ class WebSocketService {
         type: 'message',
         title: `New message from ${data.senderName}`,
         message:
-          data.content.substring(0, 100) +
-          (data.content.length > 100 ? '...' : ''),
+          (data.content || '').substring(0, 100) +
+          ((data.content || '').length > 100 ? '...' : ''),
         severity: 'info',
         autoHide: true,
         metadata: {
@@ -398,12 +398,16 @@ class WebSocketService {
 
     const config = statusMap[data.status] || { severity: 'info', icon: 'ℹ️' };
 
+    const statusLabel = data.status
+      ? data.status.charAt(0).toUpperCase() + data.status.slice(1)
+      : 'Updated';
+
     store.dispatch(
       addNotification({
         id: Date.now(),
         type: 'job-status',
-        title: `Job ${data.status.charAt(0).toUpperCase() + data.status.slice(1)}`,
-        message: `${config.icon} ${data.message}`,
+        title: `Job ${statusLabel}`,
+        message: `${config.icon} ${data.message || 'Status changed'}`,
         severity: config.severity,
         autoHide: true,
         metadata: {

@@ -73,13 +73,17 @@ export const ContractProvider = ({ children }) => {
         );
         if (success) {
           showToast('Milestone approved successfully!', 'success');
-          const updatedContracts = contracts.map((c) => {
-            if (c.id === contractId) {
-              c.milestones.find((m) => m.id === milestoneId).status = 'paid';
-            }
-            return c;
-          });
-          setContracts(updatedContracts);
+          setContracts((prev) =>
+            prev.map((c) => {
+              if (c.id !== contractId) return c;
+              return {
+                ...c,
+                milestones: c.milestones.map((m) =>
+                  m.id === milestoneId ? { ...m, status: 'paid' } : m,
+                ),
+              };
+            }),
+          );
         } else {
           throw new Error('Milestone approval failed on the backend.');
         }

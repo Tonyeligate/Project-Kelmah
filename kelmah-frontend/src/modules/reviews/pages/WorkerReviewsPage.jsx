@@ -80,9 +80,9 @@ const WorkerReviewsPage = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
         {/* Summary Skeleton */}
-        <Stack direction="row" spacing={2} alignItems="center" mb={4}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', sm: 'center' }} mb={4}>
           <Skeleton variant="circular" width={64} height={64} />
           <Box sx={{ flexGrow: 1 }}>
             <Skeleton variant="text" width="40%" />
@@ -123,9 +123,9 @@ const WorkerReviewsPage = () => {
   }));
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
       {/* Header */}
-      <Stack direction="row" spacing={2} alignItems="center" mb={4}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', sm: 'center' }} mb={4}>
         <Box>
           <Typography variant="h4" fontWeight="bold">
             My Reviews
@@ -189,9 +189,7 @@ const WorkerReviewsPage = () => {
                     },
                     rating: r.rating,
                     content: r.comment,
-                    date: formatDistanceToNow(new Date(r.createdAt), {
-                      addSuffix: true,
-                    }),
+                    date: r.createdAt,
                     jobTitle: `Job ${r.job}`,
                   }}
                 />

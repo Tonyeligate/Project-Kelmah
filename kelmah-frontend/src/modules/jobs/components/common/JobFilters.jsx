@@ -119,7 +119,7 @@ function JobFilters({ open, onClose, filters, onApply }) {
               value={localFilters.min_budget}
               onChange={handleChange('min_budget')}
               InputProps={{
-                startAdornment: '$',
+                startAdornment: 'GH₵',
               }}
             />
           </Grid>
@@ -132,7 +132,7 @@ function JobFilters({ open, onClose, filters, onApply }) {
               value={localFilters.max_budget}
               onChange={handleChange('max_budget')}
               InputProps={{
-                startAdornment: '$',
+                startAdornment: 'GH₵',
               }}
             />
           </Grid>

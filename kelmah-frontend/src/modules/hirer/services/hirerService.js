@@ -288,14 +288,12 @@ export const hirerService = {
   // Payment Management
   async releaseMilestonePayment(jobId, milestoneId, amount) {
     try {
-      // Mock payment release for now
-      return {
+      const response = await api.post('/payments/escrow/release', {
         jobId,
         milestoneId,
         amount,
-        totalPaid: amount,
-        message: 'Payment released successfully (mock)',
-      };
+      });
+      return response.data?.data || response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);
       throw error;
@@ -305,13 +303,12 @@ export const hirerService = {
   // Review Management
   async createWorkerReview(workerId, jobId, reviewData) {
     try {
-      // Mock review creation for now
-      return {
+      const response = await api.post('/reviews', {
         workerId,
         jobId,
-        reviewData,
-        message: 'Review created successfully (mock)',
-      };
+        ...reviewData,
+      });
+      return response.data?.data || response.data;
     } catch (error) {
       console.warn('Service unavailable:', error.message);
       throw error;

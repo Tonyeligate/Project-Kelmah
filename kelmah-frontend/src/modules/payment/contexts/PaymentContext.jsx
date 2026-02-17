@@ -123,7 +123,7 @@ export const PaymentProvider = ({ children }) => {
           currency: 'GHS',
           paymentMethodId,
         });
-        showToast(`$${amount.toFixed(2)} deposited successfully.`, 'success');
+        showToast(`GH₵${amount.toFixed(2)} deposited successfully.`, 'success');
         // Refresh wallet data
         await fetchData();
       } catch (err) {

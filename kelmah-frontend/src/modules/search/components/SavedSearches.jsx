@@ -92,7 +92,7 @@ const SavedSearches = ({
   const loadSavedSearches = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await smartSearchService.getSavedSearches(user.id);
+      const response = await smartSearchService.getSavedSearches(user?.id);
       setSavedSearches(response.data || []);
       setError(null);
     } catch (err) {

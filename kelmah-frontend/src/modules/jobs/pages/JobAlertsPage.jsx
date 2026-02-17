@@ -68,11 +68,11 @@ const JobAlertsPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
       <Typography
         variant="h4"
         fontWeight={800}
-        sx={{ mb: 3, color: 'secondary.main' }}
+        sx={{ mb: { xs: 2, sm: 3 }, color: 'secondary.main' }}
       >
         Job Alerts
       </Typography>

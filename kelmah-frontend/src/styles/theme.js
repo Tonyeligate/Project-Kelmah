@@ -1,4 +1,4 @@
-import { createTheme } from '@mui/material/styles';
+/**\n * @deprecated This theme file is NOT used anywhere. The canonical theme is at\n * `theme/index.js`. This file should be removed in a future cleanup pass.\n */\nimport { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
   palette: {

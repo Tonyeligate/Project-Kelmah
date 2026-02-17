@@ -55,12 +55,12 @@ const EscrowDetails = ({ escrows }) => {
                     Hirer: {row.hirer?.name || 'Unknown'}
                   </Typography>
                   <Typography variant="subtitle2" fontWeight="bold">
-                    Total: ${row.totalAmount.toFixed(2)}
+                    Total: GH₵{row.totalAmount.toFixed(2)}
                   </Typography>
                   <Box>
                     <LinearProgress variant="determinate" value={progress} />
                     <Typography variant="caption" color="text.secondary">
-                      ${row.releasedAmount.toFixed(2)} Released
+                      GH₵{row.releasedAmount.toFixed(2)} Released
                     </Typography>
                   </Box>
                 </Stack>
@@ -103,7 +103,7 @@ const EscrowDetails = ({ escrows }) => {
               <TableCell>{getStatusChip(row.status)}</TableCell>
               <TableCell align="right">
                 <Typography fontWeight="bold">
-                  ${row.totalAmount.toFixed(2)}
+                  GH₵{row.totalAmount.toFixed(2)}
                 </Typography>
               </TableCell>
               <TableCell>
@@ -116,7 +116,7 @@ const EscrowDetails = ({ escrows }) => {
                   </Box>
                   <Box sx={{ minWidth: 110 }}>
                     <Typography variant="body2" color="text.secondary">
-                      ${row.releasedAmount.toFixed(2)} Released
+                      GH₵{row.releasedAmount.toFixed(2)} Released
                     </Typography>
                   </Box>
                 </Box>

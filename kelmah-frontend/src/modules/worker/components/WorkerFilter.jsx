@@ -203,7 +203,7 @@ const WorkerFilter = ({ onFilterChange }) => {
             <Divider sx={{ mb: 2 }} />
 
             <Typography gutterBottom variant="subtitle2">
-              Hourly Rate Range (${filters.hourlyRateRange[0]} - $
+              Hourly Rate Range (GH₵{filters.hourlyRateRange[0]} - GH₵
               {filters.hourlyRateRange[1]})
             </Typography>
             <Slider

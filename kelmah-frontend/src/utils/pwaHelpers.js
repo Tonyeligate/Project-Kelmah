@@ -304,14 +304,16 @@ export const isAppInstalled = () => {
 let deferredPrompt = null;
 
 // Listen for install prompt
-window.addEventListener('beforeinstallprompt', (e) => {
-  console.log('PWA install prompt triggered');
-  e.preventDefault();
-  deferredPrompt = e;
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('PWA install prompt triggered');
+    e.preventDefault();
+    deferredPrompt = e;
 
-  // Show custom install banner for Ghana users
-  showInstallBanner();
-});
+    // Show custom install banner for Ghana users
+    showInstallBanner();
+  });
+}
 
 // Show custom install banner
 const showInstallBanner = () => {

@@ -279,13 +279,15 @@ const PaymentMethodsPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
       <Box
         sx={{
-          mb: 4,
+          mb: { xs: 2, sm: 4 },
           display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
           justifyContent: 'space-between',
-          alignItems: 'center',
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          gap: 1,
         }}
       >
         <Typography variant="h4" sx={{ color: 'secondary.main' }}>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Grid,
   Box,
@@ -33,6 +34,7 @@ const SearchResults = ({
   onSaveJob,
 }) => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Handle page change in pagination
@@ -68,7 +70,7 @@ const SearchResults = ({
     if (filters.budgetMin || filters.budgetMax) {
       activeFilters.push({
         key: 'budget',
-        value: `$${filters.budgetMin || 0} - $${filters.budgetMax || 'Any'}`,
+        value: `GH₵${filters.budgetMin || 0} - GH₵${filters.budgetMax || 'Any'}`,
       });
     }
 
@@ -196,7 +198,7 @@ const SearchResults = ({
             <Grid item xs={12} key={job.id}>
               <JobCard
                 job={job}
-                onViewDetails={() => (window.location.href = `/jobs/${job.id}`)}
+                onViewDetails={() => navigate(`/jobs/${job.id}`)}
               />
             </Grid>
           ))}

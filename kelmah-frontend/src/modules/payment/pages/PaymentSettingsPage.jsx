@@ -10,7 +10,9 @@ import {
   Alert,
   Grid,
   InputAdornment,
+  useMediaQuery,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import paymentService from '../services/paymentService';
 
 // Currency formatter for Ghana Cedi
@@ -67,25 +69,25 @@ const PaymentSettingsPage = () => {
 
   if (loading) {
     return (
-      <Container sx={{ py: 4 }}>
+      <Container sx={{ py: { xs: 2, sm: 4 } }}>
         <CircularProgress />
       </Container>
     );
   }
   if (error) {
     return (
-      <Container sx={{ py: 4 }}>
+      <Container sx={{ py: { xs: 2, sm: 4 } }}>
         <Alert severity="error">{error}</Alert>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth="md" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
       <Paper
         elevation={3}
         sx={(theme) => ({
-          p: 4,
+          p: { xs: 2, sm: 4 },
           borderRadius: 2,
           background: `linear-gradient(to right, #28313b, #485461, ${theme.palette.secondary.main})`,
           color: 'white',

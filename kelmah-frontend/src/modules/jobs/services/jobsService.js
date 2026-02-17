@@ -150,9 +150,7 @@ const jobsApi = {
    */
   async getJobs(params = {}) {
     try {
-      console.log('🔍 Calling job service API with params:', params);
       const response = await api.get('/jobs', { params });
-      console.log('📊 Raw API response:', response.data);
 
       // Handle different response formats from the backend
       let jobs = [];
@@ -192,8 +190,6 @@ const jobsApi = {
           currentPage = response.data.currentPage || 1;
         }
       }
-
-      console.log('✅ Extracted jobs:', jobs.length);
 
       // Track and report jobs with missing employer data
       const jobsNeedingReview = [];
@@ -352,7 +348,6 @@ const jobsApi = {
 
     try {
       const response = await api.get(`/jobs/${jobId}`);
-      console.log('🔍 Single job API response:', response.data);
 
       // Handle the response format: {success: true, items: [...], page: 1, total: 12}
       if (
@@ -365,7 +360,6 @@ const jobsApi = {
           (item) => item.id === jobId || item._id === jobId,
         );
         if (job) {
-          console.log('✅ Found job by ID:', job.title);
           // Return non-destructively normalized job
           const normalized = {
             ...job,

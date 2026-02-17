@@ -77,33 +77,44 @@ apiClient.interceptors.response.use(
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
-            try {
-                const refreshToken = secureStorage.getItem('refresh_token');
-                if (refreshToken) {
+            // Lock concurrent refreshes — share a single in-flight promise
+            if (!apiClient._refreshPromise) {
+                apiClient._refreshPromise = (async () => {
+                    const refreshToken = secureStorage.getItem('refresh_token');
+                    if (!refreshToken) throw new Error('No refresh token');
                     // Use a separate instance to avoid infinite loops
                     const response = await axios.post(
                         `${API_BASE_URL}/auth/refresh-token`,
-                        {
-                            refreshToken,
-                        },
+                        { refreshToken },
                     );
-
                     const token =
                         response.data?.data?.token ||
                         response.data?.token ||
                         response.data?.accessToken ||
                         null;
-                    if (!token) {
-                        throw new Error('Refresh response missing token');
-                    }
+                    if (!token) throw new Error('Refresh response missing token');
                     secureStorage.setAuthToken(token);
 
-                    // Update header and retry original request
-                    originalRequest.headers.Authorization = `Bearer ${token}`;
-                    return apiClient(originalRequest);
-                }
+                    // Save rotated refresh token if provided
+                    const newRefresh =
+                        response.data?.data?.refreshToken ||
+                        response.data?.refreshToken ||
+                        null;
+                    if (newRefresh) {
+                        secureStorage.setItem('refresh_token', newRefresh);
+                    }
+
+                    return token;
+                })().finally(() => {
+                    apiClient._refreshPromise = null;
+                });
+            }
+
+            try {
+                const token = await apiClient._refreshPromise;
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+                return apiClient(originalRequest);
             } catch (refreshError) {
-                // Refresh failed - logout user
                 secureStorage.removeItem('auth_token');
                 secureStorage.removeItem('refresh_token');
                 window.location.href = '/login';

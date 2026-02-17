@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Container,
   Typography,
@@ -70,7 +71,7 @@ function SavedJobs() {
                           sx={{ mr: 0.5, mb: 0.5 }}
                         />
                       ))}
-                  <Button href={`/jobs/${job.id}`} sx={{ mt: 1 }}>
+                  <Button component={Link} to={`/jobs/${job.id}`} sx={{ mt: 1 }}>
                     View
                   </Button>
                 </CardContent>

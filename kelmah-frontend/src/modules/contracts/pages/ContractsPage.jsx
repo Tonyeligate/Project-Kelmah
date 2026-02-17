@@ -100,8 +100,8 @@ const ContractsPage = () => {
       const needle = searchQuery.toLowerCase();
       return (
         contract.title.toLowerCase().includes(needle) ||
-        contract.client.name.toLowerCase().includes(needle) ||
-        (contract.client.company || '').toLowerCase().includes(needle)
+        contract.client?.name?.toLowerCase().includes(needle) ||
+        (contract.client?.company || '').toLowerCase().includes(needle)
       );
     };
 
@@ -123,16 +123,16 @@ const ContractsPage = () => {
     return filtered.sort((a, b) => {
       switch (sortOption) {
         case 'oldest':
-          return a.lastUpdated - b.lastUpdated;
+          return new Date(a.lastUpdated) - new Date(b.lastUpdated);
         case 'value-high':
           return b.budget - a.budget;
         case 'value-low':
           return a.budget - b.budget;
         default:
-          return b.lastUpdated - a.lastUpdated;
+          return new Date(b.lastUpdated) - new Date(a.lastUpdated);
       }
     });
-  }, [searchQuery, statusFilter, sortOption]);
+  }, [searchQuery, statusFilter, sortOption, contracts]);
 
   const refreshContracts = async () => {
     setIsRefreshing(true);

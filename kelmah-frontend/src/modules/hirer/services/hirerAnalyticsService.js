@@ -2,8 +2,10 @@ import { api } from '../../../services/apiClient';
 
 /**
  * Service for managing hirer analytics and insights
- * NOTE: No /api/hirers gateway mount exists yet. All methods fall back to
- * generated placeholder data so the Analytics dashboard renders without errors.
+ * NOTE: No /api/hirers gateway mount exists yet. All methods attempt real API
+ * calls and fall back to generated placeholder data so the Dashboard renders
+ * without errors. Once backend hirer analytics routes are implemented, remove
+ * the fallback generators and rely on real data.
  */
 const hirerAnalyticsService = {
   getHirerAnalytics: async (hirerId, timeRange = '12months') => {

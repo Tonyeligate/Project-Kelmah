@@ -517,9 +517,9 @@ const ReviewSystem = ({
           </Typography>
 
           {/* Pros and Cons */}
-          {(review.pros.length > 0 || review.cons.length > 0) && (
+          {((review.pros?.length || 0) > 0 || (review.cons?.length || 0) > 0) && (
             <Grid container spacing={2} sx={{ mb: 2 }}>
-              {review.pros.length > 0 && (
+              {(review.pros?.length || 0) > 0 && (
                 <Grid item xs={12} sm={6}>
                   <Typography
                     variant="subtitle2"
@@ -538,7 +538,7 @@ const ReviewSystem = ({
                   ))}
                 </Grid>
               )}
-              {review.cons.length > 0 && (
+              {(review.cons?.length || 0) > 0 && (
                 <Grid item xs={12} sm={6}>
                   <Typography
                     variant="subtitle2"

@@ -351,7 +351,7 @@ const ContractDetailsPage = () => {
                   Contract Value
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                  ${contract.value?.toFixed(2) || '0.00'}
+                  GH₵{contract.value?.toFixed(2) || '0.00'}
                 </Typography>
               </Grid>
 
@@ -594,7 +594,7 @@ const ContractDetailsPage = () => {
                             {formatDate(milestone.dueDate)}
                           </Typography>
                           <Typography variant="body2">
-                            <strong>Amount:</strong> $
+                            <strong>Amount:</strong> GH₵
                             {milestone.amount?.toFixed(2) || '0.00'}
                           </Typography>
                         </Box>

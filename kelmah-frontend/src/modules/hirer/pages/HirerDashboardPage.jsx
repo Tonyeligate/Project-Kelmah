@@ -230,9 +230,9 @@ const HirerDashboardPage = () => {
 
   // Summary skeleton for overview while data loads
   const LoadingOverviewSkeleton = () => (
-    <Grid container spacing={3}>
+    <Grid container spacing={{ xs: 1.5, sm: 3 }}>
       {[...Array(4)].map((_, i) => (
-        <Grid item xs={12} sm={6} md={3} key={i}>
+        <Grid item xs={6} sm={6} md={3} key={i}>
           <Skeleton variant="rounded" height={180} animation="wave" />
         </Grid>
       ))}
@@ -573,18 +573,18 @@ const HirerDashboardPage = () => {
         )}
 
         {/* 4 METRIC CARDS IN ONE ROW - LC Portal Style with Click Actions */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid container spacing={{ xs: 1.5, sm: 3 }} sx={{ mb: 4 }}>
           {/* Card 1 - Orange/Yellow - Active Jobs */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={6} md={3}>
             <Paper
               elevation={0}
               onClick={() => navigate('/hirer/jobs')}
               sx={{
-                p: 2.5,
+                p: { xs: 1.5, sm: 2.5 },
                 borderRadius: 2,
                 background: 'linear-gradient(135deg, #F39C12 0%, #E67E22 100%)',
                 color: 'white',
-                height: 130,
+                height: { xs: 100, sm: 130 },
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -619,16 +619,16 @@ const HirerDashboardPage = () => {
           </Grid>
 
           {/* Card 2 - Teal/Green - Completed Jobs */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={6} md={3}>
             <Paper
               elevation={0}
               onClick={() => navigate('/hirer/jobs')}
               sx={{
-                p: 2.5,
+                p: { xs: 1.5, sm: 2.5 },
                 borderRadius: 2,
                 background: 'linear-gradient(135deg, #1ABC9C 0%, #16A085 100%)',
                 color: 'white',
-                height: 130,
+                height: { xs: 100, sm: 130 },
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -663,16 +663,16 @@ const HirerDashboardPage = () => {
           </Grid>
 
           {/* Card 3 - Blue - Applications */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={6} md={3}>
             <Paper
               elevation={0}
               onClick={() => navigate('/hirer/applications')}
               sx={{
-                p: 2.5,
+                p: { xs: 1.5, sm: 2.5 },
                 borderRadius: 2,
                 background: 'linear-gradient(135deg, #3498DB 0%, #2980B9 100%)',
                 color: 'white',
-                height: 130,
+                height: { xs: 100, sm: 130 },
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -707,16 +707,16 @@ const HirerDashboardPage = () => {
           </Grid>
 
           {/* Card 4 - Red - Needs Attention */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={6} md={3}>
             <Paper
               elevation={0}
               onClick={() => navigate('/hirer/payments')}
               sx={{
-                p: 2.5,
+                p: { xs: 1.5, sm: 2.5 },
                 borderRadius: 2,
                 background: 'linear-gradient(135deg, #E74C3C 0%, #C0392B 100%)',
                 color: 'white',
-                height: 130,
+                height: { xs: 100, sm: 130 },
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
