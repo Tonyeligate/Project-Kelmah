@@ -102,7 +102,7 @@ export const SECURITY_CONFIG = {
   // Error Handling
   ERROR_HANDLING: {
     LOG_ERRORS: true,
-    SEND_TO_SERVER: process.env.NODE_ENV === 'production',
+    SEND_TO_SERVER: import.meta.env.MODE === 'production',
     MAX_ERROR_REPORTS: 10,
     SENSITIVE_DATA_PATTERNS: [
       /password/i,
@@ -115,7 +115,7 @@ export const SECURITY_CONFIG = {
 
   // Network Security
   NETWORK: {
-    ENFORCE_HTTPS: process.env.NODE_ENV === 'production',
+    ENFORCE_HTTPS: import.meta.env.MODE === 'production',
     HSTS_MAX_AGE: 31536000, // 1 year
     TRUST_PROXY: false,
     IP_WHITELIST: [], // Empty means allow all
@@ -133,10 +133,10 @@ export const SECURITY_CONFIG = {
 
   // Development/Debug settings
   DEBUG: {
-    ENABLE_CONSOLE_LOGS: process.env.NODE_ENV === 'development',
-    SHOW_STACK_TRACES: process.env.NODE_ENV === 'development',
+    ENABLE_CONSOLE_LOGS: import.meta.env.MODE === 'development',
+    SHOW_STACK_TRACES: import.meta.env.MODE === 'development',
     ENABLE_PERFORMANCE_MONITORING: true,
-    LOG_API_REQUESTS: process.env.NODE_ENV === 'development',
+    LOG_API_REQUESTS: import.meta.env.MODE === 'development',
   },
 };
 

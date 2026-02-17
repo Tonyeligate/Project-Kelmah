@@ -85,6 +85,29 @@ const ProfilePage = () => {
   const [addExpOpen, setAddExpOpen] = useState(false);
   const [newExp, setNewExp] = useState({ title: '', company: '', duration: '' });
 
+  // H29 fix: local state + debounce for preferences to avoid API call on every keystroke
+  const [prefJobType, setPrefJobType] = useState('');
+  const [prefLocation, setPrefLocation] = useState('');
+  const prefTimerRef = useRef(null);
+
+  // Sync local state when profile loads
+  useEffect(() => {
+    if (profile?.preferences) {
+      setPrefJobType(profile.preferences.jobType || '');
+      setPrefLocation(profile.preferences.location || '');
+    }
+  }, [profile?.preferences]);
+
+  const debouncedUpdatePreferences = useCallback(
+    (newPrefs) => {
+      if (prefTimerRef.current) clearTimeout(prefTimerRef.current);
+      prefTimerRef.current = setTimeout(() => {
+        updatePreferences(newPrefs);
+      }, 600);
+    },
+    [updatePreferences]
+  );
+
   // Load profile on mount if not already loaded
   useEffect(() => {
     if (!hasAttemptedInitialLoad.current && !profile && !loading) {
@@ -543,11 +566,13 @@ const ProfilePage = () => {
                         <TextField
                           fullWidth
                           label="Preferred Job Type"
-                          value={profile.preferences?.jobType || ''}
+                          value={prefJobType}
                           onChange={(e) => {
-                            updatePreferences({
+                            const val = e.target.value;
+                            setPrefJobType(val);
+                            debouncedUpdatePreferences({
                               ...profile.preferences,
-                              jobType: e.target.value,
+                              jobType: val,
                             });
                           }}
                         />
@@ -559,11 +584,13 @@ const ProfilePage = () => {
                         <TextField
                           fullWidth
                           label="Preferred Location"
-                          value={profile.preferences?.location || ''}
+                          value={prefLocation}
                           onChange={(e) => {
-                            updatePreferences({
+                            const val = e.target.value;
+                            setPrefLocation(val);
+                            debouncedUpdatePreferences({
                               ...profile.preferences,
-                              location: e.target.value,
+                              location: val,
                             });
                           }}
                         />

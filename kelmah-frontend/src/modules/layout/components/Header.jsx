@@ -26,7 +26,7 @@ const NavMenuSection = ({ title, items, onNavigate }) => (
   </Box>
 );
 
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { logoutUser } from '../../auth/services/authSlice';
 import {
@@ -84,8 +84,10 @@ import MobileNav from './MobileNav';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 import { BRAND_COLORS } from '../../../theme';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
+import MessageContext from '../../messaging/contexts/MessageContext';
 import workerService from '../../worker/services/workerService';
 import { secureStorage } from '../../../utils/secureStorage';
+import { Z_INDEX } from '../../../constants/layout';
 
 // Enhanced Styled Components
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -104,7 +106,7 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
       : '0 6px 25px rgba(0, 0, 0, 0.25)',
   position: 'sticky',
   top: 0,
-  zIndex: 1100,
+  zIndex: Z_INDEX.header,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
 }));
 
@@ -734,8 +736,9 @@ const Header = ({
   const { unreadCount: notifUnreadCount, notifications: notifList = [], markAllAsRead } =
     useNotifications();
   const unreadNotifications = showUserFeatures ? notifUnreadCount || 0 : 0;
-  // TODO: Wire to messaging context (useMessages) for real unread message count
-  const unreadMessages = 0;
+  // H39 fix: Wire to messaging context for real unread message count
+  const messageCtx = useContext(MessageContext);
+  const unreadMessages = showUserFeatures ? messageCtx?.unreadCount || 0 : 0;
   const isUserOnline = showUserFeatures ? true : false;
 
   const handleProfileMenuOpen = (event) => {
@@ -1484,9 +1487,9 @@ const Header = ({
                 </Box>
               </Tooltip>
             </>
-          ) : showAuthButtons && !isMobile && authCta ? (
+          ) : showAuthButtons && authCta ? (
             <Stack direction="row" spacing={1} sx={{ ml: 1 }}>
-              {authCta.secondary && (
+              {!isMobile && authCta.secondary && (
                 <AuthButton
                   component={RouterLink}
                   to={authCta.secondary.to}
@@ -1502,8 +1505,16 @@ const Header = ({
                   to={authCta.primary.to}
                   variant="contained"
                   size="small"
+                  sx={{
+                    ...(isMobile && {
+                      fontSize: '0.75rem',
+                      px: 1.5,
+                      py: 0.5,
+                      minHeight: '36px',
+                    }),
+                  }}
                 >
-                  {authCta.primary.label}
+                  {isMobile ? 'Sign Up' : authCta.primary.label}
                 </AuthButton>
               )}
             </Stack>

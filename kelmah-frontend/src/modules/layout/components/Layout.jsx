@@ -20,6 +20,7 @@ import MobileBottomNav from './MobileBottomNav';
 // import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigation'; // ✅ REMOVED: Breadcrumb navigation taking up too much space
 import SmartNavigation from '../../../components/common/SmartNavigation';
 import { useThemeMode } from '../../../theme/ThemeProvider';
+import { BOTTOM_NAV_HEIGHT, HEADER_HEIGHT_MOBILE } from '../../../constants/layout';
 // Header functionality integrated into Header component
 
 /**
@@ -120,7 +121,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
               width: '100%',
               pt: isMessagesPage ? 0 : '48px', // Messages page renders its own mobile header
               // ✅ MOBILE-AUDIT FIX: Account for safe-area-inset-bottom on notched phones
-              pb: 'calc(56px + env(safe-area-inset-bottom, 0px) + 16px)',
+              pb: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 16px)`,
               px: 1.5,
               overflowY: 'auto',
               overflowX: 'hidden',
@@ -150,7 +151,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             flexGrow: 1,
             width: '100%',
             minWidth: 0,
-            pt: { md: '56px' }, // Matches header minHeight on desktop
+            pt: { md: `${HEADER_HEIGHT_MOBILE}px` }, // Matches header minHeight on desktop
             px: { md: 3 },
             pb: { md: 3 },
           }}
@@ -220,8 +221,8 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
           {content}
         </Box>
       </Fade>
-      {/* Footer on all public pages (like Upwork/Freelancer) */}
-      <Footer />
+      {/* Footer hidden on mobile — bottom nav replaces it (Binance pattern) */}
+      {!isMobile && <Footer />}
     </Box>
   );
 };

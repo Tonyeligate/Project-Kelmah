@@ -23,7 +23,7 @@ import {
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { format } from 'date-fns';
-import { messagingService } from '../../../services/messagingService';
+import { messagingService } from '../../services/messagingService';
 
 // Styled components
 const SearchHeader = styled(Box)(({ theme }) => ({

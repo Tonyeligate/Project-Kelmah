@@ -19,6 +19,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { BRAND_COLORS } from '../../../theme';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
+import { Z_INDEX, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 
 // Styled Components - Clean mobile-first design
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -26,7 +27,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   bottom: 0,
   left: 0,
   right: 0,
-  zIndex: 1200,
+  zIndex: Z_INDEX.bottomNav,
   borderTop: theme.palette.mode === 'dark' 
     ? '1px solid rgba(255, 215, 0, 0.2)' 
     : '1px solid rgba(0, 0, 0, 0.1)',
@@ -41,8 +42,8 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 
 const StyledBottomNavigation = styled(BottomNavigation)(({ theme }) => ({
   backgroundColor: 'transparent',
-  height: 56,
-  minHeight: 56,
+  height: BOTTOM_NAV_HEIGHT,
+  minHeight: BOTTOM_NAV_HEIGHT,
 }));
 
 const StyledBottomNavigationAction = styled(BottomNavigationAction)(

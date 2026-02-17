@@ -109,6 +109,12 @@ const paymentService = {
     return data;
   },
 
+  // Payment analytics
+  getPaymentAnalytics: async (params = {}) => {
+    const { data } = await api.get('/payments/analytics', { params });
+    return data;
+  },
+
   // Transaction operations
   getTransactionHistory: async (params = {}) => {
     const response = await api.get('/payments/transactions/history', {
@@ -373,6 +379,38 @@ const paymentService = {
 
   getPayoutStatus: async (payoutId) => {
     const { data } = await api.get(`/payments/payout/status/${payoutId}`);
+    return data;
+  },
+
+  // Aliases for GhanaianMobileMoneyInterface and GhanaSMSVerification components
+  initiateMobileMoneyPayment: async (paymentData) => {
+    return await paymentService.processMobileMoneyPayment(paymentData);
+  },
+
+  confirmMobileMoneyPayment: async ({ transactionId, pin, phoneNumber }) => {
+    const provider = 'mtn'; // default; component should pass provider
+    const { data } = await api.post('/payments/mtn-momo/confirm', {
+      transactionId,
+      pin,
+      phoneNumber,
+    });
+    return data;
+  },
+
+  sendSMSVerification: async ({ phoneNumber, purpose, amount }) => {
+    const { data } = await api.post('/payments/sms-verification/send', {
+      phoneNumber,
+      purpose,
+      amount,
+    });
+    return data;
+  },
+
+  verifySMSCode: async ({ verificationId, code }) => {
+    const { data } = await api.post('/payments/sms-verification/verify', {
+      verificationId,
+      code,
+    });
     return data;
   },
 };

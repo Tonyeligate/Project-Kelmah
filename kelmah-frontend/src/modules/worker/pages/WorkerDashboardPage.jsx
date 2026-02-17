@@ -267,7 +267,7 @@ const WorkerDashboardPage = () => {
       title: 'Active Applications',
       value: stats.applications,
       bgGradient: 'linear-gradient(135deg, #FF9800 0%, #FFB74D 100%)',
-      icon: <WorkIcon sx={{ fontSize: 48, color: 'rgba(255,255,255,0.3)' }} />,
+      icon: <WorkIcon sx={{ fontSize: { xs: 32, sm: 48 }, color: 'rgba(255,255,255,0.3)' }} />,
       tooltip: 'Total number of job applications you have submitted',
       onClick: () => navigate('/worker/applications'),
     },
@@ -275,7 +275,7 @@ const WorkerDashboardPage = () => {
       title: 'Completed Jobs',
       value: stats.completedJobs,
       bgGradient: 'linear-gradient(135deg, #009688 0%, #4DB6AC 100%)',
-      icon: <AssignmentTurnedInIcon sx={{ fontSize: 48, color: 'rgba(255,255,255,0.3)' }} />,
+      icon: <AssignmentTurnedInIcon sx={{ fontSize: { xs: 32, sm: 48 }, color: 'rgba(255,255,255,0.3)' }} />,
       tooltip: 'Jobs you have successfully completed',
       onClick: () => navigate('/worker/contracts'),
     },
@@ -283,7 +283,7 @@ const WorkerDashboardPage = () => {
       title: 'Total Earnings',
       value: `GH₵${stats.earnings.toLocaleString()}`,
       bgGradient: 'linear-gradient(135deg, #2196F3 0%, #64B5F6 100%)',
-      icon: <AttachMoneyIcon sx={{ fontSize: 48, color: 'rgba(255,255,255,0.3)' }} />,
+      icon: <AttachMoneyIcon sx={{ fontSize: { xs: 32, sm: 48 }, color: 'rgba(255,255,255,0.3)' }} />,
       tooltip: 'Your total earnings from completed jobs',
       onClick: () => navigate('/worker/earnings'),
     },
@@ -291,7 +291,7 @@ const WorkerDashboardPage = () => {
       title: 'Average Rating',
       value: stats.rating > 0 ? stats.rating.toFixed(1) : 'N/A',
       bgGradient: 'linear-gradient(135deg, #9C27B0 0%, #BA68C8 100%)',
-      icon: <StarIcon sx={{ fontSize: 48, color: 'rgba(255,255,255,0.3)' }} />,
+      icon: <StarIcon sx={{ fontSize: { xs: 32, sm: 48 }, color: 'rgba(255,255,255,0.3)' }} />,
       tooltip: 'Your average rating from hirers',
       onClick: () => navigate('/worker/reviews'),
     },
@@ -489,13 +489,13 @@ const WorkerDashboardPage = () => {
                     elevation={0}
                     onClick={card.onClick}
                     sx={{
-                      p: 2.5,
+                      p: { xs: 1.5, sm: 2.5 },
                       borderRadius: 2,
                       background: card.bgGradient,
                       color: '#fff',
                       position: 'relative',
                       overflow: 'hidden',
-                      minHeight: 120,
+                      minHeight: { xs: 100, sm: 120 },
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
@@ -532,7 +532,7 @@ const WorkerDashboardPage = () => {
                     </Typography>
                     <Typography
                       variant="h4"
-                      sx={{ fontWeight: 700 }}
+                      sx={{ fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' } }}
                     >
                       {card.value}
                     </Typography>
@@ -545,13 +545,13 @@ const WorkerDashboardPage = () => {
       )}
 
       {/* Charts Section - 2 charts side by side */}
-      <Grid container spacing={3}>
+      <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
         {/* Earnings Overview Chart */}
         <Grid item xs={12} md={6}>
           <Paper
             elevation={0}
             sx={{
-              p: 3,
+              p: { xs: 1.5, sm: 2, md: 3 },
               borderRadius: 2,
               backgroundColor: 'background.paper',
               border: '1px solid',
@@ -560,7 +560,7 @@ const WorkerDashboardPage = () => {
           >
             <Typography
               variant="h6"
-              sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}
+              sx={{ color: 'text.primary', fontWeight: 600, mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}
             >
               Earnings Overview
             </Typography>
@@ -606,7 +606,7 @@ const WorkerDashboardPage = () => {
           <Paper
             elevation={0}
             sx={{
-              p: 3,
+              p: { xs: 1.5, sm: 2, md: 3 },
               borderRadius: 2,
               backgroundColor: 'background.paper',
               border: '1px solid',
@@ -615,7 +615,7 @@ const WorkerDashboardPage = () => {
           >
             <Typography
               variant="h6"
-              sx={{ color: 'text.primary', fontWeight: 600, mb: 2 }}
+              sx={{ color: 'text.primary', fontWeight: 600, mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}
             >
               Applications Overview
             </Typography>

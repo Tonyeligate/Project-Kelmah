@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Container,
   Paper,
@@ -117,7 +117,7 @@ function ApplicationManagementPage() {
     return filtered.length ? filtered : all;
   }, [jobsByStatus]);
   const [activeTab, setActiveTab] = useState('pending');
-  const [applications, setApplications] = useState([]);
+  const [allApplications, setAllApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedApplication, setSelectedApplication] = useState(null);
@@ -135,35 +135,39 @@ function ApplicationManagementPage() {
         jobsForApplications.length > 0
       ) {
         try {
-          const allApplications = await Promise.all(
+          const allApps = await Promise.all(
             jobsForApplications.map(async (job) => {
-              const list = await hirerService.getJobApplications(
-                job.id,
-                activeTab,
-              );
+              const list = await hirerService.getJobApplications(job.id);
               return (Array.isArray(list) ? list : []).map((app) =>
                 normalizeApplication(app, job.id),
               );
             }),
           );
-          const flattenedApplications = allApplications.flat();
-          setApplications(flattenedApplications);
-          if (flattenedApplications.length > 0) {
-            setSelectedApplication(flattenedApplications[0]);
-          } else {
-            setSelectedApplication(null);
-          }
+          const flattenedApplications = allApps.flat();
+          setAllApplications(flattenedApplications);
         } catch (err) {
           setError('Failed to fetch applications');
         }
       } else {
-        setApplications([]);
-        setSelectedApplication(null);
+        setAllApplications([]);
       }
       setLoading(false);
     };
     fetchAllApplications();
-  }, [activeTab, jobsForApplications]);
+  }, [jobsForApplications]);
+
+  // Client-side filter by active tab — avoids re-fetching on tab switch
+  const applications = useMemo(
+    () => allApplications.filter((app) => app.status === activeTab),
+    [allApplications, activeTab],
+  );
+
+  // Auto-select first application when filtered list changes
+  useEffect(() => {
+    if (!loading) {
+      setSelectedApplication(applications.length > 0 ? applications[0] : null);
+    }
+  }, [applications, loading]);
 
   const handleStatusUpdate = async () => {
     if (!selectedApplication) return;
@@ -177,14 +181,11 @@ function ApplicationManagementPage() {
       );
       setShowReviewDialog(false);
       setFeedback('');
-      // Refresh the list
-      const updatedApplications = applications.filter(
+      // Remove from allApplications so it disappears from current tab
+      const updatedApplications = allApplications.filter(
         (app) => app.id !== selectedApplication.id,
       );
-      setApplications(updatedApplications);
-      setSelectedApplication(
-        updatedApplications.length > 0 ? updatedApplications[0] : null,
-      );
+      setAllApplications(updatedApplications);
     } catch (err) {
       setError('Failed to update application status.');
     } finally {

@@ -287,6 +287,12 @@ const darkTheme = createTheme({
           '& .MuiToolbar-root': {
             minHeight: 72,
           },
+          // Mobile: solid bg instead of blur (perf on low-end devices)
+          '@media (max-width: 599.95px)': {
+            backgroundColor: SURFACE_TOKENS.dark.surface,
+            backdropFilter: 'none',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+          },
         },
       },
     },
@@ -298,41 +304,36 @@ const darkTheme = createTheme({
           border: '1px solid rgba(255, 255, 255, 0.08)',
           borderRadius: 14,
           transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-          boxShadow: '0 25px 60px rgba(3, 3, 5, 0.55)',
+          boxShadow: '0 12px 30px rgba(3, 3, 5, 0.35)',
           '&:hover': {
             borderColor: 'rgba(255, 215, 0, 0.35)',
-            boxShadow: '0 30px 70px rgba(0, 0, 0, 0.65)',
+            boxShadow: '0 18px 45px rgba(0, 0, 0, 0.45)',
           },
-          '@media (min-width: 900px)': {
-            boxShadow: '0 12px 30px rgba(3, 3, 5, 0.35)',
+          // Mobile: minimal shadows — flat + border (Binance pattern)
+          '@media (max-width: 599.95px)': {
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)',
+            borderRadius: 10,
             '&:hover': {
-              boxShadow: '0 18px 45px rgba(0, 0, 0, 0.45)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)',
+              transform: 'none',
             },
           },
         },
         elevation1: {
-          boxShadow: '0 18px 35px rgba(6, 6, 9, 0.4)',
-          '@media (min-width: 900px)': {
-            boxShadow: '0 10px 20px rgba(6, 6, 9, 0.25)',
-          },
+          boxShadow: '0 10px 20px rgba(6, 6, 9, 0.25)',
+          '@media (max-width: 599.95px)': { boxShadow: '0 1px 4px rgba(0,0,0,0.2)' },
         },
         elevation4: {
-          boxShadow: '0 30px 60px rgba(0, 0, 0, 0.55)',
-          '@media (min-width: 900px)': {
-            boxShadow: '0 15px 35px rgba(0, 0, 0, 0.35)',
-          },
+          boxShadow: '0 15px 35px rgba(0, 0, 0, 0.35)',
+          '@media (max-width: 599.95px)': { boxShadow: '0 2px 6px rgba(0,0,0,0.22)' },
         },
         elevation8: {
-          boxShadow: '0 40px 85px rgba(0, 0, 0, 0.65)',
-          '@media (min-width: 900px)': {
-            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.45)',
-          },
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.45)',
+          '@media (max-width: 599.95px)': { boxShadow: '0 2px 8px rgba(0,0,0,0.25)' },
         },
         elevation12: {
-          boxShadow: '0 50px 100px rgba(0, 0, 0, 0.7)',
-          '@media (min-width: 900px)': {
-            boxShadow: '0 25px 60px rgba(0, 0, 0, 0.5)',
-          },
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.5)',
+          '@media (max-width: 599.95px)': { boxShadow: '0 3px 10px rgba(0,0,0,0.28)' },
         },
       },
     },
@@ -348,6 +349,15 @@ const darkTheme = createTheme({
               borderColor: 'rgba(255, 215, 0, 0.3)',
               boxShadow: '0 25px 65px rgba(0, 0, 0, 0.65)',
               transform: 'translateY(-4px)',
+            },
+          },
+          // Mobile: flat cards, no hover lift
+          '@media (max-width: 599.95px)': {
+            borderRadius: 12,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+            '&:hover': {
+              transform: 'none',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
             },
           },
         },
@@ -409,6 +419,16 @@ const darkTheme = createTheme({
             backgroundColor: 'rgba(255, 215, 0, 0.15)',
             transform: 'scale(1.05)',
           },
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          fontSize: '16px', // Prevents iOS zoom on focus for all input types
+        },
+        input: {
+          fontSize: '16px',
         },
       },
     },
@@ -497,6 +517,14 @@ const darkTheme = createTheme({
           border: `1px solid rgba(255, 215, 0, 0.4)`,
           borderRadius: 18,
           boxShadow: '0 40px 85px rgba(0, 0, 0, 0.7)',
+          // Mobile: near-fullscreen dialogs (Binance pattern)
+          '@media (max-width: 599.95px)': {
+            margin: 16,
+            width: 'calc(100% - 32px)',
+            maxWidth: 'calc(100% - 32px)',
+            maxHeight: 'calc(100% - 32px)',
+            borderRadius: 12,
+          },
         },
       },
     },
@@ -614,6 +642,9 @@ const darkTheme = createTheme({
         root: {
           borderRadius: 12,
           backdropFilter: 'blur(6px)',
+          '@media (max-width: 599.95px)': {
+            backdropFilter: 'none',
+          },
         },
         standardInfo: {
           backgroundColor: 'rgba(33, 150, 243, 0.12)',
@@ -770,6 +801,12 @@ const lightTheme = createTheme({
           boxShadow: '0 15px 35px rgba(15, 15, 23, 0.08)',
           backdropFilter: 'blur(18px)',
           color: SURFACE_TOKENS.light.textPrimary,
+          // Mobile: solid bg instead of blur (perf on low-end devices)
+          '@media (max-width: 599.95px)': {
+            backgroundColor: SURFACE_TOKENS.light.surface,
+            backdropFilter: 'none',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
+          },
         },
       },
     },
@@ -786,18 +823,30 @@ const lightTheme = createTheme({
             borderColor: 'rgba(0, 0, 0, 0.16)',
             boxShadow: '0 26px 70px rgba(15, 15, 23, 0.12)',
           },
+          '@media (max-width: 599.95px)': {
+            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+            borderRadius: 10,
+            '&:hover': {
+              boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+              transform: 'none',
+            },
+          },
         },
         elevation1: {
           boxShadow: '0 15px 30px rgba(15, 15, 23, 0.08)',
+          '@media (max-width: 599.95px)': { boxShadow: '0 1px 3px rgba(0,0,0,0.06)' },
         },
         elevation4: {
           boxShadow: '0 28px 60px rgba(15, 15, 23, 0.12)',
+          '@media (max-width: 599.95px)': { boxShadow: '0 1px 4px rgba(0,0,0,0.08)' },
         },
         elevation8: {
           boxShadow: '0 35px 80px rgba(15, 15, 23, 0.15)',
+          '@media (max-width: 599.95px)': { boxShadow: '0 2px 6px rgba(0,0,0,0.1)' },
         },
         elevation12: {
           boxShadow: '0 45px 90px rgba(15, 15, 23, 0.18)',
+          '@media (max-width: 599.95px)': { boxShadow: '0 2px 8px rgba(0,0,0,0.12)' },
         },
       },
     },
@@ -812,6 +861,14 @@ const lightTheme = createTheme({
             borderColor: 'rgba(0, 0, 0, 0.18)',
             boxShadow: '0 24px 55px rgba(15, 15, 23, 0.12)',
             transform: 'translateY(-4px)',
+          },
+          '@media (max-width: 599.95px)': {
+            borderRadius: 12,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+            '&:hover': {
+              transform: 'none',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+            },
           },
         },
       },
@@ -875,12 +932,23 @@ const lightTheme = createTheme({
         },
       },
     },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          fontSize: '16px', // Prevents iOS zoom on focus for all input types
+        },
+        input: {
+          fontSize: '16px',
+        },
+      },
+    },
     MuiTextField: {
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
             backgroundColor: 'rgba(0, 0, 0, 0.02)',
             borderRadius: 8,
+            fontSize: '16px', // Prevents iOS zoom on focus
             '& fieldset': {
               borderColor: 'rgba(0, 0, 0, 0.12)',
             },
@@ -959,6 +1027,14 @@ const lightTheme = createTheme({
           border: '1px solid rgba(0, 0, 0, 0.08)',
           borderRadius: 18,
           boxShadow: '0 35px 80px rgba(15, 15, 23, 0.15)',
+          // Mobile: near-fullscreen dialogs (Binance pattern)
+          '@media (max-width: 599.95px)': {
+            margin: 16,
+            width: 'calc(100% - 32px)',
+            maxWidth: 'calc(100% - 32px)',
+            maxHeight: 'calc(100% - 32px)',
+            borderRadius: 12,
+          },
         },
       },
     },

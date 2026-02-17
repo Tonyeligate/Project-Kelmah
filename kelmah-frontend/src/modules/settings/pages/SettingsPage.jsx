@@ -7,6 +7,11 @@ import {
   Tabs,
   Tab,
   Grid,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  IconButton,
   alpha,
   useTheme,
   useMediaQuery,
@@ -17,6 +22,8 @@ import {
   Security as SecurityIcon,
   Settings as SettingsIcon,
   Shield as ShieldIcon,
+  ChevronRight,
+  ArrowBack,
 } from '@mui/icons-material';
 import NotificationSettings from '../components/common/NotificationSettings';
 import AccountSettings from '../components/common/AccountSettings';
@@ -77,6 +84,69 @@ const SettingsPage = () => {
     },
   ];
 
+  // Mobile: drill-down state (-1 = show list, 0+ = show section)
+  const [mobileSection, setMobileSection] = useState(-1);
+  const isMobile = !isMdUp;
+
+  // ── Mobile: List → drill-down pattern (Binance style) ──
+  if (isMobile) {
+    // Showing a specific section
+    if (mobileSection >= 0) {
+      const panel = settingsPanels[mobileSection];
+      return (
+        <Container maxWidth="lg" sx={{ py: 1, px: 1.5, color: 'text.primary' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 0.5 }}>
+            <IconButton onClick={() => setMobileSection(-1)} sx={{ mr: 0.5 }}>
+              <ArrowBack />
+            </IconButton>
+            {panel.icon}
+            <Typography variant="h6" fontWeight="bold">
+              {panel.label}
+            </Typography>
+          </Box>
+          {panel.component}
+        </Container>
+      );
+    }
+
+    // Showing the settings list
+    return (
+      <Container maxWidth="lg" sx={{ py: 2, px: 1.5, color: 'text.primary' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <SettingsIcon sx={{ fontSize: 28, mr: 1.5, color: 'primary.main' }} />
+          <Typography variant="h5" fontWeight="bold">
+            Settings
+          </Typography>
+        </Box>
+        <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          <List disablePadding>
+            {settingsPanels.map((panel, index) => (
+              <ListItemButton
+                key={panel.label}
+                onClick={() => setMobileSection(index)}
+                sx={{
+                  py: 2,
+                  borderBottom: index < settingsPanels.length - 1 ? '1px solid' : 'none',
+                  borderColor: 'divider',
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 40, color: 'primary.main' }}>
+                  {panel.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={panel.label}
+                  primaryTypographyProps={{ fontWeight: 600 }}
+                />
+                <ChevronRight sx={{ color: 'text.secondary' }} />
+              </ListItemButton>
+            ))}
+          </List>
+        </Paper>
+      </Container>
+    );
+  }
+
+  // ── Desktop: Sidebar tabs + content (unchanged) ──
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1.5, sm: 3 }, color: 'text.primary' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, md: 4 } }}>

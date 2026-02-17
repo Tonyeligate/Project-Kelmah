@@ -126,7 +126,7 @@ const PaymentAnalyticsDashboard = ({
         period: selectedPeriod,
         ...filters,
       });
-      setAnalyticsData(response.data);
+      setAnalyticsData(response);
     } catch (error) {
       enqueueSnackbar('Failed to load payment analytics', { variant: 'error' });
       console.error('Analytics error:', error);
@@ -144,7 +144,7 @@ const PaymentAnalyticsDashboard = ({
         limit: rowsPerPage,
         ...filters,
       });
-      setTransactions(response.data.transactions || []);
+      setTransactions(response?.data?.transactions || response?.transactions || []);
     } catch (error) {
       console.error('Transaction history error:', error);
     }

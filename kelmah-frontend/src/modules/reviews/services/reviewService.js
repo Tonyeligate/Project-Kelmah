@@ -243,6 +243,16 @@ class ReviewService {
     }
   }
 
+  async voteUnhelpful(reviewId) {
+    try {
+      const response = await api.post(`/reviews/${reviewId}/unhelpful`);
+      return unwrapResponse(response);
+    } catch (error) {
+      console.error('Error voting review unhelpful:', error);
+      throw error;
+    }
+  }
+
   async reportReview(reviewId, reason) {
     try {
       const response = await api.post(`/reviews/${reviewId}/report`, {

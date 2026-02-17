@@ -538,6 +538,7 @@ const PaymentMethodsPage = () => {
                 }
                 sx={{ mb: 2 }}
                 placeholder="1234 5678 9012 3456"
+                inputProps={{ inputMode: 'numeric' }}
               />
             </Tooltip>
 
@@ -564,6 +565,7 @@ const PaymentMethodsPage = () => {
                       setNewCard({ ...newCard, expiryMonth: e.target.value })
                     }
                     placeholder="MM"
+                    inputProps={{ inputMode: 'numeric' }}
                   />
                 </Tooltip>
               </Grid>
@@ -577,6 +579,7 @@ const PaymentMethodsPage = () => {
                       setNewCard({ ...newCard, expiryYear: e.target.value })
                     }
                     placeholder="YYYY"
+                    inputProps={{ inputMode: 'numeric' }}
                   />
                 </Tooltip>
               </Grid>
@@ -592,6 +595,7 @@ const PaymentMethodsPage = () => {
                 }
                 type="password"
                 placeholder="123"
+                inputProps={{ inputMode: 'numeric' }}
               />
             </Tooltip>
           </Box>
@@ -676,6 +680,7 @@ const PaymentMethodsPage = () => {
               }
               sx={{ mb: 2 }}
               placeholder="0XX XXX XXXX"
+              inputProps={{ inputMode: 'tel' }}
             />
 
             <TextField
@@ -757,6 +762,7 @@ const PaymentMethodsPage = () => {
                 setNewBank({ ...newBank, accountNumber: e.target.value })
               }
               sx={{ mb: 2 }}
+              inputProps={{ inputMode: 'numeric' }}
             />
 
             <TextField

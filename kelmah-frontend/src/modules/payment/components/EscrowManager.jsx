@@ -46,7 +46,7 @@ const EscrowManager = () => {
     try {
       setMessage(null);
       // Generate escrow reference on client for E2E mapping
-      const escrowReference = `ESC_${Date.now()}_${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+      const escrowReference = `ESC_${crypto.randomUUID()}`;
       const payload = {
         amount: Number(form.amount),
         currency: 'GHS',
@@ -74,7 +74,7 @@ const EscrowManager = () => {
     try {
       setMessage(null);
       if (!form.amount) throw new Error('Enter amount');
-      const escrowReference = `ESC_${Date.now()}_${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+      const escrowReference = `ESC_${crypto.randomUUID()}`;
 
       if (form.provider === 'stripe') {
         const resp = await paymentService.createStripePaymentIntent({
@@ -176,9 +176,9 @@ const EscrowManager = () => {
         >
           <MenuItem value="paystack">Paystack</MenuItem>
           <MenuItem value="stripe">Stripe</MenuItem>
-          <MenuItem value="mtn">MTN MoMo</MenuItem>
-          <MenuItem value="vodafone">Vodafone Cash</MenuItem>
-          <MenuItem value="airteltigo">AirtelTigo Money</MenuItem>
+          <MenuItem value="mtn" disabled>MTN MoMo (coming soon)</MenuItem>
+          <MenuItem value="vodafone" disabled>Vodafone Cash (coming soon)</MenuItem>
+          <MenuItem value="airteltigo" disabled>AirtelTigo Money (coming soon)</MenuItem>
         </Select>
         {form.provider === 'paystack' && (
           <TextField

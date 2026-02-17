@@ -73,20 +73,16 @@ export const useResponsive = () => {
       isActualTablet,
       isActualDesktop,
 
-      // Screen size info
-      screenWidth: window.innerWidth,
-      screenHeight: window.innerHeight,
+      // Screen size info (snapshot — use CSS for reactive layout)
+      screenWidth: typeof window !== 'undefined' ? window.innerWidth : 0,
+      screenHeight: typeof window !== 'undefined' ? window.innerHeight : 0,
 
       // Orientation
-      isLandscape: window.innerWidth > window.innerHeight,
-      isPortrait: window.innerWidth <= window.innerHeight,
+      isLandscape: typeof window !== 'undefined' ? window.innerWidth > window.innerHeight : false,
+      isPortrait: typeof window !== 'undefined' ? window.innerWidth <= window.innerHeight : true,
 
-      // Helper functions
-      up: (breakpoint) => useMediaQuery(theme.breakpoints.up(breakpoint)),
-      down: (breakpoint) => useMediaQuery(theme.breakpoints.down(breakpoint)),
-      between: (start, end) =>
-        useMediaQuery(theme.breakpoints.between(start, end)),
-      only: (breakpoint) => useMediaQuery(theme.breakpoints.only(breakpoint)),
+      // Breakpoint values for manual comparisons
+      breakpoints: BREAKPOINTS,
     }),
     [
       theme,

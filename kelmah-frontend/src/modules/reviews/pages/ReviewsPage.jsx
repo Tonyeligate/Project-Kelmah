@@ -258,6 +258,8 @@ const EnhancedReviewsPage = () => {
     try {
       if (isHelpful) {
         await reviewService.voteHelpful(reviewId);
+      } else {
+        await reviewService.voteUnhelpful(reviewId);
       }
 
       setReviews((prev) =>

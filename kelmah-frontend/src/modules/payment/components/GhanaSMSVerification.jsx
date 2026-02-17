@@ -134,8 +134,8 @@ const GhanaSMSVerification = ({
         amount,
       });
 
-      if (response.data.success) {
-        setVerificationId(response.data.verificationId);
+      if (response.success) {
+        setVerificationId(response.verificationId);
         setStep('sent');
         setTimeRemaining(300);
         setResendAvailable(false);
@@ -147,7 +147,7 @@ const GhanaSMSVerification = ({
         );
       } else {
         throw new Error(
-          response.data.message || 'Failed to send verification code',
+          response.message || 'Failed to send verification code',
         );
       }
     } catch (error) {
@@ -214,7 +214,7 @@ const GhanaSMSVerification = ({
         phoneNumber: `233${phoneNumber.substring(1)}`,
       });
 
-      if (response.data.success) {
+      if (response.success) {
         setStep('success');
         enqueueSnackbar('Phone number verified successfully!', {
           variant: 'success',
@@ -228,7 +228,7 @@ const GhanaSMSVerification = ({
           });
         }
       } else {
-        throw new Error(response.data.message || 'Invalid verification code');
+        throw new Error(response.message || 'Invalid verification code');
       }
     } catch (error) {
       setAttempts((prev) => prev + 1);

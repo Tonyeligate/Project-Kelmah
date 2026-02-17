@@ -287,8 +287,20 @@ const workerService = {
         throw error;
       }
 
-      // ⚠️ FIX: Use correct path /users/workers/{id}/availability, not /availability/{id}
-      response = await api.get(`/users/workers/${workerId}/availability`);
+      // Fallback: try user profile endpoint for embedded availability data
+      const fallback = await api.get(`/users/profile`);
+      const profileData = unwrapPayload(fallback);
+      return attachMetadata({
+        status: profileData?.availability?.status || 'unknown',
+        isAvailable: profileData?.availability?.isAvailable ?? false,
+        timezone: profileData?.timezone || 'Africa/Accra',
+        daySlots: [],
+        schedule: [],
+        nextAvailable: null,
+        message: null,
+        pausedUntil: null,
+        lastUpdated: null,
+      }, profileData);
     }
     const payload = unwrapPayload(response);
     const status = payload?.status;

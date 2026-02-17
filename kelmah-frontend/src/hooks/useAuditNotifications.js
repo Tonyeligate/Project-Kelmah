@@ -59,7 +59,7 @@ const useAuditNotifications = () => {
   useEffect(() => {
     if (!ws || !isConnected) return;
 
-    ws.onmessage = (event) => {
+    const handleMessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'audit_notification') {
@@ -74,6 +74,9 @@ const useAuditNotifications = () => {
         console.error('Error handling WebSocket message:', error);
       }
     };
+
+    ws.addEventListener('message', handleMessage);
+    return () => ws.removeEventListener('message', handleMessage);
   }, [ws, isConnected, handleNotification, enqueueSnackbar]);
 
   const subscribe = useCallback(() => {
@@ -92,12 +95,13 @@ const useAuditNotifications = () => {
     if (
       isConnected &&
       user &&
-      user.roles &&
-      user.roles.some((role) =>
-        ['admin', 'auditor', 'security_auditor', 'compliance_officer'].includes(
-          role,
-        ),
-      )
+      // Support both user.role (string) and user.roles (array)
+      ((typeof user.role === 'string' &&
+        ['admin', 'auditor', 'security_auditor', 'compliance_officer'].includes(user.role)) ||
+       (Array.isArray(user.roles) &&
+        user.roles.some((role) =>
+          ['admin', 'auditor', 'security_auditor', 'compliance_officer'].includes(role)
+        )))
     ) {
       subscribe();
     }

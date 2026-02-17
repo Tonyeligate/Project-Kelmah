@@ -156,6 +156,7 @@ const MessageList = ({
   hasMore,
   conversation,
   onMessageRead,
+  deleteMessage,
 }) => {
   const { user } = useAuth();
   const { getTypingUsers } = useMessages();
@@ -324,8 +325,10 @@ const MessageList = ({
 
   // Handle message delete
   const handleDeleteMessage = async () => {
-    if (selectedMessage) {
+    if (selectedMessage && typeof deleteMessage === 'function') {
       await deleteMessage(selectedMessage.id);
+      handleMenuClose();
+    } else {
       handleMenuClose();
     }
   };
@@ -576,12 +579,14 @@ const MessageList = ({
           </ListItemIcon>
           <ListItemText>Copy message</ListItemText>
         </MenuItem>
-        <MenuItem onClick={handleDeleteMessage}>
-          <ListItemIcon>
-            <DeleteIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Delete message</ListItemText>
-        </MenuItem>
+        {typeof deleteMessage === 'function' && (
+          <MenuItem onClick={handleDeleteMessage}>
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Delete message</ListItemText>
+          </MenuItem>
+        )}
       </Menu>
     </MessageListContainer>
   );

@@ -80,17 +80,19 @@ const App = () => {
 
   if (authBootstrapLoading) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          bgcolor: 'background.default',
-        }}
-      >
-        <CircularProgress color="primary" />
-      </Box>
+      <KelmahThemeProvider>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+            bgcolor: 'background.default',
+          }}
+        >
+          <CircularProgress color="primary" />
+        </Box>
+      </KelmahThemeProvider>
     );
   }
 

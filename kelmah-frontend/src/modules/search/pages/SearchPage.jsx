@@ -876,7 +876,7 @@ const SearchPage = () => {
         )}
 
         {/* Public User Results - Full Width */}
-        {!isAuthenticated && (
+        {(!isAuthenticated || (isAuthenticated && !isHirer)) && (
           <Grid container spacing={2}>
             <Grid item xs={12}>
               {/* Collapsible Hero Section - Optimized for Mobile */}

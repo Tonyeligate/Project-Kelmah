@@ -546,7 +546,7 @@ const QuickJobRequestPage = () => {
       </Box>
 
       {/* Stepper */}
-      <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+      <Stepper activeStep={activeStep} orientation={isMobile ? 'vertical' : 'horizontal'} sx={{ mb: 4 }}>
         {steps.map((label, index) => (
           <Step key={label} completed={isStepComplete(index)}>
             <StepLabel>{!isMobile && label}</StepLabel>

@@ -38,15 +38,24 @@ export const prefetchLazyIcons = (lazyIconMap) => {
       await Promise.all(
         Object.values(lazyIconMap).map(async (component) => {
           if (!component) return null;
-          const payload = component._payload;
-          const initializer = component._init || payload?._init;
-
-          if (typeof initializer === 'function') {
-            return initializer(payload);
-          }
-
-          if (typeof component === 'function') {
-            return component();
+          try {
+            // H21 fix: Avoid relying on React internals (_payload, _init).
+            // Instead, call the lazy factory if it's a callable or has a
+            // _payload with a function status. Wrapped in its own try/catch
+            // so one failure doesn't block others.
+            if (typeof component === 'function' && component.$$typeof) {
+              // React.lazy component — try triggering the import via _payload
+              const payload = component._payload;
+              if (payload && typeof payload._result === 'function') {
+                await payload._result();
+              } else if (payload && typeof payload === 'object' && payload._init) {
+                payload._init(payload);
+              }
+            } else if (typeof component === 'function') {
+              await component();
+            }
+          } catch {
+            // Individual icon prefetch failure is non-critical
           }
           return null;
         }),

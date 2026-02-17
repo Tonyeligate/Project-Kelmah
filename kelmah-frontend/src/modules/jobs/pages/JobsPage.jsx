@@ -66,6 +66,8 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import prefetchLazyIcons from '@/utils/prefetchLazyIcons';
 import HeroFiltersSection from '../components/HeroFiltersSection';
 import JobResultsSection from '../components/JobResultsSection';
+import JobsCompactSearchBar from '../components/JobsCompactSearchBar';
+import JobsMobileFilterDrawer from '../components/JobsMobileFilterDrawer';
 import tradeCategoriesData from '../data/tradeCategories.json';
 import ghanaLocations from '../data/ghanaLocations.json';
 import { useJobsQuery } from '../hooks/useJobsQuery';
@@ -563,9 +565,17 @@ const JobsPage = () => {
   const [sortBy, setSortBy] = useState('relevance');
   const [quickFilters, setQuickFilters] = useState({ urgent: false, verified: false, fullTime: false, contract: false });
   const [showFilters, setShowFilters] = useState(false);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalJobs, setTotalJobs] = useState(0);
+  const hasMore = page < totalPages;
+
+  // Infinite scroll sentinel (mobile): ref is placed on the sentinel element
+  const { ref: loadMoreRef, inView: loadMoreInView } = useInView({ threshold: 0, rootMargin: '200px' });
 
   const toggleQuickFilter = useCallback((key) => {
     setQuickFilters((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -584,6 +594,7 @@ const JobsPage = () => {
     setBudgetFilterActive(false);
     setSortBy('relevance');
     setQuickFilters({ urgent: false, verified: false, fullTime: false, contract: false });
+    setPage(1);
   }, []);
   const [platformStats, setPlatformStats] = useState({
     availableJobs: 0,
@@ -632,6 +643,18 @@ const JobsPage = () => {
     return WorkIcon;
   };
 
+  // Reset page to 1 when any filter changes
+  const prevFiltersRef = useRef('');
+  useEffect(() => {
+    const filterKey = JSON.stringify({ debouncedSearch, selectedCategory, selectedLocation, debouncedBudgetRange, sortBy, quickFilters });
+    if (prevFiltersRef.current && prevFiltersRef.current !== filterKey) {
+      setPage(1);
+    }
+    prevFiltersRef.current = filterKey;
+  }, [debouncedSearch, selectedCategory, selectedLocation, debouncedBudgetRange, sortBy, quickFilters]);
+
+  const JOBS_PER_PAGE = 12;
+
   const jobsQueryFilters = useMemo(
     () => {
       const params = {
@@ -640,7 +663,8 @@ const JobsPage = () => {
         category: selectedCategory || undefined,
         location: selectedLocation || undefined,
         sort: sortBy !== 'relevance' ? sortBy : undefined,
-        limit: 50,
+        limit: JOBS_PER_PAGE,
+        page,
       };
       // Only send budget filter when user explicitly adjusts the slider
       if (debouncedBudgetRange) {
@@ -654,7 +678,7 @@ const JobsPage = () => {
       if (quickFilters.contract) params.paymentType = 'fixed';
       return params;
     },
-    [debouncedSearch, selectedCategory, selectedLocation, debouncedBudgetRange, sortBy, quickFilters],
+    [debouncedSearch, selectedCategory, selectedLocation, debouncedBudgetRange, sortBy, quickFilters, page],
   );
 
   const {
@@ -664,6 +688,13 @@ const JobsPage = () => {
     error: jobsQueryError,
   } = useJobsQuery(jobsQueryFilters, { keepPreviousData: true });
 
+  // Infinite scroll: auto-load next page when sentinel enters viewport (mobile)
+  useEffect(() => {
+    if (loadMoreInView && hasMore && !isJobsFetching && !isJobsLoading) {
+      setPage((p) => p + 1);
+    }
+  }, [loadMoreInView, hasMore, isJobsFetching, isJobsLoading]);
+
   useEffect(() => {
     const hasDataArray = (payload) =>
       Array.isArray(payload)
@@ -672,15 +703,29 @@ const JobsPage = () => {
 
     if (jobsResponse) {
       const normalizedJobs = hasDataArray(jobsResponse);
-      console.log('✅ Jobs loaded via React Query:', normalizedJobs.length);
-      setJobs(normalizedJobs);
+      // Extract pagination metadata from the API response
+      setTotalPages(jobsResponse.totalPages || 1);
+      setTotalJobs(jobsResponse.totalJobs || normalizedJobs.length);
+
+      if (page === 1) {
+        // First page: replace jobs
+        setJobs(normalizedJobs);
+      } else {
+        // Subsequent pages: append new jobs
+        setJobs((prev) => {
+          const existingIds = new Set(prev.map((j) => j.id || j._id));
+          const newJobs = normalizedJobs.filter((j) => !existingIds.has(j.id || j._id));
+          return [...prev, ...newJobs];
+        });
+      }
+      console.log(`✅ Jobs loaded via React Query (page ${page}):`, normalizedJobs.length);
       return;
     }
 
     if (!isJobsLoading && !jobsResponse) {
       setJobs([]);
     }
-  }, [jobsResponse, isJobsLoading]);
+  }, [jobsResponse, isJobsLoading, page]);
 
   useEffect(() => {
     if (jobsQueryError) {
@@ -858,8 +903,42 @@ const JobsPage = () => {
                   </Box>
                 </Grid>
 
-                {/* Right Side - Expanded Filter System */}
+                {/* Right Side - Filter System: Compact on mobile, expanded on desktop */}
                 <Grid item xs={12} md={8}>
+                  {/* Mobile: compact search bar + bottom-sheet filter drawer (Binance pattern) */}
+                  {isMobile ? (
+                    <>
+                      <JobsCompactSearchBar
+                        searchValue={searchQuery}
+                        onSearchChange={setSearchQuery}
+                        onSearchSubmit={() => {}}
+                        onFilterClick={() => setMobileFilterOpen(true)}
+                        placeholder={isSmallMobile ? 'Search jobs...' : 'Search jobs, skills...'}
+                      />
+                      <JobsMobileFilterDrawer
+                        open={mobileFilterOpen}
+                        onClose={() => setMobileFilterOpen(false)}
+                        onApply={(filters) => {
+                          if (filters.search !== undefined) setSearchQuery(filters.search);
+                          if (filters.category !== undefined) setSelectedCategory(filters.category);
+                          if (filters.location !== undefined) setSelectedLocation(filters.location);
+                          if (filters.salaryRange) {
+                            setBudgetRange(filters.salaryRange);
+                            setBudgetFilterActive(true);
+                          }
+                          setMobileFilterOpen(false);
+                        }}
+                        initialFilters={{
+                          search: searchQuery,
+                          category: selectedCategory,
+                          location: selectedLocation,
+                          salaryRange: budgetRange,
+                        }}
+                        tradeCategories={tradeCategoriesData}
+                        locations={ghanaLocations}
+                      />
+                    </>
+                  ) : (
                   <Paper
                     elevation={8}
                     sx={{
@@ -1353,6 +1432,7 @@ const JobsPage = () => {
                       </Box>
                     </Collapse>
                   </Paper>
+                  )}
                 </Grid>
               </Grid>
             </Box>
@@ -2232,43 +2312,71 @@ const JobsPage = () => {
             </Grid>
           </motion.div>
 
-          {/* Load More Section */}
+          {/* Infinite-scroll sentinel (mobile) + Load More / Pagination */}
           {!loading && !error && uniqueJobs.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              <Box sx={{ textAlign: 'center', mt: 6 }}>
-                <Typography
-                  variant="body2"
-                  sx={{ color: 'rgba(255,255,255,0.6)', mb: 2 }}
+            <Box sx={{ textAlign: 'center', mt: 4, mb: 2 }}>
+              <Typography
+                variant="body2"
+                sx={{ color: 'text.secondary', mb: 2 }}
+              >
+                Showing {uniqueJobs.length} of {totalJobs} opportunities
+              </Typography>
+
+              {/* Mobile: infinite-scroll sentinel */}
+              {hasMore && (
+                <Box
+                  ref={loadMoreRef}
+                  sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', py: 3 }}
                 >
-                  Showing {uniqueJobs.length} of {uniqueJobs.length} total opportunities
+                  {isJobsFetching ? (
+                    <CircularProgress size={28} sx={{ color: '#D4AF37' }} />
+                  ) : (
+                    <Button
+                      variant="outlined"
+                      size="medium"
+                      onClick={() => setPage((p) => p + 1)}
+                      sx={{
+                        borderColor: '#D4AF37',
+                        color: '#D4AF37',
+                        px: 4,
+                        py: 1,
+                        '&:hover': { borderColor: '#B8941F', bgcolor: 'rgba(212,175,55,0.1)' },
+                      }}
+                    >
+                      Load More
+                    </Button>
+                  )}
+                </Box>
+              )}
+
+              {/* Desktop: page numbers */}
+              {totalPages > 1 && (
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'center', mt: 2 }}>
+                  <Pagination
+                    count={totalPages}
+                    page={page}
+                    onChange={(_, newPage) => {
+                      setPage(newPage);
+                      // On desktop pagination, replace jobs instead of append
+                      setJobs([]);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    sx={{
+                      '& .MuiPaginationItem-root': {
+                        color: 'text.primary',
+                        '&.Mui-selected': { bgcolor: '#D4AF37', color: '#000' },
+                      },
+                    }}
+                  />
+                </Box>
+              )}
+
+              {!hasMore && uniqueJobs.length > 0 && (
+                <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
+                  You&apos;ve seen all available opportunities
                 </Typography>
-                <Button
-                  variant="outlined"
-                  size="large"
-                  startIcon={<RefreshIcon />}
-                  onClick={() => {
-                    // TODO: Implement pagination/load more
-                    console.log('Load more functionality - to be implemented');
-                  }}
-                  sx={{
-                    borderColor: '#D4AF37',
-                    color: '#D4AF37',
-                    px: 4,
-                    py: 1.5,
-                    '&:hover': {
-                      borderColor: '#B8941F',
-                      bgcolor: 'rgba(212,175,55,0.1)',
-                    },
-                  }}
-                >
-                  Load More Opportunities
-                </Button>
-              </Box>
-            </motion.div>
+              )}
+            </Box>
           )}
 
           {/* Stats Section - Moved to Bottom */}

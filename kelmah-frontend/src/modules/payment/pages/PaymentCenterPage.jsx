@@ -1070,6 +1070,7 @@ const PaymentCenterPage = () => {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 fullWidth
+                inputProps={{ inputMode: 'decimal' }}
                 InputProps={{ disableUnderline: true }}
                 InputLabelProps={{
                   sx: { color: theme.palette.secondary.main },
@@ -1187,6 +1188,7 @@ const PaymentCenterPage = () => {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 fullWidth
+                inputProps={{ inputMode: 'decimal' }}
                 InputProps={{ disableUnderline: true }}
                 InputLabelProps={{
                   sx: { color: theme.palette.secondary.main },

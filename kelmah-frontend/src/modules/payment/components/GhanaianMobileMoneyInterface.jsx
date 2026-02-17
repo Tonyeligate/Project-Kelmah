@@ -34,6 +34,7 @@ import {
   Divider,
   useTheme,
   alpha,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Phone as PhoneIcon,
@@ -63,6 +64,7 @@ const GhanaianMobileMoneyInterface = ({
   description = 'Payment for services',
 }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { enqueueSnackbar } = useSnackbar();
 
   // State management
@@ -215,8 +217,8 @@ const GhanaianMobileMoneyInterface = ({
       const response =
         await paymentService.initiateMobileMoneyPayment(paymentData);
 
-      if (response.data.success) {
-        setTransactionId(response.data.transactionId);
+      if (response.success) {
+        setTransactionId(response.transactionId);
         setActiveStep(3);
         setShowPinDialog(true);
 
@@ -225,7 +227,7 @@ const GhanaianMobileMoneyInterface = ({
           { variant: 'info', autoHideDuration: 8000 },
         );
       } else {
-        throw new Error(response.data.message || 'Payment initiation failed');
+        throw new Error(response.message || 'Payment initiation failed');
       }
     } catch (error) {
       setPaymentStatus('failed');
@@ -253,7 +255,7 @@ const GhanaianMobileMoneyInterface = ({
         phoneNumber: `233${phoneNumber.substring(1)}`,
       });
 
-      if (response.data.success) {
+      if (response.success) {
         setPaymentStatus('success');
 
         // Save phone number for future use
@@ -292,7 +294,7 @@ const GhanaianMobileMoneyInterface = ({
           });
         }
       } else {
-        throw new Error(response.data.message || 'Payment confirmation failed');
+        throw new Error(response.message || 'Payment confirmation failed');
       }
     } catch (error) {
       setPaymentStatus('failed');
@@ -597,7 +599,7 @@ const GhanaianMobileMoneyInterface = ({
 
       {/* Stepper */}
       <Paper sx={{ p: 2, mb: 3 }}>
-        <Stepper activeStep={activeStep} alternativeLabel>
+        <Stepper activeStep={activeStep} orientation={isMobile ? 'vertical' : 'horizontal'} {...(!isMobile && { alternativeLabel: true })}>
           {steps.map((label) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>
@@ -673,6 +675,7 @@ const GhanaianMobileMoneyInterface = ({
             value={phoneNumber}
             onChange={(e) => handlePhoneChange(e.target.value)}
             placeholder="e.g., 0241234567"
+            inputProps={{ inputMode: 'tel' }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -741,7 +744,7 @@ const GhanaianMobileMoneyInterface = ({
             value={pin}
             onChange={(e) => setPin(e.target.value)}
             placeholder="Enter 4-digit PIN"
-            inputProps={{ maxLength: 4 }}
+            inputProps={{ maxLength: 4, inputMode: 'numeric' }}
             sx={{ mt: 2 }}
           />
 

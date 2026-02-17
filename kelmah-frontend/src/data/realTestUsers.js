@@ -549,8 +549,8 @@ export const TEST_USERS_DATA = {
   },
 };
 
-// Universal password for all test users
-export const TEST_USER_PASSWORD = 'TestUser123!';
+// Test user password loaded from environment — never commit real credentials
+export const TEST_USER_PASSWORD = import.meta.env.VITE_TEST_USER_PASSWORD || 'changeme';
 
 // Helper functions
 export const getTestUserByEmail = (email) => TEST_USERS_DATA[email] || null;

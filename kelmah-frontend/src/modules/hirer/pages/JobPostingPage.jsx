@@ -55,6 +55,7 @@ import {
 } from '../services/hirerSlice';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
+import { Z_INDEX, STICKY_CTA_HEIGHT } from '../../../constants/layout';
 
 const steps = [
   { label: 'Job Details', icon: <Work /> },
@@ -1166,7 +1167,7 @@ const JobPostingPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, pb: isMobile ? `${STICKY_CTA_HEIGHT + 16}px` : undefined }}>
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
@@ -1301,6 +1302,60 @@ const JobPostingPage = () => {
               </Button>
             )}
           </Box>
+        </Box>
+      )}
+
+      {/* Sticky bottom action bar for mobile */}
+      {isMobile && activeStep !== 5 && (
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: Z_INDEX.stickyCta,
+            bgcolor: 'background.paper',
+            borderTop: 1,
+            borderColor: 'divider',
+            px: 2,
+            py: 1.5,
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: 1,
+            boxShadow: '0 -2px 8px rgba(0,0,0,0.1)',
+          }}
+        >
+          <Button
+            variant="outlined"
+            onClick={handleBack}
+            startIcon={<ArrowBack />}
+            disabled={activeStep === 0}
+            sx={{ minHeight: 44, flex: 1 }}
+          >
+            Back
+          </Button>
+          {activeStep === steps.length - 1 ? (
+            <Button
+              variant="contained"
+              onClick={() => handleSubmit(false)}
+              endIcon={<Publish />}
+              disabled={isLoading}
+              color="primary"
+              sx={{ minHeight: 44, flex: 1 }}
+            >
+              {isLoading ? <CircularProgress size={24} /> : isEditMode ? 'Save' : 'Post Job'}
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              onClick={handleNext}
+              endIcon={<ArrowForward />}
+              disabled={isLoading}
+              sx={{ minHeight: 44, flex: 1 }}
+            >
+              Next
+            </Button>
+          )}
         </Box>
       )}
     </Container>

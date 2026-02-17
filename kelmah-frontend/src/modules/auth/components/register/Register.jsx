@@ -407,6 +407,7 @@ const Register = () => {
         {...formRegister('phone')}
         error={Boolean(errors.phone)}
         helperText={errors.phone?.message}
+        inputProps={{ inputMode: 'tel' }}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -461,7 +462,7 @@ const Register = () => {
           variant="outlined"
           fullWidth
           type="number"
-          inputProps={{ min: 0, max: 60 }}
+          inputProps={{ min: 0, max: 60, inputMode: 'numeric' }}
           placeholder="How long have you worked in your trade?"
           {...formRegister('experienceYears')}
           error={Boolean(errors.experienceYears)}
@@ -981,7 +982,8 @@ const Register = () => {
             ) : (
               <Stepper
                 activeStep={activeStep}
-                alternativeLabel
+                orientation={prefersDedicatedMobile ? 'vertical' : 'horizontal'}
+                {...(!prefersDedicatedMobile && { alternativeLabel: true })}
                 sx={{
                   mb: 2,
                   '& .MuiStepLabel-label': {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -101,6 +101,8 @@ const WorkerSearch = () => {
     primaryTrade: '', // ✅ ADDED: Trade/Specialization filter
   });
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const searchTimerRef = useRef(null);
   const [page, setPage] = useState(1);
 
   // Available filter options
@@ -289,7 +291,7 @@ const WorkerSearch = () => {
         console.log('WorkerSearch - bookmarks fetch failed:', err.message);
       }
     })();
-  }, [page, filters, searchQuery, sortOption]);
+  }, [page, filters, debouncedSearch, sortOption]);
 
   const fetchWorkers = async () => {
     try {
@@ -523,8 +525,14 @@ const WorkerSearch = () => {
   };
 
   const handleSearch = (event) => {
-    setSearchQuery(event.target.value);
-    setPage(1);
+    const value = event.target.value;
+    setSearchQuery(value);
+    // Debounce API call by 400ms
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      setDebouncedSearch(value);
+      setPage(1);
+    }, 400);
   };
 
   const handlePageChange = (event, value) => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -98,6 +98,26 @@ const MessageAttachments = ({
   readonly = false,
 }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
+
+  // H54 fix: memoize blob URLs and revoke on unmount/change to prevent memory leaks
+  const blobUrlsRef = useRef(new Map());
+
+  const getAttachmentUrl = (attachment, index) => {
+    if (attachment.url) return attachment.url;
+    const key = attachment.id || index;
+    if (!blobUrlsRef.current.has(key)) {
+      blobUrlsRef.current.set(key, URL.createObjectURL(attachment));
+    }
+    return blobUrlsRef.current.get(key);
+  };
+
+  // Cleanup blob URLs on unmount or when attachments change
+  useEffect(() => {
+    return () => {
+      blobUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      blobUrlsRef.current.clear();
+    };
+  }, [attachments]);
 
   // Handle opening image preview
   const handleOpenPreview = (url) => {
@@ -200,8 +220,7 @@ const MessageAttachments = ({
                         canInteract
                           ? () =>
                               handleOpenPreview(
-                                attachment.url ||
-                                  URL.createObjectURL(attachment),
+                                getAttachmentUrl(attachment, index),
                               )
                           : undefined
                       }
@@ -214,7 +233,7 @@ const MessageAttachments = ({
                         component="img"
                         height="100"
                         image={
-                          attachment.url || URL.createObjectURL(attachment)
+                          getAttachmentUrl(attachment, index)
                         }
                         alt={displayName}
                       />

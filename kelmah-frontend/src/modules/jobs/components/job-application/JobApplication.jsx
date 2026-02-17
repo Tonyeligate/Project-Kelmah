@@ -21,6 +21,7 @@ import {
   Step,
   StepLabel,
   useTheme,
+  useMediaQuery,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -84,6 +85,7 @@ function JobApplication() {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const {
     data: job,
     isLoading: isJobLoading,
@@ -457,7 +459,7 @@ function JobApplication() {
             borderColor: theme.palette.divider,
           }}
         >
-          <Stepper activeStep={activeStep} alternativeLabel>
+          <Stepper activeStep={activeStep} orientation={isMobile ? 'vertical' : 'horizontal'} {...(!isMobile && { alternativeLabel: true })}>
             {steps.map((label) => (
               <Step key={label}>
                 <StepLabel>{label}</StepLabel>
@@ -609,6 +611,7 @@ function JobApplication() {
                     onChange={handleInputChange}
                     error={!!formErrors.proposedBudget}
                     helperText={formErrors.proposedBudget}
+                    inputProps={{ inputMode: 'decimal' }}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -630,6 +633,7 @@ function JobApplication() {
                     onChange={handleInputChange}
                     error={!!formErrors.estimatedDuration}
                     helperText={formErrors.estimatedDuration}
+                    inputProps={{ inputMode: 'numeric' }}
                     variant="outlined"
                   />
                 </Grid>
@@ -720,6 +724,7 @@ function JobApplication() {
                     onChange={handleMilestoneChange}
                     error={!!formErrors.milestoneAmount}
                     helperText={formErrors.milestoneAmount}
+                    inputProps={{ inputMode: 'decimal' }}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -739,6 +744,7 @@ function JobApplication() {
                     type="number"
                     value={currentMilestone.estimatedDays}
                     onChange={handleMilestoneChange}
+                    inputProps={{ inputMode: 'numeric' }}
                     variant="outlined"
                   />
                 </Grid>

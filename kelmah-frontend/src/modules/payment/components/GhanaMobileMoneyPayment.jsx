@@ -346,6 +346,7 @@ const GhanaMobileMoneyPayment = ({
                 helperText={
                   errors.phone || 'Enter your mobile money registered number'
                 }
+                inputProps={{ inputMode: 'tel' }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">+233</InputAdornment>

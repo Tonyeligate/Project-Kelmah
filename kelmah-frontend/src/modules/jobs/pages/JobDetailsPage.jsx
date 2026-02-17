@@ -31,7 +31,8 @@ import {
   NoteAlt,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import JobApplication from '../components/job-application/JobApplication';
 import BidSubmissionForm from '../components/BidSubmissionForm';
 import { useDispatch, useSelector } from 'react-redux';
@@ -44,6 +45,7 @@ import {
 import { secureStorage } from '../../../utils/secureStorage';
 import { EXTERNAL_SERVICES } from '../../../config/services';
 import jobsApi from '../services/jobsService';
+import { Z_INDEX } from '../../../constants/layout';
 
 // Styled components
 const DetailsPaper = styled(Paper)(({ theme }) => ({
@@ -139,6 +141,8 @@ const normalizeSkillLabels = (skills) => {
 };
 
 const JobDetailsPage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const location = useLocation();
   const { search } = location;
   const { id } = useParams();
@@ -343,6 +347,7 @@ const JobDetailsPage = () => {
         minHeight: '100vh',
         py: { xs: 3, sm: 5, md: 8 },
         px: { xs: 1.5, sm: 2 },
+        pb: isMobile ? '80px' : undefined,
         bgcolor: 'background.default',
       }}
     >
@@ -770,6 +775,61 @@ const JobDetailsPage = () => {
           />
         )}
       </Container>
+
+      {/* Sticky bottom CTA bar for mobile */}
+      {isMobile && job && (
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: Z_INDEX.stickyCta,
+            bgcolor: 'rgba(18, 18, 18, 0.97)',
+            borderTop: '1px solid rgba(255,215,0,0.2)',
+            px: 2,
+            py: 1.5,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            backdropFilter: 'blur(8px)',
+          }}
+        >
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={job?.bidding?.bidStatus === 'open' ? () => {
+              if (!isAuthenticated) { navigate('/login', { state: { from: location.pathname } }); return; }
+              setBidDialogOpen(true);
+            } : handleApplyNow}
+            sx={{
+              bgcolor: '#D4AF37',
+              color: '#000',
+              fontWeight: 'bold',
+              py: 1.2,
+              fontSize: '0.95rem',
+              minHeight: 48,
+              borderRadius: 2,
+              '&:hover': { bgcolor: '#B8941F' },
+            }}
+          >
+            {job?.bidding?.bidStatus === 'open' ? 'Place Your Bid' : 'Apply Now'}
+          </Button>
+          <IconButton
+            onClick={handleToggleSave}
+            disabled={savingBookmark}
+            sx={{ color: saved ? '#D4AF37' : 'rgba(255,255,255,0.7)', minWidth: 48, minHeight: 48 }}
+          >
+            {saved ? <Bookmark /> : <BookmarkBorder />}
+          </IconButton>
+          <IconButton
+            onClick={handleShareJob}
+            sx={{ color: 'rgba(255,255,255,0.7)', minWidth: 48, minHeight: 48 }}
+          >
+            <Share />
+          </IconButton>
+        </Box>
+      )}
     </Box>
   );
 };

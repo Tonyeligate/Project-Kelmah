@@ -39,6 +39,7 @@ import {
 } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import { Z_INDEX, STICKY_CTA_HEIGHT } from '../../../constants/layout';
 import Toast from '../../common/components/common/Toast';
 
 // Import contract slice actions and selectors
@@ -87,6 +88,8 @@ const CreateContractPage = () => {
     severity: 'info',
   });
   const [isDirty, setIsDirty] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Load contract templates on mount
   useEffect(() => {
@@ -758,7 +761,7 @@ const CreateContractPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: { xs: 2, sm: 4 }, mb: { xs: 4, sm: 8 }, px: { xs: 0.5, sm: 2 } }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 2, sm: 4 }, mb: { xs: 4, sm: 8 }, px: { xs: 0.5, sm: 2 }, pb: isMobile ? `${STICKY_CTA_HEIGHT + 16}px` : undefined }}>
       {/* Error alert */}
       {error.createContract && (
         <Alert severity="error" sx={{ mb: 3 }}>
@@ -802,7 +805,7 @@ const CreateContractPage = () => {
           overflowX: 'auto',
         })}
       >
-        <Stepper activeStep={activeStep} alternativeLabel sx={{ minWidth: { xs: 'max-content', sm: 'auto' }, '& .MuiStepLabel-label': { fontSize: { xs: '0.7rem', sm: '0.875rem' } } }}>
+        <Stepper activeStep={activeStep} orientation={isMobile ? 'vertical' : 'horizontal'} {...(!isMobile && { alternativeLabel: true })} sx={{ minWidth: { xs: 'max-content', sm: 'auto' }, '& .MuiStepLabel-label': { fontSize: { xs: '0.7rem', sm: '0.875rem' } } }}>
           {steps.map((label) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>
@@ -915,6 +918,52 @@ const CreateContractPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Sticky bottom action bar for mobile */}
+      {isMobile && (
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: Z_INDEX.stickyCta,
+            bgcolor: 'background.paper',
+            borderTop: 1,
+            borderColor: 'divider',
+            px: 2,
+            py: 1.5,
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: 1,
+            boxShadow: '0 -2px 8px rgba(0,0,0,0.1)',
+          }}
+        >
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={handleBack}
+            disabled={activeStep === 0}
+            sx={{ minHeight: 44, flex: 1 }}
+          >
+            Back
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => {
+              if (activeStep === steps.length - 1) {
+                if (validateStep()) setConfirmDialogOpen(true);
+              } else {
+                handleNext();
+              }
+            }}
+            sx={{ minHeight: 44, flex: 1 }}
+          >
+            {activeStep === steps.length - 1 ? 'Create Contract' : 'Next'}
+          </Button>
+        </Box>
+      )}
 
       {/* Toast notifications */}
       <Toast

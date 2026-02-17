@@ -605,15 +605,15 @@ const HirerDashboardPage = () => {
                 <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
                   Active Jobs
                 </Typography>
-                <Typography variant="h3" fontWeight={700}>
+                <Typography variant="h3" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
                   {summaryData.activeJobs}
                 </Typography>
-                <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                <Typography variant="caption" sx={{ opacity: 0.9, display: { xs: 'none', sm: 'block' } }}>
                   {summaryData.activeJobs === 0 ? 'Post a job to get started' : 'Click to manage'}
                 </Typography>
               </Box>
-              <Box sx={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)' }}>
-                <WorkIcon sx={{ fontSize: 40, opacity: 0.3 }} />
+              <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
+                <WorkIcon sx={{ fontSize: { xs: 28, sm: 40 }, opacity: 0.3 }} />
               </Box>
             </Paper>
           </Grid>
@@ -649,15 +649,15 @@ const HirerDashboardPage = () => {
                 <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
                   Completed Jobs
                 </Typography>
-                <Typography variant="h3" fontWeight={700}>
+                <Typography variant="h3" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
                   {summaryData.completedJobs}
                 </Typography>
-                <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                <Typography variant="caption" sx={{ opacity: 0.9, display: { xs: 'none', sm: 'block' } }}>
                   Click to view progress
                 </Typography>
               </Box>
-              <Box sx={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)' }}>
-                <CheckCircleIcon sx={{ fontSize: 40, opacity: 0.3 }} />
+              <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
+                <CheckCircleIcon sx={{ fontSize: { xs: 28, sm: 40 }, opacity: 0.3 }} />
               </Box>
             </Paper>
           </Grid>
@@ -693,15 +693,15 @@ const HirerDashboardPage = () => {
                 <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
                   Applications
                 </Typography>
-                <Typography variant="h3" fontWeight={700}>
+                <Typography variant="h3" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
                   {summaryData.pendingProposals}
                 </Typography>
-                <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                <Typography variant="caption" sx={{ opacity: 0.9, display: { xs: 'none', sm: 'block' } }}>
                   {summaryData.pendingProposals === 0 ? 'No pending reviews' : 'Click to review'}
                 </Typography>
               </Box>
-              <Box sx={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)' }}>
-                <ProposalIcon sx={{ fontSize: 40, opacity: 0.3 }} />
+              <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
+                <ProposalIcon sx={{ fontSize: { xs: 28, sm: 40 }, opacity: 0.3 }} />
               </Box>
             </Paper>
           </Grid>
@@ -737,15 +737,15 @@ const HirerDashboardPage = () => {
                 <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
                   Needs Attention
                 </Typography>
-                <Typography variant="h3" fontWeight={700}>
+                <Typography variant="h3" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
                   {summaryData.pendingPayments}
                 </Typography>
-                <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                <Typography variant="caption" sx={{ opacity: 0.9, display: { xs: 'none', sm: 'block' } }}>
                   {summaryData.pendingPayments === 0 ? 'All clear!' : 'Click to resolve'}
                 </Typography>
               </Box>
-              <Box sx={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)' }}>
-                <HelpOutlineIcon sx={{ fontSize: 40, opacity: 0.3 }} />
+              <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
+                <HelpOutlineIcon sx={{ fontSize: { xs: 28, sm: 40 }, opacity: 0.3 }} />
               </Box>
             </Paper>
           </Grid>
@@ -758,13 +758,13 @@ const HirerDashboardPage = () => {
             <Paper
               elevation={0}
               sx={{
-                p: 3,
+                p: { xs: 1.5, sm: 2, md: 3 },
                 borderRadius: 2,
                 bgcolor: 'background.paper',
-                height: 350,
+                height: { xs: 280, sm: 350 },
               }}
             >
-              <Typography variant="h6" fontWeight={600} sx={{ mb: 3, color: 'text.primary' }}>
+              <Typography variant="h6" fontWeight={600} sx={{ mb: { xs: 1.5, sm: 3 }, color: 'text.primary', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                 Spending Overview
               </Typography>
               {/* Simple Chart Placeholder */}
@@ -830,18 +830,18 @@ const HirerDashboardPage = () => {
             <Paper
               elevation={0}
               sx={{
-                p: 3,
+                p: { xs: 1.5, sm: 2, md: 3 },
                 borderRadius: 2,
                 bgcolor: 'background.paper',
-                height: 350,
+                height: { xs: 280, sm: 350 },
               }}
             >
-              <Typography variant="h6" fontWeight={600} sx={{ mb: 3, color: 'text.primary' }}>
+              <Typography variant="h6" fontWeight={600} sx={{ mb: { xs: 1.5, sm: 3 }, color: 'text.primary', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                 Applications Overview
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, height: { xs: 'auto', sm: 250 } }}>
                 {/* Legend on left */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, justifyContent: 'center', pr: 4 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, justifyContent: 'center', pr: { xs: 0, sm: 4 }, pb: { xs: 2, sm: 0 } }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#4CAF50' }} />
                     <Typography variant="body2">Completed: {summaryData.completedJobs}</Typography>
@@ -861,8 +861,8 @@ const HirerDashboardPage = () => {
                     role="img"
                     aria-label={`Applications donut chart: ${summaryData.completedJobs} completed, ${summaryData.pendingProposals} submitted, ${summaryData.pendingPayments} pending`}
                     sx={{
-                      width: 180,
-                      height: 180,
+                      width: { xs: 130, sm: 180 },
+                      height: { xs: 130, sm: 180 },
                       borderRadius: '50%',
                       background: (() => {
                         const total = summaryData.completedJobs + summaryData.pendingProposals + summaryData.pendingPayments;
@@ -883,8 +883,8 @@ const HirerDashboardPage = () => {
                   >
                     <Box
                       sx={{
-                        width: 120,
-                        height: 120,
+                        width: { xs: 80, sm: 120 },
+                        height: { xs: 80, sm: 120 },
                         borderRadius: '50%',
                         bgcolor: 'background.paper',
                         display: 'flex',
@@ -892,7 +892,7 @@ const HirerDashboardPage = () => {
                         justifyContent: 'center',
                       }}
                     >
-                      <Typography variant="h4" fontWeight={600} color="text.secondary">
+                      <Typography variant="h4" fontWeight={600} color="text.secondary" sx={{ fontSize: { xs: '1.25rem', sm: '2rem' } }}>
                         {summaryData.activeJobs + summaryData.completedJobs}
                       </Typography>
                     </Box>

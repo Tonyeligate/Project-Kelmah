@@ -446,10 +446,10 @@ const ReviewSystem = ({
           >
             <Stack direction="row" spacing={2}>
               <Avatar
-                src={review.hirerId.profilePicture}
+                src={review.hirerId?.profilePicture}
                 sx={{ width: 48, height: 48 }}
               >
-                {review.hirerId.firstName[0]}
+                {review.hirerId?.firstName?.[0] || '?'}
               </Avatar>
               <Box>
                 <Stack direction="row" alignItems="center" spacing={1}>
@@ -457,7 +457,7 @@ const ReviewSystem = ({
                     variant="subtitle1"
                     sx={{ color: '#fff', fontWeight: 600 }}
                   >
-                    {review.hirerId.firstName} {review.hirerId.lastName}
+                    {review.hirerId?.firstName || 'Deleted'} {review.hirerId?.lastName || 'User'}
                   </Typography>
                   {review.isVerified && (
                     <VerifiedIcon sx={{ color: '#2196F3', fontSize: 16 }} />

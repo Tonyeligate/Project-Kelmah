@@ -820,6 +820,7 @@ const WorkerProfileEditPage = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
+                inputProps={{ inputMode: 'tel' }}
               />
             </Grid>
           </Grid>
@@ -844,6 +845,7 @@ const WorkerProfileEditPage = () => {
                 type="number"
                 value={formData.hourlyRate}
                 onChange={handleInputChange}
+                inputProps={{ inputMode: 'decimal' }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -861,6 +863,7 @@ const WorkerProfileEditPage = () => {
                 type="number"
                 value={formData.experience}
                 onChange={handleInputChange}
+                inputProps={{ inputMode: 'numeric' }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -993,6 +996,7 @@ const WorkerProfileEditPage = () => {
                 value={newEducation.year}
                 onChange={handleEducationChange}
                 placeholder="e.g. 2018"
+                inputProps={{ inputMode: 'numeric' }}
               />
             </Grid>
             <Grid item xs={12} sm={1} sx={{ display: 'flex', alignItems: 'stretch' }}>

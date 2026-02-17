@@ -1878,20 +1878,20 @@ const EnhancedMessagingPage = () => {
           {isMobile ? (
             selectedConversation ? (
               <Grid item xs={12}>
-                <EnhancedChatArea />
+                {EnhancedChatArea()}
               </Grid>
             ) : (
               <Grid item xs={12}>
-                <EnhancedConversationList />
+                {EnhancedConversationList()}
               </Grid>
             )
           ) : (
             <>
               <Grid item md={4} lg={3}>
-                <EnhancedConversationList />
+                {EnhancedConversationList()}
               </Grid>
               <Grid item md={8} lg={9}>
-                <EnhancedChatArea />
+                {EnhancedChatArea()}
               </Grid>
             </>
           )}

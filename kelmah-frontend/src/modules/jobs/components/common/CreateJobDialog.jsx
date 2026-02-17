@@ -285,6 +285,7 @@ function CreateJobDialog({
               onChange={handleChange('budget')}
               error={!!errors.budget}
               helperText={errors.budget}
+              inputProps={{ inputMode: 'decimal' }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
