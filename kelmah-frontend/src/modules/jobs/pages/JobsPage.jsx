@@ -209,6 +209,7 @@ import { useDebounce } from '../../../hooks/useDebounce';
 import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigation';
 import PullToRefresh from '../../../components/common/PullToRefresh';
 import usePrefersReducedMotion from '../../../hooks/usePrefersReducedMotion';
+import useNetworkSpeed from '../../../hooks/useNetworkSpeed';
 
 // Advanced Animations with Smooth Transitions
 const float = keyframes`
@@ -558,8 +559,9 @@ const JobsPage = () => {
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const prefersReducedMotion = usePrefersReducedMotion();
-  // When reduced motion is preferred, disable framer-motion transitions
-  const motionProps = prefersReducedMotion
+  const { isSlow: isSlowNetwork } = useNetworkSpeed();
+  // When reduced motion is preferred OR network is slow, disable framer-motion transitions
+  const motionProps = (prefersReducedMotion || isSlowNetwork)
     ? { initial: false, animate: false, transition: { duration: 0 } }
     : {};
   const [searchQuery, setSearchQuery] = useState('');
