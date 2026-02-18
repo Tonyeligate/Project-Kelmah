@@ -1,9 +1,9 @@
+// Import centralized services (must be at top to avoid TDZ issues)
+import { getApiBaseUrl, API_ENDPOINTS } from './environment';
+
 // Environment-based configuration
 const ENV = import.meta.env.MODE || 'development';
 const isDevelopment = ENV === 'development';
-
-// Import centralized services
-import { getApiBaseUrl } from './environment';
 
 // API URLs - use centralized configuration instead of hardcoded URLs
 const getAPIUrls = async () => {
@@ -40,7 +40,6 @@ export const API_BASE_URL = '/api';
 export const API_URL = '/api';
 
 // Socket URL - use centralized messaging service
-import { API_ENDPOINTS } from './environment';
 export const getSOCKET_URL = async () => {
   try {
     return API_ENDPOINTS.WEBSOCKET.MESSAGING || '/socket.io';
