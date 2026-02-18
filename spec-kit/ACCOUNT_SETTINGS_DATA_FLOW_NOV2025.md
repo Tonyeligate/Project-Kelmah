@@ -63,4 +63,5 @@ Gateway: API Gateway proxy → User Service `/users/profile`
 ## Notes
 - Ensure responses follow REST guidelines: `{ success, data, meta }`
 - Maintain trust middleware (`verifyGatewayRequest`) for authenticated endpoints
-- Verify that updates sync both `users` collection and `workerprofiles` document when present
+- Verify that updates sync both `users` collection and `workerprofiles` document when present.
+....
