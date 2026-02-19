@@ -298,6 +298,11 @@ const EnhancedMessagingPage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Utility: show snackbar feedback (declared before hooks that reference it)
+  const showFeedback = useCallback((message, severity = 'info') => {
+    setFeedback({ open: true, message, severity });
+  }, []);
+
   // Handle conversation selection
   const handleConversationSelect = useCallback(
     (conversation) => {
@@ -370,9 +375,6 @@ const EnhancedMessagingPage = () => {
   }, []);
 
   // Utility functions
-  const showFeedback = (message, severity = 'info') => {
-    setFeedback({ open: true, message, severity });
-  };
 
   const getOtherParticipant = (conversation) => {
     return conversation?.participants.find((p) => p.id !== user?.id);
