@@ -5,6 +5,10 @@
  * for configuration across the entire frontend application.
  */
 
+// Import service URLs from centralized services.js
+// IMPORTANT: All imports must be at top of file to avoid TDZ (Temporal Dead Zone) errors
+import SERVICES from './services';
+
 // Get current environment
 const isDevelopment = import.meta.env.MODE === 'development';
 const isProduction = import.meta.env.MODE === 'production';
@@ -13,9 +17,6 @@ const isTesting = import.meta.env.MODE === 'test';
 // ===============================================
 // API CONFIGURATION
 // ===============================================
-
-// Import service URLs from centralized services.js
-import SERVICES from './services';
 
 // Re-export SERVICES for backward compatibility
 export { SERVICES };
@@ -172,14 +173,12 @@ export const UI_CONFIG = {
 // WEBSOCKET CONFIGURATION
 // ===============================================
 
-// Import dynamic configuration
-import { getWebSocketUrlSync } from './dynamicConfig';
-
+// WS_CONFIG uses '/socket.io' as fallback - dynamic URL resolved at runtime via socketUrl.js
+// NOTE: dynamicConfig.js imports from this file, so we cannot import from it here (would be circular)
 export const WS_CONFIG = {
   url:
     import.meta.env.VITE_WS_URL ||
     import.meta.env.VITE_MESSAGING_SERVICE_URL ||
-    getWebSocketUrlSync() ||
     '/socket.io',
   reconnectionAttempts: parseInt(
     import.meta.env.VITE_WS_RECONNECTION_ATTEMPTS || '5',

@@ -19,6 +19,10 @@ router.get("/preferences", notificationController.getPreferences);
 router.put("/preferences", notificationController.updatePreferences);
 router.patch("/read/all", notificationController.markAllNotificationsAsRead);
 router.delete("/clear-all", notificationController.clearAllNotifications);
+
+// System notification creation endpoint (for inter-service use)
+router.post("/system", notificationController.createSystemNotification);
+
 router.patch(
   "/:notificationId/read",
   notificationController.markNotificationAsRead,

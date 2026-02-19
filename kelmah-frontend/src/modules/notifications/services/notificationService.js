@@ -137,45 +137,22 @@ class NotificationService {
   // Get notifications
   async getNotifications(params = {}) {
     try {
-      // Add retry-control header to prevent excessive retries on rate limit
       const response = await this.client.get('/notifications', {
         params,
-        // Disable automatic retries for this endpoint to prevent rate limiting
         'axios-retry': {
-          retries: 2, // Max 2 retries instead of default
-          retryDelay: (retryCount) => retryCount * 2000, // 2s, 4s delays
+          retries: 2,
+          retryDelay: (retryCount) => retryCount * 2000,
           retryCondition: (error) => {
-            // Don't retry on 429 (rate limit) or 4xx errors except 408, 429, 503
             if (error.response) {
               const { status } = error.response;
-              return status === 408 || status === 503; // Only retry timeouts and service unavailable
+              return status === 408 || status === 503;
             }
             return false;
           },
         },
       });
-      const normalizeNotification = (notification = {}) => ({
-        ...notification,
-        id: notification?.id || notification?._id,
-        title: notification?.title || notification?.message || '',
-        message:
-          notification?.message ||
-          notification?.content ||
-          notification?.title ||
-          '',
-        link: normalizeNotificationLink(notification),
-        read:
-          typeof notification?.read === 'boolean'
-            ? notification.read
-            : Boolean(notification?.readStatus?.isRead),
-        date:
-          notification?.date ||
-          notification?.createdAt ||
-          notification?.timestamp ||
-          new Date().toISOString(),
-      });
 
-      // Normalize to { notifications, data, pagination }
+      // Normalize response shape — backend should return { data, pagination }
       const payload = response.data;
       let notifications = [];
       let pagination = null;
@@ -199,23 +176,21 @@ class NotificationService {
         pagination = payload.pagination;
       }
 
-      const normalizedNotifications = notifications.map(normalizeNotification);
-
+      // Return raw notifications — normalization is handled by NotificationContext
       return {
-        notifications: normalizedNotifications,
-        data: normalizedNotifications,
+        notifications,
+        data: notifications,
         pagination:
           pagination || {
             page: 1,
-            limit: normalizedNotifications.length,
-            total: normalizedNotifications.length,
-            pages: normalizedNotifications.length > 0 ? 1 : 0,
+            limit: notifications.length,
+            total: notifications.length,
+            pages: notifications.length > 0 ? 1 : 0,
           },
       };
     } catch (error) {
       const statusMsg = getServiceStatusMessage();
 
-      // Enhanced error logging with service health context
       const errorMessage =
         error.response?.data?.message ||
         error.response?.data?.error ||
@@ -225,18 +200,11 @@ class NotificationService {
       console.error('Failed to fetch notifications:', {
         error: errorMessage,
         serviceStatus: statusMsg.status,
-        userMessage: statusMsg.message,
-        action: statusMsg.action,
       });
 
-      // Enhanced fallback messaging based on service status
       if (statusMsg.status === 'cold') {
         console.log(
-          '🔥 Messaging Service is cold starting - this is normal and will take 30-60 seconds...',
-        );
-      } else {
-        console.log(
-          '🔔 Using empty notifications fallback during service timeout',
+          'Messaging Service is cold starting — this is normal and will take 30-60 seconds...',
         );
       }
       return {

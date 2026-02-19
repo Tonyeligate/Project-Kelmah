@@ -288,6 +288,8 @@ export const MessageProvider = ({ children }) => {
     };
   }, [user, loadConversations, connectWebSocket, disconnectWebSocket]);
 
+  const loadingMessagesRef = useRef(false);
+
   const selectConversation = useCallback(
     async (conversation) => {
       if (selectedConversation?.id === conversation.id) return;
@@ -301,6 +303,7 @@ export const MessageProvider = ({ children }) => {
 
       setSelectedConversation(conversation);
       setLoadingMessages(true);
+      loadingMessagesRef.current = true;
       setMessages([]);
 
       try {
@@ -313,12 +316,14 @@ export const MessageProvider = ({ children }) => {
             console.log('🏠 Joined conversation:', data);
             setMessages(normalizeMessageList(data.messages || []));
             setLoadingMessages(false);
+            loadingMessagesRef.current = false;
           });
 
-          // Fallback timeout
+          // Fallback timeout — use ref to avoid stale closure
           setTimeout(() => {
-            if (loadingMessages) {
+            if (loadingMessagesRef.current) {
               setLoadingMessages(false);
+              loadingMessagesRef.current = false;
             }
           }, 5000);
         } else {
@@ -338,7 +343,7 @@ export const MessageProvider = ({ children }) => {
         setLoadingMessages(false);
       }
     },
-    [selectedConversation, socket, isConnected, loadingMessages],
+    [selectedConversation, socket, isConnected],
   );
 
   const sendMessage = useCallback(

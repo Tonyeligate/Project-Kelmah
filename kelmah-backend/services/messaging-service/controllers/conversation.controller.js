@@ -28,6 +28,8 @@ class ConversationController {
         query.status = type;
       }
 
+      const totalCount = await Conversation.countDocuments(query);
+
       const conversations = await Conversation.find(query)
         .populate("participants", "firstName lastName profilePicture isActive")
         .populate({
@@ -89,7 +91,7 @@ class ConversationController {
           pagination: {
             page: pageNum,
             limit: pageSize,
-            total: formattedConversations.length,
+            total: totalCount,
           },
         },
       });
@@ -237,13 +239,10 @@ class ConversationController {
       const participantIds = (conversation.participants || []).map(
         (p) => p._id,
       );
+      // Scope messages to BOTH sender and recipient being conversation participants
       const messages = await Message.find({
-        $or: [
-          {
-            sender: { $in: participantIds },
-            recipient: { $in: participantIds },
-          },
-        ],
+        sender: { $in: participantIds },
+        recipient: { $in: participantIds },
       })
         .populate("sender", "firstName lastName profilePicture")
         .sort({ createdAt: -1 })
@@ -332,7 +331,7 @@ class ConversationController {
       if (title !== undefined) updateData["metadata.title"] = title;
       if (participants && Array.isArray(participants)) {
         const normalized = participants.map(
-          (id) => new mongoose.Types.ObjectId(id),
+          (pid) => new mongoose.Types.ObjectId(pid),
         );
         const existingUsers = await User.find({
           _id: { $in: normalized },
@@ -458,9 +457,13 @@ class ConversationController {
         });
       }
 
+      // Scope to messages within THIS conversation only
+      // Both sender and recipient must be conversation participants
+      const participants = conversation.participants.map(String);
       await Message.updateMany(
         {
           recipient: new mongoose.Types.ObjectId(userId),
+          sender: { $in: participants.map((p) => new mongoose.Types.ObjectId(p)) },
           "readStatus.isRead": false,
         },
         {
@@ -525,17 +528,39 @@ class ConversationController {
 
       const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const regex = new RegExp(escapedQuery, "i");
-      const matched = [];
-      for (const conv of conversations) {
-        const found = await Message.findOne({
-          content: { $regex: regex },
-          $or: [
-            { sender: { $in: conv.participants } },
-            { recipient: { $in: conv.participants } },
-          ],
-        }).lean();
-        if (found) matched.push(conv);
-      }
+
+      // Optimized: Single query instead of N+1 pattern
+      const allParticipantIds = [
+        ...new Set(conversations.flatMap((c) => (c.participants || []).map(String))),
+      ];
+
+      // Find all messages matching the search within these conversations' participants
+      const matchingMessages = await Message.find({
+        content: { $regex: regex },
+        $or: [
+          { sender: { $in: allParticipantIds } },
+          { recipient: { $in: allParticipantIds } },
+        ],
+      }).select("sender recipient").lean();
+
+      // Build a set of participant pairs that have matching messages
+      const matchedPairs = new Set();
+      matchingMessages.forEach((msg) => {
+        const pair = [String(msg.sender), String(msg.recipient)].sort().join(":");
+        matchedPairs.add(pair);
+      });
+
+      // Filter conversations that have at least one matching message
+      const matched = conversations.filter((conv) => {
+        const pIds = (conv.participants || []).map(String);
+        for (let i = 0; i < pIds.length; i++) {
+          for (let j = i + 1; j < pIds.length; j++) {
+            const pair = [pIds[i], pIds[j]].sort().join(":");
+            if (matchedPairs.has(pair)) return true;
+          }
+        }
+        return false;
+      });
 
       res.status(200).json({
         success: true,

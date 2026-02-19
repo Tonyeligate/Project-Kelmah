@@ -272,6 +272,9 @@ try {
 // Initialize Socket.IO message handler
 const messageSocketHandler = new MessageSocketHandler(io);
 
+// Store io instance on app for access in controllers (e.g. createSystemNotification)
+app.set("io", io);
+
 // Health check endpoint
 const healthCheck = (req, res) => {
   const dbConnected = mongoose.connection.readyState === 1;

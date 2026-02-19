@@ -306,23 +306,30 @@ class MessageSocketHandler {
       );
 
       if (offlineParticipants.length > 0) {
-        // Queue push notifications and persist lightweight in-app notifications
-        this.queuePushNotifications(offlineParticipants, messageData);
+        // Use preference-aware notification helper for each offline participant
         try {
-          const Notification = require("../models/Notification");
-          const docs = offlineParticipants.map((uid) => ({
-            recipient: uid,
-            type: "message_received",
-            title: `New message from ${messageData.sender?.name || "Contact"}`,
-            content: messageData.content || "Sent an attachment",
-            actionUrl: `/messages/${conversationId}`,
-            relatedEntity: { type: "message", id: messageData.id },
-            priority: "low",
-            metadata: { icon: "message", color: "info" },
-          }));
-          if (docs.length > 0) await Notification.insertMany(docs);
+          const { createNotificationForUser } = require("../controllers/notification.controller");
+          const notifPromises = offlineParticipants.map((uid) =>
+            createNotificationForUser(
+              uid,
+              {
+                type: "message_received",
+                title: `New message from ${messageData.sender?.name || "Contact"}`,
+                content: messageData.content || "Sent an attachment",
+                actionUrl: `/messages/${conversationId}`,
+                relatedEntity: { type: "message", id: messageData.id },
+                priority: "low",
+                metadata: { icon: "message", color: "info" },
+              },
+              { io: this.io },
+            ).catch((err) => {
+              console.warn(`Notification creation failed for ${uid}:`, err.message);
+              return null;
+            }),
+          );
+          await Promise.all(notifPromises);
         } catch (error) {
-          console.warn("Failed to queue notification docs:", error.message);
+          console.warn("Failed to create notification docs:", error.message);
         }
       }
 
@@ -437,9 +444,21 @@ class MessageSocketHandler {
         return;
       }
 
-      // Update messages as read
+      // Verify user is participant of this conversation
+      const conversation = await Conversation.findOne({
+        _id: conversationId,
+        participants: { $in: [userId] },
+      });
+      if (!conversation) {
+        socket.emit("error", { message: "Conversation not found or access denied" });
+        return;
+      }
+
+      // Scope mark-as-read to THIS conversation's participants only
+      const participants = conversation.participants.map(String);
       const query = {
-        sender: { $ne: userId }, // Don't mark own messages as read
+        recipient: userId,
+        sender: { $in: participants },
         "readStatus.isRead": false,
       };
 
@@ -451,6 +470,10 @@ class MessageSocketHandler {
         "readStatus.isRead": true,
         "readStatus.readAt": new Date(),
       });
+
+      // Reset unread count on the conversation
+      conversation.resetUnreadCount(userId);
+      await conversation.save();
 
       // Broadcast read receipt to conversation participants
       this.io.to(`conversation_${conversationId}`).emit("messages_read", {
@@ -559,12 +582,11 @@ class MessageSocketHandler {
       // Join conversation room
       socket.join(`conversation_${conversationId}`);
 
-      // Get recent messages (Note: This needs to be adjusted based on your Message schema)
+      // Get recent messages scoped to THIS conversation's participants
+      const participants = conversation.participants.map(String);
       const messages = await Message.find({
-        $or: [
-          { sender: userId, recipient: { $in: conversation.participants } },
-          { recipient: userId, sender: { $in: conversation.participants } },
-        ],
+        sender: { $in: participants },
+        recipient: { $in: participants },
       })
         .populate("sender", "firstName lastName profilePicture")
         .sort({ createdAt: -1 })

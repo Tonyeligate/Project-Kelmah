@@ -4,6 +4,22 @@ const { handleError } = require("../utils/errorHandler");
 const {
   ensureAttachmentScanStateList,
 } = require("../utils/virusScanState");
+const { createNotificationForUser } = require("./notification.controller");
+
+/**
+ * Extract authenticated user ID from request.
+ * Supports gateway-injected user objects with id, _id, or sub fields.
+ */
+const getUserId = (req) => {
+  const u = req.user;
+  if (!u) throw new Error("Unauthenticated request — req.user is missing");
+  return u._id || u.id || u.sub;
+};
+
+/**
+ * Escape a string for safe use inside a RegExp.
+ */
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // Create a new message
 exports.createMessage = async (req, res) => {
@@ -38,7 +54,7 @@ exports.createMessage = async (req, res) => {
       relatedContract,
       metadata: {
         deviceInfo: req.headers["user-agent"],
-        ipAddress: req.ip,
+        // Omit IP address for user privacy
       },
       ...(process.env.ENABLE_E2E_ENVELOPE === "true" && encryptedBody
         ? { encryptedBody, encryption }
@@ -64,20 +80,24 @@ exports.createMessage = async (req, res) => {
     conversation.incrementUnreadCount(recipient);
     await conversation.save();
 
-    // Create notification for recipient
-    const notification = new Notification({
-      recipient,
-      type: "message_received",
-      title: "New Message",
-      content: `You have received a new message${relatedJob ? " regarding a job" : ""}`,
-      actionUrl: `/messages/${conversation._id}`,
-      relatedEntity: {
-        type: "message",
-        id: message._id,
-      },
-    });
-
-    await notification.save();
+    // Create preference-aware notification for recipient (with optional email)
+    try {
+      await createNotificationForUser(
+        recipient,
+        {
+          type: "message_received",
+          title: "New Message",
+          content: `You have received a new message${relatedJob ? " regarding a job" : ""}`,
+          actionUrl: `/messages/${conversation._id}`,
+          relatedEntity: { type: "message", id: message._id },
+          priority: "low",
+          metadata: { icon: "message", color: "info" },
+        },
+        { io: req.app?.get?.("io") },
+      );
+    } catch (notifErr) {
+      console.warn("Message notification creation failed:", notifErr.message);
+    }
 
     res.status(201).json({
       message: "Message sent successfully",
@@ -94,43 +114,43 @@ exports.getConversationMessages = async (req, res) => {
     const { conversationId } = req.params;
     const { limit = 20, before } = req.query;
 
-    const conversation = await Conversation.findById(conversationId);
+    const userId = getUserId(req);
+
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      participants: { $in: [userId] },
+    });
     if (!conversation) {
       return res.status(404).json({ message: "Conversation not found" });
     }
 
-    // Fetch strictly within the conversation participants, sorted desc
+    // Scope messages strictly to THIS conversation's participants only
+    // Both sender AND recipient must be participants of this conversation
+    const participants = conversation.participants.map(String);
     const baseQuery = {
+      sender: { $in: participants },
+      recipient: { $in: participants },
       $or: [
-        { sender: getUserId(req), recipient: { $in: conversation.participants } },
-        { recipient: getUserId(req), sender: { $in: conversation.participants } },
+        { sender: userId },
+        { recipient: userId },
       ],
     };
     if (before) {
       baseQuery.createdAt = { $lt: new Date(before) };
     }
+    const parsedLimit = Math.min(100, Math.max(1, parseInt(limit)));
     const messages = await Message.find(baseQuery)
       .sort({ createdAt: -1 })
-      .limit(Math.min(100, Math.max(1, parseInt(limit))))
-      .populate("sender", "name profilePicture")
-      .populate("recipient", "name profilePicture");
+      .limit(parsedLimit)
+      .populate("sender", "firstName lastName name profilePicture")
+      .populate("recipient", "firstName lastName name profilePicture");
 
-    // Mark messages as read
+    // Mark unread messages in THIS conversation as read (scoped to participants)
     await Message.updateMany(
       {
-        recipient: getUserId(req),
+        recipient: userId,
+        sender: { $in: participants },
         "readStatus.isRead": false,
-        // Scope only to this conversation participants
-        $or: [
-          {
-            sender: { $in: conversation.participants },
-            recipient: getUserId(req),
-          },
-          {
-            recipient: { $in: conversation.participants },
-            sender: getUserId(req),
-          },
-        ],
       },
       {
         $set: {
@@ -141,7 +161,7 @@ exports.getConversationMessages = async (req, res) => {
     );
 
     // Reset unread count (method mutates in-place; must save afterward)
-    conversation.resetUnreadCount(getUserId(req));
+    conversation.resetUnreadCount(userId);
     await conversation.save();
 
     const nextCursor =
@@ -151,7 +171,7 @@ exports.getConversationMessages = async (req, res) => {
       data: {
         messages,
         pagination: {
-          limit: Math.min(100, Math.max(1, parseInt(limit))),
+          limit: parsedLimit,
           returned: messages.length,
           nextCursor,
         },
@@ -266,20 +286,17 @@ exports.removeReaction = async (req, res) => {
   }
 };
 
-// Get unread message count
+// Get unread message count (optimized aggregation)
 exports.getUnreadCount = async (req, res) => {
   try {
-    const conversations = await Conversation.find({
-      participants: getUserId(req),
-    });
-
-    const totalUnread = conversations.reduce((sum, conv) => {
-      const unreadCount = conv.unreadCounts.find(
-        (count) => count.user.toString() === getUserId(req).toString(),
-      );
-      return sum + (unreadCount ? unreadCount.count : 0);
-    }, 0);
-
+    const userId = getUserId(req);
+    const result = await Conversation.aggregate([
+      { $match: { participants: new (require("mongoose").Types.ObjectId)(userId) } },
+      { $unwind: "$unreadCounts" },
+      { $match: { "unreadCounts.user": new (require("mongoose").Types.ObjectId)(userId) } },
+      { $group: { _id: null, total: { $sum: "$unreadCounts.count" } } },
+    ]);
+    const totalUnread = result.length > 0 ? result[0].total : 0;
     res.json({ unreadCount: totalUnread });
   } catch (error) {
     handleError(res, error);
@@ -290,16 +307,19 @@ exports.getUnreadCount = async (req, res) => {
 exports.searchMessages = async (req, res) => {
   try {
     const { q, attachments, period, sender } = req.query;
+    const userId = getUserId(req);
 
     // Scope: only messages involving the current user
     const baseScope = {
-      $or: [{ sender: getUserId(req) }, { recipient: getUserId(req) }],
+      $or: [{ sender: userId }, { recipient: userId }],
     };
 
     const andFilters = [];
 
     if (q && typeof q === "string") {
-      andFilters.push({ content: { $regex: q, $options: "i" } });
+      // Escape regex special characters to prevent NoSQL regex injection/DoS
+      const safeQ = escapeRegex(q.trim());
+      andFilters.push({ content: { $regex: safeQ, $options: "i" } });
     }
 
     if (attachments === "true") {
@@ -337,9 +357,9 @@ exports.searchMessages = async (req, res) => {
       Message.find(query)
         .sort({ createdAt: -1 })
         .limit(100)
-        .populate("sender", "name profilePicture")
-        .populate("recipient", "name profilePicture"),
-      Conversation.find({ participants: getUserId(req) }).select(
+        .populate("sender", "firstName lastName name profilePicture")
+        .populate("recipient", "firstName lastName name profilePicture"),
+      Conversation.find({ participants: userId }).select(
         "_id participants title",
       ),
     ]);

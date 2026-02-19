@@ -106,7 +106,11 @@ export const NotificationProvider = ({ children }) => {
             type,
           });
 
-        setNotifications(Array.isArray(data) ? data : []);
+        // Normalize each notification through the canonical normalizer
+        const normalized = Array.isArray(data)
+          ? data.map(normalizeNotificationPayload)
+          : [];
+        setNotifications(normalized);
         setPagination(
           paginationData || {
             page,

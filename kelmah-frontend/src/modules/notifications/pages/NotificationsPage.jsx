@@ -41,35 +41,58 @@ import {
 import { useNotifications } from '../contexts/NotificationContext';
 import { Pagination, FormControlLabel, Switch } from '@mui/material';
 import { format, formatDistanceToNow } from 'date-fns';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 // --- Reusable Components ---
 
 const notificationIcons = {
-  message: <MessageIcon />,
-  job: <WorkIcon />,
-  contract: <GavelIcon />,
+  message_received: <MessageIcon />,
+  job_application: <WorkIcon />,
+  job_offer: <WorkIcon />,
+  contract_update: <GavelIcon />,
+  payment_received: <NotificationsIcon />,
+  system_alert: <InfoIcon />,
+  review_received: <CheckCircleIcon />,
   default: <NotificationsIcon />,
 };
 
 const isExternalLink = (value) =>
   typeof value === 'string' && /^https?:\/\//i.test(value);
 
-const PageNotificationItem = ({ notification }) => (
-  <ListItem
-    sx={(theme) => ({
-      backgroundColor: theme.palette.background.paper,
-      mb: 1.5,
-      borderRadius: 2,
-      borderLeft: notification.read ? 'none' : `4px solid ${theme.palette.secondary.main}`,
-      border: `1px solid ${theme.palette.divider}`,
-      transition: 'background-color 0.2s ease',
-      cursor: notification.link ? 'pointer' : 'default',
-      '&:hover': {
-        backgroundColor: alpha(theme.palette.action.hover, 0.08),
-      },
-    })}
-  >
+const PageNotificationItem = ({ notification, onMarkRead }) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    // Mark as read on click
+    if (!notification.read && onMarkRead) {
+      onMarkRead(notification.id || notification._id);
+    }
+    // Navigate to the linked page
+    if (notification.link) {
+      if (isExternalLink(notification.link)) {
+        window.open(notification.link, '_blank', 'noopener,noreferrer');
+      } else {
+        navigate(notification.link);
+      }
+    }
+  };
+
+  return (
+    <ListItem
+      onClick={handleClick}
+      sx={(theme) => ({
+        backgroundColor: theme.palette.background.paper,
+        mb: 1.5,
+        borderRadius: 2,
+        borderLeft: notification.read ? 'none' : `4px solid ${theme.palette.secondary.main}`,
+        border: `1px solid ${theme.palette.divider}`,
+        transition: 'background-color 0.2s ease',
+        cursor: notification.link ? 'pointer' : 'default',
+        '&:hover': {
+          backgroundColor: alpha(theme.palette.action.hover, 0.08),
+        },
+      })}
+    >
     <ListItemIcon>
       <Avatar
         sx={{
@@ -134,7 +157,8 @@ const PageNotificationItem = ({ notification }) => (
       />
     )}
   </ListItem>
-);
+  );
+};
 
 const ActivityFeed = ({ notifications }) => (
   <List>
@@ -149,12 +173,29 @@ const ActivityFeed = ({ notifications }) => (
 
 // --- Main Notifications Page ---
 
+// Tab filter → backend type mapping for grouped tabs
+const TAB_TYPE_MAP = {
+  all: undefined,
+  messages: 'message_received',
+  jobs: 'job_application', // also covers job_offer
+  contracts: 'contract_update',
+};
+
+// Types that belong to each tab group (for client-side filtering)
+const TAB_TYPE_GROUPS = {
+  all: null, // show everything
+  messages: ['message_received'],
+  jobs: ['job_application', 'job_offer'],
+  contracts: ['contract_update'],
+};
+
 const NotificationsPage = () => {
   const {
     notifications,
     loading,
     unreadCount,
     pagination,
+    markAsRead,
     markAllAsRead,
     clearAllNotifications,
     refresh,
@@ -170,7 +211,7 @@ const NotificationsPage = () => {
     refresh({
       page: 1,
       limit: pagination.limit,
-      type: newValue === 'all' ? undefined : newValue,
+      type: TAB_TYPE_MAP[newValue],
       unreadOnly,
     });
   };
@@ -182,7 +223,7 @@ const NotificationsPage = () => {
       page: 1,
       limit: pagination.limit,
       unreadOnly: next,
-      type: filter === 'all' ? undefined : filter,
+      type: TAB_TYPE_MAP[filter],
     });
   };
 
@@ -191,12 +232,16 @@ const NotificationsPage = () => {
       page,
       limit: pagination.limit,
       unreadOnly,
-      type: filter === 'all' ? undefined : filter,
+      type: TAB_TYPE_MAP[filter],
     });
   };
 
   const filteredNotifications = notifications
-    .filter((n) => filter === 'all' || n.type === filter)
+    .filter((n) => {
+      const group = TAB_TYPE_GROUPS[filter];
+      if (!group) return true; // 'all' tab
+      return group.includes(n.type);
+    })
     .sort(
       (a, b) =>
         new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date),
@@ -335,9 +380,9 @@ const NotificationsPage = () => {
           sx={{ mb: 2 }}
         >
           <Tab label="All" value="all" />
-          <Tab label="Messages" value="message" />
-          <Tab label="Jobs" value="job" />
-          <Tab label="Contracts" value="contract" />
+          <Tab label="Messages" value="messages" />
+          <Tab label="Jobs" value="jobs" />
+          <Tab label="Contracts" value="contracts" />
         </Tabs>
 
         {loading ? (
@@ -357,6 +402,7 @@ const NotificationsPage = () => {
               <PageNotificationItem
                 key={notification.id || notification._id || `notif-${index}`}
                 notification={notification}
+                onMarkRead={markAsRead}
               />
             ))}
             <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
