@@ -192,11 +192,19 @@ app.get('/settings/themes', (req, res) => {
 });
 
 // Admin routes for development/testing (guarded by INTERNAL_API_KEY)
+const hasValidInternalAdminKey = (req) => {
+  const internalKey = req.headers['x-internal-key'];
+  return Boolean(
+    process.env.INTERNAL_API_KEY &&
+    internalKey &&
+    internalKey === process.env.INTERNAL_API_KEY,
+  );
+};
+
 app.post("/api/admin/verify-user", async (req, res) => {
   try {
     const { email } = req.body;
-    const internalKey = req.headers['x-internal-key'] || req.query.key;
-    if (!process.env.INTERNAL_API_KEY || internalKey !== process.env.INTERNAL_API_KEY) {
+    if (!hasValidInternalAdminKey(req)) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
     
@@ -246,8 +254,7 @@ app.post("/api/admin/verify-user", async (req, res) => {
 app.post("/api/admin/verify-users-batch", async (req, res) => {
   try {
     const { emails } = req.body;
-    const internalKey = req.headers['x-internal-key'] || req.query.key;
-    if (!process.env.INTERNAL_API_KEY || internalKey !== process.env.INTERNAL_API_KEY) {
+    if (!hasValidInternalAdminKey(req)) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
     
@@ -314,8 +321,7 @@ app.post("/api/admin/verify-users-batch", async (req, res) => {
 app.post("/api/auth/admin/verify-user", async (req, res) => {
   try {
     const { email } = req.body;
-    const internalKey = req.headers['x-internal-key'] || req.query.key;
-    if (!process.env.INTERNAL_API_KEY || internalKey !== process.env.INTERNAL_API_KEY) {
+    if (!hasValidInternalAdminKey(req)) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
 
@@ -344,8 +350,7 @@ app.post("/api/auth/admin/verify-user", async (req, res) => {
 app.post("/api/auth/admin/verify-users", async (req, res) => {
   try {
     const { emails } = req.body;
-    const internalKey = req.headers['x-internal-key'] || req.query.key;
-    if (!process.env.INTERNAL_API_KEY || internalKey !== process.env.INTERNAL_API_KEY) {
+    if (!hasValidInternalAdminKey(req)) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
     if (!emails || !Array.isArray(emails)) {
@@ -382,8 +387,7 @@ app.post("/api/auth/admin/verify-users", async (req, res) => {
 app.post('/api/admin/unlock-account', async (req, res) => {
   try {
     const { email } = req.body;
-    const internalKey = req.headers['x-internal-key'] || req.query.key;
-    if (!process.env.INTERNAL_API_KEY || internalKey !== process.env.INTERNAL_API_KEY) {
+    if (!hasValidInternalAdminKey(req)) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
     if (!email) {

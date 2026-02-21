@@ -1,5 +1,24 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Deep Platform Audit (Feb 20, 2026 – Full Frontend Pages + Backend Logic/Security/Performance) ✅
+- 🎯 **Scope**: End-to-end audit across all 57 frontend module pages, frontend route/data-flow entrypoints, API gateway, and backend microservice route/controller hotspots.
+- 📄 **Primary report**:
+  - `spec-kit/DEEP_PLATFORM_AUDIT_2026-02-20.md`
+- 🔍 **Confirmed priority findings**:
+  - Internal admin-key accepted via query-string on auth-service privileged endpoints (`req.query.key`) — high-severity exposure risk.
+  - Duplicate privileged admin route families in auth-service increasing attack surface and drift risk.
+  - Job-service public route debug logging and high-cost search query composition risk under scale.
+  - Frontend websocket/service runtime logs exposing event payload details in production paths.
+  - Remaining mobile pressure points in fixed-position-heavy pages (messaging/map/quickjobs/contracts).
+- 🧭 **Architecture summary captured**:
+  - Microservices + API Gateway + modular React frontend with traced entry points and data movement path.
+- 📌 **Next implementation priority**:
+  1. Remove URL query-key fallback from internal admin endpoints and enforce header+signature trust only.
+  2. Add route-contract protection tests and protected-route assertions.
+  3. Apply search-query budget caps and index-aligned filter hardening.
+  4. Redact/gate production logs in frontend realtime and backend debug paths.
+  5. Complete mobile-safe fixed/sticky normalization in remaining high-traffic pages.
+
 ### Comprehensive Frontend Audit - Batch 2 (July 2026 – Currency, Loops, State, API Wiring, Theme, Responsive) ✅
 - 🎯 **Scope**: 49 files fixed from comprehensive audit findings across all frontend modules
 - 📦 **Commit**: `445496e3` — 306 insertions, 243 deletions
