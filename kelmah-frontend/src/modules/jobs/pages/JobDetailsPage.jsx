@@ -384,7 +384,7 @@ const JobDetailsPage = () => {
               <DetailsPaper elevation={3}>
                 {/* Job Header */}
                 <Box sx={{ mb: 3 }}>
-                  {/* Embedded Map for Job Location */}
+                  {/* Embedded Map for Job Location — hidden on mobile, shown after description */}
                   <Box
                     sx={{
                       width: '100%',
@@ -392,6 +392,7 @@ const JobDetailsPage = () => {
                       mb: 3,
                       borderRadius: 2,
                       overflow: 'hidden',
+                      display: { xs: 'none', sm: 'block' },
                     }}
                   >
                     <iframe
@@ -506,6 +507,28 @@ const JobDetailsPage = () => {
                   >
                     {job?.description || 'No description available'}
                   </Typography>
+
+                  {/* Mobile-only map — moved below description for above-fold */}
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: 200,
+                      mb: 3,
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                      display: { xs: 'block', sm: 'none' },
+                    }}
+                  >
+                    <iframe
+                      title="Job Location"
+                      src={`${EXTERNAL_SERVICES.GOOGLE_MAPS.EMBED}?q=${encodeURIComponent(locationLabel || 'Ghana')}&output=embed`}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                    />
+                  </Box>
 
                   <Box sx={{ mt: 3 }}>
                     <Typography

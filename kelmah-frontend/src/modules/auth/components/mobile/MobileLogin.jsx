@@ -155,7 +155,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
       }}
     >
       {/* Header with Logo */}
-      <Box sx={{ textAlign: 'center', mb: 4, mt: 2 }}>
+      <Box sx={{ textAlign: 'center', mb: 2, mt: 1 }}>
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -166,20 +166,19 @@ const MobileLogin = ({ registrationSuccess = false }) => {
             src={logoIcon}
             alt="Kelmah"
             sx={{
-              width: 70,
-              height: 70,
-              mb: 2,
+              width: 40,
+              height: 40,
+              mb: 1,
               borderRadius: '50%',
-              boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.3)}`,
             }}
           />
           <Typography
-            variant="h5"
+            variant="h6"
             sx={{
               color: 'primary.main',
               fontWeight: 800,
               letterSpacing: 1,
-              mb: 0.5,
+              mb: 0.25,
             }}
           >
             Kelmah
@@ -187,38 +186,12 @@ const MobileLogin = ({ registrationSuccess = false }) => {
           <Typography
             sx={{
               color: 'text.secondary',
-              fontSize: '14px',
+              fontSize: '13px',
             }}
           >
             Ghana's Skilled Trades Platform
           </Typography>
         </motion.div>
-      </Box>
-
-      {/* Trade chips */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          flexWrap: 'wrap',
-          gap: 0.75,
-          mb: 4,
-        }}
-      >
-        {['Verified', 'Skilled', 'Quality'].map((label) => (
-          <Chip
-            key={label}
-            label={label}
-            size="small"
-            sx={{
-              backgroundColor: alpha(theme.palette.primary.main, 0.15),
-              color: 'primary.main',
-              fontSize: '12px',
-              fontWeight: 600,
-              height: 28,
-            }}
-          />
-        ))}
       </Box>
 
       {/* Main Form Card */}

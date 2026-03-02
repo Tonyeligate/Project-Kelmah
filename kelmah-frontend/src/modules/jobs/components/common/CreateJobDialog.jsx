@@ -5,6 +5,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  AppBar,
+  Toolbar,
+  IconButton,
   TextField,
   Button,
   Grid,
@@ -17,8 +20,11 @@ import {
   InputAdornment,
   FormHelperText,
   Chip,
+  Typography,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
-import { AttachMoney } from '@mui/icons-material';
+import { AttachMoney, Close as CloseIcon } from '@mui/icons-material';
 import { createJob } from '../../../jobs/services/jobSlice';
 import PropTypes from 'prop-types';
 
@@ -57,6 +63,8 @@ function CreateJobDialog({
   onSuccess = () => {},
 }) {
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [skills, setSkills] = useState([]);
@@ -159,8 +167,30 @@ function CreateJobDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Create New Job</DialogTitle>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth fullScreen={isMobile}>
+      {isMobile ? (
+        <AppBar sx={{ position: 'relative', bgcolor: 'background.paper', color: 'text.primary', boxShadow: 1 }}>
+          <Toolbar>
+            <IconButton edge="start" onClick={onClose} aria-label="Close" disabled={loading}>
+              <CloseIcon />
+            </IconButton>
+            <Typography sx={{ ml: 1, flex: 1, fontWeight: 600 }} variant="subtitle1">
+              Create New Job
+            </Typography>
+            <Button
+              color="primary"
+              variant="contained"
+              size="small"
+              onClick={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? 'Creating…' : 'Post Job'}
+            </Button>
+          </Toolbar>
+        </AppBar>
+      ) : (
+        <DialogTitle>Create New Job</DialogTitle>
+      )}
       <DialogContent>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -372,19 +402,21 @@ function CreateJobDialog({
           </Grid>
         </Grid>
       </DialogContent>
-      <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose} disabled={loading}>
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={loading}
-          color="primary"
-        >
-          {loading ? 'Creating...' : 'Create Job'}
-        </Button>
-      </DialogActions>
+      {!isMobile && (
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={onClose} disabled={loading}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={loading}
+            color="primary"
+          >
+            {loading ? 'Creating...' : 'Create Job'}
+          </Button>
+        </DialogActions>
+      )}
     </Dialog>
   );
 }

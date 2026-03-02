@@ -315,7 +315,6 @@ const MobileRegister = () => {
                 error={Boolean(errors.firstName)}
                 helperText={errors.firstName}
                 size="small"
-                inputProps={{ style: { fontSize: 16 } }}
                 sx={{ ...inputStyles, flex: '1 1 140px' }}
               />
               <TextField
@@ -326,7 +325,6 @@ const MobileRegister = () => {
                 error={Boolean(errors.lastName)}
                 helperText={errors.lastName}
                 size="small"
-                inputProps={{ style: { fontSize: 16 } }}
                 sx={{ ...inputStyles, flex: '1 1 140px' }}
               />
             </Box>

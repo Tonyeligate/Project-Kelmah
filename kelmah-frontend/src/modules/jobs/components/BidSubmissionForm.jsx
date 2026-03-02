@@ -14,6 +14,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  AppBar,
+  Toolbar,
   Button,
   TextField,
   Box,
@@ -25,6 +27,7 @@ import {
   InputAdornment,
   IconButton,
   useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import {
@@ -38,6 +41,7 @@ import bidApi from '../services/bidService';
 
 const BidSubmissionForm = ({ open, onClose, job }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const minBid = job?.bidding?.minBidAmount || job?.budget?.min || 100;
   const maxBid = job?.bidding?.maxBidAmount || job?.budget?.max || 50000;
   const currentBidders = job?.bidding?.currentBidders || 0;
@@ -97,7 +101,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
 
   if (success) {
     return (
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth fullScreen={isMobile}>
         <DialogTitle sx={{ bgcolor: 'background.paper', color: 'primary.main' }}>
           Bid Submitted!
         </DialogTitle>
@@ -120,24 +124,47 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle
-        sx={{
-          bgcolor: 'background.paper',
-          color: 'primary.main',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <GavelIcon />
-          Place Your Bid
-        </Box>
-        <IconButton onClick={onClose} sx={{ color: 'text.secondary' }}>
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth fullScreen={isMobile}>
+      {isMobile ? (
+        <AppBar sx={{ position: 'relative', bgcolor: 'background.paper', color: 'text.primary', boxShadow: 1 }}>
+          <Toolbar>
+            <IconButton edge="start" onClick={onClose} aria-label="Close bid form" sx={{ color: 'text.secondary' }}>
+              <CloseIcon />
+            </IconButton>
+            <Typography sx={{ ml: 1, flex: 1, fontWeight: 600 }} variant="subtitle1">
+              Place Your Bid
+            </Typography>
+            <Button
+              color="primary"
+              variant="contained"
+              size="small"
+              onClick={handleSubmit}
+              disabled={loading}
+              startIcon={loading ? <CircularProgress size={14} /> : <GavelIcon />}
+            >
+              {loading ? 'Submitting…' : `GHS ${bidAmount.toLocaleString()}`}
+            </Button>
+          </Toolbar>
+        </AppBar>
+      ) : (
+        <DialogTitle
+          sx={{
+            bgcolor: 'background.paper',
+            color: 'primary.main',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <GavelIcon />
+            Place Your Bid
+          </Box>
+          <IconButton onClick={onClose} sx={{ color: 'text.secondary' }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+      )}
 
       <DialogContent sx={{ bgcolor: 'background.paper', pt: 3 }}>
         {error && (
@@ -256,20 +283,22 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
         </Typography>
       </DialogContent>
 
-      <DialogActions sx={{ bgcolor: 'background.paper', p: 2 }}>
-        <Button onClick={onClose} sx={{ color: 'text.secondary' }}>
-          Cancel
-        </Button>
-        <Button
-          onClick={handleSubmit}
-          variant="contained"
-          disabled={loading}
-          startIcon={loading ? <CircularProgress size={16} /> : <GavelIcon />}
-          color="primary"
-        >
-          {loading ? 'Submitting...' : `Submit Bid — GHS ${bidAmount.toLocaleString()}`}
-        </Button>
-      </DialogActions>
+      {!isMobile && (
+        <DialogActions sx={{ bgcolor: 'background.paper', p: 2 }}>
+          <Button onClick={onClose} sx={{ color: 'text.secondary' }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            variant="contained"
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={16} /> : <GavelIcon />}
+            color="primary"
+          >
+            {loading ? 'Submitting...' : `Submit Bid — GHS ${bidAmount.toLocaleString()}`}
+          </Button>
+        </DialogActions>
+      )}
     </Dialog>
   );
 };

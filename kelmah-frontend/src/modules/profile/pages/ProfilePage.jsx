@@ -166,12 +166,12 @@ const ProfilePage = () => {
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <Paper sx={{ p: { xs: 2, md: 3 } }}>
-              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: { xs: 'center', md: 'flex-start' } }}>
-                <Skeleton variant="circular" width={isMobile ? 100 : 150} height={isMobile ? 100 : 150} />
-                <Box sx={{ flex: 1, width: '100%', textAlign: { xs: 'center', md: 'left' } }}>
-                  <Skeleton width="40%" height={32} sx={{ mb: 1, mx: { xs: 'auto', md: 0 } }} />
-                  <Skeleton width="30%" height={24} sx={{ mb: 1, mx: { xs: 'auto', md: 0 } }} />
-                  <Skeleton width="50%" height={24} sx={{ mx: { xs: 'auto', md: 0 } }} />
+              <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: { xs: 'center', md: 'flex-start' } }}>
+                <Skeleton variant="circular" width={isMobile ? 64 : 150} height={isMobile ? 64 : 150} />
+                <Box sx={{ flex: 1, width: '100%', textAlign: 'left' }}>
+                  <Skeleton width="40%" height={32} sx={{ mb: 1 }} />
+                  <Skeleton width="30%" height={24} sx={{ mb: 1 }} />
+                  <Skeleton width="50%" height={24} />
                 </Box>
               </Box>
             </Paper>
@@ -208,9 +208,9 @@ const ProfilePage = () => {
           {/* Profile Header */}
           <Grid item xs={12}>
             <Paper sx={{ p: { xs: 2, md: 3 } }}>
-              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: { xs: 'center', md: 'flex-start' } }}>
-                <ProfilePicture size={isMobile ? 100 : 150} />
-                <Box sx={{ flex: 1, width: '100%', textAlign: { xs: 'center', md: 'left' } }}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'row', md: 'row' }, gap: 2, alignItems: { xs: 'center', md: 'flex-start' } }}>
+                <ProfilePicture size={isMobile ? 64 : 150} />
+                <Box sx={{ flex: 1, width: '100%', textAlign: { xs: 'left', md: 'left' } }}>
                   {error && (
                     <Alert severity="error" sx={{ mb: 2 }}>
                       {error}
@@ -249,7 +249,6 @@ const ProfilePage = () => {
                         autoComplete="email"
                         value={formData.email}
                         onChange={handleChange}
-                        inputProps={{ style: { fontSize: 16 } }}
                       />
                       <TextField
                         fullWidth
@@ -259,7 +258,7 @@ const ProfilePage = () => {
                         autoComplete="tel"
                         value={formData.phone}
                         onChange={handleChange}
-                        inputProps={{ style: { fontSize: 16 }, inputMode: 'tel' }}
+                        inputProps={{ inputMode: 'tel' }}
                       />
                       <TextField
                         fullWidth
@@ -398,7 +397,6 @@ const ProfilePage = () => {
                         <TextField
                           autoFocus fullWidth label="Skill name" margin="dense"
                           value={newSkill} onChange={(e) => setNewSkill(e.target.value)}
-                          inputProps={{ style: { fontSize: 16 } }}
                         />
                       </DialogContent>
                       <DialogActions>
@@ -461,14 +459,13 @@ const ProfilePage = () => {
                       <DialogTitle>Add Education</DialogTitle>
                       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: '8px !important' }}>
                         <TextField autoFocus fullWidth label="Degree" value={newEdu.degree}
-                          onChange={(e) => setNewEdu(p => ({ ...p, degree: e.target.value }))}
-                          inputProps={{ style: { fontSize: 16 } }} />
+                          onChange={(e) => setNewEdu(p => ({ ...p, degree: e.target.value }))} />
                         <TextField fullWidth label="Institution" value={newEdu.institution}
-                          onChange={(e) => setNewEdu(p => ({ ...p, institution: e.target.value }))}
-                          inputProps={{ style: { fontSize: 16 } }} />
+                          onChange={(e) => setNewEdu(p => ({ ...p, institution: e.target.value }))} />
                         <TextField fullWidth label="Year" value={newEdu.year}
-                          onChange={(e) => setNewEdu(p => ({ ...p, year: e.target.value }))}
-                          inputProps={{ style: { fontSize: 16 }, inputMode: 'numeric' }} />
+                          onChange={(e) => setNewEdu(p => ({ ...p, year: e.target.value }))
+                          }
+                          inputProps={{ inputMode: 'numeric' }} />
                       </DialogContent>
                       <DialogActions>
                         <Button onClick={() => { setAddEduOpen(false); setNewEdu({ degree: '', institution: '', year: '' }); }}>Cancel</Button>
@@ -531,14 +528,11 @@ const ProfilePage = () => {
                       <DialogTitle>Add Experience</DialogTitle>
                       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: '8px !important' }}>
                         <TextField autoFocus fullWidth label="Job Title" value={newExp.title}
-                          onChange={(e) => setNewExp(p => ({ ...p, title: e.target.value }))}
-                          inputProps={{ style: { fontSize: 16 } }} />
+                          onChange={(e) => setNewExp(p => ({ ...p, title: e.target.value }))} />
                         <TextField fullWidth label="Company" value={newExp.company}
-                          onChange={(e) => setNewExp(p => ({ ...p, company: e.target.value }))}
-                          inputProps={{ style: { fontSize: 16 } }} />
+                          onChange={(e) => setNewExp(p => ({ ...p, company: e.target.value }))} />
                         <TextField fullWidth label="Duration (e.g. 2 years)" value={newExp.duration}
-                          onChange={(e) => setNewExp(p => ({ ...p, duration: e.target.value }))}
-                          inputProps={{ style: { fontSize: 16 } }} />
+                          onChange={(e) => setNewExp(p => ({ ...p, duration: e.target.value }))} />
                       </DialogContent>
                       <DialogActions>
                         <Button onClick={() => { setAddExpOpen(false); setNewExp({ title: '', company: '', duration: '' }); }}>Cancel</Button>

@@ -1,5 +1,34 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Mobile/Desktop Cleanup Phase — Framer-Motion Dead Imports, Touch Targets, Reduced-Motion Gates, iOS Zoom Fix (Mar 02, 2026) ✅
+- 🎯 **Scope**: Continuation of Binance-quality mobile/desktop hardening — removing dead code, enforcing accessibility motion preferences, fixing iOS keyboard zoom regression, and completing global touch-target coverage.
+- ✅ **Theme — light-mode IconButton touch target** (`kelmah-frontend/src/theme/index.js`):
+  - Added `minWidth: 44, minHeight: 44` and mobile `@media (max-width: 599.95px)` no-hover-scale to the **light-mode** `MuiIconButton` override (dark mode already had it). Fixes SchedulingPage, Reviews, Settings, and any light-theme page simultaneously.
+- ✅ **Dead `framer-motion` import removal**:
+  - `kelmah-frontend/src/modules/reviews/pages/ReviewsPage.jsx` — `import { motion, AnimatePresence }` was dead (motion.div wrappers already stripped in P3). Import removed.
+  - `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx` — Same: `AnimatePresence`/`motion.div` already removed in P3. Dead import cleared.
+- ✅ **ReviewsPage hardcoded dark gradient surfaces replaced**:
+  - Tabs Paper, empty-state Paper, and Reply Dialog `PaperProps` all converted from `linear-gradient(135deg, rgba(30,30,30,0.95)...)` dark-only backgrounds to `bgcolor: 'background.paper'` + `borderColor: 'divider'` — now theme-aware for both light/dark modes.
+- ✅ **JobsPage `@keyframes pulse` — reduced-motion gating**:
+  - Both inline `pulse` animations (LIVE dot indicator + urgent/hot chip) now include `@media (prefers-reduced-motion: reduce) { animation: none }` to respect user accessibility preferences and prevent battery drain on mobile.
+- ✅ **MessagingPage iOS keyboard zoom regression fixed**:
+  - Removed `fontSize: '0.875rem'` (14px) override on `.MuiInputBase-input` in the sidebar search field — that selector was defeating the global theme `MuiInputBase { fontSize: 16px }` iOS-zoom-prevention guard.
+- 🧪 **Verification**:
+  - VS Code diagnostics: no errors in `theme/index.js`, `ReviewsPage.jsx`, `MessagingPage.jsx`, `JobsPage.jsx`.
+
+
+- 🎯 **Scope**: Professional UI/UX refinement pass for worker/hirer desktop dashboard management experience.
+- ✅ **Worker dashboard improvements** (`kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`):
+  - Replaced loud gradient KPI surfaces with theme-consistent card styling and accent borders.
+  - Improved desktop readability by constraining content within `Container maxWidth="xl"`.
+  - Preserved all existing data wiring/actions while improving visual hierarchy and scanability.
+- ✅ **Hirer dashboard improvements** (`kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx`):
+  - Converted KPI cards and welcome panel from decorative gradients to professional theme-based surfaces.
+  - Standardized card typography contrast for clearer at-a-glance management metrics.
+  - Constrained desktop content to `Container maxWidth="xl"` for better information density and control spacing.
+- 🧪 **Verification**:
+  - VS Code diagnostics: no errors in both modified dashboard files.
+
 ### Mobile UI Fix Phases — Implementation Complete (Mar 02, 2026) ✅
 - 🎯 **Scope**: Executed all frontend fix phases from `MOBILE_UI_AUDIT_MAR02_2026.md` with targeted, mobile-first hardening.
 - ✅ **Interaction semantics**:

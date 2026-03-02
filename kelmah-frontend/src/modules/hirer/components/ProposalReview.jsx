@@ -29,6 +29,8 @@ import {
   TableRow,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -139,6 +141,8 @@ const getStatusColor = (status) => {
 const toArray = (value) => (Array.isArray(value) ? value : []);
 
 const ProposalReview = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedProposal, setSelectedProposal] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -522,9 +526,9 @@ const ProposalReview = () => {
 
   const renderLoadingState = () => (
     <Box>
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={{ xs: 1.5, sm: 3 }} sx={{ mb: 4 }}>
         {Array.from({ length: 4 }).map((_, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
+          <Grid item xs={6} sm={6} md={3} key={index}>
             <Skeleton variant="rounded" height={120} animation="wave" />
           </Grid>
         ))}
@@ -612,6 +616,98 @@ const ProposalReview = () => {
     if (isEmptyState) {
       return renderEmptyState();
     }
+
+    // Mobile: dense stacked list for native-app UX
+    if (isMobile) {
+      return (
+        <Card>
+          <Box>
+            {loading
+              ? Array.from({ length: skeletonRowCount }).map((_, i) => (
+                  <Box key={i} sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+                    <Skeleton height={48} />
+                  </Box>
+                ))
+              : proposals.map((proposal, index) => {
+                  const proposalId = proposal.id ?? proposal._id ?? `proposal-${index}`;
+                  const workerName = proposal.worker?.name ?? proposal.workerName ?? 'Unknown worker';
+                  const jobTitle = proposal.job?.title ?? proposal.jobTitle ?? 'Untitled job';
+                  const statusLabel = proposal.status ?? 'pending';
+                  return (
+                    <Box
+                      key={proposalId}
+                      sx={{
+                        px: 2,
+                        py: 1.5,
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}
+                    >
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="subtitle2" fontWeight={600} noWrap>
+                          {workerName}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+                          {jobTitle}
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                          <Chip
+                            label={formatStatusLabel(statusLabel)}
+                            color={getStatusColor(statusLabel)}
+                            size="small"
+                            variant={statusLabel === 'accepted' ? 'filled' : 'outlined'}
+                            sx={{ height: 20, fontSize: '0.65rem' }}
+                          />
+                          <Typography variant="caption" color="text.secondary">
+                            {formatCurrency(proposal.proposedRate ?? proposal.rate)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5, flexShrink: 0 }}>
+                        <Typography variant="caption" color="text.disabled">
+                          {formatDate(proposal.submittedAt ?? proposal.createdAt)}
+                        </Typography>
+                        <IconButton
+                          size="small"
+                          onClick={(e) => handleMenuOpen(e, proposal)}
+                          aria-label="Proposal actions"
+                        >
+                          <MoreVertIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    </Box>
+                  );
+                })}
+          </Box>
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="flex-start"
+            gap={1.5}
+            px={2}
+            py={2}
+          >
+            <Typography variant="body2" color="text.secondary">
+              {totalItems === 0
+                ? 'No proposals to display.'
+                : `Showing ${rangeStart}–${rangeEnd} of ${totalItems} proposals`}
+            </Typography>
+            <Pagination
+              count={Math.max(totalPages, 1)}
+              page={safePage}
+              onChange={handlePageChange}
+              color="primary"
+              shape="rounded"
+              size="small"
+            />
+          </Box>
+        </Card>
+      );
+    }
+
     return (
       <Card>
         <TableContainer>
@@ -857,8 +953,8 @@ const ProposalReview = () => {
 
       {isRefreshing && <LinearProgress sx={{ mb: 2 }} />}
 
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+      <Grid container spacing={{ xs: 1.5, sm: 3 }} sx={{ mb: 4 }}>
+        <Grid item xs={6} sm={6} md={3}>
           <Card
             sx={{
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -873,20 +969,20 @@ const ProposalReview = () => {
                 justifyContent="space-between"
               >
                 <Box>
-                  <Typography variant="h4" fontWeight="bold">
+                  <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.3rem', sm: '2.125rem' } }}>
                     {proposalStats.total}
                   </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
                     Total Proposals
                   </Typography>
                 </Box>
-                <PersonOutlinedIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+                <PersonOutlinedIcon sx={{ fontSize: { xs: 26, sm: 40 }, opacity: 0.8 }} />
               </Box>
             </CardContent>
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <Card
             sx={{
               background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
@@ -901,20 +997,20 @@ const ProposalReview = () => {
                 justifyContent="space-between"
               >
                 <Box>
-                  <Typography variant="h4" fontWeight="bold">
+                  <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.3rem', sm: '2.125rem' } }}>
                     {proposalStats.pending}
                   </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
                     Pending Review
                   </Typography>
                 </Box>
-                <ScheduleOutlinedIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+                <ScheduleOutlinedIcon sx={{ fontSize: { xs: 26, sm: 40 }, opacity: 0.8 }} />
               </Box>
             </CardContent>
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <Card
             sx={{
               background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
@@ -929,22 +1025,22 @@ const ProposalReview = () => {
                 justifyContent="space-between"
               >
                 <Box>
-                  <Typography variant="h4" fontWeight="bold">
+                  <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.1rem', sm: '2.125rem' } }}>
                     {formatCurrency(proposalStats.averageRate)}
                   </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
                     Average Rate
                   </Typography>
                 </Box>
                 <MonetizationOnOutlinedIcon
-                  sx={{ fontSize: 40, opacity: 0.8 }}
+                  sx={{ fontSize: { xs: 26, sm: 40 }, opacity: 0.8 }}
                 />
               </Box>
             </CardContent>
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={6} sm={6} md={3}>
           <Card
             sx={{
               background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
@@ -959,14 +1055,14 @@ const ProposalReview = () => {
                 justifyContent="space-between"
               >
                 <Box>
-                  <Typography variant="h4" fontWeight="bold">
+                  <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.3rem', sm: '2.125rem' } }}>
                     {proposalStats.accepted}
                   </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
                     Accepted
                   </Typography>
                 </Box>
-                <CheckCircleOutlineIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+                <CheckCircleOutlineIcon sx={{ fontSize: { xs: 26, sm: 40 }, opacity: 0.8 }} />
               </Box>
             </CardContent>
           </Card>

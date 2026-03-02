@@ -514,14 +514,14 @@ const HirerDashboardPage = () => {
   // LC Portal-inspired Dashboard Overview - IMPROVED with empty state CTAs
   const renderDashboardOverview = () => (
     <Fade in timeout={500}>
-      <Box sx={{ bgcolor: 'background.default', minHeight: '100dvh', mx: 0, mt: { xs: 0, md: -3 }, p: { xs: 1.5, sm: 2, md: 4 }, overflowX: 'hidden' }}>
+      <Box sx={{ bgcolor: 'background.default', minHeight: '100dvh', p: { xs: 1.5, sm: 2, md: 3 }, overflowX: 'hidden' }}>
         {/* Breadcrumb - LC Portal Style */}
-        <Breadcrumbs sx={{ mb: 3 }} aria-label="breadcrumb">
+        <Breadcrumbs sx={{ mb: 3, display: { xs: 'none', md: 'flex' } }} aria-label="breadcrumb">
           <MUILink
             component={RouterLink}
             to="/"
             underline="hover"
-            sx={{ color: '#666', display: 'flex', alignItems: 'center', gap: 0.5 }}
+            sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.5 }}
           >
             Home
           </MUILink>
@@ -549,8 +549,10 @@ const HirerDashboardPage = () => {
               p: 3,
               mb: 4,
               borderRadius: 2,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
+              backgroundColor: 'background.paper',
+              border: '1px solid',
+              borderColor: alpha(theme.palette.primary.main, 0.35),
+              color: 'text.primary',
             }}
           >
             <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
@@ -563,11 +565,6 @@ const HirerDashboardPage = () => {
               variant="contained"
               startIcon={<PostAddIcon />}
               onClick={() => navigate('/hirer/jobs/post')}
-              sx={{
-                bgcolor: 'white',
-                color: '#667eea',
-                '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
-              }}
             >
               Post Your First Job
             </Button>
@@ -598,33 +595,37 @@ const HirerDashboardPage = () => {
               sx={{
                 p: { xs: 1.5, sm: 2.5 },
                 borderRadius: 2,
-                background: 'linear-gradient(135deg, #F39C12 0%, #E67E22 100%)',
-                color: 'white',
-                height: { xs: 100, sm: 130 },
+                backgroundColor: 'background.paper',
+                color: 'text.primary',
+                border: '1px solid',
+                borderColor: alpha('#F39C12', 0.45),
+                height: { xs: 72, sm: 130 },
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 position: 'relative',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(243, 156, 18, 0.3)',
+                '@media (hover: hover)': {
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 25px rgba(243, 156, 18, 0.3)',
+                  },
                 },
               }}
             >
               <Box>
-                <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
+                <Typography variant="body2" fontWeight={600} sx={{ color: 'text.secondary', mb: 0.5 }}>
                   Active Jobs
                 </Typography>
                 <Typography variant="h3" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
                   {summaryData.activeJobs}
                 </Typography>
-                <Typography variant="caption" sx={{ opacity: 0.9, display: { xs: 'none', sm: 'block' } }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
                   {summaryData.activeJobs === 0 ? 'Post a job to get started' : 'Click to manage'}
                 </Typography>
               </Box>
               <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
-                <WorkIcon sx={{ fontSize: { xs: 28, sm: 40 }, opacity: 0.3 }} />
+                <WorkIcon sx={{ fontSize: { xs: 28, sm: 40 }, color: alpha('#F39C12', 0.28) }} />
               </Box>
             </Paper>
             </ButtonBase>
@@ -652,33 +653,37 @@ const HirerDashboardPage = () => {
               sx={{
                 p: { xs: 1.5, sm: 2.5 },
                 borderRadius: 2,
-                background: 'linear-gradient(135deg, #1ABC9C 0%, #16A085 100%)',
-                color: 'white',
-                height: { xs: 100, sm: 130 },
+                backgroundColor: 'background.paper',
+                color: 'text.primary',
+                border: '1px solid',
+                borderColor: alpha('#1ABC9C', 0.45),
+                height: { xs: 72, sm: 130 },
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 position: 'relative',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(26, 188, 156, 0.3)',
+                '@media (hover: hover)': {
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 25px rgba(26, 188, 156, 0.3)',
+                  },
                 },
               }}
             >
               <Box>
-                <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
+                <Typography variant="body2" fontWeight={600} sx={{ color: 'text.secondary', mb: 0.5 }}>
                   Completed Jobs
                 </Typography>
                 <Typography variant="h3" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
                   {summaryData.completedJobs}
                 </Typography>
-                <Typography variant="caption" sx={{ opacity: 0.9, display: { xs: 'none', sm: 'block' } }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
                   Click to view progress
                 </Typography>
               </Box>
               <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
-                <CheckCircleIcon sx={{ fontSize: { xs: 28, sm: 40 }, opacity: 0.3 }} />
+                <CheckCircleIcon sx={{ fontSize: { xs: 28, sm: 40 }, color: alpha('#1ABC9C', 0.28) }} />
               </Box>
             </Paper>
             </ButtonBase>
@@ -706,33 +711,37 @@ const HirerDashboardPage = () => {
               sx={{
                 p: { xs: 1.5, sm: 2.5 },
                 borderRadius: 2,
-                background: 'linear-gradient(135deg, #3498DB 0%, #2980B9 100%)',
-                color: 'white',
-                height: { xs: 100, sm: 130 },
+                backgroundColor: 'background.paper',
+                color: 'text.primary',
+                border: '1px solid',
+                borderColor: alpha('#3498DB', 0.45),
+                height: { xs: 72, sm: 130 },
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 position: 'relative',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(52, 152, 219, 0.3)',
+                '@media (hover: hover)': {
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 25px rgba(52, 152, 219, 0.3)',
+                  },
                 },
               }}
             >
               <Box>
-                <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
+                <Typography variant="body2" fontWeight={600} sx={{ color: 'text.secondary', mb: 0.5 }}>
                   Applications
                 </Typography>
                 <Typography variant="h3" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
                   {summaryData.pendingProposals}
                 </Typography>
-                <Typography variant="caption" sx={{ opacity: 0.9, display: { xs: 'none', sm: 'block' } }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
                   {summaryData.pendingProposals === 0 ? 'No pending reviews' : 'Click to review'}
                 </Typography>
               </Box>
               <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
-                <ProposalIcon sx={{ fontSize: { xs: 28, sm: 40 }, opacity: 0.3 }} />
+                <ProposalIcon sx={{ fontSize: { xs: 28, sm: 40 }, color: alpha('#3498DB', 0.28) }} />
               </Box>
             </Paper>
             </ButtonBase>
@@ -760,33 +769,37 @@ const HirerDashboardPage = () => {
               sx={{
                 p: { xs: 1.5, sm: 2.5 },
                 borderRadius: 2,
-                background: 'linear-gradient(135deg, #E74C3C 0%, #C0392B 100%)',
-                color: 'white',
-                height: { xs: 100, sm: 130 },
+                backgroundColor: 'background.paper',
+                color: 'text.primary',
+                border: '1px solid',
+                borderColor: alpha('#E74C3C', 0.45),
+                height: { xs: 72, sm: 130 },
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 position: 'relative',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(231, 76, 60, 0.3)',
+                '@media (hover: hover)': {
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 25px rgba(231, 76, 60, 0.3)',
+                  },
                 },
               }}
             >
               <Box>
-                <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
+                <Typography variant="body2" fontWeight={600} sx={{ color: 'text.secondary', mb: 0.5 }}>
                   Needs Attention
                 </Typography>
                 <Typography variant="h3" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
                   {summaryData.pendingPayments}
                 </Typography>
-                <Typography variant="caption" sx={{ opacity: 0.9, display: { xs: 'none', sm: 'block' } }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
                   {summaryData.pendingPayments === 0 ? 'All clear!' : 'Click to resolve'}
                 </Typography>
               </Box>
               <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
-                <HelpOutlineIcon sx={{ fontSize: { xs: 28, sm: 40 }, opacity: 0.3 }} />
+                <HelpOutlineIcon sx={{ fontSize: { xs: 28, sm: 40 }, color: alpha('#E74C3C', 0.28) }} />
               </Box>
             </Paper>
             </ButtonBase>
@@ -1009,7 +1022,7 @@ const HirerDashboardPage = () => {
         {/* Minimal Top Bar - Only shows last updated time */}
         <Box
           sx={{
-            display: 'flex',
+            display: { xs: 'none', sm: 'flex' },
             alignItems: 'center',
             justifyContent: 'flex-end',
             px: { xs: 2, md: 4 },
@@ -1054,8 +1067,7 @@ const HirerDashboardPage = () => {
         </Box>
         {/* Main Content (full-width container) */}
         <Container
-          maxWidth={false}
-          disableGutters
+          maxWidth="xl"
           sx={{
             py: 4,
             px: { xs: 2, sm: 3, md: 4 },
@@ -1085,7 +1097,7 @@ const HirerDashboardPage = () => {
             position: 'fixed',
             bottom: { xs: 80, md: 32 },
             right: { xs: 16, md: 32 },
-            zIndex: (theme) => theme.zIndex.tooltip,
+            zIndex: 1100,
           }}
           icon={<SpeedDialIcon openIcon={<AddIcon />} />}
         >

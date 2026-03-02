@@ -119,7 +119,6 @@ const WorkerFilter = ({ onFilterChange }) => {
                 </InputAdornment>
               ),
             }}
-            inputProps={{ style: { fontSize: 16 } }}
             size="small"
           />
 
@@ -135,7 +134,6 @@ const WorkerFilter = ({ onFilterChange }) => {
                 </InputAdornment>
               ),
             }}
-            inputProps={{ style: { fontSize: 16 } }}
             size="small"
           />
 

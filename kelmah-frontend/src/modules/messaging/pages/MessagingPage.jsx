@@ -60,7 +60,7 @@ import {
   Close as CloseIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
+// ✅ MOBILE-AUDIT P3: framer-motion import removed — AnimatePresence/motion.div wrappers already replaced
 import ErrorBoundary from '../../../components/common/ErrorBoundary';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
 import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
@@ -1427,7 +1427,8 @@ const EnhancedMessagingPage = () => {
                   },
                   '& .MuiInputBase-input': {
                     color: 'text.primary',
-                    fontSize: '0.875rem',
+                    // ✅ MOBILE-AUDIT: fontSize removed — theme MuiInputBase sets 16px globally
+                    // to prevent iOS keyboard auto-zoom (< 16px triggers zoom)
                   },
                   '& .MuiInputBase-input::placeholder': {
                     color: theme.palette.text.secondary,

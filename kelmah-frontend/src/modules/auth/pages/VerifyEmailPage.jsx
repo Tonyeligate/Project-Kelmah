@@ -78,7 +78,7 @@ const VerifyEmailPage = () => {
               margin="normal"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              inputProps={{ inputMode: 'email', autoComplete: 'email', style: { fontSize: 16 } }}
+              inputProps={{ inputMode: 'email', autoComplete: 'email' }}
               sx={isMobile ? {
                 '& .MuiOutlinedInput-root': {
                   bgcolor: 'action.hover',

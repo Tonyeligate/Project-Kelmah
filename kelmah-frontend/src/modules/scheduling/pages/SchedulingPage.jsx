@@ -841,7 +841,7 @@ const SchedulingPage = () => {
         </Box>
       )}
       {viewMode === 'map' && (
-        <Box sx={{ height: 500, mb: 4 }}>
+        <Box sx={{ height: { xs: 300, md: 500 }, mb: 4 }}>
           <MapContainer
             center={[7.9465, -1.0232]}
             zoom={7}

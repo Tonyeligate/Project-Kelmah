@@ -943,9 +943,17 @@ const lightTheme = createTheme({
         root: {
           color: SURFACE_TOKENS.light.textSecondary,
           transition: 'all 0.2s ease-in-out',
+          minWidth: 44, // ✅ MOBILE-AUDIT: 44px touch target for all IconButtons
+          minHeight: 44,
           '&:hover': {
             backgroundColor: 'rgba(0, 0, 0, 0.08)',
             transform: 'scale(1.05)',
+          },
+          // Mobile: no hover scale
+          '@media (max-width: 599.95px)': {
+            '&:hover': {
+              transform: 'none',
+            },
           },
         },
       },

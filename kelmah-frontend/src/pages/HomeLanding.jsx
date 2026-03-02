@@ -71,7 +71,7 @@ const HomeLanding = () => {
         component="section"
         sx={{
           position: 'relative',
-          minHeight: { xs: 'calc(100dvh - 48px)', md: '100vh' },
+          minHeight: { xs: 'min(50vh, 400px)', md: '100vh' },
           display: 'flex',
           alignItems: 'center',
           pt: { xs: '40px', md: '48px' },
@@ -92,7 +92,7 @@ const HomeLanding = () => {
           },
         }}
       >
-        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, py: { xs: 5, md: 10 } }}>
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, py: { xs: 3, md: 10 } }}>
           <Grid container spacing={{ xs: 3, md: 4 }} alignItems="center">
             <Grid item xs={12} md={7}>
               <motion.div {...heroAnim}>
@@ -284,7 +284,7 @@ const HomeLanding = () => {
       </Box>
 
       {/* ═══ CATEGORY SHOWCASE — real photos ═══ */}
-      <Box component="section" sx={{ py: { xs: 6, md: 10 } }}>
+      <Box component="section" sx={{ py: { xs: 3, md: 10 } }}>
         <Container maxWidth="lg">
           <motion.div {...scrollIn}>
             <Typography
@@ -401,7 +401,7 @@ const HomeLanding = () => {
       </Box>
 
       {/* ═══ ABOUT / VALUE PROPOSITION ═══ */}
-      <Box component="section" sx={{ py: { xs: 6, md: 10 }, bgcolor: altBg }}>
+      <Box component="section" sx={{ py: { xs: 3, md: 10 }, bgcolor: altBg }}>
         <Container maxWidth="lg">
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
@@ -480,7 +480,7 @@ const HomeLanding = () => {
       </Box>
 
       {/* ═══ HOW IT WORKS ═══ */}
-      <Box component="section" sx={{ py: { xs: 6, md: 10 } }}>
+      <Box component="section" sx={{ py: { xs: 3, md: 10 } }}>
         <Container maxWidth="lg">
           <motion.div {...scrollIn}>
             <Typography
@@ -545,7 +545,7 @@ const HomeLanding = () => {
       <Box
         component="section"
         sx={{
-          py: { xs: 7, md: 10 },
+          py: { xs: 4, md: 10 },
           bgcolor: ctaBg,
           color: '#fff',
           textAlign: 'center',

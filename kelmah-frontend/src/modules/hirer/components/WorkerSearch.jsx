@@ -756,7 +756,6 @@ const WorkerSearch = () => {
                 placeholder="Search workers by name, skills, or title..."
                 value={searchQuery}
                 onChange={handleSearch}
-                inputProps={{ style: { fontSize: 16 } }}
                 InputProps={{
                   startAdornment: (
                     <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />

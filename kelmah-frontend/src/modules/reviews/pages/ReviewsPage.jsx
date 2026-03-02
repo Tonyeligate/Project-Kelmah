@@ -61,7 +61,7 @@ import {
   Analytics as AnalyticsIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
+// ✅ MOBILE-AUDIT P3: framer-motion import removed — all motion.div wrappers replaced with plain divs
 import { formatDistanceToNow, format } from 'date-fns';
 import { useAuth } from '../../auth/hooks/useAuth';
 import reviewService from '../services/reviewService';
@@ -290,11 +290,11 @@ const EnhancedReviewsPage = () => {
   const ReviewStatistics = () => (
     <Paper
       sx={{
-        p: 3,
-        background:
-          'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
-        border: '1px solid rgba(255,215,0,0.2)',
-        borderRadius: 3,
+        p: { xs: 2, md: 3 },
+        bgcolor: 'background.paper',
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: 2,
       }}
     >
       <Typography
@@ -879,9 +879,10 @@ const EnhancedReviewsPage = () => {
       {/* Tabs */}
       <Paper
         sx={{
-          background:
-            'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
-          border: '1px solid rgba(255,215,0,0.2)',
+          // ✅ MOBILE-AUDIT P5: replaced hardcoded dark gradient with theme surface
+          bgcolor: 'background.paper',
+          border: '1px solid',
+          borderColor: 'divider',
           borderRadius: 3,
           mb: 3,
         }}
@@ -1030,9 +1031,10 @@ const EnhancedReviewsPage = () => {
               sx={{
                 p: 6,
                 textAlign: 'center',
-                background:
-                  'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
-                border: '1px solid rgba(255,215,0,0.2)',
+                // ✅ MOBILE-AUDIT P5: replaced hardcoded dark gradient with theme surface
+                bgcolor: 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider',
                 borderRadius: 3,
               }}
             >
@@ -1164,9 +1166,10 @@ const EnhancedReviewsPage = () => {
         fullScreen={isMobile}
         PaperProps={{
           sx: {
-            background:
-              'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
-            border: '1px solid rgba(255,215,0,0.2)',
+            // ✅ MOBILE-AUDIT P5: replaced hardcoded dark gradient with theme surface
+            bgcolor: 'background.paper',
+            border: '1px solid',
+            borderColor: 'divider',
           },
         }}
       >

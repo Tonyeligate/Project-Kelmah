@@ -4,6 +4,7 @@ import { normalizeUser } from '../../../utils/userUtils';
 import PullToRefresh from '../../../components/common/PullToRefresh';
 import {
   Box,
+  Container,
   Typography,
   Grid,
   Paper,
@@ -268,32 +269,32 @@ const WorkerDashboardPage = () => {
     {
       title: 'Active Applications',
       value: stats.applications,
-      bgGradient: 'linear-gradient(135deg, #FF9800 0%, #FFB74D 100%)',
-      icon: <WorkIcon sx={{ fontSize: { xs: 32, sm: 48 }, color: 'rgba(255,255,255,0.3)' }} />,
+      tone: theme.palette.warning.main,
+      icon: <WorkIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha(theme.palette.warning.main, 0.25) }} />,
       tooltip: 'Total number of job applications you have submitted',
       onClick: () => navigate('/worker/applications'),
     },
     {
       title: 'Completed Jobs',
       value: stats.completedJobs,
-      bgGradient: 'linear-gradient(135deg, #009688 0%, #4DB6AC 100%)',
-      icon: <AssignmentTurnedInIcon sx={{ fontSize: { xs: 32, sm: 48 }, color: 'rgba(255,255,255,0.3)' }} />,
+      tone: theme.palette.success.main,
+      icon: <AssignmentTurnedInIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha(theme.palette.success.main, 0.25) }} />,
       tooltip: 'Jobs you have successfully completed',
       onClick: () => navigate('/worker/contracts'),
     },
     {
       title: 'Total Earnings',
       value: `GH₵${stats.earnings.toLocaleString()}`,
-      bgGradient: 'linear-gradient(135deg, #2196F3 0%, #64B5F6 100%)',
-      icon: <AttachMoneyIcon sx={{ fontSize: { xs: 32, sm: 48 }, color: 'rgba(255,255,255,0.3)' }} />,
+      tone: theme.palette.info.main,
+      icon: <AttachMoneyIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha(theme.palette.info.main, 0.25) }} />,
       tooltip: 'Your total earnings from completed jobs',
       onClick: () => navigate('/worker/earnings'),
     },
     {
       title: 'Average Rating',
       value: stats.rating > 0 ? stats.rating.toFixed(1) : 'N/A',
-      bgGradient: 'linear-gradient(135deg, #9C27B0 0%, #BA68C8 100%)',
-      icon: <StarIcon sx={{ fontSize: { xs: 32, sm: 48 }, color: 'rgba(255,255,255,0.3)' }} />,
+      tone: theme.palette.secondary.main,
+      icon: <StarIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha(theme.palette.secondary.main, 0.25) }} />,
       tooltip: 'Your average rating from hirers',
       onClick: () => navigate('/worker/reviews'),
     },
@@ -380,6 +381,7 @@ const WorkerDashboardPage = () => {
         pb: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
       }}
     >
+      <Container maxWidth="xl" disableGutters>
       {/* Snackbar for notifications */}
       <Snackbar
         open={snackbarOpen}
@@ -508,18 +510,23 @@ const WorkerDashboardPage = () => {
                     sx={{
                       p: { xs: 1.5, sm: 2.5 },
                       borderRadius: 2,
-                      background: card.bgGradient,
-                      color: '#fff',
+                      backgroundColor: 'background.paper',
+                      border: '1px solid',
+                      borderColor: alpha(card.tone, 0.35),
+                      color: 'text.primary',
                       position: 'relative',
                       overflow: 'hidden',
-                      minHeight: { xs: 100, sm: 120 },
+                      minHeight: { xs: 72, sm: 120 },
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
-                      transition: 'transform 0.2s, box-shadow 0.2s',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                      // ✅ MOBILE-AUDIT P7: hover only on pointer devices
+                      '@media (hover: hover)': {
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                        },
                       },
                     }}
                   >
@@ -538,7 +545,7 @@ const WorkerDashboardPage = () => {
                     {/* Text content */}
                     <Typography
                       variant="body2"
-                      sx={{ fontWeight: 500, opacity: 0.9, mb: 1 }}
+                      sx={{ fontWeight: 600, color: 'text.secondary', mb: 1 }}
                     >
                       {card.title}
                     </Typography>
@@ -668,6 +675,7 @@ const WorkerDashboardPage = () => {
           </Paper>
         </Grid>
       </Grid>
+      </Container>
     </Box>
     </PullToRefresh>
   );

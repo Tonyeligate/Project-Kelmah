@@ -230,7 +230,7 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
         textAlign: 'center',
         bgcolor: 'rgba(255,255,255,0.05)',
         border: '1px solid rgba(212,175,55,0.2)',
-        minHeight: { xs: '120px', sm: '140px', md: '160px' }, // ✅ Responsive min-height
+        minHeight: { xs: 'auto', sm: '140px', md: '160px' }, // ✅ Auto on mobile
         display: 'flex', // ✅ Better centering
         flexDirection: 'column',
         justifyContent: 'center',
@@ -325,6 +325,10 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
                 '50%': {
                   opacity: 0.5,
                 },
+              },
+              // ✅ MOBILE-AUDIT: Respect prefers-reduced-motion
+              '@media (prefers-reduced-motion: reduce)': {
+                animation: 'none',
               },
             }}
           />
@@ -1495,7 +1499,7 @@ const JobsPage = () => {
                           bgcolor: 'rgba(255,255,255,0.05)',
                           border: '1px solid rgba(212,175,55,0.2)',
                           borderRadius: 2,
-                          minHeight: 320,
+                          minHeight: { xs: 'auto', sm: 320 },
                         }}
                       >
                         <CardContent sx={{ p: 3 }}>
@@ -1724,7 +1728,7 @@ const JobsPage = () => {
                           bgcolor: 'rgba(255,255,255,0.05)',
                           border: '1px solid rgba(212,175,55,0.2)',
                           borderRadius: { xs: 2, sm: 2 }, // ✅ Consistent border radius
-                          minHeight: { xs: '300px', sm: '320px' }, // ✅ Better mobile min-height
+                          minHeight: { xs: 'auto', sm: '320px' }, // ✅ Auto on mobile
                           cursor: 'pointer',
                           position: 'relative',
                           overflow: 'hidden',
@@ -1894,6 +1898,10 @@ const JobsPage = () => {
                                       '@keyframes pulse': {
                                         '0%, 100%': { opacity: 1 },
                                         '50%': { opacity: 0.7 },
+                                      },
+                                      // ✅ MOBILE-AUDIT: Respect prefers-reduced-motion
+                                      '@media (prefers-reduced-motion: reduce)': {
+                                        animation: 'none',
                                       },
                                       cursor: 'help',
                                     }}

@@ -227,8 +227,8 @@ const HirerJobManagement = () => {
 
   // Analytics Summary Cards
   const AnalyticsSummary = () => (
-    <Grid container spacing={3} sx={{ mb: 3 }}>
-      <Grid item xs={12} sm={6} md={3}>
+    <Grid container spacing={{ xs: 1.5, sm: 3 }} sx={{ mb: 3 }}>
+      <Grid item xs={6} sm={6} md={3}>
         <Card
           sx={{
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -251,7 +251,7 @@ const HirerJobManagement = () => {
                   variant="h4"
                   fontWeight="bold"
                   sx={{
-                    fontSize: { xs: '2rem', md: '2.5rem' },
+                    fontSize: { xs: '1.3rem', sm: '2rem', md: '2.5rem' },
                     lineHeight: 1.2,
                     wordBreak: 'break-word',
                   }}
@@ -260,18 +260,18 @@ const HirerJobManagement = () => {
                 </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ opacity: 0.9, whiteSpace: 'normal' }}
+                  sx={{ opacity: 0.9, whiteSpace: 'normal', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
                 >
                   Total Jobs Posted
                 </Typography>
               </Box>
-              <WorkIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+              <WorkIcon sx={{ fontSize: { xs: 26, sm: 40 }, opacity: 0.8 }} />
             </Box>
           </CardContent>
         </Card>
       </Grid>
 
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid item xs={6} sm={6} md={3}>
         <Card
           sx={{
             background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
@@ -294,7 +294,7 @@ const HirerJobManagement = () => {
                   variant="h4"
                   fontWeight="bold"
                   sx={{
-                    fontSize: { xs: '2rem', md: '2.5rem' },
+                    fontSize: { xs: '1.1rem', sm: '2rem', md: '2.5rem' },
                     lineHeight: 1.2,
                     wordBreak: 'break-word',
                   }}
@@ -303,18 +303,18 @@ const HirerJobManagement = () => {
                 </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ opacity: 0.9, whiteSpace: 'normal' }}
+                  sx={{ opacity: 0.9, whiteSpace: 'normal', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
                 >
                   Total Amount Spent
                 </Typography>
               </Box>
-              <MoneyIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+              <MoneyIcon sx={{ fontSize: { xs: 26, sm: 40 }, opacity: 0.8 }} />
             </Box>
           </CardContent>
         </Card>
       </Grid>
 
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid item xs={6} sm={6} md={3}>
         <Card
           sx={{
             background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
@@ -337,7 +337,7 @@ const HirerJobManagement = () => {
                   variant="h4"
                   fontWeight="bold"
                   sx={{
-                    fontSize: { xs: '2rem', md: '2.5rem' },
+                    fontSize: { xs: '1.3rem', sm: '2rem', md: '2.5rem' },
                     lineHeight: 1.2,
                     wordBreak: 'break-word',
                   }}
@@ -346,18 +346,18 @@ const HirerJobManagement = () => {
                 </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ opacity: 0.9, whiteSpace: 'normal' }}
+                  sx={{ opacity: 0.9, whiteSpace: 'normal', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
                 >
                   Total Applications
                 </Typography>
               </Box>
-              <PeopleIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+              <PeopleIcon sx={{ fontSize: { xs: 26, sm: 40 }, opacity: 0.8 }} />
             </Box>
           </CardContent>
         </Card>
       </Grid>
 
-      <Grid item xs={12} sm={6} md={3}>
+      <Grid item xs={6} sm={6} md={3}>
         <Card
           sx={{
             background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
@@ -380,7 +380,7 @@ const HirerJobManagement = () => {
                   variant="h4"
                   fontWeight="bold"
                   sx={{
-                    fontSize: { xs: '2rem', md: '2.5rem' },
+                    fontSize: { xs: '1.3rem', sm: '2rem', md: '2.5rem' },
                     lineHeight: 1.2,
                     wordBreak: 'break-word',
                   }}
@@ -389,12 +389,12 @@ const HirerJobManagement = () => {
                 </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ opacity: 0.9, whiteSpace: 'normal' }}
+                  sx={{ opacity: 0.9, whiteSpace: 'normal', fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
                 >
                   Success Rate
                 </Typography>
               </Box>
-              <TrendingUpIcon sx={{ fontSize: 40, opacity: 0.8 }} />
+              <TrendingUpIcon sx={{ fontSize: { xs: 26, sm: 40 }, opacity: 0.8 }} />
             </Box>
           </CardContent>
         </Card>
@@ -405,9 +405,9 @@ const HirerJobManagement = () => {
   // Loading skeleton
   const LoadingSkeleton = () => (
     <Box>
-      <Grid container spacing={3} sx={{ mb: 3 }}>
+      <Grid container spacing={{ xs: 1.5, sm: 3 }} sx={{ mb: 3 }}>
         {[...Array(4)].map((_, i) => (
-          <Grid item xs={12} sm={6} md={3} key={i}>
+          <Grid item xs={6} sm={6} md={3} key={i}>
             <Skeleton variant="rounded" height={120} animation="wave" />
           </Grid>
         ))}

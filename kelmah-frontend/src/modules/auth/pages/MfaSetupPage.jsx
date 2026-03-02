@@ -75,7 +75,7 @@ const MfaSetupPage = () => {
                 required
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
-                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 6, style: { fontSize: 16, letterSpacing: '0.3em', textAlign: 'center' } }}
+                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 6, style: { letterSpacing: '0.3em', textAlign: 'center' } }}
                 sx={isMobile ? { mb: 2, '& .MuiOutlinedInput-root': { backgroundColor: 'action.hover', color: 'text.primary' }, '& .MuiInputLabel-root': { color: 'text.secondary' } } : { mb: 2 }}
               />
               <Button type="submit" variant="contained" fullWidth sx={{ minHeight: 48, borderRadius: isMobile ? '24px' : 1 }}>
