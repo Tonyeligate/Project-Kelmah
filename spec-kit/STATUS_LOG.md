@@ -1,5 +1,83 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Cross-Module Audit Pass 4 — Full 16+ Module Scan (Mar 02, 2026) ✅
+- 🎯 **Scope**: Systematic scan of ALL 16+ frontend modules against complete gateway route map (27+ route mounts). Every `apiClient`/`api.get`/`api.post` call traced to gateway→microservice.
+- ✅ **SearchPage bookmark path fix**:
+  - [kelmah-frontend/src/modules/search/pages/SearchPage.jsx](kelmah-frontend/src/modules/search/pages/SearchPage.jsx)
+  - `POST /workers/${id}/save` → `POST /users/workers/${id}/bookmark` (no `/save` route exists; user-service exposes `/bookmark`).
+- ✅ **Gateway dashboard + appointments route mounts**:
+  - [kelmah-backend/api-gateway/server.js](kelmah-backend/api-gateway/server.js)
+  - `dashboard.routes.js` existed but was never mounted — added `app.use('/api/dashboard', dashboardRouter)`.
+  - Added `/api/appointments` dynamic proxy to user-service for scheduling features.
+- ✅ **Gateway auth MFA route alignment**:
+  - [kelmah-backend/api-gateway/routes/auth.routes.js](kelmah-backend/api-gateway/routes/auth.routes.js)
+  - Added canonical `/mfa/setup`, `/mfa/verify`, `/mfa/disable` routes (matching auth-service + frontend).
+  - Kept legacy `/setup-mfa`, `/verify-mfa`, `/disable-mfa` as aliases for backward compatibility.
+- ✅ **Gateway change-password HTTP method fix**:
+  - [kelmah-backend/api-gateway/routes/auth.routes.js](kelmah-backend/api-gateway/routes/auth.routes.js)
+  - `PUT /change-password` → `POST /change-password` (frontend + auth-service both use POST).
+- ✅ **authService.updateProfile target fix**:
+  - [kelmah-frontend/src/modules/auth/services/authService.js](kelmah-frontend/src/modules/auth/services/authService.js)
+  - `PUT /auth/profile` → `PUT /users/profile` (auth-service has no profile route; user-service handles profile CRUD).
+- ⚠️ **Non-critical gaps documented (no backend support yet)**:
+  - `/api/location/*` — locationService calls these; no backend implements them.
+  - `/api/hirers/:id/*` analytics — hirerAnalyticsService uses mock fallback data.
+  - `MessageSystem.jsx` — dead code (never imported), uses wrong paths.
+- 🧪 **Runtime verification** — 11 endpoints smoke-tested against live gateway:
+  - ✅ health, login, profile, dashboard/metrics, my-jobs, notifications, conversations, settings, jobs (public), workers (public) — ALL OK.
+- 📦 **Commit**: `3fc4057` — 13 files, +412 -114 lines, pushed to main.
+
+### Frontend↔Backend Data-Flow Audit + Contract Fixes (Mar 02, 2026) ✅
+- 🎯 **Scope**: Investigated user-reported frontend data handling failures after API gateway URL centralization, traced UI→service→gateway→backend contracts for active worker/admin flows.
+- ✅ **Critical fix — authenticated worker availability flow**:
+  - [kelmah-frontend/src/modules/worker/components/AvailabilityCalendar.jsx](kelmah-frontend/src/modules/worker/components/AvailabilityCalendar.jsx)
+  - Replaced raw `fetch('/api/availability/:userId')` calls with authenticated `api` client calls (`/availability/:userId`) so JWT headers are consistently attached.
+  - Normalized response unwrapping (`data.data` vs `data`) to prevent UI empty-state false negatives.
+- ✅ **Critical fix — admin bulk review moderation flow**:
+  - [kelmah-frontend/src/modules/admin/components/reviews/ReviewModerationQueue.jsx](kelmah-frontend/src/modules/admin/components/reviews/ReviewModerationQueue.jsx)
+  - Removed raw unauthenticated bulk moderation `fetch` call and routed through service abstraction.
+  - Added dedicated bulk endpoint support in [kelmah-frontend/src/modules/reviews/services/reviewService.js](kelmah-frontend/src/modules/reviews/services/reviewService.js) (`bulkModerateReviews`) to use backend `/api/admin/reviews/bulk-moderate` efficiently.
+- ✅ **Contract hardening — worker applications service**:
+  - [kelmah-frontend/src/modules/worker/services/applicationsService.js](kelmah-frontend/src/modules/worker/services/applicationsService.js)
+  - Corrected job-scoped application route usage for update/withdraw/get-by-id operations to align with backend route contracts (`/jobs/:jobId/applications/:applicationId`).
+- ✅ **Gateway route contract completion — job applications**:
+  - [kelmah-backend/api-gateway/routes/job.routes.js](kelmah-backend/api-gateway/routes/job.routes.js)
+  - Added missing pass-through routes for `PUT /api/jobs/:id/applications/:applicationId` and `DELETE /api/jobs/:id/applications/:applicationId` so frontend update/withdraw actions reach job-service.
+- ⚠️ **Audit finding (non-blocking, tracked)**:
+  - [kelmah-frontend/src/modules/worker/components/DocumentVerification.jsx](kelmah-frontend/src/modules/worker/components/DocumentVerification.jsx) references `/api/workers/:id/documents`, but no matching user-service route currently exists; component is not wired into active route config.
+- 🧪 **Verification**:
+  - VS Code diagnostics: no errors in modified frontend files.
+  - Gateway/user/job route tracing confirms availability and admin moderation endpoints exist and now match frontend invocation patterns.
+
+### Worker Flow Hardening Pass 2 (Mar 02, 2026) ✅
+- ✅ **DocumentVerification contract rewrite**:
+  - [kelmah-frontend/src/modules/worker/components/DocumentVerification.jsx](kelmah-frontend/src/modules/worker/components/DocumentVerification.jsx)
+  - Replaced non-existent `/api/workers/:id/documents*` calls with real certificate endpoints (`/api/workers/:id/certificates*`) and mapped response payloads to existing UI shape.
+  - Added authenticated `api` usage and presigned upload support through existing certificate upload service.
+- ✅ **JobManagement data-flow repair**:
+  - [kelmah-frontend/src/modules/worker/components/JobManagement.jsx](kelmah-frontend/src/modules/worker/components/JobManagement.jsx)
+  - Replaced broken `/api/workers/:id/jobs` fetch with real endpoints:
+    - assigned worker jobs via `/api/jobs/assigned`
+    - open marketplace jobs via `/api/jobs` for the “Available” tab
+  - Implemented working “Send Message” action via draft handoff to `/messages`.
+- ✅ **Worker service contract cleanup**:
+  - [kelmah-frontend/src/modules/worker/services/workerService.js](kelmah-frontend/src/modules/worker/services/workerService.js)
+  - Fixed withdraw/status helpers to use existing application contracts (`/api/jobs/:jobId/applications/:applicationId`, `/api/jobs/applications/me`).
+- 🧪 **Verification**:
+  - Diagnostics clean for all modified files (frontend + gateway route file).
+  - Post-fix endpoint scans show no remaining legacy `/documents` or `/workers/:id/jobs` calls in active patched worker components.
+
+### Worker Flow Hardening Pass 3 (Mar 02, 2026) ✅
+- ✅ **Profile completion routing fix**:
+  - [kelmah-frontend/src/modules/worker/components/ProfileCompletionCard.jsx](kelmah-frontend/src/modules/worker/components/ProfileCompletionCard.jsx)
+  - Corrected broken quick-action links from `/worker/documents` (no matching route) to `/worker/certificates` (active protected route).
+- ✅ **Runtime verification update**:
+  - Live gateway smoke checks confirmed:
+    - `GET /api/jobs?status=open` succeeds for public listing.
+    - `GET /api/jobs/assigned` returns `403` for hirer role, indicating role-based enforcement (expected behavior when non-worker token is used).
+- 🧪 **Verification**:
+  - VS Code diagnostics: no errors in updated worker component.
+
 ### Mobile/Desktop Cleanup Phase — Framer-Motion Dead Imports, Touch Targets, Reduced-Motion Gates, iOS Zoom Fix (Mar 02, 2026) ✅
 - 🎯 **Scope**: Continuation of Binance-quality mobile/desktop hardening — removing dead code, enforcing accessibility motion preferences, fixing iOS keyboard zoom regression, and completing global touch-target coverage.
 - ✅ **Theme — light-mode IconButton touch target** (`kelmah-frontend/src/theme/index.js`):
