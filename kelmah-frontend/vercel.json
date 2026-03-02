@@ -13,11 +13,13 @@
     }
   ],
   "env": {
+    "VITE_API_GATEWAY_URL": "https://kelmah-api-gateway-qmd7.onrender.com",
     "VITE_API_URL": "https://kelmah-api-gateway-qmd7.onrender.com/api",
     "VITE_WS_URL": "https://kelmah-api-gateway-qmd7.onrender.com"
   },
   "build": {
     "env": {
+      "VITE_API_GATEWAY_URL": "https://kelmah-api-gateway-qmd7.onrender.com",
       "VITE_API_URL": "https://kelmah-api-gateway-qmd7.onrender.com/api",
       "VITE_WS_URL": "https://kelmah-api-gateway-qmd7.onrender.com"
     }

@@ -12,7 +12,7 @@ const MESSAGING_MONGO_URI = 'mongodb+srv://Tonygb:0553366244Aj@kelmah-messaging.
 
 // ---- Service URL mapping ----
 const SERVICE_URLS = {
-  API_GATEWAY_URL: 'https://kelmah-api-gateway-hkke.onrender.com',
+  API_GATEWAY_URL: 'https://kelmah-api-gateway-qmd7.onrender.com',
   AUTH_SERVICE_URL: 'https://kelmah-auth-service-dw1u.onrender.com',
   USER_SERVICE_URL: 'https://kelmah-user-service-tb8s.onrender.com',
   JOB_SERVICE_URL: 'https://kelmah-job-service-1k2m.onrender.com',

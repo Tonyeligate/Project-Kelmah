@@ -21,34 +21,79 @@ const isTesting = import.meta.env.MODE === 'test';
 // Re-export SERVICES for backward compatibility
 export { SERVICES };
 
-// ===============================================
-// API BASE URL — Single source of truth
-// ===============================================
-// Set VITE_API_URL in .env / .env.production / Vercel dashboard.
-// Example: VITE_API_URL=https://kelmah-api-gateway-qmd7.onrender.com/api
-//
-// No hardcoded fallback URLs — change the env var once and everything updates.
+// Load runtime config for dynamic LocalTunnel URL
+let runtimeConfig = null;
 
+// CRITICAL: Production API URL — reads from VITE_API_GATEWAY_URL env var
+// so you only need to change ONE variable when the gateway URL changes.
+// Fallback to VITE_API_URL if VITE_API_GATEWAY_URL is not set.
+const PRODUCTION_API_URL = (() => {
+  const gatewayBase = import.meta.env.VITE_API_GATEWAY_URL;
+  if (gatewayBase) return `${gatewayBase.replace(/\/+$/, '')}/api`;
+  const apiUrl = import.meta.env.VITE_API_URL;
+  if (apiUrl) return apiUrl;
+  // Ultimate fallback — keep this in sync with VITE_API_GATEWAY_URL in .env / vercel.json
+  return 'https://kelmah-api-gateway-qmd7.onrender.com/api';
+})();
+
+const loadRuntimeConfig = async () => {
+  if (typeof window !== 'undefined' && !runtimeConfig) {
+    try {
+      const response = await fetch('/runtime-config.json');
+      runtimeConfig = await response.json();
+      // Store in window for synchronous access
+      window.RUNTIME_CONFIG = {
+        apiUrl: runtimeConfig.API_URL || runtimeConfig.ngrokUrl || PRODUCTION_API_URL
+      };
+      console.log('🔧 Runtime config loaded:', runtimeConfig);
+    } catch (error) {
+      console.warn('⚠️ Failed to load runtime config:', error.message);
+    }
+  }
+  return runtimeConfig;
+};
+
+// Simple synchronous resolution
 const getApiBaseUrl = () => {
-  // Priority 1: Vite env var (set at build time or in .env files)
+  // Priority 1: Runtime config (dynamically loaded)
+  if (typeof window !== 'undefined' && window.RUNTIME_CONFIG?.apiUrl) {
+    return window.RUNTIME_CONFIG.apiUrl;
+  }
+
+  // Priority 2: Check if runtimeConfig was loaded
+  if (runtimeConfig?.API_URL || runtimeConfig?.ngrokUrl) {
+    return runtimeConfig.API_URL || runtimeConfig.ngrokUrl;
+  }
+
+  // Priority 3: Environment variable - BUT ONLY if it's NOT the old 5loa URL
   const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl) {
+  if (envUrl && !envUrl.includes('5loa') && !envUrl.includes('6yoy') && !envUrl.includes('50z3')) {
     return envUrl;
   }
 
-  // Priority 2: Development default (local API gateway)
-  if (import.meta.env.MODE === 'development') {
-    return 'http://localhost:5000/api';
+  // Priority 4: Cached healthy URL from localStorage (but not if it's 5loa)
+  if (typeof window !== 'undefined') {
+    const cached = localStorage.getItem('kelmah:lastHealthyApiBase');
+    if (cached && !cached.includes('5loa') && !cached.includes('6yoy') && !cached.includes('50z3')) {
+      return cached;
+    }
+    // Clear bad cache if it exists
+    if (cached && (cached.includes('5loa') || cached.includes('6yoy') || cached.includes('50z3'))) {
+      localStorage.removeItem('kelmah:lastHealthyApiBase');
+    }
   }
 
-  // Priority 3: Relative /api — works when Vercel rewrites proxy to the backend
-  return '/api';
+  // Priority 5: Use hardcoded production URL (bypasses Vercel's broken env vars)
+  return PRODUCTION_API_URL;
 };
 
 export const API_BASE_URL = getApiBaseUrl();
 
-// Backward-compatible async getter (resolves immediately now)
-export const getApiBaseUrlAsync = async () => getApiBaseUrl();
+// Export async function for backward compatibility if needed, but prefer direct export
+export const getApiBaseUrlAsync = async () => {
+  await loadRuntimeConfig();
+  return getApiBaseUrl();
+};
 
 // Re-export getApiBaseUrl for compatibility with existing code
 export { getApiBaseUrl };

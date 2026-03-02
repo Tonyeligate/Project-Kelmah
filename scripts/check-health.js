@@ -1,7 +1,7 @@
 const https = require('https');
 
 const services = [
-  ['api-gateway', 'https://kelmah-api-gateway-hkke.onrender.com/health'],
+  ['api-gateway', 'https://kelmah-api-gateway-qmd7.onrender.com/health'],
   ['auth-service', 'https://kelmah-auth-service-dw1u.onrender.com/health'],
   ['user-service', 'https://kelmah-user-service-tb8s.onrender.com/health'],
   ['job-service', 'https://kelmah-job-service-1k2m.onrender.com/health'],
