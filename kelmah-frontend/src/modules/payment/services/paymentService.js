@@ -387,9 +387,15 @@ const paymentService = {
     return await paymentService.processMobileMoneyPayment(paymentData);
   },
 
-  confirmMobileMoneyPayment: async ({ transactionId, pin, phoneNumber }) => {
-    const provider = 'mtn'; // default; component should pass provider
-    const { data } = await api.post('/payments/mtn-momo/confirm', {
+  confirmMobileMoneyPayment: async ({ transactionId, pin, phoneNumber, provider = 'mtn' }) => {
+    // Route to the correct provider confirmation endpoint
+    const providerEndpoints = {
+      mtn: '/payments/mtn-momo/confirm',
+      vodafone: '/payments/vodafone-cash/confirm',
+      airteltigo: '/payments/airteltigo-money/confirm',
+    };
+    const endpoint = providerEndpoints[provider] || providerEndpoints.mtn;
+    const { data } = await api.post(endpoint, {
       transactionId,
       pin,
       phoneNumber,

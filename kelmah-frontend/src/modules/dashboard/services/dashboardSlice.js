@@ -2,6 +2,12 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../../../services/apiClient';
 import { API_ENDPOINTS } from '../../../config/environment';
 
+// ✅ Phase 6 NOTE: fetchDashboardData is no longer dispatched by DashboardPage.
+// Role-specific pages (WorkerDashboardPage, HirerDashboardPage) manage their own
+// data fetching via their respective slices. This slice is retained for any
+// components that still reference dashboard state, but can be removed once all
+// consumers are migrated.
+
 const { USER, JOB } = API_ENDPOINTS;
 
 // Use centralized clients with auth/retries
@@ -47,6 +53,8 @@ const initialState = {
   },
   lastUpdated: null,
   refreshing: false,
+  selectedJob: null,
+  selectedWorker: null,
 };
 
 // Enhanced async thunks with proper service routing and mock fallback
@@ -116,21 +124,8 @@ export const fetchDashboardData = createAsyncThunk(
             _serviceUnavailable: true,
           };
 
-      // Log which services are using mock data
-      if (metricsResponse.status === 'rejected') {
-        console.warn('User service unavailable for metrics, using mock data');
-      }
-      if (jobsResponse.status === 'rejected') {
-        console.warn(
-          'Job service unavailable for dashboard jobs, using mock data',
-        );
-      }
-      if (workersResponse.status === 'rejected') {
-        console.warn('User service unavailable for workers data');
-      }
-      if (analyticsResponse.status === 'rejected') {
-        console.warn('User service unavailable for analytics, using mock data');
-      }
+      // Log which services are using mock data (silent in production)
+      // Service unavailability is tracked via _serviceUnavailable flags in state
 
       return {
         metrics,
@@ -139,10 +134,7 @@ export const fetchDashboardData = createAsyncThunk(
         analytics,
       };
     } catch (error) {
-      console.warn(
-        'All dashboard services unavailable:',
-        error.message,
-      );
+      // All services unavailable — return degraded state
 
       // Return empty state with unavailable flag instead of fake data
       return {
@@ -171,7 +163,7 @@ export const updateJobStatus = createAsyncThunk(
       const payload = response.data?.data || response.data || {};
       return { jobId, status: payload.status ?? status, ...payload };
     } catch (error) {
-      console.warn('Job status update unavailable:', error.message);
+      // Job status update unavailable — propagate error to caller
       throw error;
     }
   },

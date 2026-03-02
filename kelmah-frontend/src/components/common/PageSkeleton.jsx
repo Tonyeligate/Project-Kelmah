@@ -3,12 +3,21 @@ import { Box, Skeleton, Stack } from '@mui/material';
 /**
  * PageSkeleton — shows a loading placeholder suitable for different page types.
  *
+ * Accessibility:
+ * - aria-busy="true" + aria-label tell assistive tech the page is loading
+ * - role="progressbar" communicates loading state semantically
+ *
  * @param {'list'|'detail'|'dashboard'|'form'|'grid'} variant
  */
 export default function PageSkeleton({ variant = 'list' }) {
+  const wrapperProps = {
+    role: 'progressbar',
+    'aria-busy': true,
+    'aria-label': 'Loading page content',
+  };
   if (variant === 'dashboard') {
     return (
-      <Box sx={{ p: { xs: 2, md: 3 } }}>
+      <Box {...wrapperProps} sx={{ p: { xs: 2, md: 3 } }}>
         {/* Stat cards */}
         <Stack direction="row" spacing={2} sx={{ mb: 3, overflowX: 'auto' }}>
           {[1, 2, 3, 4].map((i) => (
@@ -26,7 +35,7 @@ export default function PageSkeleton({ variant = 'list' }) {
 
   if (variant === 'detail') {
     return (
-      <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 800, mx: 'auto' }}>
+      <Box {...wrapperProps} sx={{ p: { xs: 2, md: 3 }, maxWidth: 800, mx: 'auto' }}>
         <Skeleton variant="rounded" height={40} width="60%" sx={{ mb: 2 }} />
         <Skeleton variant="rounded" height={20} width="40%" sx={{ mb: 3 }} />
         <Skeleton variant="rounded" height={200} sx={{ mb: 2 }} />
@@ -41,7 +50,7 @@ export default function PageSkeleton({ variant = 'list' }) {
 
   if (variant === 'grid') {
     return (
-      <Box sx={{ p: { xs: 2, md: 3 } }}>
+      <Box {...wrapperProps} sx={{ p: { xs: 2, md: 3 } }}>
         <Skeleton variant="rounded" height={48} sx={{ mb: 2 }} />
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -54,7 +63,7 @@ export default function PageSkeleton({ variant = 'list' }) {
 
   if (variant === 'form') {
     return (
-      <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 600, mx: 'auto' }}>
+      <Box {...wrapperProps} sx={{ p: { xs: 2, md: 3 }, maxWidth: 600, mx: 'auto' }}>
         <Skeleton variant="rounded" height={36} width="50%" sx={{ mb: 3 }} />
         <Stack spacing={2.5}>
           {[1, 2, 3, 4].map((i) => (
@@ -68,7 +77,7 @@ export default function PageSkeleton({ variant = 'list' }) {
 
   // Default: list variant
   return (
-    <Box sx={{ p: { xs: 2, md: 3 } }}>
+    <Box {...wrapperProps} sx={{ p: { xs: 2, md: 3 } }}>
       <Skeleton variant="rounded" height={48} sx={{ mb: 2 }} />
       <Stack spacing={1.5}>
         {[1, 2, 3, 4, 5, 6].map((i) => (

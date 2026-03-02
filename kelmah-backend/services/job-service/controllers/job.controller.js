@@ -1588,26 +1588,8 @@ const changeJobStatus = async (req, res, next) => {
  * @access Public
  */
 const getDashboardJobs = async (req, res) => {
-  const fallbackJobs = [
-    {
-      id: 'fallback-1',
-      title: 'Electrical Wiring Project',
-      description: 'Residential rewiring for three-bedroom house.',
-      budget: { amount: 3200, currency: 'GHS' },
-      location: { type: 'onsite', city: 'Accra', country: 'Ghana' },
-      urgency: 'medium',
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-    },
-    {
-      id: 'fallback-2',
-      title: 'Plumbing Maintenance',
-      description: 'Monthly maintenance for small apartment complex.',
-      budget: { amount: 1800, currency: 'GHS' },
-      location: { type: 'onsite', city: 'Kumasi', country: 'Ghana' },
-      urgency: 'low',
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
-    },
-  ];
+  // Empty fallback — never show fake data in production
+  const fallbackJobs = [];
 
   try {
     await ensureConnection({ timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000) });
@@ -2120,18 +2102,26 @@ const advancedJobSearch = async (req, res, next) => {
       };
     }
 
-    // Text search
+    // Text search — merge with existing $or (e.g. location) via $and
     if (query) {
       const escapeRx = (v) => String(v).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const safeQuery = escapeRx(query);
       const searchTerms = query.trim().split(' ');
-      matchStage.$or = [
+      const searchConditions = [
         { $text: { $search: query } },
         { title: { $regex: safeQuery, $options: 'i' } },
         { description: { $regex: safeQuery, $options: 'i' } },
         { skills: { $in: searchTerms.map(term => new RegExp(escapeRx(term), 'i')) } },
         { category: { $regex: safeQuery, $options: 'i' } }
       ];
+
+      if (matchStage.$or) {
+        // Preserve existing $or (location) by combining with $and
+        matchStage.$and = [{ $or: matchStage.$or }, { $or: searchConditions }];
+        delete matchStage.$or;
+      } else {
+        matchStage.$or = searchConditions;
+      }
     }
 
     pipeline.push({ $match: matchStage });

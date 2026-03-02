@@ -1,161 +1,66 @@
-import React, { useEffect } from 'react';
-import {
-  Box,
-  Grid,
-  Typography,
-  Paper,
-  Button,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
+import React from 'react';
+import { Box, Typography, Button } from '@mui/material';
 import { useSelector } from 'react-redux';
-// Removed AuthContext import to prevent dual state management conflicts
-// import { useAuth } from '../../auth/hooks/useAuth';
 import LoadingScreen from '../../common/components/loading/LoadingScreen';
-import { fetchDashboardData } from '../../dashboard/services/dashboardSlice';
-import { useDispatch } from 'react-redux';
+
+// NOTE: dashboardSlice provides shared metrics (profile views, response rate, etc.)
+// It is NOT used for role-specific dashboard data.
+// Worker data → workerSlice, Hirer data → hirerSlice.
+// This slice can be used by a future unified analytics page.
 
 // Dashboard components based on role
 import WorkerDashboard from '../../worker/pages/WorkerDashboardPage';
 import HirerDashboard from '../../hirer/pages/HirerDashboardPage';
 
 /**
- * Main dashboard page that renders the appropriate dashboard based on user role
+ * Pure routing wrapper — renders the correct role-specific dashboard.
+ * Data fetching is handled by each sub-dashboard independently.
+ * No dashboardSlice dispatch here — avoids redundant API calls.
  */
 const DashboardPage = () => {
-  const dispatch = useDispatch();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isActualMobile = isMobile;
-  // Use ONLY Redux auth state to prevent dual state management conflicts
   const { user, loading: authLoading } = useSelector((state) => state.auth);
-  // Get data from Redux store
-  const { loading: dataLoading, error: dataError } = useSelector(
-    (state) => state.dashboard,
-  );
 
-  useEffect(() => {
-    dispatch(fetchDashboardData());
-  }, []); // Fixed: Remove dispatch dependency to prevent infinite loop
-
-  // Show loading screen if auth or data is loading
-  if (authLoading || dataLoading) {
+  if (authLoading) {
     return <LoadingScreen message="Loading your dashboard..." />;
   }
 
-  // Show error if there was a problem loading data
-  if (dataError) {
+  if (!user) {
     return (
       <Box sx={{ p: 3, textAlign: 'center', minHeight: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <Typography variant="h6" color="error" gutterBottom>
-          There was a problem loading your dashboard
+          Authentication required to view dashboard
         </Typography>
-        <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary' }}>{dataError}</Typography>
-        <Button
-          variant="contained"
-          onClick={() => dispatch(fetchDashboardData())}
-          sx={{ minHeight: 44, px: 4 }}
-        >
-          Try Again
+        <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+          Please sign in to access your dashboard.
+        </Typography>
+        <Button variant="contained" href="/login" sx={{ minHeight: 44, px: 4 }}>
+          Sign In
         </Button>
       </Box>
     );
   }
 
-  // Determine which dashboard to render based on user role
-  const renderDashboard = () => {
-    if (!user) {
+  const userRole = user.role || user.userType || 'worker';
+
+  switch (userRole) {
+    case 'worker':
+      return <WorkerDashboard user={user} />;
+    case 'hirer':
+      return <HirerDashboard user={user} />;
+    case 'admin':
       return (
-        <Box sx={{ p: 3, textAlign: 'center', minHeight: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <Typography variant="h6" color="error" gutterBottom>
-            Authentication required to view dashboard
-          </Typography>
-          <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-            Please sign in to access your dashboard.
-          </Typography>
-          <Button
-            variant="contained"
-            href="/login"
-            sx={{ minHeight: 44, px: 4 }}
-          >
-            Sign In
-          </Button>
+        <Box sx={{ p: 3, textAlign: 'center' }}>
+          <Typography variant="h5" gutterBottom>Admin Dashboard</Typography>
+          <Typography variant="body1">Admin dashboard is available in the admin section.</Typography>
         </Box>
       );
-    }
-
-    const userRole = user.role || user.userType || 'worker';
-
-    switch (userRole) {
-      case 'worker':
-        return <WorkerDashboard user={user} />;
-      case 'hirer':
-        return <HirerDashboard user={user} />;
-      case 'admin':
-        return (
-          <Box sx={{ p: 3, textAlign: 'center' }}>
-            <Typography variant="h5" gutterBottom>
-              Admin Dashboard
-            </Typography>
-            <Typography variant="body1">
-              Admin dashboard is available in the admin section.
-            </Typography>
-          </Box>
-        );
-      default:
-        return (
-          <Box sx={{ p: 3, textAlign: 'center' }}>
-            <Typography variant="h6" color="error">
-              Unknown user role: {userRole}
-            </Typography>
-          </Box>
-        );
-    }
-  };
-
-  // On mobile, render dashboard component directly without wrapper
-  if (isActualMobile) {
-    return renderDashboard();
+    default:
+      return (
+        <Box sx={{ p: 3, textAlign: 'center' }}>
+          <Typography variant="h6" color="error">Unknown user role: {userRole}</Typography>
+        </Box>
+      );
   }
-
-  return (
-    <Box
-      sx={{
-        flexGrow: 1,
-        width: '100%',
-        maxWidth: '100vw',
-        padding: isMobile ? 1.5 : 3,
-        boxSizing: 'border-box',
-        overflowX: 'hidden',
-        overflowY: 'auto',
-      }}
-    >
-      <Paper
-        elevation={2}
-        sx={{
-          p: 3,
-          mb: 3,
-          borderRadius: 2,
-          background: 'rgba(25, 25, 25, 0.8)',
-          backdropFilter: 'blur(10px)',
-          borderLeft: '4px solid #FFD700',
-        }}
-      >
-        <Typography variant="h4" gutterBottom sx={{ color: '#FFF' }}>
-          Welcome back, {user?.firstName || 'User'}!
-        </Typography>
-        <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-          Here's an overview of your activities and important information.
-        </Typography>
-      </Paper>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          {renderDashboard()}
-        </Grid>
-      </Grid>
-    </Box>
-  );
 };
 
 export default DashboardPage;

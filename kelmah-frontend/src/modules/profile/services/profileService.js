@@ -99,6 +99,9 @@ class ProfileService {
       );
       const previewUrl = URL.createObjectURL(file);
       setStoredProfilePicture(previewUrl);
+      // Revoke the object URL after a short delay to avoid memory leaks.
+      // The image will be loaded by then and the URL is no longer needed.
+      setTimeout(() => URL.revokeObjectURL(previewUrl), 5000);
       return { profilePicture: previewUrl, localOnly: true };
     }
   }

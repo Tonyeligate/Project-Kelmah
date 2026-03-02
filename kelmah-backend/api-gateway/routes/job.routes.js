@@ -121,14 +121,13 @@ router.get('/location', async (req, res) => {
   await forwardToJobService(req, res, path, 'GET');
 });
 
-// GET /api/jobs/contracts - Get contracts (public)
-// GET /api/jobs/contracts - Get contracts (public)
-router.get('/contracts', async (req, res) => {
+// GET /api/jobs/contracts - Get contracts (protected — requires auth to scope by user)
+router.get('/contracts', authenticate, async (req, res) => {
   await forwardToJobService(req, res, '/api/jobs/contracts', 'GET');
 });
 
-// GET /api/jobs/contracts/:id - Get contract details (public)
-router.get('/contracts/:id', async (req, res) => {
+// GET /api/jobs/contracts/:id - Get contract details (protected)
+router.get('/contracts/:id', authenticate, async (req, res) => {
   await forwardToJobService(req, res, `/api/jobs/contracts/${req.params.id}`, 'GET');
 });
 

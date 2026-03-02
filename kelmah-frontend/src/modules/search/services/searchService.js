@@ -48,8 +48,13 @@ const searchService = {
    * @returns {Promise<Object>} - Job search results
    */
   searchJobs: async (params) => {
-    const response = await api.get('/jobs/search', { params });
-    return response.data;
+    try {
+      const response = await api.get('/jobs/search', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Job search error:', error);
+      throw error;
+    }
   },
 
   /**
@@ -94,28 +99,54 @@ const searchService = {
 
   // Get job categories
   getCategories: async () => {
-    const response = await api.get('/jobs/categories');
-    return response.data;
+    try {
+      const response = await api.get('/jobs/categories');
+      return response.data;
+    } catch (error) {
+      console.error('Categories fetch error:', error);
+      return [];
+    }
   },
 
   // Get job skills
   getSkills: async () => {
-    const response = await api.get('/jobs/skills');
-    return response.data;
+    try {
+      const response = await api.get('/jobs/skills');
+      return response.data;
+    } catch (error) {
+      console.error('Skills fetch error:', error);
+      return [];
+    }
   },
 
-  // Get search suggestions
+  /**
+   * Get search suggestions from job service
+   * @deprecated Use getSuggestions() for /search/suggestions endpoint instead
+   */
   getSearchSuggestions: async (keyword) => {
-    const response = await api.get('/jobs/suggestions', {
-      params: { keyword },
-    });
-    return response.data;
+    try {
+      const response = await api.get('/jobs/suggestions', {
+        params: { keyword },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Job suggestions error:', error);
+      return [];
+    }
   },
 
-  // Get popular searches
+  /**
+   * Get popular searches from job service
+   * @deprecated Use getPopularTerms() for /search/popular endpoint instead
+   */
   getPopularSearches: async () => {
-    const response = await api.get('/jobs/popular-searches');
-    return response.data;
+    try {
+      const response = await api.get('/jobs/popular-searches');
+      return response.data;
+    } catch (error) {
+      console.error('Popular searches error:', error);
+      return [];
+    }
   },
 };
 

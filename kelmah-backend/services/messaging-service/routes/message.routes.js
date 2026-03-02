@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const messageController = require("../controllers/message.controller");
-// ✅ TEMPORARILY DISABLED: Rate limiter middleware has missing config dependencies
-// const { createLimiter } = require('../../../shared/middlewares/rateLimiter');
+const { createLimiter } = require('../../../shared/middlewares/rateLimiter');
 // ✅ REMOVED: Authentication middleware is already applied in server.js
 // const { authenticate } = require("../middlewares/auth.middleware");
 // router.use(authenticate); // Authentication applied at server level
@@ -10,7 +9,7 @@ const messageController = require("../controllers/message.controller");
 // Message routes — literal routes BEFORE parameterized routes
 router.post(
   "/",
-  /* createLimiter('messaging'), */ messageController.createMessage,
+  createLimiter('messaging'), messageController.createMessage,
 );
 router.get("/unread/count", messageController.getUnreadCount);
 router.get("/search", messageController.searchMessages);
@@ -37,11 +36,11 @@ router.delete("/:messageId", messageController.deleteMessage);
 // Message editing and reactions
 router.put(
   "/:messageId",
-  /* createLimiter('messaging'), */ messageController.editMessage,
+  createLimiter('messaging'), messageController.editMessage,
 );
 router.post(
   "/:messageId/reactions",
-  /* createLimiter('messaging'), */ messageController.addReaction,
+  createLimiter('messaging'), messageController.addReaction,
 );
 router.delete("/:messageId/reactions/:emoji", messageController.removeReaction);
 

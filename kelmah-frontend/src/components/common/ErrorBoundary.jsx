@@ -1,9 +1,22 @@
 import React from 'react';
 import { Box, Typography, Button, Alert, AlertTitle } from '@mui/material';
-import { Refresh as RefreshIcon } from '@mui/icons-material';
+import {
+  Refresh as RefreshIcon,
+  Home as HomeIcon,
+  ErrorOutline as ErrorOutlineIcon,
+} from '@mui/icons-material';
 
 const isDev = typeof import.meta !== 'undefined' && import.meta.env?.DEV;
 
+/**
+ * ErrorBoundary — catches React render errors and shows a friendly fallback.
+ *
+ * Accessibility:
+ * - role="alert" + aria-live="assertive" so screen readers announce the error
+ * - Large icon-driven buttons (54px min-height) for low-literacy / touch users
+ * - Visible focus rings on all interactive elements
+ * - "Go Home" button as an additional escape hatch
+ */
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -11,17 +24,12 @@ class ErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI
     return { hasError: true };
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log error details
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    this.setState({
-      error: error,
-      errorInfo: errorInfo,
-    });
+    this.setState({ error, errorInfo });
   }
 
   handleRetry = () => {
@@ -30,9 +38,10 @@ class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
-      // Fallback UI
       return (
         <Box
+          role="alert"
+          aria-live="assertive"
           sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -43,7 +52,27 @@ class ErrorBoundary extends React.Component {
             textAlign: 'center',
           }}
         >
-          <Alert severity="error" sx={{ mb: 3, maxWidth: 600 }}>
+          {/* Large visual error icon for quick recognition */}
+          <Box
+            aria-hidden="true"
+            sx={{
+              width: 88,
+              height: 88,
+              borderRadius: '50%',
+              bgcolor: 'rgba(244,67,54,0.12)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mb: 2,
+            }}
+          >
+            <ErrorOutlineIcon sx={{ fontSize: 48, color: 'error.main' }} />
+          </Box>
+
+          <Alert
+            severity="error"
+            sx={{ mb: 3, maxWidth: 600, textAlign: 'left' }}
+          >
             <AlertTitle>Something went wrong</AlertTitle>
             <Typography variant="body2" sx={{ mt: 1 }}>
               We're sorry, but something unexpected happened. This usually means
@@ -55,17 +84,65 @@ class ErrorBoundary extends React.Component {
             variant="contained"
             startIcon={<RefreshIcon />}
             onClick={this.handleRetry}
-            sx={{ mb: 2 }}
+            aria-label="Try loading the page again"
+            sx={{
+              mb: 2,
+              minHeight: 54,
+              minWidth: 180,
+              fontSize: '1rem',
+              fontWeight: 700,
+              bgcolor: '#D4AF37',
+              color: '#000',
+              '&:hover': { bgcolor: '#B8941F' },
+              '&:focus-visible': {
+                outline: '3px solid #D4AF37',
+                outlineOffset: '3px',
+              },
+            }}
           >
             Try Again
           </Button>
 
           <Button
             variant="outlined"
+            startIcon={<RefreshIcon />}
             onClick={() => window.location.reload()}
-            sx={{ mb: 2 }}
+            aria-label="Refresh the entire page"
+            sx={{
+              mb: 2,
+              minHeight: 54,
+              minWidth: 180,
+              fontSize: '1rem',
+              fontWeight: 600,
+              borderColor: 'rgba(212,175,55,0.5)',
+              color: '#D4AF37',
+              '&:hover': { borderColor: '#D4AF37', bgcolor: 'rgba(212,175,55,0.08)' },
+              '&:focus-visible': {
+                outline: '3px solid #D4AF37',
+                outlineOffset: '3px',
+              },
+            }}
           >
             Refresh Page
+          </Button>
+
+          <Button
+            variant="text"
+            startIcon={<HomeIcon />}
+            onClick={() => { window.location.href = '/'; }}
+            aria-label="Go back to the home page"
+            sx={{
+              minHeight: 48,
+              fontSize: '0.95rem',
+              color: 'text.secondary',
+              '&:hover': { color: '#D4AF37' },
+              '&:focus-visible': {
+                outline: '3px solid #D4AF37',
+                outlineOffset: '3px',
+              },
+            }}
+          >
+            Go Home
           </Button>
 
           {isDev && this.state.error && (
@@ -85,7 +162,7 @@ class ErrorBoundary extends React.Component {
               <Typography
                 variant="body2"
                 component="pre"
-                sx={{ fontSize: '0.75rem' }}
+                sx={{ fontSize: '0.75rem', whiteSpace: 'pre-wrap' }}
               >
                 {this.state.error && this.state.error.toString()}
                 <br />

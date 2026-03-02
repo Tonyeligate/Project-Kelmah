@@ -9,7 +9,9 @@ export const fetchUserProfile = createAsyncThunk(
       const response = await apiClient.get(`/users/${userId}`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(
+        error.response?.data || { message: error.message || 'Network error' },
+      );
     }
   },
 );
@@ -21,7 +23,9 @@ export const updateUserProfile = createAsyncThunk(
       const response = await apiClient.put(`/users/${userId}`, data);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(
+        error.response?.data || { message: error.message || 'Network error' },
+      );
     }
   },
 );

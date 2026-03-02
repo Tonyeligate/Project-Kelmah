@@ -285,24 +285,6 @@ class MapService {
   }
 
   /**
-   * Generate coordinates within radius of center
-   */
-  generateNearbyCoordinates(center, radiusKm) {
-    const radiusInDegrees = radiusKm / 111.32; // Rough conversion
-    const u = Math.random();
-    const v = Math.random();
-    const w = radiusInDegrees * Math.sqrt(u);
-    const t = 2 * Math.PI * v;
-    const x = w * Math.cos(t);
-    const y = w * Math.sin(t);
-
-    return {
-      latitude: center.latitude + x,
-      longitude: center.longitude + y,
-    };
-  }
-
-  /**
    * Reverse geocoding using OpenStreetMap Nominatim
    */
   async reverseGeocode(latitude, longitude) {

@@ -118,9 +118,11 @@ const reviewsSlice = createSlice({
       })
       .addCase(fetchReviewsByRecipient.fulfilled, (state, action) => {
         state.loading = false;
-        state.reviews = action.payload.reviews;
-        state.totalCount = action.payload.totalCount;
-        state.currentPage = action.payload.currentPage;
+        // Handle both { data: { reviews, ... } } and flat { reviews, ... } shapes
+        const payload = action.payload?.data || action.payload || {};
+        state.reviews = payload.reviews || [];
+        state.totalCount = payload.totalCount || payload.total || 0;
+        state.currentPage = payload.currentPage || payload.page || 1;
       })
       .addCase(fetchReviewsByRecipient.rejected, (state, action) => {
         state.loading = false;

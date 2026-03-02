@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Box, useMediaQuery, useTheme } from '@mui/material';
+import { Box, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import { DeleteOutline as DeleteIcon } from '@mui/icons-material';
 
 const SWIPE_THRESHOLD = 80; // px to commit action
@@ -7,11 +7,17 @@ const SWIPE_THRESHOLD = 80; // px to commit action
 /**
  * SwipeToAction — wraps a list item and reveals a delete action on left-swipe (mobile only).
  *
- * @param {Function}  onDelete   – called when swipe completes
- * @param {ReactNode} children   – the list item content
- * @param {boolean}   [disabled] – disable swipe
+ * Accessibility:
+ * - A visible "Delete" icon-button appears as keyboard fallback at the end
+ *   of the item for users who cannot perform swipe gestures.
+ * - aria-label on the swipe region and the fallback button.
+ *
+ * @param {Function}  onDelete      – called when swipe completes
+ * @param {ReactNode} children      – the list item content
+ * @param {boolean}   [disabled]    – disable swipe
+ * @param {string}    [deleteLabel] – accessible label for delete action
  */
-export default function SwipeToAction({ onDelete, children, disabled = false }) {
+export default function SwipeToAction({ onDelete, children, disabled = false, deleteLabel = 'Delete' }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [offset, setOffset] = useState(0);
@@ -47,7 +53,35 @@ export default function SwipeToAction({ onDelete, children, disabled = false }) 
     }
   }, [offset, onDelete]);
 
-  if (!isMobile) return children;
+  // Desktop: render children with an accessible delete button fallback
+  if (!isMobile) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ flex: 1 }}>{children}</Box>
+        {onDelete && !disabled && (
+          <IconButton
+            onClick={onDelete}
+            aria-label={deleteLabel}
+            size="small"
+            sx={{
+              color: 'error.main',
+              minWidth: 44,
+              minHeight: 44,
+              ml: 1,
+              opacity: 0.6,
+              '&:hover': { opacity: 1, bgcolor: 'rgba(244,67,54,0.08)' },
+              '&:focus-visible': {
+                outline: '3px solid #D4AF37',
+                outlineOffset: '2px',
+              },
+            }}
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        )}
+      </Box>
+    );
+  }
 
   const progress = Math.min(Math.abs(offset) / SWIPE_THRESHOLD, 1);
 
@@ -82,6 +116,8 @@ export default function SwipeToAction({ onDelete, children, disabled = false }) 
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
+        role="group"
+        aria-label={`Swipe left to ${deleteLabel.toLowerCase()}`}
         sx={{
           transform: `translateX(${offset}px)`,
           transition: swiping.current ? 'none' : 'transform 0.2s ease',

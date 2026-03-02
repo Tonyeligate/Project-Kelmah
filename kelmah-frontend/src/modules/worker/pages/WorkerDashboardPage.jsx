@@ -21,6 +21,8 @@ import {
   AlertTitle,
   LinearProgress,
   Snackbar,
+  Fade,
+  alpha,
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
@@ -43,6 +45,46 @@ import {
   selectWorkerError,
   clearWorkerErrors,
 } from '../services/workerSlice';
+import workerService from '../services/workerService';
+import ProfileCompletionCard from '../components/ProfileCompletionCard';
+import QuickActionsRow from '../components/QuickActionsRow';
+
+/* ---------- Keyframes for spin animation ---------- */
+const spinKeyframes = {
+  '@keyframes spin': {
+    from: { transform: 'rotate(0deg)' },
+    to: { transform: 'rotate(360deg)' },
+  },
+};
+
+/* ---------- Extracted sub-components (stable references) ---------- */
+
+const LoadingSkeleton = () => (
+  <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }} sx={{ mb: 4 }}>
+    {[1, 2, 3, 4].map((item) => (
+      <Grid item xs={6} sm={6} md={3} key={item}>
+        <Skeleton variant="rounded" height={120} animation="wave" />
+      </Grid>
+    ))}
+  </Grid>
+);
+
+const LoadingTimeoutWarning = ({ onRefresh }) => (
+  <Alert
+    severity="warning"
+    sx={{ mb: 2, borderRadius: 2 }}
+    action={
+      <Button color="inherit" size="small" onClick={onRefresh}>
+        Refresh
+      </Button>
+    }
+  >
+    <AlertTitle>Loading Taking Longer Than Expected</AlertTitle>
+    <Typography variant="body2">
+      The server might be warming up. Please wait or try refreshing.
+    </Typography>
+  </Alert>
+);
 
 const WorkerDashboardPage = () => {
   const dispatch = useDispatch();
@@ -60,6 +102,9 @@ const WorkerDashboardPage = () => {
   const completedJobs = useSelector(selectWorkerJobs('completed')) || [];
   const isLoading = useSelector(selectWorkerLoading('applications'));
   const error = useSelector(selectWorkerError('applications'));
+
+  // Profile completion state (Phase 1)
+  const [profileCompletion, setProfileCompletion] = useState({ percentage: 100, missingFields: [] });
 
   // Enhanced state for error handling and loading feedback
   const [retryCount, setRetryCount] = useState(0);
@@ -146,7 +191,7 @@ const WorkerDashboardPage = () => {
       if (loadingTimeoutRef.current === timeoutId) {
         loadingTimeoutRef.current = null;
       }
-      console.error('Dashboard data fetch error:', err);
+      // Error captured by Redux slice — no manual logging needed
     }
   }, [dispatch, retryCount]);
 
@@ -154,6 +199,28 @@ const WorkerDashboardPage = () => {
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
+
+  // Fetch profile completion data (Phase 1)
+  useEffect(() => {
+    const loadProfileCompletion = async () => {
+      try {
+        const userId = user?.id || user?._id || user?.userId;
+        if (!userId) return;
+        const stats = await workerService.getWorkerStats(userId);
+        setProfileCompletion({
+          percentage: stats?.percentage ?? stats?.completionPercentage ?? 100,
+          missingFields: [
+            ...(stats?.missingRequired || []),
+            ...(stats?.missingOptional || []),
+          ],
+        });
+      } catch (_) {
+        // Non-blocking — profile widget will simply not display
+        // Intentionally swallowed: profile completion is supplementary data
+      }
+    };
+    loadProfileCompletion();
+  }, [user?.id, user?._id, user?.userId]);
 
   // Get time-based greeting
   const getGreeting = () => {
@@ -300,18 +367,7 @@ const WorkerDashboardPage = () => {
     },
   ];
 
-  // Loading skeleton component
-  const LoadingSkeleton = () => (
-    <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }} sx={{ mb: 4 }}>
-      {[1, 2, 3, 4].map((item) => (
-        <Grid item xs={6} sm={6} md={3} key={item}>
-          <Skeleton variant="rounded" height={120} animation="wave" />
-        </Grid>
-      ))}
-    </Grid>
-  );
-
-  // Enhanced error display with retry functionality
+  // Error display with retry functionality (uses closure over state)
   const ErrorDisplay = () => (
     <Box sx={{ mb: 3 }}>
       <Alert
@@ -323,7 +379,7 @@ const WorkerDashboardPage = () => {
             size="small"
             onClick={handleRefresh}
             disabled={isLoading}
-            startIcon={isLoading ? <RefreshIcon sx={{ animation: 'spin 1s linear infinite' }} /> : <RefreshIcon />}
+            startIcon={isLoading ? <RefreshIcon sx={{ animation: 'spin 1s linear infinite', ...spinKeyframes }} /> : <RefreshIcon />}
           >
             {isLoading ? 'Retrying...' : 'Try Again'}
           </Button>
@@ -351,24 +407,6 @@ const WorkerDashboardPage = () => {
         )}
       </Alert>
     </Box>
-  );
-
-  // Loading timeout warning
-  const LoadingTimeoutWarning = () => (
-    <Alert
-      severity="warning"
-      sx={{ mb: 2, borderRadius: 2 }}
-      action={
-        <Button color="inherit" size="small" onClick={handleRefresh}>
-          Refresh
-        </Button>
-      }
-    >
-      <AlertTitle>Loading Taking Longer Than Expected</AlertTitle>
-      <Typography variant="body2">
-        The server might be warming up. Please wait or try refreshing.
-      </Typography>
-    </Alert>
   );
 
   return (
@@ -468,7 +506,7 @@ const WorkerDashboardPage = () => {
               sx={{ color: 'text.secondary' }}
               aria-label="Refresh dashboard"
             >
-              <RefreshIcon sx={{ animation: isLoading ? 'spin 1s linear infinite' : 'none' }} />
+              <RefreshIcon sx={{ animation: isLoading ? 'spin 1s linear infinite' : 'none', ...spinKeyframes }} />
             </IconButton>
           </Tooltip>
         </Box>
@@ -478,7 +516,20 @@ const WorkerDashboardPage = () => {
       {error && <ErrorDisplay />}
 
       {/* Loading Timeout Warning */}
-      {loadingTimeout && isLoading && <LoadingTimeoutWarning />}
+      {loadingTimeout && isLoading && <LoadingTimeoutWarning onRefresh={handleRefresh} />}
+
+      {/* Profile Completion Widget (Phase 1) */}
+      {!isLoading && profileCompletion.percentage < 100 && (
+        <Fade in timeout={500}>
+          <Box>
+            <ProfileCompletionCard
+              percentage={profileCompletion.percentage}
+              missingFields={profileCompletion.missingFields}
+              onStepClick={(path) => navigate(path)}
+            />
+          </Box>
+        </Fade>
+      )}
 
       {/* Loading State */}
       {isLoading ? (
@@ -562,6 +613,16 @@ const WorkerDashboardPage = () => {
             ))}
           </Grid>
         </>
+      )}
+
+      {/* Quick Actions Row (Phase 2) */}
+      {!isLoading && (
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="body2" fontWeight={600} sx={{ mb: 1.5, color: 'text.primary' }}>
+            Quick Actions
+          </Typography>
+          <QuickActionsRow />
+        </Box>
       )}
 
       {/* Charts Section - 2 charts side by side */}

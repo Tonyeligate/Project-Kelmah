@@ -47,16 +47,24 @@ export default function MobileFilterSheet({
 
   return (
     <>
-      {/* Trigger button */}
+      {/* Trigger button — 48px min touch target */}
       <Button
         variant="outlined"
         startIcon={<FilterIcon />}
         onClick={handleOpen}
-        size="small"
+        aria-label={activeCount > 0 ? `${title}: ${activeCount} active filters` : title}
+        aria-haspopup="dialog"
+        aria-expanded={open}
         sx={{
           borderColor: activeCount > 0 ? '#D4AF37' : 'divider',
           color: activeCount > 0 ? '#D4AF37' : 'text.secondary',
-          minWidth: 'auto',
+          minHeight: 48,
+          minWidth: 48,
+          fontSize: '0.9rem',
+          '&:focus-visible': {
+            outline: '3px solid #D4AF37',
+            outlineOffset: '2px',
+          },
         }}
       >
         {title} {activeCount > 0 && `(${activeCount})`}
@@ -100,10 +108,21 @@ export default function MobileFilterSheet({
             py: 1,
           }}
         >
-          <Typography variant="h6" fontWeight={600}>
+          <Typography variant="h6" component="h2" fontWeight={600} id="filter-sheet-title">
             {title}
           </Typography>
-          <IconButton onClick={handleClose} size="small">
+          <IconButton
+            onClick={handleClose}
+            aria-label="Close filters"
+            sx={{
+              minWidth: 48,
+              minHeight: 48,
+              '&:focus-visible': {
+                outline: '3px solid #D4AF37',
+                outlineOffset: '2px',
+              },
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </Box>
@@ -115,21 +134,42 @@ export default function MobileFilterSheet({
 
         <Divider />
 
-        {/* Action buttons */}
+        {/* Action buttons — 54px min touch target */}
         <Box sx={{ display: 'flex', gap: 1, px: 2, py: 1.5 }}>
           {onReset && (
-            <Button variant="text" onClick={onReset} sx={{ flex: 1 }}>
+            <Button
+              variant="text"
+              onClick={onReset}
+              aria-label="Reset all filters"
+              sx={{
+                flex: 1,
+                minHeight: 54,
+                fontSize: '0.95rem',
+                '&:focus-visible': {
+                  outline: '3px solid #D4AF37',
+                  outlineOffset: '2px',
+                },
+              }}
+            >
               Reset
             </Button>
           )}
           <Button
             variant="contained"
             onClick={handleApply}
+            aria-label="Apply selected filters"
             sx={{
               flex: 2,
+              minHeight: 54,
+              fontSize: '1rem',
+              fontWeight: 700,
               bgcolor: '#D4AF37',
               color: '#000',
               '&:hover': { bgcolor: '#B8941F' },
+              '&:focus-visible': {
+                outline: '3px solid #D4AF37',
+                outlineOffset: '3px',
+              },
             }}
           >
             Apply Filters

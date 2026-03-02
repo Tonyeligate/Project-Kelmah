@@ -63,9 +63,12 @@ export default function PullToRefresh({ onRefresh, children, disabled = false })
       onTouchEnd={onTouchEnd}
       sx={{ position: 'relative', overflow: 'auto' }}
     >
-      {/* Pull indicator */}
+      {/* Pull indicator — aria-live announces refresh status to AT */}
       {showIndicator && (
         <Box
+          role="status"
+          aria-live="polite"
+          aria-label={refreshing ? 'Refreshing content' : 'Pull down to refresh'}
           sx={{
             display: 'flex',
             alignItems: 'center',
@@ -80,6 +83,7 @@ export default function PullToRefresh({ onRefresh, children, disabled = false })
             size={24}
             variant={refreshing ? 'indeterminate' : 'determinate'}
             value={progress}
+            aria-hidden="true"
             sx={{ color: '#D4AF37' }}
           />
           {refreshing && (

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import PropTypes from 'prop-types';
 import PullToRefresh from '../../../components/common/PullToRefresh';
 import {
   Box,
@@ -8,25 +7,15 @@ import {
   Paper,
   ButtonBase,
   Typography,
-  Card,
-  CardContent,
   Button,
   CircularProgress,
   Alert,
   IconButton,
   Tooltip,
   Chip,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Avatar,
-  Badge,
   LinearProgress,
-  Rating,
   useTheme,
   useMediaQuery,
-  Stack,
   Fade,
   Grow,
   SpeedDial,
@@ -38,7 +27,6 @@ import {
   alpha,
 } from '@mui/material';
 import {
-  Dashboard as DashboardIcon,
   Work as WorkIcon,
   Payment as PaymentIcon,
   Refresh as RefreshIcon,
@@ -48,14 +36,24 @@ import {
   People as PeopleIcon,
   Message as MessageIcon,
   PostAdd as PostAddIcon,
-  PersonSearch as PersonSearchIcon,
-  AttachMoney as AttachMoneyIcon,
   HelpOutline as HelpOutlineIcon,
   Assignment as ProposalIcon,
 } from '@mui/icons-material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Helmet } from 'react-helmet-async';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Cell as RechartsCell,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+} from 'recharts';
 import {
   fetchHirerProfile,
   fetchHirerJobs,
@@ -65,135 +63,18 @@ import {
   selectHirerPendingProposalCount,
   selectHirerError,
 } from '../services/hirerSlice';
-import { selectUnreadCount } from '../../notifications/services/notificationSlice';
+import RecentActivityFeed from '../components/RecentActivityFeed';
 
-// Enhanced dashboard card component
-const DashboardCard = ({
-  icon,
-  iconColor,
-  title,
-  value,
-  secondaryLabel,
-  secondaryValue,
-  secondaryComponent,
-  actionText,
-  actionIcon,
-  actionHandler,
-  actionColor = 'primary',
-  ...props
-}) => {
-  return (
-    <Card
-      elevation={3}
-      sx={{
-        height: '100%',
-        position: 'relative',
-        overflow: 'visible',
-        borderRadius: 3,
-        backgroundColor: 'background.paper',
-        borderLeft: '4px solid ' + iconColor,
-        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-        '&:hover': {
-          transform: 'translateY(-5px)',
-          boxShadow: '0 12px 20px rgba(0,0,0,0.15)',
-        },
-        ...props.sx,
-      }}
-      {...props}
-    >
-      <Box
-        sx={{
-          position: 'absolute',
-          top: -20,
-          left: 20,
-          width: 60,
-          height: 60,
-          borderRadius: '50%',
-          bgcolor: iconColor || 'primary.main',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0px 6px 15px rgba(0, 0, 0, 0.2)',
-          border: '4px solid',
-          borderColor: 'background.default',
-          zIndex: 1,
-        }}
-      >
-        {icon}
-      </Box>
-      <CardContent sx={{ pt: 6, pb: 3, px: 3 }}>
-        <Typography variant="h6" color="text.secondary" gutterBottom>
-          {title}
-        </Typography>
-        <Typography variant="h3" fontWeight={700} sx={{ mb: 2 }}>
-          {value}
-        </Typography>
-
-        {(secondaryLabel || secondaryComponent) && (
-          <Box sx={{ mt: 2, mb: 2 }}>
-            {secondaryLabel && (
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                {secondaryLabel}
-              </Typography>
-            )}
-            {secondaryComponent || (
-              <Typography variant="h6" fontWeight={600}>
-                {secondaryValue}
-              </Typography>
-            )}
-          </Box>
-        )}
-
-        {actionText && (
-          <Button
-            variant="contained"
-            color={actionColor}
-            endIcon={actionIcon || <ArrowForwardIcon />}
-            onClick={actionHandler}
-            sx={{ mt: 2, width: '100%', borderRadius: 2 }}
-          >
-            {actionText}
-          </Button>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
-
-DashboardCard.propTypes = {
-  icon: PropTypes.node,
-  iconColor: PropTypes.string,
-  title: PropTypes.node,
-  value: PropTypes.node,
-  secondaryLabel: PropTypes.node,
-  secondaryValue: PropTypes.node,
-  secondaryComponent: PropTypes.node,
-  actionText: PropTypes.node,
-  actionIcon: PropTypes.node,
-  actionHandler: PropTypes.func,
-  actionColor: PropTypes.string,
-  sx: PropTypes.object,
-};
-
-const StyledPaper = ({ children, elevation = 3, ...props }) => (
-  <Paper
-    elevation={elevation}
-    sx={{
-      borderRadius: 3,
-      overflow: 'hidden',
-      ...props.sx,
-    }}
-    {...props}
-  >
-    {children}
-  </Paper>
+/* ---------- Extracted sub-component (stable reference) ---------- */
+const LoadingOverviewSkeleton = () => (
+  <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }}>
+    {[...Array(4)].map((_, i) => (
+      <Grid item xs={6} sm={6} md={3} key={i}>
+        <Skeleton variant="rounded" height={180} animation="wave" />
+      </Grid>
+    ))}
+  </Grid>
 );
-
-StyledPaper.propTypes = {
-  children: PropTypes.node,
-  elevation: PropTypes.number,
-  sx: PropTypes.object,
-};
 
 const DASHBOARD_LOADING_TIMEOUT_MS = 10000;
 const APPLICATION_REFRESH_TTL_MS = 2 * 60 * 1000; // 2 minutes
@@ -229,17 +110,6 @@ const HirerDashboardPage = () => {
   const storeError = useSelector(selectHirerError('profile'));
   const jobsError = useSelector(selectHirerError('jobs'));
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-  // Summary skeleton for overview while data loads
-  const LoadingOverviewSkeleton = () => (
-    <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }}>
-      {[...Array(4)].map((_, i) => (
-        <Grid item xs={6} sm={6} md={3} key={i}>
-          <Skeleton variant="rounded" height={180} animation="wave" />
-        </Grid>
-      ))}
-    </Grid>
-  );
 
   // Fetch hirer data on component mount
   const clearLoadingTimeout = useCallback(() => {
@@ -375,7 +245,7 @@ const HirerDashboardPage = () => {
           );
         }
       } catch (err) {
-        console.error('Error fetching hirer data:', err);
+        // Error captured in state — no console logging in production
         if (!isMountedRef.current) {
           return;
         }
@@ -433,7 +303,7 @@ const HirerDashboardPage = () => {
       setLastRefreshed(Date.now());
       setTimeSinceRefresh('Just now');
     } catch (err) {
-      console.error('Error refreshing data:', err);
+      // Error captured in state — no console logging in production
       setError('Failed to refresh data. Please try again.');
     } finally {
       setRefreshing(false);
@@ -457,7 +327,7 @@ const HirerDashboardPage = () => {
         setLastRefreshed(Date.now());
         setTimeSinceRefresh('Just now');
       } catch (err) {
-        console.warn('Auto-refresh failed:', err);
+        // Silent failure on background refresh — intentional
         // Don't show error for background refresh failures
       }
     }, AUTO_REFRESH_INTERVAL_MS);
@@ -822,60 +692,50 @@ const HirerDashboardPage = () => {
               <Typography variant="h6" fontWeight={600} sx={{ mb: { xs: 1.5, sm: 3 }, color: 'text.primary', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                 Spending Overview
               </Typography>
-              {/* Simple Chart Placeholder */}
-              <Box
-                sx={{
-                  height: 250,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                  gap: 2,
-                }}
-              >
-                {summaryData.totalSpent > 0 ? (
-                  <Box role="img" aria-label={`Spending chart: ${summaryData.completedJobs} completed, ${summaryData.activeJobs} active jobs`} sx={{ width: '100%', display: 'flex', justifyContent: 'center', gap: 4 }}>
-                    <Box sx={{ textAlign: 'center' }}>
-                      <Box
-                        sx={{
-                          width: 60,
-                          height: Math.min(180, (summaryData.completedJobs / (summaryData.activeJobs + summaryData.completedJobs || 1)) * 180 + 20),
-                          bgcolor: '#1ABC9C',
-                          borderRadius: 1,
-                          mb: 1,
+              {/* Recharts BarChart replacing manual Box bars */}
+              <Box sx={{ height: 250, width: '100%' }}>
+                {summaryData.totalSpent > 0 || summaryData.completedJobs > 0 || summaryData.activeJobs > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={[
+                        { name: 'Completed', value: summaryData.completedJobs },
+                        { name: 'Active', value: summaryData.activeJobs },
+                      ]}
+                      margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                      <XAxis
+                        dataKey="name"
+                        tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
+                      />
+                      <YAxis
+                        allowDecimals={false}
+                        tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
+                      />
+                      <RechartsTooltip
+                        contentStyle={{
+                          backgroundColor: theme.palette.background.paper,
+                          border: `1px solid ${theme.palette.divider}`,
+                          borderRadius: 8,
                         }}
                       />
-                      <Typography variant="caption" color="text.secondary">Completed</Typography>
-                    </Box>
-                    <Box sx={{ textAlign: 'center' }}>
-                      <Box
-                        sx={{
-                          width: 60,
-                          height: Math.min(180, (summaryData.activeJobs / (summaryData.activeJobs + summaryData.completedJobs || 1)) * 180 + 20),
-                          bgcolor: '#F39C12',
-                          borderRadius: 1,
-                          mb: 1,
-                        }}
-                      />
-                      <Typography variant="caption" color="text.secondary">Active</Typography>
-                    </Box>
-                  </Box>
+                      <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                        {[
+                          { name: 'Completed', fill: '#1ABC9C' },
+                          { name: 'Active', fill: '#F39C12' },
+                        ].map((entry, index) => (
+                          <RechartsCell key={`bar-${index}`} fill={entry.fill} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
                 ) : (
-                  <Typography variant="body2" color="text.secondary">
-                    No spending data yet
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      No spending data yet
+                    </Typography>
+                  </Box>
                 )}
-                {/* Legend */}
-                <Box sx={{ display: 'flex', gap: 3, mt: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#1ABC9C' }} />
-                    <Typography variant="caption">Completed</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#F39C12' }} />
-                    <Typography variant="caption">Active</Typography>
-                  </Box>
-                </Box>
               </Box>
             </Paper>
           </Grid>
@@ -894,69 +754,95 @@ const HirerDashboardPage = () => {
               <Typography variant="h6" fontWeight={600} sx={{ mb: { xs: 1.5, sm: 3 }, color: 'text.primary', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                 Applications Overview
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, height: { xs: 'auto', sm: 250 } }}>
-                {/* Legend on left */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, justifyContent: 'center', pr: { xs: 0, sm: 4 }, pb: { xs: 2, sm: 0 } }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#4CAF50' }} />
-                    <Typography variant="body2">Completed: {summaryData.completedJobs}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#2196F3' }} />
-                    <Typography variant="body2">Submitted: {summaryData.pendingProposals}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#F44336' }} />
-                    <Typography variant="body2">Pending: {summaryData.pendingPayments}</Typography>
-                  </Box>
-                </Box>
-                {/* Donut Chart Placeholder */}
-                <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Box
-                    role="img"
-                    aria-label={`Applications donut chart: ${summaryData.completedJobs} completed, ${summaryData.pendingProposals} submitted, ${summaryData.pendingPayments} pending`}
-                    sx={{
-                      width: { xs: 130, sm: 180 },
-                      height: { xs: 130, sm: 180 },
-                      borderRadius: '50%',
-                      background: (() => {
-                        const total = summaryData.completedJobs + summaryData.pendingProposals + summaryData.pendingPayments;
-                        if (total === 0) return '#e0e0e0';
-                        const d1 = (summaryData.completedJobs / total) * 360;
-                        const d2 = d1 + (summaryData.pendingProposals / total) * 360;
-                        return `conic-gradient(
-                          #4CAF50 0deg ${d1}deg,
-                          #2196F3 ${d1}deg ${d2}deg,
-                          #F44336 ${d2}deg 360deg
-                        )`;
-                      })(),
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      position: 'relative',
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: { xs: 80, sm: 120 },
-                        height: { xs: 80, sm: 120 },
-                        borderRadius: '50%',
-                        bgcolor: 'background.paper',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Typography variant="h4" fontWeight={600} color="text.secondary" sx={{ fontSize: { xs: '1.25rem', sm: '2rem' } }}>
-                        {summaryData.activeJobs + summaryData.completedJobs}
-                      </Typography>
+              {(() => {
+                const appDonutData = [
+                  { name: 'Completed', value: summaryData.completedJobs, color: '#4CAF50' },
+                  { name: 'Submitted', value: summaryData.pendingProposals, color: '#2196F3' },
+                  { name: 'Pending', value: summaryData.pendingPayments, color: '#F44336' },
+                ].filter(d => d.value > 0);
+                const appTotal = summaryData.activeJobs + summaryData.completedJobs;
+
+                return (
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, height: { xs: 'auto', sm: 250 }, alignItems: 'center' }}>
+                    {/* Legend */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, justifyContent: 'center', pr: { xs: 0, sm: 4 }, pb: { xs: 2, sm: 0 } }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#4CAF50' }} />
+                        <Typography variant="body2">Completed: {summaryData.completedJobs}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#2196F3' }} />
+                        <Typography variant="body2">Submitted: {summaryData.pendingProposals}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#F44336' }} />
+                        <Typography variant="body2">Pending: {summaryData.pendingPayments}</Typography>
+                      </Box>
+                    </Box>
+                    {/* Donut Chart */}
+                    <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', minHeight: { xs: 160, sm: 220 } }}>
+                      {appDonutData.length > 0 ? (
+                        <ResponsiveContainer width="100%" height={220}>
+                          <PieChart>
+                            <Pie
+                              data={appDonutData}
+                              dataKey="value"
+                              nameKey="name"
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={55}
+                              outerRadius={85}
+                              paddingAngle={2}
+                              stroke="none"
+                            >
+                              {appDonutData.map((entry, idx) => (
+                                <RechartsCell key={`app-cell-${idx}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <RechartsTooltip
+                              contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+                              formatter={(value, name) => [`${value}`, name]}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <Box sx={{ width: 170, height: 170, borderRadius: '50%', bgcolor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Typography variant="body2" color="text.secondary">No data</Typography>
+                        </Box>
+                      )}
+                      {/* Center label overlaid on donut */}
+                      {appDonutData.length > 0 && (
+                        <Typography
+                          variant="h4"
+                          fontWeight={600}
+                          color="text.secondary"
+                          sx={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            fontSize: { xs: '1.25rem', sm: '2rem' },
+                            pointerEvents: 'none',
+                          }}
+                        >
+                          {appTotal}
+                        </Typography>
+                      )}
                     </Box>
                   </Box>
-                </Box>
-              </Box>
+                );
+              })()}
             </Paper>
           </Grid>
         </Grid>
+
+        {/* Recent Activity Feed (Phase 3) */}
+        <Box sx={{ mt: { xs: 2, sm: 3 } }}>
+          <RecentActivityFeed
+            jobs={activeJobs || []}
+            applications={applicationRecords || {}}
+          />
+        </Box>
       </Box>
     </Fade>
   );

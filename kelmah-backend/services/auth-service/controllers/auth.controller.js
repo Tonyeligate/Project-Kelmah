@@ -919,11 +919,13 @@ exports.facebookCallback = async (req, res, next) => {
     // Generate tokens
     const { accessToken, refreshToken } = jwtUtils.generateAuthTokens(user);
 
-    // Store refresh token in database
+    // Store refresh token in database (include jti + version for token rotation)
     await RefreshToken.create({
       userId: user.id,
       token: refreshToken,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      jti: jwtUtils.verifyRefreshToken(refreshToken).jti,
+      version: user.tokenVersion || 0
     });
 
     // Redirect to frontend with tokens
@@ -947,11 +949,13 @@ exports.linkedinCallback = async (req, res, next) => {
     // Generate tokens
     const { accessToken, refreshToken } = jwtUtils.generateAuthTokens(user);
 
-    // Store refresh token in database
+    // Store refresh token in database (include jti + version for token rotation)
     await RefreshToken.create({
       userId: user.id,
       token: refreshToken,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      jti: jwtUtils.verifyRefreshToken(refreshToken).jti,
+      version: user.tokenVersion || 0
     });
 
     // Redirect to frontend with tokens

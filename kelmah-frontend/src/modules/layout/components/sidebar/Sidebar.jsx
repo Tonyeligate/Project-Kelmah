@@ -11,11 +11,14 @@ import {
   Avatar,
   Badge,
   Tooltip,
+  IconButton,
 } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useNotifications } from '../../../notifications/contexts/NotificationContext';
 import { useMessages } from '../../../messaging/contexts/MessageContext';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import kelmahLogo from '../../../../assets/images/logo.png';
 
 // --- ICONS ---
@@ -85,14 +88,18 @@ const KelmahLogo = () => {
   );
 };
 
-const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
+export const SIDEBAR_WIDTH_EXPANDED = 260;
+export const SIDEBAR_WIDTH_COLLAPSED = 72;
+
+const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = false, onToggleCollapse }) => {
+  const sidebarWidth = collapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED;
   const user = useSelector((state) => state.auth.user);
   const { unreadCount: unreadMessages } = useMessages();
   const { unreadCount: unreadNotifications } = useNotifications();
   const location = useLocation();
 
-  // ✅ MOBILE-AUDIT FIX: Whether tooltips should show (disabled on temporary/mobile drawer)
-  const showTooltips = variant === 'permanent';
+  // ✅ MOBILE-AUDIT FIX: Whether tooltips should show (on permanent collapsed sidebar, or permanent desktop)
+  const showTooltips = variant === 'permanent' && collapsed;
 
   // Determine role for navigation
   const navRole =
@@ -155,38 +162,57 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
       onClose={variant === 'temporary' ? onClose : undefined}
       aria-label="Sidebar navigation"
       sx={{
-        width: 260,
+        width: sidebarWidth,
         flexShrink: 0,
+        transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
         [`& .MuiDrawer-paper`]: {
-          width: 260,
+          width: sidebarWidth,
+          transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
           boxSizing: 'border-box',
           backgroundColor: (theme) => theme.palette.background.paper,
           color: (theme) => theme.palette.text.primary,
           display: 'flex',
           flexDirection: 'column',
           borderRight: '1px solid rgba(255, 215, 0, 0.2)',
+          overflowX: 'hidden',
         },
       }}
     >
       {/* Logo Section */}
-      <Box sx={{ pt: 2, pb: 1 }}>
+      <Box sx={{ pt: 2, pb: 1, display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start', px: collapsed ? 0 : 2 }}>
         <KelmahLogo />
+        {/* Collapse toggle button */}
+        {onToggleCollapse && variant === 'permanent' && (
+          <IconButton
+            onClick={onToggleCollapse}
+            size="small"
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            sx={{
+              ml: collapsed ? 0 : 'auto',
+              color: '#FFD700',
+              '&:hover': { bgcolor: 'rgba(255,215,0,0.12)' },
+            }}
+          >
+            {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+          </IconButton>
+        )}
       </Box>
 
       {/* User Profile Card - Dark Theme Style */}
-      <Box
-        sx={{
-          mx: 2,
-          mb: 2,
-          p: 2,
-          backgroundColor: 'rgba(255, 215, 0, 0.1)',
-          borderRadius: 2,
-          border: '1px solid rgba(255, 215, 0, 0.2)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.5,
-        }}
-      >
+      {!collapsed && (
+        <Box
+          sx={{
+            mx: 2,
+            mb: 2,
+            p: 2,
+            backgroundColor: 'rgba(255, 215, 0, 0.1)',
+            borderRadius: 2,
+            border: '1px solid rgba(255, 215, 0, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+          }}
+        >
         <Avatar
           sx={{
             width: 40,
@@ -210,26 +236,30 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
           </Box>
         </Box>
       </Box>
+      )}
 
       {/* Dashboard Item - Highlighted Gold */}
-      <Box sx={{ px: 2, mb: 1 }}>
-        <ListItem
-          button
-          component={RouterLink}
-          to={dashboardPath}
-          sx={{
-            backgroundColor: isDashboardActive ? 'rgba(255, 215, 0, 0.15)' : 'transparent',
-            borderRadius: 1,
-            py: 1.5,
-            '&:hover': {
-              backgroundColor: 'rgba(255, 215, 0, 0.1)',
-            },
-          }}
-        >
-          <ListItemIcon sx={{ minWidth: 40 }}>
-            <DashboardIcon sx={{ color: '#FFD700' }} />
-          </ListItemIcon>
-          <ListItemText
+      <Tooltip title={collapsed ? 'Dashboard' : ''} placement="right" arrow disableHoverListener={!collapsed}>
+        <Box sx={{ px: collapsed ? 1 : 2, mb: 1 }}>
+          <ListItem
+            button
+            component={RouterLink}
+            to={dashboardPath}
+            sx={{
+              backgroundColor: isDashboardActive ? 'rgba(255, 215, 0, 0.15)' : 'transparent',
+              borderRadius: 1,
+              py: 1.5,
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 215, 0, 0.1)',
+              },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: collapsed ? 'auto' : 40, justifyContent: 'center' }}>
+              <DashboardIcon sx={{ color: '#FFD700' }} />
+            </ListItemIcon>
+            {!collapsed && (
+              <ListItemText
             primary="Dashboard"
             sx={{
               '& .MuiListItemText-primary': {
@@ -244,22 +274,26 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
               },
             }}
           />
-        </ListItem>
-      </Box>
+            )}
+          </ListItem>
+        </Box>
+      </Tooltip>
 
       {/* MENU Section Header */}
-      <Typography
-        variant="caption"
-        sx={{
-          px: 3,
-          py: 1,
-          color: 'rgba(255, 215, 0, 0.7)',
-          fontWeight: 600,
-          letterSpacing: 1,
-        }}
-      >
-        MENU
-      </Typography>
+      {!collapsed && (
+        <Typography
+          variant="caption"
+          sx={{
+            px: 3,
+            py: 1,
+            color: 'rgba(255, 215, 0, 0.7)',
+            fontWeight: 600,
+            letterSpacing: 1,
+          }}
+        >
+          MENU
+        </Typography>
+      )}
 
       {/* Menu Items */}
       <List sx={{ px: 1, flexGrow: 1 }}>
@@ -276,13 +310,14 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                   borderRadius: 1,
                   mb: 0.5,
                   py: 1.25,
+                  justifyContent: collapsed ? 'center' : 'flex-start',
                   backgroundColor: isActive ? 'rgba(255, 215, 0, 0.15)' : 'transparent',
                   '&:hover': {
                     backgroundColor: 'rgba(255, 215, 0, 0.08)',
                   },
                 }}
               >
-                <ListItemIcon sx={{ minWidth: 40 }}>
+                <ListItemIcon sx={{ minWidth: collapsed ? 'auto' : 40, justifyContent: 'center' }}>
                   {item.badge && item.badge > 0 ? (
                     <Badge color="error" badgeContent={item.badge} max={99}>
                       {React.cloneElement(item.icon, {
@@ -295,7 +330,8 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                     })
                   )}
                 </ListItemIcon>
-                <ListItemText
+                {!collapsed && (
+                  <ListItemText
                   primary={item.text}
                   sx={{
                     '& .MuiListItemText-primary': {
@@ -311,14 +347,15 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                     },
                   }}
                 />
+                )}
               </ListItem>
             );
 
-            // ✅ MOBILE-AUDIT FIX: Only wrap in Tooltip on permanent (desktop) sidebar
-            return showTooltips && item.tooltip ? (
+            // Wrap in Tooltip when collapsed to show item names on hover
+            return showTooltips ? (
               <Tooltip
                 key={item.text}
-                title={item.tooltip}
+                title={item.text}
                 placement="right"
                 arrow
               >
@@ -349,13 +386,14 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                 borderRadius: 1,
                 mb: 0.5,
                 py: 1.25,
+                justifyContent: collapsed ? 'center' : 'flex-start',
                 backgroundColor: isActive ? 'rgba(255, 215, 0, 0.15)' : 'transparent',
                 '&:hover': {
                   backgroundColor: 'rgba(255, 215, 0, 0.08)',
                 },
               }}
             >
-              <ListItemIcon sx={{ minWidth: 40 }}>
+              <ListItemIcon sx={{ minWidth: collapsed ? 'auto' : 40, justifyContent: 'center' }}>
                 {item.badge && item.badge > 0 ? (
                   <Badge color="error" badgeContent={item.badge} max={99}>
                     {React.cloneElement(item.icon, {
@@ -368,30 +406,31 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose }) => {
                   })
                 )}
               </ListItemIcon>
-              <ListItemText
-                primary={item.text}
-                sx={{
-                  '& .MuiListItemText-primary': {
-                    color: isActive ? '#FFD700' : '#E0E0E0',
-                    fontWeight: isActive ? 600 : 400,
-                    fontSize: '0.9rem',
-                    letterSpacing: 'normal',
-                    wordSpacing: 'normal',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    fontFamily: '"Inter", "Roboto", "Helvetica Neue", Arial, sans-serif',
-                  },
-                }}
-              />
+              {!collapsed && (
+                <ListItemText
+                  primary={item.text}
+                  sx={{
+                    '& .MuiListItemText-primary': {
+                      color: isActive ? '#FFD700' : '#E0E0E0',
+                      fontWeight: isActive ? 600 : 400,
+                      fontSize: '0.9rem',
+                      letterSpacing: 'normal',
+                      wordSpacing: 'normal',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      fontFamily: '"Inter", "Roboto", "Helvetica Neue", Arial, sans-serif',
+                    },
+                  }}
+                />
+              )}
             </ListItem>
           );
 
-          // ✅ MOBILE-AUDIT FIX: Only wrap in Tooltip on permanent (desktop) sidebar
-          return showTooltips && item.tooltip ? (
+          return showTooltips ? (
             <Tooltip
               key={item.text}
-              title={item.tooltip}
+              title={item.text}
               placement="right"
               arrow
             >

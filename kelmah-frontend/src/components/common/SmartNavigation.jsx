@@ -358,6 +358,8 @@ const SmartNavigation = () => {
       timeout={400}
     >
       <Paper
+        component="nav"
+        aria-label="Quick navigation shortcuts"
         elevation={8}
         sx={{
           position: 'fixed',
@@ -402,7 +404,20 @@ const SmartNavigation = () => {
           </Stack>
           <Stack direction="row" spacing={0.5} alignItems="center">
             <Tooltip title={isPinned ? 'Unpin shortcuts' : 'Pin shortcuts'}>
-              <IconButton size="small" onClick={handleTogglePin}>
+              <IconButton
+                size="small"
+                onClick={handleTogglePin}
+                aria-label={isPinned ? 'Unpin shortcuts' : 'Pin shortcuts'}
+                aria-pressed={isPinned}
+                sx={{
+                  minWidth: 36,
+                  minHeight: 36,
+                  '&:focus-visible': {
+                    outline: '3px solid #D4AF37',
+                    outlineOffset: '2px',
+                  },
+                }}
+              >
                 {isPinned ? (
                   <PushPinIcon fontSize="inherit" />
                 ) : (
@@ -411,7 +426,20 @@ const SmartNavigation = () => {
               </IconButton>
             </Tooltip>
             <Tooltip title="What is this panel?">
-              <IconButton size="small" onClick={handleInfoToggle}>
+              <IconButton
+                size="small"
+                onClick={handleInfoToggle}
+                aria-label="What is this panel?"
+                aria-expanded={showInfo}
+                sx={{
+                  minWidth: 36,
+                  minHeight: 36,
+                  '&:focus-visible': {
+                    outline: '3px solid #D4AF37',
+                    outlineOffset: '2px',
+                  },
+                }}
+              >
                 <InfoIcon fontSize="inherit" />
               </IconButton>
             </Tooltip>
@@ -448,10 +476,12 @@ const SmartNavigation = () => {
                 fullWidth
                 startIcon={suggestion.icon}
                 onClick={() => navigate(suggestion.path)}
+                aria-label={`${suggestion.label}: ${suggestion.description}`}
                 sx={{
                   justifyContent: 'flex-start',
                   textAlign: 'left',
                   p: 1.5,
+                  minHeight: 54,
                   borderRadius: 2,
                   bgcolor: 'rgba(255,255,255,0.05)',
                   border: '1px solid rgba(255,255,255,0.1)',
@@ -460,6 +490,10 @@ const SmartNavigation = () => {
                     bgcolor: 'rgba(255,255,255,0.1)',
                     border: `1px solid ${suggestion.color}`,
                     transform: 'translateX(4px)',
+                  },
+                  '&:focus-visible': {
+                    outline: '3px solid #D4AF37',
+                    outlineOffset: '2px',
                   },
                   transition: 'all 0.2s ease',
                 }}

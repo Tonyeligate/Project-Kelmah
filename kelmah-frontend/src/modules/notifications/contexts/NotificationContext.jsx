@@ -325,9 +325,17 @@ NotificationProvider.propTypes = {
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error(
-      'useNotifications must be used within a NotificationProvider',
-    );
+    // Return a safe no-op object instead of throwing so that consumers outside
+    // NotificationProvider (e.g. ContractContext) degrade gracefully.
+    return {
+      showToast: () => {},
+      notifications: [],
+      unreadCount: 0,
+      markAsRead: () => {},
+      markAllAsRead: () => {},
+      clearNotification: () => {},
+      clearAllNotifications: () => {},
+    };
   }
   return context;
 };

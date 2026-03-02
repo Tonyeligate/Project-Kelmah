@@ -303,11 +303,13 @@ class NotificationService {
   }
 }
 
+// Named export: full class instance used by NotificationContext + JobAlertsPage
 export const notificationService = new NotificationService();
 
 /**
- * Service for managing user notifications
- * This is the main export that should be used by components
+ * Simplified notification API wrapper — default export
+ * Used by NotificationSettingsPage and other simple consumers.
+ * For socket-level access (connect/disconnect), use the named { notificationService } export.
  */
 const notificationServiceUser = {
   /**

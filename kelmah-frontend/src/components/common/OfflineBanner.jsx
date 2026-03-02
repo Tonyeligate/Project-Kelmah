@@ -25,7 +25,7 @@ export default function OfflineBanner() {
 
   return (
     <>
-      {/* Persistent offline banner */}
+      {/* Persistent offline banner — role="alert" via Alert + aria-live for AT */}
       <Snackbar
         open={!isOnline}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
@@ -34,11 +34,14 @@ export default function OfflineBanner() {
       >
         <Alert
           severity="error"
-          icon={<WifiOffIcon />}
+          role="alert"
+          aria-live="assertive"
+          icon={<WifiOffIcon aria-hidden="true" />}
           sx={{
             width: '100%',
             maxWidth: 500,
             fontWeight: 600,
+            fontSize: '0.95rem',
             boxShadow: theme.shadows[4],
           }}
         >
@@ -57,8 +60,10 @@ export default function OfflineBanner() {
       >
         <Alert
           severity="success"
-          icon={<WifiIcon />}
-          sx={{ width: '100%', maxWidth: 500, fontWeight: 600 }}
+          role="status"
+          aria-live="polite"
+          icon={<WifiIcon aria-hidden="true" />}
+          sx={{ width: '100%', maxWidth: 500, fontWeight: 600, fontSize: '0.95rem' }}
         >
           Back online
         </Alert>

@@ -12,12 +12,10 @@ const ContractContext = createContext(null);
 
 export const ContractProvider = ({ children }) => {
   const { user } = useAuth();
-  let showToast = () => {};
-  try {
-    showToast = useNotifications().showToast;
-  } catch (e) {
-    // No NotificationProvider, fallback to no-op showToast
-  }
+  // Call hook unconditionally (Rules of Hooks) — the context returns null
+  // when there is no NotificationProvider ancestor.
+  const notifications = useNotifications();
+  const showToast = notifications?.showToast || (() => {});
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

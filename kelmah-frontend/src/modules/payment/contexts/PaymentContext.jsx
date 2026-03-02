@@ -60,7 +60,9 @@ export const PaymentProvider = ({ children }) => {
 
       // Wallet (404 -> zero balance)
       if (walletRes.status === 'fulfilled') {
-        setWalletBalance(walletRes.value.balance || 0);
+        // Normalize: API may return a number, or {total, available, pending}
+        const bal = walletRes.value?.balance ?? walletRes.value ?? 0;
+        setWalletBalance(typeof bal === 'number' ? bal : (bal?.available ?? bal?.total ?? 0));
       } else if (walletRes.reason?.response?.status === 404) {
         setWalletBalance(0);
       }

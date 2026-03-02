@@ -6,7 +6,7 @@ import { Box, Skeleton, useMediaQuery, useTheme } from '@mui/material';
  * Shows content-shaped skeletons instead of a blocking dark overlay so users
  * perceive faster transitions — especially important on 3G / low-end devices.
  */
-const LoadingScreen = ({ isLoading = true }) => {
+const LoadingScreen = ({ isLoading = true, message }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -14,6 +14,9 @@ const LoadingScreen = ({ isLoading = true }) => {
 
   return (
     <Box
+      role="status"
+      aria-busy="true"
+      aria-label={message || 'Loading content'}
       sx={{
         p: { xs: 2, sm: 3 },
         maxWidth: 1200,
@@ -22,6 +25,10 @@ const LoadingScreen = ({ isLoading = true }) => {
         bgcolor: 'background.default',
       }}
     >
+      {/* Screen-reader text */}
+      <Box sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>
+        {message || 'Loading content, please wait...'}
+      </Box>
       {/* Header skeleton */}
       <Skeleton variant="rectangular" height={isMobile ? 56 : 64} sx={{ borderRadius: 1, mb: 3 }} />
 

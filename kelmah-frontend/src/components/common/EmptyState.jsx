@@ -19,9 +19,25 @@ const iconMap = {
   profile: AccountCircleOutlined,
 };
 
+/* Accessible default messages per variant for screen readers */
+const ariaDescriptions = {
+  jobs: 'No jobs available',
+  messages: 'No messages yet',
+  notifications: 'No notifications',
+  search: 'No results found',
+  contracts: 'No contracts',
+  reviews: 'No reviews yet',
+  profile: 'Profile is empty',
+};
+
 /**
  * EmptyState — visual placeholder for empty lists. Shows a large icon, heading,
  * subtitle, and optional CTA button.
+ *
+ * Accessibility:
+ * - role="status" + aria-live so dynamic content changes are announced
+ * - Descriptive aria-label on the icon circle for screen readers
+ * - 54px-tall CTA button with visible focus ring for large-touch accessibility
  *
  * @param {'jobs'|'messages'|'notifications'|'search'|'contracts'|'reviews'|'profile'} variant
  * @param {string}   title
@@ -40,6 +56,9 @@ export default function EmptyState({
 
   return (
     <Box
+      role="status"
+      aria-live="polite"
+      aria-label={ariaDescriptions[variant] || title}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -51,6 +70,7 @@ export default function EmptyState({
       }}
     >
       <Box
+        aria-hidden="true"
         sx={{
           width: 96,
           height: 96,
@@ -66,6 +86,7 @@ export default function EmptyState({
       </Box>
       <Typography
         variant="h6"
+        component="h2"
         fontWeight={600}
         sx={{ color: 'text.primary', mb: 1 }}
       >
@@ -83,10 +104,19 @@ export default function EmptyState({
         <Button
           variant="contained"
           onClick={onAction}
+          aria-label={actionLabel}
           sx={{
             bgcolor: '#D4AF37',
             color: '#000',
+            fontWeight: 700,
+            minHeight: 54,
+            minWidth: 160,
+            fontSize: '1rem',
             '&:hover': { bgcolor: '#B8941F' },
+            '&:focus-visible': {
+              outline: '3px solid #D4AF37',
+              outlineOffset: '3px',
+            },
           }}
         >
           {actionLabel}

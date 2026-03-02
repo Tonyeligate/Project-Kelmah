@@ -1,4 +1,5 @@
 import { api } from '../../../services/apiClient';
+import { secureStorage } from '../../../utils/secureStorage';
 
 // Use centralized api client
 
@@ -16,8 +17,8 @@ const normalizeAppointment = (appointment = {}, index = 0) => ({
 
 const readStoredAppointments = () => {
   try {
-    const raw = localStorage.getItem(APPOINTMENTS_STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
+    const raw = secureStorage.getItem(APPOINTMENTS_STORAGE_KEY);
+    const parsed = raw ? (typeof raw === 'string' ? JSON.parse(raw) : raw) : [];
     return Array.isArray(parsed)
       ? parsed.map((appointment, index) =>
           normalizeAppointment(appointment, index),
@@ -29,7 +30,7 @@ const readStoredAppointments = () => {
 };
 
 const writeStoredAppointments = (appointments = []) => {
-  localStorage.setItem(APPOINTMENTS_STORAGE_KEY, JSON.stringify(appointments));
+  secureStorage.setItem(APPOINTMENTS_STORAGE_KEY, appointments);
 };
 
 const buildLocalAppointment = (appointmentData = {}) => ({

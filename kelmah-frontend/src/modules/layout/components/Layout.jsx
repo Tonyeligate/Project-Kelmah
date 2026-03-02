@@ -2,20 +2,15 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
-  Container,
   Fade,
-  AppBar,
-  Toolbar,
-  IconButton,
   Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
 import { useLocation, Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
-import Sidebar from './sidebar/Sidebar';
+import Sidebar, { SIDEBAR_WIDTH_EXPANDED, SIDEBAR_WIDTH_COLLAPSED } from './sidebar/Sidebar';
 import MobileBottomNav from './MobileBottomNav';
 // import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigation'; // ✅ REMOVED: Breadcrumb navigation taking up too much space
 import SmartNavigation from '../../../components/common/SmartNavigation';
@@ -83,6 +78,19 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
 
   // Session expired banner state - moved outside conditional blocks
   const [sessionExpired, setSessionExpired] = useState(false);
+
+  // Sidebar collapse state with localStorage persistence
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('kelmah-sidebar-collapsed')) === true; } catch { return false; }
+  });
+  const handleToggleSidebar = React.useCallback(() => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try { localStorage.setItem('kelmah-sidebar-collapsed', JSON.stringify(next)); } catch { /* noop */ }
+      return next;
+    });
+  }, []);
+
   React.useEffect(() => {
     const handler = () => setSessionExpired(true);
     window.addEventListener('auth:tokenExpired', handler);
@@ -144,13 +152,16 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
           autoShowMode={true}
           setThemeMode={resolvedSetThemeMode}
         />
-        <Sidebar variant="permanent" />
+        <Sidebar variant="permanent" collapsed={sidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
         <Box
           component="main"
           sx={{
             flexGrow: 1,
             width: '100%',
             minWidth: 0,
+            // Dynamic margin to match sidebar width transition
+            ml: 0, // Sidebar is already part of flex flow; no manual margin needed
+            transition: 'margin-left 0.25s cubic-bezier(0.4,0,0.2,1)',
             pt: { md: `${HEADER_HEIGHT_MOBILE}px` }, // Matches header minHeight on desktop
             px: { md: 3 },
             pb: { md: 3 },

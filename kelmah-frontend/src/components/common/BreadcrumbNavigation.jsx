@@ -119,6 +119,8 @@ const BreadcrumbNavigation = () => {
 
   return (
     <Box
+      component="nav"
+      aria-label="Breadcrumb navigation"
       sx={{
         py: { xs: 1, sm: 2 },
         px: { xs: 2, sm: 3 },
@@ -128,6 +130,7 @@ const BreadcrumbNavigation = () => {
     >
       <Breadcrumbs
         separator="›"
+        aria-label="Breadcrumb"
         sx={{
           '& .MuiBreadcrumbs-separator': {
             color: 'rgba(255,255,255,0.5)',
@@ -142,19 +145,21 @@ const BreadcrumbNavigation = () => {
             return (
               <Box
                 key={index}
+                aria-current="page"
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 0.5,
+                  minHeight: 36,
                 }}
               >
-                {icon}
+                {icon && React.cloneElement(icon, { 'aria-hidden': true })}
                 <Typography
                   variant="body2"
                   sx={{
                     color: '#D4AF37',
                     fontWeight: 'bold',
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
                   }}
                 >
                   {label}
@@ -176,19 +181,21 @@ const BreadcrumbNavigation = () => {
                 gap: 0.5,
                 color: 'rgba(255,255,255,0.7)',
                 textDecoration: 'none',
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                minHeight: 36,
+                px: 0.5,
+                fontSize: { xs: '0.8rem', sm: '0.875rem' },
                 '&:hover': {
                   color: '#D4AF37',
                   textDecoration: 'underline',
                 },
-                '&:focus': {
-                  outline: '2px solid #D4AF37',
+                '&:focus-visible': {
+                  outline: '3px solid #D4AF37',
                   outlineOffset: '2px',
                   borderRadius: '4px',
                 },
               }}
             >
-              {icon}
+              {icon && React.cloneElement(icon, { 'aria-hidden': true })}
               {label}
             </Link>
           );

@@ -1,4 +1,5 @@
 import { useMemo, useCallback } from 'react';
+// eslint-disable-next-line no-unused-vars
 import { useLocation } from 'react-router-dom';
 // Removed AuthContext import to prevent dual state management conflicts
 // import { useAuth } from '../modules/auth/hooks/useAuth';
@@ -7,20 +8,18 @@ import { useSelector } from 'react-redux';
 const useNavLinks = () => {
   // Use ONLY Redux auth state to prevent dual state management conflicts
   const { user, isAuthenticated } = useSelector((state) => state.auth);
-  const isInitialized = true; // Redux auth is always initialized
-  const hasRole = (role) => user?.role === role || user?.userType === role;
+  const userRole = user?.role || user?.userType;
   const location = useLocation();
 
   const navLinks = useMemo(() => {
-    if (!isInitialized) return [];
     const links = [
       { label: 'Home', to: '/' },
       { label: 'Jobs', to: '/jobs' },
-      { label: 'Find Workers', to: '/find-talents' }, // Changed from "Find Talents" for consistency
+      { label: 'Find Workers', to: '/find-talents' },
     ];
 
     // Add "Post a Job" for authenticated hirers
-    if (isAuthenticated && hasRole('hirer')) {
+    if (isAuthenticated && userRole === 'hirer') {
       links.push({ label: 'Post a Job', to: '/hirer/jobs/post' });
     }
 
@@ -33,7 +32,7 @@ const useNavLinks = () => {
     }
 
     return links;
-  }, [isInitialized, isAuthenticated, hasRole]);
+  }, [isAuthenticated, userRole]);
 
   const isActive = useCallback(
     (path) => {
