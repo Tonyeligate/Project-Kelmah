@@ -9,7 +9,7 @@ const devLog = (...args) => { if (__DEV__) console.log(...args); };
 // Async thunks for API operations
 export const fetchHirerProfile = createAsyncThunk(
   'hirer/fetchProfile',
-  async () => {
+  async (_, { rejectWithValue }) => {
     // Canonical endpoint: /users/me/credentials (verified in user-service routes)
     try {
       const response = await api.get('/users/me/credentials');
@@ -23,8 +23,12 @@ export const fetchHirerProfile = createAsyncThunk(
       try {
         const fallback = await api.get('/users/profile');
         return fallback?.data?.data || fallback?.data || {};
-      } catch (_) {
-        return {};
+      } catch (fallbackError) {
+        return rejectWithValue(
+          fallbackError?.response?.data?.message ||
+            fallbackError?.message ||
+            'Failed to fetch hirer profile',
+        );
       }
     }
   },

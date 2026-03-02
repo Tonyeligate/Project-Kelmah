@@ -119,33 +119,36 @@ class SecureStorage {
    * ciphertext and this key. Real token protection relies on CSP, HttpOnly cookies,
    * and short-lived tokens enforced server-side.
    *
-   * The secret is kept in sessionStorage so it does not survive browser restarts,
-   * limiting the exposure window on shared devices.
+   * The secret is stored in localStorage (not sessionStorage) so that multiple
+   * tabs can decrypt the same encrypted auth data. Using sessionStorage caused a
+   * critical P0 bug: each tab generated a different key, making it impossible to
+   * decrypt the shared localStorage auth tokens from a second tab.
    */
   getOrCreatePersistentSecret() {
     try {
       const keyName = 'kelmah_encryption_secret';
-      // Prefer sessionStorage to limit persistence across browser sessions
-      let secret = sessionStorage.getItem(keyName);
+      // Use localStorage so ALL tabs share the same encryption key.
+      // This is required because encrypted data lives in localStorage.
+      let secret = localStorage.getItem(keyName);
       if (!secret) {
-        // Migrate from legacy localStorage key if present
-        const legacy = localStorage.getItem(keyName);
+        // Migrate from sessionStorage if the key was previously stored there
+        const legacy = sessionStorage.getItem(keyName);
         if (legacy) {
           secret = legacy;
-          sessionStorage.setItem(keyName, secret);
-          localStorage.removeItem(keyName); // clean up legacy location
+          localStorage.setItem(keyName, secret);
+          sessionStorage.removeItem(keyName); // clean up old location
         } else {
           secret = 'ksec_' + CryptoJS.lib.WordArray.random(32).toString();
-          sessionStorage.setItem(keyName, secret);
+          localStorage.setItem(keyName, secret);
         }
       }
       return secret;
     } catch (error) {
       console.warn(
-        'Session storage unavailable, using session-scoped secret:',
+        'localStorage unavailable, using session-scoped secret:',
         error?.message || error,
       );
-      // Fallback to session-scoped value if sessionStorage is unavailable
+      // Fallback to sessionStorage if localStorage is blocked
       return sessionStorage.getItem('session_id') || this.generateSessionId();
     }
   }

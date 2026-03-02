@@ -70,27 +70,18 @@ export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
+      // authService.login() already stores token/refreshToken/user in secureStorage
+      // and sets up automatic token refresh. We only extract what the reducer needs.
       const response = await authService.login(credentials);
 
-      // Handle different response structures - backend sends {success: true, data: {token, user}}
       const responseData = response.data || response;
       const token = responseData.token;
       const user = responseData.user || {};
       const refreshToken = responseData.refreshToken;
       const normalizedUser = normalizeAuthUser(user);
 
-      // Make sure we have a token and user data
       if (token) {
-        // Store token and user data securely
-        secureStorage.setAuthToken(token);
-        if (normalizedUser) {
-          secureStorage.setUserData(normalizedUser);
-        }
-        if (refreshToken) {
-          secureStorage.setRefreshToken(refreshToken);
-        }
-
-        // Return structured data for the reducer
+        // Return structured data for the reducer — storage is handled by authService.login()
         return {
           token,
           user: normalizedUser,

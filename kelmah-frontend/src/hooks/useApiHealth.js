@@ -15,9 +15,11 @@ export const useApiHealth = () => {
     const checkHealth = async (isRetry = false) => {
       try {
         // Try multiple health endpoints for resilience
+        // Note: API_BASE_URL includes /api suffix, and /api/health/aggregate is
+        // a registered gateway route. /health (without /api) is NOT accessible
+        // through the gateway proxy.
         const healthEndpoints = [
           `${API_BASE_URL}/health/aggregate`,
-          `${API_BASE_URL}/health`,
         ];
 
         for (const healthUrl of healthEndpoints) {

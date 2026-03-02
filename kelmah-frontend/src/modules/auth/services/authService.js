@@ -377,9 +377,22 @@ const authService = {
       const response = await api.get(`/auth/verify-email/${token}`);
       const payload = response.data?.data || response.data || {};
       const normalizedUser = persistNormalizedUser(payload.user || payload);
+
+      // Backend may return the access token as `accessToken` or `token`
+      const accessToken = payload.accessToken || payload.token;
+      const refreshToken = payload.refreshToken;
+      if (accessToken) {
+        secureStorage.setAuthToken(accessToken);
+        authService.setupTokenRefresh(accessToken);
+      }
+      if (refreshToken) {
+        secureStorage.setRefreshToken(refreshToken);
+      }
+
       return {
         success: true,
         user: normalizedUser || payload.user || payload,
+        token: accessToken || null,
         message: payload.message,
       };
     } catch (error) {

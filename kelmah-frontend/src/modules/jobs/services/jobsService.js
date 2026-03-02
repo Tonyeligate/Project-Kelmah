@@ -349,43 +349,8 @@ const jobsApi = {
     try {
       const response = await api.get(`/jobs/${jobId}`);
 
-      // Handle the response format: {success: true, items: [...], page: 1, total: 12}
-      if (
-        response.data &&
-        response.data.items &&
-        Array.isArray(response.data.items)
-      ) {
-        // Find the specific job by ID
-        const job = response.data.items.find(
-          (item) => item.id === jobId || item._id === jobId,
-        );
-        if (job) {
-          // Return non-destructively normalized job
-          const normalized = {
-            ...job,
-            // Provide compatibility fields used by UI
-            created_at: job.created_at || job.createdAt || job.postedDate,
-            hirer_name: job.hirer_name || job.hirer?.name,
-            postedDate:
-              job.postedDate ||
-              (job.createdAt ? new Date(job.createdAt) : undefined),
-            deadline:
-              job.deadline || (job.endDate ? new Date(job.endDate) : undefined),
-            skills: Array.isArray(job.skills)
-              ? job.skills
-              : typeof job.skills_required === 'string'
-                ? job.skills_required
-                  .split(',')
-                  .map((s) => s.trim())
-                  .filter(Boolean)
-                : [],
-          };
-          return normalized;
-        }
-      }
-
-      // Fallback to old format (return merged normalized fields without removing originals)
-      const raw = response.data.data || response.data;
+      // Backend GET /api/jobs/:id returns { success, data: { ...job } }
+      const raw = response.data?.data || response.data;
       const normalized =
         raw && typeof raw === 'object'
           ? {
@@ -424,12 +389,40 @@ const jobsApi = {
       const response = await api.get('/jobs', {
         params: searchParams,
       });
-      const jobs = response.data.data || response.data.jobs || [];
+
+      // Re-use the same multi-format response parsing as getJobs()
+      let jobs = [];
+      let totalPages = 1;
+      let totalJobs = 0;
+      let currentPage = 1;
+
+      if (response.data) {
+        if (response.data.data && response.data.data.items && Array.isArray(response.data.data.items)) {
+          const paginated = response.data.data;
+          jobs = paginated.items;
+          totalPages = paginated.pagination?.totalPages || 1;
+          totalJobs = paginated.pagination?.total || jobs.length;
+          currentPage = paginated.pagination?.page || 1;
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          jobs = response.data.data;
+          totalPages = response.data.pagination?.totalPages || 1;
+          totalJobs = response.data.pagination?.totalItems || jobs.length;
+          currentPage = response.data.pagination?.currentPage || 1;
+        } else if (Array.isArray(response.data.jobs)) {
+          jobs = response.data.jobs;
+          totalPages = response.data.totalPages || 1;
+          totalJobs = response.data.totalJobs || jobs.length;
+          currentPage = response.data.currentPage || 1;
+        } else if (Array.isArray(response.data)) {
+          jobs = response.data;
+        }
+      }
+
       return {
         jobs: jobs.map(transformJobListItem),
-        totalPages: response.data.totalPages || 1,
-        totalJobs: response.data.totalJobs || jobs.length,
-        currentPage: response.data.currentPage || 1,
+        totalPages,
+        totalJobs,
+        currentPage,
       };
     } catch (error) {
       console.warn('Job service unavailable for job search:', error.message);

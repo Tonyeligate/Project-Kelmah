@@ -65,21 +65,17 @@ const getApiBaseUrl = () => {
     return runtimeConfig.API_URL || runtimeConfig.ngrokUrl;
   }
 
-  // Priority 3: Environment variable - BUT ONLY if it's NOT the old 5loa URL
+  // Priority 3: Environment variable
   const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl && !envUrl.includes('5loa') && !envUrl.includes('6yoy') && !envUrl.includes('50z3')) {
+  if (envUrl) {
     return envUrl;
   }
 
-  // Priority 4: Cached healthy URL from localStorage (but not if it's 5loa)
+  // Priority 4: Cached healthy URL from localStorage
   if (typeof window !== 'undefined') {
     const cached = localStorage.getItem('kelmah:lastHealthyApiBase');
-    if (cached && !cached.includes('5loa') && !cached.includes('6yoy') && !cached.includes('50z3')) {
+    if (cached) {
       return cached;
-    }
-    // Clear bad cache if it exists
-    if (cached && (cached.includes('5loa') || cached.includes('6yoy') || cached.includes('50z3'))) {
-      localStorage.removeItem('kelmah:lastHealthyApiBase');
     }
   }
 
