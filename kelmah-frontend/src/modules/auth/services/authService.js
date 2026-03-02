@@ -343,7 +343,8 @@ const authService = {
   // Update profile
   updateProfile: async (profileData) => {
     try {
-      const response = await api.put('/auth/profile', profileData);
+      // Profile updates go through user-service, not auth-service
+      const response = await api.put('/users/profile', profileData);
       const payload = response.data?.data || response.data || {};
       const normalizedUser = persistNormalizedUser(payload.user || payload);
 

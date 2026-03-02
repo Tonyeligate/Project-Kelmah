@@ -599,10 +599,14 @@ const workerService = {
   /**
    * Withdraw application from a job
    * @param {string} jobId - Job ID
+   * @param {string} applicationId - Application ID
    * @returns {Promise<void>}
    */
-  withdrawApplication: (jobId) => {
-    return api.delete(`/jobs/${jobId}/apply`);
+  withdrawApplication: (jobId, applicationId) => {
+    if (!jobId || !applicationId) {
+      throw new Error('jobId and applicationId are required to withdraw application');
+    }
+    return api.delete(`/jobs/${jobId}/applications/${applicationId}`);
   },
 
   /**
@@ -610,8 +614,24 @@ const workerService = {
    * @param {string} jobId - Job ID
    * @returns {Promise<Object>} - Application status
    */
-  getApplicationStatus: (jobId) => {
-    return api.get(`/jobs/${jobId}/application-status`);
+  getApplicationStatus: async (jobId) => {
+    if (!jobId) {
+      throw new Error('jobId is required to get application status');
+    }
+
+    const response = await api.get('/jobs/applications/me');
+    const applications = response?.data?.data ?? response?.data ?? [];
+    const list = Array.isArray(applications) ? applications : [];
+    const match = list.find(
+      (application) =>
+        application?.job?._id === jobId || application?.job?.id === jobId,
+    );
+
+    return {
+      hasApplied: Boolean(match),
+      status: match?.status || null,
+      application: match || null,
+    };
   },
 };
 

@@ -688,10 +688,10 @@ const SearchPage = () => {
     setShowMap(!showMap);
   };
 
-  // Handle worker saving
+  // Handle worker saving (bookmark)
   const handleSaveWorker = async (worker) => {
     try {
-      await api.post(`/workers/${worker.id}/save`, {});
+      await api.post(`/users/workers/${worker.id}/bookmark`, {});
 
       // Update saved status in results
       setSearchResults((prevResults) =>

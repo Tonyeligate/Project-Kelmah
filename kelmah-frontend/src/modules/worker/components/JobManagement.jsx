@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { normalizeUser } from '../../../utils/userUtils';
+import { api } from '../../../services/apiClient';
 import {
   Box,
   Paper,
@@ -41,6 +43,7 @@ const JobManagement = () => {
   // FIXED: Use standardized user normalization for consistent user data access
   const { user: rawUser } = useSelector((state) => state.auth);
   const user = normalizeUser(rawUser);
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -61,11 +64,28 @@ const JobManagement = () => {
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/workers/${user.id}/jobs?status=${getStatusForTab(activeTab)}`,
-      );
-      const data = await response.json();
-      setJobs(data);
+      const status = getStatusForTab(activeTab);
+      const response =
+        activeTab === 2
+          ? await api.get('/jobs', {
+            params: {
+              status: 'open',
+              page: 1,
+              limit: 20,
+            },
+          })
+          : await api.get('/jobs/assigned', {
+            params: status === 'all' ? {} : { status },
+          });
+      const payload = response?.data?.data ?? response?.data ?? {};
+      const list = Array.isArray(payload?.results)
+        ? payload.results
+        : Array.isArray(payload?.items)
+          ? payload.items
+        : Array.isArray(payload)
+          ? payload
+          : [];
+      setJobs(list);
       setError(null);
     } catch (err) {
       setError('Failed to load jobs');
@@ -78,11 +98,11 @@ const JobManagement = () => {
   const getStatusForTab = (tab) => {
     switch (tab) {
       case 0:
-        return 'active';
+        return 'in-progress';
       case 1:
         return 'completed';
       case 2:
-        return 'available';
+        return 'open';
       default:
         return 'all';
     }
@@ -139,23 +159,40 @@ const JobManagement = () => {
   };
 
   const sendMessage = async () => {
-    // Implement message sending
+    const trimmed = (formData.message || '').trim();
+    if (!trimmed) {
+      throw new Error('Message is required');
+    }
+
+    const draftPayload = {
+      text: trimmed,
+      source: 'job-management',
+      jobId: selectedJob?._id || selectedJob?.id || null,
+      jobTitle: selectedJob?.title || 'Job',
+      createdAt: new Date().toISOString(),
+    };
+
+    sessionStorage.setItem('kelmah_message_draft', JSON.stringify(draftPayload));
+    navigate('/messages');
   };
 
   const submitMilestone = async () => {
-    // Implement milestone submission
+    throw new Error('Milestone submission is not available from this screen yet');
   };
 
   const submitReview = async () => {
-    // Implement review submission
+    throw new Error('Review submission is not available from this screen yet');
   };
 
-  const getStatusColor = (status) => {
-    switch (status.toLowerCase()) {
+  const getStatusColor = (status = '') => {
+    const normalized = String(status).toLowerCase();
+    switch (normalized) {
       case 'active':
+      case 'in-progress':
         return 'primary';
       case 'completed':
         return 'success';
+      case 'open':
       case 'pending':
         return 'warning';
       case 'cancelled':
@@ -166,7 +203,7 @@ const JobManagement = () => {
   };
 
   const renderJobCard = (job) => (
-    <Card key={job.id} sx={{ mb: 2 }}>
+    <Card key={job.id || job._id} sx={{ mb: 2 }}>
       <CardContent>
         <Box
           sx={{
@@ -179,7 +216,7 @@ const JobManagement = () => {
           <Box>
             <Typography variant="h6">{job.title}</Typography>
             <Typography variant="body2" color="text.secondary">
-              {job.hirerName}
+              {job?.hirerName || `${job?.hirer?.firstName || ''} ${job?.hirer?.lastName || ''}`.trim() || 'Hirer'}
             </Typography>
           </Box>
           <Chip
@@ -194,14 +231,18 @@ const JobManagement = () => {
             <Typography variant="body2" color="text.secondary">
               Budget
             </Typography>
-            <Typography variant="body1">GH₵{job.budget}</Typography>
+            <Typography variant="body1">
+              GH₵{job?.budget?.amount ?? job?.budget ?? 0}
+            </Typography>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="body2" color="text.secondary">
               Deadline
             </Typography>
             <Typography variant="body1">
-              {format(new Date(job.deadline), 'MMM dd, yyyy')}
+              {job?.deadline
+                ? format(new Date(job.deadline), 'MMM dd, yyyy')
+                : 'N/A'}
             </Typography>
           </Grid>
           <Grid item xs={12}>
@@ -221,7 +262,7 @@ const JobManagement = () => {
         >
           Message
         </Button>
-        {job.status === 'active' && (
+        {(job.status === 'active' || job.status === 'in-progress') && (
           <Button
             size="small"
             startIcon={<AssessmentIcon />}
@@ -287,7 +328,7 @@ const JobManagement = () => {
         <MenuItem onClick={() => handleDialogOpen('message')}>
           <MessageIcon sx={{ mr: 1 }} /> Send Message
         </MenuItem>
-        {selectedJob?.status === 'active' && (
+        {(selectedJob?.status === 'active' || selectedJob?.status === 'in-progress') && (
           <MenuItem onClick={() => handleDialogOpen('milestone')}>
             <AssessmentIcon sx={{ mr: 1 }} /> Submit Milestone
           </MenuItem>

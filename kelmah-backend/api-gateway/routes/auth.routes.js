@@ -103,10 +103,15 @@ router.post('/resend-verification-email', publicAuthProxy);
 // Protected routes
 router.post('/logout', authenticate, protectedAuthProxy);
 router.get('/me', authenticate, protectedAuthProxy);
-router.put('/change-password', authenticate, protectedAuthProxy);
+// Both frontend and auth-service use POST for change-password
+router.post('/change-password', authenticate, protectedAuthProxy);
 router.post('/validate', authenticate, protectedAuthProxy);
 
-// MFA routes
+// MFA routes — auth-service expects /mfa/setup, /mfa/verify, /mfa/disable
+router.post('/mfa/setup', authenticate, protectedAuthProxy);
+router.post('/mfa/verify', authenticate, protectedAuthProxy);
+router.post('/mfa/disable', authenticate, protectedAuthProxy);
+// Legacy aliases (setup-mfa, verify-mfa, disable-mfa)
 router.post('/setup-mfa', authenticate, protectedAuthProxy);
 router.post('/verify-mfa', authenticate, protectedAuthProxy);
 router.post('/disable-mfa', authenticate, protectedAuthProxy);

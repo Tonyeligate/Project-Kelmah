@@ -24,13 +24,26 @@ const applicationsApi = {
   },
 
   /**
-   * Get application by ID — find within job applications
-   * No dedicated gateway route; fall back gracefully
+   * Get application by ID (job-scoped)
+   * Gateway route: GET /api/jobs/:jobId/applications
    */
-  getApplicationById: async (applicationId) => {
+  getApplicationById: async (jobId, applicationId) => {
+    if (!jobId || !applicationId) {
+      return null;
+    }
     try {
-      const response = await api.get(`/jobs/applications/${applicationId}`);
-      return response.data.data || response.data;
+      const response = await api.get(`/jobs/${jobId}/applications`);
+      const list = response.data.data || response.data || [];
+      if (!Array.isArray(list)) {
+        return null;
+      }
+      return (
+        list.find(
+          (application) =>
+            application?._id === applicationId ||
+            application?.id === applicationId,
+        ) || null
+      );
     } catch {
       return null;
     }
@@ -47,12 +60,15 @@ const applicationsApi = {
 
   /**
    * Withdraw an application
-   * Gateway route: DELETE /api/jobs/:jobId/applications/:applicationId (via /:id pattern)
+   * Gateway route: DELETE /api/jobs/:jobId/applications/:applicationId
    */
-  withdrawApplication: async (applicationId) => {
+  withdrawApplication: async (jobId, applicationId) => {
+    if (!jobId || !applicationId) {
+      return { success: false, message: 'jobId and applicationId are required' };
+    }
     try {
       const response = await api.delete(
-        `/jobs/applications/${applicationId}`,
+        `/jobs/${jobId}/applications/${applicationId}`,
       );
       return response.data;
     } catch (error) {
@@ -66,10 +82,13 @@ const applicationsApi = {
   /**
    * Update application (if allowed)
    */
-  updateApplication: async (applicationId, updateData) => {
+  updateApplication: async (jobId, applicationId, updateData) => {
+    if (!jobId || !applicationId) {
+      return null;
+    }
     try {
       const response = await api.put(
-        `/jobs/applications/${applicationId}`,
+        `/jobs/${jobId}/applications/${applicationId}`,
         updateData,
       );
       return response.data.data || response.data;

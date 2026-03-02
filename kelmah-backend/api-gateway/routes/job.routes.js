@@ -214,6 +214,26 @@ router.get('/:id/applications', authenticate, async (req, res) => {
   await forwardToJobService(req, res, `/api/jobs/${req.params.id}/applications`, 'GET');
 });
 
+// PUT /api/jobs/:id/applications/:applicationId - Update application status (protected)
+router.put('/:id/applications/:applicationId', authenticate, async (req, res) => {
+  await forwardToJobService(
+    req,
+    res,
+    `/api/jobs/${req.params.id}/applications/${req.params.applicationId}`,
+    'PUT',
+  );
+});
+
+// DELETE /api/jobs/:id/applications/:applicationId - Withdraw application (protected)
+router.delete('/:id/applications/:applicationId', authenticate, async (req, res) => {
+  await forwardToJobService(
+    req,
+    res,
+    `/api/jobs/${req.params.id}/applications/${req.params.applicationId}`,
+    'DELETE',
+  );
+});
+
 // POST /api/jobs/:id/save - Save job (protected)
 router.post('/:id/save', authenticate, async (req, res) => {
   await forwardToJobService(req, res, `/api/jobs/${req.params.id}/save`, 'POST');

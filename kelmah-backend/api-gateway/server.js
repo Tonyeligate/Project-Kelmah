@@ -639,6 +639,27 @@ app.use('/api/settings',
   })
 );
 
+// Dashboard routes (protected) → user-service /api/users/dashboard/*
+const dashboardRouter = require('./routes/dashboard.routes');
+app.use('/api/dashboard', dashboardRouter);
+
+// Appointments / Scheduling routes (protected) → user-service
+// The frontend schedulingService calls /api/appointments/* and the user-service
+// exposes a basic appointments endpoint. Proxy through so it doesn't 404.
+app.use('/api/appointments',
+  authenticate,
+  createDynamicProxy('user', {
+    pathRewrite: { '^/api/appointments': '/api/appointments' },
+    onError: (err, req, res) => {
+      console.error('[API Gateway] Appointments proxy error:', err.message);
+      res.status(503).json({
+        success: false,
+        error: { message: 'Scheduling service temporarily unavailable', code: 'SERVICE_UNAVAILABLE' }
+      });
+    }
+  })
+);
+
 // Worker routes (public read, protected write) with validation
 app.use(
   '/api/workers',

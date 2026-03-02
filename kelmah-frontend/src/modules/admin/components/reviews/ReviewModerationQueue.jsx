@@ -231,14 +231,12 @@ const ReviewModerationQueue = () => {
 
     async bulkModerate(reviewIds, status, note = '') {
       try {
-        // No dedicated bulk endpoint; simulate sequence for now
-        for (const id of reviewIds) {
-          await reviewService.moderateReview(id, status, note);
-        }
-        return {
-          success: true,
-          message: `${reviewIds.length} reviews ${status} successfully`,
-        };
+        const result = await reviewService.bulkModerateReviews(
+          reviewIds,
+          status,
+          note,
+        );
+        return result;
       } catch (e) {
         if (import.meta.env.MODE === 'development' && FEATURES.useMocks) {
           await new Promise((r) => setTimeout(r, 300));
@@ -302,18 +300,11 @@ const ReviewModerationQueue = () => {
   const handleBulkModeration = async (status) => {
     if (bulkSelection.size === 0) return;
     try {
-      // Use admin bulk endpoint through reviewsApi
-      const resp = await fetch('/api/admin/reviews/bulk-moderate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ids: Array.from(bulkSelection),
-          status,
-          note: moderationNote,
-        }),
-      });
-      const json = await resp.json();
-      if (!resp.ok) throw new Error(json.message || 'Bulk moderation failed');
+      await moderationApi.bulkModerate(
+        Array.from(bulkSelection),
+        status,
+        moderationNote,
+      );
       showFeedback(
         `${bulkSelection.size} reviews ${status} successfully`,
         'success',

@@ -32,11 +32,14 @@ import {
 } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 import { normalizeUser } from '../../../utils/userUtils';
+import { api } from '../../../services/apiClient';
 import { format, parseISO, isSameDay } from 'date-fns';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+
+const unwrap = (response) => response?.data?.data ?? response?.data ?? {};
 
 const AvailabilityCalendar = () => {
   // FIXED: Use standardized user normalization for consistent user data access
@@ -68,24 +71,19 @@ const AvailabilityCalendar = () => {
         return;
       }
 
-      const response = await fetch(
-        `/api/availability/${userId}`,
-      );
-      if (!response.ok) {
-        throw new Error(`Failed to load availability (${response.status})`);
-      }
-      const data = await response.json();
+      const response = await api.get(`/availability/${userId}`);
+      const data = unwrap(response);
 
       // Backend returns { success, data: { daySlots: [...] } }
-      const normalizedSlots = Array.isArray(data?.data?.daySlots)
-        ? data.data.daySlots.flatMap((day) => {
+      const normalizedSlots = Array.isArray(data?.daySlots)
+        ? data.daySlots.flatMap((day) => {
           const daySlots = Array.isArray(day?.slots) ? day.slots : [];
           const currentDate = format(selectedDate, 'yyyy-MM-dd');
           return daySlots.map((slot, index) => ({
             id: `${day.dayOfWeek}-${index}`,
             startTime: `${currentDate}T${slot.start || '09:00'}:00`,
             endTime: `${currentDate}T${slot.end || '17:00'}:00`,
-            status: data?.data?.isAvailable ? 'available' : 'unavailable',
+            status: data?.isAvailable ? 'available' : 'unavailable',
           }));
         })
         : [];
@@ -165,17 +163,7 @@ const AvailabilityCalendar = () => {
         ],
       };
 
-      const response = await fetch(`/api/availability/${userId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save availability');
-      }
+      await api.put(`/availability/${userId}`, payload);
 
       handleDialogClose();
       fetchAvailability();

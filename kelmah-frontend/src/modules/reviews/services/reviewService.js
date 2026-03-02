@@ -299,6 +299,20 @@ class ReviewService {
       throw error;
     }
   }
+
+  async bulkModerateReviews(ids = [], status, note = '') {
+    try {
+      const response = await api.post('/admin/reviews/bulk-moderate', {
+        ids,
+        status,
+        note,
+      });
+      return unwrapResponse(response);
+    } catch (error) {
+      console.error('Error bulk moderating reviews:', error);
+      throw error;
+    }
+  }
 }
 
 const reviewService = new ReviewService();

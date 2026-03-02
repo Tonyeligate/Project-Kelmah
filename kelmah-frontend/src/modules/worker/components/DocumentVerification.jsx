@@ -45,6 +45,28 @@ import {
 } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 import { normalizeUser } from '../../../utils/userUtils';
+import { api } from '../../../services/apiClient';
+import certificateService from '../services/certificateService';
+
+const unwrap = (response) => response?.data?.data ?? response?.data ?? {};
+
+const toDocumentView = (certificate = {}) => ({
+  id: certificate.id || certificate._id,
+  type: certificate.issuer || 'Certificate',
+  title: certificate.name || 'Untitled Document',
+  description: certificate?.metadata?.description || '',
+  file: null,
+  fileUrl: certificate.url || null,
+  expiryDate: certificate.expiresAt || null,
+  issuedAt: certificate.issuedAt || null,
+  credentialId: certificate.credentialId || '',
+  status:
+    certificate.status === 'verified'
+      ? 'verified'
+      : certificate.status === 'rejected'
+        ? 'rejected'
+        : 'pending',
+});
 
 const DocumentVerification = () => {
   // FIXED: Use standardized user normalization for consistent user data access
@@ -71,9 +93,20 @@ const DocumentVerification = () => {
   const fetchDocuments = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/workers/${user.id}/documents`);
-      const data = await response.json();
-      setDocuments(data);
+      const userId = user?.id || user?._id;
+      if (!userId) {
+        setDocuments([]);
+        setError('User context is missing. Please log in again.');
+        return;
+      }
+
+      const response = await api.get(`/workers/${userId}/certificates`);
+      const payload = unwrap(response);
+      const certificates = Array.isArray(payload?.certificates)
+        ? payload.certificates
+        : [];
+
+      setDocuments(certificates.map(toDocumentView));
       setError(null);
     } catch (err) {
       setError('Failed to load documents');
@@ -135,30 +168,36 @@ const DocumentVerification = () => {
   const handleSubmit = async () => {
     try {
       setLoading(true);
-      const formDataToSend = new FormData();
-      Object.keys(formData).forEach((key) => {
-        if (formData[key] !== null) {
-          formDataToSend.append(key, formData[key]);
-        }
-      });
+      const userId = user?.id || user?._id;
+      if (!userId) {
+        throw new Error('Missing user id');
+      }
 
-      const url = editingDocument
-        ? `/api/workers/${user.id}/documents/${editingDocument.id}`
-        : `/api/workers/${user.id}/documents`;
+      let uploadedFileUrl = editingDocument?.fileUrl || null;
+      if (formData.file) {
+        const uploadResult = await certificateService.uploadCertificateFile(
+          formData.file,
+          setUploadProgress,
+        );
+        uploadedFileUrl = uploadResult?.url || uploadedFileUrl;
+      }
 
-      const method = editingDocument ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        body: formDataToSend,
-        onUploadProgress: (progressEvent) => {
-          const progress = (progressEvent.loaded / progressEvent.total) * 100;
-          setUploadProgress(progress);
+      const payload = {
+        name: formData.title,
+        issuer: formData.type,
+        issuedAt: formData.expiryDate || new Date().toISOString(),
+        expiresAt: formData.expiryDate || null,
+        credentialId: editingDocument?.credentialId || null,
+        url: uploadedFileUrl,
+        metadata: {
+          description: formData.description,
         },
-      });
+      };
 
-      if (!response.ok) {
-        throw new Error('Failed to save document');
+      if (editingDocument?.id) {
+        await api.put(`/workers/${userId}/certificates/${editingDocument.id}`, payload);
+      } else {
+        await api.post(`/workers/${userId}/certificates`, payload);
       }
 
       handleDialogClose();
@@ -175,16 +214,12 @@ const DocumentVerification = () => {
   const handleDelete = async (documentId) => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/workers/${user.id}/documents/${documentId}`,
-        {
-          method: 'DELETE',
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to delete document');
+      const userId = user?.id || user?._id;
+      if (!userId) {
+        throw new Error('Missing user id');
       }
+
+      await api.delete(`/workers/${userId}/certificates/${documentId}`);
 
       fetchDocuments();
     } catch (err) {
@@ -197,14 +232,21 @@ const DocumentVerification = () => {
 
   const handleDownload = async (documentId) => {
     try {
-      const response = await fetch(
-        `/api/workers/${user.id}/documents/${documentId}/download`,
-      );
+      const selected = documents.find((item) => item.id === documentId);
+      if (!selected?.fileUrl) {
+        throw new Error('No file available for download');
+      }
+
+      const response = await fetch(selected.fileUrl);
+      if (!response.ok) {
+        throw new Error('Unable to download file');
+      }
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `document-${documentId}.pdf`;
+      a.download = `${selected.title || 'document'}-${documentId}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
