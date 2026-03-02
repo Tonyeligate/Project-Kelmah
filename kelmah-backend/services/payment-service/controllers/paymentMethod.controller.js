@@ -2,7 +2,7 @@ const { PaymentMethod, User } = require("../models");
 const stripe = require("../services/stripe");
 const paypal = require("../services/paypal");
 const { validatePaymentMethod } = require('../utils/validation');
-const { handleError } = require('../utils/controllerUtils');
+const { handleError, getUserId } = require('../utils/controllerUtils');
 
 const maskPhoneNumber = (phoneNumber) => {
   if (!phoneNumber) return '';
@@ -39,7 +39,7 @@ exports.getPaymentMethods = async (req, res) => {
       };
     });
 
-    res.json(sanitized);
+    res.json({ success: true, data: sanitized });
   } catch (error) {
     handleError(res, error);
   }
@@ -113,6 +113,7 @@ exports.addPaymentMethod = async (req, res) => {
     await paymentMethod.save();
 
     res.status(201).json({
+      success: true,
       message: "Payment method added successfully",
       data: paymentMethod,
     });
@@ -147,6 +148,7 @@ exports.updatePaymentMethod = async (req, res) => {
     await paymentMethod.save();
 
     res.json({
+      success: true,
       message: "Payment method updated successfully",
       data: paymentMethod,
     });
@@ -182,7 +184,7 @@ exports.removePaymentMethod = async (req, res) => {
 
     await paymentMethod.remove();
 
-    res.json({ message: "Payment method removed successfully" });
+    res.json({ success: true, message: "Payment method removed successfully" });
   } catch (error) {
     handleError(res, error);
   }
@@ -226,6 +228,7 @@ exports.verifyPaymentMethod = async (req, res) => {
     );
 
     res.json({
+      success: verificationResult.success,
       message: verificationResult.success
         ? "Payment method verified successfully"
         : "Payment method verification failed",

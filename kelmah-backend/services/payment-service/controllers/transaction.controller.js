@@ -6,7 +6,7 @@ const MTNMoMoService = require('../integrations/mtn-momo');
 const VodafoneCashService = require('../integrations/vodafone-cash');
 const AirtelTigoService = require('../integrations/airteltigo');
 const { validateTransaction } = require('../utils/validation');
-const { handleError } = require('../utils/controllerUtils');
+const { handleError, getUserId } = require('../utils/controllerUtils');
 
 // Create a new transaction
 exports.createTransaction = async (req, res) => {
@@ -60,6 +60,7 @@ exports.createTransaction = async (req, res) => {
     }
 
     res.status(201).json({
+      success: true,
       message: "Transaction created successfully",
       data: transaction,
     });
@@ -79,10 +80,10 @@ exports.getTransaction = async (req, res) => {
     }).populate("sender recipient relatedContract relatedJob");
 
     if (!transaction) {
-      return res.status(404).json({ message: "Transaction not found" });
+      return res.status(404).json({ success: false, error: { message: "Transaction not found" } });
     }
 
-    res.json(transaction);
+    res.json({ success: true, data: transaction });
   } catch (error) {
     handleError(res, error);
   }
@@ -248,13 +249,12 @@ const processPayment = async (transaction) => {
         throw new Error("Unsupported payment provider");
     }
 
-    // Update recipient's wallet
-    const recipientWallet = await Wallet.findOne({
-      user: transaction.recipient,
-    });
-    await recipientWallet.addFunds(transaction.amount, transaction);
-
-    await transaction.updateStatus("completed");
+    // CRIT-01 FIX: Do NOT credit wallet here — payment is only *initiated*.
+    // The wallet should be credited only after a webhook confirms the provider
+    // actually collected and settled the funds.  Mark as pending_confirmation
+    // so the webhook handler knows to finalise the transfer.
+    await transaction.save(); // persist gatewayData
+    await transaction.updateStatus("pending_confirmation");
   } catch (error) {
     await transaction.updateStatus("failed", {
       code: error.code,
@@ -266,9 +266,16 @@ const processPayment = async (transaction) => {
 
 const processWithdrawal = async (transaction) => {
   try {
-    const senderWallet = await Wallet.findOne({ user: transaction.sender });
-
-    if (senderWallet.balance < transaction.amount) {
+    // CRIT-02 FIX: Deduct wallet balance FIRST with an atomic operation,
+    // then send to the external provider.  If the provider call fails we
+    // roll back by re-crediting the wallet.
+    const Wallet = require('../models/Wallet');
+    const deductResult = await Wallet.findOneAndUpdate(
+      { user: transaction.sender, balance: { $gte: transaction.amount } },
+      { $inc: { balance: -transaction.amount } },
+      { new: true }
+    );
+    if (!deductResult) {
       throw new Error("Insufficient funds");
     }
 
@@ -344,9 +351,21 @@ const processWithdrawal = async (transaction) => {
         throw new Error("Unsupported payment provider");
     }
 
-    await senderWallet.deductFunds(transaction.amount, transaction);
+    // Balance was already deducted atomically above — just mark completed
     await transaction.updateStatus("completed");
   } catch (error) {
+    // CRIT-02 FIX: Roll back the wallet deduction if the provider call failed
+    // (balance was deducted atomically before the provider call)
+    try {
+      const Wallet = require('../models/Wallet');
+      await Wallet.findOneAndUpdate(
+        { user: transaction.sender },
+        { $inc: { balance: transaction.amount } }
+      );
+    } catch (rollbackErr) {
+      console.error('CRITICAL: Wallet rollback failed after provider error:', rollbackErr);
+      // Log for manual reconciliation — the user lost funds
+    }
     await transaction.updateStatus("failed", {
       code: error.code,
       message: error.message,

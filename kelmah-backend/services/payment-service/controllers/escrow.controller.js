@@ -42,7 +42,7 @@ exports.releaseEscrow = async (req, res, next) => {
     if (!workerWallet) return res.status(404).json({ success: false, message: 'Worker wallet not found' });
 
     const tx = await new Transaction({
-      transactionId: `TRX-${Date.now()}`,
+      transactionId: `TRX-${Date.now()}-${require('crypto').randomUUID().slice(0, 8)}`,
       amount: escrow.amount,
       currency: escrow.currency,
       type: 'payment',
@@ -115,7 +115,7 @@ exports.refundEscrow = async (req, res, next) => {
     if (!hirerWallet) return res.status(404).json({ success: false, message: 'Hirer wallet not found' });
 
     const tx = await new Transaction({
-      transactionId: `TRX-${Date.now()}`,
+      transactionId: `TRX-${Date.now()}-${require('crypto').randomUUID().slice(0, 8)}`,
       amount: escrow.amount,
       currency: escrow.currency,
       type: 'refund',
@@ -166,7 +166,7 @@ exports.releaseMilestonePayment = async (req, res, next) => {
 
     // Create transaction for milestone payment
     const tx = await new Transaction({
-      transactionId: `TRX-${Date.now()}`,
+      transactionId: `TRX-${Date.now()}-${require('crypto').randomUUID().slice(0, 8)}`,
       amount: milestone.amount,
       currency: escrow.currency,
       type: 'milestone_payment',

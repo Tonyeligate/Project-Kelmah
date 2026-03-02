@@ -536,6 +536,69 @@ exports.getAllUsers = async (req, res, next) => {
 };
 
 /**
+ * Bulk update users (MongoDB) — admin only
+ * Body: { userIds: string[], updateData: object }
+ */
+exports.bulkUpdateUsers = async (req, res) => {
+  try {
+    const UserModel = requireUserModel();
+    const { userIds, updateData } = req.body;
+
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ success: false, error: { message: 'userIds must be a non-empty array' } });
+    }
+    if (!updateData || typeof updateData !== 'object') {
+      return res.status(400).json({ success: false, error: { message: 'updateData must be an object' } });
+    }
+
+    // Prevent overwriting sensitive fields via bulk
+    const forbidden = ['password', 'refreshToken', 'role'];
+    forbidden.forEach((f) => delete updateData[f]);
+
+    const result = await UserModel.updateMany(
+      { _id: { $in: userIds } },
+      { $set: updateData }
+    );
+
+    res.json({
+      success: true,
+      data: {
+        matched: result.matchedCount,
+        modified: result.modifiedCount,
+      },
+    });
+  } catch (err) {
+    console.error('bulkUpdateUsers error:', err);
+    res.status(500).json({ success: false, error: { message: err.message } });
+  }
+};
+
+/**
+ * Bulk delete users (MongoDB) — admin only
+ * Body: { userIds: string[] }
+ */
+exports.bulkDeleteUsers = async (req, res) => {
+  try {
+    const UserModel = requireUserModel();
+    const { userIds } = req.body;
+
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ success: false, error: { message: 'userIds must be a non-empty array' } });
+    }
+
+    const result = await UserModel.deleteMany({ _id: { $in: userIds } });
+
+    res.json({
+      success: true,
+      data: { deleted: result.deletedCount },
+    });
+  } catch (err) {
+    console.error('bulkDeleteUsers error:', err);
+    res.status(500).json({ success: false, error: { message: err.message } });
+  }
+};
+
+/**
  * Create a new user (MongoDB)
  */
 exports.createUser = async (req, res, next) => {

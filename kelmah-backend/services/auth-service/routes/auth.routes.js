@@ -118,6 +118,15 @@ router.post(
   authController.refreshToken,
 );
 
+// Exchange short-lived OAuth auth code for tokens (CRIT-04 fix)
+router.post(
+  "/oauth/exchange",
+  createLimiter("login"),
+  [body("code").notEmpty().withMessage("Authorization code is required")],
+  validate,
+  authController.exchangeOAuthCode,
+);
+
 // Change password (protected route)
 router.post(
   "/change-password",

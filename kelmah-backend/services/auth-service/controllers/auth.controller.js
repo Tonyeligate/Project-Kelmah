@@ -886,21 +886,46 @@ exports.googleCallback = async (req, res, next) => {
   try {
     const { user } = req;
 
-    // Generate tokens
-    const { accessToken, refreshToken } = jwtUtils.generateAuthTokens(user);
-
-    // Store refresh token in database
-    await RefreshToken.create({
-      userId: user.id,
-      token: refreshToken,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      jti: jwtUtils.verifyRefreshToken(refreshToken).jti,
+    // Generate access token (short-lived)
+    const accessToken = jwtUtils.signAccessToken({
+      sub: user.id || user._id,
+      role: user.role,
       version: user.tokenVersion || 0
     });
 
-    // Redirect to frontend with tokens
+    // CRIT-05 FIX: Use the same secure refresh token generation as login
+    // so that only the token hash is stored in DB, not the raw token.
+    const refreshData = await secure.generateRefreshToken(
+      { sub: user.id || user._id, role: user.role, version: user.tokenVersion || 0 },
+      { ipAddress: req.ip, userAgent: req.headers['user-agent'] || 'unknown' }
+    );
+    await RefreshToken.create({
+      userId: user.id,
+      tokenHash: refreshData.tokenHash,
+      tokenId: refreshData.tokenId,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      version: user.tokenVersion || 0
+    });
+
+    // CRIT-04 FIX: Store tokens in a short-lived server-side auth code
+    // instead of exposing them directly in the URL.  The frontend
+    // exchanges the code for the tokens via a POST request.
+    const authCode = crypto.randomBytes(32).toString('hex');
+    const hashedCode = crypto.createHash('sha256').update(authCode).digest('hex');
+    // Store code temporarily (60s expiry) using the RevokedToken collection as a
+    // key-value store, or a dedicated OAuthCode model. For simplicity we
+    // store in a global Map with a 60-second self-cleanup timer.
+    if (!global._oauthCodes) global._oauthCodes = new Map();
+    global._oauthCodes.set(hashedCode, {
+      accessToken,
+      refreshToken: refreshData.token,
+      expiresAt: Date.now() + 60000
+    });
+    setTimeout(() => { if (global._oauthCodes) global._oauthCodes.delete(hashedCode); }, 60000);
+
+    // Redirect with only the opaque auth code — not the tokens themselves
     res.redirect(
-      `${config.frontendUrl}/oauth-callback?access_token=${accessToken}&refresh_token=${refreshToken}`,
+      `${config.frontendUrl}/oauth-callback?code=${authCode}`,
     );
   } catch (error) {
     return next(
@@ -916,21 +941,35 @@ exports.facebookCallback = async (req, res, next) => {
   try {
     const { user } = req;
 
-    // Generate tokens
-    const { accessToken, refreshToken } = jwtUtils.generateAuthTokens(user);
-
-    // Store refresh token in database (include jti + version for token rotation)
+    const accessToken = jwtUtils.signAccessToken({
+      sub: user.id || user._id,
+      role: user.role,
+      version: user.tokenVersion || 0
+    });
+    const refreshData = await secure.generateRefreshToken(
+      { sub: user.id || user._id, role: user.role, version: user.tokenVersion || 0 },
+      { ipAddress: req.ip, userAgent: req.headers['user-agent'] || 'unknown' }
+    );
     await RefreshToken.create({
       userId: user.id,
-      token: refreshToken,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      jti: jwtUtils.verifyRefreshToken(refreshToken).jti,
+      tokenHash: refreshData.tokenHash,
+      tokenId: refreshData.tokenId,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       version: user.tokenVersion || 0
     });
 
-    // Redirect to frontend with tokens
+    const authCode = crypto.randomBytes(32).toString('hex');
+    const hashedCode = crypto.createHash('sha256').update(authCode).digest('hex');
+    if (!global._oauthCodes) global._oauthCodes = new Map();
+    global._oauthCodes.set(hashedCode, {
+      accessToken,
+      refreshToken: refreshData.token,
+      expiresAt: Date.now() + 60000
+    });
+    setTimeout(() => { if (global._oauthCodes) global._oauthCodes.delete(hashedCode); }, 60000);
+
     res.redirect(
-      `${config.frontendUrl}/oauth-callback?access_token=${accessToken}&refresh_token=${refreshToken}`,
+      `${config.frontendUrl}/oauth-callback?code=${authCode}`,
     );
   } catch (error) {
     return next(
@@ -946,21 +985,35 @@ exports.linkedinCallback = async (req, res, next) => {
   try {
     const { user } = req;
 
-    // Generate tokens
-    const { accessToken, refreshToken } = jwtUtils.generateAuthTokens(user);
-
-    // Store refresh token in database (include jti + version for token rotation)
+    const accessToken = jwtUtils.signAccessToken({
+      sub: user.id || user._id,
+      role: user.role,
+      version: user.tokenVersion || 0
+    });
+    const refreshData = await secure.generateRefreshToken(
+      { sub: user.id || user._id, role: user.role, version: user.tokenVersion || 0 },
+      { ipAddress: req.ip, userAgent: req.headers['user-agent'] || 'unknown' }
+    );
     await RefreshToken.create({
       userId: user.id,
-      token: refreshToken,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      jti: jwtUtils.verifyRefreshToken(refreshToken).jti,
+      tokenHash: refreshData.tokenHash,
+      tokenId: refreshData.tokenId,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       version: user.tokenVersion || 0
     });
 
-    // Redirect to frontend with tokens
+    const authCode = crypto.randomBytes(32).toString('hex');
+    const hashedCode = crypto.createHash('sha256').update(authCode).digest('hex');
+    if (!global._oauthCodes) global._oauthCodes = new Map();
+    global._oauthCodes.set(hashedCode, {
+      accessToken,
+      refreshToken: refreshData.token,
+      expiresAt: Date.now() + 60000
+    });
+    setTimeout(() => { if (global._oauthCodes) global._oauthCodes.delete(hashedCode); }, 60000);
+
     res.redirect(
-      `${config.frontendUrl}/oauth-callback?access_token=${accessToken}&refresh_token=${refreshToken}`,
+      `${config.frontendUrl}/oauth-callback?code=${authCode}`,
     );
   } catch (error) {
     return next(
@@ -1140,18 +1193,24 @@ exports.reactivateAccount = async (req, res, next) => {
     // Find user by email
     const user = await User.findByEmail(email);
 
+    // HIGH-13 FIX: Return a generic message for all failure cases to prevent
+    // email enumeration.  An attacker cannot distinguish between
+    // "email doesn't exist", "account is active", and "wrong password".
+    const genericError = "Unable to reactivate account. Check your credentials and try again.";
+
     if (!user) {
-      return next(new AppError("User not found", 404));
+      // Timing-safe: hash a dummy password to prevent timing side-channel
+      const bcrypt = require('bcryptjs');
+      await bcrypt.hash('dummy-password', 12);
+      return next(new AppError(genericError, 400));
     }
 
-    // Check if account is already active
     if (user.isActive) {
-      return next(new AppError("Account is already active", 400));
+      return next(new AppError(genericError, 400));
     }
 
-    // Verify password
     if (!(await user.validatePassword(password))) {
-      return next(new AppError("Incorrect password", 401));
+      return next(new AppError(genericError, 400));
     }
 
     // Reactivate account
@@ -1324,10 +1383,36 @@ exports.getAuthStats = async (req, res, next) => {
 };
 
 /**
- * OAuth callback handler
+ * Exchange a short-lived OAuth auth code for access + refresh tokens.
+ * The code is generated by the OAuth callback handlers above.
  */
-if (false) {
-  /**
-   * OAuth callback handler
-   */
-}
+exports.exchangeOAuthCode = async (req, res, next) => {
+  try {
+    const { code } = req.body;
+    if (!code) {
+      return next(new AppError('Authorization code is required', 400));
+    }
+
+    const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+    const stored = global._oauthCodes && global._oauthCodes.get(hashedCode);
+
+    if (!stored || stored.expiresAt < Date.now()) {
+      if (stored) global._oauthCodes.delete(hashedCode);
+      return next(new AppError('Invalid or expired authorization code', 400));
+    }
+
+    // One-time use: delete immediately
+    global._oauthCodes.delete(hashedCode);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        accessToken: stored.accessToken,
+        refreshToken: stored.refreshToken
+      }
+    });
+  } catch (error) {
+    logger.error('OAuth code exchange failed', { error: error.message });
+    return next(new AppError('Failed to exchange authorization code', 500));
+  }
+};

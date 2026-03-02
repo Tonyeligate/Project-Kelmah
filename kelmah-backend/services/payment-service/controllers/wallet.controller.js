@@ -64,7 +64,11 @@ exports.deposit = async (req, res) => {
       });
     }
 
-    // Create a deposit transaction with pending status until payment verification
+    // CRIT FIX: Create deposit transaction with pending status.
+    // Do NOT credit the wallet here — the wallet should only be credited
+    // after the payment reference is verified via webhook or a subsequent
+    // verification call.  The old code called wallet.addFunds() immediately,
+    // allowing anyone to submit a fake reference and receive free credits.
     const transaction = await Transaction.create({
       sender: userId,
       recipient: userId,
@@ -72,10 +76,12 @@ exports.deposit = async (req, res) => {
       type: 'deposit',
       status: 'pending',
       reference,
-      description: 'Wallet deposit',
+      description: 'Wallet deposit (awaiting verification)',
     });
 
-    await wallet.addFunds(amount, transaction);
+    // NOTE: wallet.addFunds() is intentionally NOT called here.
+    // A webhook handler or payment verification endpoint must confirm the
+    // reference with the payment provider and then call wallet.addFunds().
 
     res.status(201).json({
       success: true,
@@ -166,7 +172,7 @@ exports.getWallet = async (req, res) => {
       await wallet.save();
     }
 
-    res.json(wallet);
+    res.json({ success: true, data: wallet });
   } catch (error) {
     handleError(res, error);
   }
@@ -203,6 +209,7 @@ exports.createOrUpdateWallet = async (req, res) => {
     await wallet.save();
 
     res.status(200).json({
+      success: true,
       message: "Wallet updated successfully",
       data: wallet,
     });
@@ -224,6 +231,7 @@ exports.addPaymentMethod = async (req, res) => {
     await wallet.addPaymentMethod(paymentMethod);
 
     res.status(200).json({
+      success: true,
       message: "Payment method added successfully",
       data: wallet,
     });
@@ -245,6 +253,7 @@ exports.removePaymentMethod = async (req, res) => {
     await wallet.removePaymentMethod(paymentMethodId);
 
     res.json({
+      success: true,
       message: "Payment method removed successfully",
       data: wallet,
     });
@@ -271,6 +280,7 @@ exports.setDefaultPaymentMethod = async (req, res) => {
     await paymentMethod.setAsDefault();
 
     res.json({
+      success: true,
       message: "Default payment method updated successfully",
       data: wallet,
     });
@@ -303,9 +313,13 @@ exports.getTransactionHistory = async (req, res) => {
     });
 
     res.json({
-      transactions,
-      totalPages: Math.ceil(total / limit),
-      currentPage: page,
+      success: true,
+      data: transactions,
+      meta: {
+        total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+      },
     });
   } catch (error) {
     handleError(res, error);

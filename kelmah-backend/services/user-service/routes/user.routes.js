@@ -44,6 +44,8 @@ const WorkerController = require('../controllers/worker.controller');
 const workerDetailRouter = require('./worker-detail.routes');
 
 // User CRUD routes (protected — admin only)
+router.put("/bulk-update", verifyGatewayRequest, authorizeRoles('admin'), createLimiter('admin'), require("../controllers/user.controller").bulkUpdateUsers);
+router.delete("/bulk-delete", verifyGatewayRequest, authorizeRoles('admin'), createLimiter('admin'), require("../controllers/user.controller").bulkDeleteUsers);
 router.get("/", verifyGatewayRequest, authorizeRoles('admin'), getAllUsers);
 router.post("/", verifyGatewayRequest, authorizeRoles('admin'), createLimiter('admin'), createUser);
 

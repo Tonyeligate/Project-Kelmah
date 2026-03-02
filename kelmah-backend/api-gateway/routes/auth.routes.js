@@ -116,4 +116,16 @@ router.post('/setup-mfa', authenticate, protectedAuthProxy);
 router.post('/verify-mfa', authenticate, protectedAuthProxy);
 router.post('/disable-mfa', authenticate, protectedAuthProxy);
 
+// Session management routes
+router.get('/sessions', authenticate, protectedAuthProxy);
+router.delete('/sessions', authenticate, protectedAuthProxy);
+router.delete('/sessions/:sessionId', authenticate, protectedAuthProxy);
+
+// Account management routes
+router.post('/account/deactivate', authenticate, protectedAuthProxy);
+router.post('/account/reactivate', publicAuthProxy); // Public — reactivation doesn't require active auth
+
+// Auth stats (admin)
+router.get('/stats', authenticate, protectedAuthProxy);
+
 module.exports = router;

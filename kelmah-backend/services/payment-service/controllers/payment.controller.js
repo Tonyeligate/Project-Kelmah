@@ -342,9 +342,15 @@ class PaymentController {
         });
       }
 
-      // Check user wallet balance
-      const wallet = await Wallet.findOne({ userId });
-      if (!wallet || wallet.balance < amount) {
+      // HIGH-02 FIX: Atomic wallet balance check and deduction to prevent
+      // double-spend race conditions.  Uses findOneAndUpdate with $gte guard
+      // so concurrent requests cannot both pass the balance check.
+      const wallet = await Wallet.findOneAndUpdate(
+        { userId, balance: { $gte: amount } },
+        { $inc: { balance: -amount, pendingWithdrawals: amount } },
+        { new: true }
+      );
+      if (!wallet) {
         return res.status(400).json({
           success: false,
           message: 'Insufficient wallet balance',
@@ -474,10 +480,8 @@ class PaymentController {
       });
       await payout.save();
 
-      // Deduct from wallet (pending final confirmation)
-      wallet.balance = wallet.balance - amount;
-      wallet.pendingWithdrawals = (wallet.pendingWithdrawals || 0) + amount;
-      await wallet.save();
+      // Balance already deducted atomically above via findOneAndUpdate.
+      // Just update the payout status.
 
       // Create transaction record
       await Transaction.create({

@@ -9,12 +9,12 @@ exports.getBills = async (req, res) => {
     } else {
       bills = await Bill.find({ userId: req.user.id }).sort({ dueDate: 1 });
     }
-    res.json(bills);
+    res.json({ success: true, data: bills });
   } catch (error) {
     console.error("Error fetching bills:", error);
     res
       .status(500)
-      .json({ message: "Failed to fetch bills", error: error.message });
+      .json({ success: false, error: { message: "Failed to fetch bills", details: error.message } });
   }
 };
 
@@ -41,11 +41,11 @@ exports.payBill = async (req, res) => {
       details: { amount: bill.amount },
     });
 
-    res.json({ success: true, bill });
+    res.json({ success: true, data: bill });
   } catch (error) {
     console.error("Error paying bill:", error);
     res
       .status(500)
-      .json({ message: "Failed to pay bill", error: error.message });
+      .json({ success: false, error: { message: "Failed to pay bill", details: error.message } });
   }
 };

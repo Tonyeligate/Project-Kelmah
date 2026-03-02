@@ -150,12 +150,11 @@ export const adminService = {
     }
   },
 
-  // Bulk Operations
+  // Bulk Operations — single batch request instead of N+1
   async bulkUpdateUsers(userIds, updateData) {
     try {
-      const promises = userIds.map((id) => this.updateUser(id, updateData));
-      const results = await Promise.allSettled(promises);
-      return results;
+      const response = await api.put('/users/bulk-update', { userIds, updateData });
+      return response.data;
     } catch (error) {
       console.error('Error bulk updating users:', error);
       throw error;
@@ -164,28 +163,26 @@ export const adminService = {
 
   async bulkDeleteUsers(userIds) {
     try {
-      const promises = userIds.map((id) => this.deleteUser(id));
-      const results = await Promise.allSettled(promises);
-      return results;
+      const response = await api.delete('/users/bulk-delete', { data: { userIds } });
+      return response.data;
     } catch (error) {
       console.error('Error bulk deleting users:', error);
       throw error;
     }
   },
 
-  // System Analytics (placeholder for future implementation)
+  // System Analytics — uses the user-service platform analytics endpoint
   async getSystemStats() {
     try {
-      // This would connect to analytics endpoints when available
-      const [usersResponse] = await Promise.all([
-        api.get('/users?limit=1'), // Get total count from pagination
-      ]);
+      const response = await api.get('/users/analytics/platform');
+      const stats = response.data?.data || response.data || {};
 
       return {
-        totalUsers: usersResponse.data.pagination?.total || 0,
-        activeUsers: usersResponse.data.activeUsers ?? 0,
-        newUsersThisMonth: usersResponse.data.newUsersThisMonth ?? 0,
-        systemHealth: usersResponse.data.systemHealth ?? 'unknown',
+        totalUsers: stats.totalUsers ?? 0,
+        activeUsers: stats.activeUsers ?? 0,
+        newUsersThisMonth: stats.newUsers ?? 0,
+        totalWorkers: stats.totalWorkers ?? 0,
+        systemHealth: stats.systemHealth ?? 'unknown',
       };
     } catch (error) {
       console.error('Error fetching system stats:', error);
