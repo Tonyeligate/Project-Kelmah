@@ -7,6 +7,7 @@ import {
   Typography,
   Grid,
   Paper,
+  ButtonBase,
   Breadcrumbs,
   Link,
   Tooltip,
@@ -487,9 +488,23 @@ const WorkerDashboardPage = () => {
             {metricCards.map((card, index) => (
               <Grid item xs={6} sm={6} md={3} key={index}>
                 <Tooltip title={card.tooltip} arrow placement="top">
+                  <ButtonBase
+                    onClick={card.onClick}
+                    aria-label={`${card.title}: ${card.value}. Click to view details.`}
+                    sx={{
+                      display: 'block',
+                      width: '100%',
+                      textAlign: 'left',
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                      '&:focus-visible': {
+                        outline: `2px solid ${theme.palette.primary.main}`,
+                        outlineOffset: 2,
+                      },
+                    }}
+                  >
                   <Paper
                     elevation={0}
-                    onClick={card.onClick}
                     sx={{
                       p: { xs: 1.5, sm: 2.5 },
                       borderRadius: 2,
@@ -501,17 +516,12 @@ const WorkerDashboardPage = () => {
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
-                      cursor: 'pointer',
                       transition: 'transform 0.2s, box-shadow 0.2s',
                       '&:hover': {
                         transform: 'translateY(-4px)',
                         boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
                       },
                     }}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`${card.title}: ${card.value}. Click to view details.`}
-                    onKeyDown={(e) => e.key === 'Enter' && card.onClick()}
                   >
                     {/* Icon positioned on the right */}
                     <Box
@@ -539,6 +549,7 @@ const WorkerDashboardPage = () => {
                       {card.value}
                     </Typography>
                   </Paper>
+                  </ButtonBase>
                 </Tooltip>
               </Grid>
             ))}

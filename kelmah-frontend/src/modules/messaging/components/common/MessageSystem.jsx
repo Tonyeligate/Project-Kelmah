@@ -106,7 +106,7 @@ function MessageSystem() {
   };
 
   return (
-    <Grid container spacing={2} sx={{ height: 'calc(100vh - 200px)' }}>
+    <Grid container spacing={2} sx={{ height: { xs: 'calc(100dvh - 200px)', sm: 'calc(100dvh - 200px)' }, minHeight: 'calc(100vh - 200px)' }}>
       {/* Conversations List */}
       <Grid item xs={12} md={4}>
         <Paper sx={{ height: '100%', overflow: 'auto' }}>

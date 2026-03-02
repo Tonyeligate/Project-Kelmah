@@ -9,6 +9,9 @@ import { api } from '../../../services/apiClient';
 import { secureStorage } from '../../../utils/secureStorage';
 import { normalizeUser } from '../../../utils/userUtils';
 
+const __DEV__ = import.meta.env.DEV;
+const devLog = (...args) => { if (__DEV__) console.log(...args); };
+
 // Use centralized authServiceClient with standard interceptors
 
 // Response interceptors are handled by the centralized service client configuration
@@ -50,7 +53,7 @@ const retryWithBackoff = async (fn, maxRetries = 3, baseDelay = 2000) => {
 
       // Exponential backoff: 2s, 4s, 8s
       const delay = baseDelay * Math.pow(2, attempt - 1);
-      console.log(`[Auth] Retry attempt ${attempt}/${maxRetries} after ${delay}ms...`);
+      devLog(`[Auth] Retry attempt ${attempt}/${maxRetries} after ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -86,7 +89,7 @@ const authService = {
       // Setup automatic token refresh
       authService.setupTokenRefresh(token);
 
-      console.log(
+      devLog(
         'Login successful for user:',
         normalizedUser?.email || user.email,
       );
@@ -200,7 +203,7 @@ const authService = {
 
       // Always clean up secure storage
       secureStorage.clear();
-      console.log('Logout completed - all auth data cleared');
+      devLog('Logout completed - all auth data cleared');
     }
   },
 
@@ -262,7 +265,7 @@ const authService = {
 
       const normalizedUser = persistNormalizedUser(user);
 
-      console.log('Token refreshed successfully');
+      devLog('Token refreshed successfully');
       return {
         token: newAccessToken,
         refreshToken: newRefreshToken,

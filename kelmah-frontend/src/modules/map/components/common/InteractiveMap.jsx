@@ -1032,7 +1032,12 @@ const InteractiveMap = ({
             right: 0,
             bottom: 0,
             zIndex: 9999,
-            height: '100vh',
+            height: '100dvh',
+            // fallback for browsers without dvh support
+            '@supports not (height: 100dvh)': { height: '100vh' },
+            // safe-area insets for mobile notch/nav
+            paddingTop: 'env(safe-area-inset-top)',
+            paddingBottom: 'env(safe-area-inset-bottom)',
           }),
         }}
         className={className}

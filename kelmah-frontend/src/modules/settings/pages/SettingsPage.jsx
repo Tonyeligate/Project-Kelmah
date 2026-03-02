@@ -168,7 +168,7 @@ const SettingsPage = () => {
               borderRadius: 2,
               position: isMdUp ? 'sticky' : 'relative',
               top: isMdUp ? theme.spacing(2) : 'auto',
-              maxHeight: isMdUp ? 'calc(100vh - 140px)' : 'none',
+              maxHeight: isMdUp ? 'calc(100dvh - 140px)' : 'none',
               overflow: isMdUp ? 'auto' : 'visible',
             }}
           >

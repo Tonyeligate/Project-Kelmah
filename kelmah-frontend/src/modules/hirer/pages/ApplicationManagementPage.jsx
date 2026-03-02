@@ -9,6 +9,7 @@ import {
   Grid,
   Card,
   CardContent,
+  CardActionArea,
   Button,
   Avatar,
   Chip,
@@ -65,14 +66,8 @@ const ApplicationCard = ({ application, isSelected, onSelect }) => {
   const theme = useTheme();
   return (
     <Card
-      onClick={() => onSelect(application)}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(application); } }}
-      role="button"
-      tabIndex={0}
-      aria-label={`Application from ${application.workerName}`}
       sx={{
         mb: 2,
-        cursor: 'pointer',
         borderLeft: isSelected
           ? `4px solid ${theme.palette.primary.main}`
           : 'none',
@@ -81,6 +76,16 @@ const ApplicationCard = ({ application, isSelected, onSelect }) => {
           : theme.palette.background.paper,
       }}
     >
+      <CardActionArea
+        onClick={() => onSelect(application)}
+        aria-label={`Application from ${application.workerName}`}
+        sx={{
+          '&:focus-visible': {
+            outline: `2px solid ${theme.palette.primary.main}`,
+            outlineOffset: 2,
+          },
+        }}
+      >
       <CardContent>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
           <Avatar src={application.workerAvatar} sx={{ mr: 2 }} />
@@ -98,6 +103,7 @@ const ApplicationCard = ({ application, isSelected, onSelect }) => {
           {application.coverLetter}
         </Typography>
       </CardContent>
+      </CardActionArea>
     </Card>
   );
 };
@@ -237,7 +243,7 @@ function ApplicationManagementPage() {
         sx={{
           display: 'flex',
           flexDirection: isMobile ? 'column' : 'row',
-          height: isMobile ? 'auto' : 'calc(100vh - 200px)',
+          height: isMobile ? 'auto' : 'calc(100dvh - 200px)',
           overflow: 'hidden',
         }}
       >

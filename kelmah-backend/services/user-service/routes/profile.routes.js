@@ -40,28 +40,28 @@ try {
     router.post('/portfolio/upload', verifyGatewayRequest, upload.array('files', 10), uploads.uploadWorkSamples);
     router.post('/certificates/upload', verifyGatewayRequest, upload.array('files', 10), uploads.uploadCertificates);
   } else {
-    router.post('/portfolio/upload', (req, res) => res.status(400).json({ success: false, message: 'Direct uploads disabled. Use presigned URLs.' }));
-    router.post('/certificates/upload', (req, res) => res.status(400).json({ success: false, message: 'Direct uploads disabled. Use presigned URLs.' }));
+    router.post('/portfolio/upload', verifyGatewayRequest, (req, res) => res.status(400).json({ success: false, message: 'Direct uploads disabled. Use presigned URLs.' }));
+    router.post('/certificates/upload', verifyGatewayRequest, (req, res) => res.status(400).json({ success: false, message: 'Direct uploads disabled. Use presigned URLs.' }));
   }
 } catch (e) {}
 
 // Certificate routes
 try {
   const CertificateController = require('../controllers/certificate.controller');
-  // CRUD
-  router.get('/:workerId/certificates', verifyGatewayRequest, CertificateController.listByWorker);
-  router.post('/:workerId/certificates', verifyGatewayRequest, CertificateController.create);
+  // ── Literal /certificates/... routes FIRST (prevent /:workerId shadowing) ──
   router.put('/certificates/:id', verifyGatewayRequest, CertificateController.update);
   router.delete('/certificates/:id', verifyGatewayRequest, CertificateController.remove);
-  // Verification & utils
   router.post('/certificates/:id/verify', verifyGatewayRequest, CertificateController.requestVerification);
   router.get('/certificates/:id/verification', verifyGatewayRequest, CertificateController.getVerificationStatus);
   router.post('/certificates/:id/share', verifyGatewayRequest, CertificateController.share);
   router.post('/certificates/:id/validate', verifyGatewayRequest, CertificateController.validate);
-  router.get('/:workerId/certificates/expiring', verifyGatewayRequest, CertificateController.expiring);
-  router.get('/:workerId/certificates/search', verifyGatewayRequest, CertificateController.search);
-  router.get('/:workerId/certificates/stats', verifyGatewayRequest, CertificateController.stats);
-} catch (e) {}
+  // NOTE: /:workerId/certificates routes are registered AFTER /uploads and /background below
+  var _CertificateController = CertificateController;
+} catch (e) {
+  var _CertificateController = null;
+}
+
+// ── Literal /uploads/... and /background/... routes BEFORE any /:param ──
 
 // Presign endpoint (AWS S3 presign v3)
 // POST presign (body)
@@ -148,5 +148,14 @@ try {
   const verification = require('../controllers/verification.controller');
   router.post('/background/verify', verifyGatewayRequest, verification.verifyBackground);
 } catch (e) {}
+
+// ── Param /:workerId/certificates routes LAST (after all literal routes) ──
+if (_CertificateController) {
+  router.get('/:workerId/certificates', verifyGatewayRequest, _CertificateController.listByWorker);
+  router.post('/:workerId/certificates', verifyGatewayRequest, _CertificateController.create);
+  router.get('/:workerId/certificates/expiring', verifyGatewayRequest, _CertificateController.expiring);
+  router.get('/:workerId/certificates/search', verifyGatewayRequest, _CertificateController.search);
+  router.get('/:workerId/certificates/stats', verifyGatewayRequest, _CertificateController.stats);
+}
 
 module.exports = router;

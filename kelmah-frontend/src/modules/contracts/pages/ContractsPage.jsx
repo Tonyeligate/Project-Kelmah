@@ -282,7 +282,7 @@ const ContractsPage = () => {
                 flexDirection: 'column',
                 borderRadius: 2,
                 border: `1px solid ${alpha('#000', 0.06)}`,
-                boxShadow: '0 12px 24px rgba(15, 23, 42, 0.08)',
+                // ✅ MOBILE-AUDIT P4: removed deep boxShadow, let theme handle
               }}
             >
               <CardContent>

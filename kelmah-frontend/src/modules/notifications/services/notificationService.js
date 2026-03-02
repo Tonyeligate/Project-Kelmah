@@ -9,6 +9,9 @@ import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 import { WS_CONFIG } from '../../../config/environment';
 import { getWebSocketUrl } from '../../../services/socketUrl';
 
+const __DEV__ = import.meta.env.DEV;
+const devLog = (...args) => { if (__DEV__) console.log(...args); };
+
 export const normalizeNotificationLink = (notification = {}) => {
   const rawLink = notification?.link || notification?.actionUrl || null;
   const entityType = notification?.relatedEntity?.type;
@@ -98,7 +101,7 @@ class NotificationService {
       }
 
       const wsUrl = await getWebSocketUrl();
-      console.log('📡 Notifications WebSocket connecting to:', wsUrl);
+      devLog('📡 Notifications WebSocket connecting to:', wsUrl);
 
       // Connect to backend messaging service via API Gateway
       this.socket = io(wsUrl, {
@@ -203,7 +206,7 @@ class NotificationService {
       });
 
       if (statusMsg.status === 'cold') {
-        console.log(
+        devLog(
           'Messaging Service is cold starting — this is normal and will take 30-60 seconds...',
         );
       }

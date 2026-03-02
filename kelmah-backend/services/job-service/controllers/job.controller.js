@@ -978,8 +978,13 @@ const getJobs = async (req, res, next) => {
       console.log('[GET JOBS] Query params:', JSON.stringify(req.query));
     }
 
-    // Pagination
+    // ── Query Budget Guards ──────────────────────────────────────────
+    // Cap pagination to prevent excessive result sets
     const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const MAX_PAGE = 100; // prevent absurd deep-pagination scans
+    if (page > MAX_PAGE) {
+      return errorResponse(res, 400, `Page must be <= ${MAX_PAGE}`, 'QUERY_BUDGET_EXCEEDED');
+    }
     const requestedLimit = parseInt(req.query.limit, 10) || 10;
     const limit = Math.min(Math.max(requestedLimit, 1), 50);
     const startIndex = (page - 1) * limit;
@@ -1000,7 +1005,8 @@ const getJobs = async (req, res, next) => {
     }
 
     if (req.query.skills) {
-      query.skills = { $in: req.query.skills.split(",") };
+      const skillTokens = req.query.skills.split(",").slice(0, 10); // max 10 skills
+      query.skills = { $in: skillTokens };
     }
 
     if (req.query.budget) {
@@ -1020,8 +1026,8 @@ const getJobs = async (req, res, next) => {
     // Enhanced location filtering
     if (req.query.location) {
       if (req.query.location.includes(',')) {
-        // Multiple locations
-        const locations = req.query.location.split(',').map(loc => loc.trim());
+        // Multiple locations — cap to 6 to limit $or fan-out
+        const locations = req.query.location.split(',').map(loc => loc.trim()).slice(0, 6);
         query.$or = [
           { "location.city": { $in: locations } },
           { "location.region": { $in: locations } },
@@ -1048,7 +1054,7 @@ const getJobs = async (req, res, next) => {
     if (req.query.latitude && req.query.longitude && req.query.radius) {
       const lat = parseFloat(req.query.latitude);
       const lng = parseFloat(req.query.longitude);
-      const radius = parseFloat(req.query.radius) || 50; // km
+      const radius = Math.min(parseFloat(req.query.radius) || 50, 500); // km, capped at 500
 
       query["location.coordinates"] = {
         $geoWithin: {
@@ -1097,12 +1103,15 @@ const getJobs = async (req, res, next) => {
 
     // Search with advanced text search
     if (req.query.search) {
-      const normalizedSearch = String(req.query.search).trim().slice(0, 120);
+      const normalizedSearch = String(req.query.search).trim().slice(0, 100); // tightened from 120
+      if (normalizedSearch.length < 2) {
+        return errorResponse(res, 400, 'Search term must be at least 2 characters', 'SEARCH_TOO_SHORT');
+      }
       const safeSearch = escapeRegex(normalizedSearch);
       const searchTerms = normalizedSearch
         .split(/\s+/)
         .filter(Boolean)
-        .slice(0, 8);
+        .slice(0, 6); // tightened from 8 — each term creates a RegExp
       const searchConditions = [
         { title: { $regex: safeSearch, $options: "i" } },
         { description: { $regex: safeSearch, $options: "i" } },

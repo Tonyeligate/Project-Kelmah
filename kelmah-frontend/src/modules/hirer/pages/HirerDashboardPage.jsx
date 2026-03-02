@@ -6,6 +6,7 @@ import {
   Container,
   Grid,
   Paper,
+  ButtonBase,
   Typography,
   Card,
   CardContent,
@@ -577,9 +578,23 @@ const HirerDashboardPage = () => {
         <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }} sx={{ mb: 4 }}>
           {/* Card 1 - Orange/Yellow - Active Jobs */}
           <Grid item xs={6} sm={6} md={3}>
+            <ButtonBase
+              onClick={() => navigate('/hirer/jobs')}
+              aria-label={`Active Jobs: ${summaryData.activeJobs}. Click to view jobs.`}
+              sx={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                borderRadius: 2,
+                overflow: 'hidden',
+                '&:focus-visible': {
+                  outline: `2px solid ${theme.palette.primary.main}`,
+                  outlineOffset: 2,
+                },
+              }}
+            >
             <Paper
               elevation={0}
-              onClick={() => navigate('/hirer/jobs')}
               sx={{
                 p: { xs: 1.5, sm: 2.5 },
                 borderRadius: 2,
@@ -590,17 +605,12 @@ const HirerDashboardPage = () => {
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 position: 'relative',
-                cursor: 'pointer',
                 transition: 'transform 0.2s, box-shadow 0.2s',
                 '&:hover': {
                   transform: 'translateY(-2px)',
                   boxShadow: '0 8px 25px rgba(243, 156, 18, 0.3)',
                 },
               }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/hirer/jobs'); } }}
-              aria-label={`Active Jobs: ${summaryData.activeJobs}. Click to view jobs.`}
             >
               <Box>
                 <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
@@ -617,13 +627,28 @@ const HirerDashboardPage = () => {
                 <WorkIcon sx={{ fontSize: { xs: 28, sm: 40 }, opacity: 0.3 }} />
               </Box>
             </Paper>
+            </ButtonBase>
           </Grid>
 
           {/* Card 2 - Teal/Green - Completed Jobs */}
           <Grid item xs={6} sm={6} md={3}>
+            <ButtonBase
+              onClick={() => navigate('/hirer/jobs')}
+              aria-label={`Completed Jobs: ${summaryData.completedJobs}. Click to view progress.`}
+              sx={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                borderRadius: 2,
+                overflow: 'hidden',
+                '&:focus-visible': {
+                  outline: `2px solid ${theme.palette.primary.main}`,
+                  outlineOffset: 2,
+                },
+              }}
+            >
             <Paper
               elevation={0}
-              onClick={() => navigate('/hirer/jobs')}
               sx={{
                 p: { xs: 1.5, sm: 2.5 },
                 borderRadius: 2,
@@ -634,17 +659,12 @@ const HirerDashboardPage = () => {
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 position: 'relative',
-                cursor: 'pointer',
                 transition: 'transform 0.2s, box-shadow 0.2s',
                 '&:hover': {
                   transform: 'translateY(-2px)',
                   boxShadow: '0 8px 25px rgba(26, 188, 156, 0.3)',
                 },
               }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/hirer/jobs'); } }}
-              aria-label={`Completed Jobs: ${summaryData.completedJobs}. Click to view progress.`}
             >
               <Box>
                 <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
@@ -661,13 +681,28 @@ const HirerDashboardPage = () => {
                 <CheckCircleIcon sx={{ fontSize: { xs: 28, sm: 40 }, opacity: 0.3 }} />
               </Box>
             </Paper>
+            </ButtonBase>
           </Grid>
 
           {/* Card 3 - Blue - Applications */}
           <Grid item xs={6} sm={6} md={3}>
+            <ButtonBase
+              onClick={() => navigate('/hirer/applications')}
+              aria-label={`Applications: ${summaryData.pendingProposals}. Click to review applications.`}
+              sx={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                borderRadius: 2,
+                overflow: 'hidden',
+                '&:focus-visible': {
+                  outline: `2px solid ${theme.palette.primary.main}`,
+                  outlineOffset: 2,
+                },
+              }}
+            >
             <Paper
               elevation={0}
-              onClick={() => navigate('/hirer/applications')}
               sx={{
                 p: { xs: 1.5, sm: 2.5 },
                 borderRadius: 2,
@@ -678,17 +713,12 @@ const HirerDashboardPage = () => {
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 position: 'relative',
-                cursor: 'pointer',
                 transition: 'transform 0.2s, box-shadow 0.2s',
                 '&:hover': {
                   transform: 'translateY(-2px)',
                   boxShadow: '0 8px 25px rgba(52, 152, 219, 0.3)',
                 },
               }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/hirer/applications'); } }}
-              aria-label={`Applications: ${summaryData.pendingProposals}. Click to review applications.`}
             >
               <Box>
                 <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
@@ -705,13 +735,28 @@ const HirerDashboardPage = () => {
                 <ProposalIcon sx={{ fontSize: { xs: 28, sm: 40 }, opacity: 0.3 }} />
               </Box>
             </Paper>
+            </ButtonBase>
           </Grid>
 
           {/* Card 4 - Red - Needs Attention */}
           <Grid item xs={6} sm={6} md={3}>
+            <ButtonBase
+              onClick={() => navigate('/hirer/payments')}
+              aria-label={`Needs Attention: ${summaryData.pendingPayments}. Click to view payments.`}
+              sx={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                borderRadius: 2,
+                overflow: 'hidden',
+                '&:focus-visible': {
+                  outline: `2px solid ${theme.palette.primary.main}`,
+                  outlineOffset: 2,
+                },
+              }}
+            >
             <Paper
               elevation={0}
-              onClick={() => navigate('/hirer/payments')}
               sx={{
                 p: { xs: 1.5, sm: 2.5 },
                 borderRadius: 2,
@@ -722,17 +767,12 @@ const HirerDashboardPage = () => {
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 position: 'relative',
-                cursor: 'pointer',
                 transition: 'transform 0.2s, box-shadow 0.2s',
                 '&:hover': {
                   transform: 'translateY(-2px)',
                   boxShadow: '0 8px 25px rgba(231, 76, 60, 0.3)',
                 },
               }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/hirer/payments'); } }}
-              aria-label={`Needs Attention: ${summaryData.pendingPayments}. Click to view payments.`}
             >
               <Box>
                 <Typography variant="body2" fontWeight={500} sx={{ opacity: 0.95, mb: 0.5 }}>
@@ -749,6 +789,7 @@ const HirerDashboardPage = () => {
                 <HelpOutlineIcon sx={{ fontSize: { xs: 28, sm: 40 }, opacity: 0.3 }} />
               </Box>
             </Paper>
+            </ButtonBase>
           </Grid>
         </Grid>
 

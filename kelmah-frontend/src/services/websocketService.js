@@ -6,6 +6,11 @@ import {
 import { WS_CONFIG, API_ENDPOINTS } from '../config/environment';
 import { getWebSocketUrl } from './socketUrl';
 
+/** Only log in development builds — prevents leaking metadata in production */
+const __DEV__ = import.meta.env.DEV;
+const devLog = (...args) => { if (__DEV__) console.log(...args); };
+const devWarn = (...args) => { if (__DEV__) console.warn(...args); };
+
 /**
  * WebSocket service for real-time communication
  * Handles Socket.io connection, messaging, notifications, and live updates
@@ -47,7 +52,7 @@ class WebSocketService {
 
       // Get backend WebSocket URL from shared utility
       const wsUrl = await getWebSocketUrl();
-      console.log('🔌 WebSocket Service connecting to backend:', wsUrl);
+      devLog('🔌 WebSocket Service connecting to backend:', wsUrl);
 
       // Create Socket.io connection to backend server
       this.socket = io(wsUrl, {
@@ -67,7 +72,7 @@ class WebSocketService {
 
       this.setupEventListeners(userId, userRole);
 
-      console.log('WebSocket connection initiated for user:', userId);
+      devLog('WebSocket connection initiated for user:', userId);
     } catch (error) {
       console.error('WebSocket connection error:', error);
       this.handleConnectionError(error);
@@ -81,7 +86,7 @@ class WebSocketService {
   setupEventListeners(userId, userRole) {
     // Connection events
     this.socket.on('connect', () => {
-      console.log('✅ WebSocket connected:', this.socket.id);
+      devLog('✅ WebSocket connected:', this.socket.id);
       this.isConnected = true;
       this.reconnectAttempts = 0;
       this._connecting = false;
@@ -113,7 +118,7 @@ class WebSocketService {
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log('❌ WebSocket disconnected:', reason);
+      devLog('❌ WebSocket disconnected:', reason);
       this.isConnected = false;
       this._connecting = false;
       this.stopPingMonitoring();
@@ -137,7 +142,7 @@ class WebSocketService {
     });
 
     this.socket.on('reconnect', (attemptNumber) => {
-      console.log('🔄 WebSocket reconnected after', attemptNumber, 'attempts');
+      devLog('🔄 WebSocket reconnected after', attemptNumber, 'attempts');
       store.dispatch(
         addNotification({
           id: uniqueNotifId(),
@@ -257,7 +262,7 @@ class WebSocketService {
    * Handle new message
    */
   handleNewMessage(data) {
-    console.log('📨 New message received:', data);
+    devLog('📨 New message received:', data);
 
     // Add to Redux store
     store.dispatch(
@@ -293,7 +298,7 @@ class WebSocketService {
    * Handle message status update
    */
   handleMessageStatus(data) {
-    console.log('📱 Message status update:', data);
+    devLog('📱 Message status update:', data);
     this.triggerEvent('message:status', data);
   }
 
@@ -308,7 +313,7 @@ class WebSocketService {
    * Handle job notifications
    */
   handleJobNotification(data) {
-    console.log('💼 Job notification:', data);
+    devLog('💼 Job notification:', data);
 
     const notificationMap = {
       'new-job': {
@@ -363,7 +368,7 @@ class WebSocketService {
    * Handle job application events
    */
   handleJobApplication(data) {
-    console.log('📋 Job application event:', data);
+    devLog('📋 Job application event:', data);
 
     store.dispatch(
       addNotification({
@@ -391,7 +396,7 @@ class WebSocketService {
    * Handle job status updates
    */
   handleJobStatusUpdate(data) {
-    console.log('🔄 Job status update:', data);
+    devLog('🔄 Job status update:', data);
 
     const statusMap = {
       accepted: { severity: 'success', icon: '✅' },
@@ -428,7 +433,7 @@ class WebSocketService {
    * Handle payment notifications
    */
   handlePaymentNotification(data) {
-    console.log('💰 Payment notification:', data);
+    devLog('💰 Payment notification:', data);
 
     const paymentMap = {
       'payment-received': {
@@ -483,7 +488,7 @@ class WebSocketService {
    * Handle payment status updates
    */
   handlePaymentStatusUpdate(data) {
-    console.log('💳 Payment status update:', data);
+    devLog('💳 Payment status update:', data);
     this.triggerEvent('payment:status', data);
   }
 
@@ -491,7 +496,7 @@ class WebSocketService {
    * Handle system notifications
    */
   handleSystemNotification(data) {
-    console.log('🔔 System notification:', data);
+    devLog('🔔 System notification:', data);
 
     store.dispatch(
       addNotification({
@@ -597,7 +602,7 @@ class WebSocketService {
    */
   queueMessage(event, data) {
     this.messageQueue.push({ event, data, timestamp: Date.now() });
-    console.log('📤 Message queued:', event, data);
+    devLog('📤 Message queued:', event, data);
   }
 
   /**
@@ -609,9 +614,9 @@ class WebSocketService {
     const fresh = this.messageQueue.filter((m) => now - m.timestamp < STALE_MS);
     const stale = this.messageQueue.length - fresh.length;
     if (stale > 0) {
-      console.log(`🗑️ Dropped ${stale} stale queued messages`);
+      devLog(`🗑️ Dropped ${stale} stale queued messages`);
     }
-    console.log('📨 Processing', fresh.length, 'queued messages');
+    devLog('📨 Processing', fresh.length, 'queued messages');
 
     fresh.forEach(({ event, data }) => {
       this.socket.emit(event, data);
@@ -762,7 +767,7 @@ class WebSocketService {
    */
   disconnect() {
     if (this.socket) {
-      console.log('🔌 Disconnecting WebSocket');
+      devLog('🔌 Disconnecting WebSocket');
       this.stopPingMonitoring();
       this.socket.disconnect();
       this.socket = null;

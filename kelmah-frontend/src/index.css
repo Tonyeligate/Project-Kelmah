@@ -300,13 +300,11 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
   }
 }
 
-/* Full Width Responsive Design */
+/* Shared layout contract (avoid duplicating width/max-width rules already defined above) */
 html,
 body,
 #root {
-  width: 100% !important;
-  max-width: 100vw !important;
-  box-sizing: border-box !important;
+  box-sizing: border-box;
 }
 
 /* Professional layout with proper spacing on all devices */
@@ -331,12 +329,8 @@ body,
     -ms-text-size-adjust: 100%;
   }
 
-  /* Prevent horizontal scroll on mobile — applied to root containers only,
-     NOT wildcard (*) which would break horizontal-scroll components */
-  html, body, #root {
-    max-width: 100vw !important;
-    overflow-x: hidden;
-  }
+  /* max-width and overflow-x already set in base rules above —
+     no need to redeclare with !important here */
 
   /* Mobile viewport fixes */
   html {

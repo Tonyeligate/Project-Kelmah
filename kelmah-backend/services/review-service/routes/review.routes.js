@@ -36,6 +36,17 @@ router.get('/user/:userId', reviewController.getUserReviews);
 // Get review analytics (admin only)
 router.get('/analytics', verifyGatewayRequest, requireAdmin, analyticsController.getReviewAnalytics);
 
+// ==================== RATING ROUTES ====================
+// (MUST be before /:reviewId to prevent shadowing by the param route)
+
+// Get worker rating summary (public)
+router.get('/ratings/worker/:workerId', ratingController.getWorkerRating);
+
+// Lightweight ranking signals endpoint (public, for search service)
+router.get('/ratings/worker/:workerId/signals', ratingController.getWorkerRankSignals);
+
+// ==================== PARAM ROUTES (/:reviewId) ====================
+
 // Get specific review details (public)
 router.get('/:reviewId', reviewController.getReview);
 
@@ -47,14 +58,6 @@ router.post('/:reviewId/helpful', verifyGatewayRequest, reviewController.voteHel
 
 // Report review (authenticated)
 router.post('/:reviewId/report', verifyGatewayRequest, reviewController.reportReview);
-
-// ==================== RATING ROUTES ====================
-
-// Get worker rating summary (public)
-router.get('/ratings/worker/:workerId', ratingController.getWorkerRating);
-
-// Lightweight ranking signals endpoint (public, for search service)
-router.get('/ratings/worker/:workerId/signals', ratingController.getWorkerRankSignals);
 
 // Admin: Moderate review
 router.put('/:reviewId/moderate', verifyGatewayRequest, requireAdmin, analyticsController.moderateReview);

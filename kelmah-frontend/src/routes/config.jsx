@@ -218,11 +218,6 @@ const EscrowDetailsPage = lazy(
   () => import('../modules/payment/pages/EscrowDetailsPage'),
 );
 
-// Scheduling
-const TempSchedulingPage = lazy(
-  () => import('../modules/scheduling/pages/SchedulingPage'),
-);
-
 // Admin Pages
 const SkillsAssessmentManagement = lazy(
   () => import('../modules/admin/pages/SkillsAssessmentManagement'),

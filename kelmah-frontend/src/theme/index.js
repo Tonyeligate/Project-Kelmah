@@ -391,6 +391,16 @@ const darkTheme = createTheme({
             background: 'rgba(255, 215, 0, 0.3)',
             color: 'rgba(0, 0, 0, 0.5)',
           },
+          // ✅ MOBILE-AUDIT: Flat solid color on mobile — no gradients, no shadows
+          '@media (max-width: 599.95px)': {
+            background: BRAND_COLORS.gold,
+            boxShadow: 'none',
+            '&:hover': {
+              background: BRAND_COLORS.goldLight,
+              boxShadow: 'none',
+              transform: 'none',
+            },
+          },
         },
         outlined: {
           borderColor: 'rgba(255, 215, 0, 0.6)',
@@ -415,9 +425,17 @@ const darkTheme = createTheme({
         root: {
           color: 'rgba(255, 255, 255, 0.8)',
           transition: 'all 0.2s ease-in-out',
+          minWidth: 44, // ✅ MOBILE-AUDIT: 44px touch target for all IconButtons
+          minHeight: 44,
           '&:hover': {
             backgroundColor: 'rgba(255, 215, 0, 0.15)',
             transform: 'scale(1.05)',
+          },
+          // Mobile: no hover scale
+          '@media (max-width: 599.95px)': {
+            '&:hover': {
+              transform: 'none',
+            },
           },
         },
       },

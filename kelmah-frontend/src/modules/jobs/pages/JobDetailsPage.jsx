@@ -789,6 +789,7 @@ const JobDetailsPage = () => {
             borderTop: '1px solid rgba(255,215,0,0.2)',
             px: 2,
             py: 1.5,
+            pb: 'calc(12px + env(safe-area-inset-bottom, 0px))',
             display: 'flex',
             alignItems: 'center',
             gap: 1,

@@ -384,7 +384,7 @@ const WorkerSearch = () => {
         try {
           localStorage.setItem(
             'worker_search_cache',
-            JSON.stringify(sortedWorkers),
+            JSON.stringify({ data: sortedWorkers, ts: Date.now() }),
           );
         } catch (_) { }
       } else {
@@ -403,9 +403,19 @@ const WorkerSearch = () => {
       // Provide a safe fallback list for offline/unavailable service
       let fallback = [];
       try {
-        // Optionally load a cached list from localStorage
+        // Optionally load a cached list from localStorage (with 30-min TTL)
         const cached = localStorage.getItem('worker_search_cache');
-        if (cached) fallback = JSON.parse(cached);
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            // Support both legacy (array) and new ({ data, ts }) formats
+            if (Array.isArray(parsed)) {
+              fallback = parsed;
+            } else if (parsed?.data && (!parsed.ts || Date.now() - parsed.ts < 30 * 60 * 1000)) {
+              fallback = parsed.data;
+            }
+          } catch (_) { }
+        }
       } catch (_) { }
 
       let filteredWorkers = Array.isArray(fallback) ? [...fallback] : [];

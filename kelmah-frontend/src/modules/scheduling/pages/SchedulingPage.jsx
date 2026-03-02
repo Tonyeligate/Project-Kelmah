@@ -108,8 +108,7 @@ const AppointmentCard = ({ appointment, onEdit, onDelete }) => {
         borderRadius: 2,
         p: 2,
         mb: 2,
-        transition: 'transform 0.2s',
-        '&:hover': { transform: 'translateY(-4px)' },
+        // ✅ MOBILE-AUDIT P4: removed hover transform (no hover on mobile)
         cursor: 'pointer',
         position: 'relative',
       }}
@@ -175,7 +174,7 @@ const AppointmentCard = ({ appointment, onEdit, onDelete }) => {
                 startIcon={<VideoCallIcon />}
                 sx={{
                   borderWidth: 2,
-                  boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
+                  // ✅ MOBILE-AUDIT P4: removed decorative boxShadow
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -193,7 +192,7 @@ const AppointmentCard = ({ appointment, onEdit, onDelete }) => {
                 startIcon={<LocationIcon />}
                 sx={{
                   borderWidth: 2,
-                  boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
+                  // ✅ MOBILE-AUDIT P4: removed decorative boxShadow
                 }}
                 onClick={(e) => {
                   e.stopPropagation();

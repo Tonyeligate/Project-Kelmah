@@ -57,7 +57,6 @@ import { usePayments } from '../contexts/PaymentContext';
 import TransactionsList from '../components/TransactionsList';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { glowPulse } from '../../../styles/animations';
 
 // Add currency formatter for Ghana Cedi
 const currencyFormatter = new Intl.NumberFormat('en-GH', {
@@ -67,13 +66,14 @@ const currencyFormatter = new Intl.NumberFormat('en-GH', {
 
 const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
   <Paper
-    elevation={4}
+    elevation={0}
     sx={{
       p: { xs: 2, md: 3 },
       borderRadius: 2,
-      background: 'linear-gradient(to right, #28313b, #485461, #ffd700)',
-      color: 'white',
-      border: '2px solid',
+      // ✅ MOBILE-AUDIT P4: replaced gradient with solid bg
+      bgcolor: 'background.paper',
+      color: 'text.primary',
+      border: '1px solid',
       borderColor: 'secondary.main',
     }}
   >
@@ -403,7 +403,7 @@ const ActiveEscrows = ({ escrows }) => {
                       variant="contained"
                       color="secondary"
                       size="small"
-                      sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
+                      // ✅ MOBILE-AUDIT P4: removed decorative boxShadow
                       component={RouterLink}
                       to={`/contracts/${escrow.contractId}`}
                     >
@@ -423,19 +423,14 @@ const ActiveEscrows = ({ escrows }) => {
 // NEW: big icon-plus-number cards for quick at-a-glance metrics
 const SummaryCard = ({ icon: Icon, count, label }) => (
   <Paper
-    elevation={2}
+    elevation={0}
     sx={{
       p: 2,
       borderRadius: 2,
       textAlign: 'center',
-      transition: 'transform 0.2s',
-      animation: `${glowPulse} 3s ease-in-out infinite`,
-      border: '2px solid',
+      // ✅ MOBILE-AUDIT P4: removed glowPulse infinite animation + hover glow
+      border: '1px solid',
       borderColor: 'secondary.main',
-      '&:hover': {
-        transform: 'scale(1.03)',
-        boxShadow: '0 4px 20px rgba(255,215,0,0.3)',
-      },
     }}
   >
     <Icon sx={{ fontSize: 28, mb: 0.5, color: 'secondary.main' }} />
@@ -1026,20 +1021,14 @@ const PaymentCenterPage = () => {
         fullWidth
         maxWidth="xs"
         fullScreen={isMobile}
-        BackdropProps={{
-          sx: {
-            backgroundColor: 'rgba(0, 0, 0, 0.85)',
-            backdropFilter: 'blur(4px)',
-          },
-        }}
+        // ✅ MOBILE-AUDIT P4: removed backdrop blur + glow
         PaperProps={{
           sx: {
             bgcolor: theme.palette.grey[900],
             color: theme.palette.text.primary,
-            borderRadius: '24px',
+            borderRadius: 2,
             p: 3,
-            border: `2px solid ${theme.palette.secondary.main}`,
-            boxShadow: '0 0 16px rgba(255, 215, 0, 0.5)',
+            border: `1px solid ${theme.palette.secondary.main}`,
           },
         }}
       >
@@ -1081,7 +1070,6 @@ const PaymentCenterPage = () => {
                   p: 1,
                   color: theme.palette.text.primary,
                   border: `1px solid ${theme.palette.secondary.main}`,
-                  boxShadow: 'inset 0 0 8px rgba(255, 215, 0, 0.3)',
                 }}
               />
             </Tooltip>
@@ -1102,7 +1090,6 @@ const PaymentCenterPage = () => {
                     p: '8px 12px',
                     color: theme.palette.text.primary,
                     border: `1px solid ${theme.palette.secondary.main}`,
-                    boxShadow: 'inset 0 0 8px rgba(255, 215, 0, 0.3)',
                   }}
                 >
                   {paymentMethods.map((m) => (
@@ -1144,20 +1131,14 @@ const PaymentCenterPage = () => {
         onClose={closeWithdrawDialog}
         fullWidth
         maxWidth="xs"
-        BackdropProps={{
-          sx: {
-            backgroundColor: 'rgba(0, 0, 0, 0.85)',
-            backdropFilter: 'blur(4px)',
-          },
-        }}
+        // ✅ MOBILE-AUDIT P4: removed backdrop blur + glow
         PaperProps={{
           sx: {
             bgcolor: theme.palette.grey[900],
             color: theme.palette.text.primary,
-            borderRadius: '24px',
+            borderRadius: 2,
             p: 3,
-            border: `2px solid ${theme.palette.secondary.main}`,
-            boxShadow: '0 0 16px rgba(255, 215, 0, 0.5)',
+            border: `1px solid ${theme.palette.secondary.main}`,
           },
         }}
       >
@@ -1199,7 +1180,6 @@ const PaymentCenterPage = () => {
                   p: 1,
                   color: theme.palette.text.primary,
                   border: `1px solid ${theme.palette.secondary.main}`,
-                  boxShadow: 'inset 0 0 8px rgba(255, 215, 0, 0.3)',
                 }}
               />
             </Tooltip>
@@ -1220,7 +1200,6 @@ const PaymentCenterPage = () => {
                     p: '8px 12px',
                     color: theme.palette.text.primary,
                     border: `1px solid ${theme.palette.secondary.main}`,
-                    boxShadow: 'inset 0 0 8px rgba(255, 215, 0, 0.3)',
                   }}
                 >
                   {paymentMethods.map((m) => (
@@ -1251,7 +1230,7 @@ const PaymentCenterPage = () => {
             color="secondary"
             startIcon={<ArrowDownwardIcon />}
             disabled={!amount || !methodId}
-            sx={{ boxShadow: '0 2px 8px rgba(255, 215, 0, 0.4)', minHeight: 44 }}
+            sx={{ minHeight: 44 }}
           >
             Withdraw
           </Button>

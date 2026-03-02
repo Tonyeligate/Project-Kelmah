@@ -112,23 +112,40 @@ class SecureStorage {
   }
 
   /**
-   * Get or create a persistent secret stored in localStorage to keep keys stable across sessions
+   * Get or create a persistent secret.
+   *
+   * SECURITY NOTE: This secret is stored client-side and provides DATA OBFUSCATION
+   * only — not true encryption-at-rest security. Any XSS attack can read both the
+   * ciphertext and this key. Real token protection relies on CSP, HttpOnly cookies,
+   * and short-lived tokens enforced server-side.
+   *
+   * The secret is kept in sessionStorage so it does not survive browser restarts,
+   * limiting the exposure window on shared devices.
    */
   getOrCreatePersistentSecret() {
     try {
       const keyName = 'kelmah_encryption_secret';
-      let secret = localStorage.getItem(keyName);
+      // Prefer sessionStorage to limit persistence across browser sessions
+      let secret = sessionStorage.getItem(keyName);
       if (!secret) {
-        secret = 'ksec_' + CryptoJS.lib.WordArray.random(32).toString();
-        localStorage.setItem(keyName, secret);
+        // Migrate from legacy localStorage key if present
+        const legacy = localStorage.getItem(keyName);
+        if (legacy) {
+          secret = legacy;
+          sessionStorage.setItem(keyName, secret);
+          localStorage.removeItem(keyName); // clean up legacy location
+        } else {
+          secret = 'ksec_' + CryptoJS.lib.WordArray.random(32).toString();
+          sessionStorage.setItem(keyName, secret);
+        }
       }
       return secret;
     } catch (error) {
       console.warn(
-        'Local storage unavailable, using session-scoped secret:',
+        'Session storage unavailable, using session-scoped secret:',
         error?.message || error,
       );
-      // Fallback to session-scoped value if localStorage is unavailable
+      // Fallback to session-scoped value if sessionStorage is unavailable
       return sessionStorage.getItem('session_id') || this.generateSessionId();
     }
   }

@@ -63,6 +63,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import ErrorBoundary from '../../../components/common/ErrorBoundary';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
+import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 // Removed AuthContext import to prevent dual state management conflicts
 // import { useAuth } from '../../auth/hooks/useAuth';
 import { useMessages } from '../contexts/MessageContext';
@@ -560,22 +561,15 @@ const EnhancedMessagingPage = () => {
         </Stack>
       </Box>
 
-      {/* Conversations List */}
+      {/* Conversations List — ✅ MOBILE-AUDIT P3: removed motion.div/AnimatePresence */}
       <Box sx={{ flex: 1, overflow: 'auto' }}>
-        <AnimatePresence>
-          {filteredConversations.map((conversation, index) => {
+          {filteredConversations.map((conversation) => {
             const otherParticipant = getOtherParticipant(conversation);
             const isSelected = selectedConversation?.id === conversation.id;
 
             return (
-              <motion.div
-                key={conversation.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2, delay: index * 0.05 }}
-              >
                 <Box
+                  key={conversation.id}
                   component="button"
                   type="button"
                   onClick={() => handleConversationSelect(conversation)}
@@ -744,10 +738,8 @@ const EnhancedMessagingPage = () => {
                     </Box>
                   </Stack>
                 </Box>
-              </motion.div>
             );
           })}
-        </AnimatePresence>
 
         {filteredConversations.length === 0 && (
           <Box sx={{ p: 4, textAlign: 'center' }}>
@@ -990,7 +982,7 @@ const EnhancedMessagingPage = () => {
             bgcolor: alpha(theme.palette.background.default, 0.5),
           }}
         >
-          <AnimatePresence>
+          {/* ✅ MOBILE-AUDIT P3: removed AnimatePresence + motion.div from messages */}
             {messages.map((message, index) => {
               const isOwn = message.sender === user?.id;
               const showAvatar =
@@ -998,14 +990,8 @@ const EnhancedMessagingPage = () => {
                 (index === 0 || messages[index - 1].sender !== message.sender);
 
               return (
-                <motion.div
-                  key={message.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
                   <Box
+                    key={message.id}
                     sx={{
                       display: 'flex',
                       justifyContent: isOwn ? 'flex-end' : 'flex-start',
@@ -1039,36 +1025,13 @@ const EnhancedMessagingPage = () => {
                       <Paper
                         sx={{
                           p: 1.5,
-                          borderRadius: 3,
-                          background: isOwn
-                            ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark || '#FFC000'} 100%)`
+                          borderRadius: 2,
+                          // ✅ MOBILE-AUDIT P4: solid bg instead of gradient, removed speech-bubble tails
+                          bgcolor: isOwn
+                            ? 'primary.main'
                             : alpha(theme.palette.text.primary, 0.08),
                           color: isOwn ? theme.palette.primary.contrastText : 'text.primary',
                           border: `1px solid ${isOwn ? alpha(theme.palette.primary.main, 0.3) : theme.palette.divider}`,
-                          position: 'relative',
-                          '&::before': isOwn
-                            ? {
-                                content: '""',
-                                position: 'absolute',
-                                bottom: 0,
-                                right: -8,
-                                width: 0,
-                                height: 0,
-                                borderLeft: `8px solid ${theme.palette.primary.main}`,
-                                borderTop: '8px solid transparent',
-                                borderBottom: '8px solid transparent',
-                              }
-                            : {
-                                content: '""',
-                                position: 'absolute',
-                                bottom: 0,
-                                left: -8,
-                                width: 0,
-                                height: 0,
-                                borderRight: `8px solid ${alpha(theme.palette.text.primary, 0.08)}`,
-                                borderTop: '8px solid transparent',
-                                borderBottom: '8px solid transparent',
-                              },
                         }}
                       >
                         {message.text && (
@@ -1171,10 +1134,8 @@ const EnhancedMessagingPage = () => {
                       </Paper>
                     </Box>
                   </Box>
-                </motion.div>
               );
             })}
-          </AnimatePresence>
           <div ref={messagesEndRef} />
         </Box>
 
@@ -1383,7 +1344,7 @@ const EnhancedMessagingPage = () => {
           fontFamily: 'Manrope, "Noto Sans", sans-serif',
         }}
       >
-        {!selectedConversation ? (
+        {selectedConversation == null ? (
           // Conversations List View
           <>
             {/* Mobile Header */}
@@ -1642,8 +1603,8 @@ const EnhancedMessagingPage = () => {
               })}
             </Box>
 
-            {/* Bottom spacing for nav */}
-            <Box sx={{ height: '100px' }} />
+            {/* Bottom spacing for nav — uses shared layout constant */}
+            <Box sx={{ height: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 16px)` }} />
           </>
         ) : (
           // Chat View
@@ -1733,7 +1694,7 @@ const EnhancedMessagingPage = () => {
                 flex: 1,
                 p: 2,
                 overflowY: 'auto',
-                minHeight: 'calc(100dvh - 220px)',
+                minHeight: 0, // allow flex shrink
               }}
             >
               {messages.length === 0 && (
@@ -1848,8 +1809,8 @@ const EnhancedMessagingPage = () => {
               </Box>
             </Box>
 
-            {/* Bottom spacing for mobile nav */}
-            <Box sx={{ height: '70px' }} />
+            {/* Bottom spacing for mobile nav — uses shared layout constant */}
+            <Box sx={{ height: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 16px)` }} />
           </>
             );
           })()

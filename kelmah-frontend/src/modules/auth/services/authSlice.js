@@ -6,6 +6,8 @@ import { normalizeUser } from '../../../utils/userUtils';
 // Support import.meta.env in Vite and process.env in tests
 // Use Node.js environment variables for tests
 const metaEnv = process.env;
+const __DEV__ = typeof import.meta !== 'undefined' ? import.meta.env?.DEV : false;
+const devLog = (...args) => { if (__DEV__) console.log(...args); };
 
 const normalizeAuthUser = (user) => {
   if (!user) {
@@ -115,7 +117,7 @@ export const verifyAuth = createAsyncThunk(
   'auth/verify',
   async (_, { rejectWithValue }) => {
     try {
-      console.log('Verifying auth status...');
+      devLog('Verifying auth status...');
 
       // Development mock authentication disabled – always verify via API
 
@@ -124,7 +126,7 @@ export const verifyAuth = createAsyncThunk(
       if (!token) {
         const refreshToken = secureStorage.getRefreshToken();
         if (refreshToken) {
-          console.log('No access token found, attempting refresh...');
+          devLog('No access token found, attempting refresh...');
           const refreshResult = await authService.refreshToken();
           if (refreshResult?.token) {
             token = refreshResult.token;
@@ -147,11 +149,11 @@ export const verifyAuth = createAsyncThunk(
 
       // Check if there's user data in localStorage
       const storedUserSnapshot = secureStorage.getUserData();
-      console.log('Currently stored user:', storedUserSnapshot || 'none');
+      devLog('Currently stored user:', storedUserSnapshot || 'none');
 
       // Verify against backend
       const verify = await authService.verifyAuth();
-      console.log('Auth verify response:', verify);
+      devLog('Auth verify response:', verify);
 
       if (verify?.success === false && !verify?.user) {
         throw new Error(
@@ -213,6 +215,9 @@ export const logoutUser = createAsyncThunk(
       secureStorage.clear();
       localStorage.removeItem(AUTH_CONFIG.tokenKey);
       localStorage.removeItem('user');
+      // Clear cached personal/payment data on logout (shared device safety)
+      localStorage.removeItem('worker_search_cache');
+      localStorage.removeItem('savedMomoNumbers');
       return rejectWithValue(error.message || 'Logout failed');
     }
   },
@@ -314,7 +319,7 @@ const authSlice = createSlice({
         state.token = action.payload.token || state.token;
         state.loading = false;
         state.error = null;
-        console.log(
+        devLog(
           'Auth verification fulfilled with user:',
           state.user?.email,
         );
@@ -327,7 +332,7 @@ const authSlice = createSlice({
           state.user = null;
           state.token = null;
         }
-        console.log('Auth verification rejected:', state.error);
+        devLog('Auth verification rejected:', state.error);
       })
       // Logout cases
       .addCase(logoutUser.pending, (state) => {

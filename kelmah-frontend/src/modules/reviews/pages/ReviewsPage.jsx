@@ -488,42 +488,23 @@ const EnhancedReviewsPage = () => {
   );
 
   // Review Card Component
-  const ReviewCard = ({ review, index }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.1 }}
-    >
+  // ✅ MOBILE-AUDIT P3: removed motion.div wrapper from ReviewCard
+  const ReviewCard = ({ review }) => (
       <Card
         sx={{
-          background:
-            'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
-          border: '1px solid rgba(255,215,0,0.2)',
-          borderRadius: 3,
+          // ✅ MOBILE-AUDIT P4: solid bg, simple top border instead of gradient card + ::before
+          bgcolor: 'background.paper',
+          border: '1px solid',
+          borderColor: 'divider',
+          borderTop: `3px solid ${
+            review.rating >= 4
+              ? '#4CAF50'
+              : review.rating >= 3
+                ? '#FFD700'
+                : '#FF5722'
+          }`,
+          borderRadius: 2,
           overflow: 'hidden',
-          position: 'relative',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '3px',
-            background: `linear-gradient(90deg, ${
-              review.rating >= 4
-                ? '#4CAF50'
-                : review.rating >= 3
-                  ? '#FFD700'
-                  : '#FF5722'
-            } 0%, ${alpha(
-              review.rating >= 4
-                ? '#4CAF50'
-                : review.rating >= 3
-                  ? '#FFD700'
-                  : '#FF5722',
-              0.8,
-            )} 100%)`,
-          },
         }}
       >
         <CardContent sx={{ p: 3 }}>
@@ -808,7 +789,6 @@ const EnhancedReviewsPage = () => {
           </Stack>
         </CardActions>
       </Card>
-    </motion.div>
   );
 
   // Tab panels
@@ -940,12 +920,13 @@ const EnhancedReviewsPage = () => {
           {/* Search and Filters */}
           <Paper
             sx={{
-              p: 3,
+              p: { xs: 2, md: 3 },
               mb: 3,
-              background:
-                'linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(40,40,40,0.98) 100%)',
-              border: '1px solid rgba(255,215,0,0.2)',
-              borderRadius: 3,
+              // ✅ MOBILE-AUDIT P4: solid bg instead of gradient
+              bgcolor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 2,
             }}
           >
             <Stack
@@ -1073,11 +1054,9 @@ const EnhancedReviewsPage = () => {
             </Paper>
           ) : (
             <Stack spacing={3}>
-              <AnimatePresence>
-                {filteredReviews.map((review, index) => (
-                  <ReviewCard key={review.id} review={review} index={index} />
+                {filteredReviews.map((review) => (
+                  <ReviewCard key={review.id} review={review} />
                 ))}
-              </AnimatePresence>
             </Stack>
           )}
         </>

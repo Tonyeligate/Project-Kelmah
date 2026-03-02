@@ -1,5 +1,81 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Mobile UI Fix Phases — Implementation Complete (Mar 02, 2026) ✅
+- 🎯 **Scope**: Executed all frontend fix phases from `MOBILE_UI_AUDIT_MAR02_2026.md` with targeted, mobile-first hardening.
+- ✅ **Interaction semantics**:
+  - Replaced non-native clickable card patterns with native interactive wrappers in:
+    - `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
+    - `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx`
+    - `kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx`
+- ✅ **Safe-area / viewport fixes**:
+  - Added safe-area aware spacing to fixed mobile CTA and chat/nav spacers in:
+    - `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+    - `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+    - `kelmah-frontend/src/App.jsx`
+- ✅ **State and resilience fixes**:
+  - Removed stale-closure fallback risk in jobs stats path using a synced ref in:
+    - `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- ✅ **Security/storage hardening**:
+  - Production error technical details gated to DEV only:
+    - `kelmah-frontend/src/main.jsx`
+  - Removed unused direct localStorage user helper:
+    - `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`
+- ✅ **Global CSS contract cleanup**:
+  - Simplified duplicated root viewport contract declarations in:
+    - `kelmah-frontend/src/index.css`
+- 🧪 **Verification**:
+  - VS Code diagnostics show no errors in modified frontend files, including final cleanup on:
+    - `MessagingPage.jsx`
+    - `hirerSlice.js`
+
+### Mobile-First Frontend Dry Audit Delta (Mar 02, 2026 – Route Surface Re-check) ✅
+- 🎯 **Scope**: Re-validated full frontend route/page surface and re-scored mobile UX risk with line-level checks on high-traffic pages.
+- 📄 **Primary report updated**:
+  - `spec-kit/MOBILE_UI_AUDIT_MAR02_2026.md` (new delta section appended)
+- 🔍 **New high-confidence findings**:
+  - Production error-detail leakage risk in `main.jsx` fallback details panel
+  - Stale closure fallback in jobs platform stats effect (`JobsPage.jsx`)
+  - Mobile fixed CTA safe-area gap risk in `JobDetailsPage.jsx`
+  - Global CSS viewport contract duplication in `index.css`
+  - Continued non-native card action semantics in dashboard/application pages
+- 📌 **Priority order confirmed**:
+  1. Native mobile interaction semantics + touch consistency
+  2. Safe-area/viewport contract normalization for fixed CTA/input zones
+  3. Production-safe error disclosure and storage hardening
+  4. CSS contract consolidation and theme-token cleanup
+- 🧪 **Validation mode**: Static dry audit + diagnostics; no runtime functionality changes applied in this pass.
+
+### Mobile-First Frontend Dry Audit (Mar 02, 2026 – Binance-Inspired UX Benchmark) ✅
+- 🎯 **Scope**: Full frontend page/route/component audit surface mapped (57 active module pages), with focused deep-read of app shell and high-traffic mobile pages.
+- 📄 **Primary report**:
+  - `spec-kit/MOBILE_UI_AUDIT_MAR02_2026.md`
+- 🔍 **Key findings identified**:
+  - Mobile touch-target inconsistency (auth CTA below 44px baseline)
+  - Messaging page viewport instability from fixed spacer hacks and rigid height math
+  - Clickable dashboard cards implemented as non-native button containers
+  - Route naming drift (`TempSchedulingPage` alias) after scheduling wrapper removal
+  - Client-side storage/security debt (local encryption secret and personal data caches)
+- 📌 **Recommended implementation order**:
+  1. Touch target + interaction semantics normalization
+  2. Messaging mobile viewport contract cleanup
+  3. Route/config naming and shell consistency cleanup
+  4. Storage TTL/clearance hardening for sensitive cached data
+- 🧪 **Validation mode**: Static dry audit with line-level evidence; no runtime code changes in this audit pass.
+
+### Deep Platform Audit — Full Remediation Applied (Feb 20, 2026) ✅
+- 🎯 **Scope**: All 5 remediation phases from the Deep Platform Audit priority fix backlog implemented in a single pass.
+- 📄 **Full details**: `spec-kit/DEEP_PLATFORM_AUDIT_2026-02-20.md` (see "Full Remediation Applied" section)
+- 📦 **Files modified**: 16 files edited + 1 new test file created (18 total including audit doc)
+- ✅ **Phases completed**:
+  1. **Query Budget Guards** — job search `getJobs` hardened with page/skills/location/radius/term caps (returns 400 on abuse)
+  2. **Frontend Log Redaction** — 33 production `console.log` calls gated behind `import.meta.env.DEV` across 6 service files
+  3. **Route Contract Tests** — new CI test `kelmah-backend/tests/route-contracts.test.js` (61 checks, all green); fixed genuine route shadowing in job, review, and profile routes
+  4. **Mobile dvh Normalization** — `100vh` → `100dvh` with `@supports` fallbacks + safe-area insets in 4 UI files
+  5. **Admin Route Consolidation** — extracted 3 shared handler functions, eliminated ~120 lines of duplicate code, unified `/api/auth/admin/*` canonical routes with `/api/admin/*` legacy aliases
+- 🔐 **Security**: Admin query-string key removed (audit session), search amplification capped, production logs suppressed
+- 📱 **Mobile**: dvh viewport units with vh fallback, safe-area inset padding for notched devices
+- 🧪 **Verification**: Route contract test suite passes all 61 checks; no behavioral regressions in admin endpoints
+
 ### Deep Platform Audit (Feb 20, 2026 – Full Frontend Pages + Backend Logic/Security/Performance) ✅
 - 🎯 **Scope**: End-to-end audit across all 57 frontend module pages, frontend route/data-flow entrypoints, API gateway, and backend microservice route/controller hotspots.
 - 📄 **Primary report**:
@@ -18,6 +94,9 @@
   3. Apply search-query budget caps and index-aligned filter hardening.
   4. Redact/gate production logs in frontend realtime and backend debug paths.
   5. Complete mobile-safe fixed/sticky normalization in remaining high-traffic pages.
+- ✅ **Immediate fix shipped during audit**:
+  - `kelmah-backend/services/auth-service/server.js`
+  - Removed privileged query-string key fallback (`req.query.key`) and enforced header-only internal key validation for admin mutation endpoints.
 
 ### Comprehensive Frontend Audit - Batch 2 (July 2026 – Currency, Loops, State, API Wiring, Theme, Responsive) ✅
 - 🎯 **Scope**: 49 files fixed from comprehensive audit findings across all frontend modules

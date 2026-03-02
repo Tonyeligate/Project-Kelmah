@@ -201,153 +201,33 @@ const hasValidInternalAdminKey = (req) => {
   );
 };
 
-app.post("/api/admin/verify-user", async (req, res) => {
+// ── Shared admin handler functions ──────────────────────────────────────────
+const adminVerifyUser = async (req, res) => {
   try {
     const { email } = req.body;
     if (!hasValidInternalAdminKey(req)) {
       return res.status(403).json({ success: false, message: 'Forbidden' });
     }
-    
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: "Email is required"
-      });
-    }
-    // Find user by email (Mongoose)
-    const { User } = require("./models");
-    const user = await User.findOne({ email: email.toLowerCase() });
-    
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
-    }
-
-    // Force verify the user
-    user.isEmailVerified = true;
-    user.emailVerificationToken = undefined;
-    user.emailVerificationExpires = undefined;
-    await user.save();
-
-    return res.json({
-      success: true,
-      message: "User verified successfully",
-      data: {
-        email: user.email,
-        isEmailVerified: user.isEmailVerified
-      }
-    });
-
-  } catch (error) {
-    logger.error('Admin verify user error:', error);
-    return res.status(500).json({
-      success: false,
-      message: "Error verifying user",
-      error: error.message
-    });
-  }
-});
-
-// Batch verify multiple users
-app.post("/api/admin/verify-users-batch", async (req, res) => {
-  try {
-    const { emails } = req.body;
-    if (!hasValidInternalAdminKey(req)) {
-      return res.status(403).json({ success: false, message: 'Forbidden' });
-    }
-    
-    if (!emails || !Array.isArray(emails)) {
-      return res.status(400).json({
-        success: false,
-        message: "Emails array is required"
-      });
-    }
-    const { User } = require("./models");
-    const results = [];
-
-    for (const email of emails) {
-      try {
-        const user = await User.findOne({ email: (email || '').toLowerCase() });
-        
-        if (user) {
-          user.isEmailVerified = true;
-          user.emailVerificationToken = undefined;
-          user.emailVerificationExpires = undefined;
-          await user.save();
-          
-          results.push({
-            email,
-            status: 'verified',
-            success: true
-          });
-        } else {
-          results.push({
-            email,
-            status: 'not_found',
-            success: false
-          });
-        }
-      } catch (error) {
-        results.push({
-          email,
-          status: 'error',
-          success: false,
-          error: error.message
-        });
-      }
-    }
-
-    const successCount = results.filter(r => r.success).length;
-
-    return res.json({
-      success: true,
-      message: `Verified ${successCount}/${emails.length} users`,
-      data: results
-    });
-
-  } catch (error) {
-    logger.error('Batch verify users error:', error);
-    return res.status(500).json({
-      success: false,
-      message: "Error verifying users",
-      error: error.message
-    });
-  }
-});
-
-// Admin routes (auth-prefix) to work behind API Gateway
-app.post("/api/auth/admin/verify-user", async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!hasValidInternalAdminKey(req)) {
-      return res.status(403).json({ success: false, message: 'Forbidden' });
-    }
-
     if (!email) {
       return res.status(400).json({ success: false, message: "Email is required" });
     }
-
     const { User } = require("./models");
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
-
     user.isEmailVerified = true;
     user.emailVerificationToken = undefined;
     user.emailVerificationExpires = undefined;
     await user.save();
-
     return res.json({ success: true, message: "User verified successfully", data: { email: user.email, isEmailVerified: user.isEmailVerified } });
   } catch (error) {
-    logger.error('Auth-prefixed Admin verify user error:', error);
+    logger.error('Admin verify user error:', error);
     return res.status(500).json({ success: false, message: "Error verifying user", error: error.message });
   }
-});
+};
 
-app.post("/api/auth/admin/verify-users", async (req, res) => {
+const adminVerifyUsersBatch = async (req, res) => {
   try {
     const { emails } = req.body;
     if (!hasValidInternalAdminKey(req)) {
@@ -356,7 +236,6 @@ app.post("/api/auth/admin/verify-users", async (req, res) => {
     if (!emails || !Array.isArray(emails)) {
       return res.status(400).json({ success: false, message: "Emails array is required" });
     }
-
     const { User } = require("./models");
     const results = [];
     for (const email of emails) {
@@ -378,13 +257,12 @@ app.post("/api/auth/admin/verify-users", async (req, res) => {
     const successCount = results.filter(r => r.success).length;
     return res.json({ success: true, message: `Verified ${successCount}/${emails.length} users`, data: results });
   } catch (error) {
-    logger.error('Auth-prefixed Batch verify users error:', error);
+    logger.error('Batch verify users error:', error);
     return res.status(500).json({ success: false, message: "Error verifying users", error: error.message });
   }
-});
+};
 
-// Admin route: unlock account and reset failed logins
-app.post('/api/admin/unlock-account', async (req, res) => {
+const adminUnlockAccount = async (req, res) => {
   try {
     const { email } = req.body;
     if (!hasValidInternalAdminKey(req)) {
@@ -407,7 +285,17 @@ app.post('/api/admin/unlock-account', async (req, res) => {
     logger.error('Admin unlock account error:', error);
     return res.status(500).json({ success: false, message: 'Error unlocking account', error: error.message });
   }
-});
+};
+
+// ── Canonical admin routes (auth-prefix — works behind API Gateway) ────────
+app.post("/api/auth/admin/verify-user", adminVerifyUser);
+app.post("/api/auth/admin/verify-users", adminVerifyUsersBatch);
+app.post("/api/auth/admin/unlock-account", adminUnlockAccount);
+
+// ── Legacy aliases (direct access — same handlers, will be deprecated) ─────
+app.post("/api/admin/verify-user", adminVerifyUser);
+app.post("/api/admin/verify-users-batch", adminVerifyUsersBatch);
+app.post("/api/admin/unlock-account", adminUnlockAccount);
 
 // Removed temporary job proxy routes; API Gateway should route to job-service
 

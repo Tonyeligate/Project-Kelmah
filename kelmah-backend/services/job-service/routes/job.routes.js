@@ -34,12 +34,7 @@ const router = express.Router();
 router.use(dbReady);
 
 // Public routes - handle both with and without trailing slashes
-router.get("/", (req, res, next) => {
-  console.log(`[JOB ROUTES] GET / matched! Query:`, req.query);
-  console.log(`[JOB ROUTES] req.path:`, req.path);
-  console.log(`[JOB ROUTES] req.url:`, req.url);
-  jobController.getJobs(req, res, next);
-});
+router.get("/", jobController.getJobs);
 router.get("/search", jobController.advancedJobSearch);
 router.get("/dashboard", verifyGatewayRequest, jobController.getDashboardJobs); // Protected dashboard route
 router.get("/categories", jobController.getJobCategories);
@@ -79,6 +74,20 @@ router.post(
 
 router.get("/my-jobs", authorizeRoles("hirer"), jobController.getMyJobs);
 
+// ── Literal GET routes (MUST come before any /:id param routes) ──────────────
+router.get('/proposals', authorizeRoles('hirer'), jobController.getHirerProposals);
+router.get('/saved', authorizeRoles('worker', 'hirer'), jobController.getSavedJobs);
+router.get("/analytics", authorizeRoles("admin"), jobController.getJobAnalytics);
+router.get('/assigned', authorizeRoles('worker'), jobController.getMyAssignedJobs);
+router.get('/applications/me', authorizeRoles('worker'), jobController.getMyApplications);
+router.get('/location', jobController.getJobsByLocation);
+router.get('/expired', authorizeRoles('admin'), jobController.getExpiredJobs);
+router.get('/recommendations/personalized', authorizeRoles('worker'), jobController.getPersonalizedJobRecommendations);
+router.get("/recommendations", authorizeRoles("worker"), jobController.getJobRecommendations);
+router.get('/skill/:skill', jobController.getJobsBySkill);
+router.get('/tier/:tier', jobController.getJobsByPerformanceTier);
+
+// ── Param-prefixed routes (/:id/...) ─────────────────────────────────────────
 router.put(
   "/:id",
   authorizeRoles("hirer"),
@@ -97,8 +106,6 @@ router.patch(
   jobController.changeJobStatus,
 );
 
-// Job matching routes
-router.get("/recommendations", authorizeRoles("worker"), jobController.getJobRecommendations);
 router.get("/:id/worker-matches", authorizeRoles("hirer"), jobController.getWorkerMatches);
 
 // Applications
@@ -106,35 +113,14 @@ router.post('/:id/apply', authorizeRoles('worker'), createLimiter('default'), jo
 router.get('/:id/applications', authorizeRoles('hirer'), jobController.getJobApplications);
 router.put('/:id/applications/:applicationId', authorizeRoles('hirer'), jobController.updateApplicationStatus);
 router.delete('/:id/applications/:applicationId', authorizeRoles('worker'), jobController.withdrawApplication);
-router.get('/proposals', authorizeRoles('hirer'), jobController.getHirerProposals);
 
-// Saved jobs (require authentication)
-router.get('/saved', authorizeRoles('worker', 'hirer'), jobController.getSavedJobs);
+// Saved jobs (param routes)
 router.post('/:id/save', authorizeRoles('worker', 'hirer'), jobController.saveJob);
 router.delete('/:id/save', authorizeRoles('worker', 'hirer'), jobController.unsaveJob);
-
-// Analytics routes (admin only)
-router.get("/analytics", authorizeRoles("admin"), jobController.getJobAnalytics);
-
-// Worker-centric routes
-router.get('/assigned', authorizeRoles('worker'), jobController.getMyAssignedJobs);
-router.get('/applications/me', authorizeRoles('worker'), jobController.getMyApplications);
-
-// Enhanced Job Distribution Routes
-// Location-based job filtering
-router.get('/location', jobController.getJobsByLocation);
-router.get('/skill/:skill', jobController.getJobsBySkill);
-router.get('/tier/:tier', jobController.getJobsByPerformanceTier);
-
-// Personalized recommendations
-router.get('/recommendations/personalized', authorizeRoles('worker'), jobController.getPersonalizedJobRecommendations);
 
 // Job management (hirer only)
 router.patch('/:id/close-bidding', authorizeRoles('hirer'), jobController.closeJobBidding);
 router.patch('/:id/extend-deadline', authorizeRoles('hirer'), jobController.extendJobDeadline);
 router.patch('/:id/renew', authorizeRoles('hirer'), jobController.renewJob);
-
-// Admin routes
-router.get('/expired', authorizeRoles('admin'), jobController.getExpiredJobs);
 
 module.exports = router;

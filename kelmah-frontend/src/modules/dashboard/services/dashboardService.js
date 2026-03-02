@@ -3,6 +3,9 @@ import { WS_CONFIG } from '../../../config/environment';
 import { io } from 'socket.io-client';
 import { getWebSocketUrl } from '../../../services/socketUrl';
 
+const __DEV__ = import.meta.env.DEV;
+const devLog = (...args) => { if (__DEV__) console.log(...args); };
+
 /**
  * Dashboard service to handle dashboard data fetching and real-time updates
  */
@@ -33,7 +36,7 @@ class DashboardService {
     if (!this.token) return;
 
     const wsUrl = await getWebSocketUrl();
-    console.log('📡 Dashboard WebSocket connecting to:', wsUrl);
+    devLog('📡 Dashboard WebSocket connecting to:', wsUrl);
 
     // Connect to backend WebSocket server
     // When passing full URL, Socket.IO automatically handles the path
@@ -47,7 +50,7 @@ class DashboardService {
 
     this.socket.on('connect', () => {
       this.connected = true;
-      console.log('Dashboard socket connected');
+      devLog('Dashboard socket connected');
 
       // Join dashboard channel
       try {
@@ -61,7 +64,7 @@ class DashboardService {
 
     this.socket.on('disconnect', () => {
       this.connected = false;
-      console.log('Dashboard socket disconnected');
+      devLog('Dashboard socket disconnected');
     });
 
     // Setup listeners for different dashboard events

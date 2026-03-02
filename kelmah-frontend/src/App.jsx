@@ -18,6 +18,7 @@ import { useApiHealth } from './hooks/useApiHealth';
 import { warmUpServices } from './utils/serviceWarmUp';
 import useWebSocketConnect from './hooks/useWebSocketConnect';
 import OfflineBanner from './components/common/OfflineBanner';
+import { Z_INDEX } from './constants/layout';
 
 // Main App Component
 const App = () => {
@@ -41,13 +42,14 @@ const App = () => {
 
   // Warm up backend services on app load (prevents Render free tier sleep)
   useEffect(() => {
+    let timerId;
     const wakeUpBackend = async () => {
       setServicesWakingUp(true);
       try {
         const result = await warmUpServices();
         if (result.wakingUp > 0) {
           // Services are waking up, keep indicator for a bit
-          setTimeout(() => setServicesWakingUp(false), 15000);
+          timerId = setTimeout(() => setServicesWakingUp(false), 15000);
         } else {
           setServicesWakingUp(false);
         }
@@ -57,6 +59,7 @@ const App = () => {
       }
     };
     wakeUpBackend();
+    return () => { if (timerId) clearTimeout(timerId); };
   }, []);
 
   // Verify authentication on mount
@@ -102,7 +105,15 @@ const App = () => {
       <GlobalErrorBoundary>
         {/* Service wake-up indicator */}
         {servicesWakingUp && (
-          <Box sx={{ width: '100%', position: 'fixed', top: 0, left: 0, zIndex: 1300 }}>
+              <Box
+                sx={{
+                  width: '100%',
+                  position: 'fixed',
+                  top: 'env(safe-area-inset-top, 0px)',
+                  left: 0,
+                  zIndex: Z_INDEX.backdrop,
+                }}
+              >
             <LinearProgress color="warning" />
             <Alert severity="info" sx={{ borderRadius: 0 }}>
               ⏳ Waking up backend services... This may take up to 30 seconds on first load.

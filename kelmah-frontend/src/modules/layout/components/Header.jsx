@@ -1510,7 +1510,7 @@ const Header = ({
                       fontSize: '0.75rem',
                       px: 1.5,
                       py: 0.5,
-                      minHeight: '36px',
+                      minHeight: '44px',
                     }),
                   }}
                 >

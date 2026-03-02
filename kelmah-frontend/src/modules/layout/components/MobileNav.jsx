@@ -17,7 +17,7 @@ import {
   Chip,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { motion } from 'framer-motion';
+// framer-motion import removed — ✅ MOBILE-AUDIT P3
 import { useNavigate, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import {
@@ -329,14 +329,9 @@ const MobileNav = ({ open, onClose }) => {
 
         {/* Navigation Items */}
         <List sx={{ flex: 1, py: 1 }}>
-          {navigationItems.map((item, index) => (
-              <motion.div
-                key={item.path}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.15, delay: index * 0.02 }}
-              >
-                <StyledListItemButton onClick={() => handleNavigate(item.path)}>
+          {/* ✅ MOBILE-AUDIT P3: removed motion.div staggered animation from nav items */}
+          {navigationItems.map((item) => (
+                <StyledListItemButton key={item.path} onClick={() => handleNavigate(item.path)}>
                   <ListItemIcon>
                     <Badge badgeContent={item.badge} color="error">
                       {item.icon}
@@ -349,56 +344,38 @@ const MobileNav = ({ open, onClose }) => {
                     }}
                   />
                 </StyledListItemButton>
-              </motion.div>
             ))}
 
           {showUserMenu && (
             <>
               <Divider sx={{ my: 2, mx: 2 }} />
 
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.15, delay: 0.05 }}
+              <StyledListItemButton
+                onClick={() => handleNavigate('/settings')}
               >
-                <StyledListItemButton
-                  onClick={() => handleNavigate('/settings')}
-                >
-                  <ListItemIcon>
-                    <SettingsIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Settings" />
-                </StyledListItemButton>
-              </motion.div>
+                <ListItemIcon>
+                  <SettingsIcon />
+                </ListItemIcon>
+                <ListItemText primary="Settings" />
+              </StyledListItemButton>
 
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.15, delay: 0.07 }}
+              <StyledListItemButton
+                onClick={() => handleNavigate('/support')}
               >
-                <StyledListItemButton
-                  onClick={() => handleNavigate('/support')}
-                >
-                  <ListItemIcon>
-                    <HomeIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Help & Support" />
-                </StyledListItemButton>
-              </motion.div>
+                <ListItemIcon>
+                  <HomeIcon />
+                </ListItemIcon>
+                <ListItemText primary="Help & Support" />
+              </StyledListItemButton>
 
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.15, delay: 0.09 }}
-              >
-                <StyledListItemButton
-                  onClick={handleLogout}
-                  sx={{
-                    color: '#f44336',
-                    '&:hover': {
-                      backgroundColor: alpha('#f44336', 0.1),
-                    },
-                    '& .MuiListItemIcon-root': {
+              <StyledListItemButton
+                onClick={handleLogout}
+                sx={{
+                  color: '#f44336',
+                  '&:hover': {
+                    backgroundColor: alpha('#f44336', 0.1),
+                  },
+                  '& .MuiListItemIcon-root': {
                       color: '#f44336',
                     },
                   }}
@@ -408,7 +385,6 @@ const MobileNav = ({ open, onClose }) => {
                   </ListItemIcon>
                   <ListItemText primary="Logout" />
                 </StyledListItemButton>
-              </motion.div>
             </>
           )}
         </List>

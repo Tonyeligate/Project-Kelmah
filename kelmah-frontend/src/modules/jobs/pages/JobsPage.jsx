@@ -191,7 +191,7 @@ const LazyIcons = {
   Share: React.lazy(() => import('@mui/icons-material/Share')),
 };
 import { motion, AnimatePresence } from 'framer-motion';
-import { styled, keyframes } from '@mui/material/styles';
+// styled + keyframes import removed — HeroSection (only user) was dead code
 import { format, formatDistanceToNow } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
 import CountUp from 'react-countup';
@@ -211,98 +211,9 @@ import PullToRefresh from '../../../components/common/PullToRefresh';
 import usePrefersReducedMotion from '../../../hooks/usePrefersReducedMotion';
 import useNetworkSpeed from '../../../hooks/useNetworkSpeed';
 
-// Advanced Animations with Smooth Transitions
-const float = keyframes`
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  25% { transform: translateY(-10px) rotate(1deg); }
-  50% { transform: translateY(-15px) rotate(0deg); }
-  75% { transform: translateY(-10px) rotate(-1deg); }
-`;
-
-const shimmer = keyframes`
-  0% { background-position: -200px 0; }
-  100% { background-position: calc(200px + 100%) 0; }
-`;
-
-const pulse = keyframes`
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
-  50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
-`;
-
-const slideInFromBottom = keyframes`
-  from { transform: translateY(100px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-`;
-
-const gradientShift = keyframes`
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-`;
-
-const sparkle = keyframes`
-  0%, 100% { opacity: 0; transform: scale(0); }
-  50% { opacity: 1; transform: scale(1); }
-`;
-
-const rotateGlow = keyframes`
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-`;
-
-// Professional Styled Components with Premium Feel
-const HeroSection = styled(Box)(({ theme }) => ({
-  background: `linear-gradient(135deg, 
-    ${theme.palette.primary.main} 0%, 
-    ${theme.palette.secondary.main} 25%,
-    ${theme.palette.primary.dark} 50%,
-    ${theme.palette.secondary.main} 75%,
-    ${theme.palette.primary.main} 100%)`,
-  backgroundSize: '400% 400%',
-  // animation: `${gradientShift} 15s ease infinite`,
-  color: 'white',
-  padding: theme.spacing(4, 0),
-  position: 'relative',
-  overflow: 'hidden',
-  minHeight: '40vh',
-  display: 'flex',
-  alignItems: 'center',
-  [theme.breakpoints.up('sm')]: {
-    padding: theme.spacing(8, 0),
-    minHeight: '60vh',
-  },
-  [theme.breakpoints.up('md')]: {
-    padding: theme.spacing(12, 0),
-    minHeight: '85vh',
-  },
-  [theme.breakpoints.up('lg')]: {
-    minHeight: '75vh',
-    padding: theme.spacing(12, 0),
-  },
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: `radial-gradient(circle at 20% 80%, ${alpha('#FFD700', 0.3)} 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, ${alpha('#FFA500', 0.3)} 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, ${alpha('#FF6B6B', 0.2)} 0%, transparent 50%)`,
-    // animation: `${float} 20s ease-in-out infinite`,
-  },
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    top: '-50%',
-    left: '-50%',
-    width: '200%',
-    height: '200%',
-    background: `conic-gradient(from 0deg at 50% 50%, transparent 0deg, ${alpha('#FFD700', 0.1)} 60deg, transparent 120deg)`,
-    animation: `${rotateGlow} 30s linear infinite`,
-  },
-}));
+// ✅ MOBILE-AUDIT P1: Removed dead code — 7 keyframe animations + HeroSection styled component
+// (float, shimmer, pulse, slideInFromBottom, gradientShift, sparkle, rotateGlow)
+// HeroSection was never rendered in JSX.
 
 // Animated Stat Card Component with CountUp
 const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
@@ -613,6 +524,7 @@ const JobsPage = () => {
     loading: true,
   });
   const hasPrefetchedLazyIcons = useRef(false);
+  const jobsCountRef = useRef(0);
   // Ghana-aware helpers for better UX and ranking
   const GHANA_REGIONS = [
     'Greater Accra',
@@ -754,6 +666,10 @@ const JobsPage = () => {
     setLoading(isJobsLoading && !jobsResponse);
   }, [isJobsLoading, jobsResponse]);
 
+  useEffect(() => {
+    jobsCountRef.current = jobs.length;
+  }, [jobs.length]);
+
   // Warm non-critical icon bundles once hero content settles to avoid accordion flashes later
   useEffect(() => {
     if (hasPrefetchedLazyIcons.current || loading) {
@@ -784,7 +700,7 @@ const JobsPage = () => {
           // API unavailable — derive available-jobs count from loaded data
           setPlatformStats((prev) => ({
             ...prev,
-            availableJobs: jobs.length,
+            availableJobs: jobsCountRef.current,
             loading: false,
           }));
         }
@@ -1796,7 +1712,7 @@ const JobsPage = () => {
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                      transition={{ duration: 0.5, delay: index < 8 ? index * 0.1 : 0 }}
                       whileHover={{ scale: isSmallMobile ? 1 : 1.02 }}
                       {...motionProps} // ✅ Disable scale on mobile
                     >

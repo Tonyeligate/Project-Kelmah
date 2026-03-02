@@ -1,6 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../../../services/apiClient';
 
+const __DEV__ = import.meta.env.DEV;
+const devLog = (...args) => { if (__DEV__) console.log(...args); };
+
 // Clients are centralized in modules/common/services/axios.js with auth interceptors
 
 // Async thunks for API operations
@@ -54,7 +57,7 @@ export const fetchHirerJobs = createAsyncThunk(
       // Extract items array from response - check multiple possible paths
       const responseData = response.data?.data;
       const jobs = responseData?.items || responseData?.jobs || responseData || response.data?.jobs || [];
-      console.log('[HirerSlice] Fetched jobs:', { requestedStatus: status, dbStatus, count: Array.isArray(jobs) ? jobs.length : 0 });
+      devLog('[HirerSlice] Fetched jobs:', { requestedStatus: status, dbStatus, count: Array.isArray(jobs) ? jobs.length : 0 });
       return { status, jobs: Array.isArray(jobs) ? jobs : [] };
     } catch (error) {
       console.warn(
@@ -113,17 +116,6 @@ export const updateHirerProfile = createAsyncThunk(
     }
   },
 );
-
-// Get real user data from localStorage
-const getRealUserData = () => {
-  try {
-    const userData = localStorage.getItem('user');
-    return userData ? JSON.parse(userData) : null;
-  } catch (error) {
-    console.error('Error parsing stored user data:', error);
-    return null;
-  }
-};
 
 export const updateJobStatus = createAsyncThunk(
   'hirer/updateJobStatus',
@@ -540,7 +532,7 @@ const hirerSlice = createSlice({
       // Delete Hirer Job
       .addCase(deleteHirerJob.fulfilled, (state, action) => {
         const payload = action.payload?.data || action.payload || {};
-        const jobId = payload.jobId;
+        const { jobId } = payload;
         if (!jobId) {
           return;
         }

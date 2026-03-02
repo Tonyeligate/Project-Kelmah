@@ -94,38 +94,40 @@ const ErrorFallback = ({ error }) => (
       We're sorry for the inconvenience. Please refresh the page or contact
       support if the problem persists.
     </p>
-    <details
-      style={{
-        color: '#FF5252',
-        maxWidth: '800px',
-        width: '100%',
-        backgroundColor: 'rgba(255, 82, 82, 0.1)',
-        padding: '16px',
-        borderRadius: '8px',
-        border: '1px solid rgba(255, 82, 82, 0.3)',
-      }}
-    >
-      <summary
+    {import.meta.env.DEV && (
+      <details
         style={{
-          cursor: 'pointer',
-          marginBottom: '12px',
-          fontWeight: 600,
+          color: '#FF5252',
+          maxWidth: '800px',
+          width: '100%',
+          backgroundColor: 'rgba(255, 82, 82, 0.1)',
+          padding: '16px',
+          borderRadius: '8px',
+          border: '1px solid rgba(255, 82, 82, 0.3)',
         }}
       >
-        Technical Details
-      </summary>
-      <pre
-        style={{
-          whiteSpace: 'pre-wrap',
-          fontSize: '14px',
-          lineHeight: '1.4',
-          margin: 0,
-        }}
-      >
-        {error.message}
-        {import.meta.env.DEV && error.stack && '\n\nStack Trace:\n' + error.stack}
-      </pre>
-    </details>
+        <summary
+          style={{
+            cursor: 'pointer',
+            marginBottom: '12px',
+            fontWeight: 600,
+          }}
+        >
+          Technical Details
+        </summary>
+        <pre
+          style={{
+            whiteSpace: 'pre-wrap',
+            fontSize: '14px',
+            lineHeight: '1.4',
+            margin: 0,
+          }}
+        >
+          {error.message}
+          {error.stack && '\n\nStack Trace:\n' + error.stack}
+        </pre>
+      </details>
+    )}
   </div>
 );
 

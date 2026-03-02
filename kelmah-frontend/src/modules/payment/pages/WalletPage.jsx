@@ -73,14 +73,15 @@ const WalletPage = () => {
     <Container maxWidth="md" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
       {/* Wallet Summary */}
       <Paper
-        elevation={4}
+        elevation={0}
         sx={(theme) => ({
-          p: 3,
+          p: { xs: 2, sm: 3 },
           mb: 4,
           borderRadius: 2,
-          background: `linear-gradient(to right, #28313b, #485461, ${theme.palette.secondary.main})`,
-          color: 'white',
-          border: '2px solid',
+          // ✅ MOBILE-AUDIT P4: solid bg instead of gradient
+          bgcolor: 'background.paper',
+          color: 'text.primary',
+          border: '1px solid',
           borderColor: 'secondary.main',
         })}
       >
