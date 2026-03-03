@@ -59,6 +59,7 @@ import {
   formatRelativeTime,
   formatCurrency,
 } from '../../../utils/formatters';
+import ConfirmDialog from '../../common/components/common/ConfirmDialog';
 
 const SavedSearches = ({
   showHeader = true,
@@ -78,6 +79,7 @@ const SavedSearches = ({
   const [isEditing, setIsEditing] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [runningSearchId, setRunningSearchId] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, id: null });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -139,16 +141,20 @@ const SavedSearches = ({
 
   // Handle delete saved search
   const handleDelete = async (searchId) => {
-    if (window.confirm('Are you sure you want to delete this saved search?')) {
-      try {
-        await smartSearchService.deleteSavedSearch(searchId);
-        enqueueSnackbar('Saved search deleted successfully', {
-          variant: 'success',
-        });
-        loadSavedSearches();
-      } catch (error) {
-        enqueueSnackbar('Failed to delete saved search', { variant: 'error' });
-      }
+    setDeleteConfirm({ open: true, id: searchId });
+  };
+
+  const confirmDelete = async () => {
+    const searchId = deleteConfirm.id;
+    setDeleteConfirm({ open: false, id: null });
+    try {
+      await smartSearchService.deleteSavedSearch(searchId);
+      enqueueSnackbar('Saved search deleted successfully', {
+        variant: 'success',
+      });
+      loadSavedSearches();
+    } catch (error) {
+      enqueueSnackbar('Failed to delete saved search', { variant: 'error' });
     }
   };
 
@@ -675,6 +681,14 @@ const SavedSearches = ({
           </Button>
         </DialogActions>
       </Dialog>
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        title="Delete Saved Search"
+        message="Are you sure you want to delete this saved search?"
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm({ open: false, id: null })}
+      />
     </Box>
   );
 };

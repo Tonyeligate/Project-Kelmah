@@ -53,10 +53,16 @@ const verifyGatewayRequest = (req, res, next) => {
 
   // Allow requests from API Gateway with authenticated user info (new format)
   if (gatewayAuth && authSource === 'api-gateway') {
-    // Verify HMAC signature if INTERNAL_API_KEY is configured (prevents header spoofing)
+    // Verify HMAC signature — MANDATORY when INTERNAL_API_KEY is configured (prevents header spoofing)
     const signature = req.headers['x-gateway-signature'];
-    const hmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET || '';
-    if (hmacSecret && signature) {
+    const hmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET;
+    if (hmacSecret) {
+      if (!signature) {
+        return res.status(401).json({
+          error: 'Missing gateway signature',
+          message: 'Gateway requests must include x-gateway-signature when HMAC is configured'
+        });
+      }
       const expected = crypto.createHmac('sha256', hmacSecret).update(gatewayAuth).digest('hex');
       if (!timingSafeCompare(signature, expected)) {
         return res.status(401).json({
@@ -152,6 +158,20 @@ const optionalGatewayVerification = (req, res, next) => {
 
   if (gatewayAuth && authSource === 'api-gateway') {
     try {
+      // Verify HMAC signature before trusting gateway headers
+      const signature = req.headers['x-gateway-signature'];
+      const hmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET;
+      if (hmacSecret) {
+        if (!signature) {
+          // No signature on optional route — skip populating req.user
+          return next();
+        }
+        const expected = crypto.createHmac('sha256', hmacSecret).update(gatewayAuth).digest('hex');
+        if (!timingSafeCompare(signature, expected)) {
+          // Invalid signature — do not trust headers
+          return next();
+        }
+      }
       const parsed = JSON.parse(gatewayAuth);
       const user = validateGatewayUser(parsed);
       if (user) {

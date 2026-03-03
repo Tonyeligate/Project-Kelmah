@@ -880,14 +880,14 @@ const JobDetailsPage = () => {
           <IconButton
             onClick={handleToggleSave}
             disabled={savingBookmark}
-            sx={{ color: saved ? '#D4AF37' : 'rgba(255,255,255,0.7)', minWidth: 48, minHeight: 48 }}
+            sx={{ color: saved ? '#D4AF37' : 'text.secondary', minWidth: 48, minHeight: 48 }}
           >
             {saved ? <Bookmark /> : <BookmarkBorder />}
           </IconButton>
           <IconButton
             onClick={handleShareJob}
             aria-label="Share job"
-            sx={{ color: 'rgba(255,255,255,0.7)', minWidth: 48, minHeight: 48 }}
+            sx={{ color: 'text.secondary', minWidth: 48, minHeight: 48 }}
           >
             <Share />
           </IconButton>

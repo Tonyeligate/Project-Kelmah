@@ -4,18 +4,20 @@ import portfolioApi from '../services/portfolioService';
 
 const WorkSampleUploader = ({ onUpload }) => {
   const fileInputRef = React.useRef(null);
+  const [uploadError, setUploadError] = React.useState(null);
 
   const handleSelect = () => fileInputRef.current?.click();
 
   const handleChange = async (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
+    setUploadError(null);
     try {
       await portfolioApi.uploadWorkSamples(files);
       onUpload?.(files);
     } catch (err) {
       if (import.meta.env.DEV) console.error('Upload failed', err);
-      alert('Upload failed');
+      setUploadError('Upload failed. Please try again.');
     }
   };
 
@@ -39,6 +41,11 @@ const WorkSampleUploader = ({ onUpload }) => {
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
           Supported: images and short videos. Max 20MB per file.
         </Typography>
+        {uploadError && (
+          <Alert severity="error" sx={{ mt: 1 }} onClose={() => setUploadError(null)}>
+            {uploadError}
+          </Alert>
+        )}
         <Alert severity="info" sx={{ mt: 1 }}>
           Uploads require authentication. Ensure you are logged in.
         </Alert>

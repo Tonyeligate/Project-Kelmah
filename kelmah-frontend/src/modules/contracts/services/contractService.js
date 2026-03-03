@@ -102,16 +102,12 @@ export const contractService = {
       const payload = unwrapPayload(response);
       return normalizeContract(payload, 0);
     } catch (error) {
-      // Fallback: fetch all contracts and find by ID
-      try {
-        const all = await this.getContracts();
-        const contracts = Array.isArray(all) ? all : [];
-        return contracts.find(
-          (c) => c._id === id || c.id === id,
-        ) || null;
-      } catch {
+      // If the direct fetch fails with 404, the contract doesn't exist — return null.
+      // Avoid fetching ALL contracts as a fallback (performance concern at scale).
+      if (error?.response?.status === 404) {
         return null;
       }
+      throw error;
     }
   },
 

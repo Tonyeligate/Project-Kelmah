@@ -53,6 +53,7 @@ import {
 import { useSnackbar } from 'notistack';
 import ProjectGallery from './ProjectGallery';
 import { formatCurrency, formatDate } from '../../../utils/formatters';
+import ConfirmDialog from '../../common/components/common/ConfirmDialog';
 
 const PortfolioManager = () => {
   // Use ONLY Redux auth state to prevent dual state management conflicts
@@ -70,6 +71,7 @@ const PortfolioManager = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, id: null });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -155,20 +157,22 @@ const PortfolioManager = () => {
 
   // Handle delete
   const handleDelete = async (itemId) => {
-    if (
-      window.confirm('Are you sure you want to delete this portfolio item?')
-    ) {
-      try {
-        await portfolioService.deletePortfolioItem(itemId);
-        enqueueSnackbar('Portfolio item deleted successfully', {
-          variant: 'success',
-        });
-        loadPortfolioItems();
-      } catch (err) {
-        enqueueSnackbar('Failed to delete portfolio item', {
-          variant: 'error',
-        });
-      }
+    setDeleteConfirm({ open: true, id: itemId });
+  };
+
+  const confirmDelete = async () => {
+    const itemId = deleteConfirm.id;
+    setDeleteConfirm({ open: false, id: null });
+    try {
+      await portfolioService.deletePortfolioItem(itemId);
+      enqueueSnackbar('Portfolio item deleted successfully', {
+        variant: 'success',
+      });
+      loadPortfolioItems();
+    } catch (err) {
+      enqueueSnackbar('Failed to delete portfolio item', {
+        variant: 'error',
+      });
     }
   };
 
@@ -716,8 +720,14 @@ const PortfolioManager = () => {
         >
           <AddIcon />
         </Fab>
-      )}
-    </Box>
+      )}      <ConfirmDialog
+        open={deleteConfirm.open}
+        title="Delete Portfolio Item"
+        message="Are you sure you want to delete this portfolio item?"
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm({ open: false, id: null })}
+      />    </Box>
   );
 };
 

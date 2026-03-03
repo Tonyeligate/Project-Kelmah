@@ -45,7 +45,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Password is required'],
     minlength: [8, 'Password must be at least 8 characters'],
-    maxlength: [100, 'Password cannot exceed 100 characters']
+    maxlength: [100, 'Password cannot exceed 100 characters'],
+    select: false // Never return password in queries by default
   },
   role: {
     type: String,
@@ -61,27 +62,27 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  emailVerificationToken: String,
-  emailVerificationExpires: Date,
+  emailVerificationToken: { type: String, select: false },
+  emailVerificationExpires: { type: Date, select: false },
 
   // Phone Verification
   isPhoneVerified: {
     type: Boolean,
     default: false
   },
-  phoneVerificationToken: String,
-  phoneVerificationExpires: Date,
+  phoneVerificationToken: { type: String, select: false },
+  phoneVerificationExpires: { type: Date, select: false },
 
   // Password Reset
-  passwordResetToken: String,
-  passwordResetExpires: Date,
+  passwordResetToken: { type: String, select: false },
+  passwordResetExpires: { type: Date, select: false },
 
   // Two-Factor Authentication
   isTwoFactorEnabled: {
     type: Boolean,
     default: false
   },
-  twoFactorSecret: String,
+  twoFactorSecret: { type: String, select: false },
 
   // Account Management
   tokenVersion: {
@@ -134,12 +135,10 @@ const userSchema = new mongoose.Schema({
   locationCoordinates: {
     type: {
       type: String,
-      enum: ['Point'],
-      default: 'Point'
+      enum: ['Point']
     },
     coordinates: {
-      type: [Number],
-      default: undefined
+      type: [Number]
     }
   },
 
@@ -169,7 +168,7 @@ const userSchema = new mongoose.Schema({
   },
   rating: {
     type: Number,
-    default: 4.5,
+    default: 0,
     min: 0,
     max: 5
   },
@@ -239,6 +238,8 @@ userSchema.index({ createdAt: 1 });
 userSchema.index({ googleId: 1 }, { sparse: true }); // Already no unique: true
 userSchema.index({ facebookId: 1 }, { sparse: true }); // Already no unique: true  
 userSchema.index({ linkedinId: 1 }, { sparse: true }); // Already no unique: true
+userSchema.index({ skills: 1 }); // Worker search by skills
+userSchema.index({ profession: 1 }); // Worker search by profession
 // Optional geo index for location if coordinates included elsewhere
 userSchema.index({ locationCoordinates: '2dsphere' });
 
@@ -247,18 +248,20 @@ userSchema.virtual('fullName').get(function () {
   return `${this.firstName} ${this.lastName}`;
 });
 
-// Ensure virtual fields are serialized
-userSchema.set('toJSON', {
-  virtuals: true,
-  transform: function (doc, ret) {
-    delete ret.password;
-    delete ret.passwordResetToken;
-    delete ret.emailVerificationToken;
-    delete ret.phoneVerificationToken;
-    delete ret.twoFactorSecret;
-    return ret;
-  }
-});
+// Ensure virtual fields are serialized — apply same transform to both toJSON and toObject
+const sanitizeTransform = function (doc, ret) {
+  delete ret.password;
+  delete ret.passwordResetToken;
+  delete ret.passwordResetExpires;
+  delete ret.emailVerificationToken;
+  delete ret.emailVerificationExpires;
+  delete ret.phoneVerificationToken;
+  delete ret.phoneVerificationExpires;
+  delete ret.twoFactorSecret;
+  return ret;
+};
+userSchema.set('toJSON', { virtuals: true, transform: sanitizeTransform });
+userSchema.set('toObject', { virtuals: true, transform: sanitizeTransform });
 
 // Pre-save middleware for password hashing
 userSchema.pre('save', async function (next) {
@@ -300,7 +303,7 @@ userSchema.methods.generatePasswordResetToken = function () {
 };
 
 userSchema.methods.generatePhoneVerificationToken = function () {
-  const token = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+  const token = crypto.randomInt(100000, 999999).toString(); // Cryptographically secure 6-digit OTP
   this.phoneVerificationToken = crypto
     .createHash('sha256')
     .update(token)

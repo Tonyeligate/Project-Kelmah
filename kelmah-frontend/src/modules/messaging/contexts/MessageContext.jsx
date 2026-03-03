@@ -109,6 +109,14 @@ export const MessageProvider = ({ children }) => {
 
       if (import.meta.env.DEV) console.log('🔌 MessageContext: reusing shared WebSocket connection');
 
+      // Remove any existing messaging listeners before re-adding to prevent duplicates
+      const messagingEvents = [
+        'new_message', 'user_typing', 'messages_read',
+        'user_status_changed', 'connected',
+        'connect', 'disconnect', 'connect_error', 'error'
+      ];
+      messagingEvents.forEach(evt => sharedSocket.off(evt));
+
       // Listen for messaging-specific events on the SHARED socket
       sharedSocket.on('connect', () => {
         setIsConnected(true);
@@ -262,7 +270,8 @@ export const MessageProvider = ({ children }) => {
       if (import.meta.env.DEV) console.log('🔌 MessageContext: detaching messaging listeners from shared socket');
       const messagingEvents = [
         'new_message', 'user_typing', 'messages_read',
-        'user_status_changed', 'connected'
+        'user_status_changed', 'connected',
+        'connect', 'disconnect', 'connect_error', 'error'
       ];
       try {
         messagingEvents.forEach(evt => activeSocket.off(evt));

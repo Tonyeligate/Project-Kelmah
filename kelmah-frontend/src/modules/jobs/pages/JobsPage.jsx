@@ -60,7 +60,7 @@
 
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import HeroFiltersSection from '../components/HeroFiltersSection';
-import JobResultsSection from '../components/JobResultsSection';
+// JobResultsSection removed — cards are rendered inline below
 import JobsCompactSearchBar from '../components/JobsCompactSearchBar';
 import JobsMobileFilterDrawer from '../components/JobsMobileFilterDrawer';
 import tradeCategoriesData from '../data/tradeCategories.json';
@@ -536,7 +536,7 @@ const JobsPage = () => {
       open: true,
       message: `Job alert created! You'll be notified about ${alertFilters.category} jobs${alertFilters.location !== 'All locations' ? ` in ${alertFilters.location}` : ''}.`,
     });
-    navigate('/settings/notifications', { state: { alertCreated: true, filters: alertFilters } });
+    navigate('/notifications/settings', { state: { alertCreated: true, filters: alertFilters } });
   }, [authState.isAuthenticated, selectedCategory, selectedLocation, searchQuery, navigate]);
 
   // Infinite scroll sentinel (mobile): ref is placed on the sentinel element
@@ -1741,7 +1741,7 @@ const JobsPage = () => {
                   </Typography>
                   <Typography
                     variant="body1"
-                    sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}
+                    sx={{ color: 'text.secondary', mb: 3 }}
                   >
                     {error}
                   </Typography>
@@ -1784,7 +1784,7 @@ const JobsPage = () => {
                   </Typography>
                   <Typography
                     variant="body1"
-                    sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}
+                    sx={{ color: 'text.secondary', mb: 3 }}
                   >
                     {searchQuery || selectedCategory || selectedLocation
                       ? "We couldn't find any jobs matching your search criteria. Try adjusting your filters or search terms."
@@ -1931,7 +1931,7 @@ const JobsPage = () => {
                                   variant="h6"
                                   component="h2"
                                   sx={{
-                                    color: 'white',
+                                    color: 'text.primary',
                                     fontWeight: 'bold',
                                     fontSize: {
                                       xs: '1rem',
@@ -1951,7 +1951,7 @@ const JobsPage = () => {
                                 <Typography
                                   variant="body2"
                                   sx={{
-                                    color: 'rgba(255,255,255,0.7)',
+                                    color: 'text.secondary',
                                     fontSize: { xs: '0.875rem', sm: '0.875rem' },
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
@@ -2073,7 +2073,7 @@ const JobsPage = () => {
                               <Typography
                                 variant="body2"
                                 sx={{
-                                  color: 'white',
+                                  color: 'text.primary',
                                   fontSize: { xs: '0.8rem', sm: '0.875rem' },
                                 }}
                               >
@@ -2137,7 +2137,7 @@ const JobsPage = () => {
                               />
                               <Typography
                                 variant="body2"
-                                sx={{ color: 'white' }}
+                                sx={{ color: 'text.primary' }}
                               >
                                 {job.rating ? `${job.rating} Rating` : 'New Listing'} •{' '}
                                 {job.proposalCount || 0} Applicants
@@ -2148,7 +2148,7 @@ const JobsPage = () => {
                             variant="body2"
                             sx={{
                               mb: 2,
-                              color: 'rgba(255,255,255,0.8)',
+                              color: 'text.secondary',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                               display: '-webkit-box',
@@ -2186,8 +2186,8 @@ const JobsPage = () => {
                                   label={skill}
                                   size="small"
                                   sx={{
-                                    bgcolor: 'rgba(255,255,255,0.1)',
-                                    color: 'white',
+                                    bgcolor: 'action.hover',
+                                    color: 'text.primary',
                                     fontSize: { xs: '0.8rem', sm: '0.75rem' },
                                   }}
                                 />
@@ -2215,7 +2215,7 @@ const JobsPage = () => {
                           >
                             <Typography
                               variant="caption"
-                              sx={{ color: 'rgba(255,255,255,0.6)' }}
+                              sx={{ color: 'text.secondary' }}
                             >
                               {job.postedDate ? `Posted ${formatDistanceToNow(new Date(job.postedDate), { addSuffix: true })}` : 'Recently posted'}
                             </Typography>
@@ -2272,16 +2272,7 @@ const JobsPage = () => {
                             Apply Now
                           </Button>
                           <IconButton
-                            onClick={() => {
-                              // Check if this is sample data (numeric ID) or real data (ObjectId)
-                              if (typeof job.id === 'number') {
-                                alert(
-                                  'This is sample data. Please ensure the API is connected to view real job details.',
-                                );
-                                return;
-                              }
-                              navigate(`/jobs/${job.id}`);
-                            }}
+                            onClick={() => navigate(`/jobs/${job._id || job.id}`)}
                             aria-label="View job details"
                             sx={{
                               color: '#D4AF37',
@@ -2315,16 +2306,16 @@ const JobsPage = () => {
                                 navigator
                                   .share({
                                     title: job.title,
-                                    text: `Check out this job opportunity: ${job.title} at ${job.company}`,
+                                    text: `Check out this job opportunity: ${job.title} at ${job.employer?.name || 'Kelmah'}`,
                                     url:
                                       window.location.origin +
-                                      `/jobs/${job.id}`,
+                                      `/jobs/${job._id || job.id}`,
                                   })
                                   .catch(() => {});
                               } else {
                                 // Fallback: copy to clipboard
                                 navigator.clipboard.writeText(
-                                  `${job.title} at ${job.company} - ${window.location.origin}/jobs/${job.id}`,
+                                  `${window.location.origin}/jobs/${job._id || job.id}`,
                                 );
                               }
                             }}

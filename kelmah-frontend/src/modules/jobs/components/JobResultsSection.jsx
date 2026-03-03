@@ -262,14 +262,14 @@ const JobResultsSection = ({
       navigator
         .share({
           title: job.title,
-          text: `Check out this job opportunity: ${job.title} at ${job.company}`,
-          url: `${window.location.origin}/jobs/${job.id}`,
+          text: `Check out this job opportunity: ${job.title} at ${job.employer?.name || 'Kelmah'}`,
+          url: `${window.location.origin}/jobs/${job._id || job.id}`,
         })
-        .catch((err) => console.warn('Error sharing job', err));
+        .catch(() => {});
       return;
     }
     navigator?.clipboard?.writeText(
-      `${job.title} at ${job.company} - ${window.location.origin}/jobs/${job.id}`,
+      `${window.location.origin}/jobs/${job._id || job.id}`,
     );
   };
 
@@ -879,10 +879,8 @@ const JobResultsSection = ({
                 size="large"
                 startIcon={<RefreshIcon />}
                 onClick={() => {
-                  // Pagination via filter update — parent component handles loading
-                  if (typeof onClearAllFilters === 'function') {
-                    onClearAllFilters();
-                  }
+                  // Scroll to top — parent JobsPage handles actual pagination via infinite scroll
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
                 sx={{
                   borderColor: '#D4AF37',
@@ -1031,7 +1029,7 @@ const JobResultsSection = ({
                   return;
                 }
                 // Navigate to settings with alert context
-                navigate('/settings/notifications', {
+                navigate('/notifications/settings', {
                   state: {
                     alertCreated: true,
                     filters: {

@@ -53,6 +53,7 @@ import { useSnackbar } from 'notistack';
 import { useDropzone } from 'react-dropzone';
 import { formatFileSize, formatDate } from '../../../utils/formatters';
 import { normalizeUser } from '../../../utils/userUtils';
+import ConfirmDialog from '../../common/components/common/ConfirmDialog';
 
 const CertificateUploader = ({ onCertificatesChange }) => {
   // FIXED: Use standardized user normalization for consistent user data access
@@ -68,6 +69,7 @@ const CertificateUploader = ({ onCertificatesChange }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCertificate, setSelectedCertificate] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, id: null });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -213,16 +215,20 @@ const CertificateUploader = ({ onCertificatesChange }) => {
 
   // Handle delete
   const handleDelete = async (certificateId) => {
-    if (window.confirm('Are you sure you want to delete this certificate?')) {
-      try {
-        await certificateService.deleteCertificate(certificateId);
-        enqueueSnackbar('Certificate deleted successfully', {
-          variant: 'success',
-        });
-        loadCertificates();
-      } catch (error) {
-        enqueueSnackbar('Failed to delete certificate', { variant: 'error' });
-      }
+    setDeleteConfirm({ open: true, id: certificateId });
+  };
+
+  const confirmDelete = async () => {
+    const certificateId = deleteConfirm.id;
+    setDeleteConfirm({ open: false, id: null });
+    try {
+      await certificateService.deleteCertificate(certificateId);
+      enqueueSnackbar('Certificate deleted successfully', {
+        variant: 'success',
+      });
+      loadCertificates();
+    } catch (error) {
+      enqueueSnackbar('Failed to delete certificate', { variant: 'error' });
     }
   };
 
@@ -796,6 +802,14 @@ const CertificateUploader = ({ onCertificatesChange }) => {
           </Button>
         </DialogActions>
       </Dialog>
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        title="Delete Certificate"
+        message="Are you sure you want to delete this certificate?"
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm({ open: false, id: null })}
+      />
     </Box>
   );
 };

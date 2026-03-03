@@ -56,6 +56,7 @@ import {
   Star as StarIcon,
 } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
+import ConfirmDialog from '../../common/components/common/ConfirmDialog';
 
 const GhanaJobCategoriesManagement = () => {
   const theme = useTheme();
@@ -64,6 +65,7 @@ const GhanaJobCategoriesManagement = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [dialogMode, setDialogMode] = useState('add'); // 'add', 'edit', 'view'
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, id: null });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -351,9 +353,12 @@ const GhanaJobCategoriesManagement = () => {
   };
 
   const handleDeleteCategory = (categoryId) => {
-    if (window.confirm('Are you sure you want to delete this category?')) {
-      setCategories(categories.filter((cat) => cat.id !== categoryId));
-    }
+    setDeleteConfirm({ open: true, id: categoryId });
+  };
+
+  const confirmDeleteCategory = () => {
+    setCategories(categories.filter((cat) => cat.id !== deleteConfirm.id));
+    setDeleteConfirm({ open: false, id: null });
   };
 
   const handleToggleStatus = (categoryId) => {
@@ -860,6 +865,14 @@ const GhanaJobCategoriesManagement = () => {
           )}
         </DialogActions>
       </Dialog>
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        title="Delete Category"
+        message="Are you sure you want to delete this category?"
+        confirmLabel="Delete"
+        onConfirm={confirmDeleteCategory}
+        onCancel={() => setDeleteConfirm({ open: false, id: null })}
+      />
     </Box>
   );
 };

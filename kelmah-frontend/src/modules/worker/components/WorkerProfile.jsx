@@ -732,7 +732,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       color: theme.palette.primary.main,
                     }}
                   >
-                    GHS {last30}
+                    GH₵ {last30}
                   </Typography>
                   <Typography
                     sx={{
@@ -741,7 +741,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       fontWeight: 500,
                     }}
                   >
-                    7d: GHS {last7}
+                    7d: GH₵ {last7}
                   </Typography>
                 </Paper>
               </Grid>
@@ -863,7 +863,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             color: theme.palette.primary.main,
                           }}
                         >
-                          GHS {stats.wallet_balance || 0}
+                          GH₵ {stats.wallet_balance || 0}
                         </Typography>
                       </Box>
                     </Grid>
@@ -885,7 +885,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             color: '#ff9800',
                           }}
                         >
-                          GHS {stats.in_escrow || 0}
+                          GH₵ {stats.in_escrow || 0}
                         </Typography>
                       </Box>
                     </Grid>
@@ -907,7 +907,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             color: '#2196f3',
                           }}
                         >
-                          GHS {stats.pending_payments || 0}
+                          GH₵ {stats.pending_payments || 0}
                         </Typography>
                       </Box>
                     </Grid>
@@ -978,7 +978,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             <MetricCard>
               <PriceIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
               <Typography variant="h4" fontWeight={700} color="primary">
-                GHS {profile.hourly_rate || 0}
+                GH₵ {profile.hourly_rate || 0}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Per Hour
@@ -1040,7 +1040,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                           backgroundColor: theme.palette.primary.main,
                           borderRadius: 1,
                         }}
-                        title={`M${m.month}: GHS ${m.amount}`}
+                        title={`M${m.month}: GH₵ ${m.amount}`}
                       />
                     );
                   })}

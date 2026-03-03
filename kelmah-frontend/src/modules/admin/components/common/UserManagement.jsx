@@ -61,6 +61,7 @@ import {
 } from '@mui/icons-material';
 import { adminService } from '../../services/adminService';
 import { useAuth } from '../../../auth/hooks/useAuth';
+import ConfirmDialog from '../../../common/components/common/ConfirmDialog';
 
 const UserManagement = () => {
   const { user } = useAuth();
@@ -77,6 +78,8 @@ const UserManagement = () => {
   const [filterRole, setFilterRole] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, userId: null });
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -192,19 +195,19 @@ const UserManagement = () => {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (
-      window.confirm(
-        'Are you sure you want to delete this user? This action cannot be undone.',
-      )
-    ) {
-      try {
-        await adminService.deleteUser(userId);
-        fetchUsers();
-        setAnchorEl(null);
-      } catch (err) {
-        if (import.meta.env.DEV) console.error('Error deleting user:', err);
-        setError('Failed to delete user');
-      }
+    setDeleteConfirm({ open: true, userId });
+    setAnchorEl(null);
+  };
+
+  const confirmDeleteUser = async () => {
+    const userId = deleteConfirm.userId;
+    setDeleteConfirm({ open: false, userId: null });
+    try {
+      await adminService.deleteUser(userId);
+      fetchUsers();
+    } catch (err) {
+      if (import.meta.env.DEV) console.error('Error deleting user:', err);
+      setError('Failed to delete user');
     }
   };
 
@@ -285,14 +288,9 @@ const UserManagement = () => {
           });
           break;
         case 'delete':
-          if (
-            window.confirm(
-              `Are you sure you want to delete ${selectedUsers.length} users? This action cannot be undone.`,
-            )
-          ) {
-            await adminService.bulkDeleteUsers(selectedUsers);
-          }
-          break;
+          setBulkDeleteConfirm(true);
+          setLoading(false);
+          return; // exit early — actual deletion happens in confirmBulkDelete
         default:
           break;
       }
@@ -302,6 +300,21 @@ const UserManagement = () => {
     } catch (err) {
       if (import.meta.env.DEV) console.error('Error performing bulk action:', err);
       setError('Failed to perform bulk action');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmBulkDelete = async () => {
+    setBulkDeleteConfirm(false);
+    try {
+      setLoading(true);
+      await adminService.bulkDeleteUsers(selectedUsers);
+      setSelectedUsers([]);
+      fetchUsers();
+    } catch (err) {
+      if (import.meta.env.DEV) console.error('Error bulk deleting users:', err);
+      setError('Failed to delete users');
     } finally {
       setLoading(false);
     }
@@ -857,6 +870,22 @@ const UserManagement = () => {
           )}
         </DialogActions>
       </Dialog>
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        title="Delete User"
+        message="Are you sure you want to delete this user? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={confirmDeleteUser}
+        onCancel={() => setDeleteConfirm({ open: false, userId: null })}
+      />
+      <ConfirmDialog
+        open={bulkDeleteConfirm}
+        title="Delete Users"
+        message={`Are you sure you want to delete ${selectedUsers.length} users? This action cannot be undone.`}
+        confirmLabel="Delete All"
+        onConfirm={confirmBulkDelete}
+        onCancel={() => setBulkDeleteConfirm(false)}
+      />
     </Box>
   );
 };

@@ -211,7 +211,7 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
           </Box>
           {!milestoneTotalValid() && (
             <Alert severity="warning" sx={{ mb: 1, py: 0 }} variant="outlined">
-              Milestone amounts (GHS {milestones.reduce((s, m) => s + (parseFloat(m.amount) || 0), 0).toFixed(2)}) should equal total (GHS {parseFloat(totalAmount || 0).toFixed(2)})
+              Milestone amounts (GH₵ {milestones.reduce((s, m) => s + (parseFloat(m.amount) || 0), 0).toFixed(2)}) should equal total (GH₵ {parseFloat(totalAmount || 0).toFixed(2)})
             </Alert>
           )}
         </Grid>

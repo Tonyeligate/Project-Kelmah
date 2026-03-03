@@ -27,23 +27,9 @@ export const messagingService = {
     }
   },
 
-  // Create a new conversation
+  // Create a new conversation (delegates to createDirectConversation)
   async createConversation(participantId, jobId) {
-    try {
-      // FIXED: Use /messages/conversations - matches backend router path rewrite
-      const response = await api.post('/messages/conversations', {
-        participantIds: [participantId],
-        type: 'direct',
-        jobId,
-      });
-      return response.data;
-    } catch (error) {
-      if (import.meta.env.DEV) console.warn(
-        'Messaging service unavailable for creating conversation:',
-        error.message,
-      );
-      throw error; // Let the calling code handle the error appropriately
-    }
+    return this.createDirectConversation(participantId, jobId);
   },
 
   // Create conversation from job application

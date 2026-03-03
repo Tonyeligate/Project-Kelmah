@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -13,17 +13,20 @@ import {
   Edit as EditIcon,
 } from '@mui/icons-material';
 import { usePayments } from '../contexts/PaymentContext';
+import ConfirmDialog from '../../common/components/common/ConfirmDialog';
 
 const PaymentMethodCard = ({ method, onEdit }) => {
   const { removePaymentMethod } = usePayments();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const handleDelete = async (e) => {
+  const handleDelete = (e) => {
     e.stopPropagation();
-    if (
-      window.confirm('Are you sure you want to remove this payment method?')
-    ) {
-      await removePaymentMethod(method.id);
-    }
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    setConfirmOpen(false);
+    await removePaymentMethod(method.id);
   };
 
   const handleEdit = (e) => {
@@ -100,6 +103,14 @@ const PaymentMethodCard = ({ method, onEdit }) => {
           </Typography>
         </Box>
       </CardContent>
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Remove Payment Method"
+        message="Are you sure you want to remove this payment method?"
+        confirmLabel="Remove"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </Card>
   );
 };
