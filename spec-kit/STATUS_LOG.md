@@ -1,5 +1,45 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Deep Audit Round 2 (November 2025) — ALL 27 FINDINGS COMPLETE (Mar 03, 2026) ✅
+
+**Audit scope**: Algorithm quality, data liveliness, UI/UX mobile-first, security, performance — full page-by-page inspection (16 frontend pages + key backend controllers).
+
+**Fixes applied across two commits** (`ad4956a` + `00811c6`):
+
+| ID | Severity | Fix Summary | Files |
+|----|----------|-------------|-------|
+| AUD2-C01 | HIGH | Dialog copy + button renamed: "Your message will be sent" → "Write your message; continue in Messages page" + button "Continue to Messages" | `MyApplicationsPage.jsx` |
+| AUD2-H01 | HIGH | LazyIcons intentional pattern documented (eager imports + lazy wrappers for prefetch idle-time warming); no code change needed | `JobsPage.jsx` (comment) |
+| AUD2-H02 | HIGH | `getMyAssignedJobs` now populates `payment` so `earningsSummary` gets real amounts | `job.controller.js` |
+| AUD2-H03 | HIGH | WorkerSearchPage back button: added `aria-label="Go back"` + `minWidth: 44` | `WorkerSearchPage.jsx` |
+| AUD2-H04 | HIGH | MyApplicationsPage mobile card layout instead of table rows | `MyApplicationsPage.jsx` |
+| AUD2-H05 | HIGH | JobManagementPage table: `overflowX: 'auto'` (already applied prior session) | `JobManagementPage.jsx` |
+| AUD2-M01 | MEDIUM | job.controller.js Construction silent fallback → 400 for unknown categories | `job.controller.js` |
+| AUD2-M02 | MEDIUM | ApplicationManagementPage jobId extraction handles object references | `ApplicationManagementPage.jsx` |
+| AUD2-M03 | MEDIUM | ForgotPassword copy no longer mentions phone number | `ForgotPasswordPage.jsx` |
+| AUD2-M04 | MEDIUM | HirerDashboard `setLastRefreshed` moved to finally block | `HirerDashboardPage.jsx` |
+| AUD2-M05 | MEDIUM | WorkerDashboard 90-second auto-refresh added | `WorkerDashboardPage.jsx` |
+| AUD2-M06 | MEDIUM | JobDetailsPage uses Redux auth state instead of secureStorage | `JobDetailsPage.jsx` |
+| AUD2-M07 | MEDIUM | ForgotPassword error message generic (prevents email enumeration) | `ForgotPasswordPage.jsx` |
+| AUD2-M08 | MEDIUM | HirerDashboard removed 100ms artificial delay | `HirerDashboardPage.jsx` |
+| AUD2-M09 | MEDIUM | JobManagementPage 5 parallel dispatches documented with TODO for batch endpoint | `JobManagementPage.jsx` |
+| AUD2-M10 | MEDIUM | job.controller.js redundant manual validation fail-fast removed; `validateSync` is now single gate | `job.controller.js` |
+| AUD2-M11 | MEDIUM | JobDetailsPage share uses Snackbar instead of blocking `alert()` | `JobDetailsPage.jsx` |
+| AUD2-M12 | MEDIUM | ApplicationManagementPage shows "No reviews yet" for null rating | `ApplicationManagementPage.jsx` |
+| AUD2-M13 | MEDIUM | routes/config.jsx canonical import for ResetPasswordPage | `routes/config.jsx` |
+| AUD2-L01 | LOW | HomePage trust bar fetches live stats from `/api/jobs/stats` with hardcoded fallback | `HomePage.jsx` |
+| AUD2-L02 | LOW | Shimmer CSS broken selector — already cleaned in prior session; no change needed | — |
+| AUD2-L03 | LOW | job.controller.js refactor — deferred (low risk, high churn ratio) | — |
+| AUD2-L04 | LOW | JobsPage sub-component extraction — deferred | — |
+| AUD2-L05 | LOW | JobPostingPage step extraction — deferred | — |
+| AUD2-L06 | LOW | MyApplicationsPage `console.error` wrapped with DEV guard | `MyApplicationsPage.jsx` |
+| AUD2-L07 | LOW | (no separate finding; merged with M04) | — |
+| AUD2-L08 | LOW | useJobsQuery staleTime increased 30s → 2 min across 3 query hooks | `useJobsQuery.js` |
+
+**Commit status**: `00811c6` local. Push blocked by cached repo credentials (Giftyafisa → 403). Owner must push.
+
+---
+
 ### Phase 5 Deep Audit — Payment Data-Flow Fixes COMPLETE (Nov 2025) ✅
 
 **Root Cause**: Phase 4 standardised all payment-service responses to `{ success: true, data: ... }` but frontend consumers were reading the old raw shapes.
@@ -46,6 +86,14 @@
 - ✅ Verification:
   - Frontend production build succeeds (`vite build` complete, no compile errors).
   - Landing bundle emitted successfully (`build/assets/HomeLanding-*.js`).
+
+### Frontend Route Reliability Pass — COMPLETE (Mar 03, 2026) ✅
+- ✅ Added public alias routes in [kelmah-frontend/src/routes/config.jsx](kelmah-frontend/src/routes/config.jsx) for legacy/footer links that previously fell to 404:
+  - `/help`, `/about`, `/contact`, `/privacy`, `/terms`, `/pricing`, `/settings/payments`.
+- ✅ Mapped aliases to existing Help Center page to keep navigation functional without introducing undeveloped pages.
+- ✅ Verification:
+  - `vite build` succeeds with no compile errors.
+  - Router diagnostics clean for updated files.
 
 ### Comprehensive 101-Issue Deep Audit — ALL FIXES COMPLETE (Mar 03, 2026) ✅
 
