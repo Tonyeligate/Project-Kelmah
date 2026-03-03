@@ -18,7 +18,7 @@ const PortfolioPage = () => {
     portfolioService
       .getMyPortfolio({ sortBy: 'relevance', limit: 12 })
       .then((res) => {
-        const list = res?.portfolioItems || [];
+        const list = Array.isArray(res) ? res : res?.portfolioItems || res?.items || [];
         setItems(list);
         setSelected(list[0] || null);
       })
@@ -36,7 +36,7 @@ const PortfolioPage = () => {
       .getMyPortfolio({ sortBy: 'relevance', limit: 12 })
       .then((res) => {
         if (!mounted) return;
-        const list = res?.portfolioItems || [];
+        const list = Array.isArray(res) ? res : res?.portfolioItems || res?.items || [];
         setItems(list);
         setSelected(list[0] || null);
       })

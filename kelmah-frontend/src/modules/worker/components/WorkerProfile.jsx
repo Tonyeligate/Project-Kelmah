@@ -306,8 +306,10 @@ function WorkerProfile({ workerId: workerIdProp }) {
       setReviews([]);
       setRatingSummary(ratingRes || null);
       setWorkHistory(historyRes?.data?.data || historyRes?.data || []);
-      setAvailability(availabilityRes?.data?.data || null);
-      setStats(statsRes?.data?.data || {});
+      // getWorkerAvailability returns a pre-normalized object (not an axios response)
+      setAvailability(availabilityRes || null);
+      // getWorkerStats returns a pre-normalized object (not an axios response)
+      setStats(statsRes || {});
       setEarnings(earningsRes?.data?.data || earningsRes?.data || null);
     } catch (err) {
       setError(
@@ -611,7 +613,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   {profile.average_rating?.toFixed(1) || '0.0'}
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  ({reviews.length} reviews)
+                  ({ratingSummary?.totalReviews ?? reviews.length} reviews)
                 </Typography>
               </Box>
             </Stack>
