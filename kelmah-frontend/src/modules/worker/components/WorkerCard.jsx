@@ -341,8 +341,8 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
 
     if (!isAuthenticated) {
       return {
-        label: 'Sign in to message',
-        tooltip: 'Sign in as a hirer to contact workers',
+        label: 'Log In',
+        tooltip: 'Log in to contact workers',
         disabled: false,
         handler: handleMessage,
       };
@@ -350,7 +350,7 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
 
     if (!isHirer) {
       return {
-        label: 'Hirer access required',
+        label: 'For hirers only',
         tooltip: 'Switch to a hirer account to message workers',
         disabled: true,
         handler: (e) => e.stopPropagation(),
@@ -504,14 +504,16 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
                     setIsSaved((prev) => !prev);
                     onSave();
                   }}
-                  size="small"
+                  size="medium"
                   sx={{
                     ml: 0.5,
                     flexShrink: 0,
-                    color: isSaved ? '#FFD700' : 'text.secondary',
+                    minWidth: 44,
+                    minHeight: 44,
+                    color: isSaved ? '#B8860B' : 'text.secondary',
                     '&:hover': {
-                      color: '#FFD700',
-                      bgcolor: 'rgba(255, 215, 0, 0.08)',
+                      color: '#B8860B',
+                      bgcolor: 'rgba(184, 134, 11, 0.08)',
                     },
                   }}
                 >

@@ -229,11 +229,9 @@ const JobSchema = new mongoose.Schema(
 
     createdAt: {
       type: Date,
-      default: Date.now,
     },
     updatedAt: {
       type: Date,
-      default: Date.now,
     },
   },
   {
@@ -277,18 +275,18 @@ JobSchema.virtual("isBiddingOpen").get(function () {
     !this.isExpired;
 });
 
-// Instance methods
-JobSchema.methods.updateBidCount = function () {
-  return this.constructor.countDocuments({
-    _id: this._id,
-    'bids.status': 'pending'
-  }).then(count => {
-    this.bidding.currentBidders = count;
-    if (count >= this.bidding.maxBidders) {
-      this.bidding.bidStatus = 'full';
-    }
-    return this.save();
+// Instance methods — count pending bids by querying the Bid model directly
+JobSchema.methods.updateBidCount = async function () {
+  const Bid = mongoose.models.Bid || mongoose.model('Bid');
+  const count = await Bid.countDocuments({
+    job: this._id,
+    status: 'pending'
   });
+  this.bidding.currentBidders = count;
+  if (count >= this.bidding.maxBidders) {
+    this.bidding.bidStatus = 'full';
+  }
+  return this.save();
 };
 
 JobSchema.methods.closeBidding = function () {
@@ -345,13 +343,18 @@ JobSchema.index({
   "requirements.secondarySkills": "text"
 });
 
-// Geo index for location-based queries
-JobSchema.index({ "locationDetails.coordinates": "2dsphere" });
+// Geo index — locationDetails.coordinates uses {lat,lng} not GeoJSON, so 2dsphere is invalid;
+// use a compound index on the numeric fields instead for location queries.
+JobSchema.index({ "locationDetails.coordinates.lat": 1, "locationDetails.coordinates.lng": 1 });
 
 // Compound indexes for performance
 JobSchema.index({ "locationDetails.region": 1, "requirements.primarySkills": 1 });
 JobSchema.index({ "performanceTier": 1, "bidding.bidStatus": 1 });
 JobSchema.index({ "expiresAt": 1, "status": 1 });
+// Individual indexes for frequent query patterns
+JobSchema.index({ hirer: 1 });
+JobSchema.index({ status: 1 });
+JobSchema.index({ category: 1 });
 
 // Use standard mongoose.model() - it auto-binds to the default connection
 // This works correctly whether connection is established before or after model definition

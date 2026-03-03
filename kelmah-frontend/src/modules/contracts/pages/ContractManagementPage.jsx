@@ -16,13 +16,15 @@ import {
 import {
   Add as AddIcon,
   ReceiptLong as ReceiptIcon,
+  DescriptionOutlined as DescriptionOutlinedIcon,
 } from '@mui/icons-material';
 import { useContracts } from '../contexts/ContractContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ContractCard from '../components/common/ContractCard';
 
 const ContractManagementPage = () => {
   const { contracts, loading, error } = useContracts();
+  const navigate = useNavigate();
   const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event, newValue) => {
@@ -160,11 +162,26 @@ const ContractManagementPage = () => {
                   mt: 4,
                   bgcolor: 'background.paper',
                   borderRadius: 2,
+                  border: '1px dashed',
+                  borderColor: 'divider',
                 }}
               >
-                <Typography variant="h6" color="text.secondary">
-                  No contracts found in this category.
+                <DescriptionOutlinedIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  No contracts found in this category
                 </Typography>
+                <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
+                  Try a different category or create a new contract to get started.
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  startIcon={<AddIcon />}
+                  onClick={() => navigate('/contracts/new')}
+                  sx={{ minHeight: 44 }}
+                >
+                  Create Contract
+                </Button>
               </Box>
             </Grid>
           )}

@@ -103,7 +103,7 @@ const EnhancedJobCard = ({
     try {
       await bidApi.createBid({
         job: job.id || job._id,
-        bidAmount: bidData.amount,
+        bidAmount: bidData.bidAmount,
         estimatedDuration: bidData.estimatedDuration,
         coverLetter: bidData.coverLetter,
       });
@@ -241,13 +241,13 @@ const EnhancedJobCard = ({
 
             <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
               <Avatar
-                src={job.company?.logo}
+                src={job.employer?.logo || job.hirer?.profileImage}
                 sx={{ width: 24, height: 24, mr: 1 }}
               >
-                {job.company?.name?.charAt(0)}
+                {(job.employer?.name || job.hirer?.firstName || '?').charAt(0)}
               </Avatar>
               <Typography variant="body2" color="text.secondary">
-                {job.company?.name}
+                {job.employer?.name || (job.hirer ? `${job.hirer.firstName || ''} ${job.hirer.lastName || ''}`.trim() : 'Employer')}
               </Typography>
             </Box>
           </Box>
@@ -379,7 +379,7 @@ const EnhancedJobCard = ({
               />
               <Typography variant="caption" color="text.secondary">
                 Posted{' '}
-                {formatDistanceToNow(new Date(job.postedDate), {
+                {formatDistanceToNow(new Date(job.postedDate || job.createdAt || Date.now()), {
                   addSuffix: true,
                 })}
               </Typography>

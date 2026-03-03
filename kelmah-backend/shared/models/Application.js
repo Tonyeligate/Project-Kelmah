@@ -16,10 +16,13 @@ const ApplicationSchema = new Schema(
     proposedRate: {
       type: Number,
       required: true,
+      min: [0, 'Proposed rate cannot be negative'],
+      max: [1000000, 'Proposed rate exceeds maximum']
     },
     coverLetter: {
       type: String,
       required: true,
+      maxlength: [5000, 'Cover letter cannot exceed 5000 characters']
     },
     estimatedDuration: {
       value: Number,
@@ -72,6 +75,9 @@ ApplicationSchema.index({ job: 1, createdAt: -1 });
 
 // Index for worker's applications lookup
 ApplicationSchema.index({ worker: 1, createdAt: -1 });
+
+// Index for status-based queries
+ApplicationSchema.index({ status: 1 });
 
 // Add methods to the model as needed
 ApplicationSchema.methods.updateStatus = function (newStatus) {

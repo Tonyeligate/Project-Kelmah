@@ -762,10 +762,21 @@ const SchedulingPage = () => {
                   p: 4,
                   textAlign: 'center',
                   backgroundColor: 'background.default',
+                  border: '1px dashed',
+                  borderColor: 'divider',
                 }}
                 elevation={0}
               >
-                <Typography>No appointments for this date.</Typography>
+                <EventBusyIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  No appointments for this date
+                </Typography>
+                <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
+                  Schedule a new appointment to get started.
+                </Typography>
+                <Button variant="contained" color="secondary" onClick={handleOpenDialog} sx={{ minHeight: 44 }}>
+                  Schedule Appointment
+                </Button>
               </Paper>
             )}
           </Box>
@@ -802,12 +813,21 @@ const SchedulingPage = () => {
                 p: 4,
                 textAlign: 'center',
                 backgroundColor: 'background.default',
+                border: '1px dashed',
+                borderColor: 'divider',
               }}
               elevation={0}
             >
-              <Typography>
-                No appointments found matching your criteria.
+              <EventBusyIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                No appointments found
               </Typography>
+              <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
+                Try adjusting your search or filter criteria.
+              </Typography>
+              <Button variant="contained" color="secondary" onClick={handleOpenDialog} sx={{ minHeight: 44 }}>
+                Schedule Appointment
+              </Button>
             </Paper>
           )}
         </Box>
@@ -836,12 +856,21 @@ const SchedulingPage = () => {
                 p: 4,
                 textAlign: 'center',
                 backgroundColor: 'background.default',
+                border: '1px dashed',
+                borderColor: 'divider',
               }}
               elevation={0}
             >
-              <Typography>
-                No upcoming appointments in the next 7 days.
+              <EventBusyIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                No upcoming appointments
               </Typography>
+              <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
+                You have nothing scheduled in the next 7 days.
+              </Typography>
+              <Button variant="contained" color="secondary" onClick={handleOpenDialog} sx={{ minHeight: 44 }}>
+                Schedule Appointment
+              </Button>
             </Paper>
           )}
         </Box>

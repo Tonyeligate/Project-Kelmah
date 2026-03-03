@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Container, Typography, useTheme, useMediaQuery, CircularProgress, Alert, Button } from '@mui/material';
+import { CollectionsOutlined as CollectionsOutlinedIcon } from '@mui/icons-material';
 import PortfolioGallery from '../components/PortfolioGallery';
 import ProjectShowcase from '../components/ProjectShowcase';
 import portfolioService from '../services/portfolioService';
@@ -74,13 +75,17 @@ const PortfolioPage = () => {
         My Portfolio
       </Typography>
       {items.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 6 }}>
+        <Box sx={{ textAlign: 'center', py: 6, border: '1px dashed', borderColor: 'divider', borderRadius: 2 }}>
+          <CollectionsOutlinedIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             No portfolio items yet
           </Typography>
-          <Typography variant="body2" color="text.disabled">
+          <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
             Add examples of your work to showcase your skills to hirers.
           </Typography>
+          <Button variant="contained" color="secondary" sx={{ minHeight: 44 }}>
+            Add Portfolio Item
+          </Button>
         </Box>
       ) : (
         <>

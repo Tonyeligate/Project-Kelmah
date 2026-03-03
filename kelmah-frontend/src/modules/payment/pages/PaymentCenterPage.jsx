@@ -163,13 +163,24 @@ const PaymentMethodsView = ({ methods, onEditMethod, onRequestDelete }) => {
   // Empty state
   if (!methods || methods.length === 0) {
     return (
-      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2, textAlign: 'center' }}>
-        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-          Methods
+      <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 2, textAlign: 'center', border: '1px dashed', borderColor: 'divider' }}>
+        <CreditCardIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+        <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
+          No Payment Methods
         </Typography>
-        <Typography color="text.secondary">
-          You have no methods saved.
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          Add a payment method to send and receive payments securely.
         </Typography>
+        <Button
+          variant="contained"
+          color="secondary"
+          startIcon={<AddIcon />}
+          component={RouterLink}
+          to="/payment/methods"
+          sx={{ minHeight: 44 }}
+        >
+          Add Payment Method
+        </Button>
       </Paper>
     );
   }
@@ -335,13 +346,23 @@ const ActiveEscrows = ({ escrows }) => {
   // Empty state when no active escrows
   if (!escrows || escrows.length === 0) {
     return (
-      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2, textAlign: 'center' }}>
-        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-          Active Escrows
+      <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 2, textAlign: 'center', border: '1px dashed', borderColor: 'divider' }}>
+        <AccountBalanceWalletIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+        <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
+          No Active Escrows
         </Typography>
-        <Typography color="text.secondary">
-          You have no active escrows.
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          Escrow protects both parties during a job. Start a contract to use escrow.
         </Typography>
+        <Button
+          variant="contained"
+          color="secondary"
+          component={RouterLink}
+          to="/contracts"
+          sx={{ minHeight: 44 }}
+        >
+          View Contracts
+        </Button>
       </Paper>
     );
   }

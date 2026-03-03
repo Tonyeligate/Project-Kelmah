@@ -1049,10 +1049,21 @@ const EnhancedReviewsPage = () => {
               </Typography>
               <Typography
                 variant="body2"
-                sx={{ color: 'rgba(255,255,255,0.5)' }}
+                sx={{ color: 'rgba(255,255,255,0.5)', mb: 2 }}
               >
                 Try adjusting your search or filters
               </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedRating(null);
+                }}
+                sx={{ color: 'rgba(255,255,255,0.7)', borderColor: 'rgba(255,255,255,0.3)', minHeight: 44, '&:hover': { borderColor: 'rgba(255,255,255,0.5)' } }}
+              >
+                Clear Filters
+              </Button>
             </Paper>
           ) : (
             <Stack spacing={3}>

@@ -43,7 +43,7 @@ router.post(
   createLimiter("login"),
   [
     body("email").isEmail().withMessage("Please enter a valid email address"),
-    body("password").notEmpty().withMessage("Password is required"),
+    body("password").notEmpty().withMessage("Password is required").isLength({ max: 128 }).withMessage("Password too long"),
   ],
   validate,
   authController.login,
@@ -253,10 +253,10 @@ if (process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET) {
   });
 }
 
-// MFA routes (protected by authentication)
-router.post("/mfa/setup", verifyGatewayRequest, authController.mfaSetup);
-router.post("/mfa/verify", verifyGatewayRequest, authController.verifyTwoFactor);
-router.post("/mfa/disable", verifyGatewayRequest, authController.disableTwoFactor);
+// MFA routes (protected by authentication + rate limiting to prevent brute force - H7)
+router.post("/mfa/setup", verifyGatewayRequest, createLimiter("mfaSetup"), authController.mfaSetup);
+router.post("/mfa/verify", verifyGatewayRequest, createLimiter("mfaVerify"), authController.verifyTwoFactor);
+router.post("/mfa/disable", verifyGatewayRequest, createLimiter("mfaDisable"), authController.disableTwoFactor);
 
 // Session management routes
 router.get("/sessions", verifyGatewayRequest, authController.getSessions);

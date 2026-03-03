@@ -362,7 +362,7 @@ const SearchPage = () => {
         // Ignore aborted requests (superseded by a newer search)
         if (error.name === 'AbortError' || error.name === 'CanceledError') return;
         if (import.meta.env.DEV) console.error('Error searching:', error);
-        setError(error.message || 'An error occurred while searching');
+        setError(error.message || 'Search did not work. Please try again.');
         setSearchResults([]);
       } finally {
         setLoading(false);
@@ -742,7 +742,8 @@ const SearchPage = () => {
               size="small"
               startIcon={<FilterListIcon />}
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              sx={{ minWidth: 'auto', px: 2 }}
+              aria-label="Show or hide filters"
+              sx={{ minWidth: 'auto', px: 2, minHeight: 44 }}
             >
               Filters
             </Button>
@@ -751,7 +752,8 @@ const SearchPage = () => {
               size="small"
               startIcon={<MapIcon />}
               onClick={() => setShowLocationSearch(!showLocationSearch)}
-              sx={{ minWidth: 'auto', px: 2 }}
+              aria-label="Show or hide map view"
+              sx={{ minWidth: 'auto', px: 2, minHeight: 44 }}
             >
               Map
             </Button>
@@ -760,9 +762,10 @@ const SearchPage = () => {
               size="small"
               startIcon={<LightbulbIcon />}
               onClick={() => setShowRecommendations(!showRecommendations)}
-              sx={{ minWidth: 'auto', px: 2 }}
+              aria-label="Show or hide suggestions"
+              sx={{ minWidth: 'auto', px: 2, minHeight: 44 }}
             >
-              Suggestions
+              For You
             </Button>
           </Box>
         )}

@@ -1697,9 +1697,13 @@ const EnhancedMessagingPage = () => {
               }}
             >
               {messages.length === 0 && (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography sx={{ color: 'text.secondary', fontSize: '0.9rem' }}>
-                    No messages yet. Start the conversation!
+                <Box sx={{ textAlign: 'center', py: 6 }}>
+                  <ChatBubbleOutlineIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+                  <Typography variant="h6" color="text.secondary" gutterBottom>
+                    No messages yet
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'text.disabled', fontSize: '0.9rem' }}>
+                    Say hello to start the conversation!
                   </Typography>
                 </Box>
               )}

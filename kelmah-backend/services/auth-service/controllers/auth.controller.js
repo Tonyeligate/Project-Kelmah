@@ -130,6 +130,10 @@ exports.login = async (req, res, next) => {
     if (!email || !password) {
       return next(new AppError("Email and password are required", 400));
     }
+    // H5 FIX: Prevent bcrypt DoS — bcrypt only uses first 72 bytes; reject absurdly long passwords
+    if (typeof password !== 'string' || password.length > 128) {
+      return next(new AppError("Incorrect email or password", 401));
+    }
 
     const sanitizedEmail = email.trim().toLowerCase();
 
@@ -153,24 +157,24 @@ exports.login = async (req, res, next) => {
       return next(new AppError("Incorrect email or password", 401));
     }
 
-    // Check account status first
+    // Check account status — equalize timing to prevent enumeration (H6)
+    // Always run bcrypt.compare before returning status-specific errors
+    const bcrypt = require('bcryptjs');
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
     if (!user.isActive) {
-      return next(new AppError("Account has been deactivated. Please contact support.", 403));
+      return next(new AppError("Incorrect email or password", 401));
     }
 
     if (!user.isEmailVerified) {
       return next(new AppError("Please verify your email before logging in", 403));
     }
 
-    // AUTH-1/2 FIX: Check account lock BEFORE bcrypt to avoid wasting CPU on locked accounts
+    // AUTH-1/2 FIX: Check account lock AFTER bcrypt to equalize timing
     if (user.accountLockedUntil && user.accountLockedUntil > new Date()) {
       const minutesLeft = Math.ceil((user.accountLockedUntil - new Date()) / (60 * 1000));
       return next(new AppError(`Account locked. Try again in ${minutesLeft} minutes`, 423));
     }
-
-    // Verify password using bcrypt directly
-    const bcrypt = require('bcryptjs');
-    const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
       // Increment failed login attempts

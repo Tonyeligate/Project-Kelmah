@@ -385,7 +385,11 @@ exports.getProfilePreferences = async (req, res) => {
 
 exports.getEarnings = async (req, res) => {
   try {
-    const userId = req.params.workerId || req.user?.id;
+    const requestedId = req.params.workerId;
+    const currentUserId = req.user?.id;
+    const currentRole = req.user?.role;
+    // Only allow users to view their own earnings unless they are admin
+    const userId = (currentRole === 'admin' && requestedId) ? requestedId : currentUserId;
     if (!userId) return res.status(400).json({ success: false, message: 'workerId required' });
 
     const workerModel = getWorkerProfileModel();
@@ -570,22 +574,34 @@ exports.getAllUsers = async (req, res, next) => {
 exports.bulkUpdateUsers = async (req, res) => {
   try {
     const UserModel = requireUserModel();
+    const mongoose = require('mongoose');
     const { userIds, updateData } = req.body;
 
     if (!Array.isArray(userIds) || userIds.length === 0) {
       return res.status(400).json({ success: false, error: { message: 'userIds must be a non-empty array' } });
     }
+    // Validate every ID is a valid ObjectId to prevent NoSQL injection
+    const invalidIds = userIds.filter(id => !mongoose.Types.ObjectId.isValid(id));
+    if (invalidIds.length > 0) {
+      return res.status(400).json({ success: false, error: { message: `Invalid user IDs: ${invalidIds.join(', ')}` } });
+    }
     if (!updateData || typeof updateData !== 'object') {
       return res.status(400).json({ success: false, error: { message: 'updateData must be an object' } });
     }
 
-    // Prevent overwriting sensitive fields via bulk
-    const forbidden = ['password', 'refreshToken', 'role'];
-    forbidden.forEach((f) => delete updateData[f]);
+    // Allowlist approach: only permit safe fields to be bulk-updated
+    const ALLOWED_FIELDS = ['isActive', 'availabilityStatus', 'profession', 'city', 'state', 'country'];
+    const sanitized = {};
+    for (const key of ALLOWED_FIELDS) {
+      if (key in updateData) sanitized[key] = updateData[key];
+    }
+    if (Object.keys(sanitized).length === 0) {
+      return res.status(400).json({ success: false, error: { message: 'No allowed fields to update. Allowed: ' + ALLOWED_FIELDS.join(', ') } });
+    }
 
     const result = await UserModel.updateMany(
       { _id: { $in: userIds } },
-      { $set: updateData }
+      { $set: sanitized }
     );
 
     res.json({
@@ -608,17 +624,27 @@ exports.bulkUpdateUsers = async (req, res) => {
 exports.bulkDeleteUsers = async (req, res) => {
   try {
     const UserModel = requireUserModel();
+    const mongoose = require('mongoose');
     const { userIds } = req.body;
 
     if (!Array.isArray(userIds) || userIds.length === 0) {
       return res.status(400).json({ success: false, error: { message: 'userIds must be a non-empty array' } });
     }
+    // Validate every ID is a valid ObjectId to prevent NoSQL injection
+    const invalidIds = userIds.filter(id => !mongoose.Types.ObjectId.isValid(id));
+    if (invalidIds.length > 0) {
+      return res.status(400).json({ success: false, error: { message: `Invalid user IDs: ${invalidIds.join(', ')}` } });
+    }
 
-    const result = await UserModel.deleteMany({ _id: { $in: userIds } });
+    // Soft-delete instead of permanent deletion to preserve data integrity
+    const result = await UserModel.updateMany(
+      { _id: { $in: userIds } },
+      { $set: { isActive: false, deletedAt: new Date() } }
+    );
 
     res.json({
       success: true,
-      data: { deleted: result.deletedCount },
+      data: { deactivated: result.modifiedCount },
     });
   } catch (err) {
     console.error('bulkDeleteUsers error:', err);
@@ -996,7 +1022,7 @@ exports.getUserAvailability = async (req, res, next) => {
 
     if (availability.schedule && availability.schedule.length > 0) {
       // Find next available slot in schedule
-      const currentDay = now.toLocaleLowerCase('en-US', { weekday: 'long' });
+      const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
       const currentTime = now.getHours() * 100 + now.getMinutes();
 
       for (const slot of availability.schedule) {

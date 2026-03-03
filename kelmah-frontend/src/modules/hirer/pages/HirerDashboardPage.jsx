@@ -1008,7 +1008,7 @@ const HirerDashboardPage = () => {
           <SpeedDialAction
             icon={<PaymentIcon />}
             tooltipTitle="Payments"
-            onClick={() => navigate('/payments')}
+            onClick={() => navigate('/hirer/payments')}
           />
         </SpeedDial>
       </Box>

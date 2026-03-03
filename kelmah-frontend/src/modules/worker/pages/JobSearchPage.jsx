@@ -433,7 +433,7 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
                   <VerifiedIcon sx={{ fontSize: 14, color: theme.palette.info.main }} />
                 )}
                 <Typography variant="caption" color="text.secondary">
-                  · {timeAgo(job.postedDate)}
+                  · {timeAgo(job.postedDate || job.createdAt)}
                 </Typography>
               </Stack>
             </Box>

@@ -34,6 +34,8 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import {
   ArrowBack as BackIcon,
+  ArrowForward as ForwardIcon,
+  CheckCircle as CheckCircleIcon,
   Add as AddIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
@@ -151,11 +153,11 @@ const CreateContractPage = () => {
 
   // Steps for contract creation process
   const steps = [
-    'Basic Details',
-    'Parties',
-    'Contract Terms',
-    'Milestones',
-    'Review',
+    'Job Info',
+    'Names',
+    'Pay & Dates',
+    'Payment Steps',
+    'Check & Send',
   ];
 
   // Handle form field changes
@@ -272,7 +274,7 @@ const CreateContractPage = () => {
         if (!contract.value) {
           errors.value = 'Contract value is required';
         } else if (isNaN(contract.value) || parseFloat(contract.value) <= 0) {
-          errors.value = 'Contract value must be a positive number';
+          errors.value = 'Enter how much you will pay (must be more than 0)';
         }
         break;
       case 3: // Milestones
@@ -291,7 +293,7 @@ const CreateContractPage = () => {
             isNaN(milestone.amount) ||
             parseFloat(milestone.amount) <= 0
           ) {
-            milestoneError.amount = 'Amount must be a positive number';
+            milestoneError.amount = 'Enter a pay amount greater than 0';
           } else {
             totalAmount += parseFloat(milestone.amount);
           }
@@ -307,7 +309,7 @@ const CreateContractPage = () => {
 
         // Check if milestone amounts add up to contract value
         if (totalAmount !== parseFloat(contract.value)) {
-          errors.totalAmount = `Milestone amounts (${totalAmount}) must equal contract value (${contract.value})`;
+          errors.totalAmount = 'The step payments must add up to the total pay';
         }
         break;
       default:
@@ -411,13 +413,13 @@ const CreateContractPage = () => {
                 fullWidth
                 id="title"
                 name="title"
-                label="Contract Title"
+                label="Job Name"
                 value={contract.title}
                 onChange={handleChange}
                 error={!!validationErrors.title}
                 helperText={
                   validationErrors.title ||
-                  'Enter a descriptive title for the contract'
+                  'Enter a short name for this job'
                 }
               />
             </Grid>
@@ -427,7 +429,7 @@ const CreateContractPage = () => {
                 fullWidth
                 id="description"
                 name="description"
-                label="Contract Description"
+                label="What is the job?"
                 value={contract.description}
                 onChange={handleChange}
                 multiline
@@ -435,7 +437,7 @@ const CreateContractPage = () => {
                 error={!!validationErrors.description}
                 helperText={
                   validationErrors.description ||
-                  'Provide a detailed description of the contract scope and deliverables'
+                  'Tell the worker what the job is about'
                 }
               />
             </Grid>
@@ -450,7 +452,7 @@ const CreateContractPage = () => {
                 fullWidth
                 id="clientName"
                 name="clientName"
-                label="Client Name"
+                label="Your Name"
                 value={contract.clientName}
                 onChange={handleChange}
                 error={!!validationErrors.clientName}
@@ -535,7 +537,7 @@ const CreateContractPage = () => {
                   fullWidth
                   id="value"
                   name="value"
-                  label="Contract Value"
+                  label="Total Pay"
                   value={contract.value}
                   onChange={handleChange}
                   type="number"
@@ -546,7 +548,7 @@ const CreateContractPage = () => {
                   }}
                   error={!!validationErrors.value}
                   helperText={
-                    validationErrors.value || 'Enter the total contract value'
+                    validationErrors.value || 'How much will you pay in total?'
                   }
                 />
               </Grid>
@@ -584,13 +586,15 @@ const CreateContractPage = () => {
                     }}
                   >
                     <Typography variant="subtitle1">
-                      Milestone {index + 1}
+                      Step {index + 1}
                     </Typography>
                     {contract.milestones.length > 1 && (
                       <IconButton
                         color="error"
                         onClick={() => handleRemoveMilestone(index)}
-                        size="small"
+                        size="medium"
+                        aria-label={`Remove step ${index + 1}`}
+                        sx={{ minWidth: 44, minHeight: 44 }}
                       >
                         <DeleteIcon />
                       </IconButton>
@@ -601,7 +605,7 @@ const CreateContractPage = () => {
                       <TextField
                         required
                         fullWidth
-                        label="Milestone Title"
+                        label="Step Name"
                         value={milestone.title}
                         onChange={(e) =>
                           handleMilestoneChange(index, 'title', e.target.value)
@@ -609,7 +613,7 @@ const CreateContractPage = () => {
                         error={validationErrors.milestones?.[index]?.title}
                         helperText={
                           validationErrors.milestones?.[index]?.title ||
-                          'Enter milestone title'
+                          'Name this payment step'
                         }
                       />
                     </Grid>
@@ -899,14 +903,18 @@ const CreateContractPage = () => {
         <Button
           variant="outlined"
           color="secondary"
+          startIcon={<BackIcon />}
           onClick={handleBack}
           disabled={activeStep === 0}
+          sx={{ minHeight: 44 }}
         >
           Back
         </Button>
         <Button
           variant="contained"
           color="secondary"
+          endIcon={activeStep === steps.length - 1 ? <CheckCircleIcon /> : <ForwardIcon />}
+          sx={{ minHeight: 44 }}
           onClick={() => {
             if (activeStep === steps.length - 1) {
               if (validateStep()) setConfirmDialogOpen(true);

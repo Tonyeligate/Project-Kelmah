@@ -26,6 +26,7 @@ import {
 } from '@mui/material';
 import { usePayments } from '../contexts/PaymentContext';
 import PaymentIcon from '@mui/icons-material/Payment';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -227,9 +228,18 @@ const BillPage = () => {
             <CircularProgress color="secondary" />
           </Box>
         ) : filteredBills.length === 0 ? (
-          <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
-            No bills match your filter criteria.
-          </Typography>
+          <Box sx={{ textAlign: 'center', py: 5, border: '1px dashed', borderColor: 'divider', borderRadius: 2 }}>
+            <ReceiptLongOutlinedIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              No bills match your filters
+            </Typography>
+            <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
+              Adjust the date range or status filter to see your bills.
+            </Typography>
+            <Button variant="contained" color="secondary" onClick={clearFilters} sx={{ minHeight: 44 }}>
+              Clear Filters
+            </Button>
+          </Box>
         ) : (
           <>
             <Box sx={{ mb: 2 }}>

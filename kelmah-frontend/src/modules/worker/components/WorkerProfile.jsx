@@ -305,7 +305,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
       setEarnings(earningsRes?.data?.data || earningsRes?.data || null);
     } catch (err) {
       setError(
-        'Failed to load profile data. The worker may not exist or there was a network error.',
+        'Could not find this worker. Please try again.',
       );
       if (import.meta.env.DEV) console.error(err);
     } finally {
@@ -507,9 +507,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
           >
             <IconButton
               onClick={handleBookmarkToggle}
+              aria-label={isBookmarked ? 'Remove from saved' : 'Save worker'}
               sx={{
                 bgcolor: alpha(theme.palette.background.paper, 0.9),
                 '&:hover': { bgcolor: theme.palette.background.paper },
+                width: 44,
+                height: 44,
               }}
             >
               {isBookmarked ? (
@@ -520,9 +523,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
             </IconButton>
             <IconButton
               onClick={handleShare}
+              aria-label="Share this profile"
               sx={{
                 bgcolor: alpha(theme.palette.background.paper, 0.9),
                 '&:hover': { bgcolor: theme.palette.background.paper },
+                width: 44,
+                height: 44,
               }}
             >
               <ShareIcon />
@@ -530,9 +536,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
             {isOwner && (
               <IconButton
                 onClick={() => navigate('/worker/profile/edit')}
+                aria-label="Edit your profile"
                 sx={{
                   bgcolor: alpha(theme.palette.background.paper, 0.9),
                   '&:hover': { bgcolor: theme.palette.background.paper },
+                  width: 44,
+                  height: 44,
                 }}
               >
                 <EditIcon />
@@ -876,13 +885,13 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             mb: 0.5,
                           }}
                         >
-                          In Escrow
+                          Money Held
                         </Typography>
                         <Typography
                           sx={{
                             fontSize: '1.125rem',
                             fontWeight: 'bold',
-                            color: '#ff9800',
+                            color: '#E65100',
                           }}
                         >
                           GH₵ {stats.in_escrow || 0}
@@ -904,7 +913,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                           sx={{
                             fontSize: '1.125rem',
                             fontWeight: 'bold',
-                            color: '#2196f3',
+                            color: '#1565C0',
                           }}
                         >
                           GH₵ {stats.pending_payments || 0}
@@ -921,7 +930,8 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       >
                         <Button
                           variant="contained"
-                          size="small"
+                          size="medium"
+                          startIcon={<MoneyIcon />}
                           onClick={() => navigate('/payments')}
                           sx={{
                             backgroundColor: theme.palette.primary.main,
@@ -930,14 +940,14 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             fontWeight: 'bold',
                             borderRadius: '16px',
                             px: 2,
-                            py: 0.5,
+                            minHeight: 44,
                             textTransform: 'none',
                             '&:hover': {
                               backgroundColor: theme.palette.primary.dark,
                             },
                           }}
                         >
-                          Withdraw
+                          Get Paid
                         </Button>
                       </Box>
                     </Grid>
@@ -1077,7 +1087,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             </Box>
 
             <Typography variant="h6" gutterBottom>
-              Specializations
+              What I Do Best
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               {profile.specializations?.length > 0 ? (
@@ -1091,7 +1101,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 ))
               ) : (
                 <Typography variant="body2" color="text.secondary">
-                  No specializations listed yet
+                  Not listed yet
                 </Typography>
               )}
             </Box>
@@ -1247,8 +1257,10 @@ function WorkerProfile({ workerId: workerIdProp }) {
             {isOwner && (
               <Box sx={{ mt: 2 }}>
                 <Button
-                  size="small"
+                  size="medium"
                   variant="outlined"
+                  startIcon={<EditIcon />}
+                  sx={{ minHeight: 44 }}
                   onClick={() => {
                     setEditingAvailability(true);
                     setAvailabilityDraft({
@@ -1400,6 +1412,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       <Button
                         size="small"
                         variant={d.available ? 'contained' : 'outlined'}
+                        sx={{ minHeight: 44 }}
                         onClick={() => setDay(day, { available: !d.available })}
                       >
                         {d.available ? 'Available' : 'Unavailable'}
@@ -1427,11 +1440,13 @@ function WorkerProfile({ workerId: workerIdProp }) {
             })}
           </Grid>
           <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-            <Button variant="contained" onClick={save}>
+            <Button variant="contained" startIcon={<CheckIcon />} sx={{ minHeight: 44 }} onClick={save}>
               Save
             </Button>
             <Button
               variant="text"
+              startIcon={<CloseIcon />}
+              sx={{ minHeight: 44 }}
               onClick={() => setEditingAvailability(false)}
             >
               Cancel
@@ -1452,7 +1467,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
           sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
         >
           <SchoolIcon color="primary" />
-          Certifications & Credentials
+          Certificates & Proof
         </Typography>
 
         {certificates.length > 0 ? (
@@ -1534,11 +1549,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
             variant={isMobile ? 'scrollable' : 'fullWidth'}
             scrollButtons="auto"
           >
-            <Tab label="Overview" />
-            <Tab label="Portfolio" />
-            <Tab label="Reviews" />
-            <Tab label="Availability" />
-            <Tab label="Certifications" />
+            <Tab icon={<PersonIcon />} iconPosition="start" label="Overview" />
+            <Tab icon={<ViewIcon />} iconPosition="start" label="Portfolio" />
+            <Tab icon={<StarIcon />} iconPosition="start" label="Reviews" />
+            <Tab icon={<ScheduleIcon />} iconPosition="start" label="Availability" />
+            <Tab icon={<SchoolIcon />} iconPosition="start" label="Certificates" />
           </Tabs>
         </Box>
 
@@ -1583,7 +1598,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   <Typography variant="h5" fontWeight={600}>
                     {selectedPortfolioItem.title}
                   </Typography>
-                  <IconButton onClick={() => setPortfolioDialogOpen(false)}>
+                  <IconButton onClick={() => setPortfolioDialogOpen(false)} aria-label="Close">
                     <CloseIcon />
                   </IconButton>
                 </Box>

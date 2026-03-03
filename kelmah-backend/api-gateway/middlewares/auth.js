@@ -121,7 +121,11 @@ const authenticate = async (req, res, next) => {
     req.headers['x-authenticated-user'] = userPayload;
     req.headers['x-auth-source'] = 'api-gateway';
     // HMAC signature to prevent header spoofing on direct service access
-    const hmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET || '';
+    const hmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET;
+    if (!hmacSecret) {
+      console.error('CRITICAL: No HMAC secret configured (INTERNAL_API_KEY or JWT_SECRET)');
+      return sendAuthError(res, 500, 'Server misconfiguration', 'HMAC_SECRET_MISSING');
+    }
     const signature = crypto.createHmac('sha256', hmacSecret).update(userPayload).digest('hex');
     req.headers['x-gateway-signature'] = signature;
 

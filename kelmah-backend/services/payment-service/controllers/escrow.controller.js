@@ -3,8 +3,16 @@ const { Escrow, Wallet, Transaction, User } = require('../models');
 exports.getEscrows = async (req, res, next) => {
   try {
     const userId = req.user?.id;
-    const escrows = await Escrow.find({ $or: [{ hirerId: userId }, { workerId: userId }] }).sort({ createdAt: -1 });
-    return res.json({ success: true, data: escrows });
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 20));
+    const skip = (page - 1) * limit;
+
+    const filter = { $or: [{ hirerId: userId }, { workerId: userId }] };
+    const [escrows, total] = await Promise.all([
+      Escrow.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Escrow.countDocuments(filter)
+    ]);
+    return res.json({ success: true, data: escrows, meta: { page, limit, total, pages: Math.ceil(total / limit) } });
   } catch (err) {
     next(err);
   }
@@ -27,29 +35,32 @@ exports.getEscrowDetails = async (req, res, next) => {
 };
 
 exports.releaseEscrow = async (req, res, next) => {
+  const mongoose = require('mongoose');
+  const session = await mongoose.startSession();
   try {
+    session.startTransaction();
     const { escrowId } = req.params;
     const userId = req.user?.id;
-    const escrow = await Escrow.findById(escrowId);
-    if (!escrow) return res.status(404).json({ success: false, message: 'Escrow not found' });
-    // Only hirer or admin can release escrow
+    const escrow = await Escrow.findById(escrowId).session(session);
+    if (!escrow) { await session.abortTransaction(); return res.status(404).json({ success: false, message: 'Escrow not found' }); }
     if (escrow.hirerId.toString() !== userId && req.user?.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Only the hirer can release escrow' });
+      await session.abortTransaction(); return res.status(403).json({ success: false, message: 'Only the hirer can release escrow' });
     }
-    if (escrow.status !== 'active') return res.status(400).json({ success: false, message: 'Escrow is not active' });
+    if (escrow.status !== 'active') { await session.abortTransaction(); return res.status(400).json({ success: false, message: 'Escrow is not active' }); }
 
     // Idempotency: atomically set status to 'releasing' to prevent double-release
     const lockResult = await Escrow.findOneAndUpdate(
       { _id: escrowId, status: 'active' },
       { $set: { status: 'releasing' } },
-      { new: true }
+      { new: true, session }
     );
     if (!lockResult) {
+      await session.abortTransaction();
       return res.status(409).json({ success: false, message: 'Escrow release already in progress or completed' });
     }
 
-    const workerWallet = await Wallet.findOne({ user: escrow.workerId });
-    if (!workerWallet) return res.status(404).json({ success: false, message: 'Worker wallet not found' });
+    const workerWallet = await Wallet.findOne({ user: escrow.workerId }).session(session);
+    if (!workerWallet) { await session.abortTransaction(); return res.status(404).json({ success: false, message: 'Worker wallet not found' }); }
 
     const tx = await new Transaction({
       transactionId: `TRX-${Date.now()}-${require('crypto').randomUUID().slice(0, 8)}`,
@@ -63,25 +74,32 @@ exports.releaseEscrow = async (req, res, next) => {
       relatedJob: escrow.jobId,
       description: 'Escrow release',
       status: 'completed'
-    }).save();
+    }).save({ session });
 
     await workerWallet.addFunds(escrow.amount, tx);
 
     escrow.status = 'released';
     escrow.releasedAt = new Date();
     escrow.transactions.push(tx._id);
-    await escrow.save();
+    await escrow.save({ session });
 
+    await session.commitTransaction();
     return res.json({ success: true, message: 'Escrow released successfully', data: { escrowId: escrow._id } });
   } catch (err) {
+    await session.abortTransaction();
     next(err);
+  } finally {
+    session.endSession();
   }
 };
 
 exports.fundEscrow = async (req, res, next) => {
   try {
     const { amount, currency = 'GHS', contractId, jobId, milestoneId, provider = 'paystack', workerId, reference } = req.body || {};
-    const hirerId = req.user?.id || req.body?.hirerId;
+    const hirerId = req.user?.id;
+    if (!hirerId) {
+      return res.status(401).json({ success: false, message: 'Authentication required' });
+    }
     if (!amount || !contractId || !hirerId || !workerId) {
       return res.status(400).json({ success: false, message: 'amount, contractId, workerId are required; hirerId inferred from auth', code: 'VALIDATION_ERROR' });
     }

@@ -34,6 +34,7 @@ import {
   Cancel,
   Message,
   Star,
+  InboxOutlined,
 } from '@mui/icons-material';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
@@ -310,9 +311,10 @@ function ApplicationManagementPage() {
                 </Alert>
               )}
               {!loading && applications.length === 0 && !error && (
-                <Box sx={{ textAlign: 'center', mt: 4 }}>
+                <Box sx={{ textAlign: 'center', mt: 4, py: 4, border: '1px dashed', borderColor: 'divider', borderRadius: 2 }}>
+                  <InboxOutlined sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
                   <Typography variant="h6" color="text.secondary" gutterBottom>
-                    No applications yet.
+                    No applications yet
                   </Typography>
                   <Typography
                     variant="body2"
@@ -326,6 +328,7 @@ function ApplicationManagementPage() {
                     variant="contained"
                     color="primary"
                     onClick={() => navigate('/hirer/jobs/post')}
+                    sx={{ minHeight: 44 }}
                   >
                     Post a Job
                   </Button>

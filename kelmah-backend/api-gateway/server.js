@@ -365,8 +365,8 @@ app.post('/api/quick-jobs/payment/webhook', createDynamicProxy('job', {
 // ============================================================
 // Body parsers — AFTER raw webhook routes
 // ============================================================
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 app.use(loggingMiddleware(logger));
 // Correlate request ID across services
 app.use((req, res, next) => {
@@ -1174,7 +1174,20 @@ app.use('/api/admin/reviews',
     const proxy = createProxyMiddleware({
       target: services.review,
       changeOrigin: true,
-      pathRewrite: (path) => `/api/admin/reviews${path}`
+      pathRewrite: (path) => `/api/admin/reviews${path}`,
+      onProxyReq: (proxyReq, req) => {
+        rehydrateRequestBody(proxyReq, req);
+        if (req.user) {
+          proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
+          proxyReq.setHeader('x-auth-source', 'api-gateway');
+        }
+      },
+      onError: (err, req, res) => {
+        logger.error('Admin review service error:', err);
+        if (!res.headersSent) {
+          res.status(503).json({ error: 'Review service unavailable' });
+        }
+      }
     });
     return proxy(req, res, next);
   }
@@ -1248,12 +1261,18 @@ app.use('/api/ratings',
         // Ensure downstream sees the full /api/ratings prefix even though Express stripped it
         return `${base}${suffix}`.replace(/\/\/{2,}/g, '/');
       },
-      onProxyReq: (proxyReq) => {
-        proxyReq.setHeader('ngrok-skip-browser-warning', 'true');
+      onProxyReq: (proxyReq, req) => {
+        rehydrateRequestBody(proxyReq, req);
+        if (req.user) {
+          proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
+          proxyReq.setHeader('x-auth-source', 'api-gateway');
+        }
       },
       onError: (err, req, res) => {
         logger.error('Rating service error:', err);
-        res.status(503).json({ error: 'Rating service unavailable' });
+        if (!res.headersSent) {
+          res.status(503).json({ error: 'Rating service unavailable' });
+        }
       }
     });
 
@@ -1420,6 +1439,25 @@ const startServer = async () => {
     process.exit(1);
   }
 };
+
+// Graceful shutdown handler
+const gracefulShutdown = (signal) => {
+  logger.info(`⚡ Received ${signal}. Shutting down gracefully...`);
+  if (rediscoveryTimer) clearInterval(rediscoveryTimer);
+  keepAliveManager.stop();
+  // Give in-flight requests up to 10 seconds to complete
+  const timer = setTimeout(() => {
+    logger.error('❌ Forced shutdown after timeout');
+    process.exit(1);
+  }, 10000);
+  timer.unref();
+  mongoose.connection.close(false).then(() => {
+    logger.info('✅ MongoDB connection closed');
+    process.exit(0);
+  }).catch(() => process.exit(1));
+};
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // Connect to MongoDB, then start server
 connectDB()

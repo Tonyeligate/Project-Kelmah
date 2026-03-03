@@ -443,9 +443,17 @@ const JobBidsPage = () => {
           <Typography variant="h6" color="text.secondary" gutterBottom>
             No bids yet
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Workers haven't placed any bids on this job yet. Check back soon.
           </Typography>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => navigate(-1)}
+            sx={{ minHeight: 44 }}
+          >
+            Back to Job Details
+          </Button>
         </Paper>
       )}
 

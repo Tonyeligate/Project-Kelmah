@@ -73,6 +73,10 @@ const LIMITS = {
   login: { windowMs: 15 * 60 * 1000, max: 20 },
   register: { windowMs: 60 * 60 * 1000, max: 30 },
   emailVerification: { windowMs: 15 * 60 * 1000, max: 20 },
+  forgotPassword: { windowMs: 15 * 60 * 1000, max: 5 },
+  mfaSetup: { windowMs: 15 * 60 * 1000, max: 5 },
+  mfaVerify: { windowMs: 15 * 60 * 1000, max: 10 },  // H7: prevent MFA brute force
+  mfaDisable: { windowMs: 15 * 60 * 1000, max: 5 },
   default: { windowMs: 15 * 60 * 1000, max: 100 },
 };
 

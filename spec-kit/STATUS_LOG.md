@@ -1,5 +1,52 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Deep Flow Audit: Search → Messaging → Contract + Accessibility Hardening (Jul 2026) ✅
+
+**Scope**: End-to-end dry audit of the 3 core hirer flows (worker search → messaging → contract creation), with emphasis on low-literacy accessibility, WCAG AA compliance, and professional UX. 10 files audited, 20+ issues found across 3 priority tiers.
+
+**Files Changed (8 total)**:
+- `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx` — 15 edits
+- `kelmah-frontend/src/modules/worker/components/WorkerCard.jsx` — 5 edits
+- `kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx` — 1 edit
+- `kelmah-frontend/src/modules/contracts/pages/CreateContractPage.jsx` — 14 edits
+- `kelmah-frontend/src/modules/search/pages/SearchPage.jsx` — 2 edits
+- `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx` — 1 edit
+- `kelmah-frontend/src/modules/contracts/services/contractService.js` — 1 edit
+- `kelmah-frontend/src/modules/messaging/services/messagingService.js` — 1 edit
+
+**Critical Fixes (Flow-Breaking)**:
+1. ✅ **C1**: CreateContractPage now reads `?workerId` URL param — "Hire Now" from WorkerProfile correctly pre-fills worker & client names
+2. ✅ **C2**: Removed hardcoded fake specializations/tools in WorkerProfile (was showing fake data to users)
+3. ✅ **C3**: Currency standardized to `GH₵` across 15+ instances (was `GHS` with dollar icon)
+
+**High-Priority Fixes**:
+4. ✅ **H1**: WorkerCard bookmark/save button now functional — `onSave` prop consumed, `isSaved` state tracked, bookmark icon toggles
+5. ✅ **H2**: WorkerSearchResults empty state now theme-aware (was hardcoded dark gradient, broken in light mode)
+6. ✅ **H4**: WebSocket listener accumulation fixed — pre-cleanup before registration + complete cleanup on disconnect
+7. ✅ **H6**: `contractService.getContractById` no longer falls back to fetching ALL contracts on 404 (perf fix)
+
+**Medium-Priority Fixes**:
+8. ✅ **M2**: `messagingService.createConversation` consolidated — delegates to `createDirectConversation` (eliminated code duplication)
+
+**Accessibility & Low-Literacy Improvements (17 items)**:
+- ✅ Added `aria-label` to 8 `IconButton` elements across WorkerProfile + CreateContractPage (bookmark, share, edit, close dialog, delete milestone)
+- ✅ Added `aria-label` to 3 quick-action buttons in SearchPage (Filters, Map, For You)
+- ✅ Added **icons to all 5 tabs** in WorkerProfile (PersonIcon, ViewIcon, StarIcon, ScheduleIcon, SchoolIcon) — critical for illiterate users
+- ✅ Added **icons to navigation buttons** in CreateContractPage (BackIcon, ForwardIcon, CheckCircleIcon)
+- ✅ Added **icons to Save/Cancel/Edit Availability** buttons in WorkerProfile (CheckIcon, CloseIcon, EditIcon)
+- ✅ Fixed 3 **WCAG AA color contrast failures** in WorkerProfile: `#ff9800` → `#E65100`, `#2196f3` → `#1565C0`, bookmark `#FFD700` → `#B8860B`
+- ✅ Fixed **11 touch targets** below 44px minimum across all 4 files (bookmark, delete milestone, nav buttons, day toggles, Withdraw)
+- ✅ Simplified **stepper labels**: "Basic Details" → "Job Info", "Parties" → "Names", "Contract Terms" → "Pay & Dates", "Milestones" → "Payment Steps", "Review" → "Check & Send"
+- ✅ Simplified **form labels**: "Contract Title" → "Job Name", "Contract Description" → "What is the job?", "Client Name" → "Your Name", "Contract Value" → "Total Pay", "Milestone Title" → "Step Name"
+- ✅ Simplified **error messages**: Removed math jargon ("positive number"), raw amounts in milestone validation, technical network error wording
+- ✅ Simplified **vocabulary**: "In Escrow" → "Money Held", "Specializations" → "What I Do Best", "Certifications & Credentials" → "Certificates & Proof", "Withdraw" → "Get Paid", "Suggestions" → "For You"
+
+**Validation**:
+- ✅ `get_errors` reports 0 errors across all 8 changed files
+- ✅ `vite build` succeeds in 38.76s with 0 warnings on changed files
+
+---
+
 ### Job Details + Worker Profile UX Upgrade (Mar 03, 2026) ✅
 - Scope: Deep audit and improvement of `JobDetailsPage` and `WorkerProfile` flows for clarity, low-literacy usability, responsiveness, and actionable controls.
 - Files audited in this pass:

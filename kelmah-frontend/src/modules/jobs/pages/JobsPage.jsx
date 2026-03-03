@@ -849,7 +849,7 @@ const JobsPage = () => {
                     <Typography
                       variant="h6"
                       sx={{
-                        color: 'rgba(255,255,255,0.8)',
+                        color: 'text.secondary',
                         fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1rem' }, // ✅ Improved readability
                         lineHeight: { xs: 1.5, md: 1.5 }, // ✅ Better line spacing
                         maxWidth: { xs: '100%', md: '90%' },
@@ -1525,7 +1525,7 @@ const JobsPage = () => {
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
                     <Typography
                       variant="body2"
-                      sx={{ color: 'rgba(255,255,255,0.7)' }}
+                      sx={{ color: 'text.secondary' }}
                     >
                       Active filters:
                     </Typography>
@@ -2519,7 +2519,7 @@ const JobsPage = () => {
               <Typography
                 variant="body1"
                 sx={{
-                  color: 'rgba(255,255,255,0.8)',
+                  color: 'text.secondary',
                   mb: { xs: 2.5, md: 3 }, // ✅ Responsive margin
                   fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✅ Responsive font
                   lineHeight: { xs: 1.5, md: 1.6 }, // ✅ Better readability

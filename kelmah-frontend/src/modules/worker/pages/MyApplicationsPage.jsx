@@ -279,9 +279,17 @@ const MyApplicationsPage = () => {
               <Typography color="text.secondary" sx={{ fontSize: '1rem', mb: 1 }}>
                 No applications found
               </Typography>
-              <Typography color="text.disabled" sx={{ fontSize: '0.875rem' }}>
+              <Typography color="text.disabled" sx={{ fontSize: '0.875rem', mb: 2 }}>
                 Start applying to jobs to see them here
               </Typography>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => navigate('/jobs')}
+                sx={{ minHeight: 44 }}
+              >
+                Browse Jobs
+              </Button>
             </Box>
           ) : (
             filteredApplications.map((application) => {
