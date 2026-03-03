@@ -369,7 +369,7 @@ const JobManagementPage = () => {
         <title>Manage Jobs | Kelmah</title>
       </Helmet>
 
-      {uiMessage && (
+      {uiMessage && typeof uiMessage === 'string' && (
         <Alert severity="info" sx={{ mb: 2 }} onClose={() => setUiMessage(null)}>
           {uiMessage}
         </Alert>

@@ -3,7 +3,7 @@ const path = require('path');
 
 console.log('🚀 Starting Review Service...');
 
-const reviewService = spawn('node', ['server.js'], {
+const reviewService = spawn('node', ['-r', path.resolve(__dirname, 'kelmah-backend/dns-fix.js'), 'server.js'], {
   cwd: path.join(__dirname, 'kelmah-backend/services/review-service'),
   stdio: 'inherit',
   shell: true,

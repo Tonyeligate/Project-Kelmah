@@ -27,6 +27,14 @@ exports.createTransaction = async (req, res) => {
       description,
     } = req.body;
 
+    // Validate amount is a positive finite number
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'Amount must be a positive number', code: 'INVALID_AMOUNT' }
+      });
+    }
+
     // Create transaction record (persist immediately for history consistency)
     const transaction = await new Transaction({
       transactionId: generateTransactionId(),
@@ -172,7 +180,7 @@ exports.cancelTransaction = async (req, res) => {
 
     await transaction.updateStatus("cancelled");
 
-    res.json({ message: "Transaction cancelled successfully" });
+    res.json({ success: true, message: "Transaction cancelled successfully" });
   } catch (error) {
     handleError(res, error);
   }
@@ -399,14 +407,28 @@ const processRefund = async (transaction) => {
         throw new Error("Unsupported payment provider");
     }
 
-    // Update wallets
-    const senderWallet = await Wallet.findOne({ user: transaction.sender });
-    const recipientWallet = await Wallet.findOne({
-      user: transaction.recipient,
-    });
-
-    await senderWallet.addFunds(transaction.amount, transaction);
-    await recipientWallet.deductFunds(transaction.amount, transaction);
+    // Update wallets atomically
+    const senderUpdate = await Wallet.findOneAndUpdate(
+      { user: transaction.sender },
+      { $inc: { balance: transaction.amount } },
+      { new: true }
+    );
+    if (!senderUpdate) {
+      throw new Error('Sender wallet not found');
+    }
+    const recipientUpdate = await Wallet.findOneAndUpdate(
+      { user: transaction.recipient, balance: { $gte: transaction.amount } },
+      { $inc: { balance: -transaction.amount } },
+      { new: true }
+    );
+    if (!recipientUpdate) {
+      // Rollback sender credit
+      await Wallet.findOneAndUpdate(
+        { user: transaction.sender },
+        { $inc: { balance: -transaction.amount } }
+      );
+      throw new Error('Recipient has insufficient funds for refund deduction');
+    }
 
     await transaction.updateStatus("completed");
   } catch (error) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import {
@@ -136,7 +136,11 @@ const TransactionHistory = ({ transactions }) => (
             </ListItemIcon>
             <ListItemText
               primary={tx.title}
-              secondary={format(new Date(tx.date), 'dd/MM/yyyy, hh:mm a')}
+              secondary={(() => {
+                try {
+                  return tx.date ? format(new Date(tx.date), 'dd/MM/yyyy, hh:mm a') : 'Date unavailable';
+                } catch { return 'Date unavailable'; }
+              })()}
             />
             <Typography
               color={tx.type === 'deposit' ? 'success.main' : 'error.main'}
@@ -626,7 +630,7 @@ const PaymentCenterPage = () => {
     setAppliedBillStatus('all');
     setBillPage(1);
   };
-  const filteredBills = bills.filter((b) => {
+  const filteredBills = useMemo(() => bills.filter((b) => {
     let ok = true;
     if (appliedBillStartDate)
       ok = ok && new Date(b.dueDate) >= new Date(appliedBillStartDate);
@@ -634,7 +638,7 @@ const PaymentCenterPage = () => {
       ok = ok && new Date(b.dueDate) <= new Date(appliedBillEndDate);
     if (appliedBillStatus !== 'all') ok = ok && b.status === appliedBillStatus;
     return ok;
-  });
+  }), [bills, appliedBillStartDate, appliedBillEndDate, appliedBillStatus]);
   const billPageCount = Math.ceil(filteredBills.length / billPerPage);
   const pagedBills = filteredBills.slice(
     (billPage - 1) * billPerPage,
@@ -650,9 +654,9 @@ const PaymentCenterPage = () => {
     setAppliedEscrowStatus(escrowStatusFilter);
     setEscrowPage(1);
   };
-  const filteredEscrows = escrows.filter(
+  const filteredEscrows = useMemo(() => escrows.filter(
     (e) => appliedEscrowStatus === 'all' || e.status === appliedEscrowStatus,
-  );
+  ), [escrows, appliedEscrowStatus]);
   const escrowPageCount = Math.ceil(filteredEscrows.length / escrowPerPage);
   const pagedEscrows = filteredEscrows.slice(
     (escrowPage - 1) * escrowPerPage,
@@ -1059,7 +1063,7 @@ const PaymentCenterPage = () => {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 fullWidth
-                inputProps={{ inputMode: 'decimal' }}
+                inputProps={{ inputMode: 'decimal', min: '0.01', step: '0.01' }}
                 InputProps={{ disableUnderline: true }}
                 InputLabelProps={{
                   sx: { color: theme.palette.secondary.main },
@@ -1112,14 +1116,17 @@ const PaymentCenterPage = () => {
             Cancel
           </Button>
           <Button
-            onClick={() => {
-              addFunds(Number(amount), methodId);
-              closeDepositDialog();
+            onClick={async () => {
+              try {
+                await addFunds(Number(amount), methodId);
+              } finally {
+                closeDepositDialog();
+              }
             }}
             variant="contained"
             color="secondary"
             startIcon={<AddIcon />}
-            disabled={!amount || !methodId}
+            disabled={!amount || Number(amount) <= 0 || !methodId}
             sx={{ boxShadow: '0 2px 8px rgba(255, 215, 0, 0.4)' }}
           >
             Add
@@ -1131,7 +1138,7 @@ const PaymentCenterPage = () => {
         onClose={closeWithdrawDialog}
         fullWidth
         maxWidth="xs"
-        // ✅ MOBILE-AUDIT P4: removed backdrop blur + glow
+        fullScreen={isMobile}
         PaperProps={{
           sx: {
             bgcolor: theme.palette.grey[900],
@@ -1169,7 +1176,7 @@ const PaymentCenterPage = () => {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 fullWidth
-                inputProps={{ inputMode: 'decimal' }}
+                inputProps={{ inputMode: 'decimal', min: '0.01', step: '0.01' }}
                 InputProps={{ disableUnderline: true }}
                 InputLabelProps={{
                   sx: { color: theme.palette.secondary.main },
@@ -1222,14 +1229,17 @@ const PaymentCenterPage = () => {
             Cancel
           </Button>
           <Button
-            onClick={() => {
-              withdrawFunds(Number(amount), methodId);
-              closeWithdrawDialog();
+            onClick={async () => {
+              try {
+                await withdrawFunds(Number(amount), methodId);
+              } finally {
+                closeWithdrawDialog();
+              }
             }}
             variant="contained"
             color="secondary"
             startIcon={<ArrowDownwardIcon />}
-            disabled={!amount || !methodId}
+            disabled={!amount || Number(amount) <= 0 || !methodId}
             sx={{ minHeight: 44 }}
           >
             Withdraw

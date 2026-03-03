@@ -223,18 +223,45 @@ const EarningsTracker = () => {
     setLoading(true);
     setError(null);
     try {
-      // Calculate date range
       const dateRange = getDateRange(timeRange);
+      const workerId = user?.id || user?._id || user?.userId;
 
-      // In a real app, this would call the API
-      // const response = await workerService.getWorkerEarnings(user.id, dateRange);
+      if (workerId) {
+        try {
+          const response = await workerService.getWorkerEarnings(workerId, {
+            start: dateRange.start?.toISOString(),
+            end: dateRange.end?.toISOString(),
+          });
+          const payload = response?.data?.data || response?.data || response;
+          if (payload && (payload.summary || payload.totalEarnings != null)) {
+            const normalized = {
+              summary: payload.summary || {
+                totalEarnings: payload.totalEarnings || 0,
+                monthlyEarnings: payload.monthlyEarnings || 0,
+                averageHourlyRate: payload.averageHourlyRate || 0,
+                totalHours: payload.totalHours || 0,
+                completedJobs: payload.completedJobs || 0,
+                pendingPayments: payload.pendingPayments || 0,
+                growth: payload.growth || 0,
+              },
+              monthlyTrend: payload.monthlyTrend || mockEarningsData.monthlyTrend,
+              categoryBreakdown: payload.categoryBreakdown || mockEarningsData.categoryBreakdown,
+              recentTransactions: payload.recentTransactions || [],
+            };
+            setEarningsData(normalized);
+            setTransactions(normalized.recentTransactions);
+            setLoading(false);
+            return;
+          }
+        } catch (apiErr) {
+          console.warn('Earnings API unavailable, using sample data:', apiErr.message);
+        }
+      }
 
-      // For now, use mock data
-      setTimeout(() => {
-        setEarningsData(mockEarningsData);
-        setTransactions(mockEarningsData.recentTransactions);
-        setLoading(false);
-      }, 1000);
+      // Fallback to sample data when API unavailable or no user
+      setEarningsData(mockEarningsData);
+      setTransactions(mockEarningsData.recentTransactions);
+      setLoading(false);
     } catch (err) {
       setError('Failed to load earnings data. Please try again.');
       setLoading(false);

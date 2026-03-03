@@ -34,6 +34,16 @@ const sendAuthError = (res, status, message, code = 'AUTHENTICATION_ERROR') => {
   });
 };
 
+const buildUserFromDecodedToken = (decoded, fallbackId) => ({
+  id: fallbackId,
+  email: decoded?.email || null,
+  role: decoded?.role || decoded?.userRole || null,
+  firstName: decoded?.firstName || null,
+  lastName: decoded?.lastName || null,
+  isEmailVerified: typeof decoded?.isEmailVerified === 'boolean' ? decoded.isEmailVerified : true,
+  tokenVersion: decoded?.version || 0,
+});
+
 /**
  * Main authentication middleware
  * Validates JWT tokens and populates req.user for downstream services
@@ -71,36 +81,40 @@ const authenticate = async (req, res, next) => {
       return sendAuthError(res, 401, 'Token missing user ID', 'INVALID_TOKEN_PAYLOAD');
     }
 
-    // Check cache first
-    const cacheKey = `user:${userId}`;
-    let user = userCache.get(cacheKey);
-    
-    if (!user || Date.now() - user.cachedAt > CACHE_TTL) {
-      // Lookup user in database
-      try {
-        user = await User.findById(userId).select('-password');
-        if (!user) {
-          return sendAuthError(res, 401, 'Token references non-existent user', 'USER_NOT_FOUND');
-        }
+    // Prefer JWT claims to avoid DB dependency in gateway auth path.
+    // Fallback to DB only if token lacks role (legacy tokens).
+    let authUser = buildUserFromDecodedToken(decoded, userId);
 
-        // Cache user for performance
-        cacheSet(cacheKey, { ...user.toObject(), cachedAt: Date.now() });
-      } catch (dbError) {
-        console.error('Database error during authentication:', dbError);
-        return sendAuthError(res, 500, 'Unable to verify user', 'AUTH_DB_ERROR');
+    if (!authUser.role) {
+      const cacheKey = `user:${userId}`;
+      let user = userCache.get(cacheKey);
+
+      if (!user || Date.now() - user.cachedAt > CACHE_TTL) {
+        try {
+          user = await User.findById(userId).select('-password');
+          if (!user) {
+            return sendAuthError(res, 401, 'Token references non-existent user', 'USER_NOT_FOUND');
+          }
+
+          cacheSet(cacheKey, { ...user.toObject(), cachedAt: Date.now() });
+        } catch (dbError) {
+          console.error('Database error during authentication:', dbError);
+          return sendAuthError(res, 500, 'Unable to verify user', 'AUTH_DB_ERROR');
+        }
       }
+
+      authUser = {
+        id: user._id || user.id,
+        email: user.email,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        isEmailVerified: user.isEmailVerified,
+        tokenVersion: decoded.version || 0,
+      };
     }
 
-    // Populate request with user info for downstream services
-    req.user = {
-      id: user._id || user.id,
-      email: user.email,
-      role: user.role,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      isEmailVerified: user.isEmailVerified,
-      tokenVersion: decoded.version || 0
-    };
+    req.user = authUser;
 
     // Add authentication headers for service-to-service communication
     const userPayload = JSON.stringify(req.user);
@@ -164,28 +178,34 @@ const optionalAuth = async (req, res, next) => {
       return next();
     }
 
-    const cacheKey = `user:${userId}`;
-    let user = userCache.get(cacheKey);
+    let authUser = buildUserFromDecodedToken(decoded, userId);
 
-    if (!user || Date.now() - user.cachedAt > CACHE_TTL) {
-      const dbUser = await User.findById(userId).select('-password');
-      if (!dbUser) {
-        return next();
+    if (!authUser.role) {
+      const cacheKey = `user:${userId}`;
+      let user = userCache.get(cacheKey);
+
+      if (!user || Date.now() - user.cachedAt > CACHE_TTL) {
+        const dbUser = await User.findById(userId).select('-password');
+        if (!dbUser) {
+          return next();
+        }
+
+        user = { ...dbUser.toObject(), cachedAt: Date.now() };
+        cacheSet(cacheKey, user);
       }
 
-      user = { ...dbUser.toObject(), cachedAt: Date.now() };
-      cacheSet(cacheKey, user);
+      authUser = {
+        id: user._id || user.id,
+        email: user.email,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        isEmailVerified: user.isEmailVerified,
+        tokenVersion: decoded.version || 0,
+      };
     }
 
-    req.user = {
-      id: user._id || user.id,
-      email: user.email,
-      role: user.role,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      isEmailVerified: user.isEmailVerified,
-      tokenVersion: decoded.version || 0,
-    };
+    req.user = authUser;
 
     const userPayload = JSON.stringify(req.user);
     req.headers['x-authenticated-user'] = userPayload;

@@ -360,12 +360,12 @@ exports.resendVerificationEmail = async (req, res, next) => {
     // Find user by email
     const user = await User.findByEmail(email);
 
-    if (!user) {
-      return next(new AppError("User with this email does not exist", 404));
-    }
-
-    if (user.isEmailVerified) {
-      return next(new AppError("Email is already verified", 400));
+    // Return generic success for all cases to prevent email enumeration
+    if (!user || user.isEmailVerified) {
+      return res.status(200).json({
+        status: "success",
+        message: "If an account with that email exists and is unverified, a verification email has been sent",
+      });
     }
 
     // Generate new verification token (raw) and save hashed on user

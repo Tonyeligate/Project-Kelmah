@@ -3,7 +3,7 @@ const path = require('path');
 
 console.log('🚀 Starting Payment Service...');
 
-const paymentService = spawn('node', ['server.js'], {
+const paymentService = spawn('node', ['-r', path.resolve(__dirname, 'kelmah-backend/dns-fix.js'), 'server.js'], {
   cwd: path.join(__dirname, 'kelmah-backend/services/payment-service'),
   stdio: 'inherit',
   shell: true,

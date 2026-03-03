@@ -457,6 +457,13 @@ class PaymentController {
       }
 
       if (!result.success) {
+        // CRITICAL FIX: Rollback atomic wallet deduction on provider failure
+        // Without this, failed payouts permanently lose user balance
+        await Wallet.findOneAndUpdate(
+          { userId },
+          { $inc: { balance: amount, pendingWithdrawals: -amount } }
+        );
+
         Object.assign(payout, {
           status: 'FAILED',
           failureReason: result.error.message || 'Payout initialization failed',
@@ -783,10 +790,12 @@ class PaymentController {
         });
       }
 
-      // Update wallet balance for successful payments
+      // Update wallet balance for successful payments (atomic to prevent race conditions)
       if (payment.type !== 'PAYOUT') {
-        wallet.balance = wallet.balance + payment.amount;
-        await wallet.save();
+        await Wallet.findOneAndUpdate(
+          { _id: wallet._id },
+          { $inc: { balance: payment.amount } }
+        );
       }
 
       // Create transaction record

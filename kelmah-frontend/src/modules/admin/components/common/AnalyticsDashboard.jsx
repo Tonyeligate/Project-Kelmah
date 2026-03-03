@@ -85,8 +85,25 @@ const AnalyticsDashboard = () => {
       const systemStats = await adminService.getSystemStats();
       setStats(systemStats);
 
-      // Mock data for other analytics (in a real app, these would be API calls)
-      setRecentActivity([
+      // Try to fetch supplementary analytics from API, fall back to sample data
+      let activityData = null;
+      let growthData = null;
+      let alertsData = null;
+      try {
+        const { api } = await import('../../../../services/apiClient');
+        const [activityRes, growthRes, alertsRes] = await Promise.allSettled([
+          api.get('/users/analytics/activity'),
+          api.get('/users/analytics/growth'),
+          api.get('/users/analytics/alerts'),
+        ]);
+        if (activityRes.status === 'fulfilled' && activityRes.value?.data?.data) activityData = activityRes.value.data.data;
+        if (growthRes.status === 'fulfilled' && growthRes.value?.data?.data) growthData = growthRes.value.data.data;
+        if (alertsRes.status === 'fulfilled' && alertsRes.value?.data?.data) alertsData = alertsRes.value.data.data;
+      } catch {
+        // API endpoints not yet available — use sample data
+      }
+
+      setRecentActivity(activityData || [
         {
           id: 1,
           type: 'user_registration',
@@ -113,7 +130,7 @@ const AnalyticsDashboard = () => {
         },
       ]);
 
-      setUserGrowth([
+      setUserGrowth(growthData || [
         { month: 'Jan', users: 120, growth: 12 },
         { month: 'Feb', users: 145, growth: 21 },
         { month: 'Mar', users: 180, growth: 24 },
@@ -122,7 +139,7 @@ const AnalyticsDashboard = () => {
         { month: 'Jun', users: 280, growth: 17 },
       ]);
 
-      setSystemAlerts([
+      setSystemAlerts(alertsData || [
         {
           id: 1,
           type: 'info',

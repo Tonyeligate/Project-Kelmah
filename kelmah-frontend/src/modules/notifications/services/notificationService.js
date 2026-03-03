@@ -257,7 +257,10 @@ class NotificationService {
   async getUnreadCount() {
     try {
       const response = await this.client.get('/notifications/unread/count');
-      return response.data.unreadCount;
+      const payload = response.data;
+      if (typeof payload?.unreadCount === 'number') return payload.unreadCount;
+      if (typeof payload?.data?.unreadCount === 'number') return payload.data.unreadCount;
+      return 0;
     } catch (error) {
       console.error('Failed to get unread count:', error);
       throw error;

@@ -34,6 +34,7 @@ import {
   Alert,
   useTheme,
   alpha,
+  InputAdornment,
 } from '@mui/material';
 import {
   LocationOn as LocationOnIcon,
@@ -50,10 +51,11 @@ import {
   Schedule as ScheduleIcon,
   Gavel as GavelIcon,
   EmojiEvents as EmojiEventsIcon,
+  Description as DescriptionIcon,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { format, formatDistanceToNow } from 'date-fns';
-// Note: bidApi and userPerformanceApi functionality should be integrated into appropriate module services
+import bidApi from '../../jobs/services/bidService';
 
 const EnhancedJobCard = ({
   job,
@@ -82,16 +84,15 @@ const EnhancedJobCard = ({
   const [userPerformance, setUserPerformance] = useState(null);
   const [bidStats, setBidStats] = useState(null);
 
-  // Load user performance data
+  // Load user bid stats
   React.useEffect(() => {
     if (user?.id) {
-      // TODO: Integrate user performance and bid functionality into worker service
-      // userPerformanceApi.getUserPerformance(user.id)
-      //   .then(response => setUserPerformance(response.data))
-      //   .catch(error => console.warn('Failed to load user performance:', error));
-      // bidApi.getWorkerBidStats(user.id)
-      //   .then(response => setBidStats(response.data))
-      //   .catch(error => console.warn('Failed to load bid stats:', error));
+      bidApi.getWorkerBidStats(user.id)
+        .then(response => {
+          const stats = response?.data || response;
+          setBidStats(stats);
+        })
+        .catch(err => console.warn('Bid stats unavailable:', err.message));
     }
   }, [user?.id]);
 
@@ -100,14 +101,14 @@ const EnhancedJobCard = ({
 
     setBidLoading(true);
     try {
-      // TODO: Integrate bid functionality into worker service
-      // await bidApi.createBid({
-      //   jobId: job.id,
-      //   ...bidData
-      // });
+      await bidApi.createBid({
+        job: job.id || job._id,
+        bidAmount: bidData.amount,
+        estimatedDuration: bidData.estimatedDuration,
+        coverLetter: bidData.coverLetter,
+      });
 
       setBidDialogOpen(false);
-      // Show success message
       if (onApply) onApply(job);
     } catch (error) {
       console.error('Failed to submit bid:', error);
@@ -479,6 +480,7 @@ const EnhancedJobCard = ({
               min: job?.bidding?.minBidAmount || 0,
               max: job?.bidding?.maxBidAmount || 10000,
             }}
+            InputProps={{ startAdornment: <InputAdornment position="start"><AttachMoneyIcon color="action" />GH₵</InputAdornment> }}
             helperText={`Min: GH₵${job?.bidding?.minBidAmount || 0}, Max: GH₵${job?.bidding?.maxBidAmount || 10000}`}
             sx={{ mb: 2 }}
           />
@@ -534,6 +536,7 @@ const EnhancedJobCard = ({
               })
             }
             placeholder="Explain why you're the best fit for this job..."
+            InputProps={{ startAdornment: <InputAdornment position="start"><DescriptionIcon color="action" /></InputAdornment> }}
             sx={{ mb: 2 }}
           />
 

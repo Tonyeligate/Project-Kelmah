@@ -3,7 +3,7 @@ const path = require('path');
 
 console.log('🚀 Starting Job Service...');
 
-const jobService = spawn('node', ['server.js'], {
+const jobService = spawn('node', ['-r', path.resolve(__dirname, 'kelmah-backend/dns-fix.js'), 'server.js'], {
   cwd: path.join(__dirname, 'kelmah-backend/services/job-service'),
   stdio: 'inherit',
   shell: true,

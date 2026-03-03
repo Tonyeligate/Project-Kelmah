@@ -12,9 +12,19 @@ const mtn = new MTNMoMoService();
 const vodafone = new VodafoneCashService();
 const airtel = new AirtelTigoService();
 
+// Shared error wrapper — all provider calls need try-catch to avoid unhandled rejections
+const safe = (handler) => async (req, res) => {
+  try {
+    return await handler(req, res);
+  } catch (error) {
+    console.error(`Ghana payment error [${handler.name || 'unknown'}]:`, error.message);
+    return res.status(500).json({ success: false, message: 'Payment provider error', code: 'PROVIDER_ERROR' });
+  }
+};
+
 module.exports = {
   // MTN MoMo
-  async mtnRequestToPay(req, res) {
+  mtnRequestToPay: safe(async (req, res) => {
     const { amount, phoneNumber, description, externalId, payerMessage, payeeNote } = req.body || {};
     if (!amount || !phoneNumber) {
       return res.status(400).json({ success: false, message: 'amount and phoneNumber are required' });
@@ -22,16 +32,16 @@ module.exports = {
     const result = await mtn.requestToPay({ amount, phoneNumber, description, externalId, payerMessage, payeeNote });
     if (!result.success) return res.status(400).json(result);
     return res.status(200).json(result);
-  },
+  }),
 
-  async mtnStatus(req, res) {
+  mtnStatus: safe(async (req, res) => {
     const { referenceId } = req.params;
     const result = await mtn.getTransactionStatus(referenceId);
     if (!result.success) return res.status(400).json(result);
     return res.status(200).json(result);
-  },
+  }),
 
-  async mtnValidate(req, res) {
+  mtnValidate: safe(async (req, res) => {
     const { phoneNumber } = req.body || {};
     if (!phoneNumber) {
       return res.status(400).json({ success: false, message: 'phoneNumber is required' });
@@ -39,10 +49,10 @@ module.exports = {
     const result = await mtn.validateAccount(phoneNumber);
     if (!result.success) return res.status(400).json(result);
     return res.status(200).json(result);
-  },
+  }),
 
   // Vodafone Cash
-  async vodafoneRequestToPay(req, res) {
+  vodafoneRequestToPay: safe(async (req, res) => {
     const { amount, phoneNumber, description, externalId } = req.body || {};
     if (!amount || !phoneNumber) {
       return res.status(400).json({ success: false, message: 'amount and phoneNumber are required' });
@@ -50,17 +60,17 @@ module.exports = {
     const result = await vodafone.initiatePayment({ amount, phoneNumber, description, externalId });
     if (!result.success) return res.status(400).json(result);
     return res.status(200).json(result);
-  },
+  }),
 
-  async vodafoneStatus(req, res) {
+  vodafoneStatus: safe(async (req, res) => {
     const { referenceId } = req.params;
     const result = await vodafone.getPaymentStatus(referenceId);
     if (!result.success) return res.status(400).json(result);
     return res.status(200).json(result);
-  },
+  }),
 
   // AirtelTigo Money
-  async airtelRequestToPay(req, res) {
+  airtelRequestToPay: safe(async (req, res) => {
     const { amount, phoneNumber, description, externalId } = req.body || {};
     if (!amount || !phoneNumber) {
       return res.status(400).json({ success: false, message: 'amount and phoneNumber are required' });
@@ -68,14 +78,14 @@ module.exports = {
     const result = await airtel.requestToPay({ amount, phoneNumber, description, externalId });
     if (!result.success) return res.status(400).json(result);
     return res.status(200).json(result);
-  },
+  }),
 
-  async airtelStatus(req, res) {
+  airtelStatus: safe(async (req, res) => {
     const { referenceId } = req.params;
     const result = await airtel.getTransactionStatus(referenceId);
     if (!result.success) return res.status(400).json(result);
     return res.status(200).json(result);
-  },
+  }),
 };
 
 

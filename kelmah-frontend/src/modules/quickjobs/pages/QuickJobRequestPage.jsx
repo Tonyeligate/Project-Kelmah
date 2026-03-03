@@ -64,6 +64,10 @@ const QuickJobRequestPage = () => {
   const [searchParams] = useSearchParams();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const fileInputRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const recordingTimerRef = useRef(null);
 
   // Get category from URL params
   const categoryId = searchParams.get('category') || 'general_repair';
@@ -140,10 +144,58 @@ const QuickJobRequestPage = () => {
     setPhotos(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Handle voice recording (simplified - would need Web Audio API for full implementation)
-  const handleVoiceToggle = () => {
-    setIsRecording(!isRecording);
-    // In production, implement voice recording with MediaRecorder API
+  // Voice recording via MediaRecorder API
+  const handleVoiceToggle = async () => {
+    if (isRecording) {
+      // Stop recording
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      setIsRecording(false);
+      clearInterval(recordingTimerRef.current);
+      setRecordingDuration(0);
+    } else {
+      // Start recording
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream, {
+          mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4',
+        });
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunksRef.current = [];
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) audioChunksRef.current.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType });
+          const url = URL.createObjectURL(blob);
+          setVoiceNote({ blob, url, duration: recordingDuration });
+          stream.getTracks().forEach(track => track.stop());
+        };
+
+        mediaRecorder.start(250); // collect chunks every 250ms
+        setIsRecording(true);
+        setRecordingDuration(0);
+        recordingTimerRef.current = setInterval(() => {
+          setRecordingDuration(prev => {
+            if (prev >= 60) { // 60-second max
+              handleVoiceToggle();
+              return prev;
+            }
+            return prev + 1;
+          });
+        }, 1000);
+      } catch (err) {
+        setError('Microphone access denied. Please allow microphone access to record a voice note.');
+      }
+    }
+  };
+
+  const handleRemoveVoiceNote = () => {
+    if (voiceNote?.url) URL.revokeObjectURL(voiceNote.url);
+    setVoiceNote(null);
   };
 
   // Check if step is complete
@@ -187,8 +239,26 @@ const QuickJobRequestPage = () => {
     setError('');
 
     try {
-      // TODO: Upload photos to storage and get URLs
-      const photoUrls = photos.map(p => ({ url: p.preview })); // Temporary
+      // Upload photos via FormData if available, otherwise send preview URLs
+      let photoUrls = [];
+      if (photos.length > 0) {
+        try {
+          const { api } = await import('../../../services/apiClient');
+          const formData = new FormData();
+          photos.forEach((p, i) => formData.append('photos', p.file || p, `photo-${i}`));
+          const uploadRes = await api.post('/jobs/upload-photos', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          if (uploadRes.data?.success && Array.isArray(uploadRes.data.data)) {
+            photoUrls = uploadRes.data.data.map(u => ({ url: u.url || u }));
+          } else {
+            photoUrls = photos.map(p => ({ url: p.preview }));
+          }
+        } catch {
+          // Upload endpoint not available — send preview blobs as fallback
+          photoUrls = photos.map(p => ({ url: p.preview }));
+        }
+      }
 
       const jobData = {
         category: categoryId,
@@ -316,15 +386,37 @@ const QuickJobRequestPage = () => {
               )}
             </Box>
 
-            {/* Voice note — not yet implemented */}
-            <Button
-              variant="outlined"
-              startIcon={<MicIcon />}
-              disabled
-              sx={{ mb: 2, opacity: 0.6 }}
-            >
-              Record Voice Note (Coming Soon)
-            </Button>
+            {/* Voice note recorder */}
+            <Typography variant="subtitle2" gutterBottom sx={{ mt: 1 }}>
+              Voice note (optional — describe your problem by speaking)
+            </Typography>
+            {voiceNote ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, p: 1.5, border: '1px solid', borderColor: 'success.main', borderRadius: 2, bgcolor: theme.palette.action.hover }}>
+                <MicIcon color="success" />
+                <audio src={voiceNote.url} controls style={{ flex: 1, height: 36 }} />
+                <IconButton size="small" onClick={handleRemoveVoiceNote} color="error">
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            ) : (
+              <Button
+                variant={isRecording ? 'contained' : 'outlined'}
+                startIcon={isRecording ? <MicOffIcon /> : <MicIcon />}
+                onClick={handleVoiceToggle}
+                color={isRecording ? 'error' : 'primary'}
+                sx={{ mb: 2 }}
+              >
+                {isRecording ? `Stop Recording (${recordingDuration}s)` : 'Record Voice Note'}
+              </Button>
+            )
+            }
+            {isRecording && (
+              <LinearProgress
+                variant="determinate"
+                value={(recordingDuration / 60) * 100}
+                sx={{ mb: 2, height: 4, borderRadius: 2 }}
+              />
+            )}
           </Box>
         );
 

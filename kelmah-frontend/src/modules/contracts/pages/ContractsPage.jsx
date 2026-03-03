@@ -105,8 +105,8 @@ const ContractsPage = () => {
       if (!searchQuery.trim()) return true;
       const needle = searchQuery.toLowerCase();
       return (
-        contract.title.toLowerCase().includes(needle) ||
-        contract.client?.name?.toLowerCase().includes(needle) ||
+        (contract.title || '').toLowerCase().includes(needle) ||
+        (contract.client?.name || '').toLowerCase().includes(needle) ||
         (contract.client?.company || '').toLowerCase().includes(needle)
       );
     };
@@ -294,14 +294,14 @@ const ContractsPage = () => {
                 >
                   <Box>
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                      {contract.title}
+                      {contract.title || 'Untitled Contract'}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {contract.client.name} • {contract.client.company}
+                      {contract.client?.name || 'Client'}{contract.client?.company ? ` • ${contract.client.company}` : ''}
                     </Typography>
                   </Box>
                   <Chip
-                    label={contract.status.replace('-', ' ')}
+                    label={(contract.status || 'pending').replace('-', ' ')}
                     color={statusChipColor[contract.status] || 'default'}
                     icon={
                       statusIconMap[contract.status] || (
@@ -313,18 +313,18 @@ const ContractsPage = () => {
                 </Stack>
 
                 <Typography variant="h5" sx={{ mt: 2, fontWeight: 700 }}>
-                  {contract.currency}
-                  {contract.budget.toLocaleString()}
+                  {contract.currency || 'GHS'}
+                  {(contract.budget ?? 0).toLocaleString()}
                 </Typography>
 
                 <Typography variant="caption" color="text.secondary">
                   Updated{' '}
-                  {formatDistanceToNow(contract.lastUpdated, {
-                    addSuffix: true,
-                  })}
+                  {contract.lastUpdated
+                    ? formatDistanceToNow(new Date(contract.lastUpdated), { addSuffix: true })
+                    : 'recently'}
                 </Typography>
 
-                {renderMilestones(contract.milestones)}
+                {Array.isArray(contract.milestones) && contract.milestones.length > 0 && renderMilestones(contract.milestones)}
               </CardContent>
 
               <Divider sx={{ mt: 'auto' }} />

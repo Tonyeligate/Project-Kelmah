@@ -36,7 +36,7 @@ const RatingDistribution = ({ distribution, totalReviews }) => (
         <Box sx={{ flexGrow: 1, mr: 1 }}>
           <LinearProgress
             variant="determinate"
-            value={(item.count / totalReviews) * 100}
+            value={totalReviews > 0 ? (item.count / totalReviews) * 100 : 0}
             sx={{ height: 8, borderRadius: 2 }}
           />
         </Box>

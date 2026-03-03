@@ -38,6 +38,16 @@ exports.releaseEscrow = async (req, res, next) => {
     }
     if (escrow.status !== 'active') return res.status(400).json({ success: false, message: 'Escrow is not active' });
 
+    // Idempotency: atomically set status to 'releasing' to prevent double-release
+    const lockResult = await Escrow.findOneAndUpdate(
+      { _id: escrowId, status: 'active' },
+      { $set: { status: 'releasing' } },
+      { new: true }
+    );
+    if (!lockResult) {
+      return res.status(409).json({ success: false, message: 'Escrow release already in progress or completed' });
+    }
+
     const workerWallet = await Wallet.findOne({ user: escrow.workerId });
     if (!workerWallet) return res.status(404).json({ success: false, message: 'Worker wallet not found' });
 
@@ -110,6 +120,16 @@ exports.refundEscrow = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Only the hirer or admin can refund escrow' });
     }
     if (!['active', 'disputed'].includes(escrow.status)) return res.status(400).json({ success: false, message: 'Escrow is not refundable' });
+
+    // Idempotency: atomically set status to 'refunding' to prevent double-refund
+    const lockResult = await Escrow.findOneAndUpdate(
+      { _id: escrowId, status: { $in: ['active', 'disputed'] } },
+      { $set: { status: 'refunding' } },
+      { new: true }
+    );
+    if (!lockResult) {
+      return res.status(409).json({ success: false, message: 'Escrow refund already in progress or completed' });
+    }
 
     const hirerWallet = await Wallet.findOne({ user: escrow.hirerId });
     if (!hirerWallet) return res.status(404).json({ success: false, message: 'Hirer wallet not found' });

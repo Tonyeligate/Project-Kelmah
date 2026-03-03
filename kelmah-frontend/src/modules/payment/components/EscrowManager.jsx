@@ -176,9 +176,9 @@ const EscrowManager = () => {
         >
           <MenuItem value="paystack">Paystack</MenuItem>
           <MenuItem value="stripe">Stripe</MenuItem>
-          <MenuItem value="mtn" disabled>MTN MoMo (coming soon)</MenuItem>
-          <MenuItem value="vodafone" disabled>Vodafone Cash (coming soon)</MenuItem>
-          <MenuItem value="airteltigo" disabled>AirtelTigo Money (coming soon)</MenuItem>
+          <MenuItem value="mtn">MTN MoMo</MenuItem>
+          <MenuItem value="vodafone">Vodafone Cash</MenuItem>
+          <MenuItem value="airteltigo">AirtelTigo Money</MenuItem>
         </Select>
         {form.provider === 'paystack' && (
           <TextField

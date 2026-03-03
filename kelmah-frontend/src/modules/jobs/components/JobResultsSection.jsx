@@ -1036,7 +1036,17 @@ const JobResultsSection = ({
                   });
                   return;
                 }
-                // TODO: Implement job alert creation
+                // Navigate to settings with alert context
+                navigate('/settings/notifications', {
+                  state: {
+                    alertCreated: true,
+                    filters: {
+                      category: selectedCategory || 'All categories',
+                      location: selectedLocation || 'All locations',
+                      search: searchQuery || '',
+                    },
+                  },
+                });
               }}
               sx={{
                 bgcolor: '#D4AF37',

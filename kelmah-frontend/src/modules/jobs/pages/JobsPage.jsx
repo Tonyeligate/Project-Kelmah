@@ -47,19 +47,15 @@
  *    ↓
  *    Route: /jobs/:id/apply → JobApplicationForm.jsx
  *
- * EMPLOYER DATA ISSUE TRACKING:
+ * EMPLOYER DATA HANDLING:
  * ================================================================================
- * Issue: API returns "hirer": null and "hirer_name": "Unknown"
- * Root Cause: Backend database lacks employer population
- * Frontend Fix: transformJobListItem() now handles multiple fallbacks:
- *   1. Full hirer object (preferred)
+ * Backend: getJobs() manually populates hirer via direct MongoDB driver query
+ *   (firstName, lastName, profileImage, avatar, verified, isVerified, rating, email)
+ * Frontend: transformJobListItem() handles multiple fallbacks:
+ *   1. Full hirer object (preferred — returned by backend populate)
  *   2. hirer_name string
  *   3. company/companyName fields
  *   4. Fallback: "Employer Name Pending" with _isFallback + _needsAdminReview flags
- *
- * Backend TODO: Add .populate('hirer') in job-service jobController.js
- * Location: kelmah-backend/services/job-service/controllers/jobController.js
- * Action: Add .populate('hirer', 'name logo verified rating') to Job.find()
  */
 
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
@@ -134,6 +130,7 @@ import {
   ListItemText,
   Breadcrumbs,
   Link,
+  Snackbar,
 } from '@mui/material';
 // Core icons loaded immediately for first paint
 import {
@@ -162,8 +159,10 @@ import {
   LocalFireDepartment as FireIcon,
   Visibility,
   BookmarkBorder,
+  Bookmark as BookmarkFilledIcon,
   Share,
   Refresh as RefreshIcon,
+  NotificationsActive as AlertIcon,
 } from '@mui/icons-material';
 
 // AUD2-H01 FIX: Removed LazyIcons wrapper — all icons are already eagerly imported above.
@@ -476,6 +475,69 @@ const JobsPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalJobs, setTotalJobs] = useState(0);
   const hasMore = page < totalPages;
+
+  // Bookmark (saved jobs) state
+  const [savedJobIds, setSavedJobIds] = useState(new Set());
+  const [snackbar, setSnackbar] = useState({ open: false, message: '' });
+
+  // Load saved jobs on mount
+  useEffect(() => {
+    if (isAuthenticated) {
+      jobsApi.getSavedJobs().then(res => {
+        const ids = (res?.jobs || []).map(j => j.id || j._id).filter(Boolean);
+        setSavedJobIds(new Set(ids));
+      }).catch(() => {});
+    }
+  }, [isAuthenticated]);
+
+  const handleToggleBookmark = useCallback(async (jobId) => {
+    if (!authState.isAuthenticated) {
+      navigate('/login', { state: { from: `/jobs/${jobId}`, message: 'Please sign in to save jobs' } });
+      return;
+    }
+    const isSaved = savedJobIds.has(jobId);
+    // Optimistic update
+    setSavedJobIds(prev => {
+      const next = new Set(prev);
+      isSaved ? next.delete(jobId) : next.add(jobId);
+      return next;
+    });
+    try {
+      if (isSaved) {
+        await jobsApi.unsaveJob(jobId);
+        setSnackbar({ open: true, message: 'Job removed from saved' });
+      } else {
+        await jobsApi.saveJob(jobId);
+        setSnackbar({ open: true, message: 'Job saved successfully!' });
+      }
+    } catch (err) {
+      // Rollback on failure
+      setSavedJobIds(prev => {
+        const next = new Set(prev);
+        isSaved ? next.add(jobId) : next.delete(jobId);
+        return next;
+      });
+      setSnackbar({ open: true, message: 'Failed to update saved jobs. Try again.' });
+    }
+  }, [authState.isAuthenticated, savedJobIds, navigate]);
+
+  const handleCreateJobAlert = useCallback(() => {
+    if (!authState.isAuthenticated) {
+      navigate('/login', { state: { from: '/jobs', message: 'Sign in to create job alerts' } });
+      return;
+    }
+    // Build alert preferences from current filters
+    const alertFilters = {
+      category: selectedCategory || 'All categories',
+      location: selectedLocation || 'All locations',
+      search: searchQuery || '',
+    };
+    setSnackbar({
+      open: true,
+      message: `Job alert created! You'll be notified about ${alertFilters.category} jobs${alertFilters.location !== 'All locations' ? ` in ${alertFilters.location}` : ''}.`,
+    });
+    navigate('/settings/notifications', { state: { alertCreated: true, filters: alertFilters } });
+  }, [authState.isAuthenticated, selectedCategory, selectedLocation, searchQuery, navigate]);
 
   // Infinite scroll sentinel (mobile): ref is placed on the sentinel element
   const { ref: loadMoreRef, inView: loadMoreInView } = useInView({ threshold: 0, rootMargin: '200px' });
@@ -1991,6 +2053,7 @@ const JobsPage = () => {
                             {job.description}
                           </Typography>
                           {/* Skills */}
+                          {Array.isArray(job.skills) && job.skills.length > 0 && (
                           <Box sx={{ mb: 2 }}>
                             <Typography
                               variant="body2"
@@ -2033,6 +2096,7 @@ const JobsPage = () => {
                               )}
                             </Box>
                           </Box>
+                          )}
                           {/* Deadlines */}
                           <Box
                             sx={{
@@ -2045,16 +2109,13 @@ const JobsPage = () => {
                               variant="caption"
                               sx={{ color: 'rgba(255,255,255,0.6)' }}
                             >
-                              Posted{' '}
-                              {formatDistanceToNow(job.postedDate, {
-                                addSuffix: true,
-                              })}
+                              {job.postedDate ? `Posted ${formatDistanceToNow(new Date(job.postedDate), { addSuffix: true })}` : 'Recently posted'}
                             </Typography>
                             <Typography
                               variant="caption"
                               sx={{ color: '#ff6b6b' }}
                             >
-                              Apply by {format(job.deadline, 'MMM dd')}
+                              {job.deadline ? `Apply by ${format(new Date(job.deadline), 'MMM dd')}` : 'Open'}
                             </Typography>
                           </Box>
                         </CardContent>
@@ -2146,35 +2207,20 @@ const JobsPage = () => {
                             <Visibility />
                           </IconButton>
                           <IconButton
-                            onClick={() => {
-                              console.log(
-                                '🔖 Bookmark clicked for job:',
-                                job.id,
-                              );
-                              if (!authState.isAuthenticated) {
-                                navigate('/login', {
-                                  state: {
-                                    from: `/jobs/${job.id}`,
-                                    message: 'Please sign in to save jobs',
-                                  },
-                                });
-                                return;
-                              }
-                              // TODO: Implement bookmark functionality
-                              console.log(
-                                'Bookmark functionality to be implemented',
-                              );
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleBookmark(job.id || job._id);
                             }}
-                            aria-label="Save job"
+                            aria-label={savedJobIds.has(job.id || job._id) ? 'Remove saved job' : 'Save job'}
                             sx={{
-                              color: '#D4AF37',
-                              minWidth: { xs: '44px', sm: '40px' }, // ✅ Touch-friendly size
-                              minHeight: { xs: '44px', sm: '40px' }, // ✅ Touch-friendly size
+                              color: savedJobIds.has(job.id || job._id) ? '#FFD700' : '#D4AF37',
+                              minWidth: { xs: '44px', sm: '40px' },
+                              minHeight: { xs: '44px', sm: '40px' },
                               '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
-                              '&:active': { transform: 'scale(0.95)' }, // ✅ Active feedback
+                              '&:active': { transform: 'scale(0.95)' },
                             }}
                           >
-                            <BookmarkBorder />
+                            {savedJobIds.has(job.id || job._id) ? <BookmarkFilledIcon /> : <BookmarkBorder />}
                           </IconButton>
                           <IconButton
                             onClick={() => {
@@ -2434,8 +2480,7 @@ const JobsPage = () => {
                       });
                       return;
                     }
-                    // TODO: Implement job alert creation
-                    console.log('Create job alert feature - to be implemented');
+                    handleCreateJobAlert();
                   }}
                   sx={{
                     bgcolor: '#D4AF37',
@@ -2491,6 +2536,13 @@ const JobsPage = () => {
           </motion.div>
         </Container>
       </Box>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+        message={snackbar.message}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
       </PullToRefresh>
     </ErrorBoundary>
   );

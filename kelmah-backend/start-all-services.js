@@ -12,7 +12,7 @@ const services = [
   {
     name: 'API Gateway',
     path: './api-gateway/server.js',
-    port: 3000,
+    port: 5000,
     dependsOn: []
   },
   {
@@ -48,7 +48,7 @@ const services = [
   {
     name: 'Review Service',
     path: './services/review-service/server.js',
-    port: 5007,
+    port: 5006,
     dependsOn: ['Auth Service', 'User Service']
   }
 ];

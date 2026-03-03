@@ -135,7 +135,8 @@ app.use(createErrorLogger(logger));
 app.use("/api/auth", authRoutes);
 
 // LOW-07: Static settings endpoints — these return hardcoded defaults.
-// TODO: Replace with user-specific settings from database when settings feature is built.\napp.get('/settings', (req, res) => {
+// TODO: Replace with user-specific settings from database when settings feature is built.
+app.get('/settings', (req, res) => {
   res.json({
     success: true,
     data: {

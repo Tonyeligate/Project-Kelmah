@@ -42,7 +42,8 @@ import {
   Delete as DeleteIcon,
   ArrowBack as BackIcon,
 } from '@mui/icons-material';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 // Import contract slice actions and selectors
 import {
@@ -78,6 +79,8 @@ const ContractDetailsPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const contract = useSelector(selectCurrentContract);
   const milestones = useSelector((state) =>
@@ -322,8 +325,8 @@ const ContractDetailsPage = () => {
               <Typography variant="h5">{contract.title}</Typography>
               <Chip
                 label={
-                  contract.status.charAt(0).toUpperCase() +
-                  contract.status.slice(1)
+                  (contract.status || 'draft').charAt(0).toUpperCase() +
+                  (contract.status || 'draft').slice(1)
                 }
                 color={statusColors[contract.status] || 'default'}
               />
@@ -634,6 +637,7 @@ const ContractDetailsPage = () => {
       <Dialog
         open={cancelDialogOpen}
         onClose={() => setCancelDialogOpen(false)}
+        fullScreen={isMobile}
       >
         <DialogTitle>
           {contract.status === 'draft' ? 'Delete Contract' : 'Cancel Contract'}
@@ -670,7 +674,7 @@ const ContractDetailsPage = () => {
       </Dialog>
 
       {/* Sign contract dialog */}
-      <Dialog open={signDialogOpen} onClose={() => setSignDialogOpen(false)}>
+      <Dialog open={signDialogOpen} onClose={() => setSignDialogOpen(false)} fullScreen={isMobile}>
         <DialogTitle>Sign Contract</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -702,6 +706,7 @@ const ContractDetailsPage = () => {
       <Dialog
         open={disputeDialogOpen}
         onClose={() => setDisputeDialogOpen(false)}
+        fullScreen={isMobile}
       >
         <DialogTitle>Raise a Dispute</DialogTitle>
         <DialogContent>

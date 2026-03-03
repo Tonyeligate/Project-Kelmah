@@ -93,62 +93,69 @@ export const updateWorkerSkills = createAsyncThunk(
         return [];
       }
 
-      const existingRes = await api.get(`/users/workers/${workerId}/skills`);
-      const existingSkills =
-        existingRes.data?.data?.skills ||
-        existingRes.data?.skills ||
-        existingRes.data ||
-        [];
+      try {
+        await api.put(`/users/workers/${workerId}/skills/bulk`, {
+          skills: normalizedSkills,
+        });
+      } catch (bulkError) {
+        // Backward-compatible fallback for environments without bulk route deployed yet
+        const existingRes = await api.get(`/users/workers/${workerId}/skills`);
+        const existingSkills =
+          existingRes.data?.data?.skills ||
+          existingRes.data?.skills ||
+          existingRes.data ||
+          [];
 
-      const existingByName = new Map(
-        (Array.isArray(existingSkills) ? existingSkills : []).map((entry) => [
-          String(entry?.name || '').trim().toLowerCase(),
-          entry,
-        ]),
-      );
+        const existingByName = new Map(
+          (Array.isArray(existingSkills) ? existingSkills : []).map((entry) => [
+            String(entry?.name || '').trim().toLowerCase(),
+            entry,
+          ]),
+        );
 
-      const mutationTasks = normalizedSkills.map(async (entry) => {
-        const key = entry.name.toLowerCase();
-        const current = existingByName.get(key);
+        const mutationTasks = normalizedSkills.map(async (entry) => {
+          const key = entry.name.toLowerCase();
+          const current = existingByName.get(key);
 
-        if (!current) {
-          await api.post(`/users/workers/${workerId}/skills`, {
-            name: entry.name,
+          if (!current) {
+            await api.post(`/users/workers/${workerId}/skills`, {
+              name: entry.name,
+              ...(entry.level ? { level: entry.level } : {}),
+              ...(entry.category ? { category: entry.category } : {}),
+              ...(Number.isFinite(Number(entry.yearsOfExperience))
+                ? { yearsOfExperience: Number(entry.yearsOfExperience) }
+                : {}),
+              ...(entry.description ? { description: entry.description } : {}),
+            });
+            return;
+          }
+
+          const skillId = current?.id || current?._id;
+          if (!skillId) {
+            return;
+          }
+
+          const updatePayload = {
             ...(entry.level ? { level: entry.level } : {}),
-            ...(entry.category ? { category: entry.category } : {}),
+            ...(entry.category !== undefined ? { category: entry.category } : {}),
+            ...(entry.description !== undefined
+              ? { description: entry.description }
+              : {}),
             ...(Number.isFinite(Number(entry.yearsOfExperience))
               ? { yearsOfExperience: Number(entry.yearsOfExperience) }
               : {}),
-            ...(entry.description ? { description: entry.description } : {}),
-          });
-          return;
-        }
+          };
 
-        const skillId = current?.id || current?._id;
-        if (!skillId) {
-          return;
-        }
+          if (Object.keys(updatePayload).length > 0) {
+            await api.put(
+              `/users/workers/${workerId}/skills/${skillId}`,
+              updatePayload,
+            );
+          }
+        });
 
-        const updatePayload = {
-          ...(entry.level ? { level: entry.level } : {}),
-          ...(entry.category !== undefined ? { category: entry.category } : {}),
-          ...(entry.description !== undefined
-            ? { description: entry.description }
-            : {}),
-          ...(Number.isFinite(Number(entry.yearsOfExperience))
-            ? { yearsOfExperience: Number(entry.yearsOfExperience) }
-            : {}),
-        };
-
-        if (Object.keys(updatePayload).length > 0) {
-          await api.put(
-            `/users/workers/${workerId}/skills/${skillId}`,
-            updatePayload,
-          );
-        }
-      });
-
-      await Promise.all(mutationTasks);
+        await Promise.all(mutationTasks);
+      }
 
       const latestRes = await api.get(`/users/workers/${workerId}/skills`);
       return (

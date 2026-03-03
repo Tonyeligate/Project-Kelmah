@@ -1605,7 +1605,8 @@ const changeJobStatus = async (req, res, next) => {
       cancelled: [],
     };
 
-    if (!validTransitions[job.status].includes(status)) {
+    const allowedNext = validTransitions[job.status];
+    if (!allowedNext || !allowedNext.includes(status)) {
       return errorResponse(
         res,
         400,
@@ -2846,7 +2847,7 @@ const saveJob = async (req, res, next) => {
     return successResponse(res, 201, 'Job saved');
   } catch (error) {
     // LOW-03 FIX: Return 409 Conflict for duplicate save (idempotent but semantically correct)
-    if (error?.code === 11000) return successResponse(res, 409, 'Job already saved');
+    if (error?.code === 11000) return errorResponse(res, 409, 'Job already saved');
     next(error);
   }
 };
@@ -3078,6 +3079,12 @@ const extendJobDeadline = async (req, res, next) => {
   try {
     const { jobId } = req.params;
     const { days = 7 } = req.body;
+
+    const numDays = Number(days);
+    if (!Number.isFinite(numDays) || numDays < 1 || numDays > 90) {
+      return errorResponse(res, 400, 'days must be between 1 and 90');
+    }
+
     const job = await Job.findById(jobId);
 
     if (!job) {
@@ -3088,7 +3095,7 @@ const extendJobDeadline = async (req, res, next) => {
       return errorResponse(res, 403, 'Access denied. You can only extend deadline for your own jobs');
     }
 
-    await job.extendDeadline(days);
+    await job.extendDeadline(numDays);
 
     return successResponse(res, 200, 'Job deadline extended successfully', job);
   } catch (error) {

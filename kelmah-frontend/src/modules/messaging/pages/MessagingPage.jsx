@@ -150,17 +150,13 @@ const EnhancedMessagingPage = () => {
     };
   }, []);
 
-  // Mock data for fallback
-  const mockConversations = [];
-  const mockMessages = {};
-
   // Deep-link and initial load (runs once per URL change, not on every conversations update)
   useEffect(() => {
     if (!user) return;
 
     setIsLoading(true);
-    // Short delay to allow context conversations to populate
-    const timer = setTimeout(() => setIsLoading(false), 500);
+    // Allow context conversations to populate before deep-linking
+    const timer = setTimeout(() => setIsLoading(false), 100);
 
     // Deep-link: /messages?recipient=<userId> or /messages?conversation=<id>
     const urlParams = new URLSearchParams(search);

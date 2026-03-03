@@ -110,7 +110,22 @@ const PaymentOverview = () => {
       setLoading(true);
       setError(null);
 
-      // Mock payment data for demonstration
+      // Attempt to fetch from payment API
+      let allPayments = null;
+      try {
+        const { api } = await import('../../../../services/apiClient');
+        const response = await api.get('/payments/admin/overview');
+        const payload = response?.data?.data || response?.data;
+        if (Array.isArray(payload?.payments) && payload.payments.length > 0) {
+          allPayments = payload.payments;
+        } else if (Array.isArray(payload) && payload.length > 0) {
+          allPayments = payload;
+        }
+      } catch (apiErr) {
+        console.warn('Payment API unavailable, using sample data:', apiErr.message);
+      }
+
+      // Fallback to sample data when API unavailable
       const mockPayments = [
         {
           id: 'PAY001',
@@ -175,20 +190,23 @@ const PaymentOverview = () => {
         },
       ];
 
+      // Use real data when available, fallback to sample
+      const sourcePayments = allPayments || mockPayments;
+
       // Filter based on active tab and filters
-      let filteredPayments = mockPayments;
+      let filteredPayments = sourcePayments;
 
       if (activeTab === 0) {
         // All
-        filteredPayments = mockPayments;
+        filteredPayments = sourcePayments;
       } else if (activeTab === 1) {
         // Pending
-        filteredPayments = mockPayments.filter(
+        filteredPayments = sourcePayments.filter(
           (p) => p.status === 'pending' || p.status === 'in_escrow',
         );
       } else if (activeTab === 2) {
         // Failed
-        filteredPayments = mockPayments.filter((p) => p.status === 'failed');
+        filteredPayments = sourcePayments.filter((p) => p.status === 'failed');
       }
 
       if (searchTerm) {
@@ -220,11 +238,11 @@ const PaymentOverview = () => {
       setPayments(filteredPayments);
 
       // Calculate analytics
-      const completed = mockPayments.filter((p) => p.status === 'completed');
-      const pending = mockPayments.filter(
+      const completed = sourcePayments.filter((p) => p.status === 'completed');
+      const pending = sourcePayments.filter(
         (p) => p.status === 'pending' || p.status === 'in_escrow',
       );
-      const failed = mockPayments.filter((p) => p.status === 'failed');
+      const failed = sourcePayments.filter((p) => p.status === 'failed');
 
       const totalRevenue = completed.reduce((sum, p) => sum + p.amount, 0);
       const platformFeesTotal = completed.reduce(
@@ -238,20 +256,20 @@ const PaymentOverview = () => {
         pendingPayments: pending.length,
         completedPayments: completed.length,
         failedPayments: failed.length,
-        totalTransactions: mockPayments.length,
+        totalTransactions: sourcePayments.length,
         platformFees: platformFeesTotal,
         payoutsPending: 3, // Mock pending payouts
       });
 
       // Calculate payment method distribution
       setPaymentMethods({
-        mobileMoney: mockPayments.filter((p) => p.method === 'mobile_money')
+        mobileMoney: sourcePayments.filter((p) => p.method === 'mobile_money')
           .length,
-        bankTransfer: mockPayments.filter((p) => p.method === 'bank_transfer')
+        bankTransfer: sourcePayments.filter((p) => p.method === 'bank_transfer')
           .length,
-        creditCard: mockPayments.filter((p) => p.method === 'credit_card')
+        creditCard: sourcePayments.filter((p) => p.method === 'credit_card')
           .length,
-        cash: mockPayments.filter((p) => p.method === 'cash').length,
+        cash: sourcePayments.filter((p) => p.method === 'cash').length,
       });
     } catch (err) {
       console.error('Error fetching payments:', err);

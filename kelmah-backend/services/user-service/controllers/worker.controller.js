@@ -1087,8 +1087,11 @@ class WorkerController {
    */
   static async getAllWorkers(req, res) {
     try {
-      console.log('🔍 getAllWorkers called - URL:', req.originalUrl, 'Path:', req.path);
-      console.log('🔍 Query params:', JSON.stringify(req.query));
+      const isDev = process.env.NODE_ENV === 'development';
+      if (isDev) {
+        console.log('🔍 getAllWorkers called - URL:', req.originalUrl, 'Path:', req.path);
+        console.log('🔍 Query params:', JSON.stringify(req.query));
+      }
       await ensureConnection({ timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000) });
       const {
         page = 1,
@@ -1120,13 +1123,15 @@ class WorkerController {
         isActive: true
       };
 
-      console.log('🔍 Building query with filters:', { city, location, primaryTrade, workType, keywords, search });
+      if (isDev) {
+        console.log('🔍 Building query with filters:', { city, location, primaryTrade, workType, keywords, search });
+      }
 
       // FIXED: Location filter - use location field (contains city)
       if (city || location) {
         const locationSearch = city || location;
         mongoQuery.location = { $regex: locationSearch, $options: 'i' };
-        console.log('📍 Location filter:', locationSearch);
+        if (isDev) console.log('📍 Location filter:', locationSearch);
       }
 
       // FIXED: Primary Trade filter - handle synonyms across multiple fields
@@ -1148,13 +1153,15 @@ class WorkerController {
           mongoQuery.$and.push({ $or: tradeConditions });
         }
 
-        console.log('🔧 Trade filter:', primaryTrade, '→ patterns:', tradeRegexes.map((regex) => regex.source));
+        if (isDev) {
+          console.log('🔧 Trade filter:', primaryTrade, '→ patterns:', tradeRegexes.map((regex) => regex.source));
+        }
       }
 
       // FIXED: Work Type filter - use workerProfile.workType
       if (workType) {
         mongoQuery['workerProfile.workType'] = workType;
-        console.log('💼 Work type filter:', workType);
+        if (isDev) console.log('💼 Work type filter:', workType);
       }
 
       // Rating filter
@@ -1183,9 +1190,9 @@ class WorkerController {
         // Try text search first, fallback to regex
         try {
           mongoQuery.$text = { $search: searchTerm };
-          console.log('🔎 Text search:', searchTerm);
+          if (isDev) console.log('🔎 Text search:', searchTerm);
         } catch (error) {
-          console.log('⚠️ Text search failed, using regex fallback');
+          if (isDev) console.log('⚠️ Text search failed, using regex fallback');
           mongoQuery.$or = [
             { firstName: { $regex: searchTerm, $options: 'i' } },
             { lastName: { $regex: searchTerm, $options: 'i' } },
@@ -1202,7 +1209,7 @@ class WorkerController {
         mongoQuery.skills = { $in: skillsArray };
       }
 
-      console.log('📋 Final MongoDB query:', JSON.stringify(mongoQuery, null, 2));
+      if (isDev) console.log('📋 Final MongoDB query:', JSON.stringify(mongoQuery, null, 2));
 
       // Execute MongoDB query using direct driver
       const [workers, totalCount] = await Promise.all([
@@ -1215,7 +1222,7 @@ class WorkerController {
         usersCollection.countDocuments(mongoQuery)
       ]);
 
-      console.log(`✅ Found ${workers.length} workers (total: ${totalCount})`);
+      if (isDev) console.log(`✅ Found ${workers.length} workers (total: ${totalCount})`);
 
       // Ranking weights from env or defaults
       const weights = {
@@ -2379,6 +2386,99 @@ class WorkerController {
     } catch (error) {
       console.error('updateWorkerSkill error:', error);
       return handleServiceError(res, error, 'Failed to update worker skill');
+    }
+  }
+
+  /**
+   * Bulk upsert worker skill entries in a single request.
+   * Replaces the previous N+1 client mutation pattern.
+   */
+  static async upsertWorkerSkillsBulk(req, res) {
+    const workerId = req.params.workerId || req.params.id;
+    if (!workerId) {
+      return res.status(400).json({ success: false, message: 'workerId parameter is required' });
+    }
+
+    const inputSkills = Array.isArray(req.body?.skills) ? req.body.skills : null;
+    if (!inputSkills) {
+      return res.status(400).json({ success: false, message: 'skills array is required' });
+    }
+
+    try {
+      const { userDoc } = await ensureWorkerDocuments({ workerId, lean: false });
+      if (!userDoc) {
+        return res.status(404).json({ success: false, message: 'Worker not found' });
+      }
+
+      if (!canMutateWorkerResource(req.user, userDoc._id)) {
+        return res.status(403).json({ success: false, message: 'Not authorized to manage skills for this worker' });
+      }
+
+      const profile = await getMutableWorkerProfile(userDoc);
+      profile.skillEntries = profile.skillEntries || [];
+
+      const now = new Date();
+      const existingByName = new Map(
+        profile.skillEntries
+          .filter((entry) => entry?.name)
+          .map((entry) => [String(entry.name).trim().toLowerCase(), entry]),
+      );
+
+      const nextEntries = [];
+      inputSkills.forEach((rawSkill) => {
+        const name = String(rawSkill?.name || rawSkill?.skillName || '').trim();
+        if (!name) return;
+
+        const key = name.toLowerCase();
+        const existing = existingByName.get(key);
+
+        const base = {
+          name,
+          level: rawSkill?.level || existing?.level || 'Intermediate',
+          category: rawSkill?.category !== undefined ? rawSkill.category : (existing?.category || null),
+          yearsOfExperience:
+            rawSkill?.yearsOfExperience !== undefined && Number.isFinite(Number(rawSkill.yearsOfExperience))
+              ? Number(rawSkill.yearsOfExperience)
+              : (existing?.yearsOfExperience ?? null),
+          description: rawSkill?.description !== undefined ? rawSkill.description : (existing?.description || null),
+          source: rawSkill?.source || existing?.source || 'worker-self',
+          lastUsedAt: rawSkill?.lastUsedAt !== undefined ? rawSkill.lastUsedAt : (existing?.lastUsedAt || null),
+          evidenceUrl: rawSkill?.evidenceUrl !== undefined ? rawSkill.evidenceUrl : (existing?.evidenceUrl || null),
+          verified:
+            rawSkill?.verified !== undefined && ['admin', 'staff'].includes(req.user?.role)
+              ? Boolean(rawSkill.verified)
+              : Boolean(existing?.verified),
+          createdAt: existing?.createdAt || now,
+          updatedAt: now,
+        };
+
+        if (existing?._id) {
+          base._id = existing._id;
+        }
+
+        nextEntries.push(base);
+      });
+
+      profile.skillEntries = nextEntries;
+      await profile.save();
+
+      const normalized = normalizeSkillEntries(
+        profile.skillEntries.map((entry) => (entry?.toObject ? entry.toObject() : entry)),
+      );
+
+      return res.json({
+        success: true,
+        data: {
+          skills: normalized,
+          totals: {
+            count: normalized.length,
+            verified: normalized.filter((entry) => entry.verified).length,
+          },
+        },
+      });
+    } catch (error) {
+      console.error('upsertWorkerSkillsBulk error:', error);
+      return handleServiceError(res, error, 'Failed to update worker skills');
     }
   }
 

@@ -558,6 +558,19 @@ app.use(
         host: proxyReq.getHeader('host'),
         hasAuth: !!req.user
       });
+
+      // Ensure parsed JSON bodies are forwarded for mutating requests.
+      // Without this, downstream service may wait for an unread body and time out.
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes((req.method || '').toUpperCase())
+        && req.body
+        && typeof req.body === 'object'
+        && !Buffer.isBuffer(req.body)) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      }
+
       if (req.user) {
         proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
         proxyReq.setHeader('x-auth-source', 'api-gateway');
@@ -763,10 +776,34 @@ app.use('/api/milestones', authenticate, createDynamicProxy('job', {
 }));
 
 // Search routes (public) with rate limiting
+app.use('/api/search/workers', getRateLimiter('search'));
+app.use('/api/search/workers', createDynamicProxy('user', {
+  pathRewrite: (path) => `/api/users/workers/search${path}`,
+  onError: (err, req, res) => {
+    console.error('[API Gateway] Worker search service error:', err.message);
+    res.status(503).json({
+      error: 'Worker search service temporarily unavailable',
+      message: 'Please try again later',
+      timestamp: new Date().toISOString()
+    });
+  }
+}));
+
 app.use('/api/search', getRateLimiter('search'));
 app.use('/api/search', createDynamicProxy('job', {
-  // FIX: Express strips mount path from req.url; use function-based rewrite to restore it
-  pathRewrite: (path) => `/api/search${path}`,
+  pathRewrite: (path) => {
+    const normalized = path || '/';
+    if (normalized === '/' || normalized.startsWith('/?')) {
+      return `/api/jobs/search${normalized.slice(1)}`;
+    }
+    if (normalized.startsWith('/suggestions')) {
+      return `/api/jobs/suggestions${normalized.slice('/suggestions'.length)}`;
+    }
+    if (normalized.startsWith('/popular')) {
+      return `/api/jobs/popular-searches${normalized.slice('/popular'.length)}`;
+    }
+    return `/api/jobs/search${normalized}`;
+  },
   onError: (err, req, res) => {
     console.error('[API Gateway] Search service error:', err.message);
     res.status(503).json({

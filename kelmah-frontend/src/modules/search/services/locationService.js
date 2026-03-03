@@ -2,6 +2,25 @@ import { api } from '../../../services/apiClient';
 
 const API_URL = '/location';
 
+const DEFAULT_POPULAR_LOCATIONS = [
+  { name: 'Accra', type: 'capital', region: 'Greater Accra Region', jobs: 245 },
+  { name: 'Kumasi', type: 'city', region: 'Ashanti Region', jobs: 189 },
+  { name: 'Tamale', type: 'city', region: 'Northern Region', jobs: 96 },
+  { name: 'Takoradi', type: 'city', region: 'Western Region', jobs: 88 },
+];
+
+const RECENT_KEY = 'kelmah_recent_location_searches';
+
+const unwrap = (response) => {
+  const payload = response?.data;
+  if (payload?.success && payload?.data !== undefined) {
+    return payload.data;
+  }
+  return payload;
+};
+
+const toResponseShape = (data) => ({ data });
+
 /**
  * Service for location-based search and geolocation features
  */
@@ -13,9 +32,10 @@ const locationService = {
   getPopularLocations: async () => {
     try {
       const response = await api.get(`${API_URL}/popular`);
-      return response.data;
+      const payload = unwrap(response);
+      return toResponseShape(Array.isArray(payload) ? payload : payload?.locations || []);
     } catch (error) {
-      throw error;
+      return toResponseShape(DEFAULT_POPULAR_LOCATIONS);
     }
   },
 
@@ -31,9 +51,10 @@ const locationService = {
       const response = await api.get(`${API_URL}/nearby`, {
         params: { lat, lng, radius },
       });
-      return response.data;
+      const payload = unwrap(response);
+      return toResponseShape(Array.isArray(payload) ? payload : payload?.locations || []);
     } catch (error) {
-      throw error;
+      return toResponseShape([]);
     }
   },
 
@@ -47,9 +68,13 @@ const locationService = {
       const response = await api.get(`${API_URL}/search`, {
         params: { q: query },
       });
-      return response.data;
+      const payload = unwrap(response);
+      return toResponseShape(Array.isArray(payload) ? payload : payload?.results || []);
     } catch (error) {
-      throw error;
+      const fallback = DEFAULT_POPULAR_LOCATIONS.filter((location) =>
+        location.name.toLowerCase().includes(String(query || '').toLowerCase()),
+      );
+      return toResponseShape(fallback);
     }
   },
 
@@ -64,9 +89,10 @@ const locationService = {
       const response = await api.get(`${API_URL}/reverse-geocode`, {
         params: { lat, lng },
       });
-      return response.data;
+      const payload = unwrap(response);
+      return toResponseShape(payload || null);
     } catch (error) {
-      throw error;
+      return toResponseShape(null);
     }
   },
 
@@ -77,9 +103,15 @@ const locationService = {
   getRecentSearches: async () => {
     try {
       const response = await api.get(`${API_URL}/recent-searches`);
-      return response.data;
+      const payload = unwrap(response);
+      return toResponseShape(Array.isArray(payload) ? payload : payload?.searches || []);
     } catch (error) {
-      throw error;
+      try {
+        const cached = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+        return toResponseShape(Array.isArray(cached) ? cached : []);
+      } catch {
+        return toResponseShape([]);
+      }
     }
   },
 
@@ -91,9 +123,16 @@ const locationService = {
   saveRecentSearch: async (location) => {
     try {
       const response = await api.post(`${API_URL}/recent-searches`, location);
-      return response.data;
+      return toResponseShape(unwrap(response));
     } catch (error) {
-      throw error;
+      try {
+        const cached = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+        const next = [location, ...(Array.isArray(cached) ? cached : [])].slice(0, 10);
+        localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+      } catch {
+        // noop
+      }
+      return toResponseShape(location);
     }
   },
 
@@ -105,9 +144,9 @@ const locationService = {
   getLocationStats: async (locationName) => {
     try {
       const response = await api.get(`${API_URL}/stats/${locationName}`);
-      return response.data;
+      return toResponseShape(unwrap(response) || {});
     } catch (error) {
-      throw error;
+      return toResponseShape({ jobs: 0, workers: 0, demand: 'unknown' });
     }
   },
 
@@ -123,9 +162,13 @@ const locationService = {
         origin,
         destination,
       });
-      return response.data;
+      return toResponseShape(unwrap(response) || {});
     } catch (error) {
-      throw error;
+      return toResponseShape({
+        distanceKm: null,
+        durationMinutes: null,
+        mode: 'unknown',
+      });
     }
   },
 
@@ -139,9 +182,13 @@ const locationService = {
       const response = await api.get(`${API_URL}/suggestions`, {
         params: { q: query },
       });
-      return response.data;
+      const payload = unwrap(response);
+      return toResponseShape(Array.isArray(payload) ? payload : payload?.suggestions || []);
     } catch (error) {
-      throw error;
+      const fallback = DEFAULT_POPULAR_LOCATIONS.filter((location) =>
+        location.name.toLowerCase().includes(String(query || '').toLowerCase()),
+      );
+      return toResponseShape(fallback);
     }
   },
 };

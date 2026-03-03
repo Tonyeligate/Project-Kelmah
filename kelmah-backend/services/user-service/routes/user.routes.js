@@ -70,26 +70,32 @@ router.get("/workers/jobs/recent", verifyGatewayRequest, (req, res, next) => {
 // 🔥 FIX: Worker search and list routes MUST come BEFORE parameterized /:id routes
 // to prevent "/workers/search" being matched as "/workers/:id" where id="search"
 router.get('/workers/search/location', (req, res, next) => {
-  console.log('✅ [USER-ROUTES] /workers/search/location route hit (alias → searchWorkers):', {
-    query: req.query,
-    fullPath: req.originalUrl
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✅ [USER-ROUTES] /workers/search/location route hit (alias → searchWorkers):', {
+      query: req.query,
+      fullPath: req.originalUrl
+    });
+  }
   next();
 }, WorkerController.searchWorkers);
 
 router.get('/workers/search', (req, res, next) => {
-  console.log('✅ [USER-ROUTES] /workers/search route hit:', {
-    query: req.query,
-    fullPath: req.originalUrl
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✅ [USER-ROUTES] /workers/search route hit:', {
+      query: req.query,
+      fullPath: req.originalUrl
+    });
+  }
   next();
 }, WorkerController.searchWorkers);
 
 router.get('/workers', (req, res, next) => {
-  console.log('✅ [USER-ROUTES] /workers route hit:', {
-    query: req.query,
-    fullPath: req.originalUrl
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('✅ [USER-ROUTES] /workers route hit:', {
+      query: req.query,
+      fullPath: req.originalUrl
+    });
+  }
   next();
 }, WorkerController.getAllWorkers);
 
@@ -151,6 +157,7 @@ router.get("/workers/:id/completeness", optionalGatewayVerification, (req, res, 
 
 // Worker sub-resource routes (public reads, protected mutations)
 router.get('/workers/:workerId/skills', optionalGatewayVerification, WorkerController.getWorkerSkills);
+router.put('/workers/:workerId/skills/bulk', verifyGatewayRequest, createLimiter('default'), WorkerController.upsertWorkerSkillsBulk);
 router.post('/workers/:workerId/skills', verifyGatewayRequest, createLimiter('default'), WorkerController.createWorkerSkill);
 router.put('/workers/:workerId/skills/:skillId', verifyGatewayRequest, createLimiter('default'), WorkerController.updateWorkerSkill);
 router.delete('/workers/:workerId/skills/:skillId', verifyGatewayRequest, createLimiter('default'), WorkerController.deleteWorkerSkill);

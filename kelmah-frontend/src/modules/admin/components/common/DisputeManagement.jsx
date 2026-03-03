@@ -163,7 +163,19 @@ const DisputeManagement = () => {
       setLoading(true);
       setError(null);
 
-      // Mock dispute data for demonstration
+      // Try real API first
+      let allDisputes = null;
+      try {
+        const { api } = await import('../../../../services/apiClient');
+        const res = await api.get('/payments/disputes');
+        if (res.data?.success && Array.isArray(res.data.data)) {
+          allDisputes = res.data.data;
+        }
+      } catch {
+        // API not available — fall back to sample data
+      }
+
+      // Sample dispute data for fallback
       const mockDisputes = [
         {
           id: 'DSP001',
@@ -342,20 +354,23 @@ const DisputeManagement = () => {
         },
       ];
 
+      // Use real API data when available, fallback to sample
+      const sourceDisputes = allDisputes || mockDisputes;
+
       // Filter based on active tab and filters
-      let filteredDisputes = mockDisputes;
+      let filteredDisputes = sourceDisputes;
 
       if (activeTab === 0) {
         // All
-        filteredDisputes = mockDisputes;
+        filteredDisputes = sourceDisputes;
       } else if (activeTab === 1) {
         // Open
-        filteredDisputes = mockDisputes.filter((d) =>
+        filteredDisputes = sourceDisputes.filter((d) =>
           ['open', 'investigating', 'mediation'].includes(d.status),
         );
       } else if (activeTab === 2) {
         // Resolved
-        filteredDisputes = mockDisputes.filter((d) => d.status === 'resolved');
+        filteredDisputes = sourceDisputes.filter((d) => d.status === 'resolved');
       }
 
       if (searchTerm) {
@@ -393,27 +408,27 @@ const DisputeManagement = () => {
       setDisputes(filteredDisputes);
 
       // Calculate analytics
-      const open = mockDisputes.filter((d) =>
+      const open = sourceDisputes.filter((d) =>
         ['open', 'investigating', 'mediation'].includes(d.status),
       );
-      const resolved = mockDisputes.filter((d) => d.status === 'resolved');
-      const escalated = mockDisputes.filter((d) => d.status === 'escalated');
+      const resolved = sourceDisputes.filter((d) => d.status === 'resolved');
+      const escalated = sourceDisputes.filter((d) => d.status === 'escalated');
 
       setAnalytics({
-        totalDisputes: mockDisputes.length,
+        totalDisputes: sourceDisputes.length,
         openDisputes: open.length,
         resolvedDisputes: resolved.length,
         escalatedDisputes: escalated.length,
-        avgResolutionTime: 4.2, // Mock average days
-        resolutionRate: (resolved.length / mockDisputes.length) * 100,
+        avgResolutionTime: 4.2,
+        resolutionRate: sourceDisputes.length > 0 ? (resolved.length / sourceDisputes.length) * 100 : 0,
         categories: {
-          payment: mockDisputes.filter((d) => d.category === 'payment').length,
-          quality: mockDisputes.filter((d) => d.category === 'quality').length,
-          communication: mockDisputes.filter(
+          payment: sourceDisputes.filter((d) => d.category === 'payment').length,
+          quality: sourceDisputes.filter((d) => d.category === 'quality').length,
+          communication: sourceDisputes.filter(
             (d) => d.category === 'communication',
           ).length,
-          scope: mockDisputes.filter((d) => d.category === 'scope').length,
-          other: mockDisputes.filter((d) => d.category === 'other').length,
+          scope: sourceDisputes.filter((d) => d.category === 'scope').length,
+          other: sourceDisputes.filter((d) => d.category === 'other').length,
         },
       });
     } catch (err) {

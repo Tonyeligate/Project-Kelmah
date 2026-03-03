@@ -31,8 +31,13 @@ class CertificateController {
   static async update(req, res) {
     try {
       const { id } = req.params;
-      const updated = await Certificate.findByIdAndUpdate(id, req.body, { new: true });
-      if (!updated) return res.status(404).json({ success: false, message: 'Certificate not found' });
+      const userId = req.user?.id;
+      const updated = await Certificate.findOneAndUpdate(
+        { _id: id, userId },
+        req.body,
+        { new: true }
+      );
+      if (!updated) return res.status(404).json({ success: false, message: 'Certificate not found or not owned by you' });
       return res.json({ success: true, data: { certificate: updated } });
     } catch (error) {
       return handleServiceError(res, error, 'Failed to update certificate');
@@ -42,8 +47,9 @@ class CertificateController {
   static async remove(req, res) {
     try {
       const { id } = req.params;
-      const deleted = await Certificate.findByIdAndDelete(id);
-      if (!deleted) return res.status(404).json({ success: false, message: 'Certificate not found' });
+      const userId = req.user?.id;
+      const deleted = await Certificate.findOneAndDelete({ _id: id, userId });
+      if (!deleted) return res.status(404).json({ success: false, message: 'Certificate not found or not owned by you' });
       return res.json({ success: true, message: 'Certificate deleted' });
     } catch (error) {
       return handleServiceError(res, error, 'Failed to delete certificate');

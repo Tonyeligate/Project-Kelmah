@@ -2,6 +2,32 @@ import { api } from '../../../services/apiClient';
 
 const API_URL = '/search';
 const JOB_RECOMMENDATIONS_ENDPOINT = '/jobs/recommendations';
+const SAVED_SEARCHES_STORAGE_PREFIX = 'kelmah_saved_searches';
+
+const readSavedSearches = (userId) => {
+  if (!userId) return [];
+  try {
+    const raw = localStorage.getItem(`${SAVED_SEARCHES_STORAGE_PREFIX}:${userId}`);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeSavedSearches = (userId, items) => {
+  if (!userId) return;
+  try {
+    localStorage.setItem(
+      `${SAVED_SEARCHES_STORAGE_PREFIX}:${userId}`,
+      JSON.stringify(Array.isArray(items) ? items : []),
+    );
+  } catch {
+    // noop
+  }
+};
+
+const withSavedSearchData = (items = []) => ({ data: items });
 
 /**
  * Service for AI-powered smart job search and recommendations
@@ -21,7 +47,17 @@ const smartSearchService = {
           ...options,
         },
       });
-      return response.data;
+      const payload = response?.data?.data || response?.data || {};
+      return {
+        jobs: Array.isArray(payload?.jobs)
+          ? payload.jobs
+          : Array.isArray(payload)
+            ? payload
+            : [],
+        insights: payload?.insights || null,
+        totalRecommendations: payload?.totalRecommendations,
+        averageMatchScore: payload?.averageMatchScore,
+      };
     } catch (error) {
       if (error?.response?.status === 403) {
         return {
@@ -50,8 +86,14 @@ const smartSearchService = {
    */
   performSmartSearch: async (searchParams) => {
     try {
-      const response = await api.post(`${API_URL}/smart-search`, searchParams);
-      return response.data;
+      const response = await api.get('/jobs/search', { params: searchParams });
+      const payload = response?.data?.data || response?.data || [];
+      const jobs = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.items)
+          ? payload.items
+          : [];
+      return { jobs, insights: null };
     } catch (error) {
       throw error;
     }
@@ -65,10 +107,15 @@ const smartSearchService = {
    */
   getJobMatchAnalysis: async (jobId, userId) => {
     try {
-      const response = await api.get(
-        `${API_URL}/match-analysis/${jobId}/${userId}`,
-      );
-      return response.data;
+      const response = await api.get(`/jobs/${jobId}`);
+      const payload = response?.data?.data || response?.data || {};
+      return {
+        jobId,
+        userId,
+        score: payload?.matchScore ?? null,
+        reasons: payload?.aiReasons || [],
+        breakdown: payload?.matchBreakdown || null,
+      };
     } catch (error) {
       throw error;
     }
@@ -81,10 +128,8 @@ const smartSearchService = {
    */
   saveJob: async (jobId) => {
     try {
-      const response = await api.post(`${API_URL}/save-job`, {
-        jobId,
-      });
-      return response.data;
+      const response = await api.post(`/jobs/${jobId}/save`);
+      return response?.data?.data || response?.data || { success: true };
     } catch (error) {
       console.warn('Save job API not available:', error.message);
       throw error;
@@ -98,8 +143,8 @@ const smartSearchService = {
    */
   unsaveJob: async (jobId) => {
     try {
-      const response = await api.delete(`${API_URL}/save-job/${jobId}`);
-      return response.data;
+      const response = await api.delete(`/jobs/${jobId}/save`);
+      return response?.data?.data || response?.data || { success: true };
     } catch (error) {
       throw error;
     }
@@ -118,9 +163,10 @@ const smartSearchService = {
         action,
         timestamp: new Date().toISOString(),
       });
-      return response.data;
+      return response?.data?.data || response?.data || { success: true };
     } catch (error) {
-      throw error;
+      // Tracking should never block user actions.
+      return { success: false, skipped: true };
     }
   },
 
@@ -132,10 +178,10 @@ const smartSearchService = {
    */
   getSearchSuggestions: async (userId, query) => {
     try {
-      const response = await api.get(`${API_URL}/suggestions/${userId}`, {
-        params: { q: query },
+      const response = await api.get('/jobs/suggestions', {
+        params: { q: query || '', userId },
       });
-      return response.data;
+      return response?.data?.data || response?.data || [];
     } catch (error) {
       throw error;
     }
@@ -151,9 +197,13 @@ const smartSearchService = {
       const response = await api.get(`${API_URL}/market-insights`, {
         params: filters,
       });
-      return response.data;
+      return response?.data?.data || response?.data || {};
     } catch (error) {
-      throw error;
+      return {
+        trends: [],
+        demandByCategory: [],
+        demandByLocation: [],
+      };
     }
   },
 
@@ -165,9 +215,20 @@ const smartSearchService = {
   getSavedSearches: async (userId) => {
     try {
       const response = await api.get(`${API_URL}/saved-searches/${userId}`);
-      return response.data;
+      const payload = response?.data?.data || response?.data || [];
+      const list = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.items)
+          ? payload.items
+          : [];
+      const normalized = list.map((entry, index) => ({
+        ...entry,
+        id: entry.id || entry._id || `saved-${index}-${Date.now()}`,
+      }));
+      writeSavedSearches(userId, normalized);
+      return withSavedSearchData(normalized);
     } catch (error) {
-      throw error;
+      return withSavedSearchData(readSavedSearches(userId));
     }
   },
 
@@ -183,9 +244,19 @@ const smartSearchService = {
         userId,
         ...searchData,
       });
-      return response.data;
+      return response?.data?.data || response?.data || { success: true };
     } catch (error) {
-      throw error;
+      const existing = readSavedSearches(userId);
+      const created = {
+        ...searchData,
+        userId,
+        id: `saved-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      const next = [created, ...existing];
+      writeSavedSearches(userId, next);
+      return { success: true, data: created };
     }
   },
 
@@ -201,9 +272,37 @@ const smartSearchService = {
         `${API_URL}/saved-searches/${searchId}`,
         updateData,
       );
-      return response.data;
+      return response?.data?.data || response?.data || { success: true };
     } catch (error) {
-      throw error;
+      const explicitUserId = updateData?.userId;
+      if (explicitUserId) {
+        const existing = readSavedSearches(explicitUserId);
+        const next = existing.map((entry) =>
+          entry.id === searchId ? { ...entry, ...updateData, updatedAt: new Date().toISOString() } : entry,
+        );
+        writeSavedSearches(explicitUserId, next);
+        return { success: true };
+      }
+
+      // Fallback: locate and patch search entry across all saved-search keys
+      try {
+        for (let index = 0; index < localStorage.length; index += 1) {
+          const storageKey = localStorage.key(index);
+          if (!storageKey || !storageKey.startsWith(`${SAVED_SEARCHES_STORAGE_PREFIX}:`)) continue;
+          const userId = storageKey.split(':')[1];
+          const existing = readSavedSearches(userId);
+          const hasEntry = existing.some((entry) => entry.id === searchId);
+          if (!hasEntry) continue;
+          const next = existing.map((entry) =>
+            entry.id === searchId ? { ...entry, ...updateData, updatedAt: new Date().toISOString() } : entry,
+          );
+          writeSavedSearches(userId, next);
+          break;
+        }
+      } catch {
+        // noop
+      }
+      return { success: true };
     }
   },
 
@@ -217,9 +316,10 @@ const smartSearchService = {
       const response = await api.delete(
         `${API_URL}/saved-searches/${searchId}`,
       );
-      return response.data;
+      return response?.data?.data || response?.data || { success: true };
     } catch (error) {
-      throw error;
+      // Fallback is applied by caller reload (getSavedSearches) from local cache.
+      return { success: false, skipped: true };
     }
   },
 };

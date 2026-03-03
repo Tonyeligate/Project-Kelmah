@@ -29,6 +29,7 @@ import {
   Link,
   useTheme,
   alpha,
+  InputAdornment,
 } from '@mui/material';
 import {
   Work as WorkIcon,
@@ -39,6 +40,12 @@ import {
   Send as SendIcon,
   Upload as UploadIcon,
   Description as DescriptionIcon,
+  Edit as EditIcon,
+  AccessTime as ClockIcon,
+  Star as StarIcon,
+  Link as LinkIcon,
+  People as PeopleIcon,
+  Info as InfoIcon,
 } from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -348,6 +355,7 @@ const JobApplicationForm = () => {
                       onChange={handleInputChange('coverLetter')}
                       required
                       helperText="This is your chance to make a great first impression. Be specific about your qualifications and interest in the role."
+                      InputProps={{ startAdornment: <InputAdornment position="start"><EditIcon color="action" /></InputAdornment> }}
                     />
                   </Grid>
 
@@ -362,6 +370,7 @@ const JobApplicationForm = () => {
                       onChange={handleInputChange('expectedSalary')}
                       required
                       helperText={`Job offers GH₵${job.budget?.min || 'N/A'} - ${job.budget?.max || 'N/A'}`}
+                      InputProps={{ startAdornment: <InputAdornment position="start"><MoneyIcon color="action" />GH₵</InputAdornment> }}
                     />
                   </Grid>
 
@@ -410,6 +419,7 @@ const JobApplicationForm = () => {
                       value={applicationData.portfolio}
                       onChange={handleInputChange('portfolio')}
                       helperText="Include links to your best work, GitHub profile, or portfolio website"
+                      InputProps={{ startAdornment: <InputAdornment position="start"><LinkIcon color="action" /></InputAdornment> }}
                     />
                   </Grid>
 
@@ -424,6 +434,7 @@ const JobApplicationForm = () => {
                       value={applicationData.references}
                       onChange={handleInputChange('references')}
                       helperText="Include name, position, company, and contact information"
+                      InputProps={{ startAdornment: <InputAdornment position="start"><PeopleIcon color="action" /></InputAdornment> }}
                     />
                   </Grid>
 
@@ -438,6 +449,7 @@ const JobApplicationForm = () => {
                       value={applicationData.additionalInfo}
                       onChange={handleInputChange('additionalInfo')}
                       helperText="Optional: Share any other relevant information about yourself"
+                      InputProps={{ startAdornment: <InputAdornment position="start"><InfoIcon color="action" /></InputAdornment> }}
                     />
                   </Grid>
 

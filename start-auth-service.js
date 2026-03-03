@@ -4,7 +4,7 @@ const path = require('path');
 console.log('🔐 Starting Auth Service...');
 console.log('📁 Working directory:', process.cwd());
 
-const authService = spawn('node', ['server.js'], {
+const authService = spawn('node', ['-r', path.resolve(__dirname, 'kelmah-backend/dns-fix.js'), 'server.js'], {
   stdio: 'inherit',
   env: {
     ...process.env,

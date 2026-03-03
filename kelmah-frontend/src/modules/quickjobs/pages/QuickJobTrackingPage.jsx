@@ -181,6 +181,15 @@ const QuickJobTrackingPage = () => {
     setCompletionPhotos(prev => [...prev, ...newPhotos].slice(0, 5));
   };
 
+  // Clean up object URLs on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      completionPhotos.forEach(photo => {
+        if (photo.preview) URL.revokeObjectURL(photo.preview);
+      });
+    };
+  }, [completionPhotos]);
+
   // Handle marking complete
   const handleMarkComplete = async () => {
     if (completionPhotos.length === 0) {
