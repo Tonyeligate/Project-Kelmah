@@ -534,6 +534,54 @@ app.get('/api/health/aggregate', aggregatedHealthHandler);
 const authRouter = require('./routes/auth.routes');
 app.use('/api/auth', authRouter);
 
+// Critical user mutation routes forwarded via axios to avoid body-stream proxy hangs
+const forwardUserMutation = async (req, res, targetPath) => {
+  try {
+    const userServiceUrl = services.user || getServiceUrl('user');
+    if (!userServiceUrl) {
+      return res.status(503).json({
+        success: false,
+        error: { message: 'User service unavailable', code: 'SERVICE_UNAVAILABLE' }
+      });
+    }
+
+    const upstreamResponse = await axios({
+      method: req.method,
+      url: `${userServiceUrl}${targetPath}`,
+      data: req.body,
+      params: req.query,
+      timeout: 30000,
+      headers: {
+        'content-type': 'application/json',
+        'x-request-id': req.id,
+        'x-authenticated-user': req.headers['x-authenticated-user'],
+        'x-auth-source': req.headers['x-auth-source'],
+        'x-gateway-signature': req.headers['x-gateway-signature'],
+      },
+      validateStatus: () => true,
+    });
+
+    return res.status(upstreamResponse.status).json(upstreamResponse.data);
+  } catch (error) {
+    return res.status(503).json({
+      success: false,
+      error: {
+        message: 'User service unavailable',
+        code: 'SERVICE_UNAVAILABLE',
+        details: error.message,
+      },
+    });
+  }
+};
+
+app.put('/api/users/profile', authenticate, (req, res) => {
+  return forwardUserMutation(req, res, '/api/users/profile');
+});
+
+app.put('/api/users/workers/:workerId/skills/bulk', authenticate, (req, res) => {
+  return forwardUserMutation(req, res, `/api/users/workers/${req.params.workerId}/skills/bulk`);
+});
+
 // User routes (protected) with validation
 app.use(
   '/api/users',

@@ -15,6 +15,19 @@
   - `kelmah-backend/services/auth-service/server.js`
 - ⚠️ Runtime smoke tests via local services remain blocked in this machine session by Node 25 package-compat failures during service startup (`buffer-equal-constant-time` crash path), despite successful syntax/build checks.
 
+### Gateway Search/Proxy Hardening Update (Mar 03, 2026) ✅
+- ✅ Fixed API Gateway dynamic-proxy cache-key collisions in `kelmah-backend/api-gateway/server.js`.
+  - Root cause: `JSON.stringify(options)` dropped function-valued options (`pathRewrite`, `onError`), causing cross-route proxy instance reuse.
+  - Fixes: function-aware serialization + bypass proxy cache when options contain functions.
+- ✅ Verified end-to-end through gateway:
+  - `GET /api/search?q=carpenter&limit=1` returns 200 with advanced search payload.
+  - `GET /api/search/suggestions?q=plu` returns 200 suggestions.
+  - `GET /api/search/workers?search=plumber&limit=2` returns 200 workers.
+- ⚠️ Remaining runtime observation under local gateway:
+  - Some proxied `PUT` routes to user-service with JSON body (`/api/users/*`, `/api/workers/*`) still exhibit intermittent long-hang behavior in this environment.
+  - Added `fixRequestBody` and explicit axios-forward handlers for critical user mutations, but shell-driven smoke calls continue to time out intermittently.
+  - This appears to be an existing gateway mutation-proxy transport issue beyond the wave-specific search + bulk endpoint implementation.
+
 
 ### Deep Frontend↔Backend Data-Flow Audit — COMPLETE (Mar 03, 2026) ✅
 - **Scope**: Full file-by-file audit of ALL frontend service files, Redux slices, React Query hooks, pages, and API gateway routing. ~50 files read end-to-end.
