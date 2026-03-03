@@ -157,7 +157,7 @@ router.get("/workers/:id/completeness", optionalGatewayVerification, (req, res, 
 
 // Worker sub-resource routes (public reads, protected mutations)
 router.get('/workers/:workerId/skills', optionalGatewayVerification, WorkerController.getWorkerSkills);
-router.put('/workers/:workerId/skills/bulk', verifyGatewayRequest, createLimiter('default'), WorkerController.upsertWorkerSkillsBulk);
+router.put('/workers/:workerId/skills/bulk', verifyGatewayRequest, WorkerController.upsertWorkerSkillsBulk);
 router.post('/workers/:workerId/skills', verifyGatewayRequest, createLimiter('default'), WorkerController.createWorkerSkill);
 router.put('/workers/:workerId/skills/:skillId', verifyGatewayRequest, createLimiter('default'), WorkerController.updateWorkerSkill);
 router.delete('/workers/:workerId/skills/:skillId', verifyGatewayRequest, createLimiter('default'), WorkerController.deleteWorkerSkill);
