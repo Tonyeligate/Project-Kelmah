@@ -70,7 +70,7 @@ const WorkerReviewsPage = () => {
         setReviews(reviews);
         setPagination(pagination);
       })
-      .catch(console.error)
+      .catch((err) => { if (import.meta.env.DEV) console.error(err); })
       .finally(() => setLoading(false));
   }, [user, page]);
 

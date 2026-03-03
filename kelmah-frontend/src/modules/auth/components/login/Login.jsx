@@ -475,8 +475,8 @@ const Login = () => {
                             size="small"
                             sx={{
                               color: '#FFD700',
-                              minWidth: '36px',
-                              minHeight: '36px',
+                              minWidth: '44px',
+                              minHeight: '44px',
                             }}
                           >
                             {showPassword ? (
@@ -692,7 +692,7 @@ const Login = () => {
                   </Link>
                 </Typography>
 
-                {/* Compact Social Login */}
+                {/* Social Login - Coming Soon */}
                 <Divider
                   sx={{
                     width: '100%',
@@ -705,106 +705,71 @@ const Login = () => {
                   <Typography
                     variant="caption"
                     sx={{
-                      color: '#FFD700',
+                      color: 'rgba(255,215,0,0.5)',
                       fontWeight: 600,
                       fontSize: { xs: '0.7rem', sm: '0.75rem' },
                       letterSpacing: 0.3,
                     }}
                   >
-                    OR CONTINUE WITH
+                    SOCIAL LOGIN COMING SOON
                   </Typography>
                 </Divider>
 
-                {/* Enhanced Mobile-Optimized Social Buttons */}
+                {/* Disabled Social Buttons with Coming Soon label */}
                 <Grid
                   container
                   spacing={{ xs: 2, sm: 1.5 }}
                   sx={{ width: '100%' }}
                 >
                   <Grid item xs={6}>
-                    <motion.div
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                    >
                       <Button
                         fullWidth
                         variant="outlined"
+                        disabled
                         startIcon={
                           <GoogleIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                         }
-                        onClick={async () => {
-                          if (!FEATURES.analytics) {
-                            // Gate social login behind a feature flag for now
-                            alert('Google login is temporarily disabled');
-                            return;
-                          }
-                          const apiBaseUrl = await getApiBaseUrl();
-                          window.location.href = `${apiBaseUrl}/api/auth/google`;
-                        }}
                         sx={{
                           py: { xs: 1.5, sm: 1.2 },
                           minHeight: { xs: '48px', sm: '42px' },
                           fontWeight: 600,
                           fontSize: { xs: '0.9rem', sm: '0.85rem' },
-                          background: 'rgba(255,255,255,0.95)',
-                          color: '#4285F4',
-                          borderColor: '#4285F4',
+                          background: 'rgba(255,255,255,0.3)',
+                          color: 'rgba(66,133,244,0.5)',
+                          borderColor: 'rgba(66,133,244,0.3)',
                           borderWidth: 1.5,
                           borderRadius: 1.5,
                           textTransform: 'none',
-                          '&:hover': {
-                            background: '#4285F4',
-                            color: '#fff',
-                            borderColor: '#4285F4',
-                            borderWidth: 1.5,
-                          },
+                          opacity: 0.6,
                         }}
                       >
                         Google
                       </Button>
-                    </motion.div>
                   </Grid>
                   <Grid item xs={6}>
-                    <motion.div
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                    >
                       <Button
                         fullWidth
                         variant="outlined"
+                        disabled
                         startIcon={
                           <LinkedInIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                         }
-                        onClick={async () => {
-                          if (!FEATURES.analytics) {
-                            alert('LinkedIn login is temporarily disabled');
-                            return;
-                          }
-                          const apiBaseUrl = await getApiBaseUrl();
-                          window.location.href = `${apiBaseUrl}/api/auth/linkedin`;
-                        }}
                         sx={{
                           py: { xs: 1.5, sm: 1.2 },
                           minHeight: { xs: '48px', sm: '42px' },
                           fontWeight: 600,
                           fontSize: { xs: '0.9rem', sm: '0.85rem' },
-                          background: 'rgba(255,255,255,0.95)',
-                          color: '#0077B5',
-                          borderColor: '#0077B5',
+                          background: 'rgba(255,255,255,0.3)',
+                          color: 'rgba(0,119,181,0.5)',
+                          borderColor: 'rgba(0,119,181,0.3)',
                           borderWidth: 1.5,
                           borderRadius: 1.5,
                           textTransform: 'none',
-                          '&:hover': {
-                            background: '#0077B5',
-                            color: '#fff',
-                            borderColor: '#0077B5',
-                            borderWidth: 1.5,
-                          },
+                          opacity: 0.6,
                         }}
                       >
                         LinkedIn
                       </Button>
-                    </motion.div>
                   </Grid>
                 </Grid>
               </Stack>

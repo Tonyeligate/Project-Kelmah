@@ -86,7 +86,7 @@ const ContractsPage = () => {
       const data = result?.contracts || result?.data || (Array.isArray(result) ? result : []);
       setContracts(data);
     } catch (err) {
-      console.error('Failed to load contracts:', err);
+      if (import.meta.env.DEV) console.error('Failed to load contracts:', err);
       setError('Unable to load contracts. Please try again.');
       setContracts([]);
     } finally {

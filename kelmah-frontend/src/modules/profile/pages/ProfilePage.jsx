@@ -138,7 +138,7 @@ const ProfilePage = () => {
       await updateProfile(formData);
       setEditing(false);
     } catch (error) {
-      console.error('Error updating profile:', error);
+      if (import.meta.env.DEV) console.error('Error updating profile:', error);
     }
   };
 

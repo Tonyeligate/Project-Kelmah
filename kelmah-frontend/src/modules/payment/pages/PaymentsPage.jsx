@@ -150,8 +150,8 @@ const PaymentsPage = () => {
               p: 3,
               textAlign: 'center',
               borderRadius: 2,
-              background: `linear-gradient(to right, #28313b, #485461, ${theme.palette.secondary.main})`,
-              color: 'white',
+              background: `linear-gradient(135deg, ${theme.palette.background.paper}, ${theme.palette.action.hover})`,
+              color: theme.palette.text.primary,
               border: '2px solid',
               borderColor: 'secondary.main',
               boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
@@ -228,7 +228,7 @@ const PaymentsPage = () => {
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
-                      sx={{ backgroundColor: 'grey.800', borderRadius: 1, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
+                      sx={{ backgroundColor: 'action.hover', borderRadius: 1, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
                     />
                     <TextField
                       variant="filled"
@@ -237,7 +237,7 @@ const PaymentsPage = () => {
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
-                      sx={{ backgroundColor: 'grey.800', borderRadius: 1, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
+                      sx={{ backgroundColor: 'action.hover', borderRadius: 1, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
                     />
                     <FormControl sx={{ minWidth: { xs: 0, sm: 140 }, flex: { xs: '1 1 100%', sm: '0 1 auto' } }}>
                       <InputLabel>Type</InputLabel>

@@ -23,7 +23,7 @@ const PortfolioPage = () => {
         setSelected(list[0] || null);
       })
       .catch((err) => {
-        console.error('Failed to load portfolio:', err);
+        if (import.meta.env.DEV) console.error('Failed to load portfolio:', err);
         setError('Failed to load portfolio items. Please try again.');
         setItems([]);
       })

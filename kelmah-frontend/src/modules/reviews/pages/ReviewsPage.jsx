@@ -143,7 +143,7 @@ const EnhancedReviewsPage = () => {
         setReviews(workerReviews?.reviews || []);
       }
     } catch (error) {
-      console.error('Failed to load reviews:', error);
+      if (import.meta.env.DEV) console.error('Failed to load reviews:', error);
       showFeedback('Failed to load reviews', 'error');
     } finally {
       setIsLoading(false);
@@ -250,7 +250,7 @@ const EnhancedReviewsPage = () => {
       setSelectedReview(null);
       showFeedback('Reply posted successfully!', 'success');
     } catch (error) {
-      console.error('Failed to post reply:', error);
+      if (import.meta.env.DEV) console.error('Failed to post reply:', error);
       showFeedback('Failed to post reply', 'error');
     }
   };
@@ -281,7 +281,7 @@ const EnhancedReviewsPage = () => {
 
       showFeedback('Thank you for your feedback!', 'success');
     } catch (error) {
-      console.error('Failed to vote:', error);
+      if (import.meta.env.DEV) console.error('Failed to vote:', error);
       showFeedback('Failed to record vote', 'error');
     }
   };

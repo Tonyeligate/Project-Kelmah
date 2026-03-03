@@ -242,7 +242,7 @@ const SkillsAssessmentPage = () => {
       );
       setAnalytics(analyticsSummary);
     } catch (err) {
-      console.error('Failed to load assessment data', err);
+      if (import.meta.env.DEV) console.error('Failed to load assessment data', err);
       setError('Failed to load assessment data. Showing sample insights.');
       setMySkills(fallbackNormalizedSkills);
       setAvailableTests(fallbackAvailableTests.map((test) => ({ ...test })));

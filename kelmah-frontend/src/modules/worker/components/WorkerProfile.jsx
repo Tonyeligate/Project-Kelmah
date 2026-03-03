@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 // Removed AuthContext import to prevent dual state management conflicts
 // import { useAuth } from '../../auth/hooks/useAuth';"
 import workerService from '../services/workerService';
@@ -48,6 +48,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  Snackbar,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -179,14 +180,6 @@ function WorkerProfile({ workerId: workerIdProp }) {
   const resolvedWorkerId =
     workerIdProp ?? routeParams?.workerId ?? authUser?.userId ?? null;
 
-  // Debug logging to trace worker ID resolution
-  console.log('[WorkerProfile] Render:', {
-    workerIdProp,
-    routeParamWorkerId: routeParams?.workerId,
-    resolvedWorkerId,
-    timestamp: new Date().toISOString()
-  });
-
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -207,13 +200,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tabValue, setTabValue] = useState(0);
-  const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [portfolioDialogOpen, setPortfolioDialogOpen] = useState(false);
   const [selectedPortfolioItem, setSelectedPortfolioItem] = useState(null);
   const [editingAvailability, setEditingAvailability] = useState(false);
   const [availabilityDraft, setAvailabilityDraft] = useState(null);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
 
   const isOwner =
     authUser?.userId && resolvedWorkerId
@@ -328,7 +320,6 @@ function WorkerProfile({ workerId: workerIdProp }) {
     }
 
     // Reset all state when navigating to a new worker profile
-    console.log('[WorkerProfile] useEffect triggered - resetting state and fetching for:', resolvedWorkerId);
     setLoading(true);
     setError(null);
     setProfile(null);
@@ -381,12 +372,17 @@ function WorkerProfile({ workerId: workerIdProp }) {
     if (!resolvedWorkerId) {
       return;
     }
+    const nextState = !isBookmarked;
     try {
-      setIsBookmarked((prev) => !prev);
+      setIsBookmarked(nextState);
       await workerService.bookmarkWorker(resolvedWorkerId);
+      setFeedbackMessage(
+        nextState ? 'Worker saved for later' : 'Worker removed from saved',
+      );
     } catch (_) {
       // revert on error
-      setIsBookmarked((prev) => !prev);
+      setIsBookmarked(!nextState);
+      setFeedbackMessage('Unable to update saved worker right now');
     }
   };
 
@@ -399,11 +395,18 @@ function WorkerProfile({ workerId: workerIdProp }) {
           url: window.location.href,
         });
       } catch (err) {
-        console.log('Error sharing:', err);
+        if (err?.name !== 'AbortError') {
+          setFeedbackMessage('Share was not completed. Try again.');
+        }
       }
     } else {
       // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        setFeedbackMessage('Profile link copied');
+      } catch {
+        setFeedbackMessage('Unable to copy link on this device');
+      }
     }
   };
 
@@ -919,6 +922,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                         <Button
                           variant="contained"
                           size="small"
+                          onClick={() => navigate('/payments')}
                           sx={{
                             backgroundColor: theme.palette.primary.main,
                             color: theme.palette.primary.contrastText,
@@ -1512,14 +1516,14 @@ function WorkerProfile({ workerId: workerIdProp }) {
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Breadcrumbs sx={{ mb: 3 }}>
-          <Link color="inherit" href="/" onClick={() => navigate('/')}>
+          <Link color="inherit" component={RouterLink} to="/">
             <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
             Home
           </Link>
           <Link
             color="inherit"
-            href="/hirer/find-talent"
-            onClick={() => navigate('/hirer/find-talent')} // ✅ FIXED: Use correct route
+            component={RouterLink}
+            to="/find-talents"
           >
             Find Talents
           </Link>
@@ -1639,6 +1643,14 @@ function WorkerProfile({ workerId: workerIdProp }) {
             />
           </SpeedDial>
         )}
+
+        <Snackbar
+          open={Boolean(feedbackMessage)}
+          autoHideDuration={2500}
+          onClose={() => setFeedbackMessage('')}
+          message={feedbackMessage}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        />
       </Container>
     </>
   );

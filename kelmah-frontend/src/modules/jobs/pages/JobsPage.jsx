@@ -601,11 +601,10 @@ const JobsPage = () => {
     location: 30,
   };
 
-  // Helper function to get category icon (using WorkIcon as universal fallback for now)
-  // Lazy-loaded icons are handled by JobResultsSection component
+  // Helper function to get category icon from the CATEGORY_ICON_MAP
   const getCategoryIcon = (category) => {
-    // Use WorkIcon as default to ensure fast first paint
-    return WorkIcon;
+    if (!category) return WorkIcon;
+    return CATEGORY_ICON_MAP[category] || WorkIcon;
   };
 
   // Reset page to 1 when any filter changes
@@ -1399,6 +1398,106 @@ const JobsPage = () => {
             </Box>
           </motion.div>
 
+          {/* Browse by Trade Category - Large visual icons for easy browsing */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+            {...motionProps}
+          >
+            <Box sx={{ mb: { xs: 3, md: 4 }, px: { xs: 0.5, sm: 0 } }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  color: '#D4AF37',
+                  fontWeight: 'bold',
+                  mb: { xs: 1.5, md: 2 },
+                  fontSize: { xs: '1.15rem', sm: '1.35rem', md: '1.5rem' },
+                  textAlign: { xs: 'center', md: 'left' },
+                }}
+              >
+                Browse by Trade
+              </Typography>
+              <Grid container spacing={{ xs: 1, sm: 1.5 }}>
+                {categoryData.map((cat) => {
+                  const isActive = selectedCategory === cat.name;
+                  return (
+                    <Grid item xs={3} sm={3} md={1.5} key={cat.name}>
+                      <Paper
+                        onClick={() => {
+                          if (isActive) {
+                            setSelectedCategory('');
+                          } else {
+                            setSelectedCategory(cat.name);
+                          }
+                          setPage(1);
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Browse ${cat.name} jobs`}
+                        aria-pressed={isActive}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setSelectedCategory(isActive ? '' : cat.name);
+                            setPage(1);
+                          }
+                        }}
+                        sx={{
+                          p: { xs: 1.5, sm: 2 },
+                          textAlign: 'center',
+                          cursor: 'pointer',
+                          bgcolor: isActive ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.03)',
+                          border: isActive ? '2px solid #D4AF37' : '1px solid rgba(212,175,55,0.15)',
+                          borderRadius: 2,
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            bgcolor: 'rgba(212,175,55,0.1)',
+                            border: '1px solid rgba(212,175,55,0.4)',
+                            transform: { xs: 'none', sm: 'translateY(-2px)' },
+                          },
+                          '&:active': { transform: 'scale(0.96)' },
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          minHeight: { xs: 72, sm: 80 },
+                          justifyContent: 'center',
+                        }}
+                        elevation={isActive ? 4 : 0}
+                      >
+                        <Box
+                          sx={{
+                            color: isActive ? '#FFD700' : cat.color,
+                            fontSize: { xs: 28, sm: 32 },
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'color 0.2s ease',
+                          }}
+                        >
+                          {cat.icon}
+                        </Box>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: isActive ? '#FFD700' : 'rgba(255,255,255,0.8)',
+                            fontWeight: isActive ? 700 : 500,
+                            fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                            lineHeight: 1.2,
+                            transition: 'color 0.2s ease',
+                          }}
+                        >
+                          {cat.name}
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            </Box>
+          </motion.div>
+
           {/* Enhanced Jobs Grid */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -1421,7 +1520,7 @@ const JobsPage = () => {
                   variant="h5"
                   sx={{ color: '#D4AF37', fontWeight: 'bold', mb: 1 }}
                 >
-                  Featured Opportunities
+                  {selectedCategory ? `${selectedCategory} Jobs` : 'Featured Opportunities'}
                 </Typography>
                 {hasActiveFilters && (
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -1504,7 +1603,7 @@ const JobsPage = () => {
               </Box>
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 <Chip
-                  label={`${uniqueJobs.length} Job${uniqueJobs.length !== 1 ? 's' : ''} Found`}
+                  label={`${totalJobs || uniqueJobs.length} Job${(totalJobs || uniqueJobs.length) !== 1 ? 's' : ''} Found`}
                   icon={<WorkIcon sx={{ fontSize: 18 }} />}
                   sx={{
                     bgcolor: 'rgba(212,175,55,0.2)',
@@ -2041,14 +2140,24 @@ const JobsPage = () => {
                                 variant="body2"
                                 sx={{ color: 'white' }}
                               >
-                                {job.rating || '4.5'} Rating •{' '}
+                                {job.rating ? `${job.rating} Rating` : 'New Listing'} •{' '}
                                 {job.proposalCount || 0} Applicants
                               </Typography>
                             </Box>
                           </Box>
                           <Typography
                             variant="body2"
-                            sx={{ mb: 2, color: 'rgba(255,255,255,0.8)' }}
+                            sx={{
+                              mb: 2,
+                              color: 'rgba(255,255,255,0.8)',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 3,
+                              WebkitBoxOrient: 'vertical',
+                              lineHeight: 1.5,
+                              fontSize: { xs: '0.85rem', sm: '0.875rem' },
+                            }}
                           >
                             {job.description}
                           </Typography>

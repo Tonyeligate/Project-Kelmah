@@ -310,7 +310,7 @@ const PremiumPage = () => {
       setOpenDialog(false);
     } catch (err) {
       // If payment API is unavailable, show confirmation anyway (subscription request logged)
-      console.warn('Payment API unavailable, recording upgrade request locally:', err.message);
+      if (import.meta.env.DEV) console.warn('Payment API unavailable, recording upgrade request locally:', err.message);
       setUpgradeSuccess(true);
       setOpenDialog(false);
     } finally {
@@ -479,10 +479,11 @@ const PremiumPage = () => {
             </Typography>{' '}
             plan. Your payment method will be charged{' '}
             <Typography component="span" fontWeight="bold">
-              $
-              {isYearly
+              GH₵
+              {(isYearly
                 ? plans.yearly[selectedPlan.toLowerCase()]
-                : plans.monthly[selectedPlan.toLowerCase()]}
+                : plans.monthly[selectedPlan.toLowerCase()]
+              )?.toLocaleString()}
             </Typography>
             .
           </Typography>

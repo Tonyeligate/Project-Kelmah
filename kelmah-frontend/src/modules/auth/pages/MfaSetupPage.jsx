@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AuthWrapper from '../components/common/AuthWrapper';
-import { Box, Typography, Button, TextField, Alert, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Typography, Button, TextField, Alert, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
 import { useAuth } from '../hooks/useAuth';
 
 const MfaSetupPage = () => {
@@ -84,7 +84,10 @@ const MfaSetupPage = () => {
             </Box>
           </>
         ) : (
-          <Typography sx={isMobile ? { color: 'text.secondary' } : {}}>Loading two-factor setup...</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, justifyContent: 'center' }}>
+            <CircularProgress size={24} sx={{ color: '#D4AF37' }} />
+            <Typography sx={isMobile ? { color: 'text.secondary' } : {}}>Setting up two-factor authentication...</Typography>
+          </Box>
         )}
       </Box>
   );

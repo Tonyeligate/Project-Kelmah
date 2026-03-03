@@ -59,6 +59,7 @@ import {
   StarBorder as StarBorderIcon,
   Close as CloseIcon,
   Refresh as RefreshIcon,
+  ChatBubbleOutline as ChatBubbleOutlineIcon,
 } from '@mui/icons-material';
 // ✅ MOBILE-AUDIT P3: framer-motion import removed — AnimatePresence/motion.div wrappers already replaced
 import ErrorBoundary from '../../../components/common/ErrorBoundary';
@@ -739,16 +740,17 @@ const EnhancedMessagingPage = () => {
 
         {filteredConversations.length === 0 && (
           <Box sx={{ p: 4, textAlign: 'center' }}>
+            <ChatBubbleOutlineIcon sx={{ fontSize: 56, color: 'text.disabled', mb: 1 }} />
             <Typography
               variant="h6"
               sx={{ color: 'text.disabled', mb: 1 }}
             >
-              No conversations found
+              {searchQuery ? 'No results' : 'No messages yet'}
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.disabled' }}>
               {searchQuery
-                ? 'Try adjusting your search'
-                : 'Start a new conversation'}
+                ? 'Try a different name or keyword'
+                : 'Your conversations will appear here'}
             </Typography>
           </Box>
         )}
@@ -916,37 +918,37 @@ const EnhancedMessagingPage = () => {
             </Box>
 
             <Stack direction="row" spacing={1}>
-              <Tooltip title="Voice call">
+              <Tooltip title="Voice call — Coming Soon">
+                <span>
                 <IconButton
-                  aria-label="Voice call"
+                  aria-label="Voice call — Coming Soon"
+                  disabled
                   sx={{
-                    color: 'text.secondary',
+                    color: 'text.disabled',
                     minWidth: 44,
                     minHeight: 44,
-                    '&:hover': {
-                      color: 'primary.main',
-                      background: alpha(theme.palette.primary.main, 0.1),
-                    },
+                    opacity: 0.5,
                   }}
                 >
                   <PhoneIcon />
                 </IconButton>
+                </span>
               </Tooltip>
-              <Tooltip title="Video call">
+              <Tooltip title="Video call — Coming Soon">
+                <span>
                 <IconButton
-                  aria-label="Video call"
+                  aria-label="Video call — Coming Soon"
+                  disabled
                   sx={{
-                    color: 'text.secondary',
+                    color: 'text.disabled',
                     minWidth: 44,
                     minHeight: 44,
-                    '&:hover': {
-                      color: 'primary.main',
-                      background: alpha(theme.palette.primary.main, 0.1),
-                    },
+                    opacity: 0.5,
                   }}
                 >
                   <VideoCallIcon />
                 </IconButton>
+                </span>
               </Tooltip>
               <Tooltip title="More options">
                 <IconButton
@@ -1404,7 +1406,7 @@ const EnhancedMessagingPage = () => {
                   severity="warning"
                   sx={{ mb: 2 }}
                 >
-                  {realtimeIssue || 'Live updates are reconnecting. Messages still load normally.'}
+                  {realtimeIssue || 'Reconnecting... You can still read and send messages.'}
                 </Alert>
               )}
               <TextField
@@ -1832,7 +1834,7 @@ const EnhancedMessagingPage = () => {
       >
         {(realtimeIssue || !isConnected) && (
           <Alert severity="warning" sx={{ mb: 2 }}>
-            {realtimeIssue || 'Live updates are reconnecting. You can still open conversations and send messages.'}
+            {realtimeIssue || 'Reconnecting... You can still read and send messages.'}
           </Alert>
         )}
         <Grid container spacing={2} sx={{ height: '100%' }}>
@@ -1864,33 +1866,37 @@ const EnhancedMessagingPage = () => {
           open={Boolean(moreMenuAnchor)}
           onClose={() => setMoreMenuAnchor(null)}
         >
-          <MenuItem onClick={() => setMoreMenuAnchor(null)}>
+          <MenuItem disabled sx={{ opacity: 0.6 }}>
             <ListItemIcon>
               <InfoIcon />
             </ListItemIcon>
             <ListItemText>Conversation Info</ListItemText>
+            <Typography variant="caption" sx={{ ml: 1, color: 'text.disabled' }}>Soon</Typography>
           </MenuItem>
-          <MenuItem onClick={() => setMoreMenuAnchor(null)}>
+          <MenuItem disabled sx={{ opacity: 0.6 }}>
             <ListItemIcon>
               <ArchiveIcon />
             </ListItemIcon>
             <ListItemText>Archive</ListItemText>
+            <Typography variant="caption" sx={{ ml: 1, color: 'text.disabled' }}>Soon</Typography>
           </MenuItem>
-          <MenuItem onClick={() => setMoreMenuAnchor(null)}>
+          <MenuItem disabled sx={{ opacity: 0.6 }}>
             <ListItemIcon>
               <BlockIcon />
             </ListItemIcon>
             <ListItemText>Block User</ListItemText>
+            <Typography variant="caption" sx={{ ml: 1, color: 'text.disabled' }}>Soon</Typography>
           </MenuItem>
           <Divider />
           <MenuItem
-            onClick={() => setMoreMenuAnchor(null)}
-            sx={{ color: 'error.main' }}
+            disabled
+            sx={{ opacity: 0.6 }}
           >
             <ListItemIcon>
-              <DeleteIcon sx={{ color: 'error.main' }} />
+              <DeleteIcon sx={{ color: 'text.disabled' }} />
             </ListItemIcon>
-            <ListItemText>Delete Conversation</ListItemText>
+            <ListItemText>Delete</ListItemText>
+            <Typography variant="caption" sx={{ ml: 1, color: 'text.disabled' }}>Soon</Typography>
           </MenuItem>
         </Menu>
 
@@ -1908,51 +1914,21 @@ const EnhancedMessagingPage = () => {
             },
           }}
         >
-          <DialogTitle sx={{ color: 'primary.main' }}>
-            Start New Conversation
+          <DialogTitle sx={{ color: '#D4AF37' }}>
+            New Conversation
           </DialogTitle>
           <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Search users..."
-              fullWidth
-              variant="outlined"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: alpha(theme.palette.background.default, 0.5),
-                  '& fieldset': {
-                    borderColor: theme.palette.divider,
-                  },
-                  '&:hover fieldset': {
-                    borderColor: alpha(theme.palette.primary.main, 0.5),
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: theme.palette.primary.main,
-                  },
-                },
-                '& .MuiInputBase-input': {
-                  color: 'text.primary',
-                },
-                '& .MuiInputLabel-root': {
-                  color: 'text.secondary',
-                },
-              }}
-            />
+            <Alert severity="info" sx={{ mt: 1 }}>
+              This feature is coming soon. For now, you can message workers directly from their profile or a job listing.
+            </Alert>
           </DialogContent>
           <DialogActions>
             <Button
               onClick={() => setNewChatDialog(false)}
-              sx={{ color: 'text.secondary' }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => setNewChatDialog(false)}
               variant="contained"
-              color="primary"
+              sx={{ bgcolor: '#D4AF37', color: '#000', '&:hover': { bgcolor: '#C5A028' } }}
             >
-              Start Chat
+              OK
             </Button>
           </DialogActions>
         </Dialog>

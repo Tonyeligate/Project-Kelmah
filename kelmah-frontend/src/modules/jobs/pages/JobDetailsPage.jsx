@@ -166,13 +166,18 @@ const JobDetailsPage = () => {
   useEffect(() => {
     // Validate jobId before fetching
     if (!id || id === 'undefined' || id === 'null') {
-      console.error('❌ Invalid job ID:', id);
+      if (import.meta.env.DEV) console.error('❌ Invalid job ID:', id);
       return;
     }
 
     // Fetch job details (public endpoint — no auth required for viewing)
     dispatch(fetchJobById(id));
   }, [dispatch, id]);
+
+  useEffect(() => {
+    if (!job) return;
+    setSaved(Boolean(job?.isSaved || job?.saved || job?.isBookmarked));
+  }, [job]);
 
   // Debug logging (dev only)
   useEffect(() => {
@@ -205,7 +210,16 @@ const JobDetailsPage = () => {
 
   const handleMessageHirer = () => {
     if (!job) return;
-    navigate(`/messages?recipient=${job.hirer?._id || job.hirer?.id}`);
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location.pathname } });
+      return;
+    }
+    const recipientId = job.hirer?._id || job.hirer?.id;
+    if (!recipientId) {
+      setShareSnackbar('Hirer contact is not available yet');
+      return;
+    }
+    navigate(`/messages?recipient=${recipientId}`);
   };
 
   const handleToggleSave = async () => {
@@ -219,12 +233,15 @@ const JobDetailsPage = () => {
       if (saved) {
         await jobsApi.unsaveJob(id);
         setSaved(false);
+        setShareSnackbar('Removed from saved jobs');
       } else {
         await jobsApi.saveJob(id);
         setSaved(true);
+        setShareSnackbar('Job saved successfully');
       }
     } catch (err) {
-      console.error('Failed to toggle bookmark:', err);
+      if (import.meta.env.DEV) console.error('Failed to toggle bookmark:', err);
+      setShareSnackbar('Could not update saved jobs. Try again.');
     } finally {
       setSavingBookmark(false);
     }
@@ -394,27 +411,6 @@ const JobDetailsPage = () => {
               <DetailsPaper elevation={3}>
                 {/* Job Header */}
                 <Box sx={{ mb: 3 }}>
-                  {/* Embedded Map for Job Location — hidden on mobile, shown after description */}
-                  <Box
-                    sx={{
-                      width: '100%',
-                      height: { xs: 200, sm: 250, md: 300 },
-                      mb: 3,
-                      borderRadius: 2,
-                      overflow: 'hidden',
-                      display: { xs: 'none', sm: 'block' },
-                    }}
-                  >
-                    <iframe
-                      title="Job Location"
-                      src={`${EXTERNAL_SERVICES.GOOGLE_MAPS.EMBED}?q=${encodeURIComponent(locationLabel || 'Ghana')}&output=embed`}
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      allowFullScreen
-                      loading="lazy"
-                    />
-                  </Box>
                   <Typography
                     variant="h3"
                     component="h1"
@@ -488,6 +484,28 @@ const JobDetailsPage = () => {
                       fontWeight: 'bold',
                     }}
                   />
+
+                  {/* Embedded Map for Job Location - shown after key job context */}
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: { xs: 200, sm: 250, md: 300 },
+                      mt: 3,
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                      display: { xs: 'none', sm: 'block' },
+                    }}
+                  >
+                    <iframe
+                      title="Job Location"
+                      src={`${EXTERNAL_SERVICES.GOOGLE_MAPS.EMBED}?q=${encodeURIComponent(locationLabel || 'Ghana')}&output=embed`}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                    />
+                  </Box>
                 </Box>
 
                 <Divider
@@ -614,6 +632,7 @@ const JobDetailsPage = () => {
                     startIcon={<Message />}
                     sx={{ mr: 2, mt: 2 }}
                     onClick={handleMessageHirer}
+                    disabled={!job?.hirer?._id && !job?.hirer?.id}
                   >
                     Message Hirer
                   </Button>
@@ -708,6 +727,7 @@ const JobDetailsPage = () => {
                 <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
                   <IconButton
                     onClick={handleToggleSave}
+                    disabled={savingBookmark}
                     sx={{
                       color: saved ? '#FFD700' : 'rgba(255, 255, 255, 0.7)',
                       '&:hover': {
@@ -746,9 +766,14 @@ const JobDetailsPage = () => {
                 </Typography>
 
                 <ProfileLink
-                  onClick={() =>
-                    navigate(`/profile/${job.hirer?._id || job.hirer?.id}`)
-                  }
+                  onClick={() => {
+                    const hirerId = job.hirer?._id || job.hirer?.id;
+                    if (!hirerId) {
+                      setShareSnackbar('Client profile is not available yet');
+                      return;
+                    }
+                    navigate(`/profile/${hirerId}`);
+                  }}
                 >
                   <Avatar
                     src={job.hirer?.avatar || job.hirer?.profilePicture}

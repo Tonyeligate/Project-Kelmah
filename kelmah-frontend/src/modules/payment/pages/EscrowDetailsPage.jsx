@@ -63,8 +63,8 @@ const EscrowDetailsPage = () => {
         sx={{
           p: { xs: 2, sm: 4 },
           borderRadius: 2,
-          background: 'linear-gradient(to right, #28313b, #485461, #ffd700)',
-          color: 'white',
+          background: (theme) => `linear-gradient(135deg, ${theme.palette.background.paper}, ${theme.palette.action.hover})`,
+          color: 'text.primary',
           border: '2px solid',
           borderColor: 'secondary.main',
           boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
@@ -137,7 +137,7 @@ const EscrowDetailsPage = () => {
         }}
         PaperProps={{
           sx: {
-            bgcolor: 'grey.900',
+            bgcolor: 'background.paper',
             color: 'text.primary',
             borderRadius: 2,
             border: '2px solid',
@@ -170,7 +170,7 @@ const EscrowDetailsPage = () => {
               onChange={(e) => setSelectedMethod(e.target.value)}
               inputProps={{ disableUnderline: true }}
               sx={{
-                bgcolor: 'grey.800',
+                bgcolor: 'action.hover',
                 borderRadius: 1,
                 p: '8px 12px',
                 color: 'text.primary',
@@ -209,7 +209,7 @@ const EscrowDetailsPage = () => {
                 showToast('Funds released successfully.', 'success');
                 await refresh();
               } catch (err) {
-                console.error('Release failed:', err);
+                if (import.meta.env.DEV) console.error('Release failed:', err);
                 showToast('Failed to release funds.', 'error');
               } finally {
                 setOpenRelease(false);

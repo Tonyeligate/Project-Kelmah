@@ -51,7 +51,7 @@ export const fetchHirerJobs = createAsyncThunk(
     try {
       // Map frontend status to database canonical status
       const dbStatus = STATUS_MAP[status] || status;
-      const params = { role: 'hirer' };
+      const params = { role: 'hirer', limit: 100 };
       if (dbStatus) {
         params.status = dbStatus;
       }

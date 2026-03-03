@@ -236,13 +236,6 @@ const MyApplicationsPage = () => {
               My Applications
             </Typography>
           </Box>
-          <IconButton
-            aria-label="Filter applications"
-            color="primary"
-            sx={{ minWidth: 44, minHeight: 44 }}
-          >
-            <FilterListIcon sx={{ fontSize: 20 }} />
-          </IconButton>
         </Box>
 
         {/* Status Tabs */}

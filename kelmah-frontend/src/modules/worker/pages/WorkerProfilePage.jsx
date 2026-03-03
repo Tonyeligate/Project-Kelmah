@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
-import { Container, Box } from '@mui/material';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { Container, Box, Typography, Button } from '@mui/material';
+import { PersonSearch as PersonSearchIcon } from '@mui/icons-material';
 import { Helmet } from 'react-helmet-async';
 import WorkerProfile from '../components/WorkerProfile';
 
@@ -15,15 +16,31 @@ import WorkerProfile from '../components/WorkerProfile';
 const WorkerProfilePage = () => {
   const { workerId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Scroll to top when workerId changes (new profile navigation)
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [workerId, location.pathname]);
 
-  // Early return if no workerId
+  // Show helpful message if no workerId
   if (!workerId) {
-    return null;
+    return (
+      <Box sx={{ p: 4, textAlign: 'center', minHeight: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <PersonSearchIcon sx={{ fontSize: 64, color: '#D4AF37', mb: 2 }} />
+        <Typography variant="h6" gutterBottom>Worker profile not found</Typography>
+        <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+          The worker you&apos;re looking for may have moved.
+        </Typography>
+        <Button
+          variant="contained"
+          onClick={() => navigate('/search')}
+          sx={{ bgcolor: '#D4AF37', color: '#000', '&:hover': { bgcolor: '#B8941F' } }}
+        >
+          Find Workers
+        </Button>
+      </Box>
+    );
   }
 
   return (

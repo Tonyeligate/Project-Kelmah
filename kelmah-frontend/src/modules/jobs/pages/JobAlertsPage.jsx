@@ -20,7 +20,7 @@ import SavedSearches from '../../search/components/SavedSearches';
 const Section = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
   borderRadius: theme.shape.borderRadius * 2,
-  border: '1px solid rgba(255,255,255,0.08)',
+  border: `1px solid ${theme.palette.divider}`,
 }));
 
 const JobAlertsPage = () => {

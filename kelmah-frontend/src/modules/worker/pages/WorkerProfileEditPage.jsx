@@ -216,7 +216,7 @@ const WorkerProfileEditPage = () => {
         setImagePreview(profile.profileImageUrl);
       })
       .catch((err) => {
-        console.error('Error loading profile:', err);
+        if (import.meta.env.DEV) console.error('Error loading profile:', err);
         setSnackbar({
           open: true,
           message: 'Failed to load profile. Please try again.',
@@ -437,7 +437,7 @@ const WorkerProfileEditPage = () => {
         navigate('/worker/profile');
       }, 2000);
     } catch (err) {
-      console.error('Error updating profile:', err);
+      if (import.meta.env.DEV) console.error('Error updating profile:', err);
       setSnackbar({
         open: true,
         message: 'Failed to update profile. Please try again.',

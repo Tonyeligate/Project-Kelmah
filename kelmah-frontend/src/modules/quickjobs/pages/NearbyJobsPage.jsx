@@ -238,7 +238,7 @@ const NearbyJobsPage = () => {
       {location && (
         <Chip
           icon={<MyLocationIcon />}
-          label={`Location: ${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`}
+          label="Using your current location"
           variant="outlined"
           size="small"
           sx={{ mb: 2 }}

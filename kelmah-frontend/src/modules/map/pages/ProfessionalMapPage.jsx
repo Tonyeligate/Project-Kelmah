@@ -172,7 +172,7 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                   {isJob ? item.title : item.name}
                 </Typography>
                 {item.verified && (
-                  <VerifiedIcon sx={{ fontSize: 16, color: '#4CAF50' }} />
+                  <VerifiedIcon sx={{ fontSize: 16, color: 'success.main' }} />
                 )}
                 {item.urgent && (
                   <Chip
@@ -181,7 +181,7 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                     sx={{
                       height: 18,
                       fontSize: '0.6rem',
-                      bgcolor: '#FF5722',
+                      bgcolor: 'error.main',
                       color: '#fff',
                       fontWeight: 'bold',
                     }}
@@ -206,7 +206,7 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                   <>
                     {item.rating > 0 && (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
-                        <StarIcon sx={{ fontSize: 14, color: '#FF9800' }} />
+                        <StarIcon sx={{ fontSize: 14, color: 'warning.main' }} />
                         <Typography variant="caption" fontWeight="bold">
                           {item.rating.toFixed(1)}
                         </Typography>
@@ -224,8 +224,8 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                         sx={{
                           height: 18,
                           fontSize: '0.6rem',
-                          bgcolor: '#4CAF5022',
-                          color: '#4CAF50',
+                          bgcolor: 'success.light',
+                          color: 'success.main',
                           fontWeight: 'bold',
                         }}
                       />
@@ -246,8 +246,8 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                   sx={{
                     bgcolor: theme.palette.primary.main + '15',
                     color: theme.palette.primary.main,
-                    width: 32,
-                    height: 32,
+                    width: 44,
+                    height: 44,
                   }}
                 >
                   <NavigationIcon sx={{ fontSize: 16 }} />
@@ -263,8 +263,8 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                   sx={{
                     bgcolor: theme.palette.secondary.main + '15',
                     color: theme.palette.secondary.main,
-                    width: 32,
-                    height: 32,
+                    width: 44,
+                    height: 44,
                   }}
                 >
                   <ChatIcon sx={{ fontSize: 16 }} />

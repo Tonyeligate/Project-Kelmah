@@ -285,6 +285,7 @@ const SchedulingPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState('create');
   const [currentAppointment, setCurrentAppointment] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [formData, setFormData] = useState({
     jobId: '',
     jobTitle: '',
@@ -334,7 +335,7 @@ const SchedulingPage = () => {
       const appointmentsArray = Array.isArray(data) ? data : [];
       setAppointments(appointmentsArray);
     } catch (err) {
-      console.error('Error loading appointments:', err);
+      if (import.meta.env.DEV) console.error('Error loading appointments:', err);
       setError('Failed to load appointments');
       setAppointments([]); // Set empty array as fallback
       enqueueSnackbar('Failed to load appointments', { variant: 'error' });
@@ -352,7 +353,7 @@ const SchedulingPage = () => {
       const jobsArray = Array.isArray(response?.jobs) ? response.jobs : [];
       setJobs(jobsArray);
     } catch (err) {
-      console.error('Error loading jobs:', err);
+      if (import.meta.env.DEV) console.error('Error loading jobs:', err);
       setJobs([]); // Set empty array as fallback
     } finally {
       setLoadingJobs(false);
@@ -418,7 +419,7 @@ const SchedulingPage = () => {
         setUsers([]);
       }
     } catch (err) {
-      console.error('Error loading users:', err);
+      if (import.meta.env.DEV) console.error('Error loading users:', err);
       // Set empty array as fallback
       setUsers([]);
     } finally {
@@ -532,23 +533,28 @@ const SchedulingPage = () => {
       handleCloseDialog();
       loadAppointments();
     } catch (err) {
-      console.error('Error saving appointment:', err);
+      if (import.meta.env.DEV) console.error('Error saving appointment:', err);
       enqueueSnackbar('Error saving appointment', { variant: 'error' });
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Delete this appointment?')) {
-      try {
-        await schedulingService.deleteAppointment(id);
-        enqueueSnackbar('Appointment deleted successfully', {
-          variant: 'success',
-        });
-        loadAppointments();
-      } catch (err) {
-        console.error('Error deleting appointment:', err);
-        enqueueSnackbar('Error deleting appointment', { variant: 'error' });
-      }
+    setDeleteTarget(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await schedulingService.deleteAppointment(deleteTarget);
+      enqueueSnackbar('Appointment deleted successfully', {
+        variant: 'success',
+      });
+      loadAppointments();
+    } catch (err) {
+      if (import.meta.env.DEV) console.error('Error deleting appointment:', err);
+      enqueueSnackbar('Error deleting appointment', { variant: 'error' });
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -893,6 +899,27 @@ const SchedulingPage = () => {
             mode={dialogMode}
           />
         </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+      >
+        <DialogTitle>Delete Appointment?</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this appointment? This cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteTarget(null)}>
+            Cancel
+          </Button>
+          <Button onClick={confirmDelete} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
       </Dialog>
     </Container>
   );

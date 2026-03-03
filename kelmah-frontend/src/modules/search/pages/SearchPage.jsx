@@ -8,6 +8,11 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
+import {
+  FilterList as FilterListIcon,
+  Map as MapIcon,
+  Lightbulb as LightbulbIcon,
+} from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { api } from '../../../services/apiClient';
@@ -303,9 +308,6 @@ const SearchPage = () => {
       const apiEndpoint = '/workers';
       const apiParams = buildWorkerQueryParams(params);
 
-      console.log('🔍 executeWorkerSearch - params:', params);
-      console.log('🔍 executeWorkerSearch - query:', apiParams);
-
       setLoading(true);
       setError(null);
 
@@ -314,7 +316,6 @@ const SearchPage = () => {
           params: apiParams,
           signal: controller.signal,
         });
-        console.log('🔍 API response:', response.data);
 
         if (!response.data || !response.data.success) {
           const message =
@@ -595,7 +596,6 @@ const SearchPage = () => {
 
   // Handle sort order change
   const handleSortChange = (newSortOrder) => {
-    console.log('🔄 Sort changed to:', newSortOrder);
     setSortOrder(newSortOrder);
 
     // ✅ FIX: Preserve all search params when sorting
@@ -613,12 +613,6 @@ const SearchPage = () => {
 
   // Helper function to perform search with explicit sort order
   const performSearchWithSort = async (params, sort) => {
-    console.log(
-      '🔍 performSearchWithSort called with params:',
-      params,
-      'sort:',
-      sort,
-    );
     await executeWorkerSearch(params, { sortOption: sort });
   };
 
@@ -717,8 +711,8 @@ const SearchPage = () => {
   return (
     <PageWrapper>
       <SEO
-        title="Job Search | Find Your Perfect Match"
-        description="Search for jobs by location, skills, experience level, and more. Find your perfect match with our advanced job search tools."
+        title="Find Skilled Workers | Kelmah"
+        description="Search for skilled workers by location, skills, experience level, and more. Find carpenters, plumbers, electricians, and other professionals in Ghana."
       />
 
       <Container maxWidth="lg" sx={{ pt: 0 }}>
@@ -750,6 +744,7 @@ const SearchPage = () => {
             <Button
               variant={showAdvancedFilters ? 'contained' : 'outlined'}
               size="small"
+              startIcon={<FilterListIcon />}
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
               sx={{ minWidth: 'auto', px: 2 }}
             >
@@ -758,6 +753,7 @@ const SearchPage = () => {
             <Button
               variant={showLocationSearch ? 'contained' : 'outlined'}
               size="small"
+              startIcon={<MapIcon />}
               onClick={() => setShowLocationSearch(!showLocationSearch)}
               sx={{ minWidth: 'auto', px: 2 }}
             >
@@ -766,6 +762,7 @@ const SearchPage = () => {
             <Button
               variant={showRecommendations ? 'contained' : 'outlined'}
               size="small"
+              startIcon={<LightbulbIcon />}
               onClick={() => setShowRecommendations(!showRecommendations)}
               sx={{ minWidth: 'auto', px: 2 }}
             >
@@ -898,13 +895,6 @@ const SearchPage = () => {
               />
             </Grid>
           </Grid>
-        )}
-
-        {/* Error Alert */}
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
-          </Alert>
         )}
 
         {/* Map View (Full Width) - Only for authenticated hirers */}

@@ -31,6 +31,7 @@ import {
   Stack,
   Tab,
   Divider,
+  Tooltip,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -178,9 +179,9 @@ const SkillsAssessmentManagement = () => {
                     {test.questions?.length || 0} questions
                   </Typography>
                   <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
-                    <IconButton size="small"><ViewIcon /></IconButton>
-                    <IconButton size="small"><EditIcon /></IconButton>
-                    <IconButton size="small" color="error"><DeleteIcon /></IconButton>
+                    <Tooltip title="Coming Soon"><span><IconButton size="small" disabled><ViewIcon /></IconButton></span></Tooltip>
+                    <Tooltip title="Coming Soon"><span><IconButton size="small" disabled><EditIcon /></IconButton></span></Tooltip>
+                    <Tooltip title="Coming Soon"><span><IconButton size="small" disabled><DeleteIcon /></IconButton></span></Tooltip>
                   </Stack>
                 </Stack>
               )}
@@ -224,15 +225,15 @@ const SkillsAssessmentManagement = () => {
                           />
                         </TableCell>
                         <TableCell align="center">
-                          <IconButton size="small">
+                          <Tooltip title="Coming Soon"><span><IconButton size="small" disabled>
                             <ViewIcon />
-                          </IconButton>
-                          <IconButton size="small">
+                          </IconButton></span></Tooltip>
+                          <Tooltip title="Coming Soon"><span><IconButton size="small" disabled>
                             <EditIcon />
-                          </IconButton>
-                          <IconButton size="small" color="error">
+                          </IconButton></span></Tooltip>
+                          <Tooltip title="Coming Soon"><span><IconButton size="small" disabled>
                             <DeleteIcon />
-                          </IconButton>
+                          </IconButton></span></Tooltip>
                         </TableCell>
                       </TableRow>
                     ))

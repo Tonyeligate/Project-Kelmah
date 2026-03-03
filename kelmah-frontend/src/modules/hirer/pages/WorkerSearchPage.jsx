@@ -62,6 +62,7 @@ const WorkerSearchPage = () => {
           sx={(theme) => ({
             textAlign: 'center',
             fontWeight: 'bold',
+            color: theme.palette.primary.main,
             background: `linear-gradient(45deg, ${theme.palette.primary.dark} 30%, ${theme.palette.primary.main} 90%)`,
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',

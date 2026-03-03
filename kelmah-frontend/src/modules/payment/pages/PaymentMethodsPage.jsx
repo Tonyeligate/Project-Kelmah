@@ -254,7 +254,7 @@ const PaymentMethodsPage = () => {
         }}
       >
         <Typography variant="h4" sx={{ color: 'secondary.main' }}>
-          Methods
+          Payment Methods
         </Typography>
         <Box>
           <Tooltip title="Add credit card">

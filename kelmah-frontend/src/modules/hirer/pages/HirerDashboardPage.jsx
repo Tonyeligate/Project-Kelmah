@@ -693,7 +693,7 @@ const HirerDashboardPage = () => {
               }}
             >
               <Typography variant="h6" fontWeight={600} sx={{ mb: { xs: 1.5, sm: 3 }, color: 'text.primary', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-                Spending Overview
+                Jobs Overview
               </Typography>
               {/* Recharts BarChart replacing manual Box bars */}
               <Box sx={{ height: 250, width: '100%' }}>
@@ -724,8 +724,8 @@ const HirerDashboardPage = () => {
                       />
                       <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                         {[
-                          { name: 'Completed', fill: '#1ABC9C' },
-                          { name: 'Active', fill: '#F39C12' },
+                          { name: 'Completed', fill: '#4CAF50' },
+                          { name: 'Active', fill: '#D4AF37' },
                         ].map((entry, index) => (
                           <RechartsCell key={`bar-${index}`} fill={entry.fill} />
                         ))}
@@ -864,13 +864,13 @@ const HirerDashboardPage = () => {
             gap: 3,
           }}
         >
-          <CircularProgress sx={{ color: 'secondary.main' }} />
+          <CircularProgress sx={{ color: '#D4AF37' }} />
           <Box textAlign="center">
             <Typography variant="h6" color="text.primary" gutterBottom>
-              Fetching your jobs, applications, and recent activity...
+              Loading your dashboard...
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              This usually takes about 2-3 seconds.
+              Just a moment.
             </Typography>
           </Box>
           <Box sx={{ width: '100%' }}>

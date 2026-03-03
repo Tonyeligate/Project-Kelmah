@@ -145,8 +145,8 @@ const BillPage = () => {
         sx={{
           p: { xs: 2, sm: 4 },
           borderRadius: 2,
-          background: 'linear-gradient(to right, #28313b, #485461, #ffd700)',
-          color: 'white',
+          background: (theme) => `linear-gradient(135deg, ${theme.palette.background.paper}, ${theme.palette.action.hover})`,
+          color: 'text.primary',
           border: '2px solid',
           borderColor: 'secondary.main',
         }}
@@ -319,7 +319,7 @@ const BillPage = () => {
           }}
           PaperProps={{
             sx: {
-              bgcolor: 'grey.900',
+              bgcolor: 'background.paper',
               color: 'text.primary',
               borderRadius: 2,
               border: '2px solid',

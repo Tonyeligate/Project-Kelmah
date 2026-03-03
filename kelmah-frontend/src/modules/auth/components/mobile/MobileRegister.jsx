@@ -131,42 +131,42 @@ const MobileRegister = () => {
     const newErrors = {};
 
     if (step === 1) {
-      if (!formData.role) newErrors.role = 'Please select account type';
+      if (!formData.role) newErrors.role = 'Please pick: Worker or Hirer';
     }
 
     if (step === 2) {
-      if (!formData.firstName.trim()) newErrors.firstName = 'Required';
-      if (!formData.lastName.trim()) newErrors.lastName = 'Required';
+      if (!formData.firstName.trim()) newErrors.firstName = 'Enter your first name';
+      if (!formData.lastName.trim()) newErrors.lastName = 'Enter your last name';
       if (!formData.email.trim()) {
-        newErrors.email = 'Required';
+        newErrors.email = 'Enter your email';
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-        newErrors.email = 'Invalid email';
+        newErrors.email = 'This email does not look right';
       }
       if (!formData.phone.trim()) {
-        newErrors.phone = 'Required';
+        newErrors.phone = 'Enter your phone number';
       } else if (!validateGhanaPhone(formData.phone)) {
-        newErrors.phone = 'Invalid Ghana number';
+        newErrors.phone = 'Use a valid Ghana number (e.g. 024 XXX XXXX)';
       }
       if (formData.role === 'hirer' && !formData.companyName.trim()) {
-        newErrors.companyName = 'Required';
+        newErrors.companyName = 'Enter your company or business name';
       }
       if (formData.role === 'worker' && formData.trades.length === 0) {
-        newErrors.trades = 'Select at least one';
+        newErrors.trades = 'Pick at least one trade you do';
       }
     }
 
     if (step === 3) {
       if (!formData.password) {
-        newErrors.password = 'Required';
+        newErrors.password = 'Create a password';
       } else if (formData.password.length < 8) {
-        newErrors.password = 'Min 8 characters';
+        newErrors.password = 'Password must be at least 8 characters';
       } else if (passwordStrength < 3) {
-        newErrors.password = 'Too weak';
+        newErrors.password = 'Password is too easy to guess — add numbers or symbols';
       }
       if (!formData.confirmPassword) {
-        newErrors.confirmPassword = 'Required';
+        newErrors.confirmPassword = 'Type your password again';
       } else if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = 'Passwords don\'t match';
+        newErrors.confirmPassword = 'Passwords do not match — try again';
       }
       if (!formData.acceptTerms) {
         newErrors.acceptTerms = 'Must accept terms';

@@ -79,9 +79,9 @@ const LoadingTimeoutWarning = ({ onRefresh }) => (
       </Button>
     }
   >
-    <AlertTitle>Loading Taking Longer Than Expected</AlertTitle>
+    <AlertTitle>Slow Connection</AlertTitle>
     <Typography variant="body2">
-      The server might be warming up. Please wait or try refreshing.
+      Loading is taking a bit longer. Please wait or tap Refresh.
     </Typography>
   </Alert>
 );
@@ -404,7 +404,7 @@ const WorkerDashboardPage = () => {
           {retryCount >= MAX_RETRIES ? 'Unable to Load Dashboard' : 'Loading Issue Detected'}
         </AlertTitle>
         <Typography variant="body2" sx={{ mb: 1 }}>
-          {error || 'Failed to fetch worker applications'}
+          {error || 'Could not load your dashboard. Please try again.'}
         </Typography>
         {retryCount < MAX_RETRIES && (
           <Typography variant="caption" color="text.secondary">

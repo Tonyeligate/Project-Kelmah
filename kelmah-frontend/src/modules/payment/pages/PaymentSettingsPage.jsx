@@ -89,8 +89,8 @@ const PaymentSettingsPage = () => {
         sx={(theme) => ({
           p: { xs: 2, sm: 4 },
           borderRadius: 2,
-          background: `linear-gradient(to right, #28313b, #485461, ${theme.palette.secondary.main})`,
-          color: 'white',
+          background: `linear-gradient(135deg, ${theme.palette.background.paper}, ${theme.palette.action.hover})`,
+          color: theme.palette.text.primary,
           border: '2px solid',
           borderColor: 'secondary.main',
         })}

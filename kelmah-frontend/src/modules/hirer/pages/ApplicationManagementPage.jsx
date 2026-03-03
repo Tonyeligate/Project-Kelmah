@@ -237,7 +237,7 @@ function ApplicationManagementPage() {
 
       setError('Unable to start chat. Please try again later.');
     } catch (err) {
-      console.error('Error creating direct conversation:', err);
+      if (import.meta.env.DEV) console.error('Error creating direct conversation:', err);
       setError('Unable to start chat. Please try again later.');
     }
   };

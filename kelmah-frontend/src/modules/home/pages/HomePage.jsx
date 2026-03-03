@@ -210,7 +210,7 @@ const HeroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45 }}
           >
-            {/* H1 — hero headline */}
+            {/* H1 — hero headline with gold accent */}
             <Typography
               variant="h2"
               component="h1"
@@ -223,7 +223,15 @@ const HeroSection = () => {
               }}
             >
               Find skilled workers{' '}
-              <Box component="span" sx={{ color: 'primary.main' }}>
+              <Box
+                component="span"
+                sx={{
+                  background: 'linear-gradient(45deg, #D4AF37 30%, #FFD700 90%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
                 you can trust
               </Box>
             </Typography>
@@ -282,10 +290,30 @@ const HeroSection = () => {
               justifyContent="center"
               sx={{ mb: 4 }}
             >
-              <Button variant="contained" size="large" onClick={() => navigate('/search')} sx={BTN_SX}>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => navigate('/search')}
+                sx={{
+                  ...BTN_SX,
+                  bgcolor: '#D4AF37',
+                  color: '#000',
+                  '&:hover': { bgcolor: '#B8941F' },
+                }}
+              >
                 Find Talent
               </Button>
-              <Button variant="outlined" size="large" onClick={() => navigate('/jobs')} sx={BTN_SX}>
+              <Button
+                variant="outlined"
+                size="large"
+                onClick={() => navigate('/jobs')}
+                sx={{
+                  ...BTN_SX,
+                  borderColor: '#D4AF37',
+                  color: '#D4AF37',
+                  '&:hover': { borderColor: '#B8941F', bgcolor: 'rgba(212,175,55,0.08)' },
+                }}
+              >
                 Browse Jobs
               </Button>
             </Stack>
@@ -361,13 +389,13 @@ const CategoriesSection = () => {
               >
                 <Avatar
                   sx={{
-                    width: 48,
-                    height: 48,
+                    width: { xs: 56, sm: 64 },
+                    height: { xs: 56, sm: 64 },
                     mx: 'auto',
                     mb: 1.5,
-                    bgcolor: alpha(cat.color, 0.1),
+                    bgcolor: alpha(cat.color, 0.12),
                     color: cat.color,
-                    '& svg': { fontSize: 24 },
+                    '& svg': { fontSize: { xs: 28, sm: 32 } },
                   }}
                 >
                   {cat.icon}
@@ -429,8 +457,8 @@ const HowItWorksSection = () => {
       <Reveal>
         <Stack direction="row" spacing={1} sx={{ mb: { xs: 4, md: 6 } }}>
           {[
-            { key: 'hiring', label: 'I want to hire' },
-            { key: 'working', label: 'I want to work' },
+            { key: 'hiring', label: 'I want to hire', icon: <FindTalentIcon sx={{ mr: 0.5, fontSize: 18 }} /> },
+            { key: 'working', label: 'I want to work', icon: <WorkIcon sx={{ mr: 0.5, fontSize: 18 }} /> },
           ].map((t) => (
             <Button
               key={t.key}
@@ -438,16 +466,18 @@ const HowItWorksSection = () => {
               onClick={() => setTab(t.key)}
               size="small"
               sx={{
-                minHeight: 40,
+                minHeight: 44,
                 px: 2.5,
                 borderRadius: 1.5,
                 fontWeight: 600,
                 fontSize: '0.85rem',
                 textTransform: 'none',
-                ...(tab !== t.key && { borderColor: 'divider', color: 'text.secondary' }),
+                ...(tab === t.key
+                  ? { bgcolor: '#D4AF37', color: '#000', '&:hover': { bgcolor: '#B8941F' } }
+                  : { borderColor: 'divider', color: 'text.secondary' }),
               }}
             >
-              {t.label}
+              {t.icon}{t.label}
             </Button>
           ))}
         </Stack>
@@ -462,7 +492,7 @@ const HowItWorksSection = () => {
                   variant="body2"
                   sx={{
                     fontWeight: 700,
-                    color: 'primary.main',
+                    color: '#D4AF37',
                     mb: 1.5,
                     fontSize: '0.75rem',
                     letterSpacing: 1,
@@ -474,8 +504,8 @@ const HowItWorksSection = () => {
                   sx={{
                     width: 48,
                     height: 48,
-                    bgcolor: alpha(theme.palette.primary.main, 0.1),
-                    color: 'primary.main',
+                    bgcolor: 'rgba(212,175,55,0.1)',
+                    color: '#D4AF37',
                     mb: 2,
                     '& svg': { fontSize: 24 },
                   }}
@@ -605,10 +635,20 @@ const CTASection = () => {
             spacing={1.5}
             justifyContent="center"
           >
-            <Button variant="contained" size="large" onClick={() => navigate('/register')} sx={BTN_SX}>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => navigate('/register')}
+              sx={{ ...BTN_SX, bgcolor: '#D4AF37', color: '#000', '&:hover': { bgcolor: '#B8941F' } }}
+            >
               Sign up free
             </Button>
-            <Button variant="outlined" size="large" onClick={() => navigate('/login')} sx={BTN_SX}>
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={() => navigate('/login')}
+              sx={{ ...BTN_SX, borderColor: '#D4AF37', color: '#D4AF37', '&:hover': { borderColor: '#B8941F', bgcolor: 'rgba(212,175,55,0.08)' } }}
+            >
               Log in
             </Button>
           </Stack>
