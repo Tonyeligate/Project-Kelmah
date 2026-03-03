@@ -64,9 +64,10 @@ const paymentService = {
   // Wallet operations
   getWallet: async () => {
     try {
-      // Backend exposes wallet at /api/payments/wallet (mounted router returns data at "/")
+      // Backend exposes wallet at /api/payments/wallet
+      // Backend returns { success: true, data: walletDoc } — unwrap to walletDoc
       const { data } = await api.get('/payments/wallet');
-      return data;
+      return data?.success ? (data.data ?? data) : data;
     } catch (error) {
       console.warn('Wallet service unavailable:', error.message);
       // Return empty wallet state — do NOT show fake balances
@@ -117,22 +118,28 @@ const paymentService = {
 
   // Transaction operations
   getTransactionHistory: async (params = {}) => {
-    const response = await api.get('/payments/transactions/history', {
-      params,
-    });
-    // Normalize to { data, pagination }
-    if (Array.isArray(response.data)) {
+    const response = await api.get('/payments/transactions/history', { params });
+    const rd = response.data;
+    // New format: { success: true, data: [...], meta: { total, totalPages, currentPage } }
+    if (rd?.success && Array.isArray(rd?.data)) {
       return {
-        data: response.data,
+        data: rd.data,
         pagination: {
           page: params.page || 1,
           limit: params.limit || 20,
-          total: response.data.length,
-          pages: 1,
+          total: rd.meta?.total ?? rd.data.length,
+          pages: rd.meta?.totalPages ?? 1,
         },
       };
     }
-    return response.data;
+    // Legacy: plain array
+    if (Array.isArray(rd)) {
+      return {
+        data: rd,
+        pagination: { page: params.page || 1, limit: params.limit || 20, total: rd.length, pages: 1 },
+      };
+    }
+    return rd;
   },
 
   createTransaction: async (transactionData) => {
@@ -149,8 +156,12 @@ const paymentService = {
   // Escrow operations
   getEscrows: async () => {
     try {
+      // Backend returns { success: true, data: [...] } — normalise to array
       const { data } = await api.get('/payments/escrows');
-      return data;
+      if (data?.success) {
+        return Array.isArray(data.data) ? data.data : data.data?.escrows || [];
+      }
+      return Array.isArray(data) ? data : data?.escrows || [];
     } catch (error) {
       console.warn('Escrow service unavailable:', error.message);
       // Return empty array — do NOT show fake escrow data

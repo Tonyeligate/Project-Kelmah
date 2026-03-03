@@ -17,6 +17,7 @@ import {
   IconButton,
   CircularProgress,
   Card,
+  CardActions,
   CardContent,
   Avatar,
   Dialog,
@@ -67,7 +68,8 @@ const MyApplicationsPage = () => {
         const applicationsArray = Array.isArray(data) ? data : [];
         setApplications(applicationsArray);
       } catch (error) {
-        console.error('Error loading applications:', error);
+        // AUD2-L06 FIX: Suppress console output in production
+        if (import.meta.env.DEV) console.error('Error loading applications:', error);
         setApplications([]); // Set empty array as fallback
       } finally {
         setLoading(false);
@@ -93,8 +95,11 @@ const MyApplicationsPage = () => {
     setOpenMessageDialog(true);
   };
 
-  // Send message
-  const handleSendMessage = () => {
+  // AUD2-C01 FIX: Rename to clarify this opens the Messages page with the draft pre-loaded.
+  // The message is NOT sent here — it is saved as a draft and the user picks the conversation
+  // and confirms in the Messages page. Renamed function + updated dialog copy to prevent
+  // user confusion (old label "Send Message" was misleading).
+  const handleComposeMessage = () => {
     const trimmedMessage = message.trim();
     if (!trimmedMessage) {
       return;
@@ -121,7 +126,7 @@ const MyApplicationsPage = () => {
         JSON.stringify(draftPayload),
       );
     } catch (storageError) {
-      console.warn('Failed to persist message draft:', storageError);
+      if (import.meta.env.DEV) console.warn('Failed to persist message draft:', storageError);
     }
 
     setMessage('');
@@ -424,6 +429,61 @@ const MyApplicationsPage = () => {
             <Button variant="contained" color="primary" onClick={() => navigate('/worker/find-work')}>
               Browse Jobs
             </Button>
+          </Box>
+        ) : isActualMobile ? (
+          /* AUD2-H04 FIX: Card-based list for mobile — table rows are unreadable on small screens */
+          <Box sx={{ px: 2, pb: 2 }}>
+            {filteredApplications.map((application) => {
+              const statusInfo = getStatusInfo(application.status);
+              return (
+                <Card
+                  key={application.id || application._id}
+                  variant="outlined"
+                  sx={{ mb: 2 }}
+                >
+                  <CardContent sx={{ pb: 0 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                      <Typography variant="subtitle2" sx={{ flex: 1, mr: 1, wordBreak: 'break-word' }}>
+                        {application.job?.title || 'Untitled Job'}
+                      </Typography>
+                      <Chip
+                        icon={statusInfo.icon}
+                        label={statusInfo.label}
+                        color={statusInfo.color}
+                        size="small"
+                      />
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                      {application.job?.category || '—'}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {application.job?.location?.city || application.job?.location || 'Unknown location'}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                      Applied {new Date(application.createdAt).toLocaleDateString()}
+                    </Typography>
+                  </CardContent>
+                  <CardActions sx={{ justifyContent: 'flex-end', pt: 0 }}>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleOpenDetails(application)}
+                      aria-label="View application details"
+                      sx={{ minWidth: 44, minHeight: 44 }}
+                    >
+                      <VisibilityIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleOpenMessage(application)}
+                      aria-label="Send message to employer"
+                      sx={{ minWidth: 44, minHeight: 44 }}
+                    >
+                      <MessageIcon fontSize="small" />
+                    </IconButton>
+                  </CardActions>
+                </Card>
+              );
+            })}
           </Box>
         ) : (
           <TableContainer sx={{ overflowX: 'auto' }}>
@@ -796,7 +856,7 @@ const MyApplicationsPage = () => {
                 Regarding: {selectedApplication.job?.title || selectedApplication.jobTitle || 'Job Application'}
               </Typography>
               <Typography variant="body2" color="text.secondary" paragraph>
-                Your message will be sent to the hirer.
+                Write your message below. You’ll be taken to the Messages page to select the conversation and confirm before it’s sent.
               </Typography>
               <TextField
                 autoFocus
@@ -815,11 +875,11 @@ const MyApplicationsPage = () => {
                 Cancel
               </Button>
               <Button
-                onClick={handleSendMessage}
+                onClick={handleComposeMessage}
                 variant="contained"
                 disabled={!message.trim()}
               >
-                Send Message
+                Continue to Messages
               </Button>
             </DialogActions>
           </>

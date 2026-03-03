@@ -30,16 +30,22 @@ router.use('/', (req, res, next) => {
             return rewritten;
         },
         onProxyReq: (proxyReq, reqInner) => {
-            // Forward user identity headers if present
+            // HIGH-15 FIX: Use x-authenticated-user JSON header matching the
+            // format expected by serviceTrust.verifyGatewayRequest in downstream
+            // services, instead of separate X-User-ID / X-User-Role headers.
             if (reqInner.user) {
-                proxyReq.setHeader('X-User-ID', reqInner.user.id);
-                proxyReq.setHeader('X-User-Role', reqInner.user.role);
+                proxyReq.setHeader('x-authenticated-user', JSON.stringify({
+                    id: reqInner.user.id,
+                    role: reqInner.user.role,
+                    email: reqInner.user.email
+                }));
             }
         },
         onError: (err, reqInner, resInner) => {
             console.error('Dashboard proxy error:', err.message);
             if (!resInner.headersSent) {
-                resInner.status(502).json({ error: 'Dashboard service unavailable', details: err.message });
+                // HIGH-16 FIX: Don't expose internal error details
+                resInner.status(502).json({ success: false, error: { message: 'Dashboard service unavailable' } });
             }
         }
     });

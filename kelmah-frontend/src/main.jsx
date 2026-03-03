@@ -4,7 +4,10 @@ import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { SnackbarProvider } from 'notistack';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+// MED-27 FIX: Lazy-load ReactQueryDevtools only in development
+const ReactQueryDevtools = import.meta.env.DEV
+  ? React.lazy(() => import('@tanstack/react-query-devtools').then(m => ({ default: m.ReactQueryDevtools })))
+  : () => null;
 import { queryClient } from './config/queryClient';
 import store from './store';
 import App from './App.jsx';
@@ -37,11 +40,16 @@ if (import.meta.env.DEV) {
   console.log('🔧 All imports successful');
 }
 
-// Check browser storage quota on startup (non-blocking)
-checkStorageQuota();
+// LOW-19 FIX: Defer storage quota check to avoid blocking module initialization
+if (typeof requestIdleCallback === 'function') {
+  requestIdleCallback(() => checkStorageQuota());
+} else {
+  setTimeout(checkStorageQuota, 0);
+}
 
 
-const ErrorFallback = ({ error }) => (
+// LOW-13 FIX: ErrorFallback now includes a retry button for user recovery
+const ErrorFallback = ({ error, resetErrorBoundary }) => (
   <div
     style={{
       padding: 24,
@@ -91,9 +99,41 @@ const ErrorFallback = ({ error }) => (
         maxWidth: '600px',
       }}
     >
-      We're sorry for the inconvenience. Please refresh the page or contact
+      We're sorry for the inconvenience. Please try again or contact
       support if the problem persists.
     </p>
+    <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+      <button
+        onClick={resetErrorBoundary}
+        style={{
+          padding: '12px 24px',
+          backgroundColor: '#FFD700',
+          color: '#000000',
+          border: 'none',
+          borderRadius: 8,
+          fontSize: 16,
+          fontWeight: 600,
+          cursor: 'pointer',
+        }}
+      >
+        Try Again
+      </button>
+      <button
+        onClick={() => { window.location.href = '/'; }}
+        style={{
+          padding: '12px 24px',
+          backgroundColor: 'transparent',
+          color: '#FFD700',
+          border: '2px solid #FFD700',
+          borderRadius: 8,
+          fontSize: 16,
+          fontWeight: 600,
+          cursor: 'pointer',
+        }}
+      >
+        Go Home
+      </button>
+    </div>
     {import.meta.env.DEV && (
       <details
         style={{

@@ -17,6 +17,10 @@ export const notificationSlice = createSlice({
     },
     addNotification: (state, action) => {
       state.notifications.unshift(action.payload);
+      // HIGH-17 FIX: Cap notifications at 100 to prevent unbounded growth
+      if (state.notifications.length > 100) {
+        state.notifications = state.notifications.slice(0, 100);
+      }
       if (!action.payload.read) {
         state.unreadCount += 1;
       }

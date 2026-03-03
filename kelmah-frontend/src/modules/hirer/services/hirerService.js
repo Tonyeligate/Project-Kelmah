@@ -164,11 +164,23 @@ export const hirerService = {
     }
   },
 
+  // MED-23 FIX: Actually call the API to get hirer's applications across all jobs
   async getApplications(filters = {}) {
     try {
       const limit = filters.limit || 10;
-      console.warn('Applications endpoint not available for hirers yet.');
-      return [];
+      const response = await api.get(JOB.MY_JOBS, {
+        params: { role: 'hirer', limit, includeApplications: true },
+      });
+      const jobs = response.data?.data || response.data?.jobs || [];
+      // Flatten applications from all jobs
+      const applications = [];
+      for (const job of (Array.isArray(jobs) ? jobs : [])) {
+        const jobApps = job.applications || [];
+        for (const app of jobApps) {
+          applications.push({ ...app, jobTitle: job.title, jobId: job._id || job.id });
+        }
+      }
+      return applications.slice(0, limit);
     } catch (error) {
       console.warn('Applications unavailable:', error.message);
       return [];

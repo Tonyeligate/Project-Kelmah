@@ -40,16 +40,17 @@ router.get("/dashboard", verifyGatewayRequest, jobController.getDashboardJobs); 
 router.get("/categories", jobController.getJobCategories);
 router.get('/suggestions', jobController.getSearchSuggestions);
 router.get("/stats", jobController.getPlatformStats); // ✅ PUBLIC: Platform statistics
-// Contract read routes moved to protected section below
 router.post("/contracts/:id/disputes", verifyGatewayRequest, jobController.createContractDispute);
 router.get('/:id([a-fA-F0-9]{24})', jobController.getJobById);
 
-// Milestone routes (publicly accessible reads, protected writes)
-router.get("/milestones/contract/:contractId", jobController.getContractMilestones);
-router.get("/milestones/:milestoneId", jobController.getMilestoneById);
+// MED-15 FIX: Milestone reads moved behind auth guard (contain sensitive payment/contract data)
 
 // Protected routes
 router.use(verifyGatewayRequest);
+
+// Milestone reads (protected — require authentication)
+router.get("/milestones/contract/:contractId", jobController.getContractMilestones);
+router.get("/milestones/:milestoneId", jobController.getMilestoneById);
 
 // Contract routes (protected - require authentication)
 router.get("/contracts", jobController.getContracts);

@@ -32,7 +32,10 @@ const ForgotPasswordPage = () => {
         res.message || 'If that email exists, a reset link has been sent.',
       );
     } catch (err) {
-      setError(err.response?.data?.message || err.message);
+      // AUD2-M07 FIX: Use generic error message to prevent email enumeration attacks.
+      // Server-specific messages (e.g. "User not found") would let attackers confirm
+      // which email addresses exist in the system.
+      setError('Unable to process your request. Please try again later.');
     }
   };
 
@@ -105,8 +108,8 @@ const ForgotPasswordPage = () => {
               lineHeight: 1.5,
             }}
           >
-            Enter the email address or phone number associated with your
-            account, and we'll send you instructions to reset your password.
+            Enter the email address associated with your
+            account, and we’ll send you instructions to reset your password.
           </Typography>
 
           {/* Status Alert */}
@@ -148,7 +151,7 @@ const ForgotPasswordPage = () => {
             <Box sx={{ mb: 3 }}>
               <TextField
                 fullWidth
-                placeholder="Email or Phone"
+                placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

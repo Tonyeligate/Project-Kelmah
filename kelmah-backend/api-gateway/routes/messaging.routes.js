@@ -35,8 +35,7 @@ const conversationProxy = (req, res, next) => {
   return proxy(req, res, next);
 };
 
-// All messaging routes require authentication
-router.use(authenticate);
+// HIGH-14 FIX: Removed `router.use(authenticate)` — authentication is already\n// applied at the server.js level via `app.use('/api/messages', authenticate, messagingRouter)`.\n// Double-applying it caused redundant token verification.
 
 // Conversation routes (mounted at /api/conversations)
 router.get('/conversations', conversationProxy); // List conversations

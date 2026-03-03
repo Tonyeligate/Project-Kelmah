@@ -51,7 +51,8 @@ const WorkerSearchPage = () => {
             color="inherit"
             onClick={handleGoBack}
             startIcon={<ArrowBackIcon />}
-            sx={{ minHeight: 44 }}
+            aria-label="Go back"
+            sx={{ minHeight: 44, minWidth: 44 }}
           >
             {isMobile ? '' : 'Go Back'}
           </Button>

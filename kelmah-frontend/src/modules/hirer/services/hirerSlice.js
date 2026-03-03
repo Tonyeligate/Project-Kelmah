@@ -171,6 +171,7 @@ export const fetchJobApplications = createAsyncThunk(
       const response = await api.get(`/jobs/${jobId}/applications`, {
         params,
       });
+      // Unwrap { success: true, data: [...] } if present — normalizeApplicationsByStatus handles both
       return { jobId, applications: response.data };
     } catch (error) {
       console.warn('Service unavailable:', error.message);
@@ -203,10 +204,16 @@ export const fetchPaymentSummary = createAsyncThunk(
         api.get('/payments/transactions/history').catch(() => ({ data: [] })),
       ]);
 
-      const wallet = walletResp?.data || {};
-      const escrows = Array.isArray(escrowsResp?.data)
-        ? escrowsResp.data
-        : escrowsResp?.data?.escrows || [];
+      // Unwrap { success: true, data: walletDoc } returned by the backend
+      const walletRaw = walletResp?.data;
+      const wallet = walletRaw?.success ? (walletRaw.data ?? walletRaw) : (walletRaw ?? {});
+      // Escrows: getEscrows returns a plain array already, but guard for raw response
+      const escrowRaw = escrowsResp?.data;
+      const escrows = Array.isArray(escrowRaw)
+        ? escrowRaw
+        : Array.isArray(escrowRaw?.data)
+          ? escrowRaw.data
+          : escrowRaw?.escrows || [];
       const history = Array.isArray(txResp?.data?.data)
         ? txResp.data.data
         : Array.isArray(txResp?.data)
@@ -572,10 +579,18 @@ const hirerSlice = createSlice({
           return;
         }
 
+        // Compute total from the actual resolved list (handles wrapped { success, data: [] })
+        const appList = Array.isArray(applications)
+          ? applications
+          : Array.isArray(applications?.data)
+            ? applications.data
+            : Array.isArray(applications?.items)
+              ? applications.items
+              : [];
         state.applications[jobId] = {
           jobId,
           buckets: normalizeApplicationsByStatus(applications),
-          total: Array.isArray(applications) ? applications.length : 0,
+          total: appList.length,
           fetchedAt: Date.now(),
           isLoading: false,
           error: null,

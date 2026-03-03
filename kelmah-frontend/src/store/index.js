@@ -30,7 +30,11 @@ const store = configureStore({
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: false,
+      // HIGH-19 FIX: Re-enable serializableCheck but ignore known non-serializable paths
+      serializableCheck: {
+        ignoredPaths: ['messaging.socket', 'messaging.typingUsers'],
+        ignoredActions: ['messaging/setSocket', 'messaging/setTypingUsers'],
+      },
     }),
 });
 

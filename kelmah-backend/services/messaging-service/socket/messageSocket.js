@@ -517,10 +517,18 @@ class MessageSocketHandler {
         isTyping: true,
       });
 
+      // MED-06 FIX: Store timeout ref and clear previous before creating new
+      if (!this.typingTimeouts) this.typingTimeouts = new Map();
+      const timeoutKey = `${conversationId}:${userId}`;
+      const existingTimeout = this.typingTimeouts.get(timeoutKey);
+      if (existingTimeout) clearTimeout(existingTimeout);
+
       // Auto-stop typing after 10 seconds
-      setTimeout(() => {
+      const newTimeout = setTimeout(() => {
+        this.typingTimeouts.delete(timeoutKey);
         this.handleTypingStop(socket, { conversationId });
       }, 10000);
+      this.typingTimeouts.set(timeoutKey, newTimeout);
     } catch (error) {
       console.error("Handle typing start error:", error);
     }
@@ -734,6 +742,10 @@ class MessageSocketHandler {
 
       if (!userId) return;
 
+      // LOW-04 FIX: Read connectedAt BEFORE deleting from map
+      const socketMeta = this.userSockets.get(socket.id);
+      const connectedAt = socketMeta?.connectedAt?.getTime() || Date.now();
+
       // Remove from connected users
       this.connectedUsers.delete(userId);
       this.userSockets.delete(socket.id);
@@ -748,6 +760,16 @@ class MessageSocketHandler {
         }
       }
 
+      // Clean up typing timeouts for this user
+      if (this.typingTimeouts) {
+        for (const [key, timeout] of this.typingTimeouts.entries()) {
+          if (key.endsWith(`:${userId}`)) {
+            clearTimeout(timeout);
+            this.typingTimeouts.delete(key);
+          }
+        }
+      }
+
       // Broadcast user offline status
       this.broadcastUserStatus(userId, "offline");
 
@@ -757,10 +779,7 @@ class MessageSocketHandler {
         action: "SOCKET_DISCONNECTED",
         details: {
           socketId: socket.id,
-          duration:
-            Date.now() -
-            (this.userSockets.get(socket.id)?.connectedAt?.getTime() ||
-              Date.now()),
+          duration: Date.now() - connectedAt,
         },
       });
 

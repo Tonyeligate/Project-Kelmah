@@ -16,13 +16,23 @@ class SecureStorage {
     // Initialize storage with error recovery
     this.initializeStorage();
 
-    // Set up periodic cleanup
-    setInterval(
+    // MED-26 FIX: Store interval reference so it can be cleared
+    this.cleanupInterval = setInterval(
       () => {
         this.cleanupExpiredData();
       },
       60 * 60 * 1000,
     ); // Every hour
+  }
+
+  /**
+   * Clean up resources (call on app teardown)
+   */
+  destroy() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
   }
 
   /**
@@ -305,16 +315,25 @@ class SecureStorage {
   }
 
   /**
-   * Clear all secure data
+   * Clear all secure data.
+   * CRIT-09 FIX: Only clear stored data, NOT the encryption key.
+   * Removing the key breaks other tabs that still have data encrypted with it.
+   * Use BroadcastChannel to notify other tabs of the logout.
    */
   clear() {
     try {
       localStorage.removeItem(this.storageKey);
-      localStorage.removeItem('kelmah_encryption_secret');
+      // CRIT-09: Do NOT remove encryption key — other tabs may still need it
+      // localStorage.removeItem('kelmah_encryption_secret');  // REMOVED
       sessionStorage.removeItem('session_id');
-      // Regenerate encryption key so subsequent writes in the same session
-      // use a key that matches the new persistent secret on next reload
-      this.encryptionKey = this.generateEncryptionKey();
+
+      // Notify other tabs about the logout via BroadcastChannel
+      try {
+        const channel = new BroadcastChannel('kelmah_auth');
+        channel.postMessage({ type: 'LOGOUT' });
+        channel.close();
+      } catch (_) { /* BroadcastChannel not supported in older browsers */ }
+
       return true;
     } catch (error) {
       console.error('Failed to clear secure storage:', error);

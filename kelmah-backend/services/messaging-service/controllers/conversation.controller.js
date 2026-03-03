@@ -127,9 +127,17 @@ class ConversationController {
       }
 
       // Add current user to participants if not included
-      const allParticipants = [
-        ...new Set([String(userId), ...participantIds.map(String)]),
-      ].map((id) => new mongoose.Types.ObjectId(id));
+      // MED-05 FIX: Validate ObjectId format before conversion to prevent 500 errors
+      const participantStrings = [...new Set([String(userId), ...participantIds.map(String)])];
+      const invalidIds = participantStrings.filter(id => !/^[a-fA-F0-9]{24}$/.test(id));
+      if (invalidIds.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid participant ID format: ${invalidIds.join(', ')}`,
+          code: 'INVALID_PARTICIPANT_ID',
+        });
+      }
+      const allParticipants = participantStrings.map((id) => new mongoose.Types.ObjectId(id));
 
       // Validate that all participants exist
       const existingUsers = await User.find({

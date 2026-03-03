@@ -46,10 +46,10 @@ const forwardToBidService = async (req, res, path, method = 'GET') => {
     res.status(response.status).json(response.data);
   } catch (error) {
     console.error(`[BID DIRECT] Error:`, error.message);
+    // HIGH-16 FIX: Don't expose internal error details to clients
     res.status(504).json({
       success: false,
       message: 'Bid service temporarily unavailable',
-      error: error.message,
     });
   }
 };
@@ -110,7 +110,13 @@ router.patch('/:bidId/modify', authenticate, async (req, res) => {
 });
 
 // PATCH /api/bids/cleanup/expired — Mark expired bids (admin)
-router.patch('/cleanup/expired', authenticate, async (req, res) => {
+// HIGH-22 FIX: Add admin role check — only admins should trigger cleanup
+router.patch('/cleanup/expired', authenticate, (req, res, next) => {
+  if (req.user?.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Admin access required' });
+  }
+  next();
+}, async (req, res) => {
   await forwardToBidService(req, res, '/api/bids/cleanup/expired', 'PATCH');
 });
 

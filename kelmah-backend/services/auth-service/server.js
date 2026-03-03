@@ -134,8 +134,8 @@ app.use(createErrorLogger(logger));
 // API routes
 app.use("/api/auth", authRoutes);
 
-// Fix: Add missing settings endpoints
-app.get('/settings', (req, res) => {
+// LOW-07: Static settings endpoints — these return hardcoded defaults.
+// TODO: Replace with user-specific settings from database when settings feature is built.\napp.get('/settings', (req, res) => {
   res.json({
     success: true,
     data: {

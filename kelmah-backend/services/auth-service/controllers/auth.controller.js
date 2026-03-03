@@ -1353,24 +1353,29 @@ exports.getAuthStats = async (req, res, next) => {
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
+    // LOW-08 FIX: Redact exact token counts (useful for attackers to gauge session volume).
+    // Only expose aggregate user metrics; token counts require admin role.
+    const isAdmin = req.user?.role === 'admin';
+
+    const [recentLogins, weeklyLogins, totalUsers, activeUsers] = await Promise.all([
+      User.countDocuments({ lastLogin: { $gt: oneDayAgo } }),
+      User.countDocuments({ lastLogin: { $gt: oneWeekAgo } }),
+      User.countDocuments(),
+      User.countDocuments({ isActive: true }),
+    ]);
+
     const stats = {
-      activeTokens: await RefreshToken.countDocuments({
-        expiresAt: { $gt: now }
-      }),
-      expiredTokens: await RefreshToken.countDocuments({
-        expiresAt: { $lt: now }
-      }),
-      recentLogins: await User.countDocuments({
-        lastLogin: { $gt: oneDayAgo }
-      }),
-      weeklyLogins: await User.countDocuments({
-        lastLogin: { $gt: oneWeekAgo }
-      }),
-      totalUsers: await User.countDocuments(),
-      activeUsers: await User.countDocuments({
-        isActive: true
-      })
+      recentLogins,
+      weeklyLogins,
+      totalUsers,
+      activeUsers,
     };
+
+    // Only expose token metrics to admins
+    if (isAdmin) {
+      stats.activeTokens = await RefreshToken.countDocuments({ expiresAt: { $gt: now } });
+      stats.expiredTokens = await RefreshToken.countDocuments({ expiresAt: { $lt: now } });
+    }
 
     return res.status(200).json({
       success: true,

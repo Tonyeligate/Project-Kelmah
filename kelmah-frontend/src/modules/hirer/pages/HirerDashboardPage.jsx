@@ -206,9 +206,6 @@ const HirerDashboardPage = () => {
           }
         }, DASHBOARD_LOADING_TIMEOUT_MS);
 
-        // ⏱️ Add small delay to ensure auth token is stored and axios interceptors are ready
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
         const fetchPromises = [
           dispatch(fetchHirerProfile()).unwrap(),
           dispatch(fetchHirerJobs('active')).unwrap(),
@@ -255,6 +252,12 @@ const HirerDashboardPage = () => {
       } finally {
         if (isMountedRef.current && isInitialHydration) {
           setIsHydrating(false);
+        }
+        // AUD2-M04 FIX: Update lastRefreshed on every completed fetch (not only manual refresh)
+        // so the "time since refresh" display is accurate from the initial load onward.
+        if (isMountedRef.current) {
+          setLastRefreshed(Date.now());
+          setTimeSinceRefresh('Just now');
         }
         fetchPromiseRef.current = null;
       }

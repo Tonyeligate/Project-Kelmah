@@ -14,6 +14,7 @@ import {
   CircularProgress,
   Alert,
   Skeleton,
+  Snackbar,
 } from '@mui/material';
 import {
   LocationOn,
@@ -151,13 +152,16 @@ const JobDetailsPage = () => {
   const job = useSelector(selectCurrentJob);
   const loading = useSelector(selectJobsLoading);
   const error = useSelector(selectJobsError);
+  // AUD2-M06 FIX: Use Redux auth state (survives token expiry / refresh) instead of
+  // raw token-string presence which lets expired tokens pass as authenticated.
+  const isAuthenticated = useSelector((state) => !!state.auth.user && !!state.auth.token);
   const [saved, setSaved] = useState(false);
   const [savingBookmark, setSavingBookmark] = useState(false);
   const [applicationOpen, setApplicationOpen] = useState(false);
   const [bidDialogOpen, setBidDialogOpen] = useState(false);
+  const [shareSnackbar, setShareSnackbar] = useState('');
   const locationLabel = getJobLocationLabel(job);
   const skillLabels = normalizeSkillLabels(job?.skills);
-  const isAuthenticated = !!secureStorage.getAuthToken();
 
   useEffect(() => {
     // Validate jobId before fetching
@@ -228,15 +232,21 @@ const JobDetailsPage = () => {
 
   const handleShareJob = () => {
     if (!job) return;
-    // In a real app, would open a share dialog
     if (navigator.share) {
+      // Native Web Share API (mobile / supported browsers)
       navigator.share({
         title: job.title,
         text: `Check out this job: ${job.title}`,
         url: window.location.href,
+      }).catch(() => {
+        // User cancelled — not an error
       });
     } else {
-      alert('Share feature not supported in your browser');
+      // AUD2-M11 FIX: Copy URL to clipboard and show Snackbar instead of blocking alert()
+      navigator.clipboard
+        .writeText(window.location.href)
+        .then(() => setShareSnackbar('Job link copied to clipboard!'))
+        .catch(() => setShareSnackbar(`Share: ${window.location.href}`));
     }
   };
 
@@ -848,12 +858,22 @@ const JobDetailsPage = () => {
           </IconButton>
           <IconButton
             onClick={handleShareJob}
+            aria-label="Share job"
             sx={{ color: 'rgba(255,255,255,0.7)', minWidth: 48, minHeight: 48 }}
           >
             <Share />
           </IconButton>
         </Box>
       )}
+
+      {/* AUD2-M11 FIX: Non-blocking share feedback instead of alert() */}
+      <Snackbar
+        open={!!shareSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setShareSnackbar('')}
+        message={shareSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
     </Box>
   );
 };

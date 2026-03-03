@@ -21,8 +21,9 @@ const paymentProxy = (req, res, next) => {
   return proxy(req, res, next);
 };
 
-// All payment routes require authentication
-router.use(authenticate);
+// HIGH-14 FIX: Removed `router.use(authenticate)` — authentication is already
+// handled by `createServiceProxy({ requireAuth: true })` which calls the auth
+// middleware internally. Double-applying it caused redundant token verification.
 
 // Wallet routes
 router.get('/wallet', paymentProxy); // Get user wallet

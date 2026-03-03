@@ -200,6 +200,17 @@ const WorkerDashboardPage = () => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
+  // AUD2-M05 FIX: Auto-refresh every 90 seconds so workers see new acceptances/rejections
+  // without manually refreshing — mirrors HirerDashboard DASH-001 auto-refresh pattern.
+  useEffect(() => {
+    const AUTO_REFRESH_MS = 90_000;
+    const intervalId = setInterval(() => {
+      // Silent background refresh — errors are captured in Redux state
+      fetchDashboardData();
+    }, AUTO_REFRESH_MS);
+    return () => clearInterval(intervalId);
+  }, [fetchDashboardData]);
+
   // Fetch profile completion data (Phase 1)
   useEffect(() => {
     const loadProfileCompletion = async () => {

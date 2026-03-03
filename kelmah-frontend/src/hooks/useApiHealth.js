@@ -75,7 +75,9 @@ export const useApiHealth = () => {
       clearTimeout(initialDelay);
       clearInterval(interval);
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // LOW-22 FIX: API_BASE_URL is a module-level constant, not a React value.
+  // The empty dependency array is intentional — this effect runs once on mount.
+  }, []);
 
   return { isHealthy, lastCheck };
 };

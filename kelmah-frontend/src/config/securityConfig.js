@@ -68,7 +68,9 @@ export const SECURITY_CONFIG = {
   // Content Security Policy - Dynamic connect-src based on environment
   CSP: {
     'default-src': ["'self'"],
-    'script-src': ["'self'", "'unsafe-inline'"],
+    // HIGH-18 FIX: Removed 'unsafe-inline' from script-src.
+    // Vite injects scripts via module tags, no inline scripts needed.
+    'script-src': ["'self'"],
     'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
     'font-src': ["'self'", 'https://fonts.gstatic.com'],
     'img-src': ["'self'", 'data:', 'https:'],

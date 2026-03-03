@@ -112,7 +112,8 @@ apiClient.interceptors.response.use(
             } catch (refreshError) {
                 secureStorage.removeItem('auth_token');
                 secureStorage.removeItem('refresh_token');
-                window.location.href = '/login';
+                // LOW-18: Use replace instead of href to prevent back-button loop
+                window.location.replace('/login');
                 return Promise.reject(refreshError);
             }
         }

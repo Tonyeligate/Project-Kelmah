@@ -134,8 +134,10 @@ const transformJobListItem = (job) => {
     // Additional fields for display
     proposalCount: job.proposalCount || 0,
     viewCount: job.viewCount || 0,
-    rating: job.rating || 4.5,
-    urgent: job.urgent || job.proposalCount > 15, // Auto-mark as urgent if many applicants
+    // LOW-14 FIX: Default to 0 instead of fake 4.5 rating
+    rating: job.rating || 0,
+    // LOW-15 FIX: Only use server-side urgent flag (don't auto-fabricate urgency)
+    urgent: !!job.urgent,
     verified: job.verified || employer.verified,
     paymentType: job.paymentType || 'fixed',
     duration: job.duration,

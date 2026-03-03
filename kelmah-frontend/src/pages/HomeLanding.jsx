@@ -36,12 +36,8 @@ import {
   PersonSearch as PersonSearchIcon,
   Map as MapIcon,
   SupportAgent as SupportIcon,
-  Phone as PhoneIcon,
-  Email as EmailIcon,
-  Place as PlaceIcon,
   TrendingUp as TrendingUpIcon,
   Groups as GroupsIcon,
-  Schedule as ScheduleIcon,
 } from '@mui/icons-material';
 
 import heroBg from '../assets/images/background.jpg';
@@ -127,7 +123,7 @@ const HomeLanding = () => {
           minHeight: { xs: 'min(55vh, 440px)', md: '100vh' },
           display: 'flex',
           alignItems: 'center',
-          pt: { xs: '40px', md: '48px' },
+          pt: { xs: '28px', md: '40px' },
           boxSizing: 'border-box',
           color: '#fff',
           backgroundImage: `linear-gradient(160deg, rgba(5,5,7,0.93) 0%, rgba(5,5,7,0.6) 50%, rgba(5,5,7,0.35) 100%), url(${heroBg})`,
@@ -144,7 +140,7 @@ const HomeLanding = () => {
           },
         }}
       >
-        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, py: { xs: 3, md: 10 } }}>
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, py: { xs: 2.5, md: 7 } }}>
           <Grid container spacing={{ xs: 3, md: 4 }} alignItems="center">
             <Grid item xs={12} md={7}>
               <motion.div {...heroAnim}>
@@ -339,7 +335,7 @@ const HomeLanding = () => {
       </Box>
 
       {/* ═══ QUICK CATEGORY ICONS — large icon tiles for easy browsing (accessibility-first) ═══ */}
-      <Box component="section" sx={{ py: { xs: 4, md: 8 } }}>
+      <Box component="section" sx={{ py: { xs: 3.5, md: 6 } }}>
         <Container maxWidth="lg">
           <motion.div {...scrollIn}>
             <Typography
@@ -423,7 +419,7 @@ const HomeLanding = () => {
       </Box>
 
       {/* ═══ CATEGORY PHOTO SHOWCASE ═══ */}
-      <Box component="section" sx={{ py: { xs: 3, md: 8 }, bgcolor: altBg }}>
+      <Box component="section" sx={{ py: { xs: 3, md: 6 }, bgcolor: altBg }}>
         <Container maxWidth="lg">
           <motion.div {...scrollIn}>
             <Typography
@@ -536,7 +532,7 @@ const HomeLanding = () => {
       </Box>
 
       {/* ═══ FOR WORKERS / FOR HIRERS — dual value cards ═══ */}
-      <Box component="section" sx={{ py: { xs: 4, md: 10 } }}>
+      <Box component="section" sx={{ py: { xs: 3.5, md: 7 } }}>
         <Container maxWidth="lg">
           <motion.div {...scrollIn}>
             <Typography
@@ -684,7 +680,7 @@ const HomeLanding = () => {
       </Box>
 
       {/* ═══ HOW IT WORKS ═══ */}
-      <Box component="section" sx={{ py: { xs: 4, md: 10 }, bgcolor: altBg }}>
+      <Box component="section" sx={{ py: { xs: 3.5, md: 7 }, bgcolor: altBg }}>
         <Container maxWidth="lg">
           <motion.div {...scrollIn}>
             <Typography
@@ -768,7 +764,7 @@ const HomeLanding = () => {
       <Box
         component="section"
         sx={{
-          py: { xs: 4, md: 6 },
+          py: { xs: 3.5, md: 5 },
           bgcolor: statsBg,
           color: '#fff',
         }}
@@ -800,7 +796,7 @@ const HomeLanding = () => {
       </Box>
 
       {/* ═══ TESTIMONIALS ═══ */}
-      <Box component="section" sx={{ py: { xs: 4, md: 10 } }}>
+      <Box component="section" sx={{ py: { xs: 3.5, md: 7 } }}>
         <Container maxWidth="lg">
           <motion.div {...scrollIn}>
             <Typography
@@ -878,7 +874,7 @@ const HomeLanding = () => {
       <Box
         component="section"
         sx={{
-          py: { xs: 4, md: 8 },
+          py: { xs: 3.5, md: 6 },
           bgcolor: altBg,
         }}
       >
@@ -931,8 +927,8 @@ const HomeLanding = () => {
                   variant="contained"
                   size="large"
                   startIcon={<BoltIcon />}
-                  aria-label="Quick hire a worker"
-                  onClick={() => navigate('/quick-hire')}
+                  aria-label="Find workers quickly"
+                  onClick={() => navigate('/search')}
                   sx={{
                     bgcolor: '#FFD700',
                     color: '#111',
@@ -944,7 +940,7 @@ const HomeLanding = () => {
                     '&:hover': { bgcolor: '#F5C800' },
                   }}
                 >
-                  Quick Hire
+                  Find workers now
                 </Button>
                 <Button
                   variant="outlined"
@@ -974,7 +970,7 @@ const HomeLanding = () => {
       <Box
         component="section"
         sx={{
-          py: { xs: 5, md: 12 },
+          py: { xs: 4.5, md: 8 },
           bgcolor: ctaBg,
           color: '#fff',
           textAlign: 'center',
@@ -1049,148 +1045,8 @@ const HomeLanding = () => {
         </Container>
       </Box>
 
-      {/* ═══ FOOTER ═══ */}
-      <Box
-        component="footer"
-        sx={{
-          py: { xs: 4, md: 6 },
-          bgcolor: isDark ? '#050507' : '#0A0A0C',
-          color: 'rgba(255,255,255,0.7)',
-        }}
-      >
-        <Container maxWidth="lg">
-          <Grid container spacing={4}>
-            {/* Brand */}
-            <Grid item xs={12} md={4}>
-              <Typography variant="h6" fontWeight={800} sx={{ color: '#FFD700', mb: 1 }}>
-                Kelmah
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.7, maxWidth: 280, lineHeight: 1.6, mb: 2 }}>
-                Connecting skilled tradespeople with people who need their services. Built for Ghana.
-              </Typography>
-              <Stack direction="row" spacing={2}>
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                  <PlaceIcon sx={{ fontSize: 16, opacity: 0.5 }} />
-                  <Typography variant="caption" sx={{ opacity: 0.5 }}>Accra, Ghana</Typography>
-                </Stack>
-              </Stack>
-            </Grid>
-
-            {/* Quick Links */}
-            <Grid item xs={6} sm={4} md={2}>
-              <Typography variant="body2" fontWeight={700} sx={{ color: '#fff', mb: 2 }}>
-                Platform
-              </Typography>
-              <Stack spacing={1}>
-                {[
-                  { label: 'Find Workers', path: '/search' },
-                  { label: 'Browse Jobs', path: '/jobs' },
-                  { label: 'Quick Hire', path: '/quick-hire' },
-                  { label: 'Map View', path: '/map' },
-                ].map((link) => (
-                  <Typography
-                    key={link.label}
-                    component="button"
-                    variant="body2"
-                    onClick={() => navigate(link.path)}
-                    sx={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'rgba(255,255,255,0.6)',
-                      cursor: 'pointer',
-                      p: 0,
-                      textAlign: 'left',
-                      fontSize: '0.85rem',
-                      minHeight: 32,
-                      display: 'block',
-                      '&:hover': { color: '#FFD700' },
-                    }}
-                  >
-                    {link.label}
-                  </Typography>
-                ))}
-              </Stack>
-            </Grid>
-
-            {/* For Users */}
-            <Grid item xs={6} sm={4} md={2}>
-              <Typography variant="body2" fontWeight={700} sx={{ color: '#fff', mb: 2 }}>
-                Account
-              </Typography>
-              <Stack spacing={1}>
-                {[
-                  { label: 'Sign Up', path: '/register' },
-                  { label: 'Log In', path: '/login' },
-                  { label: 'Help Center', path: '/support' },
-                  { label: 'Premium', path: '/premium' },
-                ].map((link) => (
-                  <Typography
-                    key={link.label}
-                    component="button"
-                    variant="body2"
-                    onClick={() => navigate(link.path)}
-                    sx={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'rgba(255,255,255,0.6)',
-                      cursor: 'pointer',
-                      p: 0,
-                      textAlign: 'left',
-                      fontSize: '0.85rem',
-                      minHeight: 32,
-                      display: 'block',
-                      '&:hover': { color: '#FFD700' },
-                    }}
-                  >
-                    {link.label}
-                  </Typography>
-                ))}
-              </Stack>
-            </Grid>
-
-            {/* Trades */}
-            <Grid item xs={12} sm={4} md={4}>
-              <Typography variant="body2" fontWeight={700} sx={{ color: '#fff', mb: 2 }}>
-                Popular Trades
-              </Typography>
-              <Stack direction="row" flexWrap="wrap" gap={1}>
-                {TRADE_CATEGORIES.map((cat) => (
-                  <Chip
-                    key={cat.label}
-                    label={cat.label}
-                    size="small"
-                    clickable
-                    onClick={() => navigate(`/search?category=${cat.query}`)}
-                    sx={{
-                      bgcolor: 'rgba(255,255,255,0.06)',
-                      color: 'rgba(255,255,255,0.7)',
-                      fontWeight: 500,
-                      fontSize: '0.75rem',
-                      '&:hover': { bgcolor: goldAlpha(0.15), color: '#FFD700' },
-                    }}
-                  />
-                ))}
-              </Stack>
-            </Grid>
-          </Grid>
-
-          <Divider sx={{ my: 3, borderColor: 'rgba(255,255,255,0.08)' }} />
-
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            justifyContent="space-between"
-            alignItems="center"
-            spacing={1}
-          >
-            <Typography variant="caption" sx={{ opacity: 0.4 }}>
-              © {new Date().getFullYear()} Kelmah. All rights reserved.
-            </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.4 }}>
-              Made with ❤ in Ghana
-            </Typography>
-          </Stack>
-        </Container>
-      </Box>
+      {/* Footer is provided globally by Layout; duplicated landing footer removed
+          to reduce wasted vertical space and avoid stacked-footer UI. */}
     </Box>
   );
 };

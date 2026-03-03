@@ -48,10 +48,10 @@ const forwardToJobService = async (req, res, path, method = 'GET') => {
     res.status(response.status).json(response.data);
   } catch (error) {
     console.error(`[JOB DIRECT] Error:`, error.message);
+    // HIGH-16 FIX: Don't expose internal error details to clients
     res.status(504).json({
       success: false,
-      message: 'Job service temporarily unavailable',
-      error: error.message
+      message: 'Job service temporarily unavailable'
     });
   }
 };

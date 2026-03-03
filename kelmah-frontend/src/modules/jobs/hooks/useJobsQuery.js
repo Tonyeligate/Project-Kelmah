@@ -92,8 +92,8 @@ export const useJobsQuery = (filters = {}, options = {}) => {
     return useQuery({
         queryKey: jobKeys.list(normalizedFilters),
         queryFn: () => jobsApi.getJobs(normalizedFilters),
-        staleTime: 30 * 1000, // listings can refresh often without hammering the API
-        gcTime: 2 * 60 * 1000,
+        staleTime: 2 * 60 * 1000, // AUD2-L08: 2 min — avoids hammering API on every mount without sacrificing freshness
+        gcTime: 5 * 60 * 1000,
         placeholderData: keepPreviousData,
         ...options,
     });
@@ -104,7 +104,7 @@ export const useJobQuery = (jobId, options = {}) =>
         queryKey: jobKeys.detail(jobId),
         queryFn: () => jobsApi.getJobById(jobId),
         enabled: Boolean(jobId),
-        staleTime: 30 * 1000,
+        staleTime: 2 * 60 * 1000, // AUD2-L08: 2 min for detail pages
         gcTime: 5 * 60 * 1000,
         ...options,
     });
@@ -113,8 +113,8 @@ export const useSavedJobsQuery = (params = {}, options = {}) =>
     useQuery({
         queryKey: jobKeys.saved(params),
         queryFn: () => jobsApi.getSavedJobs(params),
-        staleTime: 30 * 1000,
-        gcTime: 2 * 60 * 1000,
+        staleTime: 2 * 60 * 1000, // AUD2-L08
+        gcTime: 5 * 60 * 1000,
         ...options,
     });
 

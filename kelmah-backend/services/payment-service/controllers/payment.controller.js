@@ -805,7 +805,17 @@ class PaymentController {
       });
 
     } catch (error) {
-      console.error('Create Transaction Record Error:', error);
+      // MED-09 FIX: Log as critical error with full context instead of silently swallowing
+      console.error('CRITICAL: Failed to create transaction record', {
+        paymentId: payment?.id,
+        userId: payment?.userId,
+        amount: payment?.amount,
+        method: payment?.method,
+        error: error.message,
+        stack: error.stack,
+      });
+      // Re-throw so callers can handle the failure (e.g. retry or flag for reconciliation)
+      throw error;
     }
   }
 }

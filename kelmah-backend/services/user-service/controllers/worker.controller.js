@@ -112,7 +112,8 @@ const autopopulateWorkerDefaults = async (worker, usersCollection) => {
   }
 
   if (worker.rating === undefined) {
-    updates.rating = 4.5;
+    // CRIT-07 FIX: Default to 0, not 4.5 — inflated ratings mislead hirers
+    updates.rating = 0;
     updateNeeded = true;
   }
 
@@ -183,7 +184,7 @@ const formatWorkerForResponse = (workerDoc) => {
       : 'Accra',
     hourlyRate: workerDoc.hourlyRate || 25,
     currency: workerDoc.currency || 'GHS',
-    rating: workerDoc.rating || 4.5,
+    rating: workerDoc.rating || 0,
     totalReviews: workerDoc.totalReviews || 0,
     totalJobsCompleted: workerDoc.totalJobsCompleted || 0,
     availabilityStatus: workerDoc.availabilityStatus || 'available',
@@ -1244,7 +1245,7 @@ class WorkerController {
         if (!worker.skills || worker.skills.length === 0) { updates.skills = ['General Work']; updateNeeded = true; }
         if (!worker.hourlyRate) { updates.hourlyRate = 25; updateNeeded = true; }
         if (!worker.currency) { updates.currency = 'GHS'; updateNeeded = true; }
-        if (worker.rating === undefined) { updates.rating = 4.5; updateNeeded = true; }
+        if (worker.rating === undefined) { updates.rating = 0; updateNeeded = true; }
         if (!worker.totalReviews) { updates.totalReviews = 0; updateNeeded = true; }
         if (!worker.totalJobsCompleted) { updates.totalJobsCompleted = 0; updateNeeded = true; }
         if (!worker.availabilityStatus) { updates.availabilityStatus = 'available'; updateNeeded = true; }
@@ -1281,7 +1282,7 @@ class WorkerController {
         city: worker.location ? worker.location.split(',')[0].trim() : 'Accra', // Extract city from location
         hourlyRate: worker.hourlyRate || 25,
         currency: worker.currency || 'GHS',
-        rating: worker.rating || 4.5,
+        rating: worker.rating || 0,
         totalReviews: worker.totalReviews || 0,
         totalJobsCompleted: worker.totalJobsCompleted || 0,
         availabilityStatus: worker.availabilityStatus || 'available',
@@ -1460,7 +1461,8 @@ class WorkerController {
           updateNeeded = true;
         }
         if (!worker.rating) {
-          updates.rating = 4.5;
+          // CRIT-07 FIX: Default to 0, not 4.5
+          updates.rating = 0;
           updateNeeded = true;
         }
         if (!worker.totalReviews) {

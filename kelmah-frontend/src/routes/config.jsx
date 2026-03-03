@@ -14,8 +14,9 @@ const RegisterPage = lazy(() => import('../modules/auth/pages/RegisterPage'));
 const ForgotPasswordPage = lazy(
   () => import('../modules/auth/pages/ForgotPasswordPage'),
 );
-// NOTE: Use non-module page to avoid importing broken legacy module ResetPasswordPage
-const ResetPasswordPage = lazy(() => import('../pages/ResetPassword'));
+// AUD2-M13 FIX: The module ResetPasswordPage is a clean re-export of pages/ResetPassword.
+// Switched to canonical module path for architectural consistency.
+const ResetPasswordPage = lazy(() => import('../modules/auth/pages/ResetPasswordPage'));
 const VerifyEmailPage = lazy(
   () => import('../modules/auth/pages/VerifyEmailPage'),
 );

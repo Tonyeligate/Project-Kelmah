@@ -310,13 +310,22 @@ exports.toggleBookmark = async (req, res) => {
   }
 };
 
+// LOW-11 FIX: Return populated worker details alongside IDs
 exports.getBookmarks = async (req, res) => {
   try {
     const userId = resolveRequesterId(req);
     if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
-    const docs = await Bookmark.find({ userId }).select('workerId');
+    const docs = await Bookmark.find({ userId }).select('workerId').lean();
     const workerIds = docs.map(d => String(d.workerId));
-    return res.json({ success: true, data: { workerIds } });
+    // Try to populate basic worker info; fall back to IDs only on failure
+    let workers = [];
+    try {
+      const { WorkerProfile } = require('../models');
+      workers = await WorkerProfile.find({ userId: { $in: workerIds } })
+        .select('userId skills hourlyRate isAvailable rating')
+        .lean();
+    } catch (_) { /* populate optional */ }
+    return res.json({ success: true, data: { workerIds, workers } });
   } catch (e) {
     console.error('getBookmarks error:', e);
     return res.status(500).json({ success: false, message: 'Failed to load bookmarks' });
@@ -525,11 +534,30 @@ exports.getEarnings = async (req, res) => {
 /**
  * Get all users (MongoDB)
  */
+/**
+ * Get all users (MongoDB)
+ * MED-11 FIX: Added pagination with limit/skip and max page size
+ */
 exports.getAllUsers = async (req, res, next) => {
   try {
     const UserModel = requireUserModel();
-    const users = await UserModel.find({}).select('-password -refreshToken');
-    res.json(users);
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
+    const skip = (page - 1) * limit;
+    const role = req.query.role;
+
+    const filter = {};
+    if (role && ['worker', 'hirer', 'admin'].includes(role)) filter.role = role;
+
+    const [users, total] = await Promise.all([
+      UserModel.find(filter).select('-password -refreshToken').skip(skip).limit(limit).lean(),
+      UserModel.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      data: { users, pagination: { page, limit, total, pages: Math.ceil(total / limit) } }
+    });
   } catch (err) {
     next(err);
   }
@@ -600,11 +628,28 @@ exports.bulkDeleteUsers = async (req, res) => {
 
 /**
  * Create a new user (MongoDB)
+ * HIGH-12 FIX: Whitelist allowed fields — never pass raw req.body to Model.create()
  */
 exports.createUser = async (req, res, next) => {
   try {
     const UserModel = requireUserModel();
-    const user = await UserModel.create(req.body);
+    // Only allow safe fields — prevents privilege escalation via isAdmin, role, etc.
+    const ALLOWED_FIELDS = [
+      'firstName', 'lastName', 'email', 'password', 'role',
+      'phone', 'location', 'bio', 'profession',
+      'skills', 'hourlyRate', 'currency', 'profilePicture'
+    ];
+    const sanitized = {};
+    for (const field of ALLOWED_FIELDS) {
+      if (req.body[field] !== undefined) {
+        sanitized[field] = req.body[field];
+      }
+    }
+    // Enforce role whitelist
+    if (sanitized.role && !['worker', 'hirer'].includes(sanitized.role)) {
+      return res.status(400).json({ success: false, error: { message: 'Invalid role' } });
+    }
+    const user = await UserModel.create(sanitized);
     // Remove sensitive data before sending response
     const userResponse = user.toObject();
     delete userResponse.password;
@@ -657,13 +702,18 @@ exports.getDashboardMetrics = async (req, res) => {
     const totalWorkers = totalWorkersResult.status === 'fulfilled' ? totalWorkersResult.value : 0;
     const activeWorkers = activeWorkersResult.status === 'fulfilled' ? activeWorkersResult.value : 0;
 
+    // MED-13 FIX: Track failed metrics for partial data indication
+    const failedMetrics = [];
     if (totalUsersResult.status === 'rejected') {
+      failedMetrics.push('totalUsers');
       console.warn('Dashboard metrics: failed to count users:', totalUsersResult.reason?.message);
     }
     if (totalWorkersResult.status === 'rejected') {
+      failedMetrics.push('totalWorkers');
       console.warn('Dashboard metrics: failed to count worker profiles:', totalWorkersResult.reason?.message);
     }
     if (activeWorkersResult.status === 'rejected') {
+      failedMetrics.push('activeWorkers');
       console.warn('Dashboard metrics: failed to count available workers:', activeWorkersResult.reason?.message);
     }
 
@@ -699,6 +749,8 @@ exports.getDashboardMetrics = async (req, res) => {
       growthRate: totalUsers > 0 ? Math.round((activeWorkers / totalUsers) * 100) : 0,
       source: 'database',
       jobMetricsSource,
+      // MED-13 FIX: Indicate which metrics failed so frontend can show partial data warnings
+      ...(failedMetrics.length > 0 && { partial: true, failedMetrics }),
     };
 
     return res.json(metrics);

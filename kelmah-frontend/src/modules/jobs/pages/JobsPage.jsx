@@ -63,7 +63,6 @@
  */
 
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import prefetchLazyIcons from '@/utils/prefetchLazyIcons';
 import HeroFiltersSection from '../components/HeroFiltersSection';
 import JobResultsSection from '../components/JobResultsSection';
 import JobsCompactSearchBar from '../components/JobsCompactSearchBar';
@@ -167,29 +166,9 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 
-// Lazy-load non-critical icons to reduce initial bundle
-const LazyIcons = {
-  ElectricalServices: React.lazy(
-    () => import('@mui/icons-material/ElectricalServices'),
-  ),
-  Plumbing: React.lazy(() => import('@mui/icons-material/Plumbing')),
-  Handyman: React.lazy(() => import('@mui/icons-material/Handyman')),
-  Construction: React.lazy(() => import('@mui/icons-material/Construction')),
-  Thermostat: React.lazy(() => import('@mui/icons-material/Thermostat')),
-  RoofingSharp: React.lazy(() => import('@mui/icons-material/RoofingSharp')),
-  FormatPaint: React.lazy(() => import('@mui/icons-material/FormatPaint')),
-  Build: React.lazy(() => import('@mui/icons-material/Build')),
-  Refresh: React.lazy(() => import('@mui/icons-material/Refresh')),
-  FlashOn: React.lazy(() => import('@mui/icons-material/FlashOn')),
-  LocalFireDepartment: React.lazy(
-    () => import('@mui/icons-material/LocalFireDepartment'),
-  ),
-  Visibility: React.lazy(() => import('@mui/icons-material/Visibility')),
-  BookmarkBorder: React.lazy(
-    () => import('@mui/icons-material/BookmarkBorder'),
-  ),
-  Share: React.lazy(() => import('@mui/icons-material/Share')),
-};
+// AUD2-H01 FIX: Removed LazyIcons wrapper — all icons are already eagerly imported above.
+// Creating React.lazy() wrappers for eagerly-imported modules creates redundant async chunks
+// without any bundle-size benefit.
 import { motion, AnimatePresence } from 'framer-motion';
 // styled + keyframes import removed — HeroSection (only user) was dead code
 import { format, formatDistanceToNow } from 'date-fns';
@@ -527,7 +506,6 @@ const JobsPage = () => {
     successRate: 0,
     loading: true,
   });
-  const hasPrefetchedLazyIcons = useRef(false);
   const jobsCountRef = useRef(0);
   // Ghana-aware helpers for better UX and ranking
   const GHANA_REGIONS = [
@@ -673,17 +651,6 @@ const JobsPage = () => {
   useEffect(() => {
     jobsCountRef.current = jobs.length;
   }, [jobs.length]);
-
-  // Warm non-critical icon bundles once hero content settles to avoid accordion flashes later
-  useEffect(() => {
-    if (hasPrefetchedLazyIcons.current || loading) {
-      return undefined;
-    }
-
-    const cancelPrefetch = prefetchLazyIcons(LazyIcons);
-    hasPrefetchedLazyIcons.current = true;
-    return () => cancelPrefetch?.();
-  }, [loading]);
 
   // Fetch platform statistics from the real API endpoint
   useEffect(() => {

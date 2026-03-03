@@ -53,11 +53,15 @@ const normalizeApplication = (raw, jobIdFallback) => {
   return {
     ...raw,
     id: raw?.id || raw?._id,
-    jobId: raw?.jobId || raw?.job || jobIdFallback,
+    // AUD2-M02 FIX: Extract ID string when raw.job is a populated object, not just an ID
+    jobId: raw?.jobId || raw?.job?._id || raw?.job?.id || (typeof raw?.job === 'string' ? raw?.job : undefined) || jobIdFallback,
     workerId: raw?.workerId || worker?.id || worker?._id,
     workerName,
     workerAvatar: raw?.workerAvatar || worker?.avatar || worker?.profileImage,
-    workerRating: Number(raw?.workerRating ?? worker?.rating ?? 0),
+    // AUD2-M12 FIX: Use null (not 0) for unreviewed workers so Rating shows empty vs bad
+    workerRating: (raw?.workerRating != null || worker?.rating != null)
+      ? Number(raw?.workerRating ?? worker?.rating)
+      : null,
     coverLetter: raw?.coverLetter || raw?.coverLetterPreview || '',
   };
 };
@@ -91,12 +95,19 @@ const ApplicationCard = ({ application, isSelected, onSelect }) => {
           <Avatar src={application.workerAvatar} sx={{ mr: 2 }} />
           <Box>
             <Typography variant="h6">{application.workerName}</Typography>
-            <Rating
-              value={application.workerRating}
-              precision={0.5}
-              readOnly
-              size="small"
-            />
+            {/* AUD2-M12 FIX: Distinguish "no reviews yet" (null) from low rating (0) */}
+            {application.workerRating !== null ? (
+              <Rating
+                value={application.workerRating}
+                precision={0.5}
+                readOnly
+                size="small"
+              />
+            ) : (
+              <Typography variant="caption" color="text.disabled">
+                No reviews yet
+              </Typography>
+            )}
           </Box>
         </Box>
         <Typography variant="body2" color="text.secondary" noWrap>
@@ -349,7 +360,11 @@ function ApplicationManagementPage() {
                     <Typography variant="h5">
                       {selectedApplication.workerName}
                     </Typography>
-                    <Rating value={selectedApplication.workerRating} readOnly />
+                    {selectedApplication.workerRating !== null ? (
+                      <Rating value={selectedApplication.workerRating} readOnly />
+                    ) : (
+                      <Typography variant="body2" color="text.disabled">No reviews yet</Typography>
+                    )}
                   </div>
                 </Box>
                 <Divider sx={{ my: 2 }} />

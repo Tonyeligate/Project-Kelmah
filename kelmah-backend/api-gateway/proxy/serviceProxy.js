@@ -140,22 +140,32 @@ const createServiceProxy = (options) => {
         proxyReq.setHeader('Authorization', incomingAuthHeader);
       }
       
-      // Add internal service identification
-      const internalKey = process.env.INTERNAL_API_KEY || (process.env.NODE_ENV !== 'production' ? 'internal-request' : undefined);
+      // CRIT-12 FIX: Generate a random internal API key at startup if not provided,
+      // instead of using a predictable 'internal-request' string.
+      if (!process.env.INTERNAL_API_KEY && !serviceProxy._devInternalKey) {
+        serviceProxy._devInternalKey = require('crypto').randomBytes(32).toString('hex');
+      }
+      const internalKey = process.env.INTERNAL_API_KEY || serviceProxy._devInternalKey;
       if (internalKey) {
         proxyReq.setHeader('X-Internal-Request', internalKey);
       }
 
-      // If body was already parsed by Express (application/json), re-send it to the upstream
+      // LOW-10 FIX: Handle both JSON and URL-encoded bodies parsed by Express
       try {
         const method = (req.method || '').toUpperCase();
         const contentType = (req.headers['content-type'] || '').toLowerCase();
-        const isJson = contentType.includes('application/json');
         const hasBody = req.body && Object.keys(req.body).length > 0;
-        if (method !== 'GET' && method !== 'HEAD' && isJson && hasBody) {
-          const bodyData = JSON.stringify(req.body);
-          proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-          proxyReq.write(bodyData);
+        if (method !== 'GET' && method !== 'HEAD' && hasBody) {
+          let bodyData;
+          if (contentType.includes('application/json')) {
+            bodyData = JSON.stringify(req.body);
+          } else if (contentType.includes('application/x-www-form-urlencoded')) {
+            bodyData = new URLSearchParams(req.body).toString();
+          }
+          if (bodyData) {
+            proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+            proxyReq.write(bodyData);
+          }
         }
       } catch (_) {}
       

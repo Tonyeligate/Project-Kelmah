@@ -37,7 +37,9 @@ const {
  * Dynamic Proxy Middleware Creator
  * Creates proxy middleware that resolves service URLs at runtime.
  * Caches proxy instances per service+options to avoid per-request allocation.
+ * MED-18 FIX: Added max size limit to prevent unbounded growth.
  */
+const MAX_PROXY_CACHE_SIZE = 100;
 const proxyCache = new Map();
 
 const createDynamicProxy = (serviceName, options = {}) => {
@@ -59,6 +61,11 @@ const createDynamicProxy = (serviceName, options = {}) => {
       const instanceKey = `${cacheKey}:${targetUrl}`;
       let proxy = proxyCache.get(instanceKey);
       if (!proxy) {
+        // MED-18 FIX: Evict oldest entry if cache exceeds max size
+        if (proxyCache.size >= MAX_PROXY_CACHE_SIZE) {
+          const oldest = proxyCache.keys().next().value;
+          proxyCache.delete(oldest);
+        }
         proxy = createProxyMiddleware({
           target: targetUrl,
           changeOrigin: true,
@@ -802,11 +809,13 @@ app.use('/api/quick-jobs', authenticate, (req, res, next) => {
 
 // Payment routes (protected with validation) — use dedicated router to expose granular endpoints and aliases
 const paymentRouter = require('./routes/payment.routes');
+// HIGH-21 FIX: Removed `requestValidator.validatePayment` from global middleware.
+// Payment validation should only apply to POST routes that process payments,
+// not to GET routes like /wallet/balance or /methods.
 app.use('/api/payments',
   rateLimit({ windowMs: 15 * 60 * 1000, max: 50 }),
   authenticate,
   requestValidator.enforceTierLimits(),
-  requestValidator.validatePayment,
   paymentRouter
 );
 

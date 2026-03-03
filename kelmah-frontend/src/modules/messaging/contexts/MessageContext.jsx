@@ -9,9 +9,10 @@ import React, {
 import PropTypes from 'prop-types';
 import { messagingService } from '../services/messagingService';
 import { useAuth } from '../../auth/hooks/useAuth';
-import io from 'socket.io-client';
+// CRIT-08 FIX: Removed direct `import io` — reuse the global websocketService
+// singleton instead of creating a second Socket.IO connection.
+import websocketService from '../../../services/websocketService';
 import { normalizeAttachmentListVirusScan } from '../utils/virusScanUtils';
-import { getWebSocketUrl } from '../../../services/socketUrl';
 
 const MessageContext = createContext(null);
 
@@ -81,7 +82,9 @@ export const MessageProvider = ({ children }) => {
     }
   }, []);
 
-  // WebSocket connection setup with singleton pattern to prevent multiple connections
+  // CRIT-08 FIX: Reuse the global websocketService singleton instead of
+  // creating a second Socket.IO connection. We subscribe to the
+  // messaging-specific events on the shared socket.
   const connectWebSocket = useCallback(async () => {
     if (!user) return;
     if (socketRef.current || connectingRef.current) return;
@@ -91,36 +94,30 @@ export const MessageProvider = ({ children }) => {
     connectingRef.current = true;
 
     try {
-      const wsUrl = await getWebSocketUrl();
-      console.log('🔌 Connecting to messaging WebSocket backend:', wsUrl);
+      // Ensure the global websocket service is connected
+      if (!websocketService.isConnected) {
+        await websocketService.connect(user.id, user.role, token);
+      }
 
-      const newSocket = io(wsUrl, {
-        auth: {
-          token,
-          userId: user.id,
-          userRole: user.role,
-        },
-        transports: ['websocket', 'polling'],
-        upgrade: true,
-        timeout: 20000,
-        reconnection: true,
-        reconnectionAttempts: 2, // Keep retries low to reduce noisy failures on sleeping backends
-        reconnectionDelay: 2000, // Increased delay
-        reconnectionDelayMax: 5000,
-        maxReconnectionAttempts: 3,
-      });
+      const sharedSocket = websocketService.socket;
+      if (!sharedSocket) {
+        console.warn('WebSocketService socket unavailable — messaging will use REST only');
+        setRealtimeIssue('Real-time connection unavailable. Using standard refresh mode.');
+        connectingRef.current = false;
+        return;
+      }
 
-    // Connection events
-      newSocket.on('connect', () => {
-        console.log('✅ WebSocket connected for messaging');
+      console.log('🔌 MessageContext: reusing shared WebSocket connection');
+
+      // Listen for messaging-specific events on the SHARED socket
+      sharedSocket.on('connect', () => {
         setIsConnected(true);
         setRealtimeIssue(null);
         socketErrorLoggedRef.current = false;
         connectingRef.current = false;
       });
 
-      newSocket.on('disconnect', (reason) => {
-        console.log('❌ WebSocket disconnected');
+      sharedSocket.on('disconnect', (reason) => {
         setIsConnected(false);
         if (reason && reason !== 'io client disconnect') {
           setRealtimeIssue('Real-time updates are temporarily unavailable.');
@@ -128,7 +125,7 @@ export const MessageProvider = ({ children }) => {
         connectingRef.current = false;
       });
 
-      newSocket.on('connect_error', (error) => {
+      sharedSocket.on('connect_error', (error) => {
         if (!socketErrorLoggedRef.current) {
           console.error('🚨 WebSocket connection error:', error);
           socketErrorLoggedRef.current = true;
@@ -137,7 +134,7 @@ export const MessageProvider = ({ children }) => {
         connectingRef.current = false;
       });
 
-      newSocket.on('connected', (data) => {
+      sharedSocket.on('connected', (data) => {
         console.log('🎉 Messaging service connected:', data);
         if (data.conversations) {
           setConversations(data.conversations);
@@ -145,7 +142,7 @@ export const MessageProvider = ({ children }) => {
       });
 
     // Real-time message events
-      newSocket.on('new_message', (messageData) => {
+      sharedSocket.on('new_message', (messageData) => {
         console.log('📨 New message received:', messageData);
         const hydratedMessage = normalizeMessageAttachments(messageData);
         const activeConversation = selectedConversationRef.current;
@@ -182,7 +179,7 @@ export const MessageProvider = ({ children }) => {
       });
 
     // Typing indicators
-    newSocket.on('user_typing', (data) => {
+    sharedSocket.on('user_typing', (data) => {
       const { conversationId, userId, isTyping, user: typingUser } = data;
       setTypingUsers((prev) => {
         const newMap = new Map(prev);
@@ -205,7 +202,7 @@ export const MessageProvider = ({ children }) => {
     });
 
     // Read receipts
-      newSocket.on('messages_read', (data) => {
+      sharedSocket.on('messages_read', (data) => {
         console.log('📖 Messages marked as read:', data);
         const activeConversation = selectedConversationRef.current;
         if (
@@ -223,7 +220,7 @@ export const MessageProvider = ({ children }) => {
       });
 
     // User status updates
-      newSocket.on('user_status_changed', (data) => {
+      sharedSocket.on('user_status_changed', (data) => {
         const { userId, status } = data;
         setOnlineUsers((prev) => {
           const newSet = new Set(prev);
@@ -237,12 +234,17 @@ export const MessageProvider = ({ children }) => {
       });
 
     // Error handling
-      newSocket.on('error', (error) => {
+      sharedSocket.on('error', (error) => {
         console.error('🚨 WebSocket error:', error);
       });
 
-      socketRef.current = newSocket;
-      setSocket(newSocket);
+      socketRef.current = sharedSocket;
+      setSocket(sharedSocket);
+      // If socket is already connected, update state immediately
+      if (sharedSocket.connected) {
+        setIsConnected(true);
+        connectingRef.current = false;
+      }
     } catch (error) {
       console.error('Failed to initialize messaging socket:', error);
       setRealtimeIssue('Real-time connection failed. Using standard refresh mode.');
@@ -251,19 +253,23 @@ export const MessageProvider = ({ children }) => {
   }, [user]);
 
   // Disconnect WebSocket
+  // CRIT-08 FIX: Only remove messaging-specific listeners from the shared
+  // socket. Do NOT call activeSocket.disconnect() — that would kill the
+  // connection for notifications and all other features too.
   const disconnectWebSocket = useCallback(() => {
     const activeSocket = socketRef.current;
     if (activeSocket) {
-      console.log('🔌 Disconnecting WebSocket');
+      console.log('🔌 MessageContext: detaching messaging listeners from shared socket');
+      const messagingEvents = [
+        'new_message', 'user_typing', 'messages_read',
+        'user_status_changed', 'connected'
+      ];
       try {
-        activeSocket.removeAllListeners && activeSocket.removeAllListeners();
+        messagingEvents.forEach(evt => activeSocket.off(evt));
       } catch (error) {
-        console.warn(
-          'Failed to remove socket listeners before disconnect',
-          error,
-        );
+        console.warn('Failed to remove messaging listeners', error);
       }
-      activeSocket.disconnect();
+      // Do NOT disconnect the shared socket
       setSocket(null);
       setIsConnected(false);
       setRealtimeIssue(null);
@@ -319,11 +325,19 @@ export const MessageProvider = ({ children }) => {
             loadingMessagesRef.current = false;
           });
 
-          // Fallback timeout — use ref to avoid stale closure
-          setTimeout(() => {
+          // MED-21 FIX: Fallback timeout — fetch via REST if WS doesn't respond in time
+          const conversationId = conversation.id;
+          setTimeout(async () => {
             if (loadingMessagesRef.current) {
-              setLoadingMessages(false);
-              loadingMessagesRef.current = false;
+              try {
+                const fallbackMessages = await messagingService.getMessages(conversationId);
+                setMessages(normalizeMessageList(fallbackMessages));
+              } catch (fallbackErr) {
+                console.warn('REST fallback for messages also failed:', fallbackErr.message);
+              } finally {
+                setLoadingMessages(false);
+                loadingMessagesRef.current = false;
+              }
             }
           }, 5000);
         } else {

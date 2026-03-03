@@ -167,10 +167,12 @@ const createJob = async (req, res, next) => {
       const allSkills = Array.isArray(body.skills) ? body.skills.map(String) : [];
       const validSkills = allSkills.filter(skill => VALID_PRIMARY_SKILLS.includes(skill));
 
-      // If no valid skills found, try to map category to a skill or use default
+      // If no valid skills found, try to map category to a skill
+      // AUD2-M01 FIX: Expanded map to cover all frontend-offered categories.
+      // Unmapped categories now return a clear 400 instead of silently misfiling as Construction.
       let primary = validSkills.length > 0 ? [validSkills[0]] : [];
       if (primary.length === 0 && body.category) {
-        // Map common categories to primarySkills
+        // Map frontend-offered categories to primarySkills enum values
         const categoryToSkill = {
           'Plumbing': 'Plumbing',
           'Electrical': 'Electrical',
@@ -184,14 +186,29 @@ const createJob = async (req, res, next) => {
           'Flooring': 'Flooring',
           'Construction': 'Construction',
           'Interior Design': 'Painting',
-          'Landscaping': 'Construction'
+          'Landscaping': 'Construction',
+          // Additional categories aligned with frontend options
+          'General Repairs': 'Construction',
+          'Cleaning': 'Construction',
+          'Pest Control': 'Construction',
+          'Security': 'Construction',
+          'IT/Tech': 'Construction',
         };
         const mappedSkill = categoryToSkill[body.category];
         if (mappedSkill) {
           primary = [mappedSkill];
         } else {
-          // Default fallback to Construction if nothing matches
-          primary = ['Construction'];
+          // AUD2-M01 FIX: Return 400 for unknown categories instead of silently misfiling
+          // as Construction which corrupts search index and worker matching.
+          jobLogger.warn('job.create.unmappedCategory', {
+            ...baseLogMeta,
+            category: body.category,
+            message: 'Category cannot be mapped to a valid primary skill'
+          });
+          return errorResponse(res, 400,
+            `Category "${body.category}" is not supported. Please use one of the available categories or include a matching skill from: ${VALID_PRIMARY_SKILLS.join(', ')}`,
+            'UNSUPPORTED_CATEGORY'
+          );
         }
       }
 
@@ -366,17 +383,12 @@ const createJob = async (req, res, next) => {
       connectionMongooseId: mongoose.models ? Object.keys(mongoose.models).length : 'unknown'
     });
 
-    // If validation issues exist, fail fast with clear error message instead of waiting for timeout
-    if (validationIssues.length > 0) {
-      jobLogger.error('job.create.validationFailed', {
-        ...baseLogMeta,
-        issues: validationIssues
-      });
-      return errorResponse(res, 400, `Schema validation failed: ${validationIssues.join('; ')}`, 'VALIDATION_ERROR');
-    }
+    // AUD2-M10 FIX: Removed duplicate fail-fast based on manual validationIssues array.
+    // Mongoose validateSync() below is the single canonical gating check.
+    // The manual block above is retained only for its detailed diagnostic logging.
 
     // ========== ATTEMPT DOCUMENT CREATION ==========
-    // Try using validateSync first to catch any mongoose validation issues
+    // validateSync catches any schema violations before we attempt a DB write.
     const jobDoc = new Job(body);
     const syncValidationError = jobDoc.validateSync();
     if (syncValidationError) {
@@ -609,20 +621,54 @@ const createMilestone = async (req, res, next) => {
 const updateMilestone = async (req, res, next) => {
   try {
     const userId = req.user?.id;
+    const userRole = req.user?.role;
     const contracts = await Contract.find({ 'milestones._id': req.params.milestoneId });
     if (!contracts.length) return errorResponse(res, 404, 'Milestone not found');
     const contract = contracts[0];
-    if (String(contract.hirer) !== String(userId) && String(contract.worker) !== String(userId)) {
+    const isHirer = String(contract.hirer) === String(userId);
+    const isWorker = String(contract.worker) === String(userId);
+    if (!isHirer && !isWorker) {
       return errorResponse(res, 403, 'Only contract parties can update milestones');
     }
 
     const milestone = contract.milestones.id(req.params.milestoneId);
     const { title, description, amount, dueDate, status } = req.body;
-    if (title) milestone.title = title;
-    if (description) milestone.description = description;
-    if (amount !== undefined) milestone.amount = amount;
-    if (dueDate) milestone.dueDate = dueDate;
-    if (status) milestone.status = status;
+
+    // CRIT-06 FIX: Validate status transitions and enforce role-based restrictions.
+    // Valid flow: pending → in_progress → completed → approved → paid
+    if (status) {
+      const VALID_TRANSITIONS = {
+        'pending': ['in_progress'],
+        'in_progress': ['completed'],
+        'completed': ['approved'],
+        'approved': ['paid'],
+        'paid': []
+      };
+      // Role restrictions: workers mark in_progress/completed; hirers approve/pay
+      const WORKER_STATUSES = ['in_progress', 'completed'];
+      const HIRER_STATUSES = ['approved', 'paid'];
+
+      const allowed = VALID_TRANSITIONS[milestone.status];
+      if (!allowed || !allowed.includes(status)) {
+        return errorResponse(res, 400,
+          `Cannot transition milestone from "${milestone.status}" to "${status}". Allowed: ${(allowed || []).join(', ') || 'none'}`);
+      }
+      if (WORKER_STATUSES.includes(status) && !isWorker) {
+        return errorResponse(res, 403, 'Only the worker can mark milestones as in-progress or completed');
+      }
+      if (HIRER_STATUSES.includes(status) && !isHirer) {
+        return errorResponse(res, 403, 'Only the hirer can approve or pay milestones');
+      }
+      milestone.status = status;
+    }
+
+    // Only allow metadata edits on pending milestones
+    if (milestone.status === 'pending' || !status) {
+      if (title) milestone.title = title;
+      if (description) milestone.description = description;
+      if (amount !== undefined) milestone.amount = amount;
+      if (dueDate) milestone.dueDate = dueDate;
+    }
 
     await contract.save();
     return successResponse(res, 200, 'Milestone updated', milestone);
@@ -1276,8 +1322,10 @@ const getJobById = async (req, res, next) => {
       return errorResponse(res, 404, "Job not found");
     }
 
-    // Increment view count atomically (avoids full-document write + race conditions)
-    Job.findByIdAndUpdate(req.params.id, { $inc: { viewCount: 1 } }).catch(() => {});
+    // LOW-02 FIX: Log view count errors instead of silently swallowing
+    Job.findByIdAndUpdate(req.params.id, { $inc: { viewCount: 1 } }).catch((err) => {
+      console.warn(`viewCount increment failed for job ${req.params.id}:`, err.message);
+    });
 
     // Transform job data to match frontend expectations
     const transformedJob = {
@@ -2107,8 +2155,9 @@ const advancedJobSearch = async (req, res, next) => {
       const escapeRx = (v) => String(v).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const safeQuery = escapeRx(query);
       const searchTerms = query.trim().split(' ');
+      // MED-02 FIX: Removed $text search (requires text index that may not exist).
+      // Regex fallbacks provide equivalent coverage without index dependency.
       const searchConditions = [
-        { $text: { $search: query } },
         { title: { $regex: safeQuery, $options: 'i' } },
         { description: { $regex: safeQuery, $options: 'i' } },
         { skills: { $in: searchTerms.map(term => new RegExp(escapeRx(term), 'i')) } },
@@ -2424,8 +2473,11 @@ const getMyAssignedJobs = async (req, res, next) => {
     const startIndex = (page - 1) * limit;
     const query = { worker: req.user.id };
     if (req.query.status) query.status = req.query.status;
+    // AUD2-H02 FIX: Populate payment so the frontend earningsSummary can derive
+    // totalEarnings from job.payment.amount instead of falling back to 0.
     const jobs = await Job.find(query)
       .populate('hirer', 'firstName lastName profileImage')
+      .populate('payment', 'amount status paidAt currency')
       .skip(startIndex)
       .limit(limit)
       .sort(req.query.sort || '-createdAt');
@@ -2793,7 +2845,8 @@ const saveJob = async (req, res, next) => {
     await SavedJob.create({ user: userId, job: jobId });
     return successResponse(res, 201, 'Job saved');
   } catch (error) {
-    if (error?.code === 11000) return successResponse(res, 200, 'Job already saved');
+    // LOW-03 FIX: Return 409 Conflict for duplicate save (idempotent but semantically correct)
+    if (error?.code === 11000) return successResponse(res, 409, 'Job already saved');
     next(error);
   }
 };

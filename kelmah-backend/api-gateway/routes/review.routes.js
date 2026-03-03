@@ -1,5 +1,9 @@
 /**
- * Review Service Routes
+ * @deprecated CRIT-11: This file is NOT imported by server.js. All review-service
+ * routing is handled via inline proxy config in server.js.  Do NOT edit
+ * this file expecting changes to take effect. Scheduled for deletion.
+ *
+ * Review Service Routes (DEAD CODE)
  * Proxy configuration for review-service endpoints
  */
 const express = require('express');

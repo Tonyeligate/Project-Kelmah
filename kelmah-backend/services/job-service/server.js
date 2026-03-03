@@ -231,36 +231,26 @@ try {
 
 // Defer mounting API routes until DB is connected to avoid Mongoose buffering timeouts
 let apiRoutesMounted = false;
+// HIGH-05 FIX: Only log route mounting in development
 const mountApiRoutes = () => {
-  console.log('[ROUTE MOUNTING] mountApiRoutes() function called!');
-  console.log('[ROUTE MOUNTING] apiRoutesMounted flag:', apiRoutesMounted);
+  if (process.env.NODE_ENV === 'development') console.log('[ROUTE MOUNTING] mountApiRoutes() function called!');
   if (apiRoutesMounted) {
-    console.log('[ROUTE MOUNTING] Routes already mounted, skipping');
     return;
   }
   // Mount routes under both /jobs and /api/jobs for backward compatibility
   // API Gateway forwards to /api/jobs, but some direct calls use /jobs
-  console.log('[ROUTE MOUNTING] Mounting /jobs routes...');
   app.use("/jobs", jobRoutes);
-  console.log('[ROUTE MOUNTING] Mounting /api/jobs routes (API Gateway compatibility)...');
   app.use("/api/jobs", jobRoutes);
-  console.log('[ROUTE MOUNTING] Mounting /bids routes...');
   app.use("/bids", bidRoutes);
-  console.log('[ROUTE MOUNTING] Mounting /api/bids routes (API Gateway compatibility)...');
   app.use("/api/bids", bidRoutes);
-  console.log('[ROUTE MOUNTING] Mounting /user-performance routes...');
   app.use("/user-performance", userPerformanceRoutes);
-  console.log('[ROUTE MOUNTING] Mounting /api/user-performance routes (API Gateway compatibility)...');
   app.use("/api/user-performance", userPerformanceRoutes);
   
   // QuickJob routes - Protected Quick-Hire System
-  console.log('[ROUTE MOUNTING] Mounting /quick-jobs routes...');
   app.use("/quick-jobs", quickJobRoutes);
-  console.log('[ROUTE MOUNTING] Mounting /api/quick-jobs routes (API Gateway compatibility)...');
   app.use("/api/quick-jobs", quickJobRoutes);
   
   apiRoutesMounted = true;
-  console.log('[ROUTE MOUNTING] ✅ All API routes mounted successfully!');
   logger.info('✅ API routes mounted after DB connection');
 };
 
@@ -337,16 +327,20 @@ async function startServerWithDbRetry() {
 }
 
 // Add middleware to log ALL incoming requests BEFORE mounting routes
-app.use((req, res, next) => {
-  console.log('[REQUEST DEBUG] Incoming request:');
-  console.log('  - Method:', req.method);
-  console.log('  - Path (req.path):', req.path);
-  console.log('  - URL (req.url):', req.url);
-  console.log('  - Original URL:', req.originalUrl);
-  console.log('  - Base URL:', req.baseUrl);
-  console.log('  - Query:', JSON.stringify(req.query));
-  next();
-});
+// MED-14 NOTE: Routes mounted before DB (EMERGENCY FIX) — controllers handle DB readiness internally.
+// Debug request logging gated behind development mode
+if (process.env.NODE_ENV === 'development') {
+  app.use((req, res, next) => {
+    console.log('[REQUEST DEBUG] Incoming request:');
+    console.log('  - Method:', req.method);
+    console.log('  - Path (req.path):', req.path);
+    console.log('  - URL (req.url):', req.url);
+    console.log('  - Original URL:', req.originalUrl);
+    console.log('  - Base URL:', req.baseUrl);
+    console.log('  - Query:', JSON.stringify(req.query));
+    next();
+  });
+}
 
 // EMERGENCY FIX: Mount routes IMMEDIATELY (don't wait for DB)
 // Routes will work; only the DB queries inside controllers need DB

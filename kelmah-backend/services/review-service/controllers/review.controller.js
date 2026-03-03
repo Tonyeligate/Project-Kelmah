@@ -55,7 +55,37 @@ exports.submitReview = async (req, res) => {
       });
     }
 
-    const job = await Job.findById(jobId).select('category').lean();
+    const job = await Job.findById(jobId).select('category status hirer').lean();
+
+    // HIGH-11 FIX: Enforce job completion before allowing reviews.
+    // Prevents gaming ratings on open/in-progress jobs.
+    if (!job) {
+      return res.status(404).json({ success: false, message: 'Job not found' });
+    }
+    if (job.status !== 'completed') {
+      return res.status(400).json({
+        success: false,
+        message: 'Reviews can only be submitted for completed jobs'
+      });
+    }
+
+    // Also verify the reviewer was actually involved in the job
+    // (either as the hirer or as the hired worker via Application)
+    const isHirer = String(job.hirer) === String(reviewerId);
+    if (!isHirer) {
+      const Application = require('../models').Application || require('../models/Application');
+      const wasHired = await Application.exists({
+        job: jobId,
+        worker: reviewerId,
+        status: 'completed'
+      });
+      if (!wasHired) {
+        return res.status(403).json({
+          success: false,
+          message: 'Only job participants (hirer or hired worker) can submit reviews'
+        });
+      }
+    }
 
     // Create review matching the Review schema: { job, reviewer, reviewee, rating, comment }
     const review = new Review({
@@ -337,7 +367,8 @@ exports.addReviewResponse = async (req, res) => {
 exports.voteHelpful = async (req, res) => {
   try {
     const { reviewId } = req.params;
-    const userId = req.user?.id || req.headers['x-user-id'];
+    // HIGH-24 FIX: Only use authenticated user ID, never spoofable headers
+    const userId = req.user?.id;
 
     if (!userId) {
       return res.status(401).json({
@@ -376,17 +407,35 @@ exports.voteHelpful = async (req, res) => {
 
 /**
  * Report a review
+ * HIGH-23 FIX: Require authentication, use $addToSet for reporters to prevent
+ * duplicate reports, and only flag the review after a threshold.
  */
 exports.reportReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
     const { reason } = req.body;
+    const userId = req.user?.id;
 
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required to report a review'
+      });
+    }
+
+    if (!reason || reason.trim().length < 5) {
+      return res.status(400).json({
+        success: false,
+        message: 'A reason for reporting is required (min 5 characters)'
+      });
+    }
+
+    // Use $addToSet to prevent duplicate reports from the same user
+    const REPORT_THRESHOLD = 3;
     const review = await Review.findByIdAndUpdate(
       reviewId,
       {
-        $inc: { reportCount: 1 },
-        $set: { status: 'flagged' }
+        $addToSet: { reporters: userId }
       },
       { new: true }
     );
@@ -396,6 +445,12 @@ exports.reportReview = async (req, res) => {
         success: false,
         message: 'Review not found'
       });
+    }
+
+    // Only flag for moderation after threshold
+    if (review.reporters && review.reporters.length >= REPORT_THRESHOLD) {
+      review.status = 'flagged';
+      await review.save();
     }
 
     res.json({

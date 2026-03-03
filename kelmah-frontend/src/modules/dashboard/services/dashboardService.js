@@ -1,22 +1,41 @@
 import { api } from '../../../services/apiClient';
-import { WS_CONFIG } from '../../../config/environment';
-import { io } from 'socket.io-client';
-import { getWebSocketUrl } from '../../../services/socketUrl';
+// MED-19 FIX: Use shared websocketService instead of creating a third socket connection
+import websocketService from '../../../services/websocketService';
 
 const __DEV__ = import.meta.env.DEV;
 const devLog = (...args) => { if (__DEV__) console.log(...args); };
 
 /**
- * Dashboard service to handle dashboard data fetching and real-time updates
+ * MED-20 FIX: Safe JWT decode utility (handles malformed tokens gracefully)
+ */
+function safeDecodeUserId(token) {
+  try {
+    if (!token || typeof token !== 'string') return null;
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(base64));
+    return payload.sub || payload.id || payload.userId || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Dashboard service to handle dashboard data fetching and real-time updates.
+ * MED-19: Reuses the shared websocketService singleton instead of creating its own Socket.IO connection.
  */
 class DashboardService {
   constructor() {
     this.token = null;
-    this.socket = null;
     this.listeners = {};
     this.connected = false;
     this._overviewCache = null;
     this._overviewCacheTime = 0;
+    // Bound handlers for removal
+    this._onDashboardUpdate = (data) => this._triggerListeners('dashboardUpdate', data);
+    this._onNewJob = (data) => this._triggerListeners('newJob', data);
+    this._onStatusChange = (data) => this._triggerListeners('statusChange', data);
   }
 
   /**
@@ -28,77 +47,47 @@ class DashboardService {
   }
 
   /**
-   * Initialize WebSocket connection for dashboard
+   * Subscribe to dashboard events on the shared socket
    */
   async connect() {
-    if (this.socket) return;
+    if (this.connected) return;
 
-    if (!this.token) return;
+    const socket = websocketService.socket;
+    if (!socket) {
+      devLog('⚠️ Dashboard: shared websocket not connected yet, deferring');
+      return;
+    }
 
-    const wsUrl = await getWebSocketUrl();
-    devLog('📡 Dashboard WebSocket connecting to:', wsUrl);
+    devLog('📡 Dashboard subscribing to shared websocket events');
 
-    // Connect to backend WebSocket server
-    // When passing full URL, Socket.IO automatically handles the path
-    this.socket = io(wsUrl, {
-      auth: { token: this.token },
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-    });
+    // Join dashboard channel using safely decoded user ID
+    const userId = safeDecodeUserId(this.token);
+    if (userId && socket.connected) {
+      socket.emit('join:dashboard', userId);
+    }
 
-    this.socket.on('connect', () => {
-      this.connected = true;
-      devLog('Dashboard socket connected');
-
-      // Join dashboard channel
-      try {
-        const base64 = this.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-        const userId = JSON.parse(atob(base64)).sub;
-        if (userId) this.socket.emit('join:dashboard', userId);
-      } catch (err) {
-        console.warn('Failed to decode token for dashboard join:', err.message);
-      }
-    });
-
-    this.socket.on('disconnect', () => {
-      this.connected = false;
-      devLog('Dashboard socket disconnected');
-    });
-
-    // Setup listeners for different dashboard events
-    this.socket.on('dashboard:update', (data) => {
-      this._triggerListeners('dashboardUpdate', data);
-    });
-
-    this.socket.on('dashboard:new-job', (data) => {
-      this._triggerListeners('newJob', data);
-    });
-
-    this.socket.on('dashboard:status-change', (data) => {
-      this._triggerListeners('statusChange', data);
-    });
+    // Subscribe to dashboard-specific events on the shared socket
+    socket.on('dashboard:update', this._onDashboardUpdate);
+    socket.on('dashboard:new-job', this._onNewJob);
+    socket.on('dashboard:status-change', this._onStatusChange);
+    this.connected = true;
   }
 
   /**
-   * Disconnect WebSocket
+   * Unsubscribe from dashboard events (does NOT disconnect the shared socket)
    */
   disconnect() {
-    if (!this.socket) return;
+    const socket = websocketService.socket;
+    if (!socket) return;
 
-    if (this.token) {
-      try {
-        const base64 = this.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-        const userId = JSON.parse(atob(base64)).sub;
-        if (userId) this.socket.emit('leave:dashboard', userId);
-      } catch (err) {
-        console.warn('Failed to decode token for dashboard leave:', err.message);
-      }
+    const userId = safeDecodeUserId(this.token);
+    if (userId && socket.connected) {
+      socket.emit('leave:dashboard', userId);
     }
 
-    this.socket.disconnect();
-    this.socket = null;
+    socket.off('dashboard:update', this._onDashboardUpdate);
+    socket.off('dashboard:new-job', this._onNewJob);
+    socket.off('dashboard:status-change', this._onStatusChange);
     this.connected = false;
   }
 
@@ -247,20 +236,24 @@ class DashboardService {
     }
   }
 
-  // Get upcoming tasks
+  // MED-22 FIX: Label as placeholder data derived from workers (no real tasks API yet)
   async getUpcomingTasks() {
     try {
       const response = await api.get('/users/dashboard/workers');
       const workers = response.data?.workers || response.data || [];
-      return workers.slice(0, 5).map((worker, index) => ({
-        id: worker.id || index,
-        title: `Follow up with ${worker.name || 'worker'}`,
-        dueDate: new Date(Date.now() + index * 86400000).toISOString(),
-        status: worker.isAvailable ? 'scheduled' : 'pending',
-      }));
+      return {
+        placeholder: true,
+        message: 'Tasks feature coming soon — showing suggested follow-ups',
+        tasks: workers.slice(0, 5).map((worker, index) => ({
+          id: worker.id || index,
+          title: `Follow up with ${worker.name || 'worker'}`,
+          dueDate: new Date(Date.now() + index * 86400000).toISOString(),
+          status: worker.isAvailable ? 'scheduled' : 'pending',
+        })),
+      };
     } catch (error) {
       console.error('Error fetching upcoming tasks:', error);
-      return [];
+      return { placeholder: true, tasks: [] };
     }
   }
 

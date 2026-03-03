@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import authService from '../services/authService';
 import {
@@ -7,7 +7,6 @@ import {
   verifyAuth as verifyAuthThunk,
   logoutUser,
 } from '../services/authSlice';
-import { secureStorage } from '../../../utils/secureStorage';
 
 const roleMatches = (userRole, requestedRole) => {
   if (!requestedRole || !userRole) return false;
@@ -26,10 +25,10 @@ const useAuth = () => {
     (state) => state.auth,
   );
 
-  const resolvedToken = useMemo(
-    () => token || secureStorage.getAuthToken(),
-    [token],
-  );
+  // CRIT-10 FIX: Redux store is the single source of truth for the token.
+  // Falling back to secureStorage can return a stale token after a refresh,
+  // causing divergence. The authSlice handles rehydration on app startup.
+  const resolvedToken = token;
 
   const login = useCallback(
     (credentials) => dispatch(loginThunk(credentials)).unwrap(),

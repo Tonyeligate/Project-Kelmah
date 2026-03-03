@@ -73,17 +73,20 @@ export const PaymentProvider = ({ children }) => {
       }
 
       // Transactions (404 -> empty)
+      // getTransactionHistory now returns { data: [...], pagination: {...} }
       if (transactionsRes.status === 'fulfilled') {
         const tr = transactionsRes.value;
-        const tx = Array.isArray(tr) ? tr : tr?.transactions || [];
+        const tx = Array.isArray(tr) ? tr : tr?.data || tr?.transactions || [];
         setTransactions(tx);
       } else if (transactionsRes.reason?.response?.status === 404) {
         setTransactions([]);
       }
 
       // Escrows (501/404 -> empty)
+      // getEscrows already returns a normalised array — guard anyway
       if (escrowsRes.status === 'fulfilled') {
-        setEscrows(escrowsRes.value || []);
+        const ev = escrowsRes.value;
+        setEscrows(Array.isArray(ev) ? ev : []);
       } else if ([404, 501].includes(escrowsRes.reason?.response?.status)) {
         setEscrows([]);
       }
@@ -172,10 +175,10 @@ export const PaymentProvider = ({ children }) => {
       setLoading(true);
       try {
         const data = await paymentService.getTransactionHistory(params);
-        // Extract transactions array from response object, ensure it's always an array
+        // getTransactionHistory returns { data: [...], pagination: {...} } or plain array
         const transactionsData = Array.isArray(data)
           ? data
-          : data?.transactions || [];
+          : data?.data || data?.transactions || [];
         setTransactions(transactionsData);
       } catch (err) {
         console.error('Failed to fetch transactions:', err);

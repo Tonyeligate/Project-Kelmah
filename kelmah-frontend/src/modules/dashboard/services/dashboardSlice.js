@@ -67,8 +67,13 @@ export const fetchDashboardData = createAsyncThunk(
       const lastUpdated = dashboard?.lastUpdated;
       const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
 
-      if (lastUpdated && new Date(lastUpdated).getTime() > fiveMinutesAgo) {
-        return dashboard.data; // Return cached data if recent
+      // HIGH-20 FIX: Skip cache when previous data has _serviceUnavailable
+      // so we always retry when a service was down.
+      const hasUnavailableData = dashboard?.data?.metrics?._serviceUnavailable
+        || dashboard?.data?.recentJobs?._serviceUnavailable;
+
+      if (lastUpdated && new Date(lastUpdated).getTime() > fiveMinutesAgo && !hasUnavailableData) {
+        return dashboard.data; // Return cached data if recent and complete
       }
 
       // Try to fetch from actual services
