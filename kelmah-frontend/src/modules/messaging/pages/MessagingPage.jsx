@@ -64,6 +64,7 @@ import {
 // ✅ MOBILE-AUDIT P3: framer-motion import removed — AnimatePresence/motion.div wrappers already replaced
 import ErrorBoundary from '../../../components/common/ErrorBoundary';
 import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
+import { safeFormatDate } from '@/modules/common/utils/formatters';
 import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 // Removed AuthContext import to prevent dual state management conflicts
 // import { useAuth } from '../../auth/hooks/useAuth';
@@ -630,6 +631,7 @@ const EnhancedMessagingPage = () => {
                     >
                       <Avatar
                         src={otherParticipant?.avatar}
+                        alt={otherParticipant?.name || 'Participant avatar'}
                         sx={{
                           width: 48,
                           height: 48,
@@ -884,6 +886,7 @@ const EnhancedMessagingPage = () => {
             >
               <Avatar
                 src={otherParticipant?.avatar}
+                alt={otherParticipant?.name || 'Participant avatar'}
                 sx={{
                   width: 40,
                   height: 40,
@@ -1015,6 +1018,7 @@ const EnhancedMessagingPage = () => {
                     {!isOwn && showAvatar && (
                       <Avatar
                         src={otherParticipant?.avatar}
+                        alt={otherParticipant?.name || 'Participant avatar'}
                         sx={{
                           width: 32,
                           height: 32,
@@ -1136,7 +1140,7 @@ const EnhancedMessagingPage = () => {
                               fontSize: '0.7rem',
                             }}
                           >
-                            {format(new Date(message.timestamp), 'HH:mm')}
+                            {safeFormatDate(message.timestamp, 'HH:mm')}
                           </Typography>
                           {isOwn && (
                             <Box sx={{ ml: 1 }}>
@@ -1512,6 +1516,7 @@ const EnhancedMessagingPage = () => {
                     <Box sx={{ position: 'relative' }}>
                       <Avatar
                         src={otherParticipant?.avatar}
+                        alt={otherParticipant?.name || 'Participant avatar'}
                         sx={{
                           backgroundColor: 'primary.main',
                           color: theme.palette.primary.contrastText,
@@ -1656,6 +1661,7 @@ const EnhancedMessagingPage = () => {
                 </IconButton>
                 <Avatar
                   src={chatParticipant?.avatar}
+                  alt={chatParticipant?.name || 'Chat participant avatar'}
                   sx={{
                     backgroundColor: 'primary.main',
                     color: theme.palette.primary.contrastText,
@@ -1927,6 +1933,7 @@ const EnhancedMessagingPage = () => {
           maxWidth="sm"
           fullWidth
           fullScreen={isMobile}
+          aria-labelledby="new-chat-dialog-title"
           PaperProps={{
             sx: {
               bgcolor: 'background.paper',
@@ -1934,7 +1941,7 @@ const EnhancedMessagingPage = () => {
             },
           }}
         >
-          <DialogTitle sx={{ color: '#D4AF37' }}>
+          <DialogTitle id="new-chat-dialog-title" sx={{ color: '#D4AF37' }}>
             New Conversation
           </DialogTitle>
           <DialogContent>

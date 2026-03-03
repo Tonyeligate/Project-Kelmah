@@ -417,6 +417,7 @@ const WorkerReview = () => {
                         <Box display="flex" alignItems="center" gap={2}>
                           <Avatar
                             src={job.worker.avatar}
+                            alt={job.worker.name || 'Worker avatar'}
                             sx={{ width: 40, height: 40 }}
                           >
                             {job.worker.name.charAt(0)}
@@ -538,6 +539,7 @@ const WorkerReview = () => {
               <Box display="flex" alignItems="center" gap={2} mb={3}>
                 <Avatar
                   src={selectedWorker.avatar}
+                  alt={selectedWorker.name || 'Worker avatar'}
                   sx={{ width: 64, height: 64 }}
                 >
                   {selectedWorker.name.charAt(0)}
@@ -642,7 +644,7 @@ const WorkerReview = () => {
           {selectedWorker && selectedJob && (
             <Box>
               <Box display="flex" alignItems="center" gap={2} mb={3}>
-                <Avatar src={selectedWorker.avatar}>
+                <Avatar src={selectedWorker.avatar} alt={selectedWorker.name || 'Worker avatar'}>
                   {selectedWorker.name.charAt(0)}
                 </Avatar>
                 <Box>

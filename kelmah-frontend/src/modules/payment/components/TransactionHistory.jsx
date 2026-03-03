@@ -18,7 +18,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { Download as DownloadIcon } from '@mui/icons-material';
-import { format } from 'date-fns';
+import { safeFormatDate } from '@/modules/common/utils/formatters';
 
 const getStatusChip = (status) => {
   const color = {
@@ -43,7 +43,7 @@ const TransactionHistory = ({ transactions }) => {
               <Stack spacing={1}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                   <Typography variant="body2" fontWeight={600}>
-                    {format(new Date(row.date), 'PP')}
+                    {safeFormatDate(row.date, 'PP')}
                   </Typography>
                   {getStatusChip(row.status)}
                 </Stack>
@@ -96,7 +96,7 @@ const TransactionHistory = ({ transactions }) => {
         <TableBody>
           {transactions.map((row) => (
             <TableRow key={row.id}>
-              <TableCell>{format(new Date(row.date), 'PP')}</TableCell>
+              <TableCell>{safeFormatDate(row.date, 'PP')}</TableCell>
               <TableCell>
                 <Typography variant="body2">{row.description}</Typography>
                 <Typography variant="caption" color="text.secondary">

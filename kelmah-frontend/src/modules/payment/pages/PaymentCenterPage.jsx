@@ -1080,6 +1080,7 @@ const PaymentCenterPage = () => {
               <TextField
                 variant="filled"
                 label="Amount (GHS)"
+                placeholder="e.g. 100"
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
@@ -1195,6 +1196,7 @@ const PaymentCenterPage = () => {
               <TextField
                 variant="filled"
                 label="Amount (GHS)"
+                placeholder="e.g. 50"
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}

@@ -342,6 +342,7 @@ const QuickJobRequestPage = () => {
                 <Box key={index} sx={{ position: 'relative' }}>
                   <Avatar
                     src={photo.preview}
+                    alt={`Upload photo ${index + 1}`}
                     variant="rounded"
                     sx={{ width: 80, height: 80 }}
                   />

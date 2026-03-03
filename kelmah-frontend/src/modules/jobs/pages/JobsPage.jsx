@@ -482,12 +482,15 @@ const JobsPage = () => {
 
   // Load saved jobs on mount
   useEffect(() => {
+    let cancelled = false;
     if (isAuthenticated) {
       jobsApi.getSavedJobs().then(res => {
+        if (cancelled) return;
         const ids = (res?.jobs || []).map(j => j.id || j._id).filter(Boolean);
         setSavedJobIds(new Set(ids));
       }).catch(() => {});
     }
+    return () => { cancelled = true; };
   }, [isAuthenticated]);
 
   const handleToggleBookmark = useCallback(async (jobId) => {

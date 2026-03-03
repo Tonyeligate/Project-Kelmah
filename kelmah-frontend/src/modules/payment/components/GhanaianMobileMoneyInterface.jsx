@@ -725,8 +725,9 @@ const GhanaianMobileMoneyInterface = ({
         onClose={() => setShowPinDialog(false)}
         maxWidth="xs"
         fullWidth
+        aria-labelledby="pin-entry-dialog-title"
       >
-        <DialogTitle display="flex" alignItems="center" gap={1}>
+        <DialogTitle id="pin-entry-dialog-title" display="flex" alignItems="center" gap={1}>
           <SecurityIcon color="primary" />
           Enter Your PIN
         </DialogTitle>

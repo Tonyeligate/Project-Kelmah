@@ -82,6 +82,7 @@ const ProfilePicture = ({ size = 120, editable = true }) => {
     <Box sx={{ position: 'relative', width: size, height: size }}>
       <Avatar
         src={previewUrl || profile?.profilePicture || profile?.avatar || ''}
+        alt="Profile picture"
         sx={{
           width: size,
           height: size,
@@ -120,8 +121,8 @@ const ProfilePicture = ({ size = 120, editable = true }) => {
         </>
       )}
 
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>Update Profile Picture</DialogTitle>
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} aria-labelledby="profile-picture-dialog-title">
+        <DialogTitle id="profile-picture-dialog-title">Update Profile Picture</DialogTitle>
         <DialogContent>
           <Box
             sx={{
@@ -132,7 +133,7 @@ const ProfilePicture = ({ size = 120, editable = true }) => {
               pt: 2,
             }}
           >
-            <Avatar src={previewUrl} sx={{ width: 200, height: 200 }} />
+            <Avatar src={previewUrl} alt="Profile picture preview" sx={{ width: 200, height: 200 }} />
             {loading && (
               <CircularProgress size={24} sx={{ position: 'absolute' }} />
             )}

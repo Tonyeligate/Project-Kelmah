@@ -154,7 +154,11 @@ export const updateWorkerSkills = createAsyncThunk(
           }
         });
 
-        await Promise.all(mutationTasks);
+        const results = await Promise.allSettled(mutationTasks);
+        const failures = results.filter((r) => r.status === 'rejected');
+        if (failures.length > 0 && import.meta.env.DEV) {
+          console.warn(`${failures.length} skill update(s) failed`);
+        }
       }
 
       const latestRes = await api.get(`/users/workers/${workerId}/skills`);

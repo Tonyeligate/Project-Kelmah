@@ -101,8 +101,8 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
 
   if (success) {
     return (
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth fullScreen={isMobile}>
-        <DialogTitle sx={{ bgcolor: 'background.paper', color: 'primary.main' }}>
+      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth fullScreen={isMobile} aria-labelledby="bid-submitted-dialog-title">
+        <DialogTitle id="bid-submitted-dialog-title" sx={{ bgcolor: 'background.paper', color: 'primary.main' }}>
           Bid Submitted!
         </DialogTitle>
         <DialogContent sx={{ bgcolor: 'background.paper', pt: 3 }}>
@@ -124,14 +124,14 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth fullScreen={isMobile}>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth fullScreen={isMobile} aria-labelledby="place-bid-dialog-title">
       {isMobile ? (
         <AppBar sx={{ position: 'relative', bgcolor: 'background.paper', color: 'text.primary', boxShadow: 1 }}>
           <Toolbar>
             <IconButton edge="start" onClick={onClose} aria-label="Close bid form" sx={{ color: 'text.secondary' }}>
               <CloseIcon />
             </IconButton>
-            <Typography sx={{ ml: 1, flex: 1, fontWeight: 600 }} variant="subtitle1">
+            <Typography id="place-bid-dialog-title" sx={{ ml: 1, flex: 1, fontWeight: 600 }} variant="subtitle1">
               Place Your Bid
             </Typography>
             <Button
@@ -148,6 +148,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
         </AppBar>
       ) : (
         <DialogTitle
+          id="place-bid-dialog-title"
           sx={{
             bgcolor: 'background.paper',
             color: 'primary.main',

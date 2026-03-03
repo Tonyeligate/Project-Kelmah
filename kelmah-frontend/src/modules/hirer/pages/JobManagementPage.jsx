@@ -147,11 +147,13 @@ const JobManagementPage = () => {
   // efficient; when available, replace this loop with a single dispatch.
   // Until then, keep them parallel so no single slow bucket blocks the others.
   useEffect(() => {
+    let cancelled = false;
     ['open', 'in-progress', 'completed', 'cancelled', 'draft'].forEach(
       (status) => {
         dispatch(fetchHirerJobs(status));
       },
     );
+    return () => { cancelled = true; };
   }, [dispatch]);
 
   // Tab statuses (canonical)

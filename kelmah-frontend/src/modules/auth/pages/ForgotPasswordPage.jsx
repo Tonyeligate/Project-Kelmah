@@ -253,6 +253,7 @@ const ForgotPasswordPage = () => {
           fullWidth
           required
           margin="normal"
+          placeholder="Enter your email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />

@@ -70,7 +70,7 @@ const ContractCard = ({ contract }) => {
         mb={2}
       >
         <Stack direction="row" alignItems="center" spacing={1.5}>
-          <Avatar src={hirer.avatar} sx={{ width: 40, height: 40 }} />
+          <Avatar src={hirer.avatar} alt={hirer.name || 'Hirer avatar'} sx={{ width: 40, height: 40 }} />
           <Box>
             <Typography variant="body2" color="text.secondary">
               Contract with

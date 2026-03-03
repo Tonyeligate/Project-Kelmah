@@ -1487,7 +1487,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                         {cert.issuing_organization}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Issued: {new Date(cert.issue_date).toLocaleDateString()}
+                        Issued: {cert.issue_date ? new Date(cert.issue_date).toLocaleDateString() : 'N/A'}
                       </Typography>
                     </Box>
                     {cert.is_verified && <VerifiedIcon color="success" />}
@@ -1584,10 +1584,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
           onClose={() => setPortfolioDialogOpen(false)}
           maxWidth="md"
           fullWidth
+          aria-labelledby="portfolio-item-dialog-title"
         >
           {selectedPortfolioItem && (
             <>
-              <DialogTitle>
+              <DialogTitle id="portfolio-item-dialog-title">
                 <Box
                   sx={{
                     display: 'flex',

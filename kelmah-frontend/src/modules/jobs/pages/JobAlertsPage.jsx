@@ -39,19 +39,23 @@ const JobAlertsPage = () => {
   });
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
         setLoading(true);
         const data = await notificationService.getPreferences();
+        if (cancelled) return;
         if (data) {
           setPrefs((prev) => ({ ...prev, ...(data || {}) }));
         }
       } catch (e) {
+        if (cancelled) return;
         setError('Failed to load notification preferences');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
+    return () => { cancelled = true; };
   }, []);
 
   const savePreferences = async () => {

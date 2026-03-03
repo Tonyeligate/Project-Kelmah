@@ -95,7 +95,9 @@ const ContractsPage = () => {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     fetchContracts();
+    return () => { cancelled = true; };
   }, [fetchContracts]);
 
   const filteredContracts = useMemo(() => {

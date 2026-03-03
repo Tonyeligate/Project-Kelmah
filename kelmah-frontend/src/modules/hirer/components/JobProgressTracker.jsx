@@ -257,6 +257,7 @@ const JobProgressTracker = () => {
                   <Box display="flex" alignItems="center" gap={1}>
                     <Avatar
                       src={job.worker.avatar}
+                      alt={job.worker.name || 'Worker avatar'}
                       sx={{ width: 32, height: 32 }}
                     >
                       {job.worker.name.charAt(0)}
@@ -523,6 +524,7 @@ const JobProgressTracker = () => {
           <Box textAlign="center" mb={2}>
             <Avatar
               src={selectedJob?.worker?.avatar}
+              alt={selectedJob?.worker?.name || 'Worker avatar'}
               sx={{ width: 64, height: 64, mx: 'auto', mb: 1 }}
             >
               {selectedJob?.worker?.name?.charAt(0)}

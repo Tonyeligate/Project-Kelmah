@@ -132,6 +132,7 @@ const ProjectGallery = ({
       onClose={onClose}
       maxWidth={false}
       fullScreen={isMobile}
+      aria-labelledby="project-gallery-dialog-title"
       PaperProps={{
         sx: {
           backgroundColor: 'rgba(0, 0, 0, 0.9)',
@@ -152,6 +153,7 @@ const ProjectGallery = ({
     >
       {/* Header */}
       <DialogTitle
+        id="project-gallery-dialog-title"
         sx={{
           color: 'white',
           display: 'flex',

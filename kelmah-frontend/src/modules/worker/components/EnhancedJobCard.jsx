@@ -242,6 +242,7 @@ const EnhancedJobCard = ({
             <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
               <Avatar
                 src={job.employer?.logo || job.hirer?.profileImage}
+                alt={job.employer?.name || job.hirer?.firstName || 'Employer avatar'}
                 sx={{ width: 24, height: 24, mr: 1 }}
               >
                 {(job.employer?.name || job.hirer?.firstName || '?').charAt(0)}
@@ -450,8 +451,9 @@ const EnhancedJobCard = ({
         onClose={() => setBidDialogOpen(false)}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="bid-dialog-title"
       >
-        <DialogTitle>
+        <DialogTitle id="bid-dialog-title">
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <GavelIcon sx={{ mr: 1, color: theme.palette.primary.main }} />
             Submit Bid for {job.title}

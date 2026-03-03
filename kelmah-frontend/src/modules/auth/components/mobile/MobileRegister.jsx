@@ -430,6 +430,7 @@ const MobileRegister = () => {
               fullWidth
               type={showPassword ? 'text' : 'password'}
               label="Password"
+              placeholder="Create a strong password"
               value={formData.password}
               onChange={handleChange('password')}
               error={Boolean(errors.password)}
@@ -474,6 +475,7 @@ const MobileRegister = () => {
               fullWidth
               type={showConfirmPassword ? 'text' : 'password'}
               label="Confirm Password"
+              placeholder="Re-enter your password"
               value={formData.confirmPassword}
               onChange={handleChange('confirmPassword')}
               error={Boolean(errors.confirmPassword)}

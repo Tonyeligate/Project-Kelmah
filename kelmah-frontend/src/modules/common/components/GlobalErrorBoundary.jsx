@@ -35,7 +35,7 @@ class GlobalErrorBoundaryInner extends Component {
   }
 
   componentDidCatch(error, info) {
-    console.error('GlobalErrorBoundary caught an error:', error, info);
+    if (import.meta.env.DEV) console.error('GlobalErrorBoundary caught an error:', error, info);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -53,7 +53,7 @@ class GlobalErrorBoundaryInner extends Component {
       await checkServiceHealth('aggregate', 10000);
       this.setState({ status: getServiceStatusMessage('aggregate') });
     } catch (error) {
-      console.warn('GlobalErrorBoundary status check failed:', error);
+      if (import.meta.env.DEV) console.warn('GlobalErrorBoundary status check failed:', error);
     }
   };
 

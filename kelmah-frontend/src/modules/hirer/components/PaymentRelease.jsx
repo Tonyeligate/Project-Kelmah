@@ -491,7 +491,7 @@ const PaymentRelease = () => {
                 <Card key={payment.id || payment._id} variant="outlined">
                   <CardContent sx={{ pb: '12px !important' }}>
                     <Box display="flex" alignItems="center" gap={2} mb={1}>
-                      <Avatar src={payment.worker?.avatar} sx={{ width: 40, height: 40 }}>
+                      <Avatar src={payment.worker?.avatar} alt={payment.worker?.name || 'Worker avatar'} sx={{ width: 40, height: 40 }}>
                         {(payment.worker?.name || 'W').charAt(0)}
                       </Avatar>
                       <Box sx={{ flex: 1 }}>
@@ -740,7 +740,7 @@ const PaymentRelease = () => {
                   Payment Details
                 </Typography>
                 <Box display="flex" alignItems="center" gap={2} mb={2}>
-                  <Avatar src={selectedPayment.worker?.avatar}>
+                  <Avatar src={selectedPayment.worker?.avatar} alt={selectedPayment.worker?.name || 'Worker avatar'}>
                     {(selectedPayment.worker?.name || 'W').charAt(0)}
                   </Avatar>
                   <Box>
@@ -833,7 +833,7 @@ const PaymentRelease = () => {
                     Worker
                   </Typography>
                   <Box display="flex" alignItems="center" gap={2}>
-                    <Avatar src={selectedPayment.worker?.avatar}>
+                    <Avatar src={selectedPayment.worker?.avatar} alt={selectedPayment.worker?.name || 'Worker avatar'}>
                       {(selectedPayment.worker?.name || 'W').charAt(0)}
                     </Avatar>
                     <Typography variant="body2">

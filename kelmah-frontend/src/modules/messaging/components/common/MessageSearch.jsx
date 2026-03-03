@@ -22,7 +22,7 @@ import {
   Attachment,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
-import { format } from 'date-fns';
+import { safeFormatDate } from '@/modules/common/utils/formatters';
 import { messagingService } from '../../services/messagingService';
 
 // Styled components
@@ -255,7 +255,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
                         {message.conversation.title}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {format(new Date(message.createdAt), 'MMM d, yyyy')}
+                        {safeFormatDate(message.createdAt, 'MMM d, yyyy')}
                       </Typography>
                     </Box>
                   }

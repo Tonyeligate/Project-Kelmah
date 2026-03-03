@@ -228,8 +228,10 @@ const PortfolioManager = () => {
       const uploadPromises = Array.from(files).map((file) =>
         fileUploadService.uploadFile(file, 'portfolio', 'user'),
       );
-      const uploadResults = await Promise.all(uploadPromises);
-      const imageUrls = uploadResults.map((result) => result.url);
+      const results = await Promise.allSettled(uploadPromises);
+      const imageUrls = results
+        .filter((r) => r.status === 'fulfilled')
+        .map((r) => r.value.url);
 
       setFormData((prev) => ({
         ...prev,
@@ -530,8 +532,9 @@ const PortfolioManager = () => {
         maxWidth="md"
         fullWidth
         fullScreen={isMobile}
+        aria-labelledby="portfolio-dialog-title"
       >
-        <DialogTitle>
+        <DialogTitle id="portfolio-dialog-title">
           {isEditing ? 'Edit Portfolio Item' : 'Add Portfolio Item'}
         </DialogTitle>
         <DialogContent>

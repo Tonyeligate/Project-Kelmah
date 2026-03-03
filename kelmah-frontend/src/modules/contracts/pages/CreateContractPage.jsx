@@ -526,7 +526,6 @@ const CreateContractPage = () => {
                       helperText: validationErrors.endDate || 'Select contract end date',
                     },
                   }}
-                  )}
                   minDate={contract.startDate}
                 />
               </Grid>

@@ -644,6 +644,7 @@ const ReviewSystem = ({
       onClose={() => setSubmissionOpen(false)}
       maxWidth="md"
       fullWidth
+      aria-labelledby="review-submission-dialog-title"
       PaperProps={{
         sx: {
           background:
@@ -652,7 +653,7 @@ const ReviewSystem = ({
         },
       }}
     >
-      <DialogTitle sx={{ color: '#FFD700', fontWeight: 700 }}>
+      <DialogTitle id="review-submission-dialog-title" sx={{ color: '#FFD700', fontWeight: 700 }}>
         Submit Review
       </DialogTitle>
       <DialogContent>
@@ -934,6 +935,7 @@ const ReviewSystem = ({
         onClose={() => setResponseDialogOpen(false)}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="review-response-dialog-title"
         PaperProps={{
           sx: {
             background: 'linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(40,40,40,0.98) 100%)',
@@ -941,7 +943,7 @@ const ReviewSystem = ({
           },
         }}
       >
-        <DialogTitle sx={{ color: '#FFD700', fontWeight: 700 }}>Respond to Review</DialogTitle>
+        <DialogTitle id="review-response-dialog-title" sx={{ color: '#FFD700', fontWeight: 700 }}>Respond to Review</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus

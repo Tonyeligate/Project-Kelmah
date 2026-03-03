@@ -312,8 +312,9 @@ const AvailabilityCalendar = () => {
         onClose={handleDialogClose}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="availability-slot-dialog-title"
       >
-        <DialogTitle>
+        <DialogTitle id="availability-slot-dialog-title">
           {editingSlot ? 'Edit Time Slot' : 'Add Time Slot'}
         </DialogTitle>
         <DialogContent>

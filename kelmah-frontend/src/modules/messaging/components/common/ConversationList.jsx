@@ -59,6 +59,7 @@ import {
   isThisWeek,
   isThisMonth,
 } from 'date-fns';
+import { safeFormatRelative } from '@/modules/common/utils/formatters';
 import { useMessages } from '../../contexts/MessageContext';
 import searchService from '../../../search/services/searchService';
 import Skeleton from '@mui/material/Skeleton';
@@ -369,13 +370,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
   };
 
   const formatMessageTime = (timestamp) => {
-    if (!timestamp) return '';
-    try {
-      return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error formatting date:', error);
-      return '';
-    }
+    return safeFormatRelative(timestamp, { addSuffix: true }, '');
   };
 
   const renderLoadingSkeletons = () =>
@@ -848,6 +843,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
         onClose={() => setShowNewConversationDialog(false)}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="new-conversation-dialog-title"
         PaperProps={{
           sx: {
             bgcolor: 'background.paper',
@@ -855,7 +851,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
           },
         }}
       >
-        <DialogTitle sx={{ color: 'primary.main' }}>New Conversation</DialogTitle>
+        <DialogTitle id="new-conversation-dialog-title" sx={{ color: 'primary.main' }}>New Conversation</DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 1, mb: 2 }}>
             <Typography

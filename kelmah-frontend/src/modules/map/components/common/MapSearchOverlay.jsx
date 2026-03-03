@@ -1234,6 +1234,7 @@ const ProfessionalResultItem = ({ item, onClick, index }) => {
             >
               <Avatar
                 src={item.profileImage}
+                alt={item.name || item.title || 'Search result'}
                 sx={{
                   bgcolor:
                     item.type === 'job'
@@ -2166,6 +2167,7 @@ const MapSearchOverlay = ({
                         <Stack direction="row" spacing={2} alignItems="center">
                           <Avatar
                             src={result.avatar}
+                            alt={result.name || result.title || 'Search result'}
                             sx={{
                               width: 50,
                               height: 50,

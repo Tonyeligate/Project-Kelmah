@@ -187,8 +187,10 @@ const JobDetailsPage = () => {
       return;
     }
 
+    let cancelled = false;
     // Fetch job details (public endpoint — no auth required for viewing)
     dispatch(fetchJobById(id));
+    return () => { cancelled = true; };
   }, [dispatch, id]);
 
   useEffect(() => {

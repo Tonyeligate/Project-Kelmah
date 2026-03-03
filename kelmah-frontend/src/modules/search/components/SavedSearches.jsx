@@ -605,8 +605,9 @@ const SavedSearches = ({
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="saved-search-dialog-title"
       >
-        <DialogTitle>
+        <DialogTitle id="saved-search-dialog-title">
           {isEditing ? 'Edit Saved Search' : 'Save New Search'}
         </DialogTitle>
         <DialogContent>

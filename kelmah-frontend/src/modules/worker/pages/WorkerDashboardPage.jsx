@@ -174,12 +174,13 @@ const WorkerDashboardPage = () => {
     loadingTimeoutRef.current = timeoutId;
 
     try {
-      await Promise.all([
+      const results = await Promise.allSettled([
         dispatch(fetchWorkerApplications('pending')),
         dispatch(fetchWorkerApplications('accepted')),
         dispatch(fetchWorkerApplications('rejected')),
         dispatch(fetchWorkerJobs('completed')),
       ]);
+      const hasFailure = results.some((r) => r.status === 'rejected');
       clearTimeout(timeoutId);
       if (loadingTimeoutRef.current === timeoutId) {
         loadingTimeoutRef.current = null;

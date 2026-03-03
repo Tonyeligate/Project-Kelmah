@@ -569,8 +569,9 @@ const GhanaSMSVerification = ({
         onClose={() => setShowHelp(false)}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="sms-verification-help-dialog-title"
       >
-        <DialogTitle>SMS Verification Help</DialogTitle>
+        <DialogTitle id="sms-verification-help-dialog-title">SMS Verification Help</DialogTitle>
         <DialogContent>
           <Typography variant="h6" gutterBottom>
             Ghana Network Codes

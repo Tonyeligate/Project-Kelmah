@@ -94,7 +94,7 @@ const ApplicationCard = ({ application, isSelected, onSelect }) => {
       >
       <CardContent>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <Avatar src={application.workerAvatar} sx={{ mr: 2 }} />
+          <Avatar src={application.workerAvatar} alt={application.workerName || 'Applicant avatar'} sx={{ mr: 2 }} />
           <Box>
             <Typography variant="h6">{application.workerName}</Typography>
             {/* AUD2-M12 FIX: Distinguish "no reviews yet" (null) from low rating (0) */}
@@ -155,6 +155,7 @@ function ApplicationManagementPage() {
   const [actionType, setActionType] = useState('');
 
   useEffect(() => {
+    let cancelled = false;
     const fetchAllApplications = async () => {
       setLoading(true);
       if (
@@ -171,20 +172,23 @@ function ApplicationManagementPage() {
               );
             }),
           );
+          if (cancelled) return;
           const allApps = results
             .filter((r) => r.status === 'fulfilled')
             .map((r) => r.value);
           const flattenedApplications = allApps.flat();
           setAllApplications(flattenedApplications);
         } catch (err) {
+          if (cancelled) return;
           setError('Failed to fetch applications');
         }
       } else {
-        setAllApplications([]);
+        if (!cancelled) setAllApplications([]);
       }
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     };
     fetchAllApplications();
+    return () => { cancelled = true; };
   }, [jobsForApplications]);
 
   // Client-side filter by active tab — avoids re-fetching on tab switch
@@ -370,6 +374,7 @@ function ApplicationManagementPage() {
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <Avatar
                     src={selectedApplication.workerAvatar}
+                    alt={selectedApplication.workerName || 'Applicant avatar'}
                     sx={{ width: 60, height: 60, mr: 2 }}
                   />
                   <div>

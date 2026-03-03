@@ -315,7 +315,9 @@ const JobBidsPage = () => {
   }, [jobId]);
 
   useEffect(() => {
+    let cancelled = false;
     fetchBids();
+    return () => { cancelled = true; };
   }, [fetchBids]);
 
   const handleAcceptConfirm = async () => {
@@ -475,8 +477,9 @@ const JobBidsPage = () => {
         onClose={() => !processing && setAcceptDialog({ open: false, bid: null })}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="accept-bid-dialog-title"
       >
-        <DialogTitle>Accept This Bid?</DialogTitle>
+        <DialogTitle id="accept-bid-dialog-title">Accept This Bid?</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Accepting <strong>{acceptDialog.bid?.worker?.name || 'this worker'}</strong>'s bid of{' '}
@@ -506,8 +509,9 @@ const JobBidsPage = () => {
         onClose={() => !processing && setRejectDialog({ open: false, bid: null })}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="reject-bid-dialog-title"
       >
-        <DialogTitle>Reject This Bid?</DialogTitle>
+        <DialogTitle id="reject-bid-dialog-title">Reject This Bid?</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ mb: 2 }}>
             The worker will be notified that their bid was not accepted.

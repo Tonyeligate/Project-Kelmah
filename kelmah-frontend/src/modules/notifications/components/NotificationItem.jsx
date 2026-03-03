@@ -18,7 +18,7 @@ import {
   Mail as MailIcon,
   Assignment as AssignmentIcon,
 } from '@mui/icons-material';
-import { format } from 'date-fns';
+import { safeFormatDate } from '@/modules/common/utils/formatters';
 import { useNotifications } from '../contexts/NotificationContext';
 
 const getNotificationIcon = (type) => {
@@ -102,7 +102,7 @@ const NotificationItem = ({ notification, sx = {} }) => {
               {message}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {format(new Date(createdAt), 'PPpp')}
+              {safeFormatDate(createdAt, 'PPpp')}
             </Typography>
           </>
         }

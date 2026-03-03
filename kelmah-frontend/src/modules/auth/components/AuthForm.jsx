@@ -129,6 +129,7 @@ const AuthForm = ({ mode = 'login', onSuccess }) => {
         <>
           <TextField
             label="First Name"
+            placeholder="e.g. Kwame"
             name="firstName"
             value={formData.firstName}
             onChange={handleChange}
@@ -138,6 +139,7 @@ const AuthForm = ({ mode = 'login', onSuccess }) => {
           />
           <TextField
             label="Last Name"
+            placeholder="e.g. Asante"
             name="lastName"
             value={formData.lastName}
             onChange={handleChange}
@@ -150,6 +152,7 @@ const AuthForm = ({ mode = 'login', onSuccess }) => {
 
       <TextField
         label="Email"
+        placeholder="e.g. kwame@email.com"
         name="email"
         type="email"
         value={formData.email}
@@ -161,6 +164,7 @@ const AuthForm = ({ mode = 'login', onSuccess }) => {
 
       <TextField
         label="Password"
+        placeholder="Enter your password"
         name="password"
         type="password"
         value={formData.password}
@@ -173,6 +177,7 @@ const AuthForm = ({ mode = 'login', onSuccess }) => {
       {mode === 'register' && (
         <TextField
           label="Confirm Password"
+          placeholder="Re-enter your password"
           name="confirmPassword"
           type="password"
           value={formData.confirmPassword}

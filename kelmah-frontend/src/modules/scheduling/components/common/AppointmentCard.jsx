@@ -17,7 +17,7 @@ import {
   Cancel as CancelIcon,
   HourglassEmpty as HourglassEmptyIcon,
 } from '@mui/icons-material';
-import { format } from 'date-fns';
+import { safeFormatDate } from '@/modules/common/utils/formatters';
 
 const statusConfig = {
   pending: {
@@ -107,7 +107,7 @@ const AppointmentCard = ({ appointment, onUpdate }) => {
         <Box display="flex" alignItems="center" color="text.primary">
           <EventIcon sx={{ mr: 1, fontSize: '1.2rem' }} />
           <Typography variant="body1" fontWeight="500">
-            {format(new Date(date), "EEE, MMM d, yyyy 'at' h:mm a")}
+            {safeFormatDate(date, "EEE, MMM d, yyyy 'at' h:mm a")}
           </Typography>
         </Box>
         {status === 'pending' && onUpdate && (

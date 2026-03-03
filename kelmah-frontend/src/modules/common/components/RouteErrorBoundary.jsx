@@ -18,11 +18,13 @@ class RouteErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error(
-      `[RouteErrorBoundary] Error in ${this.props.label || 'route'}:`,
-      error,
-      errorInfo,
-    );
+    if (import.meta.env.DEV) {
+      console.error(
+        `[RouteErrorBoundary] Error in ${this.props.label || 'route'}:`,
+        error,
+        errorInfo,
+      );
+    }
   }
 
   handleReset = () => {

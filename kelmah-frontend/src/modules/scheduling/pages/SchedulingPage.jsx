@@ -48,6 +48,7 @@ import {
   isBefore,
   addDays,
 } from 'date-fns';
+import { safeFormatDate } from '@/modules/common/utils/formatters';
 import schedulingService from '../services/schedulingService';
 import AppointmentCalendar from '../components/AppointmentCalendar';
 import AppointmentForm from '../components/AppointmentForm';
@@ -118,13 +119,13 @@ const AppointmentCard = ({ appointment, onEdit, onDelete }) => {
       <Grid container spacing={2} alignItems="center">
         <Grid item xs={3} sm={2} textAlign="center">
           <Typography variant="h5" fontWeight="bold" color="primary">
-            {format(new Date(appointment.date), 'dd')}
+            {safeFormatDate(appointment.date, 'dd')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {format(new Date(appointment.date), 'MMM')}
+            {safeFormatDate(appointment.date, 'MMM')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {format(new Date(appointment.date), 'p')}
+            {safeFormatDate(appointment.date, 'p')}
           </Typography>
         </Grid>
         <Grid item xs={9} sm={7}>
@@ -902,7 +903,7 @@ const SchedulingPage = () => {
                       {app.jobTitle}
                     </Typography>
                     <Typography variant="body2">
-                      {format(new Date(app.date), 'PPP p')}
+                      {safeFormatDate(app.date, 'PPP p')}
                     </Typography>
                     <Typography variant="body2">{app.location}</Typography>
                   </Popup>
@@ -918,8 +919,9 @@ const SchedulingPage = () => {
         onClose={handleCloseDialog}
         fullWidth
         maxWidth="sm"
+        aria-labelledby="appointment-dialog-title"
       >
-        <DialogTitle>
+        <DialogTitle id="appointment-dialog-title">
           {dialogMode === 'create' ? 'New Appointment' : 'Edit Appointment'}
         </DialogTitle>
         <DialogContent>
@@ -941,8 +943,9 @@ const SchedulingPage = () => {
       <Dialog
         open={Boolean(deleteTarget)}
         onClose={() => setDeleteTarget(null)}
+        aria-labelledby="delete-appointment-dialog-title"
       >
-        <DialogTitle>Delete Appointment?</DialogTitle>
+        <DialogTitle id="delete-appointment-dialog-title">Delete Appointment?</DialogTitle>
         <DialogContent>
           <Typography>
             Are you sure you want to delete this appointment? This cannot be undone.

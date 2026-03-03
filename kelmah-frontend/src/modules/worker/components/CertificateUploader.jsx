@@ -620,8 +620,9 @@ const CertificateUploader = ({ onCertificatesChange }) => {
         onClose={handleCloseDialog}
         maxWidth="md"
         fullWidth
+        aria-labelledby="certificate-dialog-title"
       >
-        <DialogTitle>
+        <DialogTitle id="certificate-dialog-title">
           {isEditing ? 'Edit Certificate' : 'Add Certificate'}
         </DialogTitle>
         <DialogContent>

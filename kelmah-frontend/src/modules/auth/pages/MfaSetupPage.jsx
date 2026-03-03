@@ -74,6 +74,7 @@ const MfaSetupPage = () => {
                 label="Authentication Code"
                 fullWidth
                 required
+                placeholder="Enter 6-digit code"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 6, style: { letterSpacing: '0.3em', textAlign: 'center' } }}

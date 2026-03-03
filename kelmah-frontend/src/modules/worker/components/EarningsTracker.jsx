@@ -898,8 +898,9 @@ const EarningsTracker = () => {
         onClose={() => setDetailsDialog(false)}
         maxWidth="md"
         fullWidth
+        aria-labelledby="transaction-details-dialog-title"
       >
-        <DialogTitle>Transaction Details</DialogTitle>
+        <DialogTitle id="transaction-details-dialog-title">Transaction Details</DialogTitle>
         <DialogContent>
           {selectedTransaction && (
             <Grid container spacing={2} sx={{ mt: 1 }}>

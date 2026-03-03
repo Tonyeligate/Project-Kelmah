@@ -587,6 +587,7 @@ function JobApplication() {
                   <TextField
                     name="coverLetter"
                     label="Cover Letter"
+                    placeholder="Tell the hirer about your experience and why you are right for this job..."
                     fullWidth
                     multiline
                     rows={6}
@@ -605,6 +606,7 @@ function JobApplication() {
                   <TextField
                     name="proposedBudget"
                     label="Your Proposed Budget"
+                    placeholder="e.g. 500"
                     fullWidth
                     type="number"
                     value={applicationData.proposedBudget}
@@ -627,6 +629,7 @@ function JobApplication() {
                   <TextField
                     name="estimatedDuration"
                     label="Estimated Duration (days)"
+                    placeholder="e.g. 14"
                     fullWidth
                     type="number"
                     value={applicationData.estimatedDuration}

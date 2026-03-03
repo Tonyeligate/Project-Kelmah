@@ -341,8 +341,10 @@ const PremiumPage = () => {
         onClose={() => setOpenDialog(false)}
         TransitionComponent={Transition}
         PaperProps={{ sx: { borderRadius: 3, bgcolor: 'background.paper' } }}
+        aria-labelledby="confirm-upgrade-dialog-title"
       >
         <DialogTitle
+          id="confirm-upgrade-dialog-title"
           sx={{
             display: 'flex',
             justifyContent: 'space-between',

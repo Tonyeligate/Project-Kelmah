@@ -130,8 +130,9 @@ function JobListing({ job, onApply, onViewDetails }) {
         onClose={() => setShowApplyDialog(false)}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="apply-job-dialog-title"
       >
-        <DialogTitle>Apply for {job.title}</DialogTitle>
+        <DialogTitle id="apply-job-dialog-title">Apply for {job.title}</DialogTitle>
         <DialogContent>
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -146,6 +147,7 @@ function JobListing({ job, onApply, onViewDetails }) {
           <TextField
             fullWidth
             label="Proposed Rate ($/hour)"
+            placeholder="e.g. 50"
             type="number"
             name="proposedRate"
             value={application.proposedRate}
@@ -155,6 +157,7 @@ function JobListing({ job, onApply, onViewDetails }) {
           <TextField
             fullWidth
             label="Cover Message"
+            placeholder="Introduce yourself briefly..."
             multiline
             rows={4}
             name="message"

@@ -63,6 +63,7 @@ import {
 } from '@mui/icons-material';
 // ✅ MOBILE-AUDIT P3: framer-motion import removed — all motion.div wrappers replaced with plain divs
 import { formatDistanceToNow, format } from 'date-fns';
+import { safeFormatDate } from '@/modules/common/utils/formatters';
 import { useAuth } from '../../auth/hooks/useAuth';
 import reviewService from '../services/reviewService';
 import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
@@ -128,10 +129,12 @@ const EnhancedReviewsPage = () => {
         setReviews([]);
         setReviewStats({});
       } else {
-        const [stats, workerReviews] = await Promise.all([
+        const [statsResult, reviewsResult] = await Promise.allSettled([
           reviewService.getReviewStats(user.id),
           reviewService.getUserReviews(user.id, 1, 20),
         ]);
+        const stats = statsResult.status === 'fulfilled' ? statsResult.value : {};
+        const workerReviews = reviewsResult.status === 'fulfilled' ? reviewsResult.value : null;
         setReviewStats({
           overall: {
             averageRating: stats.averageRating,
@@ -531,6 +534,7 @@ const EnhancedReviewsPage = () => {
             <Stack direction="row" spacing={2} sx={{ flex: 1 }}>
               <Avatar
                 src={review.reviewer?.avatar}
+                alt={review.reviewer?.name || 'Reviewer avatar'}
                 sx={{
                   width: 50,
                   height: 50,
@@ -633,7 +637,7 @@ const EnhancedReviewsPage = () => {
                     sx={{ color: 'text.secondary' }}
                   >
                     Completed:{' '}
-                    {format(new Date(review.job.completedDate), 'MMM dd, yyyy')}
+                    {safeFormatDate(review.job?.completedDate, 'MMM dd, yyyy')}
                   </Typography>
                   <Typography
                     variant="caption"
@@ -710,6 +714,7 @@ const EnhancedReviewsPage = () => {
               >
                 <Avatar
                   src={user?.profileImage}
+                  alt={user?.firstName || 'Your avatar'}
                   sx={{
                     width: 24,
                     height: 24,
@@ -1196,6 +1201,7 @@ const EnhancedReviewsPage = () => {
         maxWidth="md"
         fullWidth
         fullScreen={isMobile}
+        aria-labelledby="reply-dialog-title"
         PaperProps={{
           sx: {
             // ✅ MOBILE-AUDIT P5: replaced hardcoded dark gradient with theme surface
@@ -1205,7 +1211,7 @@ const EnhancedReviewsPage = () => {
           },
         }}
       >
-        <DialogTitle sx={{ color: '#FFD700' }}>
+        <DialogTitle id="reply-dialog-title" sx={{ color: '#FFD700' }}>
           Reply to {selectedReview?.reviewer.name}
         </DialogTitle>
         <DialogContent>

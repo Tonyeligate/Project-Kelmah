@@ -713,6 +713,7 @@ const JobPostingPage = () => {
             <TextField
               name="title"
               label="Job Title"
+              placeholder="e.g. Experienced Plumber Needed"
               value={formData.title}
               onChange={handleChange}
               fullWidth
@@ -843,6 +844,7 @@ const JobPostingPage = () => {
             <TextField
               name="description"
               label="Job Description"
+              placeholder="Describe the work needed, tools required, and what you expect..."
               value={formData.description}
               onChange={handleChange}
               multiline
@@ -893,6 +895,7 @@ const JobPostingPage = () => {
             <TextField
               name="requirements"
               label="Requirements"
+              placeholder="e.g. Must have own tools, 3+ years experience"
               value={formData.requirements}
               onChange={handleChange}
               multiline
@@ -970,6 +973,7 @@ const JobPostingPage = () => {
                   <TextField
                     name="budget.min"
                     label="Min Rate"
+                    placeholder="e.g. 50"
                     value={formData.budget.min}
                     onChange={handleChange}
                     onBlur={() => markFieldTouched('budget.min')}
@@ -995,6 +999,7 @@ const JobPostingPage = () => {
                   <TextField
                     name="budget.max"
                     label="Max Rate"
+                    placeholder="e.g. 200"
                     value={formData.budget.max}
                     onChange={handleChange}
                     onBlur={() => markFieldTouched('budget.max')}
@@ -1022,6 +1027,7 @@ const JobPostingPage = () => {
                 <TextField
                   name="budget.fixed"
                   label="Project Budget"
+                  placeholder="e.g. 5000"
                   value={formData.budget.fixed}
                   onChange={handleChange}
                   onBlur={() => markFieldTouched('budget.fixed')}
@@ -1142,6 +1148,7 @@ const JobPostingPage = () => {
             <TextField
               name="location"
               label="Job Location"
+              placeholder="e.g. Accra, East Legon"
               value={formData.location}
               onChange={handleChange}
               fullWidth

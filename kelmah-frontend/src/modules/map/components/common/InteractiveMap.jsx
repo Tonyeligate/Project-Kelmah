@@ -658,6 +658,7 @@ const SpectacularMarkerPopup = ({
               >
                 <Avatar
                   src={marker.profileImage}
+                  alt={marker.name || 'Worker avatar'}
                   sx={{
                     width: 56,
                     height: 56,

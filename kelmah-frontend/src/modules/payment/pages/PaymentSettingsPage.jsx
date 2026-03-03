@@ -25,17 +25,21 @@ const PaymentSettingsPage = () => {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     const fetchSettings = async () => {
       try {
         const res = await paymentService.getPaymentSettings();
+        if (cancelled) return;
         setSettings(res.data || res);
       } catch (err) {
+        if (cancelled) return;
         setError('Failed to load settings. Please try again.');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
     fetchSettings();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {

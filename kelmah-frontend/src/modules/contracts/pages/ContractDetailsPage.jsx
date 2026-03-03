@@ -111,8 +111,10 @@ const ContractDetailsPage = () => {
   // Load contract and milestones on mount
   useEffect(() => {
     if (!resolvedContractId) return;
+    let cancelled = false;
     dispatch(fetchContractById(resolvedContractId));
     dispatch(fetchContractMilestones(resolvedContractId));
+    return () => { cancelled = true; };
   }, [dispatch, resolvedContractId]);
 
   // Show creation success toast if navigated with state

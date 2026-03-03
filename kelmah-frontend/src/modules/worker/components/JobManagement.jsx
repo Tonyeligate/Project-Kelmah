@@ -345,8 +345,9 @@ const JobManagement = () => {
         onClose={handleDialogClose}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="job-management-dialog-title"
       >
-        <DialogTitle>
+        <DialogTitle id="job-management-dialog-title">
           {dialogType === 'message' && 'Send Message'}
           {dialogType === 'milestone' && 'Submit Milestone'}
           {dialogType === 'review' && 'Submit Review'}

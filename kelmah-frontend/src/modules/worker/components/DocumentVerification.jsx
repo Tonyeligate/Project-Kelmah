@@ -319,7 +319,7 @@ const DocumentVerification = () => {
         </Typography>
         {document.expiryDate && (
           <Typography variant="body2" color="text.secondary">
-            Expires: {new Date(document.expiryDate).toLocaleDateString()}
+            Expires: {document.expiryDate ? new Date(document.expiryDate).toLocaleDateString() : 'N/A'}
           </Typography>
         )}
         {document.notes && (
@@ -458,8 +458,9 @@ const DocumentVerification = () => {
         onClose={handleDialogClose}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="document-dialog-title"
       >
-        <DialogTitle>
+        <DialogTitle id="document-dialog-title">
           {editingDocument ? 'Edit Document' : 'Upload Document'}
         </DialogTitle>
         <DialogContent>

@@ -229,8 +229,9 @@ const MessageInput = ({
         onClose={() => setShowAttachmentDialog(false)}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="attachments-dialog-title"
       >
-        <DialogTitle>Attachments</DialogTitle>
+        <DialogTitle id="attachments-dialog-title">Attachments</DialogTitle>
         <DialogContent>
           {fileError && (
             <Typography color="error" sx={{ mb: 2 }}>

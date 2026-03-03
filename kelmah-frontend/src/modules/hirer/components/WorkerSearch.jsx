@@ -1025,6 +1025,7 @@ const WorkerSearch = () => {
                     <Box display="flex" alignItems="center" gap={2} mb={2}>
                       <Avatar
                         src={worker.avatar}
+                        alt={worker.name || 'Worker avatar'}
                         sx={{ width: 64, height: 64 }}
                       >
                         {worker.name.charAt(0)}

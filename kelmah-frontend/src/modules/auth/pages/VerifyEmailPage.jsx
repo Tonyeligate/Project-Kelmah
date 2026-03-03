@@ -82,6 +82,7 @@ const VerifyEmailPage = () => {
               fullWidth
               required
               margin="normal"
+              placeholder="Enter your registered email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               inputProps={{ inputMode: 'email', autoComplete: 'email' }}

@@ -310,7 +310,7 @@ const MessageAttachments = ({
       )}
 
       {/* Image preview dialog */}
-      <Dialog open={!!previewUrl} onClose={handleClosePreview} maxWidth="lg">
+      <Dialog open={!!previewUrl} onClose={handleClosePreview} maxWidth="lg" aria-label="Attachment preview">
         <IconButton
           sx={{
             position: 'absolute',

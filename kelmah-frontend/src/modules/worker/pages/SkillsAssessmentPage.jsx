@@ -61,7 +61,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useParams, Link as RouterLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatRelative } from '@/modules/common/utils/formatters';
 import { Helmet } from 'react-helmet-async';
 import {
   ResponsiveContainer,
@@ -306,13 +306,17 @@ const SkillsAssessmentPage = () => {
 
   // Load initial data once credentials are resolved
   useEffect(() => {
+    let cancelled = false;
     fetchSkillsData();
+    return () => { cancelled = true; };
   }, [fetchSkillsData]);
 
   useEffect(() => {
+    let cancelled = false;
     if (testId && availableTests.length > 0) {
       fetchTestDetails(testId);
     }
+    return () => { cancelled = true; };
   }, [testId, availableTests, fetchTestDetails]);
 
   const confirmStartTest = () => {
@@ -709,7 +713,7 @@ const SkillsAssessmentPage = () => {
                       Time: {test.timeSpent} minutes
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {formatDistanceToNow(new Date(test.completedAt), {
+                      {safeFormatRelative(test.completedAt, {
                         addSuffix: true,
                       })}
                     </Typography>
@@ -1169,8 +1173,9 @@ const SkillsAssessmentPage = () => {
         <Dialog
           open={confirmExitDialog}
           onClose={() => setConfirmExitDialog(false)}
+          aria-labelledby="confirm-exit-dialog-title"
         >
-          <DialogTitle>Exit Assessment?</DialogTitle>
+          <DialogTitle id="confirm-exit-dialog-title">Exit Assessment?</DialogTitle>
           <DialogContent>
             <Typography>
               Are you sure you want to exit this assessment? Your progress will
@@ -1261,8 +1266,9 @@ const SkillsAssessmentPage = () => {
           maxWidth="md"
           fullWidth
           fullScreen={isMobile}
+          aria-labelledby="start-test-dialog-title"
         >
-          <DialogTitle>
+          <DialogTitle id="start-test-dialog-title">
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
                 <QuizIcon />
@@ -1350,8 +1356,9 @@ const SkillsAssessmentPage = () => {
           maxWidth="md"
           fullWidth
           fullScreen={isMobile}
+          aria-labelledby="results-dialog-title"
         >
-          <DialogTitle>
+          <DialogTitle id="results-dialog-title">
             <Box sx={{ textAlign: 'center' }}>
               {testResults?.passed ? (
                 <CheckCircleIcon

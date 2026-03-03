@@ -372,7 +372,7 @@ const ProposalReview = () => {
     return (
       <Box>
         <Box display="flex" alignItems="center" gap={2} mb={3}>
-          <Avatar src={worker.avatar} sx={{ width: 64, height: 64 }}>
+          <Avatar src={worker.avatar} alt={worker.name || 'Worker avatar'} sx={{ width: 64, height: 64 }}>
             {(worker.name ?? 'U').charAt(0)}
           </Avatar>
           <Box>

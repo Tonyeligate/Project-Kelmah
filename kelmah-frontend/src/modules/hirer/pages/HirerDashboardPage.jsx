@@ -212,8 +212,9 @@ const HirerDashboardPage = () => {
           dispatch(fetchHirerJobs('completed')).unwrap(),
         ];
 
-        fetchPromiseRef.current = Promise.all(fetchPromises);
-        const [, activePayload] = await fetchPromiseRef.current;
+        fetchPromiseRef.current = Promise.allSettled(fetchPromises);
+        const results = await fetchPromiseRef.current;
+        const activePayload = results[1]?.status === 'fulfilled' ? results[1].value : null;
 
         if (!isMountedRef.current) {
           return;

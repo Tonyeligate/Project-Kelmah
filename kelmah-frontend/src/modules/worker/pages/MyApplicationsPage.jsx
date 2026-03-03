@@ -62,21 +62,25 @@ const MyApplicationsPage = () => {
 
   // Load applications from API
   useEffect(() => {
+    let cancelled = false;
     const fetchApplications = async () => {
       try {
         const data = await applicationsService.getMyApplications();
+        if (cancelled) return;
         // Ensure data is an array, fallback to empty array if not
         const applicationsArray = Array.isArray(data) ? data : [];
         setApplications(applicationsArray);
       } catch (error) {
+        if (cancelled) return;
         // AUD2-L06 FIX: Suppress console output in production
         if (import.meta.env.DEV) console.error('Error loading applications:', error);
         setApplications([]); // Set empty array as fallback
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
     fetchApplications();
+    return () => { cancelled = true; };
   }, []);
 
   // Handle tab change
@@ -573,10 +577,11 @@ const MyApplicationsPage = () => {
         maxWidth="md"
         fullWidth
         fullScreen={isActualMobile}
+        aria-labelledby="application-details-dialog-title"
       >
         {selectedApplication && (
           <>
-            <DialogTitle>Application Details</DialogTitle>
+            <DialogTitle id="application-details-dialog-title">Application Details</DialogTitle>
             <DialogContent>
               <Card variant="outlined" sx={{ mb: 3 }}>
                 <CardContent>
@@ -850,10 +855,11 @@ const MyApplicationsPage = () => {
         maxWidth="sm"
         fullWidth
         fullScreen={isActualMobile}
+        aria-labelledby="application-message-dialog-title"
       >
         {selectedApplication && (
           <>
-            <DialogTitle>Message about {selectedApplication.job?.title || 'Application'}</DialogTitle>
+            <DialogTitle id="application-message-dialog-title">Message about {selectedApplication.job?.title || 'Application'}</DialogTitle>
             <DialogContent>
               <Typography variant="subtitle2" gutterBottom>
                 Regarding: {selectedApplication.job?.title || selectedApplication.jobTitle || 'Job Application'}

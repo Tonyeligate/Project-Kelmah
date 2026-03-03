@@ -153,6 +153,7 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
             <Avatar
               src={!isJob ? item.profileImage : undefined}
+              alt={isJob ? item.title : item.name || 'Map result'}
               sx={{
                 width: 48,
                 height: 48,
@@ -862,6 +863,7 @@ const ProfessionalMapPage = () => {
                   >
                     <Avatar
                       src={selectedItem.profileImage}
+                      alt={selectedItem.name || selectedItem.title || 'Selected item'}
                       sx={{
                         width: 48,
                         height: 48,

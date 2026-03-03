@@ -338,7 +338,9 @@ const MyBidsPage = () => {
   }, [userId]);
 
   useEffect(() => {
+    let cancelled = false;
     fetchBids();
+    return () => { cancelled = true; };
   }, [fetchBids]);
 
   const filteredBids = tabValue === 0

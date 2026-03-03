@@ -119,20 +119,25 @@ const NearbyJobsPage = () => {
 
   // Initial load
   useEffect(() => {
+    let cancelled = false;
     const init = async () => {
       const pos = await getLocation();
+      if (cancelled) return;
       if (pos) {
         await fetchJobs(pos);
       }
     };
     init();
+    return () => { cancelled = true; };
   }, []);
 
   // Refresh when filters change
   useEffect(() => {
+    let cancelled = false;
     if (location) {
       fetchJobs();
     }
+    return () => { cancelled = true; };
   }, [maxDistance, categoryFilter]);
 
   // Handle quote submission
@@ -382,6 +387,7 @@ const NearbyJobsPage = () => {
                         <Avatar
                           key={i}
                           src={photo.url}
+                          alt={`Job photo ${i + 1}`}
                           variant="rounded"
                           sx={{ width: 50, height: 50 }}
                         />
@@ -399,6 +405,7 @@ const NearbyJobsPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Avatar
                         src={job.client.profilePicture}
+                        alt={job.client.firstName || 'Client avatar'}
                         sx={{ width: 24, height: 24 }}
                       >
                         {job.client.firstName?.[0]}
@@ -445,8 +452,9 @@ const NearbyJobsPage = () => {
         onClose={() => !quoteSubmitting && setQuoteDialogOpen(false)}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="send-quote-dialog-title"
       >
-        <DialogTitle>
+        <DialogTitle id="send-quote-dialog-title">
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             Send Quote
             <IconButton aria-label="Close dialog" onClick={() => setQuoteDialogOpen(false)} disabled={quoteSubmitting}>

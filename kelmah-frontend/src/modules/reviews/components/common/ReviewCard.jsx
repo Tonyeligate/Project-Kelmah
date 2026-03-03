@@ -9,7 +9,7 @@ import {
   Stack,
   Divider,
 } from '@mui/material';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatRelative } from '@/modules/common/utils/formatters';
 import { styled, alpha } from '@mui/material/styles';
 
 // Styled Review container with gold accents
@@ -70,7 +70,7 @@ const ReviewCard = ({ review }) => {
           color="text.secondary"
           alignSelf="flex-end"
         >
-          {formatDistanceToNow(new Date(date), { addSuffix: true })}
+          {safeFormatRelative(date, { addSuffix: true })}
         </Typography>
       </Stack>
     </StyledReviewPaper>

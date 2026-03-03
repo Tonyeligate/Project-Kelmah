@@ -17,7 +17,7 @@ import {
   ArrowDownward as ArrowDownwardIcon,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
-import { currencyFormatter } from '@/modules/common/utils/formatters';
+import { currencyFormatter, safeFormatDate } from '@/modules/common/utils/formatters';
 
 const TransactionsList = ({ transactions = [], loading = false, limit }) => {
   if (loading) {
@@ -79,7 +79,7 @@ const TransactionsList = ({ transactions = [], loading = false, limit }) => {
               </ListItemIcon>
               <ListItemText
                 primary={tx.title || tx.description}
-                secondary={format(new Date(tx.date), 'd MMMM yyyy, hh:mm a')}
+                secondary={safeFormatDate(tx.date, 'd MMMM yyyy, hh:mm a')}
               />
               <Tooltip
                 title={

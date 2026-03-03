@@ -330,7 +330,7 @@ const QuickJobTrackingPage = () => {
 
               {/* Client info */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                <Avatar src={job.client?.profilePicture}>
+                <Avatar src={job.client?.profilePicture} alt={job.client?.firstName || 'Client avatar'}>
                   {job.client?.firstName?.[0]}
                 </Avatar>
                 <Box sx={{ flex: 1 }}>
@@ -488,8 +488,8 @@ const QuickJobTrackingPage = () => {
       )}
 
       {/* Completion Dialog */}
-      <Dialog open={completionDialogOpen} onClose={() => setCompletionDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>
+      <Dialog open={completionDialogOpen} onClose={() => setCompletionDialogOpen(false)} maxWidth="sm" fullWidth aria-labelledby="mark-complete-dialog-title">
+        <DialogTitle id="mark-complete-dialog-title">
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             Mark Work Complete
             <IconButton aria-label="Close dialog" onClick={() => setCompletionDialogOpen(false)}>
@@ -508,6 +508,7 @@ const QuickJobTrackingPage = () => {
               <Box key={index} sx={{ position: 'relative' }}>
                 <Avatar
                   src={photo.preview}
+                  alt={`Completion photo ${index + 1}`}
                   variant="rounded"
                   sx={{ width: 80, height: 80 }}
                 />
@@ -579,8 +580,8 @@ const QuickJobTrackingPage = () => {
       </Dialog>
 
       {/* Cancel Dialog */}
-      <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)}>
-        <DialogTitle>
+      <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)} aria-labelledby="cancel-job-dialog-title">
+        <DialogTitle id="cancel-job-dialog-title">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <WarningIcon color="warning" />
             Cancel Job
