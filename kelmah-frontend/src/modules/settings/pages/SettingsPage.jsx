@@ -30,6 +30,7 @@ import AccountSettings from '../components/common/AccountSettings';
 import SecuritySettings from '../components/common/SecuritySettings';
 import PrivacySettings from '../components/common/PrivacySettings';
 import { useSettings } from '../hooks/useSettings';
+import { Helmet } from 'react-helmet-async';
 
 const SettingsPage = () => {
   const {
@@ -95,6 +96,7 @@ const SettingsPage = () => {
       const panel = settingsPanels[mobileSection];
       return (
         <Container maxWidth="lg" sx={{ py: 1, px: 1.5, color: 'text.primary' }}>
+          <Helmet><title>Settings | Kelmah</title></Helmet>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 0.5 }}>
             <IconButton onClick={() => setMobileSection(-1)} sx={{ mr: 0.5 }}>
               <ArrowBack />
@@ -112,6 +114,7 @@ const SettingsPage = () => {
     // Showing the settings list
     return (
       <Container maxWidth="lg" sx={{ py: 2, px: 1.5, color: 'text.primary' }}>
+        <Helmet><title>Settings | Kelmah</title></Helmet>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <SettingsIcon sx={{ fontSize: 28, mr: 1.5, color: 'primary.main' }} />
           <Typography variant="h5" fontWeight="bold">
@@ -149,6 +152,7 @@ const SettingsPage = () => {
   // ── Desktop: Sidebar tabs + content (unchanged) ──
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1.5, sm: 3 }, color: 'text.primary' }}>
+      <Helmet><title>Settings | Kelmah</title></Helmet>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, md: 4 } }}>
         <SettingsIcon sx={{ fontSize: { xs: 28, md: 36 }, mr: 1.5, color: 'primary.main' }} />
         <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' } }}>

@@ -16,6 +16,7 @@ import {
   Skeleton,
 } from '@mui/material';
 import { usePayments } from '../contexts/PaymentContext';
+import { Helmet } from 'react-helmet-async';
 import TransactionsList from '../components/TransactionsList';
 // Add currency formatter for Ghana Cedi
 const currencyFormatter = new Intl.NumberFormat('en-GH', {
@@ -71,6 +72,7 @@ const WalletPage = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+      <Helmet><title>Wallet | Kelmah</title></Helmet>
       {/* Wallet Summary */}
       <Paper
         elevation={0}

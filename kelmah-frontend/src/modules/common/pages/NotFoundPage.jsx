@@ -1,5 +1,6 @@
 import { Box, Typography, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 
 const NotFoundPage = () => {
     const navigate = useNavigate();
@@ -17,6 +18,7 @@ const NotFoundPage = () => {
                 px: 2,
             }}
         >
+            <Helmet><title>Page Not Found | Kelmah</title></Helmet>
             <Typography variant="h2" component="p" color="primary" fontWeight="bold">
                 404
             </Typography>

@@ -42,6 +42,7 @@ import { useNotifications } from '../contexts/NotificationContext';
 import { Pagination, FormControlLabel, Switch } from '@mui/material';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 
 // --- Reusable Components ---
 
@@ -160,17 +161,6 @@ const PageNotificationItem = ({ notification, onMarkRead }) => {
   );
 };
 
-const ActivityFeed = ({ notifications }) => (
-  <List>
-    {notifications.map((notification, index) => (
-      <PageNotificationItem
-        key={notification.id || notification._id || `notif-${index}`}
-        notification={notification}
-      />
-    ))}
-  </List>
-);
-
 // --- Main Notifications Page ---
 
 // Tab filter → backend type mapping for grouped tabs
@@ -249,6 +239,7 @@ const NotificationsPage = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 }, pb: { xs: 'calc(72px + env(safe-area-inset-bottom, 0px))', md: 4 } }}>
+      <Helmet><title>Notifications | Kelmah</title></Helmet>
       {/* Header — stacks vertically on mobile */}
       <Box
         sx={{

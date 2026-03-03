@@ -33,6 +33,7 @@ import {
 } from '@mui/icons-material';
 import paymentService from '../services/paymentService';
 import { useTheme } from '@mui/material/styles';
+import { Helmet } from 'react-helmet-async';
 
 // Demo payment methods for initial display
 const PaymentMethodsPage = () => {
@@ -243,6 +244,7 @@ const PaymentMethodsPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+      <Helmet><title>Payment Methods | Kelmah</title></Helmet>
       <Box
         sx={{
           mb: { xs: 2, sm: 4 },

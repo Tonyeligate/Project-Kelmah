@@ -4,6 +4,7 @@ import AuthWrapper from '../components/common/AuthWrapper';
 import MobileLogin from '../components/mobile/MobileLogin';
 import { useLocation } from 'react-router-dom';
 import { Alert, useMediaQuery, useTheme } from '@mui/material';
+import { Helmet } from 'react-helmet-async';
 
 const LoginPage = () => {
   const location = useLocation();
@@ -20,6 +21,7 @@ const LoginPage = () => {
   // Desktop view with AuthWrapper
   return (
     <AuthWrapper>
+      <Helmet><title>Log In | Kelmah</title></Helmet>
       {registered && (
         <Alert severity="success" sx={{ mb: 2 }}>
           Registration successful! Please check your email to verify your

@@ -8,6 +8,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { Link as RouterLink, useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import ContractForm from '../components/common/ContractForm';
 
 const EditContractPage = () => {
@@ -27,6 +28,7 @@ const EditContractPage = () => {
 
   return (
     <Container maxWidth="xl" sx={{ px: { xs: 0.5, sm: 2 } }}>
+      <Helmet><title>Edit Contract | Kelmah</title></Helmet>
       <Box sx={{ py: { xs: 2, sm: 3 } }}>
         <Breadcrumbs sx={{ mb: 2 }}>
           <Link component={RouterLink} to="/" underline="hover" color="inherit">

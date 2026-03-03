@@ -13,6 +13,7 @@ import {
 import { ArrowBack } from '@mui/icons-material';
 import authService from '../services/authService';
 import { Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 
 const ForgotPasswordPage = () => {
   const theme = useTheme();
@@ -227,6 +228,7 @@ const ForgotPasswordPage = () => {
 
   return (
     <AuthWrapper>
+      <Helmet><title>Forgot Password | Kelmah</title></Helmet>
       <Box
         component="form"
         onSubmit={handleSubmit}

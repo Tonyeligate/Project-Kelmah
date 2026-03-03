@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AuthWrapper from '../components/common/AuthWrapper';
 import { Box, Typography, Button, TextField, Alert, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
 import { useAuth } from '../hooks/useAuth';
+import { Helmet } from 'react-helmet-async';
 
 const MfaSetupPage = () => {
   const theme = useTheme();
@@ -102,6 +103,7 @@ const MfaSetupPage = () => {
 
   return (
     <AuthWrapper>
+      <Helmet><title>Two-Factor Authentication | Kelmah</title></Helmet>
       {mfaContent}
     </AuthWrapper>
   );

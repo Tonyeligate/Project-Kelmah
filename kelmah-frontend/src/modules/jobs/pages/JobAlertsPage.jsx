@@ -16,6 +16,7 @@ import {
 import { styled, useTheme } from '@mui/material/styles';
 import { notificationService } from '../../notifications/services/notificationService';
 import SavedSearches from '../../search/components/SavedSearches';
+import { Helmet } from 'react-helmet-async';
 
 const Section = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -69,6 +70,7 @@ const JobAlertsPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+      <Helmet><title>Job Alerts | Kelmah</title></Helmet>
       <Typography
         variant="h4"
         fontWeight={800}

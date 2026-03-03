@@ -33,6 +33,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import SendIcon from '@mui/icons-material/Send';
 import { adminService } from '../services/adminService';
+import { Helmet } from 'react-helmet-async';
 
 const STATUS_COLOR_MAP = {
   queued: 'warning',
@@ -83,6 +84,7 @@ const PayoutQueuePage = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 1, sm: 2 } }}>
+      <Helmet><title>Payout Queue | Kelmah</title></Helmet>
       <Typography variant="h4" fontWeight="bold" gutterBottom>
         Payout Queue
       </Typography>

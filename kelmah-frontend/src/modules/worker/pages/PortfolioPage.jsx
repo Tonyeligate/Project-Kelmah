@@ -4,6 +4,7 @@ import { CollectionsOutlined as CollectionsOutlinedIcon } from '@mui/icons-mater
 import PortfolioGallery from '../components/PortfolioGallery';
 import ProjectShowcase from '../components/ProjectShowcase';
 import portfolioService from '../services/portfolioService';
+import { Helmet } from 'react-helmet-async';
 
 const PortfolioPage = () => {
   const theme = useTheme();
@@ -71,6 +72,7 @@ const PortfolioPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
+      <Helmet><title>My Portfolio | Kelmah</title></Helmet>
       <Typography variant={isMobile ? 'h5' : 'h4'} gutterBottom>
         My Portfolio
       </Typography>

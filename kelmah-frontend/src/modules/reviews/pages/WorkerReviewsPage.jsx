@@ -19,6 +19,7 @@ import reviewService from '../services/reviewService';
 import Pagination from '@mui/material/Pagination';
 import { alpha } from '@mui/material/styles';
 import { formatDistanceToNow } from 'date-fns';
+import { Helmet } from 'react-helmet-async';
 
 const RatingDistribution = ({ distribution, totalReviews }) => (
   <Box>
@@ -124,6 +125,7 @@ const WorkerReviewsPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+      <Helmet><title>Worker Reviews | Kelmah</title></Helmet>
       {/* Header */}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', sm: 'center' }} mb={4}>
         <Box>

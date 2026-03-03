@@ -66,6 +66,7 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { useAuth } from '../../auth/hooks/useAuth';
 import reviewService from '../services/reviewService';
 import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
+import { Helmet } from 'react-helmet-async';
 
 // Enhanced Reviews Page with comprehensive review management
 const EnhancedReviewsPage = () => {
@@ -339,7 +340,7 @@ const EnhancedReviewsPage = () => {
                 },
               }}
             />
-            <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            <Typography variant="body1" sx={{ color: 'text.secondary' }}>
               Based on {overallStats.totalReviews} reviews
             </Typography>
           </Box>
@@ -357,7 +358,7 @@ const EnhancedReviewsPage = () => {
               >
                 <Typography
                   variant="body2"
-                  sx={{ color: 'rgba(255,255,255,0.7)', minWidth: '20px' }}
+                  sx={{ color: 'text.secondary', minWidth: '20px' }}
                 >
                   {rating}
                 </Typography>
@@ -375,7 +376,7 @@ const EnhancedReviewsPage = () => {
                     flex: 1,
                     height: 8,
                     borderRadius: 4,
-                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    backgroundColor: (t) => alpha(t.palette.text.primary, 0.1),
                     '& .MuiLinearProgress-bar': {
                       backgroundColor: '#FFD700',
                       borderRadius: 4,
@@ -384,7 +385,7 @@ const EnhancedReviewsPage = () => {
                 />
                 <Typography
                   variant="body2"
-                  sx={{ color: 'rgba(255,255,255,0.7)', minWidth: '30px' }}
+                  sx={{ color: 'text.secondary', minWidth: '30px' }}
                 >
                   {overallStats.ratingDistribution[rating] || 0}
                 </Typography>
@@ -412,7 +413,7 @@ const EnhancedReviewsPage = () => {
                 >
                   <Typography
                     variant="body2"
-                    sx={{ color: 'rgba(255,255,255,0.8)' }}
+                    sx={{ color: 'text.primary' }}
                   >
                     {category}
                   </Typography>
@@ -446,11 +447,11 @@ const EnhancedReviewsPage = () => {
         </Grid>
       </Grid>
 
-      {/* Recent Trends */}
-      <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+      {/* Recent Trends — computed from actual review data */}
+      <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid', borderColor: 'divider' }}>
         <Stack direction="row" alignItems="center" spacing={3}>
           <Box>
-            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               This Month
             </Typography>
             <Stack direction="row" alignItems="center" spacing={1}>
@@ -458,28 +459,40 @@ const EnhancedReviewsPage = () => {
                 variant="h6"
                 sx={{ color: '#4CAF50', fontWeight: 700 }}
               >
-                {reviewStats.recent?.thisMonth}
+                {reviews.filter(r => {
+                  const d = new Date(r.createdAt);
+                  const now = new Date();
+                  return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                }).length}
               </Typography>
               <TrendingUpIcon sx={{ color: '#4CAF50', fontSize: 20 }} />
             </Stack>
           </Box>
           <Box>
-            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               Last Month
             </Typography>
             <Typography
               variant="h6"
-              sx={{ color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}
+              sx={{ color: 'text.primary', fontWeight: 600 }}
             >
-              {reviewStats.recent?.lastMonth}
+              {reviews.filter(r => {
+                const d = new Date(r.createdAt);
+                const now = new Date();
+                const lastMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
+                const lastMonthYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+                return d.getMonth() === lastMonth && d.getFullYear() === lastMonthYear;
+              }).length}
             </Typography>
           </Box>
           <Box sx={{ flex: 1 }}>
-            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               Response Rate
             </Typography>
             <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 700 }}>
-              87%
+              {reviews.length > 0
+                ? `${Math.round((reviews.filter(r => r.hasReply).length / reviews.length) * 100)}%`
+                : '—'}
             </Typography>
           </Box>
         </Stack>
@@ -517,7 +530,7 @@ const EnhancedReviewsPage = () => {
           >
             <Stack direction="row" spacing={2} sx={{ flex: 1 }}>
               <Avatar
-                src={review.reviewer.avatar}
+                src={review.reviewer?.avatar}
                 sx={{
                   width: 50,
                   height: 50,
@@ -525,7 +538,7 @@ const EnhancedReviewsPage = () => {
                   color: '#FFD700',
                 }}
               >
-                {review.reviewer.name.charAt(0)}
+                {review.reviewer?.name?.charAt(0) || '?'}
               </Avatar>
               <Box sx={{ flex: 1 }}>
                 <Stack
@@ -537,14 +550,14 @@ const EnhancedReviewsPage = () => {
                   <Typography
                     variant="h6"
                     sx={{
-                      color: '#fff',
+                      color: 'text.primary',
                       fontWeight: 600,
                       fontSize: '1.1rem',
                     }}
                   >
-                    {review.reviewer.name}
+                    {review.reviewer?.name || 'Unknown User'}
                   </Typography>
-                  {review.reviewer.isVerified && (
+                  {review.reviewer?.isVerified && (
                     <Tooltip title="Verified reviewer">
                       <VerifiedIcon sx={{ color: '#2196F3', fontSize: 20 }} />
                     </Tooltip>
@@ -616,7 +629,7 @@ const EnhancedReviewsPage = () => {
                 >
                   <Typography
                     variant="caption"
-                    sx={{ color: 'rgba(255,255,255,0.7)' }}
+                    sx={{ color: 'text.secondary' }}
                   >
                     Completed:{' '}
                     {format(new Date(review.job.completedDate), 'MMM dd, yyyy')}
@@ -636,7 +649,7 @@ const EnhancedReviewsPage = () => {
           <Typography
             variant="h6"
             sx={{
-              color: '#fff',
+              color: 'text.primary',
               fontWeight: 600,
               mb: 2,
               fontSize: '1.1rem',
@@ -648,7 +661,7 @@ const EnhancedReviewsPage = () => {
           <Typography
             variant="body1"
             sx={{
-              color: 'rgba(255,255,255,0.8)',
+              color: 'text.primary',
               lineHeight: 1.6,
               mb: 2,
             }}
@@ -713,7 +726,7 @@ const EnhancedReviewsPage = () => {
                 </Typography>
                 <Typography
                   variant="caption"
-                  sx={{ color: 'rgba(255,255,255,0.5)' }}
+                  sx={{ color: 'text.disabled' }}
                 >
                   {formatDistanceToNow(new Date(review.reply.createdAt), {
                     addSuffix: true,
@@ -722,7 +735,7 @@ const EnhancedReviewsPage = () => {
               </Stack>
               <Typography
                 variant="body2"
-                sx={{ color: 'rgba(255,255,255,0.8)' }}
+                sx={{ color: 'text.primary' }}
               >
                 {review.reply.text}
               </Typography>
@@ -743,7 +756,7 @@ const EnhancedReviewsPage = () => {
                 startIcon={<ThumbUpIcon />}
                 onClick={() => handleHelpfulVote(review.id, true)}
                 sx={{
-                  color: 'rgba(255,255,255,0.7)',
+                  color: 'text.secondary',
                   '&:hover': {
                     color: '#4CAF50',
                     backgroundColor: alpha('#4CAF50', 0.1),
@@ -757,7 +770,7 @@ const EnhancedReviewsPage = () => {
                 startIcon={<ThumbDownIcon />}
                 onClick={() => handleHelpfulVote(review.id, false)}
                 sx={{
-                  color: 'rgba(255,255,255,0.7)',
+                  color: 'text.secondary',
                   '&:hover': {
                     color: '#F44336',
                     backgroundColor: alpha('#F44336', 0.1),
@@ -826,6 +839,7 @@ const EnhancedReviewsPage = () => {
         pb: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
       }}
     >
+      <Helmet><title>Reviews | Kelmah</title></Helmet>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Stack
@@ -850,7 +864,7 @@ const EnhancedReviewsPage = () => {
             <Typography
               variant="body1"
               sx={{
-                color: 'rgba(255,255,255,0.7)',
+                color: 'text.secondary',
                 fontSize: { xs: '0.9rem', sm: '1rem' },
               }}
             >
@@ -889,13 +903,19 @@ const EnhancedReviewsPage = () => {
       >
         <Tabs
           value={activeTab}
-          onChange={(e, newValue) => setActiveTab(newValue)}
+          onChange={(e, newValue) => {
+            setActiveTab(newValue);
+            // Sync filter state with tab selection
+            if (newValue === 0) setSelectedFilter('all');
+            else if (newValue === 1) setSelectedFilter('recent');
+            else if (newValue === 2) setSelectedFilter('needs-reply');
+          }}
           variant={isMobile ? 'scrollable' : 'standard'}
           scrollButtons="auto"
           allowScrollButtonsMobile
           sx={{
             '& .MuiTab-root': {
-              color: 'rgba(255,255,255,0.7)',
+              color: 'text.secondary',
               fontWeight: 600,
               minWidth: { xs: 'auto', md: 120 },
               '&.Mui-selected': {
@@ -944,7 +964,7 @@ const EnhancedReviewsPage = () => {
                 sx={{
                   flex: 1,
                   '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    backgroundColor: (t) => alpha(t.palette.text.primary, 0.05),
                     borderRadius: 2,
                     '& fieldset': {
                       borderColor: 'rgba(255,215,0,0.3)',
@@ -957,16 +977,16 @@ const EnhancedReviewsPage = () => {
                     },
                   },
                   '& .MuiInputBase-input': {
-                    color: '#fff',
+                    color: 'text.primary',
                     '&::placeholder': {
-                      color: 'rgba(255,255,255,0.5)',
+                      color: 'text.disabled',
                     },
                   },
                 }}
                 InputProps={{
                   startAdornment: (
                     <SearchIcon
-                      sx={{ color: 'rgba(255,255,255,0.5)', mr: 1 }}
+                      sx={{ color: 'text.disabled', mr: 1 }}
                     />
                   ),
                 }}
@@ -1019,7 +1039,7 @@ const EnhancedReviewsPage = () => {
               </MobileFilterSheet>
             </Stack>
 
-            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               {filteredReviews.length} review
               {filteredReviews.length !== 1 ? 's' : ''} found
             </Typography>
@@ -1039,17 +1059,17 @@ const EnhancedReviewsPage = () => {
               }}
             >
               <StarIcon
-                sx={{ fontSize: 64, color: 'rgba(255,255,255,0.3)', mb: 2 }}
+                sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }}
               />
               <Typography
                 variant="h6"
-                sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}
+                sx={{ color: 'text.secondary', mb: 1 }}
               >
                 No reviews found
               </Typography>
               <Typography
                 variant="body2"
-                sx={{ color: 'rgba(255,255,255,0.5)', mb: 2 }}
+                sx={{ color: 'text.disabled', mb: 2 }}
               >
                 Try adjusting your search or filters
               </Typography>
@@ -1058,9 +1078,9 @@ const EnhancedReviewsPage = () => {
                 size="small"
                 onClick={() => {
                   setSearchQuery('');
-                  setSelectedRating(null);
+                  setSelectedFilter('all');
                 }}
-                sx={{ color: 'rgba(255,255,255,0.7)', borderColor: 'rgba(255,255,255,0.3)', minHeight: 44, '&:hover': { borderColor: 'rgba(255,255,255,0.5)' } }}
+                sx={{ color: 'text.secondary', borderColor: 'divider', minHeight: 44, '&:hover': { borderColor: 'text.disabled' } }}
               >
                 Clear Filters
               </Button>
@@ -1216,7 +1236,7 @@ const EnhancedReviewsPage = () => {
                 />
                 <Typography
                   variant="body2"
-                  sx={{ color: 'rgba(255,255,255,0.7)' }}
+                  sx={{ color: 'text.secondary' }}
                 >
                   {selectedReview.title}
                 </Typography>
@@ -1224,7 +1244,7 @@ const EnhancedReviewsPage = () => {
               <Typography
                 variant="body2"
                 sx={{
-                  color: 'rgba(255,255,255,0.8)',
+                  color: 'text.primary',
                   fontStyle: 'italic',
                 }}
               >
@@ -1243,7 +1263,7 @@ const EnhancedReviewsPage = () => {
             onChange={(e) => setReplyText(e.target.value)}
             sx={{
               '& .MuiOutlinedInput-root': {
-                backgroundColor: 'rgba(255,255,255,0.05)',
+                backgroundColor: (t) => alpha(t.palette.text.primary, 0.05),
                 '& fieldset': {
                   borderColor: 'rgba(255,215,0,0.3)',
                 },
@@ -1255,9 +1275,9 @@ const EnhancedReviewsPage = () => {
                 },
               },
               '& .MuiInputBase-input': {
-                color: '#fff',
+                color: 'text.primary',
                 '&::placeholder': {
-                  color: 'rgba(255,255,255,0.5)',
+                  color: 'text.disabled',
                 },
               },
             }}
@@ -1270,7 +1290,7 @@ const EnhancedReviewsPage = () => {
               setReplyText('');
               setSelectedReview(null);
             }}
-            sx={{ color: 'rgba(255,255,255,0.7)', minHeight: 44 }}
+            sx={{ color: 'text.secondary', minHeight: 44 }}
           >
             Cancel
           </Button>

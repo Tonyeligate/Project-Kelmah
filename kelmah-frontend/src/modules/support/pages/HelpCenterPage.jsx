@@ -31,6 +31,7 @@ import {
   getServiceStatusMessage,
 } from '../../../utils/serviceHealthCheck';
 import { BRAND_COLORS } from '../../../theme';
+import { Helmet } from 'react-helmet-async';
 
 const contactChannels = [
   {
@@ -222,6 +223,7 @@ const HelpCenterPage = () => {
         pb: { xs: 8, md: 12 },
       }}
     >
+      <Helmet><title>Help Center | Kelmah</title></Helmet>
       <Container maxWidth="lg">
         <Box
           sx={{

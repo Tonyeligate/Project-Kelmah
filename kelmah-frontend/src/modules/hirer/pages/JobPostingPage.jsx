@@ -581,9 +581,16 @@ const JobPostingPage = () => {
     }
 
     // Map UI form to canonical API payload
+    // Append freeform requirements to description so the text is preserved in the job.
+    // The backend auto-generates structured requirements from skills/category for matching.
+    const requirementsText = normalizeDescription(formData.requirements || '');
+    const fullDescription = requirementsText
+      ? `${normalizedDescription}\n\nRequirements:\n${requirementsText}`
+      : normalizedDescription;
+
     const payload = {
       title: formData.title,
-      description: normalizedDescription,
+      description: fullDescription,
       category: formData.category,
       skills: formData.skills,
       paymentType: formData.paymentType,

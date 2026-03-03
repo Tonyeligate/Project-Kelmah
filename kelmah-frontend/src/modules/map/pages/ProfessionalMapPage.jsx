@@ -56,6 +56,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import InteractiveMap from '../components/common/InteractiveMap';
 import mapService from '../services/mapService';
+import { Helmet } from 'react-helmet-async';
 
 // ────────────────────────────────────────────────────────────
 //  Bottom Sheet – Uber/Bolt-style pull-up results panel
@@ -443,6 +444,7 @@ const ProfessionalMapPage = () => {
         bgcolor: theme.palette.background.default,
       }}
     >
+      <Helmet><title>Map | Kelmah</title></Helmet>
       {/* TOP BAR */}
       <Box
         sx={{

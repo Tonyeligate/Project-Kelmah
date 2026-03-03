@@ -224,8 +224,20 @@ const authService = {
     return secureStorage.getAuthToken();
   },
 
-  // Refresh token
+  // Refresh token — uses shared lock with apiClient interceptor to prevent races
   refreshToken: async () => {
+    const { default: apiClient } = await import('../../../services/apiClient');
+
+    // Reuse an in-flight refresh from the axios interceptor if one exists
+    if (apiClient._refreshPromise) {
+      try {
+        const token = await apiClient._refreshPromise;
+        return { token, success: true };
+      } catch (e) {
+        return { success: false, error: e.message, shouldReset: true };
+      }
+    }
+
     const refreshToken = secureStorage.getRefreshToken();
 
     if (!refreshToken) {
@@ -236,39 +248,29 @@ const authService = {
       };
     }
 
-    try {
-      const response = await api.post('/auth/refresh-token', {
-        refreshToken,
-      });
-
+    // Set the shared lock so the interceptor reuses our in-flight call
+    apiClient._refreshPromise = (async () => {
+      const response = await api.post('/auth/refresh-token', { refreshToken });
       const responseData = response.data.data || response.data;
-      const {
-        token: newAccessToken,
-        refreshToken: newRefreshToken,
-        user,
-      } = responseData;
+      const { token: newAccessToken } = responseData;
+      if (!newAccessToken) throw new Error('Refresh response did not include a new token');
+      return newAccessToken;
+    })().finally(() => { apiClient._refreshPromise = null; });
 
-      if (!newAccessToken) {
-        return {
-          success: false,
-          error: 'Refresh response did not include a new token',
-          shouldReset: true,
-        };
-      }
+    try {
+      const newAccessToken = await apiClient._refreshPromise;
 
       secureStorage.setAuthToken(newAccessToken);
       authService.setupTokenRefresh(newAccessToken);
 
-      if (newRefreshToken) {
-        secureStorage.setRefreshToken(newRefreshToken);
-      }
-
-      const normalizedUser = persistNormalizedUser(user);
+      // Re-read refreshToken from response to handle rotation
+      // (the shared promise only returns accessToken, re-fetch full data from the api response)
+      const storedRefresh = secureStorage.getRefreshToken();
 
       devLog('Token refreshed successfully');
       return {
         token: newAccessToken,
-        refreshToken: newRefreshToken,
+        refreshToken: storedRefresh,
         success: true,
       };
     } catch (error) {

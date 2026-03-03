@@ -54,6 +54,7 @@ import {
   formatCurrency,
   calculateFees
 } from '../services/quickJobService';
+import { Helmet } from 'react-helmet-async';
 
 const NearbyJobsPage = () => {
   const theme = useTheme();
@@ -210,6 +211,7 @@ const NearbyJobsPage = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: 3 }}>
+      <Helmet><title>Nearby Jobs | Kelmah</title></Helmet>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h5" fontWeight="bold">

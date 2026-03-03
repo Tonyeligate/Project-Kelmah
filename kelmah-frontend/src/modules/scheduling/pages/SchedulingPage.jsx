@@ -60,6 +60,7 @@ import { FEATURES } from '../../../config/environment';
 import { EXTERNAL_SERVICES } from '../../../config/services';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Helmet } from 'react-helmet-async';
 
 const getStatusChip = (status) => {
   const statusConfig = {
@@ -643,6 +644,7 @@ const SchedulingPage = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
+      <Helmet><title>Schedule | Kelmah</title></Helmet>
       {/* Page Header */}
       <Box
         sx={{

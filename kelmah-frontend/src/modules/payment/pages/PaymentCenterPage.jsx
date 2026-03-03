@@ -56,6 +56,7 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { usePayments } from '../contexts/PaymentContext';
 import TransactionsList from '../components/TransactionsList';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { format } from 'date-fns';
 
 // Add currency formatter for Ghana Cedi
@@ -714,6 +715,7 @@ const PaymentCenterPage = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Helmet><title>Payment Center | Kelmah</title></Helmet>
       <Typography
         variant="h4"
         fontWeight="bold"

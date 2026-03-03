@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Button, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import AuthWrapper from '../components/common/AuthWrapper';
+import { Helmet } from 'react-helmet-async';
 
 const RoleSelectionPage = () => {
   const theme = useTheme();
@@ -169,6 +170,7 @@ const RoleSelectionPage = () => {
   // Desktop fallback - redirect to register
   return (
     <AuthWrapper>
+      <Helmet><title>Choose Your Role | Kelmah</title></Helmet>
       <Box sx={{ textAlign: 'center', py: 4 }}>
         <Typography variant="h4" gutterBottom>
           Choose Your Role

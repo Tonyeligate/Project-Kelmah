@@ -20,6 +20,7 @@ import {
 } from '@mui/icons-material';
 import { useContracts } from '../contexts/ContractContext';
 import { Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import ContractCard from '../components/common/ContractCard';
 
 const ContractManagementPage = () => {
@@ -44,6 +45,7 @@ const ContractManagementPage = () => {
       maxWidth="xl"
       sx={{ py: 4, bgcolor: 'background.default', color: 'text.primary' }}
     >
+      <Helmet><title>Manage Contracts | Kelmah</title></Helmet>
       <Box
         sx={{
           display: 'flex',

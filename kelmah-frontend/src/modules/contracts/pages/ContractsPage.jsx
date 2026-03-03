@@ -30,6 +30,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import { formatDistanceToNow } from 'date-fns';
 import { alpha } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { contractService } from '../services/contractService';
 import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
@@ -166,6 +167,7 @@ const ContractsPage = () => {
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 } }}>
+      <Helmet><title>Contracts | Kelmah</title></Helmet>
       <Stack
         direction={{ xs: 'column', md: 'row' }}
         spacing={2}

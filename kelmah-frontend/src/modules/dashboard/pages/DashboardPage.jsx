@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Lock as LockIcon } from '@mui/icons-material';
 import LoadingScreen from '../../common/components/loading/LoadingScreen';
+import { Helmet } from 'react-helmet-async';
 
 // NOTE: dashboardSlice provides shared metrics (profile views, response rate, etc.)
 // It is NOT used for role-specific dashboard data.
@@ -50,13 +51,16 @@ const DashboardPage = () => {
 
   const userRole = user.role || user.userType || 'worker';
 
+  let dashboard;
   switch (userRole) {
     case 'worker':
-      return <WorkerDashboard user={user} />;
+      dashboard = <WorkerDashboard user={user} />;
+      break;
     case 'hirer':
-      return <HirerDashboard user={user} />;
+      dashboard = <HirerDashboard user={user} />;
+      break;
     case 'admin':
-      return (
+      dashboard = (
         <Box sx={{ p: 3, textAlign: 'center' }}>
           <Typography variant="h5" gutterBottom>Admin Dashboard</Typography>
           <Typography variant="body1">Admin dashboard is available in the admin section.</Typography>
@@ -65,10 +69,17 @@ const DashboardPage = () => {
           </Button>
         </Box>
       );
+      break;
     default:
-      // Treat unknown roles as worker by default for better UX
-      return <WorkerDashboard user={user} />;
+      dashboard = <WorkerDashboard user={user} />;
   }
+
+  return (
+    <>
+      <Helmet><title>Dashboard | Kelmah</title></Helmet>
+      {dashboard}
+    </>
+  );
 };
 
 export default DashboardPage;

@@ -3,6 +3,7 @@ import Register from '../components/register/Register';
 import AuthWrapper from '../components/common/AuthWrapper';
 import MobileRegister from '../components/mobile/MobileRegister';
 import { useMediaQuery, useTheme } from '@mui/material';
+import { Helmet } from 'react-helmet-async';
 
 const RegisterPage = () => {
   const theme = useTheme();
@@ -16,6 +17,7 @@ const RegisterPage = () => {
   // Desktop view with AuthWrapper
   return (
     <AuthWrapper>
+      <Helmet><title>Sign Up | Kelmah</title></Helmet>
       <Register />
     </AuthWrapper>
   );

@@ -15,6 +15,7 @@ import {
   Box,
 } from '@mui/material';
 import notificationService from '../services/notificationService';
+import { Helmet } from 'react-helmet-async';
 
 const NotificationSettingsPage = () => {
   const [prefs, setPrefs] = useState({
@@ -64,6 +65,7 @@ const NotificationSettingsPage = () => {
 
   return (
     <Container sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+      <Helmet><title>Notification Settings | Kelmah</title></Helmet>
       <Typography variant="h5" gutterBottom>
         Notification Preferences
       </Typography>

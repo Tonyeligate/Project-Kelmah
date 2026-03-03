@@ -54,6 +54,7 @@ import {
   createQuickJob, 
   getCurrentLocation 
 } from '../services/quickJobService';
+import { Helmet } from 'react-helmet-async';
 
 // Steps for the stepper
 const steps = ['Describe Problem', 'Confirm Location', 'When do you need it?'];
@@ -618,6 +619,7 @@ const QuickJobRequestPage = () => {
 
   return (
     <Container maxWidth="sm" sx={{ py: 3 }}>
+      <Helmet><title>Quick Job Request | Kelmah</title></Helmet>
       {/* Back button & title */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
         <IconButton onClick={handleBack} sx={{ mr: 1 }}>

@@ -44,6 +44,7 @@ import {
   selectProfileError,
 } from '../../../store/slices/profileSlice.js';
 import ErrorBoundary from '../../../components/common/ErrorBoundary';
+import { Helmet } from 'react-helmet-async';
 
 const ProfilePage = () => {
   const theme = useTheme();
@@ -666,7 +667,12 @@ const ProfilePage = () => {
     );
   }
 
-  return <ErrorBoundary>{content}</ErrorBoundary>;
+  return (
+    <>
+      <Helmet><title>My Profile | Kelmah</title></Helmet>
+      <ErrorBoundary>{content}</ErrorBoundary>
+    </>
+  );
 };
 
 export default ProfilePage;

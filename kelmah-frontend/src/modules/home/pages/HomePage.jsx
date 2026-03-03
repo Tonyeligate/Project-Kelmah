@@ -35,6 +35,7 @@ import {
 } from '@mui/icons-material';
 import { alpha } from '@mui/material/styles';
 import jobsApi from '../../jobs/services/jobsService';
+import { Helmet } from 'react-helmet-async';
 
 /* =================================================================
  * DESIGN-SYSTEM PRIMITIVES
@@ -677,6 +678,7 @@ const CTASection = () => {
  * ================================================================= */
 const HomePage = () => (
   <Box>
+    <Helmet><title>Kelmah — Find Skilled Workers in Ghana</title></Helmet>
     <HeroSection />
     <CategoriesSection />
     <HowItWorksSection />

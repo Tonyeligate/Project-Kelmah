@@ -47,6 +47,7 @@ import {
 import applicationsService from '../services/applicationsService';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 
 const MyApplicationsPage = () => {
   const navigate = useNavigate();
@@ -391,6 +392,7 @@ const MyApplicationsPage = () => {
 
   return (
     <Container sx={{ py: { xs: 2, md: 4 } }}>
+      <Helmet><title>My Applications | Kelmah</title></Helmet>
       <Typography variant="h4" gutterBottom>
         My Applications
       </Typography>

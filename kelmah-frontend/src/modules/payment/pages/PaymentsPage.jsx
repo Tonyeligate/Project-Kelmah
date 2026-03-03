@@ -41,6 +41,7 @@ import {
 } from '@mui/icons-material';
 import TransactionsList from '../components/TransactionsList';
 import { Link as RouterLink } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 
 // Currency formatter for Ghana Cedi
 const currencyFormatter = new Intl.NumberFormat('en-GH', {
@@ -93,6 +94,7 @@ const PaymentsPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+      <Helmet><title>Payments | Kelmah</title></Helmet>
       <Box
         sx={{
           display: 'flex',

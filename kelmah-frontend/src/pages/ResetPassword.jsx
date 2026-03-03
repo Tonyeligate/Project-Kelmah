@@ -13,6 +13,7 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import authService from '../modules/auth/services/authService';
+import { Helmet } from 'react-helmet-async';
 
 const ResetPassword = () => {
   const theme = useTheme();
@@ -190,7 +191,12 @@ const ResetPassword = () => {
     );
   }
 
-  return <Box sx={{ display: 'flex', justifyContent: 'center', py: 6, px: 3 }}>{content}</Box>;
+  return (
+    <>
+      <Helmet><title>Reset Password | Kelmah</title></Helmet>
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 6, px: 3 }}>{content}</Box>
+    </>
+  );
 };
 
 export default ResetPassword;

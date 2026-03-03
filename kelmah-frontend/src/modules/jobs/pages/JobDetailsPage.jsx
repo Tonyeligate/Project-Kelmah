@@ -46,6 +46,7 @@ import { secureStorage } from '../../../utils/secureStorage';
 import { EXTERNAL_SERVICES } from '../../../config/services';
 import jobsApi from '../services/jobsService';
 import { Z_INDEX } from '../../../constants/layout';
+import { Helmet } from 'react-helmet-async';
 
 // Styled components
 const DetailsPaper = styled(Paper)(({ theme }) => ({
@@ -391,6 +392,7 @@ const JobDetailsPage = () => {
         bgcolor: 'background.default',
       }}
     >
+      <Helmet><title>Job Details | Kelmah</title></Helmet>
       <Container maxWidth="lg">
         {/* Back Button */}
         <motion.div

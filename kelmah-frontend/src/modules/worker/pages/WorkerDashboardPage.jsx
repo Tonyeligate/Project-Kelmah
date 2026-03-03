@@ -48,6 +48,7 @@ import {
 import workerService from '../services/workerService';
 import ProfileCompletionCard from '../components/ProfileCompletionCard';
 import QuickActionsRow from '../components/QuickActionsRow';
+import { Helmet } from 'react-helmet-async';
 
 /* ---------- Keyframes for spin animation ---------- */
 const spinKeyframes = {
@@ -430,6 +431,7 @@ const WorkerDashboardPage = () => {
         pb: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
       }}
     >
+      <Helmet><title>Worker Dashboard | Kelmah</title></Helmet>
       <Container maxWidth="xl" disableGutters>
       {/* Snackbar for notifications */}
       <Snackbar

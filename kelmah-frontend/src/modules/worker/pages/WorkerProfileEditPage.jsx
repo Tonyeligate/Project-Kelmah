@@ -52,6 +52,7 @@ import {
   fetchWorkerProfile,
 } from '../services/workerSlice';
 import { api } from '../../../services/apiClient';
+import { Helmet } from 'react-helmet-async';
 
 const Input = styled('input')({
   display: 'none',
@@ -522,6 +523,7 @@ const WorkerProfileEditPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+      <Helmet><title>Edit Profile | Kelmah</title></Helmet>
       <Box sx={{ mb: { xs: 2, md: 4 } }}>
         <Typography variant={isMobile ? 'h5' : 'h4'} gutterBottom fontWeight="bold">
           Edit Your Profile

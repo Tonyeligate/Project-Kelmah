@@ -44,6 +44,7 @@ import {
 } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import { Helmet } from 'react-helmet-async';
 
 // Import contract slice actions and selectors
 import {
@@ -275,6 +276,7 @@ const ContractDetailsPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+      <Helmet><title>Contract Details | Kelmah</title></Helmet>
       {/* Error alert */}
       {error.currentContract && (
         <Alert severity="error" sx={{ mb: 3 }}>
@@ -569,8 +571,10 @@ const ContractDetailsPage = () => {
                           </Typography>
                           <Chip
                             label={
-                              milestone.status.charAt(0).toUpperCase() +
-                              milestone.status.slice(1)
+                              milestone.status
+                                ? milestone.status.charAt(0).toUpperCase() +
+                                  milestone.status.slice(1)
+                                : 'Unknown'
                             }
                             color={statusColors[milestone.status] || 'default'}
                             size="small"

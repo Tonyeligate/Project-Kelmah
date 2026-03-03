@@ -52,6 +52,7 @@ import {
   getCurrentLocation,
   formatCurrency
 } from '../services/quickJobService';
+import { Helmet } from 'react-helmet-async';
 
 // Job status steps for worker
 const workerSteps = [
@@ -277,6 +278,7 @@ const QuickJobTrackingPage = () => {
 
   return (
     <Container maxWidth="sm" sx={{ py: 3 }}>
+      <Helmet><title>Track Quick Job | Kelmah</title></Helmet>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
         <IconButton onClick={() => navigate(-1)} sx={{ mr: 1 }}>

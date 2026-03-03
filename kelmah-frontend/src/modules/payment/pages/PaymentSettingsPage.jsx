@@ -13,6 +13,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { Helmet } from 'react-helmet-async';
 import paymentService from '../services/paymentService';
 
 // Currency formatter for Ghana Cedi
@@ -84,6 +85,7 @@ const PaymentSettingsPage = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+      <Helmet><title>Payment Settings | Kelmah</title></Helmet>
       <Paper
         elevation={3}
         sx={(theme) => ({

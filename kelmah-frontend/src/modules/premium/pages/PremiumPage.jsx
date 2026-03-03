@@ -32,6 +32,7 @@ import {
   AttachMoney as AttachMoneyIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
+import { Helmet } from 'react-helmet-async';
 
 // --- Reusable Components ---
 
@@ -195,9 +196,9 @@ const PremiumPage = () => {
       setUpgradeSuccess(true);
       setOpenDialog(false);
     } catch (err) {
-      // If payment API is unavailable, show confirmation anyway (subscription request logged)
-      if (import.meta.env.DEV) console.warn('Payment API unavailable, recording upgrade request locally:', err.message);
-      setUpgradeSuccess(true);
+      // Show error to user instead of silently succeeding
+      const message = err?.response?.data?.message || err?.message || 'Failed to process upgrade. Please try again.';
+      setUpgradeError(message);
       setOpenDialog(false);
     } finally {
       setIsUpgrading(false);
@@ -255,6 +256,7 @@ const PremiumPage = () => {
 
   return (
     <Box sx={{ bgcolor: 'background.default', color: 'text.primary', py: 6 }}>
+      <Helmet><title>Premium | Kelmah</title></Helmet>
       <Container maxWidth="lg">
         {/* Header Section */}
         <Box sx={{ textAlign: 'center', mb: 6 }}>

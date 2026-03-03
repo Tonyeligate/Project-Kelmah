@@ -43,6 +43,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../../modules/auth/hooks/useAuth';
 import ResponsiveDataView from '../../../components/common/ResponsiveDataView';
+import { Helmet } from 'react-helmet-async';
 
 // Custom TabPanel component
 function TabPanel(props) {
@@ -79,6 +80,7 @@ const SkillsAssessmentManagement = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Helmet><title>Skills Assessment Management | Kelmah</title></Helmet>
       <Typography variant="h4" gutterBottom>
         Skills Assessment Management
       </Typography>

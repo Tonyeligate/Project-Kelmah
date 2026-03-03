@@ -85,6 +85,12 @@ const EnhancedMessagingPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
+  // Defense-in-depth: redirect if user is null (ProtectedRoute should catch this, but just in case)
+  useEffect(() => {
+    if (!user) navigate('/login', { replace: true });
+  }, [user, navigate]);
+  if (!user) return null;
+
   // State management - Get conversations and messages from context
   const {
     conversations,
@@ -379,13 +385,19 @@ const EnhancedMessagingPage = () => {
   };
 
   const formatMessageTime = (timestamp) => {
-    const date = new Date(timestamp);
-    if (isToday(date)) {
-      return format(date, 'HH:mm');
-    } else if (isYesterday(date)) {
-      return 'Yesterday';
-    } else {
-      return format(date, 'MMM dd');
+    if (!timestamp) return '';
+    try {
+      const date = new Date(timestamp);
+      if (isNaN(date.getTime())) return '';
+      if (isToday(date)) {
+        return format(date, 'HH:mm');
+      } else if (isYesterday(date)) {
+        return 'Yesterday';
+      } else {
+        return format(date, 'MMM dd');
+      }
+    } catch {
+      return '';
     }
   };
 

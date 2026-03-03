@@ -4,6 +4,7 @@ import { Box, Typography, Button, TextField, Alert, useMediaQuery, useTheme } fr
 import { CheckCircleOutline, ErrorOutline, MailOutline } from '@mui/icons-material';
 import authService from '../services/authService';
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 
 const VerifyEmailPage = () => {
   const { token } = useParams();
@@ -150,6 +151,7 @@ const VerifyEmailPage = () => {
 
   return (
     <AuthWrapper>
+      <Helmet><title>Verify Email | Kelmah</title></Helmet>
       {content}
     </AuthWrapper>
   );

@@ -25,6 +25,7 @@ import {
   Alert,
 } from '@mui/material';
 import { usePayments } from '../contexts/PaymentContext';
+import { Helmet } from 'react-helmet-async';
 import PaymentIcon from '@mui/icons-material/Payment';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -142,6 +143,7 @@ const BillPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+      <Helmet><title>Bills | Kelmah</title></Helmet>
       <Paper
         sx={{
           p: { xs: 2, sm: 4 },

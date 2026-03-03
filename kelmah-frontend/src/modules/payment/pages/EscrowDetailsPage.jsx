@@ -21,6 +21,7 @@ import {
   MenuItem,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { Helmet } from 'react-helmet-async';
 
 // Currency formatter for Ghana Cedi
 const currencyFormatter = new Intl.NumberFormat('en-GH', {
@@ -32,7 +33,7 @@ const EscrowDetailsPage = () => {
   const { escrowId } = useParams();
   const { escrows, paymentMethods, refresh } = usePayments();
   const { showToast } = useNotifications();
-  const escrow = escrows.find((e) => e.id === escrowId);
+  const escrow = (escrows || []).find((e) => e.id === escrowId);
   const [openRelease, setOpenRelease] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState('');
 
@@ -52,6 +53,7 @@ const EscrowDetailsPage = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
+      <Helmet><title>Escrow Details | Kelmah</title></Helmet>
       {/* Page Heading */}
       <Box sx={{ mb: { xs: 2, sm: 4 }, display: 'flex', justifyContent: 'flex-start' }}>
         <Typography variant="h4" sx={{ color: 'secondary.main' }}>
@@ -179,7 +181,7 @@ const EscrowDetailsPage = () => {
                 boxShadow: 'inset 0 0 8px rgba(255,215,0,0.3)',
               }}
             >
-              {paymentMethods.map((pm) => (
+              {(paymentMethods || []).map((pm) => (
                 <MenuItem key={pm.id} value={pm.id}>
                   {pm.name || pm.type}
                 </MenuItem>

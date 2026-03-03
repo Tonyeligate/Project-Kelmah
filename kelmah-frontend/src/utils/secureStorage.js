@@ -100,15 +100,10 @@ class SecureStorage {
    */
   generateEncryptionKey() {
     const secret = this.getOrCreatePersistentSecret();
-    // Only use stable properties — avoid volatile ones (screen size, timezone, platform)
-    // that change when switching monitors, traveling, or on modern browsers
-    const fingerprint = [
-      navigator.userAgent,
-      navigator.language,
-      secret,
-    ].join('|');
-
-    return CryptoJS.SHA256(fingerprint).toString();
+    // Use ONLY the persistent secret for key derivation.
+    // Volatile browser properties (userAgent, language) change on updates/locale
+    // switches, silently breaking decryption of stored tokens.
+    return CryptoJS.SHA256(secret).toString();
   }
 
   /**
