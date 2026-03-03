@@ -432,7 +432,7 @@ const DisputeManagement = () => {
         },
       });
     } catch (err) {
-      console.error('Error fetching disputes:', err);
+      if (import.meta.env.DEV) console.error('Error fetching disputes:', err);
       setError('Failed to fetch dispute data');
     } finally {
       setLoading(false);

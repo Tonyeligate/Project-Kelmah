@@ -95,7 +95,7 @@ const ProjectGallery = ({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Failed to download image:', error);
+      if (import.meta.env.DEV) console.error('Failed to download image:', error);
     }
   };
 
@@ -109,7 +109,7 @@ const ProjectGallery = ({
           url: imageUrl,
         });
       } catch (error) {
-        console.error('Failed to share:', error);
+        if (import.meta.env.DEV) console.error('Failed to share:', error);
       }
     } else {
       // Fallback - copy to clipboard
@@ -117,7 +117,7 @@ const ProjectGallery = ({
         await navigator.clipboard.writeText(imageUrl);
         // You might want to show a snackbar here
       } catch (error) {
-        console.error('Failed to copy to clipboard:', error);
+        if (import.meta.env.DEV) console.error('Failed to copy to clipboard:', error);
       }
     }
   };

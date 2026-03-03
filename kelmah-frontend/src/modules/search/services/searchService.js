@@ -29,7 +29,7 @@ const searchService = {
       const payload = unwrapPayload(response);
       return payload?.results || payload || [];
     } catch (error) {
-      console.error('Search error:', error);
+      if (import.meta.env.DEV) console.error('Search error:', error);
       throw error;
     }
   },
@@ -47,7 +47,7 @@ const searchService = {
       const payload = unwrapPayload(response);
       return payload?.results || payload?.workers || payload || [];
     } catch (error) {
-      console.error('Worker search error:', error);
+      if (import.meta.env.DEV) console.error('Worker search error:', error);
       throw error;
     }
   },
@@ -62,7 +62,7 @@ const searchService = {
       const response = await api.get('/jobs/search', { params });
       return unwrapPayload(response) || [];
     } catch (error) {
-      console.error('Job search error:', error);
+      if (import.meta.env.DEV) console.error('Job search error:', error);
       throw error;
     }
   },
@@ -86,7 +86,7 @@ const searchService = {
       const payload = unwrapPayload(response);
       return payload?.suggestions || payload || [];
     } catch (error) {
-      console.error('Suggestions error:', error);
+      if (import.meta.env.DEV) console.error('Suggestions error:', error);
       return [];
     }
   },
@@ -104,7 +104,7 @@ const searchService = {
       const payload = unwrapPayload(response);
       return payload?.terms || payload || [];
     } catch (error) {
-      console.error('Popular terms error:', error);
+      if (import.meta.env.DEV) console.error('Popular terms error:', error);
       return [];
     }
   },
@@ -115,7 +115,7 @@ const searchService = {
       const response = await api.get('/jobs/categories');
       return unwrapPayload(response) || [];
     } catch (error) {
-      console.error('Categories fetch error:', error);
+      if (import.meta.env.DEV) console.error('Categories fetch error:', error);
       return [];
     }
   },
@@ -126,7 +126,7 @@ const searchService = {
       const response = await api.get('/jobs/skills');
       return unwrapPayload(response) || [];
     } catch (error) {
-      console.error('Skills fetch error:', error);
+      if (import.meta.env.DEV) console.error('Skills fetch error:', error);
       return [];
     }
   },
@@ -142,7 +142,7 @@ const searchService = {
       });
       return unwrapPayload(response) || [];
     } catch (error) {
-      console.error('Job suggestions error:', error);
+      if (import.meta.env.DEV) console.error('Job suggestions error:', error);
       return [];
     }
   },
@@ -156,7 +156,7 @@ const searchService = {
       const response = await api.get('/jobs/popular-searches');
       return unwrapPayload(response) || [];
     } catch (error) {
-      console.error('Popular searches error:', error);
+      if (import.meta.env.DEV) console.error('Popular searches error:', error);
       return [];
     }
   },

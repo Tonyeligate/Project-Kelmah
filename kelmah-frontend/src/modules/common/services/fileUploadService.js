@@ -123,7 +123,7 @@ const fileUploadService = {
       });
       return { url: getUrl, name: file.name, size: file.size, type: file.type };
     } catch (error) {
-      console.error('Error uploading file:', error);
+      if (import.meta.env.DEV) console.error('Error uploading file:', error);
       throw error;
     }
   },

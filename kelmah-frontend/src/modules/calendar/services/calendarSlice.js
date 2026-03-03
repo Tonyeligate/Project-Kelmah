@@ -16,7 +16,7 @@ export const fetchEvents = createAsyncThunk(
       if (import.meta.env?.DEV) console.log('Fetched events:', events);
       return events;
     } catch (error) {
-      console.error('Error in fetchEvents thunk:', error);
+      if (import.meta.env.DEV) console.error('Error in fetchEvents thunk:', error);
       return rejectWithValue(error.message || 'Failed to fetch events');
     }
   },

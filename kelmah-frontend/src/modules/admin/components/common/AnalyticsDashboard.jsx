@@ -154,7 +154,7 @@ const AnalyticsDashboard = () => {
         },
       ]);
     } catch (err) {
-      console.error('Error fetching analytics:', err);
+      if (import.meta.env.DEV) console.error('Error fetching analytics:', err);
       setError('Failed to load analytics data');
     } finally {
       setLoading(false);

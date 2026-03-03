@@ -13,7 +13,7 @@ const fallbackStorage = {
       const raw = window.localStorage.getItem(key);
       return raw ? JSON.parse(raw) : null;
     } catch (error) {
-      console.warn('Draft fallback read failed:', error);
+      if (import.meta.env.DEV) console.warn('Draft fallback read failed:', error);
       return null;
     }
   },
@@ -25,7 +25,7 @@ const fallbackStorage = {
       window.localStorage.setItem(key, JSON.stringify(value));
       return true;
     } catch (error) {
-      console.warn('Draft fallback write failed:', error);
+      if (import.meta.env.DEV) console.warn('Draft fallback write failed:', error);
       return false;
     }
   },
@@ -36,7 +36,7 @@ const fallbackStorage = {
       }
       window.localStorage.removeItem(key);
     } catch (error) {
-      console.warn('Draft fallback remove failed:', error);
+      if (import.meta.env.DEV) console.warn('Draft fallback remove failed:', error);
     }
   },
 };

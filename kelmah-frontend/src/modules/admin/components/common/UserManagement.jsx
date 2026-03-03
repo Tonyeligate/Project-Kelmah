@@ -146,7 +146,7 @@ const UserManagement = () => {
         setError('Failed to fetch users');
       }
     } catch (err) {
-      console.error('Error fetching users:', err);
+      if (import.meta.env.DEV) console.error('Error fetching users:', err);
       setError(err.message || 'Failed to fetch users');
     } finally {
       setLoading(false);
@@ -202,7 +202,7 @@ const UserManagement = () => {
         fetchUsers();
         setAnchorEl(null);
       } catch (err) {
-        console.error('Error deleting user:', err);
+        if (import.meta.env.DEV) console.error('Error deleting user:', err);
         setError('Failed to delete user');
       }
     }
@@ -221,7 +221,7 @@ const UserManagement = () => {
       setOpenDialog(false);
       fetchUsers();
     } catch (err) {
-      console.error('Error saving user:', err);
+      if (import.meta.env.DEV) console.error('Error saving user:', err);
       setError(err.message || 'Failed to save user');
     } finally {
       setLoading(false);
@@ -233,7 +233,7 @@ const UserManagement = () => {
       await adminService.toggleUserStatus(userId, !currentStatus);
       fetchUsers();
     } catch (err) {
-      console.error('Error toggling user status:', err);
+      if (import.meta.env.DEV) console.error('Error toggling user status:', err);
       setError('Failed to update user status');
     }
   };
@@ -243,7 +243,7 @@ const UserManagement = () => {
       await adminService.verifyUser(userId, !currentStatus);
       fetchUsers();
     } catch (err) {
-      console.error('Error toggling user verification:', err);
+      if (import.meta.env.DEV) console.error('Error toggling user verification:', err);
       setError('Failed to update user verification');
     }
   };
@@ -300,7 +300,7 @@ const UserManagement = () => {
       setSelectedUsers([]);
       fetchUsers();
     } catch (err) {
-      console.error('Error performing bulk action:', err);
+      if (import.meta.env.DEV) console.error('Error performing bulk action:', err);
       setError('Failed to perform bulk action');
     } finally {
       setLoading(false);

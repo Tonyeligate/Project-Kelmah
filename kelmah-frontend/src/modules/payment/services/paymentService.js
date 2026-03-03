@@ -69,7 +69,7 @@ const paymentService = {
       const { data } = await api.get('/payments/wallet');
       return data?.success ? (data.data ?? data) : data;
     } catch (error) {
-      console.warn('Wallet service unavailable:', error.message);
+      if (import.meta.env.DEV) console.warn('Wallet service unavailable:', error.message);
       // Return empty wallet state — do NOT show fake balances
       return {
         id: null,
@@ -163,7 +163,7 @@ const paymentService = {
       }
       return Array.isArray(data) ? data : data?.escrows || [];
     } catch (error) {
-      console.warn('Escrow service unavailable:', error.message);
+      if (import.meta.env.DEV) console.warn('Escrow service unavailable:', error.message);
       // Return empty array — do NOT show fake escrow data
       return [];
     }

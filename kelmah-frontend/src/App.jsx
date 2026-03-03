@@ -54,7 +54,7 @@ const App = () => {
           setServicesWakingUp(false);
         }
       } catch (e) {
-        console.warn('Service warm-up check failed:', e);
+        if (import.meta.env.DEV) console.warn('Service warm-up check failed:', e);
         setServicesWakingUp(false);
       }
     };

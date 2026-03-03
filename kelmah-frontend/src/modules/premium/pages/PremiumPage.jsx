@@ -19,7 +19,6 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  alpha,
   IconButton,
   Snackbar,
   Alert,
@@ -128,56 +127,6 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 // --- Main Premium Page ---
 
-const tiers = [
-  {
-    title: 'Basic',
-    price: '0',
-    description:
-      'For individuals starting out and getting to know the platform.',
-    features: [
-      'Create a professional profile',
-      'Apply to 5 jobs per month',
-      'Standard messaging features',
-      'Community and email support',
-    ],
-    buttonText: 'Current Plan',
-    buttonVariant: 'outlined',
-    isCurrent: true,
-  },
-  {
-    title: 'Pro',
-    price: '225',
-    subheader: 'Most Popular',
-    description:
-      'For professionals aiming to maximize their opportunities and stand out.',
-    features: [
-      'All features in Basic plan',
-      'Unlimited job applications',
-      'Priority placement in search results',
-      'Access to exclusive premium-only jobs',
-      'Advanced profile analytics',
-      'Reduced service fees (5%)',
-    ],
-    buttonText: 'Upgrade to Pro',
-    buttonVariant: 'contained',
-  },
-  {
-    title: 'Business',
-    price: '675',
-    description:
-      'For established freelancers and businesses managing multiple projects.',
-    features: [
-      'All features in Pro plan',
-      'Ability to post featured job listings',
-      'Dedicated account manager',
-      'Team collaboration tools (coming soon)',
-      'Lowest service fees (2.5%)',
-    ],
-    buttonText: 'Upgrade to Business',
-    buttonVariant: 'outlined',
-  },
-];
-
 const FeatureItem = ({ text }) => (
   <ListItem sx={{ py: 0.5 }}>
     <ListItemIcon sx={{ minWidth: 'auto', mr: 1.5, color: 'success.main' }}>
@@ -185,69 +134,6 @@ const FeatureItem = ({ text }) => (
     </ListItemIcon>
     <ListItemText primary={text} />
   </ListItem>
-);
-
-const PricingCard = ({ tier, isAnnual, onUpgrade }) => (
-  <Paper
-    elevation={tier.isCurrent ? 8 : 2}
-    sx={(theme) => ({
-      p: 4,
-      borderRadius: 4,
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      border: tier.isCurrent ? '2px solid' : '1px solid',
-      borderColor: tier.isCurrent
-        ? theme.palette.primary.main
-        : theme.palette.divider,
-      backgroundColor: tier.subheader
-        ? alpha(theme.palette.secondary.main, 0.05)
-        : 'transparent',
-      position: 'relative',
-    })}
-  >
-    {tier.subheader && (
-      <Chip
-        label={tier.subheader}
-        color="primary"
-        size="small"
-        sx={{
-          fontWeight: 'bold',
-          position: 'absolute',
-          top: 16,
-          right: 16,
-        }}
-      />
-    )}
-    <Typography variant="h5" component="h2" fontWeight="bold">
-      {tier.title}
-    </Typography>
-    <Box sx={{ display: 'flex', alignItems: 'baseline', my: 2 }}>
-      <Typography variant="h3" component="p" fontWeight="bold">
-        GH₵{isAnnual ? (tier.price * 10).toFixed(0) : tier.price}
-      </Typography>
-      <Typography color="text.secondary" ml={0.5}>
-        /{isAnnual ? 'year' : 'month'}
-      </Typography>
-    </Box>
-    <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1 }}>
-      {tier.description}
-    </Typography>
-    <List sx={{ my: 2 }}>
-      {tier.features.map((line) => (
-        <FeatureItem key={line} text={line} />
-      ))}
-    </List>
-    <Button
-      fullWidth
-      variant={tier.buttonVariant}
-      disabled={tier.isCurrent}
-      sx={{ mt: 'auto', fontWeight: 'bold', py: 1.5 }}
-      onClick={() => onUpgrade(tier.title)}
-    >
-      {tier.buttonText}
-    </Button>
-  </Paper>
 );
 
 const BenefitCard = ({ icon, title, description }) => (

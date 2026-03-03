@@ -19,7 +19,7 @@ export const useAuthCheck = () => {
       // Redux auth state: isAuthenticated is a boolean, not a function
       return Boolean(isAuthenticated);
     } catch (error) {
-      console.error('Error checking authentication status:', error);
+      if (import.meta.env.DEV) console.error('Error checking authentication status:', error);
       return false;
     }
   }, [isAuthenticated]);

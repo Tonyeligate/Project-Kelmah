@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -41,6 +41,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { Z_INDEX, STICKY_CTA_HEIGHT } from '../../../constants/layout';
 import Toast from '../../common/components/common/Toast';
+import workerService from '../../worker/services/workerService';
 
 // Import contract slice actions and selectors
 import {
@@ -56,6 +57,7 @@ const initialContractState = {
   description: '',
   clientName: '',
   workerName: '',
+  workerId: '',
   startDate: null,
   endDate: null,
   value: '',
@@ -73,9 +75,11 @@ const initialContractState = {
 const CreateContractPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const templates = useSelector(selectContractTemplates);
   const loading = useSelector(selectContractsLoading);
   const error = useSelector(selectContractsError);
+  const { user } = useSelector((state) => state.auth);
 
   const [contract, setContract] = useState(initialContractState);
   const [activeStep, setActiveStep] = useState(0);
@@ -88,6 +92,7 @@ const CreateContractPage = () => {
     severity: 'info',
   });
   const [isDirty, setIsDirty] = useState(false);
+  const [workerLoading, setWorkerLoading] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -95,6 +100,42 @@ const CreateContractPage = () => {
   useEffect(() => {
     dispatch(fetchContractTemplates());
   }, [dispatch]);
+
+  // Auto-populate worker and client info from URL params and auth state
+  useEffect(() => {
+    const workerId = searchParams.get('workerId');
+
+    // Auto-populate client name from authenticated user
+    if (user && !contract.clientName) {
+      const clientName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.name || '';
+      if (clientName) {
+        setContract((prev) => ({ ...prev, clientName }));
+      }
+    }
+
+    // Auto-populate worker info from URL param
+    if (workerId && !contract.workerName) {
+      setWorkerLoading(true);
+      workerService.getWorkerById(workerId)
+        .then((response) => {
+          const data = response?.data?.data || response?.data || response;
+          const workerUser = data?.user || data;
+          const workerName = [workerUser?.firstName, workerUser?.lastName].filter(Boolean).join(' ')
+            || workerUser?.name || data?.name || '';
+          if (workerName) {
+            setContract((prev) => ({
+              ...prev,
+              workerName,
+              workerId,
+            }));
+          }
+        })
+        .catch((err) => {
+          if (import.meta.env.DEV) console.error('Failed to fetch worker details:', err);
+        })
+        .finally(() => setWorkerLoading(false));
+    }
+  }, [searchParams, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Warn if the user tries to close/reload with unsaved changes
   useEffect(() => {
@@ -415,8 +456,11 @@ const CreateContractPage = () => {
                 error={!!validationErrors.clientName}
                 helperText={
                   validationErrors.clientName ||
-                  'Enter the client name or company'
+                  'Your name (auto-filled from your account)'
                 }
+                InputProps={{
+                  readOnly: !!user,
+                }}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -431,8 +475,16 @@ const CreateContractPage = () => {
                 error={!!validationErrors.workerName}
                 helperText={
                   validationErrors.workerName ||
-                  'Enter the worker name or company'
+                  (workerLoading ? 'Loading worker details...' : (contract.workerId ? 'Auto-filled from selected worker' : 'Enter the worker name'))
                 }
+                InputProps={{
+                  readOnly: !!contract.workerId,
+                  endAdornment: workerLoading ? (
+                    <InputAdornment position="end">
+                      <CircularProgress size={20} />
+                    </InputAdornment>
+                  ) : null,
+                }}
               />
             </Grid>
           </Grid>

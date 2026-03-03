@@ -90,7 +90,7 @@ class NotificationService {
     if (this.isConnected) return;
     try {
       if (!token) {
-        console.warn('Notifications: connect skipped - missing auth token');
+        if (import.meta.env.DEV) console.warn('Notifications: connect skipped - missing auth token');
         return;
       }
 
@@ -124,7 +124,7 @@ class NotificationService {
         this.onNotification && this.onNotification(payload);
       });
     } catch (error) {
-      console.error('Failed to connect to notification socket:', error);
+      if (import.meta.env.DEV) console.error('Failed to connect to notification socket:', error);
     }
   }
 
@@ -200,7 +200,7 @@ class NotificationService {
         error.message ||
         'Unknown error occurred';
 
-      console.error('Failed to fetch notifications:', {
+      if (import.meta.env.DEV) console.error('Failed to fetch notifications:', {
         error: errorMessage,
         serviceStatus: statusMsg.status,
       });
@@ -226,7 +226,7 @@ class NotificationService {
       );
       return response.data;
     } catch (error) {
-      console.error('Failed to mark notification as read:', error);
+      if (import.meta.env.DEV) console.error('Failed to mark notification as read:', error);
       throw error;
     }
   }
@@ -237,7 +237,7 @@ class NotificationService {
       const response = await this.client.patch('/notifications/read/all');
       return response.data;
     } catch (error) {
-      console.error('Failed to mark all notifications as read:', error);
+      if (import.meta.env.DEV) console.error('Failed to mark all notifications as read:', error);
       throw error;
     }
   }
@@ -248,7 +248,7 @@ class NotificationService {
       const response = await this.client.delete('/notifications/clear-all');
       return response.data;
     } catch (error) {
-      console.error('Failed to clear all notifications:', error);
+      if (import.meta.env.DEV) console.error('Failed to clear all notifications:', error);
       throw error;
     }
   }
@@ -262,7 +262,7 @@ class NotificationService {
       if (typeof payload?.data?.unreadCount === 'number') return payload.data.unreadCount;
       return 0;
     } catch (error) {
-      console.error('Failed to get unread count:', error);
+      if (import.meta.env.DEV) console.error('Failed to get unread count:', error);
       throw error;
     }
   }
@@ -275,7 +275,7 @@ class NotificationService {
       );
       return response.data;
     } catch (error) {
-      console.error('Failed to delete notification:', error);
+      if (import.meta.env.DEV) console.error('Failed to delete notification:', error);
       throw error;
     }
   }
@@ -286,7 +286,7 @@ class NotificationService {
       const response = await this.client.get('/notifications/preferences');
       return response.data?.data || response.data;
     } catch (error) {
-      console.error('Failed to load notification preferences:', error);
+      if (import.meta.env.DEV) console.error('Failed to load notification preferences:', error);
       throw error;
     }
   }
@@ -300,7 +300,7 @@ class NotificationService {
       );
       return response.data?.data || response.data;
     } catch (error) {
-      console.error('Failed to update notification preferences:', error);
+      if (import.meta.env.DEV) console.error('Failed to update notification preferences:', error);
       throw error;
     }
   }

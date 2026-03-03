@@ -253,7 +253,7 @@ const JobResultsSection = ({
     try {
       await jobsApi.saveJob(job.id || job._id);
     } catch (err) {
-      console.warn('Failed to bookmark job:', err.message);
+      if (import.meta.env.DEV) console.warn('Failed to bookmark job:', err.message);
     }
   };
 
@@ -813,12 +813,6 @@ const JobResultsSection = ({
                       <IconButton
                         onClick={(event) => {
                           event.stopPropagation();
-                          if (typeof job.id === 'number') {
-                            alert(
-                              'This is sample data. Please ensure the API is connected to view real job details.',
-                            );
-                            return;
-                          }
                           navigate(`/jobs/${job.id}`);
                         }}
                         sx={{

@@ -331,7 +331,7 @@ const MyBidsPage = () => {
       }
     } catch (err) {
       setError('Failed to load your bids. Please try again.');
-      console.error('MyBidsPage fetch error:', err);
+      if (import.meta.env.DEV) console.error('MyBidsPage fetch error:', err);
     } finally {
       setLoading(false);
     }
@@ -363,7 +363,7 @@ const MyBidsPage = () => {
       );
       setWithdrawDialog({ open: false, bid: null });
     } catch (err) {
-      console.error('Failed to withdraw bid:', err);
+      if (import.meta.env.DEV) console.error('Failed to withdraw bid:', err);
     } finally {
       setWithdrawing(false);
     }

@@ -12,7 +12,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const { celebrate, Joi, errors: celebrateErrors, Segments } = require('celebrate');
-const { createProxyMiddleware, fixRequestBody } = require('http-proxy-middleware');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 const axios = require('axios');
 const winston = require('winston');
 const mongoose = require('mongoose');
@@ -42,19 +42,6 @@ const {
 const MAX_PROXY_CACHE_SIZE = 100;
 const proxyCache = new Map();
 
-const hasFunctionInObject = (value, visited = new Set()) => {
-  if (typeof value === 'function') return true;
-  if (!value || typeof value !== 'object') return false;
-  if (visited.has(value)) return false;
-  visited.add(value);
-
-  if (Array.isArray(value)) {
-    return value.some((entry) => hasFunctionInObject(entry, visited));
-  }
-
-  return Object.values(value).some((entry) => hasFunctionInObject(entry, visited));
-};
-
 const stableSerializeProxyOptions = (value) => {
   return JSON.stringify(value, (key, currentValue) => {
     if (typeof currentValue === 'function') {
@@ -64,10 +51,30 @@ const stableSerializeProxyOptions = (value) => {
   });
 };
 
+/**
+ * Rehydrate parsed request body for proxy forwarding.
+ * Express body parsers consume the raw stream; this writes the parsed body
+ * into the proxy request so downstream services receive the payload.
+ * Replaces fixRequestBody which fails when Content-Type is missing or
+ * mismatched on the proxyReq object.
+ */
+const rehydrateRequestBody = (proxyReq, req) => {
+  if (!req.body || typeof req.body !== 'object') return;
+  const bodyData = JSON.stringify(req.body);
+  if (!bodyData || bodyData === 'null') return;
+  proxyReq.setHeader('Content-Type', 'application/json');
+  proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+  proxyReq.write(bodyData);
+};
+
+/**
+ * Dynamic Proxy Middleware Creator
+ * Creates proxy middleware that resolves service URLs at runtime.
+ * Caches proxy instances per service+options to avoid per-request allocation.
+ * Auto-injects body rehydration in onProxyReq for all proxied requests.
+ */
 const createDynamicProxy = (serviceName, options = {}) => {
-  // Build a stable cache key from service name + serialized options
   const cacheKey = `${serviceName}:${stableSerializeProxyOptions(options)}`;
-  const hasFunctionOptions = hasFunctionInObject(options);
 
   return (req, res, next) => {
     try {
@@ -82,26 +89,27 @@ const createDynamicProxy = (serviceName, options = {}) => {
       }
 
       const instanceKey = `${cacheKey}:${targetUrl}`;
-      let proxy = null;
-
-      if (!hasFunctionOptions) {
-        proxy = proxyCache.get(instanceKey);
-      }
+      let proxy = proxyCache.get(instanceKey);
 
       if (!proxy) {
         // MED-18 FIX: Evict oldest entry if cache exceeds max size
-        if (!hasFunctionOptions && proxyCache.size >= MAX_PROXY_CACHE_SIZE) {
+        if (proxyCache.size >= MAX_PROXY_CACHE_SIZE) {
           const oldest = proxyCache.keys().next().value;
           proxyCache.delete(oldest);
         }
+
+        // Wrap caller's onProxyReq to always rehydrate body first
+        const callerOnProxyReq = options.onProxyReq;
         proxy = createProxyMiddleware({
           target: targetUrl,
           changeOrigin: true,
-          ...options
+          ...options,
+          onProxyReq: (proxyReq, reqInner, resInner) => {
+            rehydrateRequestBody(proxyReq, reqInner);
+            if (callerOnProxyReq) callerOnProxyReq(proxyReq, reqInner, resInner);
+          }
         });
-        if (!hasFunctionOptions) {
-          proxyCache.set(instanceKey, proxy);
-        }
+        proxyCache.set(instanceKey, proxy);
       }
 
       return proxy(req, res, next);
@@ -637,8 +645,7 @@ app.use(
         hasAuth: !!req.user
       });
 
-      // Rehydrate parsed request body safely for proxied mutating requests.
-      fixRequestBody(proxyReq, req);
+      // Body rehydration is auto-injected by createDynamicProxy
 
       if (req.user) {
         proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
@@ -1145,6 +1152,7 @@ app.use('/api/conversations',
       // FIX: Express strips mount path; use function-based rewrite
       pathRewrite: (path) => `/api/conversations${path}`,
       onProxyReq: (proxyReq, req) => {
+        rehydrateRequestBody(proxyReq, req);
         if (req.user) {
           proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
           proxyReq.setHeader('x-auth-source', 'api-gateway');
@@ -1204,6 +1212,7 @@ app.use('/api/reviews',
       changeOrigin: true,
       pathRewrite: (path) => `/api/reviews${path}`,
       onProxyReq: (proxyReq, req) => {
+        rehydrateRequestBody(proxyReq, req);
         if (req.user) {
           proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
           proxyReq.setHeader('x-auth-source', 'api-gateway');

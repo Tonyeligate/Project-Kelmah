@@ -15,7 +15,7 @@ export const fetchHirerProfile = createAsyncThunk(
       const response = await api.get('/users/me/credentials');
       return response?.data?.data || response?.data || {};
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         'User service unavailable for hirer profile:',
         error.message,
       );
@@ -64,7 +64,7 @@ export const fetchHirerJobs = createAsyncThunk(
       devLog('[HirerSlice] Fetched jobs:', { requestedStatus: status, dbStatus, count: Array.isArray(jobs) ? jobs.length : 0 });
       return { status, jobs: Array.isArray(jobs) ? jobs : [] };
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         `Job service unavailable for hirer jobs (${status}):`,
         error.message,
       );
@@ -81,7 +81,7 @@ export const createHirerJob = createAsyncThunk(
       const response = await api.post('/jobs', jobData);
       return response.data.data || response.data;
     } catch (error) {
-      console.warn('Job service unavailable for job creation:', error.message);
+      if (import.meta.env.DEV) console.warn('Job service unavailable for job creation:', error.message);
       throw error;
     }
   },
@@ -94,7 +94,7 @@ export const updateHirerJob = createAsyncThunk(
       const response = await api.put(`/jobs/${jobId}`, updates);
       return response.data.data || response.data;
     } catch (error) {
-      console.warn('Job service unavailable for job update:', error.message);
+      if (import.meta.env.DEV) console.warn('Job service unavailable for job update:', error.message);
       const backendMessage =
         error?.response?.data?.error?.message ||
         error?.response?.data?.message ||
@@ -112,7 +112,7 @@ export const updateHirerProfile = createAsyncThunk(
       const response = await api.put('/users/profile', profileData);
       return response.data.data || response.data;
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         'User service unavailable for profile update:',
         error.message,
       );
@@ -130,7 +130,7 @@ export const updateJobStatus = createAsyncThunk(
       });
       return response.data;
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         'Job service unavailable for status update, simulating success:',
         error.message,
       );
@@ -146,7 +146,7 @@ export const deleteHirerJob = createAsyncThunk(
       await api.delete(`/jobs/${jobId}`);
       return { jobId };
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         'Job service unavailable for job deletion, simulating success:',
         error.message,
       );
@@ -174,7 +174,7 @@ export const fetchJobApplications = createAsyncThunk(
       // Unwrap { success: true, data: [...] } if present — normalizeApplicationsByStatus handles both
       return { jobId, applications: response.data };
     } catch (error) {
-      console.warn('Service unavailable:', error.message);
+      if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
       throw error;
     }
   },
@@ -187,7 +187,7 @@ export const fetchHirerAnalytics = createAsyncThunk(
       const response = await api.get('/users/dashboard/analytics');
       return response.data;
     } catch (error) {
-      console.warn('Service unavailable:', error.message);
+      if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
       throw error;
     }
   },
@@ -295,7 +295,7 @@ export const fetchPaymentSummary = createAsyncThunk(
         averagePaymentTime,
       };
     } catch (error) {
-      console.warn('Service unavailable:', error.message);
+      if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
       throw error;
     }
   },

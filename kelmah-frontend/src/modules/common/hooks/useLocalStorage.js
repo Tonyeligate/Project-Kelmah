@@ -21,7 +21,7 @@ const useLocalStorage = (key, initialValue) => {
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
       // If error also return initialValue
-      console.error(`Error reading localStorage key "${key}":`, error);
+      if (import.meta.env.DEV) console.error(`Error reading localStorage key "${key}":`, error);
       return initialValue;
     }
   });
@@ -46,7 +46,7 @@ const useLocalStorage = (key, initialValue) => {
         }
       }
     } catch (error) {
-      console.error(`Error setting localStorage key "${key}":`, error);
+      if (import.meta.env.DEV) console.error(`Error setting localStorage key "${key}":`, error);
     }
   };
 
@@ -57,7 +57,7 @@ const useLocalStorage = (key, initialValue) => {
         try {
           setStoredValue(e.newValue ? JSON.parse(e.newValue) : initialValue);
         } catch (error) {
-          console.error(
+          if (import.meta.env.DEV) console.error(
             `Error parsing localStorage change for key "${key}":`,
             error,
           );

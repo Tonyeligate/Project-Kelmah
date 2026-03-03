@@ -70,7 +70,7 @@ const ResetPassword = () => {
       <Typography
         variant="h5"
         gutterBottom
-        sx={isMobile ? { color: '#fff', fontWeight: 700 } : { fontWeight: 700 }}
+        sx={{ fontWeight: 700, color: 'text.primary' }}
       >
         Reset Password
       </Typography>
@@ -111,17 +111,6 @@ const ResetPassword = () => {
             </InputAdornment>
           ),
         }}
-        sx={
-          isMobile
-            ? {
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor: 'rgba(255,255,255,0.08)',
-                  color: '#fff',
-                },
-                '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.6)' },
-              }
-            : {}
-        }
       />
 
       <TextField
@@ -148,17 +137,6 @@ const ResetPassword = () => {
             </InputAdornment>
           ),
         }}
-        sx={
-          isMobile
-            ? {
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor: 'rgba(255,255,255,0.08)',
-                  color: '#fff',
-                },
-                '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.6)' },
-              }
-            : {}
-        }
       />
 
       <Button
@@ -183,9 +161,9 @@ const ResetPassword = () => {
       )}
 
       <Box sx={{ mt: 2 }}>
-        <Typography variant="body2" sx={isMobile ? { color: 'rgba(255,255,255,0.7)' } : {}}>
+        <Typography variant="body2" color="text.secondary">
           Remembered your password?{' '}
-          <Link to="/login" style={{ color: '#FFD700', fontWeight: 600, textDecoration: 'none' }}>
+          <Link to="/login" style={{ color: 'inherit', fontWeight: 600, textDecoration: 'none' }}>
             Sign in
           </Link>
         </Typography>

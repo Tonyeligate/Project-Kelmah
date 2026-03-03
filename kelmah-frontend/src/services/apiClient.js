@@ -62,7 +62,7 @@ apiClient.interceptors.response.use(
             error.isBackendSleeping = true;
             error.friendlyMessage =
                 'The server is waking up — this usually takes 15-30 seconds. Please try again shortly.';
-            console.warn(
+            if (import.meta.env.DEV) console.warn(
                 `⏳ Backend returned ${status} — likely waking from sleep`,
             );
             return Promise.reject(error);

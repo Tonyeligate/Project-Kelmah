@@ -84,7 +84,7 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
       });
       setError(null);
     } catch (err) {
-      console.warn('Performance API unavailable, using defaults:', err.message);
+      if (import.meta.env.DEV) console.warn('Performance API unavailable, using defaults:', err.message);
       setPerformance(DEFAULT_PERFORMANCE);
       setError(null);
     } finally {

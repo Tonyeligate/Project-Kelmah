@@ -26,7 +26,7 @@ export const checkApiHealth = async (showLoading = true) => {
       return response.status === 200;
     } catch (error) {
       const isLast = attempt === maxAttempts;
-      console.log(
+      if (import.meta.env.DEV) console.log(
         `API health check attempt ${attempt}/${maxAttempts} failed:`,
         error?.message || 'unknown error',
       );

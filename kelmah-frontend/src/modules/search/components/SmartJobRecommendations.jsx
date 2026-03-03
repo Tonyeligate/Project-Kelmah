@@ -199,7 +199,7 @@ const SmartJobRecommendations = ({
       await saveJobMutation.mutateAsync({ jobId, job });
     } catch (mutationError) {
       // Notification handled inside mutation callbacks.
-      console.warn('Saved job mutation failed:', mutationError);
+      if (import.meta.env.DEV) console.warn('Saved job mutation failed:', mutationError);
     }
   };
 
@@ -219,7 +219,7 @@ const SmartJobRecommendations = ({
       }
       navigate(`/jobs/${jobId}/apply`);
     } catch (applyError) {
-      console.error('Failed to process job application:', applyError);
+      if (import.meta.env.DEV) console.error('Failed to process job application:', applyError);
       enqueueSnackbar('Failed to process job application', {
         variant: 'error',
       });
@@ -242,7 +242,7 @@ const SmartJobRecommendations = ({
       }
       navigate(`/jobs/${jobId}`);
     } catch (viewError) {
-      console.error('Failed to track job view:', viewError);
+      if (import.meta.env.DEV) console.error('Failed to track job view:', viewError);
     }
   };
 

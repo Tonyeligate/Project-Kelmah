@@ -271,7 +271,7 @@ const ReviewAnalyticsDashboard = () => {
       const data = await analyticsApi.getReviewAnalytics(timeRange);
       setAnalytics(data);
     } catch (error) {
-      console.error('Error fetching analytics:', error);
+      if (import.meta.env.DEV) console.error('Error fetching analytics:', error);
     } finally {
       setLoading(false);
     }

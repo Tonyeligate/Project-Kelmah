@@ -307,7 +307,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
       setError(
         'Failed to load profile data. The worker may not exist or there was a network error.',
       );
-      console.error(err);
+      if (import.meta.env.DEV) console.error(err);
     } finally {
       setLoading(false);
     }
@@ -349,7 +349,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
       })
       .catch((error) => {
         if (error?.response?.status !== 401) {
-          console.error('Failed to load bookmarks', error);
+          if (import.meta.env.DEV) console.error('Failed to load bookmarks', error);
         }
       });
   }, [workerIdProp, resolvedWorkerId, fetchAllData, authUser]);
@@ -1080,27 +1080,20 @@ function WorkerProfile({ workerId: workerIdProp }) {
               Specializations
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {profile.specializations?.map((spec, index) => (
-                <Chip
-                  key={index}
-                  label={spec}
-                  variant="outlined"
-                  color="primary"
-                />
-              )) || [
+              {profile.specializations?.length > 0 ? (
+                profile.specializations.map((spec, index) => (
                   <Chip
-                    key="general"
-                    label="General Construction"
+                    key={index}
+                    label={spec}
                     variant="outlined"
                     color="primary"
-                  />,
-                  <Chip
-                    key="residential"
-                    label="Residential Work"
-                    variant="outlined"
-                    color="primary"
-                  />,
-                ]}
+                  />
+                ))
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  No specializations listed yet
+                </Typography>
+              )}
             </Box>
           </Grid>
 
@@ -1108,20 +1101,19 @@ function WorkerProfile({ workerId: workerIdProp }) {
             <Typography variant="h6" gutterBottom>
               Tools & Equipment
             </Typography>
-            <List dense>
-              {(
-                profile.tools || [
-                  'Power Tools',
-                  'Hand Tools',
-                  'Safety Equipment',
-                  'Measuring Tools',
-                ]
-              ).map((tool, index) => (
-                <ListItem key={index}>
-                  <ListItemText primary={tool} />
-                </ListItem>
-              ))}
-            </List>
+            {profile.tools?.length > 0 ? (
+              <List dense>
+                {profile.tools.map((tool, index) => (
+                  <ListItem key={index}>
+                    <ListItemText primary={tool} />
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                No tools or equipment listed yet
+              </Typography>
+            )}
           </Grid>
         </Grid>
       </CardContent>

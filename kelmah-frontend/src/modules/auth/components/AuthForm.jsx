@@ -90,7 +90,7 @@ const AuthForm = ({ mode = 'login', onSuccess }) => {
       }
     } catch (error) {
       // Error is handled by the auth slice
-      console.error('Auth error:', error);
+      if (import.meta.env.DEV) console.error('Auth error:', error);
     }
   };
 

@@ -32,7 +32,7 @@ export const SearchProvider = ({ children }) => {
       try {
         setRecentSearches(JSON.parse(savedSearches));
       } catch (err) {
-        console.error('Error parsing saved searches:', err);
+        if (import.meta.env.DEV) console.error('Error parsing saved searches:', err);
         localStorage.removeItem('recentSearches');
       }
     }
@@ -81,7 +81,7 @@ export const SearchProvider = ({ children }) => {
 
         return response;
       } catch (err) {
-        console.error('Search error:', err);
+        if (import.meta.env.DEV) console.error('Search error:', err);
         setError(err.response?.data?.message || 'Failed to perform search');
         throw err;
       } finally {

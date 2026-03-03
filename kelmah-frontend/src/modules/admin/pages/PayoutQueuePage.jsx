@@ -1,32 +1,49 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useMediaQuery } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Container,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import SendIcon from '@mui/icons-material/Send';
 import { adminService } from '../services/adminService';
 
-const StatusBadge = ({ status }) => {
-  const color =
-    {
-      queued: '#b08900',
-      processing: '#1f6feb',
-      completed: '#238636',
-      failed: '#da3633',
-    }[status] || '#6e7681';
-  return (
-    <span
-      style={{
-        backgroundColor: color,
-        color: 'white',
-        padding: '2px 8px',
-        borderRadius: 12,
-        fontSize: 12,
-      }}
-    >
-      {status}
-    </span>
-  );
+const STATUS_COLOR_MAP = {
+  queued: 'warning',
+  processing: 'info',
+  completed: 'success',
+  failed: 'error',
 };
 
 const PayoutQueuePage = () => {
-  const isMobile = useMediaQuery('(max-width:899px)');
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('queued');
@@ -65,164 +82,155 @@ const PayoutQueuePage = () => {
   };
 
   return (
-    <div style={{ padding: 24 }}>
-      <h2>Payout Queue</h2>
-      <details style={{ marginBottom: 16 }}>
-        <summary>Enqueue payout (admin)</summary>
-        <EnqueueForm onSubmitted={load} />
-      </details>
-      <div
-        style={{
-          display: 'flex',
-          gap: 12,
-          marginBottom: 16,
-          alignItems: 'center',
-        }}
-      >
-        <label>
-          Status:
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            style={{ marginLeft: 8 }}
-          >
-            <option value="">All</option>
-            <option value="queued">Queued</option>
-            <option value="processing">Processing</option>
-            <option value="completed">Completed</option>
-            <option value="failed">Failed</option>
-          </select>
-        </label>
-        <label>
-          Page:
-          <input
-            type="number"
-            value={page}
-            onChange={(e) => setPage(parseInt(e.target.value || '1'))}
-            min={1}
-            style={{ width: 80, marginLeft: 8 }}
-          />
-        </label>
-        <label>
-          Limit:
-          <input
-            type="number"
-            value={limit}
-            onChange={(e) => setLimit(parseInt(e.target.value || '20'))}
-            min={1}
-            max={100}
-            style={{ width: 80, marginLeft: 8 }}
-          />
-        </label>
-        <button onClick={onProcessBatch} disabled={processing}>
-          {processing ? 'Processing…' : 'Process batch'}
-        </button>
-        <button onClick={load} disabled={loading}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 1, sm: 2 } }}>
+      <Typography variant="h4" fontWeight="bold" gutterBottom>
+        Payout Queue
+      </Typography>
+
+      {/* Enqueue Form */}
+      <Accordion sx={{ mb: 3, borderRadius: 2, '&:before': { display: 'none' } }} disableGutters>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography fontWeight={600}>Enqueue Payout (Admin)</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <EnqueueForm onSubmitted={load} />
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Filters & Actions */}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3, alignItems: 'center' }}>
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <InputLabel>Status</InputLabel>
+          <Select value={status} label="Status" onChange={(e) => setStatus(e.target.value)}>
+            <MenuItem value="">All</MenuItem>
+            <MenuItem value="queued">Queued</MenuItem>
+            <MenuItem value="processing">Processing</MenuItem>
+            <MenuItem value="completed">Completed</MenuItem>
+            <MenuItem value="failed">Failed</MenuItem>
+          </Select>
+        </FormControl>
+        <TextField
+          size="small"
+          label="Page"
+          type="number"
+          value={page}
+          onChange={(e) => setPage(parseInt(e.target.value || '1'))}
+          inputProps={{ min: 1 }}
+          sx={{ width: 100 }}
+        />
+        <TextField
+          size="small"
+          label="Limit"
+          type="number"
+          value={limit}
+          onChange={(e) => setLimit(parseInt(e.target.value || '20'))}
+          inputProps={{ min: 1, max: 100 }}
+          sx={{ width: 100 }}
+        />
+        <Button
+          variant="contained"
+          startIcon={processing ? <CircularProgress size={16} color="inherit" /> : <PlayArrowIcon />}
+          onClick={onProcessBatch}
+          disabled={processing}
+        >
+          {processing ? 'Processing…' : 'Process Batch'}
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />}
+          onClick={load}
+          disabled={loading}
+        >
           Refresh
-        </button>
-      </div>
+        </Button>
+      </Box>
+
       {error && (
-        <div style={{ color: '#da3633', marginBottom: 12 }}>{error}</div>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
       )}
-      {/* Mobile card view */}
-      {isMobile ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {loading ? (
-            <div style={{ padding: 16, textAlign: 'center' }}>Loading…</div>
-          ) : items.length === 0 ? (
-            <div style={{ padding: 16, textAlign: 'center', color: '#8b949e' }}>No items</div>
-          ) : (
-            items.map((it) => (
-              <div
-                key={it._id}
-                style={{
-                  border: '1px solid #30363d',
-                  borderRadius: 8,
-                  padding: 12,
-                  background: '#161b22',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <strong>{it.user}</strong>
-                  <StatusBadge status={it.status} />
-                </div>
-                <div style={{ fontSize: '0.9em', color: '#8b949e' }}>
-                  {it.amount} {it.currency} • {it.provider}
-                </div>
-                <div style={{ fontSize: '0.8em', color: '#8b949e', marginTop: 4 }}>
-                  Attempts: {it.attempts} • {new Date(it.createdAt).toLocaleDateString()}
-                </div>
-                {it.lastError?.message && (
-                  <div style={{ fontSize: '0.8em', color: '#da3633', marginTop: 4 }}>
-                    {it.lastError.message}
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
+
+      {/* Content */}
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+          <CircularProgress />
+        </Box>
+      ) : items.length === 0 ? (
+        <Box sx={{ textAlign: 'center', py: 6 }}>
+          <Typography color="text.secondary">No payout items found.</Typography>
+        </Box>
+      ) : isMobile ? (
+        /* Mobile Card View */
+        <Grid container spacing={2}>
+          {items.map((it) => (
+            <Grid item xs={12} key={it._id}>
+              <Card variant="outlined">
+                <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                    <Typography variant="subtitle2" fontWeight={600} noWrap sx={{ maxWidth: '55%' }}>
+                      {it.user}
+                    </Typography>
+                    <Chip label={it.status} color={STATUS_COLOR_MAP[it.status] || 'default'} size="small" />
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    {it.amount} {it.currency} &bull; {it.provider}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Attempts: {it.attempts} &bull; {new Date(it.createdAt).toLocaleDateString()}
+                  </Typography>
+                  {it.lastError?.message && (
+                    <Typography variant="caption" color="error.main" display="block" sx={{ mt: 0.5 }}>
+                      {it.lastError.message}
+                    </Typography>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       ) : (
-      <div
-        style={{
-          border: '1px solid #30363d',
-          borderRadius: 8,
-          overflow: 'hidden',
-        }}
-      >
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ background: '#161b22' }}>
-              <th style={{ textAlign: 'left', padding: 12 }}>User</th>
-              <th style={{ textAlign: 'left', padding: 12 }}>Amount</th>
-              <th style={{ textAlign: 'left', padding: 12 }}>Currency</th>
-              <th style={{ textAlign: 'left', padding: 12 }}>Provider</th>
-              <th style={{ textAlign: 'left', padding: 12 }}>Status</th>
-              <th style={{ textAlign: 'left', padding: 12 }}>Attempts</th>
-              <th style={{ textAlign: 'left', padding: 12 }}>Created</th>
-              <th style={{ textAlign: 'left', padding: 12 }}>Last error</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={8} style={{ padding: 16 }}>
-                  Loading…
-                </td>
-              </tr>
-            ) : items.length === 0 ? (
-              <tr>
-                <td colSpan={8} style={{ padding: 16 }}>
-                  No items
-                </td>
-              </tr>
-            ) : (
-              items.map((it) => (
-                <tr key={it._id} style={{ borderTop: '1px solid #30363d' }}>
-                  <td style={{ padding: 12 }}>{it.user}</td>
-                  <td style={{ padding: 12 }}>{it.amount}</td>
-                  <td style={{ padding: 12 }}>{it.currency}</td>
-                  <td style={{ padding: 12 }}>{it.provider}</td>
-                  <td style={{ padding: 12 }}>
-                    <StatusBadge status={it.status} />
-                  </td>
-                  <td style={{ padding: 12 }}>{it.attempts}</td>
-                  <td style={{ padding: 12 }}>
-                    {new Date(it.createdAt).toLocaleString()}
-                  </td>
-                  <td style={{ padding: 12 }}>{it.lastError?.message || ''}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+        /* Desktop Table View */
+        <TableContainer component={Paper} variant="outlined">
+          <Table size="small">
+            <TableHead>
+              <TableRow sx={{ bgcolor: 'action.hover' }}>
+                <TableCell sx={{ fontWeight: 600 }}>User</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Amount</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Currency</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Provider</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Attempts</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Last Error</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {items.map((it) => (
+                <TableRow key={it._id} hover>
+                  <TableCell>{it.user}</TableCell>
+                  <TableCell>{it.amount}</TableCell>
+                  <TableCell>{it.currency}</TableCell>
+                  <TableCell>{it.provider}</TableCell>
+                  <TableCell>
+                    <Chip label={it.status} color={STATUS_COLOR_MAP[it.status] || 'default'} size="small" />
+                  </TableCell>
+                  <TableCell>{it.attempts}</TableCell>
+                  <TableCell>{new Date(it.createdAt).toLocaleString()}</TableCell>
+                  <TableCell>{it.lastError?.message || '—'}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
-    </div>
+    </Container>
   );
 };
 
 export default PayoutQueuePage;
 
+/* ---------- Enqueue Form ---------- */
 const EnqueueForm = ({ onSubmitted }) => {
   const [user, setUser] = useState('');
   const [amount, setAmount] = useState('');
@@ -240,15 +248,15 @@ const EnqueueForm = ({ onSubmitted }) => {
     setOk('');
     try {
       if (!user || !amount || !paymentMethod)
-        throw new Error('user, amount, paymentMethod are required');
-      const res = await adminService.enqueuePayout({
+        throw new Error('User ID, amount, and payment method are required');
+      await adminService.enqueuePayout({
         user,
         amount: parseFloat(amount),
         currency,
         provider,
         paymentMethod,
       });
-      setOk('Queued');
+      setOk('Payout queued successfully');
       setUser('');
       setAmount('');
       setPaymentMethod('');
@@ -261,62 +269,53 @@ const EnqueueForm = ({ onSubmitted }) => {
   };
 
   return (
-    <form
-      onSubmit={onSubmit}
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(6, 1fr)',
-        gap: 8,
-        alignItems: 'end',
-        marginTop: 12,
-      }}
-    >
-      <label style={{ display: 'grid' }}>
-        <span>User ID</span>
-        <input
-          value={user}
-          onChange={(e) => setUser(e.target.value)}
-          placeholder="user ObjectId"
-        />
-      </label>
-      <label style={{ display: 'grid' }}>
-        <span>Amount</span>
-        <input
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          min={0}
-          step={0.01}
-        />
-      </label>
-      <label style={{ display: 'grid' }}>
-        <span>Currency</span>
-        <input value={currency} onChange={(e) => setCurrency(e.target.value)} />
-      </label>
-      <label style={{ display: 'grid' }}>
-        <span>Provider</span>
-        <select value={provider} onChange={(e) => setProvider(e.target.value)}>
-          <option value="mtn_momo">MTN MoMo</option>
-          <option value="vodafone_cash">Vodafone Cash</option>
-          <option value="airteltigo">AirtelTigo</option>
-          <option value="paystack">Paystack</option>
-        </select>
-      </label>
-      <label style={{ display: 'grid' }}>
-        <span>Payment Method ID</span>
-        <input
-          value={paymentMethod}
-          onChange={(e) => setPaymentMethod(e.target.value)}
-          placeholder="paymentMethod ObjectId"
-        />
-      </label>
-      <button type="submit" disabled={submitting}>
-        Enqueue
-      </button>
+    <Box component="form" onSubmit={onSubmit}>
+      <Grid container spacing={2} alignItems="flex-end">
+        <Grid item xs={12} sm={6} md={2}>
+          <TextField fullWidth size="small" label="User ID" value={user} onChange={(e) => setUser(e.target.value)} placeholder="ObjectId" />
+        </Grid>
+        <Grid item xs={6} sm={3} md={2}>
+          <TextField fullWidth size="small" label="Amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} inputProps={{ min: 0, step: 0.01 }} />
+        </Grid>
+        <Grid item xs={6} sm={3} md={1}>
+          <TextField fullWidth size="small" label="Currency" value={currency} onChange={(e) => setCurrency(e.target.value)} />
+        </Grid>
+        <Grid item xs={12} sm={4} md={2}>
+          <FormControl fullWidth size="small">
+            <InputLabel>Provider</InputLabel>
+            <Select value={provider} label="Provider" onChange={(e) => setProvider(e.target.value)}>
+              <MenuItem value="mtn_momo">MTN MoMo</MenuItem>
+              <MenuItem value="vodafone_cash">Vodafone Cash</MenuItem>
+              <MenuItem value="airteltigo">AirtelTigo</MenuItem>
+              <MenuItem value="paystack">Paystack</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={4} md={3}>
+          <TextField fullWidth size="small" label="Payment Method ID" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} placeholder="ObjectId" />
+        </Grid>
+        <Grid item xs={12} sm={4} md={2}>
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            disabled={submitting}
+            startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : <SendIcon />}
+          >
+            Enqueue
+          </Button>
+        </Grid>
+      </Grid>
       {error && (
-        <div style={{ gridColumn: '1 / -1', color: '#da3633' }}>{error}</div>
+        <Alert severity="error" sx={{ mt: 1 }}>
+          {error}
+        </Alert>
       )}
-      {ok && <div style={{ gridColumn: '1 / -1', color: '#238636' }}>{ok}</div>}
-    </form>
+      {ok && (
+        <Alert severity="success" sx={{ mt: 1 }}>
+          {ok}
+        </Alert>
+      )}
+    </Box>
   );
 };

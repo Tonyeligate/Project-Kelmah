@@ -268,7 +268,7 @@ const ReviewModerationQueue = () => {
       setTotalPages(response.pagination.pages);
       setStats(response.stats);
     } catch (error) {
-      console.error('Error fetching reviews:', error);
+      if (import.meta.env.DEV) console.error('Error fetching reviews:', error);
       showFeedback('Failed to load reviews', 'error');
     } finally {
       setLoading(false);

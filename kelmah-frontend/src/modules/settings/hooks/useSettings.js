@@ -136,7 +136,7 @@ export const useSettings = () => {
       setLanguages(languages);
       return languages;
     } catch (error) {
-      console.error('Error loading languages:', error);
+      if (import.meta.env.DEV) console.error('Error loading languages:', error);
       return [];
     }
   }, []);
@@ -147,7 +147,7 @@ export const useSettings = () => {
       setThemes(themes);
       return themes;
     } catch (error) {
-      console.error('Error loading themes:', error);
+      if (import.meta.env.DEV) console.error('Error loading themes:', error);
       return [];
     }
   }, []);

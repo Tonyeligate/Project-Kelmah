@@ -240,7 +240,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
           setFilteredConversations(convos);
         }
       } catch (error) {
-        console.error('Error loading conversations:', error);
+        if (import.meta.env.DEV) console.error('Error loading conversations:', error);
       } finally {
         if (!cancelled) setLocalLoading(false);
       }
@@ -301,7 +301,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
         });
         if (active) setUserOptions(results.data || results.results || results);
       } catch (err) {
-        console.error('Error searching users:', err);
+        if (import.meta.env.DEV) console.error('Error searching users:', err);
       } finally {
         if (active) setUsersLoading(false);
       }
@@ -373,7 +373,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
     try {
       return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
     } catch (error) {
-      console.error('Error formatting date:', error);
+      if (import.meta.env.DEV) console.error('Error formatting date:', error);
       return '';
     }
   };
@@ -479,7 +479,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
       setShowNewConversationDialog(false);
       onSelectConversation(convo);
     } catch (err) {
-      console.error('Error creating conversation:', err);
+      if (import.meta.env.DEV) console.error('Error creating conversation:', err);
     }
   };
 

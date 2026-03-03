@@ -45,9 +45,9 @@ const loadRuntimeConfig = async () => {
       window.RUNTIME_CONFIG = {
         apiUrl: runtimeConfig.API_URL || runtimeConfig.ngrokUrl || PRODUCTION_API_URL
       };
-      console.log('🔧 Runtime config loaded:', runtimeConfig);
+      if (import.meta.env.DEV) console.log('🔧 Runtime config loaded:', runtimeConfig);
     } catch (error) {
-      console.warn('⚠️ Failed to load runtime config:', error.message);
+      if (import.meta.env.DEV) console.warn('⚠️ Failed to load runtime config:', error.message);
     }
   }
   return runtimeConfig;

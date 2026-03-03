@@ -75,7 +75,7 @@ export const MessageProvider = ({ children }) => {
         : response?.conversations || response?.data || [];
       setConversations(Array.isArray(convs) ? convs : []);
     } catch (error) {
-      console.error('Error loading conversations:', error);
+      if (import.meta.env.DEV) console.error('Error loading conversations:', error);
       setConversations([]);
     } finally {
       setLoadingConversations(false);
@@ -101,13 +101,13 @@ export const MessageProvider = ({ children }) => {
 
       const sharedSocket = websocketService.socket;
       if (!sharedSocket) {
-        console.warn('WebSocketService socket unavailable — messaging will use REST only');
+        if (import.meta.env.DEV) console.warn('WebSocketService socket unavailable — messaging will use REST only');
         setRealtimeIssue('Real-time connection unavailable. Using standard refresh mode.');
         connectingRef.current = false;
         return;
       }
 
-      console.log('🔌 MessageContext: reusing shared WebSocket connection');
+      if (import.meta.env.DEV) console.log('🔌 MessageContext: reusing shared WebSocket connection');
 
       // Listen for messaging-specific events on the SHARED socket
       sharedSocket.on('connect', () => {
@@ -127,7 +127,7 @@ export const MessageProvider = ({ children }) => {
 
       sharedSocket.on('connect_error', (error) => {
         if (!socketErrorLoggedRef.current) {
-          console.error('🚨 WebSocket connection error:', error);
+          if (import.meta.env.DEV) console.error('🚨 WebSocket connection error:', error);
           socketErrorLoggedRef.current = true;
         }
         setRealtimeIssue('Real-time connection failed. Using standard refresh mode.');
@@ -135,7 +135,7 @@ export const MessageProvider = ({ children }) => {
       });
 
       sharedSocket.on('connected', (data) => {
-        console.log('🎉 Messaging service connected:', data);
+        if (import.meta.env.DEV) console.log('🎉 Messaging service connected:', data);
         if (data.conversations) {
           setConversations(data.conversations);
         }
@@ -143,7 +143,7 @@ export const MessageProvider = ({ children }) => {
 
     // Real-time message events
       sharedSocket.on('new_message', (messageData) => {
-        console.log('📨 New message received:', messageData);
+        if (import.meta.env.DEV) console.log('📨 New message received:', messageData);
         const hydratedMessage = normalizeMessageAttachments(messageData);
         const activeConversation = selectedConversationRef.current;
 
@@ -203,7 +203,7 @@ export const MessageProvider = ({ children }) => {
 
     // Read receipts
       sharedSocket.on('messages_read', (data) => {
-        console.log('📖 Messages marked as read:', data);
+        if (import.meta.env.DEV) console.log('📖 Messages marked as read:', data);
         const activeConversation = selectedConversationRef.current;
         if (
           activeConversation &&
@@ -235,7 +235,7 @@ export const MessageProvider = ({ children }) => {
 
     // Error handling
       sharedSocket.on('error', (error) => {
-        console.error('🚨 WebSocket error:', error);
+        if (import.meta.env.DEV) console.error('🚨 WebSocket error:', error);
       });
 
       socketRef.current = sharedSocket;
@@ -246,7 +246,7 @@ export const MessageProvider = ({ children }) => {
         connectingRef.current = false;
       }
     } catch (error) {
-      console.error('Failed to initialize messaging socket:', error);
+      if (import.meta.env.DEV) console.error('Failed to initialize messaging socket:', error);
       setRealtimeIssue('Real-time connection failed. Using standard refresh mode.');
       connectingRef.current = false;
     }
@@ -259,7 +259,7 @@ export const MessageProvider = ({ children }) => {
   const disconnectWebSocket = useCallback(() => {
     const activeSocket = socketRef.current;
     if (activeSocket) {
-      console.log('🔌 MessageContext: detaching messaging listeners from shared socket');
+      if (import.meta.env.DEV) console.log('🔌 MessageContext: detaching messaging listeners from shared socket');
       const messagingEvents = [
         'new_message', 'user_typing', 'messages_read',
         'user_status_changed', 'connected'
@@ -267,7 +267,7 @@ export const MessageProvider = ({ children }) => {
       try {
         messagingEvents.forEach(evt => activeSocket.off(evt));
       } catch (error) {
-        console.warn('Failed to remove messaging listeners', error);
+        if (import.meta.env.DEV) console.warn('Failed to remove messaging listeners', error);
       }
       // Do NOT disconnect the shared socket
       setSocket(null);
@@ -319,7 +319,7 @@ export const MessageProvider = ({ children }) => {
 
           // Listen for conversation joined event
           socket.once('conversation_joined', (data) => {
-            console.log('🏠 Joined conversation:', data);
+            if (import.meta.env.DEV) console.log('🏠 Joined conversation:', data);
             setMessages(normalizeMessageList(data.messages || []));
             setLoadingMessages(false);
             loadingMessagesRef.current = false;
@@ -333,7 +333,7 @@ export const MessageProvider = ({ children }) => {
                 const fallbackMessages = await messagingService.getMessages(conversationId);
                 setMessages(normalizeMessageList(fallbackMessages));
               } catch (fallbackErr) {
-                console.warn('REST fallback for messages also failed:', fallbackErr.message);
+                if (import.meta.env.DEV) console.warn('REST fallback for messages also failed:', fallbackErr.message);
               } finally {
                 setLoadingMessages(false);
                 loadingMessagesRef.current = false;
@@ -349,7 +349,7 @@ export const MessageProvider = ({ children }) => {
           setLoadingMessages(false);
         }
       } catch (error) {
-        console.error(
+        if (import.meta.env.DEV) console.error(
           `Error loading messages for conversation ${conversation.id}:`,
           error,
         );
@@ -369,7 +369,7 @@ export const MessageProvider = ({ children }) => {
       try {
         // Use WebSocket for real-time messaging if available
         if (socket && isConnected) {
-          console.log('📤 Sending message via WebSocket');
+          if (import.meta.env.DEV) console.log('📤 Sending message via WebSocket');
           // Create optimistic message with clientId
           const clientId = `${user.id}_${Date.now()}`;
           const optimisticMessage = {
@@ -420,7 +420,7 @@ export const MessageProvider = ({ children }) => {
 
           socket.emit(eventName, payload, async (ack) => {
             if (!ack || ack.ok !== true) {
-              console.warn('WebSocket send failed, falling back to REST', ack);
+              if (import.meta.env.DEV) console.warn('WebSocket send failed, falling back to REST', ack);
               try {
                 const recipient = selectedConversation.participants.find(
                   (p) => p.id !== user.id,
@@ -449,7 +449,7 @@ export const MessageProvider = ({ children }) => {
                   ),
                 );
               } catch (e) {
-                console.error('REST fallback failed:', e);
+                if (import.meta.env.DEV) console.error('REST fallback failed:', e);
                 // Mark optimistic message as failed
                 setMessages((prev) =>
                   prev.map((m) =>
@@ -462,7 +462,7 @@ export const MessageProvider = ({ children }) => {
           // Message will be added to UI via 'new_message' event
         } else {
           // Fallback to REST API
-          console.log(
+          if (import.meta.env.DEV) console.log(
             '📤 Sending message via REST API (WebSocket unavailable)',
           );
           const recipient = selectedConversation.participants.find(
@@ -486,7 +486,7 @@ export const MessageProvider = ({ children }) => {
           );
         }
       } catch (error) {
-        console.error('Error sending message:', error);
+        if (import.meta.env.DEV) console.error('Error sending message:', error);
       } finally {
         setSendingMessage(false);
       }
@@ -503,7 +503,7 @@ export const MessageProvider = ({ children }) => {
         await selectConversation(convo);
         return convo;
       } catch (error) {
-        console.error('Error creating conversation:', error);
+        if (import.meta.env.DEV) console.error('Error creating conversation:', error);
         throw error;
       }
     },

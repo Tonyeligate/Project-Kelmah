@@ -223,9 +223,9 @@ const WorkerSearchResults = ({
           textAlign: 'center',
           py: 8,
           px: { xs: 2, md: 6 },
-          background:
-            'linear-gradient(135deg, rgba(26,26,26,0.9) 0%, rgba(45,45,45,0.95) 100%)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          bgcolor: 'background.paper',
+          border: 1,
+          borderColor: 'divider',
           borderRadius: 3,
         }}
       >
@@ -255,14 +255,14 @@ const WorkerSearchResults = ({
 
         <Typography
           variant="h5"
-          sx={{ color: '#fff', fontWeight: 'bold' }}
+          sx={{ color: 'text.primary', fontWeight: 'bold' }}
           gutterBottom
         >
           We couldn’t find any workers that match… yet
         </Typography>
         <Typography
           variant="body1"
-          sx={{ color: 'rgba(255,255,255,0.75)', mb: 4 }}
+          sx={{ color: 'text.secondary', mb: 4 }}
         >
           Adjust your filters or explore other talent pools to uncover more
           professionals.
@@ -287,7 +287,7 @@ const WorkerSearchResults = ({
               <LightbulbIcon sx={{ color: '#FFC107', mt: 0.5, fontSize: 20 }} />
               <Typography
                 variant="body2"
-                sx={{ color: 'rgba(255,255,255,0.8)' }}
+                sx={{ color: 'text.secondary' }}
               >
                 {tip}
               </Typography>
@@ -317,7 +317,7 @@ const WorkerSearchResults = ({
           <Button
             variant="outlined"
             onClick={handleBrowseJobs}
-            sx={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff' }}
+            sx={{ borderColor: 'divider', color: 'text.primary' }}
           >
             Browse open jobs
           </Button>
@@ -326,7 +326,7 @@ const WorkerSearchResults = ({
         {!isAuthenticated && (
           <Typography
             variant="caption"
-            sx={{ color: 'rgba(255,255,255,0.6)', mt: 3, display: 'block' }}
+            sx={{ color: 'text.disabled', mt: 3, display: 'block' }}
           >
             Tip: Create an account to save promising workers to your dashboard.
           </Typography>

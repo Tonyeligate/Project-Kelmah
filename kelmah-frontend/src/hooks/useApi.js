@@ -51,7 +51,7 @@ export const useApi = (apiFunction, options = {}) => {
 
         return result;
       } catch (err) {
-        console.error('API Error:', err);
+        if (import.meta.env.DEV) console.error('API Error:', err);
         setError(err);
 
         // Retry logic
@@ -222,7 +222,7 @@ export const useMultipleApi = (apiCalls, options = {}) => {
           const result = await apiFunction();
           return { key, result, error: null };
         } catch (error) {
-          console.error(`API Error for ${key}:`, error);
+          if (import.meta.env.DEV) console.error(`API Error for ${key}:`, error);
           return { key, result: null, error };
         }
       },
@@ -246,7 +246,7 @@ export const useMultipleApi = (apiCalls, options = {}) => {
       setResults(newResults);
       setErrors(newErrors);
     } catch (error) {
-      console.error('Multiple API calls failed:', error);
+      if (import.meta.env.DEV) console.error('Multiple API calls failed:', error);
     } finally {
       setLoading(false);
     }
@@ -316,7 +316,7 @@ export const useApiSubmit = (submitFunction, options = {}) => {
 
         return result;
       } catch (err) {
-        console.error('Submit Error:', err);
+        if (import.meta.env.DEV) console.error('Submit Error:', err);
         setError(err);
 
         if (onError) {

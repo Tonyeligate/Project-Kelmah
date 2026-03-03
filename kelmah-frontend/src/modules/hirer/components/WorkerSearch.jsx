@@ -263,7 +263,6 @@ const WorkerSearch = () => {
   };
 
   useEffect(() => {
-    console.log('WorkerSearch useEffect - making API calls');
     fetchWorkers();
     // Hydrate saved bookmarks
     (async () => {
@@ -273,7 +272,6 @@ const WorkerSearch = () => {
           return;
         }
 
-        console.log('WorkerSearch - fetching bookmarks');
         let res;
         try {
           res = await api.get(API_ENDPOINTS.USER.BOOKMARKS);
@@ -288,7 +286,7 @@ const WorkerSearch = () => {
         const ids = extractWorkerIdsFromBookmarks(res?.data);
         setSavedWorkers(ids);
       } catch (err) {
-        console.log('WorkerSearch - bookmarks fetch failed:', err.message);
+        // Bookmark fetch failed silently
       }
     })();
   }, [page, filters, debouncedSearch, sortOption]);
@@ -296,7 +294,6 @@ const WorkerSearch = () => {
   const fetchWorkers = async () => {
     try {
       setLoading(true);
-      console.log('WorkerSearch - fetchWorkers called');
 
       const sortMap = {
         relevance: 'relevance',
@@ -342,8 +339,6 @@ const WorkerSearch = () => {
       if (filters.availability && filters.availability !== 'all') {
         params.availability = filters.availability;
       }
-
-      console.log('WorkerSearch - making API call to:', API_ENDPOINTS.USER.WORKERS_SEARCH, params);
 
       let response;
       try {
@@ -393,12 +388,7 @@ const WorkerSearch = () => {
 
       setError(null);
     } catch (err) {
-      console.warn('User service unavailable for worker search:', err.message);
-      console.log(
-        'WorkerSearch - API call failed:',
-        err.response?.status,
-        err.response?.data,
-      );
+      if (import.meta.env.DEV) console.warn('User service unavailable for worker search:', err.message);
       setError('Unable to fetch workers. Please try again later.');
       // Provide a safe fallback list for offline/unavailable service
       let fallback = [];
@@ -561,7 +551,7 @@ const WorkerSearch = () => {
         return prev;
       });
     } catch (error) {
-      console.error('Error saving worker:', error);
+      if (import.meta.env.DEV) console.error('Error saving worker:', error);
       setError('Failed to save worker');
     }
   };
@@ -1188,7 +1178,7 @@ const WorkerSearch = () => {
                             if (newId)
                               navigate(`/messages?conversation=${newId}`);
                           } catch (e) {
-                            console.error('Failed to start conversation', e);
+                            if (import.meta.env.DEV) console.error('Failed to start conversation', e);
                           }
                         }}
                       >

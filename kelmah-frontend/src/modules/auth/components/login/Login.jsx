@@ -139,10 +139,10 @@ const Login = () => {
       ).unwrap();
 
       const destination = resolveLoginRedirect(result?.user);
-      console.log(`Login successful, redirecting to ${destination}`);
+      if (import.meta.env.DEV) console.log(`Login successful, redirecting to ${destination}`);
       navigate(destination, { replace: true });
     } catch (err) {
-      console.error('Login error:', err);
+      if (import.meta.env.DEV) console.error('Login error:', err);
       const errorMessage =
         err.message || 'Login failed. Please check your credentials.';
       setLoginError(errorMessage);

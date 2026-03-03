@@ -37,7 +37,7 @@ const resolveInitialAuthState = () => {
     secureStorage.setUserData(user);
     return { token, user, isAuthenticated: true };
   } catch (error) {
-    console.warn('Failed to resolve initial auth state:', error);
+    if (import.meta.env.DEV) console.warn('Failed to resolve initial auth state:', error);
     secureStorage.clear();
     return { token: null, user: null, isAuthenticated: false };
   }
@@ -88,14 +88,14 @@ export const login = createAsyncThunk(
           refreshToken,
         };
       } else {
-        console.warn(
+        if (import.meta.env.DEV) console.warn(
           'No token received in login response. Response structure:',
           response,
         );
         return rejectWithValue('No authentication token received');
       }
     } catch (error) {
-      console.error('Login error in thunk:', error);
+      if (import.meta.env.DEV) console.error('Login error in thunk:', error);
       const errorMessage =
         error.response?.data?.message || error.message || 'Login failed';
       return rejectWithValue(errorMessage);
@@ -133,7 +133,7 @@ export const verifyAuth = createAsyncThunk(
             throw refreshError;
           }
         } else {
-          console.warn('No token found in secure storage');
+          if (import.meta.env.DEV) console.warn('No token found in secure storage');
           throw new Error('Session expired. Please log in again.');
         }
       }
@@ -170,7 +170,7 @@ export const verifyAuth = createAsyncThunk(
         isAuthenticated: true,
       };
     } catch (error) {
-      console.error('Auth verification failed:', error);
+      if (import.meta.env.DEV) console.error('Auth verification failed:', error);
       const message = error?.message || 'Authentication verification failed';
       const isNetworkError =
         typeof error?.isNetworkError === 'boolean'

@@ -126,7 +126,7 @@ class DashboardService {
       try {
         callback(data);
       } catch (error) {
-        console.error(`Error in ${event} listener:`, error);
+        if (import.meta.env.DEV) console.error(`Error in ${event} listener:`, error);
       }
     });
   }
@@ -179,7 +179,7 @@ class DashboardService {
       this._overviewCacheTime = Date.now();
       return result;
     } catch (error) {
-      console.error('Error fetching dashboard overview:', error);
+      if (import.meta.env.DEV) console.error('Error fetching dashboard overview:', error);
       return {
         metrics: {
           totalUsers: 0,
@@ -210,7 +210,7 @@ class DashboardService {
         hasMore: activities.length >= limit,
       };
     } catch (error) {
-      console.error('Error fetching recent activity:', error);
+      if (import.meta.env.DEV) console.error('Error fetching recent activity:', error);
       return {
         activities: [],
         hasMore: false,
@@ -226,7 +226,7 @@ class DashboardService {
       });
       return response.data?.data || response.data || {};
     } catch (error) {
-      console.error('Error fetching statistics:', error);
+      if (import.meta.env.DEV) console.error('Error fetching statistics:', error);
       return {
         userGrowth: [],
         metrics: {},
@@ -252,7 +252,7 @@ class DashboardService {
         })),
       };
     } catch (error) {
-      console.error('Error fetching upcoming tasks:', error);
+      if (import.meta.env.DEV) console.error('Error fetching upcoming tasks:', error);
       return { placeholder: true, tasks: [] };
     }
   }
@@ -270,7 +270,7 @@ class DashboardService {
       }
       return [];
     } catch (error) {
-      console.error('Error fetching recent messages:', error);
+      if (import.meta.env.DEV) console.error('Error fetching recent messages:', error);
       return [];
     }
   }
@@ -288,7 +288,7 @@ class DashboardService {
         earningsThisMonth: analytics.earningsThisMonth || 0,
       };
     } catch (error) {
-      console.error('Error fetching performance metrics:', error);
+      if (import.meta.env.DEV) console.error('Error fetching performance metrics:', error);
       return {
         completionRate: 0,
         clientSatisfaction: 0,
@@ -325,7 +325,7 @@ class DashboardService {
         },
       ];
     } catch (error) {
-      console.error('Error fetching quick actions:', error);
+      if (import.meta.env.DEV) console.error('Error fetching quick actions:', error);
       return [
         {
           id: 'refresh-dashboard',
@@ -346,7 +346,7 @@ class DashboardService {
         newApplicants: overview.metrics?.totalWorkers || 0,
       };
     } catch (error) {
-      console.error('Error fetching notifications summary:', error);
+      if (import.meta.env.DEV) console.error('Error fetching notifications summary:', error);
       return {
         unreadMessages: 0,
         pendingJobs: 0,
@@ -361,7 +361,7 @@ class DashboardService {
       const overview = await this.getOverview();
       return overview.metrics || {};
     } catch (error) {
-      console.error('Error fetching real-time stats:', error);
+      if (import.meta.env.DEV) console.error('Error fetching real-time stats:', error);
       return {
         totalUsers: 0,
         totalWorkers: 0,
@@ -378,7 +378,7 @@ class DashboardService {
       const response = await api.get('/jobs/recommendations');
       return response.data?.data || response.data || [];
     } catch (error) {
-      console.error('Error fetching job matches:', error);
+      if (import.meta.env.DEV) console.error('Error fetching job matches:', error);
       return [];
     }
   }
@@ -389,7 +389,7 @@ class DashboardService {
       const response = await api.get('/jobs/recommendations');
       return response.data?.data || response.data || [];
     } catch (error) {
-      console.error('Error fetching recommendations:', error);
+      if (import.meta.env.DEV) console.error('Error fetching recommendations:', error);
       return [];
     }
   }

@@ -11,7 +11,7 @@ const useAttachments = (conversationId) => {
     const validFiles = files.filter((file) => {
       // Check file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
-        console.warn(`File ${file.name} is too large. Maximum size is 10MB.`);
+        if (import.meta.env.DEV) console.warn(`File ${file.name} is too large. Maximum size is 10MB.`);
         return false;
       }
       // Check file type
@@ -24,7 +24,7 @@ const useAttachments = (conversationId) => {
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       ];
       if (!validTypes.includes(file.type)) {
-        console.warn(`File ${file.name} has an unsupported type.`);
+        if (import.meta.env.DEV) console.warn(`File ${file.name} has an unsupported type.`);
         return false;
       }
       return true;
@@ -56,7 +56,7 @@ const useAttachments = (conversationId) => {
           size: file.size,
         };
       } catch (error) {
-        console.error('Error uploading file:', error);
+        if (import.meta.env.DEV) console.error('Error uploading file:', error);
         throw error;
       } finally {
         setUploading(false);

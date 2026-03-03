@@ -34,7 +34,6 @@ import {
 import { motion } from 'framer-motion';
 import { styled, useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import JobApplication from '../components/job-application/JobApplication';
 import BidSubmissionForm from '../components/BidSubmissionForm';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -52,9 +51,12 @@ import { Z_INDEX } from '../../../constants/layout';
 const DetailsPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
   borderRadius: theme.spacing(2),
-  background: 'rgba(26, 26, 26, 0.8)',
+  background:
+    theme.palette.mode === 'dark'
+      ? 'rgba(26, 26, 26, 0.8)'
+      : theme.palette.background.paper,
   backdropFilter: 'blur(10px)',
-  border: '1px solid rgba(255, 215, 0, 0.1)',
+  border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 215, 0, 0.1)' : theme.palette.divider}`,
 }));
 
 const ActionButton = styled(Button)(({ theme }) => ({
@@ -70,11 +72,20 @@ const ActionButton = styled(Button)(({ theme }) => ({
 
 const SkillChip = styled(Chip)(({ theme }) => ({
   margin: theme.spacing(0.5),
-  background: 'rgba(255, 215, 0, 0.2)',
-  color: '#FFD700',
-  borderColor: 'rgba(255, 215, 0, 0.5)',
+  background:
+    theme.palette.mode === 'dark'
+      ? 'rgba(255, 215, 0, 0.2)'
+      : 'rgba(212, 175, 55, 0.12)',
+  color: theme.palette.mode === 'dark' ? '#FFD700' : '#8B7500',
+  borderColor:
+    theme.palette.mode === 'dark'
+      ? 'rgba(255, 215, 0, 0.5)'
+      : 'rgba(212, 175, 55, 0.4)',
   '&:hover': {
-    background: 'rgba(255, 215, 0, 0.3)',
+    background:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255, 215, 0, 0.3)'
+        : 'rgba(212, 175, 55, 0.2)',
   },
 }));
 
@@ -83,11 +94,17 @@ const ProfileLink = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   padding: theme.spacing(1.5),
   borderRadius: theme.spacing(1),
-  background: 'rgba(255, 255, 255, 0.05)',
+  background:
+    theme.palette.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.05)'
+      : 'rgba(0, 0, 0, 0.03)',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
   '&:hover': {
-    background: 'rgba(255, 255, 255, 0.1)',
+    background:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.1)'
+        : 'rgba(0, 0, 0, 0.06)',
   },
 }));
 
@@ -157,7 +174,6 @@ const JobDetailsPage = () => {
   const isAuthenticated = useSelector((state) => !!state.auth.user && !!state.auth.token);
   const [saved, setSaved] = useState(false);
   const [savingBookmark, setSavingBookmark] = useState(false);
-  const [applicationOpen, setApplicationOpen] = useState(false);
   const [bidDialogOpen, setBidDialogOpen] = useState(false);
   const [shareSnackbar, setShareSnackbar] = useState('');
   const locationLabel = getJobLocationLabel(job);
@@ -188,24 +204,21 @@ const JobDetailsPage = () => {
     }
   }, [job]);
 
-  // Auto-open application dialog if ?apply=true
+  // Auto-redirect to application form if ?apply=true
   useEffect(() => {
     const params = new URLSearchParams(search);
-    if (params.get('apply') === 'true') {
-      setApplicationOpen(true);
+    if (params.get('apply') === 'true' && isAuthenticated) {
+      navigate(`/jobs/${id}/apply`, { replace: true });
     }
-  }, [search]);
+  }, [search, isAuthenticated, navigate, id]);
 
   const handleApplyNow = () => {
     if (!isAuthenticated) {
-      navigate('/login', { state: { from: location.pathname + '?apply=true' } });
+      navigate('/login', { state: { from: `/jobs/${id}/apply` } });
       return;
     }
-    setApplicationOpen(true);
-  };
-
-  const handleCloseApplication = () => {
-    setApplicationOpen(false);
+    // Navigate to the dedicated application form page for a consistent UX
+    navigate(`/jobs/${id}/apply`);
   };
 
   const handleMessageHirer = () => {
@@ -390,7 +403,7 @@ const JobDetailsPage = () => {
             onClick={() => navigate('/jobs')}
             sx={{
               mb: 3,
-              color: '#FFD700',
+              color: 'primary.main',
               '&:hover': {
                 background: 'rgba(255, 215, 0, 0.1)',
               },
@@ -429,22 +442,22 @@ const JobDetailsPage = () => {
                     sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <LocationOn sx={{ color: '#FFD700', mr: 0.5 }} />
-                      <Typography variant="body1" sx={{ color: '#fff' }}>
+                      <LocationOn sx={{ color: 'primary.main', mr: 0.5 }} />
+                      <Typography variant="body1" sx={{ color: 'text.primary' }}>
                         {locationLabel}
                       </Typography>
                     </Box>
 
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Category sx={{ color: '#FFD700', mr: 0.5 }} />
-                      <Typography variant="body1" sx={{ color: '#fff' }}>
+                      <Category sx={{ color: 'primary.main', mr: 0.5 }} />
+                      <Typography variant="body1" sx={{ color: 'text.primary' }}>
                         {job?.category || 'Category'}
                       </Typography>
                     </Box>
 
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <AttachMoney sx={{ color: '#FFD700', mr: 0.5 }} />
-                      <Typography variant="body1" sx={{ color: '#fff' }}>
+                      <AttachMoney sx={{ color: 'primary.main', mr: 0.5 }} />
+                      <Typography variant="body1" sx={{ color: 'text.primary' }}>
                         {job?.budget && job.budget !== null
                           ? typeof job.budget === 'object'
                             ? job.budget.min === job.budget.max
@@ -456,8 +469,8 @@ const JobDetailsPage = () => {
                     </Box>
 
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Schedule sx={{ color: '#FFD700', mr: 0.5 }} />
-                      <Typography variant="body1" sx={{ color: '#fff' }}>
+                      <Schedule sx={{ color: 'primary.main', mr: 0.5 }} />
+                      <Typography variant="body1" sx={{ color: 'text.primary' }}>
                         Posted:{' '}
                         {job?.createdAt
                           ? new Date(job.createdAt).toLocaleDateString()
@@ -466,8 +479,8 @@ const JobDetailsPage = () => {
                     </Box>
 
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <WorkOutline sx={{ color: '#FFD700', mr: 0.5 }} />
-                      <Typography variant="body1" sx={{ color: '#fff' }}>
+                      <WorkOutline sx={{ color: 'primary.main', mr: 0.5 }} />
+                      <Typography variant="body1" sx={{ color: 'text.primary' }}>
                         {job?.proposalCount || 0} Applicants
                       </Typography>
                     </Box>
@@ -509,7 +522,7 @@ const JobDetailsPage = () => {
                 </Box>
 
                 <Divider
-                  sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 3 }}
+                  sx={{ borderColor: 'divider', my: 3 }}
                 />
 
                 {/* Job Description */}
@@ -517,7 +530,7 @@ const JobDetailsPage = () => {
                   <Typography
                     variant="h5"
                     sx={{
-                      color: '#FFD700',
+                      color: 'primary.main',
                       mb: 2,
                       fontWeight: 'medium',
                     }}
@@ -528,7 +541,7 @@ const JobDetailsPage = () => {
                   <Typography
                     variant="body1"
                     sx={{
-                      color: '#fff',
+                      color: 'text.primary',
                       whiteSpace: 'pre-line',
                       mb: 3,
                     }}
@@ -562,7 +575,7 @@ const JobDetailsPage = () => {
                     <Typography
                       variant="h6"
                       sx={{
-                        color: '#FFD700',
+                        color: 'primary.main',
                         mb: 1,
                       }}
                     >
@@ -578,7 +591,7 @@ const JobDetailsPage = () => {
                 </Box>
 
                 <Divider
-                  sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 3 }}
+                  sx={{ borderColor: 'divider', my: 3 }}
                 />
 
                 {/* Job Images */}
@@ -587,7 +600,7 @@ const JobDetailsPage = () => {
                     <Typography
                       variant="h5"
                       sx={{
-                        color: '#FFD700',
+                        color: 'primary.main',
                         mb: 2,
                         fontWeight: 'medium',
                       }}
@@ -621,7 +634,7 @@ const JobDetailsPage = () => {
                 )}
 
                 <Divider
-                  sx={{ borderColor: 'rgba(255, 255, 255, 0.1)', my: 3 }}
+                  sx={{ borderColor: 'divider', my: 3 }}
                 />
 
                 {/* Additional Info */}
@@ -639,7 +652,7 @@ const JobDetailsPage = () => {
                   <Typography
                     variant="h5"
                     sx={{
-                      color: '#FFD700',
+                      color: 'primary.main',
                       mb: 2,
                       fontWeight: 'medium',
                     }}
@@ -648,8 +661,8 @@ const JobDetailsPage = () => {
                   </Typography>
 
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Schedule sx={{ color: '#FFD700', mr: 1 }} />
-                    <Typography variant="body1" sx={{ color: '#fff' }}>
+                    <Schedule sx={{ color: 'primary.main', mr: 1 }} />
+                    <Typography variant="body1" sx={{ color: 'text.primary' }}>
                       Complete by:{' '}
                       {job.endDate
                         ? new Date(job.endDate).toLocaleDateString()
@@ -672,7 +685,7 @@ const JobDetailsPage = () => {
                 <Typography
                   variant="h5"
                   sx={{
-                    color: '#FFD700',
+                    color: 'primary.main',
                     mb: 3,
                     fontWeight: 'medium',
                   }}
@@ -682,7 +695,7 @@ const JobDetailsPage = () => {
 
                 {job?.bidding?.bidStatus === 'open' ? (
                   <>
-                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 2 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
                       Budget range: GHS {(job.bidding.minBidAmount || job.budget?.min || 0).toLocaleString()} – {(job.bidding.maxBidAmount || job.budget?.max || 0).toLocaleString()}
                       {' · '}{job.bidding.currentBidders || 0}/{job.bidding.maxBidders || 5} bids placed
                     </Typography>
@@ -729,7 +742,7 @@ const JobDetailsPage = () => {
                     onClick={handleToggleSave}
                     disabled={savingBookmark}
                     sx={{
-                      color: saved ? '#FFD700' : 'rgba(255, 255, 255, 0.7)',
+                      color: saved ? 'primary.main' : 'text.secondary',
                       '&:hover': {
                         background: 'rgba(255, 215, 0, 0.1)',
                       },
@@ -741,10 +754,10 @@ const JobDetailsPage = () => {
                   <IconButton
                     onClick={handleShareJob}
                     sx={{
-                      color: 'rgba(255, 255, 255, 0.7)',
+                      color: 'text.secondary',
                       '&:hover': {
                         background: 'rgba(255, 215, 0, 0.1)',
-                        color: '#FFD700',
+                        color: 'primary.main',
                       },
                     }}
                   >
@@ -757,7 +770,7 @@ const JobDetailsPage = () => {
                 <Typography
                   variant="h5"
                   sx={{
-                    color: '#FFD700',
+                    color: 'primary.main',
                     mb: 3,
                     fontWeight: 'medium',
                   }}
@@ -782,20 +795,20 @@ const JobDetailsPage = () => {
                   />
 
                   <Box>
-                    <Typography variant="h6" sx={{ color: '#FFD700' }}>
+                    <Typography variant="h6" sx={{ color: 'primary.main' }}>
                       {job.hirer?.firstName && job.hirer?.lastName
                         ? `${job.hirer.firstName} ${job.hirer.lastName}`
                         : job.hirer?.name || 'Hirer'}
                     </Typography>
 
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Star sx={{ color: '#FFD700', fontSize: 18, mr: 0.5 }} />
-                      <Typography variant="body2" sx={{ color: '#fff', mr: 1 }}>
+                      <Star sx={{ color: 'primary.main', fontSize: 18, mr: 0.5 }} />
+                      <Typography variant="body2" sx={{ color: 'text.primary', mr: 1 }}>
                         {typeof job.hirer?.rating === 'number' ? job.hirer.rating.toFixed(1) : 'N/A'}
                       </Typography>
                       <Typography
                         variant="body2"
-                        sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                        sx={{ color: 'text.secondary' }}
                       >
                         ({job.hirer?.reviews || 0} reviews)
                       </Typography>
@@ -803,7 +816,7 @@ const JobDetailsPage = () => {
 
                     <Typography
                       variant="body2"
-                      sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 0.5 }}
+                      sx={{ color: 'text.secondary', mt: 0.5 }}
                     >
                       {job.hirer?.jobsPosted || 0} jobs posted
                     </Typography>
@@ -813,16 +826,6 @@ const JobDetailsPage = () => {
             </motion.div>
           </Grid>
         </Grid>
-
-        {/* Add job application dialog */}
-        {job && (
-          <JobApplication
-            open={applicationOpen}
-            onClose={handleCloseApplication}
-            jobId={job?.id}
-            jobTitle={job?.title}
-          />
-        )}
 
         {/* Bid submission dialog */}
         {job && (

@@ -57,7 +57,7 @@ const LocationSelector = ({
         try {
           setRecentLocations(JSON.parse(stored));
         } catch (error) {
-          console.warn('Failed to parse recent locations:', error);
+          if (import.meta.env.DEV) console.warn('Failed to parse recent locations:', error);
         }
       }
     }
@@ -84,7 +84,7 @@ const LocationSelector = ({
             });
         })
         .catch((error) => {
-          console.warn('Could not get current location:', error);
+          if (import.meta.env.DEV) console.warn('Could not get current location:', error);
         });
     }
   }, [showCurrentLocation]);
@@ -101,7 +101,7 @@ const LocationSelector = ({
       const results = await mapService.geocodeAddress(query);
       setSuggestions(results.slice(0, 5));
     } catch (error) {
-      console.error('Search error:', error);
+      if (import.meta.env.DEV) console.error('Search error:', error);
       setSuggestions([]);
     } finally {
       setIsLoading(false);
@@ -189,7 +189,7 @@ const LocationSelector = ({
       setCurrentLocation(locationData);
       handleLocationSelect(locationData, 'current');
     } catch (error) {
-      console.error('Failed to get current location:', error);
+      if (import.meta.env.DEV) console.error('Failed to get current location:', error);
     } finally {
       setIsGettingLocation(false);
     }

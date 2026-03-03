@@ -100,7 +100,7 @@ const authService = {
         success: true,
       };
     } catch (error) {
-      console.error('Login failed:', error);
+      if (import.meta.env.DEV) console.error('Login failed:', error);
 
       // Enhanced error handling with user-friendly messages
       let errorMessage = 'Login failed. Please try again.';
@@ -158,7 +158,7 @@ const authService = {
       // Do not persist auth state/tokens here to avoid confusing route behavior.
       return { token, user: normalizedUser || user, success: true };
     } catch (error) {
-      console.error('Registration error:', error);
+      if (import.meta.env.DEV) console.error('Registration error:', error);
       throw error;
     }
   },
@@ -178,7 +178,7 @@ const authService = {
         return { user: undefined, success: true };
       }
     } catch (error) {
-      console.warn('Auth verification failed:', error.message);
+      if (import.meta.env.DEV) console.warn('Auth verification failed:', error.message);
       return { success: false, error: error.message };
     }
   },
@@ -192,7 +192,7 @@ const authService = {
 
       await api.post('/auth/logout', logoutData);
     } catch (error) {
-      console.warn('Logout API call failed:', error.message);
+      if (import.meta.env.DEV) console.warn('Logout API call failed:', error.message);
       // Continue with local cleanup even if API call fails
     } finally {
       // Clear token refresh timeout
@@ -272,7 +272,7 @@ const authService = {
         success: true,
       };
     } catch (error) {
-      console.error('Token refresh failed:', error);
+      if (import.meta.env.DEV) console.error('Token refresh failed:', error);
 
       const status = error.response?.status;
       const isNetworkError =
@@ -294,7 +294,7 @@ const authService = {
           try {
             window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
           } catch (dispatchError) {
-            console.warn(
+            if (import.meta.env.DEV) console.warn(
               'Failed to dispatch tokenExpired event:',
               dispatchError,
             );
@@ -321,7 +321,7 @@ const authService = {
       );
       return response.data;
     } catch (error) {
-      console.error('Forgot password error:', error);
+      if (import.meta.env.DEV) console.error('Forgot password error:', error);
       throw error;
     }
   },
@@ -335,7 +335,7 @@ const authService = {
       );
       return response.data;
     } catch (error) {
-      console.error('Reset password error:', error);
+      if (import.meta.env.DEV) console.error('Reset password error:', error);
       throw error;
     }
   },
@@ -355,7 +355,7 @@ const authService = {
       };
 
     } catch (error) {
-      console.error('Profile update error:', error);
+      if (import.meta.env.DEV) console.error('Profile update error:', error);
       throw error;
     }
   },
@@ -368,7 +368,7 @@ const authService = {
       });
       return response.data?.data || response.data || { success: true };
     } catch (error) {
-      console.error('Change password error:', error);
+      if (import.meta.env.DEV) console.error('Change password error:', error);
       throw error;
     }
   },
@@ -397,7 +397,7 @@ const authService = {
         message: payload.message,
       };
     } catch (error) {
-      console.error('Verify email error:', error);
+      if (import.meta.env.DEV) console.error('Verify email error:', error);
       throw error;
     }
   },
@@ -409,7 +409,7 @@ const authService = {
       });
       return response.data?.data || response.data || { success: true };
     } catch (error) {
-      console.error('Resend verification email error:', error);
+      if (import.meta.env.DEV) console.error('Resend verification email error:', error);
       throw error;
     }
   },
@@ -419,7 +419,7 @@ const authService = {
       const response = await api.post('/auth/mfa/setup');
       return response.data?.data || response.data || {};
     } catch (error) {
-      console.error('MFA setup error:', error);
+      if (import.meta.env.DEV) console.error('MFA setup error:', error);
       throw error;
     }
   },
@@ -429,7 +429,7 @@ const authService = {
       const response = await api.post('/auth/mfa/verify', { code });
       return response.data?.data || response.data || {};
     } catch (error) {
-      console.error('MFA verify error:', error);
+      if (import.meta.env.DEV) console.error('MFA verify error:', error);
       throw error;
     }
   },
@@ -442,7 +442,7 @@ const authService = {
       });
       return response.data?.data || response.data || {};
     } catch (error) {
-      console.error('Disable MFA error:', error);
+      if (import.meta.env.DEV) console.error('Disable MFA error:', error);
       throw error;
     }
   },
@@ -477,11 +477,11 @@ const authService = {
         try {
           await authService.refreshToken();
         } catch (error) {
-          console.warn('Automatic token refresh failed:', error.message);
+          if (import.meta.env.DEV) console.warn('Automatic token refresh failed:', error.message);
         }
       }, refreshDelay);
     } catch (error) {
-      console.warn('Failed to schedule token refresh:', error.message);
+      if (import.meta.env.DEV) console.warn('Failed to schedule token refresh:', error.message);
     }
   },
 

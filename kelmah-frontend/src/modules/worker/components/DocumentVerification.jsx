@@ -110,7 +110,7 @@ const DocumentVerification = () => {
       setError(null);
     } catch (err) {
       setError('Failed to load documents');
-      console.error(err);
+      if (import.meta.env.DEV) console.error(err);
     } finally {
       setLoading(false);
     }
@@ -204,7 +204,7 @@ const DocumentVerification = () => {
       fetchDocuments();
     } catch (err) {
       setError('Failed to save document');
-      console.error(err);
+      if (import.meta.env.DEV) console.error(err);
     } finally {
       setLoading(false);
       setUploadProgress(0);
@@ -224,7 +224,7 @@ const DocumentVerification = () => {
       fetchDocuments();
     } catch (err) {
       setError('Failed to delete document');
-      console.error(err);
+      if (import.meta.env.DEV) console.error(err);
     } finally {
       setLoading(false);
     }
@@ -253,7 +253,7 @@ const DocumentVerification = () => {
       document.body.removeChild(a);
     } catch (err) {
       setError('Failed to download document');
-      console.error(err);
+      if (import.meta.env.DEV) console.error(err);
     }
   };
 

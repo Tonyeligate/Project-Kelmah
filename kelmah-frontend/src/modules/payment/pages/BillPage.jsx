@@ -223,14 +223,15 @@ const BillPage = () => {
           </Alert>
         )}
         {loading ? (
-          <Typography>Loading bills...</Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+            <CircularProgress color="secondary" />
+          </Box>
         ) : filteredBills.length === 0 ? (
-          <Typography color="text.secondary">
+          <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
             No bills match your filter criteria.
           </Typography>
         ) : (
-          // Summary above list
-          filteredBills.length > 0 && (
+          <>
             <Box sx={{ mb: 2 }}>
               <Typography variant="body2" color="text.secondary">
                 Showing {(page - 1) * perPage + 1} -{' '}
@@ -238,15 +239,6 @@ const BillPage = () => {
                 {filteredBills.length} bills
               </Typography>
             </Box>
-          )
-        )}
-        {loading ? (
-          <Typography>Loading bills...</Typography>
-        ) : filteredBills.length === 0 ? (
-          <Typography color="text.secondary">
-            No bills match your filter criteria.
-          </Typography>
-        ) : (
           <List>
             {pagedBills.map((bill, index) => (
               <React.Fragment key={bill.id}>
@@ -294,6 +286,7 @@ const BillPage = () => {
               </React.Fragment>
             ))}
           </List>
+          </>
         )}
         {/* Pagination */}
         {pageCount > 1 && (

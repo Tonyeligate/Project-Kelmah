@@ -90,7 +90,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
       const response = await messagingService.searchMessages(query, options);
       setResults(response.messages || []);
     } catch (error) {
-      console.error('Error searching messages:', error);
+      if (import.meta.env.DEV) console.error('Error searching messages:', error);
       setResults([]);
     } finally {
       setLoading(false);

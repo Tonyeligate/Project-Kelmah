@@ -19,7 +19,7 @@ export const useWebSocket = () => {
       }
 
       const wsUrl = await getWebSocketUrl();
-      console.log('📡 WebSocket connecting to backend:', wsUrl);
+      if (import.meta.env.DEV) console.log('📡 WebSocket connecting to backend:', wsUrl);
 
       // Connect to backend server - Socket.IO handles /socket.io path automatically
       const socket = io(wsUrl, {
@@ -47,7 +47,7 @@ export const useWebSocket = () => {
           try {
             onMessageHandler.current({ data: JSON.stringify(payload) });
           } catch (e) {
-            console.error('onmessage handler error:', e);
+            if (import.meta.env.DEV) console.error('onmessage handler error:', e);
           }
         }
       };
@@ -70,7 +70,7 @@ export const useWebSocket = () => {
 
       return socket;
     } catch (e) {
-      console.error('Socket.IO connection failed:', e);
+      if (import.meta.env.DEV) console.error('Socket.IO connection failed:', e);
       setError(e);
     }
   }, []);

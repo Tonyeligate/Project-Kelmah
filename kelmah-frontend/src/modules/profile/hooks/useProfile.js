@@ -50,9 +50,9 @@ export const useProfile = (options = {}) => {
         : error?.message || 'Failed to load profile. Please try again later.';
 
       dispatch(setError(friendlyMessage));
-      console.warn('Profile loading error (with fallback):', error.message);
+      if (import.meta.env.DEV) console.warn('Profile loading error (with fallback):', error.message);
       if (isTimeout) {
-        console.warn('[ProfileHook] loadProfile() timed out after 5s');
+        if (import.meta.env.DEV) console.warn('[ProfileHook] loadProfile() timed out after 5s');
       }
       return null;
     } finally {
@@ -179,7 +179,7 @@ export const useProfile = (options = {}) => {
       setStatistics(stats);
       return stats;
     } catch (error) {
-      console.warn('Statistics loading error (with fallback):', error.message);
+      if (import.meta.env.DEV) console.warn('Statistics loading error (with fallback):', error.message);
       // Don't re-throw since profileService now provides fallback data
       return null;
     }
@@ -191,7 +191,7 @@ export const useProfile = (options = {}) => {
       setActivity(activities);
       return activities;
     } catch (error) {
-      console.warn('Activity loading error (with fallback):', error.message);
+      if (import.meta.env.DEV) console.warn('Activity loading error (with fallback):', error.message);
       // Don't re-throw since profileService now provides fallback data
       return [];
     }
@@ -208,13 +208,13 @@ export const useProfile = (options = {}) => {
             if (profile) {
               await Promise.allSettled([
                 loadStatistics().catch((error) => {
-                  console.warn(
+                  if (import.meta.env.DEV) console.warn(
                     'Statistics loading failed (gracefully handled):',
                     error.message,
                   );
                 }),
                 loadActivity().catch((error) => {
-                  console.warn(
+                  if (import.meta.env.DEV) console.warn(
                     'Activity loading failed (gracefully handled):',
                     error.message,
                   );
@@ -222,9 +222,9 @@ export const useProfile = (options = {}) => {
               ]);
             }
 
-            console.log('🎯 Profile initialization completed');
+            if (import.meta.env.DEV) console.log('🎯 Profile initialization completed');
           } catch (error) {
-            console.error('Profile initialization error:', error);
+            if (import.meta.env.DEV) console.error('Profile initialization error:', error);
           } finally {
             profileInitPromise = null;
           }

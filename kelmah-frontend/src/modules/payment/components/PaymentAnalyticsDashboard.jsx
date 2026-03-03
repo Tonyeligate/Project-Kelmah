@@ -129,7 +129,7 @@ const PaymentAnalyticsDashboard = ({
       setAnalyticsData(response);
     } catch (error) {
       enqueueSnackbar('Failed to load payment analytics', { variant: 'error' });
-      console.error('Analytics error:', error);
+      if (import.meta.env.DEV) console.error('Analytics error:', error);
     } finally {
       setLoading(false);
     }
@@ -146,7 +146,7 @@ const PaymentAnalyticsDashboard = ({
       });
       setTransactions(response?.data?.transactions || response?.transactions || []);
     } catch (error) {
-      console.error('Transaction history error:', error);
+      if (import.meta.env.DEV) console.error('Transaction history error:', error);
     }
   };
 

@@ -92,7 +92,7 @@ const EnhancedJobCard = ({
           const stats = response?.data || response;
           setBidStats(stats);
         })
-        .catch(err => console.warn('Bid stats unavailable:', err.message));
+        .catch(err => { if (import.meta.env.DEV) console.warn('Bid stats unavailable:', err.message); });
     }
   }, [user?.id]);
 
@@ -111,7 +111,7 @@ const EnhancedJobCard = ({
       setBidDialogOpen(false);
       if (onApply) onApply(job);
     } catch (error) {
-      console.error('Failed to submit bid:', error);
+      if (import.meta.env.DEV) console.error('Failed to submit bid:', error);
     } finally {
       setBidLoading(false);
     }

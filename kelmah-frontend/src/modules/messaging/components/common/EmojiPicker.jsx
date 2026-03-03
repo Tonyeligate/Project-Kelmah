@@ -242,7 +242,7 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
         setRecentEmojis(JSON.parse(saved));
       }
     } catch (error) {
-      console.error('Error loading recent emojis', error);
+      if (import.meta.env.DEV) console.error('Error loading recent emojis', error);
     }
   }, []);
 
@@ -293,7 +293,7 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
     try {
       localStorage.setItem('recentEmojis', JSON.stringify(updatedRecent));
     } catch (error) {
-      console.error('Error saving recent emojis', error);
+      if (import.meta.env.DEV) console.error('Error saving recent emojis', error);
     }
 
     // Call the onSelect callback

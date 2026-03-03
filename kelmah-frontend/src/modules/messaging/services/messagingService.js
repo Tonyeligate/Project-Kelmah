@@ -21,7 +21,7 @@ export const messagingService = {
       if (payload?.conversations) return payload.conversations;
       return [];
     } catch (error) {
-      console.warn('Messaging service unavailable:', error.message);
+      if (import.meta.env.DEV) console.warn('Messaging service unavailable:', error.message);
       // No mock data; return empty list to avoid false positives
       return [];
     }
@@ -38,7 +38,7 @@ export const messagingService = {
       });
       return response.data;
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         'Messaging service unavailable for creating conversation:',
         error.message,
       );
@@ -55,7 +55,7 @@ export const messagingService = {
       });
       return response.data;
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         'Messaging service unavailable for conversation from application:',
         error.message,
       );
@@ -81,7 +81,7 @@ export const messagingService = {
       if (Array.isArray(payload)) return payload;
       return [];
     } catch (error) {
-      console.warn('Failed to load messages:', error.message);
+      if (import.meta.env.DEV) console.warn('Failed to load messages:', error.message);
       return [];
     }
   },
@@ -106,7 +106,7 @@ export const messagingService = {
       // Controller responds with { message: '...', data: message }
       return response.data?.data || response.data;
     } catch (error) {
-      console.warn('Failed to send message via REST:', error.message);
+      if (import.meta.env.DEV) console.warn('Failed to send message via REST:', error.message);
       throw error;
     }
   },
@@ -125,7 +125,7 @@ export const messagingService = {
       const response = await api.post('/messages/conversations', payload);
       return response.data?.data?.conversation || response.data;
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         'Messaging service unavailable for creating direct conversation:',
         error.message,
       );
@@ -147,7 +147,7 @@ export const messagingService = {
         return { messages: payload.messages };
       return { messages: [] };
     } catch (error) {
-      console.warn('Failed to search messages:', error.message);
+      if (import.meta.env.DEV) console.warn('Failed to search messages:', error.message);
       return { messages: [] };
     }
   },

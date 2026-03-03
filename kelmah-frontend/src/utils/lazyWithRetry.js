@@ -47,7 +47,7 @@ const purgeCachesAndReload = (() => {
           type: 'KELMAH_CLEAR_RUNTIME_CACHES',
         });
       } catch (error) {
-        console.warn('lazyWithRetry service worker message failed:', error);
+        if (import.meta.env.DEV) console.warn('lazyWithRetry service worker message failed:', error);
       }
 
       tasks.push(
@@ -82,7 +82,7 @@ const purgeCachesAndReload = (() => {
 
     purgeCaches()
       .catch((error) => {
-        console.warn('lazyWithRetry cache purge failed:', error);
+        if (import.meta.env.DEV) console.warn('lazyWithRetry cache purge failed:', error);
       })
       .finally(() => {
         requestAnimationFrame(() => {
@@ -126,7 +126,7 @@ export const lazyWithRetry = (factory, options = {}) => {
         const stored = sessionStorage.getItem(storageKey);
         attempts = Number(stored) || 0;
       } catch (storageError) {
-        console.warn('lazyWithRetry storage error:', storageError);
+        if (import.meta.env.DEV) console.warn('lazyWithRetry storage error:', storageError);
       }
 
       if (attempts >= maxRetries) {
@@ -137,7 +137,7 @@ export const lazyWithRetry = (factory, options = {}) => {
       try {
         sessionStorage.setItem(storageKey, String(attempts + 1));
       } catch (storageError) {
-        console.warn('lazyWithRetry storage write failed:', storageError);
+        if (import.meta.env.DEV) console.warn('lazyWithRetry storage write failed:', storageError);
       }
 
       purgeCachesAndReload();

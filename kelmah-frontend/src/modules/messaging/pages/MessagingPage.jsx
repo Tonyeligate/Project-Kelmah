@@ -206,7 +206,7 @@ const EnhancedMessagingPage = () => {
             navigate(`/messages?conversation=${newId}`, { replace: true });
           }
         } catch (e) {
-          console.error('Deep-link conversation creation failed:', e);
+          if (import.meta.env.DEV) console.error('Deep-link conversation creation failed:', e);
         }
       }
     };
@@ -232,7 +232,7 @@ const EnhancedMessagingPage = () => {
 
       sessionStorage.removeItem('kelmah_message_draft');
     } catch (draftError) {
-      console.warn('Failed to load message draft from session storage', draftError);
+      if (import.meta.env.DEV) console.warn('Failed to load message draft from session storage', draftError);
     }
   }, []);
 
@@ -336,7 +336,7 @@ const EnhancedMessagingPage = () => {
         await contextSendMessage(text, type, attachments);
       }
     } catch (error) {
-      console.error('Failed to send message:', error);
+      if (import.meta.env.DEV) console.error('Failed to send message:', error);
       showFeedback('Failed to send message', 'error');
     }
   }, [messageText, selectedFiles, selectedConversation, contextSendMessage, showFeedback]);

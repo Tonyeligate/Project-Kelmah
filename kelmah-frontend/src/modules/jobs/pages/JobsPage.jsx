@@ -412,7 +412,7 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('JobsPage Error:', error, errorInfo);
+    if (import.meta.env.DEV) console.error('JobsPage Error:', error, errorInfo);
   }
 
   render() {
@@ -461,7 +461,7 @@ const JobsPage = () => {
   const debouncedSearch = useDebounce(searchQuery, 350);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
-  const [budgetRange, setBudgetRange] = useState([0, 50000]);
+  const [budgetRange, setBudgetRange] = useState([0, 100000]);
   const [budgetFilterActive, setBudgetFilterActive] = useState(false);
   const debouncedBudgetRange = useDebounce(budgetFilterActive ? budgetRange : null, 500);
   const [sortBy, setSortBy] = useState('relevance');
@@ -555,7 +555,7 @@ const JobsPage = () => {
     setSearchQuery('');
     setSelectedCategory('');
     setSelectedLocation('');
-    setBudgetRange([0, 50000]);
+    setBudgetRange([0, 100000]);
     setBudgetFilterActive(false);
     setSortBy('relevance');
     setQuickFilters({ urgent: false, verified: false, fullTime: false, contract: false });
@@ -683,7 +683,7 @@ const JobsPage = () => {
           return [...prev, ...newJobs];
         });
       }
-      console.log(`✅ Jobs loaded via React Query (page ${page}):`, normalizedJobs.length);
+      if (import.meta.env.DEV) console.log(`Jobs loaded via React Query (page ${page}):`, normalizedJobs.length);
       return;
     }
 
@@ -694,7 +694,7 @@ const JobsPage = () => {
 
   useEffect(() => {
     if (jobsQueryError) {
-      console.error('❌ Error fetching jobs via React Query:', jobsQueryError);
+      if (import.meta.env.DEV) console.error('Error fetching jobs via React Query:', jobsQueryError);
       setError(
         `Failed to load jobs: ${jobsQueryError.message || 'Unknown error'}`,
       );
@@ -928,7 +928,6 @@ const JobsPage = () => {
                           onChange={(e) => setSearchQuery(e.target.value)}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                              console.log('🔍 Search triggered via Enter key!');
                               // Search is already triggered by state change
                             }
                           }}
@@ -1248,7 +1247,7 @@ const JobsPage = () => {
                               valueLabelDisplay="auto"
                               valueLabelFormat={(v) => `GHS ${v.toLocaleString()}`}
                               min={0}
-                              max={50000}
+                              max={100000}
                               step={500}
                               disabled={!budgetFilterActive}
                               size="small"
@@ -1570,7 +1569,7 @@ const JobsPage = () => {
                       <Chip
                         label={`Budget: GHS ${budgetRange[0].toLocaleString()} – ${budgetRange[1].toLocaleString()}`}
                         size="small"
-                        onDelete={() => { setBudgetFilterActive(false); setBudgetRange([0, 50000]); }}
+                        onDelete={() => { setBudgetFilterActive(false); setBudgetRange([0, 100000]); }}
                         sx={{
                           bgcolor: 'rgba(212,175,55,0.2)',
                           color: '#D4AF37',
@@ -2241,20 +2240,7 @@ const JobsPage = () => {
                             variant="contained"
                             fullWidth
                             onClick={() => {
-                              console.log(
-                                '📝 Apply Now clicked for job:',
-                                job.id,
-                              );
-                              console.log('🔐 Auth state:', {
-                                isAuthenticated: authState.isAuthenticated,
-                                user: authState.user,
-                                authState: authState,
-                              });
-
                               if (!authState.isAuthenticated) {
-                                console.log(
-                                  '🔒 User not authenticated, redirecting to login',
-                                );
                                 navigate('/login', {
                                   state: {
                                     from: `/jobs/${job.id}/apply`,
@@ -2265,10 +2251,6 @@ const JobsPage = () => {
                                 return;
                               }
 
-                              console.log(
-                                '🚀 Navigating to application form:',
-                                `/jobs/${job.id}/apply`,
-                              );
                               navigate(`/jobs/${job.id}/apply`);
                             }}
                             sx={{
@@ -2291,10 +2273,6 @@ const JobsPage = () => {
                           </Button>
                           <IconButton
                             onClick={() => {
-                              console.log(
-                                '🔍 View Details clicked for job:',
-                                job.id,
-                              );
                               // Check if this is sample data (numeric ID) or real data (ObjectId)
                               if (typeof job.id === 'number') {
                                 alert(
@@ -2333,7 +2311,6 @@ const JobsPage = () => {
                           </IconButton>
                           <IconButton
                             onClick={() => {
-                              console.log('📤 Share clicked for job:', job.id);
                               if (navigator.share) {
                                 navigator
                                   .share({
@@ -2343,15 +2320,12 @@ const JobsPage = () => {
                                       window.location.origin +
                                       `/jobs/${job.id}`,
                                   })
-                                  .catch((err) =>
-                                    console.log('Error sharing:', err),
-                                  );
+                                  .catch(() => {});
                               } else {
                                 // Fallback: copy to clipboard
                                 navigator.clipboard.writeText(
                                   `${job.title} at ${job.company} - ${window.location.origin}/jobs/${job.id}`,
                                 );
-                                console.log('Job link copied to clipboard');
                               }
                             }}
                             aria-label="Share job"

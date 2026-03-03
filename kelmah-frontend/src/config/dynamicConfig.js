@@ -21,7 +21,7 @@ const getCurrentNgrokUrl = async () => {
       import.meta.env.VITE_API_URL.startsWith('http');
 
     if (isProduction && hasExplicitApiUrl) {
-      console.log(
+      if (import.meta.env.DEV) console.log(
         '🎯 Production mode: Using explicit API URL instead of ngrok',
       );
       return null; // Don't use ngrok in production when explicit URL is set
@@ -53,7 +53,7 @@ const getCurrentNgrokUrl = async () => {
             }
           }
         } catch (fetchError) {
-          console.warn('Failed to fetch runtime config:', fetchError);
+          if (import.meta.env.DEV) console.warn('Failed to fetch runtime config:', fetchError);
         }
       }
 
@@ -67,7 +67,7 @@ const getCurrentNgrokUrl = async () => {
     // Node.js environment (if this ever runs on server)
     return process.env.VITE_NGROK_URL || process.env.VITE_MESSAGING_SERVICE_URL;
   } catch (error) {
-    console.warn('Failed to get dynamic ngrok URL:', error);
+    if (import.meta.env.DEV) console.warn('Failed to get dynamic ngrok URL:', error);
     return null;
   }
 };
@@ -77,10 +77,10 @@ export const updateNgrokUrl = (newUrl) => {
   try {
     if (typeof window !== 'undefined') {
       localStorage.setItem('kelmah_ngrok_url', newUrl);
-      console.log('✅ Ngrok URL updated in localStorage:', newUrl);
+      if (import.meta.env.DEV) console.log('✅ Ngrok URL updated in localStorage:', newUrl);
     }
   } catch (error) {
-    console.error('Failed to update ngrok URL:', error);
+    if (import.meta.env.DEV) console.error('Failed to update ngrok URL:', error);
   }
 };
 

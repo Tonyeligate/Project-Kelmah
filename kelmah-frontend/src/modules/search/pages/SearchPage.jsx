@@ -222,11 +222,7 @@ const SearchPage = () => {
       return undefined;
     }
 
-    console.log('🟢 SearchPage MOUNTED');
-    console.log('🟢 location.pathname:', location.pathname);
-    return () => {
-      console.log('🔴 SearchPage UNMOUNTED');
-    };
+    return undefined;
   }, []);
 
   // Get user authentication state
@@ -277,7 +273,7 @@ const SearchPage = () => {
         setShowSuggestions(false);
       }
     } catch (error) {
-      console.error('Error fetching search suggestions:', error);
+      if (import.meta.env.DEV) console.error('Error fetching search suggestions:', error);
       setSearchSuggestions([]);
       setShowSuggestions(false);
     }
@@ -365,7 +361,7 @@ const SearchPage = () => {
       } catch (error) {
         // Ignore aborted requests (superseded by a newer search)
         if (error.name === 'AbortError' || error.name === 'CanceledError') return;
-        console.error('Error searching:', error);
+        if (import.meta.env.DEV) console.error('Error searching:', error);
         setError(error.message || 'An error occurred while searching');
         setSearchResults([]);
       } finally {
@@ -422,7 +418,7 @@ const SearchPage = () => {
           try {
             params.location = JSON.parse(decodedValue);
           } catch (error) {
-            console.error('Failed to parse location from URL:', error);
+            if (import.meta.env.DEV) console.error('Failed to parse location from URL:', error);
             params.location = decodedValue;
           }
         } else {
@@ -694,7 +690,7 @@ const SearchPage = () => {
         ),
       );
     } catch (error) {
-      console.error('Error saving worker:', error);
+      if (import.meta.env.DEV) console.error('Error saving worker:', error);
 
       // Check if error is due to authentication
       if (error.response?.status === 401) {

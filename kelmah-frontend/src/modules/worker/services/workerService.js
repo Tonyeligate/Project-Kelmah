@@ -113,7 +113,7 @@ const workerService = {
       const response = await api.get('/users/me/credentials');
       payload = response?.data?.data ?? response?.data ?? {};
     } catch (error) {
-      console.warn('Credentials endpoint unavailable:', error.message);
+      if (import.meta.env.DEV) console.warn('Credentials endpoint unavailable:', error.message);
       // Fallback: try /users/profile
       try {
         const fallback = await api.get('/users/profile');

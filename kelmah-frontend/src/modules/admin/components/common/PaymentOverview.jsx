@@ -122,7 +122,7 @@ const PaymentOverview = () => {
           allPayments = payload;
         }
       } catch (apiErr) {
-        console.warn('Payment API unavailable, using sample data:', apiErr.message);
+        if (import.meta.env.DEV) console.warn('Payment API unavailable, using sample data:', apiErr.message);
       }
 
       // Fallback to sample data when API unavailable
@@ -272,7 +272,7 @@ const PaymentOverview = () => {
         cash: sourcePayments.filter((p) => p.method === 'cash').length,
       });
     } catch (err) {
-      console.error('Error fetching payments:', err);
+      if (import.meta.env.DEV) console.error('Error fetching payments:', err);
       setError('Failed to fetch payment data');
     } finally {
       setLoading(false);

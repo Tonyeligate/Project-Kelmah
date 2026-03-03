@@ -32,7 +32,7 @@ const EscrowManager = () => {
       const data = await paymentService.getEscrows();
       setEscrows(Array.isArray(data) ? data : data?.data || []);
     } catch (e) {
-      console.error('Load escrows failed', e);
+      if (import.meta.env.DEV) console.error('Load escrows failed', e);
     } finally {
       setLoading(false);
     }

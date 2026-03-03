@@ -12,45 +12,32 @@ const PortfolioPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchPortfolio = () => {
+  const fetchPortfolio = (signal) => {
     setLoading(true);
     setError(null);
     portfolioService
       .getMyPortfolio({ sortBy: 'relevance', limit: 12 })
       .then((res) => {
+        if (signal?.aborted) return;
         const list = Array.isArray(res) ? res : res?.portfolioItems || res?.items || [];
         setItems(list);
         setSelected(list[0] || null);
       })
       .catch((err) => {
+        if (signal?.aborted) return;
         if (import.meta.env.DEV) console.error('Failed to load portfolio:', err);
         setError('Failed to load portfolio items. Please try again.');
         setItems([]);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!signal?.aborted) setLoading(false);
+      });
   };
 
   useEffect(() => {
-    let mounted = true;
-    portfolioService
-      .getMyPortfolio({ sortBy: 'relevance', limit: 12 })
-      .then((res) => {
-        if (!mounted) return;
-        const list = Array.isArray(res) ? res : res?.portfolioItems || res?.items || [];
-        setItems(list);
-        setSelected(list[0] || null);
-      })
-      .catch(() => {
-        if (!mounted) return;
-        setError('Failed to load portfolio items. Please try again.');
-        setItems([]);
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-    return () => {
-      mounted = false;
-    };
+    const controller = new AbortController();
+    fetchPortfolio(controller.signal);
+    return () => controller.abort();
   }, []);
 
   if (loading) {

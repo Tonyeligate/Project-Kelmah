@@ -30,7 +30,7 @@ export const hirerService = {
       const response = await api.get(USER.ME_CREDENTIALS);
       return response?.data?.data || response?.data || {};
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         'User service unavailable for hirer profile:',
         error.message,
       );
@@ -49,7 +49,7 @@ export const hirerService = {
       const response = await api.put(USER.UPDATE, profileData);
       return response.data;
     } catch (error) {
-      console.warn('Service unavailable:', error.message);
+      if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
       throw error;
     }
   },
@@ -62,7 +62,7 @@ export const hirerService = {
       });
       return response.data;
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         `Job service unavailable for hirer jobs (${status}):`,
         error.message,
       );
@@ -112,7 +112,7 @@ export const hirerService = {
         featuredWorkers: Array.isArray(workers) ? workers : [],
       };
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         'Dashboard data unavailable, using fallback:',
         error.message,
       );
@@ -138,7 +138,7 @@ export const hirerService = {
       });
       return response.data ?? response;
     } catch (error) {
-      console.warn('Metrics unavailable, using fallback:', error.message);
+      if (import.meta.env.DEV) console.warn('Metrics unavailable, using fallback:', error.message);
       return {
         activeJobs: 0,
         totalJobs: 0,
@@ -159,7 +159,7 @@ export const hirerService = {
       });
       return response.data;
     } catch (error) {
-      console.warn('Recent jobs unavailable:', error.message);
+      if (import.meta.env.DEV) console.warn('Recent jobs unavailable:', error.message);
       return [];
     }
   },
@@ -182,7 +182,7 @@ export const hirerService = {
       }
       return applications.slice(0, limit);
     } catch (error) {
-      console.warn('Applications unavailable:', error.message);
+      if (import.meta.env.DEV) console.warn('Applications unavailable:', error.message);
       return [];
     }
   },
@@ -198,7 +198,7 @@ export const hirerService = {
       const data = payload?.data || payload;
       return Array.isArray(data) ? data : [];
     } catch (error) {
-      console.warn('Failed to fetch job applications:', error.message);
+      if (import.meta.env.DEV) console.warn('Failed to fetch job applications:', error.message);
       return [];
     }
   },
@@ -218,7 +218,7 @@ export const hirerService = {
       );
       return response.data;
     } catch (error) {
-      console.warn('Failed to update application status:', error.message);
+      if (import.meta.env.DEV) console.warn('Failed to update application status:', error.message);
       throw error;
     }
   },
@@ -230,7 +230,7 @@ export const hirerService = {
       });
       return response.data;
     } catch (error) {
-      console.warn('Worker search unavailable:', error.message);
+      if (import.meta.env.DEV) console.warn('Worker search unavailable:', error.message);
       return {
         workers: [],
         pagination: { currentPage: 1, totalPages: 1, totalItems: 0 },
@@ -272,7 +272,7 @@ export const hirerService = {
 
       return [];
     } catch (error) {
-      console.warn('Saved workers unavailable:', error.message);
+      if (import.meta.env.DEV) console.warn('Saved workers unavailable:', error.message);
       return [];
     }
   },
@@ -282,7 +282,7 @@ export const hirerService = {
       const response = await api.post(workerBookmarkPath(workerId), {});
       return response.data;
     } catch (error) {
-      console.warn('Service unavailable:', error.message);
+      if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
       throw error;
     }
   },
@@ -292,7 +292,7 @@ export const hirerService = {
       const response = await api.delete(workerBookmarkPath(workerId));
       return response.data;
     } catch (error) {
-      console.warn('Service unavailable:', error.message);
+      if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
       throw error;
     }
   },
@@ -307,7 +307,7 @@ export const hirerService = {
       });
       return response.data?.data || response.data;
     } catch (error) {
-      console.warn('Service unavailable:', error.message);
+      if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
       throw error;
     }
   },
@@ -322,7 +322,7 @@ export const hirerService = {
       });
       return response.data?.data || response.data;
     } catch (error) {
-      console.warn('Service unavailable:', error.message);
+      if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
       throw error;
     }
   },

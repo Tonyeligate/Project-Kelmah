@@ -339,7 +339,7 @@ const ProposalReview = () => {
         handleDialogClose();
         await refresh();
       } catch (err) {
-        console.error(`Failed to update proposal ${proposalId}`, {
+        if (import.meta.env.DEV) console.error(`Failed to update proposal ${proposalId}`, {
           requestId,
           error: err,
         });

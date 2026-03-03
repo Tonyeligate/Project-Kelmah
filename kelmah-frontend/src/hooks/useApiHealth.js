@@ -48,7 +48,7 @@ export const useApiHealth = () => {
         // All endpoints failed
         throw new Error('All health endpoints failed');
       } catch (error) {
-        console.warn('Health check failed:', error.message);
+        if (import.meta.env.DEV) console.warn('Health check failed:', error.message);
         if (!isMountedRef.current) return;
 
         // Retry logic - up to 3 retries with backoff

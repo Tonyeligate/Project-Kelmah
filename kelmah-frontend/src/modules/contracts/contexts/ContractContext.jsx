@@ -25,7 +25,7 @@ export const ContractProvider = ({ children }) => {
     // Always use real API data - no mock data fallbacks
     if (!user) return;
     setLoading(true);
-    console.log('🔄 Fetching real contract data from API...');
+    if (import.meta.env.DEV) console.log('🔄 Fetching real contract data from API...');
 
     try {
       const response = await contractService.getContracts();
@@ -35,7 +35,7 @@ export const ContractProvider = ({ children }) => {
         : response?.contracts || [];
       setContracts(fetchedContracts);
     } catch (err) {
-      console.error('Failed to fetch contracts:', err);
+      if (import.meta.env.DEV) console.error('Failed to fetch contracts:', err);
       setError('Could not load contract information. Please try again later.');
       showToast('Failed to load contracts.', 'error');
     } finally {
@@ -86,7 +86,7 @@ export const ContractProvider = ({ children }) => {
           throw new Error('Milestone approval failed on the backend.');
         }
       } catch (err) {
-        console.error(err);
+        if (import.meta.env.DEV) console.error(err);
         showToast('Failed to approve milestone.', 'error');
       }
     },

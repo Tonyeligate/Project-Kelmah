@@ -58,7 +58,7 @@ const ProfilePicture = ({ size = 120, editable = true }) => {
       setSelectedFile(null);
       setPreviewUrl(null);
     } catch (error) {
-      console.error('Error uploading profile picture:', error);
+      if (import.meta.env.DEV) console.error('Error uploading profile picture:', error);
     } finally {
       setLoading(false);
     }
@@ -72,7 +72,7 @@ const ProfilePicture = ({ size = 120, editable = true }) => {
       setSelectedFile(null);
       setPreviewUrl(null);
     } catch (error) {
-      console.error('Error removing profile picture:', error);
+      if (import.meta.env.DEV) console.error('Error removing profile picture:', error);
     } finally {
       setLoading(false);
     }

@@ -21,7 +21,7 @@ export const adminService = {
       const response = await api.get('/users', { params });
       return response.data;
     } catch (error) {
-      console.error('Error fetching users:', error);
+      if (import.meta.env.DEV) console.error('Error fetching users:', error);
       throw error;
     }
   },
@@ -34,7 +34,7 @@ export const adminService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error listing payouts:', error);
+      if (import.meta.env.DEV) console.error('Error listing payouts:', error);
       throw error;
     }
   },
@@ -44,7 +44,7 @@ export const adminService = {
       const response = await api.post('/payments/admin/payouts/queue', data);
       return response.data;
     } catch (error) {
-      console.error('Error enqueueing payout:', error);
+      if (import.meta.env.DEV) console.error('Error enqueueing payout:', error);
       throw error;
     }
   },
@@ -56,7 +56,7 @@ export const adminService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error processing payout batch:', error);
+      if (import.meta.env.DEV) console.error('Error processing payout batch:', error);
       throw error;
     }
   },
@@ -67,7 +67,7 @@ export const adminService = {
       const response = await api.get('/health/aggregate');
       return response.data;
     } catch (error) {
-      console.error('Error fetching provider status:', error);
+      if (import.meta.env.DEV) console.error('Error fetching provider status:', error);
       throw error;
     }
   },
@@ -80,7 +80,7 @@ export const adminService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error fetching worker analytics:', error);
+      if (import.meta.env.DEV) console.error('Error fetching worker analytics:', error);
       throw error;
     }
   },
@@ -90,7 +90,7 @@ export const adminService = {
       const response = await api.get(`/users/${userId}`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching user:', error);
+      if (import.meta.env.DEV) console.error('Error fetching user:', error);
       throw error;
     }
   },
@@ -100,7 +100,7 @@ export const adminService = {
       const response = await api.post('/users', userData);
       return response.data;
     } catch (error) {
-      console.error('Error creating user:', error);
+      if (import.meta.env.DEV) console.error('Error creating user:', error);
       throw error;
     }
   },
@@ -110,7 +110,7 @@ export const adminService = {
       const response = await api.put(`/users/${userId}`, userData);
       return response.data;
     } catch (error) {
-      console.error('Error updating user:', error);
+      if (import.meta.env.DEV) console.error('Error updating user:', error);
       throw error;
     }
   },
@@ -120,7 +120,7 @@ export const adminService = {
       const response = await api.delete(`/users/${userId}`);
       return response.data;
     } catch (error) {
-      console.error('Error deleting user:', error);
+      if (import.meta.env.DEV) console.error('Error deleting user:', error);
       throw error;
     }
   },
@@ -133,7 +133,7 @@ export const adminService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error toggling user status:', error);
+      if (import.meta.env.DEV) console.error('Error toggling user status:', error);
       throw error;
     }
   },
@@ -145,7 +145,7 @@ export const adminService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error verifying user:', error);
+      if (import.meta.env.DEV) console.error('Error verifying user:', error);
       throw error;
     }
   },
@@ -156,7 +156,7 @@ export const adminService = {
       const response = await api.put('/users/bulk-update', { userIds, updateData });
       return response.data;
     } catch (error) {
-      console.error('Error bulk updating users:', error);
+      if (import.meta.env.DEV) console.error('Error bulk updating users:', error);
       throw error;
     }
   },
@@ -166,7 +166,7 @@ export const adminService = {
       const response = await api.delete('/users/bulk-delete', { data: { userIds } });
       return response.data;
     } catch (error) {
-      console.error('Error bulk deleting users:', error);
+      if (import.meta.env.DEV) console.error('Error bulk deleting users:', error);
       throw error;
     }
   },
@@ -185,7 +185,7 @@ export const adminService = {
         systemHealth: stats.systemHealth ?? 'unknown',
       };
     } catch (error) {
-      console.error('Error fetching system stats:', error);
+      if (import.meta.env.DEV) console.error('Error fetching system stats:', error);
       throw error;
     }
   },

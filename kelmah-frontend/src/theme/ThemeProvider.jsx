@@ -43,7 +43,7 @@ const parseThemePreference = (rawValue) => {
       version: parsed.version || 1,
     };
   } catch (error) {
-    console.warn('Failed to parse stored theme preference:', error);
+    if (import.meta.env.DEV) console.warn('Failed to parse stored theme preference:', error);
     return null;
   }
 };
@@ -68,7 +68,7 @@ const readStoredThemePreference = () => {
       'localStorage',
     );
   } catch (error) {
-    console.warn('Failed to read theme from localStorage:', error);
+    if (import.meta.env.DEV) console.warn('Failed to read theme from localStorage:', error);
   }
 
   try {
@@ -77,7 +77,7 @@ const readStoredThemePreference = () => {
       'sessionStorage',
     );
   } catch (error) {
-    console.warn('Failed to read theme from sessionStorage:', error);
+    if (import.meta.env.DEV) console.warn('Failed to read theme from sessionStorage:', error);
   }
 
   const domTheme = document.documentElement?.getAttribute('data-theme');
@@ -123,13 +123,13 @@ const persistThemeMode = (mode) => {
   try {
     window.localStorage.setItem(THEME_STORAGE_KEY, payload);
   } catch (error) {
-    console.warn('Failed to save theme to localStorage:', error);
+    if (import.meta.env.DEV) console.warn('Failed to save theme to localStorage:', error);
   }
 
   try {
     window.sessionStorage.setItem(THEME_STORAGE_KEY, payload);
   } catch (error) {
-    console.warn('Failed to save theme to sessionStorage:', error);
+    if (import.meta.env.DEV) console.warn('Failed to save theme to sessionStorage:', error);
   }
 
   return payload;

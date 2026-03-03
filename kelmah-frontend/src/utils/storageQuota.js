@@ -23,7 +23,7 @@ export async function checkStorageQuota() {
     const quotaMB = (quota / 1024 / 1024).toFixed(1);
 
     if (usagePercent >= QUOTA_WARNING_THRESHOLD) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         `⚠️ Browser storage ${(usagePercent * 100).toFixed(0)}% full (${usageMB} MB / ${quotaMB} MB). ` +
           'Consider clearing site data to avoid FILE_ERROR_NO_SPACE errors.'
       );

@@ -141,7 +141,7 @@ const ReviewSystem = ({
       setTotalPages(reviewsResponse.pagination?.pages || 1);
       setWorkerRating(ratingResponse);
     } catch (error) {
-      console.error('Error fetching review data:', error);
+      if (import.meta.env.DEV) console.error('Error fetching review data:', error);
       showFeedback('Failed to load reviews', 'error');
     } finally {
       setLoading(false);

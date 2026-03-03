@@ -308,7 +308,7 @@ const JobBidsPage = () => {
       setBids(bidsData);
     } catch (err) {
       setError('Failed to load bids. The job may not exist or you may not have permission.');
-      console.error('JobBidsPage fetch error:', err);
+      if (import.meta.env.DEV) console.error('JobBidsPage fetch error:', err);
     } finally {
       setLoading(false);
     }
@@ -337,7 +337,7 @@ const JobBidsPage = () => {
       setAcceptDialog({ open: false, bid: null });
     } catch (err) {
       setError('Failed to accept bid. Please try again.');
-      console.error('Accept bid error:', err);
+      if (import.meta.env.DEV) console.error('Accept bid error:', err);
     } finally {
       setProcessing(false);
     }
@@ -359,7 +359,7 @@ const JobBidsPage = () => {
       setRejectReason('');
     } catch (err) {
       setError('Failed to reject bid. Please try again.');
-      console.error('Reject bid error:', err);
+      if (import.meta.env.DEV) console.error('Reject bid error:', err);
     } finally {
       setProcessing(false);
     }

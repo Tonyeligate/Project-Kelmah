@@ -64,7 +64,7 @@ function MessageSystem() {
       setConversations(response.data);
     } catch (err) {
       setError('Failed to load conversations');
-      console.error(err);
+      if (import.meta.env.DEV) console.error(err);
     }
   };
 
@@ -78,7 +78,7 @@ function MessageSystem() {
       scrollToBottom();
     } catch (err) {
       setError('Failed to load messages');
-      console.error(err);
+      if (import.meta.env.DEV) console.error(err);
     } finally {
       setLoading(false);
     }
@@ -97,7 +97,7 @@ function MessageSystem() {
       fetchMessages(selectedConversation.id);
     } catch (err) {
       setError('Failed to send message');
-      console.error(err);
+      if (import.meta.env.DEV) console.error(err);
     }
   };
 

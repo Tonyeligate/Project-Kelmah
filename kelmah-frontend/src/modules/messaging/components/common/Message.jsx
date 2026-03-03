@@ -165,7 +165,7 @@ const Message = ({
     try {
       return format(new Date(timestamp), 'p'); // 'p' = time format like '8:00 PM'
     } catch (error) {
-      console.error('Error formatting time:', error);
+      if (import.meta.env.DEV) console.error('Error formatting time:', error);
       return '';
     }
   };

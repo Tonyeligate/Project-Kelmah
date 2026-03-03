@@ -74,7 +74,7 @@ class WebSocketService {
 
       devLog('WebSocket connection initiated for user:', userId);
     } catch (error) {
-      console.error('WebSocket connection error:', error);
+      if (import.meta.env.DEV) console.error('WebSocket connection error:', error);
       this.handleConnectionError(error);
       this._connecting = false;
     }
@@ -136,7 +136,7 @@ class WebSocketService {
     });
 
     this.socket.on('connect_error', (error) => {
-      console.error('WebSocket connection error:', error);
+      if (import.meta.env.DEV) console.error('WebSocket connection error:', error);
       this._connecting = false;
       this.handleConnectionError(error);
     });
@@ -156,7 +156,7 @@ class WebSocketService {
     });
 
     this.socket.on('reconnect_failed', () => {
-      console.error('❌ WebSocket reconnection failed');
+      if (import.meta.env.DEV) console.error('❌ WebSocket reconnection failed');
       store.dispatch(
         addNotification({
           id: uniqueNotifId(),
@@ -674,7 +674,7 @@ class WebSocketService {
         try {
           callback(data);
         } catch (error) {
-          console.error('Event listener error:', error);
+          if (import.meta.env.DEV) console.error('Event listener error:', error);
         }
       });
     }
@@ -709,7 +709,7 @@ class WebSocketService {
         // Auto-close after 5 seconds
         setTimeout(() => notification.close(), 5000);
       } catch (error) {
-        console.error('Browser notification error:', error);
+        if (import.meta.env.DEV) console.error('Browser notification error:', error);
       }
     }
   }
@@ -729,7 +729,7 @@ class WebSocketService {
    */
   handleConnectionError(error) {
     this.reconnectAttempts++;
-    console.error(
+    if (import.meta.env.DEV) console.error(
       `WebSocket connection error (attempt ${this.reconnectAttempts}):`,
       error,
     );

@@ -1,6 +1,19 @@
 /**
  * Job Application Form Component
- * Handles the complete job application process
+ * Handles the complete job application process for vocational workers
+ *
+ * DATA FLOW:
+ *   /jobs/:id/apply route → JobApplicationForm → api.get(/jobs/:id) → display job
+ *   Worker submits → api.post(/jobs/:id/apply, { proposedRate, coverLetter }) → applyToJob
+ *
+ * CRITICAL FIXES (Audit March 2026):
+ *   - FIX-001: Removed duplicate /api prefix (api client already has /api base)
+ *   - FIX-002: Replaced job.company.name → job.hirer (backend returns hirer object)
+ *   - FIX-003: Renamed expectedSalary → proposedRate (matches Application model)
+ *   - FIX-004: Replaced job.applyBy → job.expiresAt || job.bidding?.bidDeadline
+ *   - FIX-005: Added null guards for job.skills, job.budget, etc.
+ *   - FIX-006: Improved UX for vocational workers (simple language, large touch targets)
+ *   - FIX-007: Added proper loading, error, and success states
  */
 
 import React, { useState, useEffect } from 'react';
@@ -28,34 +41,68 @@ import {
   Breadcrumbs,
   Link,
   useTheme,
-  alpha,
+  useMediaQuery,
   InputAdornment,
 } from '@mui/material';
 import {
   Work as WorkIcon,
   LocationOn as LocationIcon,
   AttachMoney as MoneyIcon,
-  Business as BusinessIcon,
   ArrowBack as ArrowBackIcon,
   Send as SendIcon,
-  Upload as UploadIcon,
-  Description as DescriptionIcon,
   Edit as EditIcon,
   AccessTime as ClockIcon,
-  Star as StarIcon,
-  Link as LinkIcon,
-  People as PeopleIcon,
-  Info as InfoIcon,
+  CheckCircle as CheckIcon,
+  Category as CategoryIcon,
 } from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { format } from 'date-fns';
 import { api } from '../../../services/apiClient';
-import { formatJobLocation } from '../../../utils/formatters';
+
+// Simple location formatter
+const formatLocation = (loc) => {
+  if (!loc) return 'Location not set';
+  if (typeof loc === 'string') return loc;
+  if (typeof loc === 'object') {
+    const parts = [loc.city, loc.region, loc.country].filter(Boolean);
+    if (parts.length > 0) return parts.join(', ');
+    if (loc.address) return loc.address;
+    if (loc.type) return loc.type === 'remote' ? 'Remote' : loc.type;
+  }
+  return 'Location not set';
+};
+
+// Simple hirer name extractor
+const getHirerName = (job) => {
+  if (!job) return 'Employer';
+  if (job.hirer && typeof job.hirer === 'object') {
+    if (job.hirer.firstName && job.hirer.lastName)
+      return `${job.hirer.firstName} ${job.hirer.lastName}`;
+    if (job.hirer.name) return job.hirer.name;
+  }
+  if (job.hirer_name) return job.hirer_name;
+  return 'Employer';
+};
+
+// Format budget display
+const formatBudget = (job) => {
+  if (!job) return 'Not specified';
+  const b = job.budget;
+  const currency = job.currency || 'GHS';
+  if (!b && b !== 0) return 'Not specified';
+  if (typeof b === 'number') return `${currency} ${b.toLocaleString()}`;
+  if (typeof b === 'object') {
+    if (b.min && b.max && b.min !== b.max)
+      return `${b.currency || currency} ${b.min.toLocaleString()} – ${b.max.toLocaleString()}`;
+    const amount = b.amount || b.min || b.max || 0;
+    return `${b.currency || currency} ${amount.toLocaleString()}`;
+  }
+  return 'Not specified';
+};
 
 const JobApplicationForm = () => {
-  console.log('🎯 JobApplicationForm component rendering...');
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { id: jobId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -65,36 +112,45 @@ const JobApplicationForm = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  // Application form state
+  // Application form state — field names match Application model
   const [applicationData, setApplicationData] = useState({
     coverLetter: '',
-    expectedSalary: '',
+    proposedRate: '',
     availability: 'immediate',
     experience: '',
     portfolio: '',
-    references: '',
     additionalInfo: '',
   });
 
   useEffect(() => {
-    console.log('🎯 JobApplicationForm mounted with jobId:', jobId);
-    console.log('📍 Current location:', location.pathname);
-
-    // Fetch job details from API
     const fetchJobDetails = async () => {
       if (!jobId) return;
-
       setLoading(true);
+      setError(null);
       try {
+        // FIX-001: Use /jobs/:id — api client already prepends /api
         const response = await api.get(`/jobs/${jobId}`);
-        if (response.data && response.data.success) {
-          setJob(response.data.data || response.data);
+        const data = response.data?.data || response.data;
+        if (data) {
+          setJob(data);
+          // Pre-fill proposed rate from job budget
+          const budgetHint =
+            typeof data.budget === 'number'
+              ? data.budget
+              : data.budget?.amount || data.budget?.min || '';
+          setApplicationData((prev) => ({
+            ...prev,
+            proposedRate: budgetHint ? String(budgetHint) : '',
+          }));
         } else {
           setError('Job not found or no longer available');
         }
       } catch (err) {
-        console.error('Error fetching job details:', err);
-        setError(err.response?.data?.message || 'Failed to load job details');
+        if (import.meta.env.DEV) console.error('Error fetching job:', err);
+        setError(
+          err.response?.data?.message ||
+            'Could not load job details. Please try again.',
+        );
       } finally {
         setLoading(false);
       }
@@ -108,6 +164,7 @@ const JobApplicationForm = () => {
       ...prev,
       [field]: event.target.value,
     }));
+    if (error) setError(null);
   };
 
   const handleSubmit = async (event) => {
@@ -116,223 +173,357 @@ const JobApplicationForm = () => {
     setError(null);
 
     try {
-      // Validate required fields
+      // Validate with clear messages for vocational workers
       if (!applicationData.coverLetter.trim()) {
-        throw new Error('Cover letter is required');
-      }
-      if (!applicationData.expectedSalary.trim()) {
-        throw new Error('Expected salary is required');
-      }
-
-      // Prepare application data
-      const submissionData = {
-        jobId,
-        coverLetter: applicationData.coverLetter.trim(),
-        expectedSalary: parseFloat(applicationData.expectedSalary),
-        availability: applicationData.availability,
-        experience: applicationData.experience,
-        portfolio: applicationData.portfolio.trim(),
-        references: applicationData.references.trim(),
-        additionalInfo: applicationData.additionalInfo.trim(),
-      };
-
-      // Submit application via API
-      const response = await api.post(
-        `/api/jobs/${jobId}/apply`,
-        submissionData,
-      );
-
-      if (response.data && response.data.success) {
-        console.log('📝 Application submitted successfully:', response.data);
-        setSuccess(true);
-
-        // Redirect after success
-        setTimeout(() => {
-          navigate('/worker/applications', {
-            state: {
-              message: 'Application submitted successfully!',
-              applicationId:
-                response.data.data?.applicationId || `APP-${Date.now()}`,
-            },
-          });
-        }, 2000);
-      } else {
         throw new Error(
-          response.data?.message || 'Failed to submit application',
+          'Please tell the employer why you are good for this job',
         );
       }
+      if (
+        !applicationData.proposedRate ||
+        Number(applicationData.proposedRate) <= 0
+      ) {
+        throw new Error('Please enter how much you want to be paid');
+      }
+
+      // FIX-003: Send proposedRate (matches Application schema)
+      const submissionData = {
+        proposedRate: parseFloat(applicationData.proposedRate),
+        coverLetter: applicationData.coverLetter.trim(),
+        estimatedDuration:
+          applicationData.availability === 'immediate'
+            ? { value: 1, unit: 'week' }
+            : applicationData.availability === '1week'
+              ? { value: 1, unit: 'week' }
+              : applicationData.availability === '2weeks'
+                ? { value: 2, unit: 'week' }
+                : { value: 1, unit: 'month' },
+      };
+
+      // FIX-001: Correct path — no double /api
+      const response = await api.post(`/jobs/${jobId}/apply`, submissionData);
+
+      if (response.data) {
+        setSuccess(true);
+        setTimeout(() => {
+          navigate('/dashboard', {
+            state: { message: 'Your application was sent!' },
+          });
+        }, 3000);
+      }
     } catch (err) {
-      console.error('Error submitting application:', err);
-      setError(
-        err.response?.data?.message ||
-        err.message ||
-        'Failed to submit application',
-      );
+      if (import.meta.env.DEV) console.error('Submit error:', err);
+      const serverMsg =
+        err.response?.data?.message || err.response?.data?.error?.message;
+      if (serverMsg?.includes('already applied')) {
+        setError(
+          'You have already applied for this job. Check your dashboard for updates.',
+        );
+      } else {
+        setError(
+          serverMsg || err.message || 'Something went wrong. Please try again.',
+        );
+      }
     } finally {
       setSubmitting(false);
     }
   };
 
+  // --- Loading ---
   if (loading) {
     return (
-      <Container sx={{ py: 4, textAlign: 'center' }}>
-        <CircularProgress size={60} />
-        <Typography variant="h6" sx={{ mt: 2 }}>
+      <Container sx={{ py: 6, textAlign: 'center' }}>
+        <CircularProgress size={60} sx={{ color: '#D4AF37' }} />
+        <Typography variant="h6" sx={{ mt: 2, color: 'text.secondary' }}>
           Loading job details...
         </Typography>
       </Container>
     );
   }
 
-  if (!job) {
+  // --- Error (no job loaded) ---
+  if (!job && error) {
     return (
       <Container sx={{ py: 4 }}>
-        <Alert severity="error">
-          Job not found. Please check the job ID and try again.
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
         </Alert>
+        <Button
+          variant="contained"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate('/jobs')}
+          sx={{
+            bgcolor: '#D4AF37',
+            color: '#000',
+            '&:hover': { bgcolor: '#B8941F' },
+          }}
+        >
+          Back to Jobs
+        </Button>
       </Container>
     );
   }
 
+  // --- No job ---
+  if (!job) {
+    return (
+      <Container sx={{ py: 4 }}>
+        <Alert severity="warning">
+          Job not found. It may have been removed.
+        </Alert>
+        <Button
+          sx={{ mt: 2 }}
+          variant="contained"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate('/jobs')}
+        >
+          Back to Jobs
+        </Button>
+      </Container>
+    );
+  }
+
+  // --- Success ---
   if (success) {
     return (
-      <Container sx={{ py: 4, textAlign: 'center' }}>
+      <Container sx={{ py: 6, textAlign: 'center' }}>
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h3" color="success.main" sx={{ mb: 2 }}>
-              ✅ Application Submitted!
-            </Typography>
-            <Typography variant="h6" color="text.secondary">
-              Your application has been sent to {job.company.name}
-            </Typography>
-            <Typography variant="body1" sx={{ mt: 2 }}>
-              You will receive a confirmation email shortly. The employer will
-              review your application and contact you if you're selected for an
-              interview.
-            </Typography>
+          <CheckIcon sx={{ fontSize: 80, color: '#4caf50', mb: 2 }} />
+          <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
+            Application Sent!
+          </Typography>
+          <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
+            Your application for &quot;{job.title}&quot; has been sent to{' '}
+            {getHirerName(job)}.
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 3 }}>
+            The employer will review your application and contact you. Check
+            your dashboard for updates.
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 2,
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+            }}
+          >
+            <Button
+              variant="contained"
+              onClick={() => navigate('/dashboard')}
+              sx={{
+                bgcolor: '#D4AF37',
+                color: '#000',
+                '&:hover': { bgcolor: '#B8941F' },
+              }}
+            >
+              Go to Dashboard
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/jobs')}
+              sx={{ borderColor: '#D4AF37', color: '#D4AF37' }}
+            >
+              Browse More Jobs
+            </Button>
           </Box>
-          <CircularProgress size={40} />
-          <Typography variant="body2" sx={{ mt: 2 }}>
-            Redirecting to your applications...
+          <CircularProgress size={30} sx={{ mt: 3, color: '#D4AF37' }} />
+          <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+            Going to your dashboard...
           </Typography>
         </motion.div>
       </Container>
     );
   }
 
+  // FIX-005: Safe data extraction
+  const skills = Array.isArray(job.skills) ? job.skills : [];
+  const hirerName = getHirerName(job);
+  const locationLabel = formatLocation(job.location || job.locationDetails);
+  const budgetLabel = formatBudget(job);
+  const deadline = job.expiresAt || job.bidding?.bidDeadline || job.endDate;
+
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
       {/* Breadcrumbs */}
-      <Breadcrumbs sx={{ mb: 3 }}>
+      <Breadcrumbs sx={{ mb: 2 }}>
         <Link
           component={RouterLink}
           to="/jobs"
           underline="hover"
           color="inherit"
-          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+          sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
         >
           <ArrowBackIcon fontSize="small" />
-          Back to Jobs
+          Jobs
         </Link>
-        <Typography color="text.primary">Apply for Job</Typography>
+        <Link
+          component={RouterLink}
+          to={`/jobs/${jobId}`}
+          underline="hover"
+          color="inherit"
+        >
+          {job.title || 'Job'}
+        </Link>
+        <Typography color="text.primary">Apply</Typography>
       </Breadcrumbs>
 
-      <Grid container spacing={4}>
-        {/* Job Details Card */}
-        <Grid item xs={12} md={4}>
+      <Grid container spacing={{ xs: 2, md: 4 }}>
+        {/* Job Summary Card */}
+        <Grid item xs={12} md={4} order={{ xs: 1, md: 1 }}>
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
+            initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.4 }}
           >
-            <Card sx={{ position: 'sticky', top: 20 }}>
-              <CardContent>
-                <Typography variant="h5" fontWeight={600} sx={{ mb: 2 }}>
+            <Card
+              sx={{
+                position: { md: 'sticky' },
+                top: { md: 80 },
+                bgcolor: 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <Typography
+                  variant="h5"
+                  fontWeight={700}
+                  sx={{ mb: 2, color: '#D4AF37' }}
+                >
                   {job.title}
                 </Typography>
 
+                {/* FIX-002: Hirer data, not company */}
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Avatar sx={{ width: 40, height: 40, mr: 2 }}>
-                    {job.company.name.charAt(0)}
+                  <Avatar
+                    src={job.hirer?.profileImage || job.hirer?.avatar}
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      mr: 1.5,
+                      bgcolor: '#D4AF37',
+                      color: '#000',
+                    }}
+                  >
+                    {hirerName.charAt(0).toUpperCase()}
                   </Avatar>
                   <Box>
-                    <Typography variant="h6">{job.company.name}</Typography>
+                    <Typography variant="subtitle1" fontWeight={600}>
+                      {hirerName}
+                    </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {formatJobLocation(job.location)}
+                      Employer
                     </Typography>
                   </Box>
                 </Box>
 
                 <Divider sx={{ my: 2 }} />
 
-                <Stack spacing={2}>
+                <Stack spacing={1.5}>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <MoneyIcon
-                      sx={{ mr: 1, color: theme.palette.success.main }}
-                    />
-                    <Typography>
-                      GH₵{job.budget?.min || 'N/A'} - {job.budget?.max || 'N/A'}{' '}
-                      {job.budget?.type || ''}
+                    <MoneyIcon sx={{ mr: 1, color: '#4caf50' }} />
+                    <Typography variant="body1" fontWeight={600}>
+                      {budgetLabel}
                     </Typography>
                   </Box>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <WorkIcon
-                      sx={{ mr: 1, color: theme.palette.primary.main }}
-                    />
-                    <Typography>{job.type}</Typography>
-                  </Box>
+                  {job.category && (
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <CategoryIcon sx={{ mr: 1, color: '#D4AF37' }} />
+                      <Typography>{job.category}</Typography>
+                    </Box>
+                  )}
 
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <LocationIcon
-                      sx={{ mr: 1, color: theme.palette.secondary.main }}
+                      sx={{ mr: 1, color: theme.palette.info.main }}
                     />
-                    <Typography>{formatJobLocation(job.location)}</Typography>
+                    <Typography>{locationLabel}</Typography>
                   </Box>
+
+                  {job.paymentType && (
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <WorkIcon
+                        sx={{ mr: 1, color: theme.palette.primary.main }}
+                      />
+                      <Typography sx={{ textTransform: 'capitalize' }}>
+                        {job.paymentType} pay
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {deadline && (
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <ClockIcon
+                        sx={{ mr: 1, color: theme.palette.warning.main }}
+                      />
+                      <Typography>
+                        Deadline: {new Date(deadline).toLocaleDateString()}
+                      </Typography>
+                    </Box>
+                  )}
                 </Stack>
 
-                <Divider sx={{ my: 2 }} />
-
-                <Typography variant="h6" sx={{ mb: 1 }}>
-                  Required Skills:
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {job.skills.map((skill, index) => (
-                    <Chip
-                      key={index}
-                      label={skill}
-                      size="small"
-                      variant="outlined"
-                      color="primary"
-                    />
-                  ))}
-                </Box>
-
-                <Divider sx={{ my: 2 }} />
-
-                <Typography variant="body2" color="text.secondary">
-                  <strong>Apply by:</strong>{' '}
-                  {format(new Date(job.applyBy), 'MMM dd, yyyy')}
-                </Typography>
+                {skills.length > 0 && (
+                  <>
+                    <Divider sx={{ my: 2 }} />
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ mb: 1, fontWeight: 600 }}
+                    >
+                      Skills Needed:
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {skills.map((skill, i) => (
+                        <Chip
+                          key={i}
+                          label={
+                            typeof skill === 'string'
+                              ? skill
+                              : skill?.name || 'Skill'
+                          }
+                          size="small"
+                          variant="outlined"
+                          sx={{ borderColor: '#D4AF37', color: '#D4AF37' }}
+                        />
+                      ))}
+                    </Box>
+                  </>
+                )}
               </CardContent>
             </Card>
           </motion.div>
         </Grid>
 
         {/* Application Form */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={8} order={{ xs: 2, md: 2 }}>
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
           >
-            <Paper sx={{ p: 4 }}>
-              <Typography variant="h4" fontWeight={600} sx={{ mb: 3 }}>
-                Apply for this Position
+            <Paper
+              sx={{
+                p: { xs: 2, sm: 4 },
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>
+                Apply for this Job
+              </Typography>
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{ mb: 3 }}
+              >
+                Fill in the details below. The employer will see your profile
+                and this application.
               </Typography>
 
               {error && (
@@ -348,124 +539,125 @@ const JobApplicationForm = () => {
                     <TextField
                       fullWidth
                       multiline
-                      rows={6}
-                      label="Cover Letter *"
-                      placeholder="Tell the employer why you're the perfect fit for this role. Highlight your relevant experience, skills, and enthusiasm for the position..."
+                      rows={isMobile ? 4 : 6}
+                      label="Why should you be hired? *"
+                      placeholder="Tell the employer about your experience and why you are right for this job. Example: I have 5 years experience in masonry work and have completed over 20 building projects in Accra."
                       value={applicationData.coverLetter}
                       onChange={handleInputChange('coverLetter')}
                       required
-                      helperText="This is your chance to make a great first impression. Be specific about your qualifications and interest in the role."
-                      InputProps={{ startAdornment: <InputAdornment position="start"><EditIcon color="action" /></InputAdornment> }}
+                      helperText="Describe your experience and skills. Be specific."
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment
+                            position="start"
+                            sx={{ alignSelf: 'flex-start', mt: 1.5 }}
+                          >
+                            <EditIcon color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                     />
                   </Grid>
 
-                  {/* Expected Salary */}
+                  {/* Proposed Rate — FIX-003 */}
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Expected Salary (GHS) *"
+                      label="Your Price (GHS) *"
                       type="number"
-                      placeholder="e.g., 4000"
-                      value={applicationData.expectedSalary}
-                      onChange={handleInputChange('expectedSalary')}
+                      placeholder="e.g., 2000"
+                      value={applicationData.proposedRate}
+                      onChange={handleInputChange('proposedRate')}
                       required
-                      helperText={`Job offers GH₵${job.budget?.min || 'N/A'} - ${job.budget?.max || 'N/A'}`}
-                      InputProps={{ startAdornment: <InputAdornment position="start"><MoneyIcon color="action" />GH₵</InputAdornment> }}
+                      helperText={`Job budget: ${budgetLabel}`}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <MoneyIcon color="action" sx={{ mr: 0.5 }} />
+                            GH₵
+                          </InputAdornment>
+                        ),
+                      }}
+                      inputProps={{ min: 0, inputMode: 'decimal' }}
                     />
                   </Grid>
 
                   {/* Availability */}
                   <Grid item xs={12} sm={6}>
                     <FormControl fullWidth>
-                      <InputLabel>Availability</InputLabel>
+                      <InputLabel>When can you start?</InputLabel>
                       <Select
                         value={applicationData.availability}
                         onChange={handleInputChange('availability')}
-                        label="Availability"
+                        label="When can you start?"
                       >
-                        <MenuItem value="immediate">Immediate</MenuItem>
-                        <MenuItem value="1week">1 Week Notice</MenuItem>
-                        <MenuItem value="2weeks">2 Weeks Notice</MenuItem>
-                        <MenuItem value="1month">1 Month Notice</MenuItem>
-                        <MenuItem value="negotiable">Negotiable</MenuItem>
+                        <MenuItem value="immediate">Right away</MenuItem>
+                        <MenuItem value="1week">In 1 week</MenuItem>
+                        <MenuItem value="2weeks">In 2 weeks</MenuItem>
+                        <MenuItem value="1month">In 1 month</MenuItem>
+                        <MenuItem value="negotiable">We can discuss</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
 
-                  {/* Years of Experience */}
+                  {/* Experience */}
                   <Grid item xs={12} sm={6}>
                     <FormControl fullWidth>
-                      <InputLabel>Years of Experience</InputLabel>
+                      <InputLabel>Years of experience</InputLabel>
                       <Select
                         value={applicationData.experience}
                         onChange={handleInputChange('experience')}
-                        label="Years of Experience"
+                        label="Years of experience"
                       >
-                        <MenuItem value="0-1">0-1 years</MenuItem>
-                        <MenuItem value="2-3">2-3 years</MenuItem>
-                        <MenuItem value="4-5">4-5 years</MenuItem>
-                        <MenuItem value="6-10">6-10 years</MenuItem>
-                        <MenuItem value="10+">10+ years</MenuItem>
+                        <MenuItem value="0-1">Less than 1 year</MenuItem>
+                        <MenuItem value="2-3">2–3 years</MenuItem>
+                        <MenuItem value="4-5">4–5 years</MenuItem>
+                        <MenuItem value="6-10">6–10 years</MenuItem>
+                        <MenuItem value="10+">More than 10 years</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
 
-                  {/* Portfolio/Work Samples */}
+                  {/* Portfolio */}
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Portfolio/Work Samples"
-                      placeholder="Share links to your portfolio, previous work, or projects that demonstrate your skills..."
+                      label="Links to your work (optional)"
+                      placeholder="Share links to photos or videos of your past work..."
                       value={applicationData.portfolio}
                       onChange={handleInputChange('portfolio')}
-                      helperText="Include links to your best work, GitHub profile, or portfolio website"
-                      InputProps={{ startAdornment: <InputAdornment position="start"><LinkIcon color="action" /></InputAdornment> }}
+                      helperText="If you have photos of your work online, share the link here"
                     />
                   </Grid>
 
-                  {/* References */}
+                  {/* Additional Info */}
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
                       multiline
-                      rows={3}
-                      label="References"
-                      placeholder="Provide contact information for 2-3 professional references..."
-                      value={applicationData.references}
-                      onChange={handleInputChange('references')}
-                      helperText="Include name, position, company, and contact information"
-                      InputProps={{ startAdornment: <InputAdornment position="start"><PeopleIcon color="action" /></InputAdornment> }}
-                    />
-                  </Grid>
-
-                  {/* Additional Information */}
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={3}
-                      label="Additional Information"
-                      placeholder="Any additional information you'd like to share with the employer..."
+                      rows={2}
+                      label="Anything else? (optional)"
+                      placeholder="Any other information the employer should know..."
                       value={applicationData.additionalInfo}
                       onChange={handleInputChange('additionalInfo')}
-                      helperText="Optional: Share any other relevant information about yourself"
-                      InputProps={{ startAdornment: <InputAdornment position="start"><InfoIcon color="action" /></InputAdornment> }}
                     />
                   </Grid>
 
-                  {/* Submit Button */}
+                  {/* Submit */}
                   <Grid item xs={12}>
                     <Box
                       sx={{
                         display: 'flex',
                         gap: 2,
-                        justifyContent: 'flex-end',
+                        justifyContent: { xs: 'stretch', sm: 'flex-end' },
+                        flexDirection: { xs: 'column-reverse', sm: 'row' },
                       }}
                     >
                       <Button
                         variant="outlined"
-                        onClick={() => navigate('/jobs')}
+                        onClick={() => navigate(`/jobs/${jobId}`)}
                         disabled={submitting}
+                        sx={{ minHeight: 48, borderColor: 'divider' }}
                       >
                         Cancel
                       </Button>
@@ -475,20 +667,22 @@ const JobApplicationForm = () => {
                         size="large"
                         startIcon={
                           submitting ? (
-                            <CircularProgress size={20} />
+                            <CircularProgress size={20} color="inherit" />
                           ) : (
                             <SendIcon />
                           )
                         }
                         disabled={submitting}
                         sx={{
-                          background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                          '&:hover': {
-                            background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
-                          },
+                          minHeight: 52,
+                          fontSize: '1rem',
+                          fontWeight: 'bold',
+                          bgcolor: '#D4AF37',
+                          color: '#000',
+                          '&:hover': { bgcolor: '#B8941F' },
                         }}
                       >
-                        {submitting ? 'Submitting...' : 'Submit Application'}
+                        {submitting ? 'Sending...' : 'Send Application'}
                       </Button>
                     </Box>
                   </Grid>

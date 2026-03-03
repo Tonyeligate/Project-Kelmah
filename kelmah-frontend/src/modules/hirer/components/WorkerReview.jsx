@@ -79,7 +79,7 @@ const WorkerReview = () => {
       setWorkers(response.data || []);
       setError(null);
     } catch (err) {
-      console.warn('User service unavailable for worker reviews:', err.message);
+      if (import.meta.env.DEV) console.warn('User service unavailable for worker reviews:', err.message);
       setWorkers([]);
       setError('Unable to fetch worker reviews. Please try again later.');
     } finally {
@@ -171,7 +171,7 @@ const WorkerReview = () => {
         setSnackbar({ open: true, message: 'Review submitted successfully!', severity: 'success' });
         handleDialogClose();
       } catch (err) {
-        console.error('Error submitting review:', err);
+        if (import.meta.env.DEV) console.error('Error submitting review:', err);
         setSnackbar({ open: true, message: err?.message || 'Failed to submit review', severity: 'error' });
       }
     }

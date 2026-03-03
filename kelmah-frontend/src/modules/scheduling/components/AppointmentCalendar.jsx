@@ -33,7 +33,7 @@ const AppointmentCalendar = ({
     try {
       const appointmentDate = new Date(app.date);
       if (isNaN(appointmentDate.getTime())) {
-        console.warn('Invalid appointment date in calendar:', app.date);
+        if (import.meta.env.DEV) console.warn('Invalid appointment date in calendar:', app.date);
         return acc;
       }
       const dateKey = format(appointmentDate, 'yyyy-MM-dd');
@@ -41,7 +41,7 @@ const AppointmentCalendar = ({
       acc[dateKey].push(app);
       return acc;
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         'Error processing appointment date in calendar:',
         app.date,
         error,

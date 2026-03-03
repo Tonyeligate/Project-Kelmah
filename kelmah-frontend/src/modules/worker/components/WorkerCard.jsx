@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -13,11 +13,11 @@ import {
   Rating,
   Button,
   Tooltip,
+  IconButton,
 } from '@mui/material';
 import {
   LocationOn as LocationIcon,
   WorkOutline as WorkIcon,
-  AttachMoney as AttachMoneyIcon,
   Star as StarIcon,
   Message as MessageIcon,
   Visibility as VisibilityIcon,
@@ -25,15 +25,18 @@ import {
   Bolt as BoltIcon,
   Schedule as ScheduleIcon,
   WorkspacePremium as WorkspacePremiumIcon,
+  BookmarkBorder as BookmarkBorderIcon,
+  Bookmark as BookmarkIcon,
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 
-const WorkerCard = ({ worker }) => {
+const WorkerCard = ({ worker, onSave, isPublicView }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, user } = useAuthCheck();
+  const [isSaved, setIsSaved] = useState(worker.isSaved || false);
 
   const resolvedWorkerId = worker.id || worker._id || worker.userId;
   const resolvedViewerId = user?.id || user?._id || user?.userId;
@@ -288,17 +291,11 @@ const WorkerCard = ({ worker }) => {
     }
 
     const targetId = resolvedWorkerId;
-    console.log('🟡 WorkerCard CLICKED! Target ID:', targetId);
-    console.log('🟡 Attempting navigation to:', `/worker-profile/${targetId}`);
 
     if (targetId) {
-      console.log('🟡 Calling navigate() now...');
       navigate(`/worker-profile/${targetId}`);
-      console.log('🟡 navigate() called successfully');
-    } else {
-      console.error('❌ No targetId found for worker:', worker);
     }
-  }, [navigate, worker]);
+  }, [navigate, resolvedWorkerId]);
 
   // Handle message worker
   const handleMessage = useCallback(
@@ -422,7 +419,7 @@ const WorkerCard = ({ worker }) => {
               alt={worker.name}
               sx={{ width: { xs: 48, md: 56 }, height: { xs: 48, md: 56 }, mr: 2 }}
             />
-            <Box>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography
                 variant="h6"
                 component="h2"
@@ -496,6 +493,32 @@ const WorkerCard = ({ worker }) => {
                 </Stack>
               )}
             </Box>
+            {/* Bookmark button */}
+            {isAuthenticated && onSave && (
+              <Tooltip title={isSaved ? 'Saved' : 'Save worker'} arrow>
+                <IconButton
+                  aria-label={isSaved ? 'Remove from saved workers' : 'Save worker'}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setIsSaved((prev) => !prev);
+                    onSave();
+                  }}
+                  size="small"
+                  sx={{
+                    ml: 0.5,
+                    flexShrink: 0,
+                    color: isSaved ? '#FFD700' : 'text.secondary',
+                    '&:hover': {
+                      color: '#FFD700',
+                      bgcolor: 'rgba(255, 215, 0, 0.08)',
+                    },
+                  }}
+                >
+                  {isSaved ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                </IconButton>
+              </Tooltip>
+            )}
           </Box>
 
           <Typography
@@ -545,12 +568,14 @@ const WorkerCard = ({ worker }) => {
           <Grid container spacing={1}>
             <Grid item xs={6}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <AttachMoneyIcon
-                  fontSize="small"
-                  sx={{ mr: 0.5, color: 'text.secondary' }}
-                />
+                <Typography
+                  variant="body2"
+                  sx={{ mr: 0.5, color: 'text.secondary', fontWeight: 700, fontSize: '0.85rem' }}
+                >
+                  GH₵
+                </Typography>
                 <Typography variant="body2" color="text.primary">
-                  GHS {worker.hourlyRate || '--'}/hr
+                  {worker.hourlyRate || '--'}/hr
                 </Typography>
               </Box>
             </Grid>
@@ -684,6 +709,7 @@ WorkerCard.propTypes = {
     availability: PropTypes.string,
     availabilityMessage: PropTypes.string,
     availableNow: PropTypes.bool,
+    isSaved: PropTypes.bool,
     responseTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     avgResponseTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     averageResponseTime: PropTypes.oneOfType([
@@ -710,6 +736,8 @@ WorkerCard.propTypes = {
     completedJobs: PropTypes.number,
     projectsCompleted: PropTypes.number,
   }).isRequired,
+  onSave: PropTypes.func,
+  isPublicView: PropTypes.bool,
 };
 
 export default WorkerCard;

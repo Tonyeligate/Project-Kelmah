@@ -284,7 +284,7 @@ const SkillsAssessmentPage = () => {
         setPaused(false);
         setTimeRemaining((test.duration || 30) * 60);
       } catch (err) {
-        console.error('Failed to load test details', err);
+        if (import.meta.env.DEV) console.error('Failed to load test details', err);
         setError('Failed to load test details');
       } finally {
         setLoading(false);

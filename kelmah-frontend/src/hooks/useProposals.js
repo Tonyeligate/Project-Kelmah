@@ -179,7 +179,7 @@ export const useProposals = ({
             finalError?.message ||
             'Unable to fetch proposals. Please try again later.';
 
-        console.error('Unable to fetch proposals', {
+        if (import.meta.env.DEV) console.error('Unable to fetch proposals', {
           requestId,
           timedOut,
           status: finalError?.response?.status,

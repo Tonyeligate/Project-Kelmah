@@ -54,7 +54,7 @@ class ProfileService {
       );
       return payload;
     } catch (error) {
-      console.warn('Profile service unavailable:', { error: error.message });
+      if (import.meta.env.DEV) console.warn('Profile service unavailable:', { error: error.message });
       throw error;
     }
   }
@@ -66,7 +66,7 @@ class ProfileService {
       console.debug('[ProfileService] Profile update succeeded');
       return response.data.data;
     } catch (error) {
-      console.error('Error updating profile:', error);
+      if (import.meta.env.DEV) console.error('Error updating profile:', error);
       throw error;
     }
   }
@@ -93,7 +93,7 @@ class ProfileService {
       }
       return response.data.data;
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         'Profile picture upload endpoint unavailable, using local preview fallback:',
         error?.message,
       );
@@ -112,7 +112,7 @@ class ProfileService {
       const response = await api.put('/users/profile', { skills });
       return response.data.data;
     } catch (error) {
-      console.error('Error updating skills:', error);
+      if (import.meta.env.DEV) console.error('Error updating skills:', error);
       throw error;
     }
   }
@@ -123,7 +123,7 @@ class ProfileService {
       const response = await api.put('/users/profile', { education });
       return response.data.data;
     } catch (error) {
-      console.error('Error updating education:', error);
+      if (import.meta.env.DEV) console.error('Error updating education:', error);
       throw error;
     }
   }
@@ -134,7 +134,7 @@ class ProfileService {
       const response = await api.put('/users/profile', { experience });
       return response.data.data;
     } catch (error) {
-      console.error('Error updating experience:', error);
+      if (import.meta.env.DEV) console.error('Error updating experience:', error);
       throw error;
     }
   }
@@ -145,7 +145,7 @@ class ProfileService {
       const response = await api.put('/users/profile', { preferences });
       return response.data.data;
     } catch (error) {
-      console.error('Error updating preferences:', error);
+      if (import.meta.env.DEV) console.error('Error updating preferences:', error);
       throw error;
     }
   }
@@ -159,7 +159,7 @@ class ProfileService {
         response.data || { jobsCompleted: 0, successRate: 0 }
       );
     } catch (error) {
-      console.warn('Statistics service unavailable:', { error: error.message });
+      if (import.meta.env.DEV) console.warn('Statistics service unavailable:', { error: error.message });
       return { jobsCompleted: 0, successRate: 0 };
     }
   }
@@ -172,7 +172,7 @@ class ProfileService {
       });
       return response.data?.data || response.data || [];
     } catch (error) {
-      console.warn('Activity service unavailable:', { error: error.message });
+      if (import.meta.env.DEV) console.warn('Activity service unavailable:', { error: error.message });
       return [];
     }
   }

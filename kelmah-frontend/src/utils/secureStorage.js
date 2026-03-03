@@ -43,7 +43,7 @@ class SecureStorage {
       // Try to access storage to detect corruption early
       this.cleanupExpiredData();
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         'Storage initialization failed, performing recovery:',
         error.message,
       );
@@ -56,7 +56,7 @@ class SecureStorage {
    */
   performStorageRecovery() {
     try {
-      console.log('Performing storage recovery...');
+      if (import.meta.env.DEV) console.log('Performing storage recovery...');
 
       // Clear all Kelmah-related localStorage keys
       const keysToRemove = [];
@@ -76,7 +76,7 @@ class SecureStorage {
         try {
           localStorage.removeItem(key);
         } catch (removeError) {
-          console.warn(
+          if (import.meta.env.DEV) console.warn(
             'Failed to remove key during recovery:',
             key,
             removeError,
@@ -87,10 +87,10 @@ class SecureStorage {
       // Regenerate encryption key
       this.encryptionKey = this.generateEncryptionKey();
 
-      console.log('Storage recovery completed');
+      if (import.meta.env.DEV) console.log('Storage recovery completed');
       return true;
     } catch (error) {
-      console.error('Storage recovery failed:', error);
+      if (import.meta.env.DEV) console.error('Storage recovery failed:', error);
       return false;
     }
   }
@@ -154,7 +154,7 @@ class SecureStorage {
       }
       return secret;
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         'localStorage unavailable, using session-scoped secret:',
         error?.message || error,
       );
@@ -175,7 +175,7 @@ class SecureStorage {
       ).toString();
       return encrypted;
     } catch (error) {
-      console.error('Encryption failed:', error);
+      if (import.meta.env.DEV) console.error('Encryption failed:', error);
       return null;
     }
   }
@@ -186,7 +186,7 @@ class SecureStorage {
   decrypt(encryptedData) {
     try {
       if (!encryptedData || encryptedData.trim() === '') {
-        console.warn('Empty or null encrypted data provided');
+        if (import.meta.env.DEV) console.warn('Empty or null encrypted data provided');
         return null;
       }
 
@@ -194,7 +194,7 @@ class SecureStorage {
       const jsonString = decrypted.toString(CryptoJS.enc.Utf8);
 
       if (!jsonString || jsonString.trim() === '') {
-        console.warn(
+        if (import.meta.env.DEV) console.warn(
           'Decryption resulted in empty string - possibly wrong key or corrupted data',
         );
         return null;
@@ -202,7 +202,7 @@ class SecureStorage {
 
       return JSON.parse(jsonString);
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         'Decryption failed, clearing corrupted storage:',
         error.message,
       );
@@ -210,7 +210,7 @@ class SecureStorage {
       try {
         localStorage.removeItem(this.storageKey);
       } catch (clearError) {
-        console.error('Failed to clear corrupted storage:', clearError);
+        if (import.meta.env.DEV) console.error('Failed to clear corrupted storage:', clearError);
       }
       return null;
     }
@@ -235,7 +235,7 @@ class SecureStorage {
 
       return decryptedData;
     } catch (error) {
-      console.error('Failed to get secure data:', error);
+      if (import.meta.env.DEV) console.error('Failed to get secure data:', error);
       this.clear();
       return {};
     }
@@ -259,7 +259,7 @@ class SecureStorage {
       }
       return false;
     } catch (error) {
-      console.error('Failed to set secure data:', error);
+      if (import.meta.env.DEV) console.error('Failed to set secure data:', error);
       return false;
     }
   }
@@ -336,7 +336,7 @@ class SecureStorage {
 
       return true;
     } catch (error) {
-      console.error('Failed to clear secure storage:', error);
+      if (import.meta.env.DEV) console.error('Failed to clear secure storage:', error);
       return false;
     }
   }
@@ -370,7 +370,7 @@ class SecureStorage {
         this.setSecureData(data);
       }
     } catch (error) {
-      console.error('Failed to cleanup expired data:', error);
+      if (import.meta.env.DEV) console.error('Failed to cleanup expired data:', error);
     }
   }
 
@@ -436,14 +436,14 @@ class SecureStorage {
 
       return retrieved && retrieved.test === true;
     } catch (error) {
-      console.error('Storage validation failed:', error);
+      if (import.meta.env.DEV) console.error('Storage validation failed:', error);
       return false;
     }
   }
 
   // Migration methods (for future use)
   migrate(fromVersion, toVersion) {
-    console.log(`Migrating secure storage from ${fromVersion} to ${toVersion}`);
+    if (import.meta.env.DEV) console.log(`Migrating secure storage from ${fromVersion} to ${toVersion}`);
     // Future migration logic here
   }
 }
@@ -453,7 +453,7 @@ const secureStorage = new SecureStorage();
 
 // Validate storage on initialization
 if (!secureStorage.validateData()) {
-  console.warn('Secure storage validation failed, clearing data');
+  if (import.meta.env.DEV) console.warn('Secure storage validation failed, clearing data');
   secureStorage.clear();
 }
 

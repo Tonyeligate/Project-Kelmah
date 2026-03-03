@@ -3,7 +3,7 @@
  */
 
 const logFormatterFallback = (label, error) => {
-  if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+  if (import.meta.env.DEV && typeof console !== 'undefined' && typeof console.warn === 'function') {
     console.warn(
       `[formatters] ${label} fallback:`,
       error?.message ? error.message : error,
@@ -421,7 +421,7 @@ export const formatTimeRange = (startTime, endTime) => {
 
   // Validate that dates are valid
   if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-    console.warn('Invalid date values in formatTimeRange:', {
+    if (import.meta.env.DEV) console.warn('Invalid date values in formatTimeRange:', {
       startTime,
       endTime,
     });
@@ -433,7 +433,7 @@ export const formatTimeRange = (startTime, endTime) => {
   try {
     return `${start.toLocaleTimeString('en-US', timeOptions)} - ${end.toLocaleTimeString('en-US', timeOptions)}`;
   } catch (error) {
-    console.warn('Error formatting time range:', error);
+    if (import.meta.env.DEV) console.warn('Error formatting time range:', error);
     return '';
   }
 };

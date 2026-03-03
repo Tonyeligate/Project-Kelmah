@@ -314,12 +314,12 @@ const SchedulingPage = () => {
             const dateObj = new Date(appointmentDate);
             // Check if date is valid
             if (isNaN(dateObj.getTime())) {
-              console.warn('Invalid appointment date:', appointmentDate);
+              if (import.meta.env.DEV) console.warn('Invalid appointment date:', appointmentDate);
               return null;
             }
             return format(dateObj, 'yyyy-MM-dd');
           } catch (error) {
-            console.warn('Invalid appointment date:', appointmentDate, error);
+            if (import.meta.env.DEV) console.warn('Invalid appointment date:', appointmentDate, error);
             return null;
           }
         })
@@ -372,7 +372,7 @@ const SchedulingPage = () => {
           workers = await workerService.searchWorkers({ limit: 20 });
         }
       } catch (apiError) {
-        console.warn(
+        if (import.meta.env.DEV) console.warn(
           'workerService.searchWorkers not available, using mock data:',
           apiError.message,
         );
@@ -583,7 +583,7 @@ const SchedulingPage = () => {
           if (isNaN(appointmentDate.getTime())) return false;
           return isSameDay(appointmentDate, selectedDate);
         } catch (error) {
-          console.warn(
+          if (import.meta.env.DEV) console.warn(
             'Invalid appointment date in dailyAppointments filter:',
             a.date,
           );
@@ -599,7 +599,7 @@ const SchedulingPage = () => {
         try {
           const appointmentDate = new Date(app.date);
           if (isNaN(appointmentDate.getTime())) {
-            console.warn('Invalid appointment date in reduce:', app.date);
+            if (import.meta.env.DEV) console.warn('Invalid appointment date in reduce:', app.date);
             return acc;
           }
           const dateKey = format(appointmentDate, 'yyyy-MM-dd');
@@ -607,7 +607,7 @@ const SchedulingPage = () => {
           acc[dateKey].push(app);
           return acc;
         } catch (error) {
-          console.warn(
+          if (import.meta.env.DEV) console.warn(
             'Error processing appointment date in reduce:',
             app.date,
             error,
@@ -630,7 +630,7 @@ const SchedulingPage = () => {
               isBefore(appointmentDate, addDays(new Date(), 7))
             );
           } catch (error) {
-            console.warn(
+            if (import.meta.env.DEV) console.warn(
               'Error processing upcoming appointment date:',
               a.date,
               error,

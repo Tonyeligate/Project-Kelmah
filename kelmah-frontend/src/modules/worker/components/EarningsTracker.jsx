@@ -254,7 +254,7 @@ const EarningsTracker = () => {
             return;
           }
         } catch (apiErr) {
-          console.warn('Earnings API unavailable, using sample data:', apiErr.message);
+          if (import.meta.env.DEV) console.warn('Earnings API unavailable, using sample data:', apiErr.message);
         }
       }
 

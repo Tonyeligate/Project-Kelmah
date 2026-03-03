@@ -104,7 +104,7 @@ const JobSearchForm = ({
     if (submitHandler) {
       emitSearch();
     } else {
-      console.warn('JobSearchForm submitted without handler');
+      if (import.meta.env.DEV) console.warn('JobSearchForm submitted without handler');
     }
   };
 

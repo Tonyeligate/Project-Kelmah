@@ -258,7 +258,7 @@ const LocationBasedSearch = ({
       const response = await locationService.getPopularLocations();
       setPopularLocations(response.data || []);
     } catch (error) {
-      console.error('Failed to load popular locations:', error);
+      if (import.meta.env.DEV) console.error('Failed to load popular locations:', error);
     }
   };
 
@@ -268,7 +268,7 @@ const LocationBasedSearch = ({
       const response = await locationService.getRecentSearches();
       setRecentSearches(response.data || []);
     } catch (error) {
-      console.error('Failed to load recent searches:', error);
+      if (import.meta.env.DEV) console.error('Failed to load recent searches:', error);
     }
   };
 
@@ -284,7 +284,7 @@ const LocationBasedSearch = ({
         );
         setNearbyLocations(response.data || []);
       } catch (error) {
-        console.error('Failed to load nearby locations:', error);
+        if (import.meta.env.DEV) console.error('Failed to load nearby locations:', error);
       } finally {
         setLoading(false);
       }
@@ -336,7 +336,7 @@ const LocationBasedSearch = ({
             variant: 'success',
           });
         } catch (error) {
-          console.error('Failed to process detected location:', error);
+          if (import.meta.env.DEV) console.error('Failed to process detected location:', error);
           enqueueSnackbar('Failed to get location details', {
             variant: 'error',
           });
@@ -379,7 +379,7 @@ const LocationBasedSearch = ({
       await locationService.saveRecentSearch(location);
       loadRecentSearches();
     } catch (error) {
-      console.error('Failed to save recent search:', error);
+      if (import.meta.env.DEV) console.error('Failed to save recent search:', error);
     }
 
     if (onLocationSelect) {
@@ -419,7 +419,7 @@ const LocationBasedSearch = ({
         enqueueSnackbar('No matching locations found', { variant: 'info' });
       }
     } catch (error) {
-      console.error('Location search failed:', error);
+      if (import.meta.env.DEV) console.error('Location search failed:', error);
       enqueueSnackbar('Search failed', { variant: 'error' });
     } finally {
       setLoading(false);

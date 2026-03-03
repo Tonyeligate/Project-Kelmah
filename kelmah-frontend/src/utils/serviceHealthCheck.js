@@ -61,7 +61,7 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
     try {
       base = await getApiBaseUrl(); // This should point to API Gateway
     } catch (error) {
-      console.warn(
+      if (import.meta.env.DEV) console.warn(
         'Failed to get API base URL for aggregate check, using fallback:',
         error,
       );
@@ -80,7 +80,7 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
       try {
         base = await getApiBaseUrl();
       } catch (error) {
-        console.warn('Failed to get API base URL, using fallback:', error);
+        if (import.meta.env.DEV) console.warn('Failed to get API base URL, using fallback:', error);
         base = '/api';
       }
     }
@@ -117,7 +117,7 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
       status: response.status,
     });
 
-    console.log(`🏥 Service Health Check - ${serviceUrl}:`, {
+    if (import.meta.env.DEV) console.log(`🏥 Service Health Check - ${serviceUrl}:`, {
       healthy: isHealthy,
       status: response.status,
       responseTime: `${duration}ms`,
@@ -126,7 +126,7 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
 
     return isHealthy;
   } catch (error) {
-    console.warn(
+    if (import.meta.env.DEV) console.warn(
       `🏥 Service Health Check Failed - ${serviceUrl}:`,
       error.message,
       {
@@ -151,7 +151,7 @@ export const checkServiceHealth = async (serviceUrl, timeout = 10000) => {
  * Warm up a service by making a simple health check request
  */
 export const warmUpService = async (serviceUrl) => {
-  console.log(`🔥 Warming up service: ${serviceUrl || 'gateway'}`);
+  if (import.meta.env.DEV) console.log(`🔥 Warming up service: ${serviceUrl || 'gateway'}`);
 
   try {
     const base = await Promise.resolve(getApiBaseUrl()).catch(() => '/api');
@@ -169,12 +169,12 @@ export const warmUpService = async (serviceUrl) => {
 
     clearTimeout(timeoutId);
 
-    console.log(
+    if (import.meta.env.DEV) console.log(
       `🔥 Service warmed up - ${serviceUrl || 'gateway'}: ${response.status}`,
     );
     return response.ok;
   } catch (error) {
-    console.warn(
+    if (import.meta.env.DEV) console.warn(
       `🔥 Service warmup failed - ${serviceUrl || 'gateway'}:`,
       error.message,
     );
@@ -186,13 +186,13 @@ export const warmUpService = async (serviceUrl) => {
  * Warm up all services proactively
  */
 export const warmUpAllServices = async () => {
-  console.log('🔥 Starting service warmup...');
+  if (import.meta.env.DEV) console.log('🔥 Starting service warmup...');
 
   const services = Object.values(SERVICES);
   const warmupPromises = services.map((service) => {
     // Don't wait for each service, warm them up in parallel
     return warmUpService(service).catch((error) => {
-      console.warn(`Warmup failed for ${service}:`, error);
+      if (import.meta.env.DEV) console.warn(`Warmup failed for ${service}:`, error);
       return false;
     });
   });
@@ -201,7 +201,7 @@ export const warmUpAllServices = async () => {
     // Also warm up aggregate health once via gateway
     warmupPromises.push(
       checkServiceHealth('aggregate', 15000).catch((error) => {
-        console.warn('Aggregate health check failed:', error);
+        if (import.meta.env.DEV) console.warn('Aggregate health check failed:', error);
         return false;
       }),
     );
@@ -211,12 +211,12 @@ export const warmUpAllServices = async () => {
       (r) => r.status === 'fulfilled' && r.value,
     ).length;
 
-    console.log(
+    if (import.meta.env.DEV) console.log(
       `🔥 Service warmup complete: ${successCount}/${services.length + 1} services responding`,
     );
     return results;
   } catch (error) {
-    console.error('Service warmup error:', error);
+    if (import.meta.env.DEV) console.error('Service warmup error:', error);
     return [];
   }
 };
@@ -284,14 +284,14 @@ export const getServiceStatusMessage = (serviceUrl) => {
  * Returns a cleanup function to stop monitoring and remove listeners.
  */
 export const initializeServiceHealth = () => {
-  console.log('🏥 Initializing service health monitoring...');
+  if (import.meta.env.DEV) console.log('🏥 Initializing service health monitoring...');
 
   // Warm up services immediately
   warmUpAllServices();
 
   // Set up periodic health checks
   const intervalId = setInterval(() => {
-    console.log('🏥 Running periodic service health checks...');
+    if (import.meta.env.DEV) console.log('🏥 Running periodic service health checks...');
     Object.values(SERVICES).forEach((service) => {
       checkServiceHealth(service);
     });
@@ -300,7 +300,7 @@ export const initializeServiceHealth = () => {
   // Warm up services on page focus (user returns)
   const handleVisibility = () => {
     if (!document.hidden) {
-      console.log('🏥 Page focused - warming up services...');
+      if (import.meta.env.DEV) console.log('🏥 Page focused - warming up services...');
       warmUpAllServices();
     }
   };
@@ -320,7 +320,7 @@ export const handleServiceError = (error, serviceUrl) => {
   const health = getServiceHealth(serviceUrl);
   const statusMsg = getServiceStatusMessage(serviceUrl);
 
-  console.error(`🚨 Service Error - ${serviceUrl}:`, {
+  if (import.meta.env.DEV) console.error(`🚨 Service Error - ${serviceUrl}:`, {
     error: error.message,
     health,
     statusMessage: statusMsg,

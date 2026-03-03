@@ -21,7 +21,7 @@ export const isTokenValid = (token) => {
     // Check if token has expired
     return payload.exp * 1000 > Date.now();
   } catch (error) {
-    console.error('Error checking token validity:', error);
+    if (import.meta.env.DEV) console.error('Error checking token validity:', error);
     return false;
   }
 };

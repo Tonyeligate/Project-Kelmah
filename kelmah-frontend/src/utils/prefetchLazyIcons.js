@@ -61,7 +61,7 @@ export const prefetchLazyIcons = (lazyIconMap) => {
         }),
       );
     } catch (error) {
-      console.warn('[prefetchLazyIcons] Failed to warm icons:', error);
+      if (import.meta.env.DEV) console.warn('[prefetchLazyIcons] Failed to warm icons:', error);
     }
   });
 

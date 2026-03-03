@@ -40,7 +40,7 @@ const EditContractPage = () => {
           >
             Contracts
           </Link>
-          <Typography color="text.primary">Edit Contract #{id}</Typography>
+          <Typography color="text.primary">Edit Contract</Typography>
         </Breadcrumbs>
 
         <ContractForm contractId={id} />
