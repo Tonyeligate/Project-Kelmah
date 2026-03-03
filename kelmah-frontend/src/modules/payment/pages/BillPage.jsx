@@ -316,6 +316,7 @@ const BillPage = () => {
           onClose={handleCloseConfirm}
           maxWidth="xs"
           fullWidth
+          aria-labelledby="confirm-payment-dialog-title"
           BackdropProps={{
             sx: {
               backgroundColor: 'rgba(0, 0, 0, 0.7)',
@@ -333,7 +334,7 @@ const BillPage = () => {
             },
           }}
         >
-          <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <DialogTitle id="confirm-payment-dialog-title" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <PaymentIcon sx={{ color: 'secondary.main', fontSize: 28 }} />{' '}
             Confirm Payment
           </DialogTitle>

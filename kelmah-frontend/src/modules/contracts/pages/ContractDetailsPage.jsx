@@ -662,8 +662,9 @@ const ContractDetailsPage = () => {
         open={cancelDialogOpen}
         onClose={() => setCancelDialogOpen(false)}
         fullScreen={isMobile}
+        aria-labelledby="cancel-contract-dialog-title"
       >
-        <DialogTitle>
+        <DialogTitle id="cancel-contract-dialog-title">
           {contract.status === 'draft' ? 'Delete Contract' : 'Cancel Contract'}
         </DialogTitle>
         <DialogContent>
@@ -698,8 +699,8 @@ const ContractDetailsPage = () => {
       </Dialog>
 
       {/* Sign contract dialog */}
-      <Dialog open={signDialogOpen} onClose={() => setSignDialogOpen(false)} fullScreen={isMobile}>
-        <DialogTitle>Sign Contract</DialogTitle>
+      <Dialog open={signDialogOpen} onClose={() => setSignDialogOpen(false)} fullScreen={isMobile} aria-labelledby="sign-contract-dialog-title">
+        <DialogTitle id="sign-contract-dialog-title">Sign Contract</DialogTitle>
         <DialogContent>
           <DialogContentText>
             By signing this contract, you agree to all terms and conditions
@@ -731,8 +732,9 @@ const ContractDetailsPage = () => {
         open={disputeDialogOpen}
         onClose={() => setDisputeDialogOpen(false)}
         fullScreen={isMobile}
+        aria-labelledby="raise-dispute-dialog-title"
       >
-        <DialogTitle>Raise a Dispute</DialogTitle>
+        <DialogTitle id="raise-dispute-dialog-title">Raise a Dispute</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Please provide details about the issue you're experiencing with this

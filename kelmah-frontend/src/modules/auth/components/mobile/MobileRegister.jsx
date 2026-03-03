@@ -310,6 +310,7 @@ const MobileRegister = () => {
               <TextField
                 fullWidth
                 label="First Name"
+                placeholder="e.g. Kwame"
                 value={formData.firstName}
                 onChange={handleChange('firstName')}
                 error={Boolean(errors.firstName)}
@@ -320,6 +321,7 @@ const MobileRegister = () => {
               <TextField
                 fullWidth
                 label="Last Name"
+                placeholder="e.g. Asante"
                 value={formData.lastName}
                 onChange={handleChange('lastName')}
                 error={Boolean(errors.lastName)}
@@ -332,6 +334,7 @@ const MobileRegister = () => {
               fullWidth
               type="email"
               label="Email"
+              placeholder="e.g. kwame@email.com"
               value={formData.email}
               onChange={handleChange('email')}
               error={Boolean(errors.email)}
@@ -368,6 +371,7 @@ const MobileRegister = () => {
               <TextField
                 fullWidth
                 label="Company Name"
+                placeholder="e.g. Asante Construction"
                 value={formData.companyName}
                 onChange={handleChange('companyName')}
                 error={Boolean(errors.companyName)}

@@ -62,7 +62,16 @@ const WalletPage = () => {
   if (error)
     return (
       <Container sx={{ py: { xs: 2, sm: 4 } }}>
-        <Alert severity="error">{error}</Alert>
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={() => fetchTransactions()}>
+              Retry
+            </Button>
+          }
+        >
+          {error}
+        </Alert>
       </Container>
     );
 

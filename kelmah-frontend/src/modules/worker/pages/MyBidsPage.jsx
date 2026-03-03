@@ -7,7 +7,7 @@
  *   MyBidsPage → bidApi.getWorkerBidStats(userId) → GET /api/bids/stats/worker/:workerId → Gateway → Job Service
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { normalizeUser } from '../../../utils/userUtils';
@@ -373,14 +373,14 @@ const MyBidsPage = () => {
     if (jobId) navigate(`/jobs/${jobId}`);
   };
 
-  const bidCounts = {
+  const bidCounts = useMemo(() => ({
     all: bids.length,
     pending: bids.filter((b) => b.status === 'pending').length,
     accepted: bids.filter((b) => b.status === 'accepted').length,
     rejected: bids.filter((b) => b.status === 'rejected').length,
     withdrawn: bids.filter((b) => b.status === 'withdrawn').length,
     expired: bids.filter((b) => b.status === 'expired').length,
-  };
+  }), [bids]);
 
   return (
     <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 } }}>
@@ -498,8 +498,9 @@ const MyBidsPage = () => {
         onClose={() => setWithdrawDialog({ open: false, bid: null })}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="withdraw-bid-dialog-title"
       >
-        <DialogTitle>Withdraw Bid</DialogTitle>
+        <DialogTitle id="withdraw-bid-dialog-title">Withdraw Bid</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ mb: 2 }}>
             Are you sure you want to withdraw your bid of{' '}

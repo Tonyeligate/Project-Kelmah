@@ -519,7 +519,7 @@ const BillsView = ({ bills, actionLoading, onPayBill }) => {
               </ListItemIcon>
               <ListItemText
                 primary={bill.title}
-                secondary={`Due: ${format(new Date(bill.dueDate), 'd MMMM yyyy')}`}
+                secondary={`Due: ${bill.dueDate ? (() => { try { return format(new Date(bill.dueDate), 'd MMMM yyyy'); } catch { return 'Unknown'; } })() : 'Unknown'}`}
               />
               <Typography
                 fontWeight="bold"
@@ -886,8 +886,9 @@ const PaymentCenterPage = () => {
                 onClose={() => setDeleteMethodOpen(false)}
                 maxWidth="xs"
                 fullWidth
+                aria-labelledby="delete-method-dialog-title"
               >
-                <DialogTitle>Remove payment method?</DialogTitle>
+                <DialogTitle id="delete-method-dialog-title">Remove payment method?</DialogTitle>
                 <DialogContent>
                   <Typography color="text.secondary">
                     This will remove the selected payment method from your
@@ -1043,6 +1044,7 @@ const PaymentCenterPage = () => {
         fullWidth
         maxWidth="xs"
         fullScreen={isMobile}
+        aria-labelledby="deposit-dialog-title"
         // ✅ MOBILE-AUDIT P4: removed backdrop blur + glow
         PaperProps={{
           sx: {
@@ -1055,6 +1057,7 @@ const PaymentCenterPage = () => {
         }}
       >
         <DialogTitle
+          id="deposit-dialog-title"
           sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
         >
           <ArrowUpwardIcon
@@ -1157,6 +1160,7 @@ const PaymentCenterPage = () => {
         fullWidth
         maxWidth="xs"
         fullScreen={isMobile}
+        aria-labelledby="withdraw-dialog-title"
         PaperProps={{
           sx: {
             bgcolor: theme.palette.grey[900],
@@ -1168,6 +1172,7 @@ const PaymentCenterPage = () => {
         }}
       >
         <DialogTitle
+          id="withdraw-dialog-title"
           sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
         >
           <ArrowDownwardIcon

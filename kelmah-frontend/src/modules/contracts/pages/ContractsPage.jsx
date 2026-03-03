@@ -20,8 +20,7 @@ import {
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import SortIcon from '@mui/icons-material/Sort';
+
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -211,6 +210,7 @@ const ContractsPage = () => {
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Search contracts"
+            aria-label="Search contracts"
             fullWidth
             size="small"
             InputProps={{
@@ -344,6 +344,7 @@ const ContractsPage = () => {
                 </Button>
                 <IconButton
                   size="small"
+                  aria-label="Download contract"
                   onClick={() =>
                     window.open(`/api/jobs/contracts/${contract.id}`, '_blank')
                   }

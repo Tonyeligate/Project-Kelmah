@@ -390,7 +390,7 @@ const WorkerDashboardPage = () => {
   ];
 
   // Error display with retry functionality (uses closure over state)
-  const ErrorDisplay = () => (
+  const renderErrorDisplay = () => (
     <Box sx={{ mb: 3 }}>
       <Alert
         severity={retryCount >= MAX_RETRIES ? "error" : "warning"}
@@ -536,7 +536,7 @@ const WorkerDashboardPage = () => {
       </Box>
 
       {/* Error Display - Shows inline instead of blocking */}
-      {error && <ErrorDisplay />}
+      {error && renderErrorDisplay()}
 
       {/* New Worker Welcome Banner - Shows when no activity */}
       {!isLoading && isNewWorker && (

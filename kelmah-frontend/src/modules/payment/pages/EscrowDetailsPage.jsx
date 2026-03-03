@@ -126,6 +126,7 @@ const EscrowDetailsPage = () => {
         onClose={() => setOpenRelease(false)}
         fullWidth
         maxWidth="sm"
+        aria-labelledby="release-funds-dialog-title"
         BackdropProps={{
           sx: {
             backgroundColor: 'rgba(0, 0, 0, 0.85)',
@@ -143,7 +144,7 @@ const EscrowDetailsPage = () => {
           },
         }}
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <DialogTitle id="release-funds-dialog-title" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <CheckCircleIcon sx={{ color: 'secondary.main', fontSize: 28 }} />
           <Typography
             variant="h6"

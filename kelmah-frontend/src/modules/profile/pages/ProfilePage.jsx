@@ -397,8 +397,9 @@ const ProfilePage = () => {
                     {/* Add Skill Dialog */}
                     <Dialog open={addSkillOpen} onClose={() => setAddSkillOpen(false)} fullWidth maxWidth="xs"
                       PaperProps={{ sx: { mx: 2, borderRadius: 2 } }}
+                      aria-labelledby="add-skill-dialog-title"
                     >
-                      <DialogTitle>Add Skill</DialogTitle>
+                      <DialogTitle id="add-skill-dialog-title">Add Skill</DialogTitle>
                       <DialogContent>
                         <TextField
                           autoFocus fullWidth label="Skill name" margin="dense"
@@ -462,8 +463,9 @@ const ProfilePage = () => {
                     {/* Add Education Dialog */}
                     <Dialog open={addEduOpen} onClose={() => setAddEduOpen(false)} fullWidth maxWidth="xs"
                       PaperProps={{ sx: { mx: 2, borderRadius: 2 } }}
+                      aria-labelledby="add-education-dialog-title"
                     >
-                      <DialogTitle>Add Education</DialogTitle>
+                      <DialogTitle id="add-education-dialog-title">Add Education</DialogTitle>
                       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: '8px !important' }}>
                         <TextField autoFocus fullWidth label="Degree" value={newEdu.degree}
                           onChange={(e) => setNewEdu(p => ({ ...p, degree: e.target.value }))} placeholder="e.g. Senior High School" />
@@ -531,8 +533,9 @@ const ProfilePage = () => {
                     {/* Add Experience Dialog */}
                     <Dialog open={addExpOpen} onClose={() => setAddExpOpen(false)} fullWidth maxWidth="xs"
                       PaperProps={{ sx: { mx: 2, borderRadius: 2 } }}
+                      aria-labelledby="add-experience-dialog-title"
                     >
-                      <DialogTitle>Add Experience</DialogTitle>
+                      <DialogTitle id="add-experience-dialog-title">Add Experience</DialogTitle>
                       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: '8px !important' }}>
                         <TextField autoFocus fullWidth label="Job Title" value={newExp.title}
                           onChange={(e) => setNewExp(p => ({ ...p, title: e.target.value }))} placeholder="e.g. Carpenter" />

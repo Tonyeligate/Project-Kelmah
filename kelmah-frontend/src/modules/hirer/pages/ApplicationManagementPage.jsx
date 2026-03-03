@@ -433,8 +433,9 @@ function ApplicationManagementPage() {
         fullWidth
         maxWidth="sm"
         fullScreen={isMobile}
+        aria-labelledby="confirm-action-dialog-title"
       >
-        <DialogTitle>Confirm Action</DialogTitle>
+        <DialogTitle id="confirm-action-dialog-title">Confirm Action</DialogTitle>
         <DialogContent>
           <Typography>
             You are about to {actionType} this application.

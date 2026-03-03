@@ -743,6 +743,7 @@ const JobManagementPage = () => {
                               <Tooltip title="View Applications">
                                 <IconButton
                                   size="small"
+                                  aria-label="View applications"
                                   onClick={() =>
                                     handleViewApplications(job.id)
                                   }
@@ -754,6 +755,7 @@ const JobManagementPage = () => {
                               <Tooltip title="View Job">
                                 <IconButton
                                   size="small"
+                                  aria-label="View job"
                                   onClick={() => handleViewJob(job.id)}
                                   sx={{ mr: 1 }}
                                 >
@@ -763,6 +765,7 @@ const JobManagementPage = () => {
                               <Tooltip title="Edit Job">
                                 <IconButton
                                   size="small"
+                                  aria-label="Edit job"
                                   onClick={() => handleEditJob(job.id)}
                                   sx={{ mr: 1 }}
                                 >
@@ -772,6 +775,7 @@ const JobManagementPage = () => {
                               <Tooltip title="More Options">
                                 <IconButton
                                   size="small"
+                                  aria-label="More options"
                                   onClick={(e) => handleMenuOpen(e, job)}
                                 >
                                   <MoreIcon />
@@ -865,8 +869,8 @@ const JobManagementPage = () => {
       </Menu>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog} fullScreen={isMobile}>
-        <DialogTitle>Delete Job</DialogTitle>
+      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog} fullScreen={isMobile} aria-labelledby="delete-job-dialog-title">
+        <DialogTitle id="delete-job-dialog-title">Delete Job</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Are you sure you want to delete "{selectedJob?.title}"? This action

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { normalizeUser } from '../../../utils/userUtils';
 import {
@@ -77,7 +77,7 @@ const PaymentMethodsPage = () => {
   const theme = useTheme();
 
   // Fetch payment methods from server
-  const fetchMethods = async () => {
+  const fetchMethods = useCallback(async () => {
     setLoading(true);
     try {
       const methods = await paymentService.getPaymentMethods();
@@ -87,12 +87,12 @@ const PaymentMethodsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Initialize with loading effect
   useEffect(() => {
     fetchMethods();
-  }, []);
+  }, [fetchMethods]);
 
   // Handle adding a new credit card via API
   const handleAddCard = async () => {
@@ -483,6 +483,7 @@ const PaymentMethodsPage = () => {
         onClose={() => setOpenAddCard(false)}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="add-card-dialog-title"
         PaperProps={{
           sx: {
             border: '2px solid',
@@ -491,7 +492,7 @@ const PaymentMethodsPage = () => {
           },
         }}
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <DialogTitle id="add-card-dialog-title" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <CreditCardIcon sx={{ color: 'secondary.main', fontSize: 28 }} /> Card
         </DialogTitle>
         <DialogContent>
@@ -602,6 +603,7 @@ const PaymentMethodsPage = () => {
         onClose={() => setOpenAddMobile(false)}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="add-mobile-dialog-title"
         PaperProps={{
           sx: {
             border: '2px solid',
@@ -616,7 +618,7 @@ const PaymentMethodsPage = () => {
           },
         }}
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <DialogTitle id="add-mobile-dialog-title" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <MobileIcon sx={{ color: 'secondary.main', fontSize: 28 }} /> Add
           Mobile Money
         </DialogTitle>
@@ -681,6 +683,7 @@ const PaymentMethodsPage = () => {
         onClose={() => setOpenAddBank(false)}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="add-bank-dialog-title"
         PaperProps={{
           sx: {
             border: '2px solid',
@@ -695,7 +698,7 @@ const PaymentMethodsPage = () => {
           },
         }}
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <DialogTitle id="add-bank-dialog-title" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <BankIcon sx={{ color: 'secondary.main', fontSize: 28 }} /> Add Bank
           Account
         </DialogTitle>
@@ -778,6 +781,7 @@ const PaymentMethodsPage = () => {
       <Dialog
         open={openConfirmDelete}
         onClose={() => setOpenConfirmDelete(false)}
+        aria-labelledby="delete-method-confirm-dialog-title"
         PaperProps={{
           sx: {
             border: '2px solid',
@@ -792,7 +796,7 @@ const PaymentMethodsPage = () => {
           },
         }}
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <DialogTitle id="delete-method-confirm-dialog-title" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DeleteIcon sx={{ color: 'error.main', fontSize: 28 }} /> Remove
           Payment Method
         </DialogTitle>

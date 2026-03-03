@@ -106,6 +106,7 @@ const CreateContractPage = () => {
 
   // Auto-populate worker and client info from URL params and auth state
   useEffect(() => {
+    let cancelled = false;
     const workerId = searchParams.get('workerId');
 
     // Auto-populate client name from authenticated user
@@ -121,6 +122,7 @@ const CreateContractPage = () => {
       setWorkerLoading(true);
       workerService.getWorkerById(workerId)
         .then((response) => {
+          if (cancelled) return;
           const data = response?.data?.data || response?.data || response;
           const workerUser = data?.user || data;
           const workerName = [workerUser?.firstName, workerUser?.lastName].filter(Boolean).join(' ')
@@ -134,10 +136,12 @@ const CreateContractPage = () => {
           }
         })
         .catch((err) => {
+          if (cancelled) return;
           if (import.meta.env.DEV) console.error('Failed to fetch worker details:', err);
         })
-        .finally(() => setWorkerLoading(false));
+        .finally(() => { if (!cancelled) setWorkerLoading(false); });
     }
+    return () => { cancelled = true; };
   }, [searchParams, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Warn if the user tries to close/reload with unsaved changes
@@ -923,8 +927,9 @@ const CreateContractPage = () => {
       <Dialog
         open={discardDialogOpen}
         onClose={() => setDiscardDialogOpen(false)}
+        aria-labelledby="discard-changes-dialog-title"
       >
-        <DialogTitle>Discard changes?</DialogTitle>
+        <DialogTitle id="discard-changes-dialog-title">Discard changes?</DialogTitle>
         <DialogContent>
           <DialogContentText>
             You have unsaved changes. Are you sure you want to leave and discard
@@ -949,8 +954,9 @@ const CreateContractPage = () => {
       <Dialog
         open={confirmDialogOpen}
         onClose={() => setConfirmDialogOpen(false)}
+        aria-labelledby="confirm-contract-dialog-title"
       >
-        <DialogTitle>Confirm Contract Creation</DialogTitle>
+        <DialogTitle id="confirm-contract-dialog-title">Confirm Contract Creation</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Are you sure you want to create this contract? This action cannot be

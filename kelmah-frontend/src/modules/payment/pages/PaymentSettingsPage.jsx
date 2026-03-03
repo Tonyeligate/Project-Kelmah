@@ -73,7 +73,16 @@ const PaymentSettingsPage = () => {
   if (error) {
     return (
       <Container sx={{ py: { xs: 2, sm: 4 } }}>
-        <Alert severity="error">{error}</Alert>
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={() => { setError(null); setLoading(true); paymentService.getPaymentSettings().then(res => { setSettings(res.data || res); }).catch(() => setError('Failed to load settings. Please try again.')).finally(() => setLoading(false)); }}>
+              Retry
+            </Button>
+          }
+        >
+          {error}
+        </Alert>
       </Container>
     );
   }
