@@ -12,7 +12,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const { celebrate, Joi, errors: celebrateErrors, Segments } = require('celebrate');
-const { createProxyMiddleware } = require('http-proxy-middleware');
+const { createProxyMiddleware, fixRequestBody } = require('http-proxy-middleware');
 const axios = require('axios');
 const winston = require('winston');
 const mongoose = require('mongoose');
@@ -42,9 +42,32 @@ const {
 const MAX_PROXY_CACHE_SIZE = 100;
 const proxyCache = new Map();
 
+const hasFunctionInObject = (value, visited = new Set()) => {
+  if (typeof value === 'function') return true;
+  if (!value || typeof value !== 'object') return false;
+  if (visited.has(value)) return false;
+  visited.add(value);
+
+  if (Array.isArray(value)) {
+    return value.some((entry) => hasFunctionInObject(entry, visited));
+  }
+
+  return Object.values(value).some((entry) => hasFunctionInObject(entry, visited));
+};
+
+const stableSerializeProxyOptions = (value) => {
+  return JSON.stringify(value, (key, currentValue) => {
+    if (typeof currentValue === 'function') {
+      return `__fn__:${currentValue.name || 'anonymous'}:${currentValue.toString()}`;
+    }
+    return currentValue;
+  });
+};
+
 const createDynamicProxy = (serviceName, options = {}) => {
   // Build a stable cache key from service name + serialized options
-  const cacheKey = `${serviceName}:${JSON.stringify(options)}`;
+  const cacheKey = `${serviceName}:${stableSerializeProxyOptions(options)}`;
+  const hasFunctionOptions = hasFunctionInObject(options);
 
   return (req, res, next) => {
     try {
@@ -59,10 +82,15 @@ const createDynamicProxy = (serviceName, options = {}) => {
       }
 
       const instanceKey = `${cacheKey}:${targetUrl}`;
-      let proxy = proxyCache.get(instanceKey);
+      let proxy = null;
+
+      if (!hasFunctionOptions) {
+        proxy = proxyCache.get(instanceKey);
+      }
+
       if (!proxy) {
         // MED-18 FIX: Evict oldest entry if cache exceeds max size
-        if (proxyCache.size >= MAX_PROXY_CACHE_SIZE) {
+        if (!hasFunctionOptions && proxyCache.size >= MAX_PROXY_CACHE_SIZE) {
           const oldest = proxyCache.keys().next().value;
           proxyCache.delete(oldest);
         }
@@ -71,7 +99,9 @@ const createDynamicProxy = (serviceName, options = {}) => {
           changeOrigin: true,
           ...options
         });
-        proxyCache.set(instanceKey, proxy);
+        if (!hasFunctionOptions) {
+          proxyCache.set(instanceKey, proxy);
+        }
       }
 
       return proxy(req, res, next);
@@ -559,17 +589,8 @@ app.use(
         hasAuth: !!req.user
       });
 
-      // Ensure parsed JSON bodies are forwarded for mutating requests.
-      // Without this, downstream service may wait for an unread body and time out.
-      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes((req.method || '').toUpperCase())
-        && req.body
-        && typeof req.body === 'object'
-        && !Buffer.isBuffer(req.body)) {
-        const bodyData = JSON.stringify(req.body);
-        proxyReq.setHeader('Content-Type', 'application/json');
-        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-        proxyReq.write(bodyData);
-      }
+      // Rehydrate parsed request body safely for proxied mutating requests.
+      fixRequestBody(proxyReq, req);
 
       if (req.user) {
         proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
