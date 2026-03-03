@@ -22,12 +22,7 @@ import {
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Helmet } from 'react-helmet-async';
-
-// Currency formatter for Ghana Cedi
-const currencyFormatter = new Intl.NumberFormat('en-GH', {
-  style: 'currency',
-  currency: 'GHS',
-});
+import { currencyFormatter } from '@/modules/common/utils/formatters';
 
 const EscrowDetailsPage = () => {
   const { escrowId } = useParams();

@@ -230,6 +230,7 @@ const ProfilePage = () => {
                             name="firstName"
                             value={formData.firstName}
                             onChange={handleChange}
+                            placeholder="e.g. Kwame"
                           />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -239,6 +240,7 @@ const ProfilePage = () => {
                             name="lastName"
                             value={formData.lastName}
                             onChange={handleChange}
+                            placeholder="e.g. Asante"
                           />
                         </Grid>
                       </Grid>
@@ -250,6 +252,7 @@ const ProfilePage = () => {
                         autoComplete="email"
                         value={formData.email}
                         onChange={handleChange}
+                        placeholder="e.g. kwame@email.com"
                       />
                       <TextField
                         fullWidth
@@ -267,6 +270,7 @@ const ProfilePage = () => {
                         name="location"
                         value={formData.location}
                         onChange={handleChange}
+                        placeholder="e.g. Accra, Greater Accra"
                       />
                       <TextField
                         fullWidth
@@ -276,6 +280,7 @@ const ProfilePage = () => {
                         rows={4}
                         value={formData.bio}
                         onChange={handleChange}
+                        placeholder="Tell hirers about yourself and your skills..."
                       />
                       <Box
                         sx={{
@@ -398,6 +403,7 @@ const ProfilePage = () => {
                         <TextField
                           autoFocus fullWidth label="Skill name" margin="dense"
                           value={newSkill} onChange={(e) => setNewSkill(e.target.value)}
+                          placeholder="e.g. Carpentry"
                         />
                       </DialogContent>
                       <DialogActions>
@@ -460,13 +466,13 @@ const ProfilePage = () => {
                       <DialogTitle>Add Education</DialogTitle>
                       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: '8px !important' }}>
                         <TextField autoFocus fullWidth label="Degree" value={newEdu.degree}
-                          onChange={(e) => setNewEdu(p => ({ ...p, degree: e.target.value }))} />
+                          onChange={(e) => setNewEdu(p => ({ ...p, degree: e.target.value }))} placeholder="e.g. Senior High School" />
                         <TextField fullWidth label="Institution" value={newEdu.institution}
-                          onChange={(e) => setNewEdu(p => ({ ...p, institution: e.target.value }))} />
+                          onChange={(e) => setNewEdu(p => ({ ...p, institution: e.target.value }))} placeholder="e.g. Accra Technical Institute" />
                         <TextField fullWidth label="Year" value={newEdu.year}
                           onChange={(e) => setNewEdu(p => ({ ...p, year: e.target.value }))
                           }
-                          inputProps={{ inputMode: 'numeric' }} />
+                          inputProps={{ inputMode: 'numeric' }} placeholder="e.g. 2020" />
                       </DialogContent>
                       <DialogActions>
                         <Button onClick={() => { setAddEduOpen(false); setNewEdu({ degree: '', institution: '', year: '' }); }}>Cancel</Button>
@@ -529,9 +535,9 @@ const ProfilePage = () => {
                       <DialogTitle>Add Experience</DialogTitle>
                       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: '8px !important' }}>
                         <TextField autoFocus fullWidth label="Job Title" value={newExp.title}
-                          onChange={(e) => setNewExp(p => ({ ...p, title: e.target.value }))} />
+                          onChange={(e) => setNewExp(p => ({ ...p, title: e.target.value }))} placeholder="e.g. Carpenter" />
                         <TextField fullWidth label="Company" value={newExp.company}
-                          onChange={(e) => setNewExp(p => ({ ...p, company: e.target.value }))} />
+                          onChange={(e) => setNewExp(p => ({ ...p, company: e.target.value }))} placeholder="e.g. Asante Construction" />
                         <TextField fullWidth label="Duration (e.g. 2 years)" value={newExp.duration}
                           onChange={(e) => setNewExp(p => ({ ...p, duration: e.target.value }))} />
                       </DialogContent>

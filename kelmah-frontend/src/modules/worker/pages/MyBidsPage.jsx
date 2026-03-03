@@ -399,7 +399,7 @@ const MyBidsPage = () => {
           </Typography>
         </Box>
         <Tooltip title="Refresh">
-          <IconButton onClick={fetchBids} disabled={loading}>
+          <IconButton aria-label="Refresh bids" onClick={fetchBids} disabled={loading}>
             <RefreshIcon />
           </IconButton>
         </Tooltip>

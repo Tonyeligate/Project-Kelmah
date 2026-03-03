@@ -17,12 +17,7 @@ import {
   ArrowDownward as ArrowDownwardIcon,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
-
-// Currency formatter for Ghana Cedi
-const currencyFormatter = new Intl.NumberFormat('en-GH', {
-  style: 'currency',
-  currency: 'GHS',
-});
+import { currencyFormatter } from '@/modules/common/utils/formatters';
 
 const TransactionsList = ({ transactions = [], loading = false, limit }) => {
   if (loading) {

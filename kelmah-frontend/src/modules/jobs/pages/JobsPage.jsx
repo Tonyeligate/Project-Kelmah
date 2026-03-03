@@ -695,9 +695,7 @@ const JobsPage = () => {
   useEffect(() => {
     if (jobsQueryError) {
       if (import.meta.env.DEV) console.error('Error fetching jobs via React Query:', jobsQueryError);
-      setError(
-        `Failed to load jobs: ${jobsQueryError.message || 'Unknown error'}`,
-      );
+      setError('Unable to load jobs. Please try again.');
       return;
     }
     if (!isJobsLoading && !isJobsFetching) {

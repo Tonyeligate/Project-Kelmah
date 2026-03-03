@@ -1,6 +1,7 @@
 const { Message, Conversation, Notification } = require("../models");
 const { validateMessage } = require("../utils/validation");
 const { handleError } = require("../utils/errorHandler");
+const logger = require("../utils/logger");
 const {
   ensureAttachmentScanStateList,
 } = require("../utils/virusScanState");
@@ -96,7 +97,7 @@ exports.createMessage = async (req, res) => {
         { io: req.app?.get?.("io") },
       );
     } catch (notifErr) {
-      console.warn("Message notification creation failed:", notifErr.message);
+      logger.warn("Message notification creation failed:", notifErr.message);
     }
 
     res.status(201).json({
@@ -143,7 +144,8 @@ exports.getConversationMessages = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(parsedLimit)
       .populate("sender", "firstName lastName name profilePicture")
-      .populate("recipient", "firstName lastName name profilePicture");
+      .populate("recipient", "firstName lastName name profilePicture")
+      .lean();
 
     // Mark unread messages in THIS conversation as read (scoped to participants)
     await Message.updateMany(
@@ -353,12 +355,17 @@ exports.searchMessages = async (req, res) => {
     const query =
       andFilters.length > 0 ? { $and: [baseScope, ...andFilters] } : baseScope;
 
+    const page = parseInt(req.query.page, 10) || 1;
+    const searchLimit = Math.min(100, parseInt(req.query.limit, 10) || 50);
+
     const [messages, conversations] = await Promise.all([
       Message.find(query)
         .sort({ createdAt: -1 })
-        .limit(100)
+        .skip((page - 1) * searchLimit)
+        .limit(searchLimit)
         .populate("sender", "firstName lastName name profilePicture")
-        .populate("recipient", "firstName lastName name profilePicture"),
+        .populate("recipient", "firstName lastName name profilePicture")
+        .lean(),
       Conversation.find({ participants: userId }).select(
         "_id participants title",
       ),

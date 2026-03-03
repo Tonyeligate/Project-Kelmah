@@ -39,9 +39,10 @@ import {
 import { format, formatDistanceToNow } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
 import { hirerService } from '../services/hirerService';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { messagingService } from '../../messaging/services/messagingService';
+import { fetchHirerJobs } from '../services/hirerSlice';
 
 const normalizeApplication = (raw, jobIdFallback) => {
   const worker = raw?.worker || {};
@@ -124,7 +125,16 @@ function ApplicationManagementPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const jobsByStatus = useSelector((state) => state.hirer?.jobs);
+
+  // Ensure hirer jobs are loaded (needed for direct navigation)
+  useEffect(() => {
+    if (!jobsByStatus || Object.keys(jobsByStatus).length === 0) {
+      dispatch(fetchHirerJobs('all'));
+    }
+  }, [dispatch, jobsByStatus]);
+
   const jobsForApplications = React.useMemo(() => {
     const all = Object.values(jobsByStatus || {}).flatMap((v) =>
       Array.isArray(v) ? v : [],
@@ -153,7 +163,7 @@ function ApplicationManagementPage() {
         jobsForApplications.length > 0
       ) {
         try {
-          const allApps = await Promise.all(
+          const results = await Promise.allSettled(
             jobsForApplications.map(async (job) => {
               const list = await hirerService.getJobApplications(job.id);
               return (Array.isArray(list) ? list : []).map((app) =>
@@ -161,6 +171,9 @@ function ApplicationManagementPage() {
               );
             }),
           );
+          const allApps = results
+            .filter((r) => r.status === 'fulfilled')
+            .map((r) => r.value);
           const flattenedApplications = allApps.flat();
           setAllApplications(flattenedApplications);
         } catch (err) {

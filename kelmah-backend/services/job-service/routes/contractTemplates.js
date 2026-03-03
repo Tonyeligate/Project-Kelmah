@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const { createLogger } = require('../utils/logger');
+const logger = createLogger('contract-templates');
 const ContractTemplate = require('../models/ContractTemplate');
 const Contract = require('../models/Contract');
 const { verifyGatewayRequest, authorize } = require('../../../shared/middlewares/serviceTrust');
@@ -163,7 +165,7 @@ router.get('/', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error fetching contract templates:', error);
+    logger.error('Error fetching contract templates:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch contract templates',
@@ -207,7 +209,7 @@ router.get('/categories', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error fetching template categories:', error);
+    logger.error('Error fetching template categories:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch template categories',
@@ -224,8 +226,9 @@ router.get('/categories', async (req, res) => {
 router.get('/popular', async (req, res) => {
   try {
     const { limit = 10 } = req.query;
+    const cappedLimit = Math.min(50, parseInt(limit) || 10);
     
-    const templates = await ContractTemplate.findPopular(parseInt(limit));
+    const templates = await ContractTemplate.findPopular(cappedLimit);
 
     res.json({
       success: true,
@@ -233,7 +236,7 @@ router.get('/popular', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error fetching popular templates:', error);
+    logger.error('Error fetching popular templates:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch popular templates',
@@ -270,7 +273,7 @@ router.get('/:id', [
     });
 
   } catch (error) {
-    console.error('Error fetching contract template:', error);
+    logger.error('Error fetching contract template:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch contract template',
@@ -315,7 +318,7 @@ router.post('/', [
     });
 
   } catch (error) {
-    console.error('Error creating contract template:', error);
+    logger.error('Error creating contract template:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to create contract template',
@@ -376,7 +379,7 @@ router.put('/:id', [
     });
 
   } catch (error) {
-    console.error('Error updating contract template:', error);
+    logger.error('Error updating contract template:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to update contract template',
@@ -422,7 +425,7 @@ router.delete('/:id', [
     });
 
   } catch (error) {
-    console.error('Error deleting contract template:', error);
+    logger.error('Error deleting contract template:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to delete contract template',
@@ -480,7 +483,7 @@ router.post('/:id/generate-contract', [
     });
 
   } catch (error) {
-    console.error('Error generating contract:', error);
+    logger.error('Error generating contract:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to generate contract',
@@ -524,7 +527,7 @@ router.post('/:id/increment-usage', [
     });
 
   } catch (error) {
-    console.error('Error incrementing template usage:', error);
+    logger.error('Error incrementing template usage:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to increment template usage',
@@ -567,7 +570,7 @@ router.put('/:id/approve', [
     });
 
   } catch (error) {
-    console.error('Error approving contract template:', error);
+    logger.error('Error approving contract template:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to approve contract template',
@@ -610,7 +613,7 @@ router.put('/:id/reject', [
     });
 
   } catch (error) {
-    console.error('Error rejecting contract template:', error);
+    logger.error('Error rejecting contract template:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to reject contract template',

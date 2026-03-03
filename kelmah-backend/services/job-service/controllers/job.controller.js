@@ -968,7 +968,7 @@ const getSearchSuggestions = async (req, res, next) => {
 
     return successResponse(res, 200, 'Search suggestions retrieved', suggestions);
   } catch (error) {
-    console.error('[GET SEARCH SUGGESTIONS ERROR]', error);
+    jobLogger.error('Search suggestions error', { error: error.message });
     next(error);
   }
 };
@@ -1301,8 +1301,7 @@ const getJobs = async (req, res, next) => {
       total,
     );
   } catch (error) {
-    console.error('[GET JOBS ERROR]', error);
-    console.error('[GET JOBS ERROR] Stack:', error.stack);
+    jobLogger.error('getJobs error', { error: error.message, stack: error.stack });
     next(error);
   }
 };
@@ -1324,7 +1323,7 @@ const getJobById = async (req, res, next) => {
 
     // LOW-02 FIX: Log view count errors instead of silently swallowing
     Job.findByIdAndUpdate(req.params.id, { $inc: { viewCount: 1 } }).catch((err) => {
-      console.warn(`viewCount increment failed for job ${req.params.id}:`, err.message);
+      jobLogger.warn(`viewCount increment failed for job ${req.params.id}`, { error: err.message });
     });
 
     // Transform job data to match frontend expectations
@@ -2305,7 +2304,7 @@ const advancedJobSearch = async (req, res, next) => {
     );
 
   } catch (error) {
-    console.error('Advanced search error:', error);
+    jobLogger.error('Advanced search error', { error: error.message });
     next(error);
   }
 };
@@ -2457,7 +2456,7 @@ const getJobAnalytics = async (req, res, next) => {
     return successResponse(res, 200, 'Job analytics retrieved successfully', analytics);
 
   } catch (error) {
-    console.error('Job analytics error:', error);
+    jobLogger.error('Job analytics error', { error: error.message });
     next(error);
   }
 };
@@ -2495,12 +2494,20 @@ const getMyAssignedJobs = async (req, res, next) => {
 const getMyApplications = async (req, res, next) => {
   try {
     const { status } = req.query;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = Math.min(100, parseInt(req.query.limit, 10) || 20);
     const q = { worker: req.user.id };
     if (status) q.status = status;
-    const apps = await Application.find(q)
-      .populate('job', 'title category budget location status')
-      .sort('-createdAt');
-    return successResponse(res, 200, 'Applications retrieved', apps);
+    const [total, apps] = await Promise.all([
+      Application.countDocuments(q),
+      Application.find(q)
+        .populate('job', 'title category budget location status')
+        .sort('-createdAt')
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean()
+    ]);
+    return paginatedResponse(res, 200, 'Applications retrieved', apps, page, limit, total);
   } catch (error) { next(error); }
 };
 
@@ -2829,11 +2836,19 @@ const withdrawApplication = async (req, res, next) => {
 const getSavedJobs = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const saves = await SavedJob.find({ user: userId })
-      .populate('job')
-      .sort('-createdAt');
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = Math.min(100, parseInt(req.query.limit, 10) || 20);
+    const [total, saves] = await Promise.all([
+      SavedJob.countDocuments({ user: userId }),
+      SavedJob.find({ user: userId })
+        .populate('job')
+        .sort('-createdAt')
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean()
+    ]);
     const jobs = saves.map((s) => s.job).filter(Boolean);
-    return successResponse(res, 200, 'Saved jobs retrieved', { jobs });
+    return paginatedResponse(res, 200, 'Saved jobs retrieved', jobs, page, limit, total);
   } catch (error) { next(error); }
 };
 
@@ -3216,24 +3231,18 @@ const getPlatformStats = async (req, res, next) => {
       lastUpdated: new Date().toISOString()
     };
 
-    console.log('[PLATFORM STATS] Computed statistics:', stats);
-
     // Return with cache headers (1 hour cache)
     res.set('Cache-Control', 'public, max-age=3600');
     return successResponse(res, 200, 'Platform statistics retrieved successfully', stats);
 
   } catch (error) {
-    console.error('[PLATFORM STATS ERROR]', error);
-    console.error('[PLATFORM STATS ERROR] Stack:', error.stack);
-
     // Fallback to reasonable defaults if query fails
     const fallbackStats = {
       availableJobs: 0,
       activeEmployers: 0,
       skilledWorkers: 0,
       successRate: 0,
-      lastUpdated: new Date().toISOString(),
-      error: error.message
+      lastUpdated: new Date().toISOString()
     };
 
     return successResponse(res, 200, 'Platform statistics retrieved (fallback)', fallbackStats);

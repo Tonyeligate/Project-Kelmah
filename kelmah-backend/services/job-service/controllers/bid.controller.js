@@ -2,6 +2,7 @@
  * Bid Controller - Enhanced Application Controller with Bidding System
  */
 
+const mongoose = require('mongoose');
 const { Bid, Job, UserPerformance } = require('../models');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
 const ServiceClient = require('../services/serviceClient');
@@ -135,7 +136,8 @@ exports.getJobBids = async (req, res, next) => {
         .skip(offset)
         .limit(limit)
         .populate('worker', 'firstName lastName profilePicture')
-        .populate('job', 'title category locationDetails'),
+        .populate('job', 'title category locationDetails')
+        .lean(),
     ]);
 
     return paginatedResponse(res, 200, 'Job bids retrieved successfully', bids, page, limit, total);
@@ -165,7 +167,8 @@ exports.getWorkerBids = async (req, res, next) => {
         .skip(offset)
         .limit(limit)
         .populate('job', 'title category locationDetails')
-        .populate('worker', 'firstName lastName profilePicture'),
+        .populate('worker', 'firstName lastName profilePicture')
+        .lean(),
     ]);
 
     return paginatedResponse(res, 200, 'Worker bids retrieved successfully', bids, page, limit, total);
@@ -181,7 +184,8 @@ exports.getBidById = async (req, res, next) => {
 
     const bid = await Bid.findById(bidId)
       .populate('job', 'title category locationDetails hirer')
-      .populate('worker', 'firstName lastName profilePicture email');
+      .populate('worker', 'firstName lastName profilePicture email')
+      .lean();
 
     if (!bid) {
       return errorResponse(res, 404, 'Bid not found');
@@ -222,20 +226,26 @@ exports.acceptBid = async (req, res, next) => {
       return errorResponse(res, 400, 'Bid is not pending');
     }
 
-    // Accept the bid
-    await bid.accept(hirerNotes);
+    // Accept bid, reject others, and update job in a transaction to prevent double-accept
+    const session = await mongoose.startSession();
+    try {
+      await session.withTransaction(async () => {
+        await bid.accept(hirerNotes);
 
-    // Reject all other pending bids for this job
-    await Bid.updateMany(
-      { job: bid.job._id, _id: { $ne: bidId }, status: 'pending' },
-      { status: 'rejected', hirerNotes: 'Another bid was accepted' }
-    );
+        await Bid.updateMany(
+          { job: bid.job._id, _id: { $ne: bidId }, status: 'pending' },
+          { status: 'rejected', hirerNotes: 'Another bid was accepted' },
+          { session }
+        );
 
-    // Update job status
-    bid.job.status = 'in-progress';
-    bid.job.worker = bid.worker;
-    bid.job.bidding.bidStatus = 'closed';
-    await bid.job.save();
+        bid.job.status = 'in-progress';
+        bid.job.worker = bid.worker;
+        bid.job.bidding.bidStatus = 'closed';
+        await bid.job.save({ session });
+      });
+    } finally {
+      await session.endSession();
+    }
 
     // Notify the worker whose bid was accepted
     ServiceClient.messaging.sendBidNotification(

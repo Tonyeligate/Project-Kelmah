@@ -38,7 +38,7 @@ import { Helmet } from 'react-helmet-async';
 // Demo payment methods for initial display
 const PaymentMethodsPage = () => {
   const [paymentMethods, setPaymentMethods] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Dialog control states
@@ -83,7 +83,7 @@ const PaymentMethodsPage = () => {
       const methods = await paymentService.getPaymentMethods();
       setPaymentMethods(methods);
     } catch (err) {
-      setError(err.message || 'Failed to load payment methods');
+      setError('Failed to load payment methods. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -120,7 +120,7 @@ const PaymentMethodsPage = () => {
         cvv: '',
       });
     } catch (err) {
-      setError(err.message || 'Failed to add card');
+      setError('Failed to add card. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -144,7 +144,7 @@ const PaymentMethodsPage = () => {
       setOpenAddMobile(false);
       setNewMobile({ provider: 'MTN', phoneNumber: '', name: '' });
     } catch (err) {
-      setError(err.message || 'Failed to add mobile money');
+      setError('Failed to add mobile money. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -174,7 +174,7 @@ const PaymentMethodsPage = () => {
         branchCode: '',
       });
     } catch (err) {
-      setError(err.message || 'Failed to add bank account');
+      setError('Failed to add bank account. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -187,7 +187,7 @@ const PaymentMethodsPage = () => {
       await paymentService.setDefaultPaymentMethod(id);
       await fetchMethods();
     } catch (err) {
-      setError(err.message || 'Failed to set default payment method');
+      setError('Failed to set default payment method. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -208,7 +208,7 @@ const PaymentMethodsPage = () => {
       setMethodToDelete(null);
       await fetchMethods();
     } catch (err) {
-      setError(err.message || 'Failed to delete payment method');
+      setError('Failed to delete payment method. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -262,6 +262,7 @@ const PaymentMethodsPage = () => {
           <Tooltip title="Add credit card">
             <IconButton
               color="secondary"
+              aria-label="Add credit card"
               sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
               onClick={() => setOpenAddCard(true)}
             >
@@ -271,6 +272,7 @@ const PaymentMethodsPage = () => {
           <Tooltip title="Add mobile money">
             <IconButton
               color="secondary"
+              aria-label="Add mobile money"
               sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
               onClick={() => setOpenAddMobile(true)}
             >
@@ -280,6 +282,7 @@ const PaymentMethodsPage = () => {
           <Tooltip title="Add bank account">
             <IconButton
               color="secondary"
+              aria-label="Add bank account"
               sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
               onClick={() => setOpenAddBank(true)}
             >
@@ -516,6 +519,7 @@ const PaymentMethodsPage = () => {
                   setNewCard({ ...newCard, cardholderName: e.target.value })
                 }
                 sx={{ mb: 2 }}
+                placeholder="e.g. Kwame Asante"
               />
             </Tooltip>
 
@@ -655,6 +659,7 @@ const PaymentMethodsPage = () => {
               onChange={(e) =>
                 setNewMobile({ ...newMobile, name: e.target.value })
               }
+              placeholder="e.g. Kwame Asante"
             />
           </Box>
         </DialogContent>
@@ -727,6 +732,7 @@ const PaymentMethodsPage = () => {
                 setNewBank({ ...newBank, accountNumber: e.target.value })
               }
               sx={{ mb: 2 }}
+              placeholder="e.g. 1234567890"
               inputProps={{ inputMode: 'numeric' }}
             />
 
@@ -738,6 +744,7 @@ const PaymentMethodsPage = () => {
                 setNewBank({ ...newBank, accountName: e.target.value })
               }
               sx={{ mb: 2 }}
+              placeholder="e.g. Kwame Asante"
             />
 
             <TextField
@@ -747,6 +754,7 @@ const PaymentMethodsPage = () => {
               onChange={(e) =>
                 setNewBank({ ...newBank, branchCode: e.target.value })
               }
+              placeholder="e.g. 001"
             />
           </Box>
         </DialogContent>

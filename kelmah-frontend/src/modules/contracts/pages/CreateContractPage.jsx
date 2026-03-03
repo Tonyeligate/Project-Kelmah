@@ -309,7 +309,7 @@ const CreateContractPage = () => {
         }
 
         // Check if milestone amounts add up to contract value
-        if (totalAmount !== parseFloat(contract.value)) {
+        if (Math.abs(totalAmount - parseFloat(contract.value)) > 0.01) {
           errors.totalAmount = 'The step payments must add up to the total pay';
         }
         break;
@@ -501,17 +501,13 @@ const CreateContractPage = () => {
                   label="Start Date *"
                   value={contract.startDate}
                   onChange={(value) => handleDateChange('startDate', value)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      fullWidth
-                      error={!!validationErrors.startDate}
-                      helperText={
-                        validationErrors.startDate ||
-                        'Select contract start date'
-                      }
-                    />
-                  )}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      error: !!validationErrors.startDate,
+                      helperText: validationErrors.startDate || 'Select contract start date',
+                    },
+                  }}
                 />
               </Grid>
               <Grid item xs={12} md={6}>
@@ -519,15 +515,13 @@ const CreateContractPage = () => {
                   label="End Date *"
                   value={contract.endDate}
                   onChange={(value) => handleDateChange('endDate', value)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      fullWidth
-                      error={!!validationErrors.endDate}
-                      helperText={
-                        validationErrors.endDate || 'Select contract end date'
-                      }
-                    />
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      error: !!validationErrors.endDate,
+                      helperText: validationErrors.endDate || 'Select contract end date',
+                    },
+                  }}
                   )}
                   minDate={contract.startDate}
                 />
@@ -642,19 +636,15 @@ const CreateContractPage = () => {
                           onChange={(value) =>
                             handleMilestoneChange(index, 'dueDate', value)
                           }
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              fullWidth
-                              error={
-                                validationErrors.milestones?.[index]?.dueDate
-                              }
-                              helperText={
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              error: !!validationErrors.milestones?.[index]?.dueDate,
+                              helperText:
                                 validationErrors.milestones?.[index]?.dueDate ||
-                                'Select milestone due date'
-                              }
-                            />
-                          )}
+                                'Select milestone due date',
+                            },
+                          }}
                           minDate={contract.startDate}
                           maxDate={contract.endDate}
                         />

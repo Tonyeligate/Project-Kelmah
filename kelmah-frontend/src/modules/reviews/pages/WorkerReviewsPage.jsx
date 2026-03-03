@@ -10,6 +10,7 @@ import {
   LinearProgress,
   Divider,
   Stack,
+  Alert,
 } from '@mui/material';
 import { Star as StarIcon } from '@mui/icons-material';
 import ReviewCard from '../components/common/ReviewCard';
@@ -52,6 +53,7 @@ const RatingDistribution = ({ distribution, totalReviews }) => (
 const WorkerReviewsPage = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [page, setPage] = useState(1);
   const limit = 10;
@@ -71,7 +73,10 @@ const WorkerReviewsPage = () => {
         setReviews(reviews);
         setPagination(pagination);
       })
-      .catch((err) => { if (import.meta.env.DEV) console.error(err); })
+      .catch((err) => {
+        if (import.meta.env.DEV) console.error(err);
+        setError('Failed to load reviews. Please try again later.');
+      })
       .finally(() => setLoading(false));
   }, [user, page]);
 
@@ -126,6 +131,11 @@ const WorkerReviewsPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
       <Helmet><title>Worker Reviews | Kelmah</title></Helmet>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
       {/* Header */}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', sm: 'center' }} mb={4}>
         <Box>

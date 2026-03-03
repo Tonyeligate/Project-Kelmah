@@ -587,6 +587,7 @@ const EnhancedReviewsPage = () => {
             </Stack>
             <IconButton
               size="small"
+              aria-label="Review options"
               onClick={(e) => {
                 setSelectedReview(review);
                 setMoreMenuAnchor(e.currentTarget);

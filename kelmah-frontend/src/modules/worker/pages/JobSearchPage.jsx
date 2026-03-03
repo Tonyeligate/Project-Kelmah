@@ -168,6 +168,7 @@ const SearchHeader = ({ search, setSearch, onSearch, resultCount, isLoading }) =
                 <InputAdornment position="end">
                   <IconButton
                     size="small"
+                    aria-label="Clear search"
                     onClick={() => {
                       setSearch('');
                       onSearch('');
@@ -732,10 +733,10 @@ const JobSearchPage = () => {
         sorted.sort((a, b) => (a.budget || 0) - (b.budget || 0));
         break;
       case 'deadline':
-        sorted.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+        sorted.sort((a, b) => new Date(a.deadline || a.expiresAt || '9999') - new Date(b.deadline || b.expiresAt || '9999'));
         break;
       default:
-        sorted.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
+        sorted.sort((a, b) => new Date(b.postedDate || b.createdAt) - new Date(a.postedDate || a.createdAt));
     }
     // Client-side budget filter
     return sorted.filter((j) => {

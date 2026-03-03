@@ -31,14 +31,11 @@ import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-// Currency formatter for Ghana Cedi
-const currencyFormatter = new Intl.NumberFormat('en-GH', {
-  style: 'currency',
-  currency: 'GHS',
-});
+import { currencyFormatter } from '@/modules/common/utils/formatters';
 
 const BillPage = () => {
   const { bills, loading, payBill, actionLoading, error } = usePayments();
+  const timerRef = React.useRef(null);
   const billsArray = Array.isArray(bills)
     ? bills
     : bills?.bills && Array.isArray(bills.bills)
@@ -104,8 +101,11 @@ const BillPage = () => {
     setDialogStep(1);
     await payBill(selectedBill.id);
     setDialogStep(2);
-    setTimeout(handleCloseConfirm, 1000);
+    timerRef.current = setTimeout(handleCloseConfirm, 1000);
   };
+
+  // Cleanup timer on unmount to prevent state update on unmounted component
+  React.useEffect(() => () => clearTimeout(timerRef.current), []);
 
   const getStatusChip = (status) => {
     switch (status) {

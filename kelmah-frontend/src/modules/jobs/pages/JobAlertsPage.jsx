@@ -62,7 +62,7 @@ const JobAlertsPage = () => {
       await notificationService.updatePreferences(prefs);
       setSuccess('Preferences saved');
     } catch (e) {
-      setError(e?.message || 'Failed to save preferences');
+      setError('Failed to save preferences. Please try again.');
     } finally {
       setSaving(false);
     }

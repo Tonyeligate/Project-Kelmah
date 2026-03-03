@@ -174,7 +174,7 @@ class GlobalErrorBoundaryInner extends Component {
               }}
             />
 
-            {error && (
+            {error && import.meta.env.DEV && (
               <Box
                 sx={{
                   p: 2,

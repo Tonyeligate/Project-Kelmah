@@ -4,6 +4,7 @@
  * User preferences now persist across service restarts.
  */
 const router = require('express').Router();
+const logger = require('../utils/logger');
 
 // Service trust middleware - verify requests from API Gateway
 const { verifyGatewayRequest } = require('../../../shared/middlewares/serviceTrust');
@@ -45,7 +46,7 @@ const AVAILABLE_THEMES = [
   { id: 'auto', name: 'Auto', description: 'Follows system preference' },
 ];
 
-const getUserId = (req) => req.user?.id || req.headers['x-user-id'] || null;
+const getUserId = (req) => req.user?.id || null;
 
 const respond = (res, data) => res.json({ success: true, data });
 
@@ -70,7 +71,7 @@ router.get('/', async (req, res) => {
     const settings = await getOrCreateSettings(userId);
     respond(res, settings);
   } catch (err) {
-    console.error('[SETTINGS] GET / error:', err.message);
+    logger.error('[SETTINGS] GET / error:', err.message);
     res.status(500).json({ success: false, error: { message: 'Failed to retrieve settings' } });
   }
 });
@@ -94,7 +95,7 @@ router.put('/', verifyGatewayRequest, async (req, res) => {
 
     respond(res, settings);
   } catch (err) {
-    console.error('[SETTINGS] PUT / error:', err.message);
+    logger.error('[SETTINGS] PUT / error:', err.message);
     res.status(500).json({ success: false, error: { message: 'Failed to update settings' } });
   }
 });
@@ -107,7 +108,7 @@ router.get('/notifications', async (req, res) => {
     const settings = await getOrCreateSettings(userId);
     respond(res, settings.notifications || DEFAULT_NOTIFICATIONS);
   } catch (err) {
-    console.error('[SETTINGS] GET /notifications error:', err.message);
+    logger.error('[SETTINGS] GET /notifications error:', err.message);
     res.status(500).json({ success: false, error: { message: 'Failed to retrieve notification preferences' } });
   }
 });
@@ -126,7 +127,7 @@ router.put('/notifications', verifyGatewayRequest, async (req, res) => {
 
     respond(res, settings.notifications);
   } catch (err) {
-    console.error('[SETTINGS] PUT /notifications error:', err.message);
+    logger.error('[SETTINGS] PUT /notifications error:', err.message);
     res.status(500).json({ success: false, error: { message: 'Failed to update notification preferences' } });
   }
 });
@@ -139,7 +140,7 @@ router.get('/privacy', async (req, res) => {
     const settings = await getOrCreateSettings(userId);
     respond(res, settings.privacy || DEFAULT_PRIVACY);
   } catch (err) {
-    console.error('[SETTINGS] GET /privacy error:', err.message);
+    logger.error('[SETTINGS] GET /privacy error:', err.message);
     res.status(500).json({ success: false, error: { message: 'Failed to retrieve privacy settings' } });
   }
 });
@@ -158,7 +159,7 @@ router.put('/privacy', verifyGatewayRequest, async (req, res) => {
 
     respond(res, settings.privacy);
   } catch (err) {
-    console.error('[SETTINGS] PUT /privacy error:', err.message);
+    logger.error('[SETTINGS] PUT /privacy error:', err.message);
     res.status(500).json({ success: false, error: { message: 'Failed to update privacy settings' } });
   }
 });
@@ -179,7 +180,7 @@ router.put('/language', verifyGatewayRequest, async (req, res) => {
 
     respond(res, { language: settings.language });
   } catch (err) {
-    console.error('[SETTINGS] PUT /language error:', err.message);
+    logger.error('[SETTINGS] PUT /language error:', err.message);
     res.status(500).json({ success: false, error: { message: 'Failed to update language' } });
   }
 });
@@ -198,7 +199,7 @@ router.put('/theme', verifyGatewayRequest, async (req, res) => {
 
     respond(res, { theme: settings.theme });
   } catch (err) {
-    console.error('[SETTINGS] PUT /theme error:', err.message);
+    logger.error('[SETTINGS] PUT /theme error:', err.message);
     res.status(500).json({ success: false, error: { message: 'Failed to update theme' } });
   }
 });
@@ -222,7 +223,7 @@ router.post('/reset', verifyGatewayRequest, async (req, res) => {
     const settings = await getOrCreateSettings(userId);
     respond(res, settings);
   } catch (err) {
-    console.error('[SETTINGS] POST /reset error:', err.message);
+    logger.error('[SETTINGS] POST /reset error:', err.message);
     res.status(500).json({ success: false, error: { message: 'Failed to reset settings' } });
   }
 });

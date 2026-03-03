@@ -362,7 +362,7 @@ const SearchPage = () => {
         // Ignore aborted requests (superseded by a newer search)
         if (error.name === 'AbortError' || error.name === 'CanceledError') return;
         if (import.meta.env.DEV) console.error('Error searching:', error);
-        setError(error.message || 'Search did not work. Please try again.');
+        setError('Search did not work. Please try again.');
         setSearchResults([]);
       } finally {
         setLoading(false);

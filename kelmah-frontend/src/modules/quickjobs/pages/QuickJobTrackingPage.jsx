@@ -95,7 +95,7 @@ const QuickJobTrackingPage = () => {
         setError(result.error?.message || 'Failed to load job');
       }
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Something went wrong');
+      setError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -281,7 +281,7 @@ const QuickJobTrackingPage = () => {
       <Helmet><title>Track Quick Job | Kelmah</title></Helmet>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <IconButton onClick={() => navigate(-1)} sx={{ mr: 1 }}>
+        <IconButton aria-label="Go back" onClick={() => navigate(-1)} sx={{ mr: 1 }}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h5" fontWeight="bold">
@@ -346,6 +346,7 @@ const QuickJobTrackingPage = () => {
                 {job.client?.phoneNumber && (
                   <IconButton 
                     color="primary"
+                    aria-label="Call client"
                     onClick={() => window.open(`tel:${job.client.phoneNumber}`, '_self')}
                   >
                     <PhoneIcon />
@@ -491,7 +492,7 @@ const QuickJobTrackingPage = () => {
         <DialogTitle>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             Mark Work Complete
-            <IconButton onClick={() => setCompletionDialogOpen(false)}>
+            <IconButton aria-label="Close dialog" onClick={() => setCompletionDialogOpen(false)}>
               <CloseIcon />
             </IconButton>
           </Box>
@@ -512,6 +513,7 @@ const QuickJobTrackingPage = () => {
                 />
                 <IconButton
                   size="small"
+                  aria-label="Remove photo"
                   onClick={() => setCompletionPhotos(prev => prev.filter((_, i) => i !== index))}
                   sx={{
                     position: 'absolute',

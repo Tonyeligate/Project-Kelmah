@@ -3,6 +3,7 @@
  * Handles review analytics and moderation operations
  */
 
+const mongoose = require('mongoose');
 const { Review } = require('../models');
 
 /**
@@ -67,6 +68,10 @@ exports.moderateReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
     const { status, moderationNote } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(reviewId)) {
+      return res.status(400).json({ success: false, message: 'Invalid review ID' });
+    }
 
     if (!['approved', 'rejected', 'flagged'].includes(status)) {
       return res.status(400).json({

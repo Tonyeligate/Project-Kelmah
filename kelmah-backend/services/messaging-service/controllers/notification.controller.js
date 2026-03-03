@@ -1,5 +1,6 @@
 const { Notification, NotificationPreference, User } = require("../models");
 const { handleError } = require("../utils/errorHandler");
+const logger = require("../utils/logger");
 
 const getRequesterId = (req) => req?.user?._id || req?.user?.id;
 
@@ -77,13 +78,13 @@ const createNotificationForUser = async (
         }
       } catch (emailErr) {
         // Email failure should not block notification creation
-        console.warn("Failed to send notification email:", emailErr.message);
+        logger.warn("Failed to send notification email:", emailErr.message);
       }
     }
 
     return notification;
   } catch (error) {
-    console.error("createNotificationForUser error:", error.message);
+    logger.error("createNotificationForUser error:", error.message);
     throw error;
   }
 };

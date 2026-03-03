@@ -31,6 +31,8 @@ const RESOLUTION_PERCENTAGES = {
 const getAllDisputes = async (req, res) => {
   try {
     const { status, page = 1, limit = 20 } = req.query;
+    const parsedLimit = Math.min(100, parseInt(limit) || 20);
+    const parsedPage = parseInt(page) || 1;
 
     const query = { 'dispute.status': { $exists: true } };
     if (status) {
@@ -41,8 +43,9 @@ const getAllDisputes = async (req, res) => {
       .populate('client', 'firstName lastName email phoneNumber')
       .populate('acceptedQuote.worker', 'firstName lastName email phoneNumber')
       .sort({ 'dispute.raisedAt': -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+      .skip((parsedPage - 1) * parsedLimit)
+      .limit(parsedLimit)
+      .lean();
 
     const total = await QuickJob.countDocuments(query);
 
@@ -60,9 +63,9 @@ const getAllDisputes = async (req, res) => {
       })),
       meta: {
         total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        pages: Math.ceil(total / limit)
+        page: parsedPage,
+        limit: parsedLimit,
+        pages: Math.ceil(total / parsedLimit)
       }
     });
   } catch (error) {
@@ -330,11 +333,12 @@ const autoResolveExpiredDisputes = async () => {
   try {
     const now = new Date();
 
-    // Find disputes past their auto-resolve deadline
+    // Find disputes past their auto-resolve deadline (batch to avoid memory spikes)
+    const BATCH_SIZE = 100;
     const expiredDisputes = await QuickJob.find({
       'dispute.status': 'open',
       'dispute.autoResolveDeadline': { $lt: now }
-    });
+    }).limit(BATCH_SIZE);
 
     let resolved = 0;
 

@@ -49,6 +49,9 @@ import workerService from '../services/workerService';
 import ProfileCompletionCard from '../components/ProfileCompletionCard';
 import QuickActionsRow from '../components/QuickActionsRow';
 import { Helmet } from 'react-helmet-async';
+import PostAddIcon from '@mui/icons-material/PostAdd';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import InboxOutlinedIcon from '@mui/icons-material/InboxOutlined';
 
 /* ---------- Keyframes for spin animation ---------- */
 const spinKeyframes = {
@@ -308,6 +311,13 @@ const WorkerDashboardPage = () => {
     rating: user?.rating || 0,
   }), [pendingApplications, acceptedApplications, completedJobs, earningsSummary, user]);
 
+  // Determine if this is a brand-new worker with no activity
+  const isNewWorker =
+    stats.applications === 0 &&
+    stats.completedJobs === 0 &&
+    stats.earnings === 0 &&
+    stats.rating === 0;
+
   // Handle refresh with retry logic
   const handleRefresh = useCallback(() => {
     dispatch(clearWorkerErrors());
@@ -528,6 +538,36 @@ const WorkerDashboardPage = () => {
       {/* Error Display - Shows inline instead of blocking */}
       {error && <ErrorDisplay />}
 
+      {/* New Worker Welcome Banner - Shows when no activity */}
+      {!isLoading && isNewWorker && (
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3,
+            mb: 4,
+            borderRadius: 2,
+            backgroundColor: 'background.paper',
+            border: '1px solid',
+            borderColor: alpha(theme.palette.primary.main, 0.35),
+            color: 'text.primary',
+          }}
+        >
+          <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
+            Welcome to Kelmah! 🎉
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }}>
+            Start by browsing available jobs and submitting your first application. Skilled workers like you are in high demand!
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<SearchIcon />}
+            onClick={() => navigate('/worker/find-work')}
+          >
+            Find Your First Job
+          </Button>
+        </Paper>
+      )}
+
       {/* Loading Timeout Warning */}
       {loadingTimeout && isLoading && <LoadingTimeoutWarning onRefresh={handleRefresh} />}
 
@@ -659,6 +699,7 @@ const WorkerDashboardPage = () => {
               Earnings Overview
             </Typography>
             <Box sx={{ height: { xs: 220, md: 280 } }}>
+              {earningsData.some(d => d.value > 0) ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -691,6 +732,13 @@ const WorkerDashboardPage = () => {
                   />
                 </PieChart>
               </ResponsiveContainer>
+              ) : (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 1 }}>
+                  <TrendingUpIcon sx={{ fontSize: 48, color: 'text.disabled' }} />
+                  <Typography variant="body2" color="text.secondary">No earnings yet</Typography>
+                  <Typography variant="caption" color="text.disabled">Complete jobs to start earning</Typography>
+                </Box>
+              )}
             </Box>
           </Paper>
         </Grid>
@@ -714,6 +762,7 @@ const WorkerDashboardPage = () => {
               Applications Overview
             </Typography>
             <Box sx={{ height: { xs: 220, md: 280 } }}>
+              {applicationsData.some(d => d.value > 0) ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -745,6 +794,13 @@ const WorkerDashboardPage = () => {
                   />
                 </PieChart>
               </ResponsiveContainer>
+              ) : (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 1 }}>
+                  <InboxOutlinedIcon sx={{ fontSize: 48, color: 'text.disabled' }} />
+                  <Typography variant="body2" color="text.secondary">No applications yet</Typography>
+                  <Button size="small" onClick={() => navigate('/worker/find-work')}>Browse Jobs</Button>
+                </Box>
+              )}
             </Box>
           </Paper>
         </Grid>

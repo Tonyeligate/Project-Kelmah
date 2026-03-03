@@ -327,13 +327,13 @@ const MyApplicationsPage = () => {
                           color="text.secondary"
                           sx={{ fontSize: '0.875rem', mb: 0.5 }}
                         >
-                          {application.company || 'Unknown Company'}
+                          {application.job?.hirer?.firstName ? `${application.job.hirer.firstName} ${application.job.hirer.lastName || ''}`.trim() : application.company || 'Unknown'}
                         </Typography>
                         <Typography
                           color="text.disabled"
                           sx={{ fontSize: '0.75rem', mb: 1 }}
                         >
-                          📍 {application.job?.location?.city || application.location || 'Unknown'} • Applied{' '}
+                          📍 {typeof application.job?.location === 'string' ? application.job.location : application.job?.location?.address || application.job?.location?.city || 'Unknown'} • Applied{' '}
                           {new Date(
                             application.createdAt || application.appliedDate,
                           ).toLocaleDateString()}

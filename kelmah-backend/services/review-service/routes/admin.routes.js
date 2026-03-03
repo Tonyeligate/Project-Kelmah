@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const logger = require('../utils/logger');
 const { verifyGatewayRequest } = require('../../../shared/middlewares/serviceTrust');
 let adminLimiter = null;
 try {
@@ -31,17 +32,19 @@ router.use((req, res, next) => {
 router.get('/reviews/queue', adminLimiter, async (req, res) => {
   try {
     const { status = 'pending', page = 1, limit = 20, category, minRating } = req.query;
+    const parsedLimit = Math.min(100, parseInt(limit) || 20);
+    const parsedPage = parseInt(page) || 1;
     const filter = {};
     if (status && status !== 'all') filter.status = status;
     if (category) filter.jobCategory = category;
     if (minRating) filter.rating = { $gte: parseInt(minRating) };
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const skip = (parsedPage - 1) * parsedLimit;
     const [reviews, total] = await Promise.all([
       Review.find(filter)
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(parseInt(limit))
+        .limit(parsedLimit)
         .lean(),
       Review.countDocuments(filter)
     ]);
@@ -51,15 +54,15 @@ router.get('/reviews/queue', adminLimiter, async (req, res) => {
       data: {
         reviews,
         pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
+          page: parsedPage,
+          limit: parsedLimit,
           total,
-          pages: Math.ceil(total / parseInt(limit))
+          pages: Math.ceil(total / parsedLimit)
         }
       }
     });
   } catch (error) {
-    console.error('Admin reviews queue error:', error);
+    logger.error('Admin reviews queue error:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch moderation queue' });
   }
 });
@@ -83,7 +86,7 @@ router.post('/reviews/:id/moderate', adminLimiter, async (req, res) => {
     if (!review) return res.status(404).json({ success: false, message: 'Review not found' });
     res.json({ success: true, message: 'Review moderated', data: review });
   } catch (error) {
-    console.error('Admin moderate review error:', error);
+    logger.error('Admin moderate review error:', error);
     res.status(500).json({ success: false, message: 'Failed to moderate review' });
   }
 });
@@ -107,7 +110,7 @@ router.post('/reviews/bulk-moderate', adminLimiter, async (req, res) => {
     );
     res.json({ success: true, message: `${result.modifiedCount} reviews ${status}`, data: { modified: result.modifiedCount } });
   } catch (error) {
-    console.error('Admin bulk moderate error:', error);
+    logger.error('Admin bulk moderate error:', error);
     res.status(500).json({ success: false, message: 'Failed to bulk moderate reviews' });
   }
 });

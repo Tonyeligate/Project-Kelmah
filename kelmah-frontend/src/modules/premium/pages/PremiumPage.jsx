@@ -353,6 +353,7 @@ const PremiumPage = () => {
             Confirm Upgrade
           </Typography>
           <IconButton
+            aria-label="Close dialog"
             onClick={() => setOpenDialog(false)}
             disabled={isUpgrading}
           >

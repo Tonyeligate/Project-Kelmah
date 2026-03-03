@@ -16,6 +16,11 @@ const VerifyEmailPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   useEffect(() => {
+    if (!token) {
+      setStatus('');
+      setError('No verification token provided. Please check your email link.');
+      return;
+    }
     const verify = async () => {
       try {
         const res = await authService.verifyEmail(token);

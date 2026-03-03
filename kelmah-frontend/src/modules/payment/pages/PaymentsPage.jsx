@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { usePayments } from '../contexts/PaymentContext';
 import BillPage from './BillPage';
 import PaymentMethodsPage from './PaymentMethodsPage';
@@ -42,16 +42,11 @@ import {
 import TransactionsList from '../components/TransactionsList';
 import { Link as RouterLink } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-
-// Currency formatter for Ghana Cedi
-const currencyFormatter = new Intl.NumberFormat('en-GH', {
-  style: 'currency',
-  currency: 'GHS',
-});
+import { currencyFormatter } from '@/modules/common/utils/formatters';
 
 const PaymentsPage = () => {
   const [selectedTab, setSelectedTab] = useState(0);
-  const [animate, setAnimate] = useState(false);
+  const [animate] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
   const { loading, error, walletBalance, transactions, fetchTransactions } =
     usePayments();
@@ -87,10 +82,6 @@ const PaymentsPage = () => {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-
-  useEffect(() => {
-    setAnimate(true);
-  }, []);
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>

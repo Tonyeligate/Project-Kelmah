@@ -223,6 +223,7 @@ const AppointmentCard = ({ appointment, onEdit, onDelete }) => {
       >
         <IconButton
           size="small"
+          aria-label="Edit appointment"
           onClick={(e) => {
             e.stopPropagation();
             onEdit(appointment);
@@ -232,6 +233,7 @@ const AppointmentCard = ({ appointment, onEdit, onDelete }) => {
         </IconButton>
         <IconButton
           size="small"
+          aria-label="Delete appointment"
           onClick={(e) => {
             e.stopPropagation();
             onDelete(appointment.id);
@@ -356,6 +358,7 @@ const SchedulingPage = () => {
     } catch (err) {
       if (import.meta.env.DEV) console.error('Error loading jobs:', err);
       setJobs([]); // Set empty array as fallback
+      enqueueSnackbar('Failed to load jobs for autocomplete', { variant: 'warning' });
     } finally {
       setLoadingJobs(false);
     }
@@ -373,6 +376,8 @@ const SchedulingPage = () => {
           workers = await workerService.searchWorkers({ limit: 20 });
         }
       } catch (apiError) {
+        // Non-critical: falls through to mock data below when worker API is unavailable.
+        // This is an intentional graceful degradation for the user autocomplete field.
         if (import.meta.env.DEV) console.warn(
           'workerService.searchWorkers not available, using mock data:',
           apiError.message,

@@ -179,7 +179,7 @@ const ContractManagementPage = () => {
                   variant="contained"
                   color="secondary"
                   startIcon={<AddIcon />}
-                  onClick={() => navigate('/contracts/new')}
+                  onClick={() => navigate('/contracts/create')}
                   sx={{ minHeight: 44 }}
                 >
                   Create Contract

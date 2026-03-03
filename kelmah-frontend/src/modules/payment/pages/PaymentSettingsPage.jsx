@@ -15,12 +15,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { Helmet } from 'react-helmet-async';
 import paymentService from '../services/paymentService';
-
-// Currency formatter for Ghana Cedi
-const currencyFormatter = new Intl.NumberFormat('en-GH', {
-  style: 'currency',
-  currency: 'GHS',
-});
+import { currencyFormatter } from '@/modules/common/utils/formatters';
 
 const PaymentSettingsPage = () => {
   const [settings, setSettings] = useState({});
@@ -35,7 +30,7 @@ const PaymentSettingsPage = () => {
         const res = await paymentService.getPaymentSettings();
         setSettings(res.data || res);
       } catch (err) {
-        setError(err.message || 'Failed to load settings');
+        setError('Failed to load settings. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -62,7 +57,7 @@ const PaymentSettingsPage = () => {
       await paymentService.updatePaymentSettings(settings);
       setSuccess(true);
     } catch (err) {
-      setError(err.message || 'Failed to save settings');
+      setError('Failed to save settings. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -112,6 +107,7 @@ const PaymentSettingsPage = () => {
               label="Default Currency"
               value={settings.defaultCurrency || ''}
               onChange={handleChange('defaultCurrency')}
+              placeholder="e.g. GHS"
             />
           </Grid>
           <Grid item xs={12}>
@@ -121,6 +117,7 @@ const PaymentSettingsPage = () => {
               type="number"
               value={settings.minDepositAmount || ''}
               onChange={handleChange('minDepositAmount')}
+              placeholder="e.g. 100"
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">

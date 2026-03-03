@@ -18,14 +18,12 @@ const DEFAULT_RATING_RESPONSE = {
 };
 
 const buildWorkerFilter = (workerId) => {
-  if (!workerId) {
-    return {};
+  if (!workerId || !Types.ObjectId.isValid(workerId)) {
+    return null; // Signal invalid ID
   }
 
   return {
-    reviewee: Types.ObjectId.isValid(workerId)
-      ? new Types.ObjectId(workerId)
-      : workerId,
+    reviewee: new Types.ObjectId(workerId),
   };
 };
 
@@ -61,13 +59,24 @@ const buildRatingsBreakdown = (averageRating) => {
 exports.getWorkerRating = async (req, res) => {
   try {
     const { workerId } = req.params;
+    const filter = buildWorkerFilter(workerId);
+    if (!filter) {
+      return res.status(400).json({ success: false, error: { message: 'Invalid worker ID' } });
+    }
 
-    // For now, return a basic structure - full implementation would require WorkerRating model
-    // This is a simplified version until the WorkerRating model is extracted
+    // Use aggregation to avoid loading all reviews into memory
+    const [stats] = await Review.aggregate([
+      { $match: filter },
+      { $group: {
+          _id: null,
+          totalReviews: { $sum: 1 },
+          avgRating: { $avg: { $ifNull: ['$rating', 0] } },
+          highRated: { $sum: { $cond: [{ $gte: ['$rating', 4] }, 1, 0] } },
+          dist: { $push: '$rating' }
+      }}
+    ]);
 
-    const reviews = await Review.find(buildWorkerFilter(workerId)).lean();
-
-    if (!reviews || reviews.length === 0) {
+    if (!stats) {
       return res.json({
         success: true,
         data: {
@@ -79,22 +88,21 @@ exports.getWorkerRating = async (req, res) => {
       });
     }
 
-    // Calculate basic stats
-    const totalReviews = reviews.length;
-    const ratingSum = reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0);
-    const averageRating = totalReviews > 0 ? ratingSum / totalReviews : 0;
-    const ratingDistribution = buildRatingDistribution(reviews);
-    const recommendationRate = totalReviews > 0
-      ? Math.round((reviews.filter(r => (Number(r.rating) || 0) >= 4).length / totalReviews) * 100)
-      : 0;
+    const { totalReviews, avgRating, highRated, dist } = stats;
+    const ratingDistribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    for (const r of dist) {
+      const rounded = Math.min(Math.max(Math.round(r || 0), 1), 5);
+      ratingDistribution[rounded]++;
+    }
+    const recommendationRate = totalReviews > 0 ? Math.round((highRated / totalReviews) * 100) : 0;
 
     res.json({
       success: true,
       data: {
         workerId,
         totalReviews,
-        averageRating: roundRating(averageRating),
-        ratings: buildRatingsBreakdown(averageRating),
+        averageRating: roundRating(avgRating),
+        ratings: buildRatingsBreakdown(avgRating),
         ratingDistribution,
         categoryRatings: [],
         recommendationRate,
@@ -118,48 +126,52 @@ exports.getWorkerRankSignals = async (req, res) => {
   try {
     const { workerId } = req.params;
 
-    const reviews = await Review.find(buildWorkerFilter(workerId)).lean();
+    const filter = buildWorkerFilter(workerId);
+    if (!filter) {
+      return res.status(400).json({ success: false, error: { message: 'Invalid worker ID' } });
+    }
 
-    if (!reviews || reviews.length === 0) {
+    // Use $facet to compute all signals in a single aggregation
+    const [result] = await Review.aggregate([
+      { $match: filter },
+      { $facet: {
+          overall: [{ $group: {
+            _id: null,
+            totalReviews: { $sum: 1 },
+            avgRating: { $avg: { $ifNull: ['$rating', 0] } },
+            highRated: { $sum: { $cond: [{ $gte: ['$rating', 4] }, 1, 0] } },
+          }}],
+          recent: [
+            { $sort: { createdAt: -1 } },
+            { $limit: 10 },
+            { $group: { _id: null, recentAvg: { $avg: { $ifNull: ['$rating', 0] } } } }
+          ]
+      }}
+    ]);
+
+    const overall = result?.overall?.[0];
+    if (!overall) {
       return res.json({
         success: true,
         data: {
           workerId,
           rankSignals: {
-            totalReviews: 0,
-            averageRating: 0,
-            recommendationRate: 0,
-            verifiedReviewsCount: 0,
-            responseRate: 0,
-            recentRating: 0
+            totalReviews: 0, averageRating: 0, recommendationRate: 0,
+            verifiedReviewsCount: 0, responseRate: 0, recentRating: 0
           }
         }
       });
     }
 
-    const totalReviews = reviews.length;
-    const ratingValues = reviews.map((r) => Number(r.rating) || 0);
-    const averageRating = totalReviews > 0
-      ? ratingValues.reduce((sum, rating) => sum + rating, 0) / totalReviews
-      : 0;
-    const recommendationRate = totalReviews > 0
-      ? Math.round((ratingValues.filter((rating) => rating >= 4).length / totalReviews) * 100)
-      : 0;
-    const responseRate = 0;
-
-    const recentReviews = reviews
-      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
-      .slice(0, 10);
-    const recentRating = recentReviews.length > 0
-      ? recentReviews.reduce((sum, review) => sum + (Number(review.rating) || 0), 0) / recentReviews.length
-      : 0;
+    const { totalReviews, avgRating, highRated } = overall;
+    const recentRating = result?.recent?.[0]?.recentAvg || 0;
 
     const signals = {
       totalReviews,
-      averageRating: roundRating(averageRating),
-      recommendationRate,
+      averageRating: roundRating(avgRating),
+      recommendationRate: totalReviews > 0 ? Math.round((highRated / totalReviews) * 100) : 0,
       verifiedReviewsCount: 0,
-      responseRate,
+      responseRate: 0,
       recentRating: roundRating(recentRating)
     };
 

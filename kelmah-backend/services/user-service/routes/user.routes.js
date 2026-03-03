@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const logger = require("../utils/logger");
 
 // Service trust middleware - verify requests from API Gateway
 const { verifyGatewayRequest, optionalGatewayVerification } = require('../../../shared/middlewares/serviceTrust');
@@ -60,7 +61,7 @@ router.post("/database/cleanup", verifyGatewayRequest, authorizeRoles('admin'), 
 // 🔥 FIX: Recent jobs route MUST come BEFORE parameterized routes
 // to prevent "/workers/jobs" being matched as "/workers/:id" where id="jobs"
 router.get("/workers/jobs/recent", verifyGatewayRequest, (req, res, next) => {
-  console.log('✅ [USER-ROUTES] /workers/jobs/recent route hit:', {
+  logger.debug('✅ [USER-ROUTES] /workers/jobs/recent route hit:', {
     query: req.query,
     fullPath: req.originalUrl
   });
@@ -71,7 +72,7 @@ router.get("/workers/jobs/recent", verifyGatewayRequest, (req, res, next) => {
 // to prevent "/workers/search" being matched as "/workers/:id" where id="search"
 router.get('/workers/search/location', (req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('✅ [USER-ROUTES] /workers/search/location route hit (alias → searchWorkers):', {
+    logger.debug('✅ [USER-ROUTES] /workers/search/location route hit (alias → searchWorkers):', {
       query: req.query,
       fullPath: req.originalUrl
     });
@@ -81,7 +82,7 @@ router.get('/workers/search/location', (req, res, next) => {
 
 router.get('/workers/search', (req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('✅ [USER-ROUTES] /workers/search route hit:', {
+    logger.debug('✅ [USER-ROUTES] /workers/search route hit:', {
       query: req.query,
       fullPath: req.originalUrl
     });
@@ -91,7 +92,7 @@ router.get('/workers/search', (req, res, next) => {
 
 router.get('/workers', (req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('✅ [USER-ROUTES] /workers route hit:', {
+    logger.debug('✅ [USER-ROUTES] /workers route hit:', {
       query: req.query,
       fullPath: req.originalUrl
     });
@@ -123,7 +124,7 @@ router.get("/workers/debug/models", verifyGatewayRequest, authorizeRoles('admin'
 });
 
 router.get('/workers/:id', (req, res, next) => {
-  console.log('✅ [USER-ROUTES] /workers/:id route hit:', {
+  logger.debug('✅ [USER-ROUTES] /workers/:id route hit:', {
     workerId: req.params.id,
     fullPath: req.originalUrl
   });
@@ -132,7 +133,7 @@ router.get('/workers/:id', (req, res, next) => {
 
 // 🔥 FIX: Add PUT route for worker profile updates
 router.put('/workers/:id', verifyGatewayRequest, (req, res, next) => {
-  console.log('✅ [USER-ROUTES] PUT /workers/:id route hit:', {
+  logger.debug('✅ [USER-ROUTES] PUT /workers/:id route hit:', {
     workerId: req.params.id,
     fullPath: req.originalUrl
   });
@@ -140,7 +141,7 @@ router.put('/workers/:id', verifyGatewayRequest, (req, res, next) => {
 }, WorkerController.updateWorkerProfile);
 
 router.get("/workers/:id/availability", optionalGatewayVerification, (req, res, next) => {
-  console.log('✅ [USER-ROUTES] /workers/:id/availability route hit:', {
+  logger.debug('✅ [USER-ROUTES] /workers/:id/availability route hit:', {
     workerId: req.params.id,
     fullPath: req.originalUrl
   });
@@ -148,7 +149,7 @@ router.get("/workers/:id/availability", optionalGatewayVerification, (req, res, 
 }, WorkerController.getWorkerAvailability);
 
 router.get("/workers/:id/completeness", optionalGatewayVerification, (req, res, next) => {
-  console.log('✅ [USER-ROUTES] /workers/:id/completeness route hit:', {
+  logger.debug('✅ [USER-ROUTES] /workers/:id/completeness route hit:', {
     workerId: req.params.id,
     fullPath: req.originalUrl
   });

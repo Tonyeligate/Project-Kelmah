@@ -5,6 +5,7 @@
 
 const { Conversation, Message, User } = require("../models");
 const auditLogger = require("../utils/audit-logger");
+const logger = require("../utils/logger");
 const mongoose = require("mongoose");
 
 class ConversationController {
@@ -96,7 +97,7 @@ class ConversationController {
         },
       });
     } catch (error) {
-      console.error("Get user conversations error:", error);
+      logger.error("Get user conversations error:", error);
       return res.status(500).json({
         success: false,
         message: "Failed to retrieve conversations",
@@ -211,7 +212,7 @@ class ConversationController {
         },
       });
     } catch (error) {
-      console.error("Create conversation error:", error);
+      logger.error("Create conversation error:", error);
       return res.status(500).json({
         success: false,
         message: "Failed to create conversation",
@@ -294,7 +295,7 @@ class ConversationController {
         },
       });
     } catch (error) {
-      console.error("Get conversation error:", error);
+      logger.error("Get conversation error:", error);
       return res.status(500).json({
         success: false,
         message: "Failed to retrieve conversation",
@@ -377,7 +378,7 @@ class ConversationController {
         data: { conversation: { id } },
       });
     } catch (error) {
-      console.error("Update conversation error:", error);
+      logger.error("Update conversation error:", error);
       return res.status(500).json({
         success: false,
         message: "Failed to update conversation",
@@ -435,7 +436,7 @@ class ConversationController {
         message: "Successfully left conversation",
       });
     } catch (error) {
-      console.error("Delete conversation error:", error);
+      logger.error("Delete conversation error:", error);
       return res.status(500).json({
         success: false,
         message: "Failed to leave conversation",
@@ -494,7 +495,7 @@ class ConversationController {
         },
       });
     } catch (error) {
-      console.error("Mark conversation as read error:", error);
+      logger.error("Mark conversation as read error:", error);
       return res.status(500).json({
         success: false,
         message: "Failed to mark conversation as read",
@@ -585,7 +586,7 @@ class ConversationController {
         },
       });
     } catch (error) {
-      console.error("Search conversations error:", error);
+      logger.error("Search conversations error:", error);
       return res.status(500).json({
         success: false,
         message: "Failed to search conversations",

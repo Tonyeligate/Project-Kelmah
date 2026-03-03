@@ -58,7 +58,7 @@ function SavedJobs() {
                     color="text.secondary"
                     sx={{ mb: 1 }}
                   >
-                    {job.employer?.name || job.hirer?.firstName ? `${job.hirer.firstName} ${job.hirer.lastName || ''}`.trim() : job.companyName || 'Employer'}
+                    {job.employer?.name || (job.hirer?.firstName ? `${job.hirer?.firstName} ${job.hirer?.lastName || ''}`.trim() : job.companyName || 'Employer')}
                   </Typography>
                   {Array.isArray(job.skills) &&
                     job.skills

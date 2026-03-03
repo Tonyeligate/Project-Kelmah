@@ -733,10 +733,12 @@ const HirerDashboardPage = () => {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 1 }}>
+                    <PaymentIcon sx={{ fontSize: 48, color: 'text.disabled' }} />
                     <Typography variant="body2" color="text.secondary">
                       No spending data yet
                     </Typography>
+                    <Typography variant="caption" color="text.disabled">Post a job and hire workers to see spending stats</Typography>
                   </Box>
                 )}
               </Box>
@@ -809,7 +811,8 @@ const HirerDashboardPage = () => {
                           </PieChart>
                         </ResponsiveContainer>
                       ) : (
-                        <Box sx={{ width: 170, height: 170, borderRadius: '50%', bgcolor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box sx={{ width: 170, height: 170, borderRadius: '50%', bgcolor: 'grey.200', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                          <ProposalIcon sx={{ fontSize: 36, color: 'text.disabled' }} />
                           <Typography variant="body2" color="text.secondary">No data</Typography>
                         </Box>
                       )}

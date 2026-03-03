@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Container, Typography, useTheme, useMediaQuery, CircularProgress, Alert, Button } from '@mui/material';
 import { CollectionsOutlined as CollectionsOutlinedIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import PortfolioGallery from '../components/PortfolioGallery';
 import ProjectShowcase from '../components/ProjectShowcase';
 import portfolioService from '../services/portfolioService';
 import { Helmet } from 'react-helmet-async';
 
 const PortfolioPage = () => {
+  const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [items, setItems] = useState([]);
@@ -85,7 +87,7 @@ const PortfolioPage = () => {
           <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
             Add examples of your work to showcase your skills to hirers.
           </Typography>
-          <Button variant="contained" color="secondary" sx={{ minHeight: 44 }}>
+          <Button variant="contained" color="secondary" sx={{ minHeight: 44 }} onClick={() => navigate('/worker/portfolio/manage')}>
             Add Portfolio Item
           </Button>
         </Box>

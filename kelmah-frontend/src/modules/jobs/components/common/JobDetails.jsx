@@ -124,9 +124,9 @@ function JobDetails() {
                 <Person color="action" />
                 <Typography color="text.secondary">
                   Posted by{' '}
-                  {job.hirer_name || job.hirer?.firstName
-                    ? `${job.hirer.firstName} ${job.hirer.lastName}`
-                    : 'Unknown'}
+                  {job.hirer_name || (job.hirer?.firstName
+                    ? `${job.hirer?.firstName} ${job.hirer?.lastName || ''}`
+                    : 'Unknown')}
                 </Typography>
               </Box>
 

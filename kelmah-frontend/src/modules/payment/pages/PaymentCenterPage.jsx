@@ -58,12 +58,7 @@ import TransactionsList from '../components/TransactionsList';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { format } from 'date-fns';
-
-// Add currency formatter for Ghana Cedi
-const currencyFormatter = new Intl.NumberFormat('en-GH', {
-  style: 'currency',
-  currency: 'GHS',
-});
+import { currencyFormatter } from '@/modules/common/utils/formatters';
 
 const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
   <Paper

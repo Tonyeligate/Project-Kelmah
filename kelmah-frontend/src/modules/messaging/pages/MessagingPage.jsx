@@ -213,6 +213,7 @@ const EnhancedMessagingPage = () => {
           }
         } catch (e) {
           if (import.meta.env.DEV) console.error('Deep-link conversation creation failed:', e);
+          showFeedback('Could not start conversation. Please try again.', 'error');
         }
       }
     };
@@ -461,6 +462,7 @@ const EnhancedMessagingPage = () => {
             <Badge badgeContent={unreadCount} color="error">
               <IconButton
                 size="small"
+                aria-label="Start new chat"
                 onClick={() => setNewChatDialog(true)}
                 sx={{
                   color: 'primary.main',
@@ -475,6 +477,7 @@ const EnhancedMessagingPage = () => {
             </Badge>
             <IconButton
               size="small"
+              aria-label="More options"
               onClick={(e) => setMoreMenuAnchor(e.currentTarget)}
               sx={{
                 color: 'text.secondary',
@@ -1179,6 +1182,7 @@ const EnhancedMessagingPage = () => {
                   >
                     <IconButton
                       size="small"
+                      aria-label="Remove attachment"
                       onClick={() =>
                         setSelectedFiles((prev) =>
                           prev.filter((_, i) => i !== index),

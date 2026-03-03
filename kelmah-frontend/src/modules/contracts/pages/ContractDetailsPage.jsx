@@ -264,12 +264,32 @@ const ContractDetailsPage = () => {
   };
 
   // Show a loading state while contract data is being fetched
-  if (loading.currentContract || !contract) {
+  if (loading.currentContract) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
           <CircularProgress />
         </Box>
+      </Container>
+    );
+  }
+
+  if (!contract && error.currentContract) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+        <Alert severity="error" sx={{ mb: 3 }}>
+          Error loading contract: {error.currentContract}
+        </Alert>
+        <Button onClick={handleBack} variant="outlined">Back to Contracts</Button>
+      </Container>
+    );
+  }
+
+  if (!contract) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+        <Alert severity="warning">Contract not found.</Alert>
+        <Button onClick={handleBack} variant="outlined" sx={{ mt: 2 }}>Back to Contracts</Button>
       </Container>
     );
   }
@@ -356,7 +376,7 @@ const ContractDetailsPage = () => {
                   Contract Value
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                  GH₵{contract.value?.toFixed(2) || '0.00'}
+                  GH₵{Number(contract.value || 0).toFixed(2)}
                 </Typography>
               </Grid>
 
@@ -602,7 +622,7 @@ const ContractDetailsPage = () => {
                           </Typography>
                           <Typography variant="body2">
                             <strong>Amount:</strong> GH₵
-                            {milestone.amount?.toFixed(2) || '0.00'}
+                            {Number(milestone.amount || 0).toFixed(2)}
                           </Typography>
                         </Box>
 

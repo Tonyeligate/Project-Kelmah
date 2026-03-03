@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const logger = require('../utils/logger');
 const Stripe = require('stripe');
 const PaystackService = require('../integrations/paystack');
 const WebhookEvent = require('../models/WebhookEvent');
@@ -62,7 +63,7 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
 
     return res.json({ received: true, type: event.type });
   } catch (err) {
-    console.error('Stripe webhook error:', err.message);
+    logger.error('Stripe webhook error:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 });
@@ -114,7 +115,7 @@ router.post('/paystack', express.raw({ type: 'application/json' }), async (req, 
 
     return res.json({ received: true, event: event.event });
   } catch (err) {
-    console.error('Paystack webhook error:', err.message);
+    logger.error('Paystack webhook error:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 });

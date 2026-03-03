@@ -2,13 +2,17 @@
  * User Performance Controller - Manage user performance tracking and tier management
  */
 
+const mongoose = require('mongoose');
 const { UserPerformance, User } = require('../models');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
+
+const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 // Get user performance data
 exports.getUserPerformance = async (req, res, next) => {
   try {
     const { userId } = req.params;
+    if (!isValidId(userId)) return errorResponse(res, 400, 'Invalid user ID');
 
     // Check if user is viewing their own performance or is an admin
     if (userId !== req.user.id && req.user.role !== 'admin') {
@@ -36,7 +40,7 @@ exports.updateUserPerformance = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const { metrics } = req.body;
-
+    if (!isValidId(userId)) return errorResponse(res, 400, 'Invalid user ID');
     // Check if user is updating their own performance or is an admin
     if (userId !== req.user.id && req.user.role !== 'admin') {
       return errorResponse(res, 403, 'Access denied');
@@ -65,6 +69,7 @@ exports.verifySkill = async (req, res, next) => {
     if (req.user.role !== 'admin') {
       return errorResponse(res, 403, 'Access denied. Only admins can verify skills');
     }
+    if (!isValidId(userId)) return errorResponse(res, 400, 'Invalid user ID');
 
     let userPerformance = await UserPerformance.findOne({ userId });
     if (!userPerformance) {
@@ -139,7 +144,8 @@ exports.getUsersByTier = async (req, res, next) => {
       .populate('userId', 'firstName lastName email profilePicture')
       .skip(offset)
       .limit(limit)
-      .sort({ overallScore: -1 });
+      .sort({ overallScore: -1 })
+      .lean();
 
     const totalCount = await UserPerformance.countDocuments({ performanceTier: tier });
 
@@ -159,6 +165,8 @@ exports.getTopPerformers = async (req, res, next) => {
       return errorResponse(res, 403, 'Access denied');
     }
 
+    const cappedLimit = Math.min(100, parseInt(limit, 10) || 10);
+
     let query = {};
     if (tier) {
       query.performanceTier = tier;
@@ -166,8 +174,9 @@ exports.getTopPerformers = async (req, res, next) => {
 
     const topPerformers = await UserPerformance.find(query)
       .sort({ 'metrics.jobCompletionRate': -1, 'metrics.clientSatisfaction': -1 })
-      .limit(parseInt(limit, 10))
-      .populate('userId', 'firstName lastName email profilePicture');
+      .limit(cappedLimit)
+      .populate('userId', 'firstName lastName email profilePicture')
+      .lean();
 
     return successResponse(res, 200, 'Top performers retrieved successfully', topPerformers);
   } catch (error) {
@@ -193,7 +202,8 @@ exports.getUsersByLocation = async (req, res, next) => {
       .populate('userId', 'firstName lastName email profilePicture')
       .skip(offset)
       .limit(limit)
-      .sort({ overallScore: -1 });
+      .sort({ overallScore: -1 })
+      .lean();
 
     const totalCount = await UserPerformance.countDocuments({ 'locationPreferences.primaryRegion': region });
 
@@ -274,33 +284,32 @@ exports.getPerformanceAnalytics = async (req, res, next) => {
       return errorResponse(res, 403, 'Access denied');
     }
 
-    const totalUsers = await UserPerformance.countDocuments();
-    const tier1Users = await UserPerformance.countDocuments({ performanceTier: 'tier1' });
-    const tier2Users = await UserPerformance.countDocuments({ performanceTier: 'tier2' });
-    const tier3Users = await UserPerformance.countDocuments({ performanceTier: 'tier3' });
-
-    const averageCompletionRate = await UserPerformance.aggregate([
-      { $group: { _id: null, avg: { $avg: '$metrics.jobCompletionRate' } } }
+    const [analytics] = await UserPerformance.aggregate([
+      { $facet: {
+          byTier: [{ $group: { _id: '$performanceTier', count: { $sum: 1 } } }],
+          avgCompletion: [{ $group: { _id: null, avg: { $avg: '$metrics.jobCompletionRate' } } }],
+          avgSatisfaction: [{ $group: { _id: null, avg: { $avg: '$metrics.clientSatisfaction' } } }],
+          total: [{ $count: 'count' }]
+      }}
     ]);
 
-    const averageSatisfaction = await UserPerformance.aggregate([
-      { $group: { _id: null, avg: { $avg: '$metrics.clientSatisfaction' } } }
-    ]);
+    const tierMap = {};
+    for (const t of (analytics?.byTier || [])) tierMap[t._id] = t.count;
 
-    const analytics = {
-      totalUsers,
+    const result = {
+      totalUsers: analytics?.total?.[0]?.count || 0,
       tierDistribution: {
-        tier1: tier1Users,
-        tier2: tier2Users,
-        tier3: tier3Users
+        tier1: tierMap.tier1 || 0,
+        tier2: tierMap.tier2 || 0,
+        tier3: tierMap.tier3 || 0
       },
       averageMetrics: {
-        jobCompletionRate: averageCompletionRate[0]?.avg || 0,
-        clientSatisfaction: averageSatisfaction[0]?.avg || 0
+        jobCompletionRate: analytics?.avgCompletion?.[0]?.avg || 0,
+        clientSatisfaction: analytics?.avgSatisfaction?.[0]?.avg || 0
       }
     };
 
-    return successResponse(res, 200, 'Performance analytics retrieved successfully', analytics);
+    return successResponse(res, 200, 'Performance analytics retrieved successfully', result);
   } catch (error) {
     next(error);
   }
@@ -314,10 +323,13 @@ exports.recalculateAllTiers = async (req, res, next) => {
       return errorResponse(res, 403, 'Access denied');
     }
 
-    const allUsers = await UserPerformance.find();
+    // Process in batches using cursor to avoid loading all into memory
+    const cursor = UserPerformance.find().cursor();
     let updatedCount = 0;
+    let totalUsers = 0;
 
-    for (const userPerformance of allUsers) {
+    for await (const userPerformance of cursor) {
+      totalUsers++;
       const calculatedTier = userPerformance.calculateTier();
       if (calculatedTier !== userPerformance.performanceTier) {
         await userPerformance.updateTier(calculatedTier, 'Auto-calculated based on performance metrics');
@@ -327,7 +339,7 @@ exports.recalculateAllTiers = async (req, res, next) => {
 
     return successResponse(res, 200, `Recalculated tiers for ${updatedCount} users`, {
       updatedCount,
-      totalUsers: allUsers.length
+      totalUsers
     });
   } catch (error) {
     next(error);

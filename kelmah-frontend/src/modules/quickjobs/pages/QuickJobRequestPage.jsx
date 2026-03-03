@@ -622,7 +622,7 @@ const QuickJobRequestPage = () => {
       <Helmet><title>Quick Job Request | Kelmah</title></Helmet>
       {/* Back button & title */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <IconButton onClick={handleBack} sx={{ mr: 1 }}>
+        <IconButton aria-label="Go back" onClick={handleBack} sx={{ mr: 1 }}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h5" fontWeight="600">

@@ -217,7 +217,7 @@ const NearbyJobsPage = () => {
         <Typography variant="h5" fontWeight="bold">
           Jobs Near You
         </Typography>
-        <IconButton onClick={() => fetchJobs()} disabled={loading || !location}>
+        <IconButton aria-label="Refresh jobs" onClick={() => fetchJobs()} disabled={loading || !location}>
           <RefreshIcon />
         </IconButton>
       </Box>
@@ -449,7 +449,7 @@ const NearbyJobsPage = () => {
         <DialogTitle>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             Send Quote
-            <IconButton onClick={() => setQuoteDialogOpen(false)} disabled={quoteSubmitting}>
+            <IconButton aria-label="Close dialog" onClick={() => setQuoteDialogOpen(false)} disabled={quoteSubmitting}>
               <CloseIcon />
             </IconButton>
           </Box>

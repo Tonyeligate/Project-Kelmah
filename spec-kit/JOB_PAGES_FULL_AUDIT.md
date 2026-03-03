@@ -139,3 +139,151 @@
 - ~14 P3 theme compliance fixes (hardcoded colors → theme tokens)
 
 All fixes verified with `get_errors()` — zero compile errors.
+
+---
+
+## Extended Audit (Session Continued)
+
+### Round 2 — Additional Pages Scanned
+
+| File | Lines | Status |
+|------|-------|--------|
+| `JobPostingPage.jsx` | 1366 | 1 fix applied |
+| `ReviewsPage.jsx` | 1338 | 6 fixes applied |
+| `NotificationsPage.jsx` | 426 | 1 fix (dead code removed) |
+| `ContractManagementPage.jsx` | 197 | 1 fix applied |
+| `ContractsPage.jsx` | 388 | 1 fix applied |
+| `ContractDetailsPage.jsx` | 767 | 3 fixes applied |
+| `CreateContractPage.jsx` | 1043 | 5 fixes applied |
+| `PortfolioPage.jsx` | 109 | 1 fix applied |
+| `MyApplicationsPage.jsx` | 896 | 2 fixes applied |
+| `ApplicationManagementPage.jsx` | 473 | 1 fix applied |
+| `VerifyEmailPage.jsx` | 161 | 1 fix applied |
+| `JobDetails.jsx` | 302 | 1 fix applied |
+| `WorkerDashboardPage.jsx` | scanned | No P0/P1 bugs |
+| `JobManagementPage.jsx` | scanned | No P0/P1 bugs |
+
+### Additional Bugs Found & Fixed
+
+#### P0 — Critical Crashes
+
+##### 11. SavedJobs.jsx — Operator Precedence Crash
+- **Line**: 61
+- **Bug**: `job.employer?.name || job.hirer?.firstName ? \`${job.hirer.firstName}...\`` — missing parens caused `job.hirer.firstName` to throw TypeError when `employer.name` was truthy but `hirer` was null
+- **Fix**: Added parentheses: `job.employer?.name || (job.hirer?.firstName ? ...)`
+
+##### 12. JobDetails.jsx — Same Operator Precedence Crash
+- **Lines**: 127-129
+- **Bug**: `job.hirer_name || job.hirer?.firstName ? \`${job.hirer.firstName}...\`` — same crash pattern
+- **Fix**: Added parentheses and optional chaining
+
+##### 13. CreateContractPage — DatePicker `renderInput` Silently Broken (MUI v7)
+- **Lines**: 504, 522, 645
+- **Bug**: `renderInput` prop was removed in MUI DatePicker v6. All 3 DatePickers passed validation errors via `renderInput` — silently ignored. Users saw no error feedback for date fields.
+- **Fix**: Replaced all 3 with `slotProps={{ textField: { fullWidth, error, helperText } }}`
+
+##### 14. ContractDetailsPage — Infinite Spinner on Error
+- **Lines**: 267-275
+- **Bug**: `if (loading.currentContract || !contract)` returned spinner forever when fetch failed (loading=false, contract=null, error=set). Error alert unreachable.
+- **Fix**: Split into 3 guards: loading → spinner, error → error alert, not found → warning
+
+#### P1 — Broken Features
+
+##### 15. JobPostingPage — Requirements Text Dropped from API Payload
+- **Lines**: 584-630
+- **Bug**: `formData.requirements` was collected in the form and shown in preview, but NEVER included in the API payload sent to the backend. Requirements were silently lost.
+- **Fix**: Appended requirements text to description as a "Requirements:" section (backend `requirements` schema is structured, so freeform text goes into description)
+
+##### 16. ReviewsPage — Tabs "Recent" and "Needs Reply" Non-functional
+- **Lines**: 888-914
+- **Bug**: `activeTab` was set but never used to filter reviews. Tabs 1/2 showed same content as "All Reviews"
+- **Fix**: Tab onChange now syncs `selectedFilter` state (tab 1→'recent', tab 2→'needs-reply')
+
+##### 17. ReviewsPage — "Clear Filters" Button Crash
+- **Line**: 1061
+- **Bug**: Called `setSelectedRating(null)` but no `selectedRating` state exists
+- **Fix**: Changed to `setSelectedFilter('all')`
+
+##### 18. ReviewsPage — Stats "This Month" / "Last Month" Always Blank
+- **Lines**: 453-484
+- **Bug**: `reviewStats.recent` hardcoded to `{}` — recent stats always undefined
+- **Fix**: Computed from actual reviews array using date comparisons
+
+##### 19. ReviewsPage — Response Rate Hardcoded 87%
+- **Line**: 484
+- **Bug**: Static `87%` literal regardless of actual data
+- **Fix**: Computed from `reviews.filter(r => r.hasReply).length / reviews.length`
+
+##### 20. ContractManagementPage — "Create Contract" Navigates to 404
+- **Line**: 182
+- **Bug**: `navigate('/contracts/new')` but route is `/contracts/create`
+- **Fix**: Changed to `/contracts/create`
+
+##### 21. ContractsPage — Empty State Button Does Nothing
+- **Line**: 378
+- **Bug**: `onAction={() => {}}` — no-op handler
+- **Fix**: Changed to navigate to `/contracts/create`
+
+##### 22. PortfolioPage — "Add Portfolio Item" Button Has No Handler
+- **Line**: 90
+- **Bug**: `<Button>` with no `onClick` — completely inert
+- **Fix**: Added `onClick={() => navigate('/worker/portfolio/manage')}` + `useNavigate` import
+
+##### 23. ApplicationManagementPage — Never Fetches Hirer Jobs
+- **Bug**: Page reads `state.hirer.jobs` but never dispatches `fetchHirerJobs`. Direct navigation shows "No applications"
+- **Fix**: Added `useDispatch` import + `fetchHirerJobs('all')` dispatch on mount
+
+##### 24. ContractDetailsPage — `.toFixed(2)` Crash on String Values
+- **Lines**: 359, 605
+- **Bug**: `contract.value?.toFixed(2)` crashes if value is a string from backend
+- **Fix**: Used `Number(contract.value || 0).toFixed(2)`
+
+##### 25. CreateContractPage — Floating-Point Comparison Blocks Valid Milestones
+- **Line**: 303
+- **Bug**: `totalAmount !== parseFloat(contract.value)` fails due to IEEE 754 precision
+- **Fix**: Changed to `Math.abs(totalAmount - parseFloat(contract.value)) > 0.01`
+
+#### P2 — Minor Fixes
+
+##### 26. MyApplicationsPage — Company Name Always "Unknown Company"
+- **Line**: 330
+- **Bug**: `application.company` — no such field on Application model
+- **Fix**: Used `application.job?.hirer?.firstName` with fallback chain
+
+##### 27. MyApplicationsPage — Location Type Mismatch
+- **Line**: 337
+- **Bug**: `application.job?.location?.city` but location may be a string, not an object
+- **Fix**: Added type check + address/city/string fallbacks
+
+##### 28. JobSearchPage — Sort by Deadline/Date NaN Crashes
+- **Lines**: 735-738
+- **Bug**: `new Date(a.deadline)` → NaN when deadline is null; same for `postedDate`
+- **Fix**: Added fallbacks: `deadline || expiresAt || '9999'` and `postedDate || createdAt`
+
+##### 29. VerifyEmailPage — API Call with Undefined Token
+- **Lines**: 18-27
+- **Bug**: `authService.verifyEmail(undefined)` when URL has no `:token` param
+- **Fix**: Added guard: `if (!token)` → show error message, skip API call
+
+##### 30. NotificationsPage — Dead `ActivityFeed` Component
+- **Lines**: 163-172
+- **Bug**: Defined but never used
+- **Fix**: Removed dead code
+
+#### P3 — Theme Compliance (ReviewsPage)
+
+- Converted ~20 hardcoded `rgba(255,255,255,*)` / `'#fff'` colors to `'text.primary'`, `'text.secondary'`, `'text.disabled'`, and `alpha()` theme functions across statistics, cards, search, dialogs, and empty states
+
+---
+
+## Total Session Summary
+
+**30 bug fixes applied across 17 files**:
+- 6 P0 crashes fixed
+- 13 P1 broken features fixed
+- 5 P2 display bugs fixed
+- ~30 P3 theme compliance fixes
+
+**4 audit rounds** covering ~25 pages/components with full dry-read analysis.
+
+All fixes verified with `get_errors()` — **zero compile errors across all edited files**.

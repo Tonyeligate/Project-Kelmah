@@ -374,7 +374,7 @@ const ContractsPage = () => {
                 title="No contracts match your filters yet"
                 subtitle="Try adjusting your search or create a new contract to get started."
                 actionLabel="Create Contract"
-                onAction={() => {}}
+                onAction={() => window.location.href = '/contracts/create'}
               />
             </Box>
           </Grid>

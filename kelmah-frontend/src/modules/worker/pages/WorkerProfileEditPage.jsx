@@ -29,6 +29,7 @@ import {
   Autocomplete,
   Switch,
   FormControlLabel,
+  Skeleton,
 } from '@mui/material';
 import {
   Save as SaveIcon,
@@ -157,6 +158,7 @@ const WorkerProfileEditPage = () => {
   // Profile completeness
   const [completeness, setCompleteness] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   // If navigated with ?section=availability, auto-scroll/focus availability section
   const availabilityRef = React.useRef(null);
@@ -182,7 +184,10 @@ const WorkerProfileEditPage = () => {
           setCompleteness(json.data?.completion ?? 0);
           setSuggestions(json.data?.suggestions ?? []);
         }
-      } catch (_) { }
+      } catch (_) {
+        // Non-critical: silently ignored to avoid blocking primary UX
+        // Profile completeness is supplementary — the edit form works without it
+      }
     };
     fetchCompleteness();
   }, [user]);
@@ -215,9 +220,11 @@ const WorkerProfileEditPage = () => {
         });
 
         setImagePreview(profile.profileImageUrl);
+        setInitialLoading(false);
       })
       .catch((err) => {
         if (import.meta.env.DEV) console.error('Error loading profile:', err);
+        setInitialLoading(false);
         setSnackbar({
           open: true,
           message: 'Failed to load profile. Please try again.',
@@ -245,7 +252,12 @@ const WorkerProfileEditPage = () => {
           }));
         }
       } catch (e) {
-        // ignore
+        if (import.meta.env.DEV) console.error('Error loading availability:', e);
+        setSnackbar({
+          open: true,
+          message: 'Could not load your availability settings. The form may show defaults.',
+          severity: 'warning',
+        });
       }
     })();
   }, [user]);
@@ -504,7 +516,7 @@ const WorkerProfileEditPage = () => {
     } catch (err) {
       setSnackbar({
         open: true,
-        message: String(err || 'Failed to update availability'),
+        message: 'Failed to update availability. Please try again.',
         severity: 'error',
       });
     }
@@ -524,6 +536,18 @@ const WorkerProfileEditPage = () => {
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
       <Helmet><title>Edit Profile | Kelmah</title></Helmet>
+
+      {/* Loading skeleton for initial profile fetch */}
+      {initialLoading ? (
+        <Box>
+          <Skeleton variant="text" width="60%" height={48} sx={{ mb: 1 }} />
+          <Skeleton variant="text" width="80%" height={24} sx={{ mb: 4 }} />
+          <Skeleton variant="rounded" height={200} sx={{ mb: 3 }} />
+          <Skeleton variant="rounded" height={300} sx={{ mb: 3 }} />
+          <Skeleton variant="rounded" height={200} />
+        </Box>
+      ) : (
+      <>
       <Box sx={{ mb: { xs: 2, md: 4 } }}>
         <Typography variant={isMobile ? 'h5' : 'h4'} gutterBottom fontWeight="bold">
           Edit Your Profile
@@ -754,6 +778,7 @@ const WorkerProfileEditPage = () => {
                 value={formData.firstName}
                 onChange={handleInputChange}
                 required
+                placeholder="e.g. Kwame"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -771,6 +796,7 @@ const WorkerProfileEditPage = () => {
                 value={formData.lastName}
                 onChange={handleInputChange}
                 required
+                placeholder="e.g. Asante"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -822,6 +848,7 @@ const WorkerProfileEditPage = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
+                placeholder="e.g. 024 123 4567"
                 inputProps={{ inputMode: 'tel' }}
               />
             </Grid>
@@ -847,6 +874,7 @@ const WorkerProfileEditPage = () => {
                 type="number"
                 value={formData.hourlyRate}
                 onChange={handleInputChange}
+                placeholder="e.g. 50"
                 inputProps={{ inputMode: 'decimal' }}
                 InputProps={{
                   startAdornment: (
@@ -1318,6 +1346,8 @@ const WorkerProfileEditPage = () => {
           </Button>
         </Box>
       </form>
+      </>
+      )}
     </Container>
   );
 };
