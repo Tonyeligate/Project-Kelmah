@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AuthWrapper from '../components/common/AuthWrapper';
-import { Box, Typography, Button, TextField, Alert, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Typography, Button, TextField, Alert, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
 import { CheckCircleOutline, ErrorOutline, MailOutline } from '@mui/icons-material';
 import authService from '../services/authService';
 import { useParams, Link } from 'react-router-dom';
@@ -12,6 +12,7 @@ const VerifyEmailPage = () => {
   const [error, setError] = useState('');
   const [email, setEmail] = useState('');
   const [resendSent, setResendSent] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -29,7 +30,7 @@ const VerifyEmailPage = () => {
         );
       } catch (err) {
         setStatus('');
-        setError(err.message || 'Email verification failed');
+        setError('Email verification failed. The link may have expired. Please request a new one.');
       }
     };
     verify();
@@ -37,11 +38,14 @@ const VerifyEmailPage = () => {
 
   const handleResend = async (e) => {
     e.preventDefault();
+    setResendLoading(true);
     try {
       await authService.resendVerificationEmail(email);
       setResendSent(true);
     } catch (err) {
-      setError(err.message || 'Failed to send verification email');
+      setError('Failed to send verification email. Please try again.');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -103,6 +107,7 @@ const VerifyEmailPage = () => {
               type="submit"
               variant="contained"
               fullWidth
+              disabled={resendLoading}
               sx={{
                 mt: 2,
                 minHeight: 48,
@@ -114,7 +119,7 @@ const VerifyEmailPage = () => {
                 '&:hover': { bgcolor: 'primary.dark' },
               }}
             >
-              Resend Link
+              {resendLoading ? <CircularProgress size={24} color="inherit" /> : 'Resend Link'}
             </Button>
           </Box>
           {resendSent && (

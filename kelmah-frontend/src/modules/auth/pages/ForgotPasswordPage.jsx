@@ -6,6 +6,7 @@ import {
   Button,
   Typography,
   Alert,
+  CircularProgress,
   useMediaQuery,
   IconButton,
   useTheme,
@@ -22,11 +23,13 @@ const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('');
     setError('');
+    setLoading(true);
     try {
       const res = await authService.forgotPassword(email);
       setStatus(
@@ -37,6 +40,8 @@ const ForgotPasswordPage = () => {
       // Server-specific messages (e.g. "User not found") would let attackers confirm
       // which email addresses exist in the system.
       setError('Unable to process your request. Please try again later.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -183,6 +188,7 @@ const ForgotPasswordPage = () => {
             <Button
               type="submit"
               fullWidth
+              disabled={loading}
               sx={{
                 bgcolor: 'primary.main',
                 color: 'primary.contrastText',
@@ -197,7 +203,7 @@ const ForgotPasswordPage = () => {
                 },
               }}
             >
-              Request Reset
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Request Reset'}
             </Button>
           </Box>
         </Box>
@@ -257,8 +263,8 @@ const ForgotPasswordPage = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <Button type="submit" variant="contained" fullWidth sx={{ mt: 2, minHeight: 44 }}>
-          Send Reset Link
+        <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ mt: 2, minHeight: 44 }}>
+          {loading ? <CircularProgress size={24} color="inherit" /> : 'Send Reset Link'}
         </Button>
         <Box sx={{ mt: 2 }}>
           <Typography variant="body2">

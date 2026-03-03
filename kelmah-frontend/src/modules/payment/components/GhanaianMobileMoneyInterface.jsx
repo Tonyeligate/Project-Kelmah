@@ -231,7 +231,7 @@ const GhanaianMobileMoneyInterface = ({
       }
     } catch (error) {
       setPaymentStatus('failed');
-      enqueueSnackbar(error.message || 'Payment initiation failed', {
+      enqueueSnackbar('Could not start payment. Please check your details and try again.', {
         variant: 'error',
       });
       if (onPaymentError) {
@@ -298,7 +298,7 @@ const GhanaianMobileMoneyInterface = ({
       }
     } catch (error) {
       setPaymentStatus('failed');
-      enqueueSnackbar(error.message || 'Payment failed', { variant: 'error' });
+      enqueueSnackbar('Payment could not be completed. Please try again or use a different method.', { variant: 'error' });
       if (onPaymentError) {
         onPaymentError(error);
       }
@@ -350,6 +350,9 @@ const GhanaianMobileMoneyInterface = ({
         },
       }}
       onClick={() => handleProviderSelect(provider.id)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleProviderSelect(provider.id); } }}
     >
       <CardContent>
         <Box display="flex" alignItems="center" gap={2} mb={2}>

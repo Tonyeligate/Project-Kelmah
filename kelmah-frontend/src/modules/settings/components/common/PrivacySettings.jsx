@@ -45,7 +45,7 @@ const PrivacySettings = ({ settings = null, loading = false, updatePrivacySettin
         severity: 'success',
       });
     } catch (error) {
-      const msg = error.response?.data?.message || error.message;
+      const msg = 'Failed to update privacy settings. Please try again.';
       setSnackbar({ open: true, message: msg, severity: 'error' });
     } finally {
       setSaving(false);

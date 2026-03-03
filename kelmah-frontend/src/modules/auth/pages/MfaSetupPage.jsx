@@ -12,6 +12,7 @@ const MfaSetupPage = () => {
   const [token, setToken] = useState('');
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
+  const [verifying, setVerifying] = useState(false);
   const { setupMFA, verifyMFA } = useAuth();
 
   useEffect(() => {
@@ -21,7 +22,7 @@ const MfaSetupPage = () => {
         setSecret(data.secret);
         setQrCode(data.qrCode);
       } catch (err) {
-        setError(err.response?.data?.message || err.message);
+        setError('Failed to set up two-factor authentication. Please refresh and try again.');
       }
     };
     init();
@@ -32,11 +33,14 @@ const MfaSetupPage = () => {
     e.preventDefault();
     setError('');
     setStatus('');
+    setVerifying(true);
     try {
       await verifyMFA(token);
       setStatus('Two-factor authentication enabled successfully.');
     } catch (err) {
-      setError(err.response?.data?.message || err.message);
+      setError('Verification failed. Please check the code and try again.');
+    } finally {
+      setVerifying(false);
     }
   };
 
@@ -80,8 +84,8 @@ const MfaSetupPage = () => {
                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 6, style: { letterSpacing: '0.3em', textAlign: 'center' } }}
                 sx={isMobile ? { mb: 2, '& .MuiOutlinedInput-root': { backgroundColor: 'action.hover', color: 'text.primary' }, '& .MuiInputLabel-root': { color: 'text.secondary' } } : { mb: 2 }}
               />
-              <Button type="submit" variant="contained" fullWidth sx={{ minHeight: 48, borderRadius: isMobile ? '24px' : 1 }}>
-                Enable 2FA
+              <Button type="submit" variant="contained" fullWidth disabled={verifying} sx={{ minHeight: 48, borderRadius: isMobile ? '24px' : 1 }}>
+                {verifying ? <CircularProgress size={24} color="inherit" /> : 'Enable 2FA'}
               </Button>
             </Box>
           </>

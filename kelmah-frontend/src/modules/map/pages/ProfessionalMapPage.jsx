@@ -134,7 +134,10 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
       layout
     >
       <Card
+        role="button"
+        tabIndex={0}
         onClick={() => onSelect(item)}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(item); } }}
         sx={{
           mx: 2,
           mb: 1.5,

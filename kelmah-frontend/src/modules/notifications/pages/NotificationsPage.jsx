@@ -80,7 +80,10 @@ const PageNotificationItem = ({ notification, onMarkRead }) => {
 
   return (
     <ListItem
+      role="button"
+      tabIndex={0}
       onClick={handleClick}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } }}
       sx={(theme) => ({
         backgroundColor: theme.palette.background.paper,
         mb: 1.5,

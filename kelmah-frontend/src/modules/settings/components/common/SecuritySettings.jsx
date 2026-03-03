@@ -94,7 +94,7 @@ const SecuritySettings = () => {
       });
       setForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {
-      const msg = error.response?.data?.message || error.message;
+      const msg = 'Failed to update security settings. Please try again.';
       setSnackbar({ open: true, message: msg, severity: 'error' });
     } finally {
       setLoading(false);

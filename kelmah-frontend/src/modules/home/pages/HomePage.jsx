@@ -375,7 +375,10 @@ const CategoriesSection = () => {
           <Grid item xs={6} sm={4} md={2} key={cat.name}>
             <Reveal delay={i * 0.06}>
               <Card
+                role="button"
+                tabIndex={0}
                 onClick={() => navigate(cat.path)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(cat.path); } }}
                 sx={{
                   ...CARD_SX,
                   cursor: 'pointer',

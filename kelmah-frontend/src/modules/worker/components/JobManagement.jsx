@@ -153,7 +153,7 @@ const JobManagement = () => {
       handleDialogClose();
       fetchJobs();
     } catch (err) {
-      setError('Failed to submit');
+      setError('Your submission could not be completed. Please try again.');
       if (import.meta.env.DEV) console.error(err);
     }
   };

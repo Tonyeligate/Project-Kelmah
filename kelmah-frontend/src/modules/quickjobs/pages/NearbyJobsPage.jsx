@@ -111,7 +111,7 @@ const NearbyJobsPage = () => {
         setError(result.error?.message || 'Failed to fetch jobs');
       }
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Something went wrong');
+      setError('Unable to load nearby jobs. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
