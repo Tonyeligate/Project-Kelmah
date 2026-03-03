@@ -63,7 +63,8 @@ const EarningsAnalytics = () => {
     try {
       setLoading(true);
       const response = await earningsService.getEarnings(user.id);
-      setEarningsData(response.data);
+      const payload = response?.data || response;
+      setEarningsData(payload);
       setError(null);
     } catch (err) {
       setError('Failed to load earnings data');

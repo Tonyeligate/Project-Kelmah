@@ -1235,42 +1235,28 @@ class WorkerController {
         );
       };
 
-      // Auto-populate missing worker fields for existing users
-      const workersWithDefaults = await Promise.all(workers.map(async (worker) => {
-        let updateNeeded = false;
-        const updates = {};
-
-        // Set default values for missing fields
-        if (!worker.profession) { updates.profession = 'General Worker'; updateNeeded = true; }
-        if (!worker.skills || worker.skills.length === 0) { updates.skills = ['General Work']; updateNeeded = true; }
-        if (!worker.hourlyRate) { updates.hourlyRate = 25; updateNeeded = true; }
-        if (!worker.currency) { updates.currency = 'GHS'; updateNeeded = true; }
-        if (worker.rating === undefined) { updates.rating = 0; updateNeeded = true; }
-        if (!worker.totalReviews) { updates.totalReviews = 0; updateNeeded = true; }
-        if (!worker.totalJobsCompleted) { updates.totalJobsCompleted = 0; updateNeeded = true; }
-        if (!worker.availabilityStatus) { updates.availabilityStatus = 'available'; updateNeeded = true; }
-        if (worker.isVerified === undefined) { updates.isVerified = false; updateNeeded = true; }
-        if (!worker.bio) {
-          updates.bio = `Experienced ${worker.profession || 'General Worker'} with ${worker.yearsOfExperience || 2} years of experience in ${worker.location || 'Accra, Ghana'}.`;
-          updateNeeded = true;
-        }
-
-        // Update MongoDB document if needed (using direct driver)
-        if (updateNeeded) {
-          try {
-            await usersCollection.updateOne(
-              { _id: worker._id },
-              { $set: updates }
-            );
-            console.log(`✅ Auto-populated worker fields for ${worker.firstName} ${worker.lastName}`);
-          } catch (error) {
-            console.error(`❌ Failed to auto-populate worker fields for ${worker._id}:`, error);
-          }
-        }
-
-        // Return worker with populated defaults
-        return { ...worker, ...updates };
-      }));
+      // IMPORTANT: Never write during read listing.
+      // We apply defaults in-memory for response shaping only.
+      const workersWithDefaults = workers.map((worker) => {
+        const defaults = {
+          profession: worker.profession || 'General Worker',
+          skills:
+            Array.isArray(worker.skills) && worker.skills.length > 0
+              ? worker.skills
+              : ['General Work'],
+          hourlyRate: worker.hourlyRate || 25,
+          currency: worker.currency || 'GHS',
+          rating: worker.rating ?? 0,
+          totalReviews: worker.totalReviews || 0,
+          totalJobsCompleted: worker.totalJobsCompleted || 0,
+          availabilityStatus: worker.availabilityStatus || 'available',
+          isVerified: worker.isVerified ?? false,
+          bio:
+            worker.bio ||
+            `Experienced ${worker.profession || 'General Worker'} with ${worker.yearsOfExperience || 2} years of experience in ${worker.location || 'Accra, Ghana'}.`,
+        };
+        return { ...worker, ...defaults };
+      });
 
       // Format response data with ranking score
       const formattedWorkers = workersWithDefaults.map(worker => ({

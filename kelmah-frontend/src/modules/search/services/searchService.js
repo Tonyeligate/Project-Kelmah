@@ -1,5 +1,13 @@
 import { api } from '../../../services/apiClient';
 
+const unwrapPayload = (response) => {
+  const payload = response?.data;
+  if (payload?.success && payload?.data !== undefined) {
+    return payload.data;
+  }
+  return payload;
+};
+
 /**
  * Service for handling search functionality
  */
@@ -18,7 +26,8 @@ const searchService = {
           ...filters,
         },
       });
-      return response.data.results || response.data;
+      const payload = unwrapPayload(response);
+      return payload?.results || payload || [];
     } catch (error) {
       console.error('Search error:', error);
       throw error;
@@ -35,7 +44,8 @@ const searchService = {
       const response = await api.get('/search/workers', {
         params,
       });
-      return response.data.results || response.data;
+      const payload = unwrapPayload(response);
+      return payload?.results || payload?.workers || payload || [];
     } catch (error) {
       console.error('Worker search error:', error);
       throw error;
@@ -50,7 +60,7 @@ const searchService = {
   searchJobs: async (params) => {
     try {
       const response = await api.get('/jobs/search', { params });
-      return response.data;
+      return unwrapPayload(response) || [];
     } catch (error) {
       console.error('Job search error:', error);
       throw error;
@@ -73,7 +83,8 @@ const searchService = {
           q: partialQuery,
         },
       });
-      return response.data.suggestions || response.data;
+      const payload = unwrapPayload(response);
+      return payload?.suggestions || payload || [];
     } catch (error) {
       console.error('Suggestions error:', error);
       return [];
@@ -90,7 +101,8 @@ const searchService = {
       const response = await api.get('/search/popular', {
         params: { limit },
       });
-      return response.data.terms || response.data;
+      const payload = unwrapPayload(response);
+      return payload?.terms || payload || [];
     } catch (error) {
       console.error('Popular terms error:', error);
       return [];
@@ -101,7 +113,7 @@ const searchService = {
   getCategories: async () => {
     try {
       const response = await api.get('/jobs/categories');
-      return response.data;
+      return unwrapPayload(response) || [];
     } catch (error) {
       console.error('Categories fetch error:', error);
       return [];
@@ -112,7 +124,7 @@ const searchService = {
   getSkills: async () => {
     try {
       const response = await api.get('/jobs/skills');
-      return response.data;
+      return unwrapPayload(response) || [];
     } catch (error) {
       console.error('Skills fetch error:', error);
       return [];
@@ -128,7 +140,7 @@ const searchService = {
       const response = await api.get('/jobs/suggestions', {
         params: { keyword },
       });
-      return response.data;
+      return unwrapPayload(response) || [];
     } catch (error) {
       console.error('Job suggestions error:', error);
       return [];
@@ -142,7 +154,7 @@ const searchService = {
   getPopularSearches: async () => {
     try {
       const response = await api.get('/jobs/popular-searches');
-      return response.data;
+      return unwrapPayload(response) || [];
     } catch (error) {
       console.error('Popular searches error:', error);
       return [];

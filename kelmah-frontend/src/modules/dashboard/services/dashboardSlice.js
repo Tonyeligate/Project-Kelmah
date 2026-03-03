@@ -102,9 +102,15 @@ export const fetchDashboardData = createAsyncThunk(
         jobsResponse.status === 'fulfilled'
           ? Array.isArray(jobsResponse.value.data)
             ? jobsResponse.value.data
-            : Array.isArray(jobsResponse.value.data?.jobs)
-              ? jobsResponse.value.data.jobs
-              : []
+            : Array.isArray(jobsResponse.value.data?.data?.recentJobs)
+              ? jobsResponse.value.data.data.recentJobs
+              : Array.isArray(jobsResponse.value.data?.data?.jobs)
+                ? jobsResponse.value.data.data.jobs
+                : Array.isArray(jobsResponse.value.data?.recentJobs)
+                  ? jobsResponse.value.data.recentJobs
+                  : Array.isArray(jobsResponse.value.data?.jobs)
+                    ? jobsResponse.value.data.jobs
+                    : []
           : [];
 
       const activeWorkers =

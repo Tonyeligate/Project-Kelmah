@@ -136,7 +136,9 @@ const reviewsSlice = createSlice({
       })
       .addCase(fetchReviewsByContract.fulfilled, (state, action) => {
         state.loading = false;
-        state.contractReviews = action.payload;
+        // Unwrap { success, data: [...] } wrapper if present
+        const payload = action.payload?.data || action.payload || [];
+        state.contractReviews = Array.isArray(payload) ? payload : [];
       })
       .addCase(fetchReviewsByContract.rejected, (state, action) => {
         state.loading = false;
