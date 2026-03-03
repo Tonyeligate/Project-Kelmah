@@ -1079,7 +1079,7 @@ const PaymentCenterPage = () => {
             <Tooltip title="Enter amount in Ghana Cedi">
               <TextField
                 variant="filled"
-                label="Amount (GHS)"
+                label="Amount (GH₵)"
                 placeholder="e.g. 100"
                 type="number"
                 value={amount}
@@ -1195,7 +1195,7 @@ const PaymentCenterPage = () => {
             <Tooltip title="Enter amount to withdraw">
               <TextField
                 variant="filled"
-                label="Amount (GHS)"
+                label="Amount (GH₵)"
                 placeholder="e.g. 50"
                 type="number"
                 value={amount}

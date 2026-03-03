@@ -677,9 +677,9 @@ const JobResultsSection = ({
                               ? typeof job?.budget === 'object'
                                 ? job.budget.min === job.budget.max ||
                                   !job.budget.max
-                                  ? `GHS ${(job.budget.amount || job.budget.min)?.toLocaleString()}`
-                                  : `GHS ${job.budget.min?.toLocaleString()} - ${job.budget.max?.toLocaleString()}`
-                                : `GHS ${job?.budget?.toLocaleString()}`
+                                  ? `GH₵ ${(job.budget.amount || job.budget.min)?.toLocaleString()}`
+                                  : `GH₵ ${job.budget.min?.toLocaleString()} - ${job.budget.max?.toLocaleString()}`
+                                : `GH₵ ${job?.budget?.toLocaleString()}`
                               : 'Negotiable'}
                           </Typography>
                           <Chip

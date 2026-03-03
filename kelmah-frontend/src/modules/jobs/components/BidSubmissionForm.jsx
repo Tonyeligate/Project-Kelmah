@@ -72,7 +72,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
       return;
     }
     if (bidAmount < minBid || bidAmount > maxBid) {
-      setError(`Bid amount must be between GHS ${minBid} and GHS ${maxBid}.`);
+      setError(`Bid amount must be between GH₵ ${minBid} and GH₵ ${maxBid}.`);
       return;
     }
 
@@ -107,7 +107,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
         </DialogTitle>
         <DialogContent sx={{ bgcolor: 'background.paper', pt: 3 }}>
           <Alert severity="success" sx={{ mb: 2 }}>
-            Your bid of <strong>GHS {bidAmount.toLocaleString()}</strong> has been
+            Your bid of <strong>GH₵ {bidAmount.toLocaleString()}</strong> has been
             submitted. The hirer will review all bids and select a worker.
           </Alert>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -142,7 +142,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
               disabled={loading}
               startIcon={loading ? <CircularProgress size={14} /> : <GavelIcon />}
             >
-              {loading ? 'Submitting…' : `GHS ${bidAmount.toLocaleString()}`}
+              {loading ? 'Submitting…' : `GH₵ ${bidAmount.toLocaleString()}`}
             </Button>
           </Toolbar>
         </AppBar>
@@ -183,7 +183,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
             <Chip
               size="small"
               icon={<AttachMoney sx={{ fontSize: 14 }} />}
-              label={`GHS ${minBid.toLocaleString()} – ${maxBid.toLocaleString()}`}
+              label={`GH₵ ${minBid.toLocaleString()} – ${maxBid.toLocaleString()}`}
               sx={{ bgcolor: alpha(theme.palette.primary.main, 0.15), color: 'primary.main' }}
             />
             <Chip
@@ -197,7 +197,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
 
         {/* Bid amount slider */}
         <Typography variant="subtitle2" sx={{ color: 'primary.main', mb: 1 }}>
-          Your Bid Amount (GHS)
+          Your Bid Amount (GH₵)
         </Typography>
         <Box sx={{ px: 1, mb: 1 }}>
           <Slider
@@ -207,7 +207,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
             max={maxBid}
             step={50}
             valueLabelDisplay="on"
-            valueLabelFormat={(v) => `GHS ${v.toLocaleString()}`}
+            valueLabelFormat={(v) => `GH₵ ${v.toLocaleString()}`}
             sx={{
               color: theme.palette.primary.main,
               '& .MuiSlider-valueLabel': { bgcolor: theme.palette.primary.main, color: theme.palette.primary.contrastText },
@@ -224,7 +224,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
           size="small"
           fullWidth
           InputProps={{
-            startAdornment: <InputAdornment position="start">GHS</InputAdornment>,
+            startAdornment: <InputAdornment position="start">GH₵</InputAdornment>,
           }}
           sx={{
             mb: 3,
@@ -296,7 +296,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
             startIcon={loading ? <CircularProgress size={16} /> : <GavelIcon />}
             color="primary"
           >
-            {loading ? 'Submitting...' : `Submit Bid — GHS ${bidAmount.toLocaleString()}`}
+            {loading ? 'Submitting...' : `Submit Bid — GH₵ ${bidAmount.toLocaleString()}`}
           </Button>
         </DialogActions>
       )}

@@ -18,6 +18,7 @@ import { useApiHealth } from './hooks/useApiHealth';
 import { warmUpServices } from './utils/serviceWarmUp';
 import useWebSocketConnect from './hooks/useWebSocketConnect';
 import OfflineBanner from './components/common/OfflineBanner';
+import ScrollToTop from './components/common/ScrollToTop';
 import { Z_INDEX } from './constants/layout';
 
 // Main App Component
@@ -103,6 +104,7 @@ const App = () => {
   return (
     <KelmahThemeProvider>
       <GlobalErrorBoundary>
+        <ScrollToTop />
         {/* Service wake-up indicator */}
         {servicesWakingUp && (
               <Box

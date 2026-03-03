@@ -202,7 +202,7 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                 {isJob ? (
                   <Chip
                     icon={<MoneyIcon sx={{ fontSize: 14 }} />}
-                    label={`GHS ${item.budget?.toLocaleString() ?? '—'}`}
+                    label={`GH₵ ${item.budget?.toLocaleString() ?? '—'}`}
                     size="small"
                     variant="outlined"
                     sx={{ height: 24 }}
@@ -219,7 +219,7 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                     )}
                     {item.hourlyRate && (
                       <Typography variant="caption" color="secondary">
-                        GHS {item.hourlyRate}/hr
+                        GH₵ {item.hourlyRate}/hr
                       </Typography>
                     )}
                     {item.online && (
@@ -480,7 +480,7 @@ const ProfessionalMapPage = () => {
             ),
             endAdornment: searchQuery && (
               <InputAdornment position="end">
-                <IconButton size="small" onClick={() => setSearchQuery('')}>
+                <IconButton size="small" onClick={() => setSearchQuery('')} aria-label="Clear search">
                   <ClearIcon fontSize="small" />
                 </IconButton>
               </InputAdornment>
@@ -899,6 +899,7 @@ const ProfessionalMapPage = () => {
                   <IconButton
                     size="small"
                     onClick={() => setSelectedItem(null)}
+                    aria-label="Close"
                   >
                     <CloseIcon fontSize="small" />
                   </IconButton>
@@ -928,7 +929,7 @@ const ProfessionalMapPage = () => {
                   {selectedItem.budget && (
                     <Chip
                       icon={<MoneyIcon />}
-                      label={`GHS ${selectedItem.budget.toLocaleString()}`}
+                      label={`GH₵ ${selectedItem.budget.toLocaleString()}`}
                       size="small"
                       color="secondary"
                     />

@@ -592,7 +592,7 @@ const PortfolioManager = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Budget (GHS)"
+                label="Budget (GH₵)"
                 type="number"
                 value={formData.budget}
                 onChange={(e) => handleInputChange('budget', e.target.value)}

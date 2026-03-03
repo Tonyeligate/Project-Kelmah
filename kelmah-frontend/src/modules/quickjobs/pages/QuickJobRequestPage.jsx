@@ -349,6 +349,7 @@ const QuickJobRequestPage = () => {
                   <IconButton
                     size="small"
                     onClick={() => handleRemovePhoto(index)}
+                    aria-label={`Remove photo ${index + 1}`}
                     sx={{
                       position: 'absolute',
                       top: -8,
@@ -396,7 +397,7 @@ const QuickJobRequestPage = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, p: 1.5, border: '1px solid', borderColor: 'success.main', borderRadius: 2, bgcolor: theme.palette.action.hover }}>
                 <MicIcon color="success" />
                 <audio src={voiceNote.url} controls style={{ flex: 1, height: 36 }} />
-                <IconButton size="small" onClick={handleRemoveVoiceNote} color="error">
+                <IconButton size="small" onClick={handleRemoveVoiceNote} color="error" aria-label="Remove voice note">
                   <CloseIcon fontSize="small" />
                 </IconButton>
               </Box>

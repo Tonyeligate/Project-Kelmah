@@ -30,6 +30,7 @@ import {
   Switch,
   FormControlLabel,
   Skeleton,
+  Tooltip,
 } from '@mui/material';
 import {
   Save as SaveIcon,
@@ -643,17 +644,20 @@ const WorkerProfileEditPage = () => {
                       }}
                     >
                       <Typography variant="subtitle1">{label}</Typography>
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={!!d.available}
-                            onChange={(e) =>
-                              handleDayToggle(day, e.target.checked)
-                            }
-                          />
-                        }
-                        label={d.available ? 'Available' : 'Off'}
-                      />
+                      <Tooltip title="Toggle availability for this day">
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={!!d.available}
+                              onChange={(e) =>
+                                handleDayToggle(day, e.target.checked)
+                              }
+                              inputProps={{ 'aria-label': 'Toggle availability' }}
+                            />
+                          }
+                          label={d.available ? 'Available' : 'Off'}
+                        />
+                      </Tooltip>
                     </Box>
                     <Grid container spacing={2}>
                       <Grid item xs={6}>

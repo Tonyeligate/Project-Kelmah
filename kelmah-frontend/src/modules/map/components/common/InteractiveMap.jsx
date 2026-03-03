@@ -457,7 +457,7 @@ const SpectacularMarkerPopup = ({
                       variant="h6"
                       sx={{ fontWeight: 'bold', lineHeight: 1 }}
                     >
-                      GHS {marker.budget?.toLocaleString()}
+                      GH₵ {marker.budget?.toLocaleString()}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
                       {marker.paymentType || 'Budget'}
@@ -768,7 +768,7 @@ const SpectacularMarkerPopup = ({
                       variant="body1"
                       sx={{ fontWeight: 'bold', lineHeight: 1 }}
                     >
-                      GHS {marker.hourlyRate}/hr
+                      GH₵ {marker.hourlyRate}/hr
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
                       hourly rate
@@ -1169,8 +1169,8 @@ const InteractiveMap = ({
                 <SpectacularMarkerPopup
                   marker={marker}
                   onViewDetails={onMarkerClick}
-                  onContact={(marker) => console.log('Contact:', marker)}
-                  onNavigate={(marker) => console.log('Navigate to:', marker)}
+                  onContact={() => {}}
+                  onNavigate={() => {}}
                 />
               </Popup>
             </Marker>

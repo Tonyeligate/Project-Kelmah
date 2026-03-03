@@ -102,7 +102,7 @@ const WorkerComparisonTable = ({ workers = [] }) => {
               <TableCell scope="col">Skills</TableCell>
               <TableCell scope="col">Rating</TableCell>
               <TableCell scope="col">Completed Jobs</TableCell>
-              <TableCell scope="col">Avg Rate (GHS)</TableCell>
+              <TableCell scope="col">Avg Rate (GH₵)</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

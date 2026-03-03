@@ -39,7 +39,7 @@ const ProposalBuilder = ({ onSubmit }) => {
             onChange={(e) => setCoverLetter(e.target.value)}
           />
           <TextField
-            label="Proposed Rate (GHS)"
+            label="Proposed Rate (GH₵)"
             type="number"
             fullWidth
             value={rate}

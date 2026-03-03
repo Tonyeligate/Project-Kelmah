@@ -469,7 +469,7 @@ const EnhancedJobCard = ({
 
           <TextField
             fullWidth
-            label="Bid Amount (GHS)"
+            label="Bid Amount (GH₵)"
             type="number"
             value={bidData.bidAmount}
             onChange={(e) =>

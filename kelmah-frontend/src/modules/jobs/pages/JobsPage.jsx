@@ -1224,7 +1224,7 @@ const JobsPage = () => {
                                   fontWeight: 'bold',
                                 }}
                               >
-                                Budget Range (GHS)
+                                Budget Range (GH₵)
                               </Typography>
                               <FormControlLabel
                                 control={
@@ -1246,7 +1246,7 @@ const JobsPage = () => {
                                 if (!budgetFilterActive) setBudgetFilterActive(true);
                               }}
                               valueLabelDisplay="auto"
-                              valueLabelFormat={(v) => `GHS ${v.toLocaleString()}`}
+                              valueLabelFormat={(v) => `GH₵ ${v.toLocaleString()}`}
                               min={0}
                               max={100000}
                               step={500}
@@ -1285,13 +1285,13 @@ const JobsPage = () => {
                                 variant="caption"
                                 sx={{ color: 'rgba(255,255,255,0.7)' }}
                               >
-                                GHS {budgetRange[0].toLocaleString()}
+                                GH₵ {budgetRange[0].toLocaleString()}
                               </Typography>
                               <Typography
                                 variant="caption"
                                 sx={{ color: 'rgba(255,255,255,0.7)' }}
                               >
-                                GHS {budgetRange[1].toLocaleString()}+
+                                GH₵ {budgetRange[1].toLocaleString()}+
                               </Typography>
                             </Box>
                           </Grid>
@@ -1568,7 +1568,7 @@ const JobsPage = () => {
                     )}
                     {budgetFilterActive && (
                       <Chip
-                        label={`Budget: GHS ${budgetRange[0].toLocaleString()} – ${budgetRange[1].toLocaleString()}`}
+                        label={`Budget: GH₵ ${budgetRange[0].toLocaleString()} – ${budgetRange[1].toLocaleString()}`}
                         size="small"
                         onDelete={() => { setBudgetFilterActive(false); setBudgetRange([0, 100000]); }}
                         sx={{
@@ -2109,9 +2109,9 @@ const JobsPage = () => {
                                   ? typeof job?.budget === 'object'
                                     ? job.budget.min === job.budget.max ||
                                       !job.budget.max
-                                      ? `GHS ${(job.budget.amount || job.budget.min)?.toLocaleString()}`
-                                      : `GHS ${job.budget.min?.toLocaleString()} - ${job.budget.max?.toLocaleString()}`
-                                    : `GHS ${job?.budget?.toLocaleString()}`
+                                      ? `GH₵ ${(job.budget.amount || job.budget.min)?.toLocaleString()}`
+                                      : `GH₵ ${job.budget.min?.toLocaleString()} - ${job.budget.max?.toLocaleString()}`
+                                    : `GH₵ ${job?.budget?.toLocaleString()}`
                                   : 'Negotiable'}
                               </Typography>
                               <Chip

@@ -22,6 +22,7 @@ import {
   IconButton,
   Snackbar,
   Alert,
+  Tooltip,
 } from '@mui/material';
 import {
   Star as StarIcon,
@@ -294,13 +295,15 @@ const PremiumPage = () => {
           <Typography variant="h4" fontWeight="bold" gutterBottom>
             Choose Your Plan
           </Typography>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={isYearly}
-                onChange={(e) => setIsYearly(e.target.checked)}
-              />
-            }
+          <Tooltip title="Toggle this premium feature">
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={isYearly}
+                  onChange={(e) => setIsYearly(e.target.checked)}
+                  inputProps={{ 'aria-label': 'Toggle premium feature' }}
+                />
+              }
             label={
               <Typography component="span">
                 Bill Annually{' '}
@@ -314,6 +317,7 @@ const PremiumPage = () => {
               </Typography>
             }
           />
+          </Tooltip>
         </Box>
         <Grid container spacing={4} justifyContent="center">
           <Grid item xs={12} md={5}>

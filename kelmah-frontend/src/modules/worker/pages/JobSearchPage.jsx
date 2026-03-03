@@ -912,10 +912,10 @@ const JobSearchPage = () => {
               onChange={(_, v) => v && setViewMode(v)}
               size="small"
             >
-              <ToggleButton value="grid" sx={{ px: 1.5 }}>
+              <ToggleButton value="grid" aria-label="Grid view" sx={{ px: 1.5 }}>
                 <GridViewIcon fontSize="small" />
               </ToggleButton>
-              <ToggleButton value="list" sx={{ px: 1.5 }}>
+              <ToggleButton value="list" aria-label="List view" sx={{ px: 1.5 }}>
                 <ListViewIcon fontSize="small" />
               </ToggleButton>
             </ToggleButtonGroup>
@@ -1059,7 +1059,7 @@ const JobSearchPage = () => {
           <Typography variant="subtitle1" fontWeight={700}>
             Filters
           </Typography>
-          <IconButton onClick={() => setFilterDrawerOpen(false)} size="small">
+          <IconButton onClick={() => setFilterDrawerOpen(false)} size="small" aria-label="Close filters">
             <CloseIcon />
           </IconButton>
         </Stack>

@@ -386,7 +386,7 @@ const HeroFiltersSection = ({
                         variant="body2"
                         sx={{ mb: 1, color: '#D4AF37', fontWeight: 'bold' }}
                       >
-                        Salary Range (GHS)
+                        Salary Range (GH₵)
                       </Typography>
                       <Slider
                         value={budgetRange}
@@ -418,13 +418,13 @@ const HeroFiltersSection = ({
                           variant="caption"
                           sx={{ color: 'rgba(255,255,255,0.7)' }}
                         >
-                          GHS {budgetRange[0]}
+                          GH₵ {budgetRange[0]}
                         </Typography>
                         <Typography
                           variant="caption"
                           sx={{ color: 'rgba(255,255,255,0.7)' }}
                         >
-                          GHS {budgetRange[1]}+
+                          GH₵ {budgetRange[1]}+
                         </Typography>
                       </Box>
                     </Grid>

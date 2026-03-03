@@ -193,7 +193,7 @@ const JobsMobileFilterDrawer = ({
               variant="body2"
               sx={{ mb: 2, fontWeight: 'bold', color: 'text.secondary' }}
             >
-              Salary Range (GHS)
+              Salary Range (GH₵)
             </Typography>
             <Slider
               value={filters.salaryRange}
@@ -220,10 +220,10 @@ const JobsMobileFilterDrawer = ({
               }}
             >
               <Typography variant="caption" color="text.secondary">
-                GHS {filters.salaryRange[0].toLocaleString()}
+                GH₵ {filters.salaryRange[0].toLocaleString()}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                GHS {filters.salaryRange[1].toLocaleString()}
+                GH₵ {filters.salaryRange[1].toLocaleString()}
               </Typography>
             </Box>
           </Box>

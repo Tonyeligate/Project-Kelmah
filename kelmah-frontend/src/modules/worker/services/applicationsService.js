@@ -6,6 +6,22 @@ import { api } from '../../../services/apiClient';
  */
 
 const applicationsApi = {
+  normalizeApplicationList: (payload) => {
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+
+    if (Array.isArray(payload?.items)) {
+      return payload.items;
+    }
+
+    if (Array.isArray(payload?.applications)) {
+      return payload.applications;
+    }
+
+    return [];
+  },
+
   /**
    * Fetch applications for the current authenticated worker
    * Gateway route: GET /api/jobs/applications/me
@@ -13,7 +29,8 @@ const applicationsApi = {
   getMyApplications: async (params = {}) => {
     try {
       const response = await api.get('/jobs/applications/me', { params });
-      return response.data.data || response.data;
+      const payload = response.data?.data || response.data;
+      return applicationsApi.normalizeApplicationList(payload);
     } catch (error) {
       // Graceful fallback — return empty array so My Applications page renders
       if (error.response?.status >= 500 || !error.response) {
@@ -107,8 +124,8 @@ const applicationsApi = {
   getApplicationStats: async () => {
     try {
       const response = await api.get('/jobs/applications/me');
-      const apps = response.data.data || response.data || [];
-      const list = Array.isArray(apps) ? apps : [];
+      const payload = response.data?.data || response.data;
+      const list = applicationsApi.normalizeApplicationList(payload);
       return {
         total: list.length,
         pending: list.filter((a) => a.status === 'pending').length,

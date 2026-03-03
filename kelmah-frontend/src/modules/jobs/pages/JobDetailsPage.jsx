@@ -465,9 +465,9 @@ const JobDetailsPage = () => {
                         {job?.budget && job.budget !== null
                           ? typeof job.budget === 'object'
                             ? job.budget.min === job.budget.max
-                              ? `${job.budget.currency || 'GHS'} ${job.budget.amount?.toLocaleString() || 0} / ${job.budget.type || 'fixed'}`
-                              : `${job.budget.currency || 'GHS'} ${job.budget.min?.toLocaleString() || 0} - ${job.budget.max?.toLocaleString() || 0} / ${job.budget.type || 'fixed'}`
-                            : `${job?.currency || 'GHS'} ${job.budget?.toLocaleString()} / ${job?.paymentType || 'fixed'}`
+                              ? `${job.budget.currency === 'GHS' ? 'GH₵' : (job.budget.currency || 'GH₵')} ${job.budget.amount?.toLocaleString() || 0} / ${job.budget.type || 'fixed'}`
+                              : `${job.budget.currency === 'GHS' ? 'GH₵' : (job.budget.currency || 'GH₵')} ${job.budget.min?.toLocaleString() || 0} - ${job.budget.max?.toLocaleString() || 0} / ${job.budget.type || 'fixed'}`
+                            : `${job?.currency === 'GHS' ? 'GH₵' : (job?.currency || 'GH₵')} ${job.budget?.toLocaleString()} / ${job?.paymentType || 'fixed'}`
                           : 'Budget not specified'}
                       </Typography>
                     </Box>
@@ -700,7 +700,7 @@ const JobDetailsPage = () => {
                 {job?.bidding?.bidStatus === 'open' ? (
                   <>
                     <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
-                      Budget range: GHS {(job.bidding.minBidAmount || job.budget?.min || 0).toLocaleString()} – {(job.bidding.maxBidAmount || job.budget?.max || 0).toLocaleString()}
+                      Budget range: GH₵ {(job.bidding.minBidAmount || job.budget?.min || 0).toLocaleString()} – {(job.bidding.maxBidAmount || job.budget?.max || 0).toLocaleString()}
                       {' · '}{job.bidding.currentBidders || 0}/{job.bidding.maxBidders || 5} bids placed
                     </Typography>
                     <ActionButton
@@ -745,8 +745,11 @@ const JobDetailsPage = () => {
                   <IconButton
                     onClick={handleToggleSave}
                     disabled={savingBookmark}
+                    aria-label={saved ? 'Remove from saved jobs' : 'Save job'}
                     sx={{
                       color: saved ? 'primary.main' : 'text.secondary',
+                      width: 44,
+                      height: 44,
                       '&:hover': {
                         background: 'rgba(255, 215, 0, 0.1)',
                       },
@@ -757,8 +760,11 @@ const JobDetailsPage = () => {
 
                   <IconButton
                     onClick={handleShareJob}
+                    aria-label="Share job"
                     sx={{
                       color: 'text.secondary',
+                      width: 44,
+                      height: 44,
                       '&:hover': {
                         background: 'rgba(255, 215, 0, 0.1)',
                         color: 'primary.main',
@@ -884,6 +890,7 @@ const JobDetailsPage = () => {
           <IconButton
             onClick={handleToggleSave}
             disabled={savingBookmark}
+            aria-label={saved ? 'Remove from saved jobs' : 'Save job'}
             sx={{ color: saved ? '#D4AF37' : 'text.secondary', minWidth: 48, minHeight: 48 }}
           >
             {saved ? <Bookmark /> : <BookmarkBorder />}

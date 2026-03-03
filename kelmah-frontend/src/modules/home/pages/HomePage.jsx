@@ -571,7 +571,7 @@ const TestimonialsSection = () => (
                 flexDirection: 'column',
               }}
             >
-              <Rating value={t.rating} readOnly size="small" sx={{ mb: 2 }} />
+              <Rating value={t.rating} readOnly size="small" sx={{ mb: 2 }} aria-label={`${t.name} rating: ${t.rating} out of 5`} />
               <Typography
                 variant="body2"
                 sx={{ flex: 1, mb: 3, lineHeight: 1.7, color: 'text.secondary' }}

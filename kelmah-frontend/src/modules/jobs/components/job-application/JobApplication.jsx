@@ -513,8 +513,8 @@ function JobApplication() {
                           <strong>Budget:</strong>{' '}
                           {job?.budget
                             ? typeof job.budget === 'object'
-                              ? `${job?.currency || 'GHS'} ${job.budget?.min || 0} - ${job.budget?.max || 0}`
-                              : `${job?.currency || 'GHS'} ${job.budget}`
+                              ? `${job?.currency || 'GH₵'} ${job.budget?.min || 0} - ${job.budget?.max || 0}`
+                              : `${job?.currency || 'GH₵'} ${job.budget}`
                             : 'Not specified'}{' '}
                           {job?.currency}
                         </Typography>

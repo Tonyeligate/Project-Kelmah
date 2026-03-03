@@ -88,7 +88,7 @@ const getHirerName = (job) => {
 const formatBudget = (job) => {
   if (!job) return 'Not specified';
   const b = job.budget;
-  const currency = job.currency || 'GHS';
+  const currency = job.currency === 'GHS' ? 'GH₵' : (job.currency || 'GH₵');
   if (!b && b !== 0) return 'Not specified';
   if (typeof b === 'number') return `${currency} ${b.toLocaleString()}`;
   if (typeof b === 'object') {
@@ -563,7 +563,7 @@ const JobApplicationForm = () => {
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Your Price (GHS) *"
+                      label="Your Price (GH₵) *"
                       type="number"
                       placeholder="e.g., 2000"
                       value={applicationData.proposedRate}

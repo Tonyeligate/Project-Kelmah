@@ -205,8 +205,13 @@ export const fetchWorkerApplications = createAsyncThunk(
       const response = await api.get('/jobs/applications/me', {
         params: { status },
       });
-      const apps = response.data?.data || response.data || [];
-      return { status, applications: Array.isArray(apps) ? apps : [] };
+      const payload = response.data?.data || response.data || [];
+      const apps = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.items)
+          ? payload.items
+          : [];
+      return { status, applications: apps };
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to fetch worker applications',

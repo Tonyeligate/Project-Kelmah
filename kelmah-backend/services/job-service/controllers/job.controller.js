@@ -2522,6 +2522,27 @@ const applyToJob = async (req, res, next) => {
     const workerId = req.user.id;
     const { proposedRate, coverLetter, estimatedDuration, attachments, availabilityStartDate, questionResponses } = req.body || {};
 
+    if (!mongoose.Types.ObjectId.isValid(jobId)) {
+      return errorResponse(res, 400, 'Invalid job identifier');
+    }
+
+    const parsedRate = Number(proposedRate);
+    if (!Number.isFinite(parsedRate) || parsedRate <= 0) {
+      return errorResponse(res, 400, 'proposedRate must be a positive number');
+    }
+
+    const normalizedCoverLetter = typeof coverLetter === 'string' ? coverLetter.trim() : '';
+    if (!normalizedCoverLetter) {
+      return errorResponse(res, 400, 'coverLetter is required');
+    }
+    if (normalizedCoverLetter.length > 5000) {
+      return errorResponse(res, 400, 'coverLetter cannot exceed 5000 characters');
+    }
+
+    if (attachments != null && !Array.isArray(attachments)) {
+      return errorResponse(res, 400, 'attachments must be an array when provided');
+    }
+
     const job = await Job.findById(jobId);
     if (!job) return errorResponse(res, 404, 'Job not found');
 
@@ -2529,6 +2550,12 @@ const applyToJob = async (req, res, next) => {
     const jobStatus = String(job.status || '').toLowerCase();
     if (jobStatus !== 'open' || job.visibility === 'private') {
       return errorResponse(res, 400, 'Job is not open for applications');
+    }
+
+    const now = Date.now();
+    const closingDate = job.expiresAt || job.bidding?.bidDeadline;
+    if (closingDate && new Date(closingDate).getTime() <= now) {
+      return errorResponse(res, 400, 'Application deadline has passed for this job');
     }
 
     // Check for duplicate application before creating
@@ -2540,8 +2567,8 @@ const applyToJob = async (req, res, next) => {
     const app = await Application.create({
       job: jobId,
       worker: workerId,
-      proposedRate,
-      coverLetter,
+      proposedRate: parsedRate,
+      coverLetter: normalizedCoverLetter,
       estimatedDuration,
       attachments,
       availabilityStartDate,

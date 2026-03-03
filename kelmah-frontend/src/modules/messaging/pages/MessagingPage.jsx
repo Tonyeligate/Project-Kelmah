@@ -860,6 +860,7 @@ const EnhancedMessagingPage = () => {
               <IconButton
                 edge="start"
                 color="inherit"
+                aria-label="Go back"
                 onClick={() => clearConversation()}
                 sx={{ mr: 2, color: 'primary.main' }}
               >

@@ -807,6 +807,7 @@ const JobPostingPage = () => {
                   <IconButton
                     size="small"
                     onClick={handleRemoveCoverImage}
+                    aria-label="Remove cover image"
                     sx={{
                       position: 'absolute',
                       top: 8,

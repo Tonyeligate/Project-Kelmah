@@ -98,7 +98,7 @@ const SettingsPage = () => {
         <Container maxWidth="lg" sx={{ py: 1, px: 1.5, color: 'text.primary' }}>
           <Helmet><title>Settings | Kelmah</title></Helmet>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 0.5 }}>
-            <IconButton onClick={() => setMobileSection(-1)} sx={{ mr: 0.5 }}>
+            <IconButton onClick={() => setMobileSection(-1)} sx={{ mr: 0.5 }} aria-label="Go back">
               <ArrowBack />
             </IconButton>
             {panel.icon}

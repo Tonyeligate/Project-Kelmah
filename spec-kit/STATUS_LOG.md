@@ -1,5 +1,57 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Deep Dry Audit: Job Search → Application → DB Flow (Mar 03, 2026) ✅
+
+**Scope**: End-to-end dry audit of worker and public job flow from `JobsPage`/`JobDetailsPage`/`JobApplicationForm` through frontend services, API gateway, job-service routes/controllers, and MongoDB (`Job`/`Application`) persistence.
+
+**Implemented fixes**:
+- ✅ Normalized worker applications API response parsing in `kelmah-frontend/src/modules/worker/services/applicationsService.js` to support paginated `{ items, pagination }` payloads.
+- ✅ Updated `kelmah-frontend/src/modules/worker/services/workerSlice.js` to hydrate application lists from paginated payloads instead of array-only assumptions.
+- ✅ Hardened `applyToJob` in `kelmah-backend/services/job-service/controllers/job.controller.js` with explicit validation for:
+  - invalid job ids,
+  - non-positive `proposedRate`,
+  - missing/oversized `coverLetter`,
+  - non-array `attachments`,
+  - expired jobs (`expiresAt`/`bidding.bidDeadline`).
+
+**Verification**:
+- ✅ `get_errors` reports no errors in all changed files:
+  - `kelmah-frontend/src/modules/worker/services/applicationsService.js`
+  - `kelmah-frontend/src/modules/worker/services/workerSlice.js`
+  - `kelmah-backend/services/job-service/controllers/job.controller.js`
+  - `spec-kit/STATUS_LOG.md`
+
+### Full Frontend Page Audit — Bugs/Security/Performance/Maintainability (Mar 03, 2026) 🔄
+
+**Scope (in progress)**: Audit each frontend page under `kelmah-frontend/src/modules/**/pages/*.jsx` for logic bugs, security issues, performance bottlenecks, maintainability risks, and edge-case failures.
+
+**Success criteria**:
+- Enumerate all page files in audit surface
+- Run targeted static scans across all pages
+- Deep-review high-risk pages and publish prioritized findings with file locations and fixes
+
+**Status**: Investigation phase started (inventory + static scan running).
+
+### Full Frontend Page Audit — Bugs/Security/Performance/Maintainability (Mar 03, 2026) ✅
+
+**Scope completed**: Audited all frontend pages under `kelmah-frontend/src/**/pages/**/*.jsx` (59 files).
+
+**Deliverable**:
+- `spec-kit/FRONTEND_FULL_PAGE_AUDIT_MAR03_2026.md`
+
+**Top risks identified**:
+1. Unsafe external `window.open` usage without `noopener,noreferrer` and URL protocol validation.
+2. `JobsPage` dedupe/key instability using `job.id` without `_id` fallback.
+3. Quickjobs object URL/timer/media lifecycle leaks and stale navigation timers.
+4. Unbounded application fetch fanout in `ApplicationManagementPage`.
+5. Unsafe date formatting paths that can throw `Invalid time value` in multiple pages.
+
+**Recommended first-wave fixes (80/20)**:
+- Add shared `openExternalSafe()` utility and replace direct `_blank` opens.
+- Normalize job IDs (`id || _id`) for dedupe and React keys.
+- Apply shared safe date formatting helpers consistently across pages.
+- Add concurrency limiting for per-job application fanout.
+
 ### Deep Flow Audit: Search → Messaging → Contract + Accessibility Hardening (Jul 2026) ✅
 
 **Scope**: End-to-end dry audit of the 3 core hirer flows (worker search → messaging → contract creation), with emphasis on low-literacy accessibility, WCAG AA compliance, and professional UX. 10 files audited, 20+ issues found across 3 priority tiers.

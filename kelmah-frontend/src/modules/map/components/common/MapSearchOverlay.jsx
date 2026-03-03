@@ -1212,7 +1212,7 @@ const ProfessionalResultItem = ({ item, onClick, index }) => {
           },
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
-        onClick={() => console.log('Selected:', item)}
+        onClick={() => onClick?.(item)}
       >
         <CardContent sx={{ p: 2.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
@@ -1362,7 +1362,7 @@ const ProfessionalResultItem = ({ item, onClick, index }) => {
                         sx={{ color: theme.palette.secondary.main }}
                       />
                       <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                        GHS {item.budget?.toLocaleString() || item.hourlyRate}
+                        GH₵ {item.budget?.toLocaleString() || item.hourlyRate}
                       </Typography>
                     </Box>
                     <Typography variant="caption" color="text.secondary">

@@ -98,7 +98,7 @@ export const useWebSocket = () => {
 
   const sendMessage = useCallback(
     (message) => {
-      if (!ioSocket) return console.warn('Socket not connected');
+      if (!ioSocket) { if (import.meta.env.DEV) console.warn('Socket not connected'); return; }
       // Support string shorthand used by useAuditNotifications
       if (typeof message === 'string') {
         if (message === 'subscribe_audit_notifications')

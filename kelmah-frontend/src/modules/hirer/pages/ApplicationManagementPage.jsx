@@ -382,7 +382,7 @@ function ApplicationManagementPage() {
                       {selectedApplication.workerName}
                     </Typography>
                     {selectedApplication.workerRating !== null ? (
-                      <Rating value={selectedApplication.workerRating} readOnly />
+                      <Rating value={selectedApplication.workerRating} readOnly aria-label={`${selectedApplication.workerName || 'Worker'} rating: ${selectedApplication.workerRating} out of 5`} />
                     ) : (
                       <Typography variant="body2" color="text.disabled">No reviews yet</Typography>
                     )}

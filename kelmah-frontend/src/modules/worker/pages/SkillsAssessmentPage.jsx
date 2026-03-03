@@ -557,7 +557,7 @@ const SkillsAssessmentPage = () => {
                     }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Rating value={test.rating} size="small" readOnly />
+                      <Rating value={test.rating} size="small" readOnly aria-label={`${test.name || 'Skill'} rating: ${test.rating} out of 5`} />
                       <Typography variant="caption" sx={{ ml: 0.5 }}>
                         ({test.completions})
                       </Typography>

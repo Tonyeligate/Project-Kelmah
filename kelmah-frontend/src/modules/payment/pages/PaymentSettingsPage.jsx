@@ -120,7 +120,7 @@ const PaymentSettingsPage = () => {
               label="Default Currency"
               value={settings.defaultCurrency || ''}
               onChange={handleChange('defaultCurrency')}
-              placeholder="e.g. GHS"
+              placeholder="e.g. GH₵"
             />
           </Grid>
           <Grid item xs={12}>

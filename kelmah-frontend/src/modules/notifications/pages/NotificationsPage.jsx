@@ -39,7 +39,7 @@ import {
   MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { useNotifications } from '../contexts/NotificationContext';
-import { Pagination, FormControlLabel, Switch } from '@mui/material';
+import { Pagination, FormControlLabel, Switch, Tooltip } from '@mui/material';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -346,12 +346,14 @@ const NotificationsPage = () => {
           Showing {filteredNotifications.length} of {notifications.length}{' '}
           notifications
         </Typography>
-        <FormControlLabel
-          control={
-            <Switch checked={unreadOnly} onChange={handleToggleUnread} />
-          }
-          label="Unread only"
-        />
+        <Tooltip title="Turn notifications on or off">
+          <FormControlLabel
+            control={
+              <Switch checked={unreadOnly} onChange={handleToggleUnread} inputProps={{ 'aria-label': 'Toggle notifications' }} />
+            }
+            label="Unread only"
+          />
+        </Tooltip>
       </Box>
 
       <Paper

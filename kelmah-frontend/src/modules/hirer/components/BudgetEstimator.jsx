@@ -24,7 +24,7 @@ const BudgetEstimator = () => {
         <Grid container spacing={2}>
           <Grid item xs={12} sm={3}>
             <TextField
-              label="Hourly Rate (GHS)"
+              label="Hourly Rate (GH₵)"
               type="number"
               fullWidth
               value={rate}
@@ -44,7 +44,7 @@ const BudgetEstimator = () => {
           </Grid>
           <Grid item xs={12} sm={3}>
             <TextField
-              label="Materials (GHS)"
+              label="Materials (GH₵)"
               type="number"
               fullWidth
               value={materials}
@@ -64,7 +64,7 @@ const BudgetEstimator = () => {
           </Grid>
           <Grid item xs={12}>
             <Typography variant="subtitle1" aria-live="polite">
-              Estimated Budget: GHS {estimate.toLocaleString()}
+              Estimated Budget: GH₵ {estimate.toLocaleString()}
             </Typography>
           </Grid>
         </Grid>

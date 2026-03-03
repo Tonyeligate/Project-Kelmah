@@ -149,7 +149,7 @@ const EscrowManager = () => {
       )}
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
         <TextField
-          label="Amount (GHS)"
+          label="Amount (GH₵)"
           value={form.amount}
           onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
         />

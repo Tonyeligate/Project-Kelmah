@@ -59,7 +59,7 @@ const STATUS_FILTERS = [
 const formatCurrency = (value) => {
   const amount = Number(value ?? 0);
   if (Number.isNaN(amount)) {
-    return 'GHS\u00a00';
+    return 'GH₵\u00a00';
   }
   return new Intl.NumberFormat('en-GH', {
     style: 'currency',

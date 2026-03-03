@@ -378,7 +378,7 @@ const JobBidsPage = () => {
 
       {/* Navigation back + header */}
       <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-        <IconButton onClick={() => navigate(-1)} size="small">
+        <IconButton onClick={() => navigate(-1)} size="small" aria-label="Go back">
           <BackIcon />
         </IconButton>
         <Typography variant="body2" color="text.secondary">

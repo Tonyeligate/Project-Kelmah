@@ -107,7 +107,7 @@ const EarningsAnalytics = () => {
       {
         title: 'Total Earnings',
         value: formatCurrency(totals.allTime),
-        subtitle: totals.currency || 'GHS',
+        subtitle: totals.currency === 'GHS' ? 'GH₵' : (totals.currency || 'GH₵'),
         icon: MoneyIcon,
         color: 'primary',
       },

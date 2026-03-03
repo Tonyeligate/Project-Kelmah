@@ -21,7 +21,7 @@ const EarningsReports = ({
                 {item.label}
               </Typography>
               <Typography variant="h6">
-                GHS {Number(item.value || 0).toLocaleString()}
+                GH₵ {Number(item.value || 0).toLocaleString()}
               </Typography>
             </Paper>
           </Grid>
