@@ -1,5 +1,36 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Phase 5 Deep Audit — Payment Data-Flow Fixes COMPLETE (Nov 2025) ✅
+
+**Root Cause**: Phase 4 standardised all payment-service responses to `{ success: true, data: ... }` but frontend consumers were reading the old raw shapes.
+
+**Fixes Applied** (commit `2a13049`):
+| Bug | Severity | File | Fix |
+|-----|----------|------|-----|
+| BUG-1 | CRITICAL | `paymentService.getWallet()` | Unwrap `{success,data}` → return walletDoc with `balance:Number` |
+| BUG-2 | CRITICAL | `paymentService.getTransactionHistory()` | Handle new `{success,data:[],meta:{}}` shape |
+| BUG-3 | HIGH | `hirerSlice.fetchPaymentSummary` | Unwrap `walletRaw.data` not `walletRaw` |
+| BUG-4 | HIGH | `hirerSlice.fetchJobApplications` | Total count from resolved array not raw wrapper object |
+| BUG-5 | MEDIUM | `PaymentContext` transactions | `tr?.data\|\|tr?.transactions` not `tr?.transactions` |
+| BUG-6 | MEDIUM | `paymentService.getEscrows()` | Normalise to array from `{success,data:[]}` |
+| BUG-7 | MEDIUM | `PaymentContext.fetchTransactions()` | Same fix as BUG-5 |
+| BUG-8 | MEDIUM | `PaymentContext` escrows handler | Guard against non-array value |
+| BUG-9 | MEDIUM | `hirerSlice.fetchPaymentSummary` escrows | Handle `{success,data:[]}` wrapper |
+
+**Modules Fully Audited (no issues found)**:
+- Auth flow (login/register → authService → authSlice ✅)
+- Job listing/details/apply (jobsService, jobSlice ✅)
+- Worker profile/skills/availability (workerSlice, workerService ✅)
+- Messaging (MessageContext, messagingService ✅)
+- Notifications (NotificationContext, notificationService ✅)
+- Reviews (reviewService with `unwrapData` helper ✅)
+- Job posting form (JobPostingPage + hirerSlice ✅)
+- Applications (fetchJobApplications normalisation ✅)
+
+**Push status**: Commit `2a13049` created locally. Push blocked by cached git credentials (Giftyafisa → 403). Owner must re-authenticate and push.
+
+---
+
 ### Landing Page Professional UX Cleanup — IN PROGRESS (Mar 03, 2026) 🔄
 - 🎯 Scope: Deep scan of landing flow and shared non-module UI for responsiveness, click reliability, and space efficiency based on Kelmah mission docs.
 - 📚 References reviewed: `spec-kit/Kelmaholddocs/old-docs/Kelma.txt`, `spec-kit/Kelmaholddocs/old-docs/Kelma docs.txt`.

@@ -626,7 +626,8 @@ app.use('/api/profile',
     return authenticate(req, res, next);
   },
   createDynamicProxy('user', {
-    pathRewrite: { '^/api/profile': '/api/profile' }
+    // FIX: Express strips mount path from req.url; use function-based rewrite to restore it
+    pathRewrite: (path) => `/api/profile${path}`
   })
 );
 
@@ -634,7 +635,8 @@ app.use('/api/profile',
 app.use('/api/profile/uploads',
   authenticate,
   createDynamicProxy('user', {
-    pathRewrite: { '^/api/profile/uploads': '/api/profile/uploads' }
+    // FIX: Express strips mount path from req.url; use function-based rewrite to restore it
+    pathRewrite: (path) => `/api/profile/uploads${path}`
   })
 );
 
@@ -642,7 +644,8 @@ app.use('/api/profile/uploads',
 app.use('/api/settings',
   authenticate,
   createDynamicProxy('user', {
-    pathRewrite: { '^/api/settings': '/api/settings' }
+    // FIX: Express strips mount path from req.url; use function-based rewrite to restore it
+    pathRewrite: (path) => `/api/settings${path}`
   })
 );
 
@@ -656,7 +659,8 @@ app.use('/api/dashboard', dashboardRouter);
 app.use('/api/appointments',
   authenticate,
   createDynamicProxy('user', {
-    pathRewrite: { '^/api/appointments': '/api/appointments' },
+    // FIX: Express strips mount path from req.url; use function-based rewrite to restore it
+    pathRewrite: (path) => `/api/appointments${path}`,
     onError: (err, req, res) => {
       console.error('[API Gateway] Appointments proxy error:', err.message);
       res.status(503).json({
@@ -747,7 +751,8 @@ app.use('/api/bids', bidRouter);
 // Milestones routes — proxy to job-service /api/jobs/milestones/*
 // Frontend calls /api/milestones/* which gateway rewrites to job-service
 app.use('/api/milestones', authenticate, createDynamicProxy('job', {
-  pathRewrite: { '^/api/milestones': '/api/jobs/milestones' },
+  // FIX: Express strips mount path from req.url; use function-based rewrite to restore it
+  pathRewrite: (path) => `/api/jobs/milestones${path}`,
   onError: (err, req, res) => {
     console.error('[API Gateway] Milestone service error:', err.message);
     res.status(503).json({
@@ -760,7 +765,8 @@ app.use('/api/milestones', authenticate, createDynamicProxy('job', {
 // Search routes (public) with rate limiting
 app.use('/api/search', getRateLimiter('search'));
 app.use('/api/search', createDynamicProxy('job', {
-  pathRewrite: { '^/api/search': '/api/search' },
+  // FIX: Express strips mount path from req.url; use function-based rewrite to restore it
+  pathRewrite: (path) => `/api/search${path}`,
   onError: (err, req, res) => {
     console.error('[API Gateway] Search service error:', err.message);
     res.status(503).json({
@@ -775,7 +781,8 @@ app.use('/api/search', createDynamicProxy('job', {
 // Route them to the same search proxy to avoid 404s
 app.use('/api/jobs/search', getRateLimiter('search'));
 app.use('/api/jobs/search', createDynamicProxy('job', {
-  pathRewrite: { '^/api/jobs/search': '/api/search' },
+  // FIX: Express strips mount path; /api/jobs/search -> job-service /api/search
+  pathRewrite: (path) => `/api/search${path}`,
   onError: (err, req, res) => {
     console.error('[API Gateway] Search alias error:', err.message);
     res.status(503).json({
@@ -796,7 +803,8 @@ app.use('/api/quick-jobs', authenticate, (req, res, next) => {
   }
   next();
 }, createDynamicProxy('job', {
-  pathRewrite: { '^/api/quick-jobs': '/api/quick-jobs' },
+  // FIX: Express strips mount path from req.url; use function-based rewrite to restore it
+  pathRewrite: (path) => `/api/quick-jobs${path}`,
   onError: (err, req, res) => {
     console.error('[API Gateway] QuickJob service error:', err.message);
     res.status(503).json({
@@ -832,7 +840,8 @@ app.use('/api/messaging/health', (req, res, next) => {
   const proxy = createProxyMiddleware({
     target: services.messaging,
     changeOrigin: true,
-    pathRewrite: { '^/api/messaging/health': '/api/health' }
+    // FIX: Express strips mount path; rewrite to messaging-service health endpoint
+    pathRewrite: (path) => `/api/health${path}`
   });
   return proxy(req, res, next);
 });
@@ -851,7 +860,8 @@ app.use('/api/uploads',
     const proxy = createProxyMiddleware({
       target: services.messaging,
       changeOrigin: true,
-      pathRewrite: { '^/api/uploads': '/api/uploads' }
+      // FIX: Express strips mount path; use function-based rewrite
+      pathRewrite: (path) => `/api/uploads${path}`
     });
     return proxy(req, res, next);
   }
@@ -942,7 +952,8 @@ app.use('/api/socket/metrics',
     const proxy = createProxyMiddleware({
       target: services.messaging,
       changeOrigin: true,
-      pathRewrite: { '^/api/socket/metrics': '/api/socket/metrics' }
+      // FIX: Express strips mount path; use function-based rewrite
+      pathRewrite: (path) => `/api/socket/metrics${path}`
     });
     return proxy(req, res, next);
   }
@@ -1025,7 +1036,8 @@ app.use('/api/conversations',
     const proxy = createProxyMiddleware({
       target: services.messaging,
       changeOrigin: true,
-      pathRewrite: { '^/api/conversations': '/api/conversations' },
+      // FIX: Express strips mount path; use function-based rewrite
+      pathRewrite: (path) => `/api/conversations${path}`,
       onProxyReq: (proxyReq, req) => {
         if (req.user) {
           proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
@@ -1145,7 +1157,8 @@ app.use('/api/admin',
     const proxy = createProxyMiddleware({
       target: services.user,
       changeOrigin: true,
-      pathRewrite: { '^/api/admin': '/api/admin' }
+      // FIX: Express strips mount path; use function-based rewrite
+      pathRewrite: (path) => `/api/admin${path}`
     });
     return proxy(req, res, next);
   }

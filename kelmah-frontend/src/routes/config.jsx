@@ -757,6 +757,34 @@ const routes = [
         element: <HelpCenterPage />,
       },
       {
+        path: 'help',
+        element: <HelpCenterPage />,
+      },
+      {
+        path: 'about',
+        element: <HelpCenterPage />,
+      },
+      {
+        path: 'contact',
+        element: <HelpCenterPage />,
+      },
+      {
+        path: 'privacy',
+        element: <HelpCenterPage />,
+      },
+      {
+        path: 'terms',
+        element: <HelpCenterPage />,
+      },
+      {
+        path: 'pricing',
+        element: <HelpCenterPage />,
+      },
+      {
+        path: 'settings/payments',
+        element: <HelpCenterPage />,
+      },
+      {
         path: 'profile',
         element: (
           <ProtectedRoute>

@@ -141,7 +141,11 @@ const JobManagementPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [uiMessage, setUiMessage] = useState(null);
 
-  // Fetch jobs by status on mount (canonical statuses)
+  // AUD2-M09: 5 separate dispatches on mount — one per job status bucket.
+  // Each fires an independent GET /api/jobs/hirer?status=X request in parallel.
+  // A backend GET /api/jobs/hirer (no status filter, full list) would be more
+  // efficient; when available, replace this loop with a single dispatch.
+  // Until then, keep them parallel so no single slow bucket blocks the others.
   useEffect(() => {
     ['open', 'in-progress', 'completed', 'cancelled', 'draft'].forEach(
       (status) => {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -34,6 +34,7 @@ import {
   Handshake as HandshakeIcon,
 } from '@mui/icons-material';
 import { alpha } from '@mui/material/styles';
+import jobsApi from '../../jobs/services/jobsService';
 
 /* =================================================================
  * DESIGN-SYSTEM PRIMITIVES
@@ -172,6 +173,31 @@ const HeroSection = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  // AUD2-L01 FIX: Fetch live platform stats; fall back to hardcoded values while loading
+  // or if the job service is unavailable.
+  const [trustMetrics, setTrustMetrics] = useState([
+    '5,000+ verified workers',
+    '12,000+ jobs completed',
+    '98% satisfaction',
+  ]);
+
+  useEffect(() => {
+    let cancelled = false;
+    jobsApi.getPlatformStats().then((stats) => {
+      if (cancelled || !stats) return;
+      const workers = stats.totalWorkers ?? stats.workers ?? null;
+      const jobs = stats.totalJobsCompleted ?? stats.completedJobs ?? stats.totalJobs ?? null;
+      const satisfaction = stats.satisfactionRate ?? stats.satisfaction ?? null;
+      const metrics = [
+        workers != null ? `${Number(workers).toLocaleString()}+ verified workers` : '5,000+ verified workers',
+        jobs != null ? `${Number(jobs).toLocaleString()}+ jobs completed` : '12,000+ jobs completed',
+        satisfaction != null ? `${satisfaction}% satisfaction` : '98% satisfaction',
+      ];
+      setTrustMetrics(metrics);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <Box
       component="section"
@@ -264,7 +290,7 @@ const HeroSection = () => {
               </Button>
             </Stack>
 
-            {/* Trust metrics — compact proof points */}
+            {/* Trust metrics — compact proof points driven by live API data */}
             <Stack
               direction="row"
               spacing={{ xs: 1.5, sm: 3 }}
@@ -272,11 +298,7 @@ const HeroSection = () => {
               flexWrap="wrap"
               useFlexGap
             >
-              {[
-                '5,000+ verified workers',
-                '12,000+ jobs completed',
-                '98% satisfaction',
-              ].map((text) => (
+              {trustMetrics.map((text) => (
                 <Stack key={text} direction="row" alignItems="center" spacing={0.75}>
                   <CheckIcon sx={{ fontSize: 16, color: 'success.main' }} />
                   <Typography
