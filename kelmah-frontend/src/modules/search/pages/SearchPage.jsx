@@ -386,7 +386,11 @@ const SearchPage = () => {
   useEffect(() => {
     // Guard: only run when we are still on a search route
     const currentPath = location.pathname || '';
-    if (!currentPath.startsWith('/find-talents') && !currentPath.startsWith('/search')) {
+    if (
+      !currentPath.startsWith('/find-talents') &&
+      !currentPath.startsWith('/search') &&
+      !currentPath.startsWith('/hirer/find-talent')
+    ) {
       return;
     }
 
@@ -553,7 +557,8 @@ const SearchPage = () => {
     const currentPath = location.pathname || '';
     const isSearchContext =
       currentPath.startsWith('/find-talents') ||
-      currentPath.startsWith('/search');
+      currentPath.startsWith('/search') ||
+      currentPath.startsWith('/hirer/find-talent');
 
     if (!isSearchContext) {
       // Guard against in-flight search effects forcing navigation when the
@@ -565,7 +570,9 @@ const SearchPage = () => {
       ? currentPath
       : currentPath.startsWith('/search')
         ? currentPath
-        : '/find-talents';
+        : currentPath.startsWith('/hirer/find-talent')
+          ? currentPath
+          : '/find-talents';
 
     const nextSearch = queryParams.toString();
     const currentSearch = (location.search || '').replace(/^[?]/, '');
@@ -712,7 +719,7 @@ const SearchPage = () => {
         description="Search for skilled workers by location, skills, experience level, and more. Find carpenters, plumbers, electricians, and other professionals in Ghana."
       />
 
-      <Container maxWidth="lg" sx={{ pt: 0 }}>
+      <Container maxWidth="xl" sx={{ pt: 0 }}>
         {/* Search Form - Responsive: Compact on mobile, full on desktop */}
         {isMobile ? (
           <>

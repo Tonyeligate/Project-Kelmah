@@ -36,6 +36,10 @@ import {
   Message,
   Star,
   InboxOutlined,
+  WorkOutline,
+  TipsAndUpdates,
+  ArrowForward,
+  Badge as BadgeIcon,
 } from '@mui/icons-material';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
@@ -202,6 +206,13 @@ function ApplicationManagementPage() {
     [allApplications, activeTab],
   );
 
+  // Tab counts for badges
+  const tabCounts = useMemo(() => ({
+    pending: allApplications.filter((a) => a.status === 'pending').length,
+    accepted: allApplications.filter((a) => a.status === 'accepted').length,
+    rejected: allApplications.filter((a) => a.status === 'rejected').length,
+  }), [allApplications]);
+
   // Auto-select first application when filtered list changes
   useEffect(() => {
     if (!loading) {
@@ -328,9 +339,18 @@ function ApplicationManagementPage() {
               allowScrollButtonsMobile
               centered={!isMobile}
             >
-              <Tab label="Pending" value="pending" />
-              <Tab label="Accepted" value="accepted" />
-              <Tab label="Rejected" value="rejected" />
+              <Tab
+                label={tabCounts.pending ? `Pending (${tabCounts.pending})` : 'Pending'}
+                value="pending"
+              />
+              <Tab
+                label={tabCounts.accepted ? `Accepted (${tabCounts.accepted})` : 'Accepted'}
+                value="accepted"
+              />
+              <Tab
+                label={tabCounts.rejected ? `Rejected (${tabCounts.rejected})` : 'Rejected'}
+                value="rejected"
+              />
             </Tabs>
             <Box sx={{ flex: '1 1 auto', overflowY: 'auto', p: 2 }}>
               {loading &&
@@ -348,27 +368,86 @@ function ApplicationManagementPage() {
                 </Alert>
               )}
               {!loading && applications.length === 0 && !error && (
-                <Box sx={{ textAlign: 'center', mt: 4, py: 4, border: '1px dashed', borderColor: 'divider', borderRadius: 2 }}>
-                  <InboxOutlined sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
-                    No applications yet
+                <Box sx={{ textAlign: 'center', mt: 2, py: 4, px: 2 }}>
+                  {/* Icon badge */}
+                  <Box
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: '50%',
+                      background: (t) => `linear-gradient(135deg, ${t.palette.primary.light}22, ${t.palette.primary.main}18)`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mx: 'auto',
+                      mb: 2.5,
+                    }}
+                  >
+                    <InboxOutlined sx={{ fontSize: 40, color: 'primary.main' }} />
+                  </Box>
+
+                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                    {allApplications.length === 0
+                      ? 'No applications yet'
+                      : `No ${activeTab} applications`}
                   </Typography>
                   <Typography
                     variant="body2"
                     color="text.secondary"
-                    sx={{ mb: 2 }}
+                    sx={{ mb: 3, maxWidth: 280, mx: 'auto' }}
                   >
-                    Publish a detailed job post to start receiving proposals
-                    from verified workers.
+                    {allApplications.length === 0
+                      ? 'Once you publish a job and workers apply, their proposals will appear here.'
+                      : `Switch tabs to view your other applications.`}
                   </Typography>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => navigate('/hirer/jobs/post')}
-                    sx={{ minHeight: 44 }}
-                  >
-                    Post a Job
-                  </Button>
+
+                  {/* Tips section */}
+                  {allApplications.length === 0 && (
+                    <Box
+                      sx={{
+                        bgcolor: 'action.hover',
+                        borderRadius: 2,
+                        p: 2,
+                        mb: 3,
+                        textAlign: 'left',
+                        maxWidth: 320,
+                        mx: 'auto',
+                      }}
+                    >
+                      <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                        <TipsAndUpdates sx={{ fontSize: 16 }} /> Quick tips
+                      </Typography>
+                      {[
+                        'Post a detailed job with clear requirements',
+                        'Set a competitive budget range',
+                        'Browse Find Talent to invite workers',
+                      ].map((tip) => (
+                        <Typography key={tip} variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, pl: 1 }}>
+                          • {tip}
+                        </Typography>
+                      ))}
+                    </Box>
+                  )}
+
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      endIcon={<ArrowForward />}
+                      onClick={() => navigate('/hirer/jobs/post')}
+                      sx={{ minHeight: 44, minWidth: 180 }}
+                    >
+                      Post a Job
+                    </Button>
+                    <Button
+                      variant="text"
+                      size="small"
+                      onClick={() => navigate('/hirer/find-talent')}
+                      sx={{ minHeight: 36, textTransform: 'none' }}
+                    >
+                      Or browse available talent
+                    </Button>
+                  </Box>
                 </Box>
               )}
               {!loading &&
@@ -391,31 +470,58 @@ function ApplicationManagementPage() {
           >
             {selectedApplication ? (
               <>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                {/* Applicant header card */}
+                <Paper
+                  variant="outlined"
+                  sx={{ p: 2.5, mb: 3, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 2 }}
+                >
                   <Avatar
                     src={selectedApplication.workerAvatar}
                     alt={selectedApplication.workerName || 'Applicant avatar'}
-                    sx={{ width: 60, height: 60, mr: 2 }}
+                    sx={{ width: 64, height: 64 }}
                   />
-                  <div>
-                    <Typography variant="h5">
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="h5" fontWeight={600}>
                       {selectedApplication.workerName}
                     </Typography>
                     {selectedApplication.workerRating !== null ? (
-                      <Rating value={selectedApplication.workerRating} readOnly aria-label={`${selectedApplication.workerName || 'Worker'} rating: ${selectedApplication.workerRating} out of 5`} />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Rating value={selectedApplication.workerRating} readOnly size="small" aria-label={`${selectedApplication.workerName || 'Worker'} rating: ${selectedApplication.workerRating} out of 5`} />
+                        <Typography variant="caption" color="text.secondary">
+                          ({selectedApplication.workerRating?.toFixed(1)})
+                        </Typography>
+                      </Box>
                     ) : (
                       <Typography variant="body2" color="text.disabled">No reviews yet</Typography>
                     )}
-                  </div>
-                </Box>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="h6">Cover Letter</Typography>
-                <Typography variant="body1" paragraph>
-                  {selectedApplication.coverLetter}
+                    {selectedApplication.status && (
+                      <Chip
+                        size="small"
+                        label={selectedApplication.status.charAt(0).toUpperCase() + selectedApplication.status.slice(1)}
+                        color={selectedApplication.status === 'accepted' ? 'success' : selectedApplication.status === 'rejected' ? 'error' : 'warning'}
+                        variant="outlined"
+                        sx={{ mt: 0.5 }}
+                      />
+                    )}
+                  </Box>
+                </Paper>
+
+                {/* Cover letter */}
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  Cover Letter
                 </Typography>
-                <Divider sx={{ my: 2 }} />
-                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-around', gap: 1 }}>
-                  <Button startIcon={<Message />} onClick={handleMessage} sx={{ minHeight: 44 }}>
+                <Paper
+                  variant="outlined"
+                  sx={{ p: 2, mb: 3, borderRadius: 2, bgcolor: 'action.hover', minHeight: 120 }}
+                >
+                  <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                    {selectedApplication.coverLetter || 'No cover letter provided.'}
+                  </Typography>
+                </Paper>
+
+                {/* Action buttons */}
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5, justifyContent: 'flex-start' }}>
+                  <Button variant="outlined" startIcon={<Message />} onClick={handleMessage} sx={{ minHeight: 44 }}>
                     Message
                   </Button>
                   <Button
@@ -439,14 +545,41 @@ function ApplicationManagementPage() {
                 </Box>
               </>
             ) : (
-              <Paper
-                sx={{ p: 4, textAlign: 'center', background: 'transparent' }}
-                elevation={0}
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '100%',
+                  minHeight: 300,
+                  textAlign: 'center',
+                  p: 4,
+                }}
               >
-                <Typography variant="h6" color="text.secondary">
-                  Select an application to view details.
+                <Box
+                  sx={{
+                    width: 72,
+                    height: 72,
+                    borderRadius: '50%',
+                    bgcolor: 'action.hover',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mb: 2,
+                  }}
+                >
+                  <BadgeIcon sx={{ fontSize: 36, color: 'text.disabled' }} />
+                </Box>
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  No application selected
                 </Typography>
-              </Paper>
+                <Typography variant="body2" color="text.disabled">
+                  {applications.length > 0
+                    ? 'Choose an application from the list to review the details.'
+                    : 'Applications from workers will appear in the panel on the left.'}
+                </Typography>
+              </Box>
             )}
           </Grid>
         </Grid>
