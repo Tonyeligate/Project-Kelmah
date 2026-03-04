@@ -1,5 +1,34 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Job Visibility + Hirer Job Management Consolidation — Round 17 ✅
+
+**Scope**: Align job visibility behavior across backend listing and hirer dashboard management while reducing redundant status-bucket fetches.
+
+**Implemented fixes**:
+- ✅ `job.controller.js`
+  - New jobs now default to `visibility: 'public'` and `status: 'open'` when omitted.
+  - Public jobs query now tolerates legacy jobs with missing/null visibility (`public OR missing OR null`) so valid legacy jobs still surface.
+  - Removed incompatible count hint for tolerant `$or` visibility query path.
+- ✅ `hirerSlice.js`
+  - Consolidated `fetchHirerJobs('all')` handling with larger single-fetch limit and reducer-side bucketing by canonical status.
+  - Normalized status key mapping (`active` alias → `open`) during assignment.
+  - Corrected initial jobs state keying to canonical `open`.
+- ✅ `JobManagementPage.jsx`
+  - Replaced 5 parallel per-status fetches with one consolidated `fetchHirerJobs('all')` flow.
+  - Added visibility chips (`Public`, `Private`, `Invite`) with explanatory tooltips in both mobile card and table views.
+  - Refreshed jobs after status updates and deletions to keep UI state in sync.
+
+**Verification**:
+- ✅ `get_errors` reports no diagnostics in all changed frontend/backend files.
+
+**Files modified**:
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`
+- `kelmah-frontend/src/modules/hirer/pages/JobManagementPage.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+---
+
 ### Session: Map Result Key Stability — Round 16 ✅
 
 **Scope**: Harden React key stability in live map/search result rendering paths to prevent stale row state and animation mismatch on updates.

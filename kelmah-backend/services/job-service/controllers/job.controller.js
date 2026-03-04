@@ -135,6 +135,10 @@ const createJob = async (req, res, next) => {
 
     if (!body.paymentType) body.paymentType = 'fixed';
     if (!body.currency) body.currency = 'GHS';
+    // Always default to public visibility so new jobs appear on the public jobs page
+    if (!body.visibility) body.visibility = 'public';
+    // Always default status to open unless explicitly set to draft
+    if (!body.status) body.status = 'open';
 
     if (typeof body.duration === 'string') {
       const match = body.duration.match(/(\d+)\s*(hour|day|week|month|hours|days|weeks|months)/i);
@@ -1040,7 +1044,17 @@ const getJobs = async (req, res, next) => {
     }
 
     // Build query - Use lowercase "open" status (matches database canonical values)
-    let query = { status: "open", visibility: "public" };
+    // Tolerant visibility filter: show jobs explicitly marked 'public' OR with no visibility
+    // field at all (legacy jobs inserted before the visibility field was added should be
+    // treated as public — no hirer deliberately set them to private).
+    let query = {
+      status: "open",
+      $or: [
+        { visibility: "public" },
+        { visibility: { $exists: false } },
+        { visibility: null }
+      ]
+    };
     if (isDebugJobs) {
       console.log('[GET JOBS] Initial query:', JSON.stringify(query));
     }
@@ -1264,9 +1278,8 @@ const getJobs = async (req, res, next) => {
         console.log('[GET JOBS] Getting total count...');
       }
       const countOptions = {};
-      if (!req.query.search && !req.query.location && !req.query.skills) {
-        countOptions.hint = { status: 1, visibility: 1, createdAt: -1 };
-      }
+      // Note: no compound hint here — the tolerant $or visibility filter prevents
+      // efficient use of a { status, visibility } compound index at count time.
 
       try {
         total = await jobsCollection.countDocuments(query, {

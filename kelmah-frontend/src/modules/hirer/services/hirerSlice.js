@@ -50,8 +50,9 @@ export const fetchHirerJobs = createAsyncThunk(
   async (status = 'all') => {
     try {
       // Map frontend status to database canonical status
-      const dbStatus = STATUS_MAP[status] || status;
-      const params = { role: 'hirer', limit: 100 };
+      const dbStatus = STATUS_MAP[status] !== undefined ? STATUS_MAP[status] : status;
+      // Use a high limit for the consolidated 'all' fetch; otherwise 50 per bucket
+      const params = { role: 'hirer', limit: status === 'all' ? 200 : 50 };
       if (dbStatus) {
         params.status = dbStatus;
       }
@@ -351,7 +352,7 @@ const normalizeApplicationsByStatus = (apiPayload) => {
 const initialState = {
   profile: null,
   jobs: {
-    active: [], // ✅ FIXED: Changed from 'active' to active
+    open: [],          // jobs with status 'open'
     'in-progress': [],
     completed: [],
     cancelled: [],
@@ -452,16 +453,31 @@ const hirerSlice = createSlice({
       .addCase(fetchHirerJobs.fulfilled, (state, action) => {
         state.loading.jobs = false;
         const { status, jobs } = action.payload || {};
-        if (status && Array.isArray(jobs)) {
-          state.jobs[status] = jobs;
+        if (!Array.isArray(jobs)) return;
+
+        if (status === 'all') {
+          // Distribute the consolidated list into per-status buckets so status
+          // counts and tab filtering work without additional processing.
+          const buckets = { open: [], 'in-progress': [], completed: [], cancelled: [], draft: [] };
+          jobs.forEach((job) => {
+            const s = job.status || 'draft';
+            if (buckets[s]) buckets[s].push(job);
+            else buckets[s] = [job]; // Handle any unexpected status values
+          });
+          Object.assign(state.jobs, buckets);
+        } else if (status) {
+          // Canonical status key — map 'active' alias to 'open'
+          const key = status === 'active' ? 'open' : status;
+          state.jobs[key] = jobs;
         }
       })
       .addCase(fetchHirerJobs.rejected, (state, action) => {
         state.loading.jobs = false;
         state.error.jobs = action.payload || 'Failed to fetch jobs';
-        // ✅ FIXED: Set empty array instead of undefined
-        const status = action.meta.arg || 'active';
-        state.jobs[status] = [];
+        // Set empty array for the failed status bucket
+        const rawStatus = action.meta.arg || 'open';
+        const key = rawStatus === 'active' ? 'open' : rawStatus;
+        if (key !== 'all') state.jobs[key] = [];
       })
 
       // Create Hirer Job

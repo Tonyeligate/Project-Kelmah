@@ -54,6 +54,9 @@ import {
   HourglassEmpty as DraftIcon,
   Refresh as RefreshIcon,
   ErrorOutline as WarningIcon,
+  Public as PublicIcon,
+  Lock as PrivateIcon,
+  GroupAdd as InviteIcon,
 } from '@mui/icons-material';
 import {
   fetchHirerJobs,
@@ -64,8 +67,33 @@ import {
 } from '../services/hirerSlice';
 import { formatJobLocation } from '../../../utils/formatters';
 
-// TabPanel component
-function TabPanel(props) {
+// Visibility chip — tells the hirer whether the job appears on the public Jobs page
+const VisibilityChip = ({ visibility }) => {
+  const v = visibility || 'public'; // treat missing as public (legacy data)
+  if (v === 'private') {
+    return (
+      <Tooltip title="This job is hidden from the public Jobs page">
+        <Chip icon={<PrivateIcon />} label="Private" size="small" color="default"
+          sx={{ fontSize: '0.7rem', height: 20, '& .MuiChip-label': { px: 0.5 } }} />
+      </Tooltip>
+    );
+  }
+  if (v === 'invite-only') {
+    return (
+      <Tooltip title="Invite-only — only visible to invited workers">
+        <Chip icon={<InviteIcon />} label="Invite" size="small" color="info"
+          sx={{ fontSize: '0.7rem', height: 20, '& .MuiChip-label': { px: 0.5 } }} />
+      </Tooltip>
+    );
+  }
+  return (
+    <Tooltip title="Visible on the public Jobs page">
+      <Chip icon={<PublicIcon />} label="Public" size="small" color="success"
+        sx={{ fontSize: '0.7rem', height: 20, '& .MuiChip-label': { px: 0.5 } }} />
+    </Tooltip>
+  );
+};
+
   const { children, value, index, ...other } = props;
   return (
     <div
@@ -141,20 +169,16 @@ const JobManagementPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [uiMessage, setUiMessage] = useState(null);
 
-  // AUD2-M09: 5 separate dispatches on mount — one per job status bucket.
-  // Each fires an independent GET /api/jobs/hirer?status=X request in parallel.
-  // A backend GET /api/jobs/hirer (no status filter, full list) would be more
-  // efficient; when available, replace this loop with a single dispatch.
-  // Until then, keep them parallel so no single slow bucket blocks the others.
+  // Single consolidated fetch — replaces 5 separate per-status calls (AUD2-M09 fix).
+  // The 'all' thunk requests /api/jobs/my-jobs?limit=200 with no status filter and the
+  // reducer distributes results into the correct per-status buckets.
   useEffect(() => {
-    let cancelled = false;
-    ['open', 'in-progress', 'completed', 'cancelled', 'draft'].forEach(
-      (status) => {
-        dispatch(fetchHirerJobs(status));
-      },
-    );
-    return () => { cancelled = true; };
+    dispatch(fetchHirerJobs('all'));
   }, [dispatch]);
+
+  const handleRefresh = () => {
+    dispatch(fetchHirerJobs('all'));
+  };
 
   // Tab statuses (canonical)
   const tabStatuses = [
@@ -209,10 +233,10 @@ const JobManagementPage = () => {
   };
 
   const handleEditJob = (jobId) => {
-    const job = jobs.find((j) => j?.id === jobId);
+    const job = jobs.find((j) => j?.id === jobId || j?._id === jobId);
     const editableStatuses = ['draft', 'open'];
     if (job?.status && !editableStatuses.includes(job.status.toLowerCase())) {
-      setUiMessage('Only draft and open jobs can be edited.');
+      setUiMessage({ text: 'Only draft and open jobs can be edited.', severity: 'warning' });
       handleMenuClose();
       return;
     }
@@ -243,7 +267,10 @@ const JobManagementPage = () => {
     if (selectedJob) {
       dispatch(updateJobStatus({ jobId: selectedJob.id || selectedJob._id, status }))
         .unwrap()
-        .then(() => setUiMessage({ text: `Job status updated to ${status}`, severity: 'success' }))
+        .then(() => {
+          setUiMessage({ text: `Job status updated to ${status}`, severity: 'success' });
+          dispatch(fetchHirerJobs('all')); // refresh the list
+        })
         .catch((err) => setUiMessage({ text: err?.message || 'Failed to update status', severity: 'error' }));
     }
     handleMenuClose();
@@ -253,7 +280,10 @@ const JobManagementPage = () => {
     if (selectedJob) {
       dispatch(deleteHirerJob(selectedJob.id || selectedJob._id))
         .unwrap()
-        .then(() => setUiMessage({ text: 'Job deleted successfully', severity: 'success' }))
+        .then(() => {
+          setUiMessage({ text: 'Job deleted successfully', severity: 'success' });
+          dispatch(fetchHirerJobs('all')); // refresh the list
+        })
         .catch((err) => setUiMessage({ text: err?.message || 'Failed to delete job', severity: 'error' }));
       setDeleteDialogOpen(false);
     }
@@ -276,14 +306,6 @@ const JobManagementPage = () => {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
-  };
-
-  const handleRefresh = () => {
-    ['open', 'in-progress', 'completed', 'cancelled', 'draft'].forEach(
-      (status) => {
-        dispatch(fetchHirerJobs(status));
-      },
-    );
   };
 
   // Mobile Job Card Component
@@ -312,7 +334,10 @@ const JobManagementPage = () => {
           <Typography variant="subtitle1" fontWeight={600} noWrap sx={{ flex: 1, pr: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {job.title}
           </Typography>
-          <StatusChip status={job.status} />
+          <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+            <StatusChip status={job.status} />
+            <VisibilityChip visibility={job.visibility} />
+          </Box>
         </Box>
         
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
@@ -372,11 +397,38 @@ const JobManagementPage = () => {
         <title>Manage Jobs | Kelmah</title>
       </Helmet>
 
-      {uiMessage && typeof uiMessage === 'string' && (
-        <Alert severity="info" sx={{ mb: 2 }} onClose={() => setUiMessage(null)}>
-          {uiMessage}
+      {uiMessage && (
+        <Alert
+          severity={typeof uiMessage === 'object' ? uiMessage.severity || 'info' : 'info'}
+          sx={{ mb: 2 }}
+          onClose={() => setUiMessage(null)}
+        >
+          {typeof uiMessage === 'object' ? uiMessage.text : uiMessage}
         </Alert>
       )}
+
+      {/* Visibility explainer: helps hirers understand why some jobs don't appear on the public page */}
+      {!loading && jobs.length > 0 && (() => {
+        const publicCount = jobs.filter(j => !j.visibility || j.visibility === 'public').length;
+        const privateCount = jobs.length - publicCount;
+        if (privateCount === 0) return null;
+        return (
+          <Alert
+            severity="warning"
+            sx={{ mb: 2, mx: { xs: 0.5, md: 0 } }}
+            action={
+              <Button color="inherit" size="small" onClick={() => navigate('/jobs')} sx={{ whiteSpace: 'nowrap' }}>
+                View Public Page
+              </Button>
+            }
+          >
+            {isMobile
+              ? `${privateCount} job${privateCount > 1 ? 's' : ''} not visible publicly. Check the 🔒 badge.`
+              : `${privateCount} of your ${jobs.length} jobs ${privateCount > 1 ? 'are' : 'is'} not visible on the public Jobs page. Jobs marked 🔒 Private won't be found by workers. Look for the visibility badge on each job.`}
+          </Alert>
+        );
+      })()}
+
       
       {/* Mobile-optimized header */}
       <Box sx={{ mb: { xs: 2, md: 4 }, px: { xs: 0.5, md: 0 } }}>
@@ -721,8 +773,11 @@ const JobManagementPage = () => {
                               </Typography>
                             </Box>
                           </TableCell>
-                          <TableCell>
-                            <StatusChip status={job.status} />
+                      <TableCell>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <StatusChip status={job.status} />
+                              <VisibilityChip visibility={job.visibility} />
+                            </Box>
                           </TableCell>
                           <TableCell>
                             <Badge
