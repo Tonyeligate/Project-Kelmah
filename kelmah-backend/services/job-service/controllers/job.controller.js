@@ -637,7 +637,7 @@ const updateMilestone = async (req, res, next) => {
   try {
     const userId = req.user?.id;
     const userRole = req.user?.role;
-    const contracts = await Contract.find({ 'milestones._id': req.params.milestoneId });
+    const contracts = await Contract.find({ 'milestones._id': req.params.milestoneId }).limit(1);
     if (!contracts.length) return errorResponse(res, 404, 'Milestone not found');
     const contract = contracts[0];
     const isHirer = String(contract.hirer) === String(userId);
@@ -700,7 +700,7 @@ const updateMilestone = async (req, res, next) => {
 const deleteMilestone = async (req, res, next) => {
   try {
     const userId = req.user?.id;
-    const contracts = await Contract.find({ 'milestones._id': req.params.milestoneId });
+    const contracts = await Contract.find({ 'milestones._id': req.params.milestoneId }).limit(1);
     if (!contracts.length) return errorResponse(res, 404, 'Milestone not found');
     const contract = contracts[0];
     if (String(contract.hirer) !== String(userId) && String(contract.worker) !== String(userId)) {
@@ -723,7 +723,7 @@ const deleteMilestone = async (req, res, next) => {
 const payMilestone = async (req, res, next) => {
   try {
     const userId = req.user?.id;
-    const contracts = await Contract.find({ 'milestones._id': req.params.milestoneId });
+    const contracts = await Contract.find({ 'milestones._id': req.params.milestoneId }).limit(1);
     if (!contracts.length) return errorResponse(res, 404, 'Milestone not found');
     const contract = contracts[0];
     if (String(contract.hirer) !== String(userId)) {

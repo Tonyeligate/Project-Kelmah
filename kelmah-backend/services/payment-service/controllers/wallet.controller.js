@@ -81,7 +81,7 @@ exports.deposit = async (req, res) => {
     // A webhook handler or payment verification endpoint must confirm the
     // reference with the payment provider and then call wallet.addFunds().
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'Deposit successful',
       data: {
@@ -90,7 +90,7 @@ exports.deposit = async (req, res) => {
       },
     });
   } catch (error) {
-    handleError(res, error);
+    return handleError(res, error);
   }
 };
 
@@ -137,7 +137,7 @@ exports.withdraw = async (req, res) => {
       description: 'Wallet withdrawal',
     });
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Withdrawal successful',
       data: {
@@ -146,7 +146,7 @@ exports.withdraw = async (req, res) => {
       },
     });
   } catch (error) {
-    handleError(res, error);
+    return handleError(res, error);
   }
 };
 
@@ -165,14 +165,17 @@ exports.getWallet = async (req, res) => {
       });
 
     if (!wallet) {
-      // Auto-provision an empty wallet on first access
-      wallet = new Wallet({ user: userId, balance: 0 });
-      await wallet.save();
+      // Auto-provision an empty wallet on first access (race-safe via unique index)
+      wallet = await Wallet.findOneAndUpdate(
+        { user: userId },
+        { $setOnInsert: { user: userId, balance: 0 } },
+        { new: true, upsert: true }
+      );
     }
 
-    res.json({ success: true, data: wallet });
+    return res.json({ success: true, data: wallet });
   } catch (error) {
-    handleError(res, error);
+    return handleError(res, error);
   }
 };
 
@@ -206,13 +209,13 @@ exports.createOrUpdateWallet = async (req, res) => {
 
     await wallet.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Wallet updated successfully",
       data: wallet,
     });
   } catch (error) {
-    handleError(res, error);
+    return handleError(res, error);
   }
 };
 
@@ -228,13 +231,13 @@ exports.addPaymentMethod = async (req, res) => {
 
     await wallet.addPaymentMethod(paymentMethod);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Payment method added successfully",
       data: wallet,
     });
   } catch (error) {
-    handleError(res, error);
+    return handleError(res, error);
   }
 };
 
@@ -250,13 +253,13 @@ exports.removePaymentMethod = async (req, res) => {
 
     await wallet.removePaymentMethod(paymentMethodId);
 
-    res.json({
+    return res.json({
       success: true,
       message: "Payment method removed successfully",
       data: wallet,
     });
   } catch (error) {
-    handleError(res, error);
+    return handleError(res, error);
   }
 };
 
@@ -277,13 +280,13 @@ exports.setDefaultPaymentMethod = async (req, res) => {
 
     await paymentMethod.setAsDefault();
 
-    res.json({
+    return res.json({
       success: true,
       message: "Default payment method updated successfully",
       data: wallet,
     });
   } catch (error) {
-    handleError(res, error);
+    return handleError(res, error);
   }
 };
 
@@ -310,7 +313,7 @@ exports.getTransactionHistory = async (req, res) => {
       $or: [{ sender: userId }, { recipient: userId }],
     });
 
-    res.json({
+    return res.json({
       success: true,
       data: transactions,
       meta: {
@@ -320,6 +323,6 @@ exports.getTransactionHistory = async (req, res) => {
       },
     });
   } catch (error) {
-    handleError(res, error);
+    return handleError(res, error);
   }
 };

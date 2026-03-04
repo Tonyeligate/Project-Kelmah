@@ -20,7 +20,11 @@ const MfaSetupPage = () => {
       try {
         const data = await setupMFA();
         if (!cancelled) {
-          setQrCode(data.qrCode);
+          if (data?.qrCode) {
+            setQrCode(data.qrCode);
+          } else {
+            setError('Failed to set up two-factor authentication. Please refresh and try again.');
+          }
         }
       } catch (err) {
         if (!cancelled) {

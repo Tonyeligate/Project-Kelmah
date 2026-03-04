@@ -345,8 +345,8 @@ UserPerformanceSchema.methods.getBidSuccessRate = function() {
 };
 
 // Static methods
-UserPerformanceSchema.statics.findByTier = function(tier) {
-  return this.find({ performanceTier: tier });
+UserPerformanceSchema.statics.findByTier = function(tier, limit = 100) {
+  return this.find({ performanceTier: tier }).limit(limit);
 };
 
 UserPerformanceSchema.statics.findTopPerformers = function(limit = 10) {
@@ -355,17 +355,17 @@ UserPerformanceSchema.statics.findTopPerformers = function(limit = 10) {
     .limit(limit);
 };
 
-UserPerformanceSchema.statics.findByLocation = function(region) {
-  return this.find({ "locationPreferences.primaryRegion": region });
+UserPerformanceSchema.statics.findByLocation = function(region, limit = 100) {
+  return this.find({ "locationPreferences.primaryRegion": region }).limit(limit);
 };
 
-UserPerformanceSchema.statics.findBySkill = function(skill) {
+UserPerformanceSchema.statics.findBySkill = function(skill, limit = 100) {
   return this.find({
     $or: [
       { "skillVerification.primarySkills.skill": skill },
       { "skillVerification.secondarySkills.skill": skill }
     ]
-  });
+  }).limit(limit);
 };
 
 // Pre-save middleware to auto-calculate tier

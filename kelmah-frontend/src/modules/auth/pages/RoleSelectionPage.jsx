@@ -61,6 +61,7 @@ const RoleSelectionPage = () => {
                   '&:hover': { backgroundColor: 'transparent' },
                 }}
                 aria-label="Help"
+                onClick={() => navigate('/help')}
               >
                 <svg
                   width="24"

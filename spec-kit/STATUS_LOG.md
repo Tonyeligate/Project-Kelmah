@@ -1,5 +1,28 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Migration Connectivity Fallback Hardening — Round 22 ✅
+
+**Scope**: Ensure MongoDB migration scripts remain executable in environments where Atlas SRV lookups intermittently fail, while preserving existing env/CLI URI behavior.
+
+**Implemented fixes**:
+- ✅ `migrate-job-visibility.js`
+  - Added connection fallback chain: primary URI → `MONGODB_URI_DIRECT` override → project-safe direct-host URI derived from SRV format.
+  - Added resilient `connectWithFallback()` helper and safe client-close behavior for failed connection attempts.
+- ✅ `migrate-message-conversation-links.js`
+  - Applied the same fallback strategy and safe connection lifecycle handling.
+  - Preserved idempotent migration flow and existing result reporting.
+
+**Verification**:
+- ✅ `node scripts/migrate-job-visibility.js`
+  - Connected successfully; reported `Found 0 job(s) with missing/null visibility.` and clean exit.
+- ✅ `node scripts/migrate-message-conversation-links.js`
+  - Connected successfully; reported `Messages missing conversation link: 0` and clean exit.
+
+**Files modified**:
+- `kelmah-backend/scripts/migrate-job-visibility.js`
+- `kelmah-backend/scripts/migrate-message-conversation-links.js`
+- `spec-kit/STATUS_LOG.md`
+
 ### Session: Continuous Fix Loop — ID Safety + Runtime Guards — Round 21 ✅
 
 **Scope**: Continue autonomous deep-fix loop across high-traffic job/hirer/worker flows and remove remaining runtime breakpoints for mixed `id/_id` payloads.

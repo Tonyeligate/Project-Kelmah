@@ -14,6 +14,7 @@ const VerifyEmailPage = () => {
   const [email, setEmail] = useState('');
   const [resendSent, setResendSent] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [resendError, setResendError] = useState('');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -46,14 +47,14 @@ const VerifyEmailPage = () => {
 
   const handleResend = async (e) => {
     e.preventDefault();
-    setError('');
+    setResendError('');
     setResendSent(false);
     setResendLoading(true);
     try {
       await authService.resendVerificationEmail(email);
       setResendSent(true);
     } catch (err) {
-      setError('Failed to send verification email. Please try again.');
+      setResendError('Failed to send verification email. Please try again.');
     } finally {
       setResendLoading(false);
     }
@@ -96,7 +97,15 @@ const VerifyEmailPage = () => {
               Enter your email to resend verification link:
             </Typography>
           </Box>
-          <Box component="form" onSubmit={handleResend} sx={{ mt: 1 }}>
+            {resendError && (
+              <Alert severity="error" sx={{
+                mt: 1, mb: 1, borderRadius: 2,
+                ...(isMobile && { bgcolor: (t) => `${t.palette.error.main}1F`, color: 'text.primary' }),
+              }}>
+                {resendError}
+              </Alert>
+            )}
+            <Box component="form" onSubmit={handleResend} sx={{ mt: 1 }}>
             <TextField
               label="Email"
               type="email"
