@@ -1,5 +1,27 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Auth/Profile Form UX Refinement — Round 18 ✅
+
+**Scope**: Improve form clarity and recovery for registration and worker profile editing flows.
+
+**Implemented fixes**:
+- ✅ `Register.jsx`
+  - Added a determinate password-strength progress bar (`LinearProgress`) with clearer strength presentation.
+- ✅ `WorkerProfileEditPage.jsx`
+  - Added undo flow after skill removal using snackbar action.
+  - Added client-side portfolio image validation (type + 5MB size guard) with clear feedback.
+  - Added bio character limit guidance (`maxLength=600` + live helper text count).
+
+**Verification**:
+- ✅ No diagnostics in both changed files via `get_errors`.
+
+**Files modified**:
+- `kelmah-frontend/src/modules/auth/components/register/Register.jsx`
+- `kelmah-frontend/src/modules/worker/pages/WorkerProfileEditPage.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+---
+
 ### Session: Job Visibility + Hirer Job Management Consolidation — Round 17 ✅
 
 **Scope**: Align job visibility behavior across backend listing and hirer dashboard management while reducing redundant status-bucket fetches.

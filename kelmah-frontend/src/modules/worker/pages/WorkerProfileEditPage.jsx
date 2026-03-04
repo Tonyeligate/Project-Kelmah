@@ -122,6 +122,7 @@ const WorkerProfileEditPage = () => {
     message: '',
     severity: 'success',
   });
+  const [undoSkillSnackbar, setUndoSkillSnackbar] = useState({ open: false, skill: null });
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -313,6 +314,17 @@ const WorkerProfileEditPage = () => {
       ...prev,
       skills: prev.skills.filter((skill) => skill !== skillToRemove),
     }));
+    setUndoSkillSnackbar({ open: true, skill: skillToRemove });
+  };
+
+  const handleUndoRemoveSkill = () => {
+    if (undoSkillSnackbar.skill) {
+      setFormData((prev) => ({
+        ...prev,
+        skills: [...prev.skills, undoSkillSnackbar.skill],
+      }));
+    }
+    setUndoSkillSnackbar({ open: false, skill: null });
   };
 
   // Education handling
@@ -400,6 +412,14 @@ const WorkerProfileEditPage = () => {
   const handlePortfolioImageChange = (e, index) => {
     const file = e.target.files[0];
     if (file) {
+      if (!file.type.startsWith('image/')) {
+        setSnackbar({ open: true, message: 'Please select an image file (JPG, PNG, WebP).', severity: 'error' });
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setSnackbar({ open: true, message: 'Portfolio image must be under 5 MB.', severity: 'error' });
+        return;
+      }
       const updatedPortfolio = [...formData.portfolio];
       updatedPortfolio[index] = {
         ...updatedPortfolio[index],
@@ -595,6 +615,20 @@ const WorkerProfileEditPage = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {/* Undo skill removal snackbar */}
+      <Snackbar
+        open={undoSkillSnackbar.open}
+        autoHideDuration={5000}
+        onClose={() => setUndoSkillSnackbar({ open: false, skill: null })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        message={`"${undoSkillSnackbar.skill}" removed`}
+        action={
+          <Button color="warning" size="small" onClick={handleUndoRemoveSkill}>
+            UNDO
+          </Button>
+        }
+      />
 
       {error?.profile && (
         <Alert severity="error" sx={{ mb: 3 }}>
@@ -940,6 +974,8 @@ const WorkerProfileEditPage = () => {
                 multiline
                 rows={4}
                 placeholder="Tell potential clients about yourself, your experience, and why they should hire you."
+                inputProps={{ maxLength: 600 }}
+                helperText={`${formData.bio.length}/600 characters`}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment

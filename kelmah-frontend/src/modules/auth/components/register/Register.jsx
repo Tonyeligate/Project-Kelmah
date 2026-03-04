@@ -14,6 +14,7 @@ import {
   Grid,
   IconButton,
   InputAdornment,
+  LinearProgress,
   Link,
   MobileStepper,
   Paper,
@@ -520,21 +521,28 @@ const Register = () => {
       />
 
       {password && (
-        <Stack
-          direction="row"
-          spacing={1}
-          alignItems="center"
-          justifyContent="center"
-        >
-          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>
-            Strength:
-          </Typography>
-          <Chip
-            label={passwordStrength.label}
-            size="small"
+        <Box sx={{ width: '100%' }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+              Password Strength
+            </Typography>
+            <Chip
+              label={passwordStrength.label}
+              size="small"
+              color={passwordChipColor}
+            />
+          </Stack>
+          <LinearProgress
+            variant="determinate"
+            value={(passwordStrength.score / 5) * 100}
             color={passwordChipColor}
+            sx={{
+              height: 6,
+              borderRadius: 3,
+              backgroundColor: 'rgba(255,255,255,0.15)',
+            }}
           />
-        </Stack>
+        </Box>
       )}
 
       <TextField
