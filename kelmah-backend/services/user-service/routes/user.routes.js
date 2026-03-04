@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const logger = require("../utils/logger");
+const { logger } = require("../utils/logger");
 
 // Service trust middleware - verify requests from API Gateway
 const { verifyGatewayRequest, optionalGatewayVerification } = require('../../../shared/middlewares/serviceTrust');

@@ -4,7 +4,7 @@
  * User preferences now persist across service restarts.
  */
 const router = require('express').Router();
-const logger = require('../utils/logger');
+const { logger } = require('../utils/logger');
 
 // Service trust middleware - verify requests from API Gateway
 const { verifyGatewayRequest } = require('../../../shared/middlewares/serviceTrust');
