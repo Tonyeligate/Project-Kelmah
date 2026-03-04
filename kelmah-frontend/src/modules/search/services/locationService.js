@@ -3,10 +3,10 @@ import { api } from '../../../services/apiClient';
 const API_URL = '/location';
 
 const DEFAULT_POPULAR_LOCATIONS = [
-  { name: 'Accra', type: 'capital', region: 'Greater Accra Region', jobs: 245 },
-  { name: 'Kumasi', type: 'city', region: 'Ashanti Region', jobs: 189 },
-  { name: 'Tamale', type: 'city', region: 'Northern Region', jobs: 96 },
-  { name: 'Takoradi', type: 'city', region: 'Western Region', jobs: 88 },
+  { name: 'Accra', type: 'capital', region: 'Greater Accra Region', jobs: 245, coordinates: [5.6037, -0.187] },
+  { name: 'Kumasi', type: 'city', region: 'Ashanti Region', jobs: 189, coordinates: [6.6885, -1.6244] },
+  { name: 'Tamale', type: 'city', region: 'Northern Region', jobs: 96, coordinates: [9.4034, -0.8393] },
+  { name: 'Takoradi', type: 'city', region: 'Western Region', jobs: 88, coordinates: [4.8918, -1.755] },
 ];
 
 const RECENT_KEY = 'kelmah_recent_location_searches';

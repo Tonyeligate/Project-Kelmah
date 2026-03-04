@@ -831,14 +831,19 @@ const SearchPage = () => {
                 <Box mb={2}>
                   <LocationBasedSearch
                     onLocationSelect={(location, radius) => {
+                      const coords = location?.coordinates;
                       handleSearch({
                         ...searchParams,
                         location: {
-                          address: location.name,
-                          coordinates: {
-                            latitude: location.coordinates[0],
-                            longitude: location.coordinates[1],
-                          },
+                          address: location?.name || '',
+                          ...(Array.isArray(coords) && coords.length >= 2
+                            ? {
+                                coordinates: {
+                                  latitude: coords[0],
+                                  longitude: coords[1],
+                                },
+                              }
+                            : {}),
                         },
                         distance: radius,
                       });
