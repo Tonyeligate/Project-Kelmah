@@ -44,7 +44,8 @@ const options = {
   connectTimeoutMS: 30000, // 30 seconds to establish connection
   family: 4, // Use IPv4 only
   waitQueueTimeoutMS: 10000, // 10 seconds to wait for connection slot
-  maxIdleTimeMS: 60000, // Close idle connections after 60s
+  maxIdleTimeMS: 300000, // Keep idle connections alive for 5 min (Render+Atlas idle recycling fix)
+  heartbeatFrequencyMS: 10000, // Ping Atlas every 10s to keep TCP socket warm
   appName: 'kelmah-job-service',
   // CRITICAL: Buffer settings must also be in connection options
   bufferCommands: true,

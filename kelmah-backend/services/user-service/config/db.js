@@ -10,6 +10,20 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 let connectPromise = null;
 const DEFAULT_READY_TIMEOUT_MS = Number(process.env.DB_READY_TIMEOUT_MS || 15000);
 
+/**
+ * Thrown when ensureConnection cannot reach MongoDB within the timeout.
+ * Carries statusCode=503 so the global Express error handler returns the
+ * correct HTTP status instead of falling back to 500.
+ */
+class DbNotReadyError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'DbNotReadyError';
+    this.code = 'DB_NOT_READY';
+    this.statusCode = 503; // picked up by server.js global error handler
+  }
+}
+
 // MongoDB connection settings - optimized for serverless/cold-start environments
 mongoose.set('bufferCommands', true); // Allow buffering during startup with reasonable timeout
 mongoose.set('autoCreate', true); // Auto-create collections if they don't exist
@@ -28,7 +42,8 @@ const options = {
   connectTimeoutMS: 30000, // 30 seconds to establish connection
   family: 4, // Use IPv4, skip trying IPv6
   waitQueueTimeoutMS: 10000, // 10 seconds to wait for connection slot
-  maxIdleTimeMS: 60000, // Close idle connections after 60s
+  maxIdleTimeMS: 300000, // Keep idle connections alive for 5 min (Render+Atlas idle recycling fix)
+  heartbeatFrequencyMS: 10000, // Ping Atlas every 10s to keep TCP socket warm
   appName: 'kelmah-user-service'
 };
 
@@ -179,7 +194,8 @@ const waitForConnection = (timeoutMs = DEFAULT_READY_TIMEOUT_MS) => {
 
     const onError = (err) => {
       cleanup();
-      reject(err);
+      // Wrap as DbNotReadyError so callers get 503 instead of 500
+      reject(new DbNotReadyError(`MongoDB connection error: ${err.message}`));
     };
 
     const cleanup = () => {
@@ -190,7 +206,7 @@ const waitForConnection = (timeoutMs = DEFAULT_READY_TIMEOUT_MS) => {
 
     const timer = setTimeout(() => {
       cleanup();
-      reject(new Error('Timed out waiting for MongoDB connection'));
+      reject(new DbNotReadyError('Timed out waiting for MongoDB connection'));
     }, timeoutMs);
 
     mongoose.connection.once('connected', onConnected);
@@ -282,4 +298,5 @@ module.exports = {
   closeDB,
   mongoose,
   ensureConnection,
+  DbNotReadyError,
 }; 
