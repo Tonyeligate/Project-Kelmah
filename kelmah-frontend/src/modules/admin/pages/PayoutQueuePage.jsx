@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
   Accordion,
   AccordionDetails,
@@ -45,6 +47,16 @@ const STATUS_COLOR_MAP = {
 const PayoutQueuePage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+
+  // Admin-only guard
+  useEffect(() => {
+    if (!isAuthenticated || (user?.role !== 'admin' && user?.userType !== 'admin')) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
+
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('queued');
@@ -116,7 +128,7 @@ const PayoutQueuePage = () => {
           label="Page"
           type="number"
           value={page}
-          onChange={(e) => setPage(parseInt(e.target.value || '1'))}
+          onChange={(e) => { const n = parseInt(e.target.value); if (!isNaN(n) && n >= 1) setPage(n); }}
           inputProps={{ min: 1 }}
           sx={{ width: 100 }}
         />
@@ -125,7 +137,7 @@ const PayoutQueuePage = () => {
           label="Limit"
           type="number"
           value={limit}
-          onChange={(e) => setLimit(parseInt(e.target.value || '20'))}
+          onChange={(e) => { const n = parseInt(e.target.value); if (!isNaN(n) && n >= 1 && n <= 100) setLimit(n); }}
           inputProps={{ min: 1, max: 100 }}
           sx={{ width: 100 }}
         />

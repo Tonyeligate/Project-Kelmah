@@ -78,7 +78,7 @@ const WorkerReviewsPage = () => {
         setError('Failed to load reviews. Please try again later.');
       })
       .finally(() => setLoading(false));
-  }, [user, page]);
+  }, [user?.id, page]);
 
   const handlePageChange = (event, value) => {
     setPage(value);
@@ -196,8 +196,8 @@ const WorkerReviewsPage = () => {
                   review={{
                     id: r._id,
                     author: {
-                      name: `${r.reviewer.firstName} ${r.reviewer.lastName}`,
-                      avatar: r.reviewer.profilePicture,
+                      name: `${r.reviewer?.firstName || 'Anonymous'} ${r.reviewer?.lastName || ''}`.trim(),
+                      avatar: r.reviewer?.profilePicture,
                     },
                     rating: r.rating,
                     content: r.comment,

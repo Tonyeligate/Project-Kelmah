@@ -112,14 +112,20 @@ const PageNotificationItem = ({ notification, onMarkRead }) => {
       secondary={
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 0.5, mt: 0.5, alignItems: { xs: 'flex-start', sm: 'center' } }}>
           <Typography variant="caption" color="text.secondary">
-            {formatDistanceToNow(
-              new Date(
-                notification.createdAt ||
-                  notification.date ||
-                  new Date().toISOString(),
-              ),
-              { addSuffix: true },
-            )}
+            {(() => {
+              try {
+                return formatDistanceToNow(
+                  new Date(
+                    notification.createdAt ||
+                      notification.date ||
+                      new Date().toISOString(),
+                  ),
+                  { addSuffix: true },
+                );
+              } catch {
+                return '';
+              }
+            })()}
           </Typography>
           {notification.link ? (
             isExternalLink(notification.link) ? (

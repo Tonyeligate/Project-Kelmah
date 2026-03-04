@@ -1772,7 +1772,7 @@ const EnhancedMessagingPage = () => {
                           opacity: 0.7,
                         }}
                       >
-                        {message.timestamp ? format(new Date(message.timestamp), 'HH:mm') : ''}
+                        {safeFormatDate(message.timestamp, 'HH:mm')}
                       </Typography>
                       {isOwn && getMessageStatus(message)}
                     </Stack>

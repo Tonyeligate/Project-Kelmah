@@ -195,7 +195,7 @@ const HeroSection = () => {
         satisfaction != null ? `${satisfaction}% satisfaction` : '98% satisfaction',
       ];
       setTrustMetrics(metrics);
-    });
+    }).catch(() => { /* Stats unavailable — keep defaults */ });
     return () => { cancelled = true; };
   }, []);
 

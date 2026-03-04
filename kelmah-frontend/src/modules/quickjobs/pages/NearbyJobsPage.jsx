@@ -3,7 +3,7 @@
  * Shows jobs near the worker's location that they can quote on
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -59,6 +59,7 @@ import { Helmet } from 'react-helmet-async';
 const NearbyJobsPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const quoteTimerRef = useRef(null);
 
   // State
   const [jobs, setJobs] = useState([]);
@@ -128,17 +129,19 @@ const NearbyJobsPage = () => {
       }
     };
     init();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      clearTimeout(quoteTimerRef.current);
+    };
   }, []);
 
   // Refresh when filters change
   useEffect(() => {
-    let cancelled = false;
     if (location) {
       fetchJobs();
     }
-    return () => { cancelled = true; };
-  }, [maxDistance, categoryFilter]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [maxDistance, categoryFilter, fetchJobs]);
 
   // Handle quote submission
   const handleSubmitQuote = async () => {
@@ -161,7 +164,7 @@ const NearbyJobsPage = () => {
         // Remove job from list (they've already quoted)
         setJobs(prev => prev.filter(j => j._id !== selectedJob._id));
         
-        setTimeout(() => {
+        quoteTimerRef.current = setTimeout(() => {
           setQuoteDialogOpen(false);
           setQuoteSuccess(false);
           setSelectedJob(null);

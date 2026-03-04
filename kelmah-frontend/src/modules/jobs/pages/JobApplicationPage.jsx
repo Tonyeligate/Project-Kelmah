@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -28,6 +28,7 @@ import bidApi from '../services/bidService';
 const JobApplicationPage = () => {
   const { id: jobId } = useParams();
   const navigate = useNavigate();
+  const redirectTimerRef = useRef(null);
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { currentJob, loading: jobLoading } = useSelector((state) => state.jobs);
@@ -47,6 +48,11 @@ const JobApplicationPage = () => {
       dispatch(fetchJobById(jobId));
     }
   }, [dispatch, jobId]);
+
+  // Cleanup redirect timer on unmount
+  useEffect(() => {
+    return () => clearTimeout(redirectTimerRef.current);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -85,7 +91,7 @@ const JobApplicationPage = () => {
 
       setSuccess(true);
       // Navigate back to the job after a short delay
-      setTimeout(() => navigate(`/jobs/${jobId}`, { replace: true }), 2000);
+      redirectTimerRef.current = setTimeout(() => navigate(`/jobs/${jobId}`, { replace: true }), 2000);
     } catch (err) {
       const msg =
         err?.message ||

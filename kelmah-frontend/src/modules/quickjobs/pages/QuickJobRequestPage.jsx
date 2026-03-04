@@ -69,6 +69,7 @@ const QuickJobRequestPage = () => {
   const audioChunksRef = useRef([]);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const recordingTimerRef = useRef(null);
+  const redirectTimerRef = useRef(null);
 
   // Get category from URL params
   const categoryId = searchParams.get('category') || 'general_repair';
@@ -99,7 +100,7 @@ const QuickJobRequestPage = () => {
     'Western North', 'Ahafo', 'Bono East', 'Oti', 'North East', 'Savannah'
   ];
 
-  // Get user's location on mount + cleanup blob URLs and recording timer on unmount
+  // Get user's location on mount + cleanup blob URLs and timers on unmount
   useEffect(() => {
     handleGetLocation();
     return () => {
@@ -107,6 +108,7 @@ const QuickJobRequestPage = () => {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       photos.forEach(p => { if (p?.preview) URL.revokeObjectURL(p.preview); });
       clearInterval(recordingTimerRef.current);
+      clearTimeout(redirectTimerRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -294,7 +296,7 @@ const QuickJobRequestPage = () => {
       if (result.success) {
         setSuccess(true);
         // Redirect to job tracking page after 2 seconds
-        setTimeout(() => {
+        redirectTimerRef.current = setTimeout(() => {
           navigate(`/quick-job/${result.data._id}`);
         }, 2000);
       } else {

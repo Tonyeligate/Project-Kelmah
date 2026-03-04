@@ -416,6 +416,16 @@ const PremiumPage = () => {
           {selectedPlan} plan upgrade request submitted! You'll receive a confirmation shortly.
         </Alert>
       </Snackbar>
+      <Snackbar
+        open={!!upgradeError}
+        autoHideDuration={6000}
+        onClose={() => setUpgradeError('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" variant="filled" onClose={() => setUpgradeError('')}>
+          {upgradeError || 'Upgrade failed. Please try again.'}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

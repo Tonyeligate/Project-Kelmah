@@ -663,9 +663,10 @@ const ProfilePage = () => {
                           <ListItem>
                             <ListItemText
                               primary={item.title}
-                              secondary={new Date(
-                                item.date,
-                              ).toLocaleDateString()}
+                              secondary={(() => {
+                                try { return new Date(item.date).toLocaleDateString(); }
+                                catch { return ''; }
+                              })()}
                             />
                           </ListItem>
                           {index < activity.length - 1 && <Divider />}

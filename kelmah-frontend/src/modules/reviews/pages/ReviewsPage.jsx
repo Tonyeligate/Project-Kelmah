@@ -64,17 +64,16 @@ import {
 // ✅ MOBILE-AUDIT P3: framer-motion import removed — all motion.div wrappers replaced with plain divs
 import { formatDistanceToNow, format } from 'date-fns';
 import { safeFormatDate, safeFormatRelative } from '@/modules/common/utils/formatters';
-import { useAuth } from '../../auth/hooks/useAuth';
+import { useSelector } from 'react-redux';
 import reviewService from '../services/reviewService';
 import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
 import { Helmet } from 'react-helmet-async';
 
 // Enhanced Reviews Page with comprehensive review management
 const EnhancedReviewsPage = () => {
-  const { user } = useAuth();
+  const { user } = useSelector((state) => state.auth);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
   // State management
   const [reviews, setReviews] = useState([]);
@@ -622,7 +621,7 @@ const EnhancedReviewsPage = () => {
                   variant="body2"
                   sx={{ color: 'secondary.main', fontWeight: 600 }}
                 >
-                  {review.job.title}
+                  {review.job?.title || 'Deleted Job'}
                 </Typography>
                 <Stack
                   direction="row"

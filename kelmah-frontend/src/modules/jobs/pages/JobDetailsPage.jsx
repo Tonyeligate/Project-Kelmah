@@ -187,10 +187,8 @@ const JobDetailsPage = () => {
       return;
     }
 
-    let cancelled = false;
     // Fetch job details (public endpoint — no auth required for viewing)
     dispatch(fetchJobById(id));
-    return () => { cancelled = true; };
   }, [dispatch, id]);
 
   useEffect(() => {
@@ -325,7 +323,7 @@ const JobDetailsPage = () => {
           alignItems: 'center',
         }}
       >
-        <Alert severity="error">{error}</Alert>
+        <Alert severity="error">{import.meta.env.DEV ? error : 'Failed to load job details. Please try again.'}</Alert>
       </Box>
     );
   }
