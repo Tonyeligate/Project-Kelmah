@@ -726,10 +726,9 @@ const MyApplicationsPage = () => {
                       Application Reviewed
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {new Date(
-                        new Date(selectedApplication.createdAt).getTime() +
-                        3 * 24 * 60 * 60 * 1000,
-                      ).toLocaleDateString()}
+                      {selectedApplication.reviewedAt
+                        ? new Date(selectedApplication.reviewedAt).toLocaleDateString()
+                        : new Date(selectedApplication.updatedAt || selectedApplication.createdAt).toLocaleDateString()}
                     </Typography>
                   </Box>
                 )}

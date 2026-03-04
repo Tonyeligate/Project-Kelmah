@@ -167,8 +167,8 @@ const JobAlertsPage = lazy(
 );
 
 // Job Application (worker apply flow)
-const JobApplicationForm = lazy(
-  () => import('../modules/worker/components/JobApplicationForm'),
+const JobApplicationPage = lazy(
+  () => import('../modules/jobs/pages/JobApplicationPage'),
 );
 
 // Quick Jobs (Protected Quick-Hire System)
@@ -276,7 +276,7 @@ const routes = [
             element: (
               <ProtectedRoute roles={['worker', 'admin']}>
                 <RouteErrorBoundary label="Job Application">
-                  <JobApplicationForm />
+                  <JobApplicationPage />
                 </RouteErrorBoundary>
               </ProtectedRoute>
             ),
@@ -400,7 +400,7 @@ const routes = [
             path: 'find-talent',
             element: (
               <ProtectedRoute roles={['hirer', 'admin']}>
-                <WorkerSearchPage />
+                <FindWorkersPage />
               </ProtectedRoute>
             ),
           },

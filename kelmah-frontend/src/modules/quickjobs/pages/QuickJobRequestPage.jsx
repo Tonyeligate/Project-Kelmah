@@ -99,9 +99,16 @@ const QuickJobRequestPage = () => {
     'Western North', 'Ahafo', 'Bono East', 'Oti', 'North East', 'Savannah'
   ];
 
-  // Get user's location on mount
+  // Get user's location on mount + cleanup blob URLs and recording timer on unmount
   useEffect(() => {
     handleGetLocation();
+    return () => {
+      // Revoke all photo blob URLs on unmount
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      photos.forEach(p => { if (p?.preview) URL.revokeObjectURL(p.preview); });
+      clearInterval(recordingTimerRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handle get current location
@@ -140,8 +147,10 @@ const QuickJobRequestPage = () => {
     setPhotos(prev => [...prev, ...newPhotos].slice(0, 5));
   };
 
-  // Remove photo
+  // Remove photo (revoke blob URL to prevent memory leak)
   const handleRemovePhoto = (index) => {
+    const photo = photos[index];
+    if (photo?.preview) URL.revokeObjectURL(photo.preview);
     setPhotos(prev => prev.filter((_, i) => i !== index));
   };
 
@@ -181,9 +190,13 @@ const QuickJobRequestPage = () => {
         setRecordingDuration(0);
         recordingTimerRef.current = setInterval(() => {
           setRecordingDuration(prev => {
-            if (prev >= 60) { // 60-second max
-              handleVoiceToggle();
-              return prev;
+            if (prev >= 60) { // 60-second max — stop recording directly via ref to avoid stale closure
+              if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+                mediaRecorderRef.current.stop();
+              }
+              setIsRecording(false);
+              clearInterval(recordingTimerRef.current);
+              return 0;
             }
             return prev + 1;
           });
@@ -339,7 +352,7 @@ const QuickJobRequestPage = () => {
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
               {photos.map((photo, index) => (
-                <Box key={index} sx={{ position: 'relative' }}>
+                <Box key={photo.url || photo.preview || index} sx={{ position: 'relative' }}>
                   <Avatar
                     src={photo.preview}
                     alt={`Upload photo ${index + 1}`}

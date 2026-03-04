@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import PullToRefresh from '../../../components/common/PullToRefresh';
 import {
   Box,
@@ -58,6 +58,7 @@ import {
   fetchHirerProfile,
   fetchHirerJobs,
   fetchJobApplications,
+  fetchPaymentSummary,
   selectHirerJobs,
   selectHirerApplications,
   selectHirerPendingProposalCount,
@@ -99,11 +100,15 @@ const HirerDashboardPage = () => {
   const applicationRecordsRef = useRef({});
   const autoRefreshRef = useRef(null); // DASH-001: Auto-refresh interval ref
 
+  // Memoize curried selectors to prevent new function references every render
+  const selectActive = useMemo(() => selectHirerJobs('active'), []);
+  const selectCompleted = useMemo(() => selectHirerJobs('completed'), []);
+
   // Get data from Redux store using selectors
   const user = useSelector((state) => state.auth.user);
   const hirerProfile = useSelector((state) => state.hirer.profile);
-  const activeJobs = useSelector(selectHirerJobs('active'));
-  const completedJobs = useSelector(selectHirerJobs('completed'));
+  const activeJobs = useSelector(selectActive);
+  const completedJobs = useSelector(selectCompleted);
   const applicationRecords = useSelector(selectHirerApplications);
   const totalPendingProposals = useSelector(selectHirerPendingProposalCount);
   const payments = useSelector((state) => state.hirer.payments);
@@ -210,6 +215,7 @@ const HirerDashboardPage = () => {
           dispatch(fetchHirerProfile()).unwrap(),
           dispatch(fetchHirerJobs('active')).unwrap(),
           dispatch(fetchHirerJobs('completed')).unwrap(),
+          dispatch(fetchPaymentSummary()).unwrap().catch(() => null), // non-critical; payment service may be down
         ];
 
         fetchPromiseRef.current = Promise.allSettled(fetchPromises);
@@ -374,8 +380,7 @@ const HirerDashboardPage = () => {
 
   const isNewHirer =
     summaryData.activeJobs === 0 &&
-    (summaryData.activeWorkers?.length || 0) === 0 &&
-    (summaryData.totalSpent || 0) === 0;
+    summaryData.completedJobs === 0;
 
   // Get time-based greeting
   const getGreeting = () => {
@@ -508,7 +513,7 @@ const HirerDashboardPage = () => {
           {/* Card 2 - Teal/Green - Completed Jobs */}
           <Grid item xs={6} sm={6} md={3}>
             <ButtonBase
-              onClick={() => navigate('/hirer/jobs')}
+              onClick={() => navigate('/hirer/jobs?status=completed')}
               aria-label={`Completed Jobs: ${summaryData.completedJobs}. Click to view progress.`}
               sx={{
                 display: 'block',
@@ -763,10 +768,10 @@ const HirerDashboardPage = () => {
               {(() => {
                 const appDonutData = [
                   { name: 'Completed', value: summaryData.completedJobs, color: theme.palette.success.main },
-                  { name: 'Submitted', value: summaryData.pendingProposals, color: theme.palette.info.main },
-                  { name: 'Pending', value: summaryData.pendingPayments, color: theme.palette.error.main },
+                  { name: 'Applications', value: summaryData.pendingProposals, color: theme.palette.info.main },
+                  { name: 'Active Jobs', value: summaryData.activeJobs, color: theme.palette.warning.main },
                 ].filter(d => d.value > 0);
-                const appTotal = summaryData.activeJobs + summaryData.completedJobs;
+                const appTotal = summaryData.activeJobs + summaryData.completedJobs + summaryData.pendingProposals;
 
                 return (
                   <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, height: { xs: 'auto', sm: 250 }, alignItems: 'center' }}>
@@ -778,11 +783,11 @@ const HirerDashboardPage = () => {
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'info.main' }} />
-                        <Typography variant="body2">Submitted: {summaryData.pendingProposals}</Typography>
+                        <Typography variant="body2">Applications: {summaryData.pendingProposals}</Typography>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'error.main' }} />
-                        <Typography variant="body2">Pending: {summaryData.pendingPayments}</Typography>
+                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'warning.main' }} />
+                        <Typography variant="body2">Active Jobs: {summaryData.activeJobs}</Typography>
                       </Box>
                     </Box>
                     {/* Donut Chart */}
@@ -856,50 +861,45 @@ const HirerDashboardPage = () => {
 
   if (isHydrating) {
     return (
-      <Container maxWidth="lg" sx={{ py: 6 }}>
+      <Container maxWidth="lg" sx={{ py: 3 }}>
         <Helmet>
           <title>Dashboard | Kelmah</title>
         </Helmet>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 3,
-          }}
-        >
-          <CircularProgress sx={{ color: '#D4AF37' }} />
-          <Box textAlign="center">
-            <Typography variant="h6" color="text.primary" gutterBottom>
-              Loading your dashboard...
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Just a moment.
-            </Typography>
-          </Box>
-          <Box sx={{ width: '100%' }}>
-            <LoadingOverviewSkeleton />
-          </Box>
-          {loadingTimeout && (
-            <Alert
-              severity="warning"
-              sx={{ mt: 1, maxWidth: 520 }}
-              action={
-                <Button
-                  color="inherit"
-                  size="small"
-                  onClick={handleRefresh}
-                  disabled={refreshing}
-                >
-                  Refresh
-                </Button>
-              }
-            >
-              Loading is taking longer than expected. Please check your
-              connection or try refreshing the page.
-            </Alert>
-          )}
-        </Box>
+        <Skeleton variant="text" width={250} height={40} sx={{ mb: 3 }} />
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          {[1,2,3,4].map(i => (
+            <Grid item xs={6} md={3} key={i}>
+              <Skeleton variant="rounded" height={120} sx={{ borderRadius: 2 }} />
+            </Grid>
+          ))}
+        </Grid>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={8}>
+            <Skeleton variant="rounded" height={300} sx={{ borderRadius: 2 }} />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Skeleton variant="rounded" height={300} sx={{ borderRadius: 2 }} />
+          </Grid>
+        </Grid>
+        {loadingTimeout && (
+          <Alert
+            severity="warning"
+            sx={{ mt: 3, maxWidth: 520 }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={handleRefresh}
+                disabled={refreshing}
+              >
+                Refresh
+              </Button>
+            }
+          >
+            Loading is taking longer than expected. Please check your
+            connection or try refreshing the page.
+          </Alert>
+        )}
       </Container>
     );
   }

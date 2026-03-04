@@ -29,6 +29,7 @@ import {
   ListItemSecondaryAction,
   IconButton,
   Stack,
+  Skeleton,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -55,6 +56,7 @@ import {
   signContract,
   sendContractForSignature,
   completeMilestone,
+  completeContract,
   createDispute,
   selectCurrentContract,
   selectContractMilestones,
@@ -75,8 +77,8 @@ const statusColors = {
 };
 
 const ContractDetailsPage = () => {
-  const { contractId, id } = useParams();
-  const resolvedContractId = contractId || id;
+  const { id } = useParams();
+  const resolvedContractId = id;
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -98,6 +100,7 @@ const ContractDetailsPage = () => {
     reason: '',
     description: '',
   });
+  const [completeContractDialogOpen, setCompleteContractDialogOpen] = useState(false);
   const [signDialogOpen, setSignDialogOpen] = useState(false);
   const [signature, setSignature] = useState('');
 
@@ -261,6 +264,29 @@ const ContractDetailsPage = () => {
       .finally(() => setActionLoading(false));
   };
 
+  // Handle contract completion
+  const handleCompleteContract = () => {
+    setActionLoading(true);
+    dispatch(completeContract(resolvedContractId))
+      .unwrap()
+      .then(() => {
+        setCompleteContractDialogOpen(false);
+        setToast({
+          open: true,
+          message: 'Contract marked as completed! Well done.',
+          severity: 'success',
+        });
+      })
+      .catch((err) => {
+        setToast({
+          open: true,
+          message: err || 'Failed to complete contract',
+          severity: 'error',
+        });
+      })
+      .finally(() => setActionLoading(false));
+  };
+
   // Handle download contract — uses browser print to PDF as no export API exists yet
   const handleDownloadContract = () => {
     if (!resolvedContractId) return;
@@ -285,10 +311,10 @@ const ContractDetailsPage = () => {
   // Show a loading state while contract data is being fetched
   if (loading.currentContract) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-          <CircularProgress />
-        </Box>
+      <Container maxWidth="md" sx={{ py: 3 }}>
+        <Skeleton variant="text" width={200} height={36} sx={{ mb: 2 }} />
+        <Skeleton variant="rounded" height={400} sx={{ borderRadius: 2, mb: 2 }} />
+        <Skeleton variant="rounded" height={120} sx={{ borderRadius: 2 }} />
       </Container>
     );
   }
@@ -432,6 +458,7 @@ const ContractDetailsPage = () => {
                     variant="outlined"
                     startIcon={<EditIcon />}
                     onClick={handleEditContract}
+                    disabled={actionLoading}
                   >
                     Edit
                   </Button>
@@ -439,7 +466,9 @@ const ContractDetailsPage = () => {
                     variant="outlined"
                     startIcon={<SendIcon />}
                     onClick={handleSendForSignature}
+                    disabled={actionLoading}
                   >
+                    {actionLoading ? <CircularProgress size={18} sx={{ mr: 1 }} /> : null}
                     Send for Signature
                   </Button>
                   <Button
@@ -447,6 +476,7 @@ const ContractDetailsPage = () => {
                     color="error"
                     startIcon={<DeleteIcon />}
                     onClick={() => setCancelDialogOpen(true)}
+                    disabled={actionLoading}
                   >
                     Delete
                   </Button>
@@ -459,6 +489,7 @@ const ContractDetailsPage = () => {
                     variant="outlined"
                     startIcon={<SignIcon />}
                     onClick={() => setSignDialogOpen(true)}
+                    disabled={actionLoading}
                   >
                     Sign Contract
                   </Button>
@@ -467,6 +498,7 @@ const ContractDetailsPage = () => {
                     color="error"
                     startIcon={<CancelIcon />}
                     onClick={() => setCancelDialogOpen(true)}
+                    disabled={actionLoading}
                   >
                     Decline
                   </Button>
@@ -476,10 +508,20 @@ const ContractDetailsPage = () => {
               {contract.status === 'active' && (
                 <>
                   <Button
+                    variant="contained"
+                    color="success"
+                    startIcon={<CompletedIcon />}
+                    onClick={() => setCompleteContractDialogOpen(true)}
+                    disabled={actionLoading}
+                  >
+                    Mark as Complete
+                  </Button>
+                  <Button
                     variant="outlined"
                     color="error"
                     startIcon={<DisputeIcon />}
                     onClick={() => setDisputeDialogOpen(true)}
+                    disabled={actionLoading}
                   >
                     Raise Dispute
                   </Button>
@@ -658,6 +700,7 @@ const ContractDetailsPage = () => {
                                 variant="outlined"
                                 size="small"
                                 startIcon={<CompletedIcon />}
+                                disabled={actionLoading}
                                 onClick={() =>
                                   handleCompleteMilestone(milestone.id)
                                 }
@@ -675,6 +718,38 @@ const ContractDetailsPage = () => {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Complete contract dialog */}
+      <Dialog
+        open={completeContractDialogOpen}
+        onClose={() => setCompleteContractDialogOpen(false)}
+        fullScreen={isMobile}
+        aria-labelledby="complete-contract-dialog-title"
+      >
+        <DialogTitle id="complete-contract-dialog-title">Mark Job as Complete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Confirm that the work has been completed to your satisfaction. This
+            will mark the contract as completed and release any held payment to
+            the worker.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCompleteContractDialogOpen(false)}
+            disabled={actionLoading}>
+            Not Yet
+          </Button>
+          <Button
+            onClick={handleCompleteContract}
+            color="success"
+            variant="contained"
+            disabled={actionLoading}
+          >
+            {actionLoading ? <CircularProgress size={18} sx={{ mr: 1 }} /> : null}
+            Yes, Complete Job
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Cancel contract dialog */}
       <Dialog
@@ -710,8 +785,9 @@ const ContractDetailsPage = () => {
           <Button
             onClick={handleCancelContract}
             color="error"
-            disabled={contract.status !== 'draft' && !cancelReason}
+            disabled={actionLoading || (contract.status !== 'draft' && !cancelReason)}
           >
+            {actionLoading ? <CircularProgress size={18} sx={{ mr: 1 }} /> : null}
             {contract.status === 'draft' ? 'Delete' : 'Cancel Contract'}
           </Button>
         </DialogActions>
@@ -739,8 +815,9 @@ const ContractDetailsPage = () => {
           <Button
             onClick={handleSignContract}
             color="primary"
-            disabled={!signature}
+            disabled={actionLoading || !signature}
           >
+            {actionLoading ? <CircularProgress size={18} sx={{ mr: 1 }} /> : null}
             Sign Contract
           </Button>
         </DialogActions>
@@ -785,8 +862,9 @@ const ContractDetailsPage = () => {
           <Button
             onClick={handleCreateDispute}
             color="primary"
-            disabled={!disputeData.reason || !disputeData.description}
+            disabled={actionLoading || !disputeData.reason || !disputeData.description}
           >
+            {actionLoading ? <CircularProgress size={18} sx={{ mr: 1 }} /> : null}
             Submit Dispute
           </Button>
         </DialogActions>

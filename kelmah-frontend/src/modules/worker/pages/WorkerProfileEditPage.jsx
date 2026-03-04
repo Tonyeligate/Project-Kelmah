@@ -274,6 +274,15 @@ const WorkerProfileEditPage = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file type and size
+      if (!file.type.startsWith('image/')) {
+        setSnackbar({ open: true, message: 'Please select an image file.', severity: 'error' });
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setSnackbar({ open: true, message: 'Image must be under 5 MB.', severity: 'error' });
+        return;
+      }
       setFormData((prev) => ({
         ...prev,
         profileImage: file,
@@ -437,6 +446,20 @@ const WorkerProfileEditPage = () => {
 
     try {
       const id = user?.id;
+
+      // Upload profile image if user selected a new one
+      if (formData.profileImage instanceof File) {
+        try {
+          const imgFormData = new FormData();
+          imgFormData.append('image', formData.profileImage);
+          const workerService = (await import('../services/workerService')).default;
+          await workerService.uploadProfileImage(id, imgFormData);
+        } catch (imgErr) {
+          if (import.meta.env.DEV) console.error('Image upload failed:', imgErr);
+          // Continue with profile save even if image upload fails
+        }
+      }
+
       await dispatch(
         updateWorkerProfile({ workerId: id, profileData: profilePayload }),
       ).unwrap();
@@ -728,7 +751,7 @@ const WorkerProfileEditPage = () => {
             <Box sx={{ mt: 2 }}>
               {Array.isArray(suggestions) &&
                 suggestions.map((s, i) => (
-                  <Chip key={i} label={s} sx={{ mr: 1, mb: 1 }} />
+                  <Chip key={s} label={s} sx={{ mr: 1, mb: 1 }} />
                 ))}
             </Box>
           )}
@@ -973,7 +996,7 @@ const WorkerProfileEditPage = () => {
               {Array.isArray(formData.skills) &&
                 formData.skills.map((skill, index) => (
                   <Chip
-                    key={index}
+                    key={skill.name || skill || index}
                     label={skill}
                     onDelete={() => handleRemoveSkill(skill)}
                     color="primary"
@@ -1055,7 +1078,7 @@ const WorkerProfileEditPage = () => {
 
               {Array.isArray(formData.education) &&
                 formData.education.map((edu, index) => (
-                  <Card key={index} variant="outlined" sx={{ mb: 1 }}>
+                  <Card key={edu.degree + '-' + edu.institution + '-' + index} variant="outlined" sx={{ mb: 1 }}>
                     <CardContent sx={{ py: 1, '&:last-child': { pb: 1 } }}>
                       <Box
                         sx={{
@@ -1157,7 +1180,7 @@ const WorkerProfileEditPage = () => {
 
               {Array.isArray(formData.languages) &&
                 formData.languages.map((lang, index) => (
-                  <Card key={index} variant="outlined" sx={{ mb: 1 }}>
+                  <Card key={lang.language + '-' + lang.proficiency + '-' + index} variant="outlined" sx={{ mb: 1 }}>
                     <CardContent sx={{ py: 1, '&:last-child': { pb: 1 } }}>
                       <Box
                         sx={{
@@ -1216,7 +1239,7 @@ const WorkerProfileEditPage = () => {
           <Grid container spacing={3}>
             {Array.isArray(formData.portfolio) &&
               formData.portfolio.map((item, index) => (
-                <Grid item xs={12} sm={6} md={4} key={index}>
+                <Grid item xs={12} sm={6} md={4} key={item.id || item._id || item.url || index}>
                   <Card variant="outlined" sx={{ position: 'relative' }}>
                     <CardContent>
                       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

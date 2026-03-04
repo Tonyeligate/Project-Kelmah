@@ -7,6 +7,7 @@ import {
   CardContent,
   Chip,
   CircularProgress,
+  Skeleton,
   Divider,
   Grid,
   IconButton,
@@ -151,7 +152,7 @@ const ContractsPage = () => {
 
   const renderMilestones = (milestones) => (
     <Stack spacing={1} sx={{ mt: 2 }}>
-      {milestones.map((milestone) => (
+      {(milestones || []).map((milestone) => (
         <Stack
           key={milestone.id}
           direction="row"
@@ -266,8 +267,10 @@ const ContractsPage = () => {
       </Paper>
 
       {loading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress />
+        <Box sx={{ py: 2 }}>
+          {[1,2,3].map(i => (
+            <Skeleton key={i} variant="rounded" height={100} sx={{ borderRadius: 2, mb: 2 }} />
+          ))}
         </Box>
       )}
 

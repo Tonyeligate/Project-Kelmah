@@ -38,6 +38,8 @@ export const MessageProvider = ({ children }) => {
   const connectingRef = useRef(false);
   const selectedConversationRef = useRef(null);
   const getTokenRef = useRef(getToken);
+  // Stores named handler references so we can remove ONLY our listeners on cleanup
+  const msgListenersRef = useRef({});
 
   // Real-time WebSocket state
   const [socket, setSocket] = useState(null);
@@ -109,48 +111,47 @@ export const MessageProvider = ({ children }) => {
 
       if (import.meta.env.DEV) console.log('🔌 MessageContext: reusing shared WebSocket connection');
 
-      // Remove any existing messaging listeners before re-adding to prevent duplicates
+      // Remove ONLY the listeners WE registered (named references), not all listeners
+      const msgListeners = msgListenersRef.current;
       const messagingEvents = [
         'new_message', 'user_typing', 'messages_read',
         'user_status_changed', 'connected',
         'connect', 'disconnect', 'connect_error', 'error'
       ];
-      messagingEvents.forEach(evt => sharedSocket.off(evt));
+      messagingEvents.forEach(evt => {
+        if (msgListeners[evt]) sharedSocket.off(evt, msgListeners[evt]);
+      });
+      msgListenersRef.current = {};
 
       // Listen for messaging-specific events on the SHARED socket
-      sharedSocket.on('connect', () => {
+      const onConnect = () => {
         setIsConnected(true);
         setRealtimeIssue(null);
         socketErrorLoggedRef.current = false;
         connectingRef.current = false;
-      });
-
-      sharedSocket.on('disconnect', (reason) => {
+      };
+      const onDisconnect = (reason) => {
         setIsConnected(false);
         if (reason && reason !== 'io client disconnect') {
           setRealtimeIssue('Real-time updates are temporarily unavailable.');
         }
         connectingRef.current = false;
-      });
-
-      sharedSocket.on('connect_error', (error) => {
+      };
+      const onConnectError = (error) => {
         if (!socketErrorLoggedRef.current) {
           if (import.meta.env.DEV) console.error('🚨 WebSocket connection error:', error);
           socketErrorLoggedRef.current = true;
         }
         setRealtimeIssue('Real-time connection failed. Using standard refresh mode.');
         connectingRef.current = false;
-      });
-
-      sharedSocket.on('connected', (data) => {
+      };
+      const onConnected = (data) => {
         if (import.meta.env.DEV) console.log('🎉 Messaging service connected:', data);
         if (data.conversations) {
           setConversations(data.conversations);
         }
-      });
-
-    // Real-time message events
-      sharedSocket.on('new_message', (messageData) => {
+      };
+      const onNewMessage = (messageData) => {
         if (import.meta.env.DEV) console.log('📨 New message received:', messageData);
         const hydratedMessage = normalizeMessageAttachments(messageData);
         const activeConversation = selectedConversationRef.current;
@@ -184,33 +185,29 @@ export const MessageProvider = ({ children }) => {
               : conv,
           ),
         );
-      });
-
-    // Typing indicators
-    sharedSocket.on('user_typing', (data) => {
-      const { conversationId, userId, isTyping, user: typingUser } = data;
-      setTypingUsers((prev) => {
-        const newMap = new Map(prev);
-        const convMap = newMap.get(conversationId) || new Map();
-        if (isTyping) {
-          convMap.set(userId, typingUser || { id: userId });
-          newMap.set(conversationId, convMap);
-        } else {
-          if (convMap.has(userId)) {
-            convMap.delete(userId);
-          }
-          if (convMap.size === 0) {
-            newMap.delete(conversationId);
-          } else {
+      };
+      const onUserTyping = (data) => {
+        const { conversationId, userId, isTyping, user: typingUser } = data;
+        setTypingUsers((prev) => {
+          const newMap = new Map(prev);
+          const convMap = newMap.get(conversationId) || new Map();
+          if (isTyping) {
+            convMap.set(userId, typingUser || { id: userId });
             newMap.set(conversationId, convMap);
+          } else {
+            if (convMap.has(userId)) {
+              convMap.delete(userId);
+            }
+            if (convMap.size === 0) {
+              newMap.delete(conversationId);
+            } else {
+              newMap.set(conversationId, convMap);
+            }
           }
-        }
-        return newMap;
-      });
-    });
-
-    // Read receipts
-      sharedSocket.on('messages_read', (data) => {
+          return newMap;
+        });
+      };
+      const onMessagesRead = (data) => {
         if (import.meta.env.DEV) console.log('📖 Messages marked as read:', data);
         const activeConversation = selectedConversationRef.current;
         if (
@@ -225,10 +222,8 @@ export const MessageProvider = ({ children }) => {
             ),
           );
         }
-      });
-
-    // User status updates
-      sharedSocket.on('user_status_changed', (data) => {
+      };
+      const onUserStatusChanged = (data) => {
         const { userId, status } = data;
         setOnlineUsers((prev) => {
           const newSet = new Set(prev);
@@ -239,11 +234,25 @@ export const MessageProvider = ({ children }) => {
           }
           return newSet;
         });
-      });
-
-    // Error handling
-      sharedSocket.on('error', (error) => {
+      };
+      const onError = (error) => {
         if (import.meta.env.DEV) console.error('🚨 WebSocket error:', error);
+      };
+
+      // Register all named handlers and store references for cleanup
+      msgListenersRef.current = {
+        connect: onConnect,
+        disconnect: onDisconnect,
+        connect_error: onConnectError,
+        connected: onConnected,
+        new_message: onNewMessage,
+        user_typing: onUserTyping,
+        messages_read: onMessagesRead,
+        user_status_changed: onUserStatusChanged,
+        error: onError,
+      };
+      Object.entries(msgListenersRef.current).forEach(([evt, handler]) => {
+        sharedSocket.on(evt, handler);
       });
 
       socketRef.current = sharedSocket;
@@ -268,13 +277,17 @@ export const MessageProvider = ({ children }) => {
     const activeSocket = socketRef.current;
     if (activeSocket) {
       if (import.meta.env.DEV) console.log('🔌 MessageContext: detaching messaging listeners from shared socket');
-      const messagingEvents = [
-        'new_message', 'user_typing', 'messages_read',
-        'user_status_changed', 'connected',
-        'connect', 'disconnect', 'connect_error', 'error'
-      ];
+      const msgListeners = msgListenersRef.current;
       try {
-        messagingEvents.forEach(evt => activeSocket.off(evt));
+        const messagingEvents = [
+          'new_message', 'user_typing', 'messages_read',
+          'user_status_changed', 'connected',
+          'connect', 'disconnect', 'connect_error', 'error'
+        ];
+        messagingEvents.forEach(evt => {
+          if (msgListeners[evt]) activeSocket.off(evt, msgListeners[evt]);
+        });
+        msgListenersRef.current = {};
       } catch (error) {
         if (import.meta.env.DEV) console.warn('Failed to remove messaging listeners', error);
       }

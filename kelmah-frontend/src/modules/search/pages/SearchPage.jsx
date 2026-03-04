@@ -18,6 +18,7 @@ import { useSelector } from 'react-redux';
 import { api } from '../../../services/apiClient';
 import { secureStorage } from '../../../utils/secureStorage';
 import { useSnackbar } from 'notistack';
+import workerService from '../../worker/services/workerService';
 
 // Custom components
 import JobSearchForm from '../components/common/JobSearchForm';
@@ -263,11 +264,11 @@ const SearchPage = () => {
     }
 
     try {
-      const response = await api.get('/jobs/suggestions', {
+      const response = await api.get('/users/workers/suggest', {
         params: { query },
       });
 
-      if (response.data.success) {
+      if (response.data?.success) {
         setSearchSuggestions(response.data.data || []);
         setShowSuggestions(true);
       } else {
@@ -303,7 +304,7 @@ const SearchPage = () => {
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      const apiEndpoint = '/workers';
+      const apiEndpoint = '/users/workers';
       const apiParams = buildWorkerQueryParams(params);
 
       setLoading(true);
@@ -683,7 +684,7 @@ const SearchPage = () => {
   // Handle worker saving (bookmark)
   const handleSaveWorker = async (worker) => {
     try {
-      await api.post(`/users/workers/${worker.id}/bookmark`, {});
+      await workerService.bookmarkWorker(worker.id);
 
       // Update saved status in results
       setSearchResults((prevResults) =>

@@ -187,7 +187,7 @@ const AppointmentCard = ({ appointment, onEdit, onDelete }) => {
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
-                  window.open(appointment.meetingLink, '_blank');
+                  window.open(appointment.meetingLink, '_blank', 'noopener,noreferrer');
                 }}
               >
                 Join Meeting
@@ -208,6 +208,7 @@ const AppointmentCard = ({ appointment, onEdit, onDelete }) => {
                   window.open(
                     `${EXTERNAL_SERVICES.GOOGLE_MAPS.SEARCH}?api=1&query=${encodeURIComponent(appointment.location)}`,
                     '_blank',
+                    'noopener,noreferrer',
                   );
                 }}
               >
@@ -789,7 +790,7 @@ const SchedulingPage = () => {
                 <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
                   Schedule a new appointment to get started.
                 </Typography>
-                <Button variant="contained" color="secondary" onClick={handleOpenDialog} sx={{ minHeight: 44 }}>
+                <Button variant="contained" color="secondary" onClick={handleOpenCreateDialog} sx={{ minHeight: 44 }}>
                   Schedule Appointment
                 </Button>
               </Paper>
@@ -840,7 +841,7 @@ const SchedulingPage = () => {
               <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
                 Try adjusting your search or filter criteria.
               </Typography>
-              <Button variant="contained" color="secondary" onClick={handleOpenDialog} sx={{ minHeight: 44 }}>
+              <Button variant="contained" color="secondary" onClick={handleOpenCreateDialog} sx={{ minHeight: 44 }}>
                 Schedule Appointment
               </Button>
             </Paper>
@@ -883,7 +884,7 @@ const SchedulingPage = () => {
               <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
                 You have nothing scheduled in the next 7 days.
               </Typography>
-              <Button variant="contained" color="secondary" onClick={handleOpenDialog} sx={{ minHeight: 44 }}>
+              <Button variant="contained" color="secondary" onClick={handleOpenCreateDialog} sx={{ minHeight: 44 }}>
                 Schedule Appointment
               </Button>
             </Paper>

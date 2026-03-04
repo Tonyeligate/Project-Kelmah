@@ -28,7 +28,8 @@ import {
   TextField,
   useTheme,
   Divider,
-  Paper
+  Paper,
+  Skeleton,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -182,14 +183,16 @@ const QuickJobTrackingPage = () => {
     setCompletionPhotos(prev => [...prev, ...newPhotos].slice(0, 5));
   };
 
-  // Clean up object URLs on unmount to prevent memory leaks
+  // Clean up object URLs on unmount only (not on every state change)
   useEffect(() => {
     return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       completionPhotos.forEach(photo => {
         if (photo.preview) URL.revokeObjectURL(photo.preview);
       });
     };
-  }, [completionPhotos]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Handle marking complete
   const handleMarkComplete = async () => {
@@ -243,7 +246,7 @@ const QuickJobTrackingPage = () => {
     if (!job?.location?.coordinates) return;
     const [lng, lat] = job.location.coordinates;
     const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   // Get category details
@@ -255,9 +258,10 @@ const QuickJobTrackingPage = () => {
   // Loading state
   if (loading && !job) {
     return (
-      <Container maxWidth="sm" sx={{ py: 8, textAlign: 'center' }}>
-        <CircularProgress />
-        <Typography sx={{ mt: 2 }}>Loading job details...</Typography>
+      <Container maxWidth="md" sx={{ py: 3 }}>
+        <Skeleton variant="text" width={200} height={36} sx={{ mb: 2 }} />
+        <Skeleton variant="rounded" height={300} sx={{ borderRadius: 2, mb: 2 }} />
+        <Skeleton variant="rounded" height={150} sx={{ borderRadius: 2 }} />
       </Container>
     );
   }
@@ -505,7 +509,7 @@ const QuickJobTrackingPage = () => {
           {/* Photo upload */}
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
             {completionPhotos.map((photo, index) => (
-              <Box key={index} sx={{ position: 'relative' }}>
+              <Box key={photo.url || photo.preview || index} sx={{ position: 'relative' }}>
                 <Avatar
                   src={photo.preview}
                   alt={`Completion photo ${index + 1}`}
@@ -515,7 +519,10 @@ const QuickJobTrackingPage = () => {
                 <IconButton
                   size="small"
                   aria-label="Remove photo"
-                  onClick={() => setCompletionPhotos(prev => prev.filter((_, i) => i !== index))}
+                  onClick={() => {
+                    if (completionPhotos[index]?.preview) URL.revokeObjectURL(completionPhotos[index].preview);
+                    setCompletionPhotos(prev => prev.filter((_, i) => i !== index));
+                  }}
                   sx={{
                     position: 'absolute',
                     top: -8,

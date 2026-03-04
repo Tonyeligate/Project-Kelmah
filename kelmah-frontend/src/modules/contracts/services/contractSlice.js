@@ -136,6 +136,18 @@ export const cancelContract = createAsyncThunk(
   },
 );
 
+export const completeContract = createAsyncThunk(
+  'contracts/completeContract',
+  async (contractId, { rejectWithValue }) => {
+    try {
+      const response = await contractService.completeContract(contractId);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  },
+);
+
 export const createDispute = createAsyncThunk(
   'contracts/createDispute',
   async ({ contractId, disputeData }, { rejectWithValue }) => {
@@ -411,6 +423,26 @@ const contractSlice = createSlice({
         }
       })
       .addCase(cancelContract.rejected, (state, action) => {
+        state.loading.currentContract = false;
+        state.error.currentContract = action.payload;
+      })
+
+      // Complete contract
+      .addCase(completeContract.pending, (state) => {
+        state.loading.currentContract = true;
+        state.error.currentContract = null;
+      })
+      .addCase(completeContract.fulfilled, (state, action) => {
+        state.loading.currentContract = false;
+        const completed = action.payload;
+        state.contracts = state.contracts.map((c) =>
+          c.id === completed.id ? completed : c,
+        );
+        if (state.currentContract && state.currentContract.id === completed.id) {
+          state.currentContract = completed;
+        }
+      })
+      .addCase(completeContract.rejected, (state, action) => {
         state.loading.currentContract = false;
         state.error.currentContract = action.payload;
       })

@@ -218,6 +218,14 @@ export const contractService = {
     return normalizeContract(payload, 0);
   },
 
+  async completeContract(contractId) {
+    const response = await api.put(`/jobs/contracts/${contractId}`, {
+      status: 'completed',
+    });
+    const payload = unwrapPayload(response);
+    return normalizeContract(payload, 0);
+  },
+
   async createDispute(contractId, disputeData) {
     const response = await api.post(
       `/jobs/contracts/${contractId}/disputes`,

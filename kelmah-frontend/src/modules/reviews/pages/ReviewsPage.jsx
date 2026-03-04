@@ -680,7 +680,7 @@ const EnhancedReviewsPage = () => {
             spacing={1}
             sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}
           >
-            {review.categories.map((category) => (
+            {(review.categories || []).map((category) => (
               <Chip
                 key={category}
                 label={category}

@@ -5,7 +5,6 @@ import {
   Typography,
   Breadcrumbs,
   Link,
-  CircularProgress,
 } from '@mui/material';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';

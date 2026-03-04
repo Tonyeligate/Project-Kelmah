@@ -3,6 +3,10 @@ const Schema = mongoose.Schema;
 
 const MessageSchema = new Schema(
   {
+    conversation: {
+      type: Schema.Types.ObjectId,
+      ref: "Conversation",
+    },
     sender: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -84,6 +88,7 @@ const MessageSchema = new Schema(
 );
 
 // Indexes for better query performance
+MessageSchema.index({ conversation: 1, createdAt: -1 });
 MessageSchema.index({ sender: 1, recipient: 1 });
 MessageSchema.index({ createdAt: -1 });
 MessageSchema.index({ relatedJob: 1 });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Login from '../components/login/Login';
 import AuthWrapper from '../components/common/AuthWrapper';
 import MobileLogin from '../components/mobile/MobileLogin';
@@ -12,6 +12,13 @@ const LoginPage = () => {
   const infoMessage = location.state?.message;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Clear location state after reading to prevent stale banners on refresh
+  useEffect(() => {
+    if (registered || infoMessage) {
+      window.history.replaceState({}, '');
+    }
+  }, [registered, infoMessage]);
 
   // Render clean mobile view without AuthWrapper
   if (isMobile) {

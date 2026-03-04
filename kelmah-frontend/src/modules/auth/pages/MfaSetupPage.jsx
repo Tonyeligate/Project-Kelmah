@@ -7,7 +7,6 @@ import { Helmet } from 'react-helmet-async';
 const MfaSetupPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [secret, setSecret] = useState('');
   const [qrCode, setQrCode] = useState('');
   const [token, setToken] = useState('');
   const [status, setStatus] = useState('');
@@ -16,16 +15,21 @@ const MfaSetupPage = () => {
   const { setupMFA, verifyMFA } = useAuth();
 
   useEffect(() => {
+    let cancelled = false;
     const init = async () => {
       try {
         const data = await setupMFA();
-        setSecret(data.secret);
-        setQrCode(data.qrCode);
+        if (!cancelled) {
+          setQrCode(data.qrCode);
+        }
       } catch (err) {
-        setError('Failed to set up two-factor authentication. Please refresh and try again.');
+        if (!cancelled) {
+          setError('Failed to set up two-factor authentication. Please refresh and try again.');
+        }
       }
     };
     init();
+    return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -48,6 +52,7 @@ const MfaSetupPage = () => {
       <Box
         sx={{ width: '100%', maxWidth: 400, mx: 'auto', textAlign: 'center' }}
       >
+        <Helmet><title>Two-Factor Authentication | Kelmah</title></Helmet>
         <Typography variant="h5" gutterBottom sx={isMobile ? { color: 'text.primary', fontWeight: 700 } : {}}>
           Setup Two-Factor Authentication
         </Typography>
@@ -108,7 +113,6 @@ const MfaSetupPage = () => {
 
   return (
     <AuthWrapper>
-      <Helmet><title>Two-Factor Authentication | Kelmah</title></Helmet>
       {mfaContent}
     </AuthWrapper>
   );

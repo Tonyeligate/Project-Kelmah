@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSelector } from 'react-redux';
-import { normalizeUser } from '../../../utils/userUtils';
 import {
   Container,
   Typography,
@@ -21,6 +19,7 @@ import {
   CardContent,
   Tooltip,
   Chip,
+  Skeleton,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -73,9 +72,6 @@ const PaymentMethodsPage = () => {
 
   const [methodToDelete, setMethodToDelete] = useState(null);
 
-  // FIXED: Use standardized user normalization for consistent user data access
-  const { user: rawUser } = useSelector((state) => state.auth);
-  const user = normalizeUser(rawUser);
   const theme = useTheme();
 
   // Fetch payment methods from server
@@ -376,8 +372,10 @@ const PaymentMethodsPage = () => {
       )}
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}>
-          <CircularProgress />
+        <Box sx={{ py: 2 }}>
+          {[1,2,3].map(i => (
+            <Skeleton key={i} variant="rounded" height={80} sx={{ borderRadius: 2, mb: 2 }} />
+          ))}
         </Box>
       ) : paymentMethods.length === 0 ? (
         <Paper
@@ -597,6 +595,7 @@ const PaymentMethodsPage = () => {
             startIcon={<AddIcon />}
             onClick={handleAddCard}
             disabled={
+              loading ||
               !newCard.cardNumber ||
               !newCard.expiryMonth ||
               !newCard.expiryYear ||
@@ -682,7 +681,7 @@ const PaymentMethodsPage = () => {
           <Button
             variant="contained"
             onClick={handleAddMobile}
-            disabled={!newMobile.phoneNumber}
+            disabled={loading || !newMobile.phoneNumber}
           >
             Add Mobile Money
           </Button>
@@ -779,6 +778,7 @@ const PaymentMethodsPage = () => {
             variant="contained"
             onClick={handleAddBank}
             disabled={
+              loading ||
               !newBank.bankName ||
               !newBank.accountNumber ||
               !newBank.accountName
@@ -820,7 +820,7 @@ const PaymentMethodsPage = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenConfirmDelete(false)}>Cancel</Button>
-          <Button color="error" onClick={handleConfirmDelete}>
+          <Button color="error" onClick={handleConfirmDelete} disabled={loading}>
             Remove
           </Button>
         </DialogActions>

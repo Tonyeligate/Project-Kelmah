@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import {
   Box,
@@ -34,6 +34,7 @@ import {
   Breadcrumbs,
   Link,
   Snackbar,
+  Skeleton,
 } from '@mui/material';
 import {
   EmojiEvents as EmojiEventsIcon,
@@ -304,19 +305,22 @@ const SkillsAssessmentPage = () => {
     setTimeRemaining((test.duration || 30) * 60);
   };
 
+  // Mounted ref to prevent state updates after unmount
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
+
   // Load initial data once credentials are resolved
   useEffect(() => {
-    let cancelled = false;
     fetchSkillsData();
-    return () => { cancelled = true; };
   }, [fetchSkillsData]);
 
   useEffect(() => {
-    let cancelled = false;
     if (testId && availableTests.length > 0) {
       fetchTestDetails(testId);
     }
-    return () => { cancelled = true; };
   }, [testId, availableTests, fetchTestDetails]);
 
   const confirmStartTest = () => {
@@ -607,7 +611,7 @@ const SkillsAssessmentPage = () => {
 
       <Grid container spacing={3}>
         {mySkills.map((skill, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
+          <Grid item xs={12} sm={6} md={4} key={skill.id || skill._id || skill.name}>
             <GlassCard>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -661,7 +665,7 @@ const SkillsAssessmentPage = () => {
 
       <Grid container spacing={3}>
         {completedTests.map((test, index) => (
-          <Grid item xs={12} sm={6} lg={4} key={index}>
+          <Grid item xs={12} sm={6} lg={4} key={test.id || test._id || test.skillId}>
             <GlassCard>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -887,8 +891,8 @@ const SkillsAssessmentPage = () => {
                   Strengths
                 </Typography>
                 <List dense>
-                  {analytics.strengths.map((strength, index) => (
-                    <ListItem key={index}>
+                  {(analytics.strengths || []).map((strength, index) => (
+                    <ListItem key={strength}>
                       <ListItemIcon>
                         <CheckCircleIcon color="success" />
                       </ListItemIcon>
@@ -911,8 +915,8 @@ const SkillsAssessmentPage = () => {
                   Growth Areas
                 </Typography>
                 <List dense>
-                  {analytics.improvementAreas.map((area, index) => (
-                    <ListItem key={index}>
+                  {(analytics.improvementAreas || []).map((area, index) => (
+                    <ListItem key={area}>
                       <ListItemIcon>
                         <WarningIcon color="warning" />
                       </ListItemIcon>
@@ -1024,7 +1028,7 @@ const SkillsAssessmentPage = () => {
                   >
                     {question.options.map((option, index) => (
                       <FormControlLabel
-                        key={index}
+                        key={option}
                         value={index}
                         control={<Radio />}
                         label={option}
@@ -1139,17 +1143,15 @@ const SkillsAssessmentPage = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: 400,
-          }}
-        >
-          <CircularProgress size={60} thickness={4} />
-        </Box>
+      <Container maxWidth="lg" sx={{ py: 3 }}>
+        <Skeleton variant="text" width={280} height={40} sx={{ mb: 3 }} />
+        <Grid container spacing={2}>
+          {[1,2,3,4,5,6].map(i => (
+            <Grid item xs={12} sm={6} md={4} key={i}>
+              <Skeleton variant="rounded" height={200} sx={{ borderRadius: 2 }} />
+            </Grid>
+          ))}
+        </Grid>
       </Container>
     );
   }
@@ -1423,7 +1425,15 @@ const SkillsAssessmentPage = () => {
           </DialogContent>
           <DialogActions sx={{ justifyContent: 'center', p: 3, flexWrap: 'wrap', gap: 1 }}>
             {testResults?.certificate && (
-              <Button startIcon={<DownloadIcon />} variant="outlined" sx={{ minHeight: 44 }}>
+              <Button
+                startIcon={<DownloadIcon />}
+                variant="outlined"
+                sx={{ minHeight: 44 }}
+                onClick={() => {
+                  setSnackbar({ open: true, message: 'Certificate download will be available soon.', severity: 'info' });
+                  setResultsDialog(false);
+                }}
+              >
                 Download Certificate
               </Button>
             )}

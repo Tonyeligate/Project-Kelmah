@@ -49,7 +49,6 @@ import workerService from '../services/workerService';
 import ProfileCompletionCard from '../components/ProfileCompletionCard';
 import QuickActionsRow from '../components/QuickActionsRow';
 import { Helmet } from 'react-helmet-async';
-import PostAddIcon from '@mui/icons-material/PostAdd';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import InboxOutlinedIcon from '@mui/icons-material/InboxOutlined';
 
@@ -99,11 +98,17 @@ const WorkerDashboardPage = () => {
   const { user: rawUser } = useSelector((state) => state.auth);
   const user = normalizeUser(rawUser);
 
+  // Memoize curried selectors so useSelector receives stable references (prevents selector recreation every render)
+  const selectPending = useMemo(() => selectWorkerApplications('pending'), []);
+  const selectAccepted = useMemo(() => selectWorkerApplications('accepted'), []);
+  const selectRejected = useMemo(() => selectWorkerApplications('rejected'), []);
+  const selectCompletedJobs = useMemo(() => selectWorkerJobs('completed'), []);
+
   // Redux selectors for real data
-  const pendingApplications = useSelector(selectWorkerApplications('pending')) || [];
-  const acceptedApplications = useSelector(selectWorkerApplications('accepted')) || [];
-  const rejectedApplications = useSelector(selectWorkerApplications('rejected')) || [];
-  const completedJobs = useSelector(selectWorkerJobs('completed')) || [];
+  const pendingApplications = useSelector(selectPending) || [];
+  const acceptedApplications = useSelector(selectAccepted) || [];
+  const rejectedApplications = useSelector(selectRejected) || [];
+  const completedJobs = useSelector(selectCompletedJobs) || [];
   const isLoading = useSelector(selectWorkerLoading('applications'));
   const error = useSelector(selectWorkerError('applications'));
 
@@ -180,7 +185,6 @@ const WorkerDashboardPage = () => {
         dispatch(fetchWorkerApplications('rejected')),
         dispatch(fetchWorkerJobs('completed')),
       ]);
-      const hasFailure = results.some((r) => r.status === 'rejected');
       clearTimeout(timeoutId);
       if (loadingTimeoutRef.current === timeoutId) {
         loadingTimeoutRef.current = null;
@@ -218,24 +222,28 @@ const WorkerDashboardPage = () => {
 
   // Fetch profile completion data (Phase 1)
   useEffect(() => {
+    let cancelled = false;
     const loadProfileCompletion = async () => {
       try {
         const userId = user?.id || user?._id || user?.userId;
         if (!userId) return;
         const stats = await workerService.getWorkerStats(userId);
-        setProfileCompletion({
-          percentage: stats?.percentage ?? stats?.completionPercentage ?? 100,
-          missingFields: [
-            ...(stats?.missingRequired || []),
-            ...(stats?.missingOptional || []),
-          ],
-        });
+        if (!cancelled) {
+          setProfileCompletion({
+            percentage: stats?.percentage ?? stats?.completionPercentage ?? 100,
+            missingFields: [
+              ...(stats?.missingRequired || []),
+              ...(stats?.missingOptional || []),
+            ],
+          });
+        }
       } catch (_) {
         // Non-blocking — profile widget will simply not display
         // Intentionally swallowed: profile completion is supplementary data
       }
     };
     loadProfileCompletion();
+    return () => { cancelled = true; };
   }, [user?.id, user?._id, user?.userId]);
 
   // Get time-based greeting
@@ -300,7 +308,7 @@ const WorkerDashboardPage = () => {
       thisMonth: completedTotals.thisMonth,
       lastMonth: completedTotals.lastMonth,
       pending: pendingEarnings,
-      withdrawn: 0,
+      // withdrawn is not tracked until a withdrawal API is wired — omit to avoid misleading chart segment
     };
   }, [completedJobs, pendingApplications, user, getAmountValue]);
 
@@ -309,15 +317,15 @@ const WorkerDashboardPage = () => {
     applications: pendingApplications.length + acceptedApplications.length,
     completedJobs: completedJobs.length,
     earnings: earningsSummary.total,
-    rating: user?.rating || 0,
+    // rating is not in the auth user object; sourced from review service at a later point
+    rating: user?.rating ?? null,
   }), [pendingApplications, acceptedApplications, completedJobs, earningsSummary, user]);
 
   // Determine if this is a brand-new worker with no activity
   const isNewWorker =
     stats.applications === 0 &&
     stats.completedJobs === 0 &&
-    stats.earnings === 0 &&
-    stats.rating === 0;
+    stats.earnings === 0;
 
   // Handle refresh with retry logic
   const handleRefresh = useCallback(() => {
@@ -339,13 +347,12 @@ const WorkerDashboardPage = () => {
     }
   }, [error, retryCount, isLoading, handleRefresh]);
 
-  // Chart data for Earnings Overview - derived from actual jobs/applications state
+  // Chart data for Earnings Overview — only include segments with non-zero values
   const earningsData = useMemo(() => [
     { name: 'This Month', value: earningsSummary.thisMonth, color: theme.palette.success.main },
     { name: 'Last Month', value: earningsSummary.lastMonth, color: theme.palette.info.main },
     { name: 'Pending', value: earningsSummary.pending, color: theme.palette.warning.main },
-    { name: 'Withdrawn', value: earningsSummary.withdrawn, color: '#9C27B0' },
-  ], [earningsSummary]);
+  ].filter(d => d.value > 0), [earningsSummary, theme]);
 
   // Chart data for Applications Overview - using real data
   const applicationsData = useMemo(() => [
@@ -593,7 +600,7 @@ const WorkerDashboardPage = () => {
           {/* Metric Cards - 4 colored cards LC Portal style */}
           <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }} sx={{ mb: 4 }}>
             {metricCards.map((card, index) => (
-              <Grid item xs={6} sm={6} md={3} key={index}>
+              <Grid item xs={6} sm={6} md={3} key={card.title}>
                 <Tooltip title={card.tooltip} arrow placement="top">
                   <ButtonBase
                     onClick={card.onClick}

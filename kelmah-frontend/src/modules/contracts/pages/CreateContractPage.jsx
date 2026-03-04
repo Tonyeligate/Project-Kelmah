@@ -1015,9 +1015,10 @@ const CreateContractPage = () => {
                 handleNext();
               }
             }}
+            disabled={loading || workerLoading}
             sx={{ minHeight: 44, flex: 1 }}
           >
-            {activeStep === steps.length - 1 ? 'Create Contract' : 'Next'}
+            {loading ? <CircularProgress size={18} color="inherit" /> : activeStep === steps.length - 1 ? 'Create Contract' : 'Next'}
           </Button>
         </Box>
       )}

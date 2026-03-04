@@ -78,13 +78,17 @@ const BidReviewCard = ({ bid, onAccept, onReject, isProcessing }) => {
 
   const formatDate = (date) => {
     if (!date) return '';
-    return new Date(date).toLocaleDateString('en-GH', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    try {
+      return new Date(date).toLocaleDateString('en-GH', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return '';
+    }
   };
 
   return (

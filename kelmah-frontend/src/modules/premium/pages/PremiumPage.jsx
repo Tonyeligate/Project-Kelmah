@@ -189,7 +189,7 @@ const PremiumPage = () => {
       const amount = plans[billingCycle]?.[priceKey] || 0;
 
       await api.post('/payments/subscriptions', {
-        plan: selectedPlan.toLowerCase(),
+        tier: selectedPlan.toLowerCase(),
         billingCycle,
         amount,
       });
@@ -198,7 +198,11 @@ const PremiumPage = () => {
       setOpenDialog(false);
     } catch (err) {
       // Show error to user instead of silently succeeding
-      const message = err?.response?.data?.message || err?.message || 'Failed to process upgrade. Please try again.';
+      const status = err?.response?.status;
+      const message =
+        status === 501
+          ? 'Premium subscriptions are coming soon! We\u2019re finalising the payment integration. Stay tuned.'
+          : err?.response?.data?.message || err?.message || 'Failed to process upgrade. Please try again.';
       setUpgradeError(message);
       setOpenDialog(false);
     } finally {
@@ -284,7 +288,7 @@ const PremiumPage = () => {
         {/* Features Grid */}
         <Grid container spacing={4} sx={{ mb: 8 }}>
           {features.map((feature, index) => (
-            <Grid item key={index} xs={12} sm={6} md={3}>
+            <Grid item key={feature.title} xs={12} sm={6} md={3}>
               <FeatureCard {...feature} />
             </Grid>
           ))}
@@ -295,13 +299,13 @@ const PremiumPage = () => {
           <Typography variant="h4" fontWeight="bold" gutterBottom>
             Choose Your Plan
           </Typography>
-          <Tooltip title="Toggle this premium feature">
+          <Tooltip title="Switch to annual billing to save 20%">
             <FormControlLabel
               control={
                 <Switch
                   checked={isYearly}
                   onChange={(e) => setIsYearly(e.target.checked)}
-                  inputProps={{ 'aria-label': 'Toggle premium feature' }}
+                  inputProps={{ 'aria-label': 'Switch to annual billing' }}
                 />
               }
             label={

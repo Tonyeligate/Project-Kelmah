@@ -87,6 +87,7 @@ const ProfilePage = () => {
   const [newEdu, setNewEdu] = useState({ degree: '', institution: '', year: '' });
   const [addExpOpen, setAddExpOpen] = useState(false);
   const [newExp, setNewExp] = useState({ title: '', company: '', duration: '' });
+  const [addingItem, setAddingItem] = useState(false);
 
   // H29 fix: local state + debounce for preferences to avoid API call on every keystroke
   const [prefJobType, setPrefJobType] = useState('');
@@ -382,7 +383,7 @@ const ProfilePage = () => {
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {profile.skills?.map((skill, index) => (
                         <Chip
-                          key={index}
+                          key={skill}
                           label={skill}
                           onDelete={async () => {
                             try {
@@ -423,7 +424,8 @@ const ProfilePage = () => {
                       </DialogContent>
                       <DialogActions>
                         <Button onClick={() => { setAddSkillOpen(false); setNewSkill(''); }}>Cancel</Button>
-                        <Button variant="contained" disabled={!newSkill.trim()} onClick={async () => {
+                        <Button variant="contained" disabled={addingItem || !newSkill.trim()} onClick={async () => {
+                          setAddingItem(true);
                           try {
                             const currentSkills = Array.isArray(profile.skills) ? profile.skills : [];
                             await updateSkills([...currentSkills, newSkill.trim()]);
@@ -431,6 +433,8 @@ const ProfilePage = () => {
                             setNewSkill(''); setAddSkillOpen(false);
                           } catch (err) {
                             enqueueSnackbar('Failed to update skills', { variant: 'error' });
+                          } finally {
+                            setAddingItem(false);
                           }
                         }}>Add</Button>
                       </DialogActions>
@@ -445,7 +449,7 @@ const ProfilePage = () => {
                     </Typography>
                     <List>
                       {profile.education?.map((edu, index) => (
-                        <React.Fragment key={index}>
+                        <React.Fragment key={edu.degree + '-' + edu.institution + '-' + index}>
                           <ListItem>
                             <ListItemText
                               primary={edu.degree}
@@ -502,8 +506,9 @@ const ProfilePage = () => {
                       </DialogContent>
                       <DialogActions>
                         <Button onClick={() => { setAddEduOpen(false); setNewEdu({ degree: '', institution: '', year: '' }); }}>Cancel</Button>
-                        <Button variant="contained" disabled={!newEdu.degree.trim() || !newEdu.institution.trim() || !newEdu.year.trim()}
+                        <Button variant="contained" disabled={addingItem || !newEdu.degree.trim() || !newEdu.institution.trim() || !newEdu.year.trim()}
                           onClick={async () => {
+                            setAddingItem(true);
                             try {
                               const currentEducation = Array.isArray(profile.education) ? profile.education : [];
                               await updateEducation([...currentEducation, { ...newEdu }]);
@@ -511,6 +516,8 @@ const ProfilePage = () => {
                               setNewEdu({ degree: '', institution: '', year: '' }); setAddEduOpen(false);
                             } catch (err) {
                               enqueueSnackbar('Failed to update education', { variant: 'error' });
+                            } finally {
+                              setAddingItem(false);
                             }
                           }}>Add</Button>
                       </DialogActions>
@@ -525,7 +532,7 @@ const ProfilePage = () => {
                     </Typography>
                     <List>
                       {profile.experience?.map((exp, index) => (
-                        <React.Fragment key={index}>
+                        <React.Fragment key={exp.title + '-' + exp.company + '-' + index}>
                           <ListItem>
                             <ListItemText
                               primary={exp.title}
@@ -580,8 +587,9 @@ const ProfilePage = () => {
                       </DialogContent>
                       <DialogActions>
                         <Button onClick={() => { setAddExpOpen(false); setNewExp({ title: '', company: '', duration: '' }); }}>Cancel</Button>
-                        <Button variant="contained" disabled={!newExp.title.trim() || !newExp.company.trim() || !newExp.duration.trim()}
+                        <Button variant="contained" disabled={addingItem || !newExp.title.trim() || !newExp.company.trim() || !newExp.duration.trim()}
                           onClick={async () => {
+                            setAddingItem(true);
                             try {
                               const currentExperience = Array.isArray(profile.experience) ? profile.experience : [];
                               await updateExperience([...currentExperience, { ...newExp }]);
@@ -589,6 +597,8 @@ const ProfilePage = () => {
                               setNewExp({ title: '', company: '', duration: '' }); setAddExpOpen(false);
                             } catch (err) {
                               enqueueSnackbar('Failed to update experience', { variant: 'error' });
+                            } finally {
+                              setAddingItem(false);
                             }
                           }}>Add</Button>
                       </DialogActions>
@@ -649,7 +659,7 @@ const ProfilePage = () => {
                     </Typography>
                     <List>
                       {activity.map((item, index) => (
-                        <React.Fragment key={index}>
+                        <React.Fragment key={item.id || item._id || index}>
                           <ListItem>
                             <ListItemText
                               primary={item.title}

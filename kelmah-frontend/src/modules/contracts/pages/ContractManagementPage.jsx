@@ -36,8 +36,8 @@ const ContractManagementPage = () => {
     if (loading) return [];
     const statusMap = ['all', 'active', 'pending', 'completed', 'dispute'];
     const selectedStatus = statusMap[tabValue];
-    if (selectedStatus === 'all') return contracts;
-    return contracts.filter((contract) => contract.status === selectedStatus);
+    if (selectedStatus === 'all') return contracts || [];
+    return (contracts || []).filter((contract) => contract.status === selectedStatus);
   }, [contracts, tabValue, loading]);
 
   return (
@@ -77,7 +77,7 @@ const ContractManagementPage = () => {
       {/* Summary line for contract counts */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="body2" color="text.secondary">
-          Showing {filteredContracts.length} of {contracts.length} contracts
+          Showing {filteredContracts.length} of {(contracts || []).length} contracts
         </Typography>
       </Box>
 

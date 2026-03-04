@@ -385,7 +385,7 @@ const NearbyJobsPage = () => {
                     <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                       {job.photos.slice(0, 3).map((photo, i) => (
                         <Avatar
-                          key={i}
+                          key={photo.url || photo || i}
                           src={photo.url}
                           alt={`Job photo ${i + 1}`}
                           variant="rounded"

@@ -99,9 +99,13 @@ const BillPage = () => {
 
   const handleConfirmPayment = async () => {
     setDialogStep(1);
-    await payBill(selectedBill.id);
-    setDialogStep(2);
-    timerRef.current = setTimeout(handleCloseConfirm, 1000);
+    try {
+      await payBill(selectedBill.id);
+      setDialogStep(2);
+      timerRef.current = setTimeout(handleCloseConfirm, 1000);
+    } catch (err) {
+      setDialogStep(0);
+    }
   };
 
   // Cleanup timer on unmount to prevent state update on unmounted component

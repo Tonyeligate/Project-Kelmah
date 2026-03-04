@@ -248,10 +248,9 @@ class ConversationController {
       const participantIds = (conversation.participants || []).map(
         (p) => p._id,
       );
-      // Scope messages to BOTH sender and recipient being conversation participants
+      // Scope messages to THIS conversation by ID
       const messages = await Message.find({
-        sender: { $in: participantIds },
-        recipient: { $in: participantIds },
+        conversation: id,
       })
         .populate("sender", "firstName lastName profilePicture")
         .sort({ createdAt: -1 })
@@ -466,13 +465,11 @@ class ConversationController {
         });
       }
 
-      // Scope to messages within THIS conversation only
-      // Both sender and recipient must be conversation participants
-      const participants = conversation.participants.map(String);
+      // Scope to messages within THIS conversation by ID
       await Message.updateMany(
         {
+          conversation: conversation._id,
           recipient: new mongoose.Types.ObjectId(userId),
-          sender: { $in: participants.map((p) => new mongoose.Types.ObjectId(p)) },
           "readStatus.isRead": false,
         },
         {
@@ -538,38 +535,22 @@ class ConversationController {
       const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const regex = new RegExp(escapedQuery, "i");
 
-      // Optimized: Single query instead of N+1 pattern
-      const allParticipantIds = [
-        ...new Set(conversations.flatMap((c) => (c.participants || []).map(String))),
-      ];
-
-      // Find all messages matching the search within these conversations' participants
+      // Find conversations that have at least one matching message (scoped by conversation ID)
+      const conversationIds = conversations.map((c) => c._id);
       const matchingMessages = await Message.find({
+        conversation: { $in: conversationIds },
         content: { $regex: regex },
-        $or: [
-          { sender: { $in: allParticipantIds } },
-          { recipient: { $in: allParticipantIds } },
-        ],
-      }).select("sender recipient").lean();
+      }).select("conversation").lean();
 
-      // Build a set of participant pairs that have matching messages
-      const matchedPairs = new Set();
-      matchingMessages.forEach((msg) => {
-        const pair = [String(msg.sender), String(msg.recipient)].sort().join(":");
-        matchedPairs.add(pair);
-      });
+      // Build a set of conversation IDs that have matching messages
+      const matchedConvIds = new Set(
+        matchingMessages.map((msg) => String(msg.conversation)),
+      );
 
       // Filter conversations that have at least one matching message
-      const matched = conversations.filter((conv) => {
-        const pIds = (conv.participants || []).map(String);
-        for (let i = 0; i < pIds.length; i++) {
-          for (let j = i + 1; j < pIds.length; j++) {
-            const pair = [pIds[i], pIds[j]].sort().join(":");
-            if (matchedPairs.has(pair)) return true;
-          }
-        }
-        return false;
-      });
+      const matched = conversations.filter((conv) =>
+        matchedConvIds.has(String(conv._id)),
+      );
 
       res.status(200).json({
         success: true,

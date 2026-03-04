@@ -113,7 +113,7 @@ const TransactionHistory = ({ transactions }) => (
       Recent Transactions
     </Typography>
     <List>
-      {transactions.slice(0, 5).map((tx, idx) => (
+      {(transactions || []).slice(0, 5).map((tx, idx) => (
         <React.Fragment key={tx.id}>
           <ListItem>
             <ListItemIcon>
@@ -419,18 +419,31 @@ const ActiveEscrows = ({ escrows }) => {
                     mt: 1,
                   }}
                 >
-                  <Tooltip title="View escrow contract details">
+                  <Tooltip title="View escrow details">
                     <Button
-                      variant="contained"
+                      variant="outlined"
                       color="secondary"
                       size="small"
-                      // ✅ MOBILE-AUDIT P4: removed decorative boxShadow
                       component={RouterLink}
-                      to={`/contracts/${escrow.contractId}`}
+                      to={`/payment/escrow/${escrow.id ?? String(escrow._id)}`}
                     >
-                      View Contract
+                      View Escrow
                     </Button>
                   </Tooltip>
+                  {escrow.contractId && (
+                    <Tooltip title="View escrow contract details">
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        size="small"
+                        // ✅ MOBILE-AUDIT P4: removed decorative boxShadow
+                        component={RouterLink}
+                        to={`/contracts/${escrow.contractId}`}
+                      >
+                        View Contract
+                      </Button>
+                    </Tooltip>
+                  )}
                 </Box>
               </CardContent>
             </Card>
@@ -574,6 +587,7 @@ const PaymentCenterPage = () => {
     withdrawFunds,
     fetchTransactions,
     deletePaymentMethod,
+    refresh,
   } = usePayments();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -583,6 +597,7 @@ const PaymentCenterPage = () => {
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [amount, setAmount] = useState('');
   const [methodId, setMethodId] = useState('');
+  const [dialogSubmitting, setDialogSubmitting] = useState(false);
 
   const [deleteMethodOpen, setDeleteMethodOpen] = useState(false);
   const [methodPendingDelete, setMethodPendingDelete] = useState(null);
@@ -647,7 +662,7 @@ const PaymentCenterPage = () => {
     setAppliedBillStatus('all');
     setBillPage(1);
   };
-  const filteredBills = useMemo(() => bills.filter((b) => {
+  const filteredBills = useMemo(() => (bills || []).filter((b) => {
     let ok = true;
     if (appliedBillStartDate)
       ok = ok && new Date(b.dueDate) >= new Date(appliedBillStartDate);
@@ -671,7 +686,7 @@ const PaymentCenterPage = () => {
     setAppliedEscrowStatus(escrowStatusFilter);
     setEscrowPage(1);
   };
-  const filteredEscrows = useMemo(() => escrows.filter(
+  const filteredEscrows = useMemo(() => (escrows || []).filter(
     (e) => appliedEscrowStatus === 'all' || e.status === appliedEscrowStatus,
   ), [escrows, appliedEscrowStatus]);
   const escrowPageCount = Math.ceil(filteredEscrows.length / escrowPerPage);
@@ -704,7 +719,16 @@ const PaymentCenterPage = () => {
   if (error)
     return (
       <Container sx={{ py: { xs: 2, md: 4 } }}>
-        <Alert severity="error">{error}</Alert>
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={refresh}>
+              Retry
+            </Button>
+          }
+        >
+          {error}
+        </Alert>
       </Container>
     );
 
@@ -737,21 +761,21 @@ const PaymentCenterPage = () => {
             <Grid item xs={6} sm={3}>
               <SummaryCard
                 icon={ReceiptIcon}
-                count={transactions.length}
+                count={(transactions || []).length}
                 label="Transactions"
               />
             </Grid>
             <Grid item xs={6} sm={3}>
               <SummaryCard
                 icon={CreditCardIcon}
-                count={paymentMethods.length}
+                count={(paymentMethods || []).length}
                 label="Methods"
               />
             </Grid>
             <Grid item xs={6} sm={3}>
               <SummaryCard
                 icon={GavelIcon}
-                count={escrows.length}
+                count={(escrows || []).length}
                 label="Escrows"
               />
               <Box sx={{ mt: 1 }}>
@@ -769,7 +793,7 @@ const PaymentCenterPage = () => {
             <Grid item xs={6} sm={3}>
               <SummaryCard
                 icon={ReceiptLongIcon}
-                count={bills.length}
+                count={(bills || []).length}
                 label="Bills"
               />
             </Grid>
@@ -1118,7 +1142,7 @@ const PaymentCenterPage = () => {
                     border: `1px solid ${theme.palette.secondary.main}`,
                   }}
                 >
-                  {paymentMethods.map((m) => (
+                  {(paymentMethods || []).map((m) => (
                     <MenuItem key={m.id} value={m.id}>
                       {m.name}
                     </MenuItem>
@@ -1139,16 +1163,18 @@ const PaymentCenterPage = () => {
           </Button>
           <Button
             onClick={async () => {
+              setDialogSubmitting(true);
               try {
                 await addFunds(Number(amount), methodId);
               } finally {
+                setDialogSubmitting(false);
                 closeDepositDialog();
               }
             }}
             variant="contained"
             color="secondary"
-            startIcon={<AddIcon />}
-            disabled={!amount || Number(amount) <= 0 || !methodId}
+            startIcon={dialogSubmitting ? <CircularProgress size={20} color="inherit" /> : <AddIcon />}
+            disabled={dialogSubmitting || !amount || Number(amount) <= 0 || !methodId}
             sx={{ boxShadow: '0 2px 8px rgba(255, 215, 0, 0.4)' }}
           >
             Add
@@ -1234,7 +1260,7 @@ const PaymentCenterPage = () => {
                     border: `1px solid ${theme.palette.secondary.main}`,
                   }}
                 >
-                  {paymentMethods.map((m) => (
+                  {(paymentMethods || []).map((m) => (
                     <MenuItem key={m.id} value={m.id}>
                       {m.name}
                     </MenuItem>
@@ -1255,16 +1281,18 @@ const PaymentCenterPage = () => {
           </Button>
           <Button
             onClick={async () => {
+              setDialogSubmitting(true);
               try {
                 await withdrawFunds(Number(amount), methodId);
               } finally {
+                setDialogSubmitting(false);
                 closeWithdrawDialog();
               }
             }}
             variant="contained"
             color="secondary"
-            startIcon={<ArrowDownwardIcon />}
-            disabled={!amount || Number(amount) <= 0 || !methodId}
+            startIcon={dialogSubmitting ? <CircularProgress size={20} color="inherit" /> : <ArrowDownwardIcon />}
+            disabled={dialogSubmitting || !amount || Number(amount) <= 0 || !methodId}
             sx={{ minHeight: 44 }}
           >
             Withdraw

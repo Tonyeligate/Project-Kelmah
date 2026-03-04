@@ -48,6 +48,11 @@ const ResetPassword = () => {
       return;
     }
 
+    if (password.length > 128) {
+      setError('Password must not exceed 128 characters.');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
@@ -60,7 +65,7 @@ const ResetPassword = () => {
       setPassword('');
       setConfirmPassword('');
     } catch (err) {
-      setError(err?.response?.data?.message || err?.message || 'Password reset failed');
+      setError('Password reset failed. The link may be invalid or expired.');
     } finally {
       setLoading(false);
     }

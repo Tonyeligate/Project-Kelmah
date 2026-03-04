@@ -254,6 +254,7 @@ class MessageSocketHandler {
         ? attachments
         : [];
       const message = new Message({
+        conversation: conversationId,
         sender: userId,
         recipient: conversation.participants.find(
           (p) => p.toString() !== userId.toString(),
@@ -388,6 +389,7 @@ class MessageSocketHandler {
         return;
       }
       const message = new Message({
+        conversation: conversationId,
         sender: userId,
         recipient: conversation.participants.find(
           (p) => p.toString() !== userId.toString(),
@@ -454,11 +456,10 @@ class MessageSocketHandler {
         return;
       }
 
-      // Scope mark-as-read to THIS conversation's participants only
-      const participants = conversation.participants.map(String);
+      // Scope mark-as-read to THIS conversation by ID
       const query = {
+        conversation: conversationId,
         recipient: userId,
-        sender: { $in: participants },
         "readStatus.isRead": false,
       };
 
@@ -590,11 +591,9 @@ class MessageSocketHandler {
       // Join conversation room
       socket.join(`conversation_${conversationId}`);
 
-      // Get recent messages scoped to THIS conversation's participants
-      const participants = conversation.participants.map(String);
+      // Get recent messages scoped to THIS conversation by ID
       const messages = await Message.find({
-        sender: { $in: participants },
-        recipient: { $in: participants },
+        conversation: conversationId,
       })
         .populate("sender", "firstName lastName profilePicture")
         .sort({ createdAt: -1 })

@@ -366,6 +366,7 @@ const MyBidsPage = () => {
       setWithdrawDialog({ open: false, bid: null });
     } catch (err) {
       if (import.meta.env.DEV) console.error('Failed to withdraw bid:', err);
+      setError('Failed to withdraw bid. Please try again.');
     } finally {
       setWithdrawing(false);
     }

@@ -90,8 +90,13 @@ const paymentService = {
 
   // Payment methods
   getPaymentMethods: async () => {
-    const { data } = await api.get('/payments/methods');
-    return normalizePaymentMethodsResponse(data);
+    try {
+      const { data } = await api.get('/payments/methods');
+      return normalizePaymentMethodsResponse(data);
+    } catch (err) {
+      if (import.meta.env.DEV) console.error('getPaymentMethods failed:', err);
+      return [];
+    }
   },
 
   addPaymentMethod: async (methodData) => {

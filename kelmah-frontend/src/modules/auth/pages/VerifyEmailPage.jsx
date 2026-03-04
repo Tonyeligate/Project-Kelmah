@@ -8,7 +8,8 @@ import { Helmet } from 'react-helmet-async';
 
 const VerifyEmailPage = () => {
   const { token } = useParams();
-  const [status, setStatus] = useState('Verifying...');
+  const [loading, setLoading] = useState(!!token);
+  const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const [email, setEmail] = useState('');
   const [resendSent, setResendSent] = useState(false);
@@ -18,26 +19,35 @@ const VerifyEmailPage = () => {
 
   useEffect(() => {
     if (!token) {
-      setStatus('');
+      setLoading(false);
       setError('No verification token provided. Please check your email link.');
       return;
     }
+    let cancelled = false;
     const verify = async () => {
       try {
         const res = await authService.verifyEmail(token);
-        setStatus(
-          res.message || 'Email verified successfully. You can now login.',
-        );
+        if (!cancelled) {
+          setStatus(
+            res.message || 'Email verified successfully. You can now login.',
+          );
+        }
       } catch (err) {
-        setStatus('');
-        setError('Email verification failed. The link may have expired. Please request a new one.');
+        if (!cancelled) {
+          setError('Email verification failed. The link may have expired. Please request a new one.');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     };
     verify();
+    return () => { cancelled = true; };
   }, [token]);
 
   const handleResend = async (e) => {
     e.preventDefault();
+    setError('');
+    setResendSent(false);
     setResendLoading(true);
     try {
       await authService.resendVerificationEmail(email);
@@ -51,7 +61,14 @@ const VerifyEmailPage = () => {
 
   const content = (
     <Box sx={{ width: '100%', maxWidth: 400, textAlign: 'center', mx: 'auto' }}>
-      {status && (
+      <Helmet><title>Verify Email | Kelmah</title></Helmet>
+      {loading && (
+        <Box sx={{ mb: 3 }}>
+          <CircularProgress size={48} sx={{ mb: 2 }} />
+          <Typography variant="body1" sx={{ color: 'text.secondary' }}>Verifying your email…</Typography>
+        </Box>
+      )}
+      {!loading && status && (
         <Box sx={{ mb: 3 }}>
           <CheckCircleOutline sx={{ fontSize: 56, color: 'success.main', mb: 1 }} />
           <Alert severity="success" sx={{
@@ -62,7 +79,7 @@ const VerifyEmailPage = () => {
           </Alert>
         </Box>
       )}
-      {error && (
+      {!loading && error && (
         <>
           <Box sx={{ mb: 3 }}>
             <ErrorOutline sx={{ fontSize: 56, color: 'error.main', mb: 1 }} />
@@ -162,7 +179,6 @@ const VerifyEmailPage = () => {
 
   return (
     <AuthWrapper>
-      <Helmet><title>Verify Email | Kelmah</title></Helmet>
       {content}
     </AuthWrapper>
   );

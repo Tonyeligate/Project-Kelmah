@@ -7,6 +7,7 @@ import {
   TextField,
   Button,
   CircularProgress,
+  Skeleton,
   Alert,
   Grid,
   InputAdornment,
@@ -69,8 +70,11 @@ const PaymentSettingsPage = () => {
 
   if (loading) {
     return (
-      <Container sx={{ py: { xs: 2, sm: 4 } }}>
-        <CircularProgress />
+      <Container maxWidth="md" sx={{ py: 3 }}>
+        <Skeleton variant="text" width={200} height={36} sx={{ mb: 3 }} />
+        {[1,2,3].map(i => (
+          <Skeleton key={i} variant="rounded" height={80} sx={{ borderRadius: 2, mb: 2 }} />
+        ))}
       </Container>
     );
   }

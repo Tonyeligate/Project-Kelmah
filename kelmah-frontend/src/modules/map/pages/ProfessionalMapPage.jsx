@@ -396,6 +396,7 @@ const ProfessionalMapPage = () => {
     window.open(
       `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`,
       '_blank',
+      'noopener,noreferrer',
     );
   }, []);
 
@@ -628,7 +629,7 @@ const ProfessionalMapPage = () => {
         {!isMobile && (
           <Box
             sx={{
-              width: 380,
+              width: { md: 320, lg: 380 },
               flexShrink: 0,
               display: 'flex',
               flexDirection: 'column',
@@ -836,7 +837,7 @@ const ProfessionalMapPage = () => {
               bottom: 24,
               right: 24,
               zIndex: 1100,
-              width: 360,
+              width: 'min(360px, calc(100vw - 48px))',
             }}
           >
             <Card

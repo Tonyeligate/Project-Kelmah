@@ -361,7 +361,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
 
   const handleContactWorker = () => {
     if (!authUser) {
-      navigate('/login');
+      navigate('/login', { state: { from: window.location.pathname + window.location.search } });
       return;
     }
     if (resolvedWorkerId) {

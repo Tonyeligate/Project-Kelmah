@@ -1,6 +1,101 @@
 # Kelmah Platform - Current Status & Development Log
 
-### Session: Deep Quality Audit & Production Hardening (Jul 2025) ✅
+### Session: Payment Module + Premium + Dashboard Hardening — Round 14 ✅
+
+**Scope**: Full dry audit of Payment (WalletPage, PaymentCenterPage, EscrowDetailsPage, PaymentMethodsPage, paymentService.js), PremiumPage, WorkerDashboardPage, and HirerDashboardPage. Fixed all CRITICAL/HIGH issues.
+
+**EscrowDetailsPage — P0 Fixes**:
+- ✅ Bug 1 (CRITICAL): `e.id === escrowId` — MongoDB returns `_id`, not `id` → escrow always "not found". Changed to `(e.id ?? String(e._id)) === escrowId`.
+- ✅ Bug 2 (CRITICAL): "Escrow not found" shown instantly before data loads — added `loading` check from `usePayments()` with skeleton.
+- ✅ Bug 3 (CRITICAL): Escrow page unreachable from any UI. Added "View Escrow" button in PaymentCenterPage escrow cards linking to `/payment/escrow/${id}`.
+- ✅ Bug 4 (CRITICAL): `releaseEscrow(escrow.id, ...)` used undefined ID → `POST /payments/escrows/undefined/release`. Changed to `escrow.id ?? String(escrow._id)`.
+- ✅ Bug 5 (HIGH): "Confirm Release" button clickable during async release → duplicate. Added `const [releasing, setReleasing]` state + `disabled={releasing}` + "Releasing…" label.
+
+**PaymentCenterPage — P1 Fixes**:
+- ✅ Bug 6 (HIGH): Error state had no retry button — user permanently stuck. Added `action={<Button onClick={refresh}>Retry</Button>}` to error Alert.
+- ✅ Bug 7 (HIGH): `to={/contracts/${escrow.contractId}}` with no null guard → `/contracts/undefined`. Added `{escrow.contractId && (…)}` conditional.
+- ✅ Wired `refresh` from `usePayments()` destructure.
+
+**PaymentMethodsPage — P1 Fixes**:
+- ✅ Bug 10 (HIGH): Add Card/Mobile/Bank confirm buttons had no `|| loading` guard — duplicate submissions. Added `|| loading` to all 3 dialog button `disabled` conditions.
+- ✅ Bug 11 (HIGH): Delete confirm "Remove" button had no `disabled` — duplicate DELETE calls. Added `disabled={loading}`.
+- ✅ Bug 12 (MEDIUM): Dead `useSelector`/`normalizeUser` import + unused `user` variable removed.
+
+**paymentService.js — P2 Fix**:
+- ✅ Bug 13 (HIGH): `getPaymentMethods()` had no try-catch (unlike `getWallet`/`getEscrows`). Wrapped in try/catch returning `[]` on failure.
+
+**PremiumPage**:
+- ✅ P-1 (CRITICAL): POST body sent `plan:` but backend destructures `tier:`. Changed to `tier:`.
+- ✅ P-2 (CRITICAL): Backend subscription endpoint is a 501 stub. Added 501-specific catch message: "Premium subscriptions are coming soon!"
+- ✅ P-6 (MEDIUM): Tooltip "Toggle this premium feature" → "Switch to annual billing to save 20%". Aria label also updated.
+
+**WorkerDashboardPage**:
+- ✅ W-1 (HIGH): `rating: user?.rating || 0` always 0 (rating not in auth JWT). Changed to `user?.rating ?? null`; 'N/A' already displays on null.
+- ✅ W-2/W-4 (HIGH): Hardcoded `withdrawn: 0` removed from `earningsSummary`; `.filter(d => d.value > 0)` added to `earningsData` — no more misleading empty Withdrawn chart segment.
+- ✅ W-3 (HIGH): Curried `selectWorkerApplications('...')` called inline in `useSelector` → new function ref every render. Now memoized with `useMemo` for all 4 selector calls.
+- `isNewWorker` condition cleaned — no longer checks `stats.rating === 0` (was always 0).
+
+**HirerDashboardPage**:
+- ✅ H-1 (CRITICAL): `fetchPaymentSummary` never dispatched → "Needs Attention" card always 0. Added to `fetchDashboardData` fetchPromises (non-critical `.catch(() => null)`). Imported from hirerSlice.
+- ✅ H-2 (CRITICAL): "Applications Overview" chart used `pendingPayments` (always 0, wrong domain). Replaced with `activeJobs` segment, renamed "Applications" + "Active Jobs". Legend updated to match.
+- ✅ H-3 (HIGH): `isNewHirer` checked `activeWorkers` + `totalSpent` (never returned by profile API → always falsy). Changed to `activeJobs === 0 && completedJobs === 0`.
+- ✅ H-4 (HIGH): Curried `selectHirerJobs('active'/'completed')` inline in `useSelector`. Memoized with `useMemo`. Added `useMemo` to React import.
+- ✅ H-5 (HIGH): "Completed Jobs" card navigated to same `/hirer/jobs` as "Active Jobs". Changed to `/hirer/jobs?status=completed`.
+
+**Build Verification**: ✅ Vite production build `built in 2m 51s`, 0 errors
+
+**Files Modified** (7 files):
+- `kelmah-frontend/src/modules/payment/pages/EscrowDetailsPage.jsx`
+- `kelmah-frontend/src/modules/payment/pages/PaymentCenterPage.jsx`
+- `kelmah-frontend/src/modules/payment/pages/PaymentMethodsPage.jsx`
+- `kelmah-frontend/src/modules/payment/services/paymentService.js`
+- `kelmah-frontend/src/modules/premium/pages/PremiumPage.jsx`
+- `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx`
+
+---
+
+
+
+**Scope**: Full dry audit of hirer→find-worker→message→contract flow. Fixed 4 critical, 5 high, and 7 medium bugs identified by subagent audit. All fixes verified with clean production build.
+
+**Critical Fixes**:
+- ✅ **C-4**: `JobApplicationForm.jsx` was deleted but still lazy-imported in routes — crashes on `/jobs/:id/apply`. Created `JobApplicationPage.jsx` (new page, ~230 lines) with full cover letter + bid/rate form. Updated `config.jsx` route.
+- ✅ **C-1**: `SearchPage.jsx` API endpoint was `/workers` (404 in prod). Changed to `/users/workers`. Worker search was returning empty for every hirer.
+
+**High Fixes**:
+- ✅ **H-5**: `/hirer/find-talent` routed to inferior `WorkerSearchPage`. Changed to full-featured `FindWorkersPage` (SearchPage with pagination, filters, map view, WorkerCard grid).
+- ✅ **H-3**: `WorkerProfile` login redirect had no `from` state — user lost context after login. Added `{ state: { from: window.location.pathname + window.location.search } }`.
+- ✅ **H-4**: MessagingPage `?recipient` deep-link fired before conversations loaded (arbitrary 100ms delay). Added `loadingConversations` guard — effect returns early until conversation list is fully populated.
+- ✅ **H-1**: ContractDetailsPage `actionLoading` state was wired to handlers but NO button had `disabled={actionLoading}`. Added `disabled={actionLoading}` + CircularProgress to every action button and all dialog confirm buttons.
+- ✅ **H-2**: Active contracts had no "Mark as Complete" path. Added `completeContract` to `contractService.js`, async thunk + reducer cases in `contractSlice.js`, and "Mark as Complete" button + confirmation dialog in `ContractDetailsPage.jsx`.
+
+**Medium Fixes**:
+- ✅ **M-1**: SearchPage autocomplete called `/jobs/suggestions` on worker search page → worker names never suggested. Changed to `/users/workers/suggest`.
+- ✅ **M-2**: `SearchPage.handleSaveWorker` used raw `api.post('/users/workers/:id/bookmark')` bypassing `workerService`. Now uses `workerService.bookmarkWorker(worker.id)`. Added `workerService` import.
+- ✅ **M-3**: CreateContractPage mobile sticky CTA had no disabled guard — duplicate submits possible. Added `disabled={loading || workerLoading}` + CircularProgress.
+- ✅ **M-4**: `MessageContext.jsx` cleanup used `sharedSocket.off(evt)` stripping ALL listeners (WebSocket memory/event leak). Refactored to store named handler references in `msgListenersRef` and call `socket.off(evt, specificHandler)` on cleanup. Zero impact on notification or other socket listeners.
+- ✅ **M-5**: `ContractDetailsPage` unused `contractId` from `useParams()` discarded — cleaned up.
+
+**New Files**:
+- `kelmah-frontend/src/modules/jobs/pages/JobApplicationPage.jsx` (NEW — 230 lines)
+
+**Modified Files** (9 files):
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/search/pages/SearchPage.jsx`
+- `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+- `kelmah-frontend/src/modules/contracts/pages/CreateContractPage.jsx`
+- `kelmah-frontend/src/modules/contracts/pages/ContractDetailsPage.jsx`
+- `kelmah-frontend/src/modules/contracts/services/contractService.js`
+- `kelmah-frontend/src/modules/contracts/services/contractSlice.js`
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`
+
+**Build Verification**: ✅ Vite production build `built in 1m 15s`, 0 errors
+
+---
+
+
 
 **Scope**: Comprehensive routing audit, broken feature fixes, currency standardization verification, and quality hardening across critical frontend pages.
 

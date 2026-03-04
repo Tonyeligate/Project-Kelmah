@@ -33,7 +33,7 @@ const ForgotPasswordPage = () => {
     try {
       const res = await authService.forgotPassword(email);
       setStatus(
-        res.message || 'If that email exists, a reset link has been sent.',
+        'If that email exists, a reset link has been sent.',
       );
     } catch (err) {
       // AUD2-M07 FIX: Use generic error message to prevent email enumeration attacks.
@@ -157,6 +157,7 @@ const ForgotPasswordPage = () => {
             <Box sx={{ mb: 3 }}>
               <TextField
                 fullWidth
+                type="email"
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

@@ -2181,9 +2181,9 @@ const JobsPage = () => {
                                 gap: 0.5,
                               }}
                             >
-                              {job.skills.slice(0, 3).map((skill, index) => (
+                              {(job.skills || []).slice(0, 3).map((skill, index) => (
                                 <Chip
-                                  key={index}
+                                  key={skill}
                                   label={skill}
                                   size="small"
                                   sx={{
@@ -2317,7 +2317,9 @@ const JobsPage = () => {
                                 // Fallback: copy to clipboard
                                 navigator.clipboard.writeText(
                                   `${window.location.origin}/jobs/${job._id || job.id}`,
-                                );
+                                ).catch(() => {
+                                  // Clipboard API unavailable (HTTP or denied)
+                                });
                               }
                             }}
                             aria-label="Share job"

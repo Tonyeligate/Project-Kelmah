@@ -32,6 +32,7 @@ import {
   DialogContent,
   DialogActions,
   CircularProgress,
+  Skeleton,
   Alert,
   Snackbar,
 } from '@mui/material';
@@ -105,6 +106,7 @@ const EnhancedMessagingPage = () => {
     unreadCount,
     startTyping,
     stopTyping,
+    loadingConversations,
   } = useMessages();
 
   // Local state for UI
@@ -160,9 +162,11 @@ const EnhancedMessagingPage = () => {
   // Deep-link and initial load (runs once per URL change, not on every conversations update)
   useEffect(() => {
     if (!user) return;
+    // Wait until conversations have loaded before checking for existing ones
+    // This prevents a race condition where the list is empty and we create duplicate conversations
+    if (loadingConversations) return;
 
     setIsLoading(true);
-    // Allow context conversations to populate before deep-linking
     const timer = setTimeout(() => setIsLoading(false), 100);
 
     // Deep-link: /messages?recipient=<userId> or /messages?conversation=<id>
@@ -221,7 +225,7 @@ const EnhancedMessagingPage = () => {
     runDeepLink();
 
     return () => clearTimeout(timer);
-  }, [user, search, navigate, selectConversation]);
+  }, [user, search, navigate, selectConversation, loadingConversations]);
 
   useEffect(() => {
     try {
@@ -792,8 +796,8 @@ const EnhancedMessagingPage = () => {
           <Box textAlign="center">
             <Box
               sx={{
-                width: 120,
-                height: 120,
+                width: { xs: 96, sm: 120 },
+                height: { xs: 96, sm: 120 },
                 borderRadius: '50%',
                 background: alpha(theme.palette.primary.main, 0.08),
                 display: 'flex',
@@ -999,7 +1003,7 @@ const EnhancedMessagingPage = () => {
           }}
         >
           {/* ✅ MOBILE-AUDIT P3: removed AnimatePresence + motion.div from messages */}
-            {messages.map((message, index) => {
+            {(messages || []).map((message, index) => {
               const isOwn = message.sender === user?.id;
               const showAvatar =
                 !isOwn &&
@@ -1068,7 +1072,7 @@ const EnhancedMessagingPage = () => {
                           message.attachments.length > 0 && (
                             <Box sx={{ mt: message.text ? 1 : 0 }}>
                               {message.attachments.map((attachment, idx) => (
-                                <Box key={idx} sx={{ mb: 1 }}>
+                                <Box key={attachment.url || attachment.name || idx} sx={{ mb: 1 }}>
                                   {attachment.type === 'image' ? (
                                     <img
                                       src={attachment.url}
@@ -1174,7 +1178,7 @@ const EnhancedMessagingPage = () => {
               >
                 {selectedFiles.map((file, index) => (
                   <Paper
-                    key={index}
+                    key={file.name + '-' + file.size}
                     sx={{
                       p: 1,
                       borderRadius: 2,
@@ -1337,16 +1341,24 @@ const EnhancedMessagingPage = () => {
   // Loading state
   if (isLoading) {
     return (
-      <Box
-        sx={{
-          height: 'calc(100dvh - 64px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: 'background.default',
-        }}
-      >
-        <CircularProgress sx={{ color: 'primary.main' }} />
+      <Box sx={{ display: 'flex', height: 'calc(100dvh - 64px)' }}>
+        <Box sx={{ width: { xs: '100%', md: 360 }, borderRight: 1, borderColor: 'divider', p: 2 }}>
+          <Skeleton variant="text" width={120} height={32} sx={{ mb: 2 }} />
+          {[1,2,3,4,5].map(i => (
+            <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+              <Skeleton variant="circular" width={48} height={48} />
+              <Box sx={{ flex: 1 }}>
+                <Skeleton variant="text" width="60%" />
+                <Skeleton variant="text" width="80%" height={16} />
+              </Box>
+            </Box>
+          ))}
+        </Box>
+        <Box sx={{ flex: 1, display: { xs: 'none', md: 'flex' }, flexDirection: 'column', p: 3 }}>
+          <Skeleton variant="text" width={200} height={32} sx={{ mb: 3 }} />
+          <Box sx={{ flex: 1 }} />
+          <Skeleton variant="rounded" height={48} />
+        </Box>
       </Box>
     );
   }

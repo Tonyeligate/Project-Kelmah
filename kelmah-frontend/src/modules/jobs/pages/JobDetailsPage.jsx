@@ -588,7 +588,7 @@ const JobDetailsPage = () => {
 
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {skillLabels.map((skill, index) => (
-                        <SkillChip key={index} label={skill} />
+                        <SkillChip key={skill} label={skill} />
                       ))}
                     </Box>
                   </Box>
@@ -614,7 +614,7 @@ const JobDetailsPage = () => {
 
                     <Grid container spacing={2}>
                       {job.images.map((image, index) => (
-                        <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Grid item xs={12} sm={6} md={4} key={image.url || image || index}>
                           <Box
                             component="img"
                             src={image}

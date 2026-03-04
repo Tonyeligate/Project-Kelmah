@@ -26,17 +26,29 @@ import { currencyFormatter } from '@/modules/common/utils/formatters';
 
 const EscrowDetailsPage = () => {
   const { escrowId } = useParams();
-  const { escrows, paymentMethods, refresh } = usePayments();
+  const { escrows, paymentMethods, loading, refresh } = usePayments();
   const { showToast } = useNotifications();
-  const escrow = (escrows || []).find((e) => e.id === escrowId);
+  // Support both MongoDB _id (string) and normalized id fields
+  const escrow = (escrows || []).find(
+    (e) => (e.id ?? String(e._id)) === escrowId,
+  );
   const [openRelease, setOpenRelease] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState('');
+  const [releasing, setReleasing] = useState(false);
 
   useEffect(() => {
     if (paymentMethods && paymentMethods.length > 0) {
       setSelectedMethod(paymentMethods[0].id);
     }
   }, [paymentMethods]);
+
+  if (loading) {
+    return (
+      <Container sx={{ py: 4, display: 'flex', justifyContent: 'center' }}>
+        <Typography variant="body1" color="text.secondary">Loading escrow details…</Typography>
+      </Container>
+    );
+  }
 
   if (!escrow) {
     return (
@@ -200,8 +212,10 @@ const EscrowDetailsPage = () => {
           </Button>
           <Button
             onClick={async () => {
+              setReleasing(true);
               try {
-                await paymentService.releaseEscrow(escrow.id, {
+                const resolvedId = escrow.id ?? String(escrow._id);
+                await paymentService.releaseEscrow(resolvedId, {
                   paymentMethodId: selectedMethod,
                 });
                 showToast('Funds released successfully.', 'success');
@@ -210,14 +224,16 @@ const EscrowDetailsPage = () => {
                 if (import.meta.env.DEV) console.error('Release failed:', err);
                 showToast('Failed to release funds.', 'error');
               } finally {
+                setReleasing(false);
                 setOpenRelease(false);
               }
             }}
             variant="contained"
             color="secondary"
+            disabled={releasing}
             sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
           >
-            Confirm Release
+            {releasing ? 'Releasing…' : 'Confirm Release'}
           </Button>
         </DialogActions>
       </Dialog>

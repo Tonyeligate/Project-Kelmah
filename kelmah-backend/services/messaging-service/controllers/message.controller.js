@@ -43,8 +43,23 @@ exports.createMessage = async (req, res) => {
 
     const sender = req.user?._id || req.user?.id;
 
-    // Create the message
+    // Find or create conversation FIRST so we can link the message
+    let conversation = await Conversation.findOne({
+      participants: { $all: [sender, recipient] },
+    });
+
+    if (!conversation) {
+      conversation = new Conversation({
+        participants: [sender, recipient],
+        relatedJob,
+        relatedContract,
+      });
+      await conversation.save();
+    }
+
+    // Create the message with conversation reference
     const message = new Message({
+      conversation: conversation._id,
       // Enforce sender as the authenticated user for security
       sender: req.user?._id || req.user?.id,
       recipient,
@@ -64,19 +79,7 @@ exports.createMessage = async (req, res) => {
 
     await message.save();
 
-    // Update or create conversation
-    let conversation = await Conversation.findOne({
-      participants: { $all: [sender, recipient] },
-    });
-
-    if (!conversation) {
-      conversation = new Conversation({
-        participants: [sender, recipient],
-        relatedJob,
-        relatedContract,
-      });
-    }
-
+    // Update conversation's last message
     conversation.lastMessage = message._id;
     conversation.incrementUnreadCount(recipient);
     await conversation.save();
@@ -125,16 +128,9 @@ exports.getConversationMessages = async (req, res) => {
       return res.status(404).json({ message: "Conversation not found" });
     }
 
-    // Scope messages strictly to THIS conversation's participants only
-    // Both sender AND recipient must be participants of this conversation
-    const participants = conversation.participants.map(String);
+    // Scope messages strictly to THIS conversation by ID
     const baseQuery = {
-      sender: { $in: participants },
-      recipient: { $in: participants },
-      $or: [
-        { sender: userId },
-        { recipient: userId },
-      ],
+      conversation: conversation._id,
     };
     if (before) {
       baseQuery.createdAt = { $lt: new Date(before) };
@@ -147,11 +143,11 @@ exports.getConversationMessages = async (req, res) => {
       .populate("recipient", "firstName lastName name profilePicture")
       .lean();
 
-    // Mark unread messages in THIS conversation as read (scoped to participants)
+    // Mark unread messages in THIS conversation as read (scoped by conversation ID)
     await Message.updateMany(
       {
+        conversation: conversation._id,
         recipient: userId,
-        sender: { $in: participants },
         "readStatus.isRead": false,
       },
       {
