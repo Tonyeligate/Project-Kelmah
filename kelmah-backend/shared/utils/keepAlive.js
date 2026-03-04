@@ -13,8 +13,8 @@
 const axios = require('axios');
 
 // Render free tier spins down after ~15 min of inactivity.
-// Ping every 10 minutes to stay well inside the window.
-const DEFAULT_INTERVAL_MS = parseInt(process.env.KEEP_ALIVE_INTERVAL || '600000', 10); // 10 min
+// Ping every 14 minutes to stay inside the window.
+const DEFAULT_INTERVAL_MS = parseInt(process.env.KEEP_ALIVE_INTERVAL || '840000', 10); // 14 min
 const PING_TIMEOUT_MS = 25000; // 25s – Render cold starts can take 20s+
 const INITIAL_DELAY_MS = 15000; // 15s – let the service finish booting first
 
@@ -102,24 +102,18 @@ class KeepAliveManager {
       selfUrl: this.selfUrl || '(none – set <SERVICE>_URL env var)'
     });
 
-    // --- Self-ping: runs every 8 minutes to keep THIS service alive ---
+    // --- Self-ping: runs every 14 minutes to keep THIS service alive ---
     if (hasSelf) {
-      const selfInterval = Math.min(this.interval, 8 * 60 * 1000);
+      const selfInterval = Math.min(this.interval, 14 * 60 * 1000);
       this.selfTimer = setInterval(() => this._pingSelf(), selfInterval);
       // First self-ping after boot
       setTimeout(() => this._pingSelf(), INITIAL_DELAY_MS);
     }
 
-    // --- Sibling pings: stagger the first run, then repeat ---
-    if (siblingCount > 0) {
-      // Stagger initial ping by 20-40s so not all services hammer at once
-      const jitter = INITIAL_DELAY_MS + Math.floor(Math.random() * 20000);
-      setTimeout(() => this.pingAllServices(), jitter);
+    // --- Sibling pings disabled: each service self-pings only ---
+    // Sibling pinging moved to each service’s own self-ping to avoid
+    // relying on the API Gateway or any central coordinator.
 
-      this.timer = setInterval(() => {
-        this.pingAllServices();
-      }, this.interval);
-    }
   }
 
   stop() {

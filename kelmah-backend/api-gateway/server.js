@@ -1386,7 +1386,8 @@ const startServer = async () => {
   try {
     // Initialize service discovery first
     await initializeServices();
-    keepAliveManager.start();
+    // Disabled: each microservice self-pings to stay alive.
+    // keepAliveManager.start();
 
     // Start periodic re-discovery so gateway picks up late-starting services
     startPeriodicRediscovery();

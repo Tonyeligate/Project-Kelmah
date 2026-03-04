@@ -94,48 +94,13 @@ const checkServiceHealth = async (url, timeout = 30000) => {
 
 /**
  * Resolve Service URL
- * Intelligently chooses between local and cloud URLs
+ * In production: uses cloud URL directly (no health checking — services may be sleeping).
+ * In development: uses localhost.
  */
 const resolveServiceUrl = async (serviceName) => {
   const config = SERVICE_CONFIG[serviceName];
   if (!config) {
     throw new Error(`Unknown service: ${serviceName}`);
-  }
-
-  const environment = detectEnvironment();
-  console.log(`🔍 Service Discovery: ${config.name} - Environment: ${environment}`);
-
-  // Flexible URL selection for production - both local and cloud are valid options
-  let urlsToTry;
-
-  const fallbackCloudUrls = Array.isArray(config.cloudFallbacks)
-    ? config.cloudFallbacks.filter(Boolean)
-    : [];
-
-  const unique = (options) => {
-    const seen = new Set();
-    return options.filter((option) => {
-      if (!option?.url || seen.has(option.url)) return false;
-      seen.add(option.url);
-      return true;
-    });
-  };
-
-  if (environment === 'production') {
-    // In production, try both cloud and local - use whichever is available
-    // This allows local testing and cloud deployment flexibility
-    urlsToTry = unique([
-      { url: config.cloud, type: 'cloud' },
-      ...fallbackCloudUrls.map((url) => ({ url, type: 'cloud-fallback' })),
-      { url: config.local, type: 'local' }
-    ]);
-  } else {
-    // In development, prefer local, fallback to cloud
-    urlsToTry = unique([
-      { url: config.local, type: 'local' },
-      { url: config.cloud, type: 'cloud' },
-      ...fallbackCloudUrls.map((url) => ({ url, type: 'cloud-fallback' }))
-    ]);
   }
 
   // Manual override via environment variables (highest priority)
@@ -145,28 +110,23 @@ const resolveServiceUrl = async (serviceName) => {
     return manualUrl;
   }
 
-  // Test URLs in order and return the first healthy one
-  for (const { url, type } of urlsToTry) {
-    console.log(`🩺 Testing ${config.name} ${type} URL: ${url}`);
-    const isHealthy = await checkServiceHealth(url);
+  const environment = detectEnvironment();
+  console.log(`🔍 Service Discovery: ${config.name} - Environment: ${environment}`);
 
-    if (isHealthy) {
-      console.log(`✅ ${config.name} using ${type} URL: ${url}`);
-      return url;
-    }
-  }
-
-  // If no URLs are healthy, prefer cloud URLs over localhost in production
-  let fallbackUrl;
   if (environment === 'production') {
-    // In production, never fall back to localhost — use cloud fallback URL
-    const cloudEntry = urlsToTry.find(u => u.type === 'cloud' || u.type === 'cloud-fallback');
-    fallbackUrl = cloudEntry?.url || urlsToTry[0]?.url;
-  } else {
-    fallbackUrl = urlsToTry[0]?.url;
+    // In production, use cloud URL directly — no health checks.
+    // On Render free tier, services may be sleeping; health checks would fail
+    // and cause the gateway to fall back to localhost which is unreachable.
+    const cloudUrl = config.cloud
+      || (Array.isArray(config.cloudFallbacks) && config.cloudFallbacks[0])
+      || config.local;
+    console.log(`✅ ${config.name} using cloud URL: ${cloudUrl}`);
+    return cloudUrl;
   }
-  console.log(`❌ ${config.name} no healthy URLs found, using fallback: ${fallbackUrl}`);
-  return fallbackUrl;
+
+  // In development, use localhost
+  console.log(`✅ ${config.name} using local URL: ${config.local}`);
+  return config.local;
 };
 
 /**
