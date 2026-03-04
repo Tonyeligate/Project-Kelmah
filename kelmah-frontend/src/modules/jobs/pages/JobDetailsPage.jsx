@@ -77,7 +77,7 @@ const SkillChip = styled(Chip)(({ theme }) => ({
     theme.palette.mode === 'dark'
       ? 'rgba(255, 215, 0, 0.2)'
       : 'rgba(212, 175, 55, 0.12)',
-  color: theme.palette.mode === 'dark' ? '#FFD700' : '#8B7500',
+  color: theme.palette.mode === 'dark' ? theme.palette.secondary.main : '#8B7500',
   borderColor:
     theme.palette.mode === 'dark'
       ? 'rgba(255, 215, 0, 0.5)'
@@ -497,7 +497,7 @@ const JobDetailsPage = () => {
                         String(job?.status || '').toLowerCase() === 'open'
                           ? 'rgba(76, 175, 80, 0.2)'
                           : 'rgba(255, 152, 0, 0.2)',
-                      color: String(job?.status || '').toLowerCase() === 'open' ? '#4caf50' : '#ff9800',
+                      color: String(job?.status || '').toLowerCase() === 'open' ? 'success.main' : 'warning.main',
                       fontWeight: 'bold',
                     }}
                   />

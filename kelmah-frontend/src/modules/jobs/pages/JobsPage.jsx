@@ -337,7 +337,7 @@ const categoryData = [
   {
     name: 'Electrical',
     icon: <ElectricalIcon />,
-    color: '#FFD700',
+    color: 'secondary.main',
     description: 'Wiring, installations & power systems',
   },
   {
@@ -757,7 +757,7 @@ const JobsPage = () => {
   // Deduplicate jobs by ID (server handles filtering; no redundant client-side filter)
   const uniqueJobs = useMemo(() => {
     const deduped = Array.from(
-      new Map(jobs.map((job) => [job.id, job])).values(),
+      new Map(jobs.map((job) => [job.id || job._id, job])).values(),
     );
 
     // Client-side sort when server doesn't support sort param yet
@@ -1468,7 +1468,7 @@ const JobsPage = () => {
                       >
                         <Box
                           sx={{
-                            color: isActive ? '#FFD700' : cat.color,
+                            color: isActive ? 'secondary.main' : cat.color,
                             fontSize: { xs: 28, sm: 32 },
                             display: 'flex',
                             alignItems: 'center',
@@ -1481,7 +1481,7 @@ const JobsPage = () => {
                         <Typography
                           variant="caption"
                           sx={{
-                            color: isActive ? '#FFD700' : 'rgba(255,255,255,0.8)',
+                            color: isActive ? 'secondary.main' : 'rgba(255,255,255,0.8)',
                             fontWeight: isActive ? 700 : 500,
                             fontSize: { xs: '0.65rem', sm: '0.75rem' },
                             lineHeight: 1.2,
@@ -1840,7 +1840,7 @@ const JobsPage = () => {
               {!loading &&
                 !error &&
                 uniqueJobs.map((job, index) => (
-                  <Grid item xs={12} sm={6} md={6} lg={4} xl={3} key={job.id}>
+                  <Grid item xs={12} sm={6} md={6} lg={4} xl={3} key={job.id || job._id}>
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -1979,7 +1979,7 @@ const JobsPage = () => {
                                     <Verified
                                       sx={{
                                         fontSize: 12,
-                                        color: '#4CAF50',
+                                        color: 'success.main',
                                         ml: 0.5,
                                       }}
                                     />
@@ -2018,7 +2018,7 @@ const JobsPage = () => {
                                     sx={{
                                       bgcolor: job.urgent
                                         ? '#ff4444'
-                                        : '#ff9800',
+                                        : 'warning.main',
                                       color: 'white',
                                       fontWeight: 'bold',
                                       fontSize: '0.7rem',
@@ -2048,8 +2048,8 @@ const JobsPage = () => {
                                     size="small"
                                     sx={{
                                       bgcolor: 'rgba(76,175,80,0.2)',
-                                      color: '#4CAF50',
-                                      border: '1px solid #4CAF50',
+                                      color: 'success.main',
+                                      border: `1px solid ${theme.palette.success.main}`,
                                       fontSize: '0.7rem',
                                       cursor: 'help',
                                     }}
@@ -2218,13 +2218,13 @@ const JobsPage = () => {
                               variant="caption"
                               sx={{ color: 'text.secondary' }}
                             >
-                              {job.postedDate ? `Posted ${formatDistanceToNow(new Date(job.postedDate), { addSuffix: true })}` : 'Recently posted'}
+                              {job.postedDate ? (() => { try { return `Posted ${formatDistanceToNow(new Date(job.postedDate), { addSuffix: true })}`; } catch { return 'Recently posted'; } })() : 'Recently posted'}
                             </Typography>
                             <Typography
                               variant="caption"
                               sx={{ color: '#ff6b6b' }}
                             >
-                              {job.deadline ? `Apply by ${format(new Date(job.deadline), 'MMM dd')}` : 'Open'}
+                              {job.deadline ? (() => { try { return `Apply by ${format(new Date(job.deadline), 'MMM dd')}`; } catch { return 'Open'; } })() : 'Open'}
                             </Typography>
                           </Box>
                         </CardContent>
@@ -2292,7 +2292,7 @@ const JobsPage = () => {
                             }}
                             aria-label={savedJobIds.has(job.id || job._id) ? 'Remove saved job' : 'Save job'}
                             sx={{
-                              color: savedJobIds.has(job.id || job._id) ? '#FFD700' : '#D4AF37',
+                              color: savedJobIds.has(job.id || job._id) ? 'secondary.main' : 'secondary.dark',
                               minWidth: { xs: '44px', sm: '40px' },
                               minHeight: { xs: '44px', sm: '40px' },
                               '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },

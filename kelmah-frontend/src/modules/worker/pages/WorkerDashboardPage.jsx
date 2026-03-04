@@ -341,17 +341,17 @@ const WorkerDashboardPage = () => {
 
   // Chart data for Earnings Overview - derived from actual jobs/applications state
   const earningsData = useMemo(() => [
-    { name: 'This Month', value: earningsSummary.thisMonth, color: '#4CAF50' },
-    { name: 'Last Month', value: earningsSummary.lastMonth, color: '#2196F3' },
-    { name: 'Pending', value: earningsSummary.pending, color: '#FF9800' },
+    { name: 'This Month', value: earningsSummary.thisMonth, color: theme.palette.success.main },
+    { name: 'Last Month', value: earningsSummary.lastMonth, color: theme.palette.info.main },
+    { name: 'Pending', value: earningsSummary.pending, color: theme.palette.warning.main },
     { name: 'Withdrawn', value: earningsSummary.withdrawn, color: '#9C27B0' },
   ], [earningsSummary]);
 
   // Chart data for Applications Overview - using real data
   const applicationsData = useMemo(() => [
-    { name: 'Accepted', value: acceptedApplications.length || 0, color: '#4CAF50' },
-    { name: 'Pending', value: pendingApplications.length || 0, color: '#FF9800' },
-    { name: 'Rejected', value: rejectedApplications.length || 0, color: '#F44336' },
+    { name: 'Accepted', value: acceptedApplications.length || 0, color: theme.palette.success.main },
+    { name: 'Pending', value: pendingApplications.length || 0, color: theme.palette.warning.main },
+    { name: 'Rejected', value: rejectedApplications.length || 0, color: theme.palette.error.main },
   ], [acceptedApplications, pendingApplications, rejectedApplications]);
 
   // Metric cards configuration - LC Portal style with tooltips

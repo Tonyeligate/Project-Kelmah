@@ -27,7 +27,7 @@ const WorkerProfilePage = () => {
   if (!workerId) {
     return (
       <Box sx={{ p: 4, textAlign: 'center', minHeight: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <PersonSearchIcon sx={{ fontSize: 64, color: '#D4AF37', mb: 2 }} />
+        <PersonSearchIcon sx={{ fontSize: 64, color: 'secondary.dark', mb: 2 }} />
         <Typography variant="h6" gutterBottom>Worker profile not found</Typography>
         <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
           The worker you&apos;re looking for may have moved.
@@ -35,7 +35,7 @@ const WorkerProfilePage = () => {
         <Button
           variant="contained"
           onClick={() => navigate('/search')}
-          sx={{ bgcolor: '#D4AF37', color: '#000', '&:hover': { bgcolor: '#B8941F' } }}
+          sx={{ bgcolor: 'secondary.dark', color: 'secondary.contrastText', '&:hover': { bgcolor: 'secondary.dark' } }}
         >
           Find Workers
         </Button>

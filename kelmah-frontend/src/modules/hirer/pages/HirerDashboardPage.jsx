@@ -725,8 +725,8 @@ const HirerDashboardPage = () => {
                       />
                       <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                         {[
-                          { name: 'Completed', fill: '#4CAF50' },
-                          { name: 'Active', fill: '#D4AF37' },
+                          { name: 'Completed', fill: theme.palette.success.main },
+                          { name: 'Active', fill: theme.palette.secondary.dark },
                         ].map((entry, index) => (
                           <RechartsCell key={`bar-${index}`} fill={entry.fill} />
                         ))}
@@ -762,9 +762,9 @@ const HirerDashboardPage = () => {
               </Typography>
               {(() => {
                 const appDonutData = [
-                  { name: 'Completed', value: summaryData.completedJobs, color: '#4CAF50' },
-                  { name: 'Submitted', value: summaryData.pendingProposals, color: '#2196F3' },
-                  { name: 'Pending', value: summaryData.pendingPayments, color: '#F44336' },
+                  { name: 'Completed', value: summaryData.completedJobs, color: theme.palette.success.main },
+                  { name: 'Submitted', value: summaryData.pendingProposals, color: theme.palette.info.main },
+                  { name: 'Pending', value: summaryData.pendingPayments, color: theme.palette.error.main },
                 ].filter(d => d.value > 0);
                 const appTotal = summaryData.activeJobs + summaryData.completedJobs;
 
@@ -773,15 +773,15 @@ const HirerDashboardPage = () => {
                     {/* Legend */}
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, justifyContent: 'center', pr: { xs: 0, sm: 4 }, pb: { xs: 2, sm: 0 } }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#4CAF50' }} />
+                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'success.main' }} />
                         <Typography variant="body2">Completed: {summaryData.completedJobs}</Typography>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#2196F3' }} />
+                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'info.main' }} />
                         <Typography variant="body2">Submitted: {summaryData.pendingProposals}</Typography>
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#F44336' }} />
+                        <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'error.main' }} />
                         <Typography variant="body2">Pending: {summaryData.pendingPayments}</Typography>
                       </Box>
                     </Box>

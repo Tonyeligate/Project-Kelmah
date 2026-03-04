@@ -63,7 +63,7 @@ import {
 } from '@mui/icons-material';
 // ✅ MOBILE-AUDIT P3: framer-motion import removed — all motion.div wrappers replaced with plain divs
 import { formatDistanceToNow, format } from 'date-fns';
-import { safeFormatDate } from '@/modules/common/utils/formatters';
+import { safeFormatDate, safeFormatRelative } from '@/modules/common/utils/formatters';
 import { useAuth } from '../../auth/hooks/useAuth';
 import reviewService from '../services/reviewService';
 import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
@@ -304,7 +304,7 @@ const EnhancedReviewsPage = () => {
       <Typography
         variant="h6"
         sx={{
-          color: '#FFD700',
+          color: 'secondary.main',
           fontWeight: 700,
           mb: 3,
           display: 'flex',
@@ -323,7 +323,7 @@ const EnhancedReviewsPage = () => {
             <Typography
               variant="h2"
               sx={{
-                color: '#FFD700',
+                color: 'secondary.main',
                 fontWeight: 800,
                 fontSize: { xs: '2.5rem', sm: '3rem' },
                 mb: 1,
@@ -339,7 +339,7 @@ const EnhancedReviewsPage = () => {
               sx={{
                 mb: 2,
                 '& .MuiRating-iconFilled': {
-                  color: '#FFD700',
+                  color: 'secondary.main',
                 },
               }}
             />
@@ -365,7 +365,7 @@ const EnhancedReviewsPage = () => {
                 >
                   {rating}
                 </Typography>
-                <StarIcon sx={{ color: '#FFD700', fontSize: 16 }} />
+                <StarIcon sx={{ color: 'secondary.main', fontSize: 16 }} />
                 <LinearProgress
                   variant="determinate"
                   value={
@@ -381,7 +381,7 @@ const EnhancedReviewsPage = () => {
                     borderRadius: 4,
                     backgroundColor: (t) => alpha(t.palette.text.primary, 0.1),
                     '& .MuiLinearProgress-bar': {
-                      backgroundColor: '#FFD700',
+                      backgroundColor: 'secondary.main',
                       borderRadius: 4,
                     },
                   }}
@@ -402,7 +402,7 @@ const EnhancedReviewsPage = () => {
           <Stack spacing={2}>
             <Typography
               variant="subtitle1"
-              sx={{ color: '#FFD700', fontWeight: 600 }}
+              sx={{ color: 'secondary.main', fontWeight: 600 }}
             >
               Category Breakdown
             </Typography>
@@ -428,14 +428,14 @@ const EnhancedReviewsPage = () => {
                       size="small"
                       sx={{
                         '& .MuiRating-iconFilled': {
-                          color: '#FFD700',
+                          color: 'secondary.main',
                         },
                       }}
                     />
                     <Typography
                       variant="body2"
                       sx={{
-                        color: '#FFD700',
+                        color: 'secondary.main',
                         fontWeight: 600,
                         minWidth: '30px',
                       }}
@@ -460,7 +460,7 @@ const EnhancedReviewsPage = () => {
             <Stack direction="row" alignItems="center" spacing={1}>
               <Typography
                 variant="h6"
-                sx={{ color: '#4CAF50', fontWeight: 700 }}
+                sx={{ color: 'success.main', fontWeight: 700 }}
               >
                 {reviews.filter(r => {
                   const d = new Date(r.createdAt);
@@ -468,7 +468,7 @@ const EnhancedReviewsPage = () => {
                   return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
                 }).length}
               </Typography>
-              <TrendingUpIcon sx={{ color: '#4CAF50', fontSize: 20 }} />
+              <TrendingUpIcon sx={{ color: 'success.main', fontSize: 20 }} />
             </Stack>
           </Box>
           <Box>
@@ -492,7 +492,7 @@ const EnhancedReviewsPage = () => {
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               Response Rate
             </Typography>
-            <Typography variant="h6" sx={{ color: '#FFD700', fontWeight: 700 }}>
+            <Typography variant="h6" sx={{ color: 'secondary.main', fontWeight: 700 }}>
               {reviews.length > 0
                 ? `${Math.round((reviews.filter(r => r.hasReply).length / reviews.length) * 100)}%`
                 : '—'}
@@ -514,9 +514,9 @@ const EnhancedReviewsPage = () => {
           borderColor: 'divider',
           borderTop: `3px solid ${
             review.rating >= 4
-              ? '#4CAF50'
+              ? theme.palette.success.main
               : review.rating >= 3
-                ? '#FFD700'
+                ? theme.palette.secondary.main
                 : '#FF5722'
           }`,
           borderRadius: 2,
@@ -538,8 +538,8 @@ const EnhancedReviewsPage = () => {
                 sx={{
                   width: 50,
                   height: 50,
-                  bgcolor: alpha('#FFD700', 0.2),
-                  color: '#FFD700',
+                  bgcolor: alpha(theme.palette.secondary.main, 0.2),
+                  color: 'secondary.main',
                 }}
               >
                 {review.reviewer?.name?.charAt(0) || '?'}
@@ -563,7 +563,7 @@ const EnhancedReviewsPage = () => {
                   </Typography>
                   {review.reviewer?.isVerified && (
                     <Tooltip title="Verified reviewer">
-                      <VerifiedIcon sx={{ color: '#2196F3', fontSize: 20 }} />
+                      <VerifiedIcon sx={{ color: 'info.main', fontSize: 20 }} />
                     </Tooltip>
                   )}
                 </Stack>
@@ -574,7 +574,7 @@ const EnhancedReviewsPage = () => {
                     size="small"
                     sx={{
                       '& .MuiRating-iconFilled': {
-                        color: '#FFD700',
+                        color: 'secondary.main',
                       },
                     }}
                   />
@@ -582,9 +582,7 @@ const EnhancedReviewsPage = () => {
                     variant="caption"
                     sx={{ color: 'text.disabled' }}
                   >
-                    {formatDistanceToNow(new Date(review.createdAt), {
-                      addSuffix: true,
-                    })}
+                    {safeFormatRelative(review.createdAt)}
                   </Typography>
                 </Stack>
               </Box>
@@ -618,11 +616,11 @@ const EnhancedReviewsPage = () => {
             }}
           >
             <Stack direction="row" alignItems="center" spacing={2}>
-              <WorkIcon sx={{ color: '#FFD700' }} />
+              <WorkIcon sx={{ color: 'secondary.main' }} />
               <Box sx={{ flex: 1 }}>
                 <Typography
                   variant="body2"
-                  sx={{ color: '#FFD700', fontWeight: 600 }}
+                  sx={{ color: 'secondary.main', fontWeight: 600 }}
                 >
                   {review.job.title}
                 </Typography>
@@ -641,7 +639,7 @@ const EnhancedReviewsPage = () => {
                   </Typography>
                   <Typography
                     variant="caption"
-                    sx={{ color: '#4CAF50', fontWeight: 600 }}
+                    sx={{ color: 'success.main', fontWeight: 600 }}
                   >
                     {typeof review.job.budget === 'number'
                       ? `GH₵${review.job.budget.toLocaleString()}`
@@ -688,8 +686,8 @@ const EnhancedReviewsPage = () => {
                 label={category}
                 size="small"
                 sx={{
-                  backgroundColor: alpha('#FFD700', 0.2),
-                  color: '#FFD700',
+                  backgroundColor: alpha(theme.palette.secondary.main, 0.2),
+                  color: 'secondary.main',
                   fontSize: '0.75rem',
                 }}
               />
@@ -705,7 +703,7 @@ const EnhancedReviewsPage = () => {
                 background: 'rgba(255,255,255,0.03)',
                 border: '1px solid rgba(255,255,255,0.1)',
                 borderRadius: 2,
-                borderLeft: '3px solid #FFD700',
+                borderLeft: `3px solid ${theme.palette.secondary.main}`,
               }}
             >
               <Stack
@@ -720,15 +718,15 @@ const EnhancedReviewsPage = () => {
                   sx={{
                     width: 24,
                     height: 24,
-                    bgcolor: alpha('#FFD700', 0.2),
-                    color: '#FFD700',
+                    bgcolor: alpha(theme.palette.secondary.main, 0.2),
+                    color: 'secondary.main',
                   }}
                 >
                   {user?.firstName?.charAt(0)}
                 </Avatar>
                 <Typography
                   variant="caption"
-                  sx={{ color: '#FFD700', fontWeight: 600 }}
+                  sx={{ color: 'secondary.main', fontWeight: 600 }}
                 >
                   Your Reply
                 </Typography>
@@ -736,9 +734,7 @@ const EnhancedReviewsPage = () => {
                   variant="caption"
                   sx={{ color: 'text.disabled' }}
                 >
-                  {formatDistanceToNow(new Date(review.reply.createdAt), {
-                    addSuffix: true,
-                  })}
+                  {safeFormatRelative(review.reply.createdAt)}
                 </Typography>
               </Stack>
               <Typography
@@ -766,8 +762,8 @@ const EnhancedReviewsPage = () => {
                 sx={{
                   color: 'text.secondary',
                   '&:hover': {
-                    color: '#4CAF50',
-                    backgroundColor: alpha('#4CAF50', 0.1),
+                    color: 'success.main',
+                    backgroundColor: alpha(theme.palette.success.main, 0.1),
                   },
                 }}
               >
@@ -780,8 +776,8 @@ const EnhancedReviewsPage = () => {
                 sx={{
                   color: 'text.secondary',
                   '&:hover': {
-                    color: '#F44336',
-                    backgroundColor: alpha('#F44336', 0.1),
+                    color: 'error.main',
+                    backgroundColor: alpha(theme.palette.error.main, 0.1),
                   },
                 }}
               >
@@ -798,9 +794,9 @@ const EnhancedReviewsPage = () => {
                   setReplyDialog(true);
                 }}
                 sx={{
-                  color: '#FFD700',
+                  color: 'secondary.main',
                   '&:hover': {
-                    backgroundColor: alpha('#FFD700', 0.1),
+                    backgroundColor: alpha(theme.palette.secondary.main, 0.1),
                   },
                 }}
               >
@@ -861,7 +857,7 @@ const EnhancedReviewsPage = () => {
             <Typography
               variant="h4"
               sx={{
-                color: '#FFD700',
+                color: 'secondary.main',
                 fontWeight: 800,
                 fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
                 mb: 0.5,
@@ -884,16 +880,16 @@ const EnhancedReviewsPage = () => {
             onClick={() => loadReviews()}
             aria-label="Refresh reviews"
             sx={{
-              background: alpha('#FFD700', 0.1),
+              background: alpha(theme.palette.secondary.main, 0.1),
               border: '1px solid rgba(255,215,0,0.3)',
               minWidth: 44,
               minHeight: 44,
               '&:hover': {
-                background: alpha('#FFD700', 0.2),
+                background: alpha(theme.palette.secondary.main, 0.2),
               },
             }}
           >
-            <RefreshIcon sx={{ color: '#FFD700' }} />
+            <RefreshIcon sx={{ color: 'secondary.main' }} />
           </IconButton>
         </Stack>
       </Box>
@@ -927,11 +923,11 @@ const EnhancedReviewsPage = () => {
               fontWeight: 600,
               minWidth: { xs: 'auto', md: 120 },
               '&.Mui-selected': {
-                color: '#FFD700',
+                color: 'secondary.main',
               },
             },
             '& .MuiTabs-indicator': {
-              backgroundColor: '#FFD700',
+              backgroundColor: 'secondary.main',
             },
           }}
         >
@@ -981,7 +977,7 @@ const EnhancedReviewsPage = () => {
                       borderColor: 'rgba(255,215,0,0.5)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#FFD700',
+                      borderColor: 'secondary.main',
                     },
                   },
                   '& .MuiInputBase-input': {
@@ -1255,7 +1251,7 @@ const EnhancedReviewsPage = () => {
                   size="small"
                   sx={{
                     '& .MuiRating-iconFilled': {
-                      color: '#FFD700',
+                      color: 'secondary.main',
                     },
                   }}
                 />
@@ -1296,7 +1292,7 @@ const EnhancedReviewsPage = () => {
                   borderColor: 'rgba(255,215,0,0.5)',
                 },
                 '&.Mui-focused fieldset': {
-                  borderColor: '#FFD700',
+                  borderColor: 'secondary.main',
                 },
               },
               '& .MuiInputBase-input': {

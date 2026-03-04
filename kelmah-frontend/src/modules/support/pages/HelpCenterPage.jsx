@@ -15,6 +15,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   useTheme,
+  alpha,
 } from '@mui/material';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import LiveHelpIcon from '@mui/icons-material/LiveHelp';
@@ -183,13 +184,13 @@ const HelpCenterPage = () => {
           theme.palette.mode === 'dark' ? BRAND_COLORS.gold : '#2e7d32',
         bg:
           theme.palette.mode === 'dark'
-            ? 'rgba(255,215,0,0.12)'
+            ? alpha(theme.palette.secondary.main, 0.12)
             : 'rgba(46,125,50,0.12)',
       },
       cold: {
         label: 'Warming Up',
         textColor: '#ef6c00',
-        bg: 'rgba(255,152,0,0.15)',
+        bg: alpha(theme.palette.warning.main, 0.15),
       },
       error: {
         label: 'Service Disruption',
