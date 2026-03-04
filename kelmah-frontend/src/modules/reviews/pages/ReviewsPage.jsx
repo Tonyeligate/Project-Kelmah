@@ -86,6 +86,7 @@ const EnhancedReviewsPage = () => {
   const [activeTab, setActiveTab] = useState(0); // Fix: Added missing activeTab state
   const [reviewStats, setReviewStats] = useState({}); // Fix: Added missing reviewStats state
   const [replyDialog, setReplyDialog] = useState(false); // Fix: Added missing replyDialog state
+  const [replySubmitting, setReplySubmitting] = useState(false);
   const [replyText, setReplyText] = useState(''); // Fix: Added missing replyText state
   const [selectedReview, setSelectedReview] = useState(null); // Fix: Added missing selectedReview state
   const [filterMenuAnchor, setFilterMenuAnchor] = useState(null); // Fix: Added missing filterMenuAnchor state
@@ -227,15 +228,15 @@ const EnhancedReviewsPage = () => {
   }, [reviews, searchQuery, selectedFilter, selectedSort]);
 
   const handleReply = async () => {
-    if (!replyText.trim() || !selectedReview) return;
-
+    if (!replyText.trim() || !selectedReview || replySubmitting) return;
+    setReplySubmitting(true);
     try {
-      await reviewService.addWorkerResponse(selectedReview.id, replyText.trim());
+      await reviewService.addWorkerResponse(selectedReview.id || selectedReview._id, replyText.trim());
 
       // Update review with reply
       setReviews((prev) =>
         prev.map((review) =>
-          review.id === selectedReview.id
+          (review.id || review._id) === (selectedReview.id || selectedReview._id)
             ? {
                 ...review,
                 hasReply: true,
@@ -255,6 +256,8 @@ const EnhancedReviewsPage = () => {
     } catch (error) {
       if (import.meta.env.DEV) console.error('Failed to post reply:', error);
       showFeedback('Failed to post reply', 'error');
+    } finally {
+      setReplySubmitting(false);
     }
   };
 
@@ -640,9 +643,9 @@ const EnhancedReviewsPage = () => {
                     variant="caption"
                     sx={{ color: 'success.main', fontWeight: 600 }}
                   >
-                    {typeof review.job.budget === 'number'
+                    {typeof review.job?.budget === 'number'
                       ? `GH₵${review.job.budget.toLocaleString()}`
-                      : review.job.budget || '—'}
+                      : review.job?.budget || '—'}
                   </Typography>
                 </Stack>
               </Box>
@@ -1316,7 +1319,7 @@ const EnhancedReviewsPage = () => {
           </Button>
           <Button
             onClick={handleReply}
-            disabled={!replyText.trim()}
+            disabled={!replyText.trim() || replySubmitting}
             sx={{
               background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
               color: '#000',

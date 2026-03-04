@@ -29,6 +29,10 @@
 - ✅ `JobManagementPage.jsx`
   - Fixed remaining list keying issues (`key={job.id}` → `key={job.id || job._id}`) for mobile and desktop job rows.
   - Prevents unstable rendering and action targeting when jobs are returned with `_id` only.
+- ✅ `SearchResults.jsx` + `JobResultsSection.jsx` + `SavedJobs.jsx`
+  - Applied `_id`/`id` normalization for card keys and navigate/apply/bookmark paths.
+  - Eliminates broken detail/apply links in mixed payload scenarios.
+  - Improves consistency of click behavior across search and saved-jobs surfaces.
 - ✅ `migrate-job-visibility.js`
   - Removed hardcoded Mongo URI.
   - Added `.env` loading + optional CLI `--uri` support.
@@ -47,6 +51,9 @@
 - `kelmah-frontend/src/modules/worker/pages/JobSearchPage.jsx`
 - `kelmah-frontend/src/modules/jobs/hooks/useJobsQuery.js`
 - `kelmah-frontend/src/modules/hirer/pages/JobManagementPage.jsx`
+- `kelmah-frontend/src/modules/search/components/results/SearchResults.jsx`
+- `kelmah-frontend/src/modules/jobs/components/JobResultsSection.jsx`
+- `kelmah-frontend/src/modules/jobs/components/common/SavedJobs.jsx`
 - `kelmah-backend/scripts/migrate-job-visibility.js`
 - `kelmah-backend/scripts/migrate-message-conversation-links.js` (new)
 - `spec-kit/STATUS_LOG.md`

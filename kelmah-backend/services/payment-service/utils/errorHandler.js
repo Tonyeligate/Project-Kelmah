@@ -12,14 +12,12 @@ exports.handleError = (res, error) => {
   if (error.name === "CastError") {
     return res.status(400).json({
       message: "Invalid ID format",
-      error: error.message,
     });
   }
 
   if (error.code === 11000) {
     return res.status(400).json({
       message: "Duplicate entry",
-      error: error.message,
     });
   }
 
@@ -27,31 +25,25 @@ exports.handleError = (res, error) => {
   if (error.type === "StripeCardError") {
     return res.status(400).json({
       message: "Card error",
-      error: error.message,
     });
   }
 
   if (error.type === "StripeInvalidRequestError") {
     return res.status(400).json({
       message: "Invalid request",
-      error: error.message,
     });
   }
 
   if (error.type === "PayPalError") {
     return res.status(400).json({
       message: "PayPal error",
-      error: error.message,
     });
   }
 
   // Default error response
   res.status(500).json({
     message: "Internal Server Error",
-    error:
-      process.env.NODE_ENV === "development"
-        ? error.message
-        : "Something went wrong",
+    error: "Something went wrong",
   });
 };
 

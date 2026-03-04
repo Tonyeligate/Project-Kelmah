@@ -318,7 +318,7 @@ if (keepAliveManager) {
         data: results,
       });
     } catch (error) {
-      res.status(500).json({ success: false, error: error.message });
+      res.status(500).json({ success: false, error: "Keep-alive trigger failed" });
     }
   });
 }

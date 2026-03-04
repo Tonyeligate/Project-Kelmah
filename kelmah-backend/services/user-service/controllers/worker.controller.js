@@ -1309,7 +1309,7 @@ class WorkerController {
       console.error('❌ Error in getAllWorkers:', error);
       return res.status(500).json({
         success: false,
-        message: error.message
+        message: 'Failed to fetch workers'
       });
     }
   }
@@ -2221,7 +2221,6 @@ class WorkerController {
         });
         fallback.data.metadata = {
           ...(fallback.data.metadata || {}),
-          error: error.message,
           source: 'user-service-fallback',
           circuitBreaker: getCircuitBreakerSnapshot(),
         };

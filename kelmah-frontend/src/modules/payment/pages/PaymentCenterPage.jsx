@@ -114,7 +114,7 @@ const TransactionHistory = ({ transactions }) => (
     </Typography>
     <List>
       {(transactions || []).slice(0, 5).map((tx, idx) => (
-        <React.Fragment key={tx.id}>
+        <React.Fragment key={tx.id || tx._id}>
           <ListItem>
             <ListItemIcon>
               <Avatar

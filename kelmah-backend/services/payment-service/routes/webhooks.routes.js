@@ -64,7 +64,7 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
     return res.json({ received: true, type: event.type });
   } catch (err) {
     logger.error('Stripe webhook error:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    return res.status(400).send('Webhook Error: Invalid webhook payload');
   }
 });
 
@@ -116,7 +116,7 @@ router.post('/paystack', express.raw({ type: 'application/json' }), async (req, 
     return res.json({ received: true, event: event.event });
   } catch (err) {
     logger.error('Paystack webhook error:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    return res.status(400).send('Webhook Error: Invalid webhook payload');
   }
 });
 

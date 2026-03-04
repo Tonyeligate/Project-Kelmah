@@ -1347,7 +1347,7 @@ app.get('/api/docs', (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).json({ error: 'Documentation not available', details: error.message });
+    res.status(500).json({ error: 'Documentation not available' });
   }
 });
 
@@ -1364,7 +1364,7 @@ app.get('/api/docs.html', (req, res) => {
       res.status(404).json({ error: 'Interactive documentation not available' });
     }
   } catch (error) {
-    res.status(500).json({ error: 'Documentation not available', details: error.message });
+    res.status(500).json({ error: 'Documentation not available' });
   }
 });
 

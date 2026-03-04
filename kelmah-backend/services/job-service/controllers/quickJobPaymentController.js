@@ -103,7 +103,7 @@ const verifyPayment = async (req, res) => {
     logger.error('Error verifying payment:', error);
     res.status(500).json({
       success: false,
-      error: { message: error.message || 'Payment verification failed', code: 'PAYMENT_ERROR' }
+      error: { message: 'Payment verification failed', code: 'PAYMENT_ERROR' }
     });
   }
 };
@@ -229,7 +229,7 @@ const releasePayment = async (req, res) => {
     logger.error('Error releasing payment:', error);
     res.status(500).json({
       success: false,
-      error: { message: error.message || 'Failed to release payment', code: 'PAYMENT_ERROR' }
+      error: { message: 'Failed to release payment', code: 'PAYMENT_ERROR' }
     });
   }
 };
@@ -284,7 +284,7 @@ const requestRefund = async (req, res) => {
     logger.error('Error processing refund:', error);
     res.status(500).json({
       success: false,
-      error: { message: error.message || 'Failed to process refund', code: 'PAYMENT_ERROR' }
+      error: { message: 'Failed to process refund', code: 'PAYMENT_ERROR' }
     });
   }
 };

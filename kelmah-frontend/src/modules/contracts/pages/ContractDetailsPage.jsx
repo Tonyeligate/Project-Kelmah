@@ -614,7 +614,7 @@ const ContractDetailsPage = () => {
               <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
                 <CircularProgress />
               </Box>
-            ) : milestones.length === 0 ? (
+            ) : !milestones || milestones.length === 0 ? (
               <Typography variant="body1" sx={{ textAlign: 'center', py: 3 }}>
                 No milestones defined for this contract.
               </Typography>
@@ -628,7 +628,7 @@ const ContractDetailsPage = () => {
                 >
                   {milestones.map((milestone) => (
                     <Step
-                      key={milestone.id}
+                      key={milestone.id || milestone._id}
                       completed={milestone.status === 'completed'}
                     >
                       <StepLabel>{milestone.title}</StepLabel>
@@ -638,7 +638,7 @@ const ContractDetailsPage = () => {
 
                 <List sx={{ mt: 3 }}>
                   {milestones.map((milestone) => (
-                    <Card key={milestone.id} sx={{ mb: 2 }}>
+                    <Card key={milestone.id || milestone._id} sx={{ mb: 2 }}>
                       <CardContent>
                         <Box
                           sx={{
@@ -702,7 +702,7 @@ const ContractDetailsPage = () => {
                                 startIcon={<CompletedIcon />}
                                 disabled={actionLoading}
                                 onClick={() =>
-                                  handleCompleteMilestone(milestone.id)
+                                  handleCompleteMilestone(milestone.id || milestone._id)
                                 }
                               >
                                 Complete

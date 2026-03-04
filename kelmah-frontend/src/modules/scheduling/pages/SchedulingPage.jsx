@@ -95,11 +95,12 @@ const AppointmentCard = ({ appointment, onEdit, onDelete }) => {
   const isVirtual = appointment.appointmentType === 'virtual';
 
   const handleJobClick = () => {
-    navigate(`/jobs/${appointment.jobId}`);
+    if (appointment.jobId) navigate(`/jobs/${appointment.jobId}`);
   };
 
   const handleUserClick = (e) => {
     e.stopPropagation();
+    if (!appointment.hirerId) return;
     navigate(`/profile/${appointment.hirerId}`, {
       state: {
         profileData: {
@@ -245,7 +246,7 @@ const AppointmentCard = ({ appointment, onEdit, onDelete }) => {
           aria-label="Delete appointment"
           onClick={(e) => {
             e.stopPropagation();
-            onDelete(appointment.id);
+            onDelete(appointment.id || appointment._id);
           }}
         >
           <DeleteIcon fontSize="small" />
@@ -292,6 +293,7 @@ const SchedulingPage = () => {
   const [users, setUsers] = useState([]);
   const [loadingJobs, setLoadingJobs] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -530,6 +532,8 @@ const SchedulingPage = () => {
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       if (dialogMode === 'create') {
         await schedulingService.createAppointment(formData);
@@ -538,7 +542,7 @@ const SchedulingPage = () => {
         });
       } else {
         await schedulingService.updateAppointment(
-          currentAppointment.id,
+          currentAppointment.id || currentAppointment._id,
           formData,
         );
         enqueueSnackbar('Appointment updated successfully', {
@@ -550,6 +554,8 @@ const SchedulingPage = () => {
     } catch (err) {
       if (import.meta.env.DEV) console.error('Error saving appointment:', err);
       enqueueSnackbar('Error saving appointment', { variant: 'error' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
