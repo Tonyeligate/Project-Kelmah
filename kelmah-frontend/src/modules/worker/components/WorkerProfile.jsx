@@ -1083,7 +1083,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
               {skills.slice(0, 8).map((skill, index) => (
-                <SkillChip key={index} label={skill.name} size="medium" />
+                <SkillChip
+                  key={skill.id || skill._id || skill.name || `skill-${index}`}
+                  label={skill.name}
+                  size="medium"
+                />
               ))}
             </Box>
 
@@ -1094,7 +1098,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
               {profile.specializations?.length > 0 ? (
                 profile.specializations.map((spec, index) => (
                   <Chip
-                    key={index}
+                    key={`${spec}-${index}`}
                     label={spec}
                     variant="outlined"
                     color="primary"
@@ -1115,7 +1119,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             {profile.tools?.length > 0 ? (
               <List dense>
                 {profile.tools.map((tool, index) => (
-                  <ListItem key={index}>
+                  <ListItem key={`${tool}-${index}`}>
                     <ListItemText primary={tool} />
                   </ListItem>
                 ))}
@@ -1147,7 +1151,13 @@ function WorkerProfile({ workerId: workerIdProp }) {
         {portfolio.length > 0 ? (
           <Grid container spacing={2}>
             {portfolio.map((item, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
+              <Grid
+                item
+                xs={12}
+                sm={6}
+                md={4}
+                key={item.id || item._id || item.title || `portfolio-${index}`}
+              >
                 <Card
                   sx={{
                     cursor: 'pointer',
@@ -1304,7 +1314,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   return `${d[0].toUpperCase()}${d.slice(1)}: ${h.start} - ${h.end}`;
                 });
                 return lines.map((text, idx) => (
-                  <ListItem key={idx}>
+                  <ListItem key={`${text}-${idx}`}>
                     <ListItemText primary={text} />
                   </ListItem>
                 ));
@@ -1475,7 +1485,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
         {certificates.length > 0 ? (
           <Grid container spacing={2}>
             {certificates.map((cert, index) => (
-              <Grid item xs={12} md={6} key={index}>
+              <Grid
+                item
+                xs={12}
+                md={6}
+                key={cert.id || cert._id || cert.name || `certificate-${index}`}
+              >
                 <Card variant="outlined" sx={{ p: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar sx={{ bgcolor: 'primary.main' }}>
@@ -1621,7 +1636,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   {selectedPortfolioItem.technologies?.map((tech, index) => (
-                    <Chip key={index} label={tech} size="small" />
+                    <Chip key={`${tech}-${index}`} label={tech} size="small" />
                   ))}
                 </Box>
               </DialogContent>

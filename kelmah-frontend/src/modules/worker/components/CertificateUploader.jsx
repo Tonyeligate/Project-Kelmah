@@ -428,7 +428,7 @@ const CertificateUploader = ({ onCertificatesChange }) => {
                   .slice(0, 3)
                   .map((skill, index) => (
                     <Chip
-                      key={index}
+                      key={`${skill.trim()}-${index}`}
                       label={skill.trim()}
                       size="small"
                       variant="outlined"

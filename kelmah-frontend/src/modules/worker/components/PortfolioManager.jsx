@@ -383,7 +383,7 @@ const PortfolioManager = () => {
                 .slice(0, 3)
                 .map((skill, index) => (
                   <Chip
-                    key={index}
+                    key={`${skill.trim()}-${index}`}
                     label={skill.trim()}
                     size="small"
                     variant="outlined"
@@ -674,7 +674,7 @@ const PortfolioManager = () => {
                 </Typography>
                 <ImageList cols={isMobile ? 2 : 4} gap={8}>
                   {formData.images.map((image, index) => (
-                    <ImageListItem key={index}>
+                    <ImageListItem key={`${image}-${index}`}>
                       <img
                         src={image}
                         alt={`Upload ${index + 1}`}

@@ -1,5 +1,25 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Key Stability Hardening — Round 15 ✅
+
+**Scope**: Reduce React reconciliation risk in dynamic worker/profile lists by replacing index-only keys with stable domain fallbacks.
+
+**Implemented fixes**:
+- ✅ `WorkerProfile.jsx`: stable keys for skills, specializations, tools, portfolio cards, certification cards, availability lines, and portfolio technology chips.
+- ✅ `CertificateUploader.jsx`: stable keys for rendered certificate skill chips.
+- ✅ `PortfolioManager.jsx`: stable keys for portfolio skill chips and uploaded image list items.
+
+**Verification**:
+- ✅ No diagnostics in all changed files via `get_errors`.
+
+**Files modified**:
+- `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+- `kelmah-frontend/src/modules/worker/components/CertificateUploader.jsx`
+- `kelmah-frontend/src/modules/worker/components/PortfolioManager.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+---
+
 ### Session: UX Resilience + Feedback Hardening — Round 14B ✅
 
 **Scope**: Finalized high-impact UX hardening on key frontend pages focused on safer rendering, resilient loading states, and clearer user feedback.
