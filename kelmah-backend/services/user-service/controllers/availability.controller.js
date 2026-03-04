@@ -1,4 +1,4 @@
-const Availability = require('../models/Availability');
+const { Availability } = require('../models');
 
 // SECURITY: Enforce ownership — only allow access to own availability (or admin)
 const resolveOwnerId = (req) => {

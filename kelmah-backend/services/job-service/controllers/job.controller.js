@@ -1001,16 +1001,16 @@ const getJobs = async (req, res, next) => {
       String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     if (isDebugJobs) {
-      console.log('[GET JOBS] Starting getJobs function');
-      console.log('[GET JOBS] Mongoose connection state:', mongoose.connection.readyState);
+      jobLogger.info('[GET JOBS] Starting getJobs function');
+      jobLogger.info('[GET JOBS] Mongoose connection state:', mongoose.connection.readyState);
     }
 
     // CHECK IF JOB MODEL IS USING THE CONNECTED MONGOOSE INSTANCE
     if (isDebugJobs) {
-      console.log('[GET JOBS] Job model database:', Job.db ? Job.db.databaseName : 'NO DB');
-      console.log('[GET JOBS] Job model connection state:', Job.db ? Job.db.readyState : 'NO DB');
-      console.log('[GET JOBS] Main mongoose database:', mongoose.connection.name);
-      console.log('[GET JOBS] Same connection?:', Job.db === mongoose.connection);
+      jobLogger.info('[GET JOBS] Job model database:', Job.db ? Job.db.databaseName : 'NO DB');
+      jobLogger.info('[GET JOBS] Job model connection state:', Job.db ? Job.db.readyState : 'NO DB');
+      jobLogger.info('[GET JOBS] Main mongoose database:', mongoose.connection.name);
+      jobLogger.info('[GET JOBS] Same connection?:', Job.db === mongoose.connection);
     }
 
     // Try direct MongoDB driver query to bypass Mongoose
@@ -1020,23 +1020,23 @@ const getJobs = async (req, res, next) => {
       const jobsCollection = db.collection('jobs');
       const directCount = await jobsCollection.countDocuments({ status: 'open', visibility: 'public' });
       if (isDebugJobs) {
-        console.log('[GET JOBS] Direct driver query SUCCESS - open jobs count:', directCount);
+        jobLogger.info('[GET JOBS] Direct driver query SUCCESS - open jobs count:', directCount);
       }
 
       // If direct query works, try to use it
       if (directCount > 0) {
         if (isDebugJobs) {
-          console.log('[GET JOBS] USING DIRECT DRIVER QUERY as workaround');
+          jobLogger.info('[GET JOBS] USING DIRECT DRIVER QUERY as workaround');
         }
       }
     } catch (clientError) {
       if (isDebugJobs) {
-        console.error('[GET JOBS] Error with direct driver query:', clientError.message);
+        jobLogger.error('[GET JOBS] Error with direct driver query:', clientError.message);
       }
     }
 
     if (isDebugJobs) {
-      console.log('[GET JOBS] Query params:', JSON.stringify(req.query));
+      jobLogger.info('[GET JOBS] Query params:', JSON.stringify(req.query));
     }
 
     // ── Query Budget Guards ──────────────────────────────────────────
@@ -1051,7 +1051,7 @@ const getJobs = async (req, res, next) => {
     const startIndex = (page - 1) * limit;
 
     if (isDebugJobs) {
-      console.log('[GET JOBS] Pagination:', { page, limit, startIndex });
+      jobLogger.info('[GET JOBS] Pagination:', { page, limit, startIndex });
     }
 
     // Build query - Use lowercase "open" status (matches database canonical values)
@@ -1067,7 +1067,7 @@ const getJobs = async (req, res, next) => {
       ]
     };
     if (isDebugJobs) {
-      console.log('[GET JOBS] Initial query:', JSON.stringify(query));
+      jobLogger.info('[GET JOBS] Initial query:', JSON.stringify(query));
     }
 
     // Filtering
@@ -1204,9 +1204,9 @@ const getJobs = async (req, res, next) => {
 
     // Execute query with pagination
     if (isDebugJobs) {
-      console.log('[GET JOBS] About to execute query...');
-      console.log('[GET JOBS] Final query:', JSON.stringify(query));
-      console.log('[GET JOBS] Sort:', req.query.sort || "-createdAt");
+      jobLogger.info('[GET JOBS] About to execute query...');
+      jobLogger.info('[GET JOBS] Final query:', JSON.stringify(query));
+      jobLogger.info('[GET JOBS] Sort:', req.query.sort || "-createdAt");
     }
 
     // WORKAROUND: Use direct MongoDB driver because Mongoose model is disconnected
@@ -1245,8 +1245,8 @@ const getJobs = async (req, res, next) => {
 
     const jobs = await jobsCursor.toArray();
     if (isDebugJobs) {
-      console.log('[GET JOBS] Direct driver query executed successfully');
-      console.log('[GET JOBS] Jobs found:', jobs.length);
+      jobLogger.info('[GET JOBS] Direct driver query executed successfully');
+      jobLogger.info('[GET JOBS] Jobs found:', jobs.length);
     }
 
     // Manually populate hirer data with all required fields
@@ -1286,7 +1286,7 @@ const getJobs = async (req, res, next) => {
     const shouldGetTotal = jobs.length === limit || page > 1;
     if (shouldGetTotal) {
       if (isDebugJobs) {
-        console.log('[GET JOBS] Getting total count...');
+        jobLogger.info('[GET JOBS] Getting total count...');
       }
       const countOptions = {};
       // Note: no compound hint here — the tolerant $or visibility filter prevents
@@ -1298,22 +1298,22 @@ const getJobs = async (req, res, next) => {
           maxTimeMS: 5000,
         });
         if (isDebugJobs) {
-          console.log('[GET JOBS] Total jobs:', total);
+          jobLogger.info('[GET JOBS] Total jobs:', total);
         }
       } catch (countError) {
         if (isDebugJobs) {
-          console.warn('[GET JOBS] countDocuments timed out, using fallback total:', countError.message);
+          jobLogger.warn('[GET JOBS] countDocuments timed out, using fallback total:', countError.message);
         }
         total = startIndex + jobs.length + (jobs.length === limit ? limit : 0);
       }
     } else {
       if (isDebugJobs) {
-        console.log('[GET JOBS] Skipping total count lookup; derived total:', total);
+        jobLogger.info('[GET JOBS] Skipping total count lookup; derived total:', total);
       }
     }
 
     if (isDebugJobs) {
-      console.log('[GET JOBS] Sending response...');
+      jobLogger.info('[GET JOBS] Sending response...');
     }
     return paginatedResponse(
       res,
@@ -1672,7 +1672,7 @@ const getDashboardJobs = async (req, res) => {
   try {
     await ensureConnection({ timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000) });
   } catch (connectionError) {
-    console.warn('Dashboard jobs: database not ready, returning fallback data:', connectionError.message);
+    jobLogger.warn('Dashboard jobs: database not ready, returning fallback data:', connectionError.message);
     return successResponse(res, 200, 'Dashboard jobs fallback data', {
       recentJobs: fallbackJobs,
       totalOpenJobs: fallbackJobs.length,
@@ -1692,7 +1692,7 @@ const getDashboardJobs = async (req, res) => {
       .select('title description budget location urgency createdAt')
       .lean({ defaults: true });
   } catch (queryError) {
-    console.warn('Dashboard jobs: query failed, using fallback data:', queryError.message);
+    jobLogger.warn('Dashboard jobs: query failed, using fallback data:', queryError.message);
     source = 'fallback-query-failed';
     recentJobs = fallbackJobs;
   }
@@ -1716,10 +1716,10 @@ const getDashboardJobs = async (req, res) => {
   ]);
 
   if (totalOpenResult.status === 'rejected') {
-    console.warn('Dashboard jobs: failed to count open jobs:', totalOpenResult.reason?.message);
+    jobLogger.warn('Dashboard jobs: failed to count open jobs:', totalOpenResult.reason?.message);
   }
   if (totalTodayResult.status === 'rejected') {
-    console.warn('Dashboard jobs: failed to count today jobs:', totalTodayResult.reason?.message);
+    jobLogger.warn('Dashboard jobs: failed to count today jobs:', totalTodayResult.reason?.message);
   }
 
   const dashboardData = {
@@ -1779,7 +1779,7 @@ const getContracts = async (req, res, next) => {
       }
     });
   } catch (error) {
-    console.error('❌ Error in getContracts:', error);
+    jobLogger.error('❌ Error in getContracts:', error);
     next(error);
   }
 };

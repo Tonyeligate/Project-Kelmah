@@ -1,7 +1,7 @@
-// Bookmark persistence and earnings endpoint
-const Bookmark = require('../models/Bookmark');
 // Use MongoDB WorkerProfile model for consistency
 const db = require('../models');
+// Destructure frequently-used models from service index (RULE-001 compliant)
+const { Bookmark, Availability, Certificate } = db;
 const { ensureConnection, mongoose: connectionInstance } = require('../config/db');
 const mongooseInstance = connectionInstance || require('mongoose');
 const { Types } = mongooseInstance;
@@ -11,7 +11,7 @@ const ensureModelsLoaded = () => {
     try {
       db.loadModels();
     } catch (error) {
-      console.warn('user.controller: loadModels failed', error.message);
+      logger.warn('user.controller: loadModels failed', error.message);
     }
   }
 };
@@ -188,7 +188,7 @@ const fetchProfileDocuments = async ({ UserModel, WorkerProfileModel, userId }) 
       throw error;
     }
 
-    console.warn(
+    logger.warn(
       'Detected BSON version mismatch while loading profile, retrying with native driver',
       { error: error.message },
     );
@@ -305,7 +305,7 @@ exports.toggleBookmark = async (req, res) => {
     await Bookmark.create({ userId, workerId });
     return res.json({ success: true, data: { workerId, bookmarked: true } });
   } catch (e) {
-    console.error('toggleBookmark error:', e);
+    logger.error('toggleBookmark error:', e);
     return res.status(500).json({ success: false, message: 'Failed to toggle bookmark' });
   }
 };
@@ -327,7 +327,7 @@ exports.getBookmarks = async (req, res) => {
     } catch (_) { /* populate optional */ }
     return res.json({ success: true, data: { workerIds, workers } });
   } catch (e) {
-    console.error('getBookmarks error:', e);
+    logger.error('getBookmarks error:', e);
     return res.status(500).json({ success: false, message: 'Failed to load bookmarks' });
   }
 };
@@ -344,7 +344,7 @@ exports.getProfileStatistics = async (req, res) => {
       data: buildProfileStatistics(workerDoc),
     });
   } catch (error) {
-    console.error('getProfileStatistics error:', error);
+    logger.error('getProfileStatistics error:', error);
     return res.status(500).json({ success: false, message: 'Failed to fetch profile statistics' });
   }
 };
@@ -361,7 +361,7 @@ exports.getProfileActivity = async (req, res) => {
       data: { entries: buildProfileActivity(workerDoc, userDoc) },
     });
   } catch (error) {
-    console.error('getProfileActivity error:', error);
+    logger.error('getProfileActivity error:', error);
     return res.status(500).json({ success: false, message: 'Failed to fetch profile activity' });
   }
 };
@@ -378,7 +378,7 @@ exports.getProfilePreferences = async (req, res) => {
       data: { preferences: normalizePreferences(userDoc?.preferences) },
     });
   } catch (error) {
-    console.error('getProfilePreferences error:', error);
+    logger.error('getProfilePreferences error:', error);
     return res.status(500).json({ success: false, message: 'Failed to fetch preferences' });
   }
 };
@@ -395,7 +395,7 @@ exports.getEarnings = async (req, res) => {
     const workerModel = getWorkerProfileModel();
 
     if (!workerModel) {
-      console.warn('getEarnings: WorkerProfile model unavailable, returning defaults');
+      logger.warn('getEarnings: WorkerProfile model unavailable, returning defaults');
       const fallbackTotals = buildEarningsFallback(0);
       return res.json({
         success: true,
@@ -414,7 +414,7 @@ exports.getEarnings = async (req, res) => {
 
     const worker = await workerModel.findOne({ userId });
     if (!worker) {
-      console.warn('getEarnings: worker profile missing, returning synthesized totals');
+      logger.warn('getEarnings: worker profile missing, returning synthesized totals');
       const fallbackTotals = buildEarningsFallback(0);
       return res.json({
         success: true,
@@ -463,7 +463,7 @@ exports.getEarnings = async (req, res) => {
     });
 
     if (!candidateEndpoints.length) {
-      console.warn('getEarnings: payment service host missing, returning fallback totals');
+      logger.warn('getEarnings: payment service host missing, returning fallback totals');
       return respondWith(fallbackTotals, 'fallback-missing-payment-host');
     }
 
@@ -486,7 +486,7 @@ exports.getEarnings = async (req, res) => {
               return response.data.transactions;
             }
           } catch (error) {
-            console.warn('Payment history request failed', {
+            logger.warn('Payment history request failed', {
               endpoint,
               message: error?.message,
             });
@@ -497,7 +497,7 @@ exports.getEarnings = async (req, res) => {
 
       const [tx30, tx7] = await Promise.all([fetchTransactions(since30), fetchTransactions(since7)]);
       if (!tx30 && !tx7) {
-        console.warn('getEarnings: payment service unreachable, using fallback values');
+        logger.warn('getEarnings: payment service unreachable, using fallback values');
         return respondWith(fallbackTotals, 'fallback-payment-timeout');
       }
 
@@ -526,11 +526,11 @@ exports.getEarnings = async (req, res) => {
 
       return respondWith(responseTotals, 'payment-service-derived');
     } catch (error) {
-      console.warn('getEarnings: unexpected error, using fallback totals', error?.message);
+      logger.warn('getEarnings: unexpected error, using fallback totals', error?.message);
       return respondWith(fallbackTotals, 'fallback-unexpected-error');
     }
   } catch (e) {
-    console.error('getEarnings error:', e);
+    logger.error('getEarnings error:', e);
     return res.status(500).json({ success: false, message: 'Failed to get earnings' });
   }
 };
@@ -558,7 +558,7 @@ exports.getAllUsers = async (req, res, next) => {
       UserModel.countDocuments(filter),
     ]);
 
-    res.json({
+    return res.json({
       success: true,
       data: { users, pagination: { page, limit, total, pages: Math.ceil(total / limit) } }
     });
@@ -575,6 +575,7 @@ exports.bulkUpdateUsers = async (req, res) => {
   try {
     const UserModel = requireUserModel();
     const mongoose = require('mongoose');
+const { logger } = require('../utils/logger');
     const { userIds, updateData } = req.body;
 
     if (!Array.isArray(userIds) || userIds.length === 0) {
@@ -604,7 +605,7 @@ exports.bulkUpdateUsers = async (req, res) => {
       { $set: sanitized }
     );
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         matched: result.matchedCount,
@@ -612,8 +613,8 @@ exports.bulkUpdateUsers = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('bulkUpdateUsers error:', err);
-    res.status(500).json({ success: false, error: { message: 'Bulk update failed' } });
+    logger.error('bulkUpdateUsers error:', err);
+    return res.status(500).json({ success: false, error: { message: 'Bulk update failed' } });
   }
 };
 
@@ -625,6 +626,7 @@ exports.bulkDeleteUsers = async (req, res) => {
   try {
     const UserModel = requireUserModel();
     const mongoose = require('mongoose');
+const { logger } = require('../utils/logger');
     const { userIds } = req.body;
 
     if (!Array.isArray(userIds) || userIds.length === 0) {
@@ -642,13 +644,13 @@ exports.bulkDeleteUsers = async (req, res) => {
       { $set: { isActive: false, deletedAt: new Date() } }
     );
 
-    res.json({
+    return res.json({
       success: true,
       data: { deactivated: result.modifiedCount },
     });
   } catch (err) {
-    console.error('bulkDeleteUsers error:', err);
-    res.status(500).json({ success: false, error: { message: 'Bulk delete failed' } });
+    logger.error('bulkDeleteUsers error:', err);
+    return res.status(500).json({ success: false, error: { message: 'Bulk delete failed' } });
   }
 };
 
@@ -680,7 +682,7 @@ exports.createUser = async (req, res, next) => {
     const userResponse = user.toObject();
     delete userResponse.password;
     delete userResponse.refreshToken;
-    res.status(201).json(userResponse);
+    return res.status(201).json(userResponse);
   } catch (err) {
     next(err);
   }
@@ -714,7 +716,7 @@ exports.getDashboardMetrics = async (req, res) => {
     let MongoWorkerProfile = db.WorkerProfile;
 
     if (!MongoUser || !MongoWorkerProfile) {
-      console.warn('Dashboard metrics: models not initialized, returning fallback data.');
+      logger.warn('Dashboard metrics: models not initialized, returning fallback data.');
       return res.json({ ...defaultMetrics, reason: 'models-not-ready' });
     }
 
@@ -732,15 +734,15 @@ exports.getDashboardMetrics = async (req, res) => {
     const failedMetrics = [];
     if (totalUsersResult.status === 'rejected') {
       failedMetrics.push('totalUsers');
-      console.warn('Dashboard metrics: failed to count users:', totalUsersResult.reason?.message);
+      logger.warn('Dashboard metrics: failed to count users:', totalUsersResult.reason?.message);
     }
     if (totalWorkersResult.status === 'rejected') {
       failedMetrics.push('totalWorkers');
-      console.warn('Dashboard metrics: failed to count worker profiles:', totalWorkersResult.reason?.message);
+      logger.warn('Dashboard metrics: failed to count worker profiles:', totalWorkersResult.reason?.message);
     }
     if (activeWorkersResult.status === 'rejected') {
       failedMetrics.push('activeWorkers');
-      console.warn('Dashboard metrics: failed to count available workers:', activeWorkersResult.reason?.message);
+      logger.warn('Dashboard metrics: failed to count available workers:', activeWorkersResult.reason?.message);
     }
 
     let jobMetrics = { totalJobs: 0, completedJobs: 0 };
@@ -762,7 +764,7 @@ exports.getDashboardMetrics = async (req, res) => {
         jobMetricsSource = 'job-service';
       }
     } catch (error) {
-      console.warn('Dashboard metrics: could not fetch job metrics:', error.message);
+      logger.warn('Dashboard metrics: could not fetch job metrics:', error.message);
     }
 
     const metrics = {
@@ -781,7 +783,7 @@ exports.getDashboardMetrics = async (req, res) => {
 
     return res.json(metrics);
   } catch (err) {
-    console.error('Dashboard metrics error:', err);
+    logger.error('Dashboard metrics error:', err);
     return res.json({ ...defaultMetrics, reason: 'metrics-unavailable' });
   }
 };
@@ -794,10 +796,11 @@ exports.getDashboardWorkers = async (req, res, next) => {
     // Use the MongoDB WorkerProfile from our models index
     const { WorkerProfile, User } = require('../models');
     const mongoose = require('mongoose');
+const { logger } = require('../utils/logger');
 
     // Check MongoDB connection status
     if (mongoose.connection.readyState !== 1) {
-      console.error('MongoDB not connected. ReadyState:', mongoose.connection.readyState);
+      logger.error('MongoDB not connected. ReadyState:', mongoose.connection.readyState);
       return res.status(503).json({ 
         error: 'Database connection not ready',
         message: 'Service temporarily unavailable. Please try again in a moment.' 
@@ -814,7 +817,7 @@ exports.getDashboardWorkers = async (req, res, next) => {
 
     // Handle empty result set
     if (!workers || workers.length === 0) {
-      console.log('No workers found in database');
+      logger.info('No workers found in database');
       return res.json({ workers: [] });
     }
 
@@ -846,10 +849,10 @@ exports.getDashboardWorkers = async (req, res, next) => {
       };
     });
 
-    res.json({ workers: formattedWorkers });
+    return res.json({ workers: formattedWorkers });
   } catch (err) {
-    console.error('Dashboard workers error:', err);
-    console.error('Error stack:', err.stack);
+    logger.error('Dashboard workers error:', err);
+    logger.error('Error stack:', err.stack);
     
     // Provide detailed error information
     const errorResponse = {
@@ -862,7 +865,7 @@ exports.getDashboardWorkers = async (req, res, next) => {
       errorResponse.stack = err.stack;
     }
     
-    res.status(500).json(errorResponse);
+    return res.status(500).json(errorResponse);
   }
 };
 
@@ -927,7 +930,7 @@ exports.getDashboardAnalytics = async (req, res) => {
         };
       });
     } catch (aggregationError) {
-      console.warn('User growth aggregation failed, using fallback data:', aggregationError.message);
+      logger.warn('User growth aggregation failed, using fallback data:', aggregationError.message);
       userGrowth = Array.from({ length: 12 }).map((_, index) => {
         const date = new Date(now.getFullYear(), now.getMonth() - (11 - index), 1);
         return {
@@ -943,10 +946,10 @@ exports.getDashboardAnalytics = async (req, res) => {
     ]);
 
     if (totalWorkersResult.status === 'rejected') {
-      console.warn('Failed to count total workers:', totalWorkersResult.reason?.message);
+      logger.warn('Failed to count total workers:', totalWorkersResult.reason?.message);
     }
     if (availableWorkersResult.status === 'rejected') {
-      console.warn('Failed to count available workers:', availableWorkersResult.reason?.message);
+      logger.warn('Failed to count available workers:', availableWorkersResult.reason?.message);
     }
 
     const totalWorkers = totalWorkersResult.status === 'fulfilled' ? totalWorkersResult.value : 0;
@@ -962,7 +965,7 @@ exports.getDashboardAnalytics = async (req, res) => {
       });
       jobStats = response.data;
     } catch (error) {
-      console.warn('Could not fetch job stats:', error.message);
+      logger.warn('Could not fetch job stats:', error.message);
     }
 
     const topCategories = [
@@ -973,7 +976,7 @@ exports.getDashboardAnalytics = async (req, res) => {
       { name: 'Painting', count: 6 },
     ];
 
-    res.json({
+    return res.json({
       userGrowth,
       jobStats,
       topCategories,
@@ -984,7 +987,7 @@ exports.getDashboardAnalytics = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('Dashboard analytics error:', err);
+    logger.error('Dashboard analytics error:', err);
     return res.status(500).json({
       success: false,
       message: 'Failed to generate dashboard analytics',
@@ -997,8 +1000,6 @@ exports.getDashboardAnalytics = async (req, res) => {
  */
 exports.getUserAvailability = async (req, res, next) => {
   try {
-    const Availability = require('../models/Availability');
-
     const userId = req.user?.id || req.params.userId;
     if (!userId) {
       return res.status(400).json({ success: false, message: 'User ID required' });
@@ -1035,14 +1036,14 @@ exports.getUserAvailability = async (req, res, next) => {
       }
     }
 
-    res.json({
+    return res.json({
       status: availability.isAvailable ? 'available' : 'unavailable',
       schedule: availability.schedule || {},
       nextAvailable,
       lastUpdated: availability.updatedAt
     });
   } catch (err) {
-    console.error('Get availability error:', err);
+    logger.error('Get availability error:', err);
     next(err);
   }
 };
@@ -1073,7 +1074,6 @@ exports.getUserCredentials = async (req, res) => {
     }
 
   const WorkerProfileModel = getWorkerProfileModel();
-    const Certificate = require('../models/Certificate');
 
     if (!WorkerProfileModel) {
       return res.status(503).json({
@@ -1198,7 +1198,7 @@ exports.getUserCredentials = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('Get credentials error:', err);
+    logger.error('Get credentials error:', err);
     return res.status(500).json({
       success: false,
       error: {
@@ -1268,7 +1268,7 @@ exports.getUserProfile = async (req, res) => {
       meta,
     });
   } catch (error) {
-    console.error('Get user profile error:', error);
+    logger.error('Get user profile error:', error);
     return res.status(500).json({
       success: false,
       error: {
@@ -1485,7 +1485,7 @@ exports.updateUserProfile = async (req, res) => {
       meta,
     });
   } catch (error) {
-    console.error('Update user profile error:', error);
+    logger.error('Update user profile error:', error);
 
     if (error?.code === 11000) {
       return res.status(409).json({
@@ -1525,13 +1525,13 @@ exports.cleanupDatabase = async (req, res) => {
     const UserModel = requireUserModel();
     const WorkerProfileModel = requireWorkerProfileModel();
 
-    console.log('🔧 Starting database cleanup...');
+    logger.info('🔧 Starting database cleanup...');
 
     // Get current counts
     const userCount = await UserModel.countDocuments();
     const workerProfileCount = await WorkerProfileModel.countDocuments();
 
-    console.log(`📊 Current state: ${userCount} users, ${workerProfileCount} worker profiles`);
+    logger.info(`📊 Current state: ${userCount} users, ${workerProfileCount} worker profiles`);
 
     // Find users without matching worker profiles (for workers)
     const workerUsers = await UserModel.find({ role: 'worker' }).select('_id firstName lastName email');
@@ -1542,7 +1542,7 @@ exports.cleanupDatabase = async (req, res) => {
       !existingUserIds.includes(user._id.toString())
     );
 
-    console.log(`👤 Found ${workerUsers.length} worker users, ${usersWithoutProfiles.length} need profiles`);
+    logger.info(`👤 Found ${workerUsers.length} worker users, ${usersWithoutProfiles.length} need profiles`);
 
     // Remove duplicate or orphaned worker profiles
     const duplicateProfiles = await WorkerProfileModel.aggregate([
@@ -1556,7 +1556,7 @@ exports.cleanupDatabase = async (req, res) => {
       const toRemove = dup.profiles.slice(1);
       await WorkerProfileModel.deleteMany({ _id: { $in: toRemove } });
       removedDuplicates += toRemove.length;
-      console.log(`🗑️  Removed ${toRemove.length} duplicate profiles for user ${dup._id}`);
+      logger.info(`🗑️  Removed ${toRemove.length} duplicate profiles for user ${dup._id}`);
     }
 
     // Create missing worker profiles
@@ -1599,7 +1599,7 @@ exports.cleanupDatabase = async (req, res) => {
       });
 
       await WorkerProfileModel.insertMany(newProfiles);
-      console.log(`✅ Created ${newProfiles.length} new worker profiles`);
+      logger.info(`✅ Created ${newProfiles.length} new worker profiles`);
     }
 
     // Final counts
@@ -1625,12 +1625,12 @@ exports.cleanupDatabase = async (req, res) => {
       }
     };
 
-    console.log('🎉 Database cleanup completed:', result);
-    res.json(result);
+    logger.info('🎉 Database cleanup completed:', result);
+    return res.json(result);
 
   } catch (error) {
-    console.error('❌ Database cleanup failed:', error);
-    res.status(500).json({
+    logger.error('❌ Database cleanup failed:', error);
+    return res.status(500).json({
       success: false,
       message: 'Database cleanup failed'
     });

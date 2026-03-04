@@ -1,4 +1,4 @@
-const ContractTemplate = require('../models/ContractTemplate');
+const { ContractTemplate } = require('../models');
 
 /**
  * Seed Contract Templates for Ghana Trade Services

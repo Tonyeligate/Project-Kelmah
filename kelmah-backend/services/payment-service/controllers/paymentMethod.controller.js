@@ -39,7 +39,7 @@ exports.getPaymentMethods = async (req, res) => {
       };
     });
 
-    res.json({ success: true, data: sanitized });
+    return res.json({ success: true, data: sanitized });
   } catch (error) {
     handleError(res, error);
   }
@@ -112,7 +112,7 @@ exports.addPaymentMethod = async (req, res) => {
 
     await paymentMethod.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Payment method added successfully",
       data: paymentMethod,
@@ -147,7 +147,7 @@ exports.updatePaymentMethod = async (req, res) => {
 
     await paymentMethod.save();
 
-    res.json({
+    return res.json({
       success: true,
       message: "Payment method updated successfully",
       data: paymentMethod,
@@ -184,7 +184,7 @@ exports.removePaymentMethod = async (req, res) => {
 
     await paymentMethod.remove();
 
-    res.json({ success: true, message: "Payment method removed successfully" });
+    return res.json({ success: true, message: "Payment method removed successfully" });
   } catch (error) {
     handleError(res, error);
   }
@@ -227,7 +227,7 @@ exports.verifyPaymentMethod = async (req, res) => {
       verificationResult.success ? "verified" : "failed",
     );
 
-    res.json({
+    return res.json({
       success: verificationResult.success,
       message: verificationResult.success
         ? "Payment method verified successfully"

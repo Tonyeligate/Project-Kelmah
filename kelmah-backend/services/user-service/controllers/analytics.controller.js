@@ -6,6 +6,7 @@
 // Use shared models via models index
 const { User, WorkerProfile } = require('../models');
 const { successResponse, errorResponse } = require('../utils/response');
+const { logger } = require('../utils/logger');
 const axios = require('axios');
 
 class AnalyticsController {
@@ -213,7 +214,7 @@ class AnalyticsController {
       return successResponse(res, 200, 'Platform analytics retrieved successfully', analytics);
 
     } catch (error) {
-      console.error('Platform analytics error:', error);
+      logger.error('Platform analytics error:', error);
       return errorResponse(res, 500, 'Failed to retrieve platform analytics');
     }
   }
@@ -299,7 +300,7 @@ class AnalyticsController {
       return successResponse(res, 200, 'System metrics retrieved successfully', metrics);
 
     } catch (error) {
-      console.error('System metrics error:', error);
+      logger.error('System metrics error:', error);
       return errorResponse(res, 500, 'Failed to retrieve system metrics');
     }
   }
@@ -392,7 +393,7 @@ class AnalyticsController {
       return successResponse(res, 200, 'User activity retrieved successfully', activity);
 
     } catch (error) {
-      console.error('User activity error:', error);
+      logger.error('User activity error:', error);
       return errorResponse(res, 500, 'Failed to retrieve user activity');
     }
   }
@@ -462,7 +463,7 @@ class AnalyticsController {
 
       return successResponse(res, 200, 'Worker analytics', summary);
     } catch (error) {
-      console.error('Worker analytics error:', error);
+      logger.error('Worker analytics error:', error);
       return errorResponse(res, 500, 'Failed to retrieve worker analytics');
     }
   }

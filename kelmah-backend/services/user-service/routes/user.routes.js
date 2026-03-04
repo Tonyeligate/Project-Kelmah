@@ -103,7 +103,7 @@ router.get('/workers', (req, res, next) => {
 // Worker-specific debug route (MUST be before /workers/:id)
 router.get("/workers/debug/models", verifyGatewayRequest, authorizeRoles('admin'), (req, res) => {
   const modelsModule = require('../models');
-  res.json({
+  return res.json({
     success: true,
     debug: {
       User: !!modelsModule.User,

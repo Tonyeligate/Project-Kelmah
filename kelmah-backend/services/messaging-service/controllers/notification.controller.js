@@ -125,7 +125,7 @@ exports.getUserNotifications = async (req, res) => {
 
     const totalNotifications = await Notification.countDocuments(query);
 
-    res.json({
+    return res.json({
       success: true,
       data: notifications,
       pagination: {
@@ -160,7 +160,7 @@ exports.markNotificationAsRead = async (req, res) => {
       return res.status(404).json({ success: false, error: { message: "Notification not found" } });
     }
 
-    res.json({ success: true, message: "Notification marked as read" });
+    return res.json({ success: true, message: "Notification marked as read" });
   } catch (error) {
     handleError(res, error);
   }
@@ -188,7 +188,7 @@ exports.markAllNotificationsAsRead = async (req, res) => {
       },
     );
 
-    res.json({ success: true, message: "All notifications marked as read", data: { modified: result.modifiedCount } });
+    return res.json({ success: true, message: "All notifications marked as read", data: { modified: result.modifiedCount } });
   } catch (error) {
     handleError(res, error);
   }
@@ -213,7 +213,7 @@ exports.deleteNotification = async (req, res) => {
       return res.status(404).json({ success: false, error: { message: "Notification not found" } });
     }
 
-    res.json({ success: true, message: "Notification deleted successfully" });
+    return res.json({ success: true, message: "Notification deleted successfully" });
   } catch (error) {
     handleError(res, error);
   }
@@ -232,7 +232,7 @@ exports.clearAllNotifications = async (req, res) => {
       recipient: requesterId,
     });
 
-    res.json({ success: true, message: "All notifications cleared", data: { deleted: result.deletedCount } });
+    return res.json({ success: true, message: "All notifications cleared", data: { deleted: result.deletedCount } });
   } catch (error) {
     handleError(res, error);
   }
@@ -252,7 +252,7 @@ exports.getUnreadCount = async (req, res) => {
       "readStatus.isRead": false,
     });
 
-    res.json({ success: true, unreadCount: count });
+    return res.json({ success: true, unreadCount: count });
   } catch (error) {
     handleError(res, error);
   }
@@ -271,7 +271,7 @@ exports.getPreferences = async (req, res) => {
     if (!prefs) {
       prefs = await NotificationPreference.create({ user: requesterId });
     }
-    res.json({ success: true, data: prefs });
+    return res.json({ success: true, data: prefs });
   } catch (error) {
     handleError(res, error);
   }
@@ -304,7 +304,7 @@ exports.updatePreferences = async (req, res) => {
       { $set: sanitized },
       { new: true, upsert: true },
     );
-    res.json({ success: true, data: prefs });
+    return res.json({ success: true, data: prefs });
   } catch (error) {
     handleError(res, error);
   }
@@ -351,7 +351,7 @@ exports.createSystemNotification = async (req, res) => {
       return res.json({ success: true, message: "Notification skipped (disabled by user preferences)" });
     }
 
-    res.status(201).json({ success: true, data: notification });
+    return res.status(201).json({ success: true, data: notification });
   } catch (error) {
     handleError(res, error);
   }

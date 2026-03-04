@@ -42,7 +42,7 @@ exports.getReviewAnalytics = async (req, res) => {
       ])
     ]);
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         totalReviews,
@@ -54,7 +54,7 @@ exports.getReviewAnalytics = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch analytics'
     });
@@ -105,14 +105,14 @@ exports.moderateReview = async (req, res) => {
     // Update worker rating if review was approved/rejected
     // await updateWorkerRating(review.workerId);
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Review moderated successfully',
       data: review
     });
 
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to moderate review'
     });

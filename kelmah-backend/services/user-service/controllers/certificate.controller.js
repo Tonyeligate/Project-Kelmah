@@ -3,7 +3,7 @@
  * CRUD and verification endpoints to match frontend certificateService.js
  */
 
-const Certificate = require('../models/Certificate');
+const { Certificate } = require('../models');
 const { handleServiceError } = require('../utils/helpers');
 const { pickAllowedFields, escapeRegex } = require('../../../shared/utils/sanitize');
 

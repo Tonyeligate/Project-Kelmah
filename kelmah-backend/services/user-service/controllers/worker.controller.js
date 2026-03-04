@@ -12,6 +12,7 @@ const { validateInput, handleServiceError, generatePagination } = require('../ut
 const auditLogger = require('../../../shared/utils/audit-logger');
 const { verifyAccessToken, decodeUserFromClaims } = require('../../../shared/utils/jwt');
 const { escapeRegex } = require('../../../shared/utils/sanitize');
+const { logger } = require('../utils/logger');
 
 const REQUIRED_PROFILE_FIELDS = [
   'firstName',
@@ -149,12 +150,12 @@ const autopopulateWorkerDefaults = async (worker, usersCollection) => {
         { _id: worker._id },
         { $set: updates },
       );
-      console.log(
+      logger.info(
         `✅ Auto-populated worker fields for ${worker.firstName || ''
         } ${worker.lastName || ''}`,
       );
     } catch (error) {
-      console.error(
+      logger.error(
         `❌ Failed to auto-populate worker fields for ${worker._id}:`,
         error,
       );
@@ -456,7 +457,7 @@ const recordCircuitFailure = () => {
 
   if (jobServiceCircuitBreaker.failureCount >= jobServiceCircuitBreaker.maxFailures) {
     if (jobServiceCircuitBreaker.state !== 'open') {
-      console.warn('⚠️ Job service circuit opened after repeated failures');
+      logger.warn('⚠️ Job service circuit opened after repeated failures');
     }
     openCircuit();
   }
@@ -601,7 +602,7 @@ const ensureWorkerDocuments = async ({ workerId, lean = true }) => {
     try {
       modelsModule.loadModels();
     } catch (error) {
-      console.warn('loadModels failed while fetching worker documents:', error.message);
+      logger.warn('loadModels failed while fetching worker documents:', error.message);
     }
   }
 
@@ -1088,8 +1089,8 @@ class WorkerController {
     try {
       const isDev = process.env.NODE_ENV === 'development';
       if (isDev) {
-        console.log('🔍 getAllWorkers called - URL:', req.originalUrl, 'Path:', req.path);
-        console.log('🔍 Query params:', JSON.stringify(req.query));
+        logger.info('🔍 getAllWorkers called - URL:', req.originalUrl, 'Path:', req.path);
+        logger.info('🔍 Query params:', JSON.stringify(req.query));
       }
       await ensureConnection({ timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000) });
       const {
@@ -1123,14 +1124,14 @@ class WorkerController {
       };
 
       if (isDev) {
-        console.log('🔍 Building query with filters:', { city, location, primaryTrade, workType, keywords, search });
+        logger.info('🔍 Building query with filters:', { city, location, primaryTrade, workType, keywords, search });
       }
 
       // FIXED: Location filter - use location field (contains city)
       if (city || location) {
         const locationSearch = escapeRegex(city || location);
         mongoQuery.location = { $regex: locationSearch, $options: 'i' };
-        if (isDev) console.log('📍 Location filter:', locationSearch);
+        if (isDev) logger.info('📍 Location filter:', locationSearch);
       }
 
       // FIXED: Primary Trade filter - handle synonyms across multiple fields
@@ -1153,14 +1154,14 @@ class WorkerController {
         }
 
         if (isDev) {
-          console.log('🔧 Trade filter:', primaryTrade, '→ patterns:', tradeRegexes.map((regex) => regex.source));
+          logger.info('🔧 Trade filter:', primaryTrade, '→ patterns:', tradeRegexes.map((regex) => regex.source));
         }
       }
 
       // FIXED: Work Type filter - use workerProfile.workType
       if (workType) {
         mongoQuery['workerProfile.workType'] = workType;
-        if (isDev) console.log('💼 Work type filter:', workType);
+        if (isDev) logger.info('💼 Work type filter:', workType);
       }
 
       // Rating filter
@@ -1189,9 +1190,9 @@ class WorkerController {
         // Try text search first, fallback to regex
         try {
           mongoQuery.$text = { $search: searchTerm };
-          if (isDev) console.log('🔎 Text search:', searchTerm);
+          if (isDev) logger.info('🔎 Text search:', searchTerm);
         } catch (error) {
-          if (isDev) console.log('⚠️ Text search failed, using regex fallback');
+          if (isDev) logger.info('⚠️ Text search failed, using regex fallback');
           mongoQuery.$or = [
             { firstName: { $regex: escapeRegex(searchTerm), $options: 'i' } },
             { lastName: { $regex: escapeRegex(searchTerm), $options: 'i' } },
@@ -1208,7 +1209,7 @@ class WorkerController {
         mongoQuery.skills = { $in: skillsArray };
       }
 
-      if (isDev) console.log('📋 Final MongoDB query:', JSON.stringify(mongoQuery, null, 2));
+      if (isDev) logger.info('📋 Final MongoDB query:', JSON.stringify(mongoQuery, null, 2));
 
       // Execute MongoDB query using direct driver
       const [workers, totalCount] = await Promise.all([
@@ -1221,7 +1222,7 @@ class WorkerController {
         usersCollection.countDocuments(mongoQuery)
       ]);
 
-      if (isDev) console.log(`✅ Found ${workers.length} workers (total: ${totalCount})`);
+      if (isDev) logger.info(`✅ Found ${workers.length} workers (total: ${totalCount})`);
 
       // Ranking weights from env or defaults
       const weights = {
@@ -1304,7 +1305,7 @@ class WorkerController {
         }
       });
     } catch (error) {
-      console.error('❌ Error in getAllWorkers:', error);
+      logger.error('❌ Error in getAllWorkers:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to fetch workers'
@@ -1512,7 +1513,7 @@ class WorkerController {
         searchResults.sort((a, b) => b.rankScore - a.rankScore);
       }
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: 'Search completed successfully',
         data: {
@@ -1535,7 +1536,7 @@ class WorkerController {
       });
 
     } catch (error) {
-      console.error('Search workers error:', error);
+      logger.error('Search workers error:', error);
       if (error?.message?.toLowerCase().includes('timed out waiting for mongodb connection')) {
         return res.status(503).json({
           success: false,
@@ -1560,7 +1561,7 @@ class WorkerController {
       }
 
       if (mongoose.connection.readyState !== 1) {
-        console.warn('⚠️ MongoDB not ready for getWorkerById request');
+        logger.warn('⚠️ MongoDB not ready for getWorkerById request');
         return res.status(503).json({
           success: false,
           message: 'User Service database is reconnecting. Please try again shortly.',
@@ -1576,7 +1577,7 @@ class WorkerController {
       const MongoWorkerProfile = modelsModule.WorkerProfile;
 
       if (!MongoUser) {
-        console.error('❌ User model not available');
+        logger.error('❌ User model not available');
         return res.status(503).json({
           success: false,
           message: 'User model not initialized',
@@ -1588,14 +1589,14 @@ class WorkerController {
         MongoUser.findById(workerId)
           .lean()
           .catch((err) => {
-            console.error('❌ Error querying User:', err);
+            logger.error('❌ Error querying User:', err);
             return null;
           }),
         MongoWorkerProfile
           ? MongoWorkerProfile.findOne({ userId: workerId })
             .lean()
             .catch((err) => {
-              console.error('⚠️ Error querying WorkerProfile:', err);
+              logger.error('⚠️ Error querying WorkerProfile:', err);
               return null;
             })
           : null,
@@ -1624,7 +1625,7 @@ class WorkerController {
           ? modelsModule.Availability.findOne({ user: workerId })
             .lean()
             .catch((err) => {
-              console.error('⚠️ Error querying Availability:', err);
+              logger.error('⚠️ Error querying Availability:', err);
               return null;
             })
           : null,
@@ -1634,7 +1635,7 @@ class WorkerController {
             .limit(25)
             .lean()
             .catch((err) => {
-              console.error('⚠️ Error querying Certificates:', err);
+              logger.error('⚠️ Error querying Certificates:', err);
               return [];
             })
           : [],
@@ -1648,7 +1649,7 @@ class WorkerController {
             .limit(20)
             .lean()
             .catch((err) => {
-              console.error('⚠️ Error querying Portfolio:', err);
+              logger.error('⚠️ Error querying Portfolio:', err);
               return [];
             })
           : [],
@@ -1844,7 +1845,7 @@ class WorkerController {
       });
 
     } catch (error) {
-      console.error('❌ getWorkerById FATAL ERROR:', {
+      logger.error('❌ getWorkerById FATAL ERROR:', {
         name: error?.name,
         message: error?.message,
         stack: error?.stack?.split('\n').slice(0, 5).join('\n'),
@@ -1879,7 +1880,7 @@ class WorkerController {
       });
 
     if (mongoose.connection.readyState !== 1) {
-      console.warn('⚠️ MongoDB not ready for profile completeness request, returning fallback', {
+      logger.warn('⚠️ MongoDB not ready for profile completeness request, returning fallback', {
         readyState: mongoose.connection.readyState,
       });
       return sendFallback('USER_SERVICE_DB_NOT_READY');
@@ -2022,7 +2023,7 @@ class WorkerController {
         recommendations.push('Review your profile details to reach 100% completion');
       }
 
-      res.json({
+      return res.json({
         success: true,
         data: {
           completionPercentage: totalPercentage,
@@ -2039,7 +2040,7 @@ class WorkerController {
       });
 
     } catch (error) {
-      console.error('❌ ERROR in getProfileCompletion - Full details:', {
+      logger.error('❌ ERROR in getProfileCompletion - Full details:', {
         errorName: error?.name,
         errorMessage: error?.message,
         errorStack: error?.stack,
@@ -2050,7 +2051,7 @@ class WorkerController {
         connectionState: mongoose.connection.readyState
       });
       if (error?.name === 'BSONVersionError') {
-        console.warn('⚠️ BSON version mismatch detected in getProfileCompletion, serving fallback payload');
+        logger.warn('⚠️ BSON version mismatch detected in getProfileCompletion, serving fallback payload');
         return sendFallback('BSON_VERSION_MISMATCH');
       }
       if (isDbUnavailableError(error)) {
@@ -2080,7 +2081,7 @@ class WorkerController {
               return parsed;
             }
           } catch (error) {
-            console.warn('Failed to parse x-authenticated-user header:', error.message);
+            logger.warn('Failed to parse x-authenticated-user header:', error.message);
           }
         }
 
@@ -2094,7 +2095,7 @@ class WorkerController {
               return claims;
             }
           } catch (error) {
-            console.warn('Unable to decode authorization token for recent jobs:', error.message);
+            logger.warn('Unable to decode authorization token for recent jobs:', error.message);
           }
         }
 
@@ -2105,7 +2106,7 @@ class WorkerController {
       const userId = userContext?.id;
 
       if (!userId) {
-        console.warn('Recent jobs request missing authenticated user context; returning fallback data');
+        logger.warn('Recent jobs request missing authenticated user context; returning fallback data');
         const fallback = buildRecentJobsFallback({
           limit: normalizedLimit,
           reason: 'MISSING_AUTH_CONTEXT',
@@ -2118,7 +2119,7 @@ class WorkerController {
       }
 
       if (circuitShouldBlockRequest()) {
-        console.warn('Job service circuit open; serving cached job matches');
+        logger.warn('Job service circuit open; serving cached job matches');
         return respondWithCachedJobs(
           res,
           'JOB_SERVICE_CIRCUIT_OPEN',
@@ -2201,7 +2202,7 @@ class WorkerController {
           }
         });
       } catch (error) {
-        console.warn('Could not fetch recent jobs from job service:', error.message);
+        logger.warn('Could not fetch recent jobs from job service:', error.message);
         recordCircuitFailure();
 
         if (jobServiceCircuitBreaker.state === 'open') {
@@ -2225,7 +2226,7 @@ class WorkerController {
         return res.status(200).json(fallback);
       }
     } catch (error) {
-      console.error('Get recent jobs error:', error);
+      logger.error('Get recent jobs error:', error);
       return handleServiceError(res, error, 'Failed to get recent jobs');
     }
   }
@@ -2265,7 +2266,7 @@ class WorkerController {
         },
       });
     } catch (error) {
-      console.error('getWorkerSkills error:', error);
+      logger.error('getWorkerSkills error:', error);
       return handleServiceError(res, error, 'Failed to load worker skills');
     }
   }
@@ -2322,7 +2323,7 @@ class WorkerController {
 
       return res.status(201).json({ success: true, data: { skill: normalized } });
     } catch (error) {
-      console.error('createWorkerSkill error:', error);
+      logger.error('createWorkerSkill error:', error);
       return handleServiceError(res, error, 'Failed to create worker skill');
     }
   }
@@ -2378,7 +2379,7 @@ class WorkerController {
 
       return res.json({ success: true, data: { skill: normalized } });
     } catch (error) {
-      console.error('updateWorkerSkill error:', error);
+      logger.error('updateWorkerSkill error:', error);
       return handleServiceError(res, error, 'Failed to update worker skill');
     }
   }
@@ -2471,7 +2472,7 @@ class WorkerController {
         },
       });
     } catch (error) {
-      console.error('upsertWorkerSkillsBulk error:', error);
+      logger.error('upsertWorkerSkillsBulk error:', error);
       return handleServiceError(res, error, 'Failed to update worker skills');
     }
   }
@@ -2508,7 +2509,7 @@ class WorkerController {
 
       return res.status(204).send();
     } catch (error) {
-      console.error('deleteWorkerSkill error:', error);
+      logger.error('deleteWorkerSkill error:', error);
       return handleServiceError(res, error, 'Failed to delete worker skill');
     }
   }
@@ -2540,7 +2541,7 @@ class WorkerController {
         },
       });
     } catch (error) {
-      console.error('getWorkerWorkHistory error:', error);
+      logger.error('getWorkerWorkHistory error:', error);
       return handleServiceError(res, error, 'Failed to load worker work history');
     }
   }
@@ -2592,7 +2593,7 @@ class WorkerController {
       const normalized = normalizeWorkHistoryEntries(profile.workHistory);
       return res.status(201).json({ success: true, data: { workHistory: normalized } });
     } catch (error) {
-      console.error('addWorkHistoryEntry error:', error);
+      logger.error('addWorkHistoryEntry error:', error);
       return handleServiceError(res, error, 'Failed to add work history entry');
     }
   }
@@ -2646,7 +2647,7 @@ class WorkerController {
 
       return res.json({ success: true, data: { workHistory: normalized } });
     } catch (error) {
-      console.error('updateWorkHistoryEntry error:', error);
+      logger.error('updateWorkHistoryEntry error:', error);
       return handleServiceError(res, error, 'Failed to update work history entry');
     }
   }
@@ -2683,7 +2684,7 @@ class WorkerController {
 
       return res.status(204).send();
     } catch (error) {
-      console.error('deleteWorkHistoryEntry error:', error);
+      logger.error('deleteWorkHistoryEntry error:', error);
       return handleServiceError(res, error, 'Failed to delete work history entry');
     }
   }
@@ -2756,7 +2757,7 @@ class WorkerController {
         },
       });
     } catch (error) {
-      console.error('getWorkerPortfolio error:', error);
+      logger.error('getWorkerPortfolio error:', error);
       return handleServiceError(res, error, 'Failed to load worker portfolio');
     }
   }
@@ -2807,7 +2808,7 @@ class WorkerController {
         meta: { ownerView: isOwner },
       });
     } catch (error) {
-      console.error('getWorkerCertificates error:', error);
+      logger.error('getWorkerCertificates error:', error);
       return handleServiceError(res, error, 'Failed to load worker certificates');
     }
   }
@@ -2884,7 +2885,7 @@ class WorkerController {
 
       return res.status(201).json({ success: true, data: { portfolioItem: formatPortfolioDocument(item) } });
     } catch (error) {
-      console.error('createWorkerPortfolioItem error:', error);
+      logger.error('createWorkerPortfolioItem error:', error);
       return handleServiceError(res, error, 'Failed to create portfolio item');
     }
   }
@@ -2939,7 +2940,7 @@ class WorkerController {
 
       return res.json({ success: true, data: { portfolioItem: formatPortfolioDocument(item) } });
     } catch (error) {
-      console.error('updateWorkerPortfolioItem error:', error);
+      logger.error('updateWorkerPortfolioItem error:', error);
       return handleServiceError(res, error, 'Failed to update portfolio item');
     }
   }
@@ -2983,7 +2984,7 @@ class WorkerController {
 
       return res.status(204).send();
     } catch (error) {
-      console.error('deleteWorkerPortfolioItem error:', error);
+      logger.error('deleteWorkerPortfolioItem error:', error);
       return handleServiceError(res, error, 'Failed to delete portfolio item');
     }
   }
@@ -3033,7 +3034,7 @@ class WorkerController {
 
       return res.status(201).json({ success: true, data: { certificate: formatCertificateDocument(certificate) } });
     } catch (error) {
-      console.error('addWorkerCertificate error:', error);
+      logger.error('addWorkerCertificate error:', error);
       return handleServiceError(res, error, 'Failed to add certificate');
     }
   }
@@ -3081,7 +3082,7 @@ class WorkerController {
 
       return res.json({ success: true, data: { certificate: formatCertificateDocument(updated) } });
     } catch (error) {
-      console.error('updateWorkerCertificate error:', error);
+      logger.error('updateWorkerCertificate error:', error);
       return handleServiceError(res, error, 'Failed to update certificate');
     }
   }
@@ -3122,7 +3123,7 @@ class WorkerController {
 
       return res.status(204).send();
     } catch (error) {
-      console.error('deleteWorkerCertificate error:', error);
+      logger.error('deleteWorkerCertificate error:', error);
       return handleServiceError(res, error, 'Failed to delete certificate');
     }
   }
@@ -3143,12 +3144,12 @@ class WorkerController {
       });
 
     if (!mongoose.Types.ObjectId.isValid(workerId)) {
-      console.warn('Invalid worker ID supplied for availability; returning fallback', { workerId });
+      logger.warn('Invalid worker ID supplied for availability; returning fallback', { workerId });
       return sendFallback('INVALID_WORKER_ID');
     }
 
     if (mongoose.connection.readyState !== 1) {
-      console.warn('⚠️ MongoDB not ready for availability request, returning fallback', {
+      logger.warn('⚠️ MongoDB not ready for availability request, returning fallback', {
         readyState: mongoose.connection.readyState,
       });
       return sendFallback('USER_SERVICE_DB_NOT_READY');
@@ -3164,7 +3165,7 @@ class WorkerController {
       const MongoAvailability = modelsModule.Availability;
 
       if (!MongoUser || !MongoAvailability) {
-        console.warn('Availability request missing initialized models, returning fallback');
+        logger.warn('Availability request missing initialized models, returning fallback');
         return sendFallback('MODELS_NOT_INITIALIZED');
       }
 
@@ -3233,7 +3234,7 @@ class WorkerController {
         return null;
       };
 
-      res.json({
+      return res.json({
         success: true,
         data: {
           status: availability.isAvailable ? 'available' : 'unavailable',
@@ -3247,7 +3248,7 @@ class WorkerController {
         }
       });
     } catch (error) {
-      console.error('❌ ERROR in getWorkerAvailability - Full details:', {
+      logger.error('❌ ERROR in getWorkerAvailability - Full details:', {
         errorName: error?.name,
         errorMessage: error?.message,
         errorStack: error?.stack,
@@ -3258,7 +3259,7 @@ class WorkerController {
         connectionState: mongoose.connection.readyState
       });
       if (error?.name === 'BSONVersionError') {
-        console.warn('⚠️ BSON version mismatch detected in getWorkerAvailability, serving fallback payload');
+        logger.warn('⚠️ BSON version mismatch detected in getWorkerAvailability, serving fallback payload');
         return sendFallback('BSON_VERSION_MISMATCH');
       }
       if (isDbUnavailableError(error)) {
@@ -3372,7 +3373,7 @@ class WorkerController {
       });
 
     } catch (error) {
-      console.error('updateWorkerProfile error:', error);
+      logger.error('updateWorkerProfile error:', error);
       return handleServiceError(res, error, 'Failed to update worker profile');
     }
   }

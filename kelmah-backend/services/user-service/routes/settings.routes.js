@@ -72,7 +72,7 @@ router.get('/', async (req, res) => {
     respond(res, settings);
   } catch (err) {
     logger.error('[SETTINGS] GET / error:', err.message);
-    res.status(500).json({ success: false, error: { message: 'Failed to retrieve settings' } });
+    return res.status(500).json({ success: false, error: { message: 'Failed to retrieve settings' } });
   }
 });
 
@@ -106,7 +106,7 @@ router.put('/', verifyGatewayRequest, async (req, res) => {
     respond(res, settings);
   } catch (err) {
     logger.error('[SETTINGS] PUT / error:', err.message);
-    res.status(500).json({ success: false, error: { message: 'Failed to update settings' } });
+    return res.status(500).json({ success: false, error: { message: 'Failed to update settings' } });
   }
 });
 
@@ -119,7 +119,7 @@ router.get('/notifications', async (req, res) => {
     respond(res, settings.notifications || DEFAULT_NOTIFICATIONS);
   } catch (err) {
     logger.error('[SETTINGS] GET /notifications error:', err.message);
-    res.status(500).json({ success: false, error: { message: 'Failed to retrieve notification preferences' } });
+    return res.status(500).json({ success: false, error: { message: 'Failed to retrieve notification preferences' } });
   }
 });
 
@@ -141,7 +141,7 @@ router.put('/notifications', verifyGatewayRequest, async (req, res) => {
     respond(res, settings.notifications);
   } catch (err) {
     logger.error('[SETTINGS] PUT /notifications error:', err.message);
-    res.status(500).json({ success: false, error: { message: 'Failed to update notification preferences' } });
+    return res.status(500).json({ success: false, error: { message: 'Failed to update notification preferences' } });
   }
 });
 
@@ -154,7 +154,7 @@ router.get('/privacy', async (req, res) => {
     respond(res, settings.privacy || DEFAULT_PRIVACY);
   } catch (err) {
     logger.error('[SETTINGS] GET /privacy error:', err.message);
-    res.status(500).json({ success: false, error: { message: 'Failed to retrieve privacy settings' } });
+    return res.status(500).json({ success: false, error: { message: 'Failed to retrieve privacy settings' } });
   }
 });
 
@@ -176,7 +176,7 @@ router.put('/privacy', verifyGatewayRequest, async (req, res) => {
     respond(res, settings.privacy);
   } catch (err) {
     logger.error('[SETTINGS] PUT /privacy error:', err.message);
-    res.status(500).json({ success: false, error: { message: 'Failed to update privacy settings' } });
+    return res.status(500).json({ success: false, error: { message: 'Failed to update privacy settings' } });
   }
 });
 
@@ -197,7 +197,7 @@ router.put('/language', verifyGatewayRequest, async (req, res) => {
     respond(res, { language: settings.language });
   } catch (err) {
     logger.error('[SETTINGS] PUT /language error:', err.message);
-    res.status(500).json({ success: false, error: { message: 'Failed to update language' } });
+    return res.status(500).json({ success: false, error: { message: 'Failed to update language' } });
   }
 });
 
@@ -216,7 +216,7 @@ router.put('/theme', verifyGatewayRequest, async (req, res) => {
     respond(res, { theme: settings.theme });
   } catch (err) {
     logger.error('[SETTINGS] PUT /theme error:', err.message);
-    res.status(500).json({ success: false, error: { message: 'Failed to update theme' } });
+    return res.status(500).json({ success: false, error: { message: 'Failed to update theme' } });
   }
 });
 
@@ -240,7 +240,7 @@ router.post('/reset', verifyGatewayRequest, async (req, res) => {
     respond(res, settings);
   } catch (err) {
     logger.error('[SETTINGS] POST /reset error:', err.message);
-    res.status(500).json({ success: false, error: { message: 'Failed to reset settings' } });
+    return res.status(500).json({ success: false, error: { message: 'Failed to reset settings' } });
   }
 });
 

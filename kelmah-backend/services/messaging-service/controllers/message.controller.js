@@ -103,7 +103,7 @@ exports.createMessage = async (req, res) => {
       logger.warn("Message notification creation failed:", notifErr.message);
     }
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Message sent successfully",
       data: message,
     });
@@ -164,7 +164,7 @@ exports.getConversationMessages = async (req, res) => {
 
     const nextCursor =
       messages.length > 0 ? messages[messages.length - 1].createdAt : null;
-    res.json({
+    return res.json({
       success: true,
       data: {
         messages,
@@ -198,7 +198,7 @@ exports.deleteMessage = async (req, res) => {
 
     await message.deleteOne();
 
-    res.json({ message: "Message deleted successfully" });
+    return res.json({ message: "Message deleted successfully" });
   } catch (error) {
     handleError(res, error);
   }
@@ -315,7 +315,7 @@ exports.getUnreadCount = async (req, res) => {
       { $group: { _id: null, total: { $sum: "$unreadCounts.count" } } },
     ]);
     const totalUnread = result.length > 0 ? result[0].total : 0;
-    res.json({ unreadCount: totalUnread });
+    return res.json({ unreadCount: totalUnread });
   } catch (error) {
     handleError(res, error);
   }

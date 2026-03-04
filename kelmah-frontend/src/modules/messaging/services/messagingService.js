@@ -7,6 +7,75 @@
 import { api } from '../../../services/apiClient';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 
+const normalizeParticipant = (participant = {}) => {
+  if (!participant || typeof participant !== 'object') return participant;
+  return {
+    ...participant,
+    id: participant.id || participant._id || participant.userId,
+  };
+};
+
+const normalizeMessage = (message = {}) => {
+  if (!message || typeof message !== 'object') return message;
+
+  const senderId =
+    message.senderId ||
+    message.sender_id ||
+    (typeof message.sender === 'string'
+      ? message.sender
+      : message.sender?.id || message.sender?._id);
+
+  const conversationId =
+    message.conversationId ||
+    message.conversation_id ||
+    (typeof message.conversation === 'string'
+      ? message.conversation
+      : message.conversation?.id || message.conversation?._id);
+
+  return {
+    ...message,
+    id: message.id || message._id,
+    senderId,
+    conversationId,
+    sender:
+      message.sender && typeof message.sender === 'object'
+        ? normalizeParticipant(message.sender)
+        : message.sender,
+  };
+};
+
+const normalizeConversation = (conversation = {}) => {
+  if (!conversation || typeof conversation !== 'object') return conversation;
+
+  return {
+    ...conversation,
+    id: conversation.id || conversation._id,
+    participants: Array.isArray(conversation.participants)
+      ? conversation.participants.map((participant) => normalizeParticipant(participant))
+      : [],
+    unread:
+      typeof conversation.unread === 'number'
+        ? conversation.unread
+        : (conversation.unreadCount || 0),
+    unreadCount:
+      typeof conversation.unreadCount === 'number'
+        ? conversation.unreadCount
+        : (conversation.unread || 0),
+    latestMessage: conversation.latestMessage
+      ? normalizeMessage(conversation.latestMessage)
+      : conversation.latestMessage,
+    lastMessage: conversation.lastMessage
+      ? normalizeMessage(conversation.lastMessage)
+      : conversation.lastMessage,
+  };
+};
+
+const normalizeConversationList = (list = []) =>
+  Array.isArray(list) ? list.map((conversation) => normalizeConversation(conversation)) : [];
+
+const normalizeMessageList = (list = []) =>
+  Array.isArray(list) ? list.map((message) => normalizeMessage(message)) : [];
+
 // ✅ FIXED: Clear export to resolve import errors
 export const messagingService = {
   // Get all conversations for the current user
@@ -16,9 +85,9 @@ export const messagingService = {
       const response = await api.get('/messages/conversations');
       // Normalize response shape
       const payload = response.data;
-      if (Array.isArray(payload)) return payload;
-      if (payload?.data?.conversations) return payload.data.conversations;
-      if (payload?.conversations) return payload.conversations;
+      if (Array.isArray(payload)) return normalizeConversationList(payload);
+      if (payload?.data?.conversations) return normalizeConversationList(payload.data.conversations);
+      if (payload?.conversations) return normalizeConversationList(payload.conversations);
       return [];
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Messaging service unavailable:', error.message);
@@ -39,7 +108,17 @@ export const messagingService = {
       const response = await api.post('/messages/conversations', {
         applicationId,
       });
-      return response.data;
+      const payload = response.data;
+      if (payload?.data?.conversation) {
+        return {
+          ...payload,
+          data: {
+            ...payload.data,
+            conversation: normalizeConversation(payload.data.conversation),
+          },
+        };
+      }
+      return normalizeConversation(payload);
     } catch (error) {
       if (import.meta.env.DEV) console.warn(
         'Messaging service unavailable for conversation from application:',
@@ -62,9 +141,9 @@ export const messagingService = {
       );
       const payload = response.data;
       // Support shapes: { success, data: { messages, pagination } } or raw array
-      if (payload?.data?.messages) return payload.data.messages;
-      if (Array.isArray(payload?.messages)) return payload.messages;
-      if (Array.isArray(payload)) return payload;
+      if (payload?.data?.messages) return normalizeMessageList(payload.data.messages);
+      if (Array.isArray(payload?.messages)) return normalizeMessageList(payload.messages);
+      if (Array.isArray(payload)) return normalizeMessageList(payload);
       return [];
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Failed to load messages:', error.message);
@@ -90,7 +169,7 @@ export const messagingService = {
         attachments,
       });
       // Controller responds with { message: '...', data: message }
-      return response.data?.data || response.data;
+      return normalizeMessage(response.data?.data || response.data);
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Failed to send message via REST:', error.message);
       throw error;
@@ -109,7 +188,7 @@ export const messagingService = {
         payload.jobId = jobId;
       }
       const response = await api.post('/messages/conversations', payload);
-      return response.data?.data?.conversation || response.data;
+      return normalizeConversation(response.data?.data?.conversation || response.data);
     } catch (error) {
       if (import.meta.env.DEV) console.warn(
         'Messaging service unavailable for creating direct conversation:',
@@ -128,9 +207,14 @@ export const messagingService = {
         params,
       });
       const payload = response.data;
-      if (payload?.data?.messages) return payload.data;
+      if (payload?.data?.messages) {
+        return {
+          ...payload.data,
+          messages: normalizeMessageList(payload.data.messages),
+        };
+      }
       if (Array.isArray(payload?.messages))
-        return { messages: payload.messages };
+        return { messages: normalizeMessageList(payload.messages) };
       return { messages: [] };
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Failed to search messages:', error.message);

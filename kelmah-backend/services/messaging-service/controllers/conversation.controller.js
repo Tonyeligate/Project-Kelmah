@@ -84,7 +84,7 @@ class ConversationController {
         };
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "Conversations retrieved successfully",
         data: {
@@ -192,7 +192,7 @@ class ConversationController {
         },
       });
 
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         message: "Conversation created successfully",
         data: {
@@ -257,7 +257,7 @@ class ConversationController {
         .limit(50)
         .lean();
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "Conversation retrieved successfully",
         data: {
@@ -385,7 +385,7 @@ class ConversationController {
         },
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "Conversation updated successfully",
         data: { conversation: { id } },
@@ -444,7 +444,7 @@ class ConversationController {
         },
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "Successfully left conversation",
       });
@@ -498,7 +498,7 @@ class ConversationController {
         { $set: { "unreadCounts.$.count": 0 } },
       );
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "Conversation marked as read",
         data: {
@@ -566,7 +566,7 @@ class ConversationController {
         matchedConvIds.has(String(conv._id)),
       );
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: "Conversation search completed",
         data: {

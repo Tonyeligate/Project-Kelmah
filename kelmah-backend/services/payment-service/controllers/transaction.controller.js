@@ -1,4 +1,5 @@
-const { Transaction, Wallet, PaymentMethod, WebhookEvent, User, Job, Application } = require("../models");
+const { Transaction, Wallet, PaymentMethod, WebhookEvent } = require("../models");
+const logger = require('../utils/logger');
 const stripe = require("../services/stripe");
 const paypal = require("../services/paypal");
 const PaystackService = require('../integrations/paystack');
@@ -67,7 +68,7 @@ exports.createTransaction = async (req, res) => {
         throw new Error("Invalid transaction type");
     }
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Transaction created successfully",
       data: transaction,
@@ -91,7 +92,7 @@ exports.getTransaction = async (req, res) => {
       return res.status(404).json({ success: false, error: { message: "Transaction not found" } });
     }
 
-    res.json({ success: true, data: transaction });
+    return res.json({ success: true, data: transaction });
   } catch (error) {
     handleError(res, error);
   }
@@ -119,7 +120,7 @@ exports.getTransactionHistory = async (req, res) => {
 
     const total = await Transaction.countDocuments(query);
 
-    res.json({
+    return res.json({
       success: true,
       data: transactions,
       pagination: {
@@ -180,7 +181,7 @@ exports.cancelTransaction = async (req, res) => {
 
     await transaction.updateStatus("cancelled");
 
-    res.json({ success: true, message: "Transaction cancelled successfully" });
+    return res.json({ success: true, message: "Transaction cancelled successfully" });
   } catch (error) {
     handleError(res, error);
   }
@@ -277,7 +278,6 @@ const processWithdrawal = async (transaction) => {
     // CRIT-02 FIX: Deduct wallet balance FIRST with an atomic operation,
     // then send to the external provider.  If the provider call fails we
     // roll back by re-crediting the wallet.
-    const Wallet = require('../models/Wallet');
     const deductResult = await Wallet.findOneAndUpdate(
       { user: transaction.sender, balance: { $gte: transaction.amount } },
       { $inc: { balance: -transaction.amount } },
@@ -365,13 +365,12 @@ const processWithdrawal = async (transaction) => {
     // CRIT-02 FIX: Roll back the wallet deduction if the provider call failed
     // (balance was deducted atomically before the provider call)
     try {
-      const Wallet = require('../models/Wallet');
       await Wallet.findOneAndUpdate(
         { user: transaction.sender },
         { $inc: { balance: transaction.amount } }
       );
     } catch (rollbackErr) {
-      console.error('CRITICAL: Wallet rollback failed after provider error:', rollbackErr);
+      logger.error('CRITICAL: Wallet rollback failed after provider error:', rollbackErr);
       // Log for manual reconciliation — the user lost funds
     }
     await transaction.updateStatus("failed", {

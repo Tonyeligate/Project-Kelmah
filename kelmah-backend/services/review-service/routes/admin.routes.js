@@ -49,7 +49,7 @@ router.get('/reviews/queue', adminLimiter, async (req, res) => {
       Review.countDocuments(filter)
     ]);
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         reviews,
@@ -63,7 +63,7 @@ router.get('/reviews/queue', adminLimiter, async (req, res) => {
     });
   } catch (error) {
     logger.error('Admin reviews queue error:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch moderation queue' });
+    return res.status(500).json({ success: false, message: 'Failed to fetch moderation queue' });
   }
 });
 
@@ -84,10 +84,10 @@ router.post('/reviews/:id/moderate', adminLimiter, async (req, res) => {
       { new: true }
     );
     if (!review) return res.status(404).json({ success: false, message: 'Review not found' });
-    res.json({ success: true, message: 'Review moderated', data: review });
+    return res.json({ success: true, message: 'Review moderated', data: review });
   } catch (error) {
     logger.error('Admin moderate review error:', error);
-    res.status(500).json({ success: false, message: 'Failed to moderate review' });
+    return res.status(500).json({ success: false, message: 'Failed to moderate review' });
   }
 });
 
@@ -108,10 +108,10 @@ router.post('/reviews/bulk-moderate', adminLimiter, async (req, res) => {
         $push: { moderationNotes: { note, moderatorId: req.user?.id, timestamp: new Date() } }
       }
     );
-    res.json({ success: true, message: `${result.modifiedCount} reviews ${status}`, data: { modified: result.modifiedCount } });
+    return res.json({ success: true, message: `${result.modifiedCount} reviews ${status}`, data: { modified: result.modifiedCount } });
   } catch (error) {
     logger.error('Admin bulk moderate error:', error);
-    res.status(500).json({ success: false, message: 'Failed to bulk moderate reviews' });
+    return res.status(500).json({ success: false, message: 'Failed to bulk moderate reviews' });
   }
 });
 

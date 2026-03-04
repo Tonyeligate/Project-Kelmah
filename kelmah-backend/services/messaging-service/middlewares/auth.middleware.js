@@ -5,6 +5,7 @@
 
 const { verifyAccessToken } = require("../../../shared/utils/jwt");
 const { User } = require("../models");
+const { logger } = require("../utils/logger");
 
 /**
  * Authentication middleware
@@ -94,7 +95,7 @@ const authenticate = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error("❌ Authentication error:", {
+    logger.error("Authentication error:", {
       name: error.name,
       message: error.message,
       url: req.url,

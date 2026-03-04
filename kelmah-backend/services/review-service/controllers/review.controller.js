@@ -4,6 +4,7 @@
  */
 
 const { Review, Job, Application } = require('../models');
+const { logger } = require('../utils/logger');
 
 const toObjectIdSafe = (value) => value;
 
@@ -73,7 +74,6 @@ exports.submitReview = async (req, res) => {
     // (either as the hirer or as the hired worker via Application)
     const isHirer = String(job.hirer) === String(reviewerId);
     if (!isHirer) {
-      const Application = require('../models').Application || require('../models/Application');
       const wasHired = await Application.exists({
         job: jobId,
         worker: reviewerId,
@@ -99,14 +99,14 @@ exports.submitReview = async (req, res) => {
 
     await review.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'Review submitted successfully',
       data: review
     });
 
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to submit review'
     });
@@ -152,7 +152,7 @@ exports.getWorkerReviews = async (req, res) => {
       Review.countDocuments(query)
     ]);
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         reviews,
@@ -166,7 +166,7 @@ exports.getWorkerReviews = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch reviews'
     });
@@ -196,7 +196,7 @@ exports.getJobReviews = async (req, res) => {
       Review.countDocuments(query)
     ]);
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         reviews,
@@ -209,7 +209,7 @@ exports.getJobReviews = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch job reviews'
     });
@@ -238,7 +238,7 @@ exports.getUserReviews = async (req, res) => {
       Review.countDocuments(query)
     ]);
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         reviews,
@@ -251,7 +251,7 @@ exports.getUserReviews = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch user reviews'
     });
@@ -278,13 +278,13 @@ exports.getReview = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: review
     });
 
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch review'
     });
@@ -347,14 +347,14 @@ exports.addReviewResponse = async (req, res) => {
 
     await review.save();
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Response added successfully',
       data: review
     });
 
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to add response'
     });
@@ -391,14 +391,14 @@ exports.voteHelpful = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Vote recorded',
       data: { helpfulVotes: review.helpfulVoters.length }
     });
 
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to record vote'
     });
@@ -453,13 +453,13 @@ exports.reportReview = async (req, res) => {
       await review.save();
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Review reported for moderation'
     });
 
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to report review'
     });
@@ -516,7 +516,7 @@ exports.checkEligibility = async (req, res) => {
       a => !reviewedJobIds.has(String(a.job._id))
     );
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         canReview: unreviewedJobs.length > 0,
@@ -531,8 +531,8 @@ exports.checkEligibility = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Failed to check review eligibility:', error);
-    res.status(500).json({
+    logger.error('Failed to check review eligibility:', error);
+    return res.status(500).json({
       success: false,
       message: 'Failed to check review eligibility'
     });

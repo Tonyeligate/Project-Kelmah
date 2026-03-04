@@ -16,10 +16,81 @@ import { normalizeAttachmentListVirusScan } from '../utils/virusScanUtils';
 
 const MessageContext = createContext(null);
 
-const normalizeMessageAttachments = (message = {}) => ({
-  ...message,
-  attachments: normalizeAttachmentListVirusScan(message.attachments || []),
-});
+const normalizeParticipant = (participant = {}) => {
+  if (!participant || typeof participant !== 'object') return participant;
+  return {
+    ...participant,
+    id: participant.id || participant._id || participant.userId,
+  };
+};
+
+const resolveParticipantId = (participant) => {
+  if (!participant) return null;
+  if (typeof participant === 'string') return participant;
+  if (typeof participant === 'object') {
+    return participant.id || participant._id || participant.userId || null;
+  }
+  return null;
+};
+
+const normalizeMessageAttachments = (message = {}) => {
+  if (!message || typeof message !== 'object') return message;
+
+  const senderId =
+    message.senderId ||
+    message.sender_id ||
+    (typeof message.sender === 'string'
+      ? message.sender
+      : message.sender?.id || message.sender?._id);
+
+  const conversationId =
+    message.conversationId ||
+    message.conversation_id ||
+    (typeof message.conversation === 'string'
+      ? message.conversation
+      : message.conversation?.id || message.conversation?._id);
+
+  return {
+    ...message,
+    id: message.id || message._id,
+    senderId,
+    conversationId,
+    sender:
+      message.sender && typeof message.sender === 'object'
+        ? normalizeParticipant(message.sender)
+        : message.sender,
+    attachments: normalizeAttachmentListVirusScan(message.attachments || []),
+  };
+};
+
+const normalizeConversation = (conversation = {}) => {
+  if (!conversation || typeof conversation !== 'object') return conversation;
+
+  return {
+    ...conversation,
+    id: conversation.id || conversation._id,
+    participants: Array.isArray(conversation.participants)
+      ? conversation.participants.map((participant) => normalizeParticipant(participant))
+      : [],
+    unread:
+      typeof conversation.unread === 'number'
+        ? conversation.unread
+        : (conversation.unreadCount || 0),
+    unreadCount:
+      typeof conversation.unreadCount === 'number'
+        ? conversation.unreadCount
+        : (conversation.unread || 0),
+    lastMessage: conversation.lastMessage
+      ? normalizeMessageAttachments(conversation.lastMessage)
+      : conversation.lastMessage,
+    latestMessage: conversation.latestMessage
+      ? normalizeMessageAttachments(conversation.latestMessage)
+      : conversation.latestMessage,
+  };
+};
+
+const normalizeConversationList = (list = []) =>
+  (Array.isArray(list) ? list : []).map((conversation) => normalizeConversation(conversation));
 
 const normalizeMessageList = (list = []) =>
   list.map((message) => normalizeMessageAttachments(message || {}));
@@ -75,7 +146,7 @@ export const MessageProvider = ({ children }) => {
       const convs = Array.isArray(response)
         ? response
         : response?.conversations || response?.data || [];
-      setConversations(Array.isArray(convs) ? convs : []);
+      setConversations(normalizeConversationList(convs));
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error loading conversations:', error);
       setConversations([]);
@@ -148,17 +219,18 @@ export const MessageProvider = ({ children }) => {
       const onConnected = (data) => {
         if (import.meta.env.DEV) console.log('🎉 Messaging service connected:', data);
         if (data.conversations) {
-          setConversations(data.conversations);
+          setConversations(normalizeConversationList(data.conversations));
         }
       };
       const onNewMessage = (messageData) => {
         if (import.meta.env.DEV) console.log('📨 New message received:', messageData);
         const hydratedMessage = normalizeMessageAttachments(messageData);
+        const hydratedConversationId = hydratedMessage.conversationId;
         const activeConversation = selectedConversationRef.current;
 
         if (
           activeConversation &&
-          messageData.conversationId === activeConversation.id
+          hydratedConversationId === activeConversation.id
         ) {
           setMessages((prev) => {
             const { clientId } = hydratedMessage;
@@ -176,7 +248,7 @@ export const MessageProvider = ({ children }) => {
 
         setConversations((prev) =>
           prev.map((conv) =>
-            conv.id === hydratedMessage.conversationId
+            conv.id === hydratedConversationId
               ? {
                 ...conv,
                 lastMessage: hydratedMessage,
@@ -320,7 +392,9 @@ export const MessageProvider = ({ children }) => {
 
   const selectConversation = useCallback(
     async (conversation) => {
-      if (selectedConversation?.id === conversation.id) return;
+      const normalizedConversation = normalizeConversation(conversation);
+      if (!normalizedConversation?.id) return;
+      if (selectedConversation?.id === normalizedConversation.id) return;
 
       // Leave previous conversation room
       if (selectedConversation && socket) {
@@ -329,7 +403,7 @@ export const MessageProvider = ({ children }) => {
         });
       }
 
-      setSelectedConversation(conversation);
+      setSelectedConversation(normalizedConversation);
       setLoadingMessages(true);
       loadingMessagesRef.current = true;
       setMessages([]);
@@ -337,7 +411,7 @@ export const MessageProvider = ({ children }) => {
       try {
         // Join new conversation room via WebSocket
         if (socket && isConnected) {
-          socket.emit('join_conversation', { conversationId: conversation.id });
+          socket.emit('join_conversation', { conversationId: normalizedConversation.id });
 
           // Listen for conversation joined event
           socket.once('conversation_joined', (data) => {
@@ -348,7 +422,7 @@ export const MessageProvider = ({ children }) => {
           });
 
           // MED-21 FIX: Fallback timeout — fetch via REST if WS doesn't respond in time
-          const conversationId = conversation.id;
+          const conversationId = normalizedConversation.id;
           setTimeout(async () => {
             if (loadingMessagesRef.current) {
               try {
@@ -365,14 +439,14 @@ export const MessageProvider = ({ children }) => {
         } else {
           // Fallback to REST API if WebSocket not available
           const loadedMessages = await messagingService.getMessages(
-            conversation.id,
+            normalizedConversation.id,
           );
           setMessages(normalizeMessageList(loadedMessages));
           setLoadingMessages(false);
         }
       } catch (error) {
         if (import.meta.env.DEV) console.error(
-          `Error loading messages for conversation ${conversation.id}:`,
+          `Error loading messages for conversation ${normalizedConversation.id}:`,
           error,
         );
         setMessages([]);
@@ -384,8 +458,11 @@ export const MessageProvider = ({ children }) => {
 
   const sendMessage = useCallback(
     async (content, messageType = 'text', attachments = []) => {
-      if (!selectedConversation || !content.trim() || !user) return;
       const safeAttachments = normalizeAttachmentListVirusScan(attachments);
+      if (!selectedConversation || !user) return;
+
+      const trimmedContent = typeof content === 'string' ? content.trim() : '';
+      if (!trimmedContent && safeAttachments.length === 0) return;
 
       setSendingMessage(true);
       try {
@@ -426,7 +503,7 @@ export const MessageProvider = ({ children }) => {
           const payload = useEncrypted
             ? {
               conversationId: selectedConversation.id,
-              encryptedBody: content.trim(),
+              encryptedBody: trimmedContent,
               encryption: { scheme: 'beta', version: '1', senderKeyId: 'me' },
               messageType,
               attachments: safeAttachments,
@@ -434,7 +511,7 @@ export const MessageProvider = ({ children }) => {
             }
             : {
               conversationId: selectedConversation.id,
-              content: content.trim(),
+              content: trimmedContent,
               messageType,
               attachments: safeAttachments,
               clientId,
@@ -445,12 +522,19 @@ export const MessageProvider = ({ children }) => {
               if (import.meta.env.DEV) console.warn('WebSocket send failed, falling back to REST', ack);
               try {
                 const recipient = selectedConversation.participants.find(
-                  (p) => p.id !== user.id,
+                  (participant) => {
+                    const participantId = resolveParticipantId(participant);
+                    return participantId && participantId !== user.id;
+                  },
                 );
+                const recipientId = resolveParticipantId(recipient);
+                if (!recipientId) {
+                  throw new Error('Unable to resolve message recipient');
+                }
                 const newMessage = await messagingService.sendMessage(
                   user.id,
-                  recipient.id,
-                  content,
+                  recipientId,
+                  trimmedContent,
                   messageType,
                   safeAttachments,
                 );
@@ -488,12 +572,19 @@ export const MessageProvider = ({ children }) => {
             '📤 Sending message via REST API (WebSocket unavailable)',
           );
           const recipient = selectedConversation.participants.find(
-            (p) => p.id !== user.id,
+            (participant) => {
+              const participantId = resolveParticipantId(participant);
+              return participantId && participantId !== user.id;
+            },
           );
+          const recipientId = resolveParticipantId(recipient);
+          if (!recipientId) {
+            throw new Error('Unable to resolve message recipient');
+          }
           const newMessage = await messagingService.sendMessage(
             user.id,
-            recipient.id,
-            content,
+            recipientId,
+            trimmedContent,
             messageType,
             safeAttachments,
           );
@@ -534,7 +625,7 @@ export const MessageProvider = ({ children }) => {
 
   // compute total unread messages
   const unreadCount = (conversations || []).reduce(
-    (sum, c) => sum + (c.unreadCount || 0),
+    (sum, c) => sum + (c.unreadCount ?? c.unread ?? 0),
     0,
   );
 

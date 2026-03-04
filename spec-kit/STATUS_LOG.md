@@ -1,5 +1,163 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: RULE-001 Compliance + Final Code Sweep — Round 24 ✅
+
+**Date**: March 4, 2026
+**Scope**: Full autonomous sweep of entire backend and frontend. Identified and fixed all RULE-001 model import violations, verified route ordering, confirmed zero console.log in controllers/routes, and validated frontend build is clean.
+
+**RULE-001 Violations Fixed (15 total across 12 files):**
+
+**Backend Controllers:**
+- ✅ `review-service/controllers/review.controller.js` — Removed inline `const Application = require('../models').Application || require('../models/Application')` (line 77). Top-level `Application` already in scope from line 6.
+- ✅ `payment-service/controllers/transaction.controller.js` — Removed 2 inline `const Wallet = require('../models/Wallet')` inside `processWithdrawal` and rollback catch block. Top-level `Wallet` already destructured at line 1.
+- ✅ `user-service/controllers/availability.controller.js` — Changed `const Availability = require('../models/Availability')` → `const { Availability } = require('../models')`.
+- ✅ `user-service/controllers/certificate.controller.js` — Changed `const Certificate = require('../models/Certificate')` → `const { Certificate } = require('../models')`.
+- ✅ `user-service/controllers/user.controller.js` — Consolidated 3 violations: replaced top-level `const Bookmark = require('../models/Bookmark')` and 2 inline requires (`Availability`, `Certificate`) with single `const { Bookmark, Availability, Certificate } = db` after the existing `db = require('../models')`.
+- ✅ `job-service/controllers/quickJobPaymentController.js` — Removed inline `const QuickJob = require('../models').QuickJob || require('../models/index').QuickJob`. Top-level `const { QuickJob } = require('../models')` already at line 7.
+
+**Backend Routes & Utilities:**
+- ✅ `auth-service/utils/jwt.js` — Changed `const RevokedToken = require('../models/RevokedToken')` → `const { RevokedToken } = require('../models')`.
+- ✅ `job-service/routes/contractTemplates.js` — Merged 2 separate direct model requires into `const { ContractTemplate, Contract } = require('../models')`.
+- ✅ `messaging-service/routes/message.routes.js` — Changed inline `const Message = require("../models/Message")` → `const { Message } = require("../models")`.
+- ✅ `payment-service/routes/payments.routes.js` — Changed `const IdempotencyKey = require('../models/IdempotencyKey')` → `const { IdempotencyKey } = require('../models')`.
+- ✅ `payment-service/routes/webhooks.routes.js` — Merged 3 direct model requires into `const { WebhookEvent, Escrow, Transaction } = require('../models')`.
+- ✅ `job-service/utils/seedContractTemplates.js` — Changed `const ContractTemplate = require('../models/ContractTemplate')` → `const { ContractTemplate } = require('../models')`.
+
+**Verification:**
+- ✅ All 12 modified files pass `node --check` (zero syntax errors).
+- ✅ Frontend production build passes cleanly (`✔ built in 51.24s`).
+- ✅ Full re-scan after fixes confirms zero remaining direct model imports in production code.
+- ✅ API Gateway route ordering verified: `/api/admin/reviews` before `/api/reviews`, `/api/search/workers` before `/api/search`, `/api/messaging/health` before `/api/messaging` — all correct.
+- ✅ Job-service route ordering verified: literal routes use `/:id([a-fA-F0-9]{24})` regex constraint, protected literal routes correctly mounted after `router.use(verifyGatewayRequest)`.
+- ✅ Review-service route ordering verified: all literal routes before `/:reviewId`.
+- ✅ User-service route ordering verified: `/workers/search`, `/workers/debug/models` etc. all before `/workers/:id`.
+- ✅ Messaging-service route ordering verified: literal routes before parameterized in all route files.
+- ✅ Zero `console.log` in any controller or route handler (all logging uses Winston).
+- ✅ Zero remaining shared/models direct imports in service code (only models/index.js files use shared/models — correct).
+
+**Files modified:**
+- `kelmah-backend/services/review-service/controllers/review.controller.js`
+- `kelmah-backend/services/payment-service/controllers/transaction.controller.js`
+- `kelmah-backend/services/user-service/controllers/availability.controller.js`
+- `kelmah-backend/services/user-service/controllers/certificate.controller.js`
+- `kelmah-backend/services/user-service/controllers/user.controller.js`
+- `kelmah-backend/services/job-service/controllers/quickJobPaymentController.js`
+- `kelmah-backend/services/auth-service/utils/jwt.js`
+- `kelmah-backend/services/job-service/routes/contractTemplates.js`
+- `kelmah-backend/services/messaging-service/routes/message.routes.js`
+- `kelmah-backend/services/payment-service/routes/payments.routes.js`
+- `kelmah-backend/services/payment-service/routes/webhooks.routes.js`
+- `kelmah-backend/services/job-service/utils/seedContractTemplates.js`
+- `spec-kit/STATUS_LOG.md`
+
+---
+
+### Session: Messaging Data-Flow Hardening — Round 23 ✅
+
+**Date**: March 4, 2026
+**Scope**: Deep sweep on frontend/backend flow edges with focus on runtime breakpoints in messaging identity handling and send-path consistency.
+
+**Implemented fixes**:
+- ✅ `messagingService.js`
+  - Added centralized normalization for conversations/messages/participants to enforce stable `id` fields (`id || _id`) and bridge mixed backend payload shapes.
+  - Normalized key fields across API methods:
+    - conversations (`id`, `unread`, `unreadCount`, `participants`, `lastMessage/latestMessage`)
+    - messages (`id`, `senderId`, `conversationId`, sender object normalization)
+  - Applied normalization consistently to `getConversations`, `getMessages`, `sendMessage`, `createDirectConversation`, `createConversationFromApplication`, and `searchMessages`.
+- ✅ `MessageContext.jsx`
+  - Added context-level normalization for websocket-driven payloads (`new_message`, `connected` conversations) to keep real-time and REST flows aligned.
+  - Hardened `selectConversation` against non-normalized input by normalizing before room-join/load logic.
+  - Standardized unread aggregation with `unreadCount ?? unread ?? 0`.
+- ✅ Attachment send-path bug fix (`MessageContext.sendMessage`)
+  - Fixed guard logic that incorrectly blocked attachment-only messages.
+  - Flow now sends when either trimmed text exists or attachments exist, matching `MessagingPage` UI behavior.
+  - Hardened REST/WebSocket fallback recipient resolution to support mixed participant shapes (string IDs vs object IDs), preventing mis-targeted or failed sends.
+
+**Verification**:
+- ✅ `get_errors` shows no diagnostics for:
+  - `kelmah-frontend/src/modules/messaging/services/messagingService.js`
+  - `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`
+- ✅ Frontend production build passes after changes:
+  - `cd kelmah-frontend && npm run build`
+  - Output confirmed successful completion (`✓ built in 1m 15s`).
+
+**Files modified**:
+- `kelmah-frontend/src/modules/messaging/services/messagingService.js`
+- `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+---
+
+### Session: Comprehensive Security & Code Quality Audit — Phase 2 COMPLETE ✅
+
+**Date**: March 4, 2026
+**Scope**: Complete second-pass sweep + fix of all remaining security, code quality, and best practice issues across the entire backend codebase.
+
+**CRITICAL fixes (2/2):**
+- ✅ `temp-db-audit.js` — Removed hardcoded MongoDB Atlas credentials (TonyGate:0553366244Aj). Now requires `MONGODB_URI` env var.
+- ✅ `auth-service/seeders/` — Replaced hardcoded "Admin@123" password with `ADMIN_DEFAULT_PASSWORD` env var, salt rounds 10→12. Then moved entire seeders + migrations directories to `backup/dead_code_sequelize_auth/` (dead Sequelize code in MongoDB project).
+
+**HIGH fixes (7/7):**
+- ✅ `wallet.controller.js` — Fixed 3 race conditions (getBalance, deposit, getWallet) with `findOneAndUpdate + upsert`. Added `return` to all 8 handler methods.
+- ✅ `bill.controller.js` — Complete rewrite: atomic `findOneAndUpdate` for payBill, `.limit()` on queries, removed unused import, added logger.
+- ✅ `contractTemplates.js` POST — Replaced `...req.body` with `TEMPLATE_ALLOWED` field allowlist.
+- ✅ `settings.routes.js` — Fixed 3 PUT handlers with `NOTIF_ALLOWED` + `PRIV_ALLOWED` allowlists.
+- ✅ `job.controller.js` createJob — Replaced `...req.body` with `JOB_CREATE_FIELDS` (25 safe fields). Added `.limit(1)` to 3 milestone queries.
+- ✅ `UserPerformance.js` — Added `limit` parameter (default 100) to 3 unbounded static methods.
+- ✅ `payment.controller.js` — Added `return` to all 5 success response calls.
+
+**MEDIUM fixes:**
+- ✅ **Console→Logger conversion**: 150 `console.log/error/warn` → `logger.info/error/warn` across 10 controller files (worker.controller, user.controller, portfolio.controller, analytics.controller, upload.controller, payment.controller, transaction.controller, ghana.controller, job.controller, review.controller) + 1 middleware (messaging auth.middleware)
+- ✅ **Return statements**: Added `return` before ~115 `res.json/res.status` calls across all controller files + 45 calls in route files
+- ✅ **Error leak**: Fixed `error.message` leak in `shared/utils/keepAlive.js` + `escrow.routes.js`
+
+**LOW fixes:**
+- ✅ Removed unused `User, Job, Application` imports from `transaction.controller.js`
+- ✅ Moved dead Sequelize migrations from auth-service, job-service, user-service to `backup/dead_code_sequelize_auth/`
+
+**Verification:**
+- ✅ ALL backend source files (services+shared+api-gateway, excluding scripts) pass `node -c` syntax check
+- ✅ 0 `console.log/error/warn` in any controller file
+- ✅ 0 unguarded `error.message` leaks in HTTP responses
+- ✅ Frontend `npx vite build` passes (1m 10s, zero errors)
+
+**Files modified (this session):**
+- `kelmah-backend/temp-db-audit.js`
+- `kelmah-backend/shared/utils/keepAlive.js`
+- `kelmah-backend/services/auth-service/seeders/` → moved to backup
+- `kelmah-backend/services/auth-service/migrations/` → moved to backup
+- `kelmah-backend/services/job-service/migrations/` → moved to backup
+- `kelmah-backend/services/user-service/migrations/` → moved to backup
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/job-service/models/UserPerformance.js`
+- `kelmah-backend/services/job-service/routes/contractTemplates.js`
+- `kelmah-backend/services/payment-service/controllers/bill.controller.js`
+- `kelmah-backend/services/payment-service/controllers/wallet.controller.js`
+- `kelmah-backend/services/payment-service/controllers/payment.controller.js`
+- `kelmah-backend/services/payment-service/controllers/paymentMethod.controller.js`
+- `kelmah-backend/services/payment-service/controllers/transaction.controller.js`
+- `kelmah-backend/services/payment-service/controllers/ghana.controller.js`
+- `kelmah-backend/services/payment-service/routes/escrow.routes.js`
+- `kelmah-backend/services/payment-service/routes/payments.routes.js`
+- `kelmah-backend/services/payment-service/routes/subscription.routes.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/controllers/user.controller.js`
+- `kelmah-backend/services/user-service/controllers/portfolio.controller.js`
+- `kelmah-backend/services/user-service/controllers/analytics.controller.js`
+- `kelmah-backend/services/user-service/controllers/upload.controller.js`
+- `kelmah-backend/services/user-service/routes/settings.routes.js`
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/messaging-service/controllers/conversation.controller.js`
+- `kelmah-backend/services/messaging-service/controllers/message.controller.js`
+- `kelmah-backend/services/messaging-service/controllers/notification.controller.js`
+- `kelmah-backend/services/messaging-service/middlewares/auth.middleware.js`
+- `kelmah-backend/services/review-service/controllers/review.controller.js`
+- `kelmah-backend/services/review-service/controllers/analytics.controller.js`
+- `kelmah-backend/services/review-service/controllers/rating.controller.js`
+- `kelmah-backend/services/review-service/routes/admin.routes.js`
+
+---
+
 ### Session: Migration Connectivity Fallback Hardening — Round 22 ✅
 
 **Scope**: Ensure MongoDB migration scripts remain executable in environments where Atlas SRV lookups intermittently fail, while preserving existing env/CLI URI behavior.

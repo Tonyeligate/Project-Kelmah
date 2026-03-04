@@ -20,7 +20,7 @@ router.get(
 // Mark a single message as read (canonical: /api/messages/:messageId/read)
 router.post("/:messageId/read", async (req, res) => {
   try {
-    const Message = require("../models/Message");
+    const { Message } = require("../models");
     const m = await Message.findById(req.params.messageId);
     if (!m)
       return res.status(404).json({ success: false, message: "Not found" });

@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 /**
  * Ghana Payments Controller
  * Thin controller exposing provider-specific endpoints expected by the frontend
@@ -17,7 +18,7 @@ const safe = (handler) => async (req, res) => {
   try {
     return await handler(req, res);
   } catch (error) {
-    console.error(`Ghana payment error [${handler.name || 'unknown'}]:`, error.message);
+    logger.error(`Ghana payment error [${handler.name || 'unknown'}]:`, error.message);
     return res.status(500).json({ success: false, message: 'Payment provider error', code: 'PROVIDER_ERROR' });
   }
 };

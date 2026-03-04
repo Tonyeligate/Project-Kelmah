@@ -25,7 +25,7 @@ const TIERS = {
 // GET /api/payments/subscriptions — list user's subscriptions
 router.get("/", async (req, res) => {
   // TODO: query Subscription model once created
-  res.json({
+  return res.json({
     success: true,
     data: [],
     message: "No active subscriptions. Upgrade via the Premium page.",
@@ -45,7 +45,7 @@ router.post("/", async (req, res) => {
   }
 
   // TODO: integrate with Paystack/Stripe subscription creation
-  res.status(501).json({
+  return res.status(501).json({
     success: false,
     message: "Subscription creation is not yet implemented. Coming soon!",
     tier: TIERS[tier],
@@ -54,7 +54,7 @@ router.post("/", async (req, res) => {
 
 // PUT /api/payments/subscriptions/:subscriptionId — update subscription
 router.put("/:subscriptionId", async (req, res) => {
-  res.status(501).json({
+  return res.status(501).json({
     success: false,
     message: "Subscription update is not yet implemented.",
   });
@@ -62,7 +62,7 @@ router.put("/:subscriptionId", async (req, res) => {
 
 // DELETE /api/payments/subscriptions/:subscriptionId — cancel subscription
 router.delete("/:subscriptionId", async (req, res) => {
-  res.status(501).json({
+  return res.status(501).json({
     success: false,
     message: "Subscription cancellation is not yet implemented.",
   });

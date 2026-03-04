@@ -8,6 +8,7 @@ const models = require('../models');
 const { validateInput, handleServiceError, generatePagination } = require('../utils/helpers');
 const auditLogger = require('../../../shared/utils/audit-logger');
 const { escapeRegex } = require('../../../shared/utils/sanitize');
+const { logger } = require('../utils/logger');
 
 const { Portfolio, WorkerProfile } = models;
 
@@ -178,7 +179,7 @@ class PortfolioController {
         },
       });
     } catch (error) {
-      console.error('Get portfolio error:', error);
+      logger.error('Get portfolio error:', error);
       return handleServiceError(res, error, 'Failed to retrieve portfolio');
     }
   }
@@ -205,7 +206,7 @@ class PortfolioController {
 
       return res.json({ success: true, data: { total, published, featured, monthly } });
     } catch (error) {
-      console.error('Get portfolio stats error:', error);
+      logger.error('Get portfolio stats error:', error);
       return handleServiceError(res, error, 'Failed to get portfolio stats');
     }
   }
@@ -237,7 +238,7 @@ class PortfolioController {
         data: { portfolioItem: formatPortfolioDocument(item) },
       });
     } catch (error) {
-      console.error('Get portfolio item error:', error);
+      logger.error('Get portfolio item error:', error);
       return handleServiceError(res, error, 'Failed to retrieve portfolio item');
     }
   }
@@ -306,7 +307,7 @@ class PortfolioController {
 
       return res.status(201).json({ success: true, message: 'Portfolio item created successfully', data: { portfolioItem: formatPortfolioDocument(created) } });
     } catch (error) {
-      console.error('Create portfolio item error:', error);
+      logger.error('Create portfolio item error:', error);
       return handleServiceError(res, error, 'Failed to create portfolio item');
     }
   }
@@ -354,7 +355,7 @@ class PortfolioController {
 
       return res.json({ success: true, message: 'Portfolio item updated successfully', data: { portfolioItem: formatPortfolioDocument(updated) } });
     } catch (error) {
-      console.error('Update portfolio item error:', error);
+      logger.error('Update portfolio item error:', error);
       return handleServiceError(res, error, 'Failed to update portfolio item');
     }
   }
@@ -390,7 +391,7 @@ class PortfolioController {
 
       return res.json({ success: true, message: 'Portfolio item deleted successfully' });
     } catch (error) {
-      console.error('Delete portfolio item error:', error);
+      logger.error('Delete portfolio item error:', error);
       return handleServiceError(res, error, 'Failed to delete portfolio item');
     }
   }
@@ -478,7 +479,7 @@ class PortfolioController {
         },
       });
     } catch (error) {
-      console.error('Search portfolio error:', error);
+      logger.error('Search portfolio error:', error);
       return handleServiceError(res, error, 'Portfolio search failed');
     }
   }
@@ -501,7 +502,7 @@ class PortfolioController {
         data: { portfolioItems: formatPortfolioCollection(items) },
       });
     } catch (error) {
-      console.error('Get featured portfolio error:', error);
+      logger.error('Get featured portfolio error:', error);
       return handleServiceError(res, error, 'Failed to retrieve featured portfolio');
     }
   }
@@ -521,7 +522,7 @@ class PortfolioController {
 
       return res.json({ success: true, message: 'Portfolio item liked successfully', data: { likeCount: updated.likeCount } });
     } catch (error) {
-      console.error('Toggle like error:', error);
+      logger.error('Toggle like error:', error);
       return handleServiceError(res, error, 'Failed to update like status');
     }
   }
@@ -556,7 +557,7 @@ class PortfolioController {
 
       return res.json({ success: true, data: { shareUrl } });
     } catch (error) {
-      console.error('Share portfolio item error:', error);
+      logger.error('Share portfolio item error:', error);
       return handleServiceError(res, error, 'Failed to share portfolio item');
     }
   }

@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const { logger } = require('../utils/logger');
 
 const ensureDir = (dir) => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -43,7 +44,7 @@ exports.uploadWorkSamples = async (req, res) => {
     }
     return res.json({ success: true, data: { files: saved } });
   } catch (err) {
-    console.error('uploadWorkSamples error', err);
+    logger.error('uploadWorkSamples error', err);
     return res.status(500).json({ success: false, message: 'Upload failed' });
   }
 };
@@ -75,7 +76,7 @@ exports.uploadCertificates = async (req, res) => {
     }
     return res.json({ success: true, data: { files: saved } });
   } catch (err) {
-    console.error('uploadCertificates error', err);
+    logger.error('uploadCertificates error', err);
     return res.status(500).json({ success: false, message: 'Upload failed' });
   }
 };

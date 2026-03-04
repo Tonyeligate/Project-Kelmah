@@ -2,8 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { createLogger } = require('../utils/logger');
 const logger = createLogger('contract-templates');
-const ContractTemplate = require('../models/ContractTemplate');
-const Contract = require('../models/Contract');
+const { ContractTemplate, Contract } = require('../models');
 const { verifyGatewayRequest, authorize } = require('../../../shared/middlewares/serviceTrust');
 const { validationResult, body, param, query } = require('express-validator');
 
@@ -150,7 +149,7 @@ router.get('/', async (req, res) => {
     const totalCount = await ContractTemplate.countDocuments(query);
     const totalPages = Math.ceil(totalCount / parseInt(limit));
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         templates,
@@ -166,7 +165,7 @@ router.get('/', async (req, res) => {
 
   } catch (error) {
     logger.error('Error fetching contract templates:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch contract templates',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -203,14 +202,14 @@ router.get('/categories', async (req, res) => {
       }
     ]);
 
-    res.json({
+    return res.json({
       success: true,
       data: categories
     });
 
   } catch (error) {
     logger.error('Error fetching template categories:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch template categories',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -230,14 +229,14 @@ router.get('/popular', async (req, res) => {
     
     const templates = await ContractTemplate.findPopular(cappedLimit);
 
-    res.json({
+    return res.json({
       success: true,
       data: templates
     });
 
   } catch (error) {
     logger.error('Error fetching popular templates:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch popular templates',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -267,14 +266,14 @@ router.get('/:id', [
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: template
     });
 
   } catch (error) {
     logger.error('Error fetching contract template:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch contract template',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -316,7 +315,7 @@ router.post('/', [
 
     await template.populate('createdBy', 'name email');
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'Contract template created successfully',
       data: template
@@ -324,7 +323,7 @@ router.post('/', [
 
   } catch (error) {
     logger.error('Error creating contract template:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to create contract template',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -382,7 +381,7 @@ router.put('/:id', [
     await template.save();
     await template.populate('createdBy', 'name email');
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Contract template updated successfully',
       data: template
@@ -390,7 +389,7 @@ router.put('/:id', [
 
   } catch (error) {
     logger.error('Error updating contract template:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to update contract template',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -429,14 +428,14 @@ router.delete('/:id', [
     template.isActive = false;
     await template.save();
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Contract template deleted successfully'
     });
 
   } catch (error) {
     logger.error('Error deleting contract template:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to delete contract template',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -486,7 +485,7 @@ router.post('/:id/generate-contract', [
 
     await contract.populate('createdBy', 'name email');
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'Contract generated successfully',
       data: contract
@@ -494,7 +493,7 @@ router.post('/:id/generate-contract', [
 
   } catch (error) {
     logger.error('Error generating contract:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to generate contract',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -527,7 +526,7 @@ router.post('/:id/increment-usage', [
 
     await template.incrementUsage();
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Template usage incremented',
       data: {
@@ -538,7 +537,7 @@ router.post('/:id/increment-usage', [
 
   } catch (error) {
     logger.error('Error incrementing template usage:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to increment template usage',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -573,7 +572,7 @@ router.put('/:id/approve', [
     await template.save();
     await template.populate(['createdBy', 'approvedBy'], 'name email');
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Contract template approved successfully',
       data: template
@@ -581,7 +580,7 @@ router.put('/:id/approve', [
 
   } catch (error) {
     logger.error('Error approving contract template:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to approve contract template',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -617,14 +616,14 @@ router.put('/:id/reject', [
 
     await template.save();
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Contract template rejected successfully'
     });
 
   } catch (error) {
     logger.error('Error rejecting contract template:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to reject contract template',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined

@@ -117,7 +117,6 @@ const getPaymentStatus = async (req, res) => {
     const { id } = req.params;
 
     // SECURITY: Verify the requester is the client or worker of this QuickJob
-    const QuickJob = require('../models').QuickJob || require('../models/index').QuickJob;
     if (QuickJob) {
       const qj = await QuickJob.findById(id).select('client acceptedQuote.worker').lean();
       if (qj) {

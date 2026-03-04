@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const RevokedToken = require('../models/RevokedToken');
+const { RevokedToken } = require('../models');
 const { JWT_SECRET, JWT_REFRESH_SECRET } = process.env;
 
 module.exports = {

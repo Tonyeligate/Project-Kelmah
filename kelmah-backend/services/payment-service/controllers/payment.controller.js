@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 /**
  * Payment Controller
  * Unified payment processing for all Ghanaian payment methods
@@ -184,7 +185,7 @@ class PaymentController {
       // Notify user
       notifyPaymentEvent(userId, 'payment_init', 'Payment Initiated', `Your payment of ${amount} ${currency} is being processed.`, { paymentId, method });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: 'Payment initialized successfully',
         data: {
@@ -198,7 +199,7 @@ class PaymentController {
       });
 
     } catch (error) {
-      console.error('Initialize Payment Error:', error);
+      logger.error('Initialize Payment Error:', error);
       return res.status(500).json({
         success: false,
         message: 'Payment service error',
@@ -288,7 +289,7 @@ class PaymentController {
         }
       }
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: 'Payment status retrieved successfully',
         data: {
@@ -305,7 +306,7 @@ class PaymentController {
       });
 
     } catch (error) {
-      console.error('Check Payment Status Error:', error);
+      logger.error('Check Payment Status Error:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to check payment status',
@@ -515,7 +516,7 @@ class PaymentController {
       // Notify user for payout request
       notifyPaymentEvent(userId, 'payout_init', 'Payout Requested', `Your payout of ${amount} GHS has been initiated.`, { payoutId });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: 'Payout initiated successfully',
         data: {
@@ -528,7 +529,7 @@ class PaymentController {
       });
 
     } catch (error) {
-      console.error('Process Payout Error:', error);
+      logger.error('Process Payout Error:', error);
       return res.status(500).json({
         success: false,
         message: 'Payout service error',
@@ -600,7 +601,7 @@ class PaymentController {
         failureReason: payment.failureReason
       }));
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: 'Payment history retrieved successfully',
         data: {
@@ -615,7 +616,7 @@ class PaymentController {
       });
 
     } catch (error) {
-      console.error('Get Payment History Error:', error);
+      logger.error('Get Payment History Error:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to retrieve payment history',
@@ -706,7 +707,7 @@ class PaymentController {
         }
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: 'Payment methods retrieved successfully',
         data: {
@@ -720,7 +721,7 @@ class PaymentController {
       });
 
     } catch (error) {
-      console.error('Get Payment Methods Error:', error);
+      logger.error('Get Payment Methods Error:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to retrieve payment methods',
@@ -815,7 +816,7 @@ class PaymentController {
 
     } catch (error) {
       // MED-09 FIX: Log as critical error with full context instead of silently swallowing
-      console.error('CRITICAL: Failed to create transaction record', {
+      logger.error('CRITICAL: Failed to create transaction record', {
         paymentId: payment?.id,
         userId: payment?.userId,
         amount: payment?.amount,

@@ -3,9 +3,7 @@ const router = express.Router();
 const logger = require('../utils/logger');
 const Stripe = require('stripe');
 const PaystackService = require('../integrations/paystack');
-const WebhookEvent = require('../models/WebhookEvent');
-const Escrow = require('../models/Escrow');
-const Transaction = require('../models/Transaction');
+const { WebhookEvent, Escrow, Transaction } = require('../models');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY || '');
 const paystack = new PaystackService();

@@ -15,7 +15,7 @@ const { createLimiter } = require('../../../shared/middlewares/rateLimiter');
 
 // Create a new payment intent/order
 // Durable idempotency store (MongoDB model, optionally Redis)
-const IdempotencyKey = require('../models/IdempotencyKey');
+const { IdempotencyKey } = require('../models');
 let redisClient = null;
 try {
   const Redis = require('ioredis');
@@ -72,7 +72,7 @@ router.post("/create-payment-intent", createLimiter('payments'), async (req, res
       { upsert: true }
     );
     if (redisClient) await redisClient.setex(`idemp:${idempotencyKey}`, 3600, JSON.stringify(response));
-    res.status(201).json(response);
+    return res.status(201).json(response);
   } catch (error) {
     if (req.body?.idempotencyKey) {
       await IdempotencyKey.findOneAndUpdate(
@@ -99,7 +99,7 @@ router.post("/confirm-payment", createLimiter('payments'), async (req, res, next
       default:
         throw new Error("Unsupported payment provider");
     }
-    res.json(result);
+    return res.json(result);
   } catch (error) {
     next(error);
   }

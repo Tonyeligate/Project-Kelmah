@@ -243,9 +243,9 @@ function keepAliveTriggerHandler(manager) {
   return async function(req, res) {
     try {
       const results = await manager.triggerPing();
-      res.json({ success: true, message: 'Keep-alive ping triggered', data: results });
+      return res.json({ success: true, message: 'Keep-alive ping triggered', data: results });
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Failed to trigger keep-alive ping', error: error.message });
+      return res.status(500).json({ success: false, message: 'Failed to trigger keep-alive ping' });
     }
   };
 }
