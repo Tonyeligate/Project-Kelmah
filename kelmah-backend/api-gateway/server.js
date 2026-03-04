@@ -648,6 +648,7 @@ app.use(
       if (req.user) {
         proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
         proxyReq.setHeader('x-auth-source', 'api-gateway');
+        if (req.headers['x-gateway-signature']) proxyReq.setHeader('x-gateway-signature', req.headers['x-gateway-signature']);
       }
     },
     onProxyRes: (proxyRes, req, res) => {
@@ -689,6 +690,7 @@ app.use('/api/availability',
       if (req.user) {
         proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
         proxyReq.setHeader('x-auth-source', 'api-gateway');
+        if (req.headers['x-gateway-signature']) proxyReq.setHeader('x-gateway-signature', req.headers['x-gateway-signature']);
       }
     },
   })
@@ -1100,6 +1102,7 @@ app.use('/api/notifications', authenticate, async (req, res, next) => {
       headers: {
         'x-authenticated-user': JSON.stringify(req.user),
         'x-auth-source': 'api-gateway',
+        'x-gateway-signature': req.headers['x-gateway-signature'] || '',
         'content-type': req.headers['content-type'] || 'application/json'
       },
       ...(req.method !== 'GET' && req.method !== 'HEAD' && { data: req.body })
@@ -1153,6 +1156,7 @@ app.use('/api/conversations',
         if (req.user) {
           proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
           proxyReq.setHeader('x-auth-source', 'api-gateway');
+          if (req.headers['x-gateway-signature']) proxyReq.setHeader('x-gateway-signature', req.headers['x-gateway-signature']);
         }
       }
     });
@@ -1177,6 +1181,7 @@ app.use('/api/admin/reviews',
         if (req.user) {
           proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
           proxyReq.setHeader('x-auth-source', 'api-gateway');
+          if (req.headers['x-gateway-signature']) proxyReq.setHeader('x-gateway-signature', req.headers['x-gateway-signature']);
         }
       },
       onError: (err, req, res) => {
@@ -1226,6 +1231,7 @@ app.use('/api/reviews',
         if (req.user) {
           proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
           proxyReq.setHeader('x-auth-source', 'api-gateway');
+          if (req.headers['x-gateway-signature']) proxyReq.setHeader('x-gateway-signature', req.headers['x-gateway-signature']);
         }
       },
       onError: (err, req, res) => {
@@ -1263,6 +1269,7 @@ app.use('/api/ratings',
         if (req.user) {
           proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
           proxyReq.setHeader('x-auth-source', 'api-gateway');
+          if (req.headers['x-gateway-signature']) proxyReq.setHeader('x-gateway-signature', req.headers['x-gateway-signature']);
         }
       },
       onError: (err, req, res) => {

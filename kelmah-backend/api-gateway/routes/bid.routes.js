@@ -35,6 +35,10 @@ const forwardToBidService = async (req, res, path, method = 'GET') => {
     if (req.user) {
       config.headers['x-authenticated-user'] = JSON.stringify(req.user);
       config.headers['x-auth-source'] = 'api-gateway';
+      // Forward HMAC signature computed by authenticate middleware
+      if (req.headers['x-gateway-signature']) {
+        config.headers['x-gateway-signature'] = req.headers['x-gateway-signature'];
+      }
     }
 
     if (['POST', 'PUT', 'PATCH'].includes(method) && req.body) {

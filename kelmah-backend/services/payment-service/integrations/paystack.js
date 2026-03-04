@@ -13,9 +13,19 @@ class PaystackService {
     this.secretKey = process.env.PAYSTACK_SECRET_KEY;
     this.publicKey = process.env.PAYSTACK_PUBLIC_KEY;
     this.webhookSecret = process.env.PAYSTACK_WEBHOOK_SECRET;
+    this.configured = !!this.secretKey;
     
     if (!this.secretKey) {
-      throw new Error('Paystack secret key is required');
+      console.warn('⚠️ PaystackService: PAYSTACK_SECRET_KEY not set — payment operations will be unavailable');
+    }
+  }
+
+  /**
+   * Guard: throw if service is not configured (called at request time, not startup)
+   */
+  _requireConfig() {
+    if (!this.configured) {
+      throw new Error('Paystack is not configured — set PAYSTACK_SECRET_KEY env var');
     }
   }
 
@@ -23,6 +33,7 @@ class PaystackService {
    * Initialize payment transaction
    */
   async initializePayment(paymentData) {
+    this._requireConfig();
     try {
       const {
         email,
@@ -83,6 +94,7 @@ class PaystackService {
    * Verify payment transaction
    */
   async verifyPayment(reference) {
+    this._requireConfig();
     try {
       const doCall = () => http.get(
         `${this.baseURL}/transaction/verify/${reference}`,
