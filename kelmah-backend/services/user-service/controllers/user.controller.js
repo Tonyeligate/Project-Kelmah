@@ -613,7 +613,7 @@ exports.bulkUpdateUsers = async (req, res) => {
     });
   } catch (err) {
     console.error('bulkUpdateUsers error:', err);
-    res.status(500).json({ success: false, error: { message: err.message } });
+    res.status(500).json({ success: false, error: { message: 'Bulk update failed' } });
   }
 };
 
@@ -648,7 +648,7 @@ exports.bulkDeleteUsers = async (req, res) => {
     });
   } catch (err) {
     console.error('bulkDeleteUsers error:', err);
-    res.status(500).json({ success: false, error: { message: err.message } });
+    res.status(500).json({ success: false, error: { message: 'Bulk delete failed' } });
   }
 };
 
@@ -782,7 +782,7 @@ exports.getDashboardMetrics = async (req, res) => {
     return res.json(metrics);
   } catch (err) {
     console.error('Dashboard metrics error:', err);
-    return res.json({ ...defaultMetrics, reason: err.message || 'unknown-error' });
+    return res.json({ ...defaultMetrics, reason: 'metrics-unavailable' });
   }
 };
 
@@ -854,7 +854,7 @@ exports.getDashboardWorkers = async (req, res, next) => {
     // Provide detailed error information
     const errorResponse = {
       error: 'Failed to fetch dashboard workers',
-      message: err.message
+      message: 'An internal error occurred'
     };
     
     // Include stack trace in development only
@@ -988,7 +988,6 @@ exports.getDashboardAnalytics = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to generate dashboard analytics',
-      error: err.message,
     });
   }
 };
@@ -1205,7 +1204,6 @@ exports.getUserCredentials = async (req, res) => {
       error: {
         message: 'Failed to load user credentials',
         code: 'USER_CREDENTIALS_ERROR',
-        details: err.message,
       },
     });
   }
@@ -1276,7 +1274,6 @@ exports.getUserProfile = async (req, res) => {
       error: {
         message: 'Failed to load account profile',
         code: 'USER_PROFILE_ERROR',
-        details: error.message,
       },
     });
   }
@@ -1506,7 +1503,6 @@ exports.updateUserProfile = async (req, res) => {
         error: {
           message: 'Invalid profile data',
           code: 'VALIDATION_ERROR',
-          details: error.message,
         },
       });
     }
@@ -1516,7 +1512,6 @@ exports.updateUserProfile = async (req, res) => {
       error: {
         message: 'Failed to update account profile',
         code: 'USER_PROFILE_UPDATE_ERROR',
-        details: error.message,
       },
     });
   }
@@ -1637,8 +1632,7 @@ exports.cleanupDatabase = async (req, res) => {
     console.error('❌ Database cleanup failed:', error);
     res.status(500).json({
       success: false,
-      message: 'Database cleanup failed',
-      error: error.message
+      message: 'Database cleanup failed'
     });
   }
 };

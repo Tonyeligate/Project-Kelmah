@@ -328,8 +328,15 @@ class PortfolioController {
         return res.status(404).json({ success: false, message: 'Worker profile not found' });
       }
 
+      const PORTFOLIO_UPDATE_FIELDS = [
+        'title', 'description', 'projectType', 'skills', 'skillsUsed',
+        'projectValue', 'duration', 'startDate', 'endDate', 'location',
+        'clientName', 'clientRating', 'images', 'media', 'tags', 'keywords',
+        'link', 'featured', 'isFeatured', 'status'
+      ];
+      const { pickAllowedFields } = require('../../../shared/utils/sanitize');
       const updatePayload = {
-        ...req.body,
+        ...pickAllowedFields(req.body, PORTFOLIO_UPDATE_FIELDS),
         updatedAt: new Date(),
       };
 

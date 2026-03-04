@@ -111,7 +111,7 @@ const BidReviewCard = ({ bid, onAccept, onReject, isProcessing }) => {
               src={worker.avatar || worker.profileImage}
               alt={worker.name}
               sx={{ width: 44, height: 44, cursor: 'pointer' }}
-              onClick={() => worker._id && navigate(`/workers/${worker._id}`)}
+              onClick={() => { const wId = worker._id || worker.id; wId && navigate(`/workers/${wId}`); }}
             >
               {(worker.name || 'W').charAt(0)}
             </Avatar>
@@ -121,8 +121,7 @@ const BidReviewCard = ({ bid, onAccept, onReject, isProcessing }) => {
                 fontWeight={700}
                 noWrap
                 sx={{ cursor: 'pointer' }}
-                onClick={() => worker._id && navigate(`/workers/${worker._id}`)}
-              >
+                onClick={() => { const wId = worker._id || worker.id; wId && navigate(`/workers/${wId}`); }}>
                 {worker.name || 'Worker'}
               </Typography>
               <Stack direction="row" spacing={1} alignItems="center">
@@ -411,7 +410,7 @@ const JobBidsPage = () => {
       {acceptedBid && (
         <Alert severity="success" icon={<AcceptIcon />} sx={{ mb: 2 }}>
           You accepted <strong>{acceptedBid.worker?.name || 'a worker'}</strong>'s bid of{' '}
-          <strong>GH₵{acceptedBid.bidAmount?.toLocaleString()}</strong>.
+          <strong>GH₵{(acceptedBid.bidAmount ?? 0).toLocaleString()}</strong>.
         </Alert>
       )}
 
@@ -487,7 +486,7 @@ const JobBidsPage = () => {
         <DialogContent>
           <DialogContentText>
             Accepting <strong>{acceptDialog.bid?.worker?.name || 'this worker'}</strong>'s bid of{' '}
-            <strong>GH₵{acceptDialog.bid?.bidAmount?.toLocaleString()}</strong> will automatically
+            <strong>GH₵{(acceptDialog.bid?.bidAmount ?? 0).toLocaleString()}</strong> will automatically
             reject all other pending bids for this job. This action cannot be undone.
           </DialogContentText>
         </DialogContent>

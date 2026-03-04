@@ -318,7 +318,8 @@ const EnhancedMessagingPage = () => {
       selectConversation(conversation);
 
       // Update URL
-      navigate(`/messages?conversation=${conversation.id}`, { replace: true });
+      const convoId = conversation.id ?? conversation._id;
+      navigate(`/messages?conversation=${convoId}`, { replace: true });
     },
     [navigate, selectConversation],
   );
@@ -369,7 +370,7 @@ const EnhancedMessagingPage = () => {
       setIsTyping(false);
       if (stopTyping) stopTyping();
     }, 2000);
-  }, [isTyping]);
+  }, [isTyping, startTyping, stopTyping]);
 
   // Handle file selection
   const handleFileSelect = useCallback((event) => {
@@ -386,7 +387,7 @@ const EnhancedMessagingPage = () => {
   // Utility functions
 
   const getOtherParticipant = (conversation) => {
-    return conversation?.participants.find((p) => p.id !== user?.id);
+    return conversation?.participants?.find((p) => p.id !== user?.id);
   };
 
   const formatMessageTime = (timestamp) => {

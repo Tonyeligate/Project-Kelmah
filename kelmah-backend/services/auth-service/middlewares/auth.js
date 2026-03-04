@@ -1,6 +1,7 @@
 const jwtUtils = require('../../../shared/utils/jwt');
 const { AppError } = require('../utils/errorTypes');
 const User = require('../models').User;
+const { logger } = require('../utils/logger');
 
 /**
  * Authentication middleware - verifies JWT tokens and sets req.user
@@ -67,7 +68,7 @@ const authenticate = async (req, res, next) => {
     
     next();
   } catch (error) {
-    console.error('Authentication middleware error:', error);
+    logger.error('Authentication middleware error:', error);
     return next(new AppError('Authentication failed. Please login again.', 401));
   }
 };

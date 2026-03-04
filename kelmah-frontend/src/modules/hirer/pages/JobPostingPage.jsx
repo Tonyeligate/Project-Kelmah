@@ -248,7 +248,7 @@ const JobPostingPage = () => {
     const allJobs = Object.values(hirerJobsByStatus).flatMap((v) =>
       Array.isArray(v) ? v : [],
     );
-    const existing = allJobs.find((j) => String(j?.id) === String(jobId));
+    const existing = allJobs.find((j) => String(j?.id || j?._id) === String(jobId));
     if (!existing) return;
 
     const locationType =
@@ -605,7 +605,7 @@ const JobPostingPage = () => {
       paymentType: formData.paymentType,
       budget:
         formData.paymentType === 'hourly'
-          ? Number(formData.budget.max || formData.budget.min || 0)
+          ? { min: Number(formData.budget.min || 0), max: Number(formData.budget.max || 0) }
           : Number(formData.budget.fixed || 0),
       currency: 'GHS',
       duration: (() => {
@@ -702,6 +702,7 @@ const JobPostingPage = () => {
               duration: '',
               locationType: 'remote',
               location: '',
+              visibility: 'public',
               coverImage: '',
               biddingEnabled: false,
               biddingMaxBidders: 5,

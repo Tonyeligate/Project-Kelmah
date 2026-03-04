@@ -207,6 +207,7 @@ const JobDetailsPage = () => {
 
   // Auto-redirect to application form if ?apply=true
   useEffect(() => {
+    if (!id || id === 'undefined' || id === 'null') return;
     const params = new URLSearchParams(search);
     if (params.get('apply') === 'true' && isAuthenticated) {
       navigate(`/jobs/${id}/apply`, { replace: true });
@@ -586,7 +587,7 @@ const JobDetailsPage = () => {
 
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {skillLabels.map((skill, index) => (
-                        <SkillChip key={skill} label={skill} />
+                        <SkillChip key={`${skill}-${index}`} label={skill} />
                       ))}
                     </Box>
                   </Box>
@@ -615,7 +616,7 @@ const JobDetailsPage = () => {
                         <Grid item xs={12} sm={6} md={4} key={image.url || image || index}>
                           <Box
                             component="img"
-                            src={image}
+                            src={typeof image === 'string' ? image : image?.url}
                             alt={`Job image ${index + 1}`}
                             sx={{
                               width: '100%',

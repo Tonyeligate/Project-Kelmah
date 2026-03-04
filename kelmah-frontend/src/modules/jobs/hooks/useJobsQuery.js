@@ -57,10 +57,11 @@ const updateSavedJobsCache = (current, job, mode = 'add') => {
         : Array.isArray(current.data)
             ? current.data
             : [];
+    const normalizeId = (item) => item?.id || item?._id || item?.jobId || item;
 
     if (mode === 'remove') {
         const nextJobs = jobs.filter(
-            (item) => (item?.id || item?._id || item?.jobId) !== (job?.id || job),
+            (item) => normalizeId(item) !== normalizeId(job),
         );
         return { ...current, jobs: nextJobs, data: nextJobs };
     }
@@ -71,7 +72,7 @@ const updateSavedJobsCache = (current, job, mode = 'add') => {
     }
 
     const alreadySaved = jobs.some(
-        (item) => (item?.id || item?._id || item?.jobId) === job.id,
+        (item) => normalizeId(item) === normalizeId(job),
     );
     if (alreadySaved) {
         return current;

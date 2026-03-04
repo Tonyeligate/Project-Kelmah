@@ -517,8 +517,6 @@ const SearchPage = () => {
     setSearchParams(sanitizedParams);
 
     updateSearchURL(sanitizedParams, nextSort);
-
-    performSearch(sanitizedParams);
   };
 
   // Update URL with search parameters
@@ -590,7 +588,6 @@ const SearchPage = () => {
     const newParams = { ...searchParams, page: newPage };
     setSearchParams(newParams);
     updateSearchURL(newParams, newParams.sort || sortOrder);
-    performSearch(newParams);
   };
 
   // Handle sort order change
@@ -673,7 +670,6 @@ const SearchPage = () => {
     // Update state and URL
     setSearchParams(newParams);
     updateSearchURL(newParams, newParams.sort || sortOrder);
-    performSearch(newParams);
   };
 
   // Toggle between list and map view

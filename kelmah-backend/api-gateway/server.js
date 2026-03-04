@@ -462,8 +462,7 @@ if (internalKeepAlive) {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: 'Failed to trigger keep-alive',
-        error: error.message
+        message: 'Failed to trigger keep-alive'
       });
     }
   });
@@ -576,7 +575,6 @@ const forwardUserMutation = async (req, res, targetPath) => {
       error: {
         message: 'User service unavailable',
         code: 'SERVICE_UNAVAILABLE',
-        details: error.message,
       },
     });
   }
@@ -665,8 +663,7 @@ app.use(
         code: err.code
       });
       res.status(503).json({
-        error: 'User service unavailable',
-        message: err.message
+        error: 'User service unavailable'
       });
     }
   })
@@ -823,7 +820,7 @@ app.use(
     },
     onError: (err, req, res) => {
       console.error('❌ [API Gateway] Worker proxy error:', err.message);
-      res.status(500).json({ error: 'Worker service unavailable', details: err.message });
+      res.status(500).json({ error: 'Worker service unavailable' });
     }
   })
 );

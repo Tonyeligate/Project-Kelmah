@@ -357,14 +357,19 @@ const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const jobId = job?.id || job?._id;
 
-  const handleClick = () => navigate(`/jobs/${job.id}`);
+  const handleClick = () => {
+    if (!jobId) return;
+    navigate(`/jobs/${jobId}`);
+  };
   const handleSaveToggle = (e) => {
     e.stopPropagation();
+    if (!jobId) return;
     if (isSaved) {
-      onUnsave({ jobId: job.id });
+      onUnsave({ jobId });
     } else {
-      onSave({ jobId: job.id, job });
+      onSave({ jobId, job: { ...job, id: jobId } });
     }
   };
 
@@ -993,22 +998,26 @@ const JobSearchPage = () => {
                 <>
                   <AnimatePresence mode="popLayout">
                     <Grid container spacing={2}>
-                      {jobs.map((job) => (
+                      {jobs.map((job) => {
+                        const jobId = job?.id || job?._id;
+                        if (!jobId) return null;
+                        return (
                         <Grid
                           item
                           xs={12}
                           sm={viewMode === 'grid' ? 6 : 12}
                           lg={viewMode === 'grid' ? 6 : 12}
-                          key={job.id}
+                          key={jobId}
                         >
                           <FindWorkJobCard
                             job={job}
-                            isSaved={savedIds.has(job.id)}
+                            isSaved={savedIds.has(jobId)}
                             onSave={(payload) => saveMutation.mutate(payload)}
                             onUnsave={(payload) => unsaveMutation.mutate(payload)}
                           />
                         </Grid>
-                      ))}
+                        );
+                      })}
                     </Grid>
                   </AnimatePresence>
 

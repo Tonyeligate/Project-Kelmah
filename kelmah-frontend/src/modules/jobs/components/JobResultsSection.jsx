@@ -241,17 +241,19 @@ const JobResultsSection = ({
   );
 
   const handleBookmark = async (job) => {
+    const jobId = job?.id || job?._id;
+    if (!jobId) return;
     if (!isAuthenticated) {
       navigate('/login', {
         state: {
-          from: `/jobs/${job.id}`,
+          from: `/jobs/${jobId}`,
           message: 'Please sign in to save jobs',
         },
       });
       return;
     }
     try {
-      await jobsApi.saveJob(job.id || job._id);
+      await jobsApi.saveJob(jobId);
     } catch (err) {
       if (import.meta.env.DEV) console.warn('Failed to bookmark job:', err.message);
     }
@@ -786,16 +788,18 @@ const JobResultsSection = ({
                         fullWidth
                         onClick={(event) => {
                           event.stopPropagation();
+                          const jobId = job?.id || job?._id;
+                          if (!jobId) return;
                           if (!isAuthenticated) {
                             navigate('/login', {
                               state: {
-                                from: `/jobs/${job.id}/apply`,
+                                from: `/jobs/${jobId}/apply`,
                                 message: 'Please sign in to apply for this job',
                               },
                             });
                             return;
                           }
-                          navigate(`/jobs/${job.id}/apply`);
+                          navigate(`/jobs/${jobId}/apply`);
                         }}
                         sx={{
                           bgcolor: '#D4AF37',
@@ -813,7 +817,7 @@ const JobResultsSection = ({
                       <IconButton
                         onClick={(event) => {
                           event.stopPropagation();
-                          navigate(`/jobs/${job.id}`);
+                          navigate(`/jobs/${job._id || job.id}`);
                         }}
                         sx={{
                           color: '#D4AF37',

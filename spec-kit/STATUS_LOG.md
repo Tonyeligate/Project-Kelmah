@@ -1,5 +1,58 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Deep Scan + ID Flow Hardening + Messaging Backfill Prep — Round 20 ✅
+
+**Scope**: Continue the fix loop using project guidance from `Kelma.txt`, `Kelma docs.txt`, and `To add.txt` with focus on user-facing reliability, low-friction navigation, and data consistency for jobs + messaging flows.
+
+**Dry audit completed**:
+- ✅ Guidance sources reviewed:
+  - `spec-kit/Kelmaholddocs/old-docs/Kelma.txt`
+  - `spec-kit/Kelmaholddocs/old-docs/Kelma docs.txt`
+  - `spec-kit/Kelmaholddocs/old-docs/To add.txt`
+- ✅ Frontend flow files scanned:
+  - `worker/pages/JobSearchPage.jsx`
+  - `jobs/hooks/useJobsQuery.js`
+  - `hirer/pages/JobManagementPage.jsx`
+- ✅ Backend flow files scanned:
+  - `messaging-service/controllers/message.controller.js`
+  - `messaging-service/controllers/conversation.controller.js`
+  - `messaging-service/models/Message.js`
+
+**Implemented fixes**:
+- ✅ `JobSearchPage.jsx`
+  - Fixed `_id`/`id` mismatch in card click and save/unsave actions.
+  - Added safe `jobId` normalization (`job.id || job._id`) to prevent broken navigation and save toggles.
+  - Fixed jobs grid keying + saved state checks to use normalized IDs.
+- ✅ `useJobsQuery.js`
+  - Hardened optimistic saved-jobs cache reconciliation with normalized ID matching (`id/_id/jobId`) for both add and remove paths.
+  - Prevents duplicate cache entries and failed unsave operations when APIs return mixed ID shapes.
+- ✅ `JobManagementPage.jsx`
+  - Fixed remaining list keying issues (`key={job.id}` → `key={job.id || job._id}`) for mobile and desktop job rows.
+  - Prevents unstable rendering and action targeting when jobs are returned with `_id` only.
+- ✅ `migrate-job-visibility.js`
+  - Removed hardcoded Mongo URI.
+  - Added `.env` loading + optional CLI `--uri` support.
+  - Added explicit diagnostics for Atlas DNS/network failures.
+- ✅ `migrate-message-conversation-links.js` (NEW)
+  - Added idempotent backfill migration to link legacy `messages` missing `conversation` reference.
+  - Reuses existing conversations (participants + related entities), creates missing conversations when needed, and refreshes `lastMessage` pointers.
+  - Added the same `.env`/`--uri` support and clear network diagnostics.
+
+**Verification**:
+- ✅ `get_errors` reports no diagnostics for all modified files.
+- ✅ Frontend build passes: `cd kelmah-frontend && npm run build`.
+- ⚠️ Both migration scripts start correctly but cannot reach Atlas from this environment (`querySrv ECONNREFUSED`); scripts now return actionable remediation steps.
+
+**Files modified**:
+- `kelmah-frontend/src/modules/worker/pages/JobSearchPage.jsx`
+- `kelmah-frontend/src/modules/jobs/hooks/useJobsQuery.js`
+- `kelmah-frontend/src/modules/hirer/pages/JobManagementPage.jsx`
+- `kelmah-backend/scripts/migrate-job-visibility.js`
+- `kelmah-backend/scripts/migrate-message-conversation-links.js` (new)
+- `spec-kit/STATUS_LOG.md`
+
+---
+
 ### Session: Jobs UX + Visibility + Worker Pages Audit — Round 19 ✅
 
 **Scope**: Follow-up improvements to jobs listing, job cards, job posting form, and worker page audit.

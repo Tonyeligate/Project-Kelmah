@@ -715,7 +715,7 @@ const JobManagementPage = () => {
             /* Mobile: Card-based layout */
             <>
               {paginatedJobs.map((job) => (
-                <MobileJobCard key={job.id} job={job} />
+                <MobileJobCard key={job.id || job._id} job={job} />
               ))}
               {filteredJobs.length > rowsPerPage && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
@@ -748,7 +748,7 @@ const JobManagementPage = () => {
                   <TableBody>
                     {paginatedJobs.map((job) => (
                         <TableRow
-                          key={job.id}
+                          key={job.id || job._id}
                           sx={{
                             '&:hover': { bgcolor: 'action.hover' },
                             cursor: 'pointer',

@@ -170,9 +170,10 @@ function ApplicationManagementPage() {
         try {
           const results = await Promise.allSettled(
             jobsForApplications.map(async (job) => {
-              const list = await hirerService.getJobApplications(job.id);
+              const jobId = job.id || job._id;
+              const list = await hirerService.getJobApplications(jobId);
               return (Array.isArray(list) ? list : []).map((app) =>
-                normalizeApplication(app, job.id),
+                normalizeApplication(app, jobId),
               );
             }),
           );
@@ -251,6 +252,10 @@ function ApplicationManagementPage() {
   // Handler to start or navigate to direct chat with selected applicant
   const handleMessage = async () => {
     if (!selectedApplication) return;
+    if (!selectedApplication.workerId) {
+      setError('Worker contact information is unavailable.');
+      return;
+    }
     try {
       const conv = await messagingService.createDirectConversation(
         selectedApplication.workerId,
@@ -449,7 +454,7 @@ function ApplicationManagementPage() {
 
       <Dialog
         open={showReviewDialog}
-        onClose={() => setShowReviewDialog(false)}
+        onClose={() => !updating && setShowReviewDialog(false)}
         fullWidth
         maxWidth="sm"
         fullScreen={isMobile}

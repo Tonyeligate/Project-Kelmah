@@ -19,17 +19,26 @@
 
 'use strict';
 
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
 const { MongoClient } = require('mongodb');
 
 // --- Connection string (same DB used by all services)
-const MONGODB_URI =
-  process.env.MONGODB_URI ||
-  'mongodb+srv://TonyGate:0553366244Aj@kelmah-messaging.xyqcurn.mongodb.net/kelmah_platform?retryWrites=true&w=majority&appName=Kelmah-messaging';
+// Priority: CLI arg (--uri=...) > env var (MONGODB_URI)
+const cliUriArg = process.argv.find((arg) => arg.startsWith('--uri='));
+const MONGODB_URI = cliUriArg ? cliUriArg.replace('--uri=', '') : process.env.MONGODB_URI;
 
 const DB_NAME = 'kelmah_platform';
 const COLLECTION = 'jobs';
 
 async function run() {
+  if (!MONGODB_URI) {
+    console.error('❌ Migration failed: MONGODB_URI is not set.');
+    console.error('Set MONGODB_URI in kelmah-backend/.env or pass --uri="<mongodb-uri>".');
+    process.exitCode = 1;
+    return;
+  }
+
   const client = new MongoClient(MONGODB_URI, {
     serverSelectionTimeoutMS: 10_000,
   });
@@ -102,6 +111,13 @@ async function run() {
     }
   } catch (err) {
     console.error('❌ Migration failed:', err.message);
+    if (String(err.message).includes('querySrv') || String(err.message).includes('ECONNREFUSED')) {
+      console.error('Hint: this looks like DNS/network access to MongoDB Atlas failing from this machine.');
+      console.error('Try one of these:');
+      console.error('  1) Confirm internet + DNS is available from this environment');
+      console.error('  2) Use a reachable URI via --uri="<mongodb-uri>"');
+      console.error('  3) Run this script from your backend host/server where Atlas is reachable');
+    }
     process.exitCode = 1;
   } finally {
     await client.close();

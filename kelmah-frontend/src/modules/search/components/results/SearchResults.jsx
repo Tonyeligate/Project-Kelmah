@@ -194,14 +194,18 @@ const SearchResults = ({
       {/* Results Grid */}
       {!loading && jobs.length > 0 && (
         <Grid container spacing={3}>
-          {jobs.map((job) => (
-            <Grid item xs={12} key={job.id}>
-              <JobCard
-                job={job}
-                onViewDetails={() => navigate(`/jobs/${job.id}`)}
-              />
-            </Grid>
-          ))}
+          {jobs.map((job) => {
+            const jobId = job?.id || job?._id;
+            if (!jobId) return null;
+            return (
+              <Grid item xs={12} key={jobId}>
+                <JobCard
+                  job={job}
+                  onViewDetails={() => navigate(`/jobs/${jobId}`)}
+                />
+              </Grid>
+            );
+          })}
         </Grid>
       )}
 

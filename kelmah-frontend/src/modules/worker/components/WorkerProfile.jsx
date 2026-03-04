@@ -1582,18 +1582,15 @@ function WorkerProfile({ workerId: workerIdProp }) {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
           >
-            {tabValue === 0 && (
-              <>
-                {renderSkillsAndExpertise()}
-                {renderAvailability()}
-              </>
-            )}
+            {tabValue === 0 && renderSkillsAndExpertise()}
             {tabValue === 1 && renderPortfolio()}
             {tabValue === 2 && renderReviews()}
             {tabValue === 3 && renderAvailability()}
             {tabValue === 4 && renderCertifications()}
           </motion.div>
         </AnimatePresence>
+
+        {renderAvailabilityEditor()}
 
         {/* Portfolio Item Dialog */}
         <Dialog

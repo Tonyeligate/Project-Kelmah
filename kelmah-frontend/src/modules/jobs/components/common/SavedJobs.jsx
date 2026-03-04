@@ -48,8 +48,11 @@ function SavedJobs() {
           <Typography>No saved jobs yet.</Typography>
         )}
         <Grid container spacing={2} sx={{ mt: 1 }}>
-          {jobs.map((job) => (
-            <Grid item xs={12} md={6} key={job.id}>
+          {jobs.map((job) => {
+            const jobId = job?.id || job?._id;
+            if (!jobId) return null;
+            return (
+            <Grid item xs={12} md={6} key={jobId}>
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="h6">{job.title}</Typography>
@@ -71,13 +74,14 @@ function SavedJobs() {
                           sx={{ mr: 0.5, mb: 0.5 }}
                         />
                       ))}
-                  <Button component={Link} to={`/jobs/${job.id}`} sx={{ mt: 1 }}>
+                  <Button component={Link} to={`/jobs/${jobId}`} sx={{ mt: 1 }}>
                     View
                   </Button>
                 </CardContent>
               </Card>
             </Grid>
-          ))}
+            );
+          })}
         </Grid>
       </Paper>
     </Container>

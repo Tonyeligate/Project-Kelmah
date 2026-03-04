@@ -252,7 +252,7 @@ const adminVerifyUsersBatch = async (req, res) => {
           results.push({ email, status: 'not_found', success: false });
         }
       } catch (error) {
-        results.push({ email, status: 'error', success: false, error: error.message });
+        results.push({ email, status: 'error', success: false });
       }
     }
     const successCount = results.filter(r => r.success).length;
