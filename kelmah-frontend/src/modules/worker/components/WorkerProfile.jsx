@@ -257,6 +257,10 @@ function WorkerProfile({ workerId: workerIdProp }) {
         : null;
       setProfile(normalizedProfile);
 
+      // Only fetch earnings for profile owner (it's protected personal data)
+      const viewingOwnProfile =
+        authUser?.userId && authUser.userId === resolvedWorkerId;
+
       // Use Promise.allSettled for graceful degradation - if ratings or other
       // secondary endpoints fail (e.g., during service cold start), still show profile
       const results = await Promise.allSettled([
@@ -267,7 +271,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
         workerService.getWorkerAvailability(resolvedWorkerId),
         workerService.getWorkerStats(resolvedWorkerId),
         reviewService.getWorkerRating(resolvedWorkerId),
-        workerService.getWorkerEarnings(resolvedWorkerId),
+        viewingOwnProfile
+          ? workerService.getWorkerEarnings(resolvedWorkerId)
+          : Promise.resolve(null),
       ]);
 
       // Helper to safely extract value from settled promise
