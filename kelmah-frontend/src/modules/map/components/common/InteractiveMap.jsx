@@ -515,7 +515,7 @@ const SpectacularMarkerPopup = ({
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {marker.skills.slice(0, 4).map((skill, index) => (
                     <Chip
-                      key={index}
+                      key={`${skill}-${index}`}
                       label={skill}
                       size="small"
                       variant="outlined"
@@ -828,7 +828,7 @@ const SpectacularMarkerPopup = ({
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {marker.skills.slice(0, 4).map((skill, index) => (
                   <Chip
-                    key={index}
+                    key={`${skill}-${index}`}
                     label={skill}
                     size="small"
                     variant="outlined"

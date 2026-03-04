@@ -1,5 +1,29 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Map Result Key Stability — Round 16 ✅
+
+**Scope**: Harden React key stability in live map/search result rendering paths to prevent stale row state and animation mismatch on updates.
+
+**Implemented fixes**:
+- ✅ `MapSearchOverlay.jsx`
+  - Suggestions list keys now use stable suggestion identifiers (`id/placeId/title`) with fallback.
+  - Filter tab keys now use semantic tab values/labels.
+  - Skill chip keys now use skill value-based keys.
+  - Quick stat card keys now use stat labels.
+  - Search result card keys now use stable result identifiers (`id/_id/slug/title`) with fallback.
+- ✅ `InteractiveMap.jsx`
+  - Skill chip lists now use value-based keys instead of index-only keys.
+
+**Verification**:
+- ✅ No diagnostics in both modified map files via `get_errors`.
+
+**Files modified**:
+- `kelmah-frontend/src/modules/map/components/common/MapSearchOverlay.jsx`
+- `kelmah-frontend/src/modules/map/components/common/InteractiveMap.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+---
+
 ### Session: Key Stability Hardening — Round 15 ✅
 
 **Scope**: Reduce React reconciliation risk in dynamic worker/profile lists by replacing index-only keys with stable domain fallbacks.

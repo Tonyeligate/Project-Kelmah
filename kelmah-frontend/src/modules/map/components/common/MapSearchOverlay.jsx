@@ -449,7 +449,12 @@ const PremiumSearchBar = ({
             >
               {suggestions.map((suggestion, index) => (
                 <motion.div
-                  key={index}
+                  key={
+                    suggestion.id ||
+                    suggestion.placeId ||
+                    suggestion.title ||
+                    `suggestion-${index}`
+                  }
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
@@ -611,7 +616,7 @@ const PremiumFilterPanel = ({
         >
           {tabs.map((tab, index) => (
             <Tab
-              key={index}
+              key={tab.value || tab.label || `tab-${index}`}
               icon={tab.icon}
               label={tab.label}
               iconPosition="start"
@@ -1413,7 +1418,7 @@ const ProfessionalResultItem = ({ item, onClick, index }) => {
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {(item.skills || []).slice(0, 3).map((skill, index) => (
                       <Chip
-                        key={index}
+                        key={`${skill}-${index}`}
                         label={skill}
                         size="small"
                         variant="outlined"
@@ -1730,7 +1735,7 @@ const MapSearchOverlay = ({
             >
               <Grid container spacing={2}>
                 {quickStats.map((stat, index) => (
-                  <Grid item xs={6} sm={3} key={index}>
+                  <Grid item xs={6} sm={3} key={stat.label || `quick-stat-${index}`}>
                     <motion.div
                       whileHover={{ scale: 1.05, y: -2 }}
                       transition={{ duration: 0.2 }}
@@ -2143,7 +2148,13 @@ const MapSearchOverlay = ({
               <Stack spacing={2} sx={{ maxHeight: 400, overflowY: 'auto' }}>
                 {searchResults.slice(0, 6).map((result, index) => (
                   <motion.div
-                    key={result.id}
+                    key={
+                      result.id ||
+                      result._id ||
+                      result.slug ||
+                      result.title ||
+                      `search-result-${index}`
+                    }
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
