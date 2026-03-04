@@ -108,6 +108,9 @@ const ContractDetailsPage = () => {
     severity: 'info',
   });
 
+  // Action-level loading to prevent double-clicks on async buttons
+  const [actionLoading, setActionLoading] = useState(false);
+
   // Load contract and milestones on mount
   useEffect(() => {
     if (!resolvedContractId) return;
@@ -144,6 +147,7 @@ const ContractDetailsPage = () => {
 
   // Handle contract cancellation
   const handleCancelContract = () => {
+    setActionLoading(true);
     dispatch(cancelContract({ contractId: resolvedContractId, reason: cancelReason }))
       .unwrap()
       .then(() => {
@@ -161,11 +165,13 @@ const ContractDetailsPage = () => {
           message: err || 'Failed to cancel contract',
           severity: 'error',
         });
-      });
+      })
+      .finally(() => setActionLoading(false));
   };
 
   // Handle contract signature
   const handleSignContract = () => {
+    setActionLoading(true);
     dispatch(signContract({ contractId: resolvedContractId, signatureData: { signature } }))
       .unwrap()
       .then(() => {
@@ -183,11 +189,13 @@ const ContractDetailsPage = () => {
           message: err || 'Failed to sign contract',
           severity: 'error',
         });
-      });
+      })
+      .finally(() => setActionLoading(false));
   };
 
   // Handle send for signature
   const handleSendForSignature = () => {
+    setActionLoading(true);
     dispatch(sendContractForSignature(resolvedContractId))
       .unwrap()
       .then(() => {
@@ -203,11 +211,13 @@ const ContractDetailsPage = () => {
           message: err || 'Failed to send contract for signature',
           severity: 'error',
         });
-      });
+      })
+      .finally(() => setActionLoading(false));
   };
 
   // Handle milestone completion
   const handleCompleteMilestone = (milestoneId) => {
+    setActionLoading(true);
     dispatch(completeMilestone({ contractId: resolvedContractId, milestoneId }))
       .unwrap()
       .then(() => {
@@ -223,11 +233,13 @@ const ContractDetailsPage = () => {
           message: err || 'Failed to complete milestone',
           severity: 'error',
         });
-      });
+      })
+      .finally(() => setActionLoading(false));
   };
 
   // Handle dispute creation
   const handleCreateDispute = () => {
+    setActionLoading(true);
     dispatch(createDispute({ contractId: resolvedContractId, disputeData }))
       .unwrap()
       .then(() => {
@@ -245,13 +257,18 @@ const ContractDetailsPage = () => {
           message: err || 'Failed to submit dispute',
           severity: 'error',
         });
-      });
+      })
+      .finally(() => setActionLoading(false));
   };
 
-  // Handle download contract
+  // Handle download contract — uses browser print to PDF as no export API exists yet
   const handleDownloadContract = () => {
     if (!resolvedContractId) return;
-    window.open(`/api/jobs/contracts/${resolvedContractId}`, '_blank');
+    setToast({
+      open: true,
+      message: 'Contract PDF export is coming soon. You can use your browser\'s Print → Save as PDF option for now.',
+      severity: 'info',
+    });
   };
 
   // Calculate contract progress based on milestones

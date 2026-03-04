@@ -28,7 +28,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { formatDistanceToNow } from 'date-fns';
 import { alpha } from '@mui/material/styles';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { contractService } from '../services/contractService';
@@ -68,6 +68,7 @@ const statusChipColor = {
 
 const ContractsPage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [searchQuery, setSearchQuery] = useState('');
@@ -317,7 +318,7 @@ const ContractsPage = () => {
                 </Stack>
 
                 <Typography variant="h5" sx={{ mt: 2, fontWeight: 700 }}>
-                  {contract.currency || 'GHS'}
+                  {contract.currency === 'GHS' ? 'GH₵' : (contract.currency || 'GH₵')}
                   {(contract.budget ?? 0).toLocaleString()}
                 </Typography>
 
@@ -346,10 +347,9 @@ const ContractsPage = () => {
                 </Button>
                 <IconButton
                   size="small"
-                  aria-label="Download contract"
-                  onClick={() =>
-                    window.open(`/api/jobs/contracts/${contract.id}`, '_blank')
-                  }
+                  aria-label="View contract details"
+                  component={RouterLink}
+                  to={`/contracts/${contract.id}`}
                 >
                   <DownloadIcon fontSize="small" />
                 </IconButton>
@@ -377,7 +377,7 @@ const ContractsPage = () => {
                 title="No contracts match your filters yet"
                 subtitle="Try adjusting your search or create a new contract to get started."
                 actionLabel="Create Contract"
-                onAction={() => window.location.href = '/contracts/create'}
+                onAction={() => navigate('/contracts/create')}
               />
             </Box>
           </Grid>

@@ -24,15 +24,16 @@ const PortfolioGallery = ({ items = [] }) => {
                 height="160"
                 image={item.thumbnailUrl}
                 alt={item.title}
+                onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
               />
               <CardContent>
-                <Typography variant="subtitle1" fontWeight={600}>
+                <Typography variant="subtitle1" fontWeight={600} noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {item.title}
                 </Typography>
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  sx={{ mt: 0.5 }}
+                  sx={{ mt: 0.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
                 >
                   {item.description}
                 </Typography>

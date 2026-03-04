@@ -25,6 +25,7 @@ import {
   useTheme,
   useMediaQuery,
   Skeleton,
+  Snackbar,
 } from '@mui/material';
 import {
   Person,
@@ -43,6 +44,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { messagingService } from '../../messaging/services/messagingService';
 import { fetchHirerJobs } from '../services/hirerSlice';
+import { useSnackbar } from 'notistack';
 
 const normalizeApplication = (raw, jobIdFallback) => {
   const worker = raw?.worker || {};
@@ -126,6 +128,7 @@ function ApplicationManagementPage() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { enqueueSnackbar } = useSnackbar();
   const jobsByStatus = useSelector((state) => state.hirer?.jobs);
 
   // Ensure hirer jobs are loaded (needed for direct navigation)
@@ -153,6 +156,7 @@ function ApplicationManagementPage() {
   const [feedback, setFeedback] = useState('');
   const [updating, setUpdating] = useState(false);
   const [actionType, setActionType] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -221,8 +225,19 @@ function ApplicationManagementPage() {
         (app) => app.id !== selectedApplication.id,
       );
       setAllApplications(updatedApplications);
+      // Clear any previous error and show success
+      setError(null);
+      setSuccessMsg(
+        actionType === 'accepted'
+          ? 'Application accepted successfully!'
+          : actionType === 'rejected'
+            ? 'Application rejected.'
+            : 'Application updated.',
+      );
+      enqueueSnackbar(`Application ${actionType === 'accepted' ? 'accepted' : 'rejected'} successfully`, { variant: 'success' });
     } catch (err) {
       setError('Failed to update application status.');
+      enqueueSnackbar('Failed to update application status', { variant: 'error' });
     } finally {
       setUpdating(false);
     }
@@ -323,7 +338,7 @@ function ApplicationManagementPage() {
                   />
                 ))}
               {error && (
-                <Alert severity="error" sx={{ mb: 2 }}>
+                <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
                   {error}
                 </Alert>
               )}
@@ -474,6 +489,18 @@ function ApplicationManagementPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Success Snackbar */}
+      <Snackbar
+        open={!!successMsg}
+        autoHideDuration={4000}
+        onClose={() => setSuccessMsg('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setSuccessMsg('')} severity="success" sx={{ width: '100%' }}>
+          {successMsg}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

@@ -45,10 +45,12 @@ import {
 } from '../../../store/slices/profileSlice.js';
 import ErrorBoundary from '../../../components/common/ErrorBoundary';
 import { Helmet } from 'react-helmet-async';
+import { useSnackbar } from 'notistack';
 
 const ProfilePage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { enqueueSnackbar } = useSnackbar();
 
   const {
     loadProfile,
@@ -102,11 +104,16 @@ const ProfilePage = () => {
   const debouncedUpdatePreferences = useCallback(
     (newPrefs) => {
       if (prefTimerRef.current) clearTimeout(prefTimerRef.current);
-      prefTimerRef.current = setTimeout(() => {
-        updatePreferences(newPrefs);
+      prefTimerRef.current = setTimeout(async () => {
+        try {
+          await updatePreferences(newPrefs);
+          enqueueSnackbar('Preferences saved', { variant: 'success' });
+        } catch (err) {
+          enqueueSnackbar('Failed to save preferences', { variant: 'error' });
+        }
       }, 600);
     },
-    [updatePreferences]
+    [updatePreferences, enqueueSnackbar]
   );
 
   // Load profile on mount if not already loaded
@@ -138,8 +145,10 @@ const ProfilePage = () => {
     try {
       await updateProfile(formData);
       setEditing(false);
+      enqueueSnackbar('Profile updated successfully', { variant: 'success' });
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error updating profile:', error);
+      enqueueSnackbar('Failed to update profile. Please try again.', { variant: 'error' });
     }
   };
 
@@ -375,14 +384,19 @@ const ProfilePage = () => {
                         <Chip
                           key={index}
                           label={skill}
-                          onDelete={() => {
-                            const currentSkills = Array.isArray(profile.skills)
-                              ? profile.skills
-                              : [];
-                            const newSkills = currentSkills.filter(
-                              (_, i) => i !== index,
-                            );
-                            updateSkills(newSkills);
+                          onDelete={async () => {
+                            try {
+                              const currentSkills = Array.isArray(profile.skills)
+                                ? profile.skills
+                                : [];
+                              const newSkills = currentSkills.filter(
+                                (_, i) => i !== index,
+                              );
+                              await updateSkills(newSkills);
+                              enqueueSnackbar('Skills updated', { variant: 'success' });
+                            } catch (err) {
+                              enqueueSnackbar('Failed to update skills', { variant: 'error' });
+                            }
                           }}
                         />
                       ))}
@@ -409,10 +423,15 @@ const ProfilePage = () => {
                       </DialogContent>
                       <DialogActions>
                         <Button onClick={() => { setAddSkillOpen(false); setNewSkill(''); }}>Cancel</Button>
-                        <Button variant="contained" disabled={!newSkill.trim()} onClick={() => {
-                          const currentSkills = Array.isArray(profile.skills) ? profile.skills : [];
-                          updateSkills([...currentSkills, newSkill.trim()]);
-                          setNewSkill(''); setAddSkillOpen(false);
+                        <Button variant="contained" disabled={!newSkill.trim()} onClick={async () => {
+                          try {
+                            const currentSkills = Array.isArray(profile.skills) ? profile.skills : [];
+                            await updateSkills([...currentSkills, newSkill.trim()]);
+                            enqueueSnackbar('Skills updated', { variant: 'success' });
+                            setNewSkill(''); setAddSkillOpen(false);
+                          } catch (err) {
+                            enqueueSnackbar('Failed to update skills', { variant: 'error' });
+                          }
                         }}>Add</Button>
                       </DialogActions>
                     </Dialog>
@@ -435,16 +454,21 @@ const ProfilePage = () => {
                             <IconButton
                               aria-label="Delete education entry"
                               sx={{ minWidth: 44, minHeight: 44 }}
-                              onClick={() => {
-                                const currentEducation = Array.isArray(
-                                  profile.education,
-                                )
-                                  ? profile.education
-                                  : [];
-                                const newEducation = currentEducation.filter(
-                                  (_, i) => i !== index,
-                                );
-                                updateEducation(newEducation);
+                              onClick={async () => {
+                                try {
+                                  const currentEducation = Array.isArray(
+                                    profile.education,
+                                  )
+                                    ? profile.education
+                                    : [];
+                                  const newEducation = currentEducation.filter(
+                                    (_, i) => i !== index,
+                                  );
+                                  await updateEducation(newEducation);
+                                  enqueueSnackbar('Education updated', { variant: 'success' });
+                                } catch (err) {
+                                  enqueueSnackbar('Failed to update education', { variant: 'error' });
+                                }
                               }}
                             >
                               <DeleteIcon />
@@ -479,10 +503,15 @@ const ProfilePage = () => {
                       <DialogActions>
                         <Button onClick={() => { setAddEduOpen(false); setNewEdu({ degree: '', institution: '', year: '' }); }}>Cancel</Button>
                         <Button variant="contained" disabled={!newEdu.degree.trim() || !newEdu.institution.trim() || !newEdu.year.trim()}
-                          onClick={() => {
-                            const currentEducation = Array.isArray(profile.education) ? profile.education : [];
-                            updateEducation([...currentEducation, { ...newEdu }]);
-                            setNewEdu({ degree: '', institution: '', year: '' }); setAddEduOpen(false);
+                          onClick={async () => {
+                            try {
+                              const currentEducation = Array.isArray(profile.education) ? profile.education : [];
+                              await updateEducation([...currentEducation, { ...newEdu }]);
+                              enqueueSnackbar('Education updated', { variant: 'success' });
+                              setNewEdu({ degree: '', institution: '', year: '' }); setAddEduOpen(false);
+                            } catch (err) {
+                              enqueueSnackbar('Failed to update education', { variant: 'error' });
+                            }
                           }}>Add</Button>
                       </DialogActions>
                     </Dialog>
@@ -505,16 +534,21 @@ const ProfilePage = () => {
                             <IconButton
                               aria-label="Delete experience entry"
                               sx={{ minWidth: 44, minHeight: 44 }}
-                              onClick={() => {
-                                const currentExperience = Array.isArray(
-                                  profile.experience,
-                                )
-                                  ? profile.experience
-                                  : [];
-                                const newExperience = currentExperience.filter(
-                                  (_, i) => i !== index,
-                                );
-                                updateExperience(newExperience);
+                              onClick={async () => {
+                                try {
+                                  const currentExperience = Array.isArray(
+                                    profile.experience,
+                                  )
+                                    ? profile.experience
+                                    : [];
+                                  const newExperience = currentExperience.filter(
+                                    (_, i) => i !== index,
+                                  );
+                                  await updateExperience(newExperience);
+                                  enqueueSnackbar('Experience updated', { variant: 'success' });
+                                } catch (err) {
+                                  enqueueSnackbar('Failed to update experience', { variant: 'error' });
+                                }
                               }}
                             >
                               <DeleteIcon />
@@ -547,10 +581,15 @@ const ProfilePage = () => {
                       <DialogActions>
                         <Button onClick={() => { setAddExpOpen(false); setNewExp({ title: '', company: '', duration: '' }); }}>Cancel</Button>
                         <Button variant="contained" disabled={!newExp.title.trim() || !newExp.company.trim() || !newExp.duration.trim()}
-                          onClick={() => {
-                            const currentExperience = Array.isArray(profile.experience) ? profile.experience : [];
-                            updateExperience([...currentExperience, { ...newExp }]);
-                            setNewExp({ title: '', company: '', duration: '' }); setAddExpOpen(false);
+                          onClick={async () => {
+                            try {
+                              const currentExperience = Array.isArray(profile.experience) ? profile.experience : [];
+                              await updateExperience([...currentExperience, { ...newExp }]);
+                              enqueueSnackbar('Experience updated', { variant: 'success' });
+                              setNewExp({ title: '', company: '', duration: '' }); setAddExpOpen(false);
+                            } catch (err) {
+                              enqueueSnackbar('Failed to update experience', { variant: 'error' });
+                            }
                           }}>Add</Button>
                       </DialogActions>
                     </Dialog>

@@ -45,7 +45,7 @@ import {
 import { secureStorage } from '../../../utils/secureStorage';
 import { EXTERNAL_SERVICES } from '../../../config/services';
 import jobsApi from '../services/jobsService';
-import { Z_INDEX } from '../../../constants/layout';
+import { Z_INDEX, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import { Helmet } from 'react-helmet-async';
 
 // Styled components
@@ -795,7 +795,9 @@ const JobDetailsPage = () => {
                       setShareSnackbar('Client profile is not available yet');
                       return;
                     }
-                    navigate(`/profile/${hirerId}`);
+                    navigate(`/profile/${hirerId}`, {
+                      state: { profileData: job.hirer },
+                    });
                   }}
                 >
                   <Avatar
@@ -852,7 +854,7 @@ const JobDetailsPage = () => {
         <Box
           sx={{
             position: 'fixed',
-            bottom: 0,
+            bottom: { xs: `${BOTTOM_NAV_HEIGHT}px`, md: 0 },
             left: 0,
             right: 0,
             zIndex: Z_INDEX.stickyCta,

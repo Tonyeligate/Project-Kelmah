@@ -17,6 +17,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { api } from '../../../services/apiClient';
 import { secureStorage } from '../../../utils/secureStorage';
+import { useSnackbar } from 'notistack';
 
 // Custom components
 import JobSearchForm from '../components/common/JobSearchForm';
@@ -215,6 +216,7 @@ const SearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { enqueueSnackbar } = useSnackbar();
 
   // Debug logging for navigation issues
   useEffect(() => {
@@ -689,8 +691,10 @@ const SearchPage = () => {
           w.id === worker.id ? { ...w, isSaved: true } : w,
         ),
       );
+      enqueueSnackbar('Worker saved to bookmarks', { variant: 'success' });
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error saving worker:', error);
+      enqueueSnackbar('Failed to save worker', { variant: 'error' });
 
       // Check if error is due to authentication
       if (error.response?.status === 401) {

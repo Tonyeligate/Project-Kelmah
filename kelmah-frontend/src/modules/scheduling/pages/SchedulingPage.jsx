@@ -100,7 +100,14 @@ const AppointmentCard = ({ appointment, onEdit, onDelete }) => {
 
   const handleUserClick = (e) => {
     e.stopPropagation();
-    navigate(`/profile/${appointment.hirerId}`);
+    navigate(`/profile/${appointment.hirerId}`, {
+      state: {
+        profileData: {
+          name: appointment.hirerName,
+          avatar: appointment.hirerAvatar,
+        },
+      },
+    });
   };
 
   return (

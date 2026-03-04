@@ -580,7 +580,7 @@ const EnhancedReviewsPage = () => {
                   />
                   <Typography
                     variant="caption"
-                    sx={{ color: 'rgba(255,255,255,0.5)' }}
+                    sx={{ color: 'text.disabled' }}
                   >
                     {formatDistanceToNow(new Date(review.createdAt), {
                       addSuffix: true,
@@ -597,9 +597,9 @@ const EnhancedReviewsPage = () => {
                 setMoreMenuAnchor(e.currentTarget);
               }}
               sx={{
-                color: 'rgba(255,255,255,0.5)',
+                color: 'text.disabled',
                 '&:hover': {
-                  color: '#FFD700',
+                  color: 'secondary.main',
                 },
               }}
             >
@@ -643,7 +643,9 @@ const EnhancedReviewsPage = () => {
                     variant="caption"
                     sx={{ color: '#4CAF50', fontWeight: 600 }}
                   >
-                    {review.job.budget}
+                    {typeof review.job.budget === 'number'
+                      ? `GH₵${review.job.budget.toLocaleString()}`
+                      : review.job.budget || '—'}
                   </Typography>
                 </Stack>
               </Box>
@@ -1172,7 +1174,18 @@ const EnhancedReviewsPage = () => {
           </ListItemIcon>
           <ListItemText>Reply</ListItemText>
         </MenuItem>
-        <MenuItem onClick={() => setMoreMenuAnchor(null)}>
+        <MenuItem
+          onClick={() => {
+            // Use Web Share API if available, otherwise copy to clipboard
+            const reviewUrl = `${window.location.origin}/reviews/${selectedReview?._id || selectedReview?.id || ''}`;
+            if (navigator.share) {
+              navigator.share({ title: 'Kelmah Review', url: reviewUrl }).catch(() => {});
+            } else if (navigator.clipboard) {
+              navigator.clipboard.writeText(reviewUrl);
+            }
+            setMoreMenuAnchor(null);
+          }}
+        >
           <ListItemIcon>
             <ShareIcon />
           </ListItemIcon>
@@ -1180,13 +1193,17 @@ const EnhancedReviewsPage = () => {
         </MenuItem>
         <Divider />
         <MenuItem
-          onClick={() => setMoreMenuAnchor(null)}
-          sx={{ color: '#F44336' }}
+          onClick={() => {
+            // Close menu — full report flow not yet implemented
+            setMoreMenuAnchor(null);
+          }}
+          disabled
+          sx={{ color: 'text.disabled' }}
         >
           <ListItemIcon>
-            <ReportIcon sx={{ color: '#F44336' }} />
+            <ReportIcon sx={{ color: 'text.disabled' }} />
           </ListItemIcon>
-          <ListItemText>Report</ListItemText>
+          <ListItemText>Report (coming soon)</ListItemText>
         </MenuItem>
       </Menu>
 
@@ -1211,8 +1228,8 @@ const EnhancedReviewsPage = () => {
           },
         }}
       >
-        <DialogTitle id="reply-dialog-title" sx={{ color: '#FFD700' }}>
-          Reply to {selectedReview?.reviewer.name}
+        <DialogTitle id="reply-dialog-title" sx={{ color: 'secondary.main' }}>
+          Reply to {selectedReview?.reviewer?.name || 'reviewer'}
         </DialogTitle>
         <DialogContent>
           {selectedReview && (
@@ -1220,8 +1237,9 @@ const EnhancedReviewsPage = () => {
               sx={{
                 p: 2,
                 mb: 3,
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: (theme) => theme.palette.action.hover,
+                border: '1px solid',
+                borderColor: 'divider',
                 borderRadius: 2,
               }}
             >

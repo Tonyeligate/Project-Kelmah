@@ -34,12 +34,14 @@ import {
 import paymentService from '../services/paymentService';
 import { useTheme } from '@mui/material/styles';
 import { Helmet } from 'react-helmet-async';
+import { useSnackbar } from 'notistack';
 
 // Demo payment methods for initial display
 const PaymentMethodsPage = () => {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { enqueueSnackbar } = useSnackbar();
 
   // Dialog control states
   const [openAddCard, setOpenAddCard] = useState(false);
@@ -119,8 +121,10 @@ const PaymentMethodsPage = () => {
         cardholderName: '',
         cvv: '',
       });
+      enqueueSnackbar('Card added successfully', { variant: 'success' });
     } catch (err) {
       setError('Failed to add card. Please try again.');
+      enqueueSnackbar('Failed to add card', { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -143,8 +147,10 @@ const PaymentMethodsPage = () => {
       await fetchMethods();
       setOpenAddMobile(false);
       setNewMobile({ provider: 'MTN', phoneNumber: '', name: '' });
+      enqueueSnackbar('Mobile money added successfully', { variant: 'success' });
     } catch (err) {
       setError('Failed to add mobile money. Please try again.');
+      enqueueSnackbar('Failed to add mobile money', { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -173,8 +179,10 @@ const PaymentMethodsPage = () => {
         accountName: '',
         branchCode: '',
       });
+      enqueueSnackbar('Bank account added successfully', { variant: 'success' });
     } catch (err) {
       setError('Failed to add bank account. Please try again.');
+      enqueueSnackbar('Failed to add bank account', { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -186,8 +194,10 @@ const PaymentMethodsPage = () => {
     try {
       await paymentService.setDefaultPaymentMethod(id);
       await fetchMethods();
+      enqueueSnackbar('Default payment method updated', { variant: 'success' });
     } catch (err) {
       setError('Failed to set default payment method. Please try again.');
+      enqueueSnackbar('Failed to set default payment method', { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -207,8 +217,10 @@ const PaymentMethodsPage = () => {
       setOpenConfirmDelete(false);
       setMethodToDelete(null);
       await fetchMethods();
+      enqueueSnackbar('Payment method removed', { variant: 'success' });
     } catch (err) {
       setError('Failed to delete payment method. Please try again.');
+      enqueueSnackbar('Failed to delete payment method', { variant: 'error' });
     } finally {
       setLoading(false);
     }

@@ -56,6 +56,7 @@ import {
 import { motion } from 'framer-motion';
 import { format, formatDistanceToNow } from 'date-fns';
 import bidApi from '../../jobs/services/bidService';
+import { useSnackbar } from 'notistack';
 
 const EnhancedJobCard = ({
   job,
@@ -69,6 +70,7 @@ const EnhancedJobCard = ({
   // FIXED: Use standardized user normalization for consistent user data access
   const { user: rawUser } = useSelector((state) => state.auth);
   const user = normalizeUser(rawUser);
+  const { enqueueSnackbar } = useSnackbar();
   const [bidDialogOpen, setBidDialogOpen] = useState(false);
   const [bidData, setBidData] = useState({
     bidAmount: job?.bidding?.minBidAmount || 0,
@@ -109,9 +111,11 @@ const EnhancedJobCard = ({
       });
 
       setBidDialogOpen(false);
+      enqueueSnackbar('Bid submitted successfully', { variant: 'success' });
       if (onApply) onApply(job);
     } catch (error) {
       if (import.meta.env.DEV) console.error('Failed to submit bid:', error);
+      enqueueSnackbar('Failed to submit bid. Please try again.', { variant: 'error' });
     } finally {
       setBidLoading(false);
     }
@@ -209,6 +213,7 @@ const EnhancedJobCard = ({
               image={job.coverImage}
               alt={job?.title || 'Job image'}
               sx={{ objectFit: 'cover' }}
+              onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
             />
           )}
           {/* Header with Performance Tier */}

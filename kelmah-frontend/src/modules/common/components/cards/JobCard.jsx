@@ -182,6 +182,7 @@ const JobCard = ({
             objectFit: 'cover',
             borderBottom: `1px solid ${theme.palette.divider}`,
           }}
+          onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
         />
       )}
       <CardContent sx={{ pb: variant === 'compact' ? 1 : 2 }}>
@@ -195,9 +196,10 @@ const JobCard = ({
           }}
         >
           <Typography
+            noWrap
             variant={variant === 'compact' ? 'subtitle1' : 'h6'}
             component="div"
-            sx={{ flexGrow: 1, mr: 1 }}
+            sx={{ flexGrow: 1, mr: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}
           >
             {title}
           </Typography>

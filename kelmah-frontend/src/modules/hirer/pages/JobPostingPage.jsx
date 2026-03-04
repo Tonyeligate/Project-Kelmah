@@ -55,7 +55,7 @@ import {
 } from '../services/hirerSlice';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
-import { Z_INDEX, STICKY_CTA_HEIGHT } from '../../../constants/layout';
+import { Z_INDEX, STICKY_CTA_HEIGHT, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 
 const steps = [
   { label: 'Job Details', icon: <Work /> },
@@ -1325,7 +1325,7 @@ const JobPostingPage = () => {
         <Box
           sx={{
             position: 'fixed',
-            bottom: 0,
+            bottom: { xs: `${BOTTOM_NAV_HEIGHT}px`, md: 0 },
             left: 0,
             right: 0,
             zIndex: Z_INDEX.stickyCta,

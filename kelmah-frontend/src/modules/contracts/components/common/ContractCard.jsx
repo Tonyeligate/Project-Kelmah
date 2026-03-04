@@ -75,7 +75,7 @@ const ContractCard = ({ contract }) => {
             <Typography variant="body2" color="text.secondary">
               Contract with
             </Typography>
-            <Typography variant="subtitle2" fontWeight="bold">
+            <Typography variant="subtitle2" fontWeight="bold" noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {hirer.name}
             </Typography>
           </Box>
@@ -91,6 +91,7 @@ const ContractCard = ({ contract }) => {
 
       {/* Contract Title */}
       <Typography
+        noWrap
         variant="h6"
         component="h3"
         fontWeight="bold"
@@ -98,6 +99,8 @@ const ContractCard = ({ contract }) => {
           mb: 2,
           flexGrow: 1,
           lineHeight: 1.4,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         }}
       >
         {title}

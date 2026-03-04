@@ -95,6 +95,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import TextField from '@mui/material/TextField';
 import ReviewSystem from '../../../components/reviews/ReviewSystem';
+import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import reviewService from '../../reviews/services/reviewService';
 
 const Input = styled('input')({
@@ -1167,13 +1168,14 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       height="200"
                       image={item.image}
                       alt={item.title}
+                      onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
                     />
                   ) : null}
                   <CardContent>
-                    <Typography variant="h6" fontWeight={600}>
+                    <Typography variant="h6" fontWeight={600} noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {item.title}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {item.description}
                     </Typography>
                   </CardContent>
@@ -1631,7 +1633,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
         {!isOwner && (
           <SpeedDial
             ariaLabel="Worker Actions"
-            sx={{ position: 'fixed', bottom: 16, right: 16 }}
+            sx={{ position: 'fixed', bottom: { xs: BOTTOM_NAV_HEIGHT + 16, md: 16 }, right: 16 }}
             icon={<SpeedDialIcon />}
           >
             <SpeedDialAction

@@ -90,7 +90,6 @@ const EnhancedMessagingPage = () => {
   useEffect(() => {
     if (!user) navigate('/login', { replace: true });
   }, [user, navigate]);
-  if (!user) return null;
 
   // State management - Get conversations and messages from context
   const {
@@ -1699,6 +1698,7 @@ const EnhancedMessagingPage = () => {
               </Box>
               <IconButton
                 aria-label="More options"
+                onClick={(e) => setMoreMenuAnchor(e.currentTarget)}
                 sx={{
                   backgroundColor: alpha(theme.palette.primary.main, 0.1),
                   color: 'primary.main',

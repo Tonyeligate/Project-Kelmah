@@ -346,10 +346,10 @@ const NotificationsPage = () => {
           Showing {filteredNotifications.length} of {notifications.length}{' '}
           notifications
         </Typography>
-        <Tooltip title="Turn notifications on or off">
+        <Tooltip title="Show unread notifications only">
           <FormControlLabel
             control={
-              <Switch checked={unreadOnly} onChange={handleToggleUnread} inputProps={{ 'aria-label': 'Toggle notifications' }} />
+              <Switch checked={unreadOnly} onChange={handleToggleUnread} inputProps={{ 'aria-label': 'Show unread notifications only' }} />
             }
             label="Unread only"
           />

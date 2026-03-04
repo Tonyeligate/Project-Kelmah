@@ -304,11 +304,12 @@ const JobManagementPage = () => {
           image={job.coverImage}
           alt={job.title || 'Job image'}
           sx={{ objectFit: 'cover' }}
+          onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
         />
       )}
       <CardContent sx={{ pb: '12px !important' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-          <Typography variant="subtitle1" fontWeight={600} sx={{ flex: 1, pr: 1 }}>
+          <Typography variant="subtitle1" fontWeight={600} noWrap sx={{ flex: 1, pr: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {job.title}
           </Typography>
           <StatusChip status={job.status} />

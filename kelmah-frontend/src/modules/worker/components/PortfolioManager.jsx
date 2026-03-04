@@ -314,6 +314,7 @@ const PortfolioManager = () => {
           image={item.images[0]}
           alt={item.title}
           sx={{ objectFit: 'cover' }}
+          onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
         />
       ) : (
         <Box
@@ -332,7 +333,7 @@ const PortfolioManager = () => {
       )}
 
       <CardContent sx={{ flexGrow: 1 }}>
-        <Typography variant="h6" component="h3" gutterBottom>
+        <Typography variant="h6" component="h3" gutterBottom noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {item.title}
         </Typography>
 
