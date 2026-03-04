@@ -126,10 +126,18 @@ const createServiceProxy = (options) => {
       }
     },
     onProxyReq: (proxyReq, req, res) => {
-      // Forward user information to services (serviceTrust format)
+      // Forward user information to services (serviceTrust format).
+      // IMPORTANT: use the exact string already set by authenticate() in req.headers so
+      // that the x-gateway-signature HMAC stays consistent — never re-serialize req.user
+      // here because a new JSON.stringify() call may produce a different string and cause
+      // verifyGatewayRequest to reject with 401 "Invalid gateway signature".
       if (req.user) {
-        proxyReq.setHeader('x-authenticated-user', JSON.stringify(req.user));
+        const signedPayload = req.headers['x-authenticated-user'] || JSON.stringify(req.user);
+        proxyReq.setHeader('x-authenticated-user', signedPayload);
         proxyReq.setHeader('x-auth-source', 'api-gateway');
+        if (req.headers['x-gateway-signature']) {
+          proxyReq.setHeader('x-gateway-signature', req.headers['x-gateway-signature']);
+        }
       }
       
       // Forward Authorization header/token to upstream

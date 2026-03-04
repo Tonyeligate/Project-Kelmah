@@ -31,11 +31,14 @@ const forwardToJobService = async (req, res, path, method = 'GET') => {
       validateStatus: () => true,
     };
 
-    // Add authentication headers if user is authenticated
+    // Add authentication headers if user is authenticated.
+    // IMPORTANT: forward the EXACT string from req.headers['x-authenticated-user'] that
+    // authenticate() already set and computed the HMAC against — never re-serialize
+    // req.user here, as a new JSON.stringify() call produces a different string reference
+    // which breaks the timing-safe HMAC comparison in verifyGatewayRequest.
     if (req.user) {
-      config.headers['x-authenticated-user'] = JSON.stringify(req.user);
+      config.headers['x-authenticated-user'] = req.headers['x-authenticated-user'] || JSON.stringify(req.user);
       config.headers['x-auth-source'] = 'api-gateway';
-      // Forward HMAC signature computed by authenticate middleware
       if (req.headers['x-gateway-signature']) {
         config.headers['x-gateway-signature'] = req.headers['x-gateway-signature'];
       }

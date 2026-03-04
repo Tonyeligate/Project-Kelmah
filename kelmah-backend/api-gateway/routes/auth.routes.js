@@ -92,9 +92,36 @@ router.post('/register', async (req, res) => {
 router.post('/forgot-password', publicAuthProxy);
 router.post('/reset-password', publicAuthProxy);
 router.get('/verify-email/:token', publicAuthProxy);
-// Refresh token aliases for FE compatibility
-router.post('/refresh', publicAuthProxy);
-router.post('/refresh-token', publicAuthProxy);
+// Refresh token aliases for FE compatibility.
+// Use direct axios (not proxy middleware) with a 60s timeout so Render cold starts
+// (~20-50s) don't cause a 504 Gateway Timeout before the auth service wakes up.
+const refreshTokenDirectHandler = async (req, res) => {
+  try {
+    const upstream = getServiceUrl(req);
+    const suffix = req.path === '/refresh' ? '/refresh' : '/refresh-token';
+    const url = `${upstream}/api/auth${suffix}`;
+    console.log(`[REFRESH-TOKEN] Forwarding to: ${url}`);
+    const r = await axios.post(url, req.body, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Request-ID': req.id || '',
+        'User-Agent': 'kelmah-api-gateway',
+      },
+      timeout: 60000, // 60s to survive Render cold starts (default proxy was 30s → 504)
+      validateStatus: () => true,
+    });
+    console.log(`[REFRESH-TOKEN] Response: ${r.status}`);
+    res.status(r.status).json(r.data);
+  } catch (e) {
+    console.error(`[REFRESH-TOKEN] Error:`, e.message);
+    res.status(504).json({
+      success: false,
+      message: 'Authentication service temporarily unavailable. Please try again.'
+    });
+  }
+};
+router.post('/refresh', refreshTokenDirectHandler);
+router.post('/refresh-token', refreshTokenDirectHandler);
 // Verify auth (returns current user)
 router.get('/verify', authenticate, protectedAuthProxy);
 // Resend verification email
