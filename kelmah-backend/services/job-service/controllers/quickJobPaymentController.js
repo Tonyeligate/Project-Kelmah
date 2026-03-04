@@ -72,7 +72,7 @@ const initializePayment = async (req, res) => {
     logger.error('Error initializing payment:', error);
     res.status(500).json({
       success: false,
-      error: { message: error.message || 'Payment initialization failed', code: 'PAYMENT_ERROR' }
+      error: { message: 'Payment initialization failed', code: 'PAYMENT_ERROR' }
     });
   }
 };
@@ -116,6 +116,20 @@ const getPaymentStatus = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // SECURITY: Verify the requester is the client or worker of this QuickJob
+    const QuickJob = require('../models').QuickJob || require('../models/index').QuickJob;
+    if (QuickJob) {
+      const qj = await QuickJob.findById(id).select('client acceptedQuote.worker').lean();
+      if (qj) {
+        const userId = req.user?.id;
+        const isClient = qj.client?.toString() === userId;
+        const isWorker = qj.acceptedQuote?.worker?.toString() === userId;
+        if (!isClient && !isWorker) {
+          return res.status(403).json({ success: false, error: { message: 'Forbidden', code: 'FORBIDDEN' } });
+        }
+      }
+    }
+
     const result = await paystackService.getPaymentStatus(id);
 
     res.json({
@@ -126,7 +140,7 @@ const getPaymentStatus = async (req, res) => {
     logger.error('Error getting payment status:', error);
     res.status(500).json({
       success: false,
-      error: { message: error.message || 'Failed to get payment status', code: 'SERVER_ERROR' }
+      error: { message: 'Failed to get payment status', code: 'SERVER_ERROR' }
     });
   }
 };
@@ -153,8 +167,8 @@ const handlePaystackWebhook = async (req, res) => {
     res.status(200).json({ received: true });
   } catch (error) {
     logger.error('Webhook error:', error);
-    // Always return 200 to Paystack to prevent retries
-    res.status(200).json({ received: true, error: error.message });
+    // Always return 200 to Paystack to prevent retries — never leak error details
+    res.status(200).json({ received: true });
   }
 };
 

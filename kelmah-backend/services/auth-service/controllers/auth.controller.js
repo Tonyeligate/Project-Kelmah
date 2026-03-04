@@ -1324,7 +1324,7 @@ exports.validateAuthToken = async (req, res, next) => {
     if (!user) {
       return res.status(200).json({ valid: false });
     }
-    return res.status(200).json({ valid: true, user });
+    return res.status(200).json({ valid: true, user: { id: user._id, role: user.role } });
   } catch (error) {
     return res.status(200).json({ valid: false });
   }

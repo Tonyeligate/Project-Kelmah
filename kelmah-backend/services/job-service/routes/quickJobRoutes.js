@@ -35,9 +35,13 @@ router.get('/my-quotes', verifyGatewayRequest, quickJobController.getMyQuotedJob
 // Payment verification (specific route)
 router.get('/payment/verify/:reference', verifyGatewayRequest, quickJobPaymentController.verifyPayment);
 
-// Dispute routes (admin - specific routes first)
-router.get('/disputes', verifyGatewayRequest, disputeController.getAllDisputes);
-router.get('/disputes/stats', verifyGatewayRequest, disputeController.getDisputeStats);
+// Dispute routes (admin only - specific routes first)
+const requireAdmin = (req, res, next) => {
+  if (req.user?.role !== 'admin') return res.status(403).json({ success: false, error: { message: 'Admin access required' } });
+  next();
+};
+router.get('/disputes', verifyGatewayRequest, requireAdmin, disputeController.getAllDisputes);
+router.get('/disputes/stats', verifyGatewayRequest, requireAdmin, disputeController.getDisputeStats);
 
 // Create new QuickJob
 router.post('/', verifyGatewayRequest, quickJobController.createQuickJob);

@@ -153,6 +153,17 @@ const Register = () => {
     setFormError('');
   }, [activeStep]);
 
+  // Pre-select role from ?role=worker or ?role=hirer URL query param (e.g., from landing page CTAs)
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const roleParam = searchParams.get('role');
+    if (roleParam === 'worker' || roleParam === 'hirer') {
+      handleRoleSelect(roleParam);
+    }
+  // handleRoleSelect is stable (useCallback with [setValue])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
+
   const getFieldsForStep = useCallback(() => {
     switch (activeStep) {
       case 0:

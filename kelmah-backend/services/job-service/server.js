@@ -356,11 +356,15 @@ console.log('[MIDDLEWARE] Registering error handler after routes');
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const status = err.status || "error";
+  // Never leak internal error details in production
+  const safeMessage = statusCode >= 500
+    ? 'An internal error occurred'
+    : (err.message || 'An error occurred');
 
   res.status(statusCode).json({
     success: false,
     status,
-    message: err.message,
+    message: safeMessage,
     errors: err.errors || null,
     stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
   });

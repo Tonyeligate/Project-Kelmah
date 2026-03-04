@@ -335,12 +335,28 @@ const JobCard = ({
         </Box>
       </CardContent>
 
-      {/* Actions - only for detailed variant */}
-      {variant === 'detailed' && (
-        <CardActions sx={{ px: 2, pb: 2 }}>
+      {/* Actions - for all non-compact variants */}
+      {variant !== 'compact' && (
+        <CardActions sx={{ px: 2, pb: 2, gap: 1, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
           <Button
             variant="contained"
             color="primary"
+            size={variant === 'detailed' ? 'medium' : 'small'}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (features.showNavigation) {
+                navigate(`/jobs/${id}/apply`);
+              }
+            }}
+            fullWidth={isMobile}
+            sx={{ fontWeight: 'bold' }}
+          >
+            Apply Now
+          </Button>
+          <Button
+            variant="outlined"
+            color="primary"
+            size={variant === 'detailed' ? 'medium' : 'small'}
             onClick={(e) => {
               e.stopPropagation();
               handleCardClick();

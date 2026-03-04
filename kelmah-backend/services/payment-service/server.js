@@ -185,8 +185,12 @@ app.get('/api/health/live', (req, res) => {
 });
 
 // Lightweight reconciliation trigger for schedulers (e.g., GitHub Actions cron)
-// Non-blocking: runs reconcile in background and returns 202 immediately
+// Requires internal service key to prevent unauthorized triggering
 app.post('/health/reconcile', (req, res) => {
+  const internalKey = req.headers['x-internal-key'];
+  if (!internalKey || internalKey !== process.env.INTERNAL_SERVICE_KEY) {
+    return res.status(403).json({ success: false, message: 'Forbidden' });
+  }
   try {
     const since = req.query.since;
     const limit = req.query.limit;

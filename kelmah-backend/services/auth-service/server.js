@@ -224,7 +224,7 @@ const adminVerifyUser = async (req, res) => {
     return res.json({ success: true, message: "User verified successfully", data: { email: user.email, isEmailVerified: user.isEmailVerified } });
   } catch (error) {
     logger.error('Admin verify user error:', error);
-    return res.status(500).json({ success: false, message: "Error verifying user", error: error.message });
+    return res.status(500).json({ success: false, message: "Error verifying user" });
   }
 };
 
@@ -259,7 +259,7 @@ const adminVerifyUsersBatch = async (req, res) => {
     return res.json({ success: true, message: `Verified ${successCount}/${emails.length} users`, data: results });
   } catch (error) {
     logger.error('Batch verify users error:', error);
-    return res.status(500).json({ success: false, message: "Error verifying users", error: error.message });
+    return res.status(500).json({ success: false, message: "Error verifying users" });
   }
 };
 
@@ -284,7 +284,7 @@ const adminUnlockAccount = async (req, res) => {
     return res.json({ success: true, message: 'Account unlocked successfully', data: { email: user.email } });
   } catch (error) {
     logger.error('Admin unlock account error:', error);
-    return res.status(500).json({ success: false, message: 'Error unlocking account', error: error.message });
+    return res.status(500).json({ success: false, message: 'Error unlocking account' });
   }
 };
 
@@ -382,7 +382,7 @@ app.use((err, req, res, next) => {
   res.status(statusCode).json({
     success: false,
     status,
-    message: err.message,
+    message: statusCode >= 500 ? 'An internal error occurred' : err.message,
     errors: err.errors || null,
     stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
   });

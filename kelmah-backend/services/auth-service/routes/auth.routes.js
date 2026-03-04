@@ -152,7 +152,7 @@ router.get("/me", verifyGatewayRequest, authController.getMe);
 
 // Verify authentication token and get user data
 router.get("/verify", verifyGatewayRequest, authController.verifyAuth);
-router.post("/validate", authController.validateAuthToken);
+router.post("/validate", createLimiter("validateToken"), authController.validateAuthToken);
 
 // Google OAuth routes - only if credentials are configured
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
@@ -269,7 +269,7 @@ router.post(
   verifyGatewayRequest,
   authController.deactivateAccount,
 );
-router.post("/account/reactivate", authController.reactivateAccount);
+router.post("/account/reactivate", createLimiter("reactivateAccount"), authController.reactivateAccount);
 
 // Health check route - useful for monitoring
 router.get("/health", (req, res) => {
@@ -280,6 +280,13 @@ router.get("/health", (req, res) => {
 });
 
 // Admin/monitoring routes
-router.get("/stats", verifyGatewayRequest, authController.getAuthStats);
+const requireAdmin = (req, res, next) => {
+  const role = req.user?.role;
+  if (role !== 'admin' && role !== 'super_admin') {
+    return res.status(403).json({ success: false, message: 'Admin access required' });
+  }
+  next();
+};
+router.get("/stats", verifyGatewayRequest, requireAdmin, authController.getAuthStats);
 
 module.exports = router;

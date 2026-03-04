@@ -212,8 +212,8 @@ const getMyQuickJobs = async (req, res) => {
     const jobs = await QuickJob.find(query)
       .populate('acceptedQuote.worker', 'firstName lastName profilePicture phoneNumber rating')
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+      .skip((page - 1) * Math.min(parseInt(limit, 10) || 20, 100))
+      .limit(Math.min(parseInt(limit, 10) || 20, 100));
 
     const total = await QuickJob.countDocuments(query);
 
@@ -223,7 +223,7 @@ const getMyQuickJobs = async (req, res) => {
       meta: {
         total,
         page: parseInt(page),
-        limit: parseInt(limit),
+        limit: Math.min(parseInt(limit, 10) || 20, 100),
         pages: Math.ceil(total / limit)
       }
     });
@@ -261,8 +261,8 @@ const getMyQuotedJobs = async (req, res) => {
     const jobs = await QuickJob.find(query)
       .populate('client', 'firstName lastName profilePicture phoneNumber')
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+      .skip((page - 1) * Math.min(parseInt(limit, 10) || 20, 100))
+      .limit(Math.min(parseInt(limit, 10) || 20, 100));
 
     const total = await QuickJob.countDocuments(query);
 

@@ -29,7 +29,7 @@ router.post("/:messageId/read", async (req, res) => {
     await m.markAsRead();
     return res.json({ success: true });
   } catch (e) {
-    return res.status(500).json({ success: false, message: e.message });
+    return res.status(500).json({ success: false, message: 'Failed to mark message as read' });
   }
 });
 router.delete("/:messageId", messageController.deleteMessage);

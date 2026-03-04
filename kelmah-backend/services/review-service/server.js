@@ -109,6 +109,9 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// Security headers
+app.use(helmet());
+
 // Add HTTP request logging
 app.use(createHttpLogger(logger));
 
@@ -270,7 +273,7 @@ if (keepAliveManager) {
       const results = await keepAliveManager.triggerPing();
       res.json({ success: true, message: 'Keep-alive triggered', data: results });
     } catch (error) {
-      res.status(500).json({ success: false, error: error.message });
+      res.status(500).json({ success: false, error: 'Keep-alive trigger failed' });
     }
   });
 }
@@ -317,7 +320,7 @@ app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   res.status(statusCode).json({
     success: false,
-    message: err.message || 'Internal server error',
+    message: statusCode >= 500 ? 'Internal server error' : (err.message || 'Internal server error'),
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 });

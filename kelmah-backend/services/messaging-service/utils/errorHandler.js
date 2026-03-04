@@ -12,14 +12,12 @@ exports.handleError = (res, error) => {
   if (error.name === "CastError") {
     return res.status(400).json({
       message: "Invalid ID format",
-      error: error.message,
     });
   }
 
   if (error.code === 11000) {
     return res.status(400).json({
       message: "Duplicate entry",
-      error: error.message,
     });
   }
 

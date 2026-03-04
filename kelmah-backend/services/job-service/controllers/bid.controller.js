@@ -355,6 +355,12 @@ exports.modifyBid = async (req, res, next) => {
     const { bidId } = req.params;
     const { field, newValue, reason } = req.body;
 
+    // SECURITY: Only allow modification of specific bid fields
+    const BID_MODIFIABLE_FIELDS = ['bidAmount', 'proposal', 'timeline', 'deliveryDate'];
+    if (!BID_MODIFIABLE_FIELDS.includes(field)) {
+      return errorResponse(res, 400, 'Invalid field for modification');
+    }
+
     const bid = await Bid.findById(bidId).populate('job');
     if (!bid) {
       return errorResponse(res, 404, 'Bid not found');

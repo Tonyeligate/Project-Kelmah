@@ -1397,8 +1397,14 @@ const updateJob = async (req, res, next) => {
       );
     }
 
-    // Normalize incoming payload similarly to create
-    const body = { ...req.body };
+    // Normalize incoming payload similarly to create — SECURITY: only allow safe fields
+    const JOB_UPDATE_ALLOWED = ['title', 'description', 'category', 'skills', 'budget', 'currency',
+      'paymentType', 'duration', 'location', 'locationType', 'urgency', 'visibility',
+      'requirements', 'tags', 'deadline', 'attachments'];
+    const body = {};
+    for (const key of JOB_UPDATE_ALLOWED) {
+      if (key in req.body) body[key] = req.body[key];
+    }
     if (typeof body.budget === 'object') {
       const b = body.budget || {};
       const type = body.paymentType || b.type;
@@ -1724,13 +1730,15 @@ const getContracts = async (req, res, next) => {
   try {
     const userId = req.user?.id;
     const { status, page = 1, limit = 20 } = req.query;
-    const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+    const skip = (parseInt(page, 10) - 1) * Math.min(parseInt(limit, 10) || 20, 100);
 
     // Build query — show contracts where the user is hirer or worker
+    // SECURITY: userId is REQUIRED — without it, return empty (prevents open query)
     const query = {};
-    if (userId) {
-      query.$or = [{ hirer: userId }, { worker: userId }];
+    if (!userId) {
+      return successResponse(res, 200, 'Contracts retrieved successfully', { contracts: [], pagination: { total: 0, page: 1, limit: 20 } });
     }
+    query.$or = [{ hirer: userId }, { worker: userId }];
     if (status) {
       query.status = status;
     }
@@ -1742,7 +1750,7 @@ const getContracts = async (req, res, next) => {
         .populate('job', 'title category budget currency')
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(parseInt(limit, 10))
+        .limit(Math.min(parseInt(limit, 10) || 20, 100))
         .lean(),
       Contract.countDocuments(query),
     ]);

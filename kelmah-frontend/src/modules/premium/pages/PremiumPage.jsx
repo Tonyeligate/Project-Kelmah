@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Box,
@@ -30,7 +31,7 @@ import {
   WorkspacePremium as WorkspacePremiumIcon,
   TrendingUp as TrendingUpIcon,
   SupportAgent as SupportAgentIcon,
-  AttachMoney as AttachMoneyIcon,
+  AccountBalanceWallet as WalletIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
 import { Helmet } from 'react-helmet-async';
@@ -156,6 +157,7 @@ const BenefitCard = ({ icon, title, description }) => (
 );
 
 const PremiumPage = () => {
+  const navigate = useNavigate();
   const [isYearly, setIsYearly] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
@@ -180,6 +182,14 @@ const PremiumPage = () => {
   };
 
   const handleConfirmUpgrade = async () => {
+    // Guard: require authentication before attempting payment
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    if (!token) {
+      setUpgradeError('Please log in to upgrade your plan.');
+      setOpenDialog(false);
+      setTimeout(() => navigate('/login'), 1500);
+      return;
+    }
     setIsUpgrading(true);
     setUpgradeError('');
     try {
@@ -228,7 +238,7 @@ const PremiumPage = () => {
       description: 'Access to our priority support team, 24/7.',
     },
     {
-      icon: <AttachMoneyIcon />,
+      icon: <WalletIcon />,
       title: 'Lower Service Fees',
       description:
         'Keep more of your earnings with reduced service fees on every completed job.',
@@ -299,7 +309,7 @@ const PremiumPage = () => {
           <Typography variant="h4" fontWeight="bold" gutterBottom>
             Choose Your Plan
           </Typography>
-          <Tooltip title="Switch to annual billing to save 20%">
+          <Tooltip title="Switch to annual billing to save ~17%">
             <FormControlLabel
               control={
                 <Switch
@@ -313,7 +323,7 @@ const PremiumPage = () => {
                 Bill Annually{' '}
                 <Chip
                   component="span"
-                  label="Save 20%"
+                  label="Save ~17%"
                   color="success"
                   size="small"
                   sx={{ ml: 1 }}

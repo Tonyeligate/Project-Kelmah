@@ -246,7 +246,7 @@ const HomeLanding = () => {
                     variant="text"
                     size="small"
                     startIcon={<WorkIcon />}
-                    onClick={() => navigate('/register')}
+                    onClick={() => navigate('/register?role=worker')}
                     sx={{
                       justifyContent: { xs: 'flex-start', sm: 'center' },
                       color: '#FFD700',
@@ -261,7 +261,7 @@ const HomeLanding = () => {
                     variant="text"
                     size="small"
                     startIcon={<SearchIcon />}
-                    onClick={() => navigate('/search')}
+                    onClick={() => navigate('/register?role=hirer')}
                     sx={{
                       justifyContent: { xs: 'flex-start', sm: 'center' },
                       color: '#FFD700',

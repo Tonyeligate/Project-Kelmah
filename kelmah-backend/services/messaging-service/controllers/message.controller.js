@@ -244,6 +244,16 @@ exports.addReaction = async (req, res) => {
       return res.status(400).json({ message: "emoji required" });
     const message = await Message.findById(messageId);
     if (!message) return res.status(404).json({ message: "Message not found" });
+
+    // Verify the user is a participant of the conversation
+    const conversation = await Conversation.findOne({
+      _id: message.conversation,
+      participants: getUserId(req),
+    });
+    if (!conversation) {
+      return res.status(403).json({ message: "Not a participant of this conversation" });
+    }
+
     message.reactions = message.reactions || [];
     const existing = message.reactions.find(
       (r) => r.emoji === emoji && String(r.user) === String(getUserId(req)),
@@ -271,6 +281,16 @@ exports.removeReaction = async (req, res) => {
     const { messageId, emoji } = req.params;
     const message = await Message.findById(messageId);
     if (!message) return res.status(404).json({ message: "Message not found" });
+
+    // Verify conversation membership
+    const conversation = await Conversation.findOne({
+      _id: message.conversation,
+      participants: getUserId(req),
+    });
+    if (!conversation) {
+      return res.status(403).json({ message: "Not a participant of this conversation" });
+    }
+
     message.reactions = (message.reactions || []).filter(
       (r) => !(r.emoji === emoji && String(r.user) === String(getUserId(req))),
     );

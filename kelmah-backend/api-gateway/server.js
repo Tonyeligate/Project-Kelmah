@@ -377,9 +377,11 @@ app.use((req, res, next) => {
 });
 
 // Inject internal key for downstream services (defense-in-depth)
+// SECURITY: Only inject on authenticated requests to prevent
+// unauthenticated callers from carrying the trust header.
 app.use((req, res, next) => {
   const internalKey = process.env.INTERNAL_API_KEY;
-  if (internalKey) {
+  if (internalKey && req.user) {
     req.headers['x-internal-key'] = internalKey;
     req.headers['x-internal-request'] = internalKey;
   }
@@ -391,8 +393,6 @@ app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 1000,
   message: { error: 'Too many requests' },
-  // Do not throttle hirer dashboard critical endpoint (match against full originalUrl)
-  skip: (req) => (req.originalUrl || '').startsWith('/api/jobs/my-jobs')
 }));
 
 // Root route - API welcome and information

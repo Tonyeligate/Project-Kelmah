@@ -353,12 +353,26 @@ class ConversationController {
           });
         }
 
-        updateData.participants = normalized;
+        // Safety: merge participants — add new ones, never remove existing
+        // To remove participants, a dedicated endpoint should be used
+        updateData.participants = {
+          $addToSet: { $each: normalized },
+        };
+      }
+
+      const updateOp = {};
+      if (updateData.participants) {
+        // Use $addToSet for participants
+        updateOp.$addToSet = { participants: { $each: updateData.participants.$addToSet.$each } };
+        delete updateData.participants;
+      }
+      if (Object.keys(updateData).length > 0) {
+        updateOp.$set = updateData;
       }
 
       await Conversation.updateOne(
         { _id: conversation._id },
-        { $set: updateData },
+        updateOp,
       );
 
       // Log conversation update

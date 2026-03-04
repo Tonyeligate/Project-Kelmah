@@ -668,13 +668,13 @@ const HirerDashboardPage = () => {
             >
               <Box>
                 <Typography variant="body2" fontWeight={600} sx={{ color: 'text.secondary', mb: 0.5 }}>
-                  Needs Attention
+                  Total Spent
                 </Typography>
                 <Typography variant="h3" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
-                  {summaryData.pendingPayments}
+                  GH₵{summaryData.totalSpent.toLocaleString()}
                 </Typography>
                 <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
-                  {summaryData.pendingPayments === 0 ? 'All clear!' : 'Click to resolve'}
+                  {summaryData.completedJobs === 0 ? 'No jobs completed yet' : 'Across completed jobs'}
                 </Typography>
               </Box>
               <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
@@ -742,9 +742,9 @@ const HirerDashboardPage = () => {
                   <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 1 }}>
                     <PaymentIcon sx={{ fontSize: 48, color: 'text.disabled' }} />
                     <Typography variant="body2" color="text.secondary">
-                      No spending data yet
+                      No jobs yet
                     </Typography>
-                    <Typography variant="caption" color="text.disabled">Post a job and hire workers to see spending stats</Typography>
+                    <Typography variant="caption" color="text.disabled">Post a job to see your overview</Typography>
                   </Box>
                 )}
               </Box>
@@ -817,7 +817,7 @@ const HirerDashboardPage = () => {
                           </PieChart>
                         </ResponsiveContainer>
                       ) : (
-                        <Box sx={{ width: 170, height: 170, borderRadius: '50%', bgcolor: 'grey.200', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                        <Box sx={{ width: 170, height: 170, borderRadius: '50%', bgcolor: 'action.disabledBackground', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
                           <ProposalIcon sx={{ fontSize: 36, color: 'text.disabled' }} />
                           <Typography variant="body2" color="text.secondary">No data</Typography>
                         </Box>
@@ -975,11 +975,7 @@ const HirerDashboardPage = () => {
           )}
           {/* Dashboard Overview - Direct content without tabs (navigation via sidebar) */}
           <Box sx={{ mt: 1 }}>
-            {isHydrating ? (
-              <LoadingOverviewSkeleton />
-            ) : (
-              renderDashboardOverview()
-            )}
+            {renderDashboardOverview()}
           </Box>
         </Container>
         {/* Floating Quick Actions */}

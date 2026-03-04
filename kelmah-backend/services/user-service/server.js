@@ -206,11 +206,12 @@ app.use(requireDatabaseReady);
 app.use("/api/users", userRoutes);
 app.use("/api/availability", availabilityRoutes);
 
-// Dashboard routes (direct mounting for compatibility)
+// Dashboard routes (direct mounting for compatibility) — require gateway trust
 const { getDashboardMetrics, getDashboardWorkers, getDashboardAnalytics } = require('./controllers/user.controller');
-app.get("/dashboard/metrics", getDashboardMetrics);
-app.get("/dashboard/workers", getDashboardWorkers);
-app.get("/dashboard/analytics", getDashboardAnalytics);
+const { verifyGatewayRequest: gwTrust } = require('../../shared/middlewares/serviceTrust');
+app.get("/dashboard/metrics", gwTrust, getDashboardMetrics);
+app.get("/dashboard/workers", gwTrust, getDashboardWorkers);
+app.get("/dashboard/analytics", gwTrust, getDashboardAnalytics);
 
 // Debug middleware to log all incoming requests (development only)
 if (process.env.NODE_ENV === 'development') {
@@ -360,16 +361,13 @@ app.get('/health/db', (req, res) => {
     mongodb: {
       readyState: readyState,
       readyStateText: states[readyState] || 'unknown',
-      host: mongoose.connection?.host || 'N/A',
+      host: 'REDACTED',
       name: mongoose.connection?.name || 'N/A',
       models: Object.keys(mongoose.models || {}).length,
-      modelNames: Object.keys(mongoose.models || {}),
     },
     environment: {
       NODE_ENV: process.env.NODE_ENV,
       hasMongodbUri: !!process.env.MONGODB_URI,
-      mongodbUriPreview: process.env.MONGODB_URI ? 
-        process.env.MONGODB_URI.substring(0, 30) + '...' : 'NOT SET'
     },
     healthCheck: readyState === 1 ? 'HEALTHY' : 'UNHEALTHY'
   };
@@ -387,16 +385,13 @@ app.get('/api/health/db', (req, res) => {
     mongodb: {
       readyState: readyState,
       readyStateText: states[readyState] || 'unknown',
-      host: mongoose.connection?.host || 'N/A',
+      host: 'REDACTED',
       name: mongoose.connection?.name || 'N/A',
       models: Object.keys(mongoose.models || {}).length,
-      modelNames: Object.keys(mongoose.models || {}),
     },
     environment: {
       NODE_ENV: process.env.NODE_ENV,
       hasMongodbUri: !!process.env.MONGODB_URI,
-      mongodbUriPreview: process.env.MONGODB_URI ? 
-        process.env.MONGODB_URI.substring(0, 30) + '...' : 'NOT SET'
     },
     healthCheck: readyState === 1 ? 'HEALTHY' : 'UNHEALTHY'
   };
@@ -444,11 +439,15 @@ app.use(notFound);
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const status = err.status || "error";
+  // Never leak internal error details in production
+  const safeMessage = statusCode >= 500
+    ? 'An internal error occurred'
+    : (err.message || 'An error occurred');
 
   res.status(statusCode).json({
     success: false,
     status,
-    message: err.message,
+    message: safeMessage,
     errors: err.errors || null,
     stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
   });

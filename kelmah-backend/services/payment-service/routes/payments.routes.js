@@ -141,7 +141,7 @@ router.post('/paystack/initialize', createLimiter('payments'), async (req, res) 
     if (!result.success) return res.status(400).json(result);
     return res.json(result);
   } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, message: 'Payment initialization failed' });
   }
 });
 
@@ -152,7 +152,7 @@ router.get('/paystack/verify/:reference', async (req, res) => {
     if (!result.success) return res.status(400).json(result);
     return res.json(result);
   } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, message: 'Payment verification failed' });
   }
 });
 

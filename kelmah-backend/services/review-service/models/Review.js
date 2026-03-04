@@ -41,7 +41,7 @@ const ReviewSchema = new Schema(
     status: {
       type: String,
       enum: ['pending', 'approved', 'rejected', 'flagged'],
-      default: 'approved',
+      default: 'pending',
     },
     response: {
       comment: {
@@ -61,6 +61,12 @@ const ReviewSchema = new Schema(
       default: 0,
       min: 0,
     },
+    reporters: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     moderationNotes: [
       {
         note: {

@@ -355,8 +355,13 @@ router.put('/:id', [
       });
     }
 
-    // Update template
-    Object.assign(template, req.body);
+    // Update template — SECURITY: allowlist safe fields only
+    const TEMPLATE_ALLOWED = ['name', 'description', 'content', 'category', 'industry',
+      'tags', 'terms', 'sections', 'variables', 'defaultCurrency', 'defaultDuration',
+      'defaultPaymentTerms', 'legalJurisdiction'];
+    for (const key of TEMPLATE_ALLOWED) {
+      if (key in req.body) template[key] = req.body[key];
+    }
 
     // Reset approval status if not admin
     if (req.user.role !== 'admin' && template.approvalStatus === 'approved') {

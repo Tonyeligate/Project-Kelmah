@@ -44,7 +44,7 @@ const MONTH_NAMES = [
 
 const EarningsAnalytics = () => {
   const { user: rawUser } = useSelector((state) => state.auth);
-  const user = normalizeUser(rawUser);
+  const user = normalizeUser(rawUser) ?? {};
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
 
@@ -79,6 +79,8 @@ const EarningsAnalytics = () => {
   useEffect(() => {
     if (user?.id) {
       loadEarningsData();
+    } else {
+      setLoading(false);
     }
   }, [loadEarningsData, user]);
 

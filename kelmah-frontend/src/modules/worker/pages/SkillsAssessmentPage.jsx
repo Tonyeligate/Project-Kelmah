@@ -754,10 +754,32 @@ const SkillsAssessmentPage = () => {
               </CardContent>
 
               <CardActions>
-                <Button size="small" startIcon={<DownloadIcon />}>
+                <Button
+                  size="small"
+                  startIcon={<DownloadIcon />}
+                  onClick={() =>
+                    setSnackbar({ open: true, message: 'Certificate download coming soon.', severity: 'info' })
+                  }
+                  disabled={!test.certificate}
+                >
                   Certificate
                 </Button>
-                <Button size="small" startIcon={<ShareIcon />}>
+                <Button
+                  size="small"
+                  startIcon={<ShareIcon />}
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator
+                        .share({
+                          title: test.title,
+                          text: `I scored ${test.score ?? ''}% on ${test.title} — Kelmah Skills Assessment`,
+                        })
+                        .catch(() => {});
+                    } else {
+                      setSnackbar({ open: true, message: 'Sharing not supported on this device.', severity: 'info' });
+                    }
+                  }}
+                >
                   Share
                 </Button>
               </CardActions>

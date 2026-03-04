@@ -109,8 +109,11 @@ const WorkerDashboardPage = () => {
   const acceptedApplications = useSelector(selectAccepted) || [];
   const rejectedApplications = useSelector(selectRejected) || [];
   const completedJobs = useSelector(selectCompletedJobs) || [];
-  const isLoading = useSelector(selectWorkerLoading('applications'));
-  const error = useSelector(selectWorkerError('applications'));
+  // Memoize curried loading/error selectors to avoid selector recreation on every render
+  const selectLoadingApps = useMemo(() => selectWorkerLoading('applications'), []);
+  const selectErrorApps   = useMemo(() => selectWorkerError('applications'),   []);
+  const isLoading = useSelector(selectLoadingApps);
+  const error     = useSelector(selectErrorApps);
 
   // Profile completion state (Phase 1)
   const [profileCompletion, setProfileCompletion] = useState({ percentage: 100, missingFields: [] });
@@ -381,7 +384,7 @@ const WorkerDashboardPage = () => {
     },
     {
       title: 'Total Earnings',
-      value: `GH₵${stats.earnings.toLocaleString()}`,
+      value: `GH₵${(Number.isFinite(stats.earnings) ? stats.earnings : 0).toLocaleString()}`,
       tone: theme.palette.info.main,
       icon: <AttachMoneyIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha(theme.palette.info.main, 0.25) }} />,
       tooltip: 'Your total earnings from completed jobs',

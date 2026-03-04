@@ -1,5 +1,47 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Jobs UX + Visibility + Worker Pages Audit — Round 19 ✅
+
+**Scope**: Follow-up improvements to jobs listing, job cards, job posting form, and worker page audit.
+
+**Implemented fixes**:
+- ✅ `JobsPage.jsx`
+  - Fixed Apply Now button using `job.id` only → now uses `job._id || job.id` consistently (prevents broken navigation when MongoDB returns `_id`).
+  - Removed unused `InteractiveJobCard as JobCard` import (page builds its own inline card UI).
+- ✅ `JobCard.jsx` (`modules/common/components/cards/`)
+  - Updated CardActions to show **both** "Apply Now" and "View Details" buttons for **all non-compact variants** (previously only `variant="detailed"` had a CTA).
+  - Apply Now navigates to `/jobs/${id}/apply`; View Details triggers `handleCardClick()`.
+  - Touch-friendly button sizing; fullWidth on mobile.
+- ✅ `JobPostingPage.jsx`
+  - Added `visibility` field to `formData` initial state (was missing — always submit hardcoded `'public'`).
+  - Added `visibility` to edit-mode data loader so existing job visibility is preserved when editing.
+  - Added **Job Visibility** selector UI in the "Location & Visibility" step (Public / Private radio buttons with descriptive labels).
+  - Added `visibility` to `previewSnapshot` and rendered it in the `JobPreview` component with emoji cues.
+  - Updated form submission to use `formData.visibility` instead of hardcoded `'public'`.
+- ✅ `kelmah-backend/scripts/migrate-job-visibility.js` (NEW)
+  - Created idempotent migration script: sets `visibility: 'public'` on all Job documents where visibility is null/missing.
+  - Reports before/after distribution.
+  - Run via: `node kelmah-backend/scripts/migrate-job-visibility.js`
+- ✅ Worker pages audit:
+  - `WorkerDashboardPage.jsx`: verified correct — auto-refresh, retry logic, earnings/applications charts, welcome state, profile completion, quick actions all present and working.
+  - `JobSearchPage.jsx`: verified correct — React Query + save/unsave with optimistic updates, category chips, sort/filter drawer, pagination, all working.
+  - `MyApplicationsPage.jsx`: verified correct — mobile card + desktop table dual view, all status tabs, dialog for details + messaging, all working.
+  - `MyBidsPage.jsx`: verified correct — bid status cards, withdraw flow, stats, all present.
+  - No code changes required in worker pages.
+
+**Verification**:
+- ✅ `get_errors` reports no diagnostics across all changed files.
+- ✅ Migration script created and validated locally (network access needed for production run).
+
+**Files modified**:
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/common/components/cards/JobCard.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/JobPostingPage.jsx`
+- `kelmah-backend/scripts/migrate-job-visibility.js` (new)
+- `spec-kit/STATUS_LOG.md`
+
+---
+
 ### Session: Auth/Profile Form UX Refinement — Round 18 ✅
 
 **Scope**: Improve form clarity and recovery for registration and worker profile editing flows.

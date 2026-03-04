@@ -180,7 +180,6 @@ import { useSelector } from 'react-redux';
 import {
   selectJobFilters,
 } from '../services/jobSlice';
-import { InteractiveJobCard as JobCard } from '../../common/components/cards';
 import { useNavigate } from 'react-router-dom';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 import { useDebounce } from '../../../hooks/useDebounce';
@@ -2241,10 +2240,11 @@ const JobsPage = () => {
                             variant="contained"
                             fullWidth
                             onClick={() => {
+                              const jobId = job._id || job.id;
                               if (!authState.isAuthenticated) {
                                 navigate('/login', {
                                   state: {
-                                    from: `/jobs/${job.id}/apply`,
+                                    from: `/jobs/${jobId}/apply`,
                                     message:
                                       'Please sign in to apply for this job',
                                   },
@@ -2252,7 +2252,7 @@ const JobsPage = () => {
                                 return;
                               }
 
-                              navigate(`/jobs/${job.id}/apply`);
+                              navigate(`/jobs/${jobId}/apply`);
                             }}
                             sx={{
                               bgcolor: '#D4AF37',

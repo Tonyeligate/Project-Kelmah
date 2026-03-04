@@ -14,7 +14,7 @@ exports.getBills = async (req, res) => {
     console.error("Error fetching bills:", error);
     res
       .status(500)
-      .json({ success: false, error: { message: "Failed to fetch bills", details: error.message } });
+      .json({ success: false, error: { message: "Failed to fetch bills" } });
   }
 };
 
@@ -46,6 +46,6 @@ exports.payBill = async (req, res) => {
     console.error("Error paying bill:", error);
     res
       .status(500)
-      .json({ success: false, error: { message: "Failed to pay bill", details: error.message } });
+      .json({ success: false, error: { message: "Failed to pay bill" } });
   }
 };

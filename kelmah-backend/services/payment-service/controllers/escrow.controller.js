@@ -149,9 +149,6 @@ exports.refundEscrow = async (req, res, next) => {
       return res.status(409).json({ success: false, message: 'Escrow refund already in progress or completed' });
     }
 
-    const hirerWallet = await Wallet.findOne({ user: escrow.hirerId });
-    if (!hirerWallet) return res.status(404).json({ success: false, message: 'Hirer wallet not found' });
-
     const tx = await new Transaction({
       transactionId: `TRX-${Date.now()}-${require('crypto').randomUUID().slice(0, 8)}`,
       amount: escrow.amount,
@@ -166,12 +163,18 @@ exports.refundEscrow = async (req, res, next) => {
       status: 'completed'
     }).save();
 
-    await hirerWallet.addFunds(escrow.amount, tx);
+    // Atomic balance update — prevents race-condition double-credit
+    const walletUpdate = await Wallet.findOneAndUpdate(
+      { user: escrow.hirerId },
+      { $inc: { balance: escrow.amount } },
+      { new: true }
+    );
+    if (!walletUpdate) return res.status(500).json({ success: false, message: 'Failed to credit hirer wallet' });
 
-    escrow.status = 'refunded';
-    escrow.refundedAt = new Date();
-    escrow.transactions.push(tx._id);
-    await escrow.save();
+    await Escrow.findByIdAndUpdate(escrowId, {
+      $set: { status: 'refunded', refundedAt: new Date() },
+      $push: { transactions: tx._id }
+    });
 
     return res.json({ success: true, message: 'Escrow refunded successfully', data: { escrowId: escrow._id } });
   } catch (err) {
@@ -199,9 +202,6 @@ exports.releaseMilestonePayment = async (req, res, next) => {
     if (!milestone) return res.status(404).json({ success: false, message: 'Milestone not found' });
     if (milestone.status === 'released') return res.status(400).json({ success: false, message: 'Milestone already released' });
 
-    const workerWallet = await Wallet.findOne({ user: escrow.workerId });
-    if (!workerWallet) return res.status(404).json({ success: false, message: 'Worker wallet not found' });
-
     // Create transaction for milestone payment
     const tx = await new Transaction({
       transactionId: `TRX-${Date.now()}-${require('crypto').randomUUID().slice(0, 8)}`,
@@ -217,8 +217,12 @@ exports.releaseMilestonePayment = async (req, res, next) => {
       status: 'completed'
     }).save();
 
-    // Add funds to worker wallet
-    await workerWallet.addFunds(milestone.amount, tx);
+    // Atomic balance update — prevents race-condition double-credit
+    await Wallet.findOneAndUpdate(
+      { user: escrow.workerId },
+      { $inc: { balance: milestone.amount } },
+      { new: true }
+    );
 
     // Update milestone status
     milestone.status = 'released';

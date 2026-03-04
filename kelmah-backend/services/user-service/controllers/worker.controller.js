@@ -11,6 +11,7 @@ const { ensureConnection } = require('../config/db');
 const { validateInput, handleServiceError, generatePagination } = require('../utils/helpers');
 const auditLogger = require('../../../shared/utils/audit-logger');
 const { verifyAccessToken, decodeUserFromClaims } = require('../../../shared/utils/jwt');
+const { escapeRegex } = require('../../../shared/utils/sanitize');
 
 const REQUIRED_PROFILE_FIELDS = [
   'firstName',
@@ -1129,7 +1130,7 @@ class WorkerController {
 
       // FIXED: Location filter - use location field (contains city)
       if (city || location) {
-        const locationSearch = city || location;
+        const locationSearch = escapeRegex(city || location);
         mongoQuery.location = { $regex: locationSearch, $options: 'i' };
         if (isDev) console.log('📍 Location filter:', locationSearch);
       }
@@ -1194,11 +1195,11 @@ class WorkerController {
         } catch (error) {
           if (isDev) console.log('⚠️ Text search failed, using regex fallback');
           mongoQuery.$or = [
-            { firstName: { $regex: searchTerm, $options: 'i' } },
-            { lastName: { $regex: searchTerm, $options: 'i' } },
-            { profession: { $regex: searchTerm, $options: 'i' } },
-            { bio: { $regex: searchTerm, $options: 'i' } },
-            { skills: { $regex: searchTerm, $options: 'i' } }
+            { firstName: { $regex: escapeRegex(searchTerm), $options: 'i' } },
+            { lastName: { $regex: escapeRegex(searchTerm), $options: 'i' } },
+            { profession: { $regex: escapeRegex(searchTerm), $options: 'i' } },
+            { bio: { $regex: escapeRegex(searchTerm), $options: 'i' } },
+            { skills: { $regex: escapeRegex(searchTerm), $options: 'i' } }
           ];
         }
       }
@@ -1344,18 +1345,19 @@ class WorkerController {
 
       // Text search
       if (query) {
+        const safeQ = escapeRegex(query);
         mongoQuery.$or = [
-          { firstName: { $regex: query, $options: 'i' } },
-          { lastName: { $regex: query, $options: 'i' } },
-          { profession: { $regex: query, $options: 'i' } },
-          { bio: { $regex: query, $options: 'i' } }
+          { firstName: { $regex: safeQ, $options: 'i' } },
+          { lastName: { $regex: safeQ, $options: 'i' } },
+          { profession: { $regex: safeQ, $options: 'i' } },
+          { bio: { $regex: safeQ, $options: 'i' } }
         ];
       }
 
       // Location search
       if (location) {
         mongoQuery.$or = mongoQuery.$or || [];
-        mongoQuery.$or.push({ location: { $regex: location, $options: 'i' } });
+        mongoQuery.$or.push({ location: { $regex: escapeRegex(location), $options: 'i' } });
       }
 
       // Skills search
@@ -1479,14 +1481,9 @@ class WorkerController {
           updateNeeded = true;
         }
 
-        // Update MongoDB document if needed
+        // Return worker with populated defaults (in-memory only — never write during search)
         if (updateNeeded) {
-          try {
-            await MongoUser.updateOne({ _id: worker._id }, { $set: updates });
-            console.log(`✅ Auto-populated worker fields for ${worker.firstName} ${worker.lastName}`);
-          } catch (error) {
-            console.error(`❌ Failed to auto-populate worker fields for ${worker._id}:`, error);
-          }
+          // Apply defaults in-memory only, not to DB
         }
 
         // Return worker with populated defaults
@@ -2932,7 +2929,15 @@ class WorkerController {
         return res.status(404).json({ success: false, message: 'Portfolio item not found' });
       }
 
-      Object.assign(item, req.body || {}, { updatedAt: new Date() });
+      // SECURITY: Only allow safe portfolio fields (prevent mass assignment)
+      const PORTFOLIO_ALLOWED = ['title', 'description', 'images', 'category', 'tags',
+        'location', 'clientName', 'projectDate', 'skills', 'isPublic', 'projectUrl'];
+      const safeFields = {};
+      const rawBody = req.body || {};
+      for (const key of PORTFOLIO_ALLOWED) {
+        if (key in rawBody) safeFields[key] = rawBody[key];
+      }
+      Object.assign(item, safeFields, { updatedAt: new Date() });
       await item.save();
 
       return res.json({ success: true, data: { portfolioItem: formatPortfolioDocument(item) } });
@@ -3061,9 +3066,15 @@ class WorkerController {
         return res.status(503).json({ success: false, message: 'Certificate model unavailable' });
       }
 
+      // SECURITY: Only allow safe certificate fields (prevent mass assignment)
+      const CERT_SAFE = ['name', 'issuer', 'credentialId', 'url', 'issuedAt', 'expiresAt', 'description', 'category'];
+      const safeUpdate = {};
+      for (const k of CERT_SAFE) { if (k in req.body) safeUpdate[k] = req.body[k]; }
+      safeUpdate.updatedAt = new Date();
+
       const updated = await CertificateModel.findOneAndUpdate(
         { _id: certificateId, workerId: userDoc._id },
-        { ...req.body, updatedAt: new Date() },
+        safeUpdate,
         { new: true },
       );
 

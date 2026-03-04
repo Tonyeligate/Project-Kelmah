@@ -94,6 +94,7 @@ const VisibilityChip = ({ visibility }) => {
   );
 };
 
+function TabPanel(props) {
   const { children, value, index, ...other } = props;
   return (
     <div
@@ -165,6 +166,7 @@ const JobManagementPage = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedJob, setSelectedJob] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [uiMessage, setUiMessage] = useState(null);
@@ -277,15 +279,19 @@ const JobManagementPage = () => {
   };
 
   const handleDeleteConfirm = () => {
-    if (selectedJob) {
+    if (selectedJob && !isDeleting) {
+      setIsDeleting(true);
       dispatch(deleteHirerJob(selectedJob.id || selectedJob._id))
         .unwrap()
         .then(() => {
           setUiMessage({ text: 'Job deleted successfully', severity: 'success' });
           dispatch(fetchHirerJobs('all')); // refresh the list
         })
-        .catch((err) => setUiMessage({ text: err?.message || 'Failed to delete job', severity: 'error' }));
-      setDeleteDialogOpen(false);
+        .catch((err) => setUiMessage({ text: err?.message || 'Failed to delete job', severity: 'error' }))
+        .finally(() => {
+          setIsDeleting(false);
+          setDeleteDialogOpen(false);
+        });
     }
     handleMenuClose();
   };
@@ -317,7 +323,7 @@ const JobManagementPage = () => {
         '&:active': { transform: 'scale(0.98)' },
         transition: 'transform 0.1s ease',
       }}
-      onClick={() => handleViewJob(job.id)}
+      onClick={() => handleViewJob(job.id || job._id)}
     >
       {job.coverImage && (
         <CardMedia
@@ -363,7 +369,7 @@ const JobManagementPage = () => {
           <Box sx={{ display: 'flex', gap: 0.5 }}>
             <IconButton
               size="small"
-              onClick={(e) => { e.stopPropagation(); handleViewApplications(job.id); }}
+              onClick={(e) => { e.stopPropagation(); handleViewApplications(job.id || job._id); }}
               aria-label="View applicants"
               sx={{ bgcolor: 'action.hover', minWidth: 44, minHeight: 44 }}
             >
@@ -371,7 +377,7 @@ const JobManagementPage = () => {
             </IconButton>
             <IconButton
               size="small"
-              onClick={(e) => { e.stopPropagation(); handleEditJob(job.id); }}
+              onClick={(e) => { e.stopPropagation(); handleEditJob(job.id || job._id); }}
               aria-label="Edit job"
               sx={{ bgcolor: 'action.hover', minWidth: 44, minHeight: 44 }}
             >
@@ -398,13 +404,9 @@ const JobManagementPage = () => {
       </Helmet>
 
       {uiMessage && (
-        <Alert
-          severity={typeof uiMessage === 'object' ? uiMessage.severity || 'info' : 'info'}
-          sx={{ mb: 2 }}
-          onClose={() => setUiMessage(null)}
-        >
-          {typeof uiMessage === 'object' ? uiMessage.text : uiMessage}
-        </Alert>
+        // Inline alert removed — Snackbar below is the canonical feedback channel
+        // (keeping this comment to signal the intentional removal)
+        null
       )}
 
       {/* Visibility explainer: helps hirers understand why some jobs don't appear on the public page */}
@@ -753,7 +755,7 @@ const JobManagementPage = () => {
                           }}
                         >
                           <TableCell
-                            onClick={() => handleViewJob(job.id)}
+                            onClick={() => handleViewJob(job.id || job._id)}
                             sx={{ fontWeight: 500 }}
                           >
                             {job.title}
@@ -803,7 +805,7 @@ const JobManagementPage = () => {
                                   size="small"
                                   aria-label="View applications"
                                   onClick={() =>
-                                    handleViewApplications(job.id)
+                                    handleViewApplications(job.id || job._id)
                                   }
                                   sx={{ mr: 1 }}
                                 >
@@ -814,7 +816,7 @@ const JobManagementPage = () => {
                                 <IconButton
                                   size="small"
                                   aria-label="View job"
-                                  onClick={() => handleViewJob(job.id)}
+                                  onClick={() => handleViewJob(job.id || job._id)}
                                   sx={{ mr: 1 }}
                                 >
                                   <ViewIcon />
@@ -824,7 +826,7 @@ const JobManagementPage = () => {
                                 <IconButton
                                   size="small"
                                   aria-label="Edit job"
-                                  onClick={() => handleEditJob(job.id)}
+                                  onClick={() => handleEditJob(job.id || job._id)}
                                   sx={{ mr: 1 }}
                                 >
                                   <EditIcon />
@@ -867,17 +869,17 @@ const JobManagementPage = () => {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={() => handleEditJob(selectedJob?.id)}>
+        <MenuItem onClick={() => handleEditJob(selectedJob?.id || selectedJob?._id)}>
           <EditIcon fontSize="small" sx={{ mr: 1 }} />
           Edit Job
         </MenuItem>
 
-        <MenuItem onClick={() => handleViewJob(selectedJob?.id)}>
+        <MenuItem onClick={() => handleViewJob(selectedJob?.id || selectedJob?._id)}>
           <ViewIcon fontSize="small" sx={{ mr: 1 }} />
           View Job
         </MenuItem>
 
-        <MenuItem onClick={() => handleViewApplications(selectedJob?.id)}>
+        <MenuItem onClick={() => handleViewApplications(selectedJob?.id || selectedJob?._id)}>
           <PersonIcon fontSize="small" sx={{ mr: 1 }} />
           View Applications
         </MenuItem>
@@ -942,8 +944,9 @@ const JobManagementPage = () => {
             color="error"
             variant="contained"
             sx={{ minHeight: 44 }}
+            disabled={isDeleting}
           >
-            Delete
+            {isDeleting ? 'Deleting…' : 'Delete'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const models = require('../models');
 const { validateInput, handleServiceError, generatePagination } = require('../utils/helpers');
 const auditLogger = require('../../../shared/utils/audit-logger');
+const { escapeRegex } = require('../../../shared/utils/sanitize');
 
 const { Portfolio, WorkerProfile } = models;
 
@@ -416,7 +417,7 @@ class PortfolioController {
       };
 
       if (query) {
-        const regex = new RegExp(query, 'i');
+        const regex = new RegExp(escapeRegex(query), 'i');
         filters.$or = [
           { title: regex },
           { description: regex },
@@ -426,7 +427,7 @@ class PortfolioController {
       }
 
       if (projectType) filters.projectType = projectType;
-      if (location) filters.location = new RegExp(location, 'i');
+      if (location) filters.location = new RegExp(escapeRegex(location), 'i');
       if (skills) filters.skillsUsed = { $in: skills.split(',').map((skill) => skill.trim()).filter(Boolean) };
 
       const valueFilters = {};

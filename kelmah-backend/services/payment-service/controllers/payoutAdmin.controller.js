@@ -11,7 +11,7 @@ exports.enqueuePayout = async (req, res) => {
     const item = await PayoutQueue.create({ user, amount, currency, paymentMethod, provider, metadata });
     return res.status(201).json({ success: true, data: item });
   } catch (e) {
-    return res.status(500).json({ success: false, message: e.message });
+    return res.status(500).json({ success: false, message: 'Failed to enqueue payout' });
   }
 };
 
@@ -55,7 +55,7 @@ exports.processBatch = async (req, res) => {
     }
     return res.json({ success: true, data: { processed, queued: await PayoutQueue.countDocuments({ status: 'queued' }) } });
   } catch (e) {
-    return res.status(500).json({ success: false, message: e.message });
+    return res.status(500).json({ success: false, message: 'Failed to process payout batch' });
   }
 };
 
@@ -71,7 +71,7 @@ exports.listPayouts = async (req, res) => {
     const total = await PayoutQueue.countDocuments(q);
     return res.json({ success: true, data: items, pagination: { page: safePage, limit: safeLimit, total, pages: Math.ceil(total / safeLimit) } });
   } catch (e) {
-    return res.status(500).json({ success: false, message: e.message });
+    return res.status(500).json({ success: false, message: 'Failed to list payouts' });
   }
 };
 

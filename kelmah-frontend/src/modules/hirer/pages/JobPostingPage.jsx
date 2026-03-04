@@ -182,6 +182,12 @@ const JobPreview = ({ snapshot }) => {
         </Box>
         <Box sx={{ mt: 1 }}>
           <Typography variant="body2">
+            <strong>Visibility:</strong>{' '}
+            {snapshot.visibility === 'private' ? '🔒 Private (invite only)' : '🌐 Public (visible to all workers)'}
+          </Typography>
+        </Box>
+        <Box sx={{ mt: 1 }}>
+          <Typography variant="body2">
             <strong>Requirements:</strong> {snapshot.requirements}
           </Typography>
         </Box>
@@ -224,6 +230,7 @@ const JobPostingPage = () => {
     duration: '',
     locationType: 'remote',
     location: '',
+    visibility: 'public',
     biddingEnabled: false,
     biddingMaxBidders: 5,
     coverImage: '',
@@ -287,6 +294,7 @@ const JobPostingPage = () => {
       duration: durationValue || prev.duration,
       locationType,
       location: locationAddress,
+      visibility: existing?.visibility || 'public',
     }));
   }, [isEditMode, hirerJobsByStatus, jobId]);
   const previewSnapshot = useMemo(() => {
@@ -320,6 +328,7 @@ const JobPostingPage = () => {
         formData.locationType === 'remote'
           ? safeLocation || 'Remote collaboration'
           : safeLocation || 'Add the job site or landmark',
+      visibility: formData.visibility || 'public',
       coverImage: coverImagePreview,
     };
   }, [formData, coverImagePreview]);
@@ -614,7 +623,7 @@ const JobPostingPage = () => {
         type: formData.locationType,
         address: formData.location,
       },
-      visibility: 'public',
+      visibility: formData.visibility || 'public',
       status: asDraft ? 'draft' : 'open',
       ...(formData.coverImage && { coverImage: formData.coverImage }),
       ...(formData.biddingEnabled && {
@@ -1165,6 +1174,40 @@ const JobPostingPage = () => {
               required
               sx={REQUIRED_LABEL_SX}
             />
+            <FormControl component="fieldset" sx={{ mt: 3 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                Job Visibility
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Control who can see your job posting on Kelmah.
+              </Typography>
+              <RadioGroup
+                name="visibility"
+                value={formData.visibility}
+                onChange={handleChange}
+              >
+                <FormControlLabel
+                  value="public"
+                  control={<Radio />}
+                  label={
+                    <Box>
+                      <Typography variant="body2" fontWeight="medium">Public</Typography>
+                      <Typography variant="caption" color="text.secondary">Visible to all workers on Kelmah</Typography>
+                    </Box>
+                  }
+                />
+                <FormControlLabel
+                  value="private"
+                  control={<Radio />}
+                  label={
+                    <Box>
+                      <Typography variant="body2" fontWeight="medium">Private</Typography>
+                      <Typography variant="caption" color="text.secondary">Only workers you invite can see and apply</Typography>
+                    </Box>
+                  }
+                />
+              </RadioGroup>
+            </FormControl>
           </>
         );
       case 4:

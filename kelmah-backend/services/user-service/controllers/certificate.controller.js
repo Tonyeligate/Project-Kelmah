@@ -5,6 +5,10 @@
 
 const Certificate = require('../models/Certificate');
 const { handleServiceError } = require('../utils/helpers');
+const { pickAllowedFields, escapeRegex } = require('../../../shared/utils/sanitize');
+
+// Allowed fields for certificate create/update (prevents mass assignment)
+const CERT_ALLOWED_FIELDS = ['name', 'issuer', 'credentialId', 'url', 'issuedAt', 'expiresAt', 'description', 'category'];
 
 class CertificateController {
   static async listByWorker(req, res) {
@@ -20,7 +24,7 @@ class CertificateController {
   static async create(req, res) {
     try {
       const { workerId } = req.params;
-      const payload = { ...req.body, workerId };
+      const payload = { ...pickAllowedFields(req.body, CERT_ALLOWED_FIELDS), workerId };
       const created = await Certificate.create(payload);
       return res.status(201).json({ success: true, data: { certificate: created } });
     } catch (error) {
@@ -32,9 +36,10 @@ class CertificateController {
     try {
       const { id } = req.params;
       const userId = req.user?.id;
+      const safeUpdate = pickAllowedFields(req.body, CERT_ALLOWED_FIELDS);
       const updated = await Certificate.findOneAndUpdate(
         { _id: id, userId },
-        req.body,
+        safeUpdate,
         { new: true }
       );
       if (!updated) return res.status(404).json({ success: false, message: 'Certificate not found or not owned by you' });
@@ -60,8 +65,9 @@ class CertificateController {
   static async requestVerification(req, res) {
     try {
       const { id } = req.params;
-      const updated = await Certificate.findByIdAndUpdate(
-        id,
+      const userId = req.user?.id;
+      const updated = await Certificate.findOneAndUpdate(
+        { _id: id, $or: [{ userId }, { workerId: userId }] },
         {
           status: 'pending',
           verification: { requestedAt: new Date(), result: 'pending' }
@@ -91,9 +97,14 @@ class CertificateController {
   static async share(req, res) {
     try {
       const { id } = req.params;
+      const userId = req.user?.id;
       const crypto = require('crypto');
       const shareToken = crypto.randomBytes(12).toString('hex');
-      const updated = await Certificate.findByIdAndUpdate(id, { shareToken }, { new: true });
+      const updated = await Certificate.findOneAndUpdate(
+        { _id: id, $or: [{ userId }, { workerId: userId }] },
+        { shareToken },
+        { new: true }
+      );
       if (!updated) return res.status(404).json({ success: false, message: 'Certificate not found' });
       const base = process.env.FRONTEND_URL || 'https://kelmah-frontend-cyan.vercel.app';
       const link = `${base}/certificates/${id}?t=${shareToken}`;
@@ -137,8 +148,8 @@ class CertificateController {
       const { workerId } = req.params;
       const { name, issuer, status } = req.query;
       const query = { workerId };
-      if (name) query.name = { $regex: name, $options: 'i' };
-      if (issuer) query.issuer = { $regex: issuer, $options: 'i' };
+      if (name) query.name = { $regex: escapeRegex(name), $options: 'i' };
+      if (issuer) query.issuer = { $regex: escapeRegex(issuer), $options: 'i' };
       if (status) query.status = status;
       const items = await Certificate.find(query).sort({ createdAt: -1 });
       return res.json({ success: true, data: { certificates: items } });
