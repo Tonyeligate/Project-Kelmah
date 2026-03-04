@@ -10,13 +10,9 @@ const apiGateway = spawn('node', ['-r', path.resolve(__dirname, 'kelmah-backend/
     ...process.env,
     NODE_ENV: process.env.NODE_ENV || 'production',
     PORT: process.env.PORT || '5000',
-    API_GATEWAY_PORT: process.env.PORT || '5000',
-    AUTH_SERVICE_URL: process.env.AUTH_SERVICE_URL || 'http://127.0.0.1:5001',
-    USER_SERVICE_URL: process.env.USER_SERVICE_URL || 'http://127.0.0.1:5002',
-    JOB_SERVICE_URL: process.env.JOB_SERVICE_URL || 'http://127.0.0.1:5003',
-    PAYMENT_SERVICE_URL: process.env.PAYMENT_SERVICE_URL || 'http://127.0.0.1:5004',
-    MESSAGING_SERVICE_URL: process.env.MESSAGING_SERVICE_URL || 'http://127.0.0.1:5005',
-    REVIEW_SERVICE_URL: process.env.REVIEW_SERVICE_URL || 'http://127.0.0.1:5006'
+    API_GATEWAY_PORT: process.env.PORT || '5000'
+    // Service URLs resolved by serviceDiscovery.js using *_SERVICE_CLOUD_URL env vars.
+    // Do NOT set *_SERVICE_URL defaults to localhost here — they override cloud discovery.
   },
   cwd: path.resolve(__dirname, 'kelmah-backend/api-gateway')
 });
