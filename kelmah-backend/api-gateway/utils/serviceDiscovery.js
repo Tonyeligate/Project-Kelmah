@@ -39,37 +39,37 @@ const SERVICE_CONFIG = {
   auth: {
     local: 'http://localhost:5001',
     cloud: process.env.AUTH_SERVICE_CLOUD_URL,
-    cloudFallbacks: ['https://kelmah-auth-service.onrender.com'],
+    cloudFallbacks: ['https://kelmah-auth-service-3zdl.onrender.com'],
     name: 'Auth Service'
   },
   user: {
     local: 'http://localhost:5002',
     cloud: process.env.USER_SERVICE_CLOUD_URL,
-    cloudFallbacks: ['https://kelmah-user-service.onrender.com'],
+    cloudFallbacks: ['https://kelmah-user-service-m0c9.onrender.com'],
     name: 'User Service'
   },
   job: {
     local: 'http://localhost:5003',
     cloud: process.env.JOB_SERVICE_CLOUD_URL,
-    cloudFallbacks: ['https://kelmah-job-service.onrender.com'],
+    cloudFallbacks: ['https://kelmah-job-service-w434.onrender.com'],
     name: 'Job Service'
   },
   payment: {
     local: 'http://localhost:5004',
     cloud: process.env.PAYMENT_SERVICE_CLOUD_URL,
-    cloudFallbacks: ['https://kelmah-payment-service.onrender.com'],
+    cloudFallbacks: ['https://kelmah-payment-service-dy01.onrender.com'],
     name: 'Payment Service'
   },
   messaging: {
     local: 'http://localhost:5005',
     cloud: process.env.MESSAGING_SERVICE_CLOUD_URL,
-    cloudFallbacks: ['https://kelmah-messaging-service.onrender.com'],
+    cloudFallbacks: ['https://kelmah-messaging-service-kpj5.onrender.com'],
     name: 'Messaging Service'
   },
   review: {
     local: 'http://localhost:5006',
     cloud: process.env.REVIEW_SERVICE_CLOUD_URL,
-    cloudFallbacks: ['https://kelmah-review-service.onrender.com'],
+    cloudFallbacks: ['https://kelmah-review-service-aue7.onrender.com'],
     name: 'Review Service'
   }
 };
@@ -78,7 +78,7 @@ const SERVICE_CONFIG = {
  * Health Check Function
  * Tests if a service URL is reachable
  */
-const checkServiceHealth = async (url, timeout = 15000) => {
+const checkServiceHealth = async (url, timeout = 30000) => {
   try {
     const response = await axios.get(`${url}/health`, {
       timeout,
@@ -156,8 +156,15 @@ const resolveServiceUrl = async (serviceName) => {
     }
   }
 
-  // If no URLs are healthy, return the first available URL (let it fail at runtime)
-  const fallbackUrl = urlsToTry[0]?.url;
+  // If no URLs are healthy, prefer cloud URLs over localhost in production
+  let fallbackUrl;
+  if (environment === 'production') {
+    // In production, never fall back to localhost — use cloud fallback URL
+    const cloudEntry = urlsToTry.find(u => u.type === 'cloud' || u.type === 'cloud-fallback');
+    fallbackUrl = cloudEntry?.url || urlsToTry[0]?.url;
+  } else {
+    fallbackUrl = urlsToTry[0]?.url;
+  }
   console.log(`❌ ${config.name} no healthy URLs found, using fallback: ${fallbackUrl}`);
   return fallbackUrl;
 };
@@ -228,7 +235,14 @@ const getServiceUrl = (serviceName) => {
   }
 
   const environment = detectEnvironment();
-  return environment === 'production' ? (config.cloud || config.local) : config.local;
+  if (environment === 'production') {
+    // In production: prefer cloud env var, then cloudFallbacks, then local as last resort
+    if (config.cloud) return config.cloud;
+    const fallback = Array.isArray(config.cloudFallbacks) && config.cloudFallbacks[0];
+    if (fallback) return fallback;
+    return config.local;
+  }
+  return config.local;
 };
 
 module.exports = {

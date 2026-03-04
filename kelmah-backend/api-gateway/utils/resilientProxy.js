@@ -16,7 +16,7 @@ class ResilientProxy {
       target,
       pathRewrite = {},
       changeOrigin = true,
-      timeout = 30000,
+      timeout = parseInt(process.env.PROXY_TIMEOUT || '60000', 10),
       ...otherOptions
     } = options;
 

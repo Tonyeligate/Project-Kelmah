@@ -557,7 +557,7 @@ const forwardUserMutation = async (req, res, targetPath) => {
       url: `${userServiceUrl}${targetPath}`,
       data: req.body,
       params: req.query,
-      timeout: 30000,
+      timeout: parseInt(process.env.PROXY_TIMEOUT || '60000', 10),
       headers: {
         'content-type': 'application/json',
         'x-request-id': req.id,
@@ -999,8 +999,8 @@ const getSocketIoProxy = () => {
       target,
       changeOrigin: true,
       ws: true,
-      timeout: 30000,
-      proxyTimeout: 30000,
+      timeout: parseInt(process.env.PROXY_TIMEOUT || '60000', 10),
+      proxyTimeout: parseInt(process.env.PROXY_TIMEOUT || '60000', 10),
       logLevel: 'debug',
       onError: (err, req, res) => {
         console.error('🚨 Socket.IO proxy error:', err.message);
