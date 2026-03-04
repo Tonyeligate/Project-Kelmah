@@ -205,7 +205,6 @@ class ResilientProxy {
         console.error('🚨 Error in aggregate health check:', error);
         res.status(500).json({
           error: 'Health check system error',
-          message: error.message,
           timestamp: new Date().toISOString()
         });
       }

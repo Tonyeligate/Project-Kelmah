@@ -3,7 +3,7 @@
  * Shows job status, GPS verification, completion flow
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -80,6 +80,7 @@ const QuickJobTrackingPage = () => {
   const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
   const [completionPhotos, setCompletionPhotos] = useState([]);
   const [completionNote, setCompletionNote] = useState('');
+  const completionBlobUrlsRef = useRef([]);
   
   // Cancellation
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
@@ -180,18 +181,16 @@ const QuickJobTrackingPage = () => {
       preview: URL.createObjectURL(file),
       url: file.name // Temporary - would upload to storage
     }));
+    // Register blob URLs so the unmount cleanup can revoke them
+    newPhotos.forEach(p => completionBlobUrlsRef.current.push(p.preview));
     setCompletionPhotos(prev => [...prev, ...newPhotos].slice(0, 5));
   };
 
-  // Clean up object URLs on unmount only (not on every state change)
+  // Clean up blob URLs on unmount via a stable ref (avoids stale closure)
   useEffect(() => {
     return () => {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      completionPhotos.forEach(photo => {
-        if (photo.preview) URL.revokeObjectURL(photo.preview);
-      });
+      completionBlobUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handle marking complete
@@ -204,11 +203,30 @@ const QuickJobTrackingPage = () => {
     setActionLoading(true);
     try {
       const pos = await getCurrentLocation();
-      const photos = completionPhotos.map(p => ({ url: p.preview }));
-      
+
+      // Upload completion photos to get real server URLs before submitting
+      let uploadedPhotos;
+      try {
+        const { api } = await import('../../../services/apiClient');
+        const formData = new FormData();
+        completionPhotos.forEach((p, i) => formData.append('photos', p.file, `completion-${i}`));
+        const uploadRes = await api.post('/jobs/upload-photos', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        if (uploadRes.data?.success && Array.isArray(uploadRes.data.data)) {
+          uploadedPhotos = uploadRes.data.data.map(u => ({ url: u.url || u }));
+        } else {
+          // Fallback: still use preview — backend must have returned unexpected shape
+          uploadedPhotos = completionPhotos.map(p => ({ url: p.preview }));
+        }
+      } catch {
+        // Upload endpoint unavailable — fall back to previews and let backend reject if needed
+        uploadedPhotos = completionPhotos.map(p => ({ url: p.preview }));
+      }
+
       const result = await markComplete(
         jobId,
-        photos,
+        uploadedPhotos,
         completionNote,
         pos.latitude,
         pos.longitude

@@ -70,6 +70,7 @@ const CertificateUploader = ({ onCertificatesChange }) => {
   const [selectedCertificate, setSelectedCertificate] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, id: null });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -107,6 +108,7 @@ const CertificateUploader = ({ onCertificatesChange }) => {
 
   // Load certificates
   const loadCertificates = useCallback(async () => {
+    if (!user?.id) return;
     try {
       setLoading(true);
       const response = await certificateService.getWorkerCertificates(user.id);
@@ -119,7 +121,7 @@ const CertificateUploader = ({ onCertificatesChange }) => {
     } finally {
       setLoading(false);
     }
-  }, [user.id, enqueueSnackbar, onCertificatesChange]);
+  }, [user?.id, enqueueSnackbar, onCertificatesChange]);
 
   React.useEffect(() => {
     if (user?.id) {
@@ -183,17 +185,19 @@ const CertificateUploader = ({ onCertificatesChange }) => {
 
   // Handle form submission
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     try {
+      setIsSubmitting(true);
       const certificateData = {
         ...formData,
-        workerId: user.id,
+        workerId: user?.id,
         skills: formData.skills.join(','),
         status: 'pending', // Default status
       };
 
       if (isEditing && selectedCertificate) {
         await certificateService.updateCertificate(
-          selectedCertificate.id,
+          selectedCertificate.id || selectedCertificate._id,
           certificateData,
         );
         enqueueSnackbar('Certificate updated successfully', {
@@ -210,6 +214,8 @@ const CertificateUploader = ({ onCertificatesChange }) => {
       loadCertificates();
     } catch (error) {
       enqueueSnackbar('Failed to save certificate', { variant: 'error' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -489,7 +495,7 @@ const CertificateUploader = ({ onCertificatesChange }) => {
           </IconButton>
           <IconButton
             size="small"
-            onClick={() => handleDelete(certificate.id)}
+            onClick={() => handleDelete(certificate.id || certificate._id)}
             title="Delete"
             sx={{ color: 'error.main' }}
           >
@@ -607,7 +613,7 @@ const CertificateUploader = ({ onCertificatesChange }) => {
       ) : (
         <Grid container spacing={3}>
           {certificates.map((certificate) => (
-            <Grid item xs={12} sm={6} md={4} key={certificate.id}>
+            <Grid item xs={12} sm={6} md={4} key={certificate.id || certificate._id}>
               {renderCertificateCard(certificate)}
             </Grid>
           ))}
@@ -796,10 +802,11 @@ const CertificateUploader = ({ onCertificatesChange }) => {
             onClick={handleSubmit}
             variant="contained"
             disabled={
+              isSubmitting ||
               !formData.name || !formData.type || !formData.issuingOrganization
             }
           >
-            {isEditing ? 'Update' : 'Add'} Certificate
+            {isSubmitting ? 'Saving...' : `${isEditing ? 'Update' : 'Add'} Certificate`}
           </Button>
         </DialogActions>
       </Dialog>

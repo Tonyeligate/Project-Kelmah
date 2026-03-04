@@ -49,8 +49,6 @@ const TRADE_SYNONYM_MAP = {
   maintenance: ['Maintenance', 'General Maintenance', 'Handyman'],
 };
 
-const escapeRegex = (value = '') => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
 const buildTradeRegexes = (trade) => {
   if (!trade) {
     return [];

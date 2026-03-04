@@ -100,7 +100,7 @@ class ServiceHealthMonitor {
       
       return {
         healthy: false,
-        error: error.message,
+        error: 'Service check failed',
         code: error.code
       };
     }

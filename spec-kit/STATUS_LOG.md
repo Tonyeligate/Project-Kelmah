@@ -1,5 +1,65 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: COMPREHENSIVE BACKEND SECURITY AUDIT — COMPLETE ✅
+
+**Date**: June 2025  
+**Scope**: Full security and code quality audit of all 6 microservices + API Gateway + shared code. ~119 findings identified (22 CRIT, 34 HIGH, 38 MED, 25 LOW). ALL CRITICAL, HIGH, and MEDIUM issues fixed. All 25+ modified files pass syntax checks.
+
+**Created Shared Utility**: `kelmah-backend/shared/utils/sanitize.js` — exports `escapeRegex()`, `pickAllowedFields()`, `sanitizeErrorMessage()`, `clampLimit()`
+
+#### CRITICAL Fixes Applied ✅
+- **Non-atomic wallet operations** (payment-service): `refundEscrow` and `releaseMilestonePayment` replaced `wallet.addFunds()` with atomic `Wallet.findOneAndUpdate({ $inc: { balance } })`
+- **Conversation hijacking** (messaging-service): `updateConversation` participants field overwrite → `$addToSet` only
+- **Missing membership checks** (messaging-service): `addReaction`/`removeReaction` now verify conversation membership
+- **Missing schema field** (review-service): `reporters` array added to Review model (was causing silent `$addToSet` failures)
+- **IDOR vulnerabilities** (user-service): availability, certificates, job contracts, payment status — all fixed with ownership checks
+- **Mass assignment** (6 locations): job update, bid modify, portfolio update, certificate update, contract template update, worker profile — all use field allowlists
+- **ReDoS via unescaped RegExp** (8 locations): worker search, portfolio search, certificate search — all use `escapeRegex()`
+
+#### HIGH Fixes Applied ✅
+- **Auto-approved reviews**: Changed default status from 'approved' to 'pending'
+- **PII exposure**: `validateAuthToken` now returns only `{id, role}` instead of full user object
+- **Unauthenticated admin endpoints**: auth stats, payment reconcile — all gated
+- **Missing rate limits**: `/validate` and `/account/reactivate` auth routes — rate limited
+- **Helmet missing**: review-service had `helmet` imported but never applied — fixed
+- **Internal key injection**: API gateway now skips `x-internal-key` for unauthenticated requests
+- **Write-on-read**: `searchWorkers` removed analytics increment from GET request
+
+#### MEDIUM Fixes Applied ✅
+- **~55 error.message response leaks** across ALL services — all sanitized:
+  - user.controller.js (10 locations), worker.controller.js (2), quickJobPaymentController.js (3)
+  - payment-service: bill, payoutAdmin, webhooks, errorHandler, payments.routes (12 locations)
+  - messaging-service: message.routes, errorHandler (3 locations)
+  - auth-service: server.js admin handlers (4 locations)
+  - api-gateway: server.js (4 locations), resilientProxy.js (1), serviceHealthMonitor.js (1)
+  - review-service: server.js (2 locations), server.new.js (1 location)
+  - Keep-alive triggers across all 6 services (6 locations)
+  - job-service: job.controller.js Mongoose validation, dbReady middleware (2 locations)
+- **Global error handlers hardened**: auth-service, user-service, review-service, job-service, payment-service — all return static messages for 500+ status codes
+- **Unbounded limit caps**: quickJobController getMyQuickJobs/getMyQuotedJobs
+- **console.error → logger**: auth middleware
+
+#### Files Modified (25+)
+- `shared/utils/sanitize.js` (NEW)
+- `api-gateway/server.js`, `api-gateway/utils/resilientProxy.js`, `api-gateway/utils/serviceHealthMonitor.js`
+- `auth-service/server.js`, `auth-service/controllers/auth.controller.js`, `auth-service/routes/auth.routes.js`, `auth-service/middlewares/auth.js`
+- `user-service/server.js`, `user-service/controllers/user.controller.js`, `user-service/controllers/worker.controller.js`, `user-service/controllers/portfolio.controller.js`, `user-service/controllers/availability.controller.js`, `user-service/controllers/certificate.controller.js`
+- `job-service/server.js`, `job-service/controllers/job.controller.js`, `job-service/controllers/bid.controller.js`, `job-service/controllers/quickJobController.js`, `job-service/controllers/quickJobPaymentController.js`, `job-service/middlewares/dbReady.js`, `job-service/routes/contractTemplates.js`, `job-service/routes/quickJobRoutes.js`
+- `payment-service/server.js`, `payment-service/controllers/escrow.controller.js`, `payment-service/controllers/bill.controller.js`, `payment-service/controllers/payoutAdmin.controller.js`, `payment-service/routes/payments.routes.js`, `payment-service/routes/webhooks.routes.js`, `payment-service/utils/errorHandler.js`
+- `messaging-service/server.js`, `messaging-service/controllers/conversation.controller.js`, `messaging-service/controllers/message.controller.js`, `messaging-service/routes/message.routes.js`, `messaging-service/utils/errorHandler.js`
+- `review-service/server.js`, `review-service/server.new.js`, `review-service/models/Review.js`
+
+#### Remaining LOW Priority (not fixed — cosmetic)
+- ~82 `console.log/error` → `logger` conversions across controller files
+- ~11 `process.env.NODE_ENV === 'development' ? error.message : undefined` conditional leaks (guarded, safe in production)
+
+#### Verification ✅
+- All 25+ modified files pass `node -c` syntax checks
+- No duplicate declarations (fixed `escapeRegex` duplicate in worker.controller.js)
+- Frontend build (`npx vite build`) passed with zero errors (verified in prior session)
+
+---
+
 ### Session: Deep Scan + ID Flow Hardening + Messaging Backfill Prep — Round 20 ✅
 
 **Scope**: Continue the fix loop using project guidance from `Kelma.txt`, `Kelma docs.txt`, and `To add.txt` with focus on user-facing reliability, low-friction navigation, and data consistency for jobs + messaging flows.

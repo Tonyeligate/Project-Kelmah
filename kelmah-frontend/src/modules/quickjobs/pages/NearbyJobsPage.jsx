@@ -60,6 +60,7 @@ const NearbyJobsPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const quoteTimerRef = useRef(null);
+  const locationRef = useRef(null); // stable ref so fetchJobs doesn't need location in its deps
 
   // State
   const [jobs, setJobs] = useState([]);
@@ -83,6 +84,7 @@ const NearbyJobsPage = () => {
     try {
       setLocationError('');
       const pos = await getCurrentLocation();
+      locationRef.current = pos;
       setLocation(pos);
       return pos;
     } catch (err) {
@@ -91,17 +93,18 @@ const NearbyJobsPage = () => {
     }
   }, []);
 
-  // Fetch nearby jobs
-  const fetchJobs = useCallback(async (pos = location) => {
-    if (!pos) return;
+  // Fetch nearby jobs — reads location from ref so this callback is stable across location changes
+  const fetchJobs = useCallback(async (pos) => {
+    const effectivePos = pos ?? locationRef.current;
+    if (!effectivePos) return;
     
     setLoading(true);
     setError('');
 
     try {
       const result = await getNearbyQuickJobs(
-        pos.longitude,
-        pos.latitude,
+        effectivePos.longitude,
+        effectivePos.latitude,
         maxDistance,
         categoryFilter || null
       );
@@ -116,7 +119,7 @@ const NearbyJobsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [location, maxDistance, categoryFilter]);
+  }, [maxDistance, categoryFilter]);
 
   // Initial load
   useEffect(() => {
@@ -135,9 +138,9 @@ const NearbyJobsPage = () => {
     };
   }, []);
 
-  // Refresh when filters change
+  // Refresh when filters change (only after initial location is acquired)
   useEffect(() => {
-    if (location) {
+    if (locationRef.current) {
       fetchJobs();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -152,7 +155,7 @@ const NearbyJobsPage = () => {
     setQuoteSubmitting(true);
 
     try {
-      const result = await submitQuote(selectedJob._id, {
+      const result = await submitQuote(selectedJob._id || selectedJob.id, {
         amount: parseFloat(quoteAmount),
         message: quoteMessage,
         availableAt: quoteAvailableAt,

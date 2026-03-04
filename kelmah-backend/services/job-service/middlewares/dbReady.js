@@ -91,10 +91,9 @@ const dbReady = async (req, res, next) => {
     });
 
     return respondUnavailable(res, {
-      reason: error.message,
+      reason: 'connection-error',
       readyState: mongoose.connection.readyState,
-      lastHealthyCheckMs,
-      lastError: lastErrorSnapshot
+      lastHealthyCheckMs
     });
   }
 };

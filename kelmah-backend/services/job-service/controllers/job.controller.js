@@ -406,7 +406,7 @@ const createJob = async (req, res, next) => {
           value: syncValidationError.errors[key].value
         }))
       });
-      return errorResponse(res, 400, `Mongoose validation failed: ${syncValidationError.message}`, 'MONGOOSE_VALIDATION_ERROR');
+      return errorResponse(res, 400, 'Mongoose validation failed', 'MONGOOSE_VALIDATION_ERROR');
     }
 
     jobLogger.info('job.create.validationPassed', {

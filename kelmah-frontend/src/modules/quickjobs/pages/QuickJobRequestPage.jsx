@@ -67,6 +67,7 @@ const QuickJobRequestPage = () => {
   const fileInputRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const streamRef = useRef(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const recordingTimerRef = useRef(null);
   const redirectTimerRef = useRef(null);
@@ -100,7 +101,7 @@ const QuickJobRequestPage = () => {
     'Western North', 'Ahafo', 'Bono East', 'Oti', 'North East', 'Savannah'
   ];
 
-  // Get user's location on mount + cleanup blob URLs and timers on unmount
+  // Get user's location on mount + cleanup blob URLs, recording, and timers on unmount
   useEffect(() => {
     handleGetLocation();
     return () => {
@@ -109,6 +110,12 @@ const QuickJobRequestPage = () => {
       photos.forEach(p => { if (p?.preview) URL.revokeObjectURL(p.preview); });
       clearInterval(recordingTimerRef.current);
       clearTimeout(redirectTimerRef.current);
+      // Stop any active media recording and release the microphone
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -170,6 +177,7 @@ const QuickJobRequestPage = () => {
       // Start recording
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        streamRef.current = stream;
         const mediaRecorder = new MediaRecorder(stream, {
           mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4',
         });
@@ -297,7 +305,7 @@ const QuickJobRequestPage = () => {
         setSuccess(true);
         // Redirect to job tracking page after 2 seconds
         redirectTimerRef.current = setTimeout(() => {
-          navigate(`/quick-job/${result.data._id}`);
+          navigate(`/quick-job/${result.data._id || result.data.id}`);
         }, 2000);
       } else {
         setError(result.error?.message || 'Failed to create job request');

@@ -384,15 +384,20 @@ const ProfessionalMapPage = () => {
 
   const handleViewDetails = useCallback(
     (item) => {
-      if (item.type === 'job') navigate(`/jobs/${item.id}`);
-      else navigate(`/workers/${item.id}`);
+      const id = item.id || item._id;
+      if (item.type === 'job') navigate(`/jobs/${id}`);
+      else navigate(`/workers/${id}`);
     },
     [navigate],
   );
 
   const handleNavigate = useCallback((item) => {
     if (!item.coordinates) return;
-    const { latitude, longitude } = item.coordinates;
+    // Support both GeoJSON array [lng, lat] and {latitude, longitude} object forms
+    const isArray = Array.isArray(item.coordinates);
+    const longitude = isArray ? item.coordinates[0] : item.coordinates.longitude;
+    const latitude  = isArray ? item.coordinates[1] : item.coordinates.latitude;
+    if (!latitude || !longitude) return;
     window.open(
       `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`,
       '_blank',
@@ -402,8 +407,11 @@ const ProfessionalMapPage = () => {
 
   const handleMessage = useCallback(
     (item) => {
+      // Use id || _id pattern; for job, hirer may be a string ID or a populated object
       const userId =
-        item.type === 'job' ? item.hirer?.id || item.hirer : item.id;
+        item.type === 'job'
+          ? item.hirer?.id || item.hirer?._id || (typeof item.hirer === 'string' ? item.hirer : null)
+          : item.id || item._id;
       if (!userId) {
         setSnack({
           open: true,
@@ -694,7 +702,7 @@ const ProfessionalMapPage = () => {
                 <AnimatePresence mode="popLayout">
                   {filtered.map((item) => (
                     <ResultCard
-                      key={item.id}
+                      key={item.id || item._id}
                       item={item}
                       viewType={viewType}
                       onSelect={handleMarkerClick}
@@ -781,7 +789,7 @@ const ProfessionalMapPage = () => {
               <AnimatePresence mode="popLayout">
                 {filtered.map((item) => (
                   <ResultCard
-                    key={item.id}
+                    key={item.id || item._id}
                     item={item}
                     viewType={viewType}
                     onSelect={handleMarkerClick}
@@ -813,7 +821,7 @@ const ProfessionalMapPage = () => {
           ) : (
             filtered.map((item) => (
               <ResultCard
-                key={item.id}
+                key={item.id || item._id}
                 item={item}
                 viewType={viewType}
                 onSelect={handleViewDetails}
