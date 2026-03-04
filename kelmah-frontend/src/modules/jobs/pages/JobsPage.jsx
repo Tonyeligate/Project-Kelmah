@@ -43,7 +43,7 @@
  *    Auth Check: useAuthCheck() hook
  *    ↓
  *    If not authenticated: navigate('/login', { state: { from, message } })
- *    If authenticated: navigate(`/jobs/${job.id}/apply`)
+ *    If authenticated: navigate(`/jobs/${job._id || job.id}/apply`)
  *    ↓
  *    Route: /jobs/:id/apply → JobApplicationForm.jsx
  *

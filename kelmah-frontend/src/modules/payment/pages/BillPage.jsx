@@ -100,7 +100,7 @@ const BillPage = () => {
   const handleConfirmPayment = async () => {
     setDialogStep(1);
     try {
-      await payBill(selectedBill.id);
+      await payBill(selectedBill.id || selectedBill._id);
       setDialogStep(2);
       timerRef.current = setTimeout(handleCloseConfirm, 1000);
     } catch (err) {
@@ -257,7 +257,7 @@ const BillPage = () => {
             </Box>
           <List>
             {pagedBills.map((bill, index) => (
-              <React.Fragment key={bill.id}>
+              <React.Fragment key={bill.id || bill._id}>
                 <ListItem sx={{ flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 1, sm: 0 }, py: { xs: 1.5, sm: 1 } }}>
                   <ListItemText
                     primary={
@@ -265,7 +265,7 @@ const BillPage = () => {
                         {bill.title}
                       </Typography>
                     }
-                    secondary={`Due: ${new Date(bill.dueDate).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' })}`}
+                    secondary={bill.dueDate ? `Due: ${new Date(bill.dueDate).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' })}` : 'No due date'}
                   />
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2, md: 2, lg: 1.5 }, flexWrap: 'wrap', width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
                     {getStatusChip(bill.status)}

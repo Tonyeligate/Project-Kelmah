@@ -151,7 +151,7 @@ const ContractManagementPage = () => {
         <Grid container spacing={3}>
           {filteredContracts.length > 0 ? (
             filteredContracts.map((contract) => (
-              <Grid item key={contract.id} xs={12} sm={6} md={4} lg={3}>
+              <Grid item key={contract.id || contract._id} xs={12} sm={6} md={4} lg={3}>
                 <ContractCard contract={contract} />
               </Grid>
             ))

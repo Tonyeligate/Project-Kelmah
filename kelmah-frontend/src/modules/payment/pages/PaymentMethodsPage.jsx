@@ -411,7 +411,7 @@ const PaymentMethodsPage = () => {
       ) : (
         <Grid container spacing={3}>
           {paymentMethods.map((method) => (
-            <Grid item xs={12} sm={6} md={4} key={method.id}>
+            <Grid item xs={12} sm={6} md={4} key={method.id || method._id}>
               <Paper
                 elevation={1}
                 sx={{
@@ -464,7 +464,7 @@ const PaymentMethodsPage = () => {
                       <Tooltip title="Set as default">
                         <IconButton
                           size="small"
-                          onClick={() => handleSetDefault(method.id)}
+                          onClick={() => handleSetDefault(method.id || method._id)}
                         >
                           <CheckCircleIcon color="action" />
                         </IconButton>
@@ -474,7 +474,7 @@ const PaymentMethodsPage = () => {
                       <IconButton
                         size="small"
                         color="error"
-                        onClick={() => handleDeleteRequest(method.id)}
+                        onClick={() => handleDeleteRequest(method.id || method._id)}
                       >
                         <DeleteIcon />
                       </IconButton>

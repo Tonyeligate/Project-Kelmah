@@ -467,7 +467,7 @@ const MyApplicationsPage = () => {
                       {application.job?.location?.city || application.job?.location || 'Unknown location'}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                      Applied {new Date(application.createdAt).toLocaleDateString()}
+                      Applied {new Date(application.createdAt || application.appliedDate).toLocaleDateString()}
                     </Typography>
                   </CardContent>
                   <CardActions sx={{ justifyContent: 'flex-end', pt: 0 }}>
@@ -524,7 +524,7 @@ const MyApplicationsPage = () => {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        {new Date(application.createdAt).toLocaleDateString()}
+                        {new Date(application.createdAt || application.appliedDate).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -604,7 +604,11 @@ const MyApplicationsPage = () => {
                         sx={{ mr: 0.5, color: 'text.secondary' }}
                       />
                       <Typography variant="body2">
-                        {selectedApplication.proposedRate ? `GH\u20B5${selectedApplication.proposedRate}` : (selectedApplication.job?.budget || '\u2014')}
+                        {selectedApplication.proposedRate
+                        ? `GH\u20B5${selectedApplication.proposedRate}`
+                        : selectedApplication.job?.budget
+                          ? `GH\u20B5${selectedApplication.job.budget}`
+                          : '\u2014'}
                       </Typography>
                     </Box>
                   </Stack>

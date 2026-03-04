@@ -2,7 +2,11 @@ require('../kelmah-backend/dns-fix');
 const mongoose = require('mongoose');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
-const URI = process.env.MONGODB_URI || 'mongodb+srv://TonyGate:0553366244Aj@kelmah-messaging.xyqcurn.mongodb.net/kelmah_platform?retryWrites=true&w=majority&appName=Kelmah-messaging';
+const URI = process.env.MONGODB_URI;
+if (!URI) {
+  console.error('MONGODB_URI environment variable is required');
+  process.exit(1);
+}
 console.log('Connecting to:', URI.substring(0, 60) + '...');
 
 (async () => {

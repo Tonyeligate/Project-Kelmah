@@ -314,7 +314,7 @@ const MyBidsPage = () => {
   const TAB_STATUSES = ['all', 'pending', 'accepted', 'rejected', 'withdrawn', 'expired'];
 
   const fetchBids = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) { setLoading(false); return; }
     setLoading(true);
     setError(null);
     try {

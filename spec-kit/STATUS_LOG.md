@@ -1,5 +1,46 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Continuous Fix Loop — ID Safety + Runtime Guards — Round 21 ✅
+
+**Scope**: Continue autonomous deep-fix loop across high-traffic job/hirer/worker flows and remove remaining runtime breakpoints for mixed `id/_id` payloads.
+
+**Implemented fixes**:
+- ✅ `JobListing.jsx`
+  - Normalized job identifier (`job.id || job._id`) for apply endpoint calls.
+  - Added guard for missing job ID before submission.
+  - Hardened null-sensitive UI paths:
+    - `user?.role` check (prevents crash when unauthenticated user renders card)
+    - `job.status` fallback for chip rendering
+    - posted date fallback (`createdAt/created_at/postedDate`) with safe output when missing.
+- ✅ `JobList.jsx`
+  - Normalized list keys from `job.id` to `job.id || job._id` (with fallback index key for invalid records).
+- ✅ `JobSearch.jsx` (common component)
+  - Normalized card keys and apply-button job ID to support `_id` records.
+- ✅ `WorkerReview.jsx`
+  - Normalized completed-jobs table row keying (`id/_id`).
+- ✅ `JobProgressTracker.jsx`
+  - Normalized progress card keying (`id/_id`).
+- ✅ `JobDetails.jsx`
+  - Hardened posted-date rendering with mixed-field fallback and invalid-date guard.
+- ✅ `JobsPage.jsx`
+  - Updated internal data-flow documentation comment to match runtime normalized apply path (`job._id || job.id`).
+
+**Verification**:
+- ✅ `get_errors` reports no diagnostics for all changed files.
+- ✅ Frontend build passes after Round 21 patches (`npm run build`).
+
+**Files modified**:
+- `kelmah-frontend/src/modules/jobs/components/common/JobListing.jsx`
+- `kelmah-frontend/src/modules/jobs/components/common/JobList.jsx`
+- `kelmah-frontend/src/modules/jobs/components/common/JobSearch.jsx`
+- `kelmah-frontend/src/modules/hirer/components/WorkerReview.jsx`
+- `kelmah-frontend/src/modules/hirer/components/JobProgressTracker.jsx`
+- `kelmah-frontend/src/modules/jobs/components/common/JobDetails.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+---
+
 ### Session: COMPREHENSIVE BACKEND SECURITY AUDIT — COMPLETE ✅
 
 **Date**: June 2025  

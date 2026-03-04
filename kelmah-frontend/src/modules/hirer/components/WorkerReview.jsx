@@ -412,7 +412,7 @@ const WorkerReview = () => {
                 </TableHead>
                 <TableBody>
                   {allJobs.map((job) => (
-                    <TableRow key={job.id} hover>
+                    <TableRow key={job.id || job._id} hover>
                       <TableCell>
                         <Box display="flex" alignItems="center" gap={2}>
                           <Avatar

@@ -84,8 +84,18 @@ router.put('/', verifyGatewayRequest, async (req, res) => {
     const update = {};
     if (req.body.theme) update.theme = req.body.theme;
     if (req.body.language) update.language = req.body.language;
-    if (req.body.notifications) update.notifications = { ...DEFAULT_NOTIFICATIONS, ...req.body.notifications };
-    if (req.body.privacy) update.privacy = { ...DEFAULT_PRIVACY, ...req.body.privacy };
+    if (req.body.notifications) {
+      const NOTIF_ALLOWED = ['email', 'push', 'sms', 'inApp', 'quietHours'];
+      const filtered = {};
+      for (const k of NOTIF_ALLOWED) { if (k in req.body.notifications) filtered[k] = req.body.notifications[k]; }
+      update.notifications = { ...DEFAULT_NOTIFICATIONS, ...filtered };
+    }
+    if (req.body.privacy) {
+      const PRIV_ALLOWED = ['profileVisibility', 'showEmail', 'showPhone'];
+      const filtered = {};
+      for (const k of PRIV_ALLOWED) { if (k in req.body.privacy) filtered[k] = req.body.privacy[k]; }
+      update.privacy = { ...DEFAULT_PRIVACY, ...filtered };
+    }
 
     const settings = await Settings.findOneAndUpdate(
       { userId },
@@ -118,7 +128,10 @@ router.put('/notifications', verifyGatewayRequest, async (req, res) => {
     const userId = getUserId(req);
     if (!userId) return res.status(401).json({ success: false, error: { message: 'Authentication required' } });
 
-    const notifications = { ...DEFAULT_NOTIFICATIONS, ...req.body };
+    const NOTIF_ALLOWED = ['email', 'push', 'sms', 'inApp', 'quietHours'];
+    const filteredNotif = {};
+    for (const k of NOTIF_ALLOWED) { if (k in req.body) filteredNotif[k] = req.body[k]; }
+    const notifications = { ...DEFAULT_NOTIFICATIONS, ...filteredNotif };
     const settings = await Settings.findOneAndUpdate(
       { userId },
       { $set: { notifications } },
@@ -150,7 +163,10 @@ router.put('/privacy', verifyGatewayRequest, async (req, res) => {
     const userId = getUserId(req);
     if (!userId) return res.status(401).json({ success: false, error: { message: 'Authentication required' } });
 
-    const privacy = { ...DEFAULT_PRIVACY, ...req.body };
+    const PRIV_ALLOWED = ['profileVisibility', 'showEmail', 'showPhone'];
+    const filteredPriv = {};
+    for (const k of PRIV_ALLOWED) { if (k in req.body) filteredPriv[k] = req.body[k]; }
+    const privacy = { ...DEFAULT_PRIVACY, ...filteredPriv };
     const settings = await Settings.findOneAndUpdate(
       { userId },
       { $set: { privacy } },

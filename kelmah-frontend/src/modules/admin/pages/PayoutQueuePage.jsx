@@ -188,10 +188,10 @@ const PayoutQueuePage = () => {
                     <Chip label={it.status} color={STATUS_COLOR_MAP[it.status] || 'default'} size="small" />
                   </Box>
                   <Typography variant="body2" color="text.secondary">
-                    {it.amount} {it.currency} &bull; {it.provider}
+                    {it.currency === 'GHS' ? 'GH₵' : (it.currency || 'GH₵')}{it.amount} &bull; {it.provider}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Attempts: {it.attempts} &bull; {new Date(it.createdAt).toLocaleDateString()}
+                    Attempts: {it.attempts} &bull; {it.createdAt ? new Date(it.createdAt).toLocaleDateString() : '—'}
                   </Typography>
                   {it.lastError?.message && (
                     <Typography variant="caption" color="error.main" display="block" sx={{ mt: 0.5 }}>
@@ -224,13 +224,13 @@ const PayoutQueuePage = () => {
                 <TableRow key={it._id} hover>
                   <TableCell>{it.user}</TableCell>
                   <TableCell>{it.amount}</TableCell>
-                  <TableCell>{it.currency}</TableCell>
+                  <TableCell>{it.currency === 'GHS' ? 'GH₵' : (it.currency || 'GH₵')}</TableCell>
                   <TableCell>{it.provider}</TableCell>
                   <TableCell>
                     <Chip label={it.status} color={STATUS_COLOR_MAP[it.status] || 'default'} size="small" />
                   </TableCell>
                   <TableCell>{it.attempts}</TableCell>
-                  <TableCell>{new Date(it.createdAt).toLocaleString()}</TableCell>
+                  <TableCell>{it.createdAt ? new Date(it.createdAt).toLocaleString() : '—'}</TableCell>
                   <TableCell>{it.lastError?.message || '—'}</TableCell>
                 </TableRow>
               ))}

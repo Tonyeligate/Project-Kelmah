@@ -9,15 +9,13 @@ const getUserId = (req) => req.user?.id || req.user?._id;
 exports.getBalance = async (req, res) => {
   try {
     const userId = getUserId(req);
-    let wallet = await Wallet.findOne({ user: userId });
+    let wallet = await Wallet.findOneAndUpdate(
+      { user: userId },
+      { $setOnInsert: { user: userId, balance: 0 } },
+      { new: true, upsert: true }
+    );
 
-    if (!wallet) {
-      // Auto-provision an empty wallet on first access
-      wallet = new Wallet({ user: userId, balance: 0 });
-      await wallet.save();
-    }
-
-    res.json({
+    return res.json({
       success: true,
       data: {
         balance: wallet.balance,
@@ -51,11 +49,11 @@ exports.deposit = async (req, res) => {
       });
     }
 
-    let wallet = await Wallet.findOne({ user: userId });
-    if (!wallet) {
-      wallet = new Wallet({ user: userId, balance: 0, currency: currency || 'GHS' });
-      await wallet.save();
-    }
+    let wallet = await Wallet.findOneAndUpdate(
+      { user: userId },
+      { $setOnInsert: { user: userId, balance: 0, currency: currency || 'GHS' } },
+      { new: true, upsert: true }
+    );
 
     if (wallet.status !== 'active') {
       return res.status(403).json({

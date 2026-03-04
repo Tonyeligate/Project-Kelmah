@@ -33,11 +33,14 @@ function JobList({ jobs, loading, error, pagination, onPageChange }) {
   return (
     <Box>
       <Grid container spacing={3}>
-        {jobs.map((job) => (
-          <Grid item xs={12} sm={6} md={4} key={job.id}>
-            <JobCard job={job} />
-          </Grid>
-        ))}
+        {jobs.map((job, index) => {
+          const jobId = job?.id || job?._id || `job-${index}`;
+          return (
+            <Grid item xs={12} sm={6} md={4} key={jobId}>
+              <JobCard job={job} />
+            </Grid>
+          );
+        })}
       </Grid>
 
       {pagination.totalPages > 1 && (

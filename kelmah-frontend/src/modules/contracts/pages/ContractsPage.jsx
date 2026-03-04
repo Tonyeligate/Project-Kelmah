@@ -282,7 +282,7 @@ const ContractsPage = () => {
 
       {!loading && <Grid container spacing={3}>
         {filteredContracts.map((contract) => (
-          <Grid item key={contract.id} xs={12} md={6} lg={4}>
+          <Grid item key={contract.id || contract._id} xs={12} md={6} lg={4}>
             <Card
               sx={{
                 height: '100%',
@@ -321,7 +321,7 @@ const ContractsPage = () => {
                 </Stack>
 
                 <Typography variant="h5" sx={{ mt: 2, fontWeight: 700 }}>
-                  {contract.currency === 'GHS' ? 'GH₵' : (contract.currency || 'GH₵')}
+                  {'GH₵'}
                   {(contract.budget ?? 0).toLocaleString()}
                 </Typography>
 
@@ -344,7 +344,7 @@ const ContractsPage = () => {
                   startIcon={<VisibilityIcon />}
                   size="small"
                   component={RouterLink}
-                  to={`/contracts/${contract.id}`}
+                  to={`/contracts/${contract.id || contract._id}`}
                 >
                   View Details
                 </Button>
@@ -352,7 +352,7 @@ const ContractsPage = () => {
                   size="small"
                   aria-label="View contract details"
                   component={RouterLink}
-                  to={`/contracts/${contract.id}`}
+                  to={`/contracts/${contract.id || contract._id}`}
                 >
                   <DownloadIcon fontSize="small" />
                 </IconButton>

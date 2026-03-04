@@ -123,7 +123,7 @@ const JobSearch = () => {
   };
 
   const renderJobCard = (job) => (
-    <Card key={job.id} sx={{ mb: 2 }}>
+    <Card key={job.id || job._id} sx={{ mb: 2 }}>
       <CardContent>
         <Grid container spacing={2}>
           <Grid item xs={12} md={8}>
@@ -156,7 +156,7 @@ const JobSearch = () => {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => handleApplyJob(job.id)}
+              onClick={() => handleApplyJob(job.id || job._id)}
             >
               Apply Now
             </Button>

@@ -165,11 +165,13 @@ function JobDetails() {
                 <Schedule color="action" />
                 <Typography color="text.secondary">
                   Posted{' '}
-                  {job.created_at
-                    ? formatDistanceToNow(new Date(job.created_at), {
-                        addSuffix: true,
-                      })
-                    : 'Unknown'}
+                  {(() => {
+                    const postedAt = job.createdAt || job.created_at || job.postedDate;
+                    if (!postedAt) return 'Unknown';
+                    const date = new Date(postedAt);
+                    if (Number.isNaN(date.getTime())) return 'Unknown';
+                    return formatDistanceToNow(date, { addSuffix: true });
+                  })()}
                 </Typography>
               </Box>
             </Box>

@@ -38,7 +38,7 @@ const EscrowDetailsPage = () => {
 
   useEffect(() => {
     if (paymentMethods && paymentMethods.length > 0) {
-      setSelectedMethod(paymentMethods[0].id);
+      setSelectedMethod(paymentMethods[0].id || String(paymentMethods[0]._id));
     }
   }, [paymentMethods]);
 
@@ -189,11 +189,14 @@ const EscrowDetailsPage = () => {
                 boxShadow: 'inset 0 0 8px rgba(255,215,0,0.3)',
               }}
             >
-              {(paymentMethods || []).map((pm) => (
-                <MenuItem key={pm.id} value={pm.id}>
-                  {pm.name || pm.type}
-                </MenuItem>
-              ))}
+              {(paymentMethods || []).map((pm) => {
+                const pmId = pm.id || String(pm._id);
+                return (
+                  <MenuItem key={pmId} value={pmId}>
+                    {pm.name || pm.type}
+                  </MenuItem>
+                );
+              })}
             </Select>
           </FormControl>
         </DialogContent>

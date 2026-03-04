@@ -293,12 +293,17 @@ router.post('/', [
   ...validateTemplate
 ], handleValidationErrors, async (req, res) => {
   try {
-    const templateData = {
-      ...req.body,
-      createdBy: req.user.id,
-      isPredefined: false,
-      approvalStatus: req.user.role === 'admin' ? 'approved' : 'pending'
-    };
+    // SECURITY: allowlist safe fields only (same pattern as PUT handler)
+    const TEMPLATE_ALLOWED = ['name', 'description', 'content', 'category', 'industry',
+      'tags', 'terms', 'sections', 'variables', 'defaultCurrency', 'defaultDuration',
+      'defaultPaymentTerms', 'legalJurisdiction'];
+    const templateData = {};
+    for (const key of TEMPLATE_ALLOWED) {
+      if (key in req.body) templateData[key] = req.body[key];
+    }
+    templateData.createdBy = req.user.id;
+    templateData.isPredefined = false;
+    templateData.approvalStatus = req.user.role === 'admin' ? 'approved' : 'pending';
 
     // Auto-approve if created by admin
     if (req.user.role === 'admin') {

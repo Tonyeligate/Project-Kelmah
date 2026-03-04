@@ -61,7 +61,7 @@ const PortfolioPage = () => {
           severity="error"
           sx={{ borderRadius: 2 }}
           action={
-            <Button color="inherit" size="small" onClick={fetchPortfolio}>
+            <Button color="inherit" size="small" onClick={() => fetchPortfolio()}>
               Retry
             </Button>
           }

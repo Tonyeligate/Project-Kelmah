@@ -4,7 +4,9 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     const bcrypt = require("bcryptjs");
-    const passwordHash = await bcrypt.hash("Admin@123", 10);
+    const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD;
+    if (!adminPassword) throw new Error('ADMIN_DEFAULT_PASSWORD env var is required');
+    const passwordHash = await bcrypt.hash(adminPassword, 12);
     await queryInterface.bulkInsert(
       "Users",
       [

@@ -240,7 +240,7 @@ const JobProgressTracker = () => {
   return (
     <Box>
       {jobsWithProgress.map((job) => (
-        <Card key={job.id} sx={{ mb: 3, overflow: 'visible' }}>
+        <Card key={job.id || job._id} sx={{ mb: 3, overflow: 'visible' }}>
           <CardContent>
             {/* Job Header */}
             <Box

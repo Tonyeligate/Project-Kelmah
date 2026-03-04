@@ -237,7 +237,7 @@ const CreateContractPage = () => {
 
     if (value) {
       const selectedTemplate = templates.find(
-        (template) => template.id === value,
+        (template) => (template.id || template._id) === value,
       );
       if (selectedTemplate) {
         // Prefill form based on template
@@ -357,7 +357,7 @@ const CreateContractPage = () => {
         .catch((err) => {
           setToast({
             open: true,
-            message: err || 'Failed to create contract',
+            message: err?.message || (typeof err === 'string' ? err : 'Failed to create contract'),
             severity: 'error',
           });
         });
@@ -401,11 +401,14 @@ const CreateContractPage = () => {
                   <MenuItem value="">
                     <em>No template</em>
                   </MenuItem>
-                  {templates.map((template) => (
-                    <MenuItem key={template.id} value={template.id}>
-                      {template.title}
-                    </MenuItem>
-                  ))}
+                  {templates.map((template) => {
+                    const tId = template.id || template._id;
+                    return (
+                      <MenuItem key={tId} value={tId}>
+                        {template.title}
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
                 <FormHelperText>
                   Select a template to pre-fill contract details
@@ -786,7 +789,7 @@ const CreateContractPage = () => {
                         {milestone.title}
                       </Typography>
                       <Typography variant="subtitle1">
-                        GH₵{parseFloat(milestone.amount).toFixed(2)}
+                        GH₵{isNaN(parseFloat(milestone.amount)) ? '—' : parseFloat(milestone.amount).toFixed(2)}
                       </Typography>
                     </Box>
                     <Typography

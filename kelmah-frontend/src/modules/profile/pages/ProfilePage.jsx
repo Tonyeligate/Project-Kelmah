@@ -88,11 +88,19 @@ const ProfilePage = () => {
   const [addExpOpen, setAddExpOpen] = useState(false);
   const [newExp, setNewExp] = useState({ title: '', company: '', duration: '' });
   const [addingItem, setAddingItem] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // H29 fix: local state + debounce for preferences to avoid API call on every keystroke
   const [prefJobType, setPrefJobType] = useState('');
   const [prefLocation, setPrefLocation] = useState('');
   const prefTimerRef = useRef(null);
+
+  // Clear debounce timer on unmount to prevent post-unmount API call
+  useEffect(() => {
+    return () => {
+      if (prefTimerRef.current) clearTimeout(prefTimerRef.current);
+    };
+  }, []);
 
   // Sync local state when profile loads
   useEffect(() => {
@@ -143,6 +151,8 @@ const ProfilePage = () => {
   };
 
   const handleSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
     try {
       await updateProfile(formData);
       setEditing(false);
@@ -150,6 +160,8 @@ const ProfilePage = () => {
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error updating profile:', error);
       enqueueSnackbar('Failed to update profile. Please try again.', { variant: 'error' });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -301,8 +313,8 @@ const ProfilePage = () => {
                         }}
                       >
                         <Button onClick={handleCancel} sx={{ minHeight: 44 }}>Cancel</Button>
-                        <Button variant="contained" onClick={handleSave} sx={{ minHeight: 44 }}>
-                          Save
+                        <Button variant="contained" onClick={handleSave} disabled={isSaving} sx={{ minHeight: 44 }}>
+                          {isSaving ? 'Saving…' : 'Save'}
                         </Button>
                       </Box>
                     </Box>
@@ -383,7 +395,7 @@ const ProfilePage = () => {
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {profile.skills?.map((skill, index) => (
                         <Chip
-                          key={skill}
+                          key={`${skill}-${index}`}
                           label={skill}
                           onDelete={async () => {
                             try {

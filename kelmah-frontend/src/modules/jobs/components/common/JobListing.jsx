@@ -30,10 +30,17 @@ function JobListing({ job, onApply, onViewDetails }) {
   });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const jobId = job?.id || job?._id;
+  const jobStatus = (job?.status || 'open').toString();
+  const postedAt = job?.createdAt || job?.created_at || job?.postedDate;
 
   const handleApply = async () => {
+    if (!jobId) {
+      setError('Unable to apply: missing job identifier.');
+      return;
+    }
     try {
-      const response = await api.post(`/jobs/${job.id}/apply`, application);
+      const response = await api.post(`/jobs/${jobId}/apply`, application);
       setSuccess('Application submitted successfully!');
       setShowApplyDialog(false);
       if (onApply) onApply(response.data);
@@ -83,7 +90,7 @@ function JobListing({ job, onApply, onViewDetails }) {
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <AccessTime sx={{ mr: 1, color: 'primary.main' }} />
                 <Typography variant="body2" color="text.secondary">
-                  Posted {formatDistanceToNow(new Date(job.created_at))} ago
+                  Posted {postedAt ? `${formatDistanceToNow(new Date(postedAt))} ago` : 'recently'}
                 </Typography>
               </Box>
 
@@ -94,12 +101,12 @@ function JobListing({ job, onApply, onViewDetails }) {
 
             <Grid item xs={12} md={4} sx={{ textAlign: 'right' }}>
               <Chip
-                label={job.status.toUpperCase()}
-                color={job.status === 'open' ? 'success' : 'default'}
+                label={jobStatus.toUpperCase()}
+                color={jobStatus === 'open' ? 'success' : 'default'}
                 sx={{ mb: 2 }}
               />
 
-              {user.role === 'worker' && job.status === 'open' && (
+              {user?.role === 'worker' && jobStatus === 'open' && (
                 <Button
                   variant="contained"
                   color="primary"

@@ -117,7 +117,18 @@ const createJob = async (req, res, next) => {
   };
 
   try {
-    const body = { ...req.body };
+    // SECURITY: allowlist body fields to prevent prototype pollution during processing
+    const JOB_CREATE_FIELDS = [
+      'title', 'description', 'category', 'budget', 'paymentType', 'currency',
+      'duration', 'location', 'locationType', 'skills', 'requirements',
+      'bidding', 'locationDetails', 'region', 'district', 'locationRegion',
+      'locationDistrict', 'coordinates', 'experienceLevel', 'visibility',
+      'status', 'tags', 'attachments', 'urgency', 'deadline'
+    ];
+    const body = {};
+    for (const key of JOB_CREATE_FIELDS) {
+      if (key in req.body) body[key] = req.body[key];
+    }
     body.hirer = req.user?.id;
 
     if (typeof body.budget === 'object') {

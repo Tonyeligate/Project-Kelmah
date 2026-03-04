@@ -67,6 +67,7 @@ const SkillsAssessmentManagement = () => {
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [openCreateDialog, setOpenCreateDialog] = useState(false);
 
   if (!user || user.role !== 'admin') {
     return (
@@ -153,6 +154,7 @@ const SkillsAssessmentManagement = () => {
               variant="contained"
               startIcon={<AddIcon />}
               disabled={loading}
+              onClick={() => setOpenCreateDialog(true)}
             >
               Create New Test
             </Button>
@@ -211,7 +213,7 @@ const SkillsAssessmentManagement = () => {
                     </TableRow>
                   ) : (
                     tests.map((test) => (
-                      <TableRow key={test.id}>
+                      <TableRow key={test.id || test._id}>
                         <TableCell>{test.title}</TableCell>
                         <TableCell>
                           <Chip label={test.category} size="small" />
@@ -291,6 +293,19 @@ const SkillsAssessmentManagement = () => {
           </Grid>
         </TabPanel>
       </Paper>
+
+      {/* Create New Test Dialog — placeholder for future implementation */}
+      <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Create New Test</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            Test creation form coming soon.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCreateDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

@@ -65,10 +65,11 @@ const WorkerReviewsPage = () => {
   });
 
   useEffect(() => {
-    if (!user?.id) return;
+    const userId = user?.id || user?._id;
+    if (!userId) return;
     setLoading(true);
     reviewService
-      .getUserReviews(user.id, page, limit, { status: 'approved' })
+      .getUserReviews(userId, page, limit, { status: 'approved' })
       .then(({ reviews, pagination }) => {
         setReviews(reviews);
         setPagination(pagination);
@@ -78,7 +79,7 @@ const WorkerReviewsPage = () => {
         setError('Failed to load reviews. Please try again later.');
       })
       .finally(() => setLoading(false));
-  }, [user?.id, page]);
+  }, [user?.id, user?._id, page]);
 
   const handlePageChange = (event, value) => {
     setPage(value);

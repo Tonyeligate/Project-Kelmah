@@ -31,6 +31,52 @@ const MONGODB_URI = cliUriArg ? cliUriArg.replace('--uri=', '') : process.env.MO
 const DB_NAME = 'kelmah_platform';
 const COLLECTION = 'jobs';
 
+const buildProjectDirectUriFromSrv = (uri) => {
+  if (!uri || !uri.startsWith('mongodb+srv://')) return null;
+
+  const match = uri.match(/^mongodb\+srv:\/\/([^:]+):([^@]+)@([^/]+)\/([^?]+)(\?.*)?$/);
+  if (!match) return null;
+
+  const [, user, pass, host, dbName] = match;
+  if (host !== 'kelmah-messaging.xyqcurn.mongodb.net') return null;
+
+  const hosts = [
+    'ac-monrsuz-shard-00-00.xyqcurn.mongodb.net:27017',
+    'ac-monrsuz-shard-00-01.xyqcurn.mongodb.net:27017',
+    'ac-monrsuz-shard-00-02.xyqcurn.mongodb.net:27017',
+  ].join(',');
+
+  const options = 'authSource=admin&replicaSet=atlas-rtsei5-shard-0&tls=true&retryWrites=true&w=majority';
+  return `mongodb://${user}:${pass}@${hosts}/${dbName}?${options}`;
+};
+
+const connectWithFallback = async (primaryUri) => {
+  const candidateUris = [
+    primaryUri,
+    process.env.MONGODB_URI_DIRECT,
+    buildProjectDirectUriFromSrv(primaryUri),
+  ].filter(Boolean);
+
+  const tried = new Set();
+  let lastError;
+
+  for (const uri of candidateUris) {
+    if (tried.has(uri)) continue;
+    tried.add(uri);
+
+    const client = new MongoClient(uri, { serverSelectionTimeoutMS: 10_000 });
+    try {
+      await client.connect();
+      return { client, connectedUri: uri };
+    } catch (err) {
+      lastError = err;
+      try { await client.close(); } catch (_) {}
+    }
+  }
+
+  throw lastError;
+};
+
 async function run() {
   if (!MONGODB_URI) {
     console.error('❌ Migration failed: MONGODB_URI is not set.');
@@ -39,13 +85,12 @@ async function run() {
     return;
   }
 
-  const client = new MongoClient(MONGODB_URI, {
-    serverSelectionTimeoutMS: 10_000,
-  });
+  let client;
 
   try {
     console.log('Connecting to MongoDB...');
-    await client.connect();
+    const conn = await connectWithFallback(MONGODB_URI);
+    client = conn.client;
     console.log('✅ Connected\n');
 
     const db = client.db(DB_NAME);
@@ -120,7 +165,9 @@ async function run() {
     }
     process.exitCode = 1;
   } finally {
-    await client.close();
+    if (client) {
+      await client.close();
+    }
     console.log('\nConnection closed.');
   }
 }
