@@ -16,7 +16,8 @@ import { secureStorage } from '../../../utils/secureStorage';
  * The serverless bridge forwards directly to the messaging service.
  */
 const bridgePost = async (path, data, timeoutMs = 45000) => {
-  const token = secureStorage.getItem('token');
+  // Key must match apiClient.js — secureStorage stores the JWT under 'auth_token'
+  const token = secureStorage.getItem('auth_token');
   return axios.post(path, data, {
     headers: {
       'Content-Type': 'application/json',
