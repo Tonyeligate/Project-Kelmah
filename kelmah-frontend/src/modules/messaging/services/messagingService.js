@@ -4,8 +4,27 @@
  * Updated: 2025-01-07 - Fixed import/export issues
  */
 
+import axios from 'axios';
 import { api } from '../../../services/apiClient';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
+import { secureStorage } from '../../../utils/secureStorage';
+
+/**
+ * Call a Vercel serverless bridge endpoint (bypasses API Gateway proxy).
+ * The Express body-parser on the Render gateway consumes the request body
+ * stream before http-proxy-middleware can pipe it, causing 504 on POST.
+ * The serverless bridge forwards directly to the messaging service.
+ */
+const bridgePost = async (path, data, timeoutMs = 45000) => {
+  const token = secureStorage.getItem('token');
+  return axios.post(path, data, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    timeout: timeoutMs,
+  });
+};
 
 const normalizeParticipant = (participant = {}) => {
   if (!participant || typeof participant !== 'object') return participant;
@@ -111,22 +130,30 @@ export const messagingService = {
 
   // Create conversation from job application
   async createConversationFromApplication(applicationId) {
-    try {
-      // FIXED: Use /messages/conversations - matches backend router path rewrite
-      const response = await api.post('/messages/conversations', {
-        applicationId,
-      });
-      const payload = response.data;
-      if (payload?.data?.conversation) {
-        return {
-          ...payload,
-          data: {
-            ...payload.data,
-            conversation: normalizeConversation(payload.data.conversation),
-          },
-        };
+    const payload = { applicationId };
+
+    // 1. Try Vercel serverless bridge
+    if (typeof window !== 'undefined' && window.location?.hostname?.includes('vercel.app')) {
+      try {
+        const response = await bridgePost('/api/create-conversation', payload);
+        const data = response.data;
+        if (data?.data?.conversation) {
+          return { ...data, data: { ...data.data, conversation: normalizeConversation(data.data.conversation) } };
+        }
+        return normalizeConversation(data);
+      } catch (_) {
+        // Fall through to gateway
       }
-      return normalizeConversation(payload);
+    }
+
+    // 2. Fallback: gateway proxy
+    try {
+      const response = await api.post('/messages/conversations', payload);
+      const data = response.data;
+      if (data?.data?.conversation) {
+        return { ...data, data: { ...data.data, conversation: normalizeConversation(data.data.conversation) } };
+      }
+      return normalizeConversation(data);
     } catch (error) {
       if (import.meta.env.DEV) console.warn(
         'Messaging service unavailable for conversation from application:',
@@ -167,16 +194,21 @@ export const messagingService = {
     messageType = 'text',
     attachments = [],
   ) {
+    const payload = { sender: senderId, recipient: recipientId, content, messageType, attachments };
+
+    // 1. Try Vercel serverless bridge for POST body
+    if (typeof window !== 'undefined' && window.location?.hostname?.includes('vercel.app')) {
+      try {
+        const response = await bridgePost('/api/send-message', payload, 30000);
+        return normalizeMessage(response.data?.data || response.data);
+      } catch (_) {
+        // Fall through to gateway
+      }
+    }
+
+    // 2. Fallback: gateway proxy
     try {
-      // FIXED: Use /messages/messages - matches backend router
-      const response = await api.post('/messages', {
-        sender: senderId,
-        recipient: recipientId,
-        content,
-        messageType,
-        attachments,
-      });
-      // Controller responds with { message: '...', data: message }
+      const response = await api.post('/messages', payload);
       return normalizeMessage(response.data?.data || response.data);
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Failed to send message via REST:', error.message);
@@ -186,15 +218,25 @@ export const messagingService = {
 
   // Create a direct conversation with a single participant
   async createDirectConversation(participantId, jobId = null) {
-    try {
-      // FIXED: Use /messages/conversations - matches backend router path rewrite
-      const payload = {
-        participantIds: [participantId],
-        type: 'direct',
-      };
-      if (jobId) {
-        payload.jobId = jobId;
+    const payload = {
+      participantIds: [participantId],
+      type: 'direct',
+      ...(jobId ? { jobId } : {}),
+    };
+
+    // 1. Try Vercel serverless bridge (bypasses gateway proxy body-stream hang)
+    if (typeof window !== 'undefined' && window.location?.hostname?.includes('vercel.app')) {
+      try {
+        const response = await bridgePost('/api/create-conversation', payload);
+        return normalizeConversation(response.data?.data?.conversation || response.data);
+      } catch (bridgeErr) {
+        if (import.meta.env.DEV) console.warn('Bridge failed, trying gateway:', bridgeErr.message);
+        // Fall through to gateway
       }
+    }
+
+    // 2. Fallback: standard gateway proxy
+    try {
       const response = await api.post('/messages/conversations', payload);
       return normalizeConversation(response.data?.data?.conversation || response.data);
     } catch (error) {
