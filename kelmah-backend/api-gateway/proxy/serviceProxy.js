@@ -158,7 +158,14 @@ const createServiceProxy = (options) => {
         proxyReq.setHeader('X-Internal-Request', internalKey);
       }
 
-      // LOW-10 FIX: Handle both JSON and URL-encoded bodies parsed by Express
+      // LOW-10 FIX: Handle both JSON and URL-encoded bodies parsed by Express.
+      // CRITICAL: Express body-parser consumes the request body stream.  When
+      // http-proxy subsequently does req.pipe(proxyReq), the consumed stream
+      // never emits 'end', so proxyReq.end() is never called → the upstream
+      // server waits indefinitely for the body to finish → Render 30s timeout
+      // fires → 504 Gateway Timeout.  Fix: after writing the serialized body,
+      // mark the request stream as non-readable so http-proxy skips the pipe
+      // and calls proxyReq.end() directly.
       try {
         const method = (req.method || '').toUpperCase();
         const contentType = (req.headers['content-type'] || '').toLowerCase();
@@ -173,6 +180,10 @@ const createServiceProxy = (options) => {
           if (bodyData) {
             proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
             proxyReq.write(bodyData);
+            // Prevent http-proxy from piping the consumed body stream (which
+            // hangs because Express body-parser already drained it).  Setting
+            // readable = false makes http-proxy call proxyReq.end() instead.
+            req.readable = false;
           }
         }
       } catch (_) {}
