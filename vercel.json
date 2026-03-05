@@ -11,6 +11,10 @@
     {
       "source": "/socket.io/:path*",
       "destination": "https://kelmah-api-gateway-qmd7.onrender.com/socket.io/$1"
+    },
+    {
+      "source": "/((?!api|socket\\.io).*)",
+      "destination": "/index.html"
     }
   ],
   "env": {

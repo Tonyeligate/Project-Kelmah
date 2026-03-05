@@ -160,22 +160,27 @@ const EnhancedMessagingPage = () => {
   }, []);
 
   // Deep-link and initial load (runs once per URL change, not on every conversations update)
+  // State for deep-link creation progress
+  const [deepLinkLoading, setDeepLinkLoading] = useState(false);
+  const [deepLinkError, setDeepLinkError] = useState(null);
+  const deepLinkAttemptedRef = useRef(false);
+
   useEffect(() => {
     if (!user) return;
     // Wait until conversations have loaded before checking for existing ones
     // This prevents a race condition where the list is empty and we create duplicate conversations
     if (loadingConversations) return;
 
-    setIsLoading(true);
-    const timer = setTimeout(() => setIsLoading(false), 100);
-
     // Deep-link: /messages?recipient=<userId> or /messages?conversation=<id>
     const urlParams = new URLSearchParams(search);
     const conversationId = urlParams.get('conversation');
     const recipientId = urlParams.get('recipient');
 
+    // Skip if no deep-link params
+    if (!conversationId && !recipientId) return;
+
     const runDeepLink = async () => {
-      // Use ref for conversations to avoid triggering this effect on every message
+      // Use ref for conversations to avoid retriggering
       const currentConversations = conversationsRef.current || [];
 
       if (conversationId) {
@@ -184,15 +189,14 @@ const EnhancedMessagingPage = () => {
         );
         if (existing) {
           selectConversation(existing);
-        } else {
-          navigate(`/messages?conversation=${conversationId}`, {
-            replace: true,
-          });
         }
+        // Even if not found in local list, stay on this URL so MessageContext
+        // can pick it up after websocket connects
         return;
       }
 
       if (recipientId) {
+        // Check if we already have a conversation with this recipient
         const existing = currentConversations.find((c) =>
           (c.participants || []).some(
             (p) => String(p.id) === String(recipientId),
@@ -203,29 +207,66 @@ const EnhancedMessagingPage = () => {
           navigate(`/messages?conversation=${existing.id}`, { replace: true });
           return;
         }
-        try {
-          const convo =
-            await messagingService.createDirectConversation(recipientId);
-          const newId =
-            convo?.id ||
-            convo?.data?.data?.conversation?.id ||
-            convo?.data?.conversation?.id ||
-            convo?.conversation?.id ||
-            convo?.data?.id;
-          if (newId) {
-            navigate(`/messages?conversation=${newId}`, { replace: true });
+
+        // Prevent duplicate attempts for the same recipient
+        if (deepLinkAttemptedRef.current) return;
+        deepLinkAttemptedRef.current = true;
+
+        // Create a new conversation — retry up to 3 times with backoff
+        setDeepLinkLoading(true);
+        setDeepLinkError(null);
+        let lastError = null;
+
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            const convo =
+              await messagingService.createDirectConversation(recipientId);
+            const newId =
+              convo?.id ||
+              convo?.data?.data?.conversation?.id ||
+              convo?.data?.conversation?.id ||
+              convo?.conversation?.id ||
+              convo?.data?.id;
+            if (newId) {
+              setDeepLinkLoading(false);
+              navigate(`/messages?conversation=${newId}`, { replace: true });
+              return;
+            }
+          } catch (e) {
+            lastError = e;
+            if (import.meta.env.DEV) console.warn(`Deep-link attempt ${attempt}/3 failed:`, e.message);
+            if (attempt < 3) {
+              // Exponential backoff: 2s, 4s
+              await new Promise((r) => setTimeout(r, attempt * 2000));
+            }
           }
-        } catch (e) {
-          if (import.meta.env.DEV) console.error('Deep-link conversation creation failed:', e);
-          showFeedback('Could not start conversation. Please try again.', 'error');
         }
+
+        // All retries failed
+        setDeepLinkLoading(false);
+        setDeepLinkError('Could not connect to messaging service. The service may be starting up.');
+        deepLinkAttemptedRef.current = false; // Allow manual retry
+        showFeedback('Messaging service unavailable. Please try again in a moment.', 'error');
       }
     };
 
     runDeepLink();
-
-    return () => clearTimeout(timer);
   }, [user, search, navigate, selectConversation, loadingConversations]);
+
+  // Manual retry handler for deep-link failures
+  const handleRetryDeepLink = useCallback(() => {
+    deepLinkAttemptedRef.current = false;
+    setDeepLinkError(null);
+    setDeepLinkLoading(false);
+    // Re-trigger by navigating to the same URL
+    const urlParams = new URLSearchParams(search);
+    const recipientId = urlParams.get('recipient');
+    if (recipientId) {
+      navigate(`/messages?recipient=${recipientId}`, { replace: true });
+      // Small delay to allow effect dependencies to reset
+      setTimeout(() => window.location.reload(), 100);
+    }
+  }, [search, navigate]);
 
   useEffect(() => {
     try {
@@ -782,6 +823,90 @@ const EnhancedMessagingPage = () => {
   // Enhanced Chat Area Component
   const EnhancedChatArea = () => {
     if (!selectedConversation) {
+      // Show deep-link loading/error state when creating conversation
+      if (deepLinkLoading) {
+        return (
+          <Paper
+            sx={{
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: 'background.paper',
+              border: `1px solid ${theme.palette.divider}`,
+              borderRadius: 3,
+            }}
+          >
+            <Box textAlign="center">
+              <CircularProgress size={48} sx={{ color: 'primary.main', mb: 3 }} />
+              <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 600, mb: 1 }}>
+                Starting conversation...
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.disabled', maxWidth: 300, mx: 'auto' }}>
+                Connecting to the messaging service. This may take a moment if the service is warming up.
+              </Typography>
+            </Box>
+          </Paper>
+        );
+      }
+
+      if (deepLinkError) {
+        return (
+          <Paper
+            sx={{
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: 'background.paper',
+              border: `1px solid ${theme.palette.divider}`,
+              borderRadius: 3,
+            }}
+          >
+            <Box textAlign="center" sx={{ maxWidth: 360, px: 3 }}>
+              <Box
+                sx={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: '50%',
+                  background: alpha(theme.palette.error.main, 0.08),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  mx: 'auto',
+                  mb: 3,
+                }}
+              >
+                <RefreshIcon sx={{ fontSize: 40, color: 'error.main' }} />
+              </Box>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                Connection failed
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
+                {deepLinkError}
+              </Typography>
+              <Button
+                variant="contained"
+                onClick={handleRetryDeepLink}
+                startIcon={<RefreshIcon />}
+                sx={{ minHeight: 44, mb: 1 }}
+              >
+                Retry
+              </Button>
+              <br />
+              <Button
+                variant="text"
+                size="small"
+                onClick={() => navigate('/messages')}
+                sx={{ mt: 1 }}
+              >
+                Go to Messages
+              </Button>
+            </Box>
+          </Paper>
+        );
+      }
+
       return (
         <Paper
           sx={{
@@ -1489,12 +1614,32 @@ const EnhancedMessagingPage = () => {
                 Recent Conversations
               </Typography>
 
-              {filteredConversations.length === 0 && (
+              {filteredConversations.length === 0 && !deepLinkLoading && !deepLinkError && (
                 <EmptyState
                   variant={searchQuery ? 'search' : 'messages'}
                   title={searchQuery ? 'No conversations match your search' : 'No conversations yet'}
                   subtitle={searchQuery ? 'Try different keywords' : 'Start chatting by finding a worker or hirer'}
                 />
+              )}
+
+              {deepLinkLoading && (
+                <Box sx={{ textAlign: 'center', py: 6 }}>
+                  <CircularProgress size={40} sx={{ color: 'primary.main', mb: 2 }} />
+                  <Typography variant="body1" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                    Starting conversation...
+                  </Typography>
+                </Box>
+              )}
+
+              {deepLinkError && (
+                <Box sx={{ textAlign: 'center', py: 4, px: 2 }}>
+                  <Typography variant="body1" sx={{ color: 'error.main', mb: 2 }}>
+                    {deepLinkError}
+                  </Typography>
+                  <Button variant="contained" onClick={handleRetryDeepLink} startIcon={<RefreshIcon />} sx={{ minHeight: 44 }}>
+                    Retry
+                  </Button>
+                </Box>
               )}
 
               {filteredConversations.map((conversation) => {

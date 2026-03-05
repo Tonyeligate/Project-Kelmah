@@ -97,9 +97,9 @@ const createServiceProxy = (options) => {
   const proxyOptions = {
     target,
     changeOrigin: true,
-    // Give upstream a bit more time for cold starts
-    proxyTimeout: 30000,
-    timeout: 30000,
+    // Give upstream a bit more time for cold starts (Render free tier: 30-60s)
+    proxyTimeout: 60000,
+    timeout: 60000,
     // Ensure forwarded path includes the intended service prefix even when mounted under a sub-router
     pathRewrite: (path, req) => {
       try {

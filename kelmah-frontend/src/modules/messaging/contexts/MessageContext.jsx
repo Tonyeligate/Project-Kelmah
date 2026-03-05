@@ -55,10 +55,18 @@ const normalizeMessageAttachments = (message = {}) => {
     id: message.id || message._id,
     senderId,
     conversationId,
-    sender:
+    // sender as string ID so `message.sender === user.id` works in UI
+    sender: senderId,
+    // Keep full sender object for display purposes
+    senderInfo:
       message.sender && typeof message.sender === 'object'
         ? normalizeParticipant(message.sender)
-        : message.sender,
+        : null,
+    // Map content↔text and createdAt↔timestamp for UI compatibility
+    text: message.text || message.content || '',
+    content: message.content || message.text || '',
+    timestamp: message.timestamp || message.createdAt,
+    createdAt: message.createdAt || message.timestamp,
     attachments: normalizeAttachmentListVirusScan(message.attachments || []),
   };
 };
@@ -137,22 +145,34 @@ export const MessageProvider = ({ children }) => {
     getTokenRef.current = getToken;
   }, [getToken]);
 
-  // Load the current user's conversations
+  // Load the current user's conversations (with retry for cold starts)
   const loadConversations = useCallback(async () => {
     setLoadingConversations(true);
-    try {
-      const response = await messagingService.getConversations();
-      // Ensure we extract the conversations array from the response
-      const convs = Array.isArray(response)
-        ? response
-        : response?.conversations || response?.data || [];
-      setConversations(normalizeConversationList(convs));
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error loading conversations:', error);
-      setConversations([]);
-    } finally {
-      setLoadingConversations(false);
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const response = await messagingService.getConversations();
+        // Ensure we extract the conversations array from the response
+        const convs = Array.isArray(response)
+          ? response
+          : response?.conversations || response?.data || [];
+        setConversations(normalizeConversationList(convs));
+        setLoadingConversations(false);
+        return; // Success — exit
+      } catch (error) {
+        lastError = error;
+        if (import.meta.env.DEV) console.warn(`loadConversations attempt ${attempt}/2 failed:`, error.message);
+        if (attempt < 2) {
+          await new Promise((r) => setTimeout(r, 3000)); // Wait 3s before retry
+        }
+      }
     }
+
+    // All retries failed
+    if (import.meta.env.DEV) console.error('Error loading conversations after retries:', lastError);
+    setConversations([]);
+    setLoadingConversations(false);
   }, []);
 
   // CRIT-08 FIX: Reuse the global websocketService singleton instead of
@@ -471,18 +491,22 @@ export const MessageProvider = ({ children }) => {
           if (import.meta.env.DEV) console.log('📤 Sending message via WebSocket');
           // Create optimistic message with clientId
           const clientId = `${user.id}_${Date.now()}`;
+          const now = new Date().toISOString();
           const optimisticMessage = {
             id: clientId,
             conversationId: selectedConversation.id,
             senderId: user.id,
-            sender: {
+            sender: user.id,
+            senderInfo: {
               id: user.id,
               name: user?.name || user?.firstName || 'You',
             },
             content: content.trim(),
+            text: content.trim(),
             messageType,
             attachments: safeAttachments,
-            createdAt: new Date().toISOString(),
+            createdAt: now,
+            timestamp: now,
             isRead: false,
             status: 'sending',
             optimistic: true,

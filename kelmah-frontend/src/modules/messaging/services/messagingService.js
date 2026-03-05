@@ -37,10 +37,18 @@ const normalizeMessage = (message = {}) => {
     id: message.id || message._id,
     senderId,
     conversationId,
-    sender:
+    // sender as string ID so `message.sender === user.id` works in UI
+    sender: senderId,
+    // Keep full sender object for display purposes
+    senderInfo:
       message.sender && typeof message.sender === 'object'
         ? normalizeParticipant(message.sender)
-        : message.sender,
+        : null,
+    // Map content↔text and createdAt↔timestamp for UI compatibility
+    text: message.text || message.content || '',
+    content: message.content || message.text || '',
+    timestamp: message.timestamp || message.createdAt,
+    createdAt: message.createdAt || message.timestamp,
   };
 };
 
