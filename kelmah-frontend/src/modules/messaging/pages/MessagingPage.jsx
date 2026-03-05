@@ -70,8 +70,6 @@ import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 // Removed AuthContext import to prevent dual state management conflicts
 // import { useAuth } from '../../auth/hooks/useAuth';
 import { useMessages } from '../contexts/MessageContext';
-// Use consolidated messaging service client that matches backend routes
-import messagingService from '../services/messagingService';
 import ConversationList from '../components/common/ConversationList';
 import Chatbox from '../components/common/Chatbox';
 import SEO from '../../common/components/common/SEO';
@@ -98,6 +96,7 @@ const EnhancedMessagingPage = () => {
     selectedConversation,
     selectConversation,
     clearConversation,
+    createConversation,
     typingUsers,
     isConnected,
     realtimeIssue,
@@ -219,14 +218,12 @@ const EnhancedMessagingPage = () => {
 
         for (let attempt = 1; attempt <= 3; attempt++) {
           try {
-            const convo =
-              await messagingService.createDirectConversation(recipientId);
-            const newId =
-              convo?.id ||
-              convo?.data?.data?.conversation?.id ||
-              convo?.data?.conversation?.id ||
-              convo?.conversation?.id ||
-              convo?.data?.id;
+            // Use context's createConversation which:
+            // 1. Calls messagingService.createDirectConversation
+            // 2. Reloads conversations list
+            // 3. Selects the new conversation
+            const convo = await createConversation(recipientId);
+            const newId = convo?.id || convo?._id;
             if (newId) {
               setDeepLinkLoading(false);
               navigate(`/messages?conversation=${newId}`, { replace: true });
@@ -251,7 +248,7 @@ const EnhancedMessagingPage = () => {
     };
 
     runDeepLink();
-  }, [user, search, navigate, selectConversation, loadingConversations]);
+  }, [user, search, navigate, selectConversation, createConversation, loadingConversations]);
 
   // Manual retry handler for deep-link failures
   const handleRetryDeepLink = useCallback(() => {
