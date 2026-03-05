@@ -11,7 +11,6 @@ import { styled, useTheme } from '@mui/material/styles';
 import {
   FilterList as FilterListIcon,
   Map as MapIcon,
-  Lightbulb as LightbulbIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -28,7 +27,6 @@ import CollapsibleHeroSection from '../components/common/CollapsibleHeroSection'
 import WorkerSearchResults from '../components/results/WorkerSearchResults';
 import JobMapView from '../components/map/JobMapView';
 import SearchSuggestions from '../components/suggestions/SearchSuggestions';
-import SmartJobRecommendations from '../components/SmartJobRecommendations';
 import AdvancedFilters from '../components/AdvancedFilters';
 import LocationBasedSearch from '../components/LocationBasedSearch';
 import SEO from '../../common/components/common/SEO';
@@ -249,7 +247,7 @@ const SearchPage = () => {
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [showLocationSearch, setShowLocationSearch] = useState(false);
-  const [showRecommendations, setShowRecommendations] = useState(true);
+  const [showRecommendations, setShowRecommendations] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Ref for aborting stale search requests
@@ -763,17 +761,7 @@ const SearchPage = () => {
               aria-label="Show or hide map view"
               sx={{ minWidth: 'auto', px: 2, minHeight: 44 }}
             >
-              Map
-            </Button>
-            <Button
-              variant={showRecommendations ? 'contained' : 'outlined'}
-              size="small"
-              startIcon={<LightbulbIcon />}
-              onClick={() => setShowRecommendations(!showRecommendations)}
-              aria-label="Show or hide suggestions"
-              sx={{ minWidth: 'auto', px: 2, minHeight: 44 }}
-            >
-              For You
+              Nearby
             </Button>
           </Box>
         )}
@@ -801,88 +789,76 @@ const SearchPage = () => {
         )}
 
         {/* Advanced Components - Only for authenticated hirers */}
-        {isAuthenticated && isHirer && (
-          <Grid container spacing={2}>
-            {/* Left Column - Search Tools */}
-            <Grid item xs={12} md={showMap ? 12 : 4}>
-              {/* Smart Recommendations */}
-              {showRecommendations && (
-                <Box mb={2}>
-                  <SmartJobRecommendations
-                    maxRecommendations={3}
-                    showHeader={true}
-                    compact={true}
-                    onJobSelect={(jobId, action) => {
-                      if (action === 'view') {
-                        navigate(`/jobs/${jobId}`);
-                      }
-                    }}
-                    filterCriteria={searchParams}
-                  />
-                </Box>
+        {isAuthenticated && isHirer && (() => {
+          const hasSidebar = !showMap && (showAdvancedFilters || showLocationSearch);
+          return (
+            <Grid container spacing={2}>
+              {/* Left Column - Search Tools (only rendered when a tool is active) */}
+              {hasSidebar && (
+                <Grid item xs={12} md={3}>
+                  {/* Advanced Filters */}
+                  {showAdvancedFilters && (
+                    <Box mb={2}>
+                      <AdvancedFilters
+                        onFiltersChange={handleSearch}
+                        initialFilters={searchParams}
+                        compact={isMobile}
+                      />
+                    </Box>
+                  )}
+
+                  {/* Location Search */}
+                  {showLocationSearch && (
+                    <Box mb={2}>
+                      <LocationBasedSearch
+                        onLocationSelect={(location, radius) => {
+                          const coords = location?.coordinates;
+                          handleSearch({
+                            ...searchParams,
+                            location: {
+                              address: location?.name || '',
+                              ...(Array.isArray(coords) && coords.length >= 2
+                                ? {
+                                    coordinates: {
+                                      latitude: coords[0],
+                                      longitude: coords[1],
+                                    },
+                                  }
+                                : {}),
+                            },
+                            distance: radius,
+                          });
+                        }}
+                        initialLocation={searchParams.location}
+                        radius={searchParams.distance || 10}
+                        compact={isMobile}
+                      />
+                    </Box>
+                  )}
+                </Grid>
               )}
 
-              {/* Advanced Filters */}
-              {showAdvancedFilters && (
-                <Box mb={2}>
-                  <AdvancedFilters
-                    onFiltersChange={handleSearch}
-                    initialFilters={searchParams}
-                    compact={isMobile}
+              {/* Results Column - Full width when no sidebar, otherwise fills remaining space */}
+              {!showMap && (
+                <Grid item xs={12} md={hasSidebar ? 9 : 12}>
+                  <WorkerSearchResults
+                    workers={searchResults}
+                    loading={loading}
+                    error={error}
+                    filters={searchParams}
+                    onRemoveFilter={handleRemoveFilter}
+                    onSortChange={handleSortChange}
+                    pagination={pagination}
+                    onPageChange={handlePageChange}
+                    showMap={showMap}
+                    onToggleView={handleToggleView}
+                    onSaveWorker={handleSaveWorker}
                   />
-                </Box>
-              )}
-
-              {/* Location Search */}
-              {showLocationSearch && (
-                <Box mb={2}>
-                  <LocationBasedSearch
-                    onLocationSelect={(location, radius) => {
-                      const coords = location?.coordinates;
-                      handleSearch({
-                        ...searchParams,
-                        location: {
-                          address: location?.name || '',
-                          ...(Array.isArray(coords) && coords.length >= 2
-                            ? {
-                                coordinates: {
-                                  latitude: coords[0],
-                                  longitude: coords[1],
-                                },
-                              }
-                            : {}),
-                        },
-                        distance: radius,
-                      });
-                    }}
-                    initialLocation={searchParams.location}
-                    radius={searchParams.distance || 10}
-                    compact={isMobile}
-                  />
-                </Box>
+                </Grid>
               )}
             </Grid>
-
-            {/* Right Column - Search Results */}
-            {!showMap && (
-              <Grid item xs={12} md={8}>
-                <WorkerSearchResults
-                  workers={searchResults}
-                  loading={loading}
-                  error={error}
-                  filters={searchParams}
-                  onRemoveFilter={handleRemoveFilter}
-                  onSortChange={handleSortChange}
-                  pagination={pagination}
-                  onPageChange={handlePageChange}
-                  showMap={showMap}
-                  onToggleView={handleToggleView}
-                  onSaveWorker={handleSaveWorker}
-                />
-              </Grid>
-            )}
-          </Grid>
-        )}
+          );
+        })()}
 
         {/* Public User Results - Full Width */}
         {(!isAuthenticated || (isAuthenticated && !isHirer)) && (
