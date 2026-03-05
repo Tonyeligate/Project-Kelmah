@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 import {
   Box,
   Typography,
@@ -226,64 +227,17 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [groupName, setGroupName] = useState('');
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
-  const { messagingService, userStatuses } = useMessages();
+  const { messagingService, isUserOnline, conversations: contextConversations, loadingConversations: contextLoading } = useMessages();
+  // Use current user from Redux (single source of truth)
+  const { user: currentUser } = useSelector((state) => state.auth);
   const [localConversations, setLocalConversations] = useState([]);
   const [localLoading, setLocalLoading] = useState(true);
 
+  // Sync from MessageContext conversations (single source of truth — avoids duplicate fetches)
   useEffect(() => {
-    let cancelled = false;
-    const fetchConversations = async () => {
-      try {
-        setLocalLoading(true);
-        const convos = await messagingService.getConversations();
-        if (!cancelled) {
-          setLocalConversations(convos);
-          setFilteredConversations(convos);
-        }
-      } catch (error) {
-        if (import.meta.env.DEV) console.error('Error loading conversations:', error);
-      } finally {
-        if (!cancelled) setLocalLoading(false);
-      }
-    };
-    fetchConversations();
-    return () => {
-      cancelled = true;
-    };
-  }, [messagingService]);
-
-  // Subscribe to new messages for real-time updates
-  useEffect(() => {
-    const unsubscribe = messagingService.onNewMessage((data) => {
-      setLocalConversations((prevConvos) => {
-        const updated = prevConvos.map((convo) => {
-          if (convo.id !== data.conversationId) return convo;
-          const hasAttach = data.attachments && data.attachments.length > 0;
-          return {
-            ...convo,
-            latestMessage: {
-              content: data.content || '',
-              timestamp: data.createdAt,
-              hasAttachment: hasAttach,
-              sender: `${data.sender.firstName} ${data.sender.lastName}`,
-              isCurrentUser: data.sender.id === messagingService.userId,
-            },
-            unread:
-              selectedConversationId === data.conversationId
-                ? 0
-                : (convo.unread || 0) + 1,
-          };
-        });
-        // Reorder conversations by newest message
-        return updated.sort(
-          (a, b) =>
-            new Date(b.latestMessage.timestamp) -
-            new Date(a.latestMessage.timestamp),
-        );
-      });
-    });
-    return () => unsubscribe();
-  }, [messagingService, selectedConversationId]);
+    setLocalConversations(Array.isArray(contextConversations) ? contextConversations : []);
+    setLocalLoading(contextLoading);
+  }, [contextConversations, contextLoading]);
 
   // Fetch user options for new conversation dialog
   useEffect(() => {
@@ -599,12 +553,10 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                         {/* Show online status of the other participant for direct chats */}
                         {!conversation.isGroup &&
                           (() => {
-                            const other = conversation.participants.find(
-                              (p) => p.id !== messagingService.userId,
+                            const other = (conversation.participants || []).find(
+                              (p) => String(p.id) !== String(currentUser?.id),
                             );
-                            const status = other
-                              ? userStatuses[other.id] || 'offline'
-                              : 'offline';
+                            const status = other && isUserOnline(String(other.id)) ? 'online' : 'offline';
                             return <StatusDot status={status} />;
                           })()}
                         {conversation.isGroup && <StatusDot status="offline" />}
@@ -696,13 +648,22 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                                     : `${conversation.latestMessage.sender}: `}
                                 </Typography>
                               )}
-                            {conversation.latestMessage?.content
-                              ? truncateText(conversation.latestMessage.content)
-                              : 'No messages yet'}
-                            {conversation.latestMessage?.hasAttachment &&
-                              conversation.latestMessage.content.trim() ===
-                                '' &&
-                              ' [Attachment]'}
+                            {(() => {
+                              const msg = conversation.latestMessage || conversation.lastMessage;
+                              if (!msg) return 'No messages yet';
+                              const mType = msg.messageType || '';
+                              // Show human-readable label for media — never show raw URLs
+                              if (mType === 'image') return '🖼️ Photo';
+                              if (mType === 'video') return '🎥 Video';
+                              if (mType === 'audio') return '🎵 Audio';
+                              if (mType === 'file' || mType === 'document') return '📎 File';
+                              // Fallback: if content looks like a URL and there are attachments, label it
+                              const content = msg.content || msg.text || '';
+                              if (msg.hasAttachment || (Array.isArray(msg.attachments) && msg.attachments.length > 0)) {
+                                if (!content.trim() || content.startsWith('http')) return '📎 Attachment';
+                              }
+                              return content ? truncateText(content) : 'No messages yet';
+                            })()}
                           </Typography>
                           {hasUnread && (
                             <UnreadBadge

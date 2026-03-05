@@ -268,6 +268,7 @@ export const MessageProvider = ({ children }) => {
           });
         }
 
+        const activeConvId = activeConversation?.id;
         setConversations((prev) =>
           prev.map((conv) =>
             conv.id === hydratedConversationId
@@ -275,6 +276,11 @@ export const MessageProvider = ({ children }) => {
                 ...conv,
                 lastMessage: hydratedMessage,
                 updatedAt: hydratedMessage.createdAt,
+                // Increment unread badge only when this conversation is NOT currently open
+                unreadCount:
+                  conv.id !== activeConvId
+                    ? (conv.unreadCount || 0) + 1
+                    : conv.unreadCount,
               }
               : conv,
           ),

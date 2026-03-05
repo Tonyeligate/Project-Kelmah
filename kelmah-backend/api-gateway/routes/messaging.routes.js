@@ -8,6 +8,41 @@ const router = express.Router();
 const { createServiceProxy } = require('../proxy/serviceProxy');
 const { authenticate } = require('../middlewares/auth');
 const axios = require('axios');
+const crypto = require('crypto');
+
+/**
+ * Build gateway-trust headers from req.user (populated by authenticate middleware).
+ * The messaging service's verifyGatewayRequest middleware requires these headers.
+ * NEVER copy x-authenticated-user from the incoming client request — clients don't set it.
+ */
+const buildGatewayTrustHeaders = (req) => {
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-Request-ID': req.id || req.headers['x-request-id'] || '',
+    'User-Agent': 'kelmah-api-gateway',
+  };
+
+  if (req.user) {
+    const userPayload = JSON.stringify(req.user);
+    headers['x-authenticated-user'] = userPayload;
+    headers['x-auth-source'] = 'api-gateway';
+    // Generate HMAC signature so verifyGatewayRequest trusts the user payload
+    const hmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET;
+    if (hmacSecret) {
+      headers['x-gateway-signature'] = crypto
+        .createHmac('sha256', hmacSecret)
+        .update(userPayload)
+        .digest('hex');
+    }
+  }
+
+  const internalKey = process.env.INTERNAL_API_KEY;
+  if (internalKey) {
+    headers['X-Internal-Request'] = internalKey;
+  }
+
+  return headers;
+};
 
 // Get service URLs from app context
 const getServiceUrl = (req) => req.app.get('serviceUrls').MESSAGING_SERVICE;
@@ -43,34 +78,13 @@ router.get('/conversations', conversationProxy); // List conversations
 
 // Direct axios handler for POST /conversations to bypass proxy body-stream issue
 // (Express body-parser consumes the stream → http-proxy pipe hangs → 504).
-// This matches the pattern used for auth/login.
 router.post('/conversations', async (req, res) => {
   try {
     const upstream = getServiceUrl(req);
     const url = `${upstream}/api/conversations`;
-
-    // Forward gateway-trust headers so the messaging service accepts the request
-    const headers = {
-      'Content-Type': 'application/json',
-      'X-Request-ID': req.id || req.headers['x-request-id'] || '',
-      'User-Agent': 'kelmah-api-gateway',
-    };
-    if (req.headers['x-authenticated-user']) {
-      headers['x-authenticated-user'] = req.headers['x-authenticated-user'];
-    }
-    if (req.headers['x-auth-source']) {
-      headers['x-auth-source'] = req.headers['x-auth-source'];
-    }
-    if (req.headers['x-gateway-signature']) {
-      headers['x-gateway-signature'] = req.headers['x-gateway-signature'];
-    }
-    if (req.headers['authorization']) {
-      headers['Authorization'] = req.headers['authorization'];
-    }
-    const internalKey = process.env.INTERNAL_API_KEY;
-    if (internalKey) {
-      headers['X-Internal-Request'] = internalKey;
-    }
+    // Build trust headers from req.user (set by authenticate middleware at server.js level)
+    // NOT from client incoming headers — clients don't send x-authenticated-user
+    const headers = buildGatewayTrustHeaders(req);
 
     console.log(`[MESSAGING] POST /conversations → ${url}`);
 
@@ -117,18 +131,8 @@ router.post('/conversations/:conversationId/messages', async (req, res) => {
     const upstream = getServiceUrl(req);
     const cid = req.params.conversationId;
     const url = `${upstream}/api/messages/conversation/${cid}`;
-
-    const headers = {
-      'Content-Type': 'application/json',
-      'X-Request-ID': req.id || req.headers['x-request-id'] || '',
-      'User-Agent': 'kelmah-api-gateway',
-    };
-    if (req.headers['x-authenticated-user']) headers['x-authenticated-user'] = req.headers['x-authenticated-user'];
-    if (req.headers['x-auth-source']) headers['x-auth-source'] = req.headers['x-auth-source'];
-    if (req.headers['x-gateway-signature']) headers['x-gateway-signature'] = req.headers['x-gateway-signature'];
-    if (req.headers['authorization']) headers['Authorization'] = req.headers['authorization'];
-    const internalKey = process.env.INTERNAL_API_KEY;
-    if (internalKey) headers['X-Internal-Request'] = internalKey;
+    // Build trust headers from req.user (NOT from client incoming headers)
+    const headers = buildGatewayTrustHeaders(req);
 
     console.log(`[MESSAGING] POST message → ${url}`);
     const r = await axios.post(url, req.body, { headers, timeout: 30000, validateStatus: () => true });
