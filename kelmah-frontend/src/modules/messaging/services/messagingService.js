@@ -15,6 +15,15 @@ import { secureStorage } from '../../../utils/secureStorage';
  * stream before http-proxy-middleware can pipe it, causing 504 on POST.
  * The serverless bridge forwards directly to the messaging service.
  */
+/**
+ * Whether the Vercel serverless bridge should be attempted.
+ * True on any non-localhost deployment (bridge endpoints only exist on Vercel).
+ * On localhost the bridge paths return 404, so the fallback to gateway proxy is instant.
+ */
+const shouldUseBridge = () =>
+  typeof window !== 'undefined' &&
+  !['localhost', '127.0.0.1'].includes(window.location?.hostname);
+
 const bridgePost = async (path, data, timeoutMs = 45000) => {
   // Key must match apiClient.js — secureStorage stores the JWT under 'auth_token'
   const token = secureStorage.getItem('auth_token');
@@ -133,8 +142,8 @@ export const messagingService = {
   async createConversationFromApplication(applicationId) {
     const payload = { applicationId };
 
-    // 1. Try Vercel serverless bridge
-    if (typeof window !== 'undefined' && window.location?.hostname?.includes('vercel.app')) {
+    // 1. Try Vercel serverless bridge (bypasses gateway body-stream hang)
+    if (shouldUseBridge()) {
       try {
         const response = await bridgePost('/api/create-conversation', payload);
         const data = response.data;
@@ -198,7 +207,7 @@ export const messagingService = {
     const payload = { sender: senderId, recipient: recipientId, content, messageType, attachments };
 
     // 1. Try Vercel serverless bridge for POST body
-    if (typeof window !== 'undefined' && window.location?.hostname?.includes('vercel.app')) {
+    if (shouldUseBridge()) {
       try {
         const response = await bridgePost('/api/send-message', payload, 30000);
         return normalizeMessage(response.data?.data || response.data);
@@ -226,7 +235,7 @@ export const messagingService = {
     };
 
     // 1. Try Vercel serverless bridge (bypasses gateway proxy body-stream hang)
-    if (typeof window !== 'undefined' && window.location?.hostname?.includes('vercel.app')) {
+    if (shouldUseBridge()) {
       try {
         const response = await bridgePost('/api/create-conversation', payload);
         return normalizeConversation(response.data?.data?.conversation || response.data);
