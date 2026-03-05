@@ -157,9 +157,10 @@ export const MessageProvider = ({ children }) => {
         const convs = Array.isArray(response)
           ? response
           : response?.conversations || response?.data || [];
-        setConversations(normalizeConversationList(convs));
+        const normalized = normalizeConversationList(convs);
+        setConversations(normalized);
         setLoadingConversations(false);
-        return; // Success — exit
+        return normalized; // Return list for callers that need it
       } catch (error) {
         lastError = error;
         if (import.meta.env.DEV) console.warn(`loadConversations attempt ${attempt}/2 failed:`, error.message);
@@ -173,6 +174,7 @@ export const MessageProvider = ({ children }) => {
     if (import.meta.env.DEV) console.error('Error loading conversations after retries:', lastError);
     setConversations([]);
     setLoadingConversations(false);
+    return [];
   }, []);
 
   // CRIT-08 FIX: Reuse the global websocketService singleton instead of
@@ -636,9 +638,16 @@ export const MessageProvider = ({ children }) => {
       try {
         const convo =
           await messagingService.createDirectConversation(participantId);
-        await loadConversations();
-        await selectConversation(convo);
-        return convo;
+        const convoId = convo?.id || convo?._id;
+
+        // Reload conversations to get full participant data
+        const freshList = await loadConversations();
+
+        // Select the full conversation from the refreshed list (has participant names)
+        // Fallback to the partial convo from the bridge if not found in list
+        const fullConvo = (freshList || []).find((c) => c.id === convoId) || convo;
+        await selectConversation(fullConvo);
+        return fullConvo;
       } catch (error) {
         if (import.meta.env.DEV) console.error('Error creating conversation:', error);
         throw error;
