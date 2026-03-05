@@ -38,7 +38,7 @@ import {
   Person,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { styled, useTheme } from '@mui/material/styles';
+import { styled, useTheme, alpha } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import BidSubmissionForm from '../components/BidSubmissionForm';
 import { useDispatch, useSelector } from 'react-redux';
@@ -55,26 +55,43 @@ import { Z_INDEX, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import { Helmet } from 'react-helmet-async';
 
 // Styled components
-const SectionHeading = ({ children, icon: Icon, sx = {} }) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5, ...sx }}>
-    {Icon && <Icon sx={{ color: 'secondary.main', fontSize: 22 }} />}
-    <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary', letterSpacing: 0.2 }}>
-      {children}
-    </Typography>
-  </Box>
-);
+const SectionHeading = ({ children, icon: Icon, sx = {} }) => {
+  const theme = useTheme();
+  const accentColor = theme.palette.mode === 'dark' ? theme.palette.primary.main : theme.palette.primary.dark;
 
-const MetaPill = ({ icon: Icon, label }) => (
-  <Box sx={{
-    display: 'flex', alignItems: 'center', gap: 0.75,
-    bgcolor: 'action.hover', borderRadius: 99, px: 1.5, py: 0.6,
-  }}>
-    {Icon && <Icon sx={{ fontSize: 16, color: 'secondary.main' }} />}
-    <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 500, lineHeight: 1.4 }}>
-      {label}
-    </Typography>
-  </Box>
-);
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5, ...sx }}>
+      {Icon && <Icon sx={{ color: accentColor, fontSize: 22 }} />}
+      <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary', letterSpacing: 0.2 }}>
+        {children}
+      </Typography>
+    </Box>
+  );
+};
+
+const MetaPill = ({ icon: Icon, label }) => {
+  const theme = useTheme();
+  const iconColor = theme.palette.mode === 'dark' ? theme.palette.primary.main : theme.palette.primary.dark;
+  const pillBg = theme.palette.mode === 'dark'
+    ? alpha(theme.palette.primary.main, 0.12)
+    : alpha(theme.palette.primary.main, 0.18);
+  const pillBorder = theme.palette.mode === 'dark'
+    ? alpha(theme.palette.primary.main, 0.28)
+    : alpha(theme.palette.primary.dark, 0.2);
+
+  return (
+    <Box sx={{
+      display: 'flex', alignItems: 'center', gap: 0.75,
+      bgcolor: pillBg, borderRadius: 99, px: 1.5, py: 0.6,
+      border: '1px solid', borderColor: pillBorder,
+    }}>
+      {Icon && <Icon sx={{ fontSize: 16, color: iconColor }} />}
+      <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600, lineHeight: 1.4 }}>
+        {label}
+      </Typography>
+    </Box>
+  );
+};
 
 const DetailsPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -104,7 +121,7 @@ const SkillChip = styled(Chip)(({ theme }) => ({
     theme.palette.mode === 'dark'
       ? 'rgba(255, 215, 0, 0.2)'
       : 'rgba(212, 175, 55, 0.12)',
-  color: theme.palette.mode === 'dark' ? theme.palette.secondary.main : '#8B7500',
+  color: theme.palette.mode === 'dark' ? theme.palette.primary.main : theme.palette.primary.dark,
   borderColor:
     theme.palette.mode === 'dark'
       ? 'rgba(255, 215, 0, 0.5)'
@@ -188,6 +205,10 @@ const JobDetailsPage = () => {
   const [shareSnackbar, setShareSnackbar] = useState('');
   const locationLabel = getJobLocationLabel(job);
   const skillLabels = normalizeSkillLabels(job?.skills);
+  const accentColor = theme.palette.mode === 'dark' ? theme.palette.primary.main : theme.palette.primary.dark;
+  const accentSoftBg = theme.palette.mode === 'dark'
+    ? alpha(theme.palette.primary.main, 0.12)
+    : alpha(theme.palette.primary.main, 0.2);
 
   useEffect(() => {
     // Validate jobId before fetching
@@ -238,7 +259,7 @@ const JobDetailsPage = () => {
       navigate('/login', { state: { from: location.pathname } });
       return;
     }
-    const recipientId = job.hirer?._id || job.hirer?.id;
+    const recipientId = job?.hirer?._id || job?.hirer?.id || job?.client?._id || job?.client?.id || job?.hirerId || job?.clientId;
     if (!recipientId) {
       setShareSnackbar('Hirer contact is not available yet');
       return;
@@ -389,19 +410,31 @@ const JobDetailsPage = () => {
   }
 
   // ─── derived hirer info ───────────────────────────────────────────────
-  const hirerId = job.hirer?._id || job.hirer?.id;
-  const hirerName = job.hirer?.firstName && job.hirer?.lastName
-    ? `${job.hirer.firstName} ${job.hirer.lastName}`
-    : job.hirer?.name || (job.hirer?.email ? job.hirer.email.split('@')[0] : null) || 'Client';
-  const hirerRating = typeof job.hirer?.rating === 'number' ? job.hirer.rating.toFixed(1) : null;
-  const hirerReviews = job.hirer?.reviewCount ?? job.hirer?.reviews ?? 0;
-  const hirerLocation = job.hirer?.location?.city || job.hirer?.location?.region
-    || (typeof job.hirer?.location === 'string' ? job.hirer.location : null) || null;
-  const hirerJoined = job.hirer?.createdAt
-    ? new Date(job.hirer.createdAt).toLocaleDateString('en-GH', { month: 'long', year: 'numeric' })
+  const hirerData = job?.hirer || job?.client || job?.createdBy || {};
+  const hirerId = hirerData?._id || hirerData?.id || job?.hirerId || job?.clientId || null;
+  const hirerName = hirerData?.firstName && hirerData?.lastName
+    ? `${hirerData.firstName} ${hirerData.lastName}`
+    : hirerData?.name || job?.hirerName || (hirerData?.email ? hirerData.email.split('@')[0] : null) || 'Client';
+  const hirerRating = typeof hirerData?.rating === 'number' ? hirerData.rating.toFixed(1) : null;
+  const hirerReviews = hirerData?.reviewCount ?? hirerData?.reviews ?? 0;
+  const hirerLocation = hirerData?.location?.city || hirerData?.location?.region
+    || (typeof hirerData?.location === 'string' ? hirerData.location : null) || null;
+  const hirerJoined = hirerData?.createdAt
+    ? new Date(hirerData.createdAt).toLocaleDateString('en-GH', { month: 'long', year: 'numeric' })
     : null;
-  const hirerJobsPosted = job.hirer?.jobsPosted ?? job.hirer?.totalJobs ?? null;
-  const hirerVerified = job.hirer?.isVerified || job.hirer?.verified || false;
+  const hirerJobsPosted = hirerData?.jobsPosted ?? hirerData?.totalJobs ?? job?.hirerJobsPosted ?? null;
+  const hirerVerified = Boolean(hirerData?.isVerified || hirerData?.verified || hirerData?.verification?.isVerified);
+
+  const handleOpenClientProfile = () => {
+    if (!hirerId) {
+      setShareSnackbar('Client profile is not available yet');
+      return;
+    }
+
+    navigate(`/profile/${hirerId}`, {
+      state: { profileData: hirerData, source: 'job-details', jobId: id },
+    });
+  };
 
   // ─── budget display ───────────────────────────────────────────────────
   const budgetDisplay = (() => {
@@ -436,7 +469,7 @@ const JobDetailsPage = () => {
           <Button
             startIcon={<ArrowBack />}
             onClick={() => navigate('/jobs')}
-            sx={{ mb: 2.5, color: 'secondary.main', fontWeight: 600, '&:hover': { background: 'rgba(255,215,0,0.08)' } }}
+            sx={{ mb: 2.5, color: accentColor, fontWeight: 700, '&:hover': { background: accentSoftBg } }}
           >
             Back to Jobs
           </Button>
@@ -519,6 +552,7 @@ const JobDetailsPage = () => {
                     color: 'text.primary',
                     whiteSpace: 'pre-line',
                     lineHeight: 1.8,
+                    fontWeight: 500,
                     fontSize: { xs: '0.93rem', sm: '1rem' },
                   }}
                 >
@@ -562,22 +596,6 @@ const JobDetailsPage = () => {
                 </DetailsPaper>
               )}
 
-              {/* Location Map */}
-              <DetailsPaper elevation={2} sx={{ mb: 3, overflow: 'hidden', p: 0 }}>
-                <Box sx={{ p: 2.5, pb: 1.5 }}>
-                  <SectionHeading icon={LocationOn}>Job Location</SectionHeading>
-                </Box>
-                <Box sx={{ width: '100%', height: { xs: 220, sm: 280, md: 320 } }}>
-                  <iframe
-                    title="Job Location Map"
-                    src={`${EXTERNAL_SERVICES.GOOGLE_MAPS.EMBED}?q=${encodeURIComponent(locationLabel || 'Ghana')}&output=embed`}
-                    width="100%" height="100%"
-                    style={{ border: 0, display: 'block' }}
-                    allowFullScreen loading="lazy"
-                  />
-                </Box>
-              </DetailsPaper>
-
             </motion.div>
           </Grid>
 
@@ -596,10 +614,10 @@ const JobDetailsPage = () => {
                     <Typography variant="body2" sx={{ color: 'text.secondary', mb: 0.3 }}>
                       Budget range
                     </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: 'secondary.main' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: accentColor }}>
                       GH₵ {(job.bidding.minBidAmount || job.budget?.min || 0).toLocaleString()} – {(job.bidding.maxBidAmount || job.budget?.max || 0).toLocaleString()}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
                       {job.bidding.currentBidders || 0} / {job.bidding.maxBidders || 5} bids placed
                     </Typography>
                   </Box>
@@ -608,7 +626,7 @@ const JobDetailsPage = () => {
                 {!job?.bidding?.bidStatus || job.bidding.bidStatus !== 'open' ? (
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="body2" sx={{ color: 'text.secondary', mb: 0.3 }}>Budget</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: 'secondary.main' }}>{budgetDisplay}</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: accentColor }}>{budgetDisplay}</Typography>
                   </Box>
                 ) : null}
 
@@ -634,22 +652,22 @@ const JobDetailsPage = () => {
                     startIcon={savingBookmark ? <CircularProgress size={16} /> : (saved ? <Bookmark /> : <BookmarkBorder />)}
                     onClick={handleToggleSave}
                     disabled={savingBookmark}
-                    sx={{ color: saved ? 'secondary.main' : 'text.secondary', borderColor: 'divider', fontWeight: 600 }}
+                    sx={{ color: saved ? accentColor : 'text.primary', borderColor: 'divider', fontWeight: 600 }}
                   >
                     {saved ? 'Saved' : 'Save'}
                   </Button>
                   <IconButton
                     onClick={handleShareJob}
                     aria-label="Share job"
-                    sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1.5, color: 'text.secondary', px: 1.5, '&:hover': { color: 'secondary.main', borderColor: 'secondary.main' } }}
+                    sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1.5, color: 'text.primary', px: 1.5, '&:hover': { color: accentColor, borderColor: accentColor, bgcolor: accentSoftBg } }}
                   >
                     <Share />
                   </IconButton>
                 </Box>
 
                 {!isAuthenticated && (
-                  <Typography variant="caption" sx={{ color: 'text.disabled', mt: 1.5, display: 'block', textAlign: 'center' }}>
-                    <Box component="span" onClick={handleSignIn} sx={{ color: 'secondary.main', cursor: 'pointer', fontWeight: 600 }}>Sign in</Box>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', mt: 1.5, display: 'block', textAlign: 'center' }}>
+                    <Box component="span" onClick={handleSignIn} sx={{ color: accentColor, cursor: 'pointer', fontWeight: 700 }}>Sign in</Box>
                     {' '}to apply or save this job
                   </Typography>
                 )}
@@ -673,12 +691,12 @@ const JobDetailsPage = () => {
                     icon: Groups, label: 'Applicants', value: `${job?.proposalCount || 0} people applied`,
                   }].map(({ icon: Icon, label, value }) => (
                     <Box key={label} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                      <Box sx={{ width: 32, height: 32, borderRadius: 1.5, bgcolor: 'rgba(255,215,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Icon sx={{ fontSize: 17, color: 'secondary.main' }} />
+                      <Box sx={{ width: 32, height: 32, borderRadius: 1.5, bgcolor: accentSoftBg, border: '1px solid', borderColor: alpha(theme.palette.primary.main, 0.3), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Icon sx={{ fontSize: 17, color: accentColor }} />
                       </Box>
                       <Box>
-                        <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</Typography>
-                        <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600, mt: 0.1 }}>{value}</Typography>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</Typography>
+                        <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 700, mt: 0.1 }}>{value}</Typography>
                       </Box>
                     </Box>
                   ))}
@@ -691,25 +709,22 @@ const JobDetailsPage = () => {
 
                 {/* Profile row — clickable */}
                 <Box
-                  onClick={() => {
-                    if (!hirerId) { setShareSnackbar('Client profile is not available yet'); return; }
-                    navigate(`/profile/${hirerId}`, { state: { profileData: job.hirer } });
-                  }}
+                  onClick={handleOpenClientProfile}
                   sx={{
                     display: 'flex', alignItems: 'center', gap: 2, p: 1.5,
                     borderRadius: 2, cursor: hirerId ? 'pointer' : 'default',
                     border: '1px solid', borderColor: 'divider',
                     mb: 2,
                     transition: 'all 0.2s',
-                    '&:hover': hirerId ? { bgcolor: 'action.hover', borderColor: 'secondary.main' } : {},
+                    '&:hover': hirerId ? { bgcolor: 'action.hover', borderColor: accentColor } : {},
                   }}
                 >
                   <Avatar
-                    src={job.hirer?.avatar || job.hirer?.profilePicture}
+                    src={hirerData?.avatar || hirerData?.profilePicture}
                     alt={hirerName}
                     sx={{
                       width: 60, height: 60, flexShrink: 0,
-                      bgcolor: 'secondary.main', color: '#000', fontWeight: 700, fontSize: '1.3rem',
+                      bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 700, fontSize: '1.3rem',
                     }}
                   >
                     {hirerName.charAt(0).toUpperCase()}
@@ -728,14 +743,14 @@ const JobDetailsPage = () => {
                       <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
                         {hirerRating ?? 'N/A'}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.disabled' }}>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                         ({hirerReviews} review{hirerReviews !== 1 ? 's' : ''})
                       </Typography>
                     </Box>
                     {hirerId && (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.2 }}>
-                        <OpenInNew sx={{ fontSize: 12, color: 'secondary.main' }} />
-                        <Typography variant="caption" sx={{ color: 'secondary.main', fontWeight: 600 }}>View Profile</Typography>
+                        <OpenInNew sx={{ fontSize: 12, color: accentColor }} />
+                        <Typography variant="caption" sx={{ color: accentColor, fontWeight: 700 }}>View Profile</Typography>
                       </Box>
                     )}
                   </Box>
@@ -745,7 +760,7 @@ const JobDetailsPage = () => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2, mb: 2.5 }}>
                   {hirerJobsPosted !== null && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Business sx={{ fontSize: 17, color: 'text.disabled' }} />
+                      <Business sx={{ fontSize: 17, color: 'text.secondary' }} />
                       <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                         <Box component="span" sx={{ fontWeight: 700, color: 'text.primary' }}>{hirerJobsPosted}</Box>
                         {' '}job{hirerJobsPosted !== 1 ? 's' : ''} posted
@@ -754,13 +769,13 @@ const JobDetailsPage = () => {
                   )}
                   {hirerLocation && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <LocationOn sx={{ fontSize: 17, color: 'text.disabled' }} />
+                      <LocationOn sx={{ fontSize: 17, color: 'text.secondary' }} />
                       <Typography variant="body2" sx={{ color: 'text.secondary' }}>{hirerLocation}</Typography>
                     </Box>
                   )}
                   {hirerJoined && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <CalendarToday sx={{ fontSize: 17, color: 'text.disabled' }} />
+                      <CalendarToday sx={{ fontSize: 17, color: 'text.secondary' }} />
                       <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                         Member since {hirerJoined}
                       </Typography>
@@ -778,7 +793,7 @@ const JobDetailsPage = () => {
                     disabled={!hirerId}
                     sx={{
                       fontWeight: 600, borderColor: 'divider', color: 'text.primary',
-                      '&:hover': { borderColor: 'secondary.main', color: 'secondary.main', bgcolor: 'rgba(255,215,0,0.05)' },
+                      '&:hover': { borderColor: accentColor, color: accentColor, bgcolor: accentSoftBg },
                     }}
                   >
                     Message Client
@@ -788,8 +803,8 @@ const JobDetailsPage = () => {
                       variant="text"
                       fullWidth
                       startIcon={<OpenInNew />}
-                      onClick={() => navigate(`/profile/${hirerId}`, { state: { profileData: job.hirer } })}
-                      sx={{ fontWeight: 600, color: 'secondary.main', '&:hover': { bgcolor: 'rgba(255,215,0,0.06)' } }}
+                      onClick={handleOpenClientProfile}
+                      sx={{ fontWeight: 700, color: accentColor, '&:hover': { bgcolor: accentSoftBg } }}
                     >
                       View Client Profile
                     </Button>
@@ -800,6 +815,26 @@ const JobDetailsPage = () => {
             </motion.div>
           </Grid>
         </Grid>
+
+        {/* Full-width map section for better wide-screen balance */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+          <DetailsPaper elevation={2} sx={{ mb: 3, overflow: 'hidden', p: 0 }}>
+            <Box sx={{ p: 2.5, pb: 1.5 }}>
+              <SectionHeading icon={LocationOn}>Job Location</SectionHeading>
+            </Box>
+            <Box sx={{ width: '100%', height: { xs: 240, sm: 300, md: 360 } }}>
+              <iframe
+                title="Job Location Map"
+                src={`${EXTERNAL_SERVICES.GOOGLE_MAPS.EMBED}?q=${encodeURIComponent(locationLabel || 'Ghana')}&output=embed`}
+                width="100%"
+                height="100%"
+                style={{ border: 0, display: 'block' }}
+                allowFullScreen
+                loading="lazy"
+              />
+            </Box>
+          </DetailsPaper>
+        </motion.div>
 
         {/* Bid submission dialog */}
         {job && (
@@ -820,8 +855,10 @@ const JobDetailsPage = () => {
             left: 0,
             right: 0,
             zIndex: Z_INDEX.stickyCta,
-            bgcolor: 'rgba(18, 18, 18, 0.97)',
-            borderTop: '1px solid rgba(255,215,0,0.2)',
+            bgcolor: theme.palette.mode === 'dark'
+              ? alpha(theme.palette.background.paper, 0.97)
+              : alpha(theme.palette.background.paper, 0.98),
+            borderTop: `1px solid ${theme.palette.mode === 'dark' ? alpha(theme.palette.primary.main, 0.22) : alpha(theme.palette.divider, 0.85)}`,
             px: 2,
             py: 1.5,
             pb: 'calc(12px + env(safe-area-inset-bottom, 0px))',
@@ -855,14 +892,14 @@ const JobDetailsPage = () => {
             onClick={handleToggleSave}
             disabled={savingBookmark}
             aria-label={saved ? 'Remove from saved jobs' : 'Save job'}
-            sx={{ color: saved ? '#D4AF37' : 'text.secondary', minWidth: 48, minHeight: 48 }}
+            sx={{ color: saved ? accentColor : 'text.primary', minWidth: 48, minHeight: 48 }}
           >
             {saved ? <Bookmark /> : <BookmarkBorder />}
           </IconButton>
           <IconButton
             onClick={handleShareJob}
             aria-label="Share job"
-            sx={{ color: 'text.secondary', minWidth: 48, minHeight: 48 }}
+            sx={{ color: 'text.primary', minWidth: 48, minHeight: 48 }}
           >
             <Share />
           </IconButton>

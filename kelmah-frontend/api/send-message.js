@@ -98,11 +98,9 @@ export default async function handler(req, res) {
       .update(userPayload)
       .digest('hex');
 
-    const { conversationId } = req.body || {};
-    const upstreamPath = conversationId
-      ? `/api/messages/conversation/${conversationId}`
-      : '/api/messages';
-    const upstreamUrl = `${MESSAGING_URL}${upstreamPath}`;
+    // Messages are always POSTed to /api/messages (the controller reads
+    // conversationId from the body, not the URL path).
+    const upstreamUrl = `${MESSAGING_URL}/api/messages`;
     const bodyStr = JSON.stringify(req.body || {});
 
     const headers = {

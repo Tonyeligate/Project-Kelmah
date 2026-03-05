@@ -793,6 +793,10 @@ const routes = [
         ),
       },
       {
+        path: 'profile/:workerId',
+        element: <WorkerProfilePage />,
+      },
+      {
         path: 'wallet',
         element: (
           <ProtectedRoute>

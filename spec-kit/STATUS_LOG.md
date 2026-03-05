@@ -1,5 +1,41 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Theme Mode System — CSS Custom Properties Fix ✅
+
+**Date**: November 2025 (continued)
+**Scope**: Fix light-mode rendering — sidebar navigation text/icons invisible, global scrollbar hardcoded gold.
+
+**Root Cause Diagnosed:**
+- `Sidebar.jsx` used 14+ hardcoded dark-mode hex colors: `#E0E0E0` (near-white text invisible on light bg), `#9E9E9E` (gray icons low contrast), `rgba(255,215,0,*)` active/hover backgrounds
+- `index.css` global scrollbar hardcoded `rgba(255, 215, 0, 0.3)` — bright gold scrollbar on light pages
+- No semantic CSS variable layer existed (only 2 vars in `:root`)
+
+**What Binance/TikTok Do Right (now implemented):**
+- CSS Custom Properties with semantic names that swap under `[data-theme="dark"]` / `[data-theme="light"]`
+- Components NEVER contain literal hex codes — they reference `var(--token-name)`
+- When theme flips, only the root variable block changes — zero component rewrites needed
+
+**Changes Made:**
+
+`kelmah-frontend/src/index.css`:
+- ✅ Replaced 2-variable `:root` with comprehensive `[data-theme="dark"]` and `[data-theme="light"]` token blocks
+- ✅ 25+ CSS vars: `--nav-icon-active`, `--nav-icon-inactive`, `--nav-text-active`, `--nav-text-inactive`, `--nav-label`, `--nav-bg-active`, `--nav-bg-hover`, `--nav-border`, `--nav-divider`, `--nav-user-card-bg`, `--nav-collapse-icon`, `--scrollbar-thumb`, `--scrollbar-thumb-hover`, etc.
+- ✅ Light mode: `--nav-text-inactive: #374151` (dark gray, visible) vs dark mode default `#E0E0E0`
+- ✅ Fixed global `*` scrollbar to use `var(--scrollbar-thumb)` / `var(--scrollbar-thumb-hover)`
+
+`kelmah-frontend/src/modules/layout/components/sidebar/Sidebar.jsx`:
+- ✅ 14 hardcoded color locations replaced with `var(--nav-*)` references
+- ✅ Drawer borderRight, user card bg/border, collapse toggle, dashboard item bg+hover+icon+text
+- ✅ MENU label, menu items active/hover bg, icon color, text color (the #1 culprit)
+- ✅ Divider, bottom items (same patterns — both icon and text color)
+- ✅ Only intentional brand uses remain: logo fallback gradient, avatar bg gold (correct)
+
+**Verification:**
+- ✅ Build: `✔ built in 1m 4s` — zero errors
+- ✅ Committed and pushed: `4f21a00` → Vercel auto-deploying
+
+---
+
 ### Session: Applications & Find Talent - Data Seeding & Layout Fixes ✅
 
 **Date**: March 5, 2026
@@ -7061,7 +7097,7 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 
 ---
 
-## 🔄 IN-PROGRESS — JobDetailsPage Contrast + Layout Follow-up (2026-03-05)
+## ✅ COMPLETED — JobDetailsPage Contrast + Layout Follow-up (2026-03-05)
 
 ### Scope
 - Fix low-contrast icons/text in dark and light modes on `JobDetailsPage`.
@@ -7073,3 +7109,21 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 - Some metadata used `text.disabled`, making key information hard to read.
 - Mobile sticky CTA had a hardcoded dark background in light mode.
 - Job Details navigates to `/profile/:id`, but route alias coverage was incomplete in current route table.
+
+### Implemented Fixes
+- Updated `JobDetailsPage` accent usage from low-contrast tokens to theme-safe accent tokens (`primary.main` in dark, `primary.dark` in light).
+- Replaced weak `text.disabled` labels/icons in key areas with clearer `text.secondary` or accent colors.
+- Improved CTA card readability for budget and interaction controls in both modes.
+- Added `hirerData` normalization/fallback chain to ensure About Client displays valid hirer data fields.
+- Added `handleOpenClientProfile` and routed all profile clicks through it for consistent behavior and state payload.
+- Moved map from left column into a full-width section beneath the two-column content to reduce uneven whitespace and improve page fit.
+- Made mobile sticky CTA background and border theme-aware (no hardcoded dark bar in light mode).
+- Added route alias `path: 'profile/:workerId'` in `src/routes/config.jsx` to resolve profile clicks from Job Details and related flows.
+
+### Files Updated
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `kelmah-frontend/src/routes/config.jsx`
+
+### Verification
+- Frontend build passed: `npm run build` ✅ (`built in 1m 32s`)
+- Confirmed route alias exists for `/profile/:workerId` ✅
