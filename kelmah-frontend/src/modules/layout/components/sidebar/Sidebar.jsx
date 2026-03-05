@@ -173,7 +173,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
           color: (theme) => theme.palette.text.primary,
           display: 'flex',
           flexDirection: 'column',
-          borderRight: '1px solid rgba(255, 215, 0, 0.2)',
+          borderRight: '1px solid var(--nav-border)',
           overflowX: 'hidden',
         },
       }}
@@ -189,8 +189,8 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             sx={{
               ml: collapsed ? 0 : 'auto',
-              color: '#FFD700',
-              '&:hover': { bgcolor: 'rgba(255,215,0,0.12)' },
+              color: 'var(--nav-collapse-icon)',
+              '&:hover': { bgcolor: 'var(--nav-collapse-hover)' },
             }}
           >
             {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
@@ -205,9 +205,9 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
             mx: 2,
             mb: 2,
             p: 2,
-            backgroundColor: 'rgba(255, 215, 0, 0.1)',
+            backgroundColor: 'var(--nav-user-card-bg)',
             borderRadius: 2,
-            border: '1px solid rgba(255, 215, 0, 0.2)',
+            border: '1px solid var(--nav-user-card-border)',
             display: 'flex',
             alignItems: 'center',
             gap: 1.5,
@@ -246,24 +246,24 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
             component={RouterLink}
             to={dashboardPath}
             sx={{
-              backgroundColor: isDashboardActive ? 'rgba(255, 215, 0, 0.15)' : 'transparent',
+              backgroundColor: isDashboardActive ? 'var(--nav-bg-active)' : 'transparent',
               borderRadius: 1,
               py: 1.5,
               justifyContent: collapsed ? 'center' : 'flex-start',
               '&:hover': {
-                backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                backgroundColor: 'var(--nav-bg-hover)',
               },
             }}
           >
             <ListItemIcon sx={{ minWidth: collapsed ? 'auto' : 40, justifyContent: 'center' }}>
-              <DashboardIcon sx={{ color: '#FFD700' }} />
+              <DashboardIcon sx={{ color: 'var(--nav-icon-active)' }} />
             </ListItemIcon>
             {!collapsed && (
               <ListItemText
             primary="Dashboard"
             sx={{
               '& .MuiListItemText-primary': {
-                color: '#FFD700',
+                color: 'var(--nav-text-active)',
                 fontWeight: 600,
                 letterSpacing: 'normal',
                 wordSpacing: 'normal',
@@ -286,7 +286,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
           sx={{
             px: 3,
             py: 1,
-            color: 'rgba(255, 215, 0, 0.7)',
+            color: 'var(--nav-label)',
             fontWeight: 600,
             letterSpacing: 1,
           }}
@@ -311,9 +311,9 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
                   mb: 0.5,
                   py: 1.25,
                   justifyContent: collapsed ? 'center' : 'flex-start',
-                  backgroundColor: isActive ? 'rgba(255, 215, 0, 0.15)' : 'transparent',
+                  backgroundColor: isActive ? 'var(--nav-bg-active)' : 'transparent',
                   '&:hover': {
-                    backgroundColor: 'rgba(255, 215, 0, 0.08)',
+                    backgroundColor: 'var(--nav-bg-hover)',
                   },
                 }}
               >
@@ -321,12 +321,12 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
                   {item.badge && item.badge > 0 ? (
                     <Badge color="error" badgeContent={item.badge} max={99}>
                       {React.cloneElement(item.icon, {
-                        sx: { color: isActive ? '#FFD700' : '#9E9E9E' },
+                        sx: { color: isActive ? 'var(--nav-icon-active)' : 'var(--nav-icon-inactive)' },
                       })}
                     </Badge>
                   ) : (
                     React.cloneElement(item.icon, {
-                      sx: { color: isActive ? '#FFD700' : '#9E9E9E' },
+                      sx: { color: isActive ? 'var(--nav-icon-active)' : 'var(--nav-icon-inactive)' },
                     })
                   )}
                 </ListItemIcon>
@@ -335,7 +335,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
                   primary={item.text}
                   sx={{
                     '& .MuiListItemText-primary': {
-                      color: isActive ? '#FFD700' : '#E0E0E0',
+                      color: isActive ? 'var(--nav-text-active)' : 'var(--nav-text-inactive)',
                       fontWeight: isActive ? 600 : 400,
                       fontSize: '0.9rem',
                       letterSpacing: 'normal',
@@ -369,7 +369,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
           })}
       </List>
 
-      <Divider sx={{ mx: 2, borderColor: 'rgba(255, 215, 0, 0.2)' }} />
+      <Divider sx={{ mx: 2, borderColor: 'var(--nav-divider)' }} />
 
       {/* Bottom Items */}
       <List sx={{ px: 1, pb: 2 }}>
@@ -387,9 +387,9 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
                 mb: 0.5,
                 py: 1.25,
                 justifyContent: collapsed ? 'center' : 'flex-start',
-                backgroundColor: isActive ? 'rgba(255, 215, 0, 0.15)' : 'transparent',
+                backgroundColor: isActive ? 'var(--nav-bg-active)' : 'transparent',
                 '&:hover': {
-                  backgroundColor: 'rgba(255, 215, 0, 0.08)',
+                  backgroundColor: 'var(--nav-bg-hover)',
                 },
               }}
             >
@@ -397,12 +397,12 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
                 {item.badge && item.badge > 0 ? (
                   <Badge color="error" badgeContent={item.badge} max={99}>
                     {React.cloneElement(item.icon, {
-                      sx: { color: isActive ? '#FFD700' : '#9E9E9E' },
+                      sx: { color: isActive ? 'var(--nav-icon-active)' : 'var(--nav-icon-inactive)' },
                     })}
                   </Badge>
                 ) : (
                   React.cloneElement(item.icon, {
-                    sx: { color: isActive ? '#FFD700' : '#9E9E9E' },
+                    sx: { color: isActive ? 'var(--nav-icon-active)' : 'var(--nav-icon-inactive)' },
                   })
                 )}
               </ListItemIcon>
@@ -411,7 +411,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
                   primary={item.text}
                   sx={{
                     '& .MuiListItemText-primary': {
-                      color: isActive ? '#FFD700' : '#E0E0E0',
+                      color: isActive ? 'var(--nav-text-active)' : 'var(--nav-text-inactive)',
                       fontWeight: isActive ? 600 : 400,
                       fontSize: '0.9rem',
                       letterSpacing: 'normal',

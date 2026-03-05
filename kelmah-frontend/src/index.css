@@ -167,7 +167,7 @@ body {
 /* Prevent scroll bar glitches */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 215, 0, 0.3) transparent;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 *::-webkit-scrollbar {
@@ -175,16 +175,16 @@ body {
 }
 
 *::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--scrollbar-track);
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 215, 0, 0.3);
+  background-color: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 215, 0, 0.5);
+  background-color: var(--scrollbar-thumb-hover);
 }
 
 /* Typography Reset */
