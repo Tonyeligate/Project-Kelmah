@@ -9,7 +9,6 @@ import {
   Button,
   Chip,
   Avatar,
-  Divider,
   IconButton,
   CircularProgress,
   Alert,
@@ -20,8 +19,6 @@ import {
   LocationOn,
   AttachMoney,
   Category,
-  Schedule,
-  Person,
   Star,
   ArrowBack,
   WorkOutline,
@@ -30,6 +27,15 @@ import {
   Share,
   Message,
   NoteAlt,
+  VerifiedUser,
+  CalendarToday,
+  OpenInNew,
+  Groups,
+  AccessTime,
+  CheckCircle,
+  Business,
+  Visibility,
+  Person,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { styled, useTheme } from '@mui/material/styles';
@@ -49,6 +55,27 @@ import { Z_INDEX, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import { Helmet } from 'react-helmet-async';
 
 // Styled components
+const SectionHeading = ({ children, icon: Icon, sx = {} }) => (
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5, ...sx }}>
+    {Icon && <Icon sx={{ color: 'secondary.main', fontSize: 22 }} />}
+    <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary', letterSpacing: 0.2 }}>
+      {children}
+    </Typography>
+  </Box>
+);
+
+const MetaPill = ({ icon: Icon, label }) => (
+  <Box sx={{
+    display: 'flex', alignItems: 'center', gap: 0.75,
+    bgcolor: 'action.hover', borderRadius: 99, px: 1.5, py: 0.6,
+  }}>
+    {Icon && <Icon sx={{ fontSize: 16, color: 'secondary.main' }} />}
+    <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 500, lineHeight: 1.4 }}>
+      {label}
+    </Typography>
+  </Box>
+);
+
 const DetailsPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
   borderRadius: theme.spacing(2),
@@ -90,24 +117,6 @@ const SkillChip = styled(Chip)(({ theme }) => ({
   },
 }));
 
-const ProfileLink = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  padding: theme.spacing(1.5),
-  borderRadius: theme.spacing(1),
-  background:
-    theme.palette.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.05)'
-      : 'rgba(0, 0, 0, 0.03)',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    background:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.1)'
-        : 'rgba(0, 0, 0, 0.06)',
-  },
-}));
 
 const toDisplayText = (value, fallback = '') => {
   if (typeof value === 'string') return value.trim() || fallback;
@@ -291,25 +300,21 @@ const JobDetailsPage = () => {
   if (loading) {
     // Show skeleton placeholders for job details
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Skeleton variant="text" width="30%" height={40} />
-          <Skeleton
-            variant="rectangular"
-            height={60}
-            width="20%"
-            sx={{ my: 2 }}
-          />
-          <Grid container spacing={4}>
-            <Grid item xs={12} md={8}>
-              <Skeleton variant="rectangular" height={300} />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Skeleton variant="rectangular" height={200} />
-              <Skeleton variant="text" width="80%" sx={{ mt: 2 }} />
-            </Grid>
+      <Container maxWidth="xl" sx={{ px: { xs: 1.5, sm: 2, md: 3 }, py: { xs: 3, sm: 5 } }}>
+        <Skeleton variant="text" width="15%" height={36} sx={{ mb: 2 }} />
+        <Skeleton variant="rectangular" height={130} sx={{ borderRadius: 3, mb: 3 }} />
+        <Grid container spacing={3}>
+          <Grid item xs={12} lg={8}>
+            <Skeleton variant="rectangular" height={260} sx={{ borderRadius: 2, mb: 2 }} />
+            <Skeleton variant="rectangular" height={120} sx={{ borderRadius: 2, mb: 2 }} />
+            <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 2 }} />
           </Grid>
-        </Box>
+          <Grid item xs={12} lg={4}>
+            <Skeleton variant="rectangular" height={180} sx={{ borderRadius: 2, mb: 2 }} />
+            <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2, mb: 2 }} />
+            <Skeleton variant="rectangular" height={220} sx={{ borderRadius: 2 }} />
+          </Grid>
+        </Grid>
       </Container>
     );
   }
@@ -383,457 +388,415 @@ const JobDetailsPage = () => {
     );
   }
 
+  // ─── derived hirer info ───────────────────────────────────────────────
+  const hirerId = job.hirer?._id || job.hirer?.id;
+  const hirerName = job.hirer?.firstName && job.hirer?.lastName
+    ? `${job.hirer.firstName} ${job.hirer.lastName}`
+    : job.hirer?.name || (job.hirer?.email ? job.hirer.email.split('@')[0] : null) || 'Client';
+  const hirerRating = typeof job.hirer?.rating === 'number' ? job.hirer.rating.toFixed(1) : null;
+  const hirerReviews = job.hirer?.reviewCount ?? job.hirer?.reviews ?? 0;
+  const hirerLocation = job.hirer?.location?.city || job.hirer?.location?.region
+    || (typeof job.hirer?.location === 'string' ? job.hirer.location : null) || null;
+  const hirerJoined = job.hirer?.createdAt
+    ? new Date(job.hirer.createdAt).toLocaleDateString('en-GH', { month: 'long', year: 'numeric' })
+    : null;
+  const hirerJobsPosted = job.hirer?.jobsPosted ?? job.hirer?.totalJobs ?? null;
+  const hirerVerified = job.hirer?.isVerified || job.hirer?.verified || false;
+
+  // ─── budget display ───────────────────────────────────────────────────
+  const budgetDisplay = (() => {
+    if (!job?.budget && job?.budget !== 0) return 'Budget not specified';
+    const currency = 'GH₵';
+    if (typeof job.budget === 'object') {
+      const { min, max, amount, type } = job.budget;
+      const suffix = type || job?.paymentType || 'fixed';
+      if (amount) return `${currency} ${Number(amount).toLocaleString()} / ${suffix}`;
+      if (min != null && max != null)
+        return min === max
+          ? `${currency} ${Number(min).toLocaleString()} / ${suffix}`
+          : `${currency} ${Number(min).toLocaleString()} – ${Number(max).toLocaleString()} / ${suffix}`;
+    }
+    return `${currency} ${Number(job.budget).toLocaleString()} / ${job?.paymentType || 'fixed'}`;
+  })();
+
   return (
     <Box
       sx={{
         minHeight: '100vh',
-        py: { xs: 3, sm: 5, md: 8 },
-        px: { xs: 1.5, sm: 2 },
-        pb: isMobile ? '80px' : undefined,
+        py: { xs: 2, sm: 4, md: 5 },
+        px: { xs: 0, sm: 1 },
+        pb: isMobile ? '90px' : undefined,
         bgcolor: 'background.default',
       }}
     >
-      <Helmet><title>Job Details | Kelmah</title></Helmet>
-      <Container maxWidth="lg">
+      <Helmet><title>{job?.title ? `${job.title} | Kelmah` : 'Job Details | Kelmah'}</title></Helmet>
+      <Container maxWidth="xl" sx={{ px: { xs: 1.5, sm: 2, md: 3 } }}>
         {/* Back Button */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3 }}
-        >
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}>
           <Button
             startIcon={<ArrowBack />}
             onClick={() => navigate('/jobs')}
-            sx={{
-              mb: 3,
-              color: 'primary.main',
-              '&:hover': {
-                background: 'rgba(255, 215, 0, 0.1)',
-              },
-            }}
+            sx={{ mb: 2.5, color: 'secondary.main', fontWeight: 600, '&:hover': { background: 'rgba(255,215,0,0.08)' } }}
           >
             Back to Jobs
           </Button>
         </motion.div>
 
-        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-          {/* Main Content */}
-          <Grid item xs={12} md={8}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+        {/* ─── HERO HEADER BAR ─────────────────────────────────────────────── */}
+        <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 2.5, sm: 3, md: 3.5 },
+              mb: 3,
+              borderRadius: 3,
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
+            }}
+          >
+            {/* Status + category row */}
+            <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
+              <Chip
+                label={(job?.status || 'unknown').toUpperCase()}
+                size="small"
+                sx={{
+                  fontWeight: 700, fontSize: '0.7rem', letterSpacing: 0.5,
+                  bgcolor: String(job?.status || '').toLowerCase() === 'open' ? 'rgba(76,175,80,0.15)' : 'rgba(255,152,0,0.15)',
+                  color: String(job?.status || '').toLowerCase() === 'open' ? '#4caf50' : '#ff9800',
+                  border: '1px solid',
+                  borderColor: String(job?.status || '').toLowerCase() === 'open' ? 'rgba(76,175,80,0.4)' : 'rgba(255,152,0,0.4)',
+                }}
+              />
+              {job?.category && (
+                <Chip
+                  icon={<Category sx={{ fontSize: '14px !important' }} />}
+                  label={job.category}
+                  size="small"
+                  variant="outlined"
+                  sx={{ fontWeight: 600, fontSize: '0.75rem', borderColor: 'divider' }}
+                />
+              )}
+            </Box>
+
+            {/* Big bold title */}
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{
+                fontWeight: 800,
+                fontSize: { xs: '1.55rem', sm: '1.9rem', md: '2.2rem' },
+                color: 'text.primary',
+                lineHeight: 1.25,
+                mb: 2,
+              }}
             >
-              <DetailsPaper elevation={3}>
-                {/* Job Header */}
-                <Box sx={{ mb: 3 }}>
-                  <Typography
-                    variant="h3"
-                    component="h1"
-                    sx={(theme) => ({
-                      mb: 2,
-                      background: `linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.dark})`,
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      fontWeight: 'bold',
-                    })}
-                  >
-                    {job?.title || 'Job Title'}
-                  </Typography>
+              {job?.title || 'Job Title'}
+            </Typography>
 
-                  <Box
-                    sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <LocationOn sx={{ color: 'primary.main', mr: 0.5 }} />
-                      <Typography variant="body1" sx={{ color: 'text.primary' }}>
-                        {locationLabel}
-                      </Typography>
-                    </Box>
+            {/* Meta pills row */}
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              <MetaPill icon={LocationOn} label={locationLabel} />
+              <MetaPill icon={AttachMoney} label={budgetDisplay} />
+              <MetaPill icon={CalendarToday} label={`Posted ${job?.createdAt ? new Date(job.createdAt).toLocaleDateString('en-GH', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Unknown'}`} />
+              <MetaPill icon={Groups} label={`${job?.proposalCount || 0} Applicants`} />
+              {job?.endDate && <MetaPill icon={AccessTime} label={`Deadline ${new Date(job.endDate).toLocaleDateString('en-GH', { day: 'numeric', month: 'short', year: 'numeric' })}`} />}
+            </Box>
+          </Paper>
+        </motion.div>
 
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Category sx={{ color: 'primary.main', mr: 0.5 }} />
-                      <Typography variant="body1" sx={{ color: 'text.primary' }}>
-                        {job?.category || 'Category'}
-                      </Typography>
-                    </Box>
+        <Grid container spacing={{ xs: 2, sm: 3 }}>
+          {/* ─── MAIN CONTENT ────────────────────────────────────────────────── */}
+          <Grid item xs={12} lg={8}>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
 
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <AttachMoney sx={{ color: 'primary.main', mr: 0.5 }} />
-                      <Typography variant="body1" sx={{ color: 'text.primary' }}>
-                        {job?.budget && job.budget !== null
-                          ? typeof job.budget === 'object'
-                            ? job.budget.min === job.budget.max
-                              ? `${job.budget.currency === 'GHS' ? 'GH₵' : (job.budget.currency || 'GH₵')} ${job.budget.amount?.toLocaleString() || 0} / ${job.budget.type || 'fixed'}`
-                              : `${job.budget.currency === 'GHS' ? 'GH₵' : (job.budget.currency || 'GH₵')} ${job.budget.min?.toLocaleString() || 0} - ${job.budget.max?.toLocaleString() || 0} / ${job.budget.type || 'fixed'}`
-                            : `${job?.currency === 'GHS' ? 'GH₵' : (job?.currency || 'GH₵')} ${job.budget?.toLocaleString()} / ${job?.paymentType || 'fixed'}`
-                          : 'Budget not specified'}
-                      </Typography>
-                    </Box>
+              {/* Description */}
+              <DetailsPaper elevation={2} sx={{ mb: 3 }}>
+                <SectionHeading icon={WorkOutline}>Job Description</SectionHeading>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: 'text.primary',
+                    whiteSpace: 'pre-line',
+                    lineHeight: 1.8,
+                    fontSize: { xs: '0.93rem', sm: '1rem' },
+                  }}
+                >
+                  {job?.description || 'No description available.'}
+                </Typography>
+              </DetailsPaper>
 
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Schedule sx={{ color: 'primary.main', mr: 0.5 }} />
-                      <Typography variant="body1" sx={{ color: 'text.primary' }}>
-                        Posted:{' '}
-                        {job?.createdAt
-                          ? new Date(job.createdAt).toLocaleDateString()
-                          : 'Unknown'}
-                      </Typography>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <WorkOutline sx={{ color: 'primary.main', mr: 0.5 }} />
-                      <Typography variant="body1" sx={{ color: 'text.primary' }}>
-                        {job?.proposalCount || 0} Applicants
-                      </Typography>
-                    </Box>
+              {/* Required Skills */}
+              {skillLabels.length > 0 && (
+                <DetailsPaper elevation={2} sx={{ mb: 3 }}>
+                  <SectionHeading icon={VerifiedUser}>Required Skills</SectionHeading>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {skillLabels.map((skill, index) => (
+                      <SkillChip key={`${skill}-${index}`} label={skill} variant="outlined" />
+                    ))}
                   </Box>
+                </DetailsPaper>
+              )}
 
-                  <Chip
-                    label={job?.status || 'Unknown'}
-                    sx={{
-                      background:
-                        String(job?.status || '').toLowerCase() === 'open'
-                          ? 'rgba(76, 175, 80, 0.2)'
-                          : 'rgba(255, 152, 0, 0.2)',
-                      color: String(job?.status || '').toLowerCase() === 'open' ? 'success.main' : 'warning.main',
-                      fontWeight: 'bold',
-                    }}
+              {/* Project Images */}
+              {job.images && job.images.length > 0 && (
+                <DetailsPaper elevation={2} sx={{ mb: 3 }}>
+                  <SectionHeading icon={Visibility}>Project Images</SectionHeading>
+                  <Grid container spacing={2}>
+                    {job.images.map((image, index) => (
+                      <Grid item xs={12} sm={6} md={4} key={image?.url || image || index}>
+                        <Box
+                          component="img"
+                          src={typeof image === 'string' ? image : image?.url}
+                          alt={`Job image ${index + 1}`}
+                          sx={{
+                            width: '100%', height: 180, objectFit: 'cover',
+                            borderRadius: 2, cursor: 'pointer',
+                            transition: 'transform 0.3s ease',
+                            '&:hover': { transform: 'scale(1.03)' },
+                          }}
+                        />
+                      </Grid>
+                    ))}
+                  </Grid>
+                </DetailsPaper>
+              )}
+
+              {/* Location Map */}
+              <DetailsPaper elevation={2} sx={{ mb: 3, overflow: 'hidden', p: 0 }}>
+                <Box sx={{ p: 2.5, pb: 1.5 }}>
+                  <SectionHeading icon={LocationOn}>Job Location</SectionHeading>
+                </Box>
+                <Box sx={{ width: '100%', height: { xs: 220, sm: 280, md: 320 } }}>
+                  <iframe
+                    title="Job Location Map"
+                    src={`${EXTERNAL_SERVICES.GOOGLE_MAPS.EMBED}?q=${encodeURIComponent(locationLabel || 'Ghana')}&output=embed`}
+                    width="100%" height="100%"
+                    style={{ border: 0, display: 'block' }}
+                    allowFullScreen loading="lazy"
                   />
-
-                  {/* Embedded Map for Job Location - shown after key job context */}
-                  <Box
-                    sx={{
-                      width: '100%',
-                      height: { xs: 200, sm: 250, md: 300 },
-                      mt: 3,
-                      borderRadius: 2,
-                      overflow: 'hidden',
-                      display: { xs: 'none', sm: 'block' },
-                    }}
-                  >
-                    <iframe
-                      title="Job Location"
-                      src={`${EXTERNAL_SERVICES.GOOGLE_MAPS.EMBED}?q=${encodeURIComponent(locationLabel || 'Ghana')}&output=embed`}
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      allowFullScreen
-                      loading="lazy"
-                    />
-                  </Box>
-                </Box>
-
-                <Divider
-                  sx={{ borderColor: 'divider', my: 3 }}
-                />
-
-                {/* Job Description */}
-                <Box sx={{ mb: 4 }}>
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      color: 'primary.main',
-                      mb: 2,
-                      fontWeight: 'medium',
-                    }}
-                  >
-                    Description
-                  </Typography>
-
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      color: 'text.primary',
-                      whiteSpace: 'pre-line',
-                      mb: 3,
-                    }}
-                  >
-                    {job?.description || 'No description available'}
-                  </Typography>
-
-                  {/* Mobile-only map — moved below description for above-fold */}
-                  <Box
-                    sx={{
-                      width: '100%',
-                      height: 200,
-                      mb: 3,
-                      borderRadius: 2,
-                      overflow: 'hidden',
-                      display: { xs: 'block', sm: 'none' },
-                    }}
-                  >
-                    <iframe
-                      title="Job Location"
-                      src={`${EXTERNAL_SERVICES.GOOGLE_MAPS.EMBED}?q=${encodeURIComponent(locationLabel || 'Ghana')}&output=embed`}
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      allowFullScreen
-                      loading="lazy"
-                    />
-                  </Box>
-
-                  <Box sx={{ mt: 3 }}>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        color: 'primary.main',
-                        mb: 1,
-                      }}
-                    >
-                      Required Skills
-                    </Typography>
-
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                      {skillLabels.map((skill, index) => (
-                        <SkillChip key={`${skill}-${index}`} label={skill} />
-                      ))}
-                    </Box>
-                  </Box>
-                </Box>
-
-                <Divider
-                  sx={{ borderColor: 'divider', my: 3 }}
-                />
-
-                {/* Job Images */}
-                {job.images && job.images.length > 0 && (
-                  <Box sx={{ mb: 4 }}>
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        color: 'primary.main',
-                        mb: 2,
-                        fontWeight: 'medium',
-                      }}
-                    >
-                      Project Images
-                    </Typography>
-
-                    <Grid container spacing={2}>
-                      {job.images.map((image, index) => (
-                        <Grid item xs={12} sm={6} md={4} key={image.url || image || index}>
-                          <Box
-                            component="img"
-                            src={typeof image === 'string' ? image : image?.url}
-                            alt={`Job image ${index + 1}`}
-                            sx={{
-                              width: '100%',
-                              height: 200,
-                              objectFit: 'cover',
-                              borderRadius: 2,
-                              transition: 'transform 0.3s ease',
-                              cursor: 'pointer',
-                              '&:hover': {
-                                transform: 'scale(1.03)',
-                              },
-                            }}
-                          />
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </Box>
-                )}
-
-                <Divider
-                  sx={{ borderColor: 'divider', my: 3 }}
-                />
-
-                {/* Additional Info */}
-                <Box>
-                  {/* Communication Actions */}
-                  <Button
-                    variant="outlined"
-                    startIcon={<Message />}
-                    sx={{ mr: 2, mt: 2 }}
-                    onClick={handleMessageHirer}
-                    disabled={!job?.hirer?._id && !job?.hirer?.id}
-                  >
-                    Message Hirer
-                  </Button>
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      color: 'primary.main',
-                      mb: 2,
-                      fontWeight: 'medium',
-                    }}
-                  >
-                    Deadline
-                  </Typography>
-
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Schedule sx={{ color: 'primary.main', mr: 1 }} />
-                    <Typography variant="body1" sx={{ color: 'text.primary' }}>
-                      Complete by:{' '}
-                      {job.endDate
-                        ? new Date(job.endDate).toLocaleDateString()
-                        : 'No deadline specified'}
-                    </Typography>
-                  </Box>
                 </Box>
               </DetailsPaper>
+
             </motion.div>
           </Grid>
 
-          {/* Sidebar */}
-          <Grid item xs={12} md={4}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
+          {/* ─── SIDEBAR ─────────────────────────────────────────────────────── */}
+          <Grid item xs={12} lg={4}>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
+
+              {/* CTA Card */}
               <DetailsPaper elevation={3} sx={{ mb: 3 }}>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    color: 'primary.main',
-                    mb: 3,
-                    fontWeight: 'medium',
-                  }}
-                >
-                  {job?.bidding?.bidStatus === 'open' ? 'Place a Bid' : 'Apply Now'}
+                <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5 }}>
+                  {job?.bidding?.bidStatus === 'open' ? 'Place a Bid' : 'Apply for this Job'}
                 </Typography>
 
-                {job?.bidding?.bidStatus === 'open' ? (
-                  <>
-                    <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
-                      Budget range: GH₵ {(job.bidding.minBidAmount || job.budget?.min || 0).toLocaleString()} – {(job.bidding.maxBidAmount || job.budget?.max || 0).toLocaleString()}
-                      {' · '}{job.bidding.currentBidders || 0}/{job.bidding.maxBidders || 5} bids placed
+                {job?.bidding?.bidStatus === 'open' && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mb: 0.3 }}>
+                      Budget range
                     </Typography>
-                    <ActionButton
-                      variant="contained"
-                      fullWidth
-                      size="large"
-                      onClick={() => {
-                        if (!isAuthenticated) {
-                          navigate('/login', { state: { from: location.pathname } });
-                          return;
-                        }
-                        setBidDialogOpen(true);
-                      }}
-                      startIcon={<NoteAlt />}
-                      sx={{
-                        mb: 2,
-                        background: 'linear-gradient(45deg, #FFD700, #FFA500)',
-                        color: '#000',
-                      }}
-                    >
-                      Place Your Bid
-                    </ActionButton>
-                  </>
-                ) : (
-                  <ActionButton
-                    variant="contained"
-                    fullWidth
-                    size="large"
-                    onClick={handleApplyNow}
-                    startIcon={<NoteAlt />}
-                    sx={{
-                      mb: 2,
-                      background: 'linear-gradient(45deg, #FFD700, #FFA500)',
-                      color: '#000',
-                    }}
-                  >
-                    Apply for this Job
-                  </ActionButton>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: 'secondary.main' }}>
+                      GH₵ {(job.bidding.minBidAmount || job.budget?.min || 0).toLocaleString()} – {(job.bidding.maxBidAmount || job.budget?.max || 0).toLocaleString()}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+                      {job.bidding.currentBidders || 0} / {job.bidding.maxBidders || 5} bids placed
+                    </Typography>
+                  </Box>
                 )}
 
-                <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-                  <IconButton
+                {!job?.bidding?.bidStatus || job.bidding.bidStatus !== 'open' ? (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mb: 0.3 }}>Budget</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: 'secondary.main' }}>{budgetDisplay}</Typography>
+                  </Box>
+                ) : null}
+
+                <ActionButton
+                  variant="contained"
+                  fullWidth
+                  size="large"
+                  onClick={() => {
+                    if (!isAuthenticated) { navigate('/login', { state: { from: location.pathname } }); return; }
+                    if (job?.bidding?.bidStatus === 'open') setBidDialogOpen(true);
+                    else handleApplyNow();
+                  }}
+                  startIcon={<NoteAlt />}
+                  sx={{ mb: 1.5, background: 'linear-gradient(45deg, #FFD700, #FFA500)', color: '#000', fontWeight: 700, py: 1.4, fontSize: '1rem' }}
+                >
+                  {job?.bidding?.bidStatus === 'open' ? 'Place Your Bid' : 'Apply Now'}
+                </ActionButton>
+
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    startIcon={savingBookmark ? <CircularProgress size={16} /> : (saved ? <Bookmark /> : <BookmarkBorder />)}
                     onClick={handleToggleSave}
                     disabled={savingBookmark}
-                    aria-label={saved ? 'Remove from saved jobs' : 'Save job'}
-                    sx={{
-                      color: saved ? 'primary.main' : 'text.secondary',
-                      width: 44,
-                      height: 44,
-                      '&:hover': {
-                        background: 'rgba(255, 215, 0, 0.1)',
-                      },
-                    }}
+                    sx={{ color: saved ? 'secondary.main' : 'text.secondary', borderColor: 'divider', fontWeight: 600 }}
                   >
-                    {saved ? <Bookmark /> : <BookmarkBorder />}
-                  </IconButton>
-
+                    {saved ? 'Saved' : 'Save'}
+                  </Button>
                   <IconButton
                     onClick={handleShareJob}
                     aria-label="Share job"
-                    sx={{
-                      color: 'text.secondary',
-                      width: 44,
-                      height: 44,
-                      '&:hover': {
-                        background: 'rgba(255, 215, 0, 0.1)',
-                        color: 'primary.main',
-                      },
-                    }}
+                    sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1.5, color: 'text.secondary', px: 1.5, '&:hover': { color: 'secondary.main', borderColor: 'secondary.main' } }}
                   >
                     <Share />
                   </IconButton>
                 </Box>
+
+                {!isAuthenticated && (
+                  <Typography variant="caption" sx={{ color: 'text.disabled', mt: 1.5, display: 'block', textAlign: 'center' }}>
+                    <Box component="span" onClick={handleSignIn} sx={{ color: 'secondary.main', cursor: 'pointer', fontWeight: 600 }}>Sign in</Box>
+                    {' '}to apply or save this job
+                  </Typography>
+                )}
               </DetailsPaper>
 
-              <DetailsPaper elevation={3}>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    color: 'primary.main',
-                    mb: 3,
-                    fontWeight: 'medium',
-                  }}
-                >
-                  About the Client
-                </Typography>
+              {/* Job Quick-Facts Card */}
+              <DetailsPaper elevation={2} sx={{ mb: 3 }}>
+                <SectionHeading>Job Details</SectionHeading>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  {[{
+                    icon: AttachMoney, label: 'Budget', value: budgetDisplay,
+                  }, {
+                    icon: LocationOn, label: 'Location', value: locationLabel,
+                  }, {
+                    icon: Category, label: 'Category', value: job?.category || '—',
+                  }, {
+                    icon: AccessTime, label: 'Deadline', value: job?.endDate ? new Date(job.endDate).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' }) : 'No deadline',
+                  }, {
+                    icon: CalendarToday, label: 'Posted', value: job?.createdAt ? new Date(job.createdAt).toLocaleDateString('en-GH', { day: 'numeric', month: 'long', year: 'numeric' }) : '—',
+                  }, {
+                    icon: Groups, label: 'Applicants', value: `${job?.proposalCount || 0} people applied`,
+                  }].map(({ icon: Icon, label, value }) => (
+                    <Box key={label} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                      <Box sx={{ width: 32, height: 32, borderRadius: 1.5, bgcolor: 'rgba(255,215,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Icon sx={{ fontSize: 17, color: 'secondary.main' }} />
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: 'text.disabled', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</Typography>
+                        <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600, mt: 0.1 }}>{value}</Typography>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </DetailsPaper>
 
-                <ProfileLink
+              {/* About the Client Card */}
+              <DetailsPaper elevation={2} sx={{ mb: 3 }}>
+                <SectionHeading icon={Person}>About the Client</SectionHeading>
+
+                {/* Profile row — clickable */}
+                <Box
                   onClick={() => {
-                    const hirerId = job.hirer?._id || job.hirer?.id;
-                    if (!hirerId) {
-                      setShareSnackbar('Client profile is not available yet');
-                      return;
-                    }
-                    navigate(`/profile/${hirerId}`, {
-                      state: { profileData: job.hirer },
-                    });
+                    if (!hirerId) { setShareSnackbar('Client profile is not available yet'); return; }
+                    navigate(`/profile/${hirerId}`, { state: { profileData: job.hirer } });
+                  }}
+                  sx={{
+                    display: 'flex', alignItems: 'center', gap: 2, p: 1.5,
+                    borderRadius: 2, cursor: hirerId ? 'pointer' : 'default',
+                    border: '1px solid', borderColor: 'divider',
+                    mb: 2,
+                    transition: 'all 0.2s',
+                    '&:hover': hirerId ? { bgcolor: 'action.hover', borderColor: 'secondary.main' } : {},
                   }}
                 >
                   <Avatar
                     src={job.hirer?.avatar || job.hirer?.profilePicture}
-                    alt={job.hirer?.firstName || job.hirer?.name || 'Hirer'}
-                    sx={{ width: 56, height: 56, mr: 2 }}
-                  />
-
-                  <Box>
-                    <Typography variant="h6" sx={{ color: 'primary.main' }}>
-                      {job.hirer?.firstName && job.hirer?.lastName
-                        ? `${job.hirer.firstName} ${job.hirer.lastName}`
-                        : job.hirer?.name || 'Hirer'}
-                    </Typography>
-
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Star sx={{ color: 'primary.main', fontSize: 18, mr: 0.5 }} />
-                      <Typography variant="body2" sx={{ color: 'text.primary', mr: 1 }}>
-                        {typeof job.hirer?.rating === 'number' ? job.hirer.rating.toFixed(1) : 'N/A'}
+                    alt={hirerName}
+                    sx={{
+                      width: 60, height: 60, flexShrink: 0,
+                      bgcolor: 'secondary.main', color: '#000', fontWeight: 700, fontSize: '1.3rem',
+                    }}
+                  >
+                    {hirerName.charAt(0).toUpperCase()}
+                  </Avatar>
+                  <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.2 }}>
+                        {hirerName}
                       </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ color: 'text.secondary' }}
-                      >
-                        ({job.hirer?.reviews || 0} reviews)
+                      {hirerVerified && (
+                        <CheckCircle sx={{ fontSize: 16, color: '#4caf50' }} titleAccess="Verified Client" />
+                      )}
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.4 }}>
+                      <Star sx={{ fontSize: 15, color: '#FFD700' }} />
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                        {hirerRating ?? 'N/A'}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.disabled' }}>
+                        ({hirerReviews} review{hirerReviews !== 1 ? 's' : ''})
                       </Typography>
                     </Box>
-
-                    <Typography
-                      variant="body2"
-                      sx={{ color: 'text.secondary', mt: 0.5 }}
-                    >
-                      {job.hirer?.jobsPosted || 0} jobs posted
-                    </Typography>
+                    {hirerId && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.2 }}>
+                        <OpenInNew sx={{ fontSize: 12, color: 'secondary.main' }} />
+                        <Typography variant="caption" sx={{ color: 'secondary.main', fontWeight: 600 }}>View Profile</Typography>
+                      </Box>
+                    )}
                   </Box>
-                </ProfileLink>
+                </Box>
+
+                {/* Client stats */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2, mb: 2.5 }}>
+                  {hirerJobsPosted !== null && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Business sx={{ fontSize: 17, color: 'text.disabled' }} />
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        <Box component="span" sx={{ fontWeight: 700, color: 'text.primary' }}>{hirerJobsPosted}</Box>
+                        {' '}job{hirerJobsPosted !== 1 ? 's' : ''} posted
+                      </Typography>
+                    </Box>
+                  )}
+                  {hirerLocation && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <LocationOn sx={{ fontSize: 17, color: 'text.disabled' }} />
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{hirerLocation}</Typography>
+                    </Box>
+                  )}
+                  {hirerJoined && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <CalendarToday sx={{ fontSize: 17, color: 'text.disabled' }} />
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        Member since {hirerJoined}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Action buttons */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    startIcon={<Message />}
+                    onClick={handleMessageHirer}
+                    disabled={!hirerId}
+                    sx={{
+                      fontWeight: 600, borderColor: 'divider', color: 'text.primary',
+                      '&:hover': { borderColor: 'secondary.main', color: 'secondary.main', bgcolor: 'rgba(255,215,0,0.05)' },
+                    }}
+                  >
+                    Message Client
+                  </Button>
+                  {hirerId && (
+                    <Button
+                      variant="text"
+                      fullWidth
+                      startIcon={<OpenInNew />}
+                      onClick={() => navigate(`/profile/${hirerId}`, { state: { profileData: job.hirer } })}
+                      sx={{ fontWeight: 600, color: 'secondary.main', '&:hover': { bgcolor: 'rgba(255,215,0,0.06)' } }}
+                    >
+                      View Client Profile
+                    </Button>
+                  )}
+                </Box>
               </DetailsPaper>
+
             </motion.div>
           </Grid>
         </Grid>
