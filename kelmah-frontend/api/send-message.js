@@ -7,9 +7,9 @@
  * Flow:  Browser → Vercel serverless → Render messaging-service directly
  */
 
-const crypto = require('crypto');
-const https = require('https');
-const http = require('http');
+import { createHmac } from 'crypto';
+import https from 'https';
+import http from 'http';
 
 const MESSAGING_URL =
   process.env.MESSAGING_SERVICE_URL ||
@@ -62,7 +62,7 @@ function forwardRequest(url, method, headers, body) {
   });
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -94,8 +94,7 @@ module.exports = async function handler(req, res) {
       tokenVersion: decoded.tokenVersion || 0,
     });
 
-    const signature = crypto
-      .createHmac('sha256', HMAC_SECRET)
+    const signature = createHmac('sha256', HMAC_SECRET)
       .update(userPayload)
       .digest('hex');
 
@@ -125,4 +124,4 @@ module.exports = async function handler(req, res) {
       message: 'Bridge error: ' + (err.message || 'Unknown error'),
     });
   }
-};
+}

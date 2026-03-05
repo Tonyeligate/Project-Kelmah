@@ -3,9 +3,106 @@
 /* Ensure consistent font loading */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap');
 
-:root {
+/* ============================================================
+   KELMAH SEMANTIC DESIGN TOKENS  (Binance / TikTok pattern)
+   All color decisions live here — components reference vars,
+   never literal hex codes.  Switching [data-theme] is the
+   ONLY thing required to change the entire visual system.
+   ============================================================ */
+
+/* Dark mode (default — applied first so :root covers SSR) */
+:root,
+[data-theme="dark"] {
+  /* Focus */
   --kelmah-focus-color: #ffd24c;
   --kelmah-focus-ring: rgba(255, 210, 76, 0.35);
+
+  /* Surfaces */
+  --k-bg-body:    #050507;
+  --k-bg-surface: #0E0F14;
+  --k-bg-raised:  #151722;
+  --k-bg-overlay: #1E2030;
+
+  /* Text */
+  --k-text-primary:   #F7F3E3;
+  --k-text-secondary: rgba(247, 243, 227, 0.70);
+  --k-text-muted:     rgba(247, 243, 227, 0.50);
+
+  /* Brand */
+  --k-gold:        #FFD700;
+  --k-gold-dark:   #B8860B;
+  --k-gold-active: #FFD700;
+
+  /* Stroke / border */
+  --k-border-default: rgba(255, 255, 255, 0.08);
+  --k-border-gold:    rgba(255, 215, 0, 0.20);
+
+  /* Navigation sidebar */
+  --nav-icon-active:    #FFD700;
+  --nav-icon-inactive:  #9E9E9E;
+  --nav-text-active:    #FFD700;
+  --nav-text-inactive:  #E0E0E0;
+  --nav-label:          rgba(255, 215, 0, 0.70);
+  --nav-bg-active:      rgba(255, 215, 0, 0.15);
+  --nav-bg-hover:       rgba(255, 215, 0, 0.08);
+  --nav-border:         rgba(255, 215, 0, 0.20);
+  --nav-user-card-bg:   rgba(255, 215, 0, 0.08);
+  --nav-user-card-border: rgba(255, 215, 0, 0.20);
+  --nav-divider:        rgba(255, 215, 0, 0.15);
+  --nav-collapse-icon:  #FFD700;
+  --nav-collapse-hover: rgba(255, 215, 0, 0.12);
+
+  /* Scrollbar */
+  --scrollbar-thumb:       rgba(255, 215, 0, 0.30);
+  --scrollbar-thumb-hover: rgba(255, 215, 0, 0.55);
+  --scrollbar-track:       transparent;
+}
+
+/* Light mode overrides — only what differs */
+[data-theme="light"] {
+  /* Focus */
+  --kelmah-focus-color: #B8860B;
+  --kelmah-focus-ring: rgba(184, 134, 11, 0.30);
+
+  /* Surfaces */
+  --k-bg-body:    #F9F7ED;
+  --k-bg-surface: #FFFFFF;
+  --k-bg-raised:  #F4EFE3;
+  --k-bg-overlay: #EFE9D9;
+
+  /* Text */
+  --k-text-primary:   #1F1F25;
+  --k-text-secondary: #4A4B57;
+  --k-text-muted:     rgba(31, 31, 37, 0.55);
+
+  /* Brand — use darker gold so it reads on cream */
+  --k-gold:        #B8860B;
+  --k-gold-dark:   #9A6F00;
+  --k-gold-active: #B8860B;
+
+  /* Stroke / border */
+  --k-border-default: rgba(0, 0, 0, 0.09);
+  --k-border-gold:    rgba(0, 0, 0, 0.12);
+
+  /* Navigation sidebar — full swap for legibility */
+  --nav-icon-active:    #B8860B;
+  --nav-icon-inactive:  #6B7280;
+  --nav-text-active:    #78590A;
+  --nav-text-inactive:  #374151;
+  --nav-label:          #9A7010;
+  --nav-bg-active:      rgba(184, 134, 11, 0.10);
+  --nav-bg-hover:       rgba(0, 0, 0, 0.05);
+  --nav-border:         rgba(0, 0, 0, 0.10);
+  --nav-user-card-bg:   rgba(0, 0, 0, 0.04);
+  --nav-user-card-border: rgba(0, 0, 0, 0.10);
+  --nav-divider:        rgba(0, 0, 0, 0.10);
+  --nav-collapse-icon:  #78590A;
+  --nav-collapse-hover: rgba(0, 0, 0, 0.06);
+
+  /* Scrollbar — subtle dark for light bg */
+  --scrollbar-thumb:       rgba(27, 27, 37, 0.25);
+  --scrollbar-thumb-hover: rgba(27, 27, 37, 0.45);
+  --scrollbar-track:       transparent;
 }
 
 /* CSS Reset and Base Styles */

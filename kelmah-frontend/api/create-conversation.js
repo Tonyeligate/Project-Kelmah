@@ -10,9 +10,9 @@
  *   (skips: Render API Gateway proxy layer)
  */
 
-const crypto = require('crypto');
-const https = require('https');
-const http = require('http');
+import { createHmac } from 'crypto';
+import https from 'https';
+import http from 'http';
 
 const MESSAGING_URL =
   process.env.MESSAGING_SERVICE_URL ||
@@ -25,14 +25,13 @@ const HMAC_SECRET =
 
 /**
  * Decode JWT payload without verification.
- * Uses manual base64url→base64 conversion for maximum Node.js compatibility.
+ * Manual base64url → base64 conversion for maximum Node.js compatibility.
  */
 function decodeJwtPayload(token) {
   try {
     const raw = token.replace('Bearer ', '').trim();
     const parts = raw.split('.');
     if (parts.length !== 3) return null;
-    // Manual base64url → base64 conversion (works on Node 14+)
     const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
     const json = Buffer.from(base64, 'base64').toString('utf8');
     return JSON.parse(json);
@@ -80,7 +79,7 @@ function forwardRequest(url, method, headers, body) {
   });
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // CORS preflight
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -115,8 +114,7 @@ module.exports = async function handler(req, res) {
       tokenVersion: decoded.tokenVersion || 0,
     });
 
-    const signature = crypto
-      .createHmac('sha256', HMAC_SECRET)
+    const signature = createHmac('sha256', HMAC_SECRET)
       .update(userPayload)
       .digest('hex');
 
@@ -143,4 +141,4 @@ module.exports = async function handler(req, res) {
       message: 'Bridge error: ' + (err.message || 'Unknown error'),
     });
   }
-};
+}

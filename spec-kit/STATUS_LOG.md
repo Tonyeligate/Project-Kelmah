@@ -7022,7 +7022,7 @@ WalletPage, PaymentsPage, PaymentSettingsPage, NotificationsPage, NotificationSe
 
 ---
 
-## ? COMPLETED — JobDetailsPage Full UI/UX Redesign
+## ? COMPLETED ï¿½ JobDetailsPage Full UI/UX Redesign
 
 **Commit:** `87eb579`
 **Date:** 2025-11
@@ -7035,8 +7035,8 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 
 | Area | Before | After |
 |------|--------|-------|
-| Container width | `maxWidth="lg"` | `maxWidth="xl"` — full screen use |
-| Grid breakpoints | `md={8}` + `md={4}` | `lg={8}` + `lg={4}` — proper 2-col at 1200px+ |
+| Container width | `maxWidth="lg"` | `maxWidth="xl"` ï¿½ full screen use |
+| Grid breakpoints | `md={8}` + `md={4}` | `lg={8}` + `lg={4}` ï¿½ proper 2-col at 1200px+ |
 | Title styling | Gradient text-fill (unreadable on dark bg) | Solid text.primary, fontWeight 800 |
 | Header layout | Title buried inside body card | Separate full-width Hero Paper above grid |
 | Meta info row | Plain text string | Styled MetaPill components (icon + label) |
@@ -7048,8 +7048,8 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 | Budget display | Inline logic scattered | Extracted budgetDisplay computed variable |
 
 ### New Micro-Components Added (inline)
-- SectionHeading — icon + bold title for every card section
-- MetaPill — pill badge for meta row (location, budget, deadline, applicants)
+- SectionHeading ï¿½ icon + bold title for every card section
+- MetaPill ï¿½ pill badge for meta row (location, budget, deadline, applicants)
 
 ### All Actions Verified Working
 - Apply / Bid Now ? /jobs/id/apply
@@ -7058,3 +7058,18 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 - Message Client ? /messages?recipient=recipientId
 - View Client Profile ? /profile/hirerId with state
 - Sign in to apply ? /login with from redirect state
+
+---
+
+## ðŸ”„ IN-PROGRESS â€” JobDetailsPage Contrast + Layout Follow-up (2026-03-05)
+
+### Scope
+- Fix low-contrast icons/text in dark and light modes on `JobDetailsPage`.
+- Verify and fix all clickable flows from Job Details (apply, save, share, message client, view profile).
+- Improve layout balance/space usage on wide screens and preserve mobile usability.
+
+### Dry Audit Findings
+- Several elements used `secondary.main` in dark mode where `secondary.main` is a dark slate, causing near-invisible text/icons.
+- Some metadata used `text.disabled`, making key information hard to read.
+- Mobile sticky CTA had a hardcoded dark background in light mode.
+- Job Details navigates to `/profile/:id`, but route alias coverage was incomplete in current route table.
