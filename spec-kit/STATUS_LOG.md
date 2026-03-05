@@ -1,5 +1,47 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Messaging System — Bridge Auth & Deep-Link Fixes ✅
+
+**Date**: March 5-6, 2026
+**Scope**: Fix 401 on Vercel serverless bridge, fix conversation not opening after "Message Worker" click, fix participant data missing in chat header.
+
+**Bug 1 — Bridge 401 Unauthorized (commit `92aa09a`):**
+- **Root Cause**: `bridgePost()` in messagingService.js used `secureStorage.getItem('token')` but JWT is stored under key `'auth_token'` (set by apiClient.js login flow). Returns `null` → no Authorization header → 401.
+- **Fix**: Changed to `secureStorage.getItem('auth_token')`.
+- **Verified**: `POST /api/create-conversation` returns 200, `POST /api/send-message` returns 201.
+
+**Bug 2 — Bridge detection only for vercel.app (commit `c3c1206`):**
+- **Root Cause**: `window.location?.hostname?.includes('vercel.app')` was too narrow — custom domains wouldn't use the bridge.
+- **Fix**: `shouldUseBridge()` helper that excludes only `localhost`/`127.0.0.1`. On non-Vercel hosts, bridge 404s and falls through to gateway instantly.
+
+**Bug 3 — Conversation not opening after creation (commit `b3aa52e`):**
+- **Root Cause**: Deep-link handler called `messagingService.createDirectConversation()` directly, then navigated to `?conversation=newId`. The new conversation wasn't in the conversations list yet (no `loadConversations()` called), so `selectConversation` never fired.
+- **Fix**: Deep-link handler now uses `createConversation` from MessageContext which: (1) creates conversation via service, (2) reloads conversation list, (3) selects the full conversation from the refreshed list.
+
+**Bug 4 — Participant data missing in chat header (commit `ba4c4f8`):**
+- **Root Cause**: Bridge returns minimal `{id: "..."}` only. `createConversation` was calling `selectConversation(convo)` with this partial object → empty participants → no name in chat header.
+- **Fix**: `loadConversations()` now returns the normalized list. `createConversation()` finds the full conversation (with participant names/avatars) from the refreshed list before selecting it.
+
+**Files Changed:**
+- `kelmah-frontend/src/modules/messaging/services/messagingService.js` — token key fix + `shouldUseBridge()` helper
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx` — use context `createConversation` in deep-link handler
+- `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx` — `loadConversations` returns list, `createConversation` selects full conversation
+
+**End-to-End Flow Verified:**
+```
+WorkerProfile "Message Worker" click
+  → navigate('/messages?recipient=XXX')  
+  → MessagingPage deep-link effect fires
+  → createConversation(recipientId) from MessageContext
+    → messagingService.createDirectConversation() → bridge POST /api/create-conversation → 200
+    → loadConversations() → GET /api/messages/conversations → full list with participant data
+    → selectConversation(fullConvo) → joins WebSocket room, loads messages
+  → navigate('/messages?conversation=newId')
+  → Chat header shows participant name, messages load
+```
+
+---
+
 ### Session: Theme Mode System — CSS Custom Properties Fix ✅
 
 **Date**: November 2025 (continued)
