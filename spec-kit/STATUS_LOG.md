@@ -1,5 +1,57 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Messaging System — 401 Fix, Image Preview, Online Status, Unread Count ✅ COMPLETED
+
+**Date**: November 2025  
+**Commit**: `24401e0`  
+**Files Changed**: 3 files, 73 insertions / 102 deletions
+
+#### Bugs Fixed
+
+**Bug 1 — 401 Unauthorized on ALL POST messaging calls (CRITICAL)**
+- **File**: `kelmah-backend/api-gateway/routes/messaging.routes.js`
+- **Root Cause**: Direct-axios POST handlers (used to avoid body-stream hang with http-proxy) copied `req.headers['x-authenticated-user']` from the incoming *client* request. Browsers never send this internal trust header → the value was always `undefined`. The messaging service's `verifyGatewayRequest` received no user identity header → returned 401 on every POST.
+- **Fix**: Added `buildGatewayTrustHeaders(req)` helper that builds `x-authenticated-user` (JSON of `req.user`), `x-auth-source: 'api-gateway'`, and `x-gateway-signature` (HMAC-SHA256) from `req.user` populated by the `authenticate` middleware. Both POST handlers now call this helper.
+
+**Bug 2 — Broken `messagingService.onNewMessage()` call crashes ConversationList (CRITICAL)**
+- **File**: `kelmah-frontend/src/modules/messaging/components/common/ConversationList.jsx`
+- **Root Cause**: Component subscribed to `messagingService.onNewMessage(cb)` — but this method doesn't exist on the service object → silent TypeError crash on every mount.
+- **Fix**: Removed the entire broken subscription effect. Synced `localConversations` from `MessageContext.conversations` via `useEffect([contextConversations])` instead — single source of truth, no duplicate fetch.
+
+**Bug 3 — Online status always read as offline for all participants**
+- **File**: `kelmah-frontend/src/modules/messaging/components/common/ConversationList.jsx`
+- **Root Cause**: `p.id !== messagingService.userId` — `messagingService.userId` is always `undefined` → condition always `true` → last participant was always selected as "other", regardless of actual current user. Also, `userStatuses` (a plain object) was destructured from `useMessages()` but that context only exports `isUserOnline` (a function) and `onlineUsers` (a Set).
+- **Fix**: Import `useSelector` from react-redux, read `currentUser` from `state.auth.user`. Replace `userStatuses[other.id]` with `isUserOnline(String(other.id))` from context.
+
+**Bug 4 — Image/video/file messages show raw S3 URL in conversation preview**
+- **File**: `kelmah-frontend/src/modules/messaging/components/common/ConversationList.jsx`
+- **Root Cause**: Preview rendered `truncateText(conversation.latestMessage.content)` — for media messages, `content` is the S3 URL string.
+- **Fix**: Added `getMessagePreview()` inline helper that checks `messageType` and returns emoji labels: `📷 Photo`, `🎥 Video`, `🎵 Audio`, `📎 File`, `📎 Attachment`; falls back to truncated text only for text messages.
+
+**Bug 5 — Unread count badge doesn't increment for background conversations**
+- **File**: `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`
+- **Root Cause**: `onNewMessage` socket handler updated `lastMessage` on the matching conversation but never incremented `unreadCount` — so sidebar badges stayed at 0 for incoming messages while another chat was open.
+- **Fix**: Added `unreadCount: conv.id !== activeConvId ? (conv.unreadCount || 0) + 1 : conv.unreadCount` in the `setConversations` map inside `onNewMessage`.
+
+#### Deployment
+- Frontend (Vercel): auto-deploying on push to `main` (~1-2 min)
+- Backend API Gateway (Render): auto-deploying on push to `main` (~2-3 min) — this carries the critical 401 fix
+
+---
+
+### Session: Messaging System Deep Audit & Stabilization 🔄 IN PROGRESS
+
+**Date**: March 5, 2026  
+**Scope**: Full dry audit and end-to-end stabilization of messaging/chat flow from "Message Worker" entry points through frontend, gateway, messaging service, realtime sockets, notifications, and media rendering.
+
+**Audit protocol running now:**
+1. Map all frontend + gateway + messaging-service + shared auth/middleware files in the messaging data flow
+2. Perform dry-audit (read all mapped files) before diagnostics
+3. Trace and validate route ordering, auth middleware chain, payload shape normalization, socket events, and notification propagation
+4. Implement focused fixes and verify with diagnostics/tests
+
+---
+
 ### Session: Messaging System — Bridge Auth & Deep-Link Fixes ✅
 
 **Date**: March 5-6, 2026
