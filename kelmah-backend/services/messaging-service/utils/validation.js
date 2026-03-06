@@ -2,11 +2,15 @@ const Joi = require("joi");
 
 // Message validation schema
 const messageSchema = Joi.object({
-  sender: Joi.string().required(),
+  sender: Joi.string().optional(),
   recipient: Joi.string().required(),
-  content: Joi.string().required().min(1).max(5000),
+  content: Joi.string().allow('').max(5000).when('attachments', {
+    is: Joi.array().min(1),
+    then: Joi.optional(),
+    otherwise: Joi.string().trim().min(1).required(),
+  }),
   messageType: Joi.string()
-    .valid("text", "image", "file", "system")
+    .valid("text", "image", "file", "system", "mixed")
     .default("text"),
   attachments: Joi.array().items(
     Joi.object({

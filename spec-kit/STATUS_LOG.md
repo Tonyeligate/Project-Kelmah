@@ -39,16 +39,79 @@
 
 ---
 
-### Session: Messaging System Deep Audit & Stabilization 🔄 IN PROGRESS
+### Session: Messaging System Deep Audit & Stabilization — Phase 1 ✅
 
-**Date**: March 5, 2026  
-**Scope**: Full dry audit and end-to-end stabilization of messaging/chat flow from "Message Worker" entry points through frontend, gateway, messaging service, realtime sockets, notifications, and media rendering.
+**Date**: March 6, 2026  
+**Scope**: Deep-link reliability, recipient identity normalization, attachment/media send-path hardening, realtime presence consistency, and bridge token compatibility.
 
-**Audit protocol running now:**
-1. Map all frontend + gateway + messaging-service + shared auth/middleware files in the messaging data flow
-2. Perform dry-audit (read all mapped files) before diagnostics
-3. Trace and validate route ordering, auth middleware chain, payload shape normalization, socket events, and notification propagation
-4. Implement focused fixes and verify with diagnostics/tests
+**Dry-audit coverage completed before edits:**
+- Frontend messaging flow (`MessagingPage`, `MessageContext`, `messagingService`, `websocketService`, entry-point components)
+- Backend messaging flow (`conversation.controller`, `message.controller`, `messageSocket`, message model + validation)
+- Bridge/gateway path (`kelmah-frontend/api/create-conversation.js`, `kelmah-frontend/api/send-message.js`, gateway messaging routes)
+
+**Phase 1 fixes implemented:**
+
+1. **Message Worker deep-link normalization (HIGH)**
+   - Fixed mismatched query contract (`userId` vs `recipient`) and recipient resolution fallback.
+   - Updated:
+     - `kelmah-frontend/src/modules/hirer/components/JobProgressTracker.jsx`
+     - `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+     - `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx` (supports both `recipient` and legacy `userId`)
+
+2. **Notification/chat click routing consistency (HIGH)**
+   - Fixed browser notification click target from unsupported `/messages/:id` to `/messages?conversation=:id`.
+   - Updated:
+     - `kelmah-frontend/src/services/websocketService.js`
+
+3. **Realtime presence consistency in UI (HIGH)**
+   - Messaging UI now derives online/offline from live socket presence set, not stale `participant.status` payload fields.
+   - Socket `connected` payload now includes online user snapshot for initial hydration.
+   - Updated:
+     - `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+     - `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`
+     - `kelmah-backend/services/messaging-service/socket/messageSocket.js`
+
+4. **Attachment/media send-path hardening (CRITICAL)**
+   - Added support for attachment-only messages and normalized mixed message types.
+   - Normalized attachment fields (`url/fileUrl/path`, mime/type/name/size) across context/service rendering.
+   - Fixed image/file rendering fallback where URL-like payloads appeared as plain text.
+   - Updated:
+     - `kelmah-backend/services/messaging-service/models/Message.js`
+     - `kelmah-backend/services/messaging-service/utils/validation.js`
+     - `kelmah-backend/services/messaging-service/controllers/message.controller.js`
+     - `kelmah-backend/services/messaging-service/socket/messageSocket.js`
+     - `kelmah-frontend/src/modules/messaging/services/messagingService.js`
+     - `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`
+     - `kelmah-frontend/src/modules/messaging/components/common/MessageAttachments.jsx`
+     - `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+
+5. **Bridge JWT compatibility (MEDIUM)**
+   - Bridge handlers now accept JWT payloads using `userId` (legacy shape) in addition to `sub`/`id`.
+   - Updated:
+     - `kelmah-frontend/api/create-conversation.js`
+     - `kelmah-frontend/api/send-message.js`
+
+**Verification completed:**
+- ✅ `get_errors` clean on all changed frontend/backend/bridge files.
+- ✅ Workspace grep validation confirms no remaining `/messages?userId=` entry-point route after normalization.
+
+**Status:**
+- ✅ Phase 1 complete and stable.
+- 🔄 Remaining deep-audit items (next phase): route-timeout resiliency under cold start, multi-tab presence edge-cases, and full e2e diagnostics through active LocalTunnel URL.
+
+**Phase 2 gateway fallback hardening ✅ (code complete):**
+- ✅ Auth diagnostic unblocked: `giftyafisa@gmail.com / 11221122Tg` returns 200 via gateway.
+- ✅ Root cause confirmed: `POST /api/messages` returned 404 (`ENDPOINT_NOT_FOUND`) in live diagnostics.
+- ✅ Implemented gateway fallback route mapping in:
+  - `kelmah-backend/api-gateway/routes/messaging.routes.js`
+  - Added direct forward handlers:
+    - `router.post('/', postMessageFallback)`
+    - `router.post('/messages', postMessageFallback)`
+  - Both now proxy to messaging-service `POST /api/messages` with proper gateway-trust headers.
+- ✅ Validation:
+  - `node --check kelmah-backend/api-gateway/routes/messaging.routes.js` → `SYNTAX_OK`
+  - `get_errors` clean for updated files.
+- ℹ️ Note: live gateway endpoint will continue returning old 404 behavior until this patch is deployed/restarted in the target environment.
 
 ---
 

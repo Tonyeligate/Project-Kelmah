@@ -33,6 +33,34 @@ const resolveParticipantId = (participant) => {
   return null;
 };
 
+const normalizeContextAttachment = (attachment = {}) => {
+  if (!attachment || typeof attachment !== 'object') return attachment;
+
+  const mimeType =
+    attachment.mimeType ||
+    attachment.fileType ||
+    attachment.type ||
+    attachment?.virusScan?.metadata?.mimeType ||
+    '';
+
+  const normalizedType =
+    attachment.type === 'image' || String(mimeType).startsWith('image/')
+      ? 'image'
+      : attachment.type || 'file';
+
+  return {
+    ...attachment,
+    id: attachment.id || attachment._id,
+    url: attachment.url || attachment.fileUrl || attachment.path || attachment.getUrl || null,
+    fileUrl: attachment.fileUrl || attachment.url || null,
+    type: normalizedType,
+    mimeType,
+    fileType: attachment.fileType || mimeType || attachment.type,
+    name: attachment.name || attachment.fileName || attachment.filename || 'Attachment',
+    size: attachment.size || attachment.fileSize || 0,
+  };
+};
+
 const normalizeMessageAttachments = (message = {}) => {
   if (!message || typeof message !== 'object') return message;
 
@@ -67,7 +95,11 @@ const normalizeMessageAttachments = (message = {}) => {
     content: message.content || message.text || '',
     timestamp: message.timestamp || message.createdAt,
     createdAt: message.createdAt || message.timestamp,
-    attachments: normalizeAttachmentListVirusScan(message.attachments || []),
+    attachments: normalizeAttachmentListVirusScan(
+      (message.attachments || []).map((attachment) =>
+        normalizeContextAttachment(attachment),
+      ),
+    ),
   };
 };
 
@@ -207,6 +239,7 @@ export const MessageProvider = ({ children }) => {
       // Remove ONLY the listeners WE registered (named references), not all listeners
       const msgListeners = msgListenersRef.current;
       const messagingEvents = [
+        'receive_message', 'message_delivered', 'message_read', 'user_online', 'user_offline',
         'new_message', 'user_typing', 'messages_read',
         'user_status_changed', 'connected',
         'connect', 'disconnect', 'connect_error', 'error'
@@ -242,6 +275,9 @@ export const MessageProvider = ({ children }) => {
         if (import.meta.env.DEV) console.log('🎉 Messaging service connected:', data);
         if (data.conversations) {
           setConversations(normalizeConversationList(data.conversations));
+        }
+        if (Array.isArray(data?.onlineUsers)) {
+          setOnlineUsers(new Set(data.onlineUsers.map((id) => String(id))));
         }
       };
       const onNewMessage = (messageData) => {
@@ -325,16 +361,32 @@ export const MessageProvider = ({ children }) => {
       };
       const onUserStatusChanged = (data) => {
         const { userId, status } = data;
+        const normalizedUserId = String(userId);
         setOnlineUsers((prev) => {
           const newSet = new Set(prev);
           if (status === 'online') {
-            newSet.add(userId);
+            newSet.add(normalizedUserId);
           } else {
-            newSet.delete(userId);
+            newSet.delete(normalizedUserId);
           }
           return newSet;
         });
       };
+      const onUserOnline = (data) => onUserStatusChanged({ userId: data.userId, status: 'online' });
+      const onUserOffline = (data) => onUserStatusChanged({ userId: data.userId, status: 'offline' });
+
+      const onMessageDelivered = (data) => {
+        if (import.meta.env.DEV) console.log('✓ Message delivered:', data);
+        const activeConversation = selectedConversationRef.current;
+        if (activeConversation && data.conversationId === activeConversation.id) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === data.messageId ? { ...msg, status: 'delivered', isDelivered: true, deliveredAt: data.deliveredAt || Date.now() } : msg
+            )
+          );
+        }
+      };
+
       const onError = (error) => {
         if (import.meta.env.DEV) console.error('🚨 WebSocket error:', error);
       };
@@ -346,9 +398,14 @@ export const MessageProvider = ({ children }) => {
         connect_error: onConnectError,
         connected: onConnected,
         new_message: onNewMessage,
+        receive_message: onNewMessage,
         user_typing: onUserTyping,
         messages_read: onMessagesRead,
+        message_read: onMessagesRead,
+        message_delivered: onMessageDelivered,
         user_status_changed: onUserStatusChanged,
+        user_online: onUserOnline,
+        user_offline: onUserOffline,
         error: onError,
       };
       Object.entries(msgListenersRef.current).forEach(([evt, handler]) => {
@@ -380,6 +437,7 @@ export const MessageProvider = ({ children }) => {
       const msgListeners = msgListenersRef.current;
       try {
         const messagingEvents = [
+          'receive_message', 'message_delivered', 'message_read', 'user_online', 'user_offline',
           'new_message', 'user_typing', 'messages_read',
           'user_status_changed', 'connected',
           'connect', 'disconnect', 'connect_error', 'error'
@@ -489,8 +547,25 @@ export const MessageProvider = ({ children }) => {
       const safeAttachments = normalizeAttachmentListVirusScan(attachments);
       if (!selectedConversation || !user) return;
 
+      const currentUserId = user.id || user._id || user.userId;
+      if (!currentUserId) return;
+
       const trimmedContent = typeof content === 'string' ? content.trim() : '';
       if (!trimmedContent && safeAttachments.length === 0) return;
+
+      const normalizedMessageType =
+        messageType === 'mixed'
+          ? safeAttachments.some((attachment) => {
+            const mimeType =
+              attachment?.type ||
+              attachment?.mimeType ||
+              attachment?.fileType ||
+              '';
+            return String(mimeType).startsWith('image/');
+          })
+            ? 'image'
+            : 'file'
+          : messageType;
 
       setSendingMessage(true);
       try {
@@ -498,20 +573,20 @@ export const MessageProvider = ({ children }) => {
         if (socket && isConnected) {
           if (import.meta.env.DEV) console.log('📤 Sending message via WebSocket');
           // Create optimistic message with clientId
-          const clientId = `${user.id}_${Date.now()}`;
+          const clientId = `${currentUserId}_${Date.now()}`;
           const now = new Date().toISOString();
           const optimisticMessage = {
             id: clientId,
             conversationId: selectedConversation.id,
-            senderId: user.id,
-            sender: user.id,
+            senderId: currentUserId,
+            sender: currentUserId,
             senderInfo: {
-              id: user.id,
+              id: currentUserId,
               name: user?.name || user?.firstName || 'You',
             },
-            content: content.trim(),
-            text: content.trim(),
-            messageType,
+            content: trimmedContent,
+            text: trimmedContent,
+            messageType: normalizedMessageType,
             attachments: safeAttachments,
             createdAt: now,
             timestamp: now,
@@ -537,14 +612,14 @@ export const MessageProvider = ({ children }) => {
               conversationId: selectedConversation.id,
               encryptedBody: trimmedContent,
               encryption: { scheme: 'beta', version: '1', senderKeyId: 'me' },
-              messageType,
+              messageType: normalizedMessageType,
               attachments: safeAttachments,
               clientId,
             }
             : {
               conversationId: selectedConversation.id,
               content: trimmedContent,
-              messageType,
+              messageType: normalizedMessageType,
               attachments: safeAttachments,
               clientId,
             };
@@ -556,7 +631,7 @@ export const MessageProvider = ({ children }) => {
                 const recipient = selectedConversation.participants.find(
                   (participant) => {
                     const participantId = resolveParticipantId(participant);
-                    return participantId && participantId !== user.id;
+                    return participantId && participantId !== currentUserId;
                   },
                 );
                 const recipientId = resolveParticipantId(recipient);
@@ -564,10 +639,10 @@ export const MessageProvider = ({ children }) => {
                   throw new Error('Unable to resolve message recipient');
                 }
                 const newMessage = await messagingService.sendMessage(
-                  user.id,
+                  currentUserId,
                   recipientId,
                   trimmedContent,
-                  messageType,
+                  normalizedMessageType,
                   safeAttachments,
                 );
                 const normalized = normalizeMessageAttachments(newMessage);
@@ -606,7 +681,7 @@ export const MessageProvider = ({ children }) => {
           const recipient = selectedConversation.participants.find(
             (participant) => {
               const participantId = resolveParticipantId(participant);
-              return participantId && participantId !== user.id;
+              return participantId && participantId !== currentUserId;
             },
           );
           const recipientId = resolveParticipantId(recipient);
@@ -614,10 +689,10 @@ export const MessageProvider = ({ children }) => {
             throw new Error('Unable to resolve message recipient');
           }
           const newMessage = await messagingService.sendMessage(
-            user.id,
+            currentUserId,
             recipientId,
             trimmedContent,
-            messageType,
+            normalizedMessageType,
             safeAttachments,
           );
           const normalized = normalizeMessageAttachments(newMessage);
@@ -713,7 +788,7 @@ export const MessageProvider = ({ children }) => {
 
   // Check if user is online
   const isUserOnline = useCallback(
-    (userId) => onlineUsers.has(userId),
+    (userId) => onlineUsers.has(String(userId)),
     [onlineUsers],
   );
 

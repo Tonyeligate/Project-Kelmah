@@ -370,8 +370,14 @@ function WorkerProfile({ workerId: workerIdProp }) {
       navigate('/login', { state: { from: window.location.pathname + window.location.search } });
       return;
     }
-    if (resolvedWorkerId) {
-      navigate(`/messages?recipient=${resolvedWorkerId}`);
+    const recipientId =
+      profile?.user?.id ||
+      profile?.user?._id ||
+      profile?.userId ||
+      resolvedWorkerId;
+
+    if (recipientId) {
+      navigate(`/messages?recipient=${encodeURIComponent(String(recipientId))}`);
     }
   };
 

@@ -104,8 +104,10 @@ const MessageAttachments = ({
 
   const getAttachmentUrl = (attachment, index) => {
     if (attachment.url) return attachment.url;
+    if (attachment.fileUrl) return attachment.fileUrl;
+    if (attachment.path) return attachment.path;
     const key = attachment.id || index;
-    if (!blobUrlsRef.current.has(key)) {
+    if (!blobUrlsRef.current.has(key) && attachment instanceof Blob) {
       blobUrlsRef.current.set(key, URL.createObjectURL(attachment));
     }
     return blobUrlsRef.current.get(key);

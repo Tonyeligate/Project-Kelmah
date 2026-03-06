@@ -143,6 +143,34 @@ router.post('/conversations/:conversationId/messages', async (req, res) => {
     res.status(504).json({ success: false, message: 'Messaging service temporarily unavailable' });
   }
 });
+
+// Direct message POST fallback (required by frontend REST fallback: POST /api/messages)
+const postMessageFallback = async (req, res) => {
+  try {
+    const upstream = getServiceUrl(req);
+    const url = `${upstream}/api/messages`;
+    const headers = buildGatewayTrustHeaders(req);
+
+    console.log(`[MESSAGING] POST message(root) → ${url}`);
+    const r = await axios.post(url, req.body, {
+      headers,
+      timeout: 30000,
+      validateStatus: () => true,
+    });
+    console.log(`[MESSAGING] POST message(root) response: ${r.status}`);
+    return res.status(r.status).json(r.data);
+  } catch (e) {
+    console.error('[MESSAGING] POST message(root) error:', e.message);
+    return res.status(504).json({
+      success: false,
+      message: 'Messaging service temporarily unavailable',
+    });
+  }
+};
+
+router.post('/', postMessageFallback);
+router.post('/messages', postMessageFallback);
+
 router.get('/messages/:messageId', messagingProxy); // Get specific message
 router.put('/messages/:messageId', messagingProxy); // Edit message
 router.delete('/messages/:messageId', messagingProxy); // Delete message

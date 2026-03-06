@@ -44,6 +44,34 @@ const normalizeParticipant = (participant = {}) => {
   };
 };
 
+const normalizeAttachment = (attachment = {}) => {
+  if (!attachment || typeof attachment !== 'object') return attachment;
+
+  const mimeType =
+    attachment.mimeType ||
+    attachment.fileType ||
+    attachment.type ||
+    attachment?.virusScan?.metadata?.mimeType ||
+    '';
+
+  const normalizedType =
+    attachment.type === 'image' || String(mimeType).startsWith('image/')
+      ? 'image'
+      : attachment.type || 'file';
+
+  return {
+    ...attachment,
+    id: attachment.id || attachment._id,
+    url: attachment.url || attachment.fileUrl || attachment.path || attachment.getUrl || null,
+    fileUrl: attachment.fileUrl || attachment.url || null,
+    type: normalizedType,
+    mimeType,
+    fileType: attachment.fileType || mimeType || attachment.type,
+    name: attachment.name || attachment.fileName || attachment.filename || 'Attachment',
+    size: attachment.size || attachment.fileSize || 0,
+  };
+};
+
 const normalizeMessage = (message = {}) => {
   if (!message || typeof message !== 'object') return message;
 
@@ -78,6 +106,9 @@ const normalizeMessage = (message = {}) => {
     content: message.content || message.text || '',
     timestamp: message.timestamp || message.createdAt,
     createdAt: message.createdAt || message.timestamp,
+    attachments: Array.isArray(message.attachments)
+      ? message.attachments.map((attachment) => normalizeAttachment(attachment))
+      : [],
   };
 };
 
@@ -204,7 +235,30 @@ export const messagingService = {
     messageType = 'text',
     attachments = [],
   ) {
-    const payload = { sender: senderId, recipient: recipientId, content, messageType, attachments };
+    const safeAttachments = Array.isArray(attachments) ? attachments : [];
+    const hasAttachments = safeAttachments.length > 0;
+    const trimmedContent = typeof content === 'string' ? content.trim() : '';
+    const normalizedMessageType =
+      messageType === 'mixed'
+        ? safeAttachments.some((attachment) => {
+          const mimeType =
+            attachment?.mimeType ||
+            attachment?.fileType ||
+            attachment?.type ||
+            '';
+          return String(mimeType).startsWith('image/');
+        })
+          ? 'image'
+          : 'file'
+        : messageType;
+
+    const payload = {
+      sender: senderId,
+      recipient: recipientId,
+      content: trimmedContent || (hasAttachments ? '[Attachment]' : ''),
+      messageType: normalizedMessageType,
+      attachments: safeAttachments,
+    };
 
     // 1. Try Vercel serverless bridge for POST body
     if (shouldUseBridge()) {

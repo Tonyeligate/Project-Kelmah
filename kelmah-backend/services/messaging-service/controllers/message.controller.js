@@ -41,6 +41,17 @@ exports.createMessage = async (req, res) => {
       encryption,
     } = req.body;
 
+    const safeAttachments = ensureAttachmentScanStateList(attachments);
+    const hasAttachments = Array.isArray(safeAttachments) && safeAttachments.length > 0;
+    const trimmedContent = typeof content === "string" ? content.trim() : "";
+    const normalizedContent = trimmedContent || (hasAttachments ? "[Attachment]" : "");
+    const normalizedMessageType =
+      messageType === "mixed"
+        ? hasAttachments
+          ? "file"
+          : "text"
+        : messageType;
+
     const sender = req.user?._id || req.user?.id;
 
     // Find or create conversation FIRST so we can link the message
@@ -63,9 +74,9 @@ exports.createMessage = async (req, res) => {
       // Enforce sender as the authenticated user for security
       sender: req.user?._id || req.user?.id,
       recipient,
-      content,
-      messageType,
-      attachments: ensureAttachmentScanStateList(attachments),
+      content: normalizedContent,
+      messageType: normalizedMessageType,
+      attachments: safeAttachments,
       relatedJob,
       relatedContract,
       metadata: {

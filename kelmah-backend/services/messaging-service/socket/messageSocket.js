@@ -168,6 +168,7 @@ class MessageSocketHandler {
       socket.emit("connected", {
         message: "Successfully connected to messaging service",
         userId,
+        onlineUsers: Array.from(this.connectedUsers.keys()).map((id) => String(id)),
         conversations: conversations.map((conv) => ({
           id: conv._id,
           participants: conv.participants,
@@ -207,6 +208,9 @@ class MessageSocketHandler {
         clientId,
       } = data || {};
       const userId = socket.userId;
+      const attachmentsArray = Array.isArray(attachments) ? attachments : [];
+      const normalizedContent =
+        typeof content === "string" ? content.trim() : "";
 
       // Rate limiting check
       const now = Date.now();
@@ -228,7 +232,7 @@ class MessageSocketHandler {
       // Validate input
       if (
         !conversationId ||
-        (!content && (!Array.isArray(attachments) || attachments.length === 0))
+        (!normalizedContent && attachmentsArray.length === 0)
       ) {
         socket.emit("error", { message: "Invalid message data" });
         if (typeof ack === "function") ack({ ok: false, error: "invalid" });
@@ -250,17 +254,28 @@ class MessageSocketHandler {
       }
 
       // Create message
-      const attachmentsArray = Array.isArray(attachments)
-        ? attachments
-        : [];
+      const normalizedMessageType =
+        messageType === "mixed"
+          ? attachmentsArray.some((attachment) => {
+              const mimeType =
+                attachment?.fileType ||
+                attachment?.mimeType ||
+                attachment?.type ||
+                "";
+              return String(mimeType).startsWith("image/");
+            })
+            ? "image"
+            : "file"
+          : messageType;
+
       const message = new Message({
         conversation: conversationId,
         sender: userId,
         recipient: conversation.participants.find(
           (p) => p.toString() !== userId.toString(),
         ),
-        content: typeof content === "string" ? content : "",
-        messageType,
+        content: normalizedContent || "[Attachment]",
+        messageType: normalizedMessageType,
         attachments: ensureAttachmentScanStateList(attachmentsArray),
         readStatus: { isRead: false },
       });
@@ -297,8 +312,32 @@ class MessageSocketHandler {
         .to(`conversation_${conversationId}`)
         .emit("new_message", messageData);
 
+      // Support the required receive_message event explicitly
+      this.io
+        .to(`conversation_${conversationId}`)
+        .emit("receive_message", messageData);
+
       // Acknowledge to sender
       if (typeof ack === "function") ack({ ok: true, message: messageData });
+
+      // Simulate a delivery tick if the recipient is online
+      const recipientId = conversation.participants.find(
+        (p) => p.toString() !== userId.toString(),
+      );
+      if (recipientId && this.connectedUsers.has(recipientId.toString())) {
+        this.io.to(`conversation_${conversationId}`).emit("message_delivered", {
+          messageId: message._id,
+          conversationId,
+          deliveredAt: new Date(),
+        });
+        
+        // Also emit camelCase/dash versions to be safe with older clients
+        this.io.to(`conversation_${conversationId}`).emit("message-status", {
+          messageId: message._id,
+          conversationId,
+          status: "delivered",
+        });
+      }
 
       // Send push notifications to offline users
       const offlineParticipants = conversation.participants.filter(
@@ -484,7 +523,14 @@ class MessageSocketHandler {
         readAt: new Date(),
         updatedCount: updateResult.modifiedCount || 0,
       });
-    } catch (error) {
+      // Explicitly support message_read (alias)
+      this.io.to(`conversation_${conversationId}`).emit("message_read", {      
+        conversationId,
+        readByUserId: userId,
+        messageIds: messageIds || "all_unread",
+        readAt: new Date(),
+        updatedCount: updateResult.modifiedCount || 0,
+      });    } catch (error) {
       console.error("Handle mark read error:", error);
       socket.emit("error", { message: "Failed to mark messages as read" });
     }
@@ -831,11 +877,13 @@ class MessageSocketHandler {
           notifyUsers.forEach((notifyUserId) => {
             const socketId = this.connectedUsers.get(notifyUserId);
             if (socketId) {
-              this.io.to(socketId).emit("user_status_changed", {
+              const statusData = {
                 userId,
                 status,
                 timestamp: new Date(),
-              });
+              };
+              this.io.to(socketId).emit("user_status_changed", statusData);
+              this.io.to(socketId).emit(status === "online" ? "user_online" : "user_offline", statusData);
             }
           });
         })

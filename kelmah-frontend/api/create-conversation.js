@@ -98,12 +98,12 @@ export default async function handler(req, res) {
     }
 
     const decoded = decodeJwtPayload(authHeader);
-    if (!decoded || !(decoded.sub || decoded.id)) {
+    if (!decoded || !(decoded.sub || decoded.id || decoded.userId)) {
       return res.status(401).json({ success: false, message: 'Invalid token payload' });
     }
 
     // Build authenticated-user header matching gateway format
-    const userId = decoded.sub || decoded.id;
+    const userId = decoded.sub || decoded.id || decoded.userId;
     const userPayload = JSON.stringify({
       id: userId,
       email: decoded.email || null,

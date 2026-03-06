@@ -173,9 +173,21 @@ class WebSocketService {
     this.socket.on('new-message', (data) => {
       this.handleNewMessage(data);
     });
+    this.socket.on('new_message', (data) => {
+      this.handleNewMessage(data);
+    });
+    this.socket.on('receive_message', (data) => {
+      this.handleNewMessage(data);
+    });
 
     this.socket.on('message-status', (data) => {
       this.handleMessageStatus(data);
+    });
+    this.socket.on('message_delivered', (data) => {
+      this.handleMessageStatus({ ...data, status: 'delivered' });
+    });
+    this.socket.on('message_read', (data) => {
+      this.handleMessageStatus({ ...data, status: 'read' });
     });
 
     this.socket.on('typing-indicator', (data) => {
@@ -686,7 +698,7 @@ class WebSocketService {
   showBrowserNotification(title, body, options = {}) {
     if ('Notification' in window && Notification.permission === 'granted') {
       try {
-        const notification = new Notification(title, {
+        const notifOptions = {
           body,
           icon: options.icon || '/assets/icons/kelmah-icon.png',
           tag: options.tag || `notification-${Date.now()}`,
@@ -694,24 +706,37 @@ class WebSocketService {
           requireInteraction: false,
           silent: false,
           ...options,
-        });
-
-        notification.onclick = () => {
-          window.focus();
-          if (options.data?.conversationId) {
-            window.location.href = `/messages/${options.data.conversationId}`;
-          } else if (options.data?.jobId) {
-            window.location.href = `/jobs/${options.data.jobId}`;
-          }
-          notification.close();
         };
 
-        // Auto-close after 5 seconds
-        setTimeout(() => notification.close(), 5000);
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.ready.then((registration) => {
+            registration.showNotification(title, notifOptions);
+          }).catch(() => {
+            this._fallbackNotification(title, notifOptions);
+          });
+        } else {
+          this._fallbackNotification(title, notifOptions);
+        }
       } catch (error) {
         if (import.meta.env.DEV) console.error('Browser notification error:', error);
       }
     }
+  }
+
+  _fallbackNotification(title, options) {
+    const notification = new Notification(title, options);
+    notification.onclick = () => {
+      window.focus();
+      if (options.data?.conversationId) {
+        window.location.href = `/messages?conversation=${encodeURIComponent(
+          String(options.data.conversationId)
+        )}`;
+      } else if (options.data?.jobId) {
+        window.location.href = `/jobs/${options.data.jobId}`;
+      }
+      notification.close();
+    };
+    setTimeout(() => notification.close(), 5000);
   }
 
   /**

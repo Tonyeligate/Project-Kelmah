@@ -659,10 +659,17 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                               if (mType === 'file' || mType === 'document') return '📎 File';
                               // Fallback: if content looks like a URL and there are attachments, label it
                               const content = msg.content || msg.text || '';
-                              if (msg.hasAttachment || (Array.isArray(msg.attachments) && msg.attachments.length > 0)) {
-                                if (!content.trim() || content.startsWith('http')) return '📎 Attachment';
-                              }
-                              return content ? truncateText(content) : 'No messages yet';
+                                const isImageUrl = content.match(/\\.(jpeg|jpg|gif|png|webp|bmp)($|\\?)/i) || content.includes('/image/upload/') || content.includes('cloudinary.com/');
+                                const isVideoUrl = content.match(/\\.(mp4|webm|avi|mov)($|\\?)/i) || content.includes('/video/upload/');
+                                
+                                if (isImageUrl) return '\uD83D\uDDBC\uFE0F Photo';
+                                if (isVideoUrl) return '\uD83C\uDFBA Video';
+
+                                if (msg.hasAttachment || (Array.isArray(msg.attachments) && msg.attachments.length > 0)) {
+                                  if (!content.trim() || content.startsWith('http')) return '\uD83D\uDCCE Attachment';
+                                }
+                                if (content.startsWith('http')) return '\uD83D\uDCCE Attachment';
+                                return content ? truncateText(content) : 'No messages yet';
                             })()}
                           </Typography>
                           {hasUnread && (

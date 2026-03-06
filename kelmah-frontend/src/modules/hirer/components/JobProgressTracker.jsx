@@ -155,9 +155,16 @@ const JobProgressTracker = () => {
   };
 
   const handleMessageWorker = (job) => {
-    const workerId = job?.worker?.id || job?.worker?._id;
-    if (workerId) {
-      navigate(`/messages?userId=${workerId}`);
+    const recipientId =
+      job?.worker?.userId ||
+      job?.worker?.user?.id ||
+      job?.worker?.user?._id ||
+      job?.worker?.id ||
+      job?.worker?._id ||
+      job?.workerId;
+
+    if (recipientId) {
+      navigate(`/messages?recipient=${encodeURIComponent(String(recipientId))}`);
     }
   };
 
@@ -169,6 +176,13 @@ const JobProgressTracker = () => {
           title: job.title || 'Untitled Job',
           worker: {
             id: job.worker?.id || job.workerId || 'unknown',
+            userId:
+              job.worker?.userId ||
+              job.worker?.user?.id ||
+              job.worker?.user?._id ||
+              job.worker?.id ||
+              job.workerId ||
+              null,
             name: job.worker?.name || job.workerName || 'Assigned Worker',
             avatar: job.worker?.avatar || job.workerAvatar || '',
             rating: job.worker?.rating || 0,

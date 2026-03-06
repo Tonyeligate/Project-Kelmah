@@ -19,12 +19,17 @@ const MessageSchema = new Schema(
     },
     content: {
       type: String,
-      required: true,
+      required: function requiredContent() {
+        const hasEncryptedBody = Boolean(this.encryptedBody);
+        const hasAttachments =
+          Array.isArray(this.attachments) && this.attachments.length > 0;
+        return !hasEncryptedBody && !hasAttachments;
+      },
       trim: true,
     },
     messageType: {
       type: String,
-      enum: ["text", "image", "file", "system"],
+      enum: ["text", "image", "file", "system", "mixed"],
       default: "text",
     },
     attachments: [

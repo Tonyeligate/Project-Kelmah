@@ -70,8 +70,7 @@ import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 // Removed AuthContext import to prevent dual state management conflicts
 // import { useAuth } from '../../auth/hooks/useAuth';
 import { useMessages } from '../contexts/MessageContext';
-import ConversationList from '../components/common/ConversationList';
-import Chatbox from '../components/common/Chatbox';
+// ConversationList + Chatbox rendered inline — imports removed (dead code)
 import SEO from '../../common/components/common/SEO';
 import EmptyState from '../../../components/common/EmptyState';
 
@@ -106,6 +105,7 @@ const EnhancedMessagingPage = () => {
     startTyping,
     stopTyping,
     loadingConversations,
+    isUserOnline,
   } = useMessages();
 
   // Local state for UI
@@ -135,6 +135,17 @@ const EnhancedMessagingPage = () => {
   const blobUrlsRef = useRef([]); // Track blob URLs for cleanup
   const conversationsRef = useRef(conversations); // Stable ref for deep-link effect
   conversationsRef.current = conversations;
+
+  const currentUserId = useMemo(
+    () => user?.id || user?._id || user?.userId || user?.sub || null,
+    [user],
+  );
+
+  const resolveParticipantId = useCallback((participant) => {
+    if (!participant) return null;
+    if (typeof participant === 'string') return participant;
+    return participant.id || participant._id || participant.userId || null;
+  }, []);
 
   // Memoize file preview URLs to avoid creating new blob URLs on every render
   const filePreviewUrls = useMemo(
@@ -173,7 +184,7 @@ const EnhancedMessagingPage = () => {
     // Deep-link: /messages?recipient=<userId> or /messages?conversation=<id>
     const urlParams = new URLSearchParams(search);
     const conversationId = urlParams.get('conversation');
-    const recipientId = urlParams.get('recipient');
+    const recipientId = urlParams.get('recipient') || urlParams.get('userId');
 
     // Skip if no deep-link params
     if (!conversationId && !recipientId) return;
@@ -184,12 +195,12 @@ const EnhancedMessagingPage = () => {
 
       if (conversationId) {
         const existing = currentConversations.find(
-          (c) => c.id === conversationId,
+          (c) => String(c.id || c._id) === String(conversationId),
         );
         if (existing) {
           selectConversation(existing);
         }
-        // Even if not found in local list, stay on this URL so MessageContext
+        // Even if not found in local list, stay on this URL so MessageContext  
         // can pick it up after websocket connects
         return;
       }
@@ -198,18 +209,15 @@ const EnhancedMessagingPage = () => {
         // Check if we already have a conversation with this recipient
         const existing = currentConversations.find((c) =>
           (c.participants || []).some(
-            (p) => String(p.id) === String(recipientId),
+            (p) => String(resolveParticipantId(p)) === String(recipientId),     
           ),
         );
         if (existing) {
+          const extId = existing.id || existing._id;
           selectConversation(existing);
-          navigate(`/messages?conversation=${existing.id}`, { replace: true });
+          navigate(`/messages?conversation=${extId}`, { replace: true });
           return;
         }
-
-        // Prevent duplicate attempts for the same recipient
-        if (deepLinkAttemptedRef.current) return;
-        deepLinkAttemptedRef.current = true;
 
         // Create a new conversation — retry up to 3 times with backoff
         setDeepLinkLoading(true);
@@ -248,7 +256,7 @@ const EnhancedMessagingPage = () => {
     };
 
     runDeepLink();
-  }, [user, search, navigate, selectConversation, createConversation, loadingConversations]);
+  }, [user, search, navigate, selectConversation, createConversation, loadingConversations, resolveParticipantId]);
 
   // Manual retry handler for deep-link failures
   const handleRetryDeepLink = useCallback(() => {
@@ -257,7 +265,7 @@ const EnhancedMessagingPage = () => {
     setDeepLinkLoading(false);
     // Re-trigger by navigating to the same URL
     const urlParams = new URLSearchParams(search);
-    const recipientId = urlParams.get('recipient');
+    const recipientId = urlParams.get('recipient') || urlParams.get('userId');
     if (recipientId) {
       navigate(`/messages?recipient=${recipientId}`, { replace: true });
       // Small delay to allow effect dependencies to reset
@@ -296,7 +304,12 @@ const EnhancedMessagingPage = () => {
         const participants = Array.isArray(conv?.participants)
           ? conv.participants
           : [];
-        const otherParticipant = participants.find((p) => p?.id !== user?.id);
+        const otherParticipant = participants.find(
+          (participant) => {
+            const participantId = resolveParticipantId(participant);
+            return participantId && String(participantId) !== String(currentUserId);
+          },
+        );
 
         const participantName = String(otherParticipant?.name || '').toLowerCase();
         const lastMessageText = String(conv?.lastMessage?.text || '').toLowerCase();
@@ -338,7 +351,7 @@ const EnhancedMessagingPage = () => {
     });
 
     setFilteredConversations(filtered);
-  }, [conversations, searchQuery, selectedFilter, user]);
+  }, [conversations, searchQuery, selectedFilter, currentUserId, resolveParticipantId]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -368,9 +381,13 @@ const EnhancedMessagingPage = () => {
     if (!selectedConversation) return;
 
     const text = messageText.trim();
-    const type = selectedFiles.length > 0 ? 'mixed' : 'text';
+    const hasAttachments = selectedFiles.length > 0;
+    const hasOnlyImages =
+      hasAttachments && selectedFiles.every((file) => file.type.startsWith('image/'));
+    const type = hasAttachments ? (hasOnlyImages ? 'image' : 'file') : 'text';
     const attachments = selectedFiles.map((file) => ({
       type: file.type.startsWith('image/') ? 'image' : 'file',
+      mimeType: file.type,
       file,
       name: file.name,
       size: file.size,
@@ -425,7 +442,23 @@ const EnhancedMessagingPage = () => {
   // Utility functions
 
   const getOtherParticipant = (conversation) => {
-    return conversation?.participants?.find((p) => p.id !== user?.id);
+    const participant = conversation?.participants?.find((candidate) => {
+      const participantId = resolveParticipantId(candidate);
+      return participantId && String(participantId) !== String(currentUserId);
+    });
+
+    const participantId = resolveParticipantId(participant);
+    if (!participant) return null;
+
+    return {
+      ...participant,
+      id: participantId,
+      avatar: participant.avatar || participant.profilePicture || null,
+      status:
+        participantId && isUserOnline(String(participantId))
+          ? 'online'
+          : 'offline',
+    };
   };
 
   const formatMessageTime = (timestamp) => {
@@ -443,6 +476,32 @@ const EnhancedMessagingPage = () => {
     } catch {
       return '';
     }
+  };
+
+  const getMessagePreview = (message) => {
+    if (!message) return 'No messages yet';
+    const text = message.text || message.content || '';
+    const mType = message.messageType || '';
+    
+    if (mType === 'image') return '🖼️ Photo';
+    if (mType === 'video') return '🎥 Video';
+    if (mType === 'audio') return '🎵 Audio';
+    if (mType === 'file' || mType === 'document') return '📎 File';
+    
+    // Check if it's a URL to an image or video
+    const isImageUrl = text.match(/\.(jpeg|jpg|gif|png|webp|bmp)($|\?)/i) || text.includes('/image/upload/') || text.includes('cloudinary.com/');
+    const isVideoUrl = text.match(/\.(mp4|webm|avi|mov)($|\?)/i) || text.includes('/video/upload/');
+    
+    if (isImageUrl) return '🖼️ Photo';
+    if (isVideoUrl) return '🎥 Video';
+    
+    if (message.hasAttachment || (Array.isArray(message.attachments) && message.attachments.length > 0)) {
+      if (!text.trim() || text.startsWith('http')) return '📎 Attachment';
+    }
+    
+    if (text.startsWith('http')) return '📎 Attachment';
+    
+    return text || 'No messages yet';
   };
 
   const getMessageStatus = (message) => {
@@ -764,17 +823,16 @@ const EnhancedMessagingPage = () => {
                             flex: 1,
                           }}
                         >
-                          {conversation.lastMessage?.sender === user?.id &&
+                          {String(conversation.lastMessage?.sender) === String(currentUserId) &&
                             'You: '}
-                          {conversation.lastMessage?.text || 'No messages yet'}
+                            {getMessagePreview(conversation.lastMessage)}
                         </Typography>
-
                         <Stack
                           direction="row"
                           alignItems="center"
                           spacing={0.5}
                         >
-                          {conversation.lastMessage?.sender === user?.id &&
+                          {String(conversation.lastMessage?.sender) === String(currentUserId) &&
                             getMessageStatus(conversation.lastMessage)}
                           {conversation.unreadCount > 0 && (
                             <Badge
@@ -1127,10 +1185,23 @@ const EnhancedMessagingPage = () => {
         >
           {/* ✅ MOBILE-AUDIT P3: removed AnimatePresence + motion.div from messages */}
             {(messages || []).map((message, index) => {
-              const isOwn = message.sender === user?.id;
+              const senderId = message.sender || message.senderId;
+              const isOwn =
+                senderId && currentUserId
+                  ? String(senderId) === String(currentUserId)
+                  : false;
               const showAvatar =
                 !isOwn &&
                 (index === 0 || messages[index - 1].sender !== message.sender);
+              const messageText =
+                typeof message.text === 'string'
+                  ? message.text
+                  : typeof message.content === 'string'
+                    ? message.content
+                    : '';
+              const textLooksLikeImageUrl =
+                /^https?:\/\/\S+$/i.test(messageText) &&
+                /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(messageText);
 
               return (
                   <Box
@@ -1178,7 +1249,7 @@ const EnhancedMessagingPage = () => {
                           border: `1px solid ${isOwn ? alpha(theme.palette.primary.main, 0.3) : theme.palette.divider}`,
                         }}
                       >
-                        {message.text && (
+                        {messageText && !textLooksLikeImageUrl && (
                           <Typography
                             variant="body2"
                             sx={{
@@ -1187,19 +1258,67 @@ const EnhancedMessagingPage = () => {
                               wordBreak: 'break-word',
                             }}
                           >
-                            {message.text}
+                            {messageText}
                           </Typography>
+                        )}
+
+                        {textLooksLikeImageUrl && (
+                          <Box sx={{ mb: 1 }}>
+                            <img
+                              src={messageText}
+                              alt="Shared media"
+                              style={{
+                                maxWidth: '100%',
+                                maxHeight: '220px',
+                                borderRadius: '8px',
+                                display: 'block',
+                              }}
+                            />
+                          </Box>
                         )}
 
                         {message.attachments &&
                           message.attachments.length > 0 && (
-                            <Box sx={{ mt: message.text ? 1 : 0 }}>
+                            <Box sx={{ mt: messageText ? 1 : 0 }}>
                               {message.attachments.map((attachment, idx) => (
-                                <Box key={attachment.url || attachment.name || idx} sx={{ mb: 1 }}>
-                                  {attachment.type === 'image' ? (
+                                <Box
+                                  key={
+                                    attachment.url ||
+                                    attachment.fileUrl ||
+                                    attachment.name ||
+                                    idx
+                                  }
+                                  sx={{ mb: 1 }}
+                                >
+                                  {(() => {
+                                    const attachmentUrl =
+                                      attachment.url ||
+                                      attachment.fileUrl ||
+                                      attachment.getUrl ||
+                                      attachment.path ||
+                                      null;
+                                    const attachmentMime =
+                                      attachment.mimeType ||
+                                      attachment.fileType ||
+                                      attachment.type ||
+                                      '';
+                                    const isImageAttachment =
+                                      attachment.type === 'image' ||
+                                      String(attachmentMime).startsWith('image/');
+                                    const displayName =
+                                      attachment.name ||
+                                      attachment.fileName ||
+                                      attachment.filename ||
+                                      'Attachment';
+                                    const attachmentSize = Number(
+                                      attachment.size || attachment.fileSize || 0,
+                                    );
+
+                                    if (isImageAttachment && attachmentUrl) {
+                                      return (
                                     <img
-                                      src={attachment.url}
-                                      alt={attachment.name}
+                                      src={attachmentUrl}
+                                      alt={displayName}
                                       style={{
                                         maxWidth: '100%',
                                         maxHeight: '200px',
@@ -1207,7 +1326,10 @@ const EnhancedMessagingPage = () => {
                                         cursor: 'pointer',
                                       }}
                                     />
-                                  ) : (
+                                      );
+                                    }
+
+                                    return (
                                     <Paper
                                       sx={{
                                         p: 1,
@@ -1232,23 +1354,36 @@ const EnhancedMessagingPage = () => {
                                               whiteSpace: 'nowrap',
                                             }}
                                           >
-                                            {attachment.name}
+                                            {displayName}
                                           </Typography>
-                                          <Typography
-                                            variant="caption"
-                                            sx={{ opacity: 0.7 }}
-                                          >
-                                            {(
-                                              attachment.size /
-                                              1024 /
-                                              1024
-                                            ).toFixed(2)}{' '}
-                                            MB
-                                          </Typography>
+                                          {attachmentSize > 0 && (
+                                            <Typography
+                                              variant="caption"
+                                              sx={{ opacity: 0.7 }}
+                                            >
+                                              {(attachmentSize / 1024 / 1024).toFixed(2)} MB
+                                            </Typography>
+                                          )}
                                         </Box>
                                       </Stack>
+                                      {attachmentUrl && (
+                                        <Box sx={{ mt: 0.75 }}>
+                                          <a
+                                            href={attachmentUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{
+                                              color: 'inherit',
+                                              fontSize: '0.75rem',
+                                            }}
+                                          >
+                                            Open file
+                                          </a>
+                                        </Box>
+                                      )}
                                     </Paper>
-                                  )}
+                                    );
+                                  })()}
                                 </Box>
                               ))}
                             </Box>
@@ -1754,8 +1889,8 @@ const EnhancedMessagingPage = () => {
                             flex: 1,
                           }}
                         >
-                          {conversation.lastMessage?.sender === user?.id && 'You: '}
-                          {conversation.lastMessage?.text || 'No messages yet'}
+                          {String(conversation.lastMessage?.sender) === String(currentUserId) && 'You: '}
+                          {getMessagePreview(conversation.lastMessage)}
                         </Typography>
                         {conversation.unreadCount > 0 && (
                           <Badge
@@ -1886,7 +2021,11 @@ const EnhancedMessagingPage = () => {
                 </Box>
               )}
               {messages.map((message) => {
-                const isOwn = message.sender === user?.id;
+                const senderId = message.sender || message.senderId;
+                const isOwn =
+                  senderId && currentUserId
+                    ? String(senderId) === String(currentUserId)
+                    : false;
                 return (
                 <Box
                   key={message.id}
