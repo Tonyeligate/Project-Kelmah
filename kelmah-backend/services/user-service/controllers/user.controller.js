@@ -448,6 +448,8 @@ exports.getEarnings = async (req, res) => {
       candidateEndpoints.push(`${gatewayBase}/api/payments/transactions/history`);
     }
 
+    const uniqueCandidateEndpoints = [...new Set(candidateEndpoints.filter(Boolean))];
+
     const respondWith = (totals, source = 'fallback') => res.json({
       success: true,
       data: {
@@ -462,7 +464,7 @@ exports.getEarnings = async (req, res) => {
       },
     });
 
-    if (!candidateEndpoints.length) {
+    if (!uniqueCandidateEndpoints.length) {
       logger.warn('getEarnings: payment service host missing, returning fallback totals');
       return respondWith(fallbackTotals, 'fallback-missing-payment-host');
     }
@@ -471,38 +473,62 @@ exports.getEarnings = async (req, res) => {
       const axios = require('axios');
       const headers = {};
       if (req.headers.authorization) headers.Authorization = req.headers.authorization;
-      const since30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      const since7 = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const requestTimeoutMs = 2500;
+      const since30Date = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const since7Date = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const since30 = since30Date.toISOString();
 
       const fetchTransactions = async (from) => {
-        for (const endpoint of candidateEndpoints) {
-          try {
-            const response = await axios.get(endpoint, {
-              params: { recipient: userId, from },
-              headers,
-              timeout: 8000,
-            });
-            if (Array.isArray(response?.data?.transactions)) {
-              return response.data.transactions;
+        const results = await Promise.all(
+          uniqueCandidateEndpoints.map(async (endpoint) => {
+            try {
+              const response = await axios.get(endpoint, {
+                params: { recipient: userId, from },
+                headers,
+                timeout: requestTimeoutMs,
+              });
+              return Array.isArray(response?.data?.transactions)
+                ? response.data.transactions
+                : null;
+            } catch (error) {
+              logger.warn('Payment history request failed', {
+                endpoint,
+                message: error?.message,
+                timeoutMs: requestTimeoutMs,
+              });
+              return null;
             }
-          } catch (error) {
-            logger.warn('Payment history request failed', {
-              endpoint,
-              message: error?.message,
-            });
-          }
-        }
-        return null;
+          }),
+        );
+
+        return results.find(Array.isArray) || null;
       };
 
-      const [tx30, tx7] = await Promise.all([fetchTransactions(since30), fetchTransactions(since7)]);
-      if (!tx30 && !tx7) {
+      const tx30 = await fetchTransactions(since30);
+      if (!tx30) {
         logger.warn('getEarnings: payment service unreachable, using fallback values');
         return respondWith(fallbackTotals, 'fallback-payment-timeout');
       }
 
       const sumTransactions = (transactions = []) =>
         transactions.reduce((sum, tx) => sum + Number(tx?.amount || 0), 0);
+
+      const selectTransactionDate = (tx) => (
+        tx?.completedAt ||
+        tx?.paidAt ||
+        tx?.processedAt ||
+        tx?.createdAt ||
+        tx?.updatedAt ||
+        tx?.date ||
+        null
+      );
+
+      const tx7 = tx30.filter((tx) => {
+        const candidateDate = selectTransactionDate(tx);
+        if (!candidateDate) return false;
+        const parsedDate = new Date(candidateDate);
+        return !Number.isNaN(parsedDate.getTime()) && parsedDate >= since7Date;
+      });
 
       const last30 = tx30 ? Number(sumTransactions(tx30).toFixed(2)) : fallbackTotals.last30Days;
       const last7 = tx7

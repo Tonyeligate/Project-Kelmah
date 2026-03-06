@@ -338,6 +338,28 @@ async function handleNetworkFirstRequest(request) {
       return cachedResponse;
     }
 
+    if (isAPIRequest(request.url)) {
+      const isTimeout = error?.name === 'AbortError';
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: {
+            message: isTimeout
+              ? 'The request timed out before the server responded.'
+              : 'The request could not reach the server.',
+            code: isTimeout ? 'REQUEST_TIMEOUT' : 'NETWORK_FAILURE',
+          },
+        }),
+        {
+          status: isTimeout ? 504 : 503,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Service-Worker-Fallback': 'network-first',
+          },
+        },
+      );
+    }
+
     throw error;
   }
 }

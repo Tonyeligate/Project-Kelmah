@@ -11,6 +11,7 @@ import {
   CardContent,
   Avatar,
   Alert,
+  Button,
   CircularProgress,
   useTheme,
   alpha,
@@ -52,6 +53,13 @@ const EarningsAnalytics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const getErrorMessage = (err) => (
+    err?.friendlyMessage ||
+    err?.response?.data?.error?.message ||
+    err?.response?.data?.message ||
+    'Failed to load earnings data'
+  );
+
   // Transform backend byMonth array into chart-friendly data
   const buildChartData = (byMonth = []) =>
     byMonth.map((entry) => ({
@@ -67,7 +75,7 @@ const EarningsAnalytics = () => {
       setEarningsData(payload);
       setError(null);
     } catch (err) {
-      setError('Failed to load earnings data');
+      setError(getErrorMessage(err));
       enqueueSnackbar('Failed to load earnings analytics', {
         variant: 'error',
       });
@@ -279,7 +287,15 @@ const EarningsAnalytics = () => {
 
   if (error) {
     return (
-      <Alert severity="error" sx={{ mb: 3 }}>
+      <Alert
+        severity="error"
+        sx={{ mb: 3 }}
+        action={
+          <Button color="inherit" size="small" onClick={loadEarningsData}>
+            Retry
+          </Button>
+        }
+      >
         {error}
       </Alert>
     );

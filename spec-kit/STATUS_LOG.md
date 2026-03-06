@@ -1,5 +1,107 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Native Jobs Domain + Routing ✅ COMPLETED
+
+**Date**: March 6, 2026
+**Scope**: Implement the jobs domain for both native apps on top of the hardened single-endpoint auth/session system, including routing, linking, save flows, and application submission.
+
+**Acceptance Criteria**
+- Android jobs flow supports list, filters, categories, detail, save/unsave, and apply.
+- iOS jobs flow supports list, filters, categories, detail, save/unsave, and apply.
+- Home-to-jobs navigation and in-jobs routing are linked for both apps.
+- Native workspace diagnostics remain clean after the jobs implementation.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/api-gateway/routes/job.routes.js`
+- `kelmah-backend/services/job-service/routes/job.routes.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-frontend/src/modules/jobs/services/jobsService.js`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/KelmahApp.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahDestination.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahNavHost.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/network/NetworkModule.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/session/SessionCoordinator.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/home/presentation/HomeScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/**/*`
+- `kelmah-mobile-ios/Kelmah/App/AppEnvironment.swift`
+- `kelmah-mobile-ios/Kelmah/App/RootTabView.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Network/APIClient.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Home/Presentation/HomeView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/**/*`
+
+**Changes completed**
+- Android:
+  - Added normalized jobs models, API service, repository, and view model.
+  - Replaced placeholder jobs screen with real Compose discover/saved flows.
+  - Added job detail and job application screens.
+  - Wired jobs routes into the main navigation graph and linked the home CTA.
+  - Added jobs service injection and tightened session cleanup on failed refresh.
+- iOS:
+  - Added normalized jobs models, raw JSON parsing, repository, and view model.
+  - Replaced placeholder jobs tab with a real SwiftUI jobs flow.
+  - Added job detail and job application views.
+  - Wired home-to-jobs tab switching plus internal jobs navigation.
+  - Added query-item support in the shared API client for filtered jobs requests.
+- Documentation:
+  - Added `spec-kit/KELMAH_NATIVE_JOBS_DOMAIN_MAR06_2026.md`.
+
+**Verification**
+- `get_errors` returned clean results for `kelmah-mobile-android/`.
+- `get_errors` returned clean results for `kelmah-mobile-ios/`.
+- Full native device builds were not executed in this Windows workspace session.
+
+### Session: Worker Earnings Timeout + Service Worker Noise Fix ✅ COMPLETED
+
+**Date**: March 6, 2026
+**Scope**: Diagnose why `/worker/earnings` fails with `ERR_FAILED`, repeated service-worker `AbortError` logs, and websocket noise; fix the slow earnings path and improve timeout behavior.
+
+**Acceptance Criteria**
+- `/worker/earnings` must stop failing because the backend earnings route exceeds the service-worker timeout window.
+- API timeouts intercepted by the service worker must resolve to structured HTTP responses instead of rejected fetches that surface as raw network errors.
+- Earnings UI must show a meaningful error message with a retry action if the backend still cannot respond.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/modules/worker/components/EarningsAnalytics.jsx`
+- `kelmah-frontend/src/modules/worker/services/earningsService.js`
+- `kelmah-frontend/src/services/apiClient.js`
+- `kelmah-frontend/src/config/environment.js`
+- `kelmah-frontend/public/sw.js`
+- `vercel.json`
+- `kelmah-backend/api-gateway/server.js`
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/user-service/controllers/user.controller.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Findings**
+- The deployed earnings endpoint exists and is protected correctly through the API Gateway, but the controller can wait too long while probing payment-history fallbacks.
+- `getEarnings()` was issuing separate 30-day and 7-day payment-history lookups, and each lookup could walk multiple candidate endpoints with an `8000ms` timeout per endpoint. In the failure case, that pushed response time beyond the service worker’s `10000ms` abort window.
+- The browser errors shown on `/worker/earnings` were therefore a timeout chain: slow earnings controller → service worker abort → `FetchEvent` network error / `ERR_FAILED` → generic UI error.
+- The repeated websocket failures are parallel infrastructure noise from the gateway socket endpoint and are not the primary cause of the earnings panel failure.
+
+**Changes completed**
+- `kelmah-backend/services/user-service/controllers/user.controller.js`
+  - Deduplicated payment-history candidate endpoints.
+  - Reduced the payment-history timeout window and queried candidate endpoints in parallel instead of serially.
+  - Replaced the double-fetch (`last30` + `last7`) pattern with one 30-day fetch, then derived the 7-day total from the returned transactions.
+  - Preserved the existing fallback response contract when payment history remains unavailable.
+- `kelmah-frontend/public/sw.js`
+  - Changed API request timeout/network failures to return structured `503/504` JSON responses instead of rethrowing raw fetch errors after cache miss.
+- `kelmah-frontend/src/modules/worker/components/EarningsAnalytics.jsx`
+  - Surfaced friendly backend/service-worker error messages instead of the generic hardcoded string.
+  - Added a retry action to the earnings error alert.
+
+**Verification**
+- Live production health check to `https://kelmah-api-gateway-qmd7.onrender.com/health` returned `200` during the audit.
+- Live worker authentication for `kwame.asante1@kelmah.test` succeeded, confirming the earnings issue was not caused by auth failure.
+- `get_errors` returned clean results for:
+  - `kelmah-backend/services/user-service/controllers/user.controller.js`
+  - `kelmah-frontend/public/sw.js`
+  - `kelmah-frontend/src/modules/worker/components/EarningsAnalytics.jsx`
+  - `spec-kit/STATUS_LOG.md`
+- Frontend production build passed successfully with `npm run build` in `kelmah-frontend/` after the earnings fix.
+
 ### Session: Worker Applications Dialog Accessibility Cleanup ✅ COMPLETED
 
 **Date**: March 6, 2026
@@ -26,7 +128,7 @@
 - `get_errors` returned clean results for `kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx`.
 - Frontend production build passed successfully with `npm run build` in `kelmah-frontend/` after the change.
 
-### Session: Native Auth + Session Hardening 🔄 IN PROGRESS
+### Session: Native Auth + Session Hardening ✅ COMPLETED
 
 **Date**: March 6, 2026
 **Scope**: Implement a real auth and session layer for both native mobile apps, harden API access around one API Gateway endpoint, and add token refresh, bootstrap, logout, and current-user recovery flows.
@@ -54,6 +156,33 @@
 - `kelmah-mobile-ios/Kelmah/Features/Auth/Data/AuthRepository.swift`
 - `kelmah-mobile-ios/Kelmah/App/AppEnvironment.swift`
 - `kelmah-mobile-ios/Kelmah/App/RootTabView.swift`
+
+**Implemented hardening**
+- Android:
+  - Added real login, refresh-token, logout, and `GET /auth/me` support in the native auth repository.
+  - Added centralized `SessionCoordinator` bootstrapping and recovery flow.
+  - Upgraded secure storage to keep a cached session snapshot and current-user record.
+  - Added request ID and mobile-client headers on API calls.
+- iOS:
+  - Added real login, refresh-token, logout, and `GET /auth/me` support in the native auth repository.
+  - Added centralized `SessionCoordinator` plus API client auth-recovery callback.
+  - Upgraded `SessionStore` to track session phase and cached current user.
+  - Added request ID and mobile-client headers on API calls.
+- Documentation:
+  - Added `spec-kit/KELMAH_NATIVE_AUTH_SESSION_FLOW_MAR06_2026.md` to lock both apps to one API Gateway endpoint and document auth recovery flow.
+
+**Single endpoint enforced**
+- API base URL: `https://api.kelmah.com/api`
+- Realtime base URL: `https://api.kelmah.com/socket.io`
+
+**Verification**
+- `get_errors` returned clean results for both native roots after the auth/session layer changes.
+
+**Next recommended implementation order**
+- `register` / `forgot password`
+- jobs repositories + paging
+- messaging socket auth handshake
+- push-device registration
 
 ### Session: Native Android + iOS Skeleton Scaffold ✅ COMPLETED
 
