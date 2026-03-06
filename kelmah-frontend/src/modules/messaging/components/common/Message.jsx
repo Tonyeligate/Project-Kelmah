@@ -171,54 +171,121 @@ const Message = ({
   };
 
   const renderMessageContent = () => {
-    switch (message.type) {
-      case 'image':
+    // If it's just an attachment placeholder, don't render a duplicate text block
+    if (message.content === '[Attachment]' && message.attachments?.length > 0) {
+      return null;
+    }
+
+    const { content, type, imageUrl, fileName } = message;
+    
+    // Auto-detect raw media URLs sent as text
+    const isRawImageUrl = type !== 'image' && content && 
+      typeof content === 'string' && 
+      content.startsWith('http') && 
+      content.match(/\.(jpeg|jpg|gif|png|webp|bmp)($|\?)/i) && 
+      (!message.attachments || message.attachments.length === 0);
+      
+    const isRawVideoUrl = type !== 'video' && content && 
+      typeof content === 'string' && 
+      content.startsWith('http') && 
+      content.match(/\.(mp4|webm|avi|mov)($|\?)/i) && 
+      (!message.attachments || message.attachments.length === 0);
+
+    if (isRawImageUrl) {
+      return (
+        <Box>
+          <Box component="img" src={content} alt="Shared image" sx={{ maxWidth: '100%', borderRadius: 1 }} />
+        </Box>
+      );
+    }
+    
+    if (isRawVideoUrl) {
+      return (
+        <Box>
+          <Box component="video" controls src={content} sx={{ maxWidth: '100%', borderRadius: 1 }} />
+        </Box>
+      );
+    }
+
+    switch (type) {
+      case 'image': {
+        const urlToUse = imageUrl || (content?.startsWith('http') ? content : null);
         return (
           <Box>
-            <Typography variant="body2" sx={{ mb: 1 }}>
-              {message.content}
-            </Typography>
-            <Box
-              component="img"
-              src={message.imageUrl}
-              alt="Shared image"
-              sx={{ maxWidth: '100%', borderRadius: 1 }}
-            />
+            {content && content !== urlToUse && content !== '[Attachment]' && (
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                {content}
+              </Typography>
+            )}
+            {urlToUse && (
+              <Box
+                component="img"
+                src={urlToUse}
+                alt="Shared image"
+                sx={{ maxWidth: '100%', borderRadius: 1 }}
+              />
+            )}
           </Box>
         );
+      }
+
+      case 'video': {
+        const fileUrlToUse = message.fileUrl || (content?.startsWith('http') ? content : null);
+        return (
+          <Box>
+            {content && content !== fileUrlToUse && content !== '[Attachment]' && (
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                {content}
+              </Typography>
+            )}
+            {fileUrlToUse && (
+              <Box component="video" controls src={fileUrlToUse} sx={{ maxWidth: '100%', borderRadius: 1 }} />
+            )}
+          </Box>
+        );
+      }
 
       case 'file':
         return (
           <Box>
-            <Typography variant="body2" sx={{ mb: 1 }}>
-              {message.content}
-            </Typography>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                p: 1,
-                bgcolor: 'background.paper',
-                borderRadius: 1,
-              }}
-            >
-              <FileIcon sx={{ mr: 1 }} />
-              <Typography variant="body2" noWrap>
-                {message.fileName}
+            {content && content !== '[Attachment]' && (
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                {content}
               </Typography>
-            </Box>
+            )}
+            {!message.attachments?.length && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  p: 1,
+                  bgcolor: 'background.paper',
+                  borderRadius: 1,
+                }}
+              >
+                <FileIcon sx={{ mr: 1 }} />
+                <Typography variant="body2" noWrap>
+                  {fileName || 'Document'}
+                </Typography>
+              </Box>
+            )}
           </Box>
         );
 
       case 'system':
         return (
           <Box sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
-            {message.content}
+            {content}
           </Box>
         );
 
       default:
-        return <Typography variant="body2">{message.content}</Typography>;
+        // Regular text
+        // Ensure URLs can be clicked if they are present in normal text
+        if (content && typeof content === 'string' && content.startsWith('http') && !content.includes(' ')) {
+           return <Typography variant="body2" component="a" href={content} target="_blank" rel="noopener noreferrer" sx={{ color: 'primary.main', textDecoration: 'underline', wordBreak: 'break-all' }}>{content}</Typography>;
+        }
+        return <Typography variant="body2">{content}</Typography>;
     }
   };
 
