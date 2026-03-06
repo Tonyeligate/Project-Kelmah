@@ -421,7 +421,15 @@ const ProfessionalMapPage = () => {
         return;
       }
 
-      navigate(`/messages?recipient=${userId}`);
+      navigate(`/messages?recipient=${userId}`, {
+        state: {
+          recipientProfile: {
+            id: String(userId),
+            name: item.name || item.title || item.displayName || 'New conversation',
+            profilePicture: item.profilePicture || item.avatar || item.photo || null,
+          },
+        },
+      });
     },
     [navigate],
   );

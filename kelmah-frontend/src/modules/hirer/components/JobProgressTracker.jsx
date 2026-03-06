@@ -164,7 +164,15 @@ const JobProgressTracker = () => {
       job?.workerId;
 
     if (recipientId) {
-      navigate(`/messages?recipient=${encodeURIComponent(String(recipientId))}`);
+      navigate(`/messages?recipient=${encodeURIComponent(String(recipientId))}`, {
+        state: {
+          recipientProfile: {
+            id: String(recipientId),
+            name: job?.worker?.name || 'New conversation',
+            profilePicture: job?.worker?.avatar || null,
+          },
+        },
+      });
     }
   };
 

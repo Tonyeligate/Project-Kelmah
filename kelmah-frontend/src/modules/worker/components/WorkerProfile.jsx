@@ -377,7 +377,23 @@ function WorkerProfile({ workerId: workerIdProp }) {
       resolvedWorkerId;
 
     if (recipientId) {
-      navigate(`/messages?recipient=${encodeURIComponent(String(recipientId))}`);
+      navigate(`/messages?recipient=${encodeURIComponent(String(recipientId))}`, {
+        state: {
+          recipientProfile: {
+            id: String(recipientId),
+            name:
+              profile?.user?.name ||
+              [profile?.user?.firstName, profile?.user?.lastName].filter(Boolean).join(' ') ||
+              profile?.name ||
+              'New conversation',
+            profilePicture:
+              profile?.profile_picture ||
+              profile?.user?.profilePicture ||
+              profile?.profilePicture ||
+              null,
+          },
+        },
+      });
     }
   };
 

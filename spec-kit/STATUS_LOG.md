@@ -1,5 +1,18 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Messaging Temporary Recipient Chats ✅
+
+**Date**: March 6, 2026
+**Scope**: Keep brand-new recipient chats local-only until the first message is sent.
+
+**Behavior Implemented**
+- Opening `/messages?recipient=:id` with no existing conversation now creates a temporary local sidebar item instead of creating a backend conversation immediately.
+- The temporary item keeps the sidebar and chat panel synchronized while the user drafts the first message.
+- On first send, the app creates the real conversation and replaces the temporary item with the persisted one.
+- Leaving messaging without sending removes the temporary item.
+- Temporary conversations no longer emit realtime room join/leave, typing, or mark-read events.
+- Common CTA entry points now pass recipient name/avatar through route state so the temporary row shows real profile metadata.
+
 ### Session: Messaging System Full Dry Audit & Runtime Verification ✅ COMPLETED
 
 **Date**: March 6, 2026

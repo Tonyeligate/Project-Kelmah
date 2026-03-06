@@ -264,7 +264,23 @@ const JobDetailsPage = () => {
       setShareSnackbar('Hirer contact is not available yet');
       return;
     }
-    navigate(`/messages?recipient=${recipientId}`);
+    navigate(`/messages?recipient=${recipientId}`, {
+      state: {
+        recipientProfile: {
+          id: String(recipientId),
+          name:
+            job?.hirer?.name ||
+            [job?.hirer?.firstName, job?.hirer?.lastName].filter(Boolean).join(' ') ||
+            job?.client?.name ||
+            'New conversation',
+          profilePicture:
+            job?.hirer?.profilePicture ||
+            job?.hirer?.avatar ||
+            job?.client?.profilePicture ||
+            null,
+        },
+      },
+    });
   };
 
   const handleToggleSave = async () => {

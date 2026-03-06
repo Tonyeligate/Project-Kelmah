@@ -315,7 +315,15 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
 
       const targetUserId = worker.userId || worker.id || worker._id;
       if (targetUserId) {
-        navigate(`/messages?recipient=${encodeURIComponent(targetUserId)}`);
+        navigate(`/messages?recipient=${encodeURIComponent(targetUserId)}`, {
+          state: {
+            recipientProfile: {
+              id: String(targetUserId),
+              name: worker.name || worker.fullName || worker.displayName || 'New conversation',
+              profilePicture: worker.profilePicture || worker.avatar || worker.photo || null,
+            },
+          },
+        });
       }
     },
     [

@@ -135,6 +135,31 @@ const normalizeConversationList = (list = []) =>
 const normalizeMessageList = (list = []) =>
   list.map((message) => normalizeMessageAttachments(message || {}));
 
+const createTemporaryConversation = (participant = {}) => {
+  const participantId = resolveParticipantId(participant);
+  const tempId = `temp-${participantId || Date.now()}`;
+
+  return {
+    id: tempId,
+    _id: tempId,
+    isTemporary: true,
+    participants: participantId
+      ? [
+        normalizeParticipant({
+          ...participant,
+          id: participantId,
+        }),
+      ]
+      : [],
+    unread: 0,
+    unreadCount: 0,
+    lastMessage: null,
+    latestMessage: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+};
+
 const sortConversationsByActivity = (list = []) =>
   [...list].sort((left, right) => {
     const leftStamp = new Date(
@@ -529,7 +554,7 @@ export const MessageProvider = ({ children }) => {
       if (selectedConversation?.id === normalizedConversation.id) return;
 
       // Leave previous conversation room
-      if (selectedConversation && socket) {
+      if (selectedConversation && socket && !selectedConversation.isTemporary) {
         socket.emit('leave_conversation', {
           conversationId: selectedConversation.id,
         });
@@ -571,6 +596,12 @@ export const MessageProvider = ({ children }) => {
             : c,
         ),
       );
+
+      if (normalizedConversation.isTemporary) {
+        setLoadingMessages(false);
+        loadingMessagesRef.current = false;
+        return;
+      }
 
       try {
         // Join new conversation room via WebSocket
@@ -672,6 +703,38 @@ export const MessageProvider = ({ children }) => {
 
       setSendingMessage(true);
       try {
+        let activeConversation = selectedConversation;
+
+        if (selectedConversation.isTemporary) {
+          const tempRecipient = selectedConversation.participants.find(
+            (participant) => resolveParticipantId(participant),
+          );
+          const tempRecipientId = resolveParticipantId(tempRecipient);
+          if (!tempRecipientId) {
+            throw new Error('Unable to resolve temporary message recipient');
+          }
+
+          const createdConversation = await messagingService.createDirectConversation(tempRecipientId);
+          const normalizedCreatedConversation = normalizeConversation(createdConversation);
+
+          setConversations((prev) =>
+            sortConversationsByActivity(
+              prev.map((conversation) =>
+                conversation.id === selectedConversation.id
+                  ? {
+                    ...normalizedCreatedConversation,
+                    unreadCount: 0,
+                    unread: 0,
+                  }
+                  : conversation,
+              ),
+            ),
+          );
+
+          setSelectedConversation(normalizedCreatedConversation);
+          activeConversation = normalizedCreatedConversation;
+        }
+
         // Use WebSocket for real-time messaging if available
         if (socket && isConnected) {
           if (import.meta.env.DEV) console.log('📤 Sending message via WebSocket');
@@ -680,7 +743,7 @@ export const MessageProvider = ({ children }) => {
           const now = new Date().toISOString();
           const optimisticMessage = {
             id: clientId,
-            conversationId: selectedConversation.id,
+            conversationId: activeConversation.id,
             senderId: currentUserId,
             sender: currentUserId,
             senderInfo: {
@@ -701,7 +764,7 @@ export const MessageProvider = ({ children }) => {
           setConversations((prev) =>
             sortConversationsByActivity(
               prev.map((c) =>
-                c.id === selectedConversation.id
+                c.id === activeConversation.id
                   ? {
                     ...c,
                     lastMessage: optimisticMessage,
@@ -718,7 +781,7 @@ export const MessageProvider = ({ children }) => {
           const eventName = useEncrypted ? 'send_encrypted' : 'send_message';
           const payload = useEncrypted
             ? {
-              conversationId: selectedConversation.id,
+              conversationId: activeConversation.id,
               encryptedBody: trimmedContent,
               encryption: { scheme: 'beta', version: '1', senderKeyId: 'me' },
               messageType: normalizedMessageType,
@@ -726,7 +789,7 @@ export const MessageProvider = ({ children }) => {
               clientId,
             }
             : {
-              conversationId: selectedConversation.id,
+              conversationId: activeConversation.id,
               content: trimmedContent,
               messageType: normalizedMessageType,
               attachments: safeAttachments,
@@ -737,7 +800,7 @@ export const MessageProvider = ({ children }) => {
             if (!ack || ack.ok !== true) {
               if (import.meta.env.DEV) console.warn('WebSocket send failed, falling back to REST', ack);
               try {
-                const recipient = selectedConversation.participants.find(
+                const recipient = activeConversation.participants.find(
                   (participant) => {
                     const participantId = resolveParticipantId(participant);
                     return participantId && participantId !== currentUserId;
@@ -753,7 +816,7 @@ export const MessageProvider = ({ children }) => {
                   trimmedContent,
                   normalizedMessageType,
                   safeAttachments,
-                  selectedConversation.id,
+                  activeConversation.id,
                 );
                 const normalized = normalizeMessageAttachments(newMessage);
                 // Replace the optimistic placeholder with the persisted message.
@@ -784,7 +847,7 @@ export const MessageProvider = ({ children }) => {
                 setConversations((prev) =>
                   sortConversationsByActivity(
                     prev.map((c) =>
-                      c.id === selectedConversation.id
+                      c.id === activeConversation.id
                         ? {
                           ...c,
                           lastMessage: normalized,
@@ -811,7 +874,7 @@ export const MessageProvider = ({ children }) => {
           if (import.meta.env.DEV) console.log(
             '📤 Sending message via REST API (WebSocket unavailable)',
           );
-          const recipient = selectedConversation.participants.find(
+          const recipient = activeConversation.participants.find(
             (participant) => {
               const participantId = resolveParticipantId(participant);
               return participantId && participantId !== currentUserId;
@@ -827,7 +890,7 @@ export const MessageProvider = ({ children }) => {
             trimmedContent,
             normalizedMessageType,
             safeAttachments,
-            selectedConversation.id,
+            activeConversation.id,
           );
           const normalized = normalizeMessageAttachments(newMessage);
           setMessages((prev) => {
@@ -847,7 +910,7 @@ export const MessageProvider = ({ children }) => {
           setConversations((prev) =>
             sortConversationsByActivity(
               prev.map((c) =>
-                c.id === selectedConversation.id
+                c.id === activeConversation.id
                   ? { ...c, lastMessage: normalized, updatedAt: normalized.createdAt }
                   : c,
               ),
@@ -886,6 +949,38 @@ export const MessageProvider = ({ children }) => {
     [loadConversations, selectConversation],
   );
 
+  const openTemporaryConversation = useCallback((participant) => {
+    const tempConversation = createTemporaryConversation(participant);
+
+    setConversations((prev) => {
+      const existingIndex = prev.findIndex(
+        (conversation) =>
+          conversation.isTemporary &&
+          String(resolveParticipantId(conversation.participants?.[0])) ===
+            String(resolveParticipantId(participant)),
+      );
+
+      if (existingIndex !== -1) {
+        const updated = [...prev];
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          participants: tempConversation.participants,
+          updatedAt: tempConversation.updatedAt,
+        };
+        return updated;
+      }
+
+      return [tempConversation, ...prev];
+    });
+
+    setSelectedConversation(tempConversation);
+    setMessages([]);
+    setLoadingMessages(false);
+    loadingMessagesRef.current = false;
+
+    return tempConversation;
+  }, []);
+
   // compute total unread messages
   const unreadCount = (conversations || []).reduce(
     (sum, c) => sum + (c.unreadCount ?? c.unread ?? 0),
@@ -893,7 +988,7 @@ export const MessageProvider = ({ children }) => {
   );
 
   const clearConversation = useCallback(() => {
-    if (selectedConversation && socket) {
+    if (selectedConversation && socket && !selectedConversation.isTemporary) {
       socket.emit('leave_conversation', {
         conversationId: selectedConversation.id,
       });
@@ -906,19 +1001,24 @@ export const MessageProvider = ({ children }) => {
       clearTimeout(conversationLoadTimeoutRef.current);
       conversationLoadTimeoutRef.current = null;
     }
+    if (selectedConversation?.isTemporary) {
+      setConversations((prev) =>
+        prev.filter((conversation) => conversation.id !== selectedConversation.id),
+      );
+    }
     setSelectedConversation(null);
     setMessages([]);
   }, [selectedConversation, socket]);
 
   // Real-time typing functions
   const startTyping = useCallback(() => {
-    if (selectedConversation && socket && isConnected) {
+    if (selectedConversation && socket && isConnected && !selectedConversation.isTemporary) {
       socket.emit('typing_start', { conversationId: selectedConversation.id });
     }
   }, [selectedConversation, socket, isConnected]);
 
   const stopTyping = useCallback(() => {
-    if (selectedConversation && socket && isConnected) {
+    if (selectedConversation && socket && isConnected && !selectedConversation.isTemporary) {
       socket.emit('typing_stop', { conversationId: selectedConversation.id });
     }
   }, [selectedConversation, socket, isConnected]);
@@ -926,7 +1026,7 @@ export const MessageProvider = ({ children }) => {
   // Mark messages as read
   const markMessagesAsRead = useCallback(
     (messageIds = []) => {
-      if (selectedConversation && socket && isConnected) {
+      if (selectedConversation && socket && isConnected && !selectedConversation.isTemporary) {
         socket.emit('mark_read', {
           conversationId: selectedConversation.id,
           messageIds,
@@ -963,6 +1063,7 @@ export const MessageProvider = ({ children }) => {
     selectConversation,
     sendMessage,
     createConversation,
+    openTemporaryConversation,
     clearConversation,
 
     // Real-time WebSocket features

@@ -79,7 +79,7 @@ import EmptyState from '../../../components/common/EmptyState';
 const EnhancedMessagingPage = () => {
   // Use ONLY Redux auth state to prevent dual state management conflicts
   const { user } = useSelector((state) => state.auth);
-  const { search } = useLocation();
+  const { search, state: locationState } = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -97,6 +97,7 @@ const EnhancedMessagingPage = () => {
     selectConversation,
     clearConversation,
     createConversation,
+    openTemporaryConversation,
     typingUsers,
     getTypingUsers,
     isConnected,
@@ -137,7 +138,17 @@ const EnhancedMessagingPage = () => {
   const fileInputRef = useRef(null);
   const blobUrlsRef = useRef([]); // Track blob URLs for cleanup
   const conversationsRef = useRef(conversations); // Stable ref for deep-link effect
+  const selectedConversationSnapshotRef = useRef(selectedConversation);
+  const clearConversationRef = useRef(clearConversation);
   conversationsRef.current = conversations;
+  selectedConversationSnapshotRef.current = selectedConversation;
+  clearConversationRef.current = clearConversation;
+
+  useEffect(() => () => {
+    if (selectedConversationSnapshotRef.current?.isTemporary) {
+      clearConversationRef.current?.();
+    }
+  }, []);
 
   const currentUserId = useMemo(
     () => user?.id || user?._id || user?.userId || user?.sub || null,
@@ -231,55 +242,40 @@ const EnhancedMessagingPage = () => {
           ),
         );
         if (existing) {
-          const extId = existing.id || existing._id;
           selectConversation(existing);
-          navigate(`/messages?conversation=${extId}`, { replace: true });
+          if (!existing.isTemporary) {
+            const extId = existing.id || existing._id;
+            navigate(`/messages?conversation=${extId}`, { replace: true });
+          }
           return;
         }
 
-        // Create a new conversation — retry up to 3 times with backoff
-        setDeepLinkLoading(true);
-        setDeepLinkError(null);
-        let lastError = null;
+        const routeParticipant = locationState?.recipientProfile || {};
+        const temporaryConversation = openTemporaryConversation({
+          id: recipientId,
+          name:
+            routeParticipant?.name ||
+            routeParticipant?.fullName ||
+            routeParticipant?.displayName ||
+            'New conversation',
+          profilePicture:
+            routeParticipant?.profilePicture ||
+            routeParticipant?.avatar ||
+            routeParticipant?.photo ||
+            null,
+        });
 
-        for (let attempt = 1; attempt <= 3; attempt++) {
-          try {
-            // createConversation:
-            // 1. Calls messagingService.createDirectConversation
-            // 2. Returns the full conversation object (new or existing)
-            // 3. Calls selectConversation internally in MessageContext
-            const convo = await createConversation(recipientId);
-            const newId = convo?.id || convo?._id;
-            if (newId) {
-              setDeepLinkLoading(false);
-              // selectConversation with the FULL object so the chat panel
-              // immediately renders the participant name and avatar.
-              if (convo.participants) {
-                selectConversation(convo);
-              }
-              navigate(`/messages?conversation=${newId}`, { replace: true });
-              return;
-            }
-          } catch (e) {
-            lastError = e;
-            if (import.meta.env.DEV) console.warn(`Deep-link attempt ${attempt}/3 failed:`, e.message);
-            if (attempt < 3) {
-              // Exponential backoff: 2s, 4s
-              await new Promise((r) => setTimeout(r, attempt * 2000));
-            }
-          }
-        }
-
-        // All retries failed
         setDeepLinkLoading(false);
-        setDeepLinkError('Could not connect to messaging service. The service may be starting up.');
-        deepLinkAttemptedRef.current = false; // Allow manual retry
-        showFeedback('Messaging service unavailable. Please try again in a moment.', 'error');
+        setDeepLinkError(null);
+        if (temporaryConversation?.id) {
+          selectConversation(temporaryConversation);
+        }
+        return;
       }
     };
 
     runDeepLink();
-  }, [user, search, navigate, selectConversation, createConversation, loadingConversations, resolveParticipantId, showFeedback]);
+  }, [user, search, navigate, selectConversation, createConversation, loadingConversations, resolveParticipantId, showFeedback, openTemporaryConversation, locationState]);
 
   // Manual retry handler for deep-link failures
   const handleRetryDeepLink = useCallback(() => {
