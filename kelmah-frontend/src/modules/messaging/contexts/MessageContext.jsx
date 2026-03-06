@@ -544,6 +544,20 @@ export const MessageProvider = ({ children }) => {
         conversationLoadTimeoutRef.current = null;
       }
 
+      setConversations((prev) => {
+        const exists = prev.some(
+          (c) => String(c.id || c._id) === String(normalizedConversation.id),
+        );
+        if (!exists) {
+          return [normalizedConversation, ...prev];
+        }
+        return prev.map((c) =>
+          String(c.id || c._id) === String(normalizedConversation.id)
+            ? { ...c, ...normalizedConversation }
+            : c,
+        );
+      });
+
       setSelectedConversation(normalizedConversation);
       setLoadingMessages(true);
       loadingMessagesRef.current = true;

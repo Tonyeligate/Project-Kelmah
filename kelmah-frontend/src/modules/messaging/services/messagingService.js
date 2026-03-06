@@ -200,6 +200,23 @@ export const messagingService = {
     }
   },
 
+  // Get a single conversation by ID for direct deep-link recovery
+  async getConversationById(conversationId) {
+    try {
+      const response = await api.get(`/messages/conversations/${conversationId}`);
+      const payload = response.data;
+      if (payload?.data?.conversation) return normalizeConversation(payload.data.conversation);
+      if (payload?.conversation) return normalizeConversation(payload.conversation);
+      if (payload?.data) return normalizeConversation(payload.data);
+      return normalizeConversation(payload);
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn(`Failed to fetch conversation ${conversationId}:`, error.message);
+      }
+      throw error;
+    }
+  },
+
   // Create a new conversation (delegates to createDirectConversation)
   async createConversation(participantId, jobId) {
     return this.createDirectConversation(participantId, jobId);

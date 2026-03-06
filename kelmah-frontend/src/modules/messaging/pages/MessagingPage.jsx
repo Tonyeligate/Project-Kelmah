@@ -70,6 +70,7 @@ import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 // Removed AuthContext import to prevent dual state management conflicts
 // import { useAuth } from '../../auth/hooks/useAuth';
 import { useMessages } from '../contexts/MessageContext';
+import { messagingService } from '../services/messagingService';
 // ConversationList + Chatbox rendered inline — imports removed (dead code)
 import SEO from '../../common/components/common/SEO';
 import EmptyState from '../../../components/common/EmptyState';
@@ -201,9 +202,24 @@ const EnhancedMessagingPage = () => {
         );
         if (existing) {
           selectConversation(existing);
+          return;
         }
-        // Even if not found in local list, stay on this URL so MessageContext  
-        // can pick it up after websocket connects
+
+        try {
+          const fetchedConversation = await messagingService.getConversationById(conversationId);
+          if (fetchedConversation?.id) {
+            selectConversation(fetchedConversation);
+            return;
+          }
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.warn(`Failed to deep-load conversation ${conversationId}:`, error.message);
+          }
+          setDeepLinkError('Conversation could not be loaded. It may no longer exist.');
+          showFeedback('Conversation could not be loaded.', 'error');
+        }
+
+        // If not found anywhere, keep the URL but avoid silently showing stale state
         return;
       }
 
@@ -263,7 +279,7 @@ const EnhancedMessagingPage = () => {
     };
 
     runDeepLink();
-  }, [user, search, navigate, selectConversation, createConversation, loadingConversations, resolveParticipantId]);
+  }, [user, search, navigate, selectConversation, createConversation, loadingConversations, resolveParticipantId, showFeedback]);
 
   // Manual retry handler for deep-link failures
   const handleRetryDeepLink = useCallback(() => {
