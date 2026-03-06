@@ -1,5 +1,61 @@
 import { api } from '../../../services/apiClient';
 
+const DISPLAY_KEYS = ['label', 'name', 'title', 'value', 'type', 'city', 'address', 'text'];
+
+const toDisplayString = (value, fallback = '') => {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed || fallback;
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    const parts = value
+      .map((item) => toDisplayString(item))
+      .filter(Boolean);
+    return parts.join(', ') || fallback;
+  }
+
+  if (value && typeof value === 'object') {
+    for (const key of DISPLAY_KEYS) {
+      const resolved = toDisplayString(value[key]);
+      if (resolved) {
+        return resolved;
+      }
+    }
+  }
+
+  return fallback;
+};
+
+const normalizeStatus = (status) =>
+  toDisplayString(status, 'unknown')
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/-/g, '_');
+
+const normalizeJob = (job = {}) => ({
+  ...job,
+  id: job.id || job._id || null,
+  title: toDisplayString(job.title, 'Untitled Job'),
+  category: toDisplayString(job.category, '—'),
+  location: toDisplayString(job.location, 'Unknown location'),
+});
+
+const normalizeApplication = (application = {}, index = 0) => ({
+  ...application,
+  id: application.id || application._id || `application-${index}`,
+  status: normalizeStatus(application.status),
+  company: toDisplayString(application.company, 'Unknown'),
+  jobTitle: toDisplayString(application.jobTitle, 'Untitled Job'),
+  createdAt: application.createdAt || application.appliedDate || null,
+  appliedDate: application.appliedDate || application.createdAt || null,
+  job: application.job ? normalizeJob(application.job) : null,
+});
+
 /**
  * Applications Service
  * Routes through /api/jobs/* gateway endpoints (no standalone /applications mount exists)
@@ -7,19 +63,18 @@ import { api } from '../../../services/apiClient';
 
 const applicationsApi = {
   normalizeApplicationList: (payload) => {
-    if (Array.isArray(payload)) {
-      return payload;
-    }
+    const rawList = Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload?.items)
+        ? payload.items
+        : Array.isArray(payload?.applications)
+          ? payload.applications
+          : [];
 
-    if (Array.isArray(payload?.items)) {
-      return payload.items;
-    }
+    return rawList.map((application, index) =>
+      normalizeApplication(application, index),
+    );
 
-    if (Array.isArray(payload?.applications)) {
-      return payload.applications;
-    }
-
-    return [];
   },
 
   /**
@@ -32,10 +87,6 @@ const applicationsApi = {
       const payload = response.data?.data || response.data;
       return applicationsApi.normalizeApplicationList(payload);
     } catch (error) {
-      // Graceful fallback — return empty array so My Applications page renders
-      if (error.response?.status >= 500 || !error.response) {
-        return [];
-      }
       throw error;
     }
   },
@@ -54,13 +105,12 @@ const applicationsApi = {
       if (!Array.isArray(list)) {
         return null;
       }
-      return (
-        list.find(
+      const found = list.find(
           (application) =>
             application?._id === applicationId ||
             application?.id === applicationId,
-        ) || null
-      );
+        ) || null;
+      return found ? normalizeApplication(found, 0) : null;
     } catch {
       return null;
     }
@@ -72,7 +122,7 @@ const applicationsApi = {
    */
   submitApplication: async (jobId, applicationData) => {
     const response = await api.post(`/jobs/${jobId}/apply`, applicationData);
-    return response.data.data || response.data;
+    return normalizeApplication(response.data.data || response.data, 0);
   },
 
   /**
@@ -108,7 +158,7 @@ const applicationsApi = {
         `/jobs/${jobId}/applications/${applicationId}`,
         updateData,
       );
-      return response.data.data || response.data;
+      return normalizeApplication(response.data.data || response.data, 0);
     } catch (error) {
       if (error.response?.status === 404) {
         return null;

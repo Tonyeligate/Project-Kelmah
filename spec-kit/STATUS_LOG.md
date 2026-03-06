@@ -1,5 +1,206 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Native Android + iOS Skeleton Scaffold ✅ COMPLETED
+
+**Date**: March 6, 2026
+**Scope**: Generate a professional native Android and iOS project skeleton for Kelmah with production-grade architecture foundations, shared backend contract alignment, and feature-first module structure.
+
+**Acceptance Criteria**
+- Scaffold a professional Android project root with Kotlin, Compose, DI, networking, storage, navigation, and starter feature modules.
+- Scaffold a professional iOS project root with SwiftUI, app structure, networking, storage, routing, and starter feature modules.
+- Keep both apps aligned to the existing Kelmah API Gateway and mobile plan.
+- Update spec-kit status records after scaffolding.
+
+**Dry-audit file surface confirmed**
+- `spec-kit/KELMAH_MOBILE_APP_PLAN_MAR06_2026.md`
+- `kelmah-mobile-android/README.md`
+- `kelmah-mobile-ios/README.md`
+- `spec-kit/STATUS_LOG.md`
+
+**Scaffold completed**
+- Android root now includes:
+  - Gradle project files
+  - Kotlin + Jetpack Compose app shell
+  - Hilt DI foundation
+  - Retrofit/OkHttp networking layer
+  - encrypted token storage
+  - starter auth and tab-based feature screens
+- iOS root now includes:
+  - XcodeGen project specification
+  - SwiftUI app shell
+  - API environment config
+  - URLSession networking layer
+  - Keychain-backed session storage
+  - starter auth and tab-based feature screens
+- Both READMEs were expanded with scaffold notes and next build order.
+- Mobile plan updated to reflect scaffold completion.
+
+**Verification**
+- `get_errors` returned clean results for both:
+  - `kelmah-mobile-android/`
+  - `kelmah-mobile-ios/`
+
+**Next implementation target**
+- Build real auth/session refresh and API contract models first, then jobs, then messaging.
+
+### Session: Worker Contracts Unification + Applications Error State ✅ COMPLETED
+
+**Date**: March 6, 2026
+**Scope**: Reuse the stronger contracts experience for `/worker/contracts` and stop `/worker/applications` from disguising API failures as empty data.
+
+**Acceptance Criteria**
+- `/worker/contracts` must render the stronger contracts experience with worker-appropriate actions and backend-aligned status filters.
+- Worker route wiring must use a single contracts UX path instead of the weaker duplicate page.
+- `/worker/applications` must show a real fetch error state with retry when the API fails.
+- Verification and updated findings must be logged here after implementation.
+
+**Confirmed file surface**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/contracts/pages/ContractsPage.jsx`
+- `kelmah-frontend/src/modules/contracts/pages/ContractManagementPage.jsx`
+- `kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx`
+- `kelmah-frontend/src/modules/worker/services/applicationsService.js`
+- `kelmah-backend/api-gateway/routes/job.routes.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+
+**Findings**
+- `/worker/contracts` was routed to a weaker duplicate page while top-level `/contracts` already had the stronger filter/search experience.
+- The stronger page still needed role-aware UX cleanup before reuse: it exposed `New Contract` to workers and filtered against statuses (`overdue`) that do not exist in the backend contract model.
+- `/worker/applications` had been updated to render safer data, but its service layer still collapsed transport/server failures into an empty array, masking outages as “No applications found”.
+
+**Changes completed**
+- `kelmah-frontend/src/routes/config.jsx`
+  - Rewired `/worker/contracts` to render `ContractsPage` so workers now use the stronger shared contracts experience.
+- `kelmah-frontend/src/modules/contracts/pages/ContractsPage.jsx`
+  - Added role-aware behavior so only `hirer`/`admin` users see the create-contract CTA.
+  - Replaced invalid filter assumptions with backend-aligned status options (`draft`, `pending`, `active`, `completed`, `closed`).
+  - Added worker-appropriate titles, empty-state copy, and refresh behavior.
+- `kelmah-frontend/src/modules/worker/services/applicationsService.js`
+  - Removed the empty-array fallback for `getMyApplications()` so fetch failures surface to the page.
+- `kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx`
+  - Added an explicit error state with user-facing messaging and retry actions in both mobile and desktop layouts.
+  - Refactored the initial fetch into `loadApplications()` so retries and first-load use the same logic.
+
+**Verification**
+- `get_errors` returned clean results for:
+  - `kelmah-frontend/src/routes/config.jsx`
+  - `kelmah-frontend/src/modules/contracts/pages/ContractsPage.jsx`
+  - `kelmah-frontend/src/modules/worker/services/applicationsService.js`
+  - `kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx`
+- Frontend production build passed successfully with `npm run build` in `kelmah-frontend/` after the changes.
+
+### Session: Native Mobile App Pivot — Kotlin + Swift ✅ COMPLETED
+
+**Date**: March 6, 2026
+**Scope**: Replace the cross-platform mobile recommendation with a native Android + iOS plan, create root native app directories, and adapt the delivery model for AI-assisted implementation.
+
+**Acceptance Criteria**
+- Redraft the mobile app plan around separate native Android and iOS applications.
+- Create root directories for the Android and iOS apps in the project root.
+- Update delivery guidance to fit AI-assisted solo execution.
+
+**Confirmed file surface**
+- `spec-kit/KELMAH_MOBILE_APP_PLAN_MAR06_2026.md`
+- `spec-kit/STATUS_LOG.md`
+
+**Changes completed**
+- Redrafted `spec-kit/KELMAH_MOBILE_APP_PLAN_MAR06_2026.md` from a cross-platform Flutter recommendation to a native `Kotlin + Swift` strategy.
+- Created root native app directories:
+  - `kelmah-mobile-android/`
+  - `kelmah-mobile-ios/`
+- Added starter README files for both native app roots.
+- Updated delivery guidance for AI-assisted solo implementation instead of a traditional team model.
+
+**Final recommendation**
+- Android: `Kotlin + Jetpack Compose`
+- iOS: `Swift + SwiftUI`
+- Shared backend entry: stable API Gateway production domain
+
+### Session: Worker Applications + Contracts Dry Audit ✅ COMPLETED
+
+**Date**: March 6, 2026
+**Scope**: Audit `/worker/applications` and `/worker/contracts` for flow, data-shape reliability, and UI/UX issues; fix the worker applications runtime crash.
+
+**Acceptance Criteria**
+- `/worker/applications` must render without React runtime crashes when API data contains inconsistent nested shapes.
+- Worker applications data must be normalized enough for safe labels, locations, and dates in both card and table views.
+- `/worker/contracts` route wiring, provider usage, and data source must be documented with clear findings on why it appears empty/weak.
+- Findings and verification must be recorded here after implementation.
+
+**Mapped file surface confirmed**
+- `kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx`
+- `kelmah-frontend/src/modules/worker/services/applicationsService.js`
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/contracts/pages/ContractManagementPage.jsx`
+- `kelmah-frontend/src/modules/contracts/pages/ContractsPage.jsx`
+- `kelmah-frontend/src/modules/contracts/contexts/ContractContext.jsx`
+- `kelmah-frontend/src/modules/contracts/services/contractService.js`
+- `kelmah-backend/api-gateway/routes/job.routes.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+
+**Findings**
+- `/worker/applications` was rendering raw backend shapes directly. The job-service returns lean `Application` documents with only minimal `job` population, and the frontend page assumed `status`, `category`, and `location` were always render-safe strings.
+- The immediate crash matched React error #31: `MyApplicationsPage` passed `getStatusInfo(application.status).label` into `Chip`. When `status` arrived as an object (for example `{ type: ... }`), React tried to render that object.
+- The same page had a second hidden render hazard: several views would fall through to `application.job.location` directly, which can also be an object and cause the same class of crash.
+- `/worker/contracts` was correctly wrapped in `ContractProvider`, but it used a worker-specific page with weak UX and invalid status assumptions.
+- `ContractManagementPage` exposed a `New Contract` CTA to workers even though creation is protected for hirers/admins, and one tab filtered by `dispute` even though the backend `Contract` model uses `draft`, `pending`, `active`, `completed`, `terminated`, and `cancelled`.
+- The worker contracts experience is also architecturally duplicated: `/worker/contracts` renders `ContractManagementPage`, while top-level `/contracts` renders `ContractsPage`, so workers see a different and less capable contracts experience depending on route.
+
+**Implemented fixes**
+- `kelmah-frontend/src/modules/worker/services/applicationsService.js`
+  - Added boundary normalization for application records so `status`, `job.title`, `job.category`, and `job.location` are always converted to safe display strings before `MyApplicationsPage` renders them.
+  - Reused the same normalization for `getMyApplications()`, `getApplicationById()`, `submitApplication()`, `updateApplication()`, and stats derivation.
+- `kelmah-frontend/src/modules/contracts/pages/ContractManagementPage.jsx`
+  - Removed worker-inappropriate contract creation affordances by showing create actions only to `hirer`/`admin` users.
+  - Replaced the invalid `Disputes` tab with a `Closed` view backed by real backend statuses (`terminated`, `cancelled`).
+  - Updated the worker empty-state message to explain that contracts appear after a hirer creates one.
+
+**Verification**
+- `get_errors` returned clean results for:
+  - `kelmah-frontend/src/modules/worker/services/applicationsService.js`
+  - `kelmah-frontend/src/modules/contracts/pages/ContractManagementPage.jsx`
+  - `kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx`
+- Frontend production build passed successfully with `npm run build` in `kelmah-frontend/`.
+
+### Session: Mobile App Strategy & Delivery Plan ✅ COMPLETED
+
+**Date**: March 6, 2026
+**Scope**: Produce a drafted implementation plan and technical documentation for a new Kelmah mobile app for Android and iOS that consumes the API Gateway.
+
+**Acceptance Criteria**
+- Recommend the most suitable mobile technology stack for Kelmah with explicit trade-offs.
+- Map the mobile app architecture against the existing API Gateway and realtime messaging flow.
+- Define phased delivery plan, module breakdown, performance strategy, and release checklist.
+- Publish the planning document in `spec-kit/` and record the work in `STATUS_LOG.md`.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/api-gateway/server.js`
+- `kelmah-frontend/API_FLOW_ARCHITECTURE.md`
+- `kelmah-frontend/src/config/environment.js`
+- `kelmah-frontend/src/services/socketUrl.js`
+- `kelmah-frontend/src/services/websocketService.js`
+- `spec-kit/PLATFORM_MOBILE_BACKEND_AUDIT_FEB15_2026.md`
+- `spec-kit/MOBILE_UI_AUDIT_MAR02_2026.md`
+
+**Current assessment**
+- Existing platform already centralizes mobile-suitable traffic through the API Gateway and Socket.IO-compatible realtime flow.
+- Fastest delivery with maximum web-team familiarity would be React Native + TypeScript.
+- Best balance for smoothness, startup performance, and consistent cross-platform UX is currently Flutter + Dart.
+
+**Deliverables produced**
+- Created `spec-kit/KELMAH_MOBILE_APP_PLAN_MAR06_2026.md` with:
+  - stack recommendation and trade-off analysis,
+  - mobile architecture and backend integration plan,
+  - feature scope and phased delivery roadmap,
+  - performance, security, and release guidance.
+
+**Final recommendation**
+- Build the mobile app in **Flutter + Dart**.
+- Use **Kotlin** and **Swift** only for isolated native bridge work.
+- Point the app to a **stable API Gateway production domain**, not LocalTunnel, for shipped builds.
+
+---
+
 ### Session: Messaging Temporary Recipient Chats ✅
 
 **Date**: March 6, 2026

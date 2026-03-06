@@ -19,14 +19,24 @@ import {
   DescriptionOutlined as DescriptionOutlinedIcon,
 } from '@mui/icons-material';
 import { useContracts } from '../contexts/ContractContext';
+import { useAuth } from '../../auth/hooks/useAuth';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import ContractCard from '../components/common/ContractCard';
 
 const ContractManagementPage = () => {
   const { contracts, loading, error } = useContracts();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [tabValue, setTabValue] = useState(0);
+  const canCreateContract = ['hirer', 'admin'].includes(user?.role);
+  const statusTabs = [
+    { value: 'all', label: 'All' },
+    { value: 'active', label: 'Active' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'closed', label: 'Closed' },
+  ];
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -34,9 +44,14 @@ const ContractManagementPage = () => {
 
   const filteredContracts = useMemo(() => {
     if (loading) return [];
-    const statusMap = ['all', 'active', 'pending', 'completed', 'dispute'];
-    const selectedStatus = statusMap[tabValue];
+    const selectedStatus = statusTabs[tabValue]?.value || 'all';
     if (selectedStatus === 'all') return contracts || [];
+    if (selectedStatus === 'closed') {
+      return (contracts || []).filter(
+        (contract) =>
+          contract.status === 'terminated' || contract.status === 'cancelled',
+      );
+    }
     return (contracts || []).filter((contract) => contract.status === selectedStatus);
   }, [contracts, tabValue, loading]);
 
@@ -59,19 +74,21 @@ const ContractManagementPage = () => {
             sx={{ fontSize: 36, mr: 1.5, color: 'secondary.main' }}
           />
           <Typography variant="h4" fontWeight="bold">
-            Contract Management
+            {canCreateContract ? 'Contract Management' : 'My Contracts'}
           </Typography>
         </Box>
-        <Button
-          component={Link}
-          to="/contracts/create"
-          startIcon={<AddIcon />}
-          variant="contained"
-          color="secondary"
-          sx={{ fontWeight: 'bold' }}
-        >
-          New Contract
-        </Button>
+        {canCreateContract && (
+          <Button
+            component={Link}
+            to="/contracts/create"
+            startIcon={<AddIcon />}
+            variant="contained"
+            color="secondary"
+            sx={{ fontWeight: 'bold' }}
+          >
+            New Contract
+          </Button>
+        )}
       </Box>
 
       {/* Summary line for contract counts */}
@@ -113,21 +130,22 @@ const ContractManagementPage = () => {
             },
           }}
         >
-          <Tab
-            label={`All (${Array.isArray(contracts) ? contracts.length : 0})`}
-          />
-          <Tab
-            label={`Active (${Array.isArray(contracts) ? contracts.filter((c) => c.status === 'active').length : 0})`}
-          />
-          <Tab
-            label={`Pending (${Array.isArray(contracts) ? contracts.filter((c) => c.status === 'pending').length : 0})`}
-          />
-          <Tab
-            label={`Completed (${Array.isArray(contracts) ? contracts.filter((c) => c.status === 'completed').length : 0})`}
-          />
-          <Tab
-            label={`Disputes (${Array.isArray(contracts) ? contracts.filter((c) => c.status === 'dispute').length : 0})`}
-          />
+          {statusTabs.map((tab) => {
+            const total = Array.isArray(contracts)
+              ? tab.value === 'all'
+                ? contracts.length
+                : tab.value === 'closed'
+                  ? contracts.filter(
+                    (contract) =>
+                      contract.status === 'terminated' ||
+                      contract.status === 'cancelled',
+                  ).length
+                  : contracts.filter((contract) => contract.status === tab.value)
+                    .length
+              : 0;
+
+            return <Tab key={tab.value} label={`${tab.label} (${total})`} />;
+          })}
         </Tabs>
       </Paper>
 
@@ -173,17 +191,21 @@ const ContractManagementPage = () => {
                   No contracts found in this category
                 </Typography>
                 <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
-                  Try a different category or create a new contract to get started.
+                  {canCreateContract
+                    ? 'Try a different status filter or create a new contract to get started.'
+                    : 'Contracts created for your accepted jobs will appear here once a hirer sends one to you.'}
                 </Typography>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  startIcon={<AddIcon />}
-                  onClick={() => navigate('/contracts/create')}
-                  sx={{ minHeight: 44 }}
-                >
-                  Create Contract
-                </Button>
+                {canCreateContract ? (
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<AddIcon />}
+                    onClick={() => navigate('/contracts/create')}
+                    sx={{ minHeight: 44 }}
+                  >
+                    Create Contract
+                  </Button>
+                ) : null}
               </Box>
             </Grid>
           )}

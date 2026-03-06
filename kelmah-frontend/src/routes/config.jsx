@@ -108,12 +108,9 @@ const JobBidsPage = lazy(
   () => import('../modules/hirer/pages/JobBidsPage'),
 );
 
-// Scheduling, Contracts, Payment pages
+// Scheduling, Payment pages
 const SchedulingPage = lazy(
   () => import('../modules/scheduling/pages/SchedulingPage'),
-);
-const ContractManagementPage = lazy(
-  () => import('../modules/contracts/pages/ContractManagementPage'),
 );
 const PaymentCenterPage = lazy(
   () => import('../modules/payment/pages/PaymentCenterPage'),
@@ -574,7 +571,7 @@ const routes = [
               <ProtectedRoute roles={['worker', 'admin']}>
                 <RouteErrorBoundary label="Contracts">
                   <ContractProvider>
-                    <ContractManagementPage />
+                    <ContractsPage />
                   </ContractProvider>
                 </RouteErrorBoundary>
               </ProtectedRoute>

@@ -25,6 +25,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import BlockIcon from '@mui/icons-material/Block';
+import DraftsIcon from '@mui/icons-material/Drafts';
 import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { formatDistanceToNow } from 'date-fns';
@@ -38,10 +40,11 @@ import EmptyState from '../../../components/common/EmptyState';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All contracts' },
+  { value: 'draft', label: 'Drafts' },
+  { value: 'pending', label: 'Pending' },
   { value: 'active', label: 'Active' },
   { value: 'completed', label: 'Completed' },
-  { value: 'pending', label: 'Pending signature' },
-  { value: 'overdue', label: 'Overdue' },
+  { value: 'closed', label: 'Closed' },
 ];
 
 const SORT_OPTIONS = [
@@ -52,23 +55,28 @@ const SORT_OPTIONS = [
 ];
 
 const statusIconMap = {
+  draft: <DraftsIcon color="info" fontSize="small" />,
   active: <CheckCircleIcon color="success" fontSize="small" />,
   completed: <CheckCircleIcon color="primary" fontSize="small" />,
   pending: <WatchLaterIcon color="warning" fontSize="small" />,
   'pending-signature': <WatchLaterIcon color="warning" fontSize="small" />,
-  overdue: <ErrorOutlineIcon color="error" fontSize="small" />,
+  terminated: <BlockIcon color="error" fontSize="small" />,
+  cancelled: <ErrorOutlineIcon color="error" fontSize="small" />,
 };
 
 const statusChipColor = {
+  draft: 'info',
   active: 'success',
   completed: 'primary',
   pending: 'warning',
   'pending-signature': 'warning',
-  overdue: 'error',
+  terminated: 'error',
+  cancelled: 'error',
 };
 
 const ContractsPage = () => {
   const { user } = useAuth();
+  const canCreateContract = ['hirer', 'admin'].includes(user?.role);
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -117,6 +125,12 @@ const ContractsPage = () => {
 
     const matchesStatus = (contract) => {
       if (statusFilter === 'all') return true;
+      if (statusFilter === 'closed') {
+        return (
+          contract.status === 'terminated' ||
+          contract.status === 'cancelled'
+        );
+      }
       if (statusFilter === 'pending') {
         return (
           contract.status === 'pending' ||
@@ -180,10 +194,12 @@ const ContractsPage = () => {
       >
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            Contracts Overview
+            {canCreateContract ? 'Contracts Overview' : 'My Contracts'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Manage and track all your contracts in one place
+            {canCreateContract
+              ? 'Manage and track all your contracts in one place'
+              : 'Track every contract that has been sent to you and monitor delivery progress'}
             {user?.profile?.name ? `, ${user.profile.name}` : ''}.
           </Typography>
         </Box>
@@ -197,14 +213,16 @@ const ContractsPage = () => {
           >
             {isRefreshing ? 'Refreshing…' : 'Refresh'}
           </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            component={RouterLink}
-            to="/contracts/create"
-          >
-            New Contract
-          </Button>
+          {canCreateContract ? (
+            <Button
+              variant="contained"
+              color="secondary"
+              component={RouterLink}
+              to="/contracts/create"
+            >
+              New Contract
+            </Button>
+          ) : null}
         </Stack>
       </Stack>
 
@@ -309,7 +327,7 @@ const ContractsPage = () => {
                     </Typography>
                   </Box>
                   <Chip
-                    label={(contract.status || 'pending').replace('-', ' ')}
+                    label={(contract.status || 'pending').replace(/[-_]/g, ' ')}
                     color={statusChipColor[contract.status] || 'default'}
                     icon={
                       statusIconMap[contract.status] || (
@@ -378,9 +396,13 @@ const ContractsPage = () => {
               <EmptyState
                 variant="contracts"
                 title="No contracts match your filters yet"
-                subtitle="Try adjusting your search or create a new contract to get started."
-                actionLabel="Create Contract"
-                onAction={() => navigate('/contracts/create')}
+                subtitle={canCreateContract
+                  ? 'Try adjusting your search or create a new contract to get started.'
+                  : 'Try adjusting your search or refresh this page. Contracts sent by hirers for your accepted jobs will appear here.'}
+                actionLabel={canCreateContract ? 'Create Contract' : 'Refresh'}
+                onAction={canCreateContract
+                  ? () => navigate('/contracts/create')
+                  : refreshContracts}
               />
             </Box>
           </Grid>

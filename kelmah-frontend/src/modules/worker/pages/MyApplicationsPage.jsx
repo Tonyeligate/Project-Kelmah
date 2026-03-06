@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Typography,
   Paper,
+  Alert,
   Tabs,
   Tab,
   Box,
@@ -53,6 +54,7 @@ const MyApplicationsPage = () => {
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [tabValue, setTabValue] = useState(0);
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
@@ -60,28 +62,45 @@ const MyApplicationsPage = () => {
   const [message, setMessage] = useState('');
   const theme = useTheme();
 
+  const getErrorMessage = useCallback((requestError) => {
+    const apiMessage = requestError?.response?.data?.error?.message
+      || requestError?.response?.data?.message;
+
+    if (apiMessage) {
+      return apiMessage;
+    }
+
+    if (!requestError?.response) {
+      return 'We could not reach the applications service. Check your connection and try again.';
+    }
+
+    return 'We could not load your applications right now. Please try again.';
+  }, []);
+
+  const loadApplications = useCallback(async (isCancelled = () => false) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await applicationsService.getMyApplications();
+      if (isCancelled()) return;
+      setApplications(Array.isArray(data) ? data : []);
+    } catch (requestError) {
+      if (isCancelled()) return;
+      if (import.meta.env.DEV) console.error('Error loading applications:', requestError);
+      setApplications([]);
+      setError(getErrorMessage(requestError));
+    } finally {
+      if (!isCancelled()) setLoading(false);
+    }
+  }, [getErrorMessage]);
+
   // Load applications from API
   useEffect(() => {
     let cancelled = false;
-    const fetchApplications = async () => {
-      try {
-        const data = await applicationsService.getMyApplications();
-        if (cancelled) return;
-        // Ensure data is an array, fallback to empty array if not
-        const applicationsArray = Array.isArray(data) ? data : [];
-        setApplications(applicationsArray);
-      } catch (error) {
-        if (cancelled) return;
-        // AUD2-L06 FIX: Suppress console output in production
-        if (import.meta.env.DEV) console.error('Error loading applications:', error);
-        setApplications([]); // Set empty array as fallback
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-    fetchApplications();
+    loadApplications(() => cancelled);
     return () => { cancelled = true; };
-  }, []);
+  }, [loadApplications]);
 
   // Handle tab change
   const handleTabChange = (event, newValue) => {
@@ -278,6 +297,20 @@ const MyApplicationsPage = () => {
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
               <CircularProgress color="primary" />
             </Box>
+          ) : error ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Alert severity="error" sx={{ mb: 2, textAlign: 'left' }}>
+                {error}
+              </Alert>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => loadApplications()}
+                sx={{ minHeight: 44 }}
+              >
+                Try Again
+              </Button>
+            </Box>
           ) : filteredApplications.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 6 }}>
               <WorkOutlineIcon sx={{ fontSize: 60, color: 'text.disabled', mb: 2 }} />
@@ -421,6 +454,19 @@ const MyApplicationsPage = () => {
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
             <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Box sx={{ p: 4 }}>
+            <Alert
+              severity="error"
+              action={(
+                <Button color="inherit" size="small" onClick={() => loadApplications()}>
+                  Retry
+                </Button>
+              )}
+            >
+              {error}
+            </Alert>
           </Box>
         ) : filteredApplications.length === 0 ? (
           <Box sx={{ p: 4, textAlign: 'center' }}>
