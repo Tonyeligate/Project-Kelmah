@@ -6,8 +6,10 @@
 
 import axios from 'axios';
 import { api } from '../../../services/apiClient';
+import store from '../../../store';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
 import { secureStorage } from '../../../utils/secureStorage';
+import authService from '../../auth/services/authService';
 
 /**
  * Call a Vercel serverless bridge endpoint (bypasses API Gateway proxy).
@@ -24,16 +26,50 @@ const shouldUseBridge = () =>
   typeof window !== 'undefined' &&
   !['localhost', '127.0.0.1'].includes(window.location?.hostname);
 
-const bridgePost = async (path, data, timeoutMs = 45000) => {
-  // Key must match apiClient.js — secureStorage stores the JWT under 'auth_token'
-  const token = secureStorage.getItem('auth_token');
-  return axios.post(path, data, {
+const getBridgeToken = async ({ forceRefresh = false } = {}) => {
+  if (!forceRefresh) {
+    const reduxToken = store.getState()?.auth?.token;
+    if (reduxToken) return reduxToken;
+
+    const storedToken = secureStorage.getAuthToken();
+    if (storedToken) return storedToken;
+  }
+
+  const refreshResult = await authService.refreshToken();
+  if (refreshResult?.success && refreshResult.token) {
+    return refreshResult.token;
+  }
+
+  return null;
+};
+
+const postBridgeWithToken = (path, data, timeoutMs, token) =>
+  axios.post(path, data, {
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     timeout: timeoutMs,
   });
+
+const bridgePost = async (path, data, timeoutMs = 45000) => {
+  let token = await getBridgeToken();
+
+  try {
+    return await postBridgeWithToken(path, data, timeoutMs, token);
+  } catch (error) {
+    if (error.response?.status !== 401) {
+      throw error;
+    }
+
+    const refreshedToken = await getBridgeToken({ forceRefresh: true });
+    if (!refreshedToken || refreshedToken === token) {
+      throw error;
+    }
+
+    token = refreshedToken;
+    return postBridgeWithToken(path, data, timeoutMs, token);
+  }
 };
 
 const normalizeParticipant = (participant = {}) => {

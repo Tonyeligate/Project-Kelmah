@@ -1,5 +1,55 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Messaging System Full Dry Audit & Runtime Verification ✅ COMPLETED
+
+**Date**: March 6, 2026
+**Scope**: End-to-end messaging deep audit covering worker-profile CTA routing, messaging deep-links, conversation creation, message sending, realtime socket delivery, unread/read tick flow, inbox media previews, notification propagation, Vercel bridge auth, API gateway routing, and messaging-service controller/socket consistency.
+
+**Acceptance Criteria**
+- Clicking any messaging CTA opens the correct conversation for the selected user.
+- Conversation creation works from deployed Vercel routes without 401/404/504 regressions.
+- Sent messages persist, update live, and do not leave console 401/504 noise in standard flows.
+- Inbox preview labels media as photo/video/file instead of raw URLs.
+- Read receipts, unread counts, online/offline presence, and browser/platform notifications stay synchronized.
+- Audit findings are documented with severity, file locations, causes, and concrete fixes.
+
+**Mapped file surface for dry audit (confirmed)**
+- Frontend entry/CTA: `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+- Messaging UI/state: `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`, `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`, `kelmah-frontend/src/modules/messaging/services/messagingService.js`
+- Messaging media/rendering: `kelmah-frontend/src/modules/messaging/components/common/Message.jsx`, `MessageAttachments.jsx`, `ConversationList.jsx`
+- Shared realtime/notifications: `kelmah-frontend/src/services/websocketService.js`, `kelmah-frontend/src/modules/notifications/services/notificationService.js`, `notificationSlice.js`
+- Bridge layer: `kelmah-frontend/api/create-conversation.js`, `kelmah-frontend/api/send-message.js`, root/frontend `vercel.json`
+- Gateway: `kelmah-backend/api-gateway/routes/messaging.routes.js`
+- Messaging service: `kelmah-backend/services/messaging-service/server.js`, `routes/*.js`, `controllers/conversation.controller.js`, `controllers/message.controller.js`, `controllers/notification.controller.js`, `socket/messageSocket.js`, `models/Conversation.js`, `models/Message.js`, `middlewares/auth.middleware.js`, `utils/validation.js`
+
+**Implemented fixes**
+- `kelmah-frontend/src/modules/messaging/services/messagingService.js`
+  - Bridge POST auth now resolves the JWT from Redux first, falls back to secure storage, and retries once after refresh on 401.
+- `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`
+  - Added message dedupe by persisted ID, optimistic-placeholder replacement, conversation activity sorting, and stale `conversation_joined` listener cleanup.
+- `kelmah-frontend/src/modules/messaging/components/common/Message.jsx`
+  - Normalized component rendering to honor `message.messageType` / `message.fileType` so media messages no longer fall back to plain text.
+- `kelmah-backend/services/messaging-service/controllers/message.controller.js`
+  - Enforced conversation membership for REST sends, normalized recipient resolution, and emitted realtime delivery events from REST-created messages.
+- `kelmah-backend/services/messaging-service/socket/messageSocket.js`
+  - Normalized presence keys to strings, incremented unread counts on websocket sends, fixed offline-notification links, and enriched socket bootstrap conversation payloads.
+- `spec-kit/MESSAGING_FULL_AUDIT_MAR06_2026.md`
+  - Added complete dry-audit notes, end-to-end flow, runtime verification evidence, and remaining risk items.
+
+**Verification completed**
+- Live gateway authentication succeeded with the test user.
+- Live deployed bridge endpoints returned success:
+  - `POST /api/create-conversation` → 200
+  - `POST /api/send-message` → 201
+- File-level problem checks reported no errors on the edited runtime files.
+- Backend syntax validation had already been confirmed clean on the touched service files.
+
+**Remaining follow-up**
+- Push the local patch set so Vercel/Render deploy the final fixes.
+- Re-run browser/E2E verification for CTA open-chat flow, realtime delivery, unread counts, and notification behavior once deployment completes.
+
+---
+
 ### Session: Build Fix + All Messaging Audit Changes Deployed ✅ CRITICAL
 
 **Date**: March 6, 2026 (continued)

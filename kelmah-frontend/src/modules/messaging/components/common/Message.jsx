@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {
   Avatar,
@@ -13,7 +13,6 @@ import {
   Paper,
   Fade,
   Chip,
-  Badge,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -31,10 +30,6 @@ import {
   Check as SentIcon,
   LockOutlined as LockIcon,
   InsertDriveFile as FileIcon,
-  Image as ImageIcon,
-  PictureAsPdf as PdfIcon,
-  Videocam as VideoIcon,
-  AudioFile as AudioIcon,
 } from '@mui/icons-material';
 import { useInView } from 'react-intersection-observer';
 import MessageAttachments from './MessageAttachments';
@@ -75,13 +70,6 @@ const MessageTime = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.secondary,
   marginTop: theme.spacing(0.5),
   textAlign: 'right',
-}));
-
-const MessageStatus = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-end',
-  marginTop: theme.spacing(0.5),
 }));
 
 const Message = ({
@@ -177,24 +165,40 @@ const Message = ({
     }
 
     const { content, type, imageUrl, fileName } = message;
+    const effectiveType =
+      type ||
+      message.messageType ||
+      message.fileType ||
+      (Array.isArray(message.attachments) && message.attachments.length > 0
+        ? 'file'
+        : 'text');
     
     // Auto-detect raw media URLs sent as text
-    const isRawImageUrl = type !== 'image' && content && 
-      typeof content === 'string' && 
-      content.startsWith('http') && 
-      content.match(/\.(jpeg|jpg|gif|png|webp|bmp)($|\?)/i) && 
+    const isRawImageUrl =
+      effectiveType !== 'image' &&
+      content &&
+      typeof content === 'string' &&
+      content.startsWith('http') &&
+      content.match(/\.(jpeg|jpg|gif|png|webp|bmp)($|\?)/i) &&
       (!message.attachments || message.attachments.length === 0);
-      
-    const isRawVideoUrl = type !== 'video' && content && 
-      typeof content === 'string' && 
-      content.startsWith('http') && 
-      content.match(/\.(mp4|webm|avi|mov)($|\?)/i) && 
+
+    const isRawVideoUrl =
+      effectiveType !== 'video' &&
+      content &&
+      typeof content === 'string' &&
+      content.startsWith('http') &&
+      content.match(/\.(mp4|webm|avi|mov)($|\?)/i) &&
       (!message.attachments || message.attachments.length === 0);
 
     if (isRawImageUrl) {
       return (
         <Box>
-          <Box component="img" src={content} alt="Shared image" sx={{ maxWidth: '100%', borderRadius: 1 }} />
+          <Box
+            component="img"
+            src={content}
+            alt="Shared image"
+            sx={{ maxWidth: '100%', borderRadius: 1 }}
+          />
         </Box>
       );
     }
@@ -202,14 +206,20 @@ const Message = ({
     if (isRawVideoUrl) {
       return (
         <Box>
-          <Box component="video" controls src={content} sx={{ maxWidth: '100%', borderRadius: 1 }} />
+          <Box
+            component="video"
+            controls
+            src={content}
+            sx={{ maxWidth: '100%', borderRadius: 1 }}
+          />
         </Box>
       );
     }
 
-    switch (type) {
+    switch (effectiveType) {
       case 'image': {
-        const urlToUse = imageUrl || (content?.startsWith('http') ? content : null);
+        const urlToUse =
+          imageUrl || (content?.startsWith('http') ? content : null);
         return (
           <Box>
             {content && content !== urlToUse && content !== '[Attachment]' && (
@@ -230,7 +240,8 @@ const Message = ({
       }
 
       case 'video': {
-        const fileUrlToUse = message.fileUrl || (content?.startsWith('http') ? content : null);
+        const fileUrlToUse =
+          message.fileUrl || (content?.startsWith('http') ? content : null);
         return (
           <Box>
             {content && content !== fileUrlToUse && content !== '[Attachment]' && (
@@ -239,7 +250,12 @@ const Message = ({
               </Typography>
             )}
             {fileUrlToUse && (
-              <Box component="video" controls src={fileUrlToUse} sx={{ maxWidth: '100%', borderRadius: 1 }} />
+              <Box
+                component="video"
+                controls
+                src={fileUrlToUse}
+                sx={{ maxWidth: '100%', borderRadius: 1 }}
+              />
             )}
           </Box>
         );
@@ -282,8 +298,28 @@ const Message = ({
       default:
         // Regular text
         // Ensure URLs can be clicked if they are present in normal text
-        if (content && typeof content === 'string' && content.startsWith('http') && !content.includes(' ')) {
-           return <Typography variant="body2" component="a" href={content} target="_blank" rel="noopener noreferrer" sx={{ color: 'primary.main', textDecoration: 'underline', wordBreak: 'break-all' }}>{content}</Typography>;
+        if (
+          content &&
+          typeof content === 'string' &&
+          content.startsWith('http') &&
+          !content.includes(' ')
+        ) {
+          return (
+            <Typography
+              variant="body2"
+              component="a"
+              href={content}
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
+                color: 'primary.main',
+                textDecoration: 'underline',
+                wordBreak: 'break-all',
+              }}
+            >
+              {content}
+            </Typography>
+          );
         }
         return <Typography variant="body2">{content}</Typography>;
     }
@@ -508,8 +544,14 @@ Message.propTypes = {
     id: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
     type: PropTypes.string,
+    messageType: PropTypes.string,
+    fileType: PropTypes.string,
+    imageUrl: PropTypes.string,
+    fileName: PropTypes.string,
+    fileUrl: PropTypes.string,
     createdAt: PropTypes.string.isRequired,
     isRead: PropTypes.bool,
+    status: PropTypes.string,
     sender: PropTypes.object,
     attachments: PropTypes.array,
     encrypted: PropTypes.bool,

@@ -1,4 +1,4 @@
-import React, {
+import {
   createContext,
   useState,
   useEffect,
@@ -135,6 +135,17 @@ const normalizeConversationList = (list = []) =>
 const normalizeMessageList = (list = []) =>
   list.map((message) => normalizeMessageAttachments(message || {}));
 
+const sortConversationsByActivity = (list = []) =>
+  [...list].sort((left, right) => {
+    const leftStamp = new Date(
+      left?.lastMessage?.createdAt || left?.lastMessage?.timestamp || left?.updatedAt || 0,
+    ).getTime();
+    const rightStamp = new Date(
+      right?.lastMessage?.createdAt || right?.lastMessage?.timestamp || right?.updatedAt || 0,
+    ).getTime();
+    return rightStamp - leftStamp;
+  });
+
 export const useMessages = () => {
   const context = useContext(MessageContext);
   if (!context) {
@@ -149,6 +160,8 @@ export const MessageProvider = ({ children }) => {
   const connectingRef = useRef(false);
   const selectedConversationRef = useRef(null);
   const getTokenRef = useRef(getToken);
+  const conversationJoinHandlerRef = useRef(null);
+  const conversationLoadTimeoutRef = useRef(null);
   // Stores named handler references so we can remove ONLY our listeners on cleanup
   const msgListenersRef = useRef({});
 
@@ -189,7 +202,9 @@ export const MessageProvider = ({ children }) => {
         const convs = Array.isArray(response)
           ? response
           : response?.conversations || response?.data || [];
-        const normalized = normalizeConversationList(convs);
+        const normalized = sortConversationsByActivity(
+          normalizeConversationList(convs),
+        );
         setConversations(normalized);
         setLoadingConversations(false);
         return normalized; // Return list for callers that need it
@@ -274,7 +289,14 @@ export const MessageProvider = ({ children }) => {
       const onConnected = (data) => {
         if (import.meta.env.DEV) console.log('🎉 Messaging service connected:', data);
         if (data.conversations) {
-          setConversations(normalizeConversationList(data.conversations));
+          setConversations((prev) => {
+            if (Array.isArray(prev) && prev.length > 0) {
+              return prev;
+            }
+            return sortConversationsByActivity(
+              normalizeConversationList(data.conversations),
+            );
+          });
         }
         if (Array.isArray(data?.onlineUsers)) {
           setOnlineUsers(new Set(data.onlineUsers.map((id) => String(id))));
@@ -292,6 +314,18 @@ export const MessageProvider = ({ children }) => {
         ) {
           setMessages((prev) => {
             const { clientId } = hydratedMessage;
+            const existingIdIndex = prev.findIndex(
+              (message) => String(message.id) === String(hydratedMessage.id),
+            );
+            if (existingIdIndex !== -1) {
+              const updated = [...prev];
+              updated[existingIdIndex] = {
+                ...updated[existingIdIndex],
+                ...hydratedMessage,
+                status: 'sent',
+              };
+              return updated;
+            }
             if (clientId) {
               const index = prev.findIndex((m) => m.id === clientId);
               if (index !== -1) {
@@ -306,19 +340,23 @@ export const MessageProvider = ({ children }) => {
 
         const activeConvId = activeConversation?.id;
         setConversations((prev) =>
-          prev.map((conv) =>
-            conv.id === hydratedConversationId
-              ? {
-                ...conv,
-                lastMessage: hydratedMessage,
-                updatedAt: hydratedMessage.createdAt,
-                // Increment unread badge only when this conversation is NOT currently open
-                unreadCount:
-                  conv.id !== activeConvId
-                    ? (conv.unreadCount || 0) + 1
-                    : conv.unreadCount,
-              }
-              : conv,
+          sortConversationsByActivity(
+            prev.map((conv) =>
+              conv.id === hydratedConversationId
+                ? {
+                  ...conv,
+                  lastMessage: hydratedMessage,
+                  updatedAt: hydratedMessage.createdAt,
+                  // Increment unread badge only when this conversation is NOT currently open
+                  unreadCount:
+                    conv.id !== activeConvId
+                      ? (conv.unreadCount || 0) + 1
+                      : 0,
+                  unread:
+                    conv.id !== activeConvId ? (conv.unread || 0) + 1 : 0,
+                }
+                : conv,
+            ),
           ),
         );
       };
@@ -432,6 +470,10 @@ export const MessageProvider = ({ children }) => {
   // connection for notifications and all other features too.
   const disconnectWebSocket = useCallback(() => {
     const activeSocket = socketRef.current;
+    if (conversationLoadTimeoutRef.current) {
+      clearTimeout(conversationLoadTimeoutRef.current);
+      conversationLoadTimeoutRef.current = null;
+    }
     if (activeSocket) {
       if (import.meta.env.DEV) console.log('🔌 MessageContext: detaching messaging listeners from shared socket');
       const msgListeners = msgListenersRef.current;
@@ -445,6 +487,10 @@ export const MessageProvider = ({ children }) => {
         messagingEvents.forEach(evt => {
           if (msgListeners[evt]) activeSocket.off(evt, msgListeners[evt]);
         });
+        if (conversationJoinHandlerRef.current) {
+          activeSocket.off('conversation_joined', conversationJoinHandlerRef.current);
+          conversationJoinHandlerRef.current = null;
+        }
         msgListenersRef.current = {};
       } catch (error) {
         if (import.meta.env.DEV) console.warn('Failed to remove messaging listeners', error);
@@ -489,6 +535,15 @@ export const MessageProvider = ({ children }) => {
         });
       }
 
+      if (socket && conversationJoinHandlerRef.current) {
+        socket.off('conversation_joined', conversationJoinHandlerRef.current);
+        conversationJoinHandlerRef.current = null;
+      }
+      if (conversationLoadTimeoutRef.current) {
+        clearTimeout(conversationLoadTimeoutRef.current);
+        conversationLoadTimeoutRef.current = null;
+      }
+
       setSelectedConversation(normalizedConversation);
       setLoadingMessages(true);
       loadingMessagesRef.current = true;
@@ -515,16 +570,30 @@ export const MessageProvider = ({ children }) => {
           });
 
           // Listen for conversation joined event
-          socket.once('conversation_joined', (data) => {
+          const handleConversationJoined = (data) => {
+            if (String(data?.conversationId) !== String(normalizedConversation.id)) {
+              return;
+            }
+            if (conversationJoinHandlerRef.current) {
+              socket.off('conversation_joined', conversationJoinHandlerRef.current);
+              conversationJoinHandlerRef.current = null;
+            }
+            if (conversationLoadTimeoutRef.current) {
+              clearTimeout(conversationLoadTimeoutRef.current);
+              conversationLoadTimeoutRef.current = null;
+            }
             if (import.meta.env.DEV) console.log('🏠 Joined conversation:', data);
             setMessages(normalizeMessageList(data.messages || []));
             setLoadingMessages(false);
             loadingMessagesRef.current = false;
-          });
+          };
+
+          conversationJoinHandlerRef.current = handleConversationJoined;
+          socket.on('conversation_joined', handleConversationJoined);
 
           // MED-21 FIX: Fallback timeout — fetch via REST if WS doesn't respond in time
           const conversationId = normalizedConversation.id;
-          setTimeout(async () => {
+          conversationLoadTimeoutRef.current = setTimeout(async () => {
             if (loadingMessagesRef.current) {
               try {
                 const fallbackMessages = await messagingService.getMessages(conversationId);
@@ -532,8 +601,13 @@ export const MessageProvider = ({ children }) => {
               } catch (fallbackErr) {
                 if (import.meta.env.DEV) console.warn('REST fallback for messages also failed:', fallbackErr.message);
               } finally {
+                if (conversationJoinHandlerRef.current) {
+                  socket.off('conversation_joined', conversationJoinHandlerRef.current);
+                  conversationJoinHandlerRef.current = null;
+                }
                 setLoadingMessages(false);
                 loadingMessagesRef.current = false;
+                conversationLoadTimeoutRef.current = null;
               }
             }
           }, 5000);
@@ -611,10 +685,16 @@ export const MessageProvider = ({ children }) => {
           };
           setMessages((prev) => [...prev, optimisticMessage]);
           setConversations((prev) =>
-            prev.map((c) =>
-              c.id === selectedConversation.id
-                ? { ...c, lastMessage: optimisticMessage }
-                : c,
+            sortConversationsByActivity(
+              prev.map((c) =>
+                c.id === selectedConversation.id
+                  ? {
+                    ...c,
+                    lastMessage: optimisticMessage,
+                    updatedAt: optimisticMessage.createdAt,
+                  }
+                  : c,
+              ),
             ),
           );
 
@@ -662,19 +742,42 @@ export const MessageProvider = ({ children }) => {
                   selectedConversation.id,
                 );
                 const normalized = normalizeMessageAttachments(newMessage);
-                // Mark optimistic message as failed and append REST message
+                // Replace the optimistic placeholder with the persisted message.
+                // If the realtime echo already arrived, update in place instead of duplicating.
                 setMessages((prev) => {
+                  const existingPersistedIndex = prev.findIndex(
+                    (message) => String(message.id) === String(normalized.id),
+                  );
+                  if (existingPersistedIndex !== -1) {
+                    const updated = [...prev];
+                    updated[existingPersistedIndex] = {
+                      ...updated[existingPersistedIndex],
+                      ...normalized,
+                      status: 'sent',
+                    };
+                    return updated;
+                  }
+
                   const idx = prev.findIndex((m) => m.id === clientId);
+                  if (idx === -1) {
+                    return [...prev, normalized];
+                  }
+
                   const copy = [...prev];
-                  if (idx !== -1)
-                    copy[idx] = { ...copy[idx], status: 'failed' };
-                  return [...copy, normalized];
+                  copy[idx] = { ...normalized, status: 'sent' };
+                  return copy;
                 });
                 setConversations((prev) =>
-                  prev.map((c) =>
-                    c.id === selectedConversation.id
-                      ? { ...c, lastMessage: normalized }
-                      : c,
+                  sortConversationsByActivity(
+                    prev.map((c) =>
+                      c.id === selectedConversation.id
+                        ? {
+                          ...c,
+                          lastMessage: normalized,
+                          updatedAt: normalized.createdAt,
+                        }
+                        : c,
+                    ),
                   ),
                 );
               } catch (e) {
@@ -713,12 +816,27 @@ export const MessageProvider = ({ children }) => {
             selectedConversation.id,
           );
           const normalized = normalizeMessageAttachments(newMessage);
-          setMessages((prev) => [...prev, normalized]);
+          setMessages((prev) => {
+            const existingIndex = prev.findIndex(
+              (message) => String(message.id) === String(normalized.id),
+            );
+            if (existingIndex !== -1) {
+              const updated = [...prev];
+              updated[existingIndex] = {
+                ...updated[existingIndex],
+                ...normalized,
+              };
+              return updated;
+            }
+            return [...prev, normalized];
+          });
           setConversations((prev) =>
-            prev.map((c) =>
-              c.id === selectedConversation.id
-                ? { ...c, lastMessage: normalized }
-                : c,
+            sortConversationsByActivity(
+              prev.map((c) =>
+                c.id === selectedConversation.id
+                  ? { ...c, lastMessage: normalized, updatedAt: normalized.createdAt }
+                  : c,
+              ),
             ),
           );
         }
@@ -765,6 +883,14 @@ export const MessageProvider = ({ children }) => {
       socket.emit('leave_conversation', {
         conversationId: selectedConversation.id,
       });
+    }
+    if (socket && conversationJoinHandlerRef.current) {
+      socket.off('conversation_joined', conversationJoinHandlerRef.current);
+      conversationJoinHandlerRef.current = null;
+    }
+    if (conversationLoadTimeoutRef.current) {
+      clearTimeout(conversationLoadTimeoutRef.current);
+      conversationLoadTimeoutRef.current = null;
     }
     setSelectedConversation(null);
     setMessages([]);

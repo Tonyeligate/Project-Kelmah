@@ -10,6 +10,15 @@ const {
 } = require("../utils/virusScanState");
 const auditLogger = require("../utils/audit-logger");
 
+const toIdString = (value) => {
+  if (!value) return null;
+  if (typeof value === "string") return value;
+  if (typeof value === "object") {
+    return value._id?.toString?.() || value.id?.toString?.() || value.toString?.();
+  }
+  return String(value);
+};
+
 class MessageSocketHandler {
   constructor(io) {
     this.io = io;
@@ -141,7 +150,7 @@ class MessageSocketHandler {
       const user = socket.user;
 
       // Store connection mapping
-      this.connectedUsers.set(userId, socket.id);
+      this.connectedUsers.set(String(userId), socket.id);
       this.userSockets.set(socket.id, {
         userId,
         user,
@@ -155,7 +164,12 @@ class MessageSocketHandler {
       // Get user's conversations and join them
       const conversations = await Conversation.find({
         participants: { $in: [userId] },
-      });
+      })
+        .populate("participants", "firstName lastName profilePicture isActive")
+        .populate({
+          path: "lastMessage",
+          populate: { path: "sender", select: "firstName lastName" },
+        });
 
       conversations.forEach((conversation) => {
         socket.join(`conversation_${conversation.id}`);
@@ -171,7 +185,24 @@ class MessageSocketHandler {
         onlineUsers: Array.from(this.connectedUsers.keys()).map((id) => String(id)),
         conversations: conversations.map((conv) => ({
           id: conv._id,
-          participants: conv.participants,
+          participants: (conv.participants || []).map((participant) => ({
+            id: participant._id,
+            name: `${participant.firstName || ""} ${participant.lastName || ""}`.trim(),
+            profilePicture: participant.profilePicture || null,
+            isActive: participant.isActive,
+          })),
+          lastMessage: conv.lastMessage
+            ? {
+                id: conv.lastMessage._id,
+                content: conv.lastMessage.content,
+                messageType: conv.lastMessage.messageType,
+                createdAt: conv.lastMessage.createdAt,
+                senderId: toIdString(conv.lastMessage.sender?._id),
+                senderName: conv.lastMessage.sender
+                  ? `${conv.lastMessage.sender.firstName || ""} ${conv.lastMessage.sender.lastName || ""}`.trim()
+                  : undefined,
+              }
+            : null,
           status: conv.status,
           updatedAt: conv.updatedAt,
         })),
@@ -282,7 +313,16 @@ class MessageSocketHandler {
       await message.save();
 
       // Update conversation's last message timestamp
+      const recipientId = toIdString(
+        conversation.participants.find(
+          (p) => toIdString(p) !== toIdString(userId),
+        ),
+      );
+
       conversation.lastMessage = message._id;
+      if (recipientId) {
+        conversation.incrementUnreadCount(recipientId);
+      }
       await conversation.save();
 
       // Populate sender details
@@ -321,10 +361,7 @@ class MessageSocketHandler {
       if (typeof ack === "function") ack({ ok: true, message: messageData });
 
       // Simulate a delivery tick if the recipient is online
-      const recipientId = conversation.participants.find(
-        (p) => p.toString() !== userId.toString(),
-      );
-      if (recipientId && this.connectedUsers.has(recipientId.toString())) {
+      if (recipientId && this.connectedUsers.has(String(recipientId))) {
         this.io.to(`conversation_${conversationId}`).emit("message_delivered", {
           messageId: message._id,
           conversationId,
@@ -341,8 +378,14 @@ class MessageSocketHandler {
 
       // Send push notifications to offline users
       const offlineParticipants = conversation.participants.filter(
-        (participantId) =>
-          participantId !== userId && !this.connectedUsers.has(participantId),
+        (participantId) => {
+          const normalizedParticipantId = toIdString(participantId);
+          return (
+            normalizedParticipantId &&
+            normalizedParticipantId !== toIdString(userId) &&
+            !this.connectedUsers.has(normalizedParticipantId)
+          );
+        },
       );
 
       if (offlineParticipants.length > 0) {
@@ -356,7 +399,7 @@ class MessageSocketHandler {
                 type: "message_received",
                 title: `New message from ${messageData.sender?.name || "Contact"}`,
                 content: messageData.content || "Sent an attachment",
-                actionUrl: `/messages/${conversationId}`,
+                actionUrl: `/messages?conversation=${conversationId}`,
                 relatedEntity: { type: "message", id: messageData.id },
                 priority: "low",
                 metadata: { icon: "message", color: "info" },
@@ -792,7 +835,7 @@ class MessageSocketHandler {
       const connectedAt = socketMeta?.connectedAt?.getTime() || Date.now();
 
       // Remove from connected users
-      this.connectedUsers.delete(userId);
+      this.connectedUsers.delete(String(userId));
       this.userSockets.delete(socket.id);
 
       // Clean up typing indicators
@@ -864,11 +907,13 @@ class MessageSocketHandler {
 
           conversations.forEach((conv) => {
             conv.participants.forEach((participantId) => {
+              const normalizedParticipantId = toIdString(participantId);
               if (
-                participantId !== userId &&
-                this.connectedUsers.has(participantId)
+                normalizedParticipantId &&
+                normalizedParticipantId !== toIdString(userId) &&
+                this.connectedUsers.has(normalizedParticipantId)
               ) {
-                notifyUsers.add(participantId);
+                notifyUsers.add(normalizedParticipantId);
               }
             });
           });
@@ -944,7 +989,7 @@ class MessageSocketHandler {
    * Get user's online status
    */
   getUserStatus(userId) {
-    const socketId = this.connectedUsers.get(userId);
+    const socketId = this.connectedUsers.get(String(userId));
     if (!socketId) return "offline";
 
     const socketData = this.userSockets.get(socketId);
@@ -955,7 +1000,7 @@ class MessageSocketHandler {
    * Send message to specific user
    */
   sendToUser(userId, event, data) {
-    const socketId = this.connectedUsers.get(userId);
+    const socketId = this.connectedUsers.get(String(userId));
     if (socketId) {
       this.io.to(socketId).emit(event, data);
       return true;

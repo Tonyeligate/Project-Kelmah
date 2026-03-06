@@ -7,6 +7,15 @@ const {
 } = require("../utils/virusScanState");
 const { createNotificationForUser } = require("./notification.controller");
 
+const toIdString = (value) => {
+  if (!value) return null;
+  if (typeof value === "string") return value;
+  if (typeof value === "object") {
+    return value._id?.toString?.() || value.id?.toString?.() || value.toString?.();
+  }
+  return String(value);
+};
+
 /**
  * Extract authenticated user ID from request.
  * Supports gateway-injected user objects with id, _id, or sub fields.
@@ -60,9 +69,16 @@ exports.createMessage = async (req, res) => {
     // second DB query.
     let conversation;
     if (bodyConversationId) {
-      conversation = await Conversation.findById(bodyConversationId);
+      conversation = await Conversation.findOne({
+        _id: bodyConversationId,
+        participants: { $in: [sender] },
+        status: { $ne: "deleted" },
+      });
       if (!conversation) {
-        return res.status(404).json({ success: false, message: "Conversation not found" });
+        return res.status(404).json({
+          success: false,
+          message: "Conversation not found or access denied",
+        });
       }
     } else {
       // Legacy path: find/create by participants
@@ -84,6 +100,13 @@ exports.createMessage = async (req, res) => {
     const resolvedRecipient =
       recipient ||
       (conversation.participants || []).find((p) => String(p) !== String(sender))?.toString();
+
+    if (!resolvedRecipient) {
+      return res.status(400).json({
+        success: false,
+        message: "Unable to resolve message recipient",
+      });
+    }
 
     // Create the message with conversation reference
     const message = new Message({
@@ -112,6 +135,52 @@ exports.createMessage = async (req, res) => {
     if (resolvedRecipient) conversation.incrementUnreadCount(resolvedRecipient);
     await conversation.save();
 
+    await message.populate("sender", "firstName lastName profilePicture");
+
+    const messageData = {
+      id: message._id,
+      conversationId: conversation._id,
+      senderId: toIdString(message.sender?._id || sender),
+      sender: message.sender
+        ? {
+            id: message.sender._id,
+            name: `${message.sender.firstName || ""} ${message.sender.lastName || ""}`.trim(),
+            profilePicture: message.sender.profilePicture || null,
+          }
+        : null,
+      recipient: resolvedRecipient,
+      content: message.content,
+      messageType: message.messageType,
+      attachments: message.attachments,
+      createdAt: message.createdAt,
+      isRead: message.readStatus?.isRead || false,
+      status: "sent",
+      clientId: req.body?.clientId || null,
+    };
+
+    const io = req.app?.get?.("io");
+    if (io) {
+      const conversationRoom = `conversation_${conversation._id}`;
+      io.to(conversationRoom).emit("new_message", messageData);
+      io.to(conversationRoom).emit("receive_message", messageData);
+
+      const recipientRoom = io.sockets?.adapter?.rooms?.get(
+        `user_${String(resolvedRecipient)}`,
+      );
+      if (recipientRoom?.size) {
+        io.to(conversationRoom).emit("message_delivered", {
+          messageId: message._id,
+          conversationId: conversation._id,
+          deliveredAt: new Date(),
+        });
+        io.to(conversationRoom).emit("message-status", {
+          messageId: message._id,
+          conversationId: conversation._id,
+          status: "delivered",
+        });
+      }
+    }
+
     // Create preference-aware notification for recipient (with optional email)
     try {
       if (resolvedRecipient) {
@@ -126,7 +195,7 @@ exports.createMessage = async (req, res) => {
             priority: "low",
             metadata: { icon: "message", color: "info" },
           },
-          { io: req.app?.get?.("io") },
+          { io },
         );
       }
     } catch (notifErr) {
@@ -136,7 +205,10 @@ exports.createMessage = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Message sent successfully",
-      data: message,
+      data: {
+        ...message.toObject(),
+        conversationId: conversation._id,
+      },
     });
   } catch (error) {
     handleError(res, error);
