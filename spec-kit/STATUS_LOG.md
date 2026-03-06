@@ -1,5 +1,60 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Worker Applications Dialog Accessibility Cleanup ✅ COMPLETED
+
+**Date**: March 6, 2026
+**Scope**: Remove the `/worker/applications` dialog focus warning caused by opening MUI dialogs while the trigger button still retains focus.
+
+**Acceptance Criteria**
+- Opening application details/message dialogs should no longer leave the trigger button focused while the page root is `aria-hidden`.
+- `/worker/applications` should keep the current working render state and remain build-clean.
+
+**Confirmed file surface**
+- `kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Findings**
+- The `inject.js:304` `className.indexOf` error is not from the Kelmah workspace. Workspace search found no matching source, which indicates a browser-injected script or extension.
+- The app-side console warning was a real accessibility issue: opening the MUI application dialogs could leave the clicked trigger button focused while the app root became `aria-hidden`.
+
+**Changes completed**
+- `kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx`
+  - Added trigger-focus cleanup before opening the details and message dialogs.
+  - Updated every dialog-launching button/icon button to pass the click event through the shared blur helper.
+
+**Verification**
+- `get_errors` returned clean results for `kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx`.
+- Frontend production build passed successfully with `npm run build` in `kelmah-frontend/` after the change.
+
+### Session: Native Auth + Session Hardening 🔄 IN PROGRESS
+
+**Date**: March 6, 2026
+**Scope**: Implement a real auth and session layer for both native mobile apps, harden API access around one API Gateway endpoint, and add token refresh, bootstrap, logout, and current-user recovery flows.
+
+**Acceptance Criteria**
+- Both native apps use one stable API Gateway base endpoint for all authenticated calls.
+- Android auth/session layer supports login, refresh, bootstrap, logout, and current-user recovery.
+- iOS auth/session layer supports login, refresh, bootstrap, logout, and current-user recovery.
+- API access adds solid request identity, auth retry handling, and session cleanup behavior.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/api-gateway/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-frontend/src/services/apiClient.js`
+- `kelmah-frontend/src/modules/auth/services/authService.js`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/KelmahApp.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/network/NetworkModule.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/storage/TokenManager.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/data/AuthApiService.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/data/AuthModels.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/data/AuthRepository.kt`
+- `kelmah-mobile-ios/Kelmah/Core/Network/APIClient.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Storage/SessionStore.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Auth/Data/AuthRepository.swift`
+- `kelmah-mobile-ios/Kelmah/App/AppEnvironment.swift`
+- `kelmah-mobile-ios/Kelmah/App/RootTabView.swift`
+
 ### Session: Native Android + iOS Skeleton Scaffold ✅ COMPLETED
 
 **Date**: March 6, 2026

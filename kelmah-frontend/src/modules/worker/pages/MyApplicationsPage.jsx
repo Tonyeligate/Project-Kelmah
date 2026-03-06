@@ -107,14 +107,26 @@ const MyApplicationsPage = () => {
     setTabValue(newValue);
   };
 
+  const blurTriggerFocus = (event) => {
+    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
+    if (event?.currentTarget && typeof event.currentTarget.blur === 'function') {
+      event.currentTarget.blur();
+    }
+  };
+
   // Open application details dialog
-  const handleOpenDetails = (application) => {
+  const handleOpenDetails = (application, event) => {
+    blurTriggerFocus(event);
     setSelectedApplication(application);
     setOpenDetailsDialog(true);
   };
 
   // Open message dialog
-  const handleOpenMessage = (application) => {
+  const handleOpenMessage = (application, event) => {
+    blurTriggerFocus(event);
     setSelectedApplication(application);
     setOpenMessageDialog(true);
   };
@@ -395,7 +407,7 @@ const MyApplicationsPage = () => {
                           textTransform: 'none',
                           minHeight: 44,
                         }}
-                        onClick={() => handleOpenDetails(application)}
+                        onClick={(event) => handleOpenDetails(application, event)}
                       >
                         View Details
                       </Button>
@@ -409,7 +421,7 @@ const MyApplicationsPage = () => {
                           textTransform: 'none',
                           minHeight: 44,
                         }}
-                        onClick={() => handleOpenMessage(application)}
+                        onClick={(event) => handleOpenMessage(application, event)}
                       >
                         Message
                       </Button>
@@ -519,7 +531,7 @@ const MyApplicationsPage = () => {
                   <CardActions sx={{ justifyContent: 'flex-end', pt: 0 }}>
                     <IconButton
                       size="small"
-                      onClick={() => handleOpenDetails(application)}
+                      onClick={(event) => handleOpenDetails(application, event)}
                       aria-label="View application details"
                       sx={{ minWidth: 44, minHeight: 44 }}
                     >
@@ -527,7 +539,7 @@ const MyApplicationsPage = () => {
                     </IconButton>
                     <IconButton
                       size="small"
-                      onClick={() => handleOpenMessage(application)}
+                      onClick={(event) => handleOpenMessage(application, event)}
                       aria-label="Send message to employer"
                       sx={{ minWidth: 44, minHeight: 44 }}
                     >
@@ -591,7 +603,7 @@ const MyApplicationsPage = () => {
                         >
                           <IconButton
                             size="small"
-                            onClick={() => handleOpenDetails(application)}
+                            onClick={(event) => handleOpenDetails(application, event)}
                             aria-label="View application details"
                             sx={{ minWidth: 44, minHeight: 44 }}
                           >
@@ -599,7 +611,7 @@ const MyApplicationsPage = () => {
                           </IconButton>
                           <IconButton
                             size="small"
-                            onClick={() => handleOpenMessage(application)}
+                            onClick={(event) => handleOpenMessage(application, event)}
                             aria-label="Send message to employer"
                             sx={{ minWidth: 44, minHeight: 44 }}
                           >
