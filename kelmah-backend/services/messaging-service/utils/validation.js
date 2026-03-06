@@ -3,7 +3,13 @@ const Joi = require("joi");
 // Message validation schema
 const messageSchema = Joi.object({
   sender: Joi.string().optional(),
-  recipient: Joi.string().required(),
+  // recipient is required ONLY when conversationId is not provided
+  recipient: Joi.string().when('conversationId', {
+    is: Joi.string().min(1).exist(),
+    then: Joi.string().optional(),
+    otherwise: Joi.string().required(),
+  }),
+  conversationId: Joi.string().optional(),
   content: Joi.string().allow('').max(5000).when('attachments', {
     is: Joi.array().min(1),
     then: Joi.optional(),

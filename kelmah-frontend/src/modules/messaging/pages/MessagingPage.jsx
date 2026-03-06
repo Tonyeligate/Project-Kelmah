@@ -228,14 +228,19 @@ const EnhancedMessagingPage = () => {
 
         for (let attempt = 1; attempt <= 3; attempt++) {
           try {
-            // Use context's createConversation which:
+            // createConversation:
             // 1. Calls messagingService.createDirectConversation
-            // 2. Reloads conversations list
-            // 3. Selects the new conversation
+            // 2. Returns the full conversation object (new or existing)
+            // 3. Calls selectConversation internally in MessageContext
             const convo = await createConversation(recipientId);
             const newId = convo?.id || convo?._id;
             if (newId) {
               setDeepLinkLoading(false);
+              // selectConversation with the FULL object so the chat panel
+              // immediately renders the participant name and avatar.
+              if (convo.participants) {
+                selectConversation(convo);
+              }
               navigate(`/messages?conversation=${newId}`, { replace: true });
               return;
             }

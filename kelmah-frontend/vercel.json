@@ -4,6 +4,14 @@
   "installCommand": "npm install --legacy-peer-deps",
   "rewrites": [
     {
+      "source": "/api/send-message",
+      "destination": "/api/send-message"
+    },
+    {
+      "source": "/api/create-conversation",
+      "destination": "/api/create-conversation"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "https://kelmah-api-gateway-qmd7.onrender.com/api/$1"
     },

@@ -228,12 +228,15 @@ export const messagingService = {
   },
 
   // Send a message via REST (used as websocket fallback)
+  // conversationId is now required so the backend can link the message
+  // to the correct conversation without doing a participant lookup.
   async sendMessage(
     senderId,
     recipientId,
     content,
     messageType = 'text',
     attachments = [],
+    conversationId = null,
   ) {
     const safeAttachments = Array.isArray(attachments) ? attachments : [];
     const hasAttachments = safeAttachments.length > 0;
@@ -258,21 +261,30 @@ export const messagingService = {
       content: trimmedContent || (hasAttachments ? '[Attachment]' : ''),
       messageType: normalizedMessageType,
       attachments: safeAttachments,
+      // Always include conversationId so the backend skips the participant lookup
+      ...(conversationId ? { conversationId } : {}),
     };
 
     // 1. Try Vercel serverless bridge for POST body
     if (shouldUseBridge()) {
       try {
         const response = await bridgePost('/api/send-message', payload, 30000);
-        return normalizeMessage(response.data?.data || response.data);
-      } catch (_) {
+        const msg = response.data?.data || response.data;
+        if (msg && !msg.error) return normalizeMessage(msg);
+        // Bridge returned an error body — fall through to gateway
+        if (import.meta.env.DEV) console.warn('[sendMessage] Bridge returned error, trying gateway:', response.data);
+      } catch (bridgeErr) {
+        if (import.meta.env.DEV) console.warn('[sendMessage] Bridge threw, trying gateway:', bridgeErr.message);
         // Fall through to gateway
       }
     }
 
-    // 2. Fallback: gateway proxy
+    // 2. Fallback: gateway proxy POSTs via conversations/:id/messages
     try {
-      const response = await api.post('/messages', payload);
+      const postPath = conversationId
+        ? `/messages/conversations/${conversationId}/messages`
+        : '/messages';
+      const response = await api.post(postPath, payload);
       return normalizeMessage(response.data?.data || response.data);
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Failed to send message via REST:', error.message);

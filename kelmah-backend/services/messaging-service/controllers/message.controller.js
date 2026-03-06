@@ -27,11 +27,12 @@ exports.createMessage = async (req, res) => {
   try {
     const { error } = validateMessage(req.body);
     if (error) {
-      return res.status(400).json({ message: error.details[0].message });
+      return res.status(400).json({ success: false, message: error.details[0].message });
     }
 
     const {
       recipient,
+      conversationId: bodyConversationId,
       content,
       messageType,
       attachments,
@@ -54,26 +55,42 @@ exports.createMessage = async (req, res) => {
 
     const sender = req.user?._id || req.user?.id;
 
-    // Find or create conversation FIRST so we can link the message
-    let conversation = await Conversation.findOne({
-      participants: { $all: [sender, recipient] },
-    });
-
-    if (!conversation) {
-      conversation = new Conversation({
-        participants: [sender, recipient],
-        relatedJob,
-        relatedContract,
+    // Resolve conversation — prefer explicit conversationId from body over
+    // participant lookup so the frontend can always pass it and avoid a
+    // second DB query.
+    let conversation;
+    if (bodyConversationId) {
+      conversation = await Conversation.findById(bodyConversationId);
+      if (!conversation) {
+        return res.status(404).json({ success: false, message: "Conversation not found" });
+      }
+    } else {
+      // Legacy path: find/create by participants
+      conversation = await Conversation.findOne({
+        participants: { $all: [sender, recipient] },
       });
-      await conversation.save();
+
+      if (!conversation) {
+        conversation = new Conversation({
+          participants: [sender, recipient],
+          relatedJob,
+          relatedContract,
+        });
+        await conversation.save();
+      }
     }
+
+    // Derive recipient from conversation if not supplied
+    const resolvedRecipient =
+      recipient ||
+      (conversation.participants || []).find((p) => String(p) !== String(sender))?.toString();
 
     // Create the message with conversation reference
     const message = new Message({
       conversation: conversation._id,
       // Enforce sender as the authenticated user for security
       sender: req.user?._id || req.user?.id,
-      recipient,
+      recipient: resolvedRecipient,
       content: normalizedContent,
       messageType: normalizedMessageType,
       attachments: safeAttachments,
@@ -92,29 +109,32 @@ exports.createMessage = async (req, res) => {
 
     // Update conversation's last message
     conversation.lastMessage = message._id;
-    conversation.incrementUnreadCount(recipient);
+    if (resolvedRecipient) conversation.incrementUnreadCount(resolvedRecipient);
     await conversation.save();
 
     // Create preference-aware notification for recipient (with optional email)
     try {
-      await createNotificationForUser(
-        recipient,
-        {
-          type: "message_received",
-          title: "New Message",
-          content: `You have received a new message${relatedJob ? " regarding a job" : ""}`,
-          actionUrl: `/messages/${conversation._id}`,
-          relatedEntity: { type: "message", id: message._id },
-          priority: "low",
-          metadata: { icon: "message", color: "info" },
-        },
-        { io: req.app?.get?.("io") },
-      );
+      if (resolvedRecipient) {
+        await createNotificationForUser(
+          resolvedRecipient,
+          {
+            type: "message_received",
+            title: "New Message",
+            content: `You have received a new message${relatedJob ? " regarding a job" : ""}`,
+            actionUrl: `/messages?conversation=${conversation._id}`,
+            relatedEntity: { type: "message", id: message._id },
+            priority: "low",
+            metadata: { icon: "message", color: "info" },
+          },
+          { io: req.app?.get?.("io") },
+        );
+      }
     } catch (notifErr) {
       logger.warn("Message notification creation failed:", notifErr.message);
     }
 
     return res.status(201).json({
+      success: true,
       message: "Message sent successfully",
       data: message,
     });

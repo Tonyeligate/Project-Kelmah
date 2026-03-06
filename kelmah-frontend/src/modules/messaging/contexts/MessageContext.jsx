@@ -659,6 +659,7 @@ export const MessageProvider = ({ children }) => {
                   trimmedContent,
                   normalizedMessageType,
                   safeAttachments,
+                  selectedConversation.id,
                 );
                 const normalized = normalizeMessageAttachments(newMessage);
                 // Mark optimistic message as failed and append REST message
@@ -709,6 +710,7 @@ export const MessageProvider = ({ children }) => {
             trimmedContent,
             normalizedMessageType,
             safeAttachments,
+            selectedConversation.id,
           );
           const normalized = normalizeMessageAttachments(newMessage);
           setMessages((prev) => [...prev, normalized]);

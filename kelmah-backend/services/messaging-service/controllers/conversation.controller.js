@@ -159,12 +159,29 @@ class ConversationController {
         const existingConversation = await Conversation.findOne({
           participants: { $all: allParticipants },
           status: { $ne: "deleted" },
-        });
+        }).populate("participants", "firstName lastName profilePicture");
+
         if (existingConversation) {
+          // Return fully-populated conversation so the frontend can
+          // call selectConversation() without a second fetch.
           return res.status(200).json({
             success: true,
             message: "Conversation already exists",
-            data: { conversation: { id: existingConversation._id } },
+            data: {
+              conversation: {
+                id: existingConversation._id,
+                type: "direct",
+                title: existingConversation.metadata?.title || null,
+                participants: (existingConversation.participants || []).map((p) => ({
+                  id: p._id,
+                  name: `${p.firstName} ${p.lastName}`.trim(),
+                  profilePicture: p.profilePicture,
+                })),
+                lastMessage: existingConversation.lastMessage || null,
+                createdAt: existingConversation.createdAt,
+                lastMessageAt: existingConversation.updatedAt,
+              },
+            },
           });
         }
       }
