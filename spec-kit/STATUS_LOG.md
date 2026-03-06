@@ -1,5 +1,52 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Build Fix + All Messaging Audit Changes Deployed ✅ CRITICAL
+
+**Date**: March 6, 2026 (continued)
+**Commit**: `8006de6`
+**Files Changed**: 16 files, 601 insertions / 120 deletions
+
+#### ROOT CAUSE OF PERSISTENT ERRORS IDENTIFIED
+
+**The previous session's commits (`24401e0`) introduced a build-breaking syntax error that prevented Vercel from deploying the frontend.** The deployed site was running STALE code from before all messaging fixes, which is why the user continued to see 401/504 errors and broken chat UI.
+
+**Syntax error location**: `MessagingPage.jsx` line 258:113 — `if (existing) {` block was missing `return;` and closing `}`, causing an unclosed block that cascaded into a brace mismatch detected by esbuild.
+
+#### What This Commit Contains (cumulative from audit)
+
+1. **BUILD FIX (CRITICAL)** — Added `return;` + `}` to close the deep-link `if(existing)` block in MessagingPage.jsx
+2. **Dead import removal** — Removed unused `ConversationList` and `Chatbox` imports from MessagingPage.jsx (dead code — page uses inline `EnhancedConversationList()`)
+3. **Deep-link improvements** — Accept both `?recipient=` and `?userId=` params, String() comparison for ObjectId matching
+4. **getMessagePreview()** — Image/video/file detection with emoji labels in conversation list
+5. **getOtherParticipant()** — Robust ID resolution + live online status via `isUserOnline()`
+6. **Message rendering** — Image URL detection, attachment type detection, sender ID normalization
+7. **Gateway POST auth** — `buildGatewayTrustHeaders(req)` for all POST messaging routes
+8. **MessageContext** — Unread count increment for background conversations, attachment normalization
+9. **Backend** — Message model flexibility, validation schema relaxation, socket improvements
+10. **Bridge functions** — JWT userId field compatibility
+
+#### HMAC Secret Analysis
+
+| Side | Resolves to |
+|---|---|
+| Vercel bridges | `process.env.INTERNAL_API_KEY` → undefined → `process.env.JWT_SECRET` → undefined → hardcoded `kelmah-internal-key-2024` |
+| Messaging service | `process.env.INTERNAL_API_KEY` → `kelmah-internal-key-2024` (from .env) |
+
+**Result**: Both sides match today. No HMAC mismatch. The 401s were from stale code, not secret mismatch.
+
+**⚠️ Recommendation**: Set `INTERNAL_API_KEY=kelmah-internal-key-2024` in Vercel project dashboard (Settings → Environment Variables) to eliminate reliance on hardcoded fallback.
+
+#### Key Architectural Discovery
+
+`ConversationList.jsx` (1016 lines) is **dead code** — imported but never rendered. `MessagingPage.jsx` uses its own inline `EnhancedConversationList()`. All previous fixes to ConversationList.jsx had NO user-visible effect.
+
+#### Deployment Status
+- ✅ Vite build passes (`built in 44.79s`)
+- ✅ Pushed to `main` → Vercel auto-deploys (~1-2 min)
+- ✅ Backend changes auto-deploy on Render (~2-3 min)
+
+---
+
 ### Session: Messaging System — 401 Fix, Image Preview, Online Status, Unread Count ✅ COMPLETED
 
 **Date**: November 2025  
