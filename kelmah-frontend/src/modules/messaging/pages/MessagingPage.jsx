@@ -161,6 +161,11 @@ const EnhancedMessagingPage = () => {
     return participant.id || participant._id || participant.userId || null;
   }, []);
 
+  // Utility: show snackbar feedback (must be declared before hooks that depend on it)
+  const showFeedback = useCallback((message, severity = 'info') => {
+    setFeedback({ open: true, message, severity });
+  }, []);
+
   // Memoize file preview URLs to avoid creating new blob URLs on every render
   const filePreviewUrls = useMemo(
     () => selectedFiles.map((file) =>
@@ -378,11 +383,6 @@ const EnhancedMessagingPage = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  // Utility: show snackbar feedback (declared before hooks that reference it)
-  const showFeedback = useCallback((message, severity = 'info') => {
-    setFeedback({ open: true, message, severity });
-  }, []);
 
   // Handle conversation selection
   const handleConversationSelect = useCallback(
