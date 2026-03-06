@@ -494,10 +494,25 @@ export const MessageProvider = ({ children }) => {
       loadingMessagesRef.current = true;
       setMessages([]);
 
+      // Reset unread badge immediately when opening a conversation
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === normalizedConversation.id
+            ? { ...c, unreadCount: 0, unread: 0 }
+            : c,
+        ),
+      );
+
       try {
         // Join new conversation room via WebSocket
         if (socket && isConnected) {
           socket.emit('join_conversation', { conversationId: normalizedConversation.id });
+
+          // Notify backend that messages in this conversation have been read
+          socket.emit('mark_read', {
+            conversationId: normalizedConversation.id,
+            messageIds: 'all_unread',
+          });
 
           // Listen for conversation joined event
           socket.once('conversation_joined', (data) => {

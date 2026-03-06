@@ -24,6 +24,7 @@ class WebSocketService {
     this.socket = null;
     this.isConnected = false;
     this._connecting = false; // Prevent multiple concurrent connections
+    this._hasConnectedOnce = false; // Suppress redundant connect toasts
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
     this.reconnectDelay = 1000;
@@ -87,9 +88,11 @@ class WebSocketService {
     // Connection events
     this.socket.on('connect', () => {
       devLog('✅ WebSocket connected:', this.socket.id);
+      const wasConnectedBefore = this._hasConnectedOnce;
       this.isConnected = true;
       this.reconnectAttempts = 0;
       this._connecting = false;
+      this._hasConnectedOnce = true;
 
       // Join user-specific room
       this.socket.emit('join-room', {
@@ -104,17 +107,19 @@ class WebSocketService {
       // Start ping monitoring
       this.startPingMonitoring();
 
-      // Dispatch connection success
-      store.dispatch(
-        addNotification({
-          id: uniqueNotifId(),
-          type: 'system',
-          title: 'Connected',
-          message: 'Real-time features activated',
-          severity: 'success',
-          autoHide: true,
-        }),
-      );
+      // Only show toast on first connect — skip on reconnects to avoid spam
+      if (!wasConnectedBefore) {
+        store.dispatch(
+          addNotification({
+            id: uniqueNotifId(),
+            type: 'system',
+            title: 'Connected',
+            message: 'Real-time features activated',
+            severity: 'success',
+            autoHide: true,
+          }),
+        );
+      }
     });
 
     this.socket.on('disconnect', (reason) => {
@@ -123,16 +128,19 @@ class WebSocketService {
       this._connecting = false;
       this.stopPingMonitoring();
 
-      store.dispatch(
-        addNotification({
-          id: uniqueNotifId(),
-          type: 'system',
-          title: 'Disconnected',
-          message: 'Reconnecting to real-time services...',
-          severity: 'warning',
-          autoHide: true,
-        }),
-      );
+      // Only warn if intentional server disconnect, not transient reconnects
+      if (reason === 'io server disconnect' || reason === 'transport close') {
+        store.dispatch(
+          addNotification({
+            id: uniqueNotifId(),
+            type: 'system',
+            title: 'Disconnected',
+            message: 'Reconnecting to real-time services...',
+            severity: 'warning',
+            autoHide: true,
+          }),
+        );
+      }
     });
 
     this.socket.on('connect_error', (error) => {
@@ -143,16 +151,7 @@ class WebSocketService {
 
     this.socket.on('reconnect', (attemptNumber) => {
       devLog('🔄 WebSocket reconnected after', attemptNumber, 'attempts');
-      store.dispatch(
-        addNotification({
-          id: uniqueNotifId(),
-          type: 'system',
-          title: 'Reconnected',
-          message: 'Real-time features restored',
-          severity: 'success',
-          autoHide: true,
-        }),
-      );
+      // Silent reconnect — no toast to avoid spam; devLog is sufficient
     });
 
     this.socket.on('reconnect_failed', () => {

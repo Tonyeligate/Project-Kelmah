@@ -97,6 +97,7 @@ const EnhancedMessagingPage = () => {
     clearConversation,
     createConversation,
     typingUsers,
+    getTypingUsers,
     isConnected,
     realtimeIssue,
     messages,
@@ -105,6 +106,7 @@ const EnhancedMessagingPage = () => {
     startTyping,
     stopTyping,
     loadingConversations,
+    loadingMessages,
     isUserOnline,
   } = useMessages();
 
@@ -263,13 +265,15 @@ const EnhancedMessagingPage = () => {
     deepLinkAttemptedRef.current = false;
     setDeepLinkError(null);
     setDeepLinkLoading(false);
-    // Re-trigger by navigating to the same URL
+    // Soft retry: briefly navigate away then back so the useEffect re-fires
     const urlParams = new URLSearchParams(search);
     const recipientId = urlParams.get('recipient') || urlParams.get('userId');
     if (recipientId) {
-      navigate(`/messages?recipient=${recipientId}`, { replace: true });
-      // Small delay to allow effect dependencies to reset
-      setTimeout(() => window.location.reload(), 100);
+      navigate('/messages', { replace: true });
+      // Allow React to flush the removal of params, then re-navigate
+      requestAnimationFrame(() => {
+        navigate(`/messages?recipient=${recipientId}`, { replace: true });
+      });
     }
   }, [search, navigate]);
 
@@ -1106,7 +1110,7 @@ const EnhancedMessagingPage = () => {
                   Job: {selectedConversation.jobRelated.title}
                 </Typography>
               )}
-              {typingUsers.size > 0 && (
+              {getTypingUsers().length > 0 && (
                 <Typography
                   variant="caption"
                   sx={{
@@ -1183,6 +1187,17 @@ const EnhancedMessagingPage = () => {
             bgcolor: alpha(theme.palette.background.default, 0.5),
           }}
         >
+          {loadingMessages ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+              <CircularProgress size={32} sx={{ color: 'primary.main' }} />
+            </Box>
+          ) : (messages || []).length === 0 ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+              <Typography variant="body2" sx={{ color: 'text.disabled' }}>
+                No messages yet. Say hello!
+              </Typography>
+            </Box>
+          ) : null}
           {/* ✅ MOBILE-AUDIT P3: removed AnimatePresence + motion.div from messages */}
             {(messages || []).map((message, index) => {
               const senderId = message.sender || message.senderId;
@@ -2009,7 +2024,12 @@ const EnhancedMessagingPage = () => {
                 minHeight: 0, // allow flex shrink
               }}
             >
-              {messages.length === 0 && (
+              {loadingMessages && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                  <CircularProgress size={32} sx={{ color: 'primary.main' }} />
+                </Box>
+              )}
+              {!loadingMessages && messages.length === 0 && (
                 <Box sx={{ textAlign: 'center', py: 6 }}>
                   <ChatBubbleOutlineIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
                   <Typography variant="h6" color="text.secondary" gutterBottom>
