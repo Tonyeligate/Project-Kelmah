@@ -386,11 +386,15 @@ exports.resendVerificationEmail = async (req, res, next) => {
 
     logger.info('Resent verification email', { frontendUrl });
 
-    await emailService.sendVerificationEmail({
-      name: user.fullName,
-      email: user.email,
-      verificationUrl,
-    });
+    try {
+      await emailService.sendVerificationEmail({
+        name: user.fullName,
+        email: user.email,
+        verificationUrl,
+      });
+    } catch (mailErr) {
+      logger.warn('Resend verification email failed', { email: user.email, error: mailErr.message });
+    }
 
     // Return success response
     return res.status(200).json({
@@ -438,11 +442,15 @@ exports.forgotPassword = async (req, res, next) => {
     const resetUrl = `${config.frontendUrl}/reset-password?token=${resetToken}`;
 
     // Send password reset email
-    await emailService.sendPasswordResetEmail({
-      name: user.fullName,
-      email: user.email,
-      resetUrl,
-    });
+    try {
+      await emailService.sendPasswordResetEmail({
+        name: user.fullName,
+        email: user.email,
+        resetUrl,
+      });
+    } catch (mailErr) {
+      logger.warn('Password reset email failed', { email: user.email, error: mailErr.message });
+    }
 
     // Return success response
     return res.status(200).json({
@@ -493,10 +501,14 @@ exports.resetPassword = async (req, res, next) => {
     await user.save();
 
     // Send password changed confirmation email
-    await emailService.sendPasswordChangedEmail({
-      name: user.fullName,
-      email: user.email,
-    });
+    try {
+      await emailService.sendPasswordChangedEmail({
+        name: user.fullName,
+        email: user.email,
+      });
+    } catch (mailErr) {
+      logger.warn('Password changed confirmation email failed after reset', { email: user.email, error: mailErr.message });
+    }
 
     // Return success response
     return res.status(200).json({
@@ -551,10 +563,14 @@ exports.changePassword = async (req, res, next) => {
     });
 
     // Send password changed confirmation email
-    await emailService.sendPasswordChangedEmail({
-      name: user.fullName,
-      email: user.email,
-    });
+    try {
+      await emailService.sendPasswordChangedEmail({
+        name: user.fullName,
+        email: user.email,
+      });
+    } catch (mailErr) {
+      logger.warn('Password changed confirmation email failed', { email: user.email, error: mailErr.message });
+    }
 
     // Return success response
     return res.status(200).json({

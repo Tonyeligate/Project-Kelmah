@@ -1,5 +1,46 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Native Endpoint Centralization ✅ COMPLETED
+
+**Date**: March 7, 2026
+**Scope**: Centralize Android and iOS mobile routing so API and realtime traffic derive from one configurable gateway origin per platform.
+
+**Acceptance Criteria**
+- Android uses one configurable gateway origin for all mobile API and realtime routes.
+- iOS uses one configurable gateway origin for all mobile API and realtime routes.
+- Native runtime UI no longer hardcodes legacy gateway URLs outside the config layer.
+- Workspace diagnostics remain clean for touched mobile config files.
+
+**Dry-audit file surface confirmed**
+- `kelmah-mobile-android/app/build.gradle.kts`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/network/NetworkConfig.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/network/NetworkModule.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/home/presentation/HomeScreen.kt`
+- `kelmah-mobile-android/README.md`
+- `kelmah-mobile-ios/Config/Debug.xcconfig`
+- `kelmah-mobile-ios/Config/Release.xcconfig`
+- `kelmah-mobile-ios/Kelmah/Info.plist`
+- `kelmah-mobile-ios/Kelmah/Core/Config/APIEnvironment.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Network/APIClient.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Home/Presentation/HomeView.swift`
+- `kelmah-mobile-ios/README.md`
+
+**Findings**
+- Android still duplicated API and socket URLs at the Gradle layer even though runtime traffic already flowed through `NetworkConfig`.
+- iOS still exposed separate API/socket bundle keys and runtime fallbacks, which weakened the single-origin contract.
+- Home screens and platform READMEs still mentioned older hardcoded gateway URLs.
+
+**Changes completed**
+- Android now accepts one `KELMAH_GATEWAY_ORIGIN` value and derives `/api` and `/socket.io` internally.
+- iOS now accepts one `GATEWAY_ORIGIN` value and derives `/api` and `/socket.io` inside `APIEnvironment`.
+- Runtime home screens now display the active derived gateway origin instead of an embedded literal URL.
+- Added `spec-kit/KELMAH_NATIVE_ENDPOINT_CENTRALIZATION_MAR07_2026.md`.
+
+**Verification**
+- `get_errors` returned clean results for the touched Android config files.
+- `get_errors` returned clean results for the touched iOS config files.
+- Workspace search confirmed the legacy split endpoint keys were removed from the native runtime config flow.
+
 ### Session: Native Auth Expansion + Email Timeout Hardening ✅ COMPLETED
 
 **Date**: March 7, 2026

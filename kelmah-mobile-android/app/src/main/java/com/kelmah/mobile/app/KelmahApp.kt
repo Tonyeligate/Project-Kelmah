@@ -1,0 +1,125 @@
+package com.kelmah.mobile.app
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.kelmah.mobile.app.navigation.KelmahDestination
+import com.kelmah.mobile.app.navigation.KelmahNavHost
+import com.kelmah.mobile.app.navigation.mainDestinations
+import com.kelmah.mobile.core.design.theme.KelmahTheme
+import com.kelmah.mobile.core.session.SessionCoordinator
+import com.kelmah.mobile.core.session.SessionState
+import com.kelmah.mobile.core.storage.TokenManager
+import com.kelmah.mobile.features.auth.presentation.LoginScreen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+
+@Composable
+fun KelmahApp(
+    tokenManager: TokenManager,
+    sessionCoordinator: SessionCoordinator,
+) {
+    KelmahTheme {
+        val sessionState by sessionCoordinator.sessionState.collectAsStateWithLifecycle()
+        val appScope = rememberCoroutineScope()
+
+        LaunchedEffect(tokenManager.getAccessToken()) {
+            sessionCoordinator.bootstrapSession()
+        }
+
+        when (val state = sessionState) {
+            SessionState.Loading -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    CircularProgressIndicator()
+                    Text(
+                        text = "Securing your Kelmah session...",
+                        modifier = Modifier.padding(top = 16.dp),
+                    )
+                }
+                return@KelmahTheme
+            }
+
+            is SessionState.Unauthenticated -> {
+                LoginScreen(
+                    onLoginSuccess = {
+                        appScope.launch { sessionCoordinator.onLoginCompleted() }
+                    },
+                )
+                return@KelmahTheme
+            }
+
+            is SessionState.Error -> {
+                LoginScreen(
+                    onLoginSuccess = {
+                        appScope.launch { sessionCoordinator.onLoginCompleted() }
+                    },
+                    sessionMessage = state.message,
+                )
+                return@KelmahTheme
+            }
+
+            is SessionState.Authenticated -> Unit
+        }
+
+        val navController = rememberNavController()
+        val backStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = backStackEntry?.destination?.route
+
+        Scaffold(
+            bottomBar = {
+                NavigationBar {
+                    mainDestinations.forEach { destination ->
+                        val isSelected = when (destination) {
+                            KelmahDestination.Jobs -> currentRoute?.startsWith("jobs") == true
+                            else -> currentRoute == destination.route
+                        }
+                        NavigationBarItem(
+                            selected = isSelected,
+                            onClick = {
+                                if (!isSelected) {
+                                    navController.navigate(destination.route) {
+                                        launchSingleTop = true
+                                        restoreState = true
+                                        popUpTo(navController.graph.startDestinationId) {
+                                            saveState = true
+                                        }
+                                    }
+                                }
+                            },
+                            icon = { androidx.compose.material3.Icon(destination.icon, contentDescription = destination.label) },
+                            label = { Text(destination.label) },
+                        )
+                    }
+                }
+            },
+        ) { paddingValues ->
+            KelmahNavHost(
+                navController = navController,
+                onLogout = {
+                    appScope.launch {
+                        sessionCoordinator.logout()
+                    }
+                },
+            )
+        }
+    }
+}

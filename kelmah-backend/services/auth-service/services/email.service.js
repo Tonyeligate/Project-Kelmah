@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const config = require('../config');
+const { logger } = require('../utils/logger');
 
 // Map config properties to expected names
 const EMAIL_FROM = config.FROM_EMAIL || config.EMAIL_FROM || 'noreply@kelmah.com';
@@ -7,6 +8,8 @@ const SMTP_HOST = config.SMTP_HOST || 'smtp.gmail.com';
 const SMTP_PORT = config.SMTP_PORT || 465;
 const SMTP_USER = config.SMTP_USER;
 const SMTP_PASS = config.SMTP_PASSWORD || config.SMTP_PASS;
+const EMAIL_SEND_TIMEOUT_MS = Number(config.EMAIL_SEND_TIMEOUT_MS || process.env.EMAIL_SEND_TIMEOUT_MS || 8000);
+const HAS_SMTP_CREDENTIALS = Boolean((SMTP_USER || process.env.SMTP_USER) && (SMTP_PASS || process.env.SMTP_PASS));
 
 // Debug logging only in development
 if (process.env.NODE_ENV === 'development') {
@@ -47,6 +50,25 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 const transporter = nodemailer.createTransport(smtpConfig);
+
+const sendMailSafely = async (mailOptions, operation) => {
+  if (!HAS_SMTP_CREDENTIALS) {
+    logger.warn('SMTP credentials missing; email send skipped', {
+      operation,
+      to: mailOptions.to,
+    });
+    return { skipped: true };
+  }
+
+  return Promise.race([
+    transporter.sendMail(mailOptions),
+    new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(new Error(`Email send timed out after ${EMAIL_SEND_TIMEOUT_MS}ms`));
+      }, EMAIL_SEND_TIMEOUT_MS);
+    }),
+  ]);
+};
 
 // Helper function to create professional email templates
 const createEmailTemplate = (title, content, buttonText, buttonUrl) => {
@@ -142,7 +164,7 @@ module.exports = {
       messageId: `<${Date.now()}-${Math.random().toString(36).substr(2, 9)}@kelmah.com>`
     };
     
-    await transporter.sendMail(mailOptions);
+    await sendMailSafely(mailOptions, 'sendVerificationEmail');
   },
   sendPasswordResetEmail: async ({ name, email, resetUrl }) => {
     const subject = '🔐 Reset Your Kelmah Password - Secure Action Required';
@@ -177,7 +199,7 @@ module.exports = {
       }
     };
     
-    await transporter.sendMail(mailOptions);
+    await sendMailSafely(mailOptions, 'sendPasswordResetEmail');
   },
 
   sendPasswordChangedEmail: async ({ name, email }) => {
@@ -213,7 +235,7 @@ module.exports = {
       }
     };
     
-    await transporter.sendMail(mailOptions);
+    await sendMailSafely(mailOptions, 'sendPasswordChangedEmail');
   },
 
   sendAccountDeactivationEmail: async ({ name, email }) => {
@@ -250,7 +272,7 @@ module.exports = {
       }
     };
     
-    await transporter.sendMail(mailOptions);
+    await sendMailSafely(mailOptions, 'sendAccountDeactivationEmail');
   },
 
   sendAccountReactivationEmail: async ({ name, email }) => {
@@ -287,7 +309,7 @@ module.exports = {
       }
     };
     
-    await transporter.sendMail(mailOptions);
+    await sendMailSafely(mailOptions, 'sendAccountReactivationEmail');
   },
 
   sendAccountLockedEmail: async ({ name, email }) => {
@@ -324,7 +346,7 @@ module.exports = {
       }
     };
     
-    await transporter.sendMail(mailOptions);
+    await sendMailSafely(mailOptions, 'sendAccountLockedEmail');
   },
 
   sendLoginNotificationEmail: async ({ name, email }) => {
@@ -360,6 +382,6 @@ module.exports = {
       }
     };
     
-    await transporter.sendMail(mailOptions);
+    await sendMailSafely(mailOptions, 'sendLoginNotificationEmail');
   }
 };

@@ -1,0 +1,135 @@
+package com.kelmah.mobile.features.jobs.presentation
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
+@Composable
+fun JobApplicationScreen(
+    jobId: String,
+    onBack: () -> Unit,
+    onSubmitted: () -> Unit,
+    viewModel: JobsViewModel = hiltViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbars = remember { SnackbarHostState() }
+    var proposedRate by rememberSaveable { mutableStateOf("") }
+    var estimatedDuration by rememberSaveable { mutableStateOf("") }
+    var coverLetter by rememberSaveable { mutableStateOf("") }
+
+    LaunchedEffect(jobId) {
+        viewModel.loadJobDetail(jobId)
+    }
+
+    LaunchedEffect(uiState.errorMessage, uiState.infoMessage) {
+        uiState.errorMessage?.let { snackbars.showSnackbar(it); viewModel.clearMessages() }
+        uiState.infoMessage?.let { snackbars.showSnackbar(it); viewModel.clearMessages() }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Apply to Job") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Back")
+                    }
+                },
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbars) },
+    ) { padding ->
+        val jobTitle = uiState.selectedJob?.summary?.takeIf { it.id == jobId }?.title ?: "Kelmah Job"
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Text(text = jobTitle, style = MaterialTheme.typography.headlineSmall)
+            Text(text = "Submit a strong, professional application through the Kelmah API Gateway.")
+
+            OutlinedTextField(
+                value = proposedRate,
+                onValueChange = { proposedRate = it },
+                label = { Text("Proposed rate (GHS)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
+            OutlinedTextField(
+                value = estimatedDuration,
+                onValueChange = { estimatedDuration = it },
+                label = { Text("Estimated duration") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
+            OutlinedTextField(
+                value = coverLetter,
+                onValueChange = { coverLetter = it },
+                label = { Text("Cover letter") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp),
+                minLines = 8,
+                maxLines = 10,
+            )
+
+            Button(
+                onClick = {
+                    viewModel.submitApplication(
+                        jobId = jobId,
+                        proposedRate = proposedRate,
+                        coverLetter = coverLetter,
+                        estimatedDuration = estimatedDuration,
+                        onSuccess = onSubmitted,
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isSubmittingApplication,
+            ) {
+                if (uiState.isSubmittingApplication) {
+                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                } else {
+                    Text("Submit Application")
+                }
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}

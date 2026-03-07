@@ -1,0 +1,220 @@
+import SwiftUI
+
+struct JobsView: View {
+    @ObservedObject var viewModel: JobsViewModel
+    @State private var path: [JobsRoute] = []
+
+    var body: some View {
+        NavigationStack(path: $path) {
+            List {
+                Section {
+                    Picker("Feed", selection: Binding(
+                        get: { viewModel.activeFeed },
+                        set: { newValue in
+                            Task { await viewModel.switchFeed(newValue) }
+                        }
+                    )) {
+                        ForEach(JobsFeed.allCases, id: \.self) { feed in
+                            Text(feed.title).tag(feed)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                if viewModel.activeFeed == .discover {
+                    Section("Filters") {
+                        TextField("Search jobs", text: $viewModel.filters.search)
+                        TextField("Location", text: $viewModel.filters.location)
+
+                        Menu {
+                            ForEach(viewModel.categories) { category in
+                                Button(category.name) {
+                                    viewModel.filters.category = category.name
+                                    Task { await viewModel.refreshJobs() }
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                Text("Category")
+                                Spacer()
+                                Text(viewModel.filters.category)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+
+                        Button("Apply Filters") {
+                            Task { await viewModel.refreshJobs() }
+                        }
+                    }
+                }
+
+                if let message = viewModel.errorMessage {
+                    Section {
+                        MessageBannerView(message: message, tint: .red.opacity(0.12))
+                    }
+                }
+
+                if let message = viewModel.infoMessage {
+                    Section {
+                        MessageBannerView(message: message, tint: KelmahTheme.accent.opacity(0.18))
+                    }
+                }
+
+                Section(viewModel.activeFeed == .saved ? "Saved Jobs" : "Open Jobs") {
+                    if viewModel.isLoading && viewModel.displayedJobs.isEmpty {
+                        ProgressView("Loading jobs...")
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    } else if viewModel.displayedJobs.isEmpty {
+                        ContentUnavailableView(
+                            viewModel.activeFeed == .saved ? "No saved jobs yet" : "No jobs found",
+                            systemImage: "briefcase",
+                            description: Text(viewModel.activeFeed == .saved ? "Jobs you save will appear here for quick access." : "Try broadening your filters or refreshing the marketplace feed.")
+                        )
+                    } else {
+                        ForEach(viewModel.displayedJobs) { job in
+                            JobCardView(
+                                job: job,
+                                onOpen: { path.append(.detail(job.id)) },
+                                onToggleSave: {
+                                    Task { await viewModel.toggleSaved(jobId: job.id, shouldSave: job.isSaved == false) }
+                                },
+                                onApply: { path.append(.apply(job.id)) }
+                            )
+                            .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                            .listRowBackground(Color.clear)
+                        }
+
+                        if viewModel.activeFeed == .discover, viewModel.currentPage < viewModel.totalPages {
+                            Button {
+                                Task { await viewModel.loadMoreJobs() }
+                            } label: {
+                                if viewModel.isLoadingMore {
+                                    ProgressView()
+                                        .frame(maxWidth: .infinity)
+                                } else {
+                                    Text("Load More Jobs")
+                                        .frame(maxWidth: .infinity)
+                                }
+                            }
+                            .buttonStyle(.bordered)
+                        }
+                    }
+                }
+            }
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .background(KelmahTheme.background)
+            .navigationTitle("Jobs")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        Task {
+                            if viewModel.activeFeed == .saved {
+                                await viewModel.loadSavedJobs()
+                            } else {
+                                await viewModel.refreshJobs()
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                }
+            }
+            .refreshable {
+                if viewModel.activeFeed == .saved {
+                    await viewModel.loadSavedJobs()
+                } else {
+                    await viewModel.refreshJobs()
+                }
+            }
+            .task {
+                await viewModel.bootstrap()
+            }
+            .navigationDestination(for: JobsRoute.self) { route in
+                switch route {
+                case let .detail(jobId):
+                    JobDetailView(viewModel: viewModel, jobId: jobId) { selectedJobId in
+                        path.append(.apply(selectedJobId))
+                    }
+                case let .apply(jobId):
+                    JobApplicationView(viewModel: viewModel, jobId: jobId) {
+                        if path.isEmpty == false {
+                            path.removeLast()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct JobCardView: View {
+    let job: JobSummary
+    let onOpen: () -> Void
+    let onToggleSave: () -> Void
+    let onApply: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(job.title)
+                        .font(.headline)
+                    Text(job.employerName)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button(action: onToggleSave) {
+                    Image(systemName: job.isSaved ? "bookmark.fill" : "bookmark")
+                }
+                .buttonStyle(.plain)
+            }
+
+            Text(job.description)
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .lineLimit(3)
+            Text(job.category)
+                .font(.caption.weight(.semibold))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(KelmahTheme.accent.opacity(0.14))
+                .clipShape(Capsule())
+            Text(job.locationLabel)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+            Text(job.budgetLabel)
+                .font(.headline)
+                .foregroundStyle(KelmahTheme.accent)
+
+            HStack(spacing: 10) {
+                Button("View", action: onOpen)
+                    .buttonStyle(.bordered)
+                Button("Apply", action: onApply)
+                    .buttonStyle(.borderedProminent)
+                    .tint(KelmahTheme.accent)
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.white)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .onTapGesture(perform: onOpen)
+    }
+}
+
+private struct MessageBannerView: View {
+    let message: String
+    let tint: Color
+
+    var body: some View {
+        Text(message)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .background(tint)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+    }
+}
