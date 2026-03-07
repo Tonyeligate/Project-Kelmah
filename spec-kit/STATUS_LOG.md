@@ -1,5 +1,36 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Gateway Public Auth Timeout Fix 🔄 IN PROGRESS
+
+**Date**: March 7, 2026
+**Scope**: Diagnose and remove the remaining public auth 504s at the API gateway after direct auth-service checks proved the service itself was already responding.
+
+**Acceptance Criteria**
+- Gateway registration stops returning `504`.
+- Gateway forgot-password stops returning `504`.
+- Gateway resend-verification-email stops returning `504`.
+- Public auth forwarding no longer depends on the generic proxy body path for these routes.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/api-gateway/routes/auth.routes.js`
+- `kelmah-backend/api-gateway/proxy/serviceProxy.js`
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/services/auth-service/services/email.service.js`
+
+**Findings**
+- Direct calls to `https://kelmah-auth-service-3zdl.onrender.com/api/auth/*` succeeded quickly for register, forgot-password, and resend-verification-email.
+- The live gateway still returned `504` for those same routes, which isolated the remaining blocker to gateway forwarding.
+- Login and aggregate health remained healthy, so the issue was not a broad auth-service outage.
+
+**Changes completed**
+- Reworked public auth routes in `kelmah-backend/api-gateway/routes/auth.routes.js` to use direct axios forwarding for login, register, forgot-password, reset-password, verify-email, and resend-verification-email.
+- Added normalized upstream response handling to forward safe headers and JSON bodies without the earlier response-shaping failure path.
+- Added `spec-kit/KELMAH_GATEWAY_PUBLIC_AUTH_TIMEOUT_FIX_MAR07_2026.md`.
+
+**Verification**
+- `get_errors` returned clean results for `kelmah-backend/api-gateway/routes/auth.routes.js`.
+- Live post-redeploy validation is pending the new API gateway deployment.
+
 ### Session: Public Menu Focus Trap Re-Audit ✅ COMPLETED
 
 **Date**: March 7, 2026

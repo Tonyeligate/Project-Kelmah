@@ -36,62 +36,64 @@ const protectedAuthProxy = (req, res, next) => {
 // Authentication middleware for protected routes
 const { authenticate } = require('../middlewares/auth');
 
-// Public routes
-// Bypass proxy for login/register to avoid body/timeout issues
-router.post('/login', async (req, res) => {
+const sendUpstreamResponse = (res, upstreamResponse) => {
+  const safeHeaders = {};
+  if (upstreamResponse.headers['content-type']) safeHeaders['content-type'] = upstreamResponse.headers['content-type'];
+  if (upstreamResponse.headers['set-cookie']) safeHeaders['set-cookie'] = upstreamResponse.headers['set-cookie'];
+
+  res.status(upstreamResponse.status).set(safeHeaders);
+  if (typeof upstreamResponse.data === 'string') {
+    return res.send(upstreamResponse.data);
+  }
+  return res.json(upstreamResponse.data);
+};
+
+const forwardPublicAuthDirect = async (req, res, authPath, {
+  method = 'post',
+  timeout = 60000,
+  data = req.body,
+} = {}) => {
   try {
-    // Direct connection to auth service avoiding proxy
-    // Use resolved service URL from service discovery (supports cloud + local)
     const upstream = getServiceUrl(req);
-    const url = `${upstream}/api/auth/login`;
-
-    console.log(`[LOGIN] Attempting login to: ${url}`);
-
-    const r = await axios.post(url, req.body, {
+    const url = `${upstream}/api/auth${authPath}`;
+    const response = await axios({
+      method,
+      url,
+      data,
       headers: {
         'Content-Type': 'application/json',
         'X-Request-ID': req.id || '',
         'User-Agent': 'kelmah-api-gateway',
         'ngrok-skip-browser-warning': 'true'
       },
-      timeout: 30000,
+      timeout,
       validateStatus: () => true,
     });
 
-    console.log(`[LOGIN] Response status: ${r.status}`);
-    res.status(r.status).json(r.data);
-  } catch (e) {
-    console.error(`[LOGIN] Error:`, e.message);
-    console.error(`[LOGIN] Stack:`, e.stack);
-    res.status(504).json({
+    return sendUpstreamResponse(res, response);
+  } catch (error) {
+    const status = error.response?.status || 504;
+    return res.status(status).json({
       success: false,
-      message: 'Authentication service temporarily unavailable'
+      message: error.message || 'Authentication service temporarily unavailable'
     });
   }
-});
+};
 
-router.post('/register', async (req, res) => {
-  try {
-    const upstream = getServiceUrl(req);
-    const url = `${upstream}/api/auth/register`;
-    const r = await axios.post(url, req.body, {
-      headers: { 'Content-Type': 'application/json', 'X-Request-ID': req.id || '' },
-      timeout: 45000,
-      validateStatus: () => true,
-    });
-    // Only forward safe headers — avoid leaking internal upstream headers
-    const safeHeaders = {};
-    if (r.headers['content-type']) safeHeaders['content-type'] = r.headers['content-type'];
-    if (r.headers['set-cookie']) safeHeaders['set-cookie'] = r.headers['set-cookie'];
-    res.status(r.status).set(safeHeaders).send(r.data);
-  } catch (e) {
-    const status = e.response?.status || 504;
-    res.status(status).json({ success: false, message: e.message || 'Auth service unavailable' });
-  }
+// Public routes
+// Bypass the generic proxy for public auth mutations so Express body parsing
+// cannot interfere with upstream request completion during cloud deployments.
+router.post('/login', (req, res) => forwardPublicAuthDirect(req, res, '/login', { timeout: 30000 }));
+router.post('/register', (req, res) => forwardPublicAuthDirect(req, res, '/register', { timeout: 60000 }));
+router.post('/forgot-password', (req, res) => forwardPublicAuthDirect(req, res, '/forgot-password', { timeout: 60000 }));
+router.post('/reset-password', (req, res) => forwardPublicAuthDirect(req, res, '/reset-password', { timeout: 60000 }));
+router.get('/verify-email/:token', (req, res) => {
+  return forwardPublicAuthDirect(req, res, `/verify-email/${req.params.token}`, {
+    method: 'get',
+    timeout: 60000,
+    data: undefined,
+  });
 });
-router.post('/forgot-password', publicAuthProxy);
-router.post('/reset-password', publicAuthProxy);
-router.get('/verify-email/:token', publicAuthProxy);
 // Refresh token aliases for FE compatibility.
 // Use direct axios (not proxy middleware) with a 60s timeout so Render cold starts
 // (~20-50s) don't cause a 504 Gateway Timeout before the auth service wakes up.
@@ -125,7 +127,9 @@ router.post('/refresh-token', refreshTokenDirectHandler);
 // Verify auth (returns current user)
 router.get('/verify', authenticate, protectedAuthProxy);
 // Resend verification email
-router.post('/resend-verification-email', publicAuthProxy);
+router.post('/resend-verification-email', (req, res) => {
+  return forwardPublicAuthDirect(req, res, '/resend-verification-email', { timeout: 60000 });
+});
 
 // Protected routes
 router.post('/logout', authenticate, protectedAuthProxy);
