@@ -21,10 +21,13 @@
 - Direct calls to `https://kelmah-auth-service-3zdl.onrender.com/api/auth/*` succeeded quickly for register, forgot-password, and resend-verification-email.
 - The live gateway still returned `504` for those same routes, which isolated the remaining blocker to gateway forwarding.
 - Login and aggregate health remained healthy, so the issue was not a broad auth-service outage.
+- After the gateway forwarding change started responding for recovery routes, register still returned `phone already exists` even when the request omitted phone.
+- That exposed a second production issue in auth registration: the controller still persisted `phone: null`, which can collide with older deployed sparse/unique phone indexes.
 
 **Changes completed**
 - Reworked public auth routes in `kelmah-backend/api-gateway/routes/auth.routes.js` to use direct axios forwarding for login, register, forgot-password, reset-password, verify-email, and resend-verification-email.
 - Added normalized upstream response handling to forward safe headers and JSON bodies without the earlier response-shaping failure path.
+- Updated `kelmah-backend/services/auth-service/controllers/auth.controller.js` so blank phone values are omitted from new users instead of being saved as `null`.
 - Added `spec-kit/KELMAH_GATEWAY_PUBLIC_AUTH_TIMEOUT_FIX_MAR07_2026.md`.
 
 **Verification**

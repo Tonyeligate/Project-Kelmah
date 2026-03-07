@@ -54,15 +54,26 @@ exports.register = async (req, res, next) => {
       return next(new AppError("Email already in use", 400));
     }
 
+    const normalizedPhone = typeof phone === 'string'
+      ? phone.trim()
+      : '';
+
     // Create user with improved error handling
-    const newUser = await User.create({
+    // Omit phone completely when it is blank so sparse phone indexes do not
+    // treat repeated null values as duplicates in older deployed databases.
+    const createPayload = {
       firstName,
       lastName,
       email,
-      phone: phone || null, // Handle empty phone gracefully
       password,
       role: userRole,
-    });
+    };
+
+    if (normalizedPhone) {
+      createPayload.phone = normalizedPhone;
+    }
+
+    const newUser = await User.create(createPayload);
 
     // Generate a verification token (raw) and store hashed version on user
     const rawToken = newUser.generateVerificationToken();

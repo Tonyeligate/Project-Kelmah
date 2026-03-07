@@ -46,6 +46,8 @@
 - Live API gateway validation on March 7, 2026 showed `POST /api/auth/register`, `POST /api/auth/resend-verification-email`, and `POST /api/auth/forgot-password` returning `504 Gateway Timeout` while `POST /api/auth/login` still succeeded.
 - This indicates the email-backed auth actions are likely blocking too long in the auth service despite the core auth service being reachable.
 - The next fix is to harden email delivery so registration and recovery endpoints never hang the mobile onboarding flow.
+- After the gateway forwarding fix deployed, resend-verification and forgot-password began responding through the gateway, but register still failed with `phone already exists` even when the client omitted phone.
+- The remaining register failure was traced to auth registration writing `phone: null`, which can still collide with older sparse/unique phone indexes in deployed MongoDB collections.
 
 ## Implementation Summary
 ### Native mobile
@@ -57,6 +59,7 @@
 - Auth email service now uses guarded SMTP sending with a bounded timeout.
 - Missing SMTP credentials no longer leave email-backed auth requests hanging indefinitely.
 - Resend-verification, forgot-password, reset-password confirmation, and password-change confirmation flows now log email failures without failing the primary auth action.
+- Registration now omits the `phone` field entirely when the client does not provide a value, preventing duplicate-null collisions on older deployed phone indexes.
 
 ## Verification
 - `get_errors` returned clean results for `kelmah-mobile-android/`.
