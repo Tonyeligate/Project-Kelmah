@@ -42,12 +42,12 @@ const UserMenu = ({
 }) => {
   const theme = useTheme();
 
-  // Close the menu synchronously and run any post-close callback.
-  // The previous implementation focused returnFocusRef while the MUI Menu
-  // (a Modal) was still open → focus landed inside aria-hidden #root → page
-  // froze. With disableEnforceFocus + disableRestoreFocus on the Menu,
-  // focus management is fully opt-out; we just close and optionally navigate.
+  // Close the menu synchronously. Blur the active element first so MUI
+  // does not apply aria-hidden on the Menu while a descendant retains focus.
   const requestClose = (event, { afterClose } = {}) => {
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
     onClose();
     afterClose?.();
   };

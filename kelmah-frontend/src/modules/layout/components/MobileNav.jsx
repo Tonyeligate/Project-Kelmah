@@ -122,14 +122,14 @@ const MobileNav = ({ open, onClose }) => {
   const isLoginPage = location.pathname.includes('/login');
   const isRegisterPage = location.pathname.includes('/register');
 
-  // Close the drawer synchronously. Manual focus management (focusing
-  // returnFocusRef while the modal is still open) caused the aria-hidden
-  // warning and page-freeze bug — MUI Modal sets aria-hidden on #root while
-  // the overlay is mounted, so focusing anything inside #root during close
-  // breaks assistive-technology contracts and confuses MUI's cleanup.
-  // With disableRestoreFocus + disableEnforceFocus on the Drawer, MUI will
-  // not fight us and focus simply stays on <body> until the user interacts.
+  // Close the drawer synchronously. Blur the focused element first so MUI
+  // does not apply aria-hidden on the drawer while a descendant still holds
+  // focus (that combination triggers the browser warning and can leave
+  // overflow:hidden on body, freezing the page).
   const requestClose = () => {
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
     onClose();
   };
 
@@ -163,7 +163,10 @@ const MobileNav = ({ open, onClose }) => {
   };
 
   const handleLogout = async () => {
-    onClose(); // close drawer synchronously before async work
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
+    onClose();
 
     try {
       secureStorage.clear();
@@ -182,7 +185,10 @@ const MobileNav = ({ open, onClose }) => {
   };
 
   const handleNavigate = (path) => {
-    onClose(); // close drawer synchronously before navigating
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
+    onClose();
 
     const currentPath = `${location.pathname || ''}${location.search || ''}`;
     if (path && path !== currentPath) {
