@@ -98,7 +98,7 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
   },
 }));
 
-const MobileNav = ({ open, onClose }) => {
+const MobileNav = ({ open, onClose, returnFocusRef }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -121,6 +121,36 @@ const MobileNav = ({ open, onClose }) => {
     location.pathname.includes('/verify-email');
   const isLoginPage = location.pathname.includes('/login');
   const isRegisterPage = location.pathname.includes('/register');
+
+  const blurInteractiveTarget = (event) => {
+    const target = event?.currentTarget;
+    if (typeof target?.blur === 'function') {
+      target.blur();
+    }
+
+    const activeElement = document.activeElement;
+    if (activeElement && typeof activeElement.blur === 'function') {
+      activeElement.blur();
+    }
+  };
+
+  const requestClose = (event) => {
+    blurInteractiveTarget(event);
+
+    const returnFocusTarget = returnFocusRef?.current;
+    if (typeof returnFocusTarget?.focus === 'function') {
+      returnFocusTarget.focus({ preventScroll: true });
+    }
+
+    if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(() => {
+        onClose();
+      });
+      return;
+    }
+
+    onClose();
+  };
 
   const authCtas = useMemo(() => {
     if (!showAuthButtons) return [];
@@ -152,7 +182,7 @@ const MobileNav = ({ open, onClose }) => {
   };
 
   const handleLogout = async () => {
-    onClose();
+    requestClose();
 
     try {
       secureStorage.clear();
@@ -170,9 +200,13 @@ const MobileNav = ({ open, onClose }) => {
     }
   };
 
-  const handleNavigate = (path) => {
-    onClose();
-    navigate(path);
+  const handleNavigate = (path, event) => {
+    requestClose(event);
+
+    const currentPath = `${location.pathname || ''}${location.search || ''}`;
+    if (path && path !== currentPath) {
+      navigate(path);
+    }
   };
 
   const getUserInitials = () => {
@@ -235,8 +269,13 @@ const MobileNav = ({ open, onClose }) => {
     <StyledDrawer
       anchor="left"
       open={open}
-      onClose={onClose}
+      onClose={requestClose}
       variant="temporary"
+      ModalProps={{
+        keepMounted: true,
+        disableAutoFocus: true,
+        disableRestoreFocus: true,
+      }}
     >
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
@@ -268,7 +307,8 @@ const MobileNav = ({ open, onClose }) => {
             Kelmah
           </Typography>
           <IconButton
-            onClick={onClose}
+            onClick={requestClose}
+            aria-label="Close menu"
             sx={{
               color:
                 theme.palette.mode === 'dark'
@@ -331,7 +371,7 @@ const MobileNav = ({ open, onClose }) => {
         <List sx={{ flex: 1, py: 1 }}>
           {/* ✅ MOBILE-AUDIT P3: removed motion.div staggered animation from nav items */}
           {navigationItems.map((item) => (
-                <StyledListItemButton key={item.path} onClick={() => handleNavigate(item.path)}>
+                <StyledListItemButton key={item.path} onClick={(event) => handleNavigate(item.path, event)}>
                   <ListItemIcon>
                     <Badge badgeContent={item.badge} color="error">
                       {item.icon}
@@ -351,7 +391,7 @@ const MobileNav = ({ open, onClose }) => {
               <Divider sx={{ my: 2, mx: 2 }} />
 
               <StyledListItemButton
-                onClick={() => handleNavigate('/settings')}
+                onClick={(event) => handleNavigate('/settings', event)}
               >
                 <ListItemIcon>
                   <SettingsIcon />
@@ -360,7 +400,7 @@ const MobileNav = ({ open, onClose }) => {
               </StyledListItemButton>
 
               <StyledListItemButton
-                onClick={() => handleNavigate('/support')}
+                onClick={(event) => handleNavigate('/support', event)}
               >
                 <ListItemIcon>
                   <HomeIcon />
@@ -401,7 +441,7 @@ const MobileNav = ({ open, onClose }) => {
               {authCtas.map((cta) => (
                 <StyledListItemButton
                   key={cta.path}
-                  onClick={() => handleNavigate(cta.path)}
+                  onClick={(event) => handleNavigate(cta.path, event)}
                   sx={{
                     justifyContent: 'center',
                     ...(cta.tone === 'primary' && {
@@ -438,6 +478,9 @@ const MobileNav = ({ open, onClose }) => {
 MobileNav.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
+  returnFocusRef: PropTypes.shape({
+    current: PropTypes.any,
+  }),
 };
 
 export default MobileNav;

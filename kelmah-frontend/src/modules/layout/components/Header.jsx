@@ -66,6 +66,7 @@ const Header = ({
   const [headerAvailability, setHeaderAvailability] = useState(null);
   const [headerCompletion, setHeaderCompletion] = useState(null);
   const [themeMenuAnchor, setThemeMenuAnchor] = useState(null);
+  const mobileMenuButtonRef = React.useRef(null);
 
   // Auto-hide header behaviour (desktop: mouse proximity, mobile: scroll direction)
   const isHeaderVisible = useAutoHideHeader(autoShowMode, isMobile);
@@ -221,6 +222,18 @@ const Header = ({
     setThemeMenuAnchor(event.currentTarget);
   };
 
+  const blurInteractiveTarget = (event) => {
+    const target = event?.currentTarget;
+    if (typeof target?.blur === 'function') {
+      target.blur();
+    }
+
+    const activeElement = document.activeElement;
+    if (activeElement && typeof activeElement.blur === 'function') {
+      activeElement.blur();
+    }
+  };
+
   const handleThemeMenuClose = () => {
     setThemeMenuAnchor(null);
   };
@@ -263,6 +276,12 @@ const Header = ({
   };
 
   // User menu and notifications menu are now rendered via <UserMenu> and <NotificationBells> components
+
+  React.useEffect(() => {
+    if (mobileMenuOpen) {
+      setMobileMenuOpen(false);
+    }
+  }, [location.pathname, location.search, mobileMenuOpen]);
 
   if (authState.isLoading || !authState.isReady) {
     return (
@@ -501,8 +520,13 @@ const Header = ({
           {/* Mobile Menu Button — right-aligned */}
           {isMobile && (
             <ActionButton
-              aria-label="menu"
-              onClick={() => setMobileMenuOpen(true)}
+              ref={mobileMenuButtonRef}
+              aria-label="Open menu"
+              aria-expanded={mobileMenuOpen}
+              onClick={(event) => {
+                blurInteractiveTarget(event);
+                setMobileMenuOpen(true);
+              }}
               sx={{
                 ml: { xs: 0.5, sm: 1 },
                 p: { xs: 1, sm: 1.5 },
@@ -525,6 +549,7 @@ const Header = ({
         <MobileNav
           open={mobileMenuOpen}
           onClose={() => setMobileMenuOpen(false)}
+          returnFocusRef={mobileMenuButtonRef}
         />
       )}
 

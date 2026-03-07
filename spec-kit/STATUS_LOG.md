@@ -88,11 +88,14 @@
   - Blurs the hamburger trigger before opening the mobile drawer.
   - Adds a route-change safety effect so the mobile drawer closes whenever the location changes.
   - Improves the mobile menu button accessibility state with `aria-expanded`.
+  - Stores the hamburger trigger ref so focus can be handed back outside the drawer before close.
 - `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
   - Adds a shared close helper that blurs the active control before closing the temporary drawer.
   - Uses the shared close helper for drawer backdrop close, close button taps, and navigation item taps.
   - Prevents redundant same-path navigation while still closing the drawer immediately.
   - Keeps the drawer mounted and disables restore-focus to avoid focus churn during modal teardown.
+  - Returns focus to the header menu trigger and defers drawer state close until the next animation frame.
+  - Disables modal auto-focus so the temporary drawer does not reclaim focus during open/close churn.
 
 **Verification**
 - `get_errors` returned clean results for:
@@ -100,6 +103,7 @@
   - `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
   - `spec-kit/STATUS_LOG.md`
 - Frontend production build passed successfully with `npm run build` in `kelmah-frontend/` after the drawer changes.
+- Frontend production build passed again after the strengthened focus-return patch for the mobile drawer.
 - Workspace search found no first-party `className.indexOf` source in `kelmah-frontend/src`, which supports the earlier conclusion that the reported `inject.js` error is browser-injected noise rather than app code.
 
 ### Session: Light-Mode Visibility Audit ✅ COMPLETED
