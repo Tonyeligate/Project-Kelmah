@@ -1,5 +1,163 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Native Auth Expansion + Email Timeout Hardening ✅ COMPLETED
+
+**Date**: March 7, 2026
+**Scope**: Expand the native mobile auth surface beyond sign-in and harden auth-service email-backed endpoints so registration and recovery flows stop timing out.
+
+**Acceptance Criteria**
+- Android supports register, forgot password, reset password, resend verification email, and verify-email token flow.
+- iOS supports register, forgot password, reset password, resend verification email, and verify-email token flow.
+- Profile security includes change-password for both apps.
+- Email-backed auth endpoints no longer depend on unbounded SMTP waits inside the auth service.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/api-gateway/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/services/auth-service/services/email.service.js`
+- `kelmah-frontend/src/modules/auth/services/authService.js`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/**/*`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/**/*`
+- `kelmah-mobile-ios/Kelmah/Features/Auth/**/*`
+- `kelmah-mobile-ios/Kelmah/Features/Profile/**/*`
+
+**Findings**
+- The native apps only supported sign-in at the start of this session, leaving registration and recovery incomplete.
+- Live API gateway validation reproduced a backend production blocker: `register`, `forgot-password`, and `resend-verification-email` returned `504` while `login` still worked.
+- The failing endpoints all depended on auth-service email sends, which pointed to unbounded SMTP waits as the likely bottleneck.
+
+**Changes completed**
+- Android:
+  - Expanded auth models, API service, repository, and `AuthViewModel` for register/recovery/verification flows.
+  - Rebuilt the login surface into a multi-mode auth hub.
+  - Added real profile security UI and password-change flow.
+- iOS:
+  - Expanded auth models, repository, and `LoginViewModel` for register/recovery/verification flows.
+  - Rebuilt the login surface into a multi-mode auth hub.
+  - Added real profile security UI and password-change flow.
+- Backend:
+  - Added bounded SMTP send handling in `email.service.js`.
+  - Converted resend/forgot/password-change confirmation email failures into logged warnings so core auth actions can still complete.
+- Documentation:
+  - Added and completed `spec-kit/KELMAH_NATIVE_AUTH_EXPANSION_MAR07_2026.md`.
+
+**Verification**
+- `get_errors` returned clean results for `kelmah-mobile-android/`.
+- `get_errors` returned clean results for `kelmah-mobile-ios/`.
+- `get_errors` returned clean results for:
+  - `kelmah-backend/services/auth-service/services/email.service.js`
+  - `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- Live gateway validation before the backend hardening reproduced the `504` timeout issue.
+- Live post-deployment validation is pending deployment of the updated backend code.
+
+### Session: Public Mobile Drawer Close + Focus Audit ✅ COMPLETED
+
+**Date**: March 7, 2026
+**Scope**: Diagnose and fix the public mobile slide menu on `/find-talents`, including the stuck drawer behavior after tapping menu actions and the app-side MUI focus/`aria-hidden` warning.
+
+**Acceptance Criteria**
+- The public mobile drawer opens and closes reliably from the header on `/find-talents`.
+- Tapping a drawer item closes the drawer cleanly without leaving the UI in a stuck modal state.
+- The app-side drawer flow no longer leaves focused interactive descendants inside a closing `MuiDrawer`/`MuiModal` container.
+- Workspace diagnostics remain clean for touched frontend files.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/modules/layout/components/Header.jsx`
+- `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
+- `kelmah-frontend/src/modules/search/pages/SearchPage.jsx`
+- `kelmah-frontend/src/hooks/useNavLinks.js`
+- `kelmah-frontend/src/routes/config.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Initial findings**
+- `/find-talents` resolves to the public `FindWorkersPage`, which is powered by `SearchPage.jsx`.
+- The public slide menu is owned by `Header.jsx` → `MobileNav.jsx`; it is a temporary MUI `Drawer` controlled by `mobileMenuOpen` state in the header.
+- `MobileNav.jsx` currently closes the drawer by calling `onClose()` directly from nav items and the close button, but it does not clear focus from the active trigger/item before the temporary drawer begins hiding.
+- There is no path-change safety close in the current mobile drawer flow, so the UI depends entirely on the immediate click handler path succeeding.
+
+**Trace summary**
+- User action: tap the public header hamburger on `/find-talents`.
+- State owner: `Header.jsx` toggles `mobileMenuOpen` and renders `MobileNav.jsx` for mobile screens.
+- Drawer flow: `MobileNav.jsx` renders a temporary MUI `Drawer` and routes menu item taps through `handleNavigate()`.
+- Route target: public guest navigation includes `/find-talents`, `/jobs`, and `/`.
+- Failure mode before fix: focused triggers/items stayed active while the temporary drawer/modal was transitioning out, and the flow had no route-change safety close.
+
+**Changes completed**
+- `kelmah-frontend/src/modules/layout/components/Header.jsx`
+  - Blurs the hamburger trigger before opening the mobile drawer.
+  - Adds a route-change safety effect so the mobile drawer closes whenever the location changes.
+  - Improves the mobile menu button accessibility state with `aria-expanded`.
+- `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
+  - Adds a shared close helper that blurs the active control before closing the temporary drawer.
+  - Uses the shared close helper for drawer backdrop close, close button taps, and navigation item taps.
+  - Prevents redundant same-path navigation while still closing the drawer immediately.
+  - Keeps the drawer mounted and disables restore-focus to avoid focus churn during modal teardown.
+
+**Verification**
+- `get_errors` returned clean results for:
+  - `kelmah-frontend/src/modules/layout/components/Header.jsx`
+  - `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
+  - `spec-kit/STATUS_LOG.md`
+- Frontend production build passed successfully with `npm run build` in `kelmah-frontend/` after the drawer changes.
+- Workspace search found no first-party `className.indexOf` source in `kelmah-frontend/src`, which supports the earlier conclusion that the reported `inject.js` error is browser-injected noise rather than app code.
+
+### Session: Light-Mode Visibility Audit ✅ COMPLETED
+
+**Date**: March 7, 2026
+**Scope**: Audit and fix light-mode text, icon, card, and surface visibility issues across the React frontend so content remains legible on all pages and components.
+
+**Acceptance Criteria**
+- No high-impact frontend pages or shared components retain hardcoded dark-only text/icon colors that disappear in light mode.
+- Shared cards, badges, pills, KPI surfaces, search inputs, and empty states use theme-aware tokens or semantic CSS variables.
+- Frontend build completes successfully after the fixes.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/index.css`
+- `kelmah-frontend/src/components/common/BreadcrumbNavigation.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/jobs/components/JobsCompactSearchBar.jsx`
+- `kelmah-frontend/src/modules/jobs/components/JobsMobileFilterDrawer.jsx`
+- `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
+- `kelmah-frontend/src/modules/messaging/components/common/ConversationList.jsx`
+- `kelmah-frontend/src/modules/messaging/components/common/MessageSearch.jsx`
+- `kelmah-frontend/src/modules/messaging/components/common/MessageStatus.jsx`
+- `kelmah-frontend/src/modules/messaging/components/common/MessageAttachments.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Initial findings**
+- The earlier sidebar fix solved navigation text, but high-impact light-mode regressions still existed in the public breadcrumb bar, jobs discovery flow, mobile jobs filters, stats cards, empty states, and shared messaging surfaces.
+- `JobsPage.jsx` was the main offender: hardcoded `rgba(255,255,255,*)`, `white`, and fixed gold values were applied directly to cards, search/filter controls, skeletons, pills, and CTA sections.
+- Shared messaging components used dark-only white borders/backgrounds that washed out search chips, timestamps, attachment rows, tabs, and list dividers in light mode.
+
+**Changes completed**
+- `kelmah-frontend/src/index.css`
+  - Added shared semantic light/dark tokens for soft surfaces, muted surfaces, accent fills/borders, on-accent text, and error states.
+- `kelmah-frontend/src/components/common/BreadcrumbNavigation.jsx`
+  - Replaced dark-only breadcrumb backgrounds/text/separators with semantic CSS variables so breadcrumb text/icons remain readable in light mode.
+- `kelmah-frontend/src/modules/jobs/components/JobsCompactSearchBar.jsx`
+  - Converted the mobile search container, placeholder, icon, input border, and filter button to semantic tokens.
+- `kelmah-frontend/src/modules/jobs/components/JobsMobileFilterDrawer.jsx`
+  - Updated category icons, slider accent, and apply button to use theme-aware semantic tokens.
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+  - Reworked the hero filter card, search/select controls, category tiles, active-filter chips, loading skeletons, error/empty states, job cards, pagination, stat cards, and bottom CTA section to use semantic tokens instead of fixed dark-only colors.
+  - Fixed the exact mobile issues shown in screenshots: breadcrumb visibility, search field contrast, category tile labels, platform statistics card labels, and pale card surfaces in light mode.
+- `kelmah-frontend/src/modules/messaging/components/common/MessageSearch.jsx`
+  - Replaced dark-only borders/hover states/filter chips with theme-aware action/divider values.
+- `kelmah-frontend/src/modules/messaging/components/common/MessageStatus.jsx`
+  - Replaced white timestamp/status icon colors with theme text secondary/disabled colors.
+- `kelmah-frontend/src/modules/messaging/components/common/MessageAttachments.jsx`
+  - Converted attachment row surfaces/borders and remove icon colors to theme-aware values.
+- `kelmah-frontend/src/modules/messaging/components/common/ConversationList.jsx`
+  - Updated conversation container, search field, tab labels, list borders, and filter divider to remain readable in light mode.
+
+**Verification**
+- VS Code diagnostics: no errors in all touched files.
+- Frontend build: `✓ built in 48.78s`.
+- Remaining long-tail hardcoded color debt still exists in lower-priority modules such as map overlays, auth wrappers, and admin/review specialty screens, but the high-impact shared navigation/jobs/messaging visibility regressions are now corrected.
+
+---
+
 ### Session: Native Jobs Domain + Routing ✅ COMPLETED
 
 **Date**: March 6, 2026

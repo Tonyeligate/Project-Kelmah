@@ -124,8 +124,8 @@ const BreadcrumbNavigation = () => {
       sx={{
         py: { xs: 1, sm: 2 },
         px: { xs: 2, sm: 3 },
-        bgcolor: 'rgba(255,255,255,0.02)',
-        borderBottom: '1px solid rgba(212,175,55,0.1)',
+        bgcolor: 'var(--k-surface-soft)',
+        borderBottom: '1px solid var(--k-border-gold)',
       }}
     >
       <Breadcrumbs
@@ -133,7 +133,7 @@ const BreadcrumbNavigation = () => {
         aria-label="Breadcrumb"
         sx={{
           '& .MuiBreadcrumbs-separator': {
-            color: 'rgba(255,255,255,0.5)',
+            color: 'var(--k-text-muted)',
             fontSize: '0.875rem',
           },
         }}
@@ -157,7 +157,7 @@ const BreadcrumbNavigation = () => {
                 <Typography
                   variant="body2"
                   sx={{
-                    color: '#D4AF37',
+                    color: 'var(--k-gold)',
                     fontWeight: 'bold',
                     fontSize: { xs: '0.8rem', sm: '0.875rem' },
                   }}
@@ -179,17 +179,17 @@ const BreadcrumbNavigation = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 0.5,
-                color: 'rgba(255,255,255,0.7)',
+                color: 'var(--k-text-secondary)',
                 textDecoration: 'none',
                 minHeight: 36,
                 px: 0.5,
                 fontSize: { xs: '0.8rem', sm: '0.875rem' },
                 '&:hover': {
-                  color: '#D4AF37',
+                  color: 'var(--k-gold)',
                   textDecoration: 'underline',
                 },
                 '&:focus-visible': {
-                  outline: '3px solid #D4AF37',
+                  outline: '3px solid var(--kelmah-focus-color)',
                   outlineOffset: '2px',
                   borderRadius: '4px',
                 },

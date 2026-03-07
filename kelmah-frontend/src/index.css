@@ -37,6 +37,18 @@
   --k-border-default: rgba(255, 255, 255, 0.08);
   --k-border-gold:    rgba(255, 215, 0, 0.20);
 
+  /* Shared semantic states */
+  --k-surface-soft:           rgba(255, 255, 255, 0.05);
+  --k-surface-muted:          rgba(255, 255, 255, 0.10);
+  --k-accent-soft:            rgba(255, 215, 0, 0.10);
+  --k-accent-soft-strong:     rgba(255, 215, 0, 0.18);
+  --k-accent-border:          rgba(255, 215, 0, 0.25);
+  --k-accent-border-strong:   rgba(255, 215, 0, 0.40);
+  --k-text-on-accent:         #111111;
+  --k-danger-soft:            rgba(244, 67, 54, 0.12);
+  --k-danger-border:          rgba(244, 67, 54, 0.32);
+  --k-danger-text:            #ff6b6b;
+
   /* Navigation sidebar */
   --nav-icon-active:    #FFD700;
   --nav-icon-inactive:  #9E9E9E;
@@ -83,6 +95,18 @@
   /* Stroke / border */
   --k-border-default: rgba(0, 0, 0, 0.09);
   --k-border-gold:    rgba(0, 0, 0, 0.12);
+
+  /* Shared semantic states */
+  --k-surface-soft:           rgba(0, 0, 0, 0.03);
+  --k-surface-muted:          rgba(0, 0, 0, 0.06);
+  --k-accent-soft:            rgba(184, 134, 11, 0.10);
+  --k-accent-soft-strong:     rgba(184, 134, 11, 0.16);
+  --k-accent-border:          rgba(184, 134, 11, 0.24);
+  --k-accent-border-strong:   rgba(184, 134, 11, 0.36);
+  --k-text-on-accent:         #111111;
+  --k-danger-soft:            rgba(211, 47, 47, 0.08);
+  --k-danger-border:          rgba(211, 47, 47, 0.22);
+  --k-danger-text:            #B42318;
 
   /* Navigation sidebar — full swap for legibility */
   --nav-icon-active:    #B8860B;

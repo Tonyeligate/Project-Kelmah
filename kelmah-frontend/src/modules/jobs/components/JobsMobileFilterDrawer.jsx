@@ -157,7 +157,7 @@ const JobsMobileFilterDrawer = ({
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     {cat.icon && (
                       <cat.icon
-                        sx={{ mr: 1, color: '#D4AF37', fontSize: 18 }}
+                        sx={{ mr: 1, color: 'var(--k-gold)', fontSize: 18 }}
                       />
                     )}
                     {cat.label}
@@ -205,7 +205,7 @@ const JobsMobileFilterDrawer = ({
               max={10000}
               step={100}
               sx={{
-                color: '#D4AF37',
+                color: 'var(--k-gold)',
                 '& .MuiSlider-thumb': {
                   width: 24,
                   height: 24,
@@ -255,10 +255,10 @@ const JobsMobileFilterDrawer = ({
           startIcon={<SearchIcon />}
           sx={{
             minHeight: '48px',
-            bgcolor: '#D4AF37',
-            color: '#000',
+            bgcolor: 'var(--k-gold)',
+            color: 'var(--k-text-on-accent)',
             '&:hover': {
-              bgcolor: '#B8941F',
+              bgcolor: 'var(--k-gold-dark)',
             },
           }}
         >

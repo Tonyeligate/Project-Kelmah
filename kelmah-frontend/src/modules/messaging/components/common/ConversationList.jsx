@@ -70,13 +70,22 @@ const ConversationContainer = styled(Paper)(({ theme }) => ({
   height: '100%',
   borderRadius: theme.spacing(2),
   overflow: 'hidden',
-  backgroundColor: alpha(theme.palette.primary.main, 0.7),
+  backgroundColor:
+    theme.palette.mode === 'dark'
+      ? alpha(theme.palette.primary.main, 0.7)
+      : alpha(theme.palette.background.paper, 0.98),
   backdropFilter: 'blur(10px)',
-  border: `2px solid ${theme.palette.secondary.main}`,
-  boxShadow: `inset 0 0 8px rgba(255, 215, 0, 0.5)`,
+  border: `1px solid ${alpha(theme.palette.secondary.main, theme.palette.mode === 'dark' ? 0.45 : 0.22)}`,
+  boxShadow:
+    theme.palette.mode === 'dark'
+      ? `inset 0 0 8px rgba(255, 215, 0, 0.5)`
+      : `0 12px 32px rgba(0, 0, 0, 0.06)`,
   transition: 'box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out',
   '&:hover': {
-    boxShadow: `0 0 12px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.5)`,
+    boxShadow:
+      theme.palette.mode === 'dark'
+        ? `0 0 12px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.5)`
+        : `0 16px 40px rgba(0, 0, 0, 0.08)`,
     borderColor: theme.palette.secondary.light,
   },
   display: 'flex',
@@ -130,7 +139,10 @@ const SearchField = styled(TextField)(({ theme }) => ({
   margin: theme.spacing(2),
   '& .MuiOutlinedInput-root': {
     borderRadius: theme.spacing(3),
-    backgroundColor: alpha(theme.palette.common.white, 0.05),
+    backgroundColor:
+      theme.palette.mode === 'dark'
+        ? alpha(theme.palette.common.white, 0.05)
+        : alpha(theme.palette.common.black, 0.03),
     '& fieldset': {
       borderColor: alpha(theme.palette.secondary.main, 0.3),
     },
@@ -142,7 +154,7 @@ const SearchField = styled(TextField)(({ theme }) => ({
     },
   },
   '& .MuiInputBase-input': {
-    color: theme.palette.common.white,
+    color: theme.palette.text.primary,
   },
 }));
 
@@ -156,7 +168,7 @@ const ActionButton = styled(Button)(({ theme }) => ({
 }));
 
 const StyledTab = styled(Tab)(({ theme }) => ({
-  color: alpha(theme.palette.common.white, 0.7),
+  color: theme.palette.text.secondary,
   '&.Mui-selected': {
     color: theme.palette.secondary.main,
   },
@@ -440,7 +452,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          borderBottom: `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
         })}
       >
         <Typography variant="h6" sx={{ color: 'primary.main' }}>
@@ -508,7 +520,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
         onChange={handleTabChange}
         variant="fullWidth"
         sx={(theme) => ({
-          borderBottom: `1px solid ${alpha(theme.palette.common.white, 0.1)}`,
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
           '& .MuiTabs-indicator': {
             backgroundColor: theme.palette.secondary.main,
           },
@@ -767,7 +779,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
         >
           Group Chats
         </MenuItem>
-        <Divider sx={{ my: 1, borderColor: 'rgba(255,255,255,0.2)' }} />
+        <Divider sx={{ my: 1, borderColor: 'divider' }} />
         <MenuItem
           onClick={() => {
             setDateFilter('allDates');

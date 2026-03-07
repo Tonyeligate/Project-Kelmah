@@ -205,14 +205,14 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
       sx={{
         p: { xs: 2, sm: 2.5, md: 3 }, // ✅ Responsive padding
         textAlign: 'center',
-        bgcolor: 'rgba(255,255,255,0.05)',
-        border: '1px solid rgba(212,175,55,0.2)',
+        bgcolor: 'var(--k-bg-surface)',
+        border: '1px solid var(--k-accent-border)',
         minHeight: { xs: 'auto', sm: '140px', md: '160px' }, // ✅ Auto on mobile
         display: 'flex', // ✅ Better centering
         flexDirection: 'column',
         justifyContent: 'center',
         '&:hover': {
-          border: '1px solid #D4AF37',
+          border: '1px solid var(--k-gold)',
           boxShadow: '0 8px 32px rgba(212,175,55,0.2)',
           transform: { xs: 'none', sm: 'translateY(-4px)' }, // ✅ Desktop-only hover
         },
@@ -241,7 +241,7 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
       <Typography
         variant="h3"
         sx={{
-          color: '#D4AF37',
+          color: 'var(--k-gold)',
           fontWeight: 'bold',
           mb: { xs: 0.5, sm: 0.75, md: 1 }, // ✅ Responsive margin
           fontSize: { xs: '1.75rem', sm: '2.25rem', md: '3rem' }, // ✅ Responsive font size
@@ -265,7 +265,7 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
       <Typography
         variant="body1"
         sx={{
-          color: 'rgba(255,255,255,0.8)',
+          color: 'var(--k-text-secondary)',
           fontWeight: 'medium',
           fontSize: { xs: '0.875rem', sm: '0.9rem', md: '1rem' },
           position: 'relative',
@@ -419,16 +419,16 @@ class ErrorBoundary extends React.Component {
       return (
         this.props.fallback || (
           <Box sx={{ textAlign: 'center', py: 8 }}>
-            <Typography variant="h5" sx={{ color: '#fff', mb: 2 }}>
+            <Typography variant="h5" sx={{ color: 'var(--k-text-primary)', mb: 2 }}>
               Something went wrong
             </Typography>
-            <Typography variant="body1" sx={{ color: '#ccc', mb: 3 }}>
+            <Typography variant="body1" sx={{ color: 'var(--k-text-secondary)', mb: 3 }}>
               We&apos;re having trouble loading jobs. Please try refreshing the page.
             </Typography>
             <Button
               variant="contained"
               onClick={() => window.location.reload()}
-              sx={{ bgcolor: '#D4AF37', color: 'black' }}
+              sx={{ bgcolor: 'var(--k-gold)', color: 'var(--k-text-on-accent)' }}
             >
               Refresh Page
             </Button>
@@ -827,7 +827,7 @@ const JobsPage = () => {
                       sx={{
                         fontWeight: 'bold',
                         background:
-                          'linear-gradient(45deg, #D4AF37 30%, #FFD700 90%)',
+                          'linear-gradient(45deg, var(--k-gold-dark) 30%, var(--k-gold) 90%)',
                         backgroundClip: 'text',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
@@ -903,9 +903,9 @@ const JobsPage = () => {
                     elevation={8}
                     sx={{
                       p: { xs: 1.5, sm: 2 }, // ✅ Reduced padding on mobile
-                      bgcolor: 'rgba(255,255,255,0.05)',
+                      bgcolor: 'var(--k-bg-surface)',
                       backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(212,175,55,0.2)',
+                      border: '1px solid var(--k-accent-border)',
                       borderRadius: { xs: 2, sm: 2 },
                       mx: { xs: 1, sm: 0 }, // ✅ Add horizontal margin on mobile
                     }}
@@ -942,23 +942,23 @@ const JobsPage = () => {
                           }}
                           sx={{
                             '& .MuiOutlinedInput-root': {
-                              color: 'white',
+                              color: 'var(--k-text-primary)',
                               height: { xs: '44px', sm: '40px' }, // ✅ Larger touch target on mobile (44px is Apple's recommended minimum)
                               '& fieldset': {
-                                borderColor: 'rgba(212,175,55,0.3)',
+                                borderColor: 'var(--k-accent-border)',
                               },
                               '&:hover fieldset': {
-                                borderColor: '#D4AF37',
+                                borderColor: 'var(--k-gold)',
                               },
                               '&.Mui-focused fieldset': {
-                                borderColor: '#D4AF37',
+                                borderColor: 'var(--k-gold)',
                               },
                             },
                             '& .MuiInputBase-input': {
                               fontSize: { xs: '1rem', sm: '0.875rem' }, // ✅ 16px on mobile prevents iOS auto-zoom
                               padding: { xs: '10px 14px', sm: '8.5px 14px' }, // ✅ Comfortable padding
                               '&::placeholder': {
-                                color: 'rgba(255,255,255,0.6)',
+                                color: 'var(--k-text-muted)',
                                 opacity: 1,
                               },
                             },
@@ -968,7 +968,7 @@ const JobsPage = () => {
                               <InputAdornment position="start">
                                 <SearchIcon
                                   sx={{
-                                    color: '#D4AF37',
+                                    color: 'var(--k-gold)',
                                     fontSize: { xs: '1.2rem', sm: '1rem' },
                                   }}
                                 />
@@ -982,11 +982,11 @@ const JobsPage = () => {
                           <InputLabel
                             shrink
                             sx={{
-                              color: 'rgba(255,255,255,0.7)',
+                              color: 'var(--k-text-secondary)',
                               fontSize: { xs: '0.8rem', sm: '0.75rem' }, // ✅ Slightly larger on mobile
                               transform: 'translate(14px, -9px) scale(0.85)',
                               '&.Mui-focused': {
-                                color: '#D4AF37',
+                                color: 'var(--k-gold)',
                               },
                             }}
                           >
@@ -1002,21 +1002,21 @@ const JobsPage = () => {
                               'aria-label': 'Select trade category',
                             }}
                             sx={{
-                              color: 'white',
+                              color: 'var(--k-text-primary)',
                               fontSize: { xs: '1rem', sm: '0.875rem' }, // ✅ Larger text on mobile
                               height: { xs: '44px', sm: '40px' }, // ✅ Match TextField height
                               '& .MuiOutlinedInput-notchedOutline': {
-                                borderColor: 'rgba(212,175,55,0.3)',
+                                borderColor: 'var(--k-accent-border)',
                               },
                               '&:hover .MuiOutlinedInput-notchedOutline': {
-                                borderColor: '#D4AF37',
+                                borderColor: 'var(--k-gold)',
                               },
                               '&.Mui-focused .MuiOutlinedInput-notchedOutline':
                               {
-                                borderColor: '#D4AF37',
+                                borderColor: 'var(--k-gold)',
                               },
                               '& .MuiSvgIcon-root': {
-                                color: '#D4AF37',
+                                color: 'var(--k-gold)',
                               },
                               '& .MuiSelect-select': {
                                 // ✅ Proper padding for mobile touch
@@ -1035,7 +1035,7 @@ const JobsPage = () => {
                                   <category.icon
                                     sx={{
                                       mr: 1,
-                                      color: '#D4AF37',
+                                      color: 'var(--k-gold)',
                                       fontSize: 18,
                                     }}
                                   />
@@ -1053,11 +1053,11 @@ const JobsPage = () => {
                           <InputLabel
                             shrink
                             sx={{
-                              color: 'rgba(255,255,255,0.7)',
+                              color: 'var(--k-text-secondary)',
                               fontSize: { xs: '0.8rem', sm: '0.75rem' }, // ✅ Slightly larger on mobile
                               transform: 'translate(14px, -9px) scale(0.85)',
                               '&.Mui-focused': {
-                                color: '#D4AF37',
+                                color: 'var(--k-gold)',
                               },
                             }}
                           >
@@ -1073,21 +1073,21 @@ const JobsPage = () => {
                               'aria-label': 'Select location',
                             }}
                             sx={{
-                              color: 'white',
+                              color: 'var(--k-text-primary)',
                               fontSize: { xs: '1rem', sm: '0.875rem' }, // ✅ Larger text on mobile
                               height: { xs: '44px', sm: '40px' }, // ✅ Match TextField height
                               '& .MuiOutlinedInput-notchedOutline': {
-                                borderColor: 'rgba(212,175,55,0.3)',
+                                borderColor: 'var(--k-accent-border)',
                               },
                               '&:hover .MuiOutlinedInput-notchedOutline': {
-                                borderColor: '#D4AF37',
+                                borderColor: 'var(--k-gold)',
                               },
                               '&.Mui-focused .MuiOutlinedInput-notchedOutline':
                               {
-                                borderColor: '#D4AF37',
+                                borderColor: 'var(--k-gold)',
                               },
                               '& .MuiSvgIcon-root': {
-                                color: '#D4AF37',
+                                color: 'var(--k-gold)',
                               },
                               '& .MuiSelect-select': {
                                 // ✅ Proper padding for mobile touch
@@ -1132,8 +1132,8 @@ const JobsPage = () => {
                               }
                             }}
                             sx={{
-                              bgcolor: '#D4AF37',
-                              color: 'black',
+                              bgcolor: 'var(--k-gold)',
+                              color: 'var(--k-text-on-accent)',
                               fontWeight: 'bold',
                               fontSize: { xs: '1rem', sm: '0.875rem' }, // ✅ Slightly larger on mobile
                               height: { xs: '44px', sm: '40px' }, // ✅ Match other elements (44px for mobile touch)
@@ -1142,7 +1142,7 @@ const JobsPage = () => {
                               boxShadow: '0 4px 12px rgba(212,175,55,0.4)',
                               whiteSpace: 'nowrap',
                               '&:hover': {
-                                bgcolor: '#B8941F',
+                                bgcolor: 'var(--k-gold-dark)',
                                 boxShadow: '0 6px 16px rgba(212,175,55,0.6)',
                                 transform: {
                                   xs: 'none',
@@ -1172,12 +1172,12 @@ const JobsPage = () => {
                         onClick={() => setShowFilters(!showFilters)}
                         size="small"
                         sx={{
-                          color: '#D4AF37',
+                          color: 'var(--k-gold)',
                           fontSize: { xs: '0.875rem', sm: '0.75rem' },
                           padding: { xs: '8px 14px', sm: '4px 8px' },
                           minHeight: { xs: '44px', sm: 'auto' },
                           '&:hover': {
-                            bgcolor: 'rgba(212,175,55,0.1)',
+                            bgcolor: 'var(--k-accent-soft)',
                           },
                         }}
                       >
@@ -1185,7 +1185,7 @@ const JobsPage = () => {
                         {hasActiveFilters && (
                           <Badge 
                             badgeContent={[debouncedSearch, selectedCategory, selectedLocation, budgetFilterActive, quickFilters.urgent, quickFilters.verified, quickFilters.fullTime, quickFilters.contract].filter(Boolean).length}
-                            sx={{ ml: 1, '& .MuiBadge-badge': { bgcolor: '#D4AF37', color: 'black', fontSize: '0.65rem', minWidth: 16, height: 16 } }}
+                            sx={{ ml: 1, '& .MuiBadge-badge': { bgcolor: 'var(--k-gold)', color: 'var(--k-text-on-accent)', fontSize: '0.65rem', minWidth: 16, height: 16 } }}
                           />
                         )}
                       </Button>
@@ -1196,8 +1196,8 @@ const JobsPage = () => {
                       <LinearProgress
                         sx={{
                           mt: 1,
-                          bgcolor: 'rgba(212,175,55,0.15)',
-                          '& .MuiLinearProgress-bar': { bgcolor: '#D4AF37' },
+                          bgcolor: 'var(--k-accent-soft)',
+                          '& .MuiLinearProgress-bar': { bgcolor: 'var(--k-gold)' },
                           height: 2,
                           borderRadius: 1,
                         }}
@@ -1210,7 +1210,7 @@ const JobsPage = () => {
                         sx={{
                           mt: 2,
                           pt: 2,
-                          borderTop: '1px solid rgba(212,175,55,0.2)',
+                          borderTop: '1px solid var(--k-accent-border)',
                         }}
                       >
                         <Grid container spacing={2}>
@@ -1219,7 +1219,7 @@ const JobsPage = () => {
                               <Typography
                                 variant="body2"
                                 sx={{
-                                  color: '#D4AF37',
+                                  color: 'var(--k-gold)',
                                   fontWeight: 'bold',
                                 }}
                               >
@@ -1231,10 +1231,10 @@ const JobsPage = () => {
                                     checked={budgetFilterActive}
                                     onChange={(e) => setBudgetFilterActive(e.target.checked)}
                                     size="small"
-                                    sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#D4AF37' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#D4AF37' } }}
+                                    sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: 'var(--k-gold)' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: 'var(--k-gold)' } }}
                                   />
                                 }
-                                label={<Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>{budgetFilterActive ? 'On' : 'Off'}</Typography>}
+                                label={<Typography variant="caption" sx={{ color: 'var(--k-text-muted)' }}>{budgetFilterActive ? 'On' : 'Off'}</Typography>}
                                 sx={{ m: 0 }}
                               />
                             </Box>
@@ -1252,9 +1252,9 @@ const JobsPage = () => {
                               disabled={!budgetFilterActive}
                               size="small"
                               sx={{
-                                color: budgetFilterActive ? '#D4AF37' : 'grey.600',
+                                color: budgetFilterActive ? 'var(--k-gold)' : 'grey.600',
                                 '& .MuiSlider-thumb': {
-                                  bgcolor: budgetFilterActive ? '#D4AF37' : 'grey.500',
+                                  bgcolor: budgetFilterActive ? 'var(--k-gold)' : 'grey.500',
                                   width: { xs: 28, sm: 20 },
                                   height: { xs: 28, sm: 20 },
                                   '&::before': {
@@ -1266,10 +1266,10 @@ const JobsPage = () => {
                                   },
                                 },
                                 '& .MuiSlider-track': {
-                                  bgcolor: budgetFilterActive ? '#D4AF37' : 'grey.600',
+                                  bgcolor: budgetFilterActive ? 'var(--k-gold)' : 'grey.600',
                                 },
                                 '& .MuiSlider-rail': {
-                                  bgcolor: 'rgba(212,175,55,0.3)',
+                                  bgcolor: 'var(--k-accent-border)',
                                 },
                               }}
                             />
@@ -1282,13 +1282,13 @@ const JobsPage = () => {
                             >
                               <Typography
                                 variant="caption"
-                                sx={{ color: 'rgba(255,255,255,0.7)' }}
+                                sx={{ color: 'var(--k-text-secondary)' }}
                               >
                                 GH₵ {budgetRange[0].toLocaleString()}
                               </Typography>
                               <Typography
                                 variant="caption"
-                                sx={{ color: 'rgba(255,255,255,0.7)' }}
+                                sx={{ color: 'var(--k-text-secondary)' }}
                               >
                                 GH₵ {budgetRange[1].toLocaleString()}+
                               </Typography>
@@ -1299,7 +1299,7 @@ const JobsPage = () => {
                               variant="body2"
                               sx={{
                                 mb: 1,
-                                color: '#D4AF37',
+                                color: 'var(--k-gold)',
                                 fontWeight: 'bold',
                               }}
                             >
@@ -1325,14 +1325,14 @@ const JobsPage = () => {
                                   variant={quickFilters[key] ? 'filled' : 'outlined'}
                                   onClick={() => toggleQuickFilter(key)}
                                   sx={{
-                                    borderColor: '#D4AF37',
-                                    color: quickFilters[key] ? 'black' : '#D4AF37',
-                                    bgcolor: quickFilters[key] ? '#D4AF37' : 'transparent',
+                                    borderColor: 'var(--k-gold)',
+                                    color: quickFilters[key] ? 'var(--k-text-on-accent)' : 'var(--k-gold)',
+                                    bgcolor: quickFilters[key] ? 'var(--k-gold)' : 'transparent',
                                     fontSize: '0.8rem',
                                     cursor: 'pointer',
                                     fontWeight: quickFilters[key] ? 'bold' : 'normal',
                                     '&:hover': {
-                                      bgcolor: quickFilters[key] ? '#B8941F' : 'rgba(212,175,55,0.15)',
+                                        bgcolor: quickFilters[key] ? 'var(--k-gold-dark)' : 'var(--k-accent-soft)',
                                     },
                                     transition: 'all 0.2s ease',
                                   }}
@@ -1345,7 +1345,7 @@ const JobsPage = () => {
                               variant="body2"
                               sx={{
                                 mb: 1,
-                                color: '#D4AF37',
+                                color: 'var(--k-gold)',
                                 fontWeight: 'bold',
                               }}
                             >
@@ -1356,13 +1356,13 @@ const JobsPage = () => {
                                 value={sortBy}
                                 onChange={(e) => setSortBy(e.target.value)}
                                 sx={{
-                                  color: 'white',
+                                  color: 'var(--k-text-primary)',
                                   fontSize: '0.875rem',
                                   height: '36px',
-                                  '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(212,175,55,0.3)' },
-                                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#D4AF37' },
-                                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#D4AF37' },
-                                  '& .MuiSvgIcon-root': { color: '#D4AF37' },
+                                  '& .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--k-accent-border)' },
+                                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--k-gold)' },
+                                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--k-gold)' },
+                                  '& .MuiSvgIcon-root': { color: 'var(--k-gold)' },
                                 }}
                               >
                                 <MenuItem value="relevance">Most Relevant</MenuItem>
@@ -1408,7 +1408,7 @@ const JobsPage = () => {
               <Typography
                 variant="h5"
                 sx={{
-                  color: '#D4AF37',
+                  color: 'var(--k-gold)',
                   fontWeight: 'bold',
                   mb: { xs: 1.5, md: 2 },
                   fontSize: { xs: '1.15rem', sm: '1.35rem', md: '1.5rem' },
@@ -1446,13 +1446,13 @@ const JobsPage = () => {
                           p: { xs: 1.5, sm: 2 },
                           textAlign: 'center',
                           cursor: 'pointer',
-                          bgcolor: isActive ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.03)',
-                          border: isActive ? '2px solid #D4AF37' : '1px solid rgba(212,175,55,0.15)',
+                          bgcolor: isActive ? 'var(--k-accent-soft)' : 'var(--k-bg-surface)',
+                          border: isActive ? '2px solid var(--k-gold)' : '1px solid var(--k-accent-border)',
                           borderRadius: 2,
                           transition: 'all 0.2s ease',
                           '&:hover': {
-                            bgcolor: 'rgba(212,175,55,0.1)',
-                            border: '1px solid rgba(212,175,55,0.4)',
+                            bgcolor: 'var(--k-accent-soft)',
+                            border: '1px solid var(--k-accent-border-strong)',
                             transform: { xs: 'none', sm: 'translateY(-2px)' },
                           },
                           '&:active': { transform: 'scale(0.96)' },
@@ -1480,7 +1480,7 @@ const JobsPage = () => {
                         <Typography
                           variant="caption"
                           sx={{
-                            color: isActive ? 'secondary.main' : 'rgba(255,255,255,0.8)',
+                            color: isActive ? 'secondary.main' : 'var(--k-text-secondary)',
                             fontWeight: isActive ? 700 : 500,
                             fontSize: { xs: '0.65rem', sm: '0.75rem' },
                             lineHeight: 1.2,
@@ -1517,7 +1517,7 @@ const JobsPage = () => {
               <Box>
                 <Typography
                   variant="h5"
-                  sx={{ color: '#D4AF37', fontWeight: 'bold', mb: 1 }}
+                  sx={{ color: 'var(--k-gold)', fontWeight: 'bold', mb: 1 }}
                 >
                   {selectedCategory ? `${selectedCategory} Jobs` : 'Featured Opportunities'}
                 </Typography>
@@ -1535,9 +1535,9 @@ const JobsPage = () => {
                         size="small"
                         onDelete={() => setSearchQuery('')}
                         sx={{
-                          bgcolor: 'rgba(212,175,55,0.2)',
-                          color: '#D4AF37',
-                          '& .MuiChip-deleteIcon': { color: '#D4AF37' },
+                          bgcolor: 'var(--k-accent-soft-strong)',
+                          color: 'var(--k-gold)',
+                          '& .MuiChip-deleteIcon': { color: 'var(--k-gold)' },
                         }}
                       />
                     )}
@@ -1547,9 +1547,9 @@ const JobsPage = () => {
                         size="small"
                         onDelete={() => setSelectedCategory('')}
                         sx={{
-                          bgcolor: 'rgba(212,175,55,0.2)',
-                          color: '#D4AF37',
-                          '& .MuiChip-deleteIcon': { color: '#D4AF37' },
+                          bgcolor: 'var(--k-accent-soft-strong)',
+                          color: 'var(--k-gold)',
+                          '& .MuiChip-deleteIcon': { color: 'var(--k-gold)' },
                         }}
                       />
                     )}
@@ -1559,9 +1559,9 @@ const JobsPage = () => {
                         size="small"
                         onDelete={() => setSelectedLocation('')}
                         sx={{
-                          bgcolor: 'rgba(212,175,55,0.2)',
-                          color: '#D4AF37',
-                          '& .MuiChip-deleteIcon': { color: '#D4AF37' },
+                          bgcolor: 'var(--k-accent-soft-strong)',
+                          color: 'var(--k-gold)',
+                          '& .MuiChip-deleteIcon': { color: 'var(--k-gold)' },
                         }}
                       />
                     )}
@@ -1571,9 +1571,9 @@ const JobsPage = () => {
                         size="small"
                         onDelete={() => { setBudgetFilterActive(false); setBudgetRange([0, 100000]); }}
                         sx={{
-                          bgcolor: 'rgba(212,175,55,0.2)',
-                          color: '#D4AF37',
-                          '& .MuiChip-deleteIcon': { color: '#D4AF37' },
+                          bgcolor: 'var(--k-accent-soft-strong)',
+                          color: 'var(--k-gold)',
+                          '& .MuiChip-deleteIcon': { color: 'var(--k-gold)' },
                         }}
                       />
                     )}
@@ -1584,9 +1584,9 @@ const JobsPage = () => {
                         size="small"
                         onDelete={() => toggleQuickFilter(key)}
                         sx={{
-                          bgcolor: 'rgba(212,175,55,0.2)',
-                          color: '#D4AF37',
-                          '& .MuiChip-deleteIcon': { color: '#D4AF37' },
+                          bgcolor: 'var(--k-accent-soft-strong)',
+                          color: 'var(--k-gold)',
+                          '& .MuiChip-deleteIcon': { color: 'var(--k-gold)' },
                         }}
                       />
                     ))}
@@ -1605,8 +1605,8 @@ const JobsPage = () => {
                   label={`${totalJobs || uniqueJobs.length} Job${(totalJobs || uniqueJobs.length) !== 1 ? 's' : ''} Found`}
                   icon={<WorkIcon sx={{ fontSize: 18 }} />}
                   sx={{
-                    bgcolor: 'rgba(212,175,55,0.2)',
-                    color: '#D4AF37',
+                    bgcolor: 'var(--k-accent-soft-strong)',
+                    color: 'var(--k-gold)',
                     fontWeight: 'bold',
                     fontSize: '0.875rem',
                     px: 1,
@@ -1623,8 +1623,8 @@ const JobsPage = () => {
                       <Card
                         sx={{
                           height: '100%',
-                          bgcolor: 'rgba(255,255,255,0.05)',
-                          border: '1px solid rgba(212,175,55,0.2)',
+                          bgcolor: 'var(--k-bg-surface)',
+                          border: '1px solid var(--k-accent-border)',
                           borderRadius: 2,
                           minHeight: { xs: 'auto', sm: 320 },
                         }}
@@ -1635,30 +1635,30 @@ const JobsPage = () => {
                               variant="circular"
                               width={40}
                               height={40}
-                              sx={{ bgcolor: 'rgba(255,255,255,0.1)' }}
+                              sx={{ bgcolor: 'var(--k-surface-muted)' }}
                             />
                             <Box sx={{ flex: 1 }}>
                               <Skeleton
                                 variant="text"
                                 width="80%"
-                                sx={{ bgcolor: 'rgba(255,255,255,0.1)', mb: 1 }}
+                                sx={{ bgcolor: 'var(--k-surface-muted)', mb: 1 }}
                               />
                               <Skeleton
                                 variant="text"
                                 width="50%"
-                                sx={{ bgcolor: 'rgba(255,255,255,0.1)' }}
+                                sx={{ bgcolor: 'var(--k-surface-muted)' }}
                               />
                             </Box>
                           </Box>
                           <Skeleton
                             variant="text"
                             width="100%"
-                            sx={{ bgcolor: 'rgba(255,255,255,0.1)', mb: 1 }}
+                            sx={{ bgcolor: 'var(--k-surface-muted)', mb: 1 }}
                           />
                           <Skeleton
                             variant="text"
                             width="90%"
-                            sx={{ bgcolor: 'rgba(255,255,255,0.1)', mb: 2 }}
+                            sx={{ bgcolor: 'var(--k-surface-muted)', mb: 2 }}
                           />
                           <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                             <Skeleton
@@ -1666,7 +1666,7 @@ const JobsPage = () => {
                               width={70}
                               height={24}
                               sx={{
-                                bgcolor: 'rgba(255,255,255,0.1)',
+                                bgcolor: 'var(--k-surface-muted)',
                                 borderRadius: 1,
                               }}
                             />
@@ -1675,7 +1675,7 @@ const JobsPage = () => {
                               width={70}
                               height={24}
                               sx={{
-                                bgcolor: 'rgba(255,255,255,0.1)',
+                                bgcolor: 'var(--k-surface-muted)',
                                 borderRadius: 1,
                               }}
                             />
@@ -1684,7 +1684,7 @@ const JobsPage = () => {
                               width={70}
                               height={24}
                               sx={{
-                                bgcolor: 'rgba(255,255,255,0.1)',
+                                bgcolor: 'var(--k-surface-muted)',
                                 borderRadius: 1,
                               }}
                             />
@@ -1694,7 +1694,7 @@ const JobsPage = () => {
                             width="100%"
                             height={40}
                             sx={{
-                              bgcolor: 'rgba(255,255,255,0.1)',
+                              bgcolor: 'var(--k-surface-muted)',
                               borderRadius: 1,
                               mt: 2,
                             }}
@@ -1712,8 +1712,8 @@ const JobsPage = () => {
                 <Paper
                   sx={{
                     p: 4,
-                    bgcolor: 'rgba(244,67,54,0.1)',
-                    border: '1px solid rgba(244,67,54,0.3)',
+                    bgcolor: 'var(--k-danger-soft)',
+                    border: '1px solid var(--k-danger-border)',
                     borderRadius: 2,
                     textAlign: 'center',
                   }}
@@ -1735,7 +1735,7 @@ const JobsPage = () => {
                   </Box>
                   <Typography
                     variant="h6"
-                    sx={{ color: '#ff6b6b', mb: 2, fontWeight: 'bold' }}
+                    sx={{ color: 'var(--k-danger-text)', mb: 2, fontWeight: 'bold' }}
                   >
                     Unable to Load Jobs
                   </Typography>
@@ -1749,10 +1749,10 @@ const JobsPage = () => {
                     variant="contained"
                     onClick={() => window.location.reload()}
                     sx={{
-                      bgcolor: '#D4AF37',
-                      color: 'black',
+                      bgcolor: 'var(--k-gold)',
+                      color: 'var(--k-text-on-accent)',
                       fontWeight: 'bold',
-                      '&:hover': { bgcolor: '#B8941F' },
+                      '&:hover': { bgcolor: 'var(--k-gold-dark)' },
                     }}
                   >
                     Retry
@@ -1765,8 +1765,8 @@ const JobsPage = () => {
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <Box
                   sx={{
-                    bgcolor: 'rgba(255,255,255,0.05)',
-                    border: '2px dashed rgba(212,175,55,0.3)',
+                    bgcolor: 'var(--k-bg-surface)',
+                    border: '2px dashed var(--k-accent-border-strong)',
                     borderRadius: 3,
                     p: 6,
                     maxWidth: 600,
@@ -1774,11 +1774,11 @@ const JobsPage = () => {
                   }}
                 >
                   <SearchIcon
-                    sx={{ fontSize: 80, color: '#D4AF37', mb: 2, opacity: 0.5 }}
+                    sx={{ fontSize: 80, color: 'var(--k-gold)', mb: 2, opacity: 0.5 }}
                   />
                   <Typography
                     variant="h5"
-                    sx={{ color: '#D4AF37', mb: 2, fontWeight: 'bold' }}
+                    sx={{ color: 'var(--k-gold)', mb: 2, fontWeight: 'bold' }}
                   >
                     No Jobs Found
                   </Typography>
@@ -1807,10 +1807,10 @@ const JobsPage = () => {
                           setSelectedLocation('');
                         }}
                         sx={{
-                          bgcolor: '#D4AF37',
-                          color: 'black',
+                          bgcolor: 'var(--k-gold)',
+                          color: 'var(--k-text-on-accent)',
                           fontWeight: 'bold',
-                          '&:hover': { bgcolor: '#B8941F' },
+                          '&:hover': { bgcolor: 'var(--k-gold-dark)' },
                         }}
                       >
                         Clear All Filters
@@ -1820,11 +1820,11 @@ const JobsPage = () => {
                       variant="outlined"
                       onClick={() => navigate('/hirer/jobs/post')}
                       sx={{
-                        borderColor: '#D4AF37',
-                        color: '#D4AF37',
+                        borderColor: 'var(--k-gold)',
+                        color: 'var(--k-gold)',
                         '&:hover': {
-                          borderColor: '#B8941F',
-                          bgcolor: 'rgba(212,175,55,0.1)',
+                          borderColor: 'var(--k-gold-dark)',
+                          bgcolor: 'var(--k-accent-soft)',
                         },
                       }}
                     >
@@ -1852,8 +1852,8 @@ const JobsPage = () => {
                           height: '100%',
                           display: 'flex',
                           flexDirection: 'column',
-                          bgcolor: 'rgba(255,255,255,0.05)',
-                          border: '1px solid rgba(212,175,55,0.2)',
+                          bgcolor: 'var(--k-bg-surface)',
+                          border: '1px solid var(--k-accent-border)',
                           borderRadius: { xs: 2, sm: 2 }, // ✅ Consistent border radius
                           minHeight: { xs: 'auto', sm: '320px' }, // ✅ Auto on mobile
                           cursor: 'pointer',
@@ -1868,13 +1868,13 @@ const JobsPage = () => {
                             right: 0,
                             height: '4px',
                             background:
-                              'linear-gradient(90deg, #D4AF37, #FFD700)',
+                              'linear-gradient(90deg, var(--k-gold-dark), var(--k-gold))',
                             transform: 'scaleX(0)',
                             transformOrigin: 'left',
                             transition: 'transform 0.3s ease',
                           },
                           '&:hover': {
-                            border: '1px solid #D4AF37',
+                            border: '1px solid var(--k-gold)',
                             boxShadow: '0 12px 40px rgba(212,175,55,0.4)',
                             transform: { xs: 'none', sm: 'translateY(-4px)' }, // ✅ Disable transform on mobile
                             '&::before': {
@@ -1921,7 +1921,7 @@ const JobsPage = () => {
                                 {
                                   sx: {
                                     mr: 1,
-                                    color: '#D4AF37',
+                                    color: 'var(--k-gold)',
                                     fontSize: { xs: 20, sm: 24 },
                                   },
                                 },
@@ -2068,7 +2068,7 @@ const JobsPage = () => {
                             >
                               <LocationOn
                                 fontSize="small"
-                                sx={{ mr: 1, color: '#D4AF37' }}
+                                sx={{ mr: 1, color: 'var(--k-gold)' }}
                               />
                               <Typography
                                 variant="body2"
@@ -2094,13 +2094,13 @@ const JobsPage = () => {
                             >
                               <MonetizationOn
                                 fontSize="small"
-                                sx={{ mr: 1, color: '#D4AF37' }}
+                                sx={{ mr: 1, color: 'var(--k-gold)' }}
                               />
                               <Typography
                                 variant="body2"
                                 fontWeight="bold"
                                 sx={{
-                                  color: '#D4AF37',
+                                  color: 'var(--k-gold)',
                                   fontSize: { xs: '0.875rem', sm: '0.95rem' },
                                 }}
                               >
@@ -2118,8 +2118,8 @@ const JobsPage = () => {
                                 size="small"
                                 sx={{
                                   ml: 1,
-                                  bgcolor: 'rgba(212,175,55,0.2)',
-                                  color: '#D4AF37',
+                                  bgcolor: 'var(--k-accent-soft-strong)',
+                                  color: 'var(--k-gold)',
                                 }}
                               />
                             </Box>
@@ -2133,7 +2133,7 @@ const JobsPage = () => {
                             >
                               <Star
                                 fontSize="small"
-                                sx={{ mr: 1, color: '#D4AF37' }}
+                                sx={{ mr: 1, color: 'var(--k-gold)' }}
                               />
                               <Typography
                                 variant="body2"
@@ -2167,7 +2167,7 @@ const JobsPage = () => {
                               variant="body2"
                               sx={{
                                 mb: 1,
-                                color: '#D4AF37',
+                                color: 'var(--k-gold)',
                                 fontWeight: 'bold',
                               }}
                             >
@@ -2197,8 +2197,8 @@ const JobsPage = () => {
                                   label={`+${job.skills.length - 3} more`}
                                   size="small"
                                   sx={{
-                                    bgcolor: 'rgba(212,175,55,0.2)',
-                                    color: '#D4AF37',
+                                    bgcolor: 'var(--k-accent-soft-strong)',
+                                    color: 'var(--k-gold)',
                                   }}
                                 />
                               )}
@@ -2221,7 +2221,7 @@ const JobsPage = () => {
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ color: '#ff6b6b' }}
+                              sx={{ color: 'var(--k-danger-text)' }}
                             >
                               {job.deadline ? (() => { try { return `Apply by ${format(new Date(job.deadline), 'MMM dd')}`; } catch { return 'Open'; } })() : 'Open'}
                             </Typography>
@@ -2255,14 +2255,14 @@ const JobsPage = () => {
                               navigate(`/jobs/${jobId}/apply`);
                             }}
                             sx={{
-                              bgcolor: '#D4AF37',
-                              color: 'black',
+                              bgcolor: 'var(--k-gold)',
+                              color: 'var(--k-text-on-accent)',
                               fontWeight: 'bold',
                               fontSize: { xs: '1rem', sm: '0.875rem' }, // ✅ Slightly larger on mobile
                               padding: { xs: '10px 16px', sm: '8px 16px' }, // ✅ Better mobile padding
                               minHeight: { xs: '44px', sm: '40px' }, // ✅ Touch-friendly height
                               '&:hover': {
-                                bgcolor: '#B8941F',
+                                bgcolor: 'var(--k-gold-dark)',
                               },
                               // ✅ Mobile active feedback
                               '&:active': {
@@ -2276,10 +2276,10 @@ const JobsPage = () => {
                             onClick={() => navigate(`/jobs/${job._id || job.id}`)}
                             aria-label="View job details"
                             sx={{
-                              color: '#D4AF37',
+                              color: 'var(--k-gold)',
                               minWidth: { xs: '44px', sm: '40px' }, // ✅ Touch-friendly size
                               minHeight: { xs: '44px', sm: '40px' }, // ✅ Touch-friendly size
-                              '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
+                              '&:hover': { bgcolor: 'var(--k-accent-soft)' },
                               '&:active': { transform: 'scale(0.95)' }, // ✅ Active feedback
                             }}
                           >
@@ -2295,7 +2295,7 @@ const JobsPage = () => {
                               color: savedJobIds.has(job.id || job._id) ? 'secondary.main' : 'secondary.dark',
                               minWidth: { xs: '44px', sm: '40px' },
                               minHeight: { xs: '44px', sm: '40px' },
-                              '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
+                              '&:hover': { bgcolor: 'var(--k-accent-soft)' },
                               '&:active': { transform: 'scale(0.95)' },
                             }}
                           >
@@ -2324,10 +2324,10 @@ const JobsPage = () => {
                             }}
                             aria-label="Share job"
                             sx={{
-                              color: '#D4AF37',
+                              color: 'var(--k-gold)',
                               minWidth: { xs: '44px', sm: '40px' },
                               minHeight: { xs: '44px', sm: '40px' },
-                              '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
+                              '&:hover': { bgcolor: 'var(--k-accent-soft)' },
                             }}
                           >
                             <Share />
@@ -2357,18 +2357,18 @@ const JobsPage = () => {
                   sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', py: 3 }}
                 >
                   {isJobsFetching ? (
-                    <CircularProgress size={28} sx={{ color: '#D4AF37' }} />
+                    <CircularProgress size={28} sx={{ color: 'var(--k-gold)' }} />
                   ) : (
                     <Button
                       variant="outlined"
                       size="medium"
                       onClick={() => setPage((p) => p + 1)}
                       sx={{
-                        borderColor: '#D4AF37',
-                        color: '#D4AF37',
+                        borderColor: 'var(--k-gold)',
+                        color: 'var(--k-gold)',
                         px: 4,
                         py: 1,
-                        '&:hover': { borderColor: '#B8941F', bgcolor: 'rgba(212,175,55,0.1)' },
+                        '&:hover': { borderColor: 'var(--k-gold-dark)', bgcolor: 'var(--k-accent-soft)' },
                       }}
                     >
                       Load More
@@ -2392,7 +2392,7 @@ const JobsPage = () => {
                     sx={{
                       '& .MuiPaginationItem-root': {
                         color: 'text.primary',
-                        '&.Mui-selected': { bgcolor: '#D4AF37', color: '#000' },
+                        '&.Mui-selected': { bgcolor: 'var(--k-gold)', color: 'var(--k-text-on-accent)' },
                       },
                     }}
                   />
@@ -2424,7 +2424,7 @@ const JobsPage = () => {
               <Typography
                 variant="h4"
                 sx={{
-                  color: '#D4AF37',
+                  color: 'var(--k-gold)',
                   fontWeight: 'bold',
                   textAlign: 'center',
                   mb: { xs: 3, md: 4 }, // ✅ Responsive margin
@@ -2503,14 +2503,14 @@ const JobsPage = () => {
                 p: { xs: 2.5, sm: 3, md: 4 }, // ✅ Responsive padding
                 mx: { xs: 1, sm: 0 }, // ✅ Mobile horizontal spacing
                 textAlign: 'center',
-                bgcolor: 'rgba(212,175,55,0.1)',
-                border: '1px solid rgba(212,175,55,0.3)',
+                bgcolor: 'var(--k-accent-soft)',
+                border: '1px solid var(--k-accent-border-strong)',
               }}
             >
               <Typography
                 variant="h4"
                 sx={{
-                  color: '#D4AF37',
+                  color: 'var(--k-gold)',
                   fontWeight: 'bold',
                   mb: { xs: 1.5, md: 2 }, // ✅ Responsive margin
                   fontSize: { xs: '1.35rem', sm: '1.75rem', md: '2rem' }, // ✅ Responsive font
@@ -2560,14 +2560,14 @@ const JobsPage = () => {
                     handleCreateJobAlert();
                   }}
                   sx={{
-                    bgcolor: '#D4AF37',
-                    color: 'black',
+                    bgcolor: 'var(--k-gold)',
+                    color: 'var(--k-text-on-accent)',
                     fontWeight: 'bold',
                     fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✅ Responsive font
                     px: { xs: 3, sm: 3.5, md: 4 }, // ✅ Responsive padding
                     minHeight: { xs: '44px', sm: '48px' }, // ✅ Touch target
                     '&:hover': {
-                      bgcolor: '#B8941F',
+                      bgcolor: 'var(--k-gold-dark)',
                     },
                     '&:active': {
                       transform: 'scale(0.98)', // ✅ Touch feedback
@@ -2592,14 +2592,14 @@ const JobsPage = () => {
                     navigate('/profile/upload-cv');
                   }}
                   sx={{
-                    borderColor: '#D4AF37',
-                    color: '#D4AF37',
+                    borderColor: 'var(--k-gold)',
+                    color: 'var(--k-gold)',
                     fontSize: { xs: '0.9rem', sm: '0.95rem', md: '1rem' }, // ✅ Responsive font
                     px: { xs: 3, sm: 3.5, md: 4 }, // ✅ Responsive padding
                     minHeight: { xs: '44px', sm: '48px' }, // ✅ Touch target
                     '&:hover': {
-                      borderColor: '#B8941F',
-                      bgcolor: 'rgba(212,175,55,0.1)',
+                      borderColor: 'var(--k-gold-dark)',
+                      bgcolor: 'var(--k-accent-soft)',
                     },
                     '&:active': {
                       transform: 'scale(0.98)', // ✅ Touch feedback

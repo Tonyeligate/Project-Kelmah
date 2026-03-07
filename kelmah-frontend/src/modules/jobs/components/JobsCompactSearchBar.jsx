@@ -31,9 +31,9 @@ const JobsCompactSearchBar = ({
       sx={{
         p: 1,
         mb: 2,
-        bgcolor: 'rgba(255,255,255,0.05)',
+        bgcolor: 'var(--k-bg-surface)',
         backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(212,175,55,0.2)',
+        border: '1px solid var(--k-accent-border)',
       }}
     >
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -48,20 +48,20 @@ const JobsCompactSearchBar = ({
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: '#D4AF37' }} />
+                <SearchIcon sx={{ color: 'var(--k-gold)' }} />
               </InputAdornment>
             ),
             sx: {
               height: '44px',
-              color: 'white',
+              color: 'var(--k-text-primary)',
               '& fieldset': {
-                borderColor: 'rgba(212,175,55,0.3)',
+                borderColor: 'var(--k-accent-border)',
               },
               '&:hover fieldset': {
-                borderColor: '#D4AF37',
+                borderColor: 'var(--k-gold)',
               },
               '&.Mui-focused fieldset': {
-                borderColor: '#D4AF37',
+                borderColor: 'var(--k-gold)',
               },
             },
           }}
@@ -69,7 +69,7 @@ const JobsCompactSearchBar = ({
             '& .MuiInputBase-input': {
               fontSize: '0.95rem',
               '&::placeholder': {
-                color: 'rgba(255,255,255,0.6)',
+                color: 'var(--k-text-muted)',
                 opacity: 1,
               },
             },
@@ -85,10 +85,10 @@ const JobsCompactSearchBar = ({
             width: '44px',
             height: '44px',
             p: 0,
-            bgcolor: '#D4AF37',
-            color: '#000',
+            bgcolor: 'var(--k-gold)',
+            color: 'var(--k-text-on-accent)',
             '&:hover': {
-              bgcolor: '#B8941F',
+              bgcolor: 'var(--k-gold-dark)',
             },
           }}
         >

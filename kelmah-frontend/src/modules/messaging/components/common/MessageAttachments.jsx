@@ -37,10 +37,10 @@ const AttachmentItem = styled(Paper)(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(1),
   borderRadius: theme.spacing(1),
-  background: 'rgba(255, 255, 255, 0.08)',
-  border: '1px solid rgba(255, 255, 255, 0.12)',
+  background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)',
+  border: `1px solid ${theme.palette.divider}`,
   '&:hover': {
-    background: 'rgba(255, 255, 255, 0.12)',
+    background: theme.palette.action.hover,
   },
   maxWidth: '100%',
   overflow: 'hidden',
@@ -278,7 +278,7 @@ const MessageAttachments = ({
                         <IconButton
                           size="small"
                           onClick={() => onRemove && onRemove(index)}
-                          sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                          sx={{ color: 'text.secondary' }}
                         >
                           <Close fontSize="small" />
                         </IconButton>

@@ -31,19 +31,19 @@ const SearchHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(2),
-  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+  borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
 const SearchResult = styled(ListItem)(({ theme }) => ({
   cursor: 'pointer',
   '&:hover': {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: theme.palette.action.hover,
   },
 }));
 
 const ContentPreview = styled(Typography)(({ theme, highlight }) => ({
   '& .highlight': {
-    backgroundColor: 'rgba(255, 215, 0, 0.3)',
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 215, 0, 0.3)' : 'rgba(184, 134, 11, 0.18)',
     padding: '0 2px',
     borderRadius: '2px',
   },
@@ -52,13 +52,14 @@ const ContentPreview = styled(Typography)(({ theme, highlight }) => ({
 const FilterChip = styled(Chip)(({ theme, selected }) => ({
   margin: theme.spacing(0.5),
   backgroundColor: selected
-    ? 'rgba(255, 215, 0, 0.2)'
-    : 'rgba(255, 255, 255, 0.1)',
-  borderColor: selected ? '#FFA500' : 'transparent',
+    ? (theme.palette.mode === 'dark' ? 'rgba(255, 215, 0, 0.2)' : 'rgba(184, 134, 11, 0.12)')
+    : theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+  color: selected ? theme.palette.secondary.main : theme.palette.text.secondary,
+  borderColor: selected ? theme.palette.secondary.main : theme.palette.divider,
   '&:hover': {
     backgroundColor: selected
-      ? 'rgba(255, 215, 0, 0.3)'
-      : 'rgba(255, 255, 255, 0.2)',
+      ? (theme.palette.mode === 'dark' ? 'rgba(255, 215, 0, 0.3)' : 'rgba(184, 134, 11, 0.18)')
+      : theme.palette.action.hover,
   },
 }));
 

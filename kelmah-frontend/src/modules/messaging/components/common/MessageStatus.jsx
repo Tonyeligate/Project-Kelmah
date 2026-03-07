@@ -17,7 +17,7 @@ const StatusContainer = styled(Box)(({ theme }) => ({
 
 const TimeStamp = styled(Typography)(({ theme }) => ({
   fontSize: '0.7rem',
-  color: 'rgba(255, 255, 255, 0.5)',
+  color: theme.palette.text.secondary,
   marginRight: theme.spacing(0.5),
 }));
 
@@ -58,21 +58,21 @@ const MessageStatus = ({
         return (
           <CheckCircle
             fontSize="small"
-            sx={{ color: 'rgba(255, 255, 255, 0.5)', width: 14, height: 14 }}
+            sx={{ color: (theme) => theme.palette.text.secondary, width: 14, height: 14 }}
           />
         );
       case 'sent':
         return (
           <Check
             fontSize="small"
-            sx={{ color: 'rgba(255, 255, 255, 0.5)', width: 14, height: 14 }}
+            sx={{ color: (theme) => theme.palette.text.secondary, width: 14, height: 14 }}
           />
         );
       case 'pending':
         return (
           <AccessTime
             fontSize="small"
-            sx={{ color: 'rgba(255, 255, 255, 0.3)', width: 14, height: 14 }}
+            sx={{ color: (theme) => theme.palette.text.disabled, width: 14, height: 14 }}
           />
         );
       default:
