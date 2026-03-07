@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useCallback } from 'react';
 import {
   Drawer,
   List,
@@ -106,6 +106,13 @@ const MobileNav = ({ open, onClose }) => {
   const authState = useAuthCheck();
   const { unreadCount = 0 } = useNotifications();
 
+  // Pending action to run after the Drawer's exit transition completes.
+  // This prevents the page-freeze bug: if we navigate() while the Drawer is
+  // still closing, MUI Modal never fires its cleanup (removing backdrop,
+  // restoring body overflow, clearing aria-hidden). By deferring navigation
+  // to SlideProps.onExited, we guarantee MUI finishes first.
+  const pendingActionRef = useRef(null);
+
   const { user, canShowUserFeatures, shouldShowAuthButtons } = authState;
 
   const showUserMenu = canShowUserFeatures;
@@ -122,16 +129,40 @@ const MobileNav = ({ open, onClose }) => {
   const isLoginPage = location.pathname.includes('/login');
   const isRegisterPage = location.pathname.includes('/register');
 
-  // Close the drawer synchronously. Blur the focused element first so MUI
-  // does not apply aria-hidden on the drawer while a descendant still holds
-  // focus (that combination triggers the browser warning and can leave
-  // overflow:hidden on body, freezing the page).
+  // Close the drawer. Any navigation or logout is stored in pendingActionRef
+  // and executed by handleDrawerExited after MUI finishes its modal cleanup.
   const requestClose = () => {
     if (document.activeElement && typeof document.activeElement.blur === 'function') {
       document.activeElement.blur();
     }
     onClose();
+
+    // Safety net: if SlideProps.onExited somehow doesn't fire (edge case with
+    // keepMounted or interrupted transitions), execute the pending action after
+    // a generous timeout. Also force-clean body overflow to unfreeze the page.
+    if (pendingActionRef.current) {
+      setTimeout(() => {
+        const action = pendingActionRef.current;
+        if (action) {
+          pendingActionRef.current = null;
+          // Force-clean any stale MUI Modal artifacts on body
+          document.body.style.removeProperty('overflow');
+          document.body.style.removeProperty('padding-right');
+          action();
+        }
+      }, 350);
+    }
   };
+
+  // Called by SlideProps.onExited — the Drawer's slide-out animation has
+  // completed and MUI Modal has fully restored body styles & removed backdrop.
+  const handleDrawerExited = useCallback(() => {
+    const action = pendingActionRef.current;
+    pendingActionRef.current = null;
+    if (typeof action === 'function') {
+      action();
+    }
+  }, []);
 
   const authCtas = useMemo(() => {
     if (!showAuthButtons) return [];
@@ -162,38 +193,31 @@ const MobileNav = ({ open, onClose }) => {
     return label.charAt(0).toUpperCase() + label.slice(1);
   };
 
-  const handleLogout = async () => {
-    if (document.activeElement && typeof document.activeElement.blur === 'function') {
-      document.activeElement.blur();
-    }
-    onClose();
+  const handleLogout = () => {
+    // Store the logout action; it runs after the drawer fully closes.
+    pendingActionRef.current = async () => {
+      try {
+        secureStorage.clear();
+        sessionStorage.clear();
+      } catch (_) { /* best-effort */ }
 
-    try {
-      secureStorage.clear();
-      sessionStorage.clear();
-    } catch (storageError) {
-      // Best-effort cleanup
-    }
-
-    try {
-      await dispatch(logoutUser());
-    } catch (error) {
-      // Thunk handles its own cleanup
-    } finally {
-      navigate('/', { replace: true });
-    }
+      try {
+        await dispatch(logoutUser());
+      } catch (_) { /* thunk handles cleanup */ }
+      finally {
+        navigate('/', { replace: true });
+      }
+    };
+    requestClose();
   };
 
   const handleNavigate = (path) => {
-    if (document.activeElement && typeof document.activeElement.blur === 'function') {
-      document.activeElement.blur();
-    }
-    onClose();
-
     const currentPath = `${location.pathname || ''}${location.search || ''}`;
     if (path && path !== currentPath) {
-      navigate(path);
+      // Store navigation; it runs after the drawer fully closes.
+      pendingActionRef.current = () => navigate(path);
     }
+    requestClose();
   };
 
   const getUserInitials = () => {
@@ -258,6 +282,7 @@ const MobileNav = ({ open, onClose }) => {
       open={open}
       onClose={requestClose}
       variant="temporary"
+      SlideProps={{ onExited: handleDrawerExited }}
       ModalProps={{
         keepMounted: true,
         disableAutoFocus: true,
