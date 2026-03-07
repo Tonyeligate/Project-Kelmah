@@ -10,6 +10,30 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 let connectPromise = null;
 const DEFAULT_READY_TIMEOUT_MS = Number(process.env.DB_READY_TIMEOUT_MS || 15000);
 
+const reconcileAuthIndexes = async () => {
+  try {
+    const { User } = require('../models');
+    const indexes = await User.collection.indexes();
+    const legacyUniquePhoneIndexes = indexes.filter((index) => index?.key?.phone === 1 && index.unique);
+
+    for (const index of legacyUniquePhoneIndexes) {
+      console.log(`🧹 Dropping legacy unique phone index: ${index.name}`);
+      await User.collection.dropIndex(index.name);
+    }
+
+    const hasSparsePhoneIndex = indexes.some(
+      (index) => index?.key?.phone === 1 && index.sparse === true && index.unique !== true,
+    );
+
+    if (!hasSparsePhoneIndex) {
+      console.log('🛠️ Ensuring non-unique sparse phone index exists');
+      await User.collection.createIndex({ phone: 1 }, { sparse: true, name: 'phone_1' });
+    }
+  } catch (error) {
+    console.error('⚠️ Auth index reconciliation skipped:', error.message);
+  }
+};
+
 // MongoDB connection options
 const options = {
   retryWrites: true,
@@ -88,6 +112,8 @@ const connectDB = async () => {
 
     console.log(`✅ AUTH Service connected to MongoDB: ${conn.connection.host}`);
     console.log(`📊 Database: ${conn.connection.name}`);
+
+    await reconcileAuthIndexes();
 
     // Handle connection events
     mongoose.connection.on('error', (error) => {

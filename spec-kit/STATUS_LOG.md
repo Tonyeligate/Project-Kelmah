@@ -28,6 +28,7 @@
 - Reworked public auth routes in `kelmah-backend/api-gateway/routes/auth.routes.js` to use direct axios forwarding for login, register, forgot-password, reset-password, verify-email, and resend-verification-email.
 - Added normalized upstream response handling to forward safe headers and JSON bodies without the earlier response-shaping failure path.
 - Updated `kelmah-backend/services/auth-service/controllers/auth.controller.js` so blank phone values are omitted from new users instead of being saved as `null`.
+- Updated `kelmah-backend/services/auth-service/config/db.js` so auth-service startup drops legacy unique phone indexes and recreates the intended sparse non-unique phone index.
 - Added `spec-kit/KELMAH_GATEWAY_PUBLIC_AUTH_TIMEOUT_FIX_MAR07_2026.md`.
 
 **Verification**

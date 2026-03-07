@@ -26,6 +26,8 @@
   - aggregate auth-service health was healthy,
   - login continued to work.
 - This isolated the remaining production blocker to the gateway forwarding layer rather than the auth service itself.
+- After gateway recovery routes were fixed, register still returned `phone already exists` even when the request omitted phone.
+- That exposed a legacy database-index issue: older deployed auth databases can still carry a unique phone index, and registration previously wrote `phone: null`, which collides under that legacy index.
 
 ## Implementation Summary
 - Reworked public auth forwarding in [kelmah-backend/api-gateway/routes/auth.routes.js](kelmah-backend/api-gateway/routes/auth.routes.js) so public auth mutations use direct axios forwarding instead of the generic proxy path.
@@ -38,6 +40,8 @@
   - `/verify-email/:token`
   - `/resend-verification-email`
 - Kept protected auth routes on the trusted proxy flow.
+- Updated auth registration to omit blank phone values instead of persisting `null`.
+- Added auth-service startup index reconciliation in [kelmah-backend/services/auth-service/config/db.js](kelmah-backend/services/auth-service/config/db.js) to drop legacy unique phone indexes and recreate the intended sparse non-unique phone index.
 
 ## Verification So Far
 - Editor diagnostics are clean for [kelmah-backend/api-gateway/routes/auth.routes.js](kelmah-backend/api-gateway/routes/auth.routes.js).
