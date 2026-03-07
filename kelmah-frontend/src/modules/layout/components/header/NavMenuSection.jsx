@@ -16,8 +16,8 @@ const NavMenuSection = ({ title, items, onNavigate }) => (
     {items.filter(Boolean).map((item) => (
       <MenuItem
         key={item.label}
-        onClick={() => {
-          onNavigate(item.path);
+        onClick={(event) => {
+          onNavigate(item.path, event);
           item.onClick?.();
         }}
         sx={{ py: 1.25 }}

@@ -98,7 +98,7 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
   },
 }));
 
-const MobileNav = ({ open, onClose, returnFocusRef }) => {
+const MobileNav = ({ open, onClose }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -122,33 +122,14 @@ const MobileNav = ({ open, onClose, returnFocusRef }) => {
   const isLoginPage = location.pathname.includes('/login');
   const isRegisterPage = location.pathname.includes('/register');
 
-  const blurInteractiveTarget = (event) => {
-    const target = event?.currentTarget;
-    if (typeof target?.blur === 'function') {
-      target.blur();
-    }
-
-    const activeElement = document.activeElement;
-    if (activeElement && typeof activeElement.blur === 'function') {
-      activeElement.blur();
-    }
-  };
-
-  const requestClose = (event) => {
-    blurInteractiveTarget(event);
-
-    const returnFocusTarget = returnFocusRef?.current;
-    if (typeof returnFocusTarget?.focus === 'function') {
-      returnFocusTarget.focus({ preventScroll: true });
-    }
-
-    if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
-      window.requestAnimationFrame(() => {
-        onClose();
-      });
-      return;
-    }
-
+  // Close the drawer synchronously. Manual focus management (focusing
+  // returnFocusRef while the modal is still open) caused the aria-hidden
+  // warning and page-freeze bug — MUI Modal sets aria-hidden on #root while
+  // the overlay is mounted, so focusing anything inside #root during close
+  // breaks assistive-technology contracts and confuses MUI's cleanup.
+  // With disableRestoreFocus + disableEnforceFocus on the Drawer, MUI will
+  // not fight us and focus simply stays on <body> until the user interacts.
+  const requestClose = () => {
     onClose();
   };
 
@@ -182,7 +163,7 @@ const MobileNav = ({ open, onClose, returnFocusRef }) => {
   };
 
   const handleLogout = async () => {
-    requestClose();
+    onClose(); // close drawer synchronously before async work
 
     try {
       secureStorage.clear();
@@ -200,8 +181,8 @@ const MobileNav = ({ open, onClose, returnFocusRef }) => {
     }
   };
 
-  const handleNavigate = (path, event) => {
-    requestClose(event);
+  const handleNavigate = (path) => {
+    onClose(); // close drawer synchronously before navigating
 
     const currentPath = `${location.pathname || ''}${location.search || ''}`;
     if (path && path !== currentPath) {
@@ -372,7 +353,7 @@ const MobileNav = ({ open, onClose, returnFocusRef }) => {
         <List sx={{ flex: 1, py: 1 }}>
           {/* ✅ MOBILE-AUDIT P3: removed motion.div staggered animation from nav items */}
           {navigationItems.map((item) => (
-                <StyledListItemButton key={item.path} onClick={(event) => handleNavigate(item.path, event)}>
+                <StyledListItemButton key={item.path} onClick={() => handleNavigate(item.path)}>
                   <ListItemIcon>
                     <Badge badgeContent={item.badge} color="error">
                       {item.icon}
@@ -392,7 +373,7 @@ const MobileNav = ({ open, onClose, returnFocusRef }) => {
               <Divider sx={{ my: 2, mx: 2 }} />
 
               <StyledListItemButton
-                onClick={(event) => handleNavigate('/settings', event)}
+                onClick={() => handleNavigate('/settings')}
               >
                 <ListItemIcon>
                   <SettingsIcon />
@@ -401,7 +382,7 @@ const MobileNav = ({ open, onClose, returnFocusRef }) => {
               </StyledListItemButton>
 
               <StyledListItemButton
-                onClick={(event) => handleNavigate('/support', event)}
+                onClick={() => handleNavigate('/support')}
               >
                 <ListItemIcon>
                   <HomeIcon />
@@ -442,7 +423,7 @@ const MobileNav = ({ open, onClose, returnFocusRef }) => {
               {authCtas.map((cta) => (
                 <StyledListItemButton
                   key={cta.path}
-                  onClick={(event) => handleNavigate(cta.path, event)}
+                  onClick={() => handleNavigate(cta.path)}
                   sx={{
                     justifyContent: 'center',
                     ...(cta.tone === 'primary' && {
@@ -479,9 +460,6 @@ const MobileNav = ({ open, onClose, returnFocusRef }) => {
 MobileNav.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  returnFocusRef: PropTypes.shape({
-    current: PropTypes.any,
-  }),
 };
 
 export default MobileNav;

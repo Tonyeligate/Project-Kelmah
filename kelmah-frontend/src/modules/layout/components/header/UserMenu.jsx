@@ -33,7 +33,6 @@ import { BRAND_COLORS } from '../../../../theme';
 const UserMenu = ({
   anchorEl,
   onClose,
-  returnFocusRef,
   user,
   menuSections,
   currentPage,
@@ -43,42 +42,14 @@ const UserMenu = ({
 }) => {
   const theme = useTheme();
 
-  const blurInteractiveTarget = (event) => {
-    const target = event?.currentTarget;
-    if (typeof target?.blur === 'function') {
-      target.blur();
-    }
-
-    const activeElement = document.activeElement;
-    if (activeElement && typeof activeElement.blur === 'function') {
-      activeElement.blur();
-    }
-  };
-
-  const requestClose = (event, { restoreFocus = true, afterClose } = {}) => {
-    blurInteractiveTarget(event);
-
-    if (restoreFocus) {
-      const focusTarget = returnFocusRef?.current;
-      if (typeof focusTarget?.focus === 'function') {
-        focusTarget.focus({ preventScroll: true });
-      }
-    }
-
-    const runClose = () => {
-      onClose();
-      afterClose?.();
-    };
-
-    if (
-      typeof window !== 'undefined' &&
-      typeof window.requestAnimationFrame === 'function'
-    ) {
-      window.requestAnimationFrame(runClose);
-      return;
-    }
-
-    runClose();
+  // Close the menu synchronously and run any post-close callback.
+  // The previous implementation focused returnFocusRef while the MUI Menu
+  // (a Modal) was still open → focus landed inside aria-hidden #root → page
+  // froze. With disableEnforceFocus + disableRestoreFocus on the Menu,
+  // focus management is fully opt-out; we just close and optionally navigate.
+  const requestClose = (event, { afterClose } = {}) => {
+    onClose();
+    afterClose?.();
   };
 
   const getUserInitials = () => {
@@ -218,7 +189,6 @@ const UserMenu = ({
           items={section.items}
           onNavigate={(path, event) => {
             requestClose(event, {
-              restoreFocus: false,
               afterClose: () =>
                 onNavigate(path === '/support' ? '/support/help-center' : path),
             });
@@ -231,7 +201,6 @@ const UserMenu = ({
       <MenuItem
         onClick={(event) => {
           requestClose(event, {
-            restoreFocus: false,
             afterClose: onLogout,
           });
         }}

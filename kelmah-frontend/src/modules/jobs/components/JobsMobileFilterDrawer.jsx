@@ -79,6 +79,11 @@ const JobsMobileFilterDrawer = ({
       anchor="bottom"
       open={open}
       onClose={onClose}
+      ModalProps={{
+        disableAutoFocus: true,
+        disableEnforceFocus: true,
+        disableRestoreFocus: true,
+      }}
       PaperProps={{
         sx: {
           borderTopLeftRadius: 16,

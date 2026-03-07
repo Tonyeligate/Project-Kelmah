@@ -67,6 +67,7 @@ const Header = ({
   const [headerCompletion, setHeaderCompletion] = useState(null);
   const [themeMenuAnchor, setThemeMenuAnchor] = useState(null);
   const mobileMenuButtonRef = React.useRef(null);
+  const profileMenuButtonRef = React.useRef(null);
 
   // Auto-hide header behaviour (desktop: mouse proximity, mobile: scroll direction)
   const isHeaderVisible = useAutoHideHeader(autoShowMode, isMobile);
@@ -200,6 +201,7 @@ const Header = ({
 
   const handleProfileMenuOpen = (event) => {
     if (showUserFeatures) {
+      blurInteractiveTarget(event);
       setAnchorEl(event.currentTarget);
     }
   };
@@ -278,6 +280,8 @@ const Header = ({
   // User menu and notifications menu are now rendered via <UserMenu> and <NotificationBells> components
 
   React.useEffect(() => {
+    setAnchorEl(null);
+    setNotificationsAnchor(null);
     setMobileMenuOpen(false);
   }, [location.pathname, location.search]);
 
@@ -471,7 +475,13 @@ const Header = ({
               {/* User Avatar */}
               <Tooltip title="Account menu" arrow>
                 <Box sx={{ position: 'relative', ml: 1 }}>
-                  <UserAvatar onClick={handleProfileMenuOpen}>
+                  <UserAvatar
+                    ref={profileMenuButtonRef}
+                    onClick={handleProfileMenuOpen}
+                    aria-label="Open account menu"
+                    aria-haspopup="menu"
+                    aria-expanded={Boolean(anchorEl)}
+                  >
                     {getUserInitials()}
                   </UserAvatar>
                   <StatusIndicator online={isUserOnline} />
@@ -547,7 +557,6 @@ const Header = ({
         <MobileNav
           open={mobileMenuOpen}
           onClose={() => setMobileMenuOpen(false)}
-          returnFocusRef={mobileMenuButtonRef}
         />
       )}
 
@@ -561,7 +570,6 @@ const Header = ({
         isUserOnline={isUserOnline}
         onLogout={handleLogout}
         onNavigate={(path) => {
-          handleMenuClose();
           navigate(path === '/support' ? '/support/help-center' : path);
         }}
       />
