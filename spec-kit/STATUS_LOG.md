@@ -1,5 +1,66 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Public Menu Focus Trap Re-Audit ✅ COMPLETED
+
+**Date**: March 7, 2026
+**Scope**: Re-audit the public mobile navigation drawer and adjacent profile/menu interactions after the user reported that closing the menu still triggers the MUI `aria-hidden` retained-focus warning and temporarily leaves the page non-interactive.
+
+**Acceptance Criteria**
+- Closing the public mobile drawer must not leave focus on the drawer paper or any descendant inside a hidden modal.
+- After closing the menu, page interaction must immediately recover without requiring extra taps.
+- The fix must preserve reliable open/close behavior introduced by the earlier drawer regression patch.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/modules/layout/components/Header.jsx`
+- `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
+- `kelmah-frontend/src/modules/layout/components/header/UserMenu.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Current findings**
+- The public mobile drawer close path was still trying to restore focus while the MUI modal focus trap was active.
+- Because the `Drawer` modal still enforced focus internally, the attempted hand-off back to the opener could be pulled back into the drawer paper element.
+- That matches the reported browser warning showing focus stuck on `MuiDrawer-paper` inside an ancestor that had already become `aria-hidden`, and explains why the page could feel temporarily non-interactive after close.
+
+**Changes completed**
+- `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
+  - Added `disableEnforceFocus: true` to the drawer modal props so focus can leave the drawer before it transitions out.
+
+**Verification**
+- `get_errors` returned clean results for:
+  - `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
+  - `spec-kit/STATUS_LOG.md`
+- Frontend production build passed successfully with `npm run build` in `kelmah-frontend/` after the focus-trap fix.
+
+### Session: Profile Dropdown Regression Re-Audit ✅ COMPLETED
+
+**Date**: March 7, 2026
+**Scope**: Diagnose and fix the profile avatar dropdown/menu on mobile after the drawer fix, because the user reports the same stuck or broken interaction is happening to the profile dropdown menu.
+
+**Acceptance Criteria**
+- The profile dropdown opens reliably from the avatar trigger on mobile.
+- Closing or navigating from the profile dropdown does not leave focus trapped on a hidden menu descendant.
+- The fix preserves current menu navigation and logout behavior.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/modules/layout/components/Header.jsx`
+- `kelmah-frontend/src/modules/layout/components/header/UserMenu.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Current findings**
+- The profile dropdown is not owned by `MobileNav.jsx`; it is rendered separately by `UserMenu.jsx` and opened from the avatar trigger in `Header.jsx`.
+- The current avatar open path already blurs the trigger before opening, but the menu was still vulnerable to the same MUI modal focus-enforcement behavior during close.
+- Because `UserMenu.jsx` restores focus to the avatar trigger before close, the menu must also allow focus to escape its internal trap or the focused element can remain inside hidden overlay content.
+
+**Changes completed**
+- `kelmah-frontend/src/modules/layout/components/header/UserMenu.jsx`
+  - Added `disableEnforceFocus` to the account menu so focus restoration back to the avatar trigger can complete before the menu is hidden.
+
+**Verification**
+- `get_errors` returned clean results for:
+  - `kelmah-frontend/src/modules/layout/components/header/UserMenu.jsx`
+  - `spec-kit/STATUS_LOG.md`
+- Frontend production build passed successfully with `npm run build` in `kelmah-frontend/` after the profile menu focus fix.
+
 ### Session: Public Mobile Drawer Regression Re-Audit ✅ COMPLETED
 
 **Date**: March 7, 2026

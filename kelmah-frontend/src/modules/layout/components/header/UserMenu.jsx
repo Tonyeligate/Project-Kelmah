@@ -33,6 +33,7 @@ import { BRAND_COLORS } from '../../../../theme';
 const UserMenu = ({
   anchorEl,
   onClose,
+  returnFocusRef,
   user,
   menuSections,
   currentPage,
@@ -41,6 +42,44 @@ const UserMenu = ({
   onNavigate,
 }) => {
   const theme = useTheme();
+
+  const blurInteractiveTarget = (event) => {
+    const target = event?.currentTarget;
+    if (typeof target?.blur === 'function') {
+      target.blur();
+    }
+
+    const activeElement = document.activeElement;
+    if (activeElement && typeof activeElement.blur === 'function') {
+      activeElement.blur();
+    }
+  };
+
+  const requestClose = (event, { restoreFocus = true, afterClose } = {}) => {
+    blurInteractiveTarget(event);
+
+    if (restoreFocus) {
+      const focusTarget = returnFocusRef?.current;
+      if (typeof focusTarget?.focus === 'function') {
+        focusTarget.focus({ preventScroll: true });
+      }
+    }
+
+    const runClose = () => {
+      onClose();
+      afterClose?.();
+    };
+
+    if (
+      typeof window !== 'undefined' &&
+      typeof window.requestAnimationFrame === 'function'
+    ) {
+      window.requestAnimationFrame(runClose);
+      return;
+    }
+
+    runClose();
+  };
 
   const getUserInitials = () => {
     if (!user) return 'U';
@@ -59,7 +98,10 @@ const UserMenu = ({
     <Menu
       anchorEl={anchorEl}
       open={Boolean(anchorEl)}
-      onClose={onClose}
+      onClose={(event) => requestClose(event)}
+      disableAutoFocus
+      disableEnforceFocus
+      disableRestoreFocus
       PaperProps={{
         elevation: 12,
         sx: {
@@ -101,6 +143,9 @@ const UserMenu = ({
       }}
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
       anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      MenuListProps={{
+        'aria-label': 'Account menu options',
+      }}
     >
       {/* User Info Header */}
       <Box sx={{ px: 3, py: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
@@ -171,16 +216,27 @@ const UserMenu = ({
           key={section.title}
           title={section.title}
           items={section.items}
-          onNavigate={(path) => {
-            onClose();
-            onNavigate(path === '/support' ? '/support/help-center' : path);
+          onNavigate={(path, event) => {
+            requestClose(event, {
+              restoreFocus: false,
+              afterClose: () =>
+                onNavigate(path === '/support' ? '/support/help-center' : path),
+            });
           }}
         />
       ))}
 
       <Divider sx={{ my: 1 }} />
 
-      <MenuItem onClick={onLogout} sx={{ py: 1.5, color: 'error.main' }}>
+      <MenuItem
+        onClick={(event) => {
+          requestClose(event, {
+            restoreFocus: false,
+            afterClose: onLogout,
+          });
+        }}
+        sx={{ py: 1.5, color: 'error.main' }}
+      >
         <ListItemIcon>
           <LogoutIcon color="error" />
         </ListItemIcon>

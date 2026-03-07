@@ -274,6 +274,7 @@ const MobileNav = ({ open, onClose, returnFocusRef }) => {
       ModalProps={{
         keepMounted: true,
         disableAutoFocus: true,
+        disableEnforceFocus: true,
         disableRestoreFocus: true,
       }}
     >
