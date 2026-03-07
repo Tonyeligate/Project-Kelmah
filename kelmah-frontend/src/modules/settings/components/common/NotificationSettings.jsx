@@ -2,17 +2,16 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  FormGroup,
   FormControlLabel,
   Switch,
   Button,
-  Paper,
-  Divider,
   CircularProgress,
   Snackbar,
   Alert,
+  Stack,
 } from '@mui/material';
 import PropTypes from 'prop-types';
+import SettingsSection from '../SettingsSection';
 
 const NotificationSettings = ({
   settings = null,
@@ -66,62 +65,81 @@ const NotificationSettings = ({
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
+  const rows = [
+    {
+      name: 'email',
+      label: 'Email notifications',
+      helper: 'Application decisions, contract updates, and important account alerts.',
+    },
+    {
+      name: 'push',
+      label: 'Push notifications',
+      helper: 'Instant mobile alerts when a hirer messages you or updates a job.',
+    },
+    {
+      name: 'inApp',
+      label: 'In-app notifications',
+      helper: 'Alerts inside Kelmah for messages, jobs, and workflow reminders.',
+    },
+    {
+      name: 'sms',
+      label: 'SMS notifications',
+      helper: 'Only use for urgent reminders. SMS delivery may depend on your network.',
+    },
+  ];
+
   return (
-    <Paper sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Notification Settings
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Manage how you receive notifications from Kelmah.
-      </Typography>
-      <Divider sx={{ mb: 3 }} />
-      <FormGroup>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={Boolean(localSettings.email)}
-              onChange={handleChange}
-              name="email"
-            />
-          }
-          label="Email Notifications"
-        />
-        <FormControlLabel
-          control={
-            <Switch
-              checked={Boolean(localSettings.push)}
-              onChange={handleChange}
-              name="push"
-            />
-          }
-          label="Push Notifications"
-        />
-        <FormControlLabel
-          control={
-            <Switch
-              checked={Boolean(localSettings.inApp)}
-              onChange={handleChange}
-              name="inApp"
-            />
-          }
-          label="In-App Notifications"
-        />
-        <FormControlLabel
-          control={
-            <Switch
-              checked={Boolean(localSettings.sms)}
-              onChange={handleChange}
-              name="sms"
-            />
-          }
-          label="SMS Notifications"
-        />
-      </FormGroup>
-      <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-        <Button variant="contained" onClick={handleSave} disabled={loading}>
-          {loading ? <CircularProgress size={24} /> : 'Save Changes'}
-        </Button>
-      </Box>
+    <>
+      <SettingsSection
+        title="Notification Settings"
+        description="Choose the channels Kelmah should use when jobs, contracts, or conversations need your attention."
+        loading={loading}
+      >
+        <Stack spacing={1.5}>
+          {rows.map((row) => (
+            <Box
+              key={row.name}
+              sx={{
+                p: 1.5,
+                borderRadius: 2,
+                border: '1px solid',
+                borderColor: 'divider',
+                bgcolor: 'background.default',
+              }}
+            >
+              <FormControlLabel
+                sx={{ alignItems: 'flex-start', m: 0, width: '100%', justifyContent: 'space-between' }}
+                control={(
+                  <Switch
+                    checked={Boolean(localSettings[row.name])}
+                    onChange={handleChange}
+                    name={row.name}
+                  />
+                )}
+                label={(
+                  <Box sx={{ pr: 2 }}>
+                    <Typography variant="subtitle2" fontWeight={700}>
+                      {row.label}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+                      {row.helper}
+                    </Typography>
+                  </Box>
+                )}
+                labelPlacement="start"
+              />
+            </Box>
+          ))}
+        </Stack>
+        <Alert severity="info" sx={{ mt: 2 }}>
+          Notification categories such as jobs, messages, and promotions will use these channel preferences.
+        </Alert>
+        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+          <Button variant="contained" onClick={handleSave} disabled={loading}>
+            {loading ? <CircularProgress size={24} /> : 'Save Changes'}
+          </Button>
+        </Box>
+      </SettingsSection>
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
@@ -135,7 +153,7 @@ const NotificationSettings = ({
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Paper>
+    </>
   );
 };
 

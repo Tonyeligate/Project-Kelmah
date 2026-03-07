@@ -184,6 +184,12 @@ const MyApplicationsPage = () => {
     })
     : [];
 
+  const applicationCounts = [
+    { label: 'Pending', value: applications.filter((app) => app.status === 'pending').length },
+    { label: 'Review', value: applications.filter((app) => app.status === 'under_review').length },
+    { label: 'Accepted', value: applications.filter((app) => app.status === 'accepted').length },
+  ];
+
   // Status label and color mapping — matches Application model enum
   const getStatusInfo = (status) => {
     switch (status) {
@@ -276,6 +282,31 @@ const MyApplicationsPage = () => {
 
         {/* Status Tabs */}
         <Box sx={{ px: 2, pt: 2 }}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 1.5,
+              mb: 2,
+              borderRadius: 3,
+              bgcolor: 'background.paper',
+              border: 1,
+              borderColor: 'divider',
+            }}
+          >
+            <Typography sx={{ fontSize: '0.875rem', fontWeight: 700, mb: 1 }}>
+              Application summary
+            </Typography>
+            <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+              {applicationCounts.map((item) => (
+                <Chip
+                  key={item.label}
+                  label={`${item.label}: ${item.value}`}
+                  size="small"
+                  sx={{ fontWeight: 600 }}
+                />
+              ))}
+            </Stack>
+          </Paper>
           <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 2 }}>
             {['All', 'Pending', 'Under Review', 'Accepted', 'Rejected', 'Withdrawn'].map(
               (status, index) => (
@@ -389,6 +420,7 @@ const MyApplicationsPage = () => {
                         </Typography>
                       </Box>
                       <Chip
+                        icon={statusInfo.icon}
                         label={statusInfo.label}
                         color={statusInfo.color}
                         size="small"
@@ -396,9 +428,20 @@ const MyApplicationsPage = () => {
                       />
                     </Box>
 
+                    <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 1.5 }}>
+                      {application.proposedRate ? (
+                        <Chip label={`Rate: GH₵${application.proposedRate}`} size="small" variant="outlined" />
+                      ) : null}
+                      <Chip
+                        label={application.job?.category || application.job?.trade || 'General work'}
+                        size="small"
+                        variant="outlined"
+                      />
+                    </Stack>
+
                     <Box sx={{ display: 'flex', gap: 1 }}>
                       <Button
-                        variant="outlined"
+                        variant="contained"
                         color="primary"
                         size="small"
                         sx={{
@@ -409,10 +452,10 @@ const MyApplicationsPage = () => {
                         }}
                         onClick={(event) => handleOpenDetails(application, event)}
                       >
-                        View Details
+                        Open Application
                       </Button>
                       <Button
-                        variant="contained"
+                        variant="outlined"
                         color="primary"
                         size="small"
                         sx={{

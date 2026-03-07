@@ -9,9 +9,9 @@ import {
 } from '@mui/material';
 import { useSelector } from 'react-redux';
 import {
-  selectLoading,
-  selectError,
-} from '../../../../store/slices/settingsSlice';
+  selectSettingsLoading,
+  selectSettingsError,
+} from '../../../store/slices/settingsSlice';
 
 const SettingsSection = ({
   title,
@@ -21,23 +21,27 @@ const SettingsSection = ({
   error,
   sx = {},
 }) => {
-  const globalLoading = useSelector(selectLoading);
-  const globalError = useSelector(selectError);
+  const globalLoading = useSelector(selectSettingsLoading);
+  const globalError = useSelector(selectSettingsError);
 
   return (
     <Paper
       sx={{
-        p: 3,
+        p: { xs: 2, sm: 3 },
         mb: 3,
+        borderRadius: 3,
+        border: '1px solid',
+        borderColor: 'divider',
+        backgroundColor: 'background.paper',
         ...sx,
       }}
     >
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
           {title}
         </Typography>
         {description && (
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 640, lineHeight: 1.6 }}>
             {description}
           </Typography>
         )}

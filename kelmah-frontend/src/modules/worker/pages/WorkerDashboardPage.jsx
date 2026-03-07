@@ -364,6 +364,27 @@ const WorkerDashboardPage = () => {
     { name: 'Rejected', value: rejectedApplications.length || 0, color: theme.palette.error.main },
   ], [acceptedApplications, pendingApplications, rejectedApplications]);
 
+  const mobileHighlights = useMemo(() => ([
+    {
+      title: 'This month',
+      value: `GH₵${(earningsSummary.thisMonth || 0).toLocaleString()}`,
+      helper: 'Earned from completed jobs',
+      tone: theme.palette.success.main,
+    },
+    {
+      title: 'Pending offers',
+      value: pendingApplications.length,
+      helper: 'Applications awaiting response',
+      tone: theme.palette.warning.main,
+    },
+    {
+      title: 'Completed jobs',
+      value: completedJobs.length,
+      helper: 'Jobs you have finished',
+      tone: theme.palette.info.main,
+    },
+  ]), [earningsSummary.thisMonth, pendingApplications.length, completedJobs.length, theme]);
+
   // Metric cards configuration - LC Portal style with tooltips
   const metricCards = [
     {
@@ -689,7 +710,98 @@ const WorkerDashboardPage = () => {
         </Box>
       )}
 
-      {/* Charts Section - 2 charts side by side */}
+      {isMobile ? (
+        <Grid container spacing={1.5}>
+          <Grid item xs={12}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2,
+                borderRadius: 2,
+                backgroundColor: 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
+                Today&apos;s overview
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Focus on the next action that keeps your Kelmah profile active and visible.
+              </Typography>
+              <Grid container spacing={1.5}>
+                {mobileHighlights.map((item) => (
+                  <Grid item xs={12} key={item.title}>
+                    <Box
+                      sx={{
+                        p: 1.5,
+                        borderRadius: 2,
+                        backgroundColor: alpha(item.tone, 0.08),
+                        border: '1px solid',
+                        borderColor: alpha(item.tone, 0.24),
+                      }}
+                    >
+                      <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                        {item.title}
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 700, mt: 0.25 }}>
+                        {item.value}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {item.helper}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            </Paper>
+          </Grid>
+          <Grid item xs={12}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2,
+                borderRadius: 2,
+                backgroundColor: 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>
+                Application pipeline
+              </Typography>
+              <Stack spacing={1.25}>
+                {applicationsData.map((item) => (
+                  <Box key={item.name}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                      <Typography variant="body2" fontWeight={600}>
+                        {item.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {item.value}
+                      </Typography>
+                    </Box>
+                    <LinearProgress
+                      variant="determinate"
+                      value={stats.applications > 0 ? (item.value / Math.max(stats.applications, 1)) * 100 : 0}
+                      sx={{
+                        height: 8,
+                        borderRadius: 999,
+                        backgroundColor: alpha(item.color, 0.12),
+                        '& .MuiLinearProgress-bar': {
+                          backgroundColor: item.color,
+                          borderRadius: 999,
+                        },
+                      }}
+                    />
+                  </Box>
+                ))}
+              </Stack>
+            </Paper>
+          </Grid>
+        </Grid>
+      ) : (
+      /* Charts Section - 2 charts side by side */
       <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
         {/* Earnings Overview Chart */}
         <Grid item xs={12} md={6}>
@@ -816,6 +928,7 @@ const WorkerDashboardPage = () => {
           </Paper>
         </Grid>
       </Grid>
+      )}
       </Container>
     </Box>
     </PullToRefresh>

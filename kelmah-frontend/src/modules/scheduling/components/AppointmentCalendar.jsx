@@ -7,6 +7,9 @@ import {
   Badge,
   Tooltip,
   useTheme,
+  Stack,
+  Chip,
+  alpha,
 } from '@mui/material';
 import {
   LocalizationProvider,
@@ -103,12 +106,14 @@ const AppointmentCalendar = ({
               {...DayComponentProps}
               selected={isSelected}
               sx={{
+                borderRadius: 2.5,
+                fontWeight: hasAppointment ? 700 : 500,
                 ...(isToday &&
                   highlightToday && {
                     border: `2px solid ${theme.palette.primary.main}`,
                   }),
                 ...(hasAppointment && {
-                  fontWeight: 'bold',
+                  backgroundColor: alpha(theme.palette.primary.main, 0.08),
                 }),
               }}
             />
@@ -117,6 +122,9 @@ const AppointmentCalendar = ({
       </Box>
     );
   };
+
+  const appointmentCount = appointments.length;
+  const upcomingLabel = appointmentCount === 1 ? '1 appointment scheduled' : `${appointmentCount} appointments scheduled`;
 
   return (
     <Paper
@@ -128,9 +136,38 @@ const AppointmentCalendar = ({
         backgroundColor: theme.palette.background.paper,
       }}
     >
-      <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-        Appointment Calendar
-      </Typography>
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1} sx={{ mb: 2 }}>
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            Appointment Calendar
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Pick a day to review site visits, calls, and interviews.
+          </Typography>
+        </Box>
+        <Chip
+          size="small"
+          label={upcomingLabel}
+          variant="outlined"
+          sx={{ fontWeight: 700, maxWidth: 150 }}
+        />
+      </Stack>
+      {appointmentCount === 0 && (
+        <Box
+          sx={{
+            mb: 2,
+            p: 1.5,
+            borderRadius: 2,
+            bgcolor: alpha(theme.palette.primary.main, 0.06),
+            border: '1px dashed',
+            borderColor: alpha(theme.palette.primary.main, 0.2),
+          }}
+        >
+          <Typography variant="body2" color="text.secondary">
+            No dates are marked yet. Create your first appointment to see it appear on the calendar.
+          </Typography>
+        </Box>
+      )}
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <DateCalendar
           value={selectedDate}
@@ -140,15 +177,24 @@ const AppointmentCalendar = ({
           }}
           sx={{
             width: '100%',
+            bgcolor: 'background.default',
+            borderRadius: 3,
             '& .MuiPickersCalendarHeader-root': {
               paddingLeft: 2,
               paddingRight: 2,
+            },
+            '& .MuiPickersCalendarHeader-label': {
+              fontWeight: 700,
             },
             '& .MuiDayCalendar-header': {
               justifyContent: 'space-around',
             },
             '& .MuiDayCalendar-weekContainer': {
               justifyContent: 'space-around',
+            },
+            '& .MuiDayCalendar-weekDayLabel': {
+              color: 'text.secondary',
+              fontWeight: 700,
             },
           }}
         />

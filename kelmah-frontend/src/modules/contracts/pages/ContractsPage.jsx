@@ -203,13 +203,14 @@ const ContractsPage = () => {
             {user?.profile?.name ? `, ${user.profile.name}` : ''}.
           </Typography>
         </Box>
-        <Stack direction="row" spacing={1}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ width: { xs: '100%', sm: 'auto' } }}>
           <Button
             variant="contained"
             color="primary"
             startIcon={<RefreshIcon />}
             onClick={refreshContracts}
             disabled={isRefreshing}
+            fullWidth={isMobile}
           >
             {isRefreshing ? 'Refreshing…' : 'Refresh'}
           </Button>
@@ -219,6 +220,7 @@ const ContractsPage = () => {
               color="secondary"
               component={RouterLink}
               to="/contracts/create"
+              fullWidth={isMobile}
             >
               New Contract
             </Button>
@@ -356,23 +358,24 @@ const ContractsPage = () => {
               <Divider sx={{ mt: 'auto' }} />
 
               <CardActions
-                sx={{ justifyContent: 'space-between', px: 3, py: 2 }}
+                sx={{ justifyContent: 'space-between', px: 3, py: 2, gap: 1, flexWrap: 'wrap' }}
               >
                 <Button
                   startIcon={<VisibilityIcon />}
                   size="small"
+                  variant="outlined"
                   component={RouterLink}
                   to={`/contracts/${contract.id || contract._id}`}
                 >
-                  View Details
+                  Open Contract
                 </Button>
                 <IconButton
                   size="small"
-                  aria-label="View contract details"
+                  aria-label="Open contract details"
                   component={RouterLink}
                   to={`/contracts/${contract.id || contract._id}`}
                 >
-                  <DownloadIcon fontSize="small" />
+                  <VisibilityIcon fontSize="small" />
                 </IconButton>
               </CardActions>
             </Card>
@@ -398,7 +401,7 @@ const ContractsPage = () => {
                 title="No contracts match your filters yet"
                 subtitle={canCreateContract
                   ? 'Try adjusting your search or create a new contract to get started.'
-                  : 'Try adjusting your search or refresh this page. Contracts sent by hirers for your accepted jobs will appear here.'}
+                  : 'Try adjusting your search or refresh this page. Contracts for accepted jobs will appear here once hirers send them.'}
                 actionLabel={canCreateContract ? 'Create Contract' : 'Refresh'}
                 onAction={canCreateContract
                   ? () => navigate('/contracts/create')

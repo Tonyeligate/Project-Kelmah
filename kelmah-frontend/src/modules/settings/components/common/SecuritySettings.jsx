@@ -9,9 +9,14 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
+  Stack,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
 import authService from '../../../auth/services/authService';
 import { Link as RouterLink } from 'react-router-dom';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import SettingsSection from '../SettingsSection';
 
 const SecuritySettings = () => {
   // FIXED: Use standardized user normalization for consistent user data access
@@ -31,6 +36,7 @@ const SecuritySettings = () => {
   const [showDisable, setShowDisable] = useState(false);
   const [disableForm, setDisableForm] = useState({ password: '', token: '' });
   const [disableLoading, setDisableLoading] = useState(false);
+  const [showPasswords, setShowPasswords] = useState({ current: false, next: false, confirm: false, disable: false });
   const [disableSnackbar, setDisableSnackbar] = useState({
     open: false,
     message: '',
@@ -103,40 +109,62 @@ const SecuritySettings = () => {
 
   const handleClose = () => setSnackbar((prev) => ({ ...prev, open: false }));
 
+  const buildPasswordAdornment = (key) => ({
+    endAdornment: (
+      <InputAdornment position="end">
+        <IconButton
+          edge="end"
+          onClick={() => setShowPasswords((prev) => ({ ...prev, [key]: !prev[key] }))}
+          aria-label={showPasswords[key] ? 'Hide password' : 'Show password'}
+        >
+          {showPasswords[key] ? <VisibilityOff /> : <Visibility />}
+        </IconButton>
+      </InputAdornment>
+    ),
+  });
+
   return (
-    <Box p={3} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Typography variant="h5" gutterBottom>
-        Change Password
-      </Typography>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <SettingsSection
+        title="Change Password"
+        description="Choose a strong password that is different from the one you use on other apps."
+      >
+      <Stack spacing={2}>
+        <Alert severity="info">Use at least 8 characters with a mix of letters, numbers, and symbols.</Alert>
       <TextField
         label="Current Password"
         name="currentPassword"
-        type="password"
+        type={showPasswords.current ? 'text' : 'password'}
         value={form.currentPassword}
         onChange={handleChange}
         fullWidth
+        InputProps={buildPasswordAdornment('current')}
       />
       <TextField
         label="New Password"
         name="newPassword"
-        type="password"
+        type={showPasswords.next ? 'text' : 'password'}
         value={form.newPassword}
         onChange={handleChange}
         fullWidth
+        InputProps={buildPasswordAdornment('next')}
       />
       <TextField
         label="Confirm New Password"
         name="confirmPassword"
-        type="password"
+        type={showPasswords.confirm ? 'text' : 'password'}
         value={form.confirmPassword}
         onChange={handleChange}
         fullWidth
+        InputProps={buildPasswordAdornment('confirm')}
       />
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Button variant="contained" onClick={handleSubmit} disabled={loading}>
           {loading ? <CircularProgress size={24} /> : 'Update Password'}
         </Button>
       </Box>
+      </Stack>
+      </SettingsSection>
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
@@ -150,10 +178,10 @@ const SecuritySettings = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-      <Box p={3} sx={{ mt: 4, borderTop: '1px solid', borderColor: 'divider' }}>
-        <Typography variant="h5" gutterBottom>
-          Two-Factor Authentication
-        </Typography>
+      <SettingsSection
+        title="Two-Factor Authentication"
+        description="Add an extra layer of protection when you sign in from a new device."
+      >
         {user?.isTwoFactorEnabled ? (
           <>
             <Typography>
@@ -177,11 +205,12 @@ const SecuritySettings = () => {
                 <TextField
                   label="Current Password"
                   name="password"
-                  type="password"
+                  type={showPasswords.disable ? 'text' : 'password'}
                   value={disableForm.password}
                   onChange={handleDisableChange}
                   fullWidth
                   required
+                  InputProps={buildPasswordAdornment('disable')}
                 />
                 <TextField
                   label="Authentication Code"
@@ -223,6 +252,7 @@ const SecuritySettings = () => {
             </Button>
           </>
         )}
+      </SettingsSection>
         <Snackbar
           open={disableSnackbar.open}
           autoHideDuration={6000}
@@ -236,7 +266,6 @@ const SecuritySettings = () => {
             {disableSnackbar.message}
           </Alert>
         </Snackbar>
-      </Box>
     </Box>
   );
 };

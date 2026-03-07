@@ -9,7 +9,11 @@ import {
   CardContent,
   Button,
   Chip,
+  Box,
+  Stack,
 } from '@mui/material';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import workerService from '../../../worker/services/workerService';
 
 function SavedJobs() {
@@ -38,14 +42,37 @@ function SavedJobs() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ p: 3 }}>
-        <Typography variant="h5" gutterBottom>
+      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 700 }}>
           Saved Jobs
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Keep promising jobs here so you can return when you are ready to apply.
         </Typography>
         {loading && <Typography>Loading...</Typography>}
         {error && <Typography color="error">{error}</Typography>}
         {!loading && !error && jobs.length === 0 && (
-          <Typography>No saved jobs yet.</Typography>
+          <Box
+            sx={{
+              border: '1px dashed',
+              borderColor: 'divider',
+              borderRadius: 3,
+              p: { xs: 3, md: 4 },
+              textAlign: 'center',
+              bgcolor: 'background.default',
+            }}
+          >
+            <BookmarkBorderIcon sx={{ fontSize: 52, color: 'text.disabled', mb: 1 }} />
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+              No saved jobs yet
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Tap the save icon on jobs you want to revisit later.
+            </Typography>
+            <Button component={Link} to="/jobs" variant="contained">
+              Browse Jobs
+            </Button>
+          </Box>
         )}
         <Grid container spacing={2} sx={{ mt: 1 }}>
           {jobs.map((job) => {
@@ -53,15 +80,42 @@ function SavedJobs() {
             if (!jobId) return null;
             return (
             <Grid item xs={12} md={6} key={jobId}>
-              <Card variant="outlined">
+              <Card variant="outlined" sx={{ borderRadius: 3, height: '100%' }}>
                 <CardContent>
-                  <Typography variant="h6">{job.title}</Typography>
+                  <Stack direction="row" spacing={1.5} alignItems="flex-start" sx={{ mb: 1 }}>
+                    <Box
+                      sx={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: 2,
+                        display: 'grid',
+                        placeItems: 'center',
+                        bgcolor: 'primary.main',
+                        color: 'primary.contrastText',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <WorkOutlineIcon fontSize="small" />
+                    </Box>
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                        {job.title}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mb: 1 }}
+                      >
+                        {job.employer?.name || (job.hirer?.firstName ? `${job.hirer?.firstName} ${job.hirer?.lastName || ''}`.trim() : job.companyName || 'Employer')}
+                      </Typography>
+                    </Box>
+                  </Stack>
                   <Typography
                     variant="body2"
                     color="text.secondary"
-                    sx={{ mb: 1 }}
+                    sx={{ mb: 1.5 }}
                   >
-                    {job.employer?.name || (job.hirer?.firstName ? `${job.hirer?.firstName} ${job.hirer?.lastName || ''}`.trim() : job.companyName || 'Employer')}
+                    {job.location?.city || job.location || 'Location flexible'}
                   </Typography>
                   {Array.isArray(job.skills) &&
                     job.skills
@@ -74,9 +128,14 @@ function SavedJobs() {
                           sx={{ mr: 0.5, mb: 0.5 }}
                         />
                       ))}
-                  <Button component={Link} to={`/jobs/${jobId}`} sx={{ mt: 1 }}>
-                    View
-                  </Button>
+                  <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
+                    <Button component={Link} to={`/jobs/${jobId}`} variant="contained">
+                      View Job
+                    </Button>
+                    <Button component={Link} to={`/jobs/${jobId}/apply`} variant="outlined">
+                      Apply
+                    </Button>
+                  </Stack>
                 </CardContent>
               </Card>
             </Grid>

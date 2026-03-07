@@ -6,6 +6,7 @@ import {
   Chip,
   Paper,
   Collapse,
+  Button,
   useTheme,
   alpha,
 } from '@mui/material';
@@ -50,6 +51,7 @@ const ProfileCompletionCard = ({ percentage = 0, missingFields = [], onStepClick
   const isComplete = percentage >= 100;
 
   const visibleFields = (missingFields || []).slice(0, 3);
+  const remainingCount = Math.max((missingFields || []).length - visibleFields.length, 0);
 
   const progressColor =
     percentage >= 80
@@ -73,12 +75,23 @@ const ProfileCompletionCard = ({ percentage = 0, missingFields = [], onStepClick
       >
         {/* Header row */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-          <Typography variant="subtitle1" fontWeight={600} color="text.primary">
-            Profile Completion
-          </Typography>
-          <Typography variant="subtitle2" fontWeight={700} sx={{ color: progressColor }}>
-            {Math.round(percentage)}%
-          </Typography>
+          <Box>
+            <Typography variant="subtitle1" fontWeight={700} color="text.primary">
+              Profile Completion
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Complete a few more details to improve your visibility in search.
+            </Typography>
+          </Box>
+          <Chip
+            label={`${Math.round(percentage)}%`}
+            size="small"
+            sx={{
+              fontWeight: 700,
+              bgcolor: alpha(progressColor, 0.12),
+              color: progressColor,
+            }}
+          />
         </Box>
 
         {/* Progress bar */}
@@ -104,28 +117,43 @@ const ProfileCompletionCard = ({ percentage = 0, missingFields = [], onStepClick
 
         {/* Missing-field chips */}
         {visibleFields.length > 0 && (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {visibleFields.map((field) => {
-              const mapped = FIELD_MAP[field] || fallbackField(field);
-              return (
-                <Chip
-                  key={field}
-                  icon={mapped.icon}
-                  label={mapped.label}
-                  size="small"
-                  clickable
-                  onClick={() => onStepClick?.(mapped.path)}
-                  sx={{
-                    bgcolor: alpha(theme.palette.primary.main, 0.08),
-                    color: 'text.primary',
-                    fontWeight: 500,
-                    '&:hover': {
-                      bgcolor: alpha(theme.palette.primary.main, 0.18),
-                    },
-                  }}
-                />
-              );
-            })}
+          <Box>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
+              {visibleFields.map((field) => {
+                const mapped = FIELD_MAP[field] || fallbackField(field);
+                return (
+                  <Chip
+                    key={field}
+                    icon={mapped.icon}
+                    label={mapped.label}
+                    size="small"
+                    clickable
+                    onClick={() => onStepClick?.(mapped.path)}
+                    sx={{
+                      bgcolor: alpha(theme.palette.primary.main, 0.08),
+                      color: 'text.primary',
+                      fontWeight: 500,
+                      '&:hover': {
+                        bgcolor: alpha(theme.palette.primary.main, 0.18),
+                      },
+                    }}
+                  />
+                );
+              })}
+            </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+              <Typography variant="caption" color="text.secondary">
+                {remainingCount > 0 ? `Plus ${remainingCount} more step${remainingCount > 1 ? 's' : ''} to finish.` : 'You are close to complete.'}
+              </Typography>
+              <Button
+                size="small"
+                variant="contained"
+                onClick={() => onStepClick?.('/worker/profile/edit')}
+                sx={{ minHeight: 36, textTransform: 'none', fontWeight: 700 }}
+              >
+                Finish Profile
+              </Button>
+            </Box>
           </Box>
         )}
       </Paper>

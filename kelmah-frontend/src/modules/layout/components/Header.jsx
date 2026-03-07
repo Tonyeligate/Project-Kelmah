@@ -200,10 +200,13 @@ const Header = ({
   const isUserOnline = showUserFeatures ? true : false;
 
   const handleProfileMenuOpen = (event) => {
-    if (showUserFeatures) {
-      blurInteractiveTarget(event);
-      setAnchorEl(event.currentTarget);
+    if (!showUserFeatures) return;
+    blurInteractiveTarget(event);
+    if (isMobile) {
+      navigate('/profile');
+      return;
     }
+    setAnchorEl(event.currentTarget);
   };
 
   const handleMenuClose = () => {
@@ -337,15 +340,16 @@ const Header = ({
     >
       <Toolbar
         sx={{
-          minHeight: { xs: 48, sm: 48, md: 56 }, // ✅ MOBILE-AUDIT FIX: 48px min for touch targets
+          minHeight: { xs: 56, sm: 56, md: 56 },
           px: { xs: 1, sm: 2, md: 3 },
-          py: { xs: 0.25, sm: 0.25 },
+          pt: { xs: 'calc(env(safe-area-inset-top, 0px) + 4px)', sm: 'calc(env(safe-area-inset-top, 0px) + 4px)', md: 0.25 },
+          pb: { xs: 0.5, sm: 0.5, md: 0.25 },
           gap: { xs: 0.5, sm: 0.75, md: 1 },
-          // ✅ MOBILE-AUDIT FIX: Min 48px for touch-target compliance (was 36px)
+          // ✅ MOBILE-AUDIT FIX: Ensure safe-area breathing room and 56px mobile header rhythm
           '@media (max-width: 899px)': {
-            minHeight: '48px',
+            minHeight: '56px',
             px: 1,
-            py: 0.25,
+            pb: 0.5,
           },
         }}
       >
@@ -473,14 +477,14 @@ const Header = ({
               )}
 
               {/* User Avatar */}
-              <Tooltip title="Account menu" arrow>
+              <Tooltip title={isMobile ? 'Profile' : 'Account menu'} arrow>
                 <Box sx={{ position: 'relative', ml: 1 }}>
                   <UserAvatar
                     ref={profileMenuButtonRef}
                     onClick={handleProfileMenuOpen}
-                    aria-label="Open account menu"
-                    aria-haspopup="menu"
-                    aria-expanded={Boolean(anchorEl)}
+                    aria-label={isMobile ? 'Open profile' : 'Open account menu'}
+                    aria-haspopup={isMobile ? undefined : 'menu'}
+                    aria-expanded={isMobile ? undefined : Boolean(anchorEl)}
                   >
                     {getUserInitials()}
                   </UserAvatar>
@@ -561,18 +565,20 @@ const Header = ({
       )}
 
       {/* Menus */}
-      <UserMenu
-        anchorEl={anchorEl}
-        onClose={handleMenuClose}
-        user={user}
-        menuSections={buildMenuItems(user?.role)}
-        currentPage={currentPage}
-        isUserOnline={isUserOnline}
-        onLogout={handleLogout}
-        onNavigate={(path) => {
-          navigate(path === '/support' ? '/support/help-center' : path);
-        }}
-      />
+      {!isMobile && (
+        <UserMenu
+          anchorEl={anchorEl}
+          onClose={handleMenuClose}
+          user={user}
+          menuSections={buildMenuItems(user?.role)}
+          currentPage={currentPage}
+          isUserOnline={isUserOnline}
+          onLogout={handleLogout}
+          onNavigate={(path) => {
+            navigate(path === '/support' ? '/support/help-center' : path);
+          }}
+        />
+      )}
       <ThemeMenu
         anchorEl={themeMenuAnchor}
         open={Boolean(themeMenuAnchor)}

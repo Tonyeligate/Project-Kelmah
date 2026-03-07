@@ -663,24 +663,31 @@ const SchedulingPage = () => {
     : [];
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 } }}>
       <Helmet><title>Schedule | Kelmah</title></Helmet>
       {/* Page Header */}
       <Box
         sx={{
           display: 'flex',
-          alignItems: 'center',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: { xs: 'stretch', md: 'center' },
           justifyContent: 'space-between',
-          mb: 4,
+          gap: 2,
+          mb: 3,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <CalendarTodayIcon
             sx={{ fontSize: 36, mr: 1.5, color: 'primary.main' }}
           />
-          <Typography variant="h4" fontWeight="bold">
-            My Schedule
-          </Typography>
+          <Box>
+            <Typography variant="h4" fontWeight="bold">
+              My Schedule
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Track appointments, meetings, and site visits in one place.
+            </Typography>
+          </Box>
         </Box>
         <Button
           variant="contained"
@@ -689,6 +696,8 @@ const SchedulingPage = () => {
             backgroundColor: 'primary.main',
             '&:hover': { backgroundColor: 'primary.dark' },
             fontWeight: 'bold',
+            minHeight: 44,
+            width: { xs: '100%', md: 'auto' },
           }}
         >
           New Appointment
@@ -703,6 +712,9 @@ const SchedulingPage = () => {
 
       {/* Filters and Search */}
       <Paper sx={{ p: 2, mb: 3, borderRadius: 2 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+          Search by job or hirer, then switch between calendar, agenda, upcoming, or map views.
+        </Typography>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={6} md={4}>
             <TextField
@@ -741,6 +753,12 @@ const SchedulingPage = () => {
               onChange={(e, mode) => mode && setViewMode(mode)}
               size="small"
               fullWidth
+              sx={{
+                '& .MuiToggleButton-root': {
+                  textTransform: 'none',
+                  fontWeight: 600,
+                },
+              }}
             >
               <ToggleButton value="calendar">Calendar</ToggleButton>
               <ToggleButton value="agenda">Agenda</ToggleButton>
@@ -794,7 +812,7 @@ const SchedulingPage = () => {
                   No appointments for this date
                 </Typography>
                 <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
-                  Schedule a new appointment to get started.
+                  Pick another date or create a new appointment to keep work moving.
                 </Typography>
                 <Button variant="contained" color="secondary" onClick={handleOpenCreateDialog} sx={{ minHeight: 44 }}>
                   Schedule Appointment
@@ -888,7 +906,7 @@ const SchedulingPage = () => {
                 No upcoming appointments
               </Typography>
               <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
-                You have nothing scheduled in the next 7 days.
+                You have nothing scheduled in the next 7 days. Create one now so you do not miss a site visit or call.
               </Typography>
               <Button variant="contained" color="secondary" onClick={handleOpenCreateDialog} sx={{ minHeight: 44 }}>
                 Schedule Appointment

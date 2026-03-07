@@ -80,7 +80,7 @@ const UserMenu = ({
           filter: 'drop-shadow(0px 4px 16px rgba(0,0,0,0.2))',
           mt: 1.5,
           borderRadius: 3,
-          minWidth: 'min(280px, calc(100vw - 32px))',
+          minWidth: 260,
           border:
             theme.palette.mode === 'dark'
               ? `1px solid rgba(255, 215, 0, 0.3)`
@@ -88,28 +88,7 @@ const UserMenu = ({
           backgroundColor:
             theme.palette.mode === 'dark'
               ? BRAND_COLORS.blackMedium
-              : BRAND_COLORS.gold,
-          '&:before': {
-            content: '""',
-            display: 'block',
-            position: 'absolute',
-            top: 0,
-            right: 14,
-            width: 10,
-            height: 10,
-            bgcolor:
-              theme.palette.mode === 'dark'
-                ? BRAND_COLORS.blackMedium
-                : BRAND_COLORS.gold,
-            transform: 'translateY(-50%) rotate(45deg)',
-            zIndex: 0,
-            border:
-              theme.palette.mode === 'dark'
-                ? `1px solid rgba(255, 215, 0, 0.3)`
-                : `1px solid rgba(0, 0, 0, 0.2)`,
-            borderBottom: 'none',
-            borderRight: 'none',
-          },
+              : theme.palette.background.paper,
         },
       }}
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
@@ -134,7 +113,7 @@ const UserMenu = ({
             <Typography variant="body2" color="text.secondary" noWrap>
               {user?.email}
             </Typography>
-            <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', gap: 0.5, mt: 0.75, flexWrap: 'wrap' }}>
               <Chip
                 label={getUserRole().charAt(0).toUpperCase() + getUserRole().slice(1)}
                 size="small"
@@ -150,21 +129,6 @@ const UserMenu = ({
                 }}
               />
               <Chip
-                label={`On ${currentPage?.name || 'Page'}`}
-                size="small"
-                variant="outlined"
-                sx={{
-                  borderColor:
-                    theme.palette.mode === 'dark'
-                      ? 'rgba(255, 215, 0, 0.3)'
-                      : 'rgba(0, 0, 0, 0.3)',
-                  color:
-                    theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
-                  fontSize: '0.65rem',
-                  fontWeight: 500,
-                }}
-              />
-              <Chip
                 label={isUserOnline ? 'Online' : 'Offline'}
                 size="small"
                 sx={{
@@ -177,6 +141,9 @@ const UserMenu = ({
                 }}
               />
             </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+              Quick account actions for {currentPage?.name || 'your workspace'}.
+            </Typography>
           </Box>
         </Stack>
       </Box>

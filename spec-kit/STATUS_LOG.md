@@ -1,5 +1,296 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Mobile Worker UI/UX Remediation Sweep ✅ COMPLETED
+
+**Date**: March 7, 2026
+**Scope**: Fix the worker-facing mobile UI/UX and layout defects surfaced in the attached audit set across jobs, messaging, auth, saved jobs, settings, scheduling, contracts, applications, dashboard, profile, and shared mobile navigation/header shells.
+
+**Acceptance Criteria**
+- Mobile screens no longer clip content under the fixed header and bottom navigation.
+- Mobile navigation is simplified so primary app navigation is handled by bottom navigation while account surfaces avoid duplicated routes and oversized overlays.
+- Jobs, messaging, settings, schedule, contracts, applications, dashboard, and profile screens have clearer hierarchy, stronger empty states, larger tap targets, and reduced visual clutter.
+- Worker dashboard and profile mobile layouts feel action-oriented instead of chart-heavy or edit-heavy.
+- Frontend validation passes after the remediation.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/index.css`
+- `kelmah-frontend/src/constants/layout.js`
+- `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+- `kelmah-frontend/src/modules/layout/components/Header.jsx`
+- `kelmah-frontend/src/modules/layout/components/MobileBottomNav.jsx`
+- `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
+- `kelmah-frontend/src/modules/layout/components/header/UserMenu.jsx`
+- `kelmah-frontend/src/modules/layout/components/header/menuConfig.jsx`
+- `kelmah-frontend/src/modules/layout/components/header/pageDetection.js`
+- `kelmah-frontend/src/modules/layout/components/header/HeaderStyles.js`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/jobs/components/JobsCompactSearchBar.jsx`
+- `kelmah-frontend/src/modules/jobs/components/JobsMobileFilterDrawer.jsx`
+- `kelmah-frontend/src/modules/jobs/components/common/SavedJobs.jsx`
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- `kelmah-frontend/src/modules/auth/pages/LoginPage.jsx`
+- `kelmah-frontend/src/modules/auth/components/mobile/MobileLogin.jsx`
+- `kelmah-frontend/src/modules/settings/pages/SettingsPage.jsx`
+- `kelmah-frontend/src/modules/settings/components/SettingsSection.jsx`
+- `kelmah-frontend/src/modules/settings/components/common/NotificationSettings.jsx`
+- `kelmah-frontend/src/modules/settings/components/common/AccountSettings.jsx`
+- `kelmah-frontend/src/modules/settings/components/common/SecuritySettings.jsx`
+- `kelmah-frontend/src/modules/settings/components/common/PrivacySettings.jsx`
+- `kelmah-frontend/src/modules/scheduling/pages/SchedulingPage.jsx`
+- `kelmah-frontend/src/modules/scheduling/components/AppointmentCalendar.jsx`
+- `kelmah-frontend/src/modules/contracts/pages/ContractsPage.jsx`
+- `kelmah-frontend/src/modules/worker/pages/MyApplicationsPage.jsx`
+- `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
+- `kelmah-frontend/src/modules/worker/components/QuickActionsRow.jsx`
+- `kelmah-frontend/src/modules/worker/components/ProfileCompletionCard.jsx`
+- `kelmah-frontend/src/modules/profile/pages/ProfilePage.jsx`
+
+**End-to-end flow notes**
+- Layout flow: `Layout.jsx` → fixed `Header.jsx` / `MobileBottomNav.jsx` / `MobileNav.jsx` → page container → module page.
+- Jobs flow: `JobsPage.jsx` → `useJobsQuery()` / `jobsService` → `/api/jobs` → rendered cards / saved jobs state.
+- Messaging flow: `MessagingPage.jsx` → `MessageContext` / `messagingService` → `/api/messages/*` → conversation list + chat thread.
+- Settings flow: `SettingsPage.jsx` → settings hooks/services → per-section components → `/api/users/settings*` endpoints.
+- Scheduling flow: `SchedulingPage.jsx` → `schedulingService` → `/api/scheduling*` endpoints → `AppointmentCalendar.jsx` and agenda cards.
+- Contracts flow: `ContractsPage.jsx` → `contractService.getContracts()` → `/api/contracts*` endpoints.
+- Worker dashboard flow: `WorkerDashboardPage.jsx` → worker slice + `workerService` → worker dashboard endpoints → KPI cards, quick actions, and insight modules.
+- Profile flow: `ProfilePage.jsx` → `useProfile()` → profile endpoints → header, tabs, and stats.
+
+**Current findings**
+- The fixed mobile header and dashboard layout padding are too tight, which is the shared root cause behind repeated clipped headings in settings and other mobile pages.
+- Mobile account/navigation surfaces are fragmented across avatar menu, hamburger drawer, and bottom navigation, producing redundant navigation and oversized overlays.
+- Several worker-facing mobile screens still use desktop-density layouts or presentation-first widgets (large charts, large empty cards, multi-action card footers) instead of action-first mobile patterns.
+- Messaging mobile thread layout does not fully anchor the conversation to the composer, which visually creates the dead-space issue seen in the audit images.
+
+**Delivery summary**
+- Consolidated mobile shell spacing and account navigation patterns.
+- Refactored high-friction worker mobile screens to use clearer hierarchy, smaller cards, better empty states, and simpler action layouts.
+- Completed frontend validation for the remediation sweep.
+
+**Changes completed so far**
+- Simplified the shared mobile shell in `Layout.jsx`, `Header.jsx`, `MobileNav.jsx`, `UserMenu.jsx`, and `menuConfig.jsx` so content clears the fixed header/bottom nav and mobile account routes no longer compete with primary navigation.
+- Rebuilt the settings shell and detail panels in `SettingsPage.jsx`, `SettingsSection.jsx`, `NotificationSettings.jsx`, `AccountSettings.jsx`, `SecuritySettings.jsx`, and `PrivacySettings.jsx` with stronger information scent, clearer setting rows, and safer account/security actions.
+- Refined worker-facing mobile flows in `MessagingPage.jsx`, `WorkerDashboardPage.jsx`, `QuickActionsRow.jsx`, `MyApplicationsPage.jsx`, `SavedJobs.jsx`, `JobsPage.jsx`, `ContractsPage.jsx`, `SchedulingPage.jsx`, `ProfilePage.jsx`, and `MobileLogin.jsx` to reduce visual clutter, improve empty states, and surface clearer action-first CTAs.
+
+**Verification**
+- Editor diagnostics returned clean results for the touched settings, worker, jobs, messaging, contracts, scheduling, profile, and auth mobile files.
+- `npm run build` completed successfully in `kelmah-frontend/` after fixing the JSX wrapper issues in the settings panels and correcting the shared settings slice import/selectors.
+- Remaining output was limited to an existing Vite chunking warning for mixed dynamic/static imports around `src/services/apiClient.js`; the build still completed successfully.
+
+**Follow-up polish completed**
+- Tightened the remaining helper surfaces in `AppointmentCalendar.jsx` and `ProfileCompletionCard.jsx` so the supporting schedule/profile widgets match the new action-first mobile treatment.
+- Re-ran `npm run build` after the helper-widget pass; the frontend build completed successfully again with only the pre-existing Vite chunking warning around `src/services/apiClient.js`.
+
+### Session: Job Detail Page UI/UX Audit & Layout Remediation 🔄 IN PROGRESS
+
+**Date**: March 7, 2026
+**Scope**: Full dry audit of the worker-facing job detail page with emphasis on layout density, whitespace usage, readability, clickable flows, About the Client correctness, message/profile routing, bid/save/share actions, and page structure alignment with the Kelmah marketplace UX goals.
+
+**Acceptance Criteria**
+- Job detail hero, metadata, content blocks, and sidebar fit the screen with stronger hierarchy and clearer use of horizontal space.
+- Titles, labels, and primary content are bold, readable, and visually scannable on desktop and mobile.
+- Every clickable element on the page has a valid, tested flow, especially Back to Jobs, Place Your Bid / Apply, Save, Share, Message Client, and View Client Profile.
+- About the Client shows accurate hirer identity and supporting metadata for the job being viewed.
+- The page feels professional, balanced, and purpose-fit for a vocational marketplace.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `kelmah-frontend/src/modules/jobs/components/common/JobDetails.jsx`
+- `kelmah-frontend/src/modules/jobs/services/jobsService.js`
+- `kelmah-frontend/src/modules/jobs/services/bidService.js`
+- `kelmah-frontend/src/modules/jobs/hooks/useJobs.js`
+- `kelmah-backend/api-gateway/routes/job.routes.js`
+- `kelmah-backend/services/job-service/routes/job.routes.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+
+**Current working hypothesis**
+- The desktop job detail page is suffering from weak content-width strategy and inconsistent section composition, causing large dead zones and low information density.
+- About the Client actions and supporting links likely depend on incomplete or inconsistently normalized hirer data from the job detail response.
+
+**Current findings**
+- Live `GET /api/jobs/:id` returns only a lean hirer object (`firstName`, `lastName`, `email`, `name`) for public job details, so the old UI was implying richer client profile data than the backend actually exposes.
+- The previous `View Client Profile` interaction in the job detail page navigated to `/profile/:workerId`, which is wired to the worker public profile page and is therefore the wrong destination for hirer/client identities.
+- The page already had the right high-level sections, but the hero area was under-using horizontal space and the sidebar content was not carrying enough trustworthy context to justify the layout split.
+
+**Changes completed**
+- Reworked `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx` so the hero uses a two-column desktop composition with summary insight cards, stronger text hierarchy, and a sticky sidebar for better screen usage.
+- Replaced the broken client-profile navigation with an in-page client details dialog that surfaces only trustworthy public context and routes workers into messaging instead of the wrong worker-profile page.
+- Hardened the About the Client card to avoid fake review/rating presentation when public client review data is absent.
+- Updated `kelmah-frontend/src/modules/jobs/services/jobsService.js` to normalize client identity/media fields for job detail rendering (`hirer.name`, `hirer.avatar`, `clientProfile`, and image fallback aggregation).
+
+**Verification**
+- Live diagnostics:
+  - `GET https://kelmah-api-gateway-qmd7.onrender.com/api/jobs?limit=2` → `200`
+  - `GET https://kelmah-api-gateway-qmd7.onrender.com/api/jobs/69a73f7c2ea54264fff62774` → `200`
+- Editor diagnostics: `get_errors` returned clean results for `JobDetailsPage.jsx` and `jobsService.js` after the remediation.
+- Frontend validation: `npm run build` completed successfully in `kelmah-frontend/` after the page changes.
+
+### Session: Native Notifications Domain + Auth Register Recovery 🔄 IN PROGRESS
+
+**Date**: March 7, 2026
+**Scope**: Replace the native notification placeholders with real gateway-backed inbox flows on Android and iOS while continuing the auth registration recovery work for the remaining deployed `phone already exists` blocker.
+
+**Acceptance Criteria**
+- Android supports notification list loading, unread filtering, refresh, mark-as-read, mark-all-read, and delete.
+- iOS supports notification list loading, unread filtering, refresh, mark-as-read, mark-all-read, and delete.
+- Both native apps keep using the single configured gateway origin for notification traffic.
+- Live notification endpoints are validated against the deployed gateway contract.
+- Auth registration recovery hardening is documented alongside the native notification pass.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/api-gateway/routes/messaging.routes.js`
+- `kelmah-backend/services/messaging-service/server.js`
+- `kelmah-backend/services/messaging-service/routes/notification.routes.js`
+- `kelmah-backend/services/messaging-service/controllers/notification.controller.js`
+- `kelmah-backend/services/messaging-service/models/Notification.js`
+- `kelmah-backend/services/messaging-service/models/NotificationPreference.js`
+- `kelmah-frontend/src/modules/notifications/services/notificationService.js`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahNavHost.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/network/NetworkModule.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/presentation/NotificationsScreen.kt`
+- `kelmah-mobile-ios/Kelmah/App/AppEnvironment.swift`
+- `kelmah-mobile-ios/Kelmah/App/RootTabView.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Network/APIClient.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Notifications/Presentation/NotificationsView.swift`
+- `spec-kit/KELMAH_NATIVE_NOTIFICATIONS_DOMAIN_MAR07_2026.md`
+- `spec-kit/KELMAH_LIVE_AUTH_REGISTER_DEPLOY_BLOCKER_MAR07_2026.md`
+
+**Current findings**
+- Both native apps had notification placeholders even though the deployed gateway already exposes a stable notification inbox contract.
+- The live notification payload returns records under `data`, unread counts at top level, `_id` identifiers, and nested `readStatus`, which matches the normalization added for the native apps.
+- The deployed registration blocker remains isolated to auth-service/database runtime drift, not the notification contract.
+
+**Changes completed**
+- Android:
+  - Added notification models, Retrofit API service, repository parsing, and `NotificationsViewModel` in `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/`.
+  - Replaced the placeholder `NotificationsScreen` with a real Compose inbox supporting unread filtering, refresh, mark-read, mark-all-read, and delete.
+  - Extended `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/network/NetworkModule.kt` with `NotificationsApiService` provisioning.
+- iOS:
+  - Added notification models, repository parsing, and `NotificationsViewModel` in `kelmah-mobile-ios/Kelmah/Features/Notifications/`.
+  - Extended `kelmah-mobile-ios/Kelmah/App/AppEnvironment.swift` and `kelmah-mobile-ios/Kelmah/App/RootTabView.swift` so the Alerts tab uses shared notification dependencies.
+  - Replaced the placeholder `NotificationsView` with a real SwiftUI inbox supporting unread filtering, refresh, mark-read, mark-all-read, and delete.
+- Auth recovery:
+  - Added `spec-kit/KELMAH_LIVE_AUTH_REGISTER_DEPLOY_BLOCKER_MAR07_2026.md` and strengthened auth-service runtime recovery for legacy phone index drift.
+
+**Verification**
+- `get_errors` returned clean results for all touched Android notification files and the updated Android network module.
+- `get_errors` returned clean results for all touched iOS notification files, `AppEnvironment`, and `RootTabView`.
+- Live gateway contract validation confirmed:
+  - `POST /api/auth/login` → `200`
+  - `GET /api/notifications?limit=5` → `200`
+  - `GET /api/notifications/unread/count` → `200`
+- Live registration still requires redeploy validation after the new auth recovery code:
+  - `POST /api/auth/register` via gateway → `400 phone already exists`
+  - `POST /api/auth/register` direct to auth-service → `400 phone already exists`
+
+### Session: Live Auth Register Deploy Blocker + Native Hardening 🔄 IN PROGRESS
+
+**Date**: March 7, 2026
+**Scope**: Dry-audit the remaining deployed registration failure (`phone already exists`) across gateway → auth-service → shared user model → database startup reconciliation, then remove that blocker and continue the next native production-hardening pass.
+
+**Acceptance Criteria**
+- Live `POST /api/auth/register` succeeds through the deployed gateway when `phone` is omitted.
+- The auth-service startup path self-heals legacy phone indexes without requiring manual database intervention.
+- The registration controller remains safe if blank, null, or malformed phone values arrive from native clients.
+- The investigation records the exact request flow and the next mobile hardening surface after auth is stabilized.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/api-gateway/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/server.js`
+- `kelmah-backend/services/auth-service/config/db.js`
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/services/auth-service/models/index.js`
+- `kelmah-backend/shared/models/User.js`
+- `spec-kit/KELMAH_GATEWAY_PUBLIC_AUTH_TIMEOUT_FIX_MAR07_2026.md`
+- `spec-kit/STATUS_LOG.md`
+
+**Current findings**
+- The gateway public auth forwarding is already direct and no longer the main blocker for registration.
+- The auth-service controller now omits blank phone values, but the live deployed registration path still behaves as if a legacy unique phone constraint remains active.
+- The shared `User` schema only declares a sparse non-unique phone index, so the remaining blocker is most likely runtime/database-state drift rather than the intended source code path.
+- The startup reconciliation currently inspects indexes once, drops unique phone indexes, and recreates a sparse phone index, but live verification is still needed against the actual deployed database state.
+
+**In progress**
+- Revalidating the deployed gateway and auth-service registration behavior.
+- Inspecting the live MongoDB `users` indexes/documents to confirm whether a legacy unique phone index or stale runtime is still present.
+- Mapping the next native production-hardening targets once auth registration is cleared.
+
+### Session: Native Messaging Domain + Live Auth Revalidation 🔄 IN PROGRESS
+
+**Date**: March 7, 2026
+**Scope**: Finish the dry audit for the native messaging gap across gateway, messaging-service, web messaging contracts, and both native apps; then implement production-ready native messaging flows while continuing live auth registration revalidation.
+
+**Acceptance Criteria**
+- Android supports conversation list, thread view, manual thread refresh, compose/send, unread state, and gateway-backed messaging recovery.
+- iOS supports conversation list, thread view, manual thread refresh, compose/send, unread state, and gateway-backed messaging recovery.
+- Both native apps keep using one configurable gateway origin for `/api` and `/socket.io` derivation.
+- Native messaging payloads align with the existing gateway + messaging-service REST contracts.
+- Live auth registration is rechecked against the deployed gateway while messaging work progresses.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/api-gateway/routes/messaging.routes.js`
+- `kelmah-backend/services/messaging-service/server.js`
+- `kelmah-backend/services/messaging-service/routes/conversation.routes.js`
+- `kelmah-backend/services/messaging-service/routes/message.routes.js`
+- `kelmah-backend/services/messaging-service/controllers/conversation.controller.js`
+- `kelmah-backend/services/messaging-service/controllers/message.controller.js`
+- `kelmah-backend/services/messaging-service/models/Conversation.js`
+- `kelmah-backend/services/messaging-service/models/Message.js`
+- `kelmah-backend/services/messaging-service/socket/messageSocket.js`
+- `kelmah-frontend/src/modules/messaging/services/messagingService.js`
+- `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/network/NetworkConfig.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/network/NetworkModule.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/storage/StoredSession.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/storage/TokenManager.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/data/JobsApiService.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/data/JobsRepository.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobsViewModel.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesScreen.kt`
+- `kelmah-mobile-ios/project.yml`
+- `kelmah-mobile-ios/Kelmah/App/AppEnvironment.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Config/APIEnvironment.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Network/APIClient.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Session/SessionModels.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Storage/SessionStore.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Data/JobsModels.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Data/JobsRepository.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobsViewModel.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Messaging/Presentation/MessagesView.swift`
+
+**Current findings**
+- Both native apps still expose placeholder-only messaging tabs with no repository, models, or thread state.
+- The live backend messaging contract is already stable enough for native work through REST: list conversations via `GET /api/messages/conversations`, load thread history via `GET /api/messages/conversations/:conversationId/messages`, create direct conversations via `POST /api/messages/conversations`, and send via `POST /api/messages/conversations/:conversationId/messages`.
+- The web app confirms the intended normalization rules: conversation IDs may be `_id` or `id`, participant records can vary in shape, unread counts can arrive as `unread` or `unreadCount`, and messages need normalized `content`/`text`, `createdAt`/`timestamp`, and attachment metadata.
+- Backend websocket support exists and authenticates with the same access token, but native production readiness can still advance immediately with REST + refresh/polling flows while socket parity is phased in.
+- Live auth registration still needs periodic revalidation because the gateway now returns healthy recovery responses while registration continues to report `phone already exists` in the deployed environment.
+
+**In progress**
+- Creating `spec-kit/KELMAH_NATIVE_MESSAGING_DOMAIN_MAR07_2026.md` for the required end-to-end data-flow record.
+- Building normalized messaging repositories, state holders, and UI for Android and iOS.
+- Rechecking live auth registration during this implementation cycle.
+
+**Changes completed**
+- Android:
+  - Added normalized messaging models, Retrofit API service, repository parsing, and `MessagesViewModel` in `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/`.
+  - Replaced the placeholder `MessagesScreen` with a real Compose conversation list + thread experience, including search, unread badges, thread refresh, and send composer.
+  - Extended `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/network/NetworkModule.kt` with `MessagingApiService` provisioning.
+- iOS:
+  - Added normalized messaging models, repository parsing, and `MessagesViewModel` in `kelmah-mobile-ios/Kelmah/Features/Messaging/`.
+  - Replaced the placeholder `MessagesView` with a real SwiftUI conversation list + thread experience, including search, unread badges, refresh, and send composer.
+  - Extended `kelmah-mobile-ios/Kelmah/App/AppEnvironment.swift` and `kelmah-mobile-ios/Kelmah/App/RootTabView.swift` so messaging uses shared app-level dependencies.
+
+**Verification**
+- `get_errors` returned clean results for all touched Android messaging files and the updated Android network module.
+- `get_errors` returned clean results for all touched iOS messaging files, `AppEnvironment`, and `RootTabView`.
+- Live auth gateway revalidation still shows:
+  - `POST /api/auth/register` → `400 phone already exists`
+  - `POST /api/auth/forgot-password` → `200`
+  - `POST /api/auth/resend-verification-email` → `200`
+- That confirms the deployed registration path is still lagging behind the latest auth-service fix even though recovery routes are healthy.
+
 ### Session: Gateway Public Auth Timeout Fix 🔄 IN PROGRESS
 
 **Date**: March 7, 2026

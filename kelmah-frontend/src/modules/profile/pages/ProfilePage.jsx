@@ -231,7 +231,7 @@ const ProfilePage = () => {
           {/* Profile Header */}
           <Grid item xs={12}>
             <Paper sx={{ p: { xs: 2, md: 3 } }}>
-              <Box sx={{ display: 'flex', flexDirection: { xs: 'row', md: 'row' }, gap: 2, alignItems: { xs: 'center', md: 'flex-start' } }}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: { xs: 'flex-start', md: 'flex-start' } }}>
                 <ProfilePicture size={isMobile ? 64 : 150} />
                 <Box sx={{ flex: 1, width: '100%', textAlign: { xs: 'left', md: 'left' } }}>
                   {error && (
@@ -325,6 +325,11 @@ const ProfilePage = () => {
                         {profile?.firstName || 'First'}{' '}
                         {profile?.lastName || 'Name'}
                       </Typography>
+                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1.5 }}>
+                        {profile?.location ? <Chip label={profile.location} size="small" /> : null}
+                        {statistics ? <Chip label={`${statistics.jobsApplied || 0} jobs applied`} size="small" variant="outlined" /> : null}
+                        {statistics ? <Chip label={`${statistics.offers || 0} offers`} size="small" variant="outlined" /> : null}
+                      </Box>
                       <Typography
                         variant="body1"
                         color="text.secondary"
@@ -358,6 +363,7 @@ const ProfilePage = () => {
                       <Button
                         startIcon={<EditIcon />}
                         onClick={handleEdit}
+                        variant="contained"
                         sx={{ mt: 2, minHeight: 44 }}
                       >
                         Edit Profile
@@ -372,12 +378,22 @@ const ProfilePage = () => {
           {/* Profile Content */}
           <Grid item xs={12}>
             <Paper sx={{ p: { xs: 2, md: 3 } }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                Keep your skills, education, work history, and preferences up to date so hirers can trust your profile quickly.
+              </Typography>
               <Tabs
                 value={selectedTab}
                 onChange={handleTabChange}
-                variant="scrollable"
+                variant={isMobile ? 'scrollable' : 'scrollable'}
                 scrollButtons="auto"
                 allowScrollButtonsMobile
+                sx={{
+                  '& .MuiTab-root': {
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    minHeight: 44,
+                  },
+                }}
               >
                 <Tab label="Skills" />
                 <Tab label="Education" />

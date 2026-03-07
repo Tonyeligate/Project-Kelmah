@@ -44,7 +44,7 @@ import { secureStorage } from '../../../utils/secureStorage';
 // Styled Components
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
-    width: 'min(280px, 85vw)', // ✅ MOBILE-AUDIT FIX: Clamp to 85vw for 320px screens
+    width: 'min(300px, 76vw)',
     background:
       theme.palette.mode === 'dark'
         ? `linear-gradient(180deg, ${BRAND_COLORS.black} 0%, ${BRAND_COLORS.blackLight} 100%)`
@@ -61,7 +61,7 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
 }));
 
 const ProfileSection = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(3, 2),
+  padding: theme.spacing(2.25, 2),
   background:
     theme.palette.mode === 'dark'
       ? `linear-gradient(135deg, ${alpha(BRAND_COLORS.gold, 0.1)} 0%, ${alpha(BRAND_COLORS.goldLight, 0.05)} 100%)`
@@ -231,38 +231,34 @@ const MobileNav = ({ open, onClose }) => {
     return 'U';
   };
 
-  // Role-specific navigation items - cleaner, no duplicates
+  // Secondary navigation only — bottom navigation owns the primary app sections.
   const navigationItems = useMemo(() => {
     const baseItems = [];
     
     if (showUserMenu) {
-      // Authenticated user navigation based on role
       if (isHirer) {
         baseItems.push(
-          { label: 'Dashboard', icon: <DashboardIcon />, path: '/hirer/dashboard' },
-          { label: 'Post a Job', icon: <WorkIcon />, path: '/hirer/jobs/post' },
           { label: 'My Job Posts', icon: <AssignmentIcon />, path: '/hirer/jobs' },
           { label: 'Applications', icon: <AssignmentIcon />, path: '/hirer/applications' },
-          { label: 'Find Workers', icon: <SearchIcon />, path: '/hirer/find-talent' },
+          { label: 'Find Talent', icon: <SearchIcon />, path: '/hirer/find-talent' },
+          { label: 'Profile', icon: <PersonIcon />, path: '/profile' },
         );
       } else if (isWorker) {
         baseItems.push(
-          { label: 'Dashboard', icon: <DashboardIcon />, path: '/worker/dashboard' },
-          { label: 'Find Jobs', icon: <SearchIcon />, path: '/worker/find-work' },
           { label: 'My Applications', icon: <AssignmentIcon />, path: '/worker/applications' },
-          { label: 'My Profile', icon: <PersonIcon />, path: '/worker/profile' },
+          { label: 'Saved Jobs', icon: <WorkIcon />, path: '/worker/saved-jobs' },
+          { label: 'My Schedule', icon: <WalletIcon />, path: '/worker/schedule' },
+          { label: 'Profile', icon: <PersonIcon />, path: '/profile' },
         );
       } else {
         baseItems.push(
-          { label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+          { label: 'Profile', icon: <PersonIcon />, path: '/profile' },
           { label: 'Browse Jobs', icon: <WorkIcon />, path: '/jobs' },
         );
       }
-      
-      // Common items for authenticated users
+
       baseItems.push(
-        { label: 'Messages', icon: <MessageIcon />, path: '/messages', badge: unreadCount },
-        { label: 'Notifications', icon: <NotificationsIcon />, path: '/notifications', badge: unreadCount },
+        { label: 'Help & Support', icon: <HomeIcon />, path: '/support' },
       );
     } else {
       // Guest navigation
@@ -357,7 +353,7 @@ const MobileNav = ({ open, onClose }) => {
                 {getUserInitials()}
               </Avatar>
               <Box sx={{ flex: 1 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
                   {user?.fullName || user?.displayName || user?.email || 'User'}
                 </Typography>
                 <Chip
@@ -375,6 +371,9 @@ const MobileNav = ({ open, onClose }) => {
                     fontWeight: 600,
                   }}
                 />
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.75 }}>
+                  Account shortcuts and worker tools
+                </Typography>
               </Box>
             </Stack>
           </ProfileSection>
@@ -403,9 +402,7 @@ const MobileNav = ({ open, onClose }) => {
             <>
               <Divider sx={{ my: 2, mx: 2 }} />
 
-              <StyledListItemButton
-                onClick={() => handleNavigate('/settings')}
-              >
+              <StyledListItemButton onClick={() => handleNavigate('/settings')}>
                 <ListItemIcon>
                   <SettingsIcon />
                 </ListItemIcon>
@@ -436,7 +433,7 @@ const MobileNav = ({ open, onClose }) => {
                   <ListItemIcon>
                     <LogoutIcon />
                   </ListItemIcon>
-                  <ListItemText primary="Logout" />
+                  <ListItemText primary="Sign Out" />
                 </StyledListItemButton>
             </>
           )}

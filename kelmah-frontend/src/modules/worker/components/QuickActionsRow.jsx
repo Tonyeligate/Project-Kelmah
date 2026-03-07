@@ -8,11 +8,11 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 
 const actions = [
-  { label: 'Find Jobs', icon: SearchIcon, path: '/worker/find-work' },
-  { label: 'My Applications', icon: AssignmentIcon, path: '/worker/applications' },
-  { label: 'Active Contracts', icon: ReceiptIcon, path: '/worker/contracts' },
-  { label: 'My Earnings', icon: AttachMoneyIcon, path: '/worker/earnings' },
-  { label: 'Update Availability', icon: EventAvailableIcon, path: '/worker/schedule' },
+  { label: 'Find Work', caption: 'Browse open jobs', icon: SearchIcon, path: '/worker/find-work' },
+  { label: 'Applications', caption: 'Track submissions', icon: AssignmentIcon, path: '/worker/applications' },
+  { label: 'Contracts', caption: 'Review active work', icon: ReceiptIcon, path: '/worker/contracts' },
+  { label: 'Earnings', caption: 'See payment progress', icon: AttachMoneyIcon, path: '/worker/earnings' },
+  { label: 'Schedule', caption: 'Update availability', icon: EventAvailableIcon, path: '/worker/schedule' },
 ];
 
 /**
@@ -25,16 +25,12 @@ const QuickActionsRow = () => {
   return (
     <Box
       sx={{
-        display: 'flex',
+        display: 'grid',
+        gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(5, minmax(0, 1fr))' },
         gap: 1.5,
-        overflowX: 'auto',
-        pb: 1,
-        // Hide scrollbar but allow scrolling on mobile
-        scrollbarWidth: 'none',
-        '&::-webkit-scrollbar': { display: 'none' },
       }}
     >
-      {actions.map(({ label, icon: Icon, path }) => (
+      {actions.map(({ label, caption, icon: Icon, path }) => (
         <ButtonBase
           key={label}
           onClick={() => navigate(path)}
@@ -42,17 +38,16 @@ const QuickActionsRow = () => {
           sx={{
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             justifyContent: 'center',
-            minWidth: 88,
-            width: { xs: 88, sm: 100 },
-            py: 1.5,
-            px: 1,
+            minHeight: { xs: 96, sm: 108 },
+            width: '100%',
+            py: 1.75,
+            px: 1.5,
             borderRadius: 2,
             bgcolor: 'background.paper',
             border: '1px solid',
             borderColor: 'divider',
-            flexShrink: 0,
             transition: 'transform 0.15s, box-shadow 0.15s',
             '@media (hover: hover)': {
               '&:hover': {
@@ -66,21 +61,30 @@ const QuickActionsRow = () => {
           <Icon
             sx={{
               fontSize: 28,
-              mb: 0.75,
+              mb: 1,
               color: theme.palette.primary.main,
             }}
           />
           <Typography
-            variant="caption"
-            align="center"
+            variant="subtitle2"
             sx={{
-              fontWeight: 600,
+              fontWeight: 700,
               color: 'text.primary',
               lineHeight: 1.2,
-              fontSize: '0.7rem',
             }}
           >
             {label}
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              mt: 0.5,
+              color: 'text.secondary',
+              lineHeight: 1.35,
+              textAlign: 'left',
+            }}
+          >
+            {caption}
           </Typography>
         </ButtonBase>
       ))}

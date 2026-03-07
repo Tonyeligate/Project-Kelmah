@@ -9,6 +9,10 @@ import {
   Typography,
   Skeleton,
   Stack,
+  Avatar,
+  Paper,
+  Divider,
+  Chip,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +25,7 @@ import {
 import { VALIDATION } from '../../../../config/environment';
 import { logoutUser } from '../../../auth/services/authSlice';
 import LogoutIcon from '@mui/icons-material/Logout';
+import SettingsSection from '../SettingsSection';
 
 const AccountSettings = () => {
   const dispatch = useDispatch();
@@ -185,10 +190,36 @@ const AccountSettings = () => {
   };
 
   return (
-    <Box component="section" sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Account Settings
-      </Typography>
+    <SettingsSection
+      title="Account Settings"
+      description="Update the contact details hirers and Kelmah use to reach you. Save changes before leaving this screen."
+      error={error}
+      loading={showSkeleton}
+    >
+      <Paper
+        variant="outlined"
+        sx={{
+          p: 2,
+          mb: 2.5,
+          borderRadius: 2,
+          backgroundColor: 'background.default',
+        }}
+      >
+        <Stack direction="row" spacing={1.5} alignItems="center">
+          <Avatar sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 700 }}>
+            {(formData.firstName?.[0] || user?.firstName?.[0] || 'K').toUpperCase()}
+          </Avatar>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="subtitle1" fontWeight={700}>
+              {[formData.firstName, formData.lastName].filter(Boolean).join(' ') || 'Kelmah account'}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" noWrap>
+              {formData.email || user?.email || 'No email available'}
+            </Typography>
+            <Chip label="Account details" size="small" sx={{ mt: 1, fontWeight: 600 }} />
+          </Box>
+        </Stack>
+      </Paper>
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
@@ -254,23 +285,16 @@ const AccountSettings = () => {
             fullWidth
             disabled={isSaving}
           />
+          <Typography variant="body2" color="text.secondary">
+            Use a phone number with country code so hirers can contact you reliably.
+          </Typography>
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             spacing={2}
-            justifyContent="space-between"
+            justifyContent="flex-end"
             alignItems={{ xs: 'stretch', sm: 'center' }}
             sx={{ pt: 1 }}
           >
-            <Button
-              type="button"
-              variant="outlined"
-              color="error"
-              onClick={handleLogout}
-              startIcon={<LogoutIcon />}
-              disabled={isLoggingOut}
-            >
-              {isLoggingOut ? 'Signing out…' : 'Logout of Kelmah'}
-            </Button>
             <Button
               type="submit"
               variant="contained"
@@ -282,6 +306,33 @@ const AccountSettings = () => {
           </Stack>
         </Box>
       )}
+      <Paper
+        variant="outlined"
+        sx={{
+          mt: 3,
+          p: 2,
+          borderRadius: 2,
+          borderColor: 'error.main',
+          backgroundColor: 'background.default',
+        }}
+      >
+        <Typography variant="subtitle1" fontWeight={700} color="error.main">
+          Sign out of this device
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2 }}>
+          Use this when you are done, especially on a shared phone or tablet.
+        </Typography>
+        <Button
+          type="button"
+          variant="outlined"
+          color="error"
+          onClick={handleLogout}
+          startIcon={<LogoutIcon />}
+          disabled={isLoggingOut}
+        >
+          {isLoggingOut ? 'Signing out…' : 'Logout of Kelmah'}
+        </Button>
+      </Paper>
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
@@ -295,7 +346,7 @@ const AccountSettings = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Box>
+    </SettingsSection>
   );
 };
 

@@ -15,6 +15,9 @@ import {
   alpha,
   useTheme,
   useMediaQuery,
+  Avatar,
+  Stack,
+  Chip,
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
@@ -25,6 +28,7 @@ import {
   ChevronRight,
   ArrowBack,
 } from '@mui/icons-material';
+import { useSelector } from 'react-redux';
 import NotificationSettings from '../components/common/NotificationSettings';
 import AccountSettings from '../components/common/AccountSettings';
 import SecuritySettings from '../components/common/SecuritySettings';
@@ -44,6 +48,10 @@ const SettingsPage = () => {
   const [tabValue, setTabValue] = useState(0);
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const { user } = useSelector((state) => state.auth);
+
+  const userDisplayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.name || 'Kelmah Worker';
+  const userInitials = ((user?.firstName?.[0] || '') + (user?.lastName?.[0] || '')).toUpperCase() || user?.email?.[0]?.toUpperCase() || 'K';
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -60,16 +68,19 @@ const SettingsPage = () => {
         />
       ),
       label: 'Notifications',
+      description: 'Control email, push, SMS, and in-app alerts.',
       icon: <NotificationsIcon />,
     },
     {
       component: <AccountSettings />,
       label: 'Account',
+      description: 'Update your personal details and contact information.',
       icon: <AccountCircleIcon />,
     },
     {
       component: <SecuritySettings />,
       label: 'Security & Password',
+      description: 'Protect your account with stronger sign-in settings.',
       icon: <SecurityIcon />,
     },
     {
@@ -81,6 +92,7 @@ const SettingsPage = () => {
         />
       ),
       label: 'Privacy',
+      description: 'Choose who can discover your profile and data.',
       icon: <ShieldIcon />,
     },
   ];
@@ -101,12 +113,21 @@ const SettingsPage = () => {
             <IconButton onClick={() => setMobileSection(-1)} sx={{ mr: 0.5 }} aria-label="Go back">
               <ArrowBack />
             </IconButton>
-            {panel.icon}
-            <Typography variant="h6" fontWeight="bold">
-              {panel.label}
-            </Typography>
+            <Box>
+              <Stack direction="row" spacing={1} alignItems="center">
+                {panel.icon}
+                <Typography variant="h6" fontWeight="bold">
+                  {panel.label}
+                </Typography>
+              </Stack>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                {panel.description}
+              </Typography>
+            </Box>
           </Box>
-          {panel.component}
+          <Paper sx={{ p: { xs: 1.25, sm: 2 }, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+            {panel.component}
+          </Paper>
         </Container>
       );
     }
@@ -121,6 +142,33 @@ const SettingsPage = () => {
             Settings
           </Typography>
         </Box>
+        <Paper
+          elevation={1}
+          sx={{
+            p: 2,
+            mb: 2,
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+            background: (currentTheme) =>
+              `linear-gradient(135deg, ${alpha(currentTheme.palette.primary.main, 0.12)} 0%, ${alpha(currentTheme.palette.background.paper, 1)} 100%)`,
+          }}
+        >
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <Avatar sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 700 }}>
+              {userInitials}
+            </Avatar>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="subtitle1" fontWeight={700} noWrap>
+                {userDisplayName}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" noWrap>
+                {user?.email || 'Account settings'}
+              </Typography>
+              <Chip label="Manage your account" size="small" sx={{ mt: 1, fontWeight: 600 }} />
+            </Box>
+          </Stack>
+        </Paper>
         <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
           <List disablePadding>
             {settingsPanels.map((panel, index) => (
@@ -138,7 +186,9 @@ const SettingsPage = () => {
                 </ListItemIcon>
                 <ListItemText
                   primary={panel.label}
+                  secondary={panel.description}
                   primaryTypographyProps={{ fontWeight: 600 }}
+                  secondaryTypographyProps={{ color: 'text.secondary', sx: { mt: 0.25 } }}
                 />
                 <ChevronRight sx={{ color: 'text.secondary' }} />
               </ListItemButton>
@@ -159,6 +209,32 @@ const SettingsPage = () => {
           Settings
         </Typography>
       </Box>
+
+      <Paper
+        sx={{
+          p: 2.5,
+          mb: 3,
+          borderRadius: 3,
+          border: '1px solid',
+          borderColor: 'divider',
+          background: (currentTheme) =>
+            `linear-gradient(135deg, ${alpha(currentTheme.palette.primary.main, 0.08)} 0%, ${alpha(currentTheme.palette.background.paper, 1)} 100%)`,
+        }}
+      >
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Avatar sx={{ width: 56, height: 56, bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 700 }}>
+            {userInitials}
+          </Avatar>
+          <Box>
+            <Typography variant="subtitle1" fontWeight={700}>
+              {userDisplayName}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {user?.email || 'Keep your account secure and up to date.'}
+            </Typography>
+          </Box>
+        </Stack>
+      </Paper>
 
       <Grid container spacing={4}>
         <Grid item xs={12} md={3}>

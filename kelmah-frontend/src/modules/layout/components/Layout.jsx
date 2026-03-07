@@ -127,10 +127,12 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             sx={{
               flex: 1,
               width: '100%',
-              pt: isMessagesPage ? 0 : '48px', // Messages page renders its own mobile header
+              pt: isMessagesPage
+                ? 0
+                : `calc(${HEADER_HEIGHT_MOBILE}px + env(safe-area-inset-top, 0px) + 12px)`,
               // ✅ MOBILE-AUDIT FIX: Account for safe-area-inset-bottom on notched phones
-              pb: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 16px)`,
-              px: 1.5,
+              pb: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 24px)`,
+              px: { xs: 1.5, sm: 2 },
               overflowY: 'auto',
               overflowX: 'hidden',
               WebkitOverflowScrolling: 'touch',
@@ -218,8 +220,12 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             // Desktop header is static so no compensation needed (except standard spacing)
             pt: isHomePage
               ? 0
-              : { xs: 'calc(48px + 8px)', sm: 'calc(48px + 16px)', md: 3 },
-            pb: isHomePage ? 0 : { xs: 1, sm: 2, md: 3 },
+              : {
+                  xs: `calc(${HEADER_HEIGHT_MOBILE}px + env(safe-area-inset-top, 0px) + 12px)`,
+                  sm: `calc(${HEADER_HEIGHT_MOBILE}px + 16px)`,
+                  md: 3,
+                },
+            pb: isHomePage ? 0 : { xs: 2, sm: 2.5, md: 3 },
             px: isHomePage ? 0 : { xs: 1, sm: 2, md: 3 },
             overflowX: 'hidden',
             overflowY: 'visible',

@@ -151,7 +151,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
         display: 'flex',
         flexDirection: 'column',
         px: 3,
-        py: 4,
+        py: `max(24px, env(safe-area-inset-top, 0px))`,
       }}
     >
       {/* Header with Logo */}
@@ -206,6 +206,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
             borderRadius: 3,
             p: 3,
             border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+            boxShadow: `0 12px 32px ${alpha(theme.palette.common.black, isDark ? 0.28 : 0.08)}`,
           }}
         >
           {/* Back button & Title */}
@@ -231,10 +232,16 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                 Welcome back
               </Typography>
               <Typography sx={{ color: 'text.secondary', fontSize: '14px' }}>
-                Sign in to continue
+                Sign in to continue with jobs, messages, and contracts.
               </Typography>
             </Box>
           </Box>
+
+          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 2 }}>
+            <Chip label="Find work faster" size="small" variant="outlined" />
+            <Chip label="Track applications" size="small" variant="outlined" />
+            <Chip label="Reply to hirers" size="small" variant="outlined" />
+          </Stack>
 
           {/* Success Alert */}
           <AnimatePresence>
@@ -360,7 +367,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
               />
 
               {/* Remember & Forgot */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, flexDirection: { xs: 'column', sm: 'row' }, gap: 1 }}>
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -441,6 +448,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
               justifyContent: 'center',
               gap: 0.5,
               minHeight: 44,
+              flexDirection: { xs: 'column', sm: 'row' },
             }}
           >
             <Typography sx={{ color: 'text.secondary', fontSize: '14px' }}>
@@ -457,7 +465,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                 py: 1,
                 px: 1,
                 minHeight: 44,
-                minWidth: 'auto',
+                minWidth: { xs: '100%', sm: 'auto' },
                 '&:hover': { textDecoration: 'underline', backgroundColor: 'transparent' },
               }}
             >

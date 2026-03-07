@@ -1704,21 +1704,15 @@ const EnhancedMessagingPage = () => {
                   Messages
                 </Typography>
               </Box>
-              <IconButton
-                aria-label="Search conversations"
-                onClick={() => {
-                  const searchInput = document.querySelector('#mobile-search-input input');
-                  if (searchInput) searchInput.focus();
-                }}
+              <Chip
+                label={`${unreadCount || 0} unread`}
+                color={unreadCount > 0 ? 'primary' : 'default'}
+                variant={unreadCount > 0 ? 'filled' : 'outlined'}
                 sx={{
-                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                  color: 'primary.main',
-                  minWidth: 44,
-                  minHeight: 44,
+                  fontWeight: 700,
+                  height: 34,
                 }}
-              >
-                <SearchIcon sx={{ fontSize: 20 }} />
-              </IconButton>
+              />
             </Box>
 
             {/* Search Bar */}
@@ -1763,20 +1757,30 @@ const EnhancedMessagingPage = () => {
                   ),
                 }}
               />
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Search by worker, hirer, recent message, or job title.
+              </Typography>
             </Box>
 
             {/* Conversations List — Real Data */}
             <Box sx={{ px: 2 }}>
-              <Typography
-                sx={{
-                  color: 'text.primary',
-                  fontSize: '1rem',
-                  fontWeight: 'bold',
-                  mb: 2,
-                }}
-              >
-                Recent Conversations
-              </Typography>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                <Box>
+                  <Typography
+                    sx={{
+                      color: 'text.primary',
+                      fontSize: '1rem',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Recent Conversations
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Open a chat to continue where you left off.
+                  </Typography>
+                </Box>
+                <Chip size="small" label={`${filteredConversations.length} chats`} variant="outlined" />
+              </Stack>
 
               {filteredConversations.length === 0 && !deepLinkLoading && !deepLinkError && (
                 <EmptyState
@@ -1953,25 +1957,84 @@ const EnhancedMessagingPage = () => {
           (() => {
             const chatParticipant = getOtherParticipant(selectedConversation);
             return (
-          <>
+          <Box
+            sx={{
+              minHeight: `calc(100dvh - ${BOTTOM_NAV_HEIGHT}px)`,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
             {/* Chat Header */}
             <Box
               sx={{
-                display: 'flex',
-                alignItems: 'center',
                 bgcolor: 'background.default',
-                p: 2,
-                justifyContent: 'space-between',
                 position: 'sticky',
                 top: 0,
                 zIndex: 10,
                 borderBottom: `1px solid ${theme.palette.divider}`,
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  p: 2,
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <IconButton
+                    onClick={() => clearConversation()}
+                    aria-label="Back to conversations"
+                    sx={{
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      color: 'primary.main',
+                      minWidth: 44,
+                      minHeight: 44,
+                    }}
+                  >
+                    <ArrowBackIcon sx={{ fontSize: 20 }} />
+                  </IconButton>
+                  <Avatar
+                    src={chatParticipant?.avatar}
+                    alt={chatParticipant?.name || 'Chat participant avatar'}
+                    sx={{
+                      backgroundColor: 'primary.main',
+                      color: theme.palette.primary.contrastText,
+                      width: 36,
+                      height: 36,
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {chatParticipant?.name?.charAt(0) || '?'}
+                  </Avatar>
+                  <Box>
+                    <Typography
+                      sx={{
+                        color: 'text.primary',
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        lineHeight: 1,
+                      }}
+                    >
+                      {chatParticipant?.name || 'Unknown'}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        color: 'text.secondary',
+                        fontSize: '0.75rem',
+                        lineHeight: 1,
+                      }}
+                    >
+                      {chatParticipant?.status === 'online'
+                        ? 'Online'
+                        : 'Last seen recently'}
+                    </Typography>
+                  </Box>
+                </Box>
                 <IconButton
-                  onClick={() => clearConversation()}
-                  aria-label="Back to conversations"
+                  aria-label="More options"
+                  onClick={(e) => setMoreMenuAnchor(e.currentTarget)}
                   sx={{
                     backgroundColor: alpha(theme.palette.primary.main, 0.1),
                     color: 'primary.main',
@@ -1979,57 +2042,19 @@ const EnhancedMessagingPage = () => {
                     minHeight: 44,
                   }}
                 >
-                  <ArrowBackIcon sx={{ fontSize: 20 }} />
+                  <MoreVertIcon sx={{ fontSize: 20 }} />
                 </IconButton>
-                <Avatar
-                  src={chatParticipant?.avatar}
-                  alt={chatParticipant?.name || 'Chat participant avatar'}
-                  sx={{
-                    backgroundColor: 'primary.main',
-                    color: theme.palette.primary.contrastText,
-                    width: 36,
-                    height: 36,
-                    fontWeight: 'bold',
-                  }}
-                >
-                  {chatParticipant?.name?.charAt(0) || '?'}
-                </Avatar>
-                <Box>
-                  <Typography
-                    sx={{
-                      color: 'text.primary',
-                      fontSize: '1rem',
-                      fontWeight: 'bold',
-                      lineHeight: 1,
-                    }}
-                  >
-                    {chatParticipant?.name || 'Unknown'}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      color: 'text.secondary',
-                      fontSize: '0.75rem',
-                      lineHeight: 1,
-                    }}
-                  >
-                    {chatParticipant?.status === 'online'
-                      ? 'Online'
-                      : 'Last seen recently'}
-                  </Typography>
-                </Box>
               </Box>
-              <IconButton
-                aria-label="More options"
-                onClick={(e) => setMoreMenuAnchor(e.currentTarget)}
-                sx={{
-                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                  color: 'primary.main',
-                  minWidth: 44,
-                  minHeight: 44,
-                }}
-              >
-                <MoreVertIcon sx={{ fontSize: 20 }} />
-              </IconButton>
+              {selectedConversation.jobRelated && (
+                <Box sx={{ px: 2, pb: 1.5 }}>
+                  <Chip
+                    size="small"
+                    label={`Job: ${selectedConversation.jobRelated.title}`}
+                    variant="outlined"
+                    sx={{ maxWidth: '100%' }}
+                  />
+                </Box>
+              )}
             </Box>
 
             {/* Messages Area — Real Data */}
@@ -2105,15 +2130,69 @@ const EnhancedMessagingPage = () => {
             {/* Message Input — Wired to real handlers */}
             <Box
               sx={{
-                position: 'sticky',
-                bottom: 0,
                 bgcolor: 'background.default',
-                p: 2,
+                px: 2,
+                pt: 1,
+                pb: `calc(12px + env(safe-area-inset-bottom, 0px))`,
                 borderTop: `1px solid ${theme.palette.divider}`,
-                paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
               }}
             >
+              {selectedFiles.length > 0 && (
+                <Stack direction="row" spacing={1} sx={{ mb: 1.25, overflowX: 'auto', pb: 0.5 }}>
+                  {selectedFiles.map((file, index) => (
+                    <Paper
+                      key={`${file.name}-${index}`}
+                      variant="outlined"
+                      sx={{
+                        px: 1.25,
+                        py: 0.75,
+                        minWidth: 120,
+                        borderRadius: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography variant="caption" sx={{ display: 'block', fontWeight: 700 }} noWrap>
+                          {file.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {Math.round(file.size / 1024)} KB
+                        </Typography>
+                      </Box>
+                      <IconButton
+                        size="small"
+                        onClick={() => setSelectedFiles((prev) => prev.filter((_, currentIndex) => currentIndex !== index))}
+                        aria-label={`Remove ${file.name}`}
+                      >
+                        <CloseIcon fontSize="small" />
+                      </IconButton>
+                    </Paper>
+                  ))}
+                </Stack>
+              )}
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                <IconButton
+                  onClick={() => fileInputRef.current?.click()}
+                  aria-label="Attach a file"
+                  sx={{
+                    bgcolor: 'background.paper',
+                    border: `1px solid ${theme.palette.divider}`,
+                    minWidth: 44,
+                    minHeight: 44,
+                  }}
+                >
+                  <AttachFileIcon fontSize="small" />
+                </IconButton>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  hidden
+                  onChange={handleFileSelect}
+                />
                 <TextField
                   fullWidth
                   placeholder="Type a message..."
@@ -2166,9 +2245,7 @@ const EnhancedMessagingPage = () => {
               </Box>
             </Box>
 
-            {/* Bottom spacing for mobile nav — uses shared layout constant */}
-            <Box sx={{ height: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 16px)` }} />
-          </>
+          </Box>
             );
           })()
         )}

@@ -1787,7 +1787,7 @@ const JobsPage = () => {
                     sx={{ color: 'text.secondary', mb: 3 }}
                   >
                     {searchQuery || selectedCategory || selectedLocation
-                      ? "We couldn't find any jobs matching your search criteria. Try adjusting your filters or search terms."
+                      ? "We couldn't find any jobs matching your filters. Clear a filter or widen your search to see more work."
                       : 'No jobs are currently available. Check back soon for new opportunities!'}
                   </Typography>
                   <Box
@@ -1818,7 +1818,10 @@ const JobsPage = () => {
                     )}
                     <Button
                       variant="outlined"
-                      onClick={() => navigate('/hirer/jobs/post')}
+                      onClick={() => {
+                        setPage(1);
+                        fetchJobs(1, false);
+                      }}
                       sx={{
                         borderColor: 'var(--k-gold)',
                         color: 'var(--k-gold)',
@@ -1828,7 +1831,7 @@ const JobsPage = () => {
                         },
                       }}
                     >
-                      Post a Job
+                      Refresh Jobs
                     </Button>
                   </Box>
                 </Box>
@@ -2209,22 +2212,20 @@ const JobsPage = () => {
                           <Box
                             sx={{
                               display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
+                              gap: 1,
+                              flexWrap: 'wrap',
                             }}
                           >
-                            <Typography
-                              variant="caption"
-                              sx={{ color: 'text.secondary' }}
-                            >
-                              {job.postedDate ? (() => { try { return `Posted ${formatDistanceToNow(new Date(job.postedDate), { addSuffix: true })}`; } catch { return 'Recently posted'; } })() : 'Recently posted'}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: 'var(--k-danger-text)' }}
-                            >
-                              {job.deadline ? (() => { try { return `Apply by ${format(new Date(job.deadline), 'MMM dd')}`; } catch { return 'Open'; } })() : 'Open'}
-                            </Typography>
+                            <Chip
+                              size="small"
+                              label={job.postedDate ? (() => { try { return `Posted ${formatDistanceToNow(new Date(job.postedDate), { addSuffix: true })}`; } catch { return 'Recently posted'; } })() : 'Recently posted'}
+                              sx={{ bgcolor: 'action.hover', color: 'text.secondary' }}
+                            />
+                            <Chip
+                              size="small"
+                              label={job.deadline ? (() => { try { return `Apply by ${format(new Date(job.deadline), 'MMM dd')}`; } catch { return 'Applications open'; } })() : 'Applications open'}
+                              sx={{ bgcolor: 'rgba(244,67,54,0.08)', color: 'var(--k-danger-text)' }}
+                            />
                           </Box>
                         </CardContent>
 
@@ -2232,8 +2233,9 @@ const JobsPage = () => {
                           sx={{
                             p: { xs: 2, sm: 3 }, // ✅ Better mobile padding
                             pt: 0,
-                            gap: { xs: 1, sm: 0 }, // ✅ Add gap between buttons on mobile
-                            flexWrap: { xs: 'wrap', sm: 'nowrap' }, // ✅ Allow wrapping on very small screens
+                            flexDirection: 'column',
+                            alignItems: 'stretch',
+                            gap: 1,
                           }}
                         >
                           <Button
@@ -2272,66 +2274,61 @@ const JobsPage = () => {
                           >
                             Apply Now
                           </Button>
-                          <IconButton
-                            onClick={() => navigate(`/jobs/${job._id || job.id}`)}
-                            aria-label="View job details"
-                            sx={{
-                              color: 'var(--k-gold)',
-                              minWidth: { xs: '44px', sm: '40px' }, // ✅ Touch-friendly size
-                              minHeight: { xs: '44px', sm: '40px' }, // ✅ Touch-friendly size
-                              '&:hover': { bgcolor: 'var(--k-accent-soft)' },
-                              '&:active': { transform: 'scale(0.95)' }, // ✅ Active feedback
-                            }}
-                          >
-                            <Visibility />
-                          </IconButton>
-                          <IconButton
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleBookmark(job.id || job._id);
-                            }}
-                            aria-label={savedJobIds.has(job.id || job._id) ? 'Remove saved job' : 'Save job'}
-                            sx={{
-                              color: savedJobIds.has(job.id || job._id) ? 'secondary.main' : 'secondary.dark',
-                              minWidth: { xs: '44px', sm: '40px' },
-                              minHeight: { xs: '44px', sm: '40px' },
-                              '&:hover': { bgcolor: 'var(--k-accent-soft)' },
-                              '&:active': { transform: 'scale(0.95)' },
-                            }}
-                          >
-                            {savedJobIds.has(job.id || job._id) ? <BookmarkFilledIcon /> : <BookmarkBorder />}
-                          </IconButton>
-                          <IconButton
-                            onClick={() => {
-                              if (navigator.share) {
-                                navigator
-                                  .share({
-                                    title: job.title,
-                                    text: `Check out this job opportunity: ${job.title} at ${job.employer?.name || 'Kelmah'}`,
-                                    url:
-                                      window.location.origin +
-                                      `/jobs/${job._id || job.id}`,
-                                  })
-                                  .catch(() => {});
-                              } else {
-                                // Fallback: copy to clipboard
-                                navigator.clipboard.writeText(
-                                  `${window.location.origin}/jobs/${job._id || job.id}`,
-                                ).catch(() => {
-                                  // Clipboard API unavailable (HTTP or denied)
-                                });
-                              }
-                            }}
-                            aria-label="Share job"
-                            sx={{
-                              color: 'var(--k-gold)',
-                              minWidth: { xs: '44px', sm: '40px' },
-                              minHeight: { xs: '44px', sm: '40px' },
-                              '&:hover': { bgcolor: 'var(--k-accent-soft)' },
-                            }}
-                          >
-                            <Share />
-                          </IconButton>
+                          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'space-between' }}>
+                            <Button
+                              variant="outlined"
+                              onClick={() => navigate(`/jobs/${job._id || job.id}`)}
+                              startIcon={<Visibility />}
+                              sx={{ flex: 1, minHeight: 44 }}
+                            >
+                              Details
+                            </Button>
+                            <IconButton
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleBookmark(job.id || job._id);
+                              }}
+                              aria-label={savedJobIds.has(job.id || job._id) ? 'Remove saved job' : 'Save job'}
+                              sx={{
+                                color: savedJobIds.has(job.id || job._id) ? 'secondary.main' : 'secondary.dark',
+                                minWidth: 44,
+                                minHeight: 44,
+                                border: '1px solid',
+                                borderColor: 'divider',
+                              }}
+                            >
+                              {savedJobIds.has(job.id || job._id) ? <BookmarkFilledIcon /> : <BookmarkBorder />}
+                            </IconButton>
+                            <IconButton
+                              onClick={() => {
+                                if (navigator.share) {
+                                  navigator
+                                    .share({
+                                      title: job.title,
+                                      text: `Check out this job opportunity: ${job.title} at ${job.employer?.name || 'Kelmah'}`,
+                                      url:
+                                        window.location.origin +
+                                        `/jobs/${job._id || job.id}`,
+                                    })
+                                    .catch(() => {});
+                                } else {
+                                  navigator.clipboard.writeText(
+                                    `${window.location.origin}/jobs/${job._id || job.id}`,
+                                  ).catch(() => {});
+                                }
+                              }}
+                              aria-label="Share job"
+                              sx={{
+                                color: 'var(--k-gold)',
+                                minWidth: 44,
+                                minHeight: 44,
+                                border: '1px solid',
+                                borderColor: 'divider',
+                              }}
+                            >
+                              <Share />
+                            </IconButton>
+                          </Box>
                         </CardActions>
                       </Card>
                     </motion.div>
