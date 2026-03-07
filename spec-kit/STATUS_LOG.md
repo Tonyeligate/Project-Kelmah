@@ -1,5 +1,36 @@
 # Kelmah Platform - Current Status & Development Log
 
+### Session: Public Mobile Drawer Regression Re-Audit ✅ COMPLETED
+
+**Date**: March 7, 2026
+**Scope**: Re-audit the public mobile slide menu after the strengthened focus-handoff patch because the user reports the drawer now fails to work at all on `/find-talents`.
+
+**Acceptance Criteria**
+- The mobile drawer can still open reliably after the latest focus-hand-off changes.
+- Route-change auto-close only runs on actual navigation, not when the menu is first opened.
+- The drawer keeps the earlier focus-safety improvements without regressing basic menu interaction.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/modules/layout/components/Header.jsx`
+- `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Current findings**
+- The newly added route-change close effect in `Header.jsx` depends on `mobileMenuOpen` as well as the route.
+- When the hamburger sets `mobileMenuOpen` to `true`, that effect re-runs immediately and closes the drawer again, which matches the user's latest report that the menu now does not work at all.
+- `MobileNav.jsx` focus-return logic is not required to reproduce this specific regression; the immediate-close loop is already sufficient to break the basic open flow.
+
+**Changes completed**
+- `kelmah-frontend/src/modules/layout/components/Header.jsx`
+  - Removed `mobileMenuOpen` from the route-change close effect dependency path.
+  - Kept the close-on-navigation behavior, but limited it to actual `location.pathname` or `location.search` changes so opening the drawer no longer triggers an immediate self-close.
+
+**Verification**
+- `get_errors` returned clean results for:
+  - `kelmah-frontend/src/modules/layout/components/Header.jsx`
+  - `spec-kit/STATUS_LOG.md`
+- Frontend production build passed successfully with `npm run build` in `kelmah-frontend/` after the regression fix.
+
 ### Session: Native Endpoint Centralization ✅ COMPLETED
 
 **Date**: March 7, 2026

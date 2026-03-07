@@ -278,10 +278,8 @@ const Header = ({
   // User menu and notifications menu are now rendered via <UserMenu> and <NotificationBells> components
 
   React.useEffect(() => {
-    if (mobileMenuOpen) {
-      setMobileMenuOpen(false);
-    }
-  }, [location.pathname, location.search, mobileMenuOpen]);
+    setMobileMenuOpen(false);
+  }, [location.pathname, location.search]);
 
   if (authState.isLoading || !authState.isReady) {
     return (
