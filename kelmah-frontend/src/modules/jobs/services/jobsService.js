@@ -57,6 +57,14 @@ const normalizeJobMedia = (job) => {
   return resolveMediaAssetUrls(rawImages, rawAttachments);
 };
 
+const normalizeCoverImageMetadata = (metadata) => {
+  if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
+    return null;
+  }
+
+  return { ...metadata };
+};
+
 const transformJobListItem = (job) => {
   if (!job) return null;
 
@@ -123,8 +131,12 @@ const transformJobListItem = (job) => {
 
   const employer = getEmployerInfo();
   const imageGallery = normalizeJobMedia(job);
+  const coverImageMetadata = normalizeCoverImageMetadata(job.coverImageMetadata);
+  const rawCoverImage = resolveMediaAssetUrl([job.coverImage, coverImageMetadata]);
   const resolvedCoverImage = resolveJobVisualUrl({
     ...job,
+    coverImage: rawCoverImage || job.coverImage,
+    coverImageMetadata,
     images: Array.isArray(job?.images) ? job.images : imageGallery,
   });
 
@@ -167,7 +179,9 @@ const transformJobListItem = (job) => {
     verified: job.verified || employer.verified,
     paymentType: job.paymentType || 'fixed',
     duration: job.duration,
-    coverImage: resolvedCoverImage || '',
+    coverImage: rawCoverImage || '',
+    coverImageMetadata,
+    resolvedCoverImage: resolvedCoverImage || rawCoverImage || '',
     imageGallery,
   };
 };
@@ -381,6 +395,8 @@ const jobsApi = {
       // Backend GET /api/jobs/:id returns { success, data: { ...job } }
       const raw = response.data?.data || response.data;
       const normalizedImages = normalizeJobMedia(raw);
+      const coverImageMetadata = normalizeCoverImageMetadata(raw?.coverImageMetadata);
+      const rawCoverImage = resolveMediaAssetUrl([raw?.coverImage, coverImageMetadata]);
       const normalizedHirer =
         raw?.hirer && typeof raw.hirer === 'object'
           ? {
@@ -405,6 +421,14 @@ const jobsApi = {
           ? {
             ...raw,
             hirer: normalizedHirer,
+            coverImage: rawCoverImage || '',
+            coverImageMetadata,
+            resolvedCoverImage: resolveJobVisualUrl({
+              ...raw,
+              coverImage: rawCoverImage || raw?.coverImage,
+              coverImageMetadata,
+              images: normalizedImages,
+            }) || rawCoverImage || '',
             created_at: raw.created_at || raw.createdAt || raw.postedDate,
             hirer_name: raw.hirer_name || normalizedHirer?.name,
             postedDate:
@@ -421,7 +445,6 @@ const jobsApi = {
                   .map((s) => s.trim())
                   .filter(Boolean)
                 : [],
-            coverImage: resolveJobVisualUrl(raw) || '',
             images: normalizedImages,
             imageGallery: normalizedImages,
             clientProfile: normalizedHirer

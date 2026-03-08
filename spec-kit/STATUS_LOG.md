@@ -2,6 +2,64 @@
 
 ---
 
+### Session: Frontend Role-Separation Remediation 🔄 IN PROGRESS
+
+**Date**: March 8, 2026  
+**Scope**: Execute the highest-value fixes from the March 8 frontend page audit to reduce worker/hirer boundary leakage, repair broken route behavior, and improve functional correctness on public and protected page flows.
+
+**Acceptance Criteria**
+- Dry-audit the route, auth, navigation, quick-jobs, payments, search, login, dashboard, and premium files tied to the top audit findings.
+- Implement focused fixes for the clearest worker/hirer separation defects and broken route flows.
+- Rebuild the frontend and confirm touched routes/components compile cleanly.
+- Record completed fixes and remaining follow-up items in spec-kit.
+
+### Session: Deployed Jobs Card Image Re-Audit ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Re-check the deployed jobs page image pipeline against the live Vercel experience and fix why job cards still render blurred/placeholder hero panels instead of real job cover images.
+
+**Acceptance Criteria**
+- Audit the exact frontend jobs-card image flow currently used by the deployed `/jobs` page.
+- Inspect the live API payload path to confirm whether deployed jobs currently include usable `coverImage` and binding metadata.
+- Identify whether the blur is caused by missing persisted job media, rejected binding metadata, or an environment/deployment mismatch.
+- Apply the smallest correct fix, verify it against the deployed/live-like flow, and record the outcome in spec-kit.
+
+**Dry-audit file surface confirmed**
+- `spec-kit/STATUS_LOG.md`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/common/components/cards/JobCard.jsx`
+- `kelmah-frontend/src/modules/common/utils/mediaAssets.js`
+- `kelmah-frontend/src/modules/jobs/services/jobsService.js`
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `kelmah-frontend/src/services/apiClient.js`
+- `kelmah-frontend/src/config/environment.js`
+- `kelmah-frontend/public/runtime-config.json`
+- `vercel.json`
+- `kelmah-frontend/vercel.json`
+- `kelmah-backend/shared/models/Job.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/job-service/utils/jobTransform.js`
+
+**End-to-end flow notes**
+- Public jobs cards load through `JobsPage.jsx` → `jobsService.getJobs()` → production API base from `environment.js`/`apiClient.js` → `GET /api/jobs` at the gateway → job-service transform/controller → shared `Job` model fields `coverImage` and `coverImageMetadata`.
+- Card rendering then calls `resolveJobVisualUrl(job)` in `mediaAssets.js`, which now intentionally refuses to trust a `coverImage` unless the matching `coverImageMetadata` proves it belongs to the current job.
+- The deployed Vercel page was still rendering fallback hero panels because the list-item transform in `jobsService.js` stripped away `coverImageMetadata` after the API returned it.
+
+**Current findings**
+- The live production API already returns real Cloudinary `coverImage` URLs plus valid binding metadata such as `ownerType: 'job'`, `jobId`, `hirerId`, and `imageBindingKey`.
+- The blur/placeholder effect was therefore not a backend data problem and not a missing-image backfill problem.
+- Root cause: `transformJobListItem()` replaced `coverImage` with a resolved URL string but dropped `coverImageMetadata`, so the later jobs-page renderer re-ran `resolveJobVisualUrl(job)` on a transformed object that no longer had the metadata required to trust that cover image.
+
+**Changes completed**
+- Updated `kelmah-frontend/src/modules/jobs/services/jobsService.js` to preserve raw `coverImage` and `coverImageMetadata` on transformed list/detail job objects.
+- Added a small metadata normalizer so list/detail payloads keep the binding object intact instead of collapsing it during transformation.
+- Added `resolvedCoverImage` as a convenience field while keeping the raw persisted cover fields available for all later `resolveJobVisualUrl()` calls on jobs list, home, worker, and detail surfaces.
+
+**Verification**
+- Queried the live production jobs API at `https://kelmah-api-gateway-gf3g.onrender.com/api/jobs?limit=3&status=open` and confirmed current jobs already expose valid Cloudinary `coverImage` URLs plus strict binding metadata.
+- Confirmed the deployed frontend bundle currently contains the strict binding checks (`ownerType`, `ownerId`, `imageBindingKey`), which matched the observed fallback behavior.
+- Frontend production build passed after the fix with `npm run build` in `kelmah-frontend/`; only the pre-existing dynamic-import chunking warning for `apiClient.js` remained.
+
 ### Session: Render Cloudinary Module Fix ✅ COMPLETED
 
 **Date**: March 8, 2026  
