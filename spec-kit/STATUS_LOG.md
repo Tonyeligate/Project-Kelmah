@@ -2,6 +2,43 @@
 
 ---
 
+### Session: Render Cloudinary Module Fix ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Fix the job-service Render deployment failure caused by the missing `cloudinary` module during the root-level install/start flow.
+
+**Acceptance Criteria**
+- Audit the actual package install surface used by the Render job-service deployment.
+- Identify why `kelmah-backend/shared/utils/cloudinary.js` resolves locally but fails in the Render runtime.
+- Apply the smallest dependency/config fix so the deployed job service can boot successfully.
+- Verify the dependency is present in the correct package manifest and record the fix in spec-kit.
+
+**Dry-audit file surface confirmed**
+- `package.json`
+- `package-lock.json`
+- `kelmah-backend/package.json`
+- `kelmah-backend/shared/utils/cloudinary.js`
+- `start-job-service.js`
+
+**End-to-end flow notes**
+- Render installs dependencies from the repo root using `npm install`, then starts the job service through the root launcher `node start-job-service.js`.
+- `start-job-service.js` runs the nested job-service app, but shared runtime imports still depend on packages being installed in a parent `node_modules` tree reachable from that root install surface.
+- `kelmah-backend/shared/utils/cloudinary.js` requires `cloudinary` during controller load, so the deploy crash was caused before the service could finish booting.
+
+**Current findings**
+- The backend package already declared `cloudinary`, but the repo-root `package.json` did not.
+- Because the Render service was configured to install only from the repo root, the runtime never received the `cloudinary` package even though local backend-only installs could mask the gap.
+- The smallest safe fix was to add `cloudinary` to the repo-root dependency manifest and refresh the root lockfile.
+
+**Changes completed**
+- Added `cloudinary` to the repo-root dependency list in `package.json` so the Render root install surface now includes the package required by the shared media utility.
+- Refreshed the repo-root `package-lock.json` with `npm install` so the dependency graph recorded by deployment now matches the manifest.
+
+**Verification**
+- Confirmed `cloudinary` now exists in both the repo-root `package.json` and `package-lock.json`.
+- Verified the job-service runtime path resolves the package successfully by running `require.resolve('cloudinary')` from `kelmah-backend/services/job-service`, which returned `kelmah-backend/node_modules/cloudinary/cloudinary.js`.
+- This removes the exact `Cannot find module 'cloudinary'` failure shown in the Render boot log for `kelmah-backend/shared/utils/cloudinary.js`.
+
 ### Session: Frontend Page Audit & Role Separation Review ✅ COMPLETED
 
 **Date**: March 8, 2026  
