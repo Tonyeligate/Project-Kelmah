@@ -62,6 +62,7 @@ class WebSocketService {
           userId,
           userRole,
         },
+        path: '/socket.io',
         transports: ['websocket', 'polling'],
         upgrade: true,
         timeout: 20000,

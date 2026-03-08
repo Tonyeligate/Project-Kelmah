@@ -2,6 +2,43 @@
 
 ---
 
+### Session: Production WebSocket + Root Vercel Config Cleanup ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Stop production sockets from falling back to the frontend Vercel origin, remove the stale root Vercel gateway hardcoding, and keep backend URL rotation fully driven by dashboard environment variables.
+
+**Acceptance Criteria**
+- Frontend socket resolution prefers Vercel env configuration and derives a backend origin safely from the API base when needed.
+- Root `vercel.json` no longer hardcodes stale Render gateway hosts or build-time frontend env values.
+- Frontend build passes after the configuration cleanup.
+
+**Dry-audit file surface confirmed**
+- `vercel.json`
+- `kelmah-frontend/src/config/environment.js`
+- `kelmah-frontend/src/config/dynamicConfig.js`
+- `kelmah-frontend/src/services/socketUrl.js`
+- `kelmah-frontend/src/services/websocketService.js`
+- `kelmah-frontend/src/hooks/useWebSocket.js`
+- `kelmah-frontend/src/modules/notifications/services/notificationService.js`
+- `kelmah-backend/api-gateway/server.js`
+
+**Current findings**
+- Root `vercel.json` still hardcodes the old `qmd7` gateway in rewrites plus `env`/`build.env`, which can override dashboard configuration for the deployed project.
+- `kelmah-frontend/src/services/socketUrl.js` still falls back to `window.location.origin`, which matches the live browser errors hitting `wss://kelmah-frontend-cyan.vercel.app/socket.io/...`.
+- Shared socket consumers (`websocketService.js`, `useWebSocket.js`, `notificationService.js`) all depend on that same resolver, so a single centralized fix is preferred.
+
+**Changes completed**
+- `kelmah-frontend/src/services/socketUrl.js` now prefers env-configured socket origins, derives the backend origin from the centralized API base when only `/api` or `/socket.io` is available, and keeps same-origin fallback as a true last resort.
+- `kelmah-frontend/src/services/websocketService.js` and `kelmah-frontend/src/hooks/useWebSocket.js` now pin Socket.IO to the explicit `/socket.io` transport path for consistent gateway/backend routing.
+- Root `vercel.json` was reduced to build settings plus SPA fallback only, removing stale `qmd7` rewrites and hardcoded `VITE_*` values so Vercel dashboard env vars remain the only production source of truth.
+
+**Verification**
+- Editor diagnostics returned clean results for `kelmah-frontend/src/services/socketUrl.js`, `kelmah-frontend/src/services/websocketService.js`, `kelmah-frontend/src/hooks/useWebSocket.js`, and `vercel.json`.
+- `npm run build` completed successfully in `kelmah-frontend/` after the cleanup.
+- Search across `vercel.json`, `kelmah-frontend/src/**/*`, and `kelmah-frontend/build/**/*` found no remaining baked `qmd7` or `gf3g` gateway host strings.
+
+---
+
 ### Session: Frontend API Base Normalization Follow-up ✅ COMPLETED
 
 **Date**: March 8, 2026  

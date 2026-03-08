@@ -24,6 +24,7 @@ export const useWebSocket = () => {
       // Connect to backend server - Socket.IO handles /socket.io path automatically
       const socket = io(wsUrl, {
         auth: { token },
+        path: '/socket.io',
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionAttempts: 10,
