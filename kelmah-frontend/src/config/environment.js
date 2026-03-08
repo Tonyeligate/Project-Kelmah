@@ -24,16 +24,29 @@ export { SERVICES };
 // Load runtime config for dynamic LocalTunnel URL
 let runtimeConfig = null;
 
-// CRITICAL: Production API URL — reads from VITE_API_GATEWAY_URL env var
-// so you only need to change ONE variable when the gateway URL changes.
-// Fallback to VITE_API_URL if VITE_API_GATEWAY_URL is not set.
+// Sanitize a URL coming from env vars — removes accidental double-protocol typos
+// e.g. "https://https://..." → "https://..."  or  "wss://https://..." → "wss://..."
+const sanitizeEnvUrl = (raw) => {
+  if (!raw || typeof raw !== 'string') return null;
+  // Strip repeated https:// or http:// that Vercel copy-paste errors introduce
+  const clean = raw
+    .replace(/^(https?:\/\/){2,}/, 'https://')
+    .replace(/^(wss?:\/\/)(https?:\/\/)+/, 'wss://')
+    .replace(/\/+$/, '');  // strip trailing slashes
+  return clean || null;
+};
+
+// API URL — controlled entirely via VITE_API_URL or VITE_API_GATEWAY_URL in Vercel dashboard.
+// Never hardcode a gateway URL here. Set the env var in Vercel and redeploy.
 const PRODUCTION_API_URL = (() => {
-  const gatewayBase = import.meta.env.VITE_API_GATEWAY_URL;
-  if (gatewayBase) return `${gatewayBase.replace(/\/+$/, '')}/api`;
-  const apiUrl = import.meta.env.VITE_API_URL;
+  // VITE_API_GATEWAY_URL: bare gateway host → we append /api
+  const gatewayBase = sanitizeEnvUrl(import.meta.env.VITE_API_GATEWAY_URL);
+  if (gatewayBase) return `${gatewayBase}/api`;
+  // VITE_API_URL: full URL including /api suffix
+  const apiUrl = sanitizeEnvUrl(import.meta.env.VITE_API_URL);
   if (apiUrl) return apiUrl;
-  // Ultimate fallback — keep this in sync with VITE_API_GATEWAY_URL in .env / vercel.json
-  return 'https://kelmah-api-gateway-qmd7.onrender.com/api';
+  // No env var set — use relative path so the app still works without crashing
+  return '/api';
 })();
 
 const loadRuntimeConfig = async () => {
@@ -43,7 +56,7 @@ const loadRuntimeConfig = async () => {
       runtimeConfig = await response.json();
       // Store in window for synchronous access
       window.RUNTIME_CONFIG = {
-        apiUrl: runtimeConfig.API_URL || runtimeConfig.ngrokUrl || PRODUCTION_API_URL
+        apiUrl: runtimeConfig.API_URL || runtimeConfig.ngrokUrl || PRODUCTION_API_URL || '/api'
       };
       if (import.meta.env.DEV) console.log('🔧 Runtime config loaded:', runtimeConfig);
     } catch (error) {
@@ -66,7 +79,7 @@ const getApiBaseUrl = () => {
   }
 
   // Priority 3: Environment variable
-  const envUrl = import.meta.env.VITE_API_URL;
+  const envUrl = sanitizeEnvUrl(import.meta.env.VITE_API_URL);
   if (envUrl) {
     return envUrl;
   }
@@ -79,7 +92,7 @@ const getApiBaseUrl = () => {
     }
   }
 
-  // Priority 5: Use hardcoded production URL (bypasses Vercel's broken env vars)
+  // Priority 5: Env-var-derived production URL (never hardcoded — set VITE_API_URL in Vercel dashboard)
   return PRODUCTION_API_URL;
 };
 
