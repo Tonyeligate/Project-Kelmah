@@ -146,6 +146,23 @@ Impact:
 - cleaner public/shared experience
 - less wrong-role funneling
 
+### 13. Shared profile/schedule aliases now redirect into role-owned areas
+Updated `routes/config.jsx`:
+- `/profile` now redirects workers to `/worker/profile`
+- `/profile` now redirects hirers to `/settings` instead of the worker-centric shared profile form
+- `/schedule` now redirects workers to `/worker/schedule`
+- `/schedule` now redirects hirers away from the worker-biased scheduler surface
+
+Impact:
+- less role leakage through shared aliases
+- cleaner canonical ownership for future split work
+
+### 14. Shared settings copy now uses neutral fallback identity
+Updated `SettingsPage.jsx` fallback name from `Kelmah Worker` to `Kelmah User`.
+
+Impact:
+- reduced worker-only language on shared settings surface
+
 ## Verification
 - `get_errors` returned no file-level errors on all touched files.
 - Frontend build succeeded:

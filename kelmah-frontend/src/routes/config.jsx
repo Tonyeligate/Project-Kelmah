@@ -1,11 +1,13 @@
 import { Navigate, useRoutes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
+import { useSelector } from 'react-redux';
 import Layout from '../modules/layout/components/Layout';
 import ProtectedRoute from '../modules/auth/components/common/ProtectedRoute';
 import LoadingScreen from '../modules/common/components/loading/LoadingScreen';
 import { PaymentProvider } from '../modules/payment/contexts/PaymentContext';
 import { ContractProvider } from '../modules/contracts/contexts/ContractContext';
 import RouteErrorBoundary from '../modules/common/components/RouteErrorBoundary';
+import { getRoleHomePath, hasRole } from '../utils/userUtils';
 
 // Public Pages
 const LandingPage = lazy(() => import('../pages/HomeLanding'));
@@ -230,6 +232,24 @@ const RoleProtectedRoute = ({ children, allowedRoles }) => (
     {children}
   </ProtectedRoute>
 );
+
+const RoleAliasRedirect = ({ workerPath, hirerPath, adminPath }) => {
+  const user = useSelector((state) => state.auth.user);
+
+  if (hasRole(user, 'admin')) {
+    return <Navigate to={adminPath || getRoleHomePath(user)} replace />;
+  }
+
+  if (hasRole(user, 'hirer')) {
+    return <Navigate to={hirerPath || getRoleHomePath(user)} replace />;
+  }
+
+  if (hasRole(user, 'worker')) {
+    return <Navigate to={workerPath || getRoleHomePath(user)} replace />;
+  }
+
+  return <Navigate to="/dashboard" replace />;
+};
 
 const routes = [
   {
@@ -785,7 +805,11 @@ const routes = [
         path: 'profile',
         element: (
           <ProtectedRoute>
-            <ProfilePage />
+            <RoleAliasRedirect
+              workerPath="/worker/profile"
+              hirerPath="/settings"
+              adminPath="/admin/skills-management"
+            />
           </ProtectedRoute>
         ),
       },
@@ -974,7 +998,11 @@ const routes = [
         path: 'schedule',
         element: (
           <ProtectedRoute>
-            <SchedulingPage />
+            <RoleAliasRedirect
+              workerPath="/worker/schedule"
+              hirerPath="/hirer/dashboard"
+              adminPath="/admin/skills-management"
+            />
           </ProtectedRoute>
         ),
       },

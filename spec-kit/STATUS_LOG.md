@@ -40,6 +40,8 @@
 - Made escrow back-navigation role-aware in `EscrowDetailsPage`.
 - Replaced unstable random worker search IDs with deterministic fallbacks in `SearchPage`.
 - Updated jobs-page/detail CTAs to steer hirers toward posting jobs/finding talent instead of worker-only apply/CV flows, and aligned `JobDetailsPage` with the centralized auth selector.
+- Redirected shared `/profile` and `/schedule` aliases into role-owned areas instead of leaving hirers on worker-centric surfaces.
+- Replaced the shared settings fallback label `Kelmah Worker` with the neutral `Kelmah User`.
 
 **Verification**
 - `get_errors` returned no errors on all touched files.

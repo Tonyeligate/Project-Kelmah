@@ -50,7 +50,7 @@ const SettingsPage = () => {
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const { user } = useSelector((state) => state.auth);
 
-  const userDisplayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.name || 'Kelmah Worker';
+  const userDisplayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.name || 'Kelmah User';
   const userInitials = ((user?.firstName?.[0] || '') + (user?.lastName?.[0] || '')).toUpperCase() || user?.email?.[0]?.toUpperCase() || 'K';
 
   const handleTabChange = (event, newValue) => {
