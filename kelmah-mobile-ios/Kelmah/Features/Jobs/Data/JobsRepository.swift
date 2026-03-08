@@ -83,7 +83,7 @@ final class JobsRepository {
         var items = [
             URLQueryItem(name: "page", value: String(page)),
             URLQueryItem(name: "limit", value: String(limit)),
-            URLQueryItem(name: "sort", value: "newest"),
+            URLQueryItem(name: "sort", value: filters.sort.rawValue),
         ]
         if filters.search.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
             items.append(URLQueryItem(name: "search", value: filters.search.trimmingCharacters(in: .whitespacesAndNewlines)))

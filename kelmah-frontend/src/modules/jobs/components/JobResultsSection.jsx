@@ -702,7 +702,7 @@ const JobResultsSection = ({
                             sx={{ mr: 1, color: '#D4AF37' }}
                           />
                           <Typography variant="body2" sx={{ color: 'white' }}>
-                            {job.rating || '4.5'} Rating •{' '}
+                            {job.rating ? `${job.rating} Rating` : 'No ratings yet'} •{' '}
                             {job.proposalCount || 0} Applicants
                           </Typography>
                         </Box>

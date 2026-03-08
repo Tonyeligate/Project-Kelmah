@@ -38,6 +38,8 @@ final class SessionStore: ObservableObject {
         keychainStore.save(accessToken, for: "kelmah_access_token")
         if let refreshToken {
             keychainStore.save(refreshToken, for: "kelmah_refresh_token")
+        } else {
+            keychainStore.delete("kelmah_refresh_token")
         }
         if let user {
             updateUser(user)

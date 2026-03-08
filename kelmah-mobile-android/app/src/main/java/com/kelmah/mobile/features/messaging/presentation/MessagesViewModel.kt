@@ -37,6 +37,9 @@ class MessagesViewModel @Inject constructor(
     )
     val uiState: StateFlow<MessagesUiState> = _uiState.asStateFlow()
 
+    val totalUnreadCount: Int
+        get() = _uiState.value.conversations.sumOf { it.unreadCount }
+
     init {
         bootstrap()
     }
@@ -68,6 +71,33 @@ class MessagesViewModel @Inject constructor(
             )
         }
         loadMessages(conversation.id)
+    }
+
+    fun openConversationById(conversationId: String) {
+        val existing = _uiState.value.conversations.firstOrNull { it.id == conversationId }
+        if (existing != null) {
+            openConversation(existing)
+            return
+        }
+
+        viewModelScope.launch {
+            when (val result = messagingRepository.getConversations()) {
+                is ApiResult.Success -> {
+                    val conversation = result.data.firstOrNull { it.id == conversationId }
+                    _uiState.update {
+                        it.copy(
+                            conversations = result.data,
+                            selectedConversation = conversation ?: it.selectedConversation,
+                            errorMessage = if (conversation == null) "Conversation could not be found" else null,
+                        )
+                    }
+                    conversation?.let(::openConversation)
+                }
+                is ApiResult.Error -> {
+                    _uiState.update { it.copy(errorMessage = result.message) }
+                }
+            }
+        }
     }
 
     fun closeConversation() {

@@ -87,7 +87,7 @@ const searchService = {
       return payload?.suggestions || payload || [];
     } catch (error) {
       if (import.meta.env.DEV) console.error('Suggestions error:', error);
-      return [];
+      return { error: true, message: error.message, data: [] };
     }
   },
 
@@ -105,7 +105,7 @@ const searchService = {
       return payload?.terms || payload || [];
     } catch (error) {
       if (import.meta.env.DEV) console.error('Popular terms error:', error);
-      return [];
+      return { error: true, message: error.message, data: [] };
     }
   },
 
@@ -116,7 +116,7 @@ const searchService = {
       return unwrapPayload(response) || [];
     } catch (error) {
       if (import.meta.env.DEV) console.error('Categories fetch error:', error);
-      return [];
+      throw error;
     }
   },
 
@@ -127,7 +127,7 @@ const searchService = {
       return unwrapPayload(response) || [];
     } catch (error) {
       if (import.meta.env.DEV) console.error('Skills fetch error:', error);
-      return [];
+      throw error;
     }
   },
 
@@ -143,7 +143,7 @@ const searchService = {
       return unwrapPayload(response) || [];
     } catch (error) {
       if (import.meta.env.DEV) console.error('Job suggestions error:', error);
-      return [];
+      return { error: true, message: error.message, data: [] };
     }
   },
 
@@ -157,7 +157,7 @@ const searchService = {
       return unwrapPayload(response) || [];
     } catch (error) {
       if (import.meta.env.DEV) console.error('Popular searches error:', error);
-      return [];
+      return { error: true, message: error.message, data: [] };
     }
   },
 };

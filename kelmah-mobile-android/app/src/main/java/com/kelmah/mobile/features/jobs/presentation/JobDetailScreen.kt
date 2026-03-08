@@ -20,6 +20,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,10 +38,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kelmah.mobile.core.utils.RelativeTimeFormatter
+import com.kelmah.mobile.core.session.KelmahUserRole
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JobDetailScreen(
     jobId: String,
+    userRole: KelmahUserRole,
     onBack: () -> Unit,
     onApply: (String) -> Unit,
     viewModel: JobsViewModel = hiltViewModel(),
@@ -60,7 +65,7 @@ fun JobDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Job Details") },
+                title = { Text(if (userRole == KelmahUserRole.HIRER) "Market Listing" else "Job Details") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Back")
@@ -97,6 +102,12 @@ fun JobDetailScreen(
                     Text(text = job.summary.employerName, style = MaterialTheme.typography.titleMedium)
                     Text(text = job.summary.locationLabel, style = MaterialTheme.typography.bodyMedium)
                     Text(text = job.summary.budgetLabel, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                    RelativeTimeFormatter.relativeOrFallback(job.summary.postedAt)?.let { posted ->
+                        Text(text = "Posted $posted", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    if (job.summary.isUrgent) {
+                        Text(text = "Urgent listing", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                    }
                     Text(text = job.fullDescription.ifBlank { job.summary.description }, style = MaterialTheme.typography.bodyLarge)
                 }
             }
@@ -114,32 +125,45 @@ fun JobDetailScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = "Applications: ${job.proposalCount}")
                     Text(text = "Views: ${job.viewCount}")
-                    job.deadline?.let { Text(text = "Deadline: $it") }
+                    job.deadline?.let {
+                        Text(text = "Deadline: ${RelativeTimeFormatter.deadlineLabel(it) ?: it}")
+                    }
                 }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                OutlinedButton(
-                    onClick = { viewModel.toggleSaved(job.summary.id, !job.summary.isSaved) },
-                    modifier = Modifier.weight(1f),
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Icon(
-                        if (job.summary.isSaved) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
-                        contentDescription = null,
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(if (job.summary.isSaved) "Saved" else "Save")
+                    OutlinedButton(
+                        onClick = { viewModel.toggleSaved(job.summary.id, !job.summary.isSaved) },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Icon(
+                            if (job.summary.isSaved) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
+                            contentDescription = null,
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(if (job.summary.isSaved) "Saved" else "Save")
+                    }
+                    if (userRole == KelmahUserRole.WORKER) {
+                        Button(
+                            onClick = { onApply(job.summary.id) },
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Icon(Icons.Outlined.Send, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Apply")
+                        }
+                    }
                 }
-                Button(
-                    onClick = { onApply(job.summary.id) },
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Icon(Icons.Outlined.Send, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Apply")
+                if (userRole == KelmahUserRole.HIRER) {
+                    Text(
+                        text = "Hirer mode keeps this view focused on market research and pricing review. Worker application steps stay hidden for hirer accounts.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
         }

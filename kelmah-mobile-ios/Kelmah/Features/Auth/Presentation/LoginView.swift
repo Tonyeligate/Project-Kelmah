@@ -13,6 +13,7 @@ struct LoginView: View {
                 Text("Kelmah")
                     .font(.system(size: 42, weight: .bold))
                     .foregroundStyle(KelmahTheme.primary)
+                    .accessibilityIdentifier("auth.title")
 
                 Text("Production-focused native onboarding for a national vocational marketplace.")
                     .foregroundStyle(.secondary)
@@ -23,6 +24,7 @@ struct LoginView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                .accessibilityIdentifier("auth.modePicker")
 
                 if let infoMessage = viewModel.infoMessage {
                     Text(infoMessage)
@@ -37,33 +39,38 @@ struct LoginView: View {
                 }
 
                 if viewModel.mode == .register {
-                    textField("First name", text: $viewModel.firstName)
-                    textField("Last name", text: $viewModel.lastName)
+                    textField("First name", text: $viewModel.firstName, accessibilityId: "auth.firstNameField")
+                    textField("Last name", text: $viewModel.lastName, accessibilityId: "auth.lastNameField")
                 }
 
                 if viewModel.mode != .verifyEmail {
-                    textField("Email", text: $viewModel.email, keyboard: .emailAddress)
+                    textField("Email", text: $viewModel.email, keyboard: .emailAddress, accessibilityId: "auth.emailField")
                 }
 
                 if viewModel.mode == .register {
-                    textField("Phone number (optional)", text: $viewModel.phone, keyboard: .phonePad)
+                    textField("Phone number (optional)", text: $viewModel.phone, keyboard: .phonePad, accessibilityId: "auth.phoneField")
                     Picker("Role", selection: $viewModel.role) {
                         Text("Worker").tag("worker")
                         Text("Hirer").tag("hirer")
                     }
                     .pickerStyle(.segmented)
+                    .accessibilityIdentifier("auth.rolePicker")
                 }
 
                 if viewModel.mode == .resetPassword || viewModel.mode == .verifyEmail {
-                    textField(viewModel.mode == .resetPassword ? "Reset token" : "Verification token", text: $viewModel.token)
+                    textField(
+                        viewModel.mode == .resetPassword ? "Reset token" : "Verification token",
+                        text: $viewModel.token,
+                        accessibilityId: "auth.tokenField"
+                    )
                 }
 
                 if viewModel.mode == .login || viewModel.mode == .register || viewModel.mode == .resetPassword {
-                    secureField("Password", text: $viewModel.password)
+                    secureField("Password", text: $viewModel.password, accessibilityId: "auth.passwordField")
                 }
 
                 if viewModel.mode == .register || viewModel.mode == .resetPassword {
-                    secureField("Confirm password", text: $viewModel.confirmPassword)
+                    secureField("Confirm password", text: $viewModel.confirmPassword, accessibilityId: "auth.confirmPasswordField")
                 }
 
                 Button {
@@ -88,6 +95,7 @@ struct LoginView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
                 .disabled(viewModel.isLoading)
+                .accessibilityIdentifier("auth.primaryAction")
 
                 actionLinks
             }
@@ -144,7 +152,12 @@ struct LoginView: View {
         }
     }
 
-    private func textField(_ title: String, text: Binding<String>, keyboard: UIKeyboardType = .default) -> some View {
+    private func textField(
+        _ title: String,
+        text: Binding<String>,
+        keyboard: UIKeyboardType = .default,
+        accessibilityId: String
+    ) -> some View {
         TextField(title, text: text)
             .textInputAutocapitalization(.never)
             .keyboardType(keyboard)
@@ -152,12 +165,14 @@ struct LoginView: View {
             .padding()
             .background(.white)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .accessibilityIdentifier(accessibilityId)
     }
 
-    private func secureField(_ title: String, text: Binding<String>) -> some View {
+    private func secureField(_ title: String, text: Binding<String>, accessibilityId: String) -> some View {
         SecureField(title, text: text)
             .padding()
             .background(.white)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .accessibilityIdentifier(accessibilityId)
     }
 }

@@ -28,6 +28,11 @@ exports.createBid = async (req, res, next) => {
       return errorResponse(res, 400, 'Job is not open for bidding');
     }
 
+    // Prevent hirer from bidding on their own job
+    if (job.hirer.toString() === workerId) {
+      return errorResponse(res, 400, 'You cannot bid on your own job');
+    }
+
     // Check if user has already bid on this job
     const existingBid = await Bid.findOne({ job: jobId, worker: workerId });
     if (existingBid) {
@@ -40,8 +45,11 @@ exports.createBid = async (req, res, next) => {
     const year = now.getFullYear();
     const monthlyBidCount = await Bid.getWorkerMonthlyBidCount(workerId, month, year);
     
-    if (monthlyBidCount >= 5) {
-      return errorResponse(res, 400, 'Monthly bid limit of 5 bids exceeded');
+    // Use tier-based bid limit instead of hard-coded 5
+    const userPerformance = await UserPerformance.findOne({ userId: workerId });
+    const monthlyBidLimit = userPerformance ? userPerformance.monthlyBidQuota : 5;
+    if (monthlyBidCount >= monthlyBidLimit) {
+      return errorResponse(res, 400, `Monthly bid limit of ${monthlyBidLimit} bids exceeded`);
     }
 
     // Check if job has reached maximum bidders
@@ -58,8 +66,7 @@ exports.createBid = async (req, res, next) => {
       return errorResponse(res, 400, `Bid amount cannot exceed ${job.bidding.maxBidAmount} GHS`);
     }
 
-    // Get user performance score
-    const userPerformance = await UserPerformance.findOne({ userId: workerId });
+    // Get user performance score (already fetched above for bid limit)
     const performanceScore = userPerformance ? userPerformance.overallScore : 0;
 
     // Create the bid
@@ -230,7 +237,10 @@ exports.acceptBid = async (req, res, next) => {
     const session = await mongoose.startSession();
     try {
       await session.withTransaction(async () => {
-        await bid.accept(hirerNotes);
+        bid.status = 'accepted';
+        bid.hirerNotes = hirerNotes || '';
+        bid.responseTimestamp = new Date();
+        await bid.save({ session });
 
         await Bid.updateMany(
           { job: bid.job._id, _id: { $ne: bidId }, status: 'pending' },

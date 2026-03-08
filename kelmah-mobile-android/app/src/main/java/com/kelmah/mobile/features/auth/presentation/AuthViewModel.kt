@@ -3,6 +3,7 @@ package com.kelmah.mobile.features.auth.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kelmah.mobile.core.network.ApiResult
+import com.kelmah.mobile.core.security.PasswordPolicy
 import com.kelmah.mobile.features.auth.data.AuthRepository
 import com.kelmah.mobile.features.auth.data.RegisterRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -153,8 +154,8 @@ class AuthViewModel @Inject constructor(
                 _uiState.update { it.copy(errorMessage = "Email is required") }
                 return
             }
-            !isStrongPassword(state.password) -> {
-                _uiState.update { it.copy(errorMessage = "Password must be at least 8 characters and include one uppercase letter and one number") }
+            !PasswordPolicy.isStrong(state.password) -> {
+                _uiState.update { it.copy(errorMessage = PasswordPolicy.requirementMessage) }
                 return
             }
             state.password != state.confirmPassword -> {
@@ -223,8 +224,8 @@ class AuthViewModel @Inject constructor(
                 _uiState.update { it.copy(errorMessage = "Reset token is required") }
                 return
             }
-            !isStrongPassword(state.password) -> {
-                _uiState.update { it.copy(errorMessage = "Password must be at least 8 characters and include one uppercase letter and one number") }
+            !PasswordPolicy.isStrong(state.password) -> {
+                _uiState.update { it.copy(errorMessage = PasswordPolicy.requirementMessage) }
                 return
             }
             state.password != state.confirmPassword -> {
@@ -282,7 +283,4 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
-
-    private fun isStrongPassword(password: String): Boolean =
-        password.length >= 8 && password.any(Char::isUpperCase) && password.any(Char::isDigit)
 }

@@ -341,9 +341,11 @@ class DashboardService {
     try {
       const overview = await this.getOverview();
       return {
-        unreadMessages: overview.metrics?.activeWorkers || 0,
+        // Use dedicated fields from the metrics API when available;
+        // fall back to 0 instead of misusing unrelated worker counts.
+        unreadMessages: overview.metrics?.unreadMessages || 0,
         pendingJobs: overview.jobs?.totalOpenJobs || 0,
-        newApplicants: overview.metrics?.totalWorkers || 0,
+        newApplicants: overview.metrics?.newApplicants || overview.jobs?.totalJobsToday || 0,
       };
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error fetching notifications summary:', error);

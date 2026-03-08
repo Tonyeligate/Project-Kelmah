@@ -367,6 +367,26 @@ app.post('/api/quick-jobs/payment/webhook', createDynamicProxy('job', {
 // ============================================================
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+
+// MongoDB operator injection protection
+const sanitizeInput = (obj) => {
+  if (obj === null || typeof obj !== 'object') return obj;
+  for (const key of Object.keys(obj)) {
+    if (key.startsWith('$')) {
+      delete obj[key];
+    } else if (typeof obj[key] === 'object') {
+      sanitizeInput(obj[key]);
+    }
+  }
+  return obj;
+};
+
+app.use((req, res, next) => {
+  if (req.body) sanitizeInput(req.body);
+  if (req.query) sanitizeInput(req.query);
+  next();
+});
+
 app.use(loggingMiddleware(logger));
 // Correlate request ID across services
 app.use((req, res, next) => {
@@ -609,15 +629,23 @@ app.use(
   (req, res, next) => {
     if (req.method === 'GET') {
       const p = req.path || '';
-      if (p === '/workers' || /^\/workers\//.test(p)) {
-        // Protected worker sub-resources that require authentication
-        // (earnings is personal data; bookmark state is user-specific)
-        if (/\/(earnings|bookmark)(\/|$)/.test(p)) {
-          console.log('🔒 [API Gateway] Protected worker route - requiring auth:', p);
-          return authenticate(req, res, next);
-        }
+      const publicWorkerPatterns = [
+        /^\/workers$/,
+        /^\/workers\/search$/,
+        /^\/workers\/search\/location$/,
+        /^\/workers\/[a-fA-F0-9]{24}$/,
+        /^\/workers\/[a-fA-F0-9]{24}\/(availability|completeness)$/,
+        /^\/workers\/[a-fA-F0-9]{24}\/(skills|work-history|portfolio|certificates)$/,
+      ];
+
+      if (publicWorkerPatterns.some((pattern) => pattern.test(p))) {
         console.log('✅ [API Gateway] Public worker route - skipping auth:', p);
         return next();
+      }
+
+      if (p.startsWith('/workers')) {
+        console.log('🔒 [API Gateway] Non-public worker route - requiring auth:', p);
+        return authenticate(req, res, next);
       }
     }
     return authenticate(req, res, next);

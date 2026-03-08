@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const { authenticate, optionalAuth } = require('../middlewares/auth');
+const { authenticate, authorizeRoles, optionalAuth } = require('../middlewares/auth');
 
 // Get service URLs from app context
 const getServiceUrl = (req) => req.app.get('serviceUrls').JOB_SERVICE;
@@ -63,8 +63,8 @@ const forwardToJobService = async (req, res, path, method = 'GET') => {
   }
 };
 
-// POST /api/jobs - Create job (protected)
-router.post('/', authenticate, async (req, res) => {
+// POST /api/jobs - Create job (protected, hirer/admin only)
+router.post('/', authenticate, authorizeRoles('hirer', 'admin'), async (req, res) => {
   await forwardToJobService(req, res, '/api/jobs', 'POST');
 });
 
@@ -172,8 +172,8 @@ router.get('/proposals', authenticate, async (req, res) => {
   await forwardToJobService(req, res, '/api/jobs/proposals', 'GET');
 });
 
-// GET /api/jobs/analytics - Get job analytics (protected, admin)
-router.get('/analytics', authenticate, async (req, res) => {
+// GET /api/jobs/analytics - Get job analytics (protected, admin only)
+router.get('/analytics', authenticate, authorizeRoles('admin'), async (req, res) => {
   await forwardToJobService(req, res, '/api/jobs/analytics', 'GET');
 });
 
@@ -204,9 +204,9 @@ router.post('/:id/apply', authenticate, async (req, res) => {
   await forwardToJobService(req, res, `/api/jobs/${req.params.id}/apply`, 'POST');
 });
 
-// PATCH /api/jobs/:id/status - Update job status (protected)
+// PATCH /api/jobs/:id/status - Update job status (protected, hirer/admin only)
 // ⚠️ Must use PATCH to match job-service handler (not PUT)
-router.patch('/:id/status', authenticate, async (req, res) => {
+router.patch('/:id/status', authenticate, authorizeRoles('hirer', 'admin'), async (req, res) => {
   await forwardToJobService(req, res, `/api/jobs/${req.params.id}/status`, 'PATCH');
 });
 

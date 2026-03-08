@@ -232,13 +232,9 @@ const userSchema = new mongoose.Schema({
 
 // ✅ FIXED: Clean indexes without duplicates (removed unique: true from explicit indexes)
 userSchema.index({ email: 1 }, { unique: true });
-userSchema.index({ phone: 1 }, { sparse: true }); // Removed duplicate unique: true 
 userSchema.index({ role: 1 });
 userSchema.index({ isActive: 1 });
 userSchema.index({ createdAt: 1 });
-userSchema.index({ googleId: 1 }, { sparse: true }); // Already no unique: true
-userSchema.index({ facebookId: 1 }, { sparse: true }); // Already no unique: true  
-userSchema.index({ linkedinId: 1 }, { sparse: true }); // Already no unique: true
 userSchema.index({ skills: 1 }); // Worker search by skills
 userSchema.index({ profession: 1 }); // Worker search by profession
 // Optional geo index for location if coordinates included elsewhere

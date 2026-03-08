@@ -85,7 +85,7 @@ export const useJobs = () => {
     async (jobId, jobData) => {
       try {
         dispatch(setLoading(true));
-        const updatedJob = await jobService.updateJob(jobId, jobData);
+        const updatedJob = await jobService.editJob(jobId, jobData);
         dispatch(updateJobInList({ id: jobId, data: updatedJob }));
         return updatedJob;
       } catch (error) {
@@ -102,7 +102,7 @@ export const useJobs = () => {
     async (jobId) => {
       try {
         dispatch(setLoading(true));
-        await jobService.deleteJob(jobId);
+        await jobService.removeJob(jobId);
         dispatch(removeJob(jobId));
         return true;
       } catch (error) {
@@ -119,7 +119,7 @@ export const useJobs = () => {
     async (jobId, applicationData) => {
       try {
         dispatch(setLoading(true));
-        const application = await jobService.applyForJob(
+        const application = await jobService.applyToJob(
           jobId,
           applicationData,
         );

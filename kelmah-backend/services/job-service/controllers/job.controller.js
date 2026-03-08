@@ -148,6 +148,65 @@ const bindJobCoverImageMetadata = (metadata = {}, { jobId, hirerId, coverImage }
   };
 };
 
+const canViewRestrictedJob = (reqUser, job = {}) => {
+  if (!reqUser || !job) {
+    return false;
+  }
+
+  const hirerId = job.hirer?._id || job.hirer;
+  return reqUser.role === 'admin' || String(reqUser.id) === String(hirerId);
+};
+
+const normalizeSkillValues = (values = []) => {
+  if (!Array.isArray(values)) {
+    return [];
+  }
+
+  return values
+    .map((value) => {
+      if (typeof value === 'string') {
+        return value;
+      }
+      if (value && typeof value === 'object') {
+        return value.name || value.skillName || value.title || '';
+      }
+      return '';
+    })
+    .map((value) => String(value || '').trim().toLowerCase())
+    .filter(Boolean);
+};
+
+const collectJobSkills = (job = {}) => {
+  const primarySkills = normalizeSkillValues(job.requirements?.primarySkills || []);
+  const secondarySkills = normalizeSkillValues(job.requirements?.secondarySkills || []);
+  const explicitSkills = normalizeSkillValues(job.skills || []);
+  return Array.from(new Set([...primarySkills, ...secondarySkills, ...explicitSkills]));
+};
+
+const collectWorkerSkills = (worker = {}) => {
+  return Array.from(
+    new Set([
+      ...normalizeSkillValues(worker.skills || []),
+      ...normalizeSkillValues(worker.workerProfile?.skills || []),
+    ]),
+  );
+};
+
+const readLocationParts = (locationValue = {}) => {
+  if (typeof locationValue === 'string') {
+    const parts = locationValue.split(',').map((part) => part.trim().toLowerCase()).filter(Boolean);
+    return {
+      city: parts[0] || '',
+      region: parts[1] || parts[0] || '',
+    };
+  }
+
+  return {
+    city: String(locationValue.city || locationValue.district || '').trim().toLowerCase(),
+    region: String(locationValue.region || '').trim().toLowerCase(),
+  };
+};
+
 /**
  * Create a new job
  * @route POST /api/jobs
@@ -199,8 +258,8 @@ const createJob = async (req, res, next) => {
     if (!body.currency) body.currency = 'GHS';
     // Always default to public visibility so new jobs appear on the public jobs page
     if (!body.visibility) body.visibility = 'public';
-    // Always default status to open unless explicitly set to draft
-    if (!body.status) body.status = 'open';
+    // Force status - clients cannot set arbitrary status on creation
+    body.status = (body.status === 'draft') ? 'draft' : 'open';
 
     if (typeof body.duration === 'string') {
       const match = body.duration.match(/(\d+)\s*(hour|day|week|month|hours|days|weeks|months)/i);
@@ -534,6 +593,20 @@ const getContractById = async (req, res, next) => {
       .populate('hirer', 'firstName lastName')
       .populate('worker', 'firstName lastName');
     if (!contract) return errorResponse(res, 404, 'Contract not found');
+
+    // Authorization check - only contract parties and admins can view
+    const userId = req.user?.id;
+    if (userId) {
+      const isParty = String(contract.hirer?._id || contract.hirer) === String(userId) ||
+                       String(contract.worker?._id || contract.worker) === String(userId);
+      const isAdmin = req.user?.role === 'admin';
+      if (!isParty && !isAdmin) {
+        return errorResponse(res, 403, 'Access denied. Only contract parties can view this contract');
+      }
+    } else {
+      return errorResponse(res, 401, 'Authentication required to view contracts');
+    }
+
     return successResponse(res, 200, 'Contract retrieved', contract);
   } catch (error) {
     next(error);
@@ -1120,10 +1193,12 @@ const getJobs = async (req, res, next) => {
     // treated as public — no hirer deliberately set them to private).
     let query = {
       status: "open",
-      $or: [
-        { visibility: "public" },
-        { visibility: { $exists: false } },
-        { visibility: null }
+      $and: [
+        { $or: [
+          { visibility: "public" },
+          { visibility: { $exists: false } },
+          { visibility: null }
+        ]}
       ]
     };
     if (isDebugJobs) {
@@ -1159,25 +1234,25 @@ const getJobs = async (req, res, next) => {
       if (req.query.location.includes(',')) {
         // Multiple locations — cap to 6 to limit $or fan-out
         const locations = req.query.location.split(',').map(loc => loc.trim()).slice(0, 6);
-        query.$or = [
+        query.$and.push({ $or: [
           { "location.city": { $in: locations } },
           { "location.region": { $in: locations } },
           { "location.country": { $in: locations } },
           { "location.address": { $in: locations } },
           { "locationDetails.region": { $in: locations } },
           { "locationDetails.district": { $in: locations } }
-        ];
+        ]});
       } else {
         // Single location - search across city, region, country
         const safeLocation = escapeRegex(req.query.location);
-        query.$or = [
+        query.$and.push({ $or: [
           { "location.city": { $regex: safeLocation, $options: "i" } },
           { "location.region": { $regex: safeLocation, $options: "i" } },
           { "location.country": { $regex: safeLocation, $options: "i" } },
           { "location.address": { $regex: safeLocation, $options: "i" } },
           { "locationDetails.region": { $regex: safeLocation, $options: "i" } },
           { "locationDetails.district": { $regex: safeLocation, $options: "i" } }
-        ];
+        ]});
       }
     }
 
@@ -1249,17 +1324,7 @@ const getJobs = async (req, res, next) => {
         { skills: { $in: searchTerms.map((term) => new RegExp(escapeRegex(term), 'i')) } },
         { category: { $regex: safeSearch, $options: "i" } }
       ];
-      // If location filter already set $or, combine with $and to prevent conflict
-      if (query.$or) {
-        const locationOr = query.$or;
-        delete query.$or;
-        query.$and = [
-          { $or: locationOr },
-          { $or: searchConditions }
-        ];
-      } else {
-        query.$or = searchConditions;
-      }
+      query.$and.push({ $or: searchConditions });
     }
 
     // Execute query with pagination
@@ -1286,11 +1351,15 @@ const getJobs = async (req, res, next) => {
     if (req.query.sort && SORT_MAP[req.query.sort]) {
       sortSpec = SORT_MAP[req.query.sort];
     } else if (req.query.sort) {
-      // Legacy format: "-createdAt" or "createdAt"
+      const ALLOWED_SORT_FIELDS = ['createdAt', 'budget', 'title', 'updatedAt', 'deadline', 'views'];
       const sortField = req.query.sort;
       const sortOrder = sortField.startsWith('-') ? -1 : 1;
       const sortKey = sortField.replace(/^-/, '');
-      sortSpec = { [sortKey]: sortOrder };
+      if (ALLOWED_SORT_FIELDS.includes(sortKey)) {
+        sortSpec = { [sortKey]: sortOrder };
+      } else {
+        sortSpec = { createdAt: -1 }; // fallback to default
+      }
     } else {
       // Default: newest first
       sortSpec = { createdAt: -1 };
@@ -1320,8 +1389,7 @@ const getJobs = async (req, res, next) => {
         avatar: 1,
         verified: 1,
         isVerified: 1,
-        rating: 1,
-        email: 1
+        rating: 1
       })
       .toArray();
 
@@ -1398,11 +1466,19 @@ const getJobs = async (req, res, next) => {
 const getJobById = async (req, res, next) => {
   try {
     const job = await Job.findById(req.params.id)
-      .populate("hirer", "firstName lastName profileImage email")
-      .populate("worker", "firstName lastName profileImage");
+      .populate("hirer", "firstName lastName profileImage companyName rating verified isVerified")
+      .populate("worker", "firstName lastName profileImage")
+      .lean();
 
     if (!job) {
       return errorResponse(res, 404, "Job not found");
+    }
+
+    const normalizedStatus = String(job.status || '').toLowerCase();
+    const visibility = job.visibility || 'public';
+    const isPubliclyVisible = visibility === 'public' && normalizedStatus !== 'draft';
+    if (!isPubliclyVisible && !canViewRestrictedJob(req.user, job)) {
+      return errorResponse(res, 404, 'Job not found');
     }
 
     // LOW-02 FIX: Log view count errors instead of silently swallowing
@@ -1412,7 +1488,7 @@ const getJobById = async (req, res, next) => {
 
     // Transform job data to match frontend expectations
     const transformedJob = {
-      ...job.toObject(),
+      ...job,
       // Add budget object for complex budget display (keeping original budget as well)
       budget: {
         min: job.bidding?.minBidAmount || job.budget || 0,
@@ -1428,7 +1504,7 @@ const getJobById = async (req, res, next) => {
       created_at: job.createdAt,
       // Add avatar field for hirer
       hirer: {
-        ...job.hirer?.toObject(),
+        ...(job.hirer || {}),
         avatar: job.hirer?.profileImage,
         name: job.hirer ? `${job.hirer.firstName} ${job.hirer.lastName}` : 'Unknown'
       }
@@ -1581,7 +1657,7 @@ const getMyJobs = async (req, res, next) => {
 
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
     const startIndex = (page - 1) * limit;
 
     const client = mongoose.connection.getClient();
@@ -1595,13 +1671,15 @@ const getMyJobs = async (req, res, next) => {
       query.status = req.query.status;
     }
 
-    const sortField = req.query.sort || '-createdAt';
-    const sortOrder = sortField.startsWith('-') ? -1 : 1;
-    const sortKey = sortField.replace(/^-/, '');
+    const ALLOWED_SORT_FIELDS = ['createdAt', 'budget', 'title', 'updatedAt', 'deadline', 'views', 'status'];
+    const rawSort = req.query.sort || '-createdAt';
+    const sortOrder = rawSort.startsWith('-') ? -1 : 1;
+    const sortKey = rawSort.replace(/^-/, '');
+    const sortField = ALLOWED_SORT_FIELDS.includes(sortKey) ? sortKey : 'createdAt';
 
     const jobs = await jobsCollection
       .find(query)
-      .sort({ [sortKey]: sortOrder })
+      .sort({ [sortField]: sortOrder })
       .skip(startIndex)
       .limit(limit)
       .toArray();
@@ -1895,11 +1973,24 @@ const getJobRecommendations = async (req, res, next) => {
       return errorResponse(res, 403, 'Only workers can access job recommendations');
     }
 
+    const existingApplications = await Application.find({ worker: workerId })
+      .select('job')
+      .lean();
+    const appliedJobIds = existingApplications
+      .map((application) => application.job)
+      .filter(Boolean);
+
     const query = {
       status: 'open',
-      visibility: 'public',
-      'applications.applicant': { $ne: workerId },
+      $or: [
+        { visibility: 'public' },
+        { visibility: { $exists: false } },
+        { visibility: null },
+      ],
     };
+    if (appliedJobIds.length > 0) {
+      query._id = { $nin: appliedJobIds };
+    }
 
     const candidateJobs = await Job.find(query)
       .populate('hirer', 'firstName lastName profileImage rating totalJobsPosted companyName businessName')
@@ -1994,11 +2085,23 @@ const getWorkerMatches = async (req, res, next) => {
 
     // Get available workers (this would typically call user-service)
     // For now, we'll use a basic query - in production this would be a service call
-    const workers = await User.find({
+    const numericLimit = Math.min(Math.max(1, parseInt(limit, 10) || 20), 50);
+
+    // Pre-filter workers by job skills for better relevance
+    const jobSkills = collectJobSkills(job);
+    const workerQuery = {
       role: 'worker',
       isActive: true,
-      'workerProfile.availabilityStatus': { $in: ['available', 'partially_available'] }
-    }).limit(parseInt(limit) * 2);
+      availabilityStatus: { $nin: ['unavailable', 'vacation'] }
+    };
+    if (jobSkills.length > 0) {
+      workerQuery.skills = { $in: jobSkills };
+    }
+
+    const workers = await User.find(workerQuery)
+      .select('firstName lastName profileImage rating totalJobsCompleted skills hourlyRate location locationCoordinates availabilityStatus yearsOfExperience isVerified')
+      .limit(numericLimit * 3)
+      .lean();
 
     // Calculate match scores for each worker
     const workersWithScores = workers.map(worker => {
@@ -2009,9 +2112,9 @@ const getWorkerMatches = async (req, res, next) => {
         name: `${worker.firstName} ${worker.lastName}`,
         profileImage: worker.profileImage,
         rating: worker.rating || 0,
-        completedJobs: worker.completedJobs || 0,
+        completedJobs: worker.totalJobsCompleted || worker.completedJobs || 0,
         skills: worker.skills || [],
-        hourlyRate: worker.workerProfile?.hourlyRate || 0,
+        hourlyRate: worker.hourlyRate || worker.workerProfile?.hourlyRate || 0,
         location: worker.location,
         matchScore: matchScore.totalScore,
         matchDetails: matchScore.breakdown,
@@ -2023,7 +2126,7 @@ const getWorkerMatches = async (req, res, next) => {
     const matchedWorkers = workersWithScores
       .filter(worker => worker.matchScore >= parseInt(minScore))
       .sort((a, b) => b.matchScore - a.matchScore)
-      .slice(0, parseInt(limit));
+      .slice(0, numericLimit);
 
     return successResponse(res, 200, 'Worker matches retrieved successfully', {
       workers: matchedWorkers,
@@ -2044,56 +2147,83 @@ function calculateJobMatchScore(job, worker) {
   const breakdown = {};
   const reasons = [];
 
-  // Skills matching (40% weight)
-  const jobSkills = job.skills || [];
-  const workerSkills = worker.skills || [];
+  // Skills matching (40% weight) - proportional scoring
+  const jobSkills = collectJobSkills(job);
+  const workerSkills = collectWorkerSkills(worker);
 
   const skillMatches = jobSkills.filter(jobSkill =>
     workerSkills.some(workerSkill =>
-      jobSkill.toLowerCase().includes(workerSkill.toLowerCase()) ||
-      workerSkill.toLowerCase().includes(jobSkill.toLowerCase())
+      jobSkill === workerSkill ||
+      jobSkill.split(/\s+/).every(word => workerSkill.includes(word)) ||
+      workerSkill.split(/\s+/).every(word => jobSkill.includes(word))
     )
   );
 
-  const skillScore = jobSkills.length > 0 ? (skillMatches.length / jobSkills.length) * 40 : 0;
-  breakdown.skills = skillScore;
+  const skillScore = jobSkills.length > 0
+    ? (skillMatches.length / jobSkills.length) * 40
+    : 0;
+  breakdown.skills = Math.round(skillScore * 10) / 10;
   totalScore += skillScore;
 
   if (skillMatches.length > 0) {
     reasons.push(`${skillMatches.length}/${jobSkills.length} skill matches`);
   }
 
-  // Location matching (25% weight)
+  // Location matching (25% weight) - handle both structured and string locations
   let locationScore = 0;
-  if (job.location && worker.location) {
-    if (job.location.city === worker.location.city) {
-      locationScore = 25;
-      reasons.push('Same city');
-    } else if (job.location.region === worker.location.region) {
-      locationScore = 15;
-      reasons.push('Same region');
-    } else if (job.location.country === worker.location.country) {
-      locationScore = 5;
-      reasons.push('Same country');
-    }
+  const jobLoc = job.locationDetails || job.location || {};
+  const workerLoc = worker.locationDetails || worker.location || {};
+
+  const jobLocation = readLocationParts(jobLoc);
+  const workerLocation = readLocationParts(workerLoc);
+  const jobCity = jobLocation.city;
+  const workerCity = workerLocation.city;
+  const jobRegion = jobLocation.region;
+  const workerRegion = workerLocation.region;
+
+  if (jobCity && workerCity && jobCity === workerCity) {
+    locationScore = 25;
+    reasons.push('Same city');
+  } else if (jobRegion && workerRegion && jobRegion === workerRegion) {
+    locationScore = 15;
+    reasons.push('Same region');
+  } else if (job.location?.type === 'remote') {
+    locationScore = 20;
+    reasons.push('Remote-friendly job');
   }
   breakdown.location = locationScore;
   totalScore += locationScore;
 
-  // Budget compatibility (20% weight)
+  // Budget compatibility (20% weight) - use duration field properly
   let budgetScore = 0;
-  if (job.budget && worker.workerProfile?.hourlyRate) {
-    const expectedHours = job.estimatedHours || 40;
-    const totalBudget = worker.workerProfile.hourlyRate * expectedHours;
+  const workerHourlyRate = Number(worker.hourlyRate || worker.workerProfile?.hourlyRate || 0);
+  if (job.budget && workerHourlyRate > 0) {
+    // Parse duration from job schema: { value: Number, unit: String }
+    let estimatedHours = 40; // default fallback
+    if (job.duration && job.duration.value) {
+      const unit = (job.duration.unit || 'hour').toLowerCase();
+      if (unit === 'hour' || unit === 'hours') estimatedHours = job.duration.value;
+      else if (unit === 'day' || unit === 'days') estimatedHours = job.duration.value * 8;
+      else if (unit === 'week' || unit === 'weeks') estimatedHours = job.duration.value * 40;
+      else if (unit === 'month' || unit === 'months') estimatedHours = job.duration.value * 160;
+    }
 
-    if (totalBudget <= job.budget) {
+    const workerCost = workerHourlyRate * estimatedHours;
+    const budgetRatio = job.budget / workerCost;
+
+    if (budgetRatio >= 1.0) {
       budgetScore = 20;
+      reasons.push('Budget exceeds your rate');
+    } else if (budgetRatio >= 0.8) {
+      budgetScore = 15;
       reasons.push('Budget compatible');
-    } else if (totalBudget <= job.budget * 1.2) {
+    } else if (budgetRatio >= 0.6) {
       budgetScore = 10;
       reasons.push('Budget close match');
+    } else if (budgetRatio >= 0.4) {
+      budgetScore = 5;
     }
-  } else if (!worker.workerProfile?.hourlyRate) {
+  } else if (workerHourlyRate <= 0) {
     budgetScore = 10; // Neutral score if no rate specified
   }
   breakdown.budget = budgetScore;
@@ -2101,7 +2231,7 @@ function calculateJobMatchScore(job, worker) {
 
   // Worker rating (10% weight)
   const ratingScore = ((worker.rating || 0) / 5) * 10;
-  breakdown.rating = ratingScore;
+  breakdown.rating = Math.round(ratingScore * 10) / 10;
   totalScore += ratingScore;
 
   if (worker.rating >= 4.5) {
@@ -2110,7 +2240,7 @@ function calculateJobMatchScore(job, worker) {
 
   // Experience level (5% weight)
   let experienceScore = 0;
-  const completedJobs = worker.completedJobs || 0;
+  const completedJobs = worker.totalJobsCompleted || worker.completedJobs || 0;
   if (completedJobs >= 50) experienceScore = 5;
   else if (completedJobs >= 20) experienceScore = 4;
   else if (completedJobs >= 10) experienceScore = 3;
@@ -2179,7 +2309,15 @@ const advancedJobSearch = async (req, res, next) => {
     // Match stage - basic filters (tolerate legacy status case variants)
     const matchStage = {
       status: { $in: ['open', 'Open'] },
-      visibility: 'public'
+      $and: [
+        {
+          $or: [
+            { visibility: 'public' },
+            { visibility: { $exists: false } },
+            { visibility: null }
+          ]
+        }
+      ]
     };
 
     // Category filter
@@ -2190,7 +2328,13 @@ const advancedJobSearch = async (req, res, next) => {
     // Skills filter
     if (skills) {
       const skillsArray = skills.split(',').map(s => s.trim());
-      matchStage.skills = { $in: skillsArray };
+      matchStage.$and.push({
+        $or: [
+          { skills: { $in: skillsArray } },
+          { 'requirements.primarySkills': { $in: skillsArray } },
+          { 'requirements.secondarySkills': { $in: skillsArray } }
+        ]
+      });
     }
 
     // Budget range filter
@@ -2202,22 +2346,33 @@ const advancedJobSearch = async (req, res, next) => {
 
     // Job type filter
     if (jobType) {
-      matchStage.type = jobType;
+      if (['fixed', 'hourly'].includes(jobType)) {
+        matchStage.paymentType = jobType;
+      } else if (['remote', 'onsite', 'hybrid'].includes(jobType)) {
+        matchStage['location.type'] = jobType;
+      }
     }
 
     // Experience level filter
     if (experienceLevel) {
-      matchStage.experienceLevel = experienceLevel;
+      matchStage['requirements.experienceLevel'] = experienceLevel;
     }
 
     // Remote work filter
     if (remote === 'true') {
-      matchStage.remote = true;
+      matchStage['location.type'] = 'remote';
     }
 
     // Urgency filter
     if (urgent === 'true') {
-      matchStage.urgency = { $in: ['high', 'urgent'] };
+      const soonThreshold = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+      matchStage.$and.push({
+        $or: [
+          { urgency: { $in: ['high', 'urgent'] } },
+          { expiresAt: { $gte: new Date(), $lte: soonThreshold } },
+          { 'bidding.bidDeadline': { $gte: new Date(), $lte: soonThreshold } }
+        ]
+      });
     }
 
     // Date range filter
@@ -2231,11 +2386,14 @@ const advancedJobSearch = async (req, res, next) => {
     if (location) {
       const escapedLoc = location.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const locationRegex = new RegExp(escapedLoc, 'i');
-      matchStage.$or = [
-        { 'location.city': locationRegex },
-        { 'location.region': locationRegex },
-        { 'location.country': locationRegex }
-      ];
+      matchStage.$and.push({
+        $or: [
+          { 'location.city': locationRegex },
+          { 'location.country': locationRegex },
+          { 'locationDetails.region': locationRegex },
+          { 'locationDetails.district': locationRegex }
+        ]
+      });
     }
 
     // Geographic search
@@ -2243,11 +2401,17 @@ const advancedJobSearch = async (req, res, next) => {
       const lat = parseFloat(latitude);
       const lng = parseFloat(longitude);
       const radiusKm = parseFloat(radius);
+      const latDelta = radiusKm / 111;
+      const lngDivisor = Math.max(Math.cos((lat * Math.PI) / 180), 0.1);
+      const lngDelta = radiusKm / (111 * lngDivisor);
 
-      matchStage['location.coordinates'] = {
-        $geoWithin: {
-          $centerSphere: [[lng, lat], radiusKm / 6378.1]
-        }
+      matchStage['locationDetails.coordinates.lat'] = {
+        $gte: lat - latDelta,
+        $lte: lat + latDelta,
+      };
+      matchStage['locationDetails.coordinates.lng'] = {
+        $gte: lng - lngDelta,
+        $lte: lng + lngDelta,
       };
     }
 
@@ -2262,16 +2426,14 @@ const advancedJobSearch = async (req, res, next) => {
         { title: { $regex: safeQuery, $options: 'i' } },
         { description: { $regex: safeQuery, $options: 'i' } },
         { skills: { $in: searchTerms.map(term => new RegExp(escapeRx(term), 'i')) } },
-        { category: { $regex: safeQuery, $options: 'i' } }
+        { category: { $regex: safeQuery, $options: 'i' } },
+        { 'requirements.primarySkills': { $in: searchTerms.map(term => new RegExp(escapeRx(term), 'i')) } },
+        { 'requirements.secondarySkills': { $in: searchTerms.map(term => new RegExp(escapeRx(term), 'i')) } },
+        { 'locationDetails.region': { $regex: safeQuery, $options: 'i' } },
+        { 'locationDetails.district': { $regex: safeQuery, $options: 'i' } }
       ];
 
-      if (matchStage.$or) {
-        // Preserve existing $or (location) by combining with $and
-        matchStage.$and = [{ $or: matchStage.$or }, { $or: searchConditions }];
-        delete matchStage.$or;
-      } else {
-        matchStage.$or = searchConditions;
-      }
+      matchStage.$and.push({ $or: searchConditions });
     }
 
     pipeline.push({ $match: matchStage });
@@ -2287,7 +2449,7 @@ const advancedJobSearch = async (req, res, next) => {
     });
 
     pipeline.push({
-      $unwind: '$hirerInfo'
+      $unwind: { path: '$hirerInfo', preserveNullAndEmptyArrays: true }
     });
 
     // Filter by hirer rating if specified
@@ -2304,18 +2466,15 @@ const advancedJobSearch = async (req, res, next) => {
       $addFields: {
         relevanceScore: {
           $add: [
-            { $cond: [{ $ne: ['$featured', null] }, 10, 0] },
             { $multiply: [{ $ifNull: ['$hirerInfo.rating', 0] }, 2] },
-            { $cond: [{ $eq: ['$urgency', 'high'] }, 5, 0] },
-            { $cond: [{ $gte: ['$budget', 1000] }, 3, 0] }
+            { $cond: [{ $eq: ['$location.type', 'remote'] }, 3, 0] },
+            { $cond: [{ $gte: ['$budget', 1000] }, 3, 0] },
+            { $cond: [{ $gte: ['$createdAt', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)] }, 4, 0] },
+            { $cond: [{ $gt: [{ $size: { $ifNull: ['$requirements.primarySkills', []] } }, 0] }, 2, 0] }
           ]
         },
         distanceScore: {
-          $cond: [
-            { $and: [{ $ne: ['$location.coordinates', null] }, latitude, longitude] },
-            { $literal: 0 }, // Would calculate actual distance here
-            { $literal: 0 }
-          ]
+          $literal: 0
         }
       }
     });
@@ -2362,12 +2521,11 @@ const advancedJobSearch = async (req, res, next) => {
         category: 1,
         skills: 1,
         budget: 1,
-        type: 1,
-        experienceLevel: 1,
+        paymentType: 1,
+        'requirements.experienceLevel': 1,
         location: 1,
-        remote: 1,
-        urgency: 1,
-        featured: 1,
+        locationDetails: 1,
+        expiresAt: 1,
         createdAt: 1,
         updatedAt: 1,
         relevanceScore: 1,
@@ -2576,13 +2734,16 @@ const getMyAssignedJobs = async (req, res, next) => {
     if (req.query.status) query.status = req.query.status;
     // AUD2-H02 FIX: Populate payment so the frontend earningsSummary can derive
     // totalEarnings from job.payment.amount instead of falling back to 0.
-    const jobs = await Job.find(query)
-      .populate('hirer', 'firstName lastName profileImage')
-      .populate('payment', 'amount status paidAt currency')
-      .skip(startIndex)
-      .limit(limit)
-      .sort(req.query.sort || '-createdAt');
-    const total = await Job.countDocuments(query);
+    const [jobs, total] = await Promise.all([
+      Job.find(query)
+        .populate('hirer', 'firstName lastName profileImage')
+        .populate('payment', 'amount status paidAt currency')
+        .skip(startIndex)
+        .limit(limit)
+        .sort(req.query.sort || '-createdAt')
+        .lean(),
+      Job.countDocuments(query),
+    ]);
     return paginatedResponse(res, 200, 'Assigned jobs retrieved', jobs, page, limit, total);
   } catch (error) { next(error); }
 };
@@ -2748,7 +2909,7 @@ const getHirerProposals = async (req, res, next) => {
 
     const jobs = await Job.find(jobCriteria).select(
       'title category status budget currency paymentType location locationDetails duration createdAt',
-    );
+    ).lean().limit(200);
 
     if (jobs.length === 0) {
       return paginatedResponse(
@@ -3040,7 +3201,8 @@ const getJobsByLocation = async (req, res, next) => {
       .populate('hirer', 'firstName lastName profilePicture')
       .skip(offset)
       .limit(limit)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     const totalCount = await Job.countDocuments(query);
 
@@ -3062,7 +3224,8 @@ const getJobsBySkill = async (req, res, next) => {
       .populate('hirer', 'firstName lastName profilePicture')
       .skip(offset)
       .limit(limit)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     const totalCount = await Job.countDocuments({
       $or: [
@@ -3110,8 +3273,7 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
-    const offset = (page - 1) * limit;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
 
     // Get user performance data
     const userPerformance = await UserPerformance.findOne({ userId });
@@ -3119,12 +3281,12 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
       return errorResponse(res, 404, 'User performance data not found');
     }
 
-    // Get user's skills
-    const primarySkills = userPerformance.skillVerification.primarySkills
+    // Get user's skills with null guards
+    const primarySkills = (userPerformance.skillVerification?.primarySkills || [])
       .filter(skill => skill.verified)
       .map(skill => skill.skill);
 
-    const secondarySkills = userPerformance.skillVerification.secondarySkills
+    const secondarySkills = (userPerformance.skillVerification?.secondarySkills || [])
       .filter(skill => skill.verified)
       .map(skill => skill.skill);
 
@@ -3134,8 +3296,8 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
       return successResponse(res, 200, 'No skills found for recommendations', []);
     }
 
-    // Find jobs matching user skills
-    const jobs = await Job.find({
+    // Fetch ALL matching jobs (up to a reasonable cap), THEN score and paginate
+    const candidateJobs = await Job.find({
       $or: [
         { 'requirements.primarySkills': { $in: allSkills } },
         { 'requirements.secondarySkills': { $in: allSkills } },
@@ -3145,51 +3307,55 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
       'bidding.bidStatus': 'open'
     })
       .populate('hirer', 'firstName lastName profilePicture')
-      .skip(offset)
-      .limit(limit)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(200) // reasonable cap for scoring
+      .lean();
 
-    // Calculate match scores for each job
-    const jobsWithScores = jobs.map(job => {
+    // Calculate match scores for each job with null guards
+    const jobsWithScores = candidateJobs.map(job => {
       let score = 0;
 
-      // Skill matching (40% weight)
-      const primarySkillMatch = job.requirements.primarySkills.some(skill => primarySkills.includes(skill));
-      const secondarySkillMatch = job.requirements.secondarySkills.some(skill => secondarySkills.includes(skill));
-      if (primarySkillMatch) score += 40;
-      if (secondarySkillMatch) score += 20;
+      // Skill matching (40% weight) - proportional
+      const jobPrimarySkills = job.requirements?.primarySkills || [];
+      const jobSecondarySkills = job.requirements?.secondarySkills || [];
+      const primaryMatched = jobPrimarySkills.filter(skill => primarySkills.includes(skill)).length;
+      const secondaryMatched = jobSecondarySkills.filter(skill => secondarySkills.includes(skill)).length;
 
-      // Location matching (30% weight)
-      if (userPerformance.locationPreferences.primaryRegion === job.locationDetails.region) {
+      if (jobPrimarySkills.length > 0) {
+        score += (primaryMatched / jobPrimarySkills.length) * 40;
+      }
+      if (jobSecondarySkills.length > 0) {
+        score += (secondaryMatched / jobSecondarySkills.length) * 20;
+      }
+
+      // Location matching (30% weight) with null guard
+      const jobRegion = job.locationDetails?.region;
+      const userRegion = userPerformance.locationPreferences?.primaryRegion;
+      if (userRegion && jobRegion && userRegion === jobRegion) {
         score += 30;
       }
 
       // Performance tier matching (20% weight)
-      if (userPerformance.performanceTier === job.performanceTier) {
+      if (userPerformance.performanceTier && userPerformance.performanceTier === job.performanceTier) {
         score += 20;
       }
 
       // Recent job bonus (10% weight)
-      const daysSincePosted = Math.floor((new Date() - job.createdAt) / (1000 * 60 * 60 * 24));
+      const daysSincePosted = Math.floor((Date.now() - new Date(job.createdAt).getTime()) / (1000 * 60 * 60 * 24));
       if (daysSincePosted <= 3) score += 10;
+      else if (daysSincePosted <= 7) score += 5;
 
-      return { ...job.toObject(), matchScore: score };
+      return { ...job, matchScore: Math.round(score) };
     });
 
-    // Sort by match score
+    // Sort ALL by match score FIRST, THEN paginate
     jobsWithScores.sort((a, b) => b.matchScore - a.matchScore);
 
-    const totalCount = await Job.countDocuments({
-      $or: [
-        { 'requirements.primarySkills': { $in: allSkills } },
-        { 'requirements.secondarySkills': { $in: allSkills } },
-        { skills: { $in: allSkills } }
-      ],
-      status: { $in: ['open', 'Open'] },
-      'bidding.bidStatus': 'open'
-    });
+    const totalCount = jobsWithScores.length;
+    const offset = (page - 1) * limit;
+    const paginatedJobs = jobsWithScores.slice(offset, offset + limit);
 
-    return paginatedResponse(res, 200, 'Personalized job recommendations retrieved successfully', jobsWithScores, page, limit, totalCount);
+    return paginatedResponse(res, 200, 'Personalized job recommendations retrieved successfully', paginatedJobs, page, limit, totalCount);
   } catch (error) {
     next(error);
   }

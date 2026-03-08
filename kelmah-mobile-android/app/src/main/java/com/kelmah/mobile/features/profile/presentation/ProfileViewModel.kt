@@ -3,6 +3,7 @@ package com.kelmah.mobile.features.profile.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kelmah.mobile.core.network.ApiResult
+import com.kelmah.mobile.core.security.PasswordPolicy
 import com.kelmah.mobile.core.storage.SessionUser
 import com.kelmah.mobile.core.storage.TokenManager
 import com.kelmah.mobile.features.auth.data.AuthRepository
@@ -69,8 +70,8 @@ class ProfileViewModel @Inject constructor(
                 _uiState.update { it.copy(errorMessage = "Complete all password fields") }
                 return
             }
-            !isStrongPassword(state.newPassword) -> {
-                _uiState.update { it.copy(errorMessage = "New password must be at least 8 characters and include one uppercase letter and one number") }
+            !PasswordPolicy.isStrong(state.newPassword) -> {
+                _uiState.update { it.copy(errorMessage = "New ${PasswordPolicy.requirementMessage.lowercase()}") }
                 return
             }
             state.newPassword != state.confirmPassword -> {
@@ -100,7 +101,4 @@ class ProfileViewModel @Inject constructor(
             }
         }
     }
-
-    private fun isStrongPassword(password: String): Boolean =
-        password.length >= 8 && password.any(Char::isUpperCase) && password.any(Char::isDigit)
 }

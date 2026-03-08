@@ -55,7 +55,7 @@ const verifyAccessToken = (token) => {
   }
   
   try {
-    return jwt.verify(token, JWT_SECRET);
+    return jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
       throw new Error('Token expired');
@@ -73,13 +73,13 @@ const verifyRefreshToken = (token) => {
   if (!JWT_REFRESH_SECRET) {
     throw new Error('JWT_REFRESH_SECRET is required for refresh tokens');
   }
-  
+
   if (!token || typeof token !== 'string') {
     throw new Error('Token must be a string');
   }
-  
+
   try {
-    return jwt.verify(token, JWT_REFRESH_SECRET);
+    return jwt.verify(token, JWT_REFRESH_SECRET, { algorithms: ['HS256'] });
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
       throw new Error('Refresh token expired');

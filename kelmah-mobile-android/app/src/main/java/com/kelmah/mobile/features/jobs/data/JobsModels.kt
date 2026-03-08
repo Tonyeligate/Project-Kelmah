@@ -6,7 +6,20 @@ data class JobsFilterState(
     val search: String = "",
     val category: String = "All",
     val location: String = "",
+    val sort: JobSortOption = JobSortOption.NEWEST,
 )
+
+enum class JobSortOption(
+    val label: String,
+    val queryValue: String,
+) {
+    NEWEST("Newest", "newest"),
+    OLDEST("Oldest", "oldest"),
+    BUDGET_HIGH("Top Budget", "budget_desc"),
+    BUDGET_LOW("Low Budget", "budget_asc"),
+    DEADLINE_SOON("Deadline Soon", "deadline_asc"),
+    URGENT("Urgent", "urgent"),
+}
 
 enum class JobsFeed {
     DISCOVER,

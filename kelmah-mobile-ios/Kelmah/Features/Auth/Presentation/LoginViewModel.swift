@@ -85,8 +85,8 @@ final class LoginViewModel: ObservableObject {
             errorMessage = "Email is required"
             return
         }
-        guard isStrongPassword(password) else {
-            errorMessage = "Password must be at least 8 characters and include one uppercase letter and one number"
+        guard PasswordPolicy.isStrong(password) else {
+            errorMessage = PasswordPolicy.requirementMessage
             return
         }
         guard password == confirmPassword else {
@@ -129,8 +129,8 @@ final class LoginViewModel: ObservableObject {
             errorMessage = "Reset token is required"
             return
         }
-        guard isStrongPassword(password) else {
-            errorMessage = "Password must be at least 8 characters and include one uppercase letter and one number"
+        guard PasswordPolicy.isStrong(password) else {
+            errorMessage = PasswordPolicy.requirementMessage
             return
         }
         guard password == confirmPassword else {
@@ -174,9 +174,5 @@ final class LoginViewModel: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
-    }
-
-    private func isStrongPassword(_ value: String) -> Bool {
-        value.count >= 8 && value.contains(where: \ .isUppercase) && value.contains(where: \ .isNumber)
     }
 }

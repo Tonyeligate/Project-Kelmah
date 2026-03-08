@@ -24,6 +24,10 @@ final class MessagesViewModel: ObservableObject {
         repository.currentUserId
     }
 
+    var totalUnreadCount: Int {
+        conversations.reduce(0) { $0 + $1.unreadCount }
+    }
+
     var filteredConversations: [MessageConversation] {
         let query = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         guard query.isEmpty == false else { return conversations }
@@ -63,6 +67,20 @@ final class MessagesViewModel: ObservableObject {
         selectedConversation = conversation
         draftMessage = ""
         await loadMessages(conversationId: conversation.id)
+    }
+
+    func openConversation(conversationId: String) async {
+        if let existing = conversations.first(where: { $0.id == conversationId }) {
+            await openConversation(existing)
+            return
+        }
+
+        await refreshConversations()
+        if let refreshed = conversations.first(where: { $0.id == conversationId }) {
+            await openConversation(refreshed)
+        } else {
+            errorMessage = "Conversation could not be found"
+        }
     }
 
     func closeConversation() {

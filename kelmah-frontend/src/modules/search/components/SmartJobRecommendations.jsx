@@ -320,7 +320,8 @@ const SmartJobRecommendations = ({
 
   // Render job recommendation card
   const renderJobCard = (job) => {
-    const matchColor = getMatchScoreColor(job.matchScore);
+    const hasMatchScore = job.matchScore != null && !isNaN(job.matchScore);
+    const matchColor = hasMatchScore ? getMatchScoreColor(job.matchScore) : 'default';
     const urgency = getUrgencyIndicator(job.urgency);
     const jobKey = job.id || job._id || job.jobId;
     const isSaved = jobKey ? savedJobIds.has(jobKey) : false;
@@ -363,18 +364,20 @@ const SmartJobRecommendations = ({
         )}
 
         {/* Match score badge */}
-        <Chip
-          label={`${job.matchScore}% Match`}
-          color={matchColor}
-          size="small"
-          sx={{
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            zIndex: 1,
-            fontWeight: 'bold',
-          }}
-        />
+        {hasMatchScore && (
+          <Chip
+            label={`${job.matchScore}% Match`}
+            color={matchColor}
+            size="small"
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              zIndex: 1,
+              fontWeight: 'bold',
+            }}
+          />
+        )}
 
         {/* Urgency indicator */}
         {job.urgency !== 'low' && (
@@ -384,7 +387,7 @@ const SmartJobRecommendations = ({
             size="small"
             sx={{
               position: 'absolute',
-              top: job.featured ? 40 : 40,
+              top: hasMatchScore ? 40 : 8,
               right: 8,
               zIndex: 1,
             }}

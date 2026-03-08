@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -48,6 +47,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,16 +59,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kelmah.mobile.core.utils.RelativeTimeFormatter
 import com.kelmah.mobile.features.messaging.data.ConversationSummary
 import com.kelmah.mobile.features.messaging.data.ThreadMessage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MessagesScreen(
+    initialConversationId: String? = null,
     viewModel: MessagesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbars = remember { SnackbarHostState() }
+    var handledInitialConversation by rememberSaveable(initialConversationId) { mutableStateOf(initialConversationId == null) }
     val filteredConversations = remember(state.conversations, state.searchQuery) {
         val query = state.searchQuery.trim().lowercase()
         if (query.isBlank()) {
@@ -87,6 +92,13 @@ fun MessagesScreen(
         state.infoMessage?.let {
             snackbars.showSnackbar(it)
             viewModel.clearMessages()
+        }
+    }
+
+    LaunchedEffect(initialConversationId, state.conversations, handledInitialConversation) {
+        if (!handledInitialConversation && !initialConversationId.isNullOrBlank()) {
+            handledInitialConversation = true
+            viewModel.openConversationById(initialConversationId)
         }
     }
 
@@ -407,7 +419,7 @@ private fun MessageBubble(
                 message.createdAt?.let {
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = it,
+                        text = RelativeTimeFormatter.relativeOrFallback(it) ?: it,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

@@ -1054,6 +1054,44 @@ const buildVerificationSnapshot = (worker = {}, profile = {}, certificationSumma
   };
 };
 
+const canViewWorkerPrivateFields = (reqUser, targetUserId) =>
+  canMutateWorkerResource(reqUser, targetUserId);
+
+const buildPublicAvailabilityView = (availability = {}) => ({
+  status: availability.status || 'available',
+  isAvailable: toSafeBoolean(availability.isAvailable, true),
+  timezone: toSafeString(availability.timezone, 'Africa/Accra'),
+  nextAvailable: availability.nextAvailable || null,
+  message: toSafeString(availability.message, ''),
+  emergencyAvailable: toSafeBoolean(availability.emergencyAvailable, false),
+  lastUpdated: availability.lastUpdated || null,
+  source: availability.source || {},
+});
+
+const sanitizeWorkerResponseForAudience = (workerPayload, options = {}) => {
+  const { includePrivateFields = false } = options;
+  if (!workerPayload) {
+    return workerPayload;
+  }
+
+  if (includePrivateFields) {
+    return workerPayload;
+  }
+
+  return {
+    ...workerPayload,
+    availability: buildPublicAvailabilityView(workerPayload.availability),
+    certifications: {
+      ...workerPayload.certifications,
+      items: toArray(workerPayload.certifications?.items).filter((certificate) => {
+        const status = toSafeString(certificate?.status, '').toLowerCase();
+        const verificationResult = toSafeString(certificate?.verification?.result, '').toLowerCase();
+        return status === 'verified' || verificationResult === 'verified';
+      }),
+    },
+  };
+};
+
 const isDbUnavailableError = (error) => {
   if (!error) {
     return false;
@@ -1742,6 +1780,9 @@ class WorkerController {
 
       const verification = buildVerificationSnapshot(worker, profile, certificationSummary);
 
+      const targetWorkerId = worker._id ? toSafeString(worker._id) : toSafeString(profile.userId, '');
+      const includePrivateFields = canViewWorkerPrivateFields(req.user, targetWorkerId);
+
       const workerPayload = {
         id: worker._id ? toSafeString(worker._id) : toSafeString(profile.userId, ''),
         userId: worker._id ? toSafeString(worker._id) : toSafeString(profile.userId, ''),
@@ -1781,17 +1822,26 @@ class WorkerController {
         },
         portfolio: portfolioSummary,
         certifications: certificationSummary,
-        contact: {
-          email: toSafeString(worker.email, ''),
-          phone: toSafeString(worker.phone, ''),
-          website: toSafeString(profile.website || worker.website, ''),
-          social: {
-            linkedin: toSafeString(profile.linkedinUrl || profile.socialLinks?.linkedin, ''),
-            instagram: toSafeString(profile.socialLinks?.instagram, ''),
-            facebook: toSafeString(profile.socialLinks?.facebook, ''),
+        contact: includePrivateFields
+          ? {
+            email: toSafeString(worker.email, ''),
+            phone: toSafeString(worker.phone, ''),
+            website: toSafeString(profile.website || worker.website, ''),
+            social: {
+              linkedin: toSafeString(profile.linkedinUrl || profile.socialLinks?.linkedin, ''),
+              instagram: toSafeString(profile.socialLinks?.instagram, ''),
+              facebook: toSafeString(profile.socialLinks?.facebook, ''),
+            },
+          }
+          : {
+            website: toSafeString(profile.website || worker.website, ''),
+            social: {
+              linkedin: toSafeString(profile.linkedinUrl || profile.socialLinks?.linkedin, ''),
+              instagram: toSafeString(profile.socialLinks?.instagram, ''),
+              facebook: toSafeString(profile.socialLinks?.facebook, ''),
+            },
           },
-        },
-        business: profile.businessInfo
+        business: includePrivateFields && profile.businessInfo
           ? {
             name: toSafeString(profile.businessInfo.businessName, ''),
             type: toSafeString(profile.businessInfo.businessType, ''),
@@ -1799,7 +1849,7 @@ class WorkerController {
             taxId: toSafeString(profile.businessInfo.taxId, ''),
           }
           : null,
-        insurance: profile.insuranceInfo
+        insurance: includePrivateFields && profile.insuranceInfo
           ? {
             hasInsurance: toSafeBoolean(profile.insuranceInfo.hasInsurance, false),
             provider: toSafeString(profile.insuranceInfo.provider, ''),
@@ -1807,18 +1857,23 @@ class WorkerController {
             coverage: toSafeNumber(profile.insuranceInfo.coverage, null),
           }
           : null,
-        user: {
-          id: worker._id ? toSafeString(worker._id) : toSafeString(profile.userId, ''),
-          email: toSafeString(worker.email, ''),
-          phone: toSafeString(worker.phone, ''),
-          role: toSafeString(worker.role, 'worker'),
-          isActive: toSafeBoolean(worker.isActive, true),
-          isEmailVerified: toSafeBoolean(worker.isEmailVerified, false),
-          createdAt: toIsoString(worker.createdAt),
-          updatedAt: toIsoString(worker.updatedAt),
-          lastLogin: toIsoString(worker.lastLogin),
-        },
-        lastActiveAt: toIsoString(profile.lastActiveAt || worker.lastLogin),
+        user: includePrivateFields
+          ? {
+            id: worker._id ? toSafeString(worker._id) : toSafeString(profile.userId, ''),
+            email: toSafeString(worker.email, ''),
+            phone: toSafeString(worker.phone, ''),
+            role: toSafeString(worker.role, 'worker'),
+            isActive: toSafeBoolean(worker.isActive, true),
+            isEmailVerified: toSafeBoolean(worker.isEmailVerified, false),
+            createdAt: toIsoString(worker.createdAt),
+            updatedAt: toIsoString(worker.updatedAt),
+            lastLogin: toIsoString(worker.lastLogin),
+          }
+          : {
+            id: worker._id ? toSafeString(worker._id) : toSafeString(profile.userId, ''),
+            role: toSafeString(worker.role, 'worker'),
+          },
+        lastActiveAt: includePrivateFields ? toIsoString(profile.lastActiveAt || worker.lastLogin) : null,
         metadata: {
           retrievedAt: new Date().toISOString(),
           source: {
@@ -1837,10 +1892,14 @@ class WorkerController {
         isVerified: verification.isVerified,
       });
 
+      const responseWorkerPayload = sanitizeWorkerResponseForAudience(workerPayload, {
+        includePrivateFields,
+      });
+
       return res.status(200).json({
         success: true,
         data: {
-          worker: workerPayload,
+          worker: responseWorkerPayload,
         },
       });
 
@@ -2788,7 +2847,7 @@ class WorkerController {
       if (req.query.status) {
         filter.status = req.query.status;
       } else if (!isOwner) {
-        filter.status = { $in: ['verified', 'pending'] };
+        filter.status = 'verified';
       }
 
       const certificates = await CertificateModel.find(filter)
@@ -3234,18 +3293,25 @@ class WorkerController {
         return null;
       };
 
+      const responseAvailability = {
+        status: availability.isAvailable ? 'available' : 'unavailable',
+        isAvailable: Boolean(availability.isAvailable),
+        timezone: availability.timezone,
+        daySlots: availability.daySlots || [],
+        schedule: normalizedSchedule,
+        nextAvailable: computeNextAvailable(),
+        lastUpdated: availability.updatedAt,
+        pausedUntil: availability.pausedUntil || null,
+      };
+
+      const includePrivateFields = canViewWorkerPrivateFields(req.user, workerId);
+      const publicAvailability = buildPublicAvailabilityView(responseAvailability);
+
       return res.json({
         success: true,
-        data: {
-          status: availability.isAvailable ? 'available' : 'unavailable',
-          isAvailable: Boolean(availability.isAvailable),
-          timezone: availability.timezone,
-          daySlots: availability.daySlots || [],
-          schedule: normalizedSchedule,
-          nextAvailable: computeNextAvailable(),
-          lastUpdated: availability.updatedAt,
-          pausedUntil: availability.pausedUntil || null,
-        }
+        data: includePrivateFields
+          ? responseAvailability
+          : publicAvailability
       });
     } catch (error) {
       logger.error('❌ ERROR in getWorkerAvailability - Full details:', {
@@ -3288,9 +3354,9 @@ class WorkerController {
 
     try {
       await ensureConnection({ timeoutMs: 30000 });
-      
+
       const { User } = require('../models');
-      
+
       // Find the worker user
       const user = await User.findById(workerId);
       
@@ -3307,6 +3373,15 @@ class WorkerController {
           message: 'User is not a worker' 
         });
       }
+
+      if (!canMutateWorkerResource(req.user, user._id)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to update this worker profile'
+        });
+      }
+
+      const profile = await getMutableWorkerProfile(user);
 
       // Extract profile data from request body
       const {
@@ -3330,9 +3405,14 @@ class WorkerController {
       if (firstName) user.firstName = firstName;
       if (lastName) user.lastName = lastName;
       if (phone) user.phone = phone;
+      if (location) user.location = location;
+      if (bio) user.bio = bio;
+      if (hourlyRate !== undefined) user.hourlyRate = Number(hourlyRate);
+      if (experience !== undefined) user.yearsOfExperience = Number(experience);
+      if (Array.isArray(skills)) user.skills = skills;
 
-      // Update worker profile fields
-      if (!user.workerProfile) {
+      // Update embedded worker profile fields for backward compatibility
+      if (!user.workerProfile || typeof user.workerProfile !== 'object') {
         user.workerProfile = {};
       }
 
@@ -3356,8 +3436,24 @@ class WorkerController {
         user.profilePictureMetadata = profilePictureMetadata;
       }
 
-      // Save the updated user
-      await user.save();
+      if (title) {
+        profile.title = title;
+        profile.headline = title;
+      }
+      if (bio) profile.bio = bio;
+      if (hourlyRate !== undefined) profile.hourlyRate = Number(hourlyRate);
+      if (experience !== undefined) profile.yearsOfExperience = Number(experience);
+      if (location) profile.location = location;
+      if (Array.isArray(skills)) profile.skills = skills;
+      if (Array.isArray(education)) profile.education = education;
+      if (Array.isArray(languages)) profile.languages = languages;
+      if (Array.isArray(portfolio)) profile.portfolioItems = portfolio;
+      if (typeof profilePicture === 'string' && profilePicture.trim()) {
+        profile.profilePicture = profilePicture.trim();
+      }
+
+      // Save the updated user and worker profile
+      await Promise.all([user.save(), profile.save()]);
 
       // Return the updated profile
       const updatedProfile = {
@@ -3370,6 +3466,14 @@ class WorkerController {
         profileImageUrl: user.profilePicture || null,
         profilePicture: user.profilePicture || null,
         ...user.workerProfile,
+        workerProfileId: profile._id,
+        bio: profile.bio || user.bio || null,
+        location: profile.location || user.location || null,
+        hourlyRate: profile.hourlyRate ?? user.hourlyRate ?? null,
+        experience: profile.yearsOfExperience ?? user.yearsOfExperience ?? null,
+        skills: Array.isArray(profile.skills) && profile.skills.length > 0 ? profile.skills : (user.skills || []),
+        languages: profile.languages || [],
+        education: profile.education || [],
       };
 
       return res.json({ 

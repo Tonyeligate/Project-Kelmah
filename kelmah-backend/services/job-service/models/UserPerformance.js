@@ -143,7 +143,7 @@ const UserPerformanceSchema = new Schema(
     locationPreferences: {
       primaryRegion: {
         type: String,
-        enum: ["Greater Accra", "Ashanti", "Western", "Eastern", "Central", "Volta", "Northern", "Upper East", "Upper West", "Brong-Ahafo"]
+        enum: ["Greater Accra", "Ashanti", "Western", "Eastern", "Central", "Volta", "Northern", "Upper East", "Upper West", "Brong-Ahafo", "Oti", "Bono East", "North East", "Savannah", "Western North", "Ahafo"]
       },
       preferredCities: [String],
       maxTravelDistance: {
@@ -372,9 +372,27 @@ UserPerformanceSchema.statics.findBySkill = function(skill, limit = 100) {
 UserPerformanceSchema.pre('save', function(next) {
   if (this.isModified('metrics') || this.isModified('skillVerification')) {
     const calculatedTier = this.calculateTier();
+
+    // Inline tier update to avoid infinite recursion (updateTier calls save())
     if (calculatedTier !== this.performanceTier) {
-      this.updateTier(calculatedTier, "Auto-calculated based on performance metrics");
+      this.performanceTier = calculatedTier;
+      // Set bid quota based on tier
+      const tierQuotas = { tier1: 8, tier2: 6, tier3: 5 };
+      this.monthlyBidQuota = tierQuotas[calculatedTier] || 5;
+
+      // Add to performance history (cap at 50 entries)
+      if (!this.performanceHistory) this.performanceHistory = [];
+      this.performanceHistory.push({
+        tier: calculatedTier,
+        score: this.metrics?.overallScore || 0,
+        date: new Date(),
+        reason: 'Auto-calculated from metrics on save'
+      });
+      if (this.performanceHistory.length > 50) {
+        this.performanceHistory = this.performanceHistory.slice(-50);
+      }
     }
+    this.lastUpdated = new Date();
   }
   next();
 });

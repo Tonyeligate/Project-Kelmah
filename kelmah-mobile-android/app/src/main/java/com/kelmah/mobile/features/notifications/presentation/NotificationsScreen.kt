@@ -1,5 +1,6 @@
 package com.kelmah.mobile.features.notifications.presentation
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,11 +47,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kelmah.mobile.features.notifications.data.NotificationItem
+import com.kelmah.mobile.features.notifications.data.actionLabel
+import com.kelmah.mobile.features.notifications.data.actionTarget
 import com.kelmah.mobile.features.notifications.data.displayTag
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationsScreen(
+    onOpenNotification: (NotificationItem) -> Unit = {},
     viewModel: NotificationsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -141,6 +145,7 @@ fun NotificationsScreen(
                                 isMutating = state.isMutating,
                                 onMarkRead = { viewModel.markAsRead(notification.id) },
                                 onDelete = { viewModel.deleteNotification(notification.id) },
+                                onOpen = { onOpenNotification(notification) },
                             )
                         }
                     }
@@ -156,9 +161,15 @@ private fun NotificationCard(
     isMutating: Boolean,
     onMarkRead: () -> Unit,
     onDelete: () -> Unit,
+    onOpen: () -> Unit,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = notification.actionTarget != null) {
+                if (!notification.isRead) onMarkRead()
+                onOpen()
+            },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (notification.isRead) {
@@ -211,6 +222,14 @@ private fun NotificationCard(
                     TextButton(onClick = onMarkRead, enabled = isMutating.not()) {
                         Text("Mark read")
                     }
+                }
+                notification.actionLabel?.let { actionLabel ->
+                    Text(
+                        text = actionLabel,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(end = 8.dp),
+                    )
                 }
                 IconButton(onClick = onDelete, enabled = isMutating.not()) {
                     Icon(Icons.Outlined.DeleteOutline, contentDescription = "Delete notification")

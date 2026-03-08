@@ -12,10 +12,33 @@ enum JobsFeed: String, CaseIterable, Hashable {
     }
 }
 
+enum JobSortOption: String, CaseIterable, Hashable, Identifiable {
+    case newest
+    case oldest
+    case budgetHigh = "budget_desc"
+    case budgetLow = "budget_asc"
+    case deadlineSoon = "deadline_asc"
+    case urgent
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .newest: return "Newest"
+        case .oldest: return "Oldest"
+        case .budgetHigh: return "Top Budget"
+        case .budgetLow: return "Low Budget"
+        case .deadlineSoon: return "Deadline Soon"
+        case .urgent: return "Urgent"
+        }
+    }
+}
+
 struct JobFilters: Equatable {
     var search: String = ""
     var category: String = "All"
     var location: String = ""
+    var sort: JobSortOption = .newest
 }
 
 struct JobCategory: Identifiable, Hashable {

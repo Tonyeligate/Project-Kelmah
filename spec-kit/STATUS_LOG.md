@@ -2,6 +2,198 @@
 
 ---
 
+### Session: Backend Contract Hardening For Worker Privacy And Job Exposure ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Start executing the highest-severity backend fixes from the matching/recommendation audit without unnecessary restarts: lock down worker profile mutation authorization, split public/private worker response DTOs, reduce public availability and certificate exposure, and remove hirer email leakage from public job payloads.
+
+**Acceptance Criteria**
+- Add owner-or-admin enforcement to worker profile update routes and keep the response contract stable enough for the current frontend.
+- Ensure unauthenticated worker detail, availability, and certificate endpoints expose only public-safe fields.
+- Remove hirer email leakage from public job list/detail payloads and enforce visibility gating on job detail reads.
+- Re-run diagnostics on the touched files and re-check live/public contract behavior after the patch set.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/api-gateway/server.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/job-service/routes/job.routes.js`
+- `kelmah-backend/services/job-service/utils/jobTransform.js`
+- `kelmah-backend/shared/models/User.js`
+- `kelmah-backend/shared/models/Job.js`
+- `spec-kit/MATCHING_RECOMMENDATIONS_ACTIVITY_DEEP_AUDIT_MAR08_2026.md`
+
+**Completed changes**
+- Added owner-or-admin enforcement to `PUT /api/users/workers/:id` in the user-service controller.
+- Split worker detail and availability responses into public-safe vs owner/admin views so unauthenticated reads no longer expose direct contact and account-state fields by default.
+- Tightened gateway public worker-route matching from a broad catch-all regex to explicit allow-listed read paths.
+- Removed hirer email propagation from the shared job response transformer and job detail populate path.
+- Added optional auth to public job detail reads so private and draft jobs can be hidden from non-owners while still allowing owner/admin access.
+- Reworked job recommendation and worker-match inputs to use the actual `Application` and top-level `User` fields instead of stale pseudo-fields.
+- Corrected advanced job search filters to use canonical schema fields (`paymentType`, `location.type`, `requirements.experienceLevel`, `locationDetails.*`) instead of stale fields.
+- Removed duplicate shared `User` model index declarations that were generating runtime Mongoose warnings during module load.
+
+**Verification**
+- `get_errors` returned no diagnostics for all touched backend files and the updated spec log.
+- Direct Node module-load checks succeeded for the patched worker controller, job controller, and job transformer after the final patch set.
+- Verified via a direct transformer smoke check that populated hirer objects no longer emit an `email` field in transformed public job payloads.
+- Live Render/Vercel contract re-check was not repeated for these exact changes because no service restart or deployment was performed in this session.
+
+### Session: Native Mobile Matching, Recommendations, and Precision Audit ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Perform a deep mobile-only audit across Android and iOS for job matching logic, worker profile relevance, search recommendations, recent activity surfaces, precision of ranking/filtering behavior, UI correctness, security, and performance risks that could hurt platform productivity or trust.
+
+**Acceptance Criteria**
+- Dry-audit the full Android and iOS source surface, with extra focus on jobs, home, messaging, notifications, auth/session, and shared network/state layers.
+- Trace the data flow from mobile UI state through repository/network layers into the gateway-backed matching/search/recommendation endpoints.
+- Identify bugs, security risks, edge cases, performance issues, and maintainability concerns with severity and actionable fixes.
+- Validate critical contracts against the live Render gateway where helpful without unnecessary redeploys or service restarts.
+- Record the highest-value recommendations for improving match precision, recommendation quality, and user productivity.
+
+**Dry-audit file surface confirmed**
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/**/*.kt`
+- `kelmah-mobile-android/app/src/test/java/com/kelmah/mobile/**/*.kt`
+- `kelmah-mobile-android/build.gradle.kts`
+- `kelmah-mobile-android/app/build.gradle.kts`
+- `kelmah-mobile-ios/Kelmah/**/*.swift`
+- `kelmah-mobile-ios/KelmahTests/**/*.swift`
+- `kelmah-mobile-ios/KelmahUITests/**/*.swift`
+- `kelmah-mobile-ios/project.yml`
+- `kelmah-mobile-ios/Config/*.xcconfig`
+- `spec-kit/STATUS_LOG.md`
+
+**Current focus**
+- Android audit pass on jobs, home, notifications, auth/session, and network precision.
+- iOS audit pass on the equivalent feature and infrastructure layers.
+- Live gateway contract checks for recommendation/search endpoints that materially affect mobile ranking behavior.
+
+**Highest-risk findings**
+- Both mobile apps still drive job discovery from the generic jobs list with hard-coded `sort=newest`, and neither app consumes a dedicated recommendation endpoint or sends worker-profile/activity signals for ranking.
+- The current home dashboards in both apps are static copy only, so there is no real recent-activity, match-health, or recommendation summary logic despite product copy implying otherwise.
+- Worker-profile relevance is not implemented in either mobile app: the current profile surfaces expose identity and password-change controls only, with no skills, rates, certifications, availability, or portfolio data to support matching precision.
+- Realtime behavior is incomplete in both apps: socket base URLs are configured, but messaging and notifications are still REST-refresh flows only.
+- Notification action links are parsed from backend payloads but not executed into mobile navigation, so activity alerts do not take users to the related conversation or job.
+- iOS has an additional session/storage bug where saving a session without a refresh token leaves the previous refresh token intact, creating stale-auth recovery risk.
+
+**Verification**
+- Read-only dry audit completed across the Android and iOS mobile source trees, including jobs, home, messaging, notifications, auth/session, storage, profile, and transport layers.
+- Live Render gateway checks confirmed public jobs and category contracts are reachable, recommendation endpoints are authenticated, and the authenticated recommendations route currently returns `403 Forbidden` for the documented hirer test account.
+- Live messaging and notification payloads were sampled successfully and confirmed that notification action URLs such as `/messages?conversation=...` exist in the backend contract but are not currently translated into mobile navigation.
+
+### Session: Matching, Recommendations, Search, Activity, And Full Page Audit ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Deep dry audit of job matching precision, worker profile matching, job and worker search ranking, recommendation logic, recent-activity logic for matches and recommendations, database-to-backend flow integrity, and frontend page-level bugs, security, and performance issues across the platform.
+
+**Acceptance Criteria**
+- Document the end-to-end data flow for matching, recommendations, search, and activity-driven widgets from frontend pages through the gateway and services into MongoDB models.
+- Identify concrete bugs, security risks, performance issues, maintainability problems, and edge-case failures with file references and severity.
+- Verify whether the current live frontend and deployed API contracts align with the audited code paths.
+- Produce a prioritized remediation backlog focused on the highest-leverage fixes.
+
+**Dry-audit file surface confirmed so far**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/pages/HomeLanding.jsx`
+- `kelmah-frontend/src/modules/search/pages/SearchPage.jsx`
+- `kelmah-frontend/src/modules/search/components/SmartJobRecommendations.jsx`
+- `kelmah-frontend/src/modules/search/components/results/SearchResults.jsx`
+- `kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx`
+- `kelmah-frontend/src/modules/search/components/suggestions/SearchSuggestions.jsx`
+- `kelmah-frontend/src/modules/search/components/common/SearchSuggestions.jsx`
+- `kelmah-frontend/src/modules/search/contexts/SearchContext.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `kelmah-frontend/src/modules/jobs/services/jobsService.js`
+- `kelmah-frontend/src/modules/jobs/services/jobSlice.js`
+- `kelmah-frontend/src/modules/jobs/hooks/useJobs.js`
+- `kelmah-frontend/src/modules/jobs/hooks/useJobsQuery.js`
+- `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
+- `kelmah-frontend/src/modules/worker/pages/WorkerProfilePage.jsx`
+- `kelmah-frontend/src/modules/worker/pages/WorkerProfileEditPage.jsx`
+- `kelmah-frontend/src/modules/worker/services/workerService.js`
+- `kelmah-frontend/src/modules/worker/services/workerSlice.js`
+- `kelmah-frontend/src/modules/hirer/pages/WorkerSearchPage.jsx`
+- `kelmah-frontend/src/modules/hirer/components/RecentActivityFeed.jsx`
+- `kelmah-backend/api-gateway/server.js`
+- `kelmah-backend/api-gateway/routes/job.routes.js`
+- `kelmah-backend/api-gateway/routes/user.routes.js`
+- `kelmah-backend/services/job-service/routes/job.routes.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/job-service/models/index.js`
+- `kelmah-backend/services/user-service/server.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/services/recommendation.service.js`
+- `kelmah-backend/services/user-service/utils/helpers.js`
+- `kelmah-backend/shared/models/Job.js`
+- `kelmah-backend/shared/models/User.js`
+- `spec-kit/SMART_JOB_RECOMMENDATIONS_DATA_FLOW_NOV2025.md`
+- `spec-kit/JOB_SYSTEM_COMPREHENSIVE_AUDIT.md`
+- `spec-kit/FRONTEND_PAGE_AUDIT_MAR08_2026.md`
+
+**Current findings**
+- Matching and recommendation behavior appears split across job-service scoring, user-service helper formatting, and frontend consumption assumptions, which creates a high risk of inconsistent ranking and trust issues.
+- The highest-value page-quality risks are concentrated in search, jobs, worker dashboard/profile, hirer talent discovery, and shared role-leaking pages rather than being uniformly distributed across the whole app.
+- Existing audits already suggest route-role drift, heuristic recommendation behavior, and duplicate or parallel data-fetching patterns that need reconfirmation against current code and live contracts.
+
+**Delivery summary**
+- Completed the dry audit of the matching, recommendation, worker-discovery, activity, and productivity page surface.
+- Cross-checked the highest-risk findings against the live Vercel frontend and the responding Render gateway host without restarting services.
+- Captured a prioritized remediation set focused on search correctness, recommendation accuracy, public data exposure, route drift, and fake or synthetic productivity UI.
+
+**Verification**
+- Verified that `https://kelmah-frontend-cyan.vercel.app/api/jobs?limit=1` returns `404`, consistent with the checked-in Vercel config lacking `/api/*` rewrites.
+- Verified that `https://kelmah-api-gateway-gf3g.onrender.com/api/health` and `/api/health/aggregate` return `200`.
+- Verified that public live payloads expose `hirer.email` on jobs and contact/account-state data on worker detail responses.
+- Verified that live `/api/jobs/recommendations` is protected with `401` when unauthenticated while `/api/jobs/recommendations/personalized` returns `404`, confirming deployed route drift.
+
+### Session: Native Mobile Remote Validation Automation ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Add dedicated native mobile CI automation so Android validation continues automatically and the iOS app gains real remote macOS build/test execution despite the current Windows workstation limit.
+
+**Acceptance Criteria**
+- Dry-audit the existing mobile build files, iOS project spec, UI/unit test targets, and current GitHub workflow surface before editing anything.
+- Add a dedicated workflow that validates Android with the established lightweight commands and validates iOS through a macOS runner with XcodeGen.
+- Replace the placeholder iOS UI test with a meaningful smoke test that confirms the unauthenticated app shell loads.
+- Update mobile-facing documentation and record the final verification approach in spec-kit.
+
+**Dry-audit file surface confirmed**
+- `.github/workflows/ci.yml`
+- `.github/workflows/ci-cd.yml`
+- `.github/workflows/node.js.yml`
+- `kelmah-mobile-android/build.gradle.kts`
+- `kelmah-mobile-android/app/build.gradle.kts`
+- `kelmah-mobile-android/README.md`
+- `kelmah-mobile-ios/project.yml`
+- `kelmah-mobile-ios/Config/Debug.xcconfig`
+- `kelmah-mobile-ios/Config/Release.xcconfig`
+- `kelmah-mobile-ios/Kelmah/Features/Auth/Presentation/LoginView.swift`
+- `kelmah-mobile-ios/Kelmah/App/RootTabView.swift`
+- `kelmah-mobile-ios/KelmahTests/KelmahTests.swift`
+- `kelmah-mobile-ios/KelmahUITests/KelmahUITests.swift`
+- `kelmah-mobile-ios/README.md`
+- `spec-kit/STATUS_LOG.md`
+
+**Current findings**
+- Existing repository CI only covers Node/backend/frontend surfaces; native mobile validation is not yet automated.
+- Android already has a repeatable validation command set (`testDebugUnitTest`, `assembleDebug`, `lintDebug`) but no dedicated GitHub Actions workflow.
+- iOS already has an XcodeGen project spec plus real unit tests, but UI coverage is still placeholder-only and native execution currently requires a remote macOS runner.
+
+**Changes completed**
+- Added `.github/workflows/mobile-native-validation.yml` so native mobile changes now trigger a dedicated GitHub Actions gate for Android and iOS.
+- Wired the Android job to the proven lightweight command set on Java 17, Gradle 8.7, and Android SDK 35.
+- Wired the iOS job to install XcodeGen on a macOS runner, generate `Kelmah.xcodeproj`, resolve an available iPhone simulator, and execute both unit and smoke UI test coverage.
+- Replaced the placeholder `KelmahUITests` implementation with a real auth-shell smoke test that launches the app and verifies the unauthenticated mode switch flow.
+- Added stable accessibility identifiers to the iOS login surface so remote UI automation has deterministic hooks instead of relying only on presentation text.
+- Updated the Android and iOS mobile READMEs to document the new native mobile validation path and current production-readiness gate.
+
+**Verification**
+- `get_errors` reported no diagnostics in the new workflow file, the touched iOS UI files, the updated mobile READMEs, or `spec-kit/STATUS_LOG.md`.
+- The new workflow is structured to run the same Android validation commands already proven locally on Windows: `testDebugUnitTest`, `assembleDebug`, and `lintDebug`.
+- Real iOS execution still cannot run from this Windows workstation, so the new macOS workflow is the executable verification path for Xcode build/test confirmation on the first GitHub Actions run.
+
 ### Session: Frontend Structural Role Split Follow-up ✅ COMPLETED
 
 **Date**: March 8, 2026  

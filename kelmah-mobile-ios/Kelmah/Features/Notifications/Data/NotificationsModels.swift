@@ -1,5 +1,19 @@
 import Foundation
 
+enum NotificationActionTarget: Hashable {
+    case job(String)
+    case conversation(String)
+
+    var label: String {
+        switch self {
+        case .job:
+            return "Open job"
+        case .conversation:
+            return "Open conversation"
+        }
+    }
+}
+
 struct AppNotificationItem: Identifiable, Hashable {
     let id: String
     let type: String
@@ -29,6 +43,34 @@ struct AppNotificationItem: Identifiable, Hashable {
         default:
             return priority == "high" ? "High priority" : "Alert"
         }
+    }
+
+    var actionTarget: NotificationActionTarget? {
+        if let actionURL, actionURL.isEmpty == false {
+            let baseURL = URL(string: "https://kelmah.local")
+            if let components = URLComponents(string: actionURL, relativeTo: baseURL) {
+                if let conversationId = components.queryItems?.first(where: { $0.name == "conversation" })?.value,
+                   conversationId.isEmpty == false {
+                    return .conversation(conversationId)
+                }
+
+                let path = components.path
+                if path.hasPrefix("/jobs/") {
+                    let jobId = path.split(separator: "/").last.map(String.init)
+                    if let jobId, jobId.isEmpty == false {
+                        return .job(jobId)
+                    }
+                }
+            }
+        }
+
+        if relatedEntityType?.lowercased() == "message", let relatedEntityId, relatedEntityId.isEmpty == false {
+            return .conversation(relatedEntityId)
+        }
+        if relatedEntityType?.lowercased() == "job", let relatedEntityId, relatedEntityId.isEmpty == false {
+            return .job(relatedEntityId)
+        }
+        return nil
     }
 }
 

@@ -19,9 +19,15 @@ Native iOS app root.
 - feature-first source structure
 - environment config files
 - secure token storage
-- placeholder test targets
+- unit coverage for password policy and role/session security rules
+- smoke UI coverage for the unauthenticated auth shell
 - shared asset catalog skeleton
 - production API gateway alignment
+
+## Automated validation
+- GitHub Actions workflow `.github/workflows/mobile-native-validation.yml` now generates the Xcode project with XcodeGen on a macOS runner.
+- Remote validation runs `KelmahTests` plus the auth-shell smoke UI test so iOS can be build/test checked even when local development happens on Windows.
+- The workflow also pairs this with Android build, unit-test, and lint validation for one native mobile gate.
 
 ## Auth and session hardening
 - single API Gateway endpoint for all API calls
@@ -31,6 +37,7 @@ Native iOS app root.
 - cached user recovery with secure token storage
 - register, forgot-password, reset-password, resend-verification, and verify-email flows added
 - profile password-change flow added
+- sign-out-all-devices control added
 
 ## Jobs domain status
 - discover and saved jobs feeds are wired
@@ -46,8 +53,8 @@ Native iOS app root.
 - Realtime base is derived internally as `<gateway-origin>/socket.io`
 
 ## Next build order
-1. generate the Xcode project from `project.yml`
-2. implement Socket.IO messaging client
-3. wire push notifications and device registration
-4. add local persistence and offline caching
-5. add deep links and biometric unlock
+1. implement Socket.IO messaging client
+2. wire push notifications and device registration
+3. add local persistence and offline caching
+4. add deep links and biometric unlock
+5. expand authenticated end-to-end UI coverage beyond the auth-shell smoke flow

@@ -73,7 +73,7 @@ class MessagingRepository @Inject constructor(
         val userId = currentUserId()
         val dataNode = response["data"]
         val values = when (dataNode) {
-            is JsonObject -> dataNode.nestedArray("conversations")
+            is JsonObject -> dataNode.nestedArray("conversations") ?: JsonArray(emptyList())
             is JsonArray -> dataNode
             else -> response.nestedArray("conversations") ?: JsonArray(emptyList())
         }
@@ -101,7 +101,7 @@ class MessagingRepository @Inject constructor(
     private fun parseMessages(response: JsonObject, conversationId: String): List<ThreadMessage> {
         val dataNode = response["data"]
         val values = when (dataNode) {
-            is JsonObject -> dataNode.nestedArray("messages")
+            is JsonObject -> dataNode.nestedArray("messages") ?: JsonArray(emptyList())
             is JsonArray -> dataNode
             else -> response.nestedArray("messages") ?: JsonArray(emptyList())
         }

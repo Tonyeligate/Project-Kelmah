@@ -27,7 +27,7 @@ class JobsRepository @Inject constructor(
             buildMap {
                 put("page", page.toString())
                 put("limit", limit.toString())
-                put("sort", "newest")
+                put("sort", filters.sort.queryValue)
                 if (filters.search.isNotBlank()) put("search", filters.search.trim())
                 if (filters.category.isNotBlank() && filters.category != "All") put("category", filters.category)
                 if (filters.location.isNotBlank()) put("location", filters.location.trim())
@@ -241,7 +241,7 @@ class JobsRepository @Inject constructor(
         return job.nestedArray("skills")
             ?.mapNotNull { skill ->
                 when (skill) {
-                    is JsonPrimitive -> skill.contentOrNull
+                    is JsonPrimitive -> skill.contentOrNull()
                     is JsonObject -> skill.string("name") ?: skill.string("label") ?: skill.string("type")
                     else -> null
                 }

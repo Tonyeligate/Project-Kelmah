@@ -6,6 +6,7 @@ import com.kelmah.mobile.core.network.ApiResult
 import com.kelmah.mobile.features.jobs.data.ApplyToJobRequest
 import com.kelmah.mobile.features.jobs.data.JobCategory
 import com.kelmah.mobile.features.jobs.data.JobDetail
+import com.kelmah.mobile.features.jobs.data.JobSortOption
 import com.kelmah.mobile.features.jobs.data.JobSummary
 import com.kelmah.mobile.features.jobs.data.JobsFeed
 import com.kelmah.mobile.features.jobs.data.JobsFilterState
@@ -67,6 +68,11 @@ class JobsViewModel @Inject constructor(
         _uiState.update { it.copy(filters = it.filters.copy(location = value), errorMessage = null) }
     }
 
+    fun updateSort(sort: JobSortOption) {
+        _uiState.update { it.copy(filters = it.filters.copy(sort = sort), errorMessage = null) }
+        refreshJobs()
+    }
+
     fun applyFilters() {
         refreshJobs()
     }
@@ -124,10 +130,14 @@ class JobsViewModel @Inject constructor(
             _uiState.update { it.copy(isLoadingMore = true, errorMessage = null) }
             when (val result = jobsRepository.getJobs(state.filters, page = state.currentPage + 1)) {
                 is ApiResult.Success -> {
+                    val mergedJobs = LinkedHashMap<String, JobSummary>()
+                    (state.discoverJobs + result.data.jobs).forEach { job ->
+                        mergedJobs[job.id] = job
+                    }
                     _uiState.update {
                         it.copy(
                             isLoadingMore = false,
-                            discoverJobs = (it.discoverJobs + result.data.jobs).distinctBy(JobSummary::id),
+                            discoverJobs = mergedJobs.values.toList(),
                             currentPage = result.data.page,
                             totalPages = result.data.totalPages,
                             totalItems = result.data.totalItems,
@@ -219,8 +229,18 @@ class JobsViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             val rate = proposedRate.toDoubleOrNull()
+            val selectedBudget = _uiState.value.selectedJob
+                ?.takeIf { it.summary.id == jobId }
+                ?.summary
+                ?.budgetAmount
             if (rate == null || rate <= 0.0) {
                 _uiState.update { it.copy(errorMessage = "Enter a valid proposed rate") }
+                return@launch
+            }
+            if (selectedBudget != null && selectedBudget > 0.0 && rate > selectedBudget * 2) {
+                _uiState.update {
+                    it.copy(errorMessage = "Proposed rate is too far above the listed budget of ${selectedBudget.toInt()} ${_uiState.value.selectedJob?.summary?.currency ?: "GHS"}")
+                }
                 return@launch
             }
             if (coverLetter.trim().isBlank()) {

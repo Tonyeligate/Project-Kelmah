@@ -22,7 +22,12 @@ Native Android app root.
 - encrypted local session storage
 - network security config
 - release shrink/minify rules
-- placeholder tests
+- unit coverage for password policy and role/session security rules
+
+## Automated validation
+- GitHub Actions workflow `.github/workflows/mobile-native-validation.yml` now validates the Android app with `testDebugUnitTest`, `assembleDebug`, and `lintDebug`.
+- The workflow uses Java 17, Gradle 8.7, and Android SDK platform 35 so the CI path matches the lightweight local validation setup already proven on Windows.
+- Android validation is paired with remote macOS iOS validation so both native apps share one production-readiness gate.
 
 ## Auth and session hardening
 - single API Gateway endpoint for all API calls
@@ -32,6 +37,7 @@ Native Android app root.
 - cached session snapshot with secure token storage
 - register, forgot-password, reset-password, resend-verification, and verify-email flows added
 - profile password-change flow added
+- sign-out-all-devices control added
 
 ## Jobs domain status
 - discover and saved jobs feeds are wired

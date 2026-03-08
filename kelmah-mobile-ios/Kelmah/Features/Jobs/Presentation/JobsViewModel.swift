@@ -74,11 +74,7 @@ final class JobsViewModel: ObservableObject {
 
         do {
             let page = try await repository.getJobs(filters: filters, page: currentPage + 1)
-            var merged: [JobSummary] = []
-            for job in discoverJobs + page.jobs where merged.contains(where: { $0.id == job.id }) == false {
-                merged.append(job)
-            }
-            discoverJobs = merged
+            discoverJobs = mergeJobsPreservingLatest(discoverJobs + page.jobs)
             currentPage = page.page
             totalPages = page.totalPages
             totalItems = page.totalItems
@@ -121,9 +117,7 @@ final class JobsViewModel: ObservableObject {
             }
             if shouldSave {
                 if let saved = discoverJobs.first(where: { $0.id == jobId }) ?? selectedJob?.summary.withSaved(true) {
-                    savedJobs = Array(([saved] + savedJobs).reduce(into: [String: JobSummary]()) { result, item in
-                        result[item.id] = item
-                    }.values)
+                    savedJobs = mergeJobsPreservingLatest([saved] + savedJobs)
                 }
             } else {
                 savedJobs.removeAll { $0.id == jobId }
@@ -146,6 +140,10 @@ final class JobsViewModel: ObservableObject {
     ) async -> Bool {
         guard let rate = Double(proposedRate), rate > 0 else {
             errorMessage = "Enter a valid proposed rate"
+            return false
+        }
+        if let selectedJob, selectedJob.summary.id == jobId, selectedJob.summary.budgetAmount > 0, rate > selectedJob.summary.budgetAmount * 2 {
+            errorMessage = "Proposed rate is too far above the listed budget of \(Int(selectedJob.summary.budgetAmount)) \(selectedJob.summary.currency)"
             return false
         }
         guard coverLetter.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false else {
@@ -189,6 +187,20 @@ final class JobsViewModel: ObservableObject {
                 categories = [JobCategory(id: "all", name: "All", description: "")]
             }
         }
+    }
+
+    private func mergeJobsPreservingLatest(_ jobs: [JobSummary]) -> [JobSummary] {
+        var orderedIds: [String] = []
+        var jobsById: [String: JobSummary] = [:]
+
+        for job in jobs {
+            if jobsById[job.id] == nil {
+                orderedIds.append(job.id)
+            }
+            jobsById[job.id] = job
+        }
+
+        return orderedIds.compactMap { jobsById[$0] }
     }
 }
 

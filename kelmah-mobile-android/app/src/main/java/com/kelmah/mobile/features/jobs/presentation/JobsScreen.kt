@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -35,6 +36,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,11 +50,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kelmah.mobile.core.utils.RelativeTimeFormatter
+import com.kelmah.mobile.core.session.KelmahUserRole
 import com.kelmah.mobile.features.jobs.data.JobSummary
 import com.kelmah.mobile.features.jobs.data.JobsFeed
+import com.kelmah.mobile.features.jobs.data.JobSortOption
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JobsScreen(
+    userRole: KelmahUserRole,
     onOpenJob: (String) -> Unit,
     onApplyToJob: (String) -> Unit,
     viewModel: JobsViewModel = hiltViewModel(),
@@ -60,6 +67,20 @@ fun JobsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbars = remember { SnackbarHostState() }
     val jobs = if (uiState.activeFeed == JobsFeed.DISCOVER) uiState.discoverJobs else uiState.savedJobs
+    val isWorker = userRole == KelmahUserRole.WORKER
+    val screenTitle = if (isWorker) "Jobs" else "Hiring Market"
+    val discoverLabel = if (isWorker) "Discover" else "Market"
+    val savedLabel = if (isWorker) "Saved" else "Watchlist"
+    val emptySavedDescription = if (isWorker) {
+        "Jobs you save will appear here for quick access."
+    } else {
+        "Saved market listings will appear here so you can revisit rates, scope, and demand signals."
+    }
+    val emptyDiscoverDescription = if (isWorker) {
+        "Try broadening your filters or refreshing the marketplace feed."
+    } else {
+        "Try broadening your filters or refreshing the market feed to review more live hiring signals."
+    }
 
     LaunchedEffect(uiState.errorMessage, uiState.infoMessage) {
         uiState.errorMessage?.let {
@@ -75,7 +96,7 @@ fun JobsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Jobs") },
+                title = { Text(screenTitle) },
                 actions = {
                     IconButton(onClick = {
                         if (uiState.activeFeed == JobsFeed.SAVED) viewModel.loadSavedJobs() else viewModel.refreshJobs()
@@ -98,13 +119,23 @@ fun JobsScreen(
                 FilterChip(
                     selected = uiState.activeFeed == JobsFeed.DISCOVER,
                     onClick = { viewModel.switchFeed(JobsFeed.DISCOVER) },
-                    label = { Text("Discover") },
+                    label = { Text(discoverLabel) },
                 )
                 FilterChip(
                     selected = uiState.activeFeed == JobsFeed.SAVED,
                     onClick = { viewModel.switchFeed(JobsFeed.SAVED) },
-                    label = { Text("Saved") },
+                    label = { Text(savedLabel) },
                 )
+            }
+
+            if (!isWorker) {
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                    Text(
+                        text = "Hirer mode is active. Use this tab to benchmark pricing, review live demand, and save listings for hiring research while messages and alerts handle candidate follow-up.",
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
             }
 
             if (uiState.activeFeed == JobsFeed.DISCOVER) {
@@ -112,7 +143,7 @@ fun JobsScreen(
                     value = uiState.filters.search,
                     onValueChange = viewModel::updateSearch,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Search jobs") },
+                    label = { Text(if (isWorker) "Search jobs" else "Search live jobs") },
                     leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                     trailingIcon = {
                         TextButton(onClick = viewModel::applyFilters) {
@@ -138,6 +169,15 @@ fun JobsScreen(
                         )
                     }
                 }
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(JobSortOption.entries, key = { it.name }) { sort ->
+                        FilterChip(
+                            selected = uiState.filters.sort == sort,
+                            onClick = { viewModel.updateSort(sort) },
+                            label = { Text(sort.label) },
+                        )
+                    }
+                }
             }
 
             HorizontalDivider()
@@ -148,11 +188,15 @@ fun JobsScreen(
                 }
             } else if (jobs.isEmpty()) {
                 EmptyJobsState(
-                    title = if (uiState.activeFeed == JobsFeed.SAVED) "No saved jobs yet" else "No jobs found",
-                    description = if (uiState.activeFeed == JobsFeed.SAVED) {
-                        "Jobs you save will appear here for quick access."
+                    title = if (uiState.activeFeed == JobsFeed.SAVED) {
+                        if (isWorker) "No saved jobs yet" else "No saved market listings yet"
                     } else {
-                        "Try broadening your filters or refreshing the marketplace feed."
+                        if (isWorker) "No jobs found" else "No market listings found"
+                    },
+                    description = if (uiState.activeFeed == JobsFeed.SAVED) {
+                        emptySavedDescription
+                    } else {
+                        emptyDiscoverDescription
                     },
                 )
             } else {
@@ -162,6 +206,7 @@ fun JobsScreen(
                 ) {
                     items(jobs, key = { it.id }) { job ->
                         JobCard(
+                            userRole = userRole,
                             job = job,
                             onOpen = { onOpenJob(job.id) },
                             onSaveToggle = { viewModel.toggleSaved(job.id, !job.isSaved) },
@@ -191,11 +236,14 @@ fun JobsScreen(
 
 @Composable
 private fun JobCard(
+    userRole: KelmahUserRole,
     job: JobSummary,
     onOpen: () -> Unit,
     onSaveToggle: () -> Unit,
     onApply: () -> Unit,
 ) {
+    val isWorker = userRole == KelmahUserRole.WORKER
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -216,17 +264,35 @@ private fun JobCard(
                 }
             }
             Text(job.description, maxLines = 3, overflow = TextOverflow.Ellipsis)
-            AssistChip(onClick = {}, label = { Text(job.category) })
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                AssistChip(onClick = {}, label = { Text(job.category) })
+                if (job.isUrgent) {
+                    AssistChip(onClick = {}, label = { Text("Urgent") })
+                }
+            }
             Text(job.locationLabel, style = MaterialTheme.typography.bodyMedium)
             Text(job.budgetLabel, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+            val activityMeta = listOfNotNull(
+                RelativeTimeFormatter.relativeOrFallback(job.postedAt),
+                if (job.isUrgent) "Priority listing" else null,
+            )
+            if (activityMeta.isNotEmpty()) {
+                Text(
+                    text = activityMeta.joinToString(" • "),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = onOpen, modifier = Modifier.weight(1f)) {
-                    Text("View")
+                    Text(if (isWorker) "View" else "Review")
                 }
-                OutlinedButton(onClick = onApply, modifier = Modifier.weight(1f)) {
-                    Icon(Icons.Outlined.Send, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Apply")
+                if (isWorker) {
+                    OutlinedButton(onClick = onApply, modifier = Modifier.weight(1f)) {
+                        Icon(Icons.Outlined.Send, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Apply")
+                    }
                 }
             }
         }

@@ -31,7 +31,7 @@ const authenticateUser = (req, res, next) => {
     }
     
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
     req.user = { 
       id: decoded.id || decoded.sub, 
       email: decoded.email, 

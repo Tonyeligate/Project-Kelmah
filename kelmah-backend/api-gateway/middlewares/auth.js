@@ -40,7 +40,7 @@ const buildUserFromDecodedToken = (decoded, fallbackId) => ({
   role: decoded?.role || decoded?.userRole || null,
   firstName: decoded?.firstName || null,
   lastName: decoded?.lastName || null,
-  isEmailVerified: typeof decoded?.isEmailVerified === 'boolean' ? decoded.isEmailVerified : true,
+  isEmailVerified: typeof decoded?.isEmailVerified === 'boolean' ? decoded.isEmailVerified : false,
   tokenVersion: decoded?.version || 0,
 });
 
@@ -152,7 +152,7 @@ const authorizeRoles = (...allowedRoles) => {
     if (!allowedRoles.includes(req.user.role)) {
       return res.status(403).json({ 
         error: 'Access denied',
-        message: `Access denied. Required roles: ${allowedRoles.join(', ')}` 
+        message: 'Access denied. Insufficient permissions.'
       });
     }
 
@@ -214,7 +214,13 @@ const optionalAuth = async (req, res, next) => {
     const userPayload = JSON.stringify(req.user);
     req.headers['x-authenticated-user'] = userPayload;
     req.headers['x-auth-source'] = 'api-gateway';
-    const hmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET || '';
+    const hmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET;
+    if (!hmacSecret) {
+      console.error('CRITICAL: No HMAC secret configured in optionalAuth');
+      // Continue without setting gateway headers since we can't sign them
+      req.user = authUser;
+      return next();
+    }
     const signature = crypto.createHmac('sha256', hmacSecret).update(userPayload).digest('hex');
     req.headers['x-gateway-signature'] = signature;
 

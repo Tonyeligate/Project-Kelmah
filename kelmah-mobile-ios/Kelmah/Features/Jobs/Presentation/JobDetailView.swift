@@ -3,6 +3,7 @@ import SwiftUI
 struct JobDetailView: View {
     @ObservedObject var viewModel: JobsViewModel
     let jobId: String
+    let userRole: KelmahUserRole
     let onApply: (String) -> Void
 
     var body: some View {
@@ -25,6 +26,16 @@ struct JobDetailView: View {
                             Text(job.summary.budgetLabel)
                                 .font(.headline)
                                 .foregroundStyle(KelmahTheme.accent)
+                            if let postedAt = RelativeTimeFormatter.relativeOrFallback(job.summary.postedAt) {
+                                Text("Posted \(postedAt)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            if job.summary.isUrgent {
+                                Text("Urgent listing")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(KelmahTheme.accent)
+                            }
                             Text(job.fullDescription.isEmpty ? job.summary.description : job.fullDescription)
                                 .font(.body)
                         }
@@ -48,7 +59,7 @@ struct JobDetailView: View {
                             Text("Applications: \(job.proposalCount)")
                             Text("Views: \(job.viewCount)")
                             if let deadline = job.deadline {
-                                Text("Deadline: \(deadline)")
+                                Text("Deadline: \(RelativeTimeFormatter.deadlineLabel(deadline) ?? deadline)")
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -67,14 +78,26 @@ struct JobDetailView: View {
                             }
                             .buttonStyle(.bordered)
 
-                            Button {
-                                onApply(job.summary.id)
-                            } label: {
-                                Label("Apply", systemImage: "paperplane.fill")
-                                    .frame(maxWidth: .infinity)
+                            if userRole == .worker {
+                                Button {
+                                    onApply(job.summary.id)
+                                } label: {
+                                    Label("Apply", systemImage: "paperplane.fill")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(KelmahTheme.accent)
                             }
-                            .buttonStyle(.borderedProminent)
-                            .tint(KelmahTheme.accent)
+                        }
+
+                        if userRole == .hirer {
+                            Text("Hirer mode keeps this view focused on market research and pricing review. Worker application steps stay hidden for hirer accounts.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding()
+                                .background(.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                         }
                     }
                     .padding(20)
@@ -82,7 +105,7 @@ struct JobDetailView: View {
                 .background(KelmahTheme.background.ignoresSafeArea())
             }
         }
-        .navigationTitle("Job Details")
+        .navigationTitle(userRole == .hirer ? "Market Listing" : "Job Details")
         .navigationBarTitleDisplayMode(.inline)
         .task(id: jobId) {
             await viewModel.loadJobDetail(jobId: jobId)

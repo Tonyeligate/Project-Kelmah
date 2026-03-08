@@ -5,6 +5,7 @@
 
 const ensured = {
   jobs: false,
+  bids: false,
 };
 
 /**
@@ -52,6 +53,37 @@ async function ensureJobIndexes(connection) {
         name: 'jobs_createdAt_desc',
         background: true,
       },
+      // Text index for full-text search (replaces regex scans)
+      {
+        key: { title: 'text', description: 'text', category: 'text', skills: 'text' },
+        name: 'jobs_text_search',
+        background: true,
+        weights: { title: 10, skills: 5, category: 3, description: 1 },
+        default_language: 'english',
+      },
+      // Fix location index paths to match actual data structure
+      {
+        key: { 'locationDetails.region': 1, status: 1 },
+        name: 'jobs_locationDetails_region_status',
+        background: true,
+      },
+      {
+        key: { 'locationDetails.district': 1, status: 1 },
+        name: 'jobs_locationDetails_district_status',
+        background: true,
+      },
+      // Compound index for recommendations query
+      {
+        key: { status: 1, 'bidding.bidStatus': 1, skills: 1 },
+        name: 'jobs_status_bidding_skills',
+        background: true,
+      },
+      // Hirer lookup index
+      {
+        key: { hirer: 1, status: 1, createdAt: -1 },
+        name: 'jobs_hirer_status_createdAt',
+        background: true,
+      },
     ];
 
     await Promise.all(
@@ -74,6 +106,58 @@ async function ensureJobIndexes(connection) {
   }
 }
 
+/**
+ * Ensure indexes for the bids collection.
+ * @param {import('mongoose').Connection} connection
+ */
+async function ensureBidIndexes(connection) {
+  if (ensured.bids || !connection) {
+    return;
+  }
+
+  try {
+    const db = connection.connection ? connection.connection.db : connection.db;
+    if (!db) return;
+
+    const bidsCollection = db.collection('bids');
+
+    const indexSpecs = [
+      {
+        key: { job: 1, worker: 1 },
+        name: 'bids_job_worker_unique',
+        unique: true,
+        background: true,
+      },
+      {
+        key: { worker: 1, bidTimestamp: -1 },
+        name: 'bids_worker_timestamp',
+        background: true,
+      },
+      {
+        key: { job: 1, status: 1, bidTimestamp: -1 },
+        name: 'bids_job_status_timestamp',
+        background: true,
+      },
+    ];
+
+    await Promise.all(
+      indexSpecs.map((spec) =>
+        bidsCollection
+          .createIndex(spec.key, { name: spec.name, unique: spec.unique || false, background: spec.background })
+          .catch((error) => {
+            console.warn(`[JOB INDEX MANAGER] Failed to create bid index ${spec.name}: ${error.message}`);
+          }),
+      ),
+    );
+
+    ensured.bids = true;
+    console.log('[JOB INDEX MANAGER] Bid indexes ensured');
+  } catch (error) {
+    console.warn('[JOB INDEX MANAGER] Error ensuring bid indexes:', error.message);
+  }
+}
+
 module.exports = {
   ensureJobIndexes,
+  ensureBidIndexes,
 };

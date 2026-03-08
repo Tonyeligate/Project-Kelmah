@@ -1,5 +1,7 @@
 package com.kelmah.mobile.features.notifications.data
 
+import android.net.Uri
+
 data class NotificationItem(
     val id: String,
     val type: String,
@@ -13,6 +15,11 @@ data class NotificationItem(
     val relatedEntityId: String? = null,
 )
 
+sealed interface NotificationActionTarget {
+    data class Job(val jobId: String) : NotificationActionTarget
+    data class Conversation(val conversationId: String) : NotificationActionTarget
+}
+
 val NotificationItem.displayTag: String
     get() = when {
         priority.equals("high", ignoreCase = true) -> "High priority"
@@ -23,4 +30,26 @@ val NotificationItem.displayTag: String
         type == "contract_update" -> "Contract"
         type == "review_received" -> "Review"
         else -> "Alert"
+    }
+
+val NotificationItem.actionTarget: NotificationActionTarget?
+    get() {
+        val parsedUrl = actionUrl?.let { runCatching { Uri.parse(it) }.getOrNull() }
+        val path = parsedUrl?.path.orEmpty()
+        val conversationId = parsedUrl?.getQueryParameter("conversation")
+
+        return when {
+            !conversationId.isNullOrBlank() -> NotificationActionTarget.Conversation(conversationId)
+            path.startsWith("/jobs/") -> path.substringAfterLast('/').takeIf { it.isNotBlank() }?.let(NotificationActionTarget::Job)
+            relatedEntityType.equals("message", ignoreCase = true) -> relatedEntityId?.let(NotificationActionTarget::Conversation)
+            relatedEntityType.equals("job", ignoreCase = true) -> relatedEntityId?.let(NotificationActionTarget::Job)
+            else -> null
+        }
+    }
+
+val NotificationItem.actionLabel: String?
+    get() = when (actionTarget) {
+        is NotificationActionTarget.Conversation -> "Open conversation"
+        is NotificationActionTarget.Job -> "Open job"
+        null -> null
     }

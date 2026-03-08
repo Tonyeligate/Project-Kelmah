@@ -11,23 +11,52 @@ private enum RootTab: Hashable {
 struct RootTabView: View {
     @EnvironmentObject private var environment: AppEnvironment
     @State private var selectedTab: RootTab = .home
+    @State private var pendingConversationId: String?
+    @State private var pendingJobId: String?
+
+    private var userRole: KelmahUserRole {
+        environment.sessionStore.currentUser?.kelmahUserRole ?? .worker
+    }
 
     var body: some View {
+        let messagesBadge = environment.messagesViewModel.totalUnreadCount
+        let notificationsBadge = environment.notificationsViewModel.unreadCount
+
         Group {
             if environment.sessionStore.phase == .checking {
                 ProgressView("Securing your Kelmah session...")
             } else if environment.sessionStore.isSessionUsable {
                 TabView(selection: $selectedTab) {
-                    HomeView(onBrowseJobs: { selectedTab = .jobs })
+                    HomeView(currentUser: environment.sessionStore.currentUser, onBrowseJobs: { selectedTab = .jobs })
                         .tag(RootTab.home)
-                        .tabItem { Label("Home", systemImage: "house") }
-                    JobsView(viewModel: environment.jobsViewModel)
+                        .tabItem { Label(userRole == .hirer ? "Dashboard" : "Home", systemImage: "house") }
+                    JobsView(
+                        viewModel: environment.jobsViewModel,
+                        userRole: userRole,
+                        pendingJobId: pendingJobId,
+                        onHandledPendingJob: { pendingJobId = nil }
+                    )
                         .tag(RootTab.jobs)
-                        .tabItem { Label("Jobs", systemImage: "briefcase") }
-                    MessagesView(viewModel: environment.messagesViewModel)
+                        .tabItem { Label(userRole == .hirer ? "Hiring" : "Jobs", systemImage: "briefcase") }
+                    MessagesView(
+                        viewModel: environment.messagesViewModel,
+                        pendingConversationId: pendingConversationId,
+                        onHandledPendingConversation: { pendingConversationId = nil }
+                    )
+                        .badge(messagesBadge == 0 ? nil : messagesBadge)
                         .tag(RootTab.messages)
                         .tabItem { Label("Messages", systemImage: "message") }
-                    NotificationsView(viewModel: environment.notificationsViewModel)
+                    NotificationsView(viewModel: environment.notificationsViewModel) { target in
+                        switch target {
+                        case let .conversation(conversationId):
+                            pendingConversationId = conversationId
+                            selectedTab = .messages
+                        case let .job(jobId):
+                            pendingJobId = jobId
+                            selectedTab = .jobs
+                        }
+                    }
+                        .badge(notificationsBadge == 0 ? nil : notificationsBadge)
                         .tag(RootTab.alerts)
                         .tabItem { Label("Alerts", systemImage: "bell") }
                     ProfileView(

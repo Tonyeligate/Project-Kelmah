@@ -2,6 +2,8 @@ import SwiftUI
 
 struct MessagesView: View {
     @ObservedObject var viewModel: MessagesViewModel
+    var pendingConversationId: String? = nil
+    var onHandledPendingConversation: (() -> Void)? = nil
     @State private var path: [MessagesRoute] = []
 
     var body: some View {
@@ -70,6 +72,15 @@ struct MessagesView: View {
             }
             .task {
                 await viewModel.bootstrap()
+            }
+            .task(id: pendingConversationId) {
+                if let pendingConversationId, pendingConversationId.isEmpty == false {
+                    await viewModel.openConversation(conversationId: pendingConversationId)
+                    if viewModel.selectedConversation?.id == pendingConversationId {
+                        path = [.thread(pendingConversationId)]
+                    }
+                    onHandledPendingConversation?()
+                }
             }
             .navigationDestination(for: MessagesRoute.self) { route in
                 switch route {
@@ -236,7 +247,7 @@ private struct MessageBubbleView: View {
                 Text(displayText)
                     .font(.body)
                 if let createdAt = message.createdAt {
-                    Text(createdAt)
+                    Text(RelativeTimeFormatter.relativeOrFallback(createdAt) ?? createdAt)
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }

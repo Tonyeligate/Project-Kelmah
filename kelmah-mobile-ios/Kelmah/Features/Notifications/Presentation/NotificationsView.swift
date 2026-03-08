@@ -2,6 +2,7 @@ import SwiftUI
 
 struct NotificationsView: View {
     @ObservedObject var viewModel: NotificationsViewModel
+    var onOpenTarget: (NotificationActionTarget) -> Void = { _ in }
 
     var body: some View {
         NavigationStack {
@@ -55,8 +56,14 @@ struct NotificationsView: View {
                             NotificationRowView(notification: notification)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
-                                    guard notification.isRead == false else { return }
-                                    Task { await viewModel.markAsRead(notificationId: notification.id) }
+                                    Task {
+                                        if notification.isRead == false {
+                                            await viewModel.markAsRead(notificationId: notification.id)
+                                        }
+                                        if let target = notification.actionTarget {
+                                            onOpenTarget(target)
+                                        }
+                                    }
                                 }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button(role: .destructive) {
@@ -142,16 +149,16 @@ private struct NotificationRowView: View {
                 .foregroundStyle(.secondary)
 
             HStack {
-                Text(notification.createdAt ?? "Just now")
+                Text(RelativeTimeFormatter.relativeOrFallback(notification.createdAt) ?? notification.createdAt ?? "Just now")
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
                 Spacer()
 
-                if let actionURL = notification.actionURL, actionURL.isEmpty == false {
-                    Text(actionURL)
+                if let target = notification.actionTarget {
+                    Text(target.label)
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(KelmahTheme.accent)
                         .lineLimit(1)
                 }
             }

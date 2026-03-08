@@ -18,6 +18,7 @@ const { generateOTP } = require("../utils/otp");
 const deviceUtil = require("../utils/device");
 const sessionUtil = require("../utils/session");
 const { logger } = require("../utils/logger");
+const SecurityUtils = require("../utils/security");
 // MFA dependencies
 let speakeasy, QRCode;
 try {
@@ -269,6 +270,36 @@ exports.login = async (req, res, next) => {
         }
       }
     );
+
+    // Check if 2FA is enabled for this user
+    if (user.isTwoFactorEnabled) {
+      const { twoFactorCode } = req.body;
+      if (!twoFactorCode) {
+        // Return a partial response requiring 2FA verification
+        return res.status(200).json({
+          success: true,
+          requiresTwoFactor: true,
+          message: 'Two-factor authentication required',
+          data: {
+            requiresTwoFactor: true,
+            userId: user._id, // client needs this to submit 2FA code
+          }
+        });
+      }
+
+      // Verify the 2FA code
+      const speakeasy = require('speakeasy');
+      const isValidCode = speakeasy.totp.verify({
+        secret: user.twoFactorSecret,
+        encoding: 'base32',
+        token: twoFactorCode,
+        window: 1, // Allow 1 step before/after for clock skew
+      });
+
+      if (!isValidCode) {
+        return next(new AppError('Invalid two-factor authentication code', 401));
+      }
+    }
 
     // Generate access token via local JWT utils
     const accessToken = jwtUtils.signAccessToken({
@@ -533,9 +564,10 @@ exports.resetPassword = async (req, res, next) => {
       return next(new AppError("Please provide a new password", 400));
     }
 
-    if (password.length < 8) {
+    const passwordValidation = SecurityUtils.validatePassword(password);
+    if (!passwordValidation.isValid) {
       return next(
-        new AppError("Password must be at least 8 characters long", 400),
+        new AppError(passwordValidation.errors.join('. '), 400),
       );
     }
 
@@ -587,9 +619,10 @@ exports.changePassword = async (req, res, next) => {
       return next(new AppError("Please provide current and new password", 400));
     }
 
-    if (newPassword.length < 8) {
+    const passwordValidation = SecurityUtils.validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
       return next(
-        new AppError("Password must be at least 8 characters long", 400),
+        new AppError(passwordValidation.errors.join('. '), 400),
       );
     }
 

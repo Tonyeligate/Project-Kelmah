@@ -34,7 +34,7 @@ function transformJobForFrontend(job) {
       // Hirer is populated
       hirerName = `${job.hirer.firstName || ''} ${job.hirer.lastName || ''}`.trim() || 
                   job.hirer.companyName || 
-                  job.hirer.email || 
+                  'Hiring Client' || 
                   'Unknown';
       hirerObj = {
         _id: job.hirer._id ? job.hirer._id.toString() : String(job.hirer._id || job.hirer.id),
@@ -42,7 +42,6 @@ function transformJobForFrontend(job) {
         firstName: job.hirer.firstName || '',
         lastName: job.hirer.lastName || '',
         name: hirerName,
-        email: job.hirer.email || null,
         profileImage: job.hirer.profileImage || job.hirer.avatar || null,
         avatar: job.hirer.profileImage || job.hirer.avatar || null,
         logo: job.hirer.profileImage || job.hirer.avatar || null,

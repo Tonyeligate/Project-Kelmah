@@ -522,6 +522,46 @@ const jobsApi = {
   },
 
   /**
+   * Update an existing job (hirer)
+   */
+  async editJob(jobId, jobData) {
+    const normalized = this.normalizeJobPayload(jobData);
+    const response = await api.put(`/jobs/${jobId}`, normalized);
+    return response.data?.data || response.data;
+  },
+
+  /**
+   * Delete a job (hirer)
+   */
+  async removeJob(jobId) {
+    const response = await api.delete(`/jobs/${jobId}`);
+    return response.data?.data || response.data;
+  },
+
+  /**
+   * Get featured jobs
+   */
+  async getFeaturedJobs(params = {}) {
+    try {
+      const response = await api.get('/jobs', {
+        params: { ...params, featured: true },
+      });
+      const data = response.data?.data || response.data;
+      const jobs = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.items)
+          ? data.items
+          : Array.isArray(data?.jobs)
+            ? data.jobs
+            : [];
+      return jobs.map(transformJobListItem);
+    } catch (error) {
+      if (import.meta.env.DEV) console.warn('Job service unavailable for featured jobs:', error.message);
+      return [];
+    }
+  },
+
+  /**
    * Apply to a job
    */
   async applyToJob(jobId, applicationData) {

@@ -7,6 +7,7 @@ const express = require('express');
 const router = express.Router();
 const { createServiceProxy } = require('../proxy/serviceProxy');
 const axios = require('axios');
+const { rateLimiters } = require('../middlewares/rate-limiter');
 
 // Get service URLs from app context
 const getServiceUrl = (req) => req.app.get('serviceUrls').AUTH_SERVICE;
@@ -83,11 +84,11 @@ const forwardPublicAuthDirect = async (req, res, authPath, {
 // Public routes
 // Bypass the generic proxy for public auth mutations so Express body parsing
 // cannot interfere with upstream request completion during cloud deployments.
-router.post('/login', (req, res) => forwardPublicAuthDirect(req, res, '/login', { timeout: 30000 }));
-router.post('/register', (req, res) => forwardPublicAuthDirect(req, res, '/register', { timeout: 60000 }));
-router.post('/forgot-password', (req, res) => forwardPublicAuthDirect(req, res, '/forgot-password', { timeout: 60000 }));
-router.post('/reset-password', (req, res) => forwardPublicAuthDirect(req, res, '/reset-password', { timeout: 60000 }));
-router.get('/verify-email/:token', (req, res) => {
+router.post('/login', rateLimiters.auth, (req, res) => forwardPublicAuthDirect(req, res, '/login', { timeout: 30000 }));
+router.post('/register', rateLimiters.auth, (req, res) => forwardPublicAuthDirect(req, res, '/register', { timeout: 60000 }));
+router.post('/forgot-password', rateLimiters.auth, (req, res) => forwardPublicAuthDirect(req, res, '/forgot-password', { timeout: 60000 }));
+router.post('/reset-password', rateLimiters.auth, (req, res) => forwardPublicAuthDirect(req, res, '/reset-password', { timeout: 60000 }));
+router.get('/verify-email/:token', rateLimiters.general, (req, res) => {
   return forwardPublicAuthDirect(req, res, `/verify-email/${req.params.token}`, {
     method: 'get',
     timeout: 60000,
@@ -122,12 +123,12 @@ const refreshTokenDirectHandler = async (req, res) => {
     });
   }
 };
-router.post('/refresh', refreshTokenDirectHandler);
-router.post('/refresh-token', refreshTokenDirectHandler);
+router.post('/refresh', rateLimiters.general, refreshTokenDirectHandler);
+router.post('/refresh-token', rateLimiters.general, refreshTokenDirectHandler);
 // Verify auth (returns current user)
 router.get('/verify', authenticate, protectedAuthProxy);
 // Resend verification email
-router.post('/resend-verification-email', (req, res) => {
+router.post('/resend-verification-email', rateLimiters.auth, (req, res) => {
   return forwardPublicAuthDirect(req, res, '/resend-verification-email', { timeout: 60000 });
 });
 

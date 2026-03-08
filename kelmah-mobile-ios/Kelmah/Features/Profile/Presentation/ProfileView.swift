@@ -22,8 +22,8 @@ final class ProfileViewModel: ObservableObject {
             errorMessage = "Complete all password fields"
             return false
         }
-        guard isStrongPassword(newPassword) else {
-            errorMessage = "New password must be at least 8 characters and include one uppercase letter and one number"
+        guard PasswordPolicy.isStrong(newPassword) else {
+            errorMessage = "New \(PasswordPolicy.requirementMessage.lowercased())"
             return false
         }
         guard newPassword == confirmPassword else {
@@ -46,10 +46,6 @@ final class ProfileViewModel: ObservableObject {
             errorMessage = error.localizedDescription
             return false
         }
-    }
-
-    private func isStrongPassword(_ value: String) -> Bool {
-        value.count >= 8 && value.contains(where: \ .isUppercase) && value.contains(where: \ .isNumber)
     }
 }
 
@@ -155,6 +151,19 @@ struct ProfileView: View {
                     }
                 } label: {
                     Text("Sign Out")
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                }
+                .background(.white)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+
+                Button(role: .destructive) {
+                    Task {
+                        await sessionCoordinator.logout(logoutAll: true)
+                    }
+                } label: {
+                    Text("Sign Out All Devices")
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
                         .padding()

@@ -7,6 +7,12 @@ import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.outlined.PersonOutline
 import androidx.compose.material.icons.outlined.WorkOutline
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.kelmah.mobile.core.session.KelmahUserRole
+
+data class KelmahNavItem(
+    val destination: KelmahDestination,
+    val label: String,
+)
 
 sealed class KelmahDestination(
     val route: String,
@@ -24,13 +30,15 @@ sealed class KelmahDestination(
     companion object {
         fun jobDetail(jobId: String): String = "jobs/detail/$jobId"
         fun jobApply(jobId: String): String = "jobs/apply/$jobId"
+        fun messages(conversationId: String? = null): String =
+            if (conversationId.isNullOrBlank()) Messages.route else "${Messages.route}?conversationId=$conversationId"
     }
 }
 
-val mainDestinations = listOf(
-    KelmahDestination.Home,
-    KelmahDestination.Jobs,
-    KelmahDestination.Messages,
-    KelmahDestination.Notifications,
-    KelmahDestination.Profile,
+fun mainDestinations(role: KelmahUserRole): List<KelmahNavItem> = listOf(
+    KelmahNavItem(KelmahDestination.Home, if (role == KelmahUserRole.HIRER) "Dashboard" else KelmahDestination.Home.label),
+    KelmahNavItem(KelmahDestination.Jobs, if (role == KelmahUserRole.HIRER) "Hiring" else KelmahDestination.Jobs.label),
+    KelmahNavItem(KelmahDestination.Messages, KelmahDestination.Messages.label),
+    KelmahNavItem(KelmahDestination.Notifications, KelmahDestination.Notifications.label),
+    KelmahNavItem(KelmahDestination.Profile, KelmahDestination.Profile.label),
 )

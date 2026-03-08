@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import dashboardService from '../services/dashboardService';
 import {
   setDashboardData,
@@ -15,6 +15,7 @@ import { secureStorage } from '../../../utils/secureStorage';
 export const useDashboard = () => {
   const dispatch = useDispatch();
   const { isAuthenticated } = useAuth();
+  const dashboardData = useSelector((state) => state.dashboard?.data);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [realTimeData, setRealTimeData] = useState({});
@@ -102,14 +103,14 @@ export const useDashboard = () => {
           dispatch(setDashboardData({ recentActivity: response.activities }));
           setPage(1);
         } else {
+          const existingActivities = dashboardData?.recentActivity || [];
           dispatch(
-            setDashboardData((prev) => ({
-              ...prev,
+            setDashboardData({
               recentActivity: [
-                ...(prev.recentActivity || []),
+                ...existingActivities,
                 ...response.activities,
               ],
-            })),
+            }),
           );
           setPage(currentPage + 1);
         }
@@ -123,7 +124,7 @@ export const useDashboard = () => {
         dispatch(setLoading({ recentActivity: false }));
       }
     },
-    [dispatch, page],
+    [dispatch, page, dashboardData],
   );
 
   const loadStatistics = useCallback(

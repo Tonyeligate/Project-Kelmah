@@ -25,6 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun ProfileScreen(
     onLogout: () -> Unit,
+    onLogoutAll: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -113,11 +114,22 @@ fun ProfileScreen(
             }
         }
         item {
-            Button(
-                onClick = onLogout,
+            Column(
                 modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text("Sign out")
+                Button(
+                    onClick = onLogout,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Sign out")
+                }
+                Button(
+                    onClick = onLogoutAll,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Sign out all devices")
+                }
             }
         }
     }

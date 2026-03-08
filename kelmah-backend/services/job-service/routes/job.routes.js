@@ -41,7 +41,7 @@ router.get("/categories", jobController.getJobCategories);
 router.get('/suggestions', jobController.getSearchSuggestions);
 router.get("/stats", jobController.getPlatformStats); // ✅ PUBLIC: Platform statistics
 router.post("/contracts/:id/disputes", verifyGatewayRequest, jobController.createContractDispute);
-router.get('/:id([a-fA-F0-9]{24})', jobController.getJobById);
+router.get('/:id([a-fA-F0-9]{24})', optionalGatewayVerification, jobController.getJobById);
 
 // MED-15 FIX: Milestone reads moved behind auth guard (contain sensitive payment/contract data)
 
