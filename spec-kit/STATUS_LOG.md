@@ -2,6 +2,56 @@
 
 ---
 
+### Session: Frontend Page Audit & Role Separation Review ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Audit all frontend page surfaces for bugs, UI/UX defects, security gaps, performance issues, maintainability problems, and role-separation leaks between worker and hirer flows.
+
+**Acceptance Criteria**
+- Inventory every frontend page component plus the route/shell files that decide how pages are exposed.
+- Dry-audit the highest-risk page flows for worker/hirer separation, auth guards, null safety, and data-flow issues.
+- Produce a harsh issue list with severity, location, impact, and fix guidance.
+- Document architectural guidance that keeps worker and hirer experiences clearly separated while preserving a future split path.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/auth/components/common/ProtectedRoute.jsx`
+- `kelmah-frontend/src/config/navLinks.js`
+- `kelmah-frontend/src/App.jsx`
+- `kelmah-frontend/src/utils/userUtils.js`
+- 58 frontend page files under `kelmah-frontend/src/modules/**/pages/*.jsx`
+
+**Current findings**
+- The router already separates large worker and hirer areas, but several shared pages (`/profile`, `/schedule`, `/payments`, `/premium`) still contain worker-only assumptions or cross-role dead links.
+- The biggest separation failure is the quick-hire flow: requester copy is mounted behind worker-only routes, which is a direct role inversion.
+- Public discovery, hirer recruiting, and worker profile exposure are still mixed through alias sprawl and pathname-sniff logic, which makes future worker/hirer app splitting harder than it needs to be.
+
+**Documentation**
+- Detailed report written to `spec-kit/FRONTEND_PAGE_AUDIT_MAR08_2026.md`.
+
+### Session: Native Android Toolchain Enablement 🔄 IN PROGRESS
+
+**Date**: March 8, 2026  
+**Scope**: Enable the lightest practical Windows-native Android build/test toolchain needed for ongoing Kelmah mobile validation while keeping download size lower than a full Android Studio + emulator setup.
+
+**Acceptance Criteria**
+- Audit the current Android project build requirements and the Windows machine's existing mobile toolchain state.
+- Install only the minimum practical Android validation dependencies needed for local compile and lightweight test execution.
+- Avoid heavyweight emulator/system-image installs unless they are strictly required.
+- Record what was installed, what remains impossible on this machine, and the validation outcome in spec-kit.
+
+**Dry-audit file surface confirmed**
+- `kelmah-mobile-android/build.gradle.kts`
+- `kelmah-mobile-android/app/build.gradle.kts`
+- `kelmah-mobile-android/settings.gradle.kts`
+- `kelmah-mobile-android/README.md`
+- `kelmah-mobile-ios/README.md`
+
+**Current findings**
+- The Android app requires AGP 8.5.2, Kotlin 1.9.24, Java 17, and Android SDK 35 toolchains.
+- The workspace currently has no Gradle wrapper, and the previous validation command confirmed `gradle` is not installed on this Windows machine.
+- Native iOS SwiftUI build execution still cannot be made local on Windows because Xcode is macOS-only, so the installation effort should stay focused on the Android toolchain.
+
 ### Session: Strict Job Image Ownership Guard ✅ COMPLETED
 
 **Date**: March 8, 2026  
