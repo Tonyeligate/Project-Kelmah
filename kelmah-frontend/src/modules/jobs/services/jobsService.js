@@ -54,7 +54,7 @@ const normalizeJobMedia = (job) => {
   const rawImages = Array.isArray(job.images) ? job.images : [];
   const rawAttachments = Array.isArray(job.attachments) ? job.attachments : [];
 
-  return resolveMediaAssetUrls(job.coverImage, job.coverImageMetadata, rawImages, rawAttachments);
+  return resolveMediaAssetUrls(rawImages, rawAttachments);
 };
 
 const transformJobListItem = (job) => {
@@ -421,12 +421,7 @@ const jobsApi = {
                   .map((s) => s.trim())
                   .filter(Boolean)
                 : [],
-            coverImage:
-              resolveMediaAssetUrl([
-                raw.coverImage,
-                raw.coverImageMetadata,
-                normalizedImages,
-              ]) || '',
+            coverImage: resolveJobVisualUrl(raw) || '',
             images: normalizedImages,
             imageGallery: normalizedImages,
             clientProfile: normalizedHirer

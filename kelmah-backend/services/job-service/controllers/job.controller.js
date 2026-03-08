@@ -127,6 +127,27 @@ const normalizeJobCoverImage = async (body = {}, userId) => {
   };
 };
 
+const bindJobCoverImageMetadata = (metadata = {}, { jobId, hirerId, coverImage } = {}) => {
+  const normalizedJobId = jobId?.toString?.() || String(jobId || '');
+  const normalizedHirerId = hirerId?.toString?.() || String(hirerId || '');
+  const normalizedCoverImage = typeof coverImage === 'string' ? coverImage.trim() : '';
+
+  if (!normalizedJobId) {
+    return metadata;
+  }
+
+  return {
+    ...(metadata && typeof metadata === 'object' ? metadata : {}),
+    url: metadata?.url || metadata?.secureUrl || metadata?.secure_url || normalizedCoverImage || '',
+    secureUrl: metadata?.secureUrl || metadata?.secure_url || metadata?.url || normalizedCoverImage || '',
+    ownerType: 'job',
+    ownerId: normalizedJobId,
+    jobId: normalizedJobId,
+    hirerId: normalizedHirerId || null,
+    imageBindingKey: `job:${normalizedJobId}:cover`,
+  };
+};
+
 /**
  * Create a new job
  * @route POST /api/jobs
@@ -437,6 +458,13 @@ const createJob = async (req, res, next) => {
     // ========== ATTEMPT DOCUMENT CREATION ==========
     // validateSync catches any schema violations before we attempt a DB write.
     const jobDoc = new Job(body);
+    if (jobDoc.coverImage || jobDoc.coverImageMetadata) {
+      jobDoc.coverImageMetadata = bindJobCoverImageMetadata(jobDoc.coverImageMetadata, {
+        jobId: jobDoc._id,
+        hirerId: jobDoc.hirer,
+        coverImage: jobDoc.coverImage,
+      });
+    }
     const syncValidationError = jobDoc.validateSync();
     if (syncValidationError) {
       jobLogger.error('job.create.mongooseValidationFailed', {
@@ -1477,6 +1505,13 @@ const updateJob = async (req, res, next) => {
     }
 
     Object.assign(body, await normalizeJobCoverImage(body, req.user?.id));
+    if (body.coverImage || body.coverImageMetadata) {
+      body.coverImageMetadata = bindJobCoverImageMetadata(body.coverImageMetadata, {
+        jobId: job._id,
+        hirerId: job.hirer,
+        coverImage: body.coverImage || job.coverImage,
+      });
+    }
 
     // Update job
     job = await Job.findByIdAndUpdate(req.params.id, body, {

@@ -413,6 +413,22 @@ const buildDirectSourceAsset = (candidate) => ({
   originalSourceUrl: candidate.downloadUrl,
 });
 
+const bindJobCoverImageMetadata = (asset = {}, job = {}) => {
+  const jobId = job?._id?.toString?.() || String(job?._id || '');
+  const hirerId = job?.hirer?.toString?.() || String(job?.hirer || '');
+
+  return {
+    ...(asset && typeof asset === 'object' ? asset : {}),
+    url: asset?.url || asset?.secureUrl || asset?.secure_url || job?.coverImage || '',
+    secureUrl: asset?.secureUrl || asset?.secure_url || asset?.url || job?.coverImage || '',
+    ownerType: 'job',
+    ownerId: jobId,
+    jobId,
+    hirerId: hirerId || null,
+    imageBindingKey: `job:${jobId}:cover`,
+  };
+};
+
 const parseSrvConnectionString = (uri) => {
   const parsed = new URL(uri);
   return {
@@ -494,7 +510,7 @@ const main = async () => {
   };
 
   let jobs = await Job.find(query)
-    .select('title description category skills location locationDetails coverImage coverImageMetadata status visibility createdAt')
+    .select('title description category skills location locationDetails coverImage coverImageMetadata hirer status visibility createdAt')
     .sort({ createdAt: -1 })
     .lean();
 
@@ -563,7 +579,7 @@ const main = async () => {
           $set: {
             coverImage: asset.url,
             coverImageMetadata: {
-              ...asset,
+              ...bindJobCoverImageMetadata(asset, job),
               refreshedAt: new Date(),
               refreshedBy: 'ghana-job-image-backfill-script',
             },

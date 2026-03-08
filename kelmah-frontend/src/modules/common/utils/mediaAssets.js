@@ -121,6 +121,42 @@ export const resolveProfileImageUrl = (entity = {}) =>
     entity?.image,
   ]);
 
+const normalizeEntityId = (value) => {
+  if (!value) return '';
+  if (typeof value === 'string' || typeof value === 'number') {
+    return String(value).trim();
+  }
+  if (typeof value === 'object') {
+    return normalizeEntityId(value._id || value.id || value.ownerId || value.jobId || value.$oid);
+  }
+  return '';
+};
+
+const isBoundToJobCover = (job = {}) => {
+  const metadata = job?.coverImageMetadata;
+  const currentJobId = normalizeEntityId(job?.id || job?._id || job?.jobId);
+
+  if (!metadata || typeof metadata !== 'object' || !currentJobId) {
+    return false;
+  }
+
+  if (metadata.ownerType && metadata.ownerType !== 'job') {
+    return false;
+  }
+
+  const metadataJobId = normalizeEntityId(metadata.jobId || metadata.ownerId);
+  if (metadataJobId) {
+    return metadataJobId === currentJobId;
+  }
+
+  const bindingKey = asTrimmedString(metadata.imageBindingKey || metadata.bindingKey);
+  if (bindingKey) {
+    return bindingKey === `job:${currentJobId}:cover`;
+  }
+
+  return false;
+};
+
 const JOB_VISUAL_THEMES = {
   plumbing: { start: '#0f766e', end: '#0ea5e9', accent: '#67e8f9', badge: '#cffafe' },
   electrical: { start: '#312e81', end: '#2563eb', accent: '#facc15', badge: '#dbeafe' },
@@ -206,14 +242,16 @@ const createJobFallbackVisual = (job = {}) => {
 };
 
 export const resolveJobVisualUrl = (job = {}, options = {}) => {
-  const resolved = resolveMediaAssetUrl([
-    job?.coverImage,
-    job?.coverImageMetadata,
+  const resolvedCoverImage = isBoundToJobCover(job)
+    ? resolveMediaAssetUrl([job?.coverImage, job?.coverImageMetadata], options)
+    : '';
+  const resolvedGalleryImage = resolveMediaAssetUrl([
     job?.images,
     job?.attachments,
     job?.media,
     job?.gallery,
   ], options);
+  const resolved = resolvedCoverImage || resolvedGalleryImage;
 
   if (resolved) {
     return resolved;

@@ -2,6 +2,107 @@
 
 ---
 
+### Session: Strict Job Image Ownership Guard ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Enforce strict binding between each job record and its stored cover image metadata so jobs never render another job's image by mistake.
+
+**Acceptance Criteria**
+- Audit the backend job image persistence flow and frontend job image resolver path.
+- Add explicit job ownership metadata for stored job cover images.
+- Ensure frontend rendering only accepts a cover image when its metadata matches the current job identity, otherwise fall back safely.
+- Verify touched files and record the completed result in spec-kit.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/shared/models/Job.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/job-service/utils/jobTransform.js`
+- `kelmah-backend/scripts/backfill-ghana-job-images.js`
+- `kelmah-frontend/src/modules/common/utils/mediaAssets.js`
+- `kelmah-frontend/src/modules/jobs/services/jobsService.js`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+
+**End-to-end flow notes**
+- Backend ownership flow: job creation/update persists `Job.hirer`, `coverImage`, and `coverImageMetadata` on the same `Job` document.
+- Frontend list/detail flow: jobs load through `jobsService.js`, then `resolveJobVisualUrl()` decides whether to render the stored cover image or fall back safely.
+- The strict guarantee requires both sides: backend metadata binding and frontend validation of that binding before any cover image is rendered.
+
+**Current findings**
+- The existing model separation already prevented user-profile images from overwriting job images.
+- The remaining gap was that cover image metadata did not explicitly prove job ownership, so frontend rendering was safe by structure but not strict by metadata contract.
+- The fix path was to stamp job identity into metadata and require the renderer to verify it before display.
+
+**Changes completed**
+- Added server-side job cover binding metadata in `job.controller.js` so newly created and updated jobs now stamp `ownerType`, `ownerId`, `jobId`, `hirerId`, and `imageBindingKey` onto `coverImageMetadata`.
+- Updated `backfill-ghana-job-images.js` so all live backfilled jobs now also carry the same strict ownership metadata.
+- Hardened `resolveJobVisualUrl()` in `mediaAssets.js` so frontend rendering only accepts a stored cover image when `coverImageMetadata` matches the current job id; otherwise it falls back safely.
+- Tightened `jobsService.js` media normalization so gallery resolution no longer re-injects a cover image through generic media arrays and bypass the ownership check.
+
+**Verification**
+- Re-ran the live job-image backfill after the metadata change: `scoped: 37`, `updated: 37`, `skipped: 0`, `failed: 0`.
+- Verified a live sample of open jobs directly in MongoDB and confirmed `matchesJob: true` plus `matchesHirer: true` for every sampled job, with binding keys like `job:<jobId>:cover`.
+- Frontend production build passed with `npm run build` in `kelmah-frontend/` after the strict ownership guard changes.
+- Only the pre-existing Mongoose duplicate-index warnings and the existing Vite `apiClient.js` chunking warning remained; no new ownership-guard errors were introduced.
+
+### Session: Frontend Page Audit & Role Separation Review 🔄 IN PROGRESS
+
+**Date**: March 8, 2026  
+**Scope**: Audit all frontend page surfaces for bugs, UI/UX defects, security gaps, performance issues, maintainability problems, and role-separation leaks between worker and hirer flows.
+
+**Acceptance Criteria**
+- Inventory every frontend page component plus the route/shell files that decide how pages are exposed.
+- Dry-audit the highest-risk page flows for worker/hirer separation, auth guards, null safety, and data-flow issues.
+- Produce a harsh issue list with severity, location, impact, and fix guidance.
+- Document architectural guidance that keeps worker and hirer experiences clearly separated while preserving a future split path.
+
+### Session: Native Mobile Role Separation Audit ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Audit the in-progress native Android and iOS shells for worker-vs-hirer separation gaps, then harden the shared one-app architecture without breaking the current gateway-first mobile flows.
+
+**Acceptance Criteria**
+- Dry-audit the active Android and iOS shell, session, home, and jobs surfaces that currently determine the signed-in experience.
+- Confirm whether worker and hirer users receive clearly separated in-app experiences after authentication.
+- Apply focused native fixes for the highest-value role-separation gaps while preserving the single-app architecture and future split flexibility.
+- Validate touched mobile files and record the outcome in spec-kit.
+
+**Dry-audit file surface confirmed**
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/KelmahApp.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahNavHost.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahDestination.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/session/SessionCoordinator.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/session/SessionState.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/storage/StoredSession.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/storage/TokenManager.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/home/presentation/HomeScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobsScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobDetailScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobApplicationScreen.kt`
+- `kelmah-mobile-ios/Kelmah/App/AppEnvironment.swift`
+- `kelmah-mobile-ios/Kelmah/App/RootTabView.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Storage/SessionStore.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Session/SessionModels.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Home/Presentation/HomeView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobsView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobDetailView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobApplicationView.swift`
+
+**Current findings**
+- Both native apps correctly persist and recover authenticated sessions, but the signed-in shell still defaults to a worker-centric home/jobs experience even when the authenticated user role is `hirer`.
+- The current home surfaces market worker actions only, and both job detail flows still present apply-first controls regardless of role.
+- The correct fix was to centralize lightweight role resolution in both native shells, then drive home copy, tab labels, job-market wording, and apply access from that shared role abstraction.
+
+**Changes completed**
+- Added shared native role resolvers in Android and iOS so the signed-in shell can consistently infer `worker` vs `hirer` from the authenticated session user.
+- Updated both app shells so signed-in hirer accounts now see role-aware dashboard/home wording and a renamed hiring-focused jobs tab label instead of a purely worker-branded shell.
+- Updated Android and iOS home surfaces to greet the signed-in user and swap worker-specific copy for hirer-specific hiring-operations messaging while preserving the single-app gateway-first architecture.
+- Updated Android and iOS jobs list/detail/application flows so hirer accounts now enter a hiring-market research path, worker-only apply controls stay hidden, and direct application screens guard against accidental hirer access.
+
+**Verification**
+- Editor diagnostics reported no errors across all touched Android and iOS native files after the role-aware changes.
+- A local Android compile attempt was executed, but this Windows workspace does not currently have a `gradle` command or Gradle wrapper available, so compile validation could not run beyond editor diagnostics.
+- The audit confirmed the previous worker-only copy path was removed from the signed-in home/jobs shell for hirer accounts on both platforms.
+
 ### Session: Real Job Cover Image Backfill ✅ COMPLETED
 
 **Date**: March 8, 2026  
