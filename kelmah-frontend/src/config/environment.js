@@ -36,15 +36,25 @@ const sanitizeEnvUrl = (raw) => {
   return clean || null;
 };
 
+// Ensure a URL ends with /api (the gateway mounts all routes under /api/*)
+// Works whether the user sets "https://gateway.com" or "https://gateway.com/api"
+const ensureApiSuffix = (url) => {
+  if (!url) return null;
+  // Already ends with /api or /api/ — leave it
+  if (/\/api\/?$/.test(url)) return url.replace(/\/+$/, '');
+  return `${url}/api`;
+};
+
 // API URL — controlled entirely via VITE_API_URL or VITE_API_GATEWAY_URL in Vercel dashboard.
 // Never hardcode a gateway URL here. Set the env var in Vercel and redeploy.
+// VITE_API_URL can be the bare host OR include /api — both work.
 const PRODUCTION_API_URL = (() => {
   // VITE_API_GATEWAY_URL: bare gateway host → we append /api
   const gatewayBase = sanitizeEnvUrl(import.meta.env.VITE_API_GATEWAY_URL);
-  if (gatewayBase) return `${gatewayBase}/api`;
-  // VITE_API_URL: full URL including /api suffix
+  if (gatewayBase) return ensureApiSuffix(gatewayBase);
+  // VITE_API_URL: accepts both "https://gateway.com" and "https://gateway.com/api"
   const apiUrl = sanitizeEnvUrl(import.meta.env.VITE_API_URL);
-  if (apiUrl) return apiUrl;
+  if (apiUrl) return ensureApiSuffix(apiUrl);
   // No env var set — use relative path so the app still works without crashing
   return '/api';
 })();
