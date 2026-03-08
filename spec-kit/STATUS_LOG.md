@@ -2,6 +2,84 @@
 
 ---
 
+### Session: Native Mobile Security UX Hardening ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Strengthen cross-platform native account security by removing duplicated password-policy logic, exposing sign-out-all-sessions controls, and replacing placeholder mobile tests with real security-focused coverage.
+
+**Acceptance Criteria**
+- Dry-audit the Android and iOS auth/profile flows that currently own password validation and session sign-out behavior.
+- Centralize password-strength rules in each native app so registration, reset, and profile password-change flows stay consistent.
+- Expose a user-facing sign-out-all-devices flow in both apps using the existing backend logout-all contract.
+- Replace placeholder unit tests with meaningful mobile coverage and run the lightweight Android validation suite again.
+
+**Dry-audit file surface confirmed**
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/presentation/AuthViewModel.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/presentation/ProfileViewModel.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/presentation/ProfileScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/KelmahApp.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahNavHost.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/data/AuthRepository.kt`
+- `kelmah-mobile-android/app/src/test/java/com/kelmah/mobile/TokenManagerTest.kt`
+- `kelmah-mobile-ios/Kelmah/Features/Auth/Presentation/LoginViewModel.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Profile/Presentation/ProfileView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Auth/Data/AuthRepository.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Session/SessionCoordinator.swift`
+- `kelmah-mobile-ios/KelmahTests/KelmahTests.swift`
+- `kelmah-mobile-android/README.md`
+- `kelmah-mobile-ios/README.md`
+
+**Current findings**
+- Both native apps already supported backend `logoutAll` at the repository/session layer, but neither profile surface exposed that security control to users.
+- Password-strength rules were duplicated separately across auth and profile flows on both platforms, which risked inconsistent security behavior as the apps continue to grow.
+- Both mobile test targets still contained placeholder-only tests, which was too shallow for a production-readiness security pass.
+
+**Changes completed**
+- Added shared password-policy helpers in both native apps so registration, reset-password, and profile password-change flows now use one consistent password rule source per platform.
+- Updated Android and iOS auth/profile flows to consume the shared password policy instead of duplicating password-strength checks inline.
+- Added sign-out-all-devices actions to both native profile surfaces, wiring them into the existing backend `logoutAll` contract without introducing new API endpoints.
+- Replaced placeholder mobile test coverage with real account-security tests for password strength and session role/display behavior.
+- Updated the Android and iOS mobile READMEs so their status notes now reflect real security-focused unit coverage and the new sign-out-all-devices capability.
+
+**Verification**
+- Editor diagnostics reported no errors across all touched Android and iOS files in this pass.
+- Lightweight Android validation completed successfully again with `gradle.bat testDebugUnitTest assembleDebug` after the new changes.
+- iOS source changes were validated through editor diagnostics only because native Xcode test execution remains unavailable on this Windows machine.
+
+### Session: Jobs Card Overlay Label Contrast Fix ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Fix the low-contrast text in the top image-area labels on the public jobs cards so category and overlay text remain readable without hover.
+
+**Acceptance Criteria**
+- Audit the exact jobs-card image overlay label styles used on the deployed `/jobs` page.
+- Identify why the top chip/label text becomes unreadable against the current card image styling.
+- Apply the smallest styling fix that keeps the public jobs cards readable in the live dark theme.
+- Verify the fix builds cleanly and record the result in spec-kit.
+
+**Dry-audit file surface confirmed**
+- `spec-kit/STATUS_LOG.md`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+
+**End-to-end flow notes**
+- The public `/jobs` grid renders each card hero directly inside `JobsPage.jsx`.
+- The unreadable top text was the category chip rendered over the hero image, not the lower dark overlay copy pill.
+- The chip used a near-white background with MUI `text.primary`, which resolves to a light/white foreground in the current dark theme, causing white-on-white contrast failure.
+
+**Current findings**
+- Root cause was pure styling, not missing image data and not hover logic.
+- The category chip stayed in the DOM at all times, but its text looked invisible because the chip background was light while the theme foreground token also resolved light.
+- Hover only made the card feel more visible because the surrounding card contrast changed, but the chip itself still needed an explicit dark foreground.
+
+**Changes completed**
+- Updated the top category chip in `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx` to use a fixed dark foreground color instead of `text.primary`.
+- Added a subtle border and shadow plus explicit `.MuiChip-label` color/weight so the label remains readable over bright hero images.
+
+**Verification**
+- Editor diagnostics reported no errors in `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx` after the contrast fix.
+- A full frontend build attempt was executed, but the current local workspace contains an unrelated pre-existing syntax error in `kelmah-frontend/src/modules/search/pages/SearchPage.jsx` (`Unexpected "return"` around line 95), so whole-app local build verification is currently blocked by that separate in-progress file.
+- The jobs-card contrast change itself is isolated to `JobsPage.jsx` and does not introduce file-level errors.
+
 ### Session: Frontend Role-Separation Remediation ✅ COMPLETED
 
 **Date**: March 8, 2026  

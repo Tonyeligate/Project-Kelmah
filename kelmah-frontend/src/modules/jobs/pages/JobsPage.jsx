@@ -1962,8 +1962,14 @@ const JobsPage = () => {
                               size="small"
                               sx={{
                                 bgcolor: 'rgba(255,255,255,0.92)',
-                                color: 'text.primary',
+                                color: '#111827',
                                 fontWeight: 700,
+                                border: '1px solid rgba(15,23,42,0.08)',
+                                boxShadow: '0 6px 16px rgba(15,23,42,0.16)',
+                                '& .MuiChip-label': {
+                                  color: '#111827',
+                                  fontWeight: 800,
+                                },
                               }}
                             />
                             {jobVisuals.length > 1 && (
