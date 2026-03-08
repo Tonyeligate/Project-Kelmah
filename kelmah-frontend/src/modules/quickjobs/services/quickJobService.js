@@ -124,6 +124,37 @@ export const acceptQuote = async (jobId, quoteId) => {
 };
 
 /**
+ * Initialize payment for an accepted quick job
+ * @param {string} jobId - Job ID
+ * @param {string} paymentMethod - Payment method key
+ * @returns {Promise<Object>} Payment initialization payload
+ */
+export const initializeQuickJobPayment = async (jobId, paymentMethod = 'card') => {
+  const response = await api.post(`${API_BASE}/${jobId}/pay`, { paymentMethod });
+  return response.data;
+};
+
+/**
+ * Get payment status for a quick job
+ * @param {string} jobId - Job ID
+ * @returns {Promise<Object>} Payment status payload
+ */
+export const getQuickJobPaymentStatus = async (jobId) => {
+  const response = await api.get(`${API_BASE}/${jobId}/payment-status`);
+  return response.data;
+};
+
+/**
+ * Verify a quick-job payment using a gateway callback reference
+ * @param {string} reference - Paystack transaction reference
+ * @returns {Promise<Object>} Payment verification payload
+ */
+export const verifyQuickJobPayment = async (reference) => {
+  const response = await api.get(`${API_BASE}/payment/verify/${reference}`);
+  return response.data;
+};
+
+/**
  * Mark worker is on the way
  * @param {string} jobId - Job ID
  * @param {number} latitude - Current latitude
@@ -289,6 +320,9 @@ export default {
   getQuickJob,
   submitQuote,
   acceptQuote,
+  initializeQuickJobPayment,
+  getQuickJobPaymentStatus,
+  verifyQuickJobPayment,
   markOnWay,
   markArrived,
   startWork,

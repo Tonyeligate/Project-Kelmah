@@ -29,7 +29,9 @@ import {
   LocationOn as LocationIcon,
   ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
+import { useSelector } from 'react-redux';
 import { SERVICE_CATEGORIES } from '../services/quickJobService';
+import { hasRole } from '../../../utils/userUtils';
 
 // Category icons (emoji-based for universal recognition)
 const categoryIcons = {
@@ -53,6 +55,7 @@ const ServiceCategorySelector = () => {
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [searchTerm, setSearchTerm] = useState('');
+  const user = useSelector((state) => state.auth.user);
 
   // Filter categories based on search
   const filteredCategories = SERVICE_CATEGORIES.filter(cat =>
@@ -62,12 +65,17 @@ const ServiceCategorySelector = () => {
 
   // Handle category selection
   const handleCategorySelect = (categoryId) => {
-    navigate(`/quick-job/new?category=${categoryId}`);
+    if (hasRole(user, ['worker'])) {
+      navigate('/worker/quick-jobs');
+      return;
+    }
+
+    navigate(`/hirer/quick-hire/request?category=${categoryId}`);
   };
 
   // Handle "Find Worker" search
   const handleFindWorker = () => {
-    navigate('/workers');
+    navigate('/find-talents');
   };
 
   return (

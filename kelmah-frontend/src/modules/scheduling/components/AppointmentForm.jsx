@@ -28,6 +28,7 @@ const AppointmentForm = ({
   loadingJobs = false,
   loadingUsers = false,
   mode = 'create',
+  counterpartyLabel = 'Hirer',
 }) => {
   const [errors, setErrors] = useState({});
 
@@ -39,7 +40,7 @@ const AppointmentForm = ({
     }
 
     if (!formData.hirerId && !formData.hirer) {
-      newErrors.hirer = 'Hirer is required';
+      newErrors.hirer = `${counterpartyLabel} is required`;
     }
 
     if (!formData.date) {
@@ -169,7 +170,7 @@ const AppointmentForm = ({
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Select Hirer"
+                label={`Select ${counterpartyLabel}`}
                 fullWidth
                 error={!!errors.hirer}
                 helperText={errors.hirer}
@@ -304,7 +305,7 @@ const AppointmentForm = ({
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography variant="body2" color="text.secondary">
-                  Hirer:
+                  {counterpartyLabel}:
                 </Typography>
                 <Typography variant="body1" fontWeight="medium">
                   {formData.hirer || 'Not selected'}
@@ -391,6 +392,7 @@ AppointmentForm.propTypes = {
   loadingJobs: PropTypes.bool,
   loadingUsers: PropTypes.bool,
   mode: PropTypes.oneOf(['create', 'edit']),
+  counterpartyLabel: PropTypes.string,
 };
 
 export default AppointmentForm;

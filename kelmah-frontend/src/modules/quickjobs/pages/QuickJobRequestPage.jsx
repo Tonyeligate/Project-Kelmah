@@ -9,7 +9,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -59,9 +59,10 @@ import { Helmet } from 'react-helmet-async';
 // Steps for the stepper
 const steps = ['Describe Problem', 'Confirm Location', 'When do you need it?'];
 
-const QuickJobRequestPage = () => {
+const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const { category: categoryParam } = useParams();
   const [searchParams] = useSearchParams();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const fileInputRef = useRef(null);
@@ -73,7 +74,7 @@ const QuickJobRequestPage = () => {
   const redirectTimerRef = useRef(null);
 
   // Get category from URL params
-  const categoryId = searchParams.get('category') || 'general_repair';
+  const categoryId = categoryParam || searchParams.get('category') || 'general_repair';
   const category = SERVICE_CATEGORIES.find(c => c.id === categoryId) || SERVICE_CATEGORIES[0];
 
   // Form state
@@ -305,7 +306,7 @@ const QuickJobRequestPage = () => {
         setSuccess(true);
         // Redirect to job tracking page after 2 seconds
         redirectTimerRef.current = setTimeout(() => {
-          navigate(`/quick-job/${result.data._id || result.data.id}`);
+          navigate(`${successBasePath}/${result.data._id || result.data.id}`);
         }, 2000);
       } else {
         setError(result.error?.message || 'Failed to create job request');

@@ -2,6 +2,52 @@
 
 ---
 
+### Session: Frontend Structural Role Split Follow-up ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Complete the next structural frontend separation pass by splitting quick-hire requester vs worker flows, creating true hirer-owned profile and scheduling surfaces, and decomposing shared search into public vs hirer-owned containers.
+
+**Acceptance Criteria**
+- Dry-audit all route, page, component, and service files involved in quick-jobs, profile, scheduling, and search ownership.
+- Implement route and page changes so worker and hirer surfaces are explicitly owned by their domains.
+- Keep shared code reusable, but remove pathname-sniff and wrong-role UX from the user-facing pages.
+- Rebuild the frontend, validate touched files, and document the resulting architecture in spec-kit.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/search/pages/SearchPage.jsx`
+- `kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/WorkerSearchPage.jsx`
+- `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx`
+- `kelmah-frontend/src/modules/quickjobs/components/ServiceCategorySelector.jsx`
+- `kelmah-frontend/src/modules/quickjobs/pages/QuickJobRequestPage.jsx`
+- `kelmah-frontend/src/modules/quickjobs/pages/QuickJobTrackingPage.jsx`
+- `kelmah-frontend/src/modules/quickjobs/pages/NearbyJobsPage.jsx`
+- `kelmah-frontend/src/modules/quickjobs/services/quickJobService.js`
+- `kelmah-frontend/src/modules/profile/pages/ProfilePage.jsx`
+- `kelmah-frontend/src/modules/profile/hooks/useProfile.js`
+- `kelmah-frontend/src/modules/profile/services/profileService.js`
+- `kelmah-frontend/src/modules/scheduling/pages/SchedulingPage.jsx`
+- `kelmah-frontend/src/modules/scheduling/components/AppointmentForm.jsx`
+
+**Completed fixes**
+- Decomposed public worker discovery so `SearchPage` is now a thin public wrapper over the shared `WorkerDirectoryExperience` container.
+- Switched `WorkerSearchPage` to the same shared worker-directory container in hirer mode, removing the old route-level split logic and keeping `/hirer/find-talent` domain-owned.
+- Added true hirer-owned profile and scheduling pages at `/hirer/profile` and `/hirer/schedule`, then updated shared `/profile` and `/schedule` aliases to route hirers there instead of worker-biased surfaces.
+- Added canonical hirer quick-hire routes under `/hirer/quick-hire/*` plus a requester tracking page that supports quote review, quote acceptance, payment initialization, approval, cancellation, and disputes.
+- Added canonical worker quick-job routes under `/worker/quick-jobs/*` and converted legacy quick-hire/quick-job entry points into role-aware compatibility redirects.
+- Updated `QuickJobRequestPage` and `ServiceCategorySelector` so requester creation now lands in hirer-owned quick-hire tracking instead of the worker tracking flow.
+- Extended scheduling copy and appointment dialogs to support hirer-owned wording via configurable counterparty labels without breaking the existing shared scheduler implementation.
+- Extended the quick-job service with payment initialization and payment-status helpers needed by the requester tracking surface.
+- Added quick-job payment callback coverage by preserving callback query strings in role redirects, handling `/quick-job/:jobId/payment-callback` and `/quick-job/:jobId/payment-complete`, and verifying callback references from the hirer tracking page.
+
+**Verification**
+- `get_errors` returned no file-level errors on all touched frontend files.
+- `npm run build` completed successfully in `kelmah-frontend/`.
+
+**Documentation**
+- Detailed follow-up report written to `spec-kit/FRONTEND_STRUCTURAL_ROLE_SPLIT_FOLLOWUP_MAR08_2026.md`.
+
 ### Session: Native Mobile Security UX Hardening ✅ COMPLETED
 
 **Date**: March 8, 2026  
@@ -40,10 +86,12 @@
 - Added sign-out-all-devices actions to both native profile surfaces, wiring them into the existing backend `logoutAll` contract without introducing new API endpoints.
 - Replaced placeholder mobile test coverage with real account-security tests for password strength and session role/display behavior.
 - Updated the Android and iOS mobile READMEs so their status notes now reflect real security-focused unit coverage and the new sign-out-all-devices capability.
+- Fixed the Android shell `Scaffold` content padding usage so local lint now passes instead of failing on an obscured-content risk.
 
 **Verification**
 - Editor diagnostics reported no errors across all touched Android and iOS files in this pass.
 - Lightweight Android validation completed successfully again with `gradle.bat testDebugUnitTest assembleDebug` after the new changes.
+- Additional Android audit validation completed successfully with `gradle.bat lintDebug`.
 - iOS source changes were validated through editor diagnostics only because native Xcode test execution remains unavailable on this Windows machine.
 
 ### Session: Jobs Card Overlay Label Contrast Fix ✅ COMPLETED

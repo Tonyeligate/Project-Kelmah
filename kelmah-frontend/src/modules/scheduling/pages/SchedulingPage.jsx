@@ -90,9 +90,67 @@ const getStatusChip = (status) => {
   );
 };
 
-const AppointmentCard = ({ appointment, onEdit, onDelete }) => {
+const getAppointmentCounterparty = (appointment, viewerRole = 'worker') => {
+  if (viewerRole === 'hirer') {
+    const workerId =
+      appointment?.workerId ||
+      appointment?.acceptedQuote?.worker?._id ||
+      appointment?.worker?._id ||
+      appointment?.worker?._id?.toString?.();
+    const workerName =
+      appointment?.worker ||
+      appointment?.workerName ||
+      [appointment?.workerFirstName, appointment?.workerLastName]
+        .filter(Boolean)
+        .join(' ') ||
+      (appointment?.acceptedQuote?.worker?.firstName
+        ? `${appointment.acceptedQuote.worker.firstName} ${appointment.acceptedQuote.worker.lastName || ''}`.trim()
+        : '') ||
+      appointment?.hirer ||
+      'Assigned worker';
+    const workerAvatar =
+      appointment?.workerAvatar ||
+      appointment?.acceptedQuote?.worker?.profilePicture ||
+      appointment?.hirerAvatar ||
+      null;
+
+    return {
+      id: workerId,
+      name: workerName,
+      avatar: workerAvatar,
+      profilePath: workerId ? `/workers/${workerId}` : null,
+    };
+  }
+
+  const hirerId = appointment?.hirerId || appointment?.client?._id || null;
+  const hirerName =
+    appointment?.hirer ||
+    appointment?.hirerName ||
+    [appointment?.hirerFirstName, appointment?.hirerLastName]
+      .filter(Boolean)
+      .join(' ') ||
+    'Hiring contact';
+  const hirerAvatar =
+    appointment?.hirerAvatar || appointment?.client?.profilePicture || null;
+
+  return {
+    id: hirerId,
+    name: hirerName,
+    avatar: hirerAvatar,
+    profilePath: hirerId ? `/profile/${hirerId}` : null,
+  };
+};
+
+const AppointmentCard = ({
+  appointment,
+  onEdit,
+  onDelete,
+  viewerRole = 'worker',
+  counterpartyLabel = 'Hirer',
+}) => {
   const navigate = useNavigate();
   const isVirtual = appointment.appointmentType === 'virtual';
+  const counterparty = getAppointmentCounterparty(appointment, viewerRole);
 
   const handleJobClick = () => {
     if (appointment.jobId) navigate(`/jobs/${appointment.jobId}`);
@@ -100,12 +158,12 @@ const AppointmentCard = ({ appointment, onEdit, onDelete }) => {
 
   const handleUserClick = (e) => {
     e.stopPropagation();
-    if (!appointment.hirerId) return;
-    navigate(`/profile/${appointment.hirerId}`, {
+    if (!counterparty.profilePath) return;
+    navigate(counterparty.profilePath, {
       state: {
         profileData: {
-          name: appointment.hirerName,
-          avatar: appointment.hirerAvatar,
+          name: counterparty.name,
+          avatar: counterparty.avatar,
         },
       },
     });
@@ -142,8 +200,8 @@ const AppointmentCard = ({ appointment, onEdit, onDelete }) => {
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
             <Avatar
-              src={appointment.hirerAvatar}
-              alt={appointment.hirer}
+              src={counterparty.avatar}
+              alt={counterparty.name}
               sx={{ width: 24, height: 24, mr: 1 }}
             />
             <Link
@@ -153,7 +211,7 @@ const AppointmentCard = ({ appointment, onEdit, onDelete }) => {
               onClick={handleUserClick}
               underline="hover"
             >
-              {appointment.hirer}
+              {counterparty.name}
             </Link>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
@@ -280,7 +338,29 @@ const AppointmentSkeleton = () => (
   </Paper>
 );
 
-const SchedulingPage = () => {
+const SchedulingPage = ({
+  viewerRole = 'worker',
+  pageTitle,
+  pageSubtitle,
+  counterpartyLabel,
+  searchHelperText,
+  searchPlaceholder,
+}) => {
+  const resolvedCounterpartyLabel =
+    counterpartyLabel || (viewerRole === 'hirer' ? 'Worker' : 'Hirer');
+  const resolvedPageTitle =
+    pageTitle || (viewerRole === 'hirer' ? 'Hiring Schedule' : 'My Schedule');
+  const resolvedPageSubtitle =
+    pageSubtitle ||
+    (viewerRole === 'hirer'
+      ? 'Coordinate interviews, site visits, and kickoff calls with workers.'
+      : 'Track appointments, meetings, and site visits in one place.');
+  const resolvedSearchHelperText =
+    searchHelperText ||
+    `Search by job or ${resolvedCounterpartyLabel.toLowerCase()}, then switch between calendar, agenda, upcoming, or map views.`;
+  const resolvedSearchPlaceholder =
+    searchPlaceholder || `Search appointments by job or ${resolvedCounterpartyLabel.toLowerCase()}...`;
+
   // Appointments state and loading
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -468,13 +548,14 @@ const SchedulingPage = () => {
   };
 
   const handleOpenEditDialog = (app) => {
+    const counterparty = getAppointmentCounterparty(app, viewerRole);
     setDialogMode('edit');
     setCurrentAppointment(app);
     setFormData({
       jobId: app.jobId || '',
       jobTitle: app.jobTitle || '',
-      hirerId: app.hirerId || '',
-      hirer: app.hirer || '',
+      hirerId: counterparty.id || app.hirerId || '',
+      hirer: counterparty.name || app.hirer || '',
       date: new Date(app.date),
       status: app.status || 'pending',
       appointmentType: app.appointmentType || 'in-person',
@@ -583,14 +664,15 @@ const SchedulingPage = () => {
   const filteredAppointments = Array.isArray(appointments)
     ? appointments.filter((app) => {
         if (!app) return false; // Skip null/undefined appointments
+        const counterpartyName = getAppointmentCounterparty(app, viewerRole).name;
         const matchesStatus =
           filterStatus === 'all' || app.status === filterStatus;
         const matchesSearch =
           !searchQuery ||
           (app.jobTitle &&
             app.jobTitle.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          (app.hirer &&
-            app.hirer.toLowerCase().includes(searchQuery.toLowerCase()));
+          (counterpartyName &&
+            counterpartyName.toLowerCase().includes(searchQuery.toLowerCase()));
         return matchesStatus && matchesSearch;
       })
     : [];
@@ -682,10 +764,10 @@ const SchedulingPage = () => {
           />
           <Box>
             <Typography variant="h4" fontWeight="bold">
-              My Schedule
+                {resolvedPageTitle}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Track appointments, meetings, and site visits in one place.
+                {resolvedPageSubtitle}
             </Typography>
           </Box>
         </Box>
@@ -713,14 +795,14 @@ const SchedulingPage = () => {
       {/* Filters and Search */}
       <Paper sx={{ p: 2, mb: 3, borderRadius: 2 }}>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-          Search by job or hirer, then switch between calendar, agenda, upcoming, or map views.
+          {resolvedSearchHelperText}
         </Typography>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={6} md={4}>
             <TextField
               fullWidth
               size="small"
-              placeholder="Search appointments..."
+              placeholder={resolvedSearchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               InputProps={{
@@ -794,6 +876,8 @@ const SchedulingPage = () => {
                   appointment={app}
                   onEdit={handleOpenEditDialog}
                   onDelete={handleDelete}
+                  viewerRole={viewerRole}
+                  counterpartyLabel={resolvedCounterpartyLabel}
                 />
               ))
             ) : (
@@ -843,6 +927,8 @@ const SchedulingPage = () => {
                       appointment={app}
                       onEdit={handleOpenEditDialog}
                       onDelete={handleDelete}
+                      viewerRole={viewerRole}
+                      counterpartyLabel={resolvedCounterpartyLabel}
                     />
                   ))}
                 </Box>
@@ -888,6 +974,8 @@ const SchedulingPage = () => {
                 appointment={app}
                 onEdit={handleOpenEditDialog}
                 onDelete={handleDelete}
+                viewerRole={viewerRole}
+                counterpartyLabel={resolvedCounterpartyLabel}
               />
             ))
           ) : (
@@ -954,7 +1042,9 @@ const SchedulingPage = () => {
         aria-labelledby="appointment-dialog-title"
       >
         <DialogTitle id="appointment-dialog-title">
-          {dialogMode === 'create' ? 'New Appointment' : 'Edit Appointment'}
+          {dialogMode === 'create'
+            ? `New Appointment with ${resolvedCounterpartyLabel}`
+            : `Edit Appointment with ${resolvedCounterpartyLabel}`}
         </DialogTitle>
         <DialogContent>
           <AppointmentForm
@@ -967,6 +1057,7 @@ const SchedulingPage = () => {
             loadingJobs={loadingJobs}
             loadingUsers={loadingUsers}
             mode={dialogMode}
+            counterpartyLabel={resolvedCounterpartyLabel}
           />
         </DialogContent>
       </Dialog>

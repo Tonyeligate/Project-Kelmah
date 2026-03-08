@@ -1,4 +1,4 @@
-import { Navigate, useRoutes } from 'react-router-dom';
+import { Navigate, useLocation, useParams, useRoutes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { useSelector } from 'react-redux';
 import Layout from '../modules/layout/components/Layout';
@@ -60,6 +60,15 @@ const ApplicationManagementPage = lazy(
 );
 const WorkerSearchPage = lazy(
   () => import('../modules/hirer/pages/WorkerSearchPage'),
+);
+const HirerProfilePage = lazy(
+  () => import('../modules/hirer/pages/HirerProfilePage'),
+);
+const HirerSchedulingPage = lazy(
+  () => import('../modules/hirer/pages/HirerSchedulingPage'),
+);
+const HirerQuickJobTrackingPage = lazy(
+  () => import('../modules/hirer/pages/HirerQuickJobTrackingPage'),
 );
 const HirerToolsPage = lazy(
   () => import('../modules/hirer/pages/HirerToolsPage'),
@@ -145,11 +154,6 @@ const NotificationSettingsPage = lazy(
 // Settings
 const SettingsPage = lazy(
   () => import('../modules/settings/pages/SettingsPage'),
-);
-
-// Profile
-const ProfilePage = lazy(
-  () => import('../modules/profile/pages/ProfilePage'),
 );
 
 // Support
@@ -246,6 +250,63 @@ const RoleAliasRedirect = ({ workerPath, hirerPath, adminPath }) => {
 
   if (hasRole(user, 'worker')) {
     return <Navigate to={workerPath || getRoleHomePath(user)} replace />;
+  }
+
+  return <Navigate to="/dashboard" replace />;
+};
+
+const QuickJobRequestRedirect = () => {
+  const user = useSelector((state) => state.auth.user);
+  const location = useLocation();
+  const search = location.search || '';
+
+  if (hasRole(user, 'admin') || hasRole(user, 'hirer')) {
+    return <Navigate to={`/hirer/quick-hire/request${search}`} replace />;
+  }
+
+  if (hasRole(user, 'worker')) {
+    return <Navigate to="/worker/quick-jobs" replace />;
+  }
+
+  return <Navigate to="/dashboard" replace />;
+};
+
+const QuickJobRequestCategoryRedirect = () => {
+  const user = useSelector((state) => state.auth.user);
+  const { category } = useParams();
+
+  if (hasRole(user, 'admin') || hasRole(user, 'hirer')) {
+    return <Navigate to={`/hirer/quick-hire/request/${category || ''}`} replace />;
+  }
+
+  if (hasRole(user, 'worker')) {
+    return <Navigate to="/worker/quick-jobs" replace />;
+  }
+
+  return <Navigate to="/dashboard" replace />;
+};
+
+const QuickJobRoleRedirect = ({
+  workerBasePath = '/worker/quick-jobs',
+  hirerBasePath = '/hirer/quick-hire',
+  adminBasePath = '/hirer/quick-hire',
+}) => {
+  const user = useSelector((state) => state.auth.user);
+  const location = useLocation();
+  const { jobId } = useParams();
+  const suffix = jobId ? `/${jobId}` : '';
+  const search = location.search || '';
+
+  if (hasRole(user, 'admin')) {
+    return <Navigate to={`${adminBasePath}${suffix}${search}`} replace />;
+  }
+
+  if (hasRole(user, 'hirer')) {
+    return <Navigate to={`${hirerBasePath}${suffix}${search}`} replace />;
+  }
+
+  if (hasRole(user, 'worker')) {
+    return <Navigate to={`${workerBasePath}${suffix}${search}`} replace />;
   }
 
   return <Navigate to="/dashboard" replace />;
@@ -422,6 +483,59 @@ const routes = [
             ),
           },
           {
+            path: 'profile',
+            element: (
+              <ProtectedRoute roles={['hirer', 'admin']}>
+                <HirerProfilePage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'schedule',
+            element: (
+              <ProtectedRoute roles={['hirer', 'admin']}>
+                <HirerSchedulingPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: 'quick-hire',
+            children: [
+              {
+                index: true,
+                element: (
+                  <ProtectedRoute roles={['hirer', 'admin']}>
+                    <QuickJobRequestPage successBasePath="/hirer/quick-hire" />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'request',
+                element: (
+                  <ProtectedRoute roles={['hirer', 'admin']}>
+                    <QuickJobRequestPage successBasePath="/hirer/quick-hire" />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: 'request/:category',
+                element: (
+                  <ProtectedRoute roles={['hirer', 'admin']}>
+                    <QuickJobRequestPage successBasePath="/hirer/quick-hire" />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: ':jobId',
+                element: (
+                  <ProtectedRoute roles={['hirer', 'admin']}>
+                    <HirerQuickJobTrackingPage />
+                  </ProtectedRoute>
+                ),
+              },
+            ],
+          },
+          {
             path: 'tools',
             element: (
               <ProtectedRoute roles={['hirer', 'admin']}>
@@ -586,6 +700,27 @@ const routes = [
             ),
           },
           {
+            path: 'quick-jobs',
+            children: [
+              {
+                index: true,
+                element: (
+                  <ProtectedRoute roles={['worker', 'admin']}>
+                    <NearbyJobsPage />
+                  </ProtectedRoute>
+                ),
+              },
+              {
+                path: ':jobId',
+                element: (
+                  <ProtectedRoute roles={['worker', 'admin']}>
+                    <QuickJobTrackingPage />
+                  </ProtectedRoute>
+                ),
+              },
+            ],
+          },
+          {
             path: 'contracts',
             element: (
               <ProtectedRoute roles={['worker', 'admin']}>
@@ -662,82 +797,96 @@ const routes = [
       },
 
       // ==========================================
-      // QUICK JOBS ROUTES (Protected Quick-Hire)
+      // QUICK JOBS COMPATIBILITY ALIASES
       // ==========================================
       {
         path: 'quick-hire',
-        children: [
-          {
-            index: true,
-            element: (
-              <ProtectedRoute roles={['worker', 'admin']}>
-                <QuickJobRequestPage />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            path: 'request',
-            element: (
-              <ProtectedRoute roles={['worker', 'admin']}>
-                <QuickJobRequestPage />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            path: 'request/:category',
-            element: (
-              <ProtectedRoute roles={['worker', 'admin']}>
-                <QuickJobRequestPage />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            path: 'nearby',
-            element: (
-              <ProtectedRoute roles={['worker', 'admin']}>
-                <NearbyJobsPage />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            path: 'track/:jobId',
-            element: (
-              <ProtectedRoute roles={['worker', 'admin']}>
-                <QuickJobTrackingPage />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            // Payment callback route for Paystack redirects
-            path: 'payment/:jobId',
-            element: (
-              <ProtectedRoute roles={['worker', 'admin']}>
-                <QuickJobTrackingPage />
-              </ProtectedRoute>
-            ),
-          },
-        ],
+        element: (
+          <ProtectedRoute>
+            <RoleAliasRedirect
+              workerPath="/worker/quick-jobs"
+              hirerPath="/hirer/quick-hire"
+              adminPath="/hirer/quick-hire"
+            />
+          </ProtectedRoute>
+        ),
       },
-
-      // Compatibility aliases for existing QuickJobs module navigation
-      // (module currently navigates to /quick-job/:jobId and /worker/quick-jobs)
+      {
+        path: 'quick-hire/request',
+        element: (
+          <ProtectedRoute>
+            <QuickJobRequestRedirect />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'quick-hire/request/:category',
+        element: (
+          <ProtectedRoute>
+            <QuickJobRequestCategoryRedirect />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'quick-hire/nearby',
+        element: (
+          <ProtectedRoute>
+            <RoleAliasRedirect
+              workerPath="/worker/quick-jobs"
+              hirerPath="/hirer/quick-hire"
+              adminPath="/hirer/quick-hire"
+            />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'quick-hire/track/:jobId',
+        element: (
+          <ProtectedRoute>
+            <QuickJobRoleRedirect />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'quick-hire/payment/:jobId',
+        element: (
+          <ProtectedRoute>
+            <QuickJobRoleRedirect />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'quick-job/new',
+        element: (
+          <ProtectedRoute>
+            <QuickJobRequestRedirect />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: 'quick-job/:jobId',
         element: (
-          <ProtectedRoute roles={['worker', 'admin']}>
-            <QuickJobTrackingPage />
+          <ProtectedRoute>
+            <QuickJobRoleRedirect />
           </ProtectedRoute>
         ),
       },
       {
-        path: 'worker/quick-jobs',
+        path: 'quick-job/:jobId/payment-callback',
         element: (
-          <ProtectedRoute roles={['worker', 'admin']}>
-            <NearbyJobsPage />
+          <ProtectedRoute>
+            <QuickJobRoleRedirect />
           </ProtectedRoute>
         ),
       },
-
+      {
+        path: 'quick-job/:jobId/payment-complete',
+        element: (
+          <ProtectedRoute>
+            <QuickJobRoleRedirect />
+          </ProtectedRoute>
+        ),
+      },
       // ==========================================
       // SHARED ROUTES (ALL AUTHENTICATED USERS)
       // ==========================================
@@ -807,7 +956,7 @@ const routes = [
           <ProtectedRoute>
             <RoleAliasRedirect
               workerPath="/worker/profile"
-              hirerPath="/settings"
+              hirerPath="/hirer/profile"
               adminPath="/admin/skills-management"
             />
           </ProtectedRoute>
@@ -1000,7 +1149,7 @@ const routes = [
           <ProtectedRoute>
             <RoleAliasRedirect
               workerPath="/worker/schedule"
-              hirerPath="/hirer/dashboard"
+              hirerPath="/hirer/schedule"
               adminPath="/admin/skills-management"
             />
           </ProtectedRoute>
