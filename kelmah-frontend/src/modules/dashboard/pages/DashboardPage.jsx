@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock as LockIcon } from '@mui/icons-material';
 import LoadingScreen from '../../common/components/loading/LoadingScreen';
 import { Helmet } from 'react-helmet-async';
+import { getRoleHomePath, getUserRoles } from '../../../utils/userUtils';
 
 // NOTE: dashboardSlice provides shared metrics (profile views, response rate, etc.)
 // It is NOT used for role-specific dashboard data.
@@ -49,7 +50,7 @@ const DashboardPage = () => {
     );
   }
 
-  const userRole = user.role || user.userType || 'worker';
+  const userRole = getUserRoles(user)[0] || 'worker';
 
   let dashboard;
   switch (userRole) {
@@ -64,7 +65,7 @@ const DashboardPage = () => {
         <Box sx={{ p: 3, textAlign: 'center' }}>
           <Typography variant="h5" gutterBottom>Admin Dashboard</Typography>
           <Typography variant="body1">Admin dashboard is available in the admin section.</Typography>
-          <Button variant="outlined" onClick={() => navigate('/admin')} sx={{ mt: 2, borderColor: '#D4AF37', color: '#D4AF37' }}>
+          <Button variant="outlined" onClick={() => navigate(getRoleHomePath(user))} sx={{ mt: 2, borderColor: '#D4AF37', color: '#D4AF37' }}>
             Go to Admin Panel
           </Button>
         </Box>

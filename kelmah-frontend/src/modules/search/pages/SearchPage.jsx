@@ -62,6 +62,16 @@ const normalizeWorkerRecord = (worker = {}) => {
     worker.id ||
     worker.userId ||
     (worker._id && worker._id.toString ? worker._id.toString() : worker._id);
+  const deterministicFallbackId =
+    worker.email ||
+    worker.phone ||
+    [worker.name, worker.firstName, worker.lastName, worker.profession, worker.city]
+      .filter(Boolean)
+      .join('-')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') ||
+    'worker-record';
 
   const skillsArray = Array.isArray(worker.skills)
     ? worker.skills.map((skill) =>
@@ -74,7 +84,7 @@ const normalizeWorkerRecord = (worker = {}) => {
       : [];
 
   return {
-    id: id || `worker-${crypto.randomUUID()}`,
+    id: id || `worker-${deterministicFallbackId}`,
     userId: id || worker.userId,
     name:
       worker.name ||

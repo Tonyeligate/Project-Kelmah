@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePayments } from '../contexts/PaymentContext';
 import BillPage from './BillPage';
 import PaymentMethodsPage from './PaymentMethodsPage';
 import PaymentSettingsPage from './PaymentSettingsPage';
+import { useSelector } from 'react-redux';
 import {
   Container,
   Grid,
@@ -43,6 +44,7 @@ import TransactionsList from '../components/TransactionsList';
 import { Link as RouterLink } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
+import { hasRole } from '../../../utils/userUtils';
 
 const PaymentsPage = () => {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -50,6 +52,9 @@ const PaymentsPage = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const { loading, error, walletBalance, transactions, fetchTransactions } =
     usePayments();
+  const user = useSelector((state) => state.auth.user);
+  const canManagePaymentMethods = hasRole(user, ['worker', 'admin']);
+  const canViewPaymentSettings = hasRole(user, ['admin']);
   // Transaction filters & pagination
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -82,6 +87,23 @@ const PaymentsPage = () => {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+
+  const tabs = [
+    { label: 'Transactions', content: null },
+    { label: 'Bills', content: <BillPage /> },
+    ...(canManagePaymentMethods
+      ? [{ label: 'Payment Methods', content: <PaymentMethodsPage /> }]
+      : []),
+    ...(canViewPaymentSettings
+      ? [{ label: 'Settings', content: <PaymentSettingsPage /> }]
+      : []),
+  ];
+
+  useEffect(() => {
+    if (selectedTab >= tabs.length) {
+      setSelectedTab(0);
+    }
+  }, [selectedTab, tabs.length]);
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 0.5, sm: 2 } }}>
@@ -118,13 +140,15 @@ const PaymentsPage = () => {
             },
           }}
         >
-          <MenuItem
-            component={RouterLink}
-            to="/payment/methods"
-            onClick={handleMenuClose}
-          >
-            Manage Payment Methods
-          </MenuItem>
+          {canManagePaymentMethods && (
+            <MenuItem
+              component={RouterLink}
+              to="/payment/methods"
+              onClick={handleMenuClose}
+            >
+              Manage Payment Methods
+            </MenuItem>
+          )}
           <MenuItem
             component={RouterLink}
             to="/payment/bill"
@@ -195,10 +219,9 @@ const PaymentsPage = () => {
                 '& .Mui-selected': { color: 'secondary.main' },
               }}
             >
-              <Tab label="Transactions" />
-              <Tab label="Bills" />
-              <Tab label="Payment Methods" />
-              <Tab label="Settings" />
+              {tabs.map((tab) => (
+                <Tab key={tab.label} label={tab.label} />
+              ))}
             </Tabs>
 
             <Box sx={{ p: { xs: 1.5, sm: 3 } }}>
@@ -276,11 +299,7 @@ const PaymentsPage = () => {
                 </>
               )}
 
-              {selectedTab === 1 && <BillPage />}
-
-              {selectedTab === 2 && <PaymentMethodsPage />}
-
-              {selectedTab === 3 && <PaymentSettingsPage />}
+              {selectedTab > 0 && tabs[selectedTab]?.content}
             </Box>
           </Paper>
         </Grid>

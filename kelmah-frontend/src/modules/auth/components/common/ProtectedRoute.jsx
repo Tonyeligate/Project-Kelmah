@@ -3,7 +3,10 @@ import PropTypes from 'prop-types';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 import { useSelector } from 'react-redux';
-import { hasRole as userHasRole } from '../../../../utils/userUtils';
+import {
+  hasRole as userHasRole,
+  getRoleHomePath,
+} from '../../../../utils/userUtils';
 import RouteErrorBoundary from '../../../common/components/RouteErrorBoundary';
 
 /**
@@ -21,21 +24,18 @@ const ProtectedRoute = ({
 }) => {
   const location = useLocation();
   // Use ONLY Redux auth state - removed dual AuthContext/Redux conflicts
-  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const { user, isAuthenticated, loading: authLoading } = useSelector((state) => state.auth);
 
   // Determine if the route is allowed based on roles or directly from prop
-  let computedAllowance;
-
-  if (Array.isArray(roles) && roles.length > 0) {
-    computedAllowance = isAuthenticated && userHasRole(user, roles);
-  } else if (typeof isAllowedProp === 'boolean') {
-    computedAllowance = isAllowedProp;
-  } else {
-    computedAllowance = isAuthenticated;
-  }
+  const requiresRoleCheck = Array.isArray(roles) && roles.length > 0;
+  const hasRequiredRole = requiresRoleCheck ? userHasRole(user, roles) : true;
+  const computedAllowance =
+    typeof isAllowedProp === 'boolean'
+      ? isAllowedProp
+      : isAuthenticated && hasRequiredRole;
 
   // Show loading indicator while authentication is being checked
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <Box
         sx={{
@@ -51,7 +51,7 @@ const ProtectedRoute = ({
   }
 
   // Redirect if not authenticated or not authorized
-  if (!computedAllowance) {
+  if (!isAuthenticated) {
     return (
       <Navigate
         to={redirectPath}
@@ -59,6 +59,19 @@ const ProtectedRoute = ({
         state={{
           from: `${location.pathname || '/'}${location.search || ''}`,
           message: 'Please sign in to continue.',
+        }}
+      />
+    );
+  }
+
+  if (!computedAllowance) {
+    return (
+      <Navigate
+        to={getRoleHomePath(user)}
+        replace
+        state={{
+          from: `${location.pathname || '/'}${location.search || ''}`,
+          message: 'You do not have access to that page.',
         }}
       />
     );

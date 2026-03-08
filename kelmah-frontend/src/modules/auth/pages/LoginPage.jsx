@@ -15,10 +15,10 @@ const LoginPage = () => {
 
   // Clear location state after reading to prevent stale banners on refresh
   useEffect(() => {
-    if (registered || infoMessage) {
+    if ((registered || infoMessage) && !location.state?.from) {
       window.history.replaceState({}, '');
     }
-  }, [registered, infoMessage]);
+  }, [registered, infoMessage, location.state]);
 
   // Render clean mobile view without AuthWrapper
   if (isMobile) {

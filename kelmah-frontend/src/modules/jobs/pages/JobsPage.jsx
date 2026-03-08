@@ -59,6 +59,7 @@
  */
 
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { hasRole } from '../../../utils/userUtils';
 import HeroFiltersSection from '../components/HeroFiltersSection';
 // JobResultsSection removed — cards are rendered inline below
 import JobsCompactSearchBar from '../components/JobsCompactSearchBar';
@@ -488,6 +489,8 @@ const JobsPage = () => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [budgetRange, setBudgetRange] = useState([0, 100000]);
   const [budgetFilterActive, setBudgetFilterActive] = useState(false);
+  const isWorkerUser = hasRole(user, ['worker', 'admin']);
+  const isHirerUser = hasRole(user, ['hirer']);
   const debouncedBudgetRange = useDebounce(budgetFilterActive ? budgetRange : null, 500);
   const [sortBy, setSortBy] = useState('relevance');
   const [quickFilters, setQuickFilters] = useState({ urgent: false, verified: false, fullTime: false, contract: false });
@@ -2655,9 +2658,15 @@ const JobsPage = () => {
                       navigate('/login', {
                         state: {
                           from: '/jobs',
-                          message: 'Sign in to create job alerts',
+                          message: isHirerUser
+                            ? 'Sign in to post a job'
+                            : 'Sign in to create job alerts',
                         },
                       });
+                      return;
+                    }
+                    if (isHirerUser) {
+                      navigate('/hirer/jobs/post');
                       return;
                     }
                     handleCreateJobAlert();
@@ -2677,7 +2686,7 @@ const JobsPage = () => {
                     },
                   }}
                 >
-                  Create Job Alert
+                  {isHirerUser ? 'Post a Job' : 'Create Job Alert'}
                 </Button>
                 <Button
                   variant="outlined"
@@ -2686,13 +2695,15 @@ const JobsPage = () => {
                     if (!authState.isAuthenticated) {
                       navigate('/login', {
                         state: {
-                          from: '/profile/upload-cv',
-                          message: 'Sign in to upload your CV',
+                          from: isHirerUser ? '/hirer/find-talent' : '/profile/upload-cv',
+                          message: isHirerUser
+                            ? 'Sign in to find talent'
+                            : 'Sign in to upload your CV',
                         },
                       });
                       return;
                     }
-                    navigate('/profile/upload-cv');
+                    navigate(isHirerUser ? '/hirer/find-talent' : '/profile/upload-cv');
                   }}
                   sx={{
                     borderColor: 'var(--k-gold)',
@@ -2709,7 +2720,7 @@ const JobsPage = () => {
                     },
                   }}
                 >
-                  Upload CV
+                  {isHirerUser ? 'Find Talent' : 'Upload CV'}
                 </Button>
               </Box>
             </Paper>

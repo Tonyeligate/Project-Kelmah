@@ -2,7 +2,7 @@
 
 ---
 
-### Session: Frontend Role-Separation Remediation 🔄 IN PROGRESS
+### Session: Frontend Role-Separation Remediation ✅ COMPLETED
 
 **Date**: March 8, 2026  
 **Scope**: Execute the highest-value fixes from the March 8 frontend page audit to reduce worker/hirer boundary leakage, repair broken route behavior, and improve functional correctness on public and protected page flows.
@@ -12,6 +12,41 @@
 - Implement focused fixes for the clearest worker/hirer separation defects and broken route flows.
 - Rebuild the frontend and confirm touched routes/components compile cleanly.
 - Record completed fixes and remaining follow-up items in spec-kit.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/auth/components/common/ProtectedRoute.jsx`
+- `kelmah-frontend/src/config/navLinks.js`
+- `kelmah-frontend/src/modules/auth/pages/LoginPage.jsx`
+- `kelmah-frontend/src/modules/dashboard/pages/DashboardPage.jsx`
+- `kelmah-frontend/src/modules/premium/pages/PremiumPage.jsx`
+- `kelmah-frontend/src/modules/payment/pages/PaymentsPage.jsx`
+- `kelmah-frontend/src/modules/payment/pages/EscrowDetailsPage.jsx`
+- `kelmah-frontend/src/modules/search/pages/SearchPage.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `kelmah-frontend/src/utils/userUtils.js`
+
+**Completed fixes**
+- Added centralized `getRoleHomePath(user)` helper to standardize role-home redirects.
+- Updated `ProtectedRoute` to distinguish unauthenticated vs unauthorized access, sending wrong-role users to their role home instead of the login page.
+- Switched header navigation to normalized role checks and made public pricing navigation point to `/pricing`.
+- Fixed pricing route ownership: `/pricing` now renders `PremiumPage` publicly and `/premium` redirects to it.
+- Routed `/hirer/find-talent` through the hirer-owned `WorkerSearchPage` instead of the shared public search container.
+- Fixed admin dashboard navigation by adding an `/admin` index redirect and aligning the CTA with the role-home helper.
+- Preserved protected-route return state on `LoginPage` by avoiding aggressive history-state clearing when `from` exists.
+- Replaced raw storage auth checks on `PremiumPage` with the centralized auth selector and preserved return navigation on login redirect.
+- Made `PaymentsPage` tabs/actions role-aware so hirers do not see worker/admin-only payment-method/settings surfaces.
+- Made escrow back-navigation role-aware in `EscrowDetailsPage`.
+- Replaced unstable random worker search IDs with deterministic fallbacks in `SearchPage`.
+- Updated jobs-page/detail CTAs to steer hirers toward posting jobs/finding talent instead of worker-only apply/CV flows, and aligned `JobDetailsPage` with the centralized auth selector.
+
+**Verification**
+- `get_errors` returned no errors on all touched files.
+- `npx vite build` completed successfully.
+
+**Documentation**
+- Detailed remediation report written to `spec-kit/FRONTEND_ROLE_SEPARATION_REMEDIATION_MAR08_2026.md`.
 
 ### Session: Deployed Jobs Card Image Re-Audit ✅ COMPLETED
 

@@ -1,4 +1,4 @@
-import { useRoutes } from 'react-router-dom';
+import { Navigate, useRoutes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import Layout from '../modules/layout/components/Layout';
 import ProtectedRoute from '../modules/auth/components/common/ProtectedRoute';
@@ -397,7 +397,7 @@ const routes = [
             path: 'find-talent',
             element: (
               <ProtectedRoute roles={['hirer', 'admin']}>
-                <FindWorkersPage />
+                <WorkerSearchPage />
               </ProtectedRoute>
             ),
           },
@@ -775,7 +775,7 @@ const routes = [
       },
       {
         path: 'pricing',
-        element: <HelpCenterPage />,
+        element: <PremiumPage />,
       },
       {
         path: 'settings/payments',
@@ -939,13 +939,7 @@ const routes = [
       // ==========================================
       {
         path: 'premium',
-        element: (
-          <ProtectedRoute>
-            <RouteErrorBoundary label="Premium">
-              <PremiumPage />
-            </RouteErrorBoundary>
-          </ProtectedRoute>
-        ),
+        element: <Navigate to="/pricing" replace />,
       },
 
       // ==========================================
@@ -991,6 +985,10 @@ const routes = [
       {
         path: 'admin',
         children: [
+          {
+            index: true,
+            element: <Navigate to="skills-management" replace />,
+          },
           {
             path: 'skills-management',
             element: (

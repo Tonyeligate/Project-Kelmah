@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { usePayments } from '../contexts/PaymentContext';
 import paymentService from '../services/paymentService';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
@@ -23,9 +24,11 @@ import {
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Helmet } from 'react-helmet-async';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
+import { getRoleHomePath, hasRole } from '../../../utils/userUtils';
 
 const EscrowDetailsPage = () => {
   const { escrowId } = useParams();
+  const user = useSelector((state) => state.auth.user);
   const { escrows, paymentMethods, loading, refresh } = usePayments();
   const { showToast } = useNotifications();
   // Support both MongoDB _id (string) and normalized id fields
@@ -35,6 +38,9 @@ const EscrowDetailsPage = () => {
   const [openRelease, setOpenRelease] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState('');
   const [releasing, setReleasing] = useState(false);
+  const backPath = hasRole(user, ['worker', 'admin'])
+    ? '/worker/payment'
+    : getRoleHomePath(user);
 
   useEffect(() => {
     if (paymentMethods && paymentMethods.length > 0) {
@@ -125,7 +131,7 @@ const EscrowDetailsPage = () => {
               boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
             }}
             component={RouterLink}
-            to="/worker/payment"
+            to={backPath}
           >
             Back to Payment Center
           </Button>

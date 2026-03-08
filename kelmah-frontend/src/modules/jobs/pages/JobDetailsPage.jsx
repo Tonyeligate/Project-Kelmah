@@ -54,11 +54,13 @@ import {
   selectJobsLoading,
   selectJobsError,
 } from '../services/jobSlice';
+import { selectIsAuthenticated } from '../../auth/services/authSlice';
 import { secureStorage } from '../../../utils/secureStorage';
 import { EXTERNAL_SERVICES } from '../../../config/services';
 import jobsApi from '../services/jobsService';
 import { Z_INDEX, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import { Helmet } from 'react-helmet-async';
+import { hasRole } from '../../../utils/userUtils';
 import {
   resolveMediaAssetUrl,
   resolveMediaAssetUrls,
@@ -227,9 +229,10 @@ const JobDetailsPage = () => {
   const job = useSelector(selectCurrentJob);
   const loading = useSelector(selectJobsLoading);
   const error = useSelector(selectJobsError);
-  // AUD2-M06 FIX: Use Redux auth state (survives token expiry / refresh) instead of
-  // raw token-string presence which lets expired tokens pass as authenticated.
-  const isAuthenticated = useSelector((state) => !!state.auth.user && !!state.auth.token);
+  const authUser = useSelector((state) => state.auth.user);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const isWorkerUser = hasRole(authUser, ['worker', 'admin']);
+  const isHirerUser = hasRole(authUser, ['hirer']);
   const [saved, setSaved] = useState(false);
   const [savingBookmark, setSavingBookmark] = useState(false);
   const [bidDialogOpen, setBidDialogOpen] = useState(false);
@@ -847,13 +850,18 @@ const JobDetailsPage = () => {
                   size="large"
                   onClick={() => {
                     if (!isAuthenticated) { navigate('/login', { state: { from: location.pathname } }); return; }
+                    if (isHirerUser) { navigate('/hirer/find-talent'); return; }
                     if (job?.bidding?.bidStatus === 'open') setBidDialogOpen(true);
                     else handleApplyNow();
                   }}
                   startIcon={<NoteAlt />}
                   sx={{ mb: 1.5, background: 'linear-gradient(45deg, #FFD700, #FFA500)', color: '#000', fontWeight: 700, py: 1.4, fontSize: '1rem' }}
                 >
-                  {job?.bidding?.bidStatus === 'open' ? 'Place Your Bid' : 'Apply Now'}
+                  {isHirerUser
+                    ? 'Find Talent Instead'
+                    : job?.bidding?.bidStatus === 'open'
+                      ? 'Place Your Bid'
+                      : 'Apply Now'}
                 </ActionButton>
 
                 <Box sx={{ display: 'flex', gap: 1 }}>

@@ -413,6 +413,19 @@ export const formatUserRole = (user) => {
   }
 };
 
+/**
+ * Resolve the best default authenticated landing path for a user.
+ * Keeps role-specific experiences separated while preserving a shared shell.
+ * @param {Object} user - User data object
+ * @returns {string} Best route for the user's role
+ */
+export const getRoleHomePath = (user) => {
+  if (hasRole(user, 'admin')) return '/admin/skills-management';
+  if (hasRole(user, 'hirer')) return '/hirer/dashboard';
+  if (hasRole(user, 'worker')) return '/worker/dashboard';
+  return '/dashboard';
+};
+
 export default {
   normalizeUser,
   getFullName,
@@ -424,4 +437,5 @@ export default {
   getProfileCompletion,
   getUserData,
   formatUserRole,
+  getRoleHomePath,
 };

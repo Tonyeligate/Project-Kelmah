@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
   Container,
   Box,
@@ -35,6 +36,7 @@ import {
   Close as CloseIcon,
 } from '@mui/icons-material';
 import { Helmet } from 'react-helmet-async';
+import { selectIsAuthenticated } from '../../auth/services/authSlice';
 
 // --- Reusable Components ---
 
@@ -158,6 +160,7 @@ const BenefitCard = ({ icon, title, description }) => (
 
 const PremiumPage = () => {
   const navigate = useNavigate();
+  const isAuthenticated = useSelector(selectIsAuthenticated);
   const [isYearly, setIsYearly] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
@@ -183,11 +186,15 @@ const PremiumPage = () => {
 
   const handleConfirmUpgrade = async () => {
     // Guard: require authentication before attempting payment
-    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-    if (!token) {
+    if (!isAuthenticated) {
       setUpgradeError('Please log in to upgrade your plan.');
       setOpenDialog(false);
-      setTimeout(() => navigate('/login'), 1500);
+      setTimeout(() => navigate('/login', {
+        state: {
+          from: '/pricing',
+          message: 'Please sign in to upgrade your plan.',
+        },
+      }), 1500);
       return;
     }
     setIsUpgrading(true);
