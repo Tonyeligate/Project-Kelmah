@@ -203,7 +203,8 @@ const WorkerReviewsPage = () => {
                     rating: r.rating,
                     content: r.comment,
                     date: r.createdAt,
-                    jobTitle: `Job ${r.job}`,
+                    jobTitle: r.job?.title || `Job ${r.job}`,
+                    jobImage: r.job?.image,
                   }}
                 />
               </Grid>

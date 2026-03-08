@@ -64,6 +64,10 @@ import {
 // ✅ MOBILE-AUDIT P3: framer-motion import removed — all motion.div wrappers replaced with plain divs
 import { formatDistanceToNow, format } from 'date-fns';
 import { safeFormatDate, safeFormatRelative } from '@/modules/common/utils/formatters';
+import {
+  resolveMediaAssetUrl,
+  resolveProfileImageUrl,
+} from '@/modules/common/utils/mediaAssets';
 import { useSelector } from 'react-redux';
 import reviewService from '../services/reviewService';
 import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
@@ -507,7 +511,12 @@ const EnhancedReviewsPage = () => {
 
   // Review Card Component
   // ✅ MOBILE-AUDIT P3: removed motion.div wrapper from ReviewCard
-  const ReviewCard = ({ review }) => (
+  const ReviewCard = ({ review }) => {
+    const reviewerAvatar = resolveMediaAssetUrl(review.reviewer?.avatar);
+    const replyAvatar = resolveProfileImageUrl(user || {});
+    const jobVisual = resolveMediaAssetUrl(review.job?.image || review.job?.gallery);
+
+    return (
       <Card
         sx={{
           // ✅ MOBILE-AUDIT P4: solid bg, simple top border instead of gradient card + ::before
@@ -535,7 +544,7 @@ const EnhancedReviewsPage = () => {
           >
             <Stack direction="row" spacing={2} sx={{ flex: 1 }}>
               <Avatar
-                src={review.reviewer?.avatar}
+                src={reviewerAvatar}
                 alt={review.reviewer?.name || 'Reviewer avatar'}
                 sx={{
                   width: 50,
@@ -618,7 +627,32 @@ const EnhancedReviewsPage = () => {
             }}
           >
             <Stack direction="row" alignItems="center" spacing={2}>
-              <WorkIcon sx={{ color: 'secondary.main' }} />
+              <Box
+                sx={{
+                  width: 68,
+                  height: 68,
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  flexShrink: 0,
+                  bgcolor: alpha(theme.palette.secondary.main, 0.12),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid',
+                  borderColor: alpha(theme.palette.secondary.main, 0.18),
+                }}
+              >
+                {jobVisual ? (
+                  <Box
+                    component="img"
+                    src={jobVisual}
+                    alt={review.job?.title || 'Completed job'}
+                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <WorkIcon sx={{ color: 'secondary.main' }} />
+                )}
+              </Box>
               <Box sx={{ flex: 1 }}>
                 <Typography
                   variant="body2"
@@ -630,7 +664,7 @@ const EnhancedReviewsPage = () => {
                   direction="row"
                   alignItems="center"
                   spacing={2}
-                  sx={{ mt: 0.5 }}
+                  sx={{ mt: 0.5, flexWrap: 'wrap' }}
                 >
                   <Typography
                     variant="caption"
@@ -647,6 +681,18 @@ const EnhancedReviewsPage = () => {
                       ? `GH₵${review.job.budget.toLocaleString()}`
                       : review.job?.budget || '—'}
                   </Typography>
+                  {review.job?.gallery?.length > 1 && (
+                    <Chip
+                      label={`${review.job.gallery.length} project visuals`}
+                      size="small"
+                      sx={{
+                        height: 22,
+                        bgcolor: alpha(theme.palette.common.white, 0.7),
+                        color: 'text.primary',
+                        fontWeight: 700,
+                      }}
+                    />
+                  )}
                 </Stack>
               </Box>
             </Stack>
@@ -715,7 +761,7 @@ const EnhancedReviewsPage = () => {
                 sx={{ mb: 1 }}
               >
                 <Avatar
-                  src={user?.profileImage}
+                  src={replyAvatar}
                   alt={user?.firstName || 'Your avatar'}
                   sx={{
                     width: 24,
@@ -808,7 +854,8 @@ const EnhancedReviewsPage = () => {
           </Stack>
         </CardActions>
       </Card>
-  );
+    );
+  };
 
   // Tab panels
   const tabPanels = [

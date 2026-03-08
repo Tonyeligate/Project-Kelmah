@@ -187,6 +187,11 @@ import BreadcrumbNavigation from '../../../components/common/BreadcrumbNavigatio
 import PullToRefresh from '../../../components/common/PullToRefresh';
 import usePrefersReducedMotion from '../../../hooks/usePrefersReducedMotion';
 import useNetworkSpeed from '../../../hooks/useNetworkSpeed';
+import {
+  resolveMediaAssetUrl,
+  resolveMediaAssetUrls,
+  resolveProfileImageUrl,
+} from '../../common/utils/mediaAssets';
 
 // ✅ MOBILE-AUDIT P1: Removed dead code — 7 keyframe animations + HeroSection styled component
 // (float, shimmer, pulse, slideInFromBottom, gradientShift, sparkle, rotateGlow)
@@ -395,6 +400,34 @@ const tradeCategories = tradeCategoriesData.map((category) => ({
   ...category,
   icon: CATEGORY_ICON_MAP[category.value] || WorkIcon,
 }));
+
+const getJobHeroImage = (job = {}) =>
+  resolveMediaAssetUrl([
+    job?.coverImage,
+    job?.coverImageMetadata,
+    job?.images,
+    job?.attachments,
+    job?.media,
+    job?.gallery,
+  ]);
+
+const getJobVisuals = (job = {}) =>
+  resolveMediaAssetUrls(
+    job?.coverImage,
+    job?.coverImageMetadata,
+    job?.images,
+    job?.attachments,
+    job?.media,
+    job?.gallery,
+  );
+
+const getEmployerAvatar = (job = {}) =>
+  resolveMediaAssetUrl([
+    job?.employer?.logo,
+    job?.employer?.avatar,
+    job?.employer?.image,
+    resolveProfileImageUrl(job?.hirer || {}),
+  ]);
 
 // Platform metrics are now derived from real data inside the component via platformStats state.
 // No hardcoded vanity numbers — stats are computed from actual job counts.
@@ -1841,7 +1874,12 @@ const JobsPage = () => {
             <Grid container spacing={{ xs: 2, sm: 3 }}>
               {!loading &&
                 !error &&
-                uniqueJobs.map((job, index) => (
+                uniqueJobs.map((job, index) => {
+                  const jobHeroImage = getJobHeroImage(job);
+                  const jobVisuals = getJobVisuals(job);
+                  const employerAvatar = getEmployerAvatar(job);
+
+                  return (
                   <Grid item xs={12} sm={6} md={6} lg={4} xl={3} key={job.id || job._id}>
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
@@ -1897,6 +1935,80 @@ const JobsPage = () => {
                         role="article"
                         aria-label={`Job posting: ${job.title}`}
                       >
+                        <Box
+                          sx={{
+                            position: 'relative',
+                            height: 148,
+                            background: jobHeroImage
+                              ? `linear-gradient(180deg, rgba(15,23,42,0.18) 0%, rgba(15,23,42,0.72) 100%), url(${jobHeroImage})`
+                              : 'linear-gradient(135deg, rgba(212,175,55,0.18) 0%, rgba(15,118,110,0.35) 100%)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            display: 'flex',
+                            alignItems: 'flex-end',
+                            p: 2,
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              top: 12,
+                              left: 12,
+                              right: 12,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: 1,
+                            }}
+                          >
+                            <Chip
+                              label={job.category || 'Trade job'}
+                              size="small"
+                              sx={{
+                                bgcolor: 'rgba(255,255,255,0.92)',
+                                color: 'text.primary',
+                                fontWeight: 700,
+                              }}
+                            />
+                            {jobVisuals.length > 1 && (
+                              <Chip
+                                label={`${jobVisuals.length} visuals`}
+                                size="small"
+                                sx={{
+                                  bgcolor: 'rgba(15,23,42,0.74)',
+                                  color: 'white',
+                                  fontWeight: 700,
+                                }}
+                              />
+                            )}
+                          </Box>
+
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                              bgcolor: 'rgba(15,23,42,0.64)',
+                              color: 'white',
+                              px: 1.25,
+                              py: 0.75,
+                              borderRadius: 2,
+                              maxWidth: '100%',
+                            }}
+                          >
+                            {React.createElement(getCategoryIcon(job.category), {
+                              sx: { color: 'var(--k-gold)', fontSize: 18 },
+                            })}
+                            <Typography
+                              variant="caption"
+                              sx={{ fontWeight: 700, letterSpacing: 0.2 }}
+                            >
+                              {jobHeroImage
+                                ? 'Image-backed job brief ready for quick review'
+                                : 'Clear trade context helps workers decide faster'}
+                            </Typography>
+                          </Box>
+                        </Box>
                         <CardContent
                           sx={{ flexGrow: 1, p: { xs: 2.5, sm: 3 } }}
                         >
@@ -1964,9 +2076,9 @@ const JobsPage = () => {
                                     gap: 0.5,
                                   }}
                                 >
-                                  {job.employer?.logo && (
+                                  {employerAvatar && (
                                     <Avatar
-                                      src={job.employer.logo}
+                                      src={employerAvatar}
                                       alt={job.employer.name}
                                       sx={{
                                         width: 16,
@@ -2333,7 +2445,8 @@ const JobsPage = () => {
                       </Card>
                     </motion.div>
                   </Grid>
-                ))}
+                  );
+                })}
             </Grid>
           </motion.div>
 

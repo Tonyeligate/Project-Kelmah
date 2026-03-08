@@ -1,9 +1,22 @@
 import { api } from '../../../services/apiClient';
+import {
+  resolveMediaAssetUrl,
+  resolveMediaAssetUrls,
+  resolveProfileImageUrl,
+} from '../../common/utils/mediaAssets';
 
 const unwrapData = (response) => response?.data?.data ?? response?.data ?? {};
 const unwrapResponse = (response) => response?.data ?? {};
 
 const normalizeReview = (review = {}, index = 0) => {
+  const reviewerAvatar = resolveProfileImageUrl(review?.reviewer || review?.hirerId || {});
+  const jobGallery = resolveMediaAssetUrls(
+    review?.job?.coverImage,
+    review?.job?.mainImage,
+    review?.job?.images,
+    review?.job?.attachments,
+    review?.jobImage,
+  );
   const reviewerName =
     review?.reviewer?.name ||
     review?.reviewerName ||
@@ -35,11 +48,7 @@ const normalizeReview = (review = {}, index = 0) => {
       isVerified: Boolean(
         review?.reviewer?.isVerified || review?.hirerId?.isVerified,
       ),
-      avatar:
-        review?.reviewer?.avatar ||
-        review?.hirerId?.profilePicture ||
-        review?.reviewer?.profilePicture ||
-        '',
+      avatar: reviewerAvatar,
     },
     job: {
       title: jobTitle,
@@ -50,6 +59,12 @@ const normalizeReview = (review = {}, index = 0) => {
         review?.createdAt ||
         new Date().toISOString(),
       budget: review?.job?.budget || review?.budget || 'N/A',
+      image: resolveMediaAssetUrl(jobGallery),
+      gallery: jobGallery,
+    },
+    author: {
+      name: reviewerName,
+      avatar: reviewerAvatar,
     },
   };
 };

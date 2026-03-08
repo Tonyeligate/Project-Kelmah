@@ -2,6 +2,58 @@
 
 ---
 
+### Session: Platform Image Experience Deepening Round 2 ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Push the image-first marketplace treatment deeper into remaining search, reviews, portfolio, and job-card surfaces so worker proof, job visuals, and trust context are consistently visible on high-intent pages.
+
+**Acceptance Criteria**
+- Audit the remaining high-value image surfaces not fully upgraded in the first pass.
+- Normalize raw avatar, cover-image, and portfolio-gallery fields through the shared media helpers.
+- Strengthen visual trust cues on worker discovery, review, portfolio, and alternate job-card surfaces.
+- Verify touched files and record the completed outcome in spec-kit before final commit.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx`
+- `kelmah-frontend/src/modules/reviews/pages/ReviewsPage.jsx`
+- `kelmah-frontend/src/modules/reviews/components/common/ReviewCard.jsx`
+- `kelmah-frontend/src/modules/reviews/pages/WorkerReviewsPage.jsx`
+- `kelmah-frontend/src/modules/reviews/services/reviewService.js`
+- `kelmah-frontend/src/modules/worker/components/PortfolioManager.jsx`
+- `kelmah-frontend/src/modules/worker/components/ProjectGallery.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/worker/components/EnhancedJobCard.jsx`
+- `kelmah-frontend/src/modules/common/utils/mediaAssets.js`
+
+**End-to-end flow notes**
+- Hirer discovery flow: `WorkerSearch.jsx` requests worker results through `/users/workers/search` and renders custom cards locally, so any raw media handling here bypasses the shared worker card experience.
+- Review trust flow: `ReviewsPage.jsx` and `ReviewCard.jsx` consume normalized review payloads from `reviewService.js` → `/api/reviews/*`, so richer image context must start in frontend normalization and card rendering.
+- Portfolio proof flow: `PortfolioManager.jsx` and `ProjectGallery.jsx` consume mixed `images` shapes from portfolio APIs, so gallery reliability depends on resolving string and object media consistently.
+- Secondary job-card flow: `JobsPage.jsx` and `EnhancedJobCard.jsx` still maintain their own card rendering paths, making them important image-alignment targets after the shared `JobCard.jsx` upgrade.
+
+**Current findings**
+- The hirer worker-search experience still relies on raw avatar fields and lacks a stronger visual proof band for featured talent.
+- Review cards still emphasize text over job/reviewer image context even though the platform now supports normalized mixed media.
+- Portfolio management still assumes direct string image arrays, which weakens preview reliability for Cloudinary/object-shaped media.
+- Jobs listing variants still include custom cards that do not consistently surface cover images or normalized client avatars.
+
+**Planned fix direction**
+- Reuse the shared media utilities on all remaining custom image surfaces.
+- Add image-forward layout treatments to worker discovery, review trust, portfolio proof, and alternate job cards.
+- Keep all API contracts stable while improving frontend normalization and presentation.
+
+**Changes completed**
+- Upgraded `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx` so hirers now see image-led worker cards with normalized avatars, portfolio-preview thumbnails, and stronger proof-focused discovery cues.
+- Updated `kelmah-frontend/src/modules/reviews/services/reviewService.js` to normalize reviewer avatars and completed-job media into every review payload.
+- Enhanced `kelmah-frontend/src/modules/reviews/pages/ReviewsPage.jsx`, `kelmah-frontend/src/modules/reviews/components/common/ReviewCard.jsx`, and `kelmah-frontend/src/modules/reviews/pages/WorkerReviewsPage.jsx` so review surfaces now show richer visual proof with normalized reviewer images and job visuals.
+- Upgraded `kelmah-frontend/src/modules/worker/components/PortfolioManager.jsx` and `kelmah-frontend/src/modules/worker/components/ProjectGallery.jsx` so mixed media objects resolve consistently, gallery previews are visible, and project visuals open cleanly from management cards.
+- Updated `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx` and `kelmah-frontend/src/modules/worker/components/EnhancedJobCard.jsx` so the remaining custom job cards now surface normalized cover images and client avatars instead of falling back to sparse text-first cards.
+
+**Verification**
+- Editor diagnostics returned clean results for all touched frontend files and the updated spec log entry.
+- `npm run build` completed successfully in `kelmah-frontend/` after the round-two image experience upgrades.
+- The frontend build still reports the pre-existing `apiClient.js` dynamic/static import warning only; no new image-surface build failures were introduced.
+
 ### Session: Platform Image Experience Deepening ✅ COMPLETED
 
 **Date**: March 8, 2026  

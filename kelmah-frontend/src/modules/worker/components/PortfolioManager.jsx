@@ -54,6 +54,31 @@ import { useSnackbar } from 'notistack';
 import ProjectGallery from './ProjectGallery';
 import { formatCurrency, formatDate } from '../../../utils/formatters';
 import ConfirmDialog from '../../common/components/common/ConfirmDialog';
+import {
+  resolveMediaAssetUrl,
+  resolveMediaAssetUrls,
+} from '../../common/utils/mediaAssets';
+
+const getPortfolioItemImages = (item = {}) =>
+  resolveMediaAssetUrls(
+    item?.images,
+    item?.mainImage,
+    item?.coverImage,
+    item?.gallery,
+    item?.media,
+  );
+
+const normalizePortfolioItem = (item = {}, index = 0) => {
+  const previewImages = getPortfolioItemImages(item);
+
+  return {
+    ...item,
+    id: item?.id || item?._id || `portfolio-item-${index}`,
+    previewImages,
+    heroImage: resolveMediaAssetUrl(previewImages),
+    imageCount: previewImages.length,
+  };
+};
 
 const PortfolioManager = () => {
   // Use ONLY Redux auth state to prevent dual state management conflicts
@@ -72,6 +97,12 @@ const PortfolioManager = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, id: null });
+  const [galleryState, setGalleryState] = useState({
+    open: false,
+    images: [],
+    title: '',
+    index: 0,
+  });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -108,7 +139,9 @@ const PortfolioManager = () => {
       setLoading(true);
       const payload = await portfolioService.getWorkerPortfolio(user.id);
       const items = payload?.portfolioItems || payload?.items || [];
-      setPortfolioItems(items);
+      setPortfolioItems(
+        items.map((item, index) => normalizePortfolioItem(item, index)),
+      );
       setError(null);
     } catch (err) {
       setError('Failed to load portfolio items');
@@ -188,8 +221,15 @@ const PortfolioManager = () => {
         budget: item.budget || '',
         duration: item.duration || '',
         location: item.location || '',
-        skills: item.skills ? item.skills.split(',') : [],
-        images: item.images || [],
+        skills: Array.isArray(item.skills)
+          ? item.skills
+          : item.skills
+            ? item.skills.split(',').map((skill) => skill.trim()).filter(Boolean)
+            : [],
+        images:
+          (Array.isArray(item.images) && item.images.length
+            ? item.images
+            : item.previewImages) || [],
         completedAt: item.completedAt || '',
         featured: item.featured || false,
         status: item.status || 'completed',
@@ -260,6 +300,18 @@ const PortfolioManager = () => {
     }));
   };
 
+  const handleOpenGallery = (item, initialIndex = 0) => {
+    const images = item?.previewImages || getPortfolioItemImages(item);
+    if (!images.length) return;
+
+    setGalleryState({
+      open: true,
+      images,
+      title: item?.title || 'Portfolio project',
+      index: initialIndex,
+    });
+  };
+
   // Render portfolio item card
   const renderPortfolioItem = (item) => (
     <Card
@@ -307,13 +359,14 @@ const PortfolioManager = () => {
         <MoreVertIcon />
       </IconButton>
 
-      {item.images && item.images.length > 0 ? (
+      {item.imageCount > 0 ? (
         <CardMedia
           component="img"
           height="200"
-          image={item.images[0]}
+          image={item.heroImage}
           alt={item.title}
           sx={{ objectFit: 'cover' }}
+          onClick={() => handleOpenGallery(item)}
           onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
         />
       ) : (
@@ -332,6 +385,22 @@ const PortfolioManager = () => {
         </Box>
       )}
 
+      {item.imageCount > 0 && (
+        <Chip
+          label={`${item.imageCount} image${item.imageCount === 1 ? '' : 's'}`}
+          size="small"
+          color="secondary"
+          onClick={() => handleOpenGallery(item)}
+          sx={{
+            position: 'absolute',
+            bottom: 12,
+            left: 12,
+            zIndex: 1,
+            fontWeight: 700,
+          }}
+        />
+      )}
+
       <CardContent sx={{ flexGrow: 1 }}>
         <Typography variant="h6" component="h3" gutterBottom noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {item.title}
@@ -342,6 +411,39 @@ const PortfolioManager = () => {
             ? `${item.description.substring(0, 100)}...`
             : item.description}
         </Typography>
+
+        {item.imageCount > 0 && (
+          <Box mt={2} mb={2}>
+            <Typography variant="caption" color="text.secondary" gutterBottom>
+              Visual proof
+            </Typography>
+            <Stack direction="row" spacing={1} sx={{ mt: 0.75 }}>
+              {item.previewImages.slice(0, 3).map((imageUrl, index) => (
+                <Box
+                  key={`${item.id}-preview-${index}`}
+                  sx={{
+                    width: 58,
+                    height: 48,
+                    borderRadius: 1.5,
+                    overflow: 'hidden',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    cursor: 'pointer',
+                    bgcolor: 'action.hover',
+                  }}
+                  onClick={() => handleOpenGallery(item, index)}
+                >
+                  <Box
+                    component="img"
+                    src={imageUrl}
+                    alt={`${item.title} preview ${index + 1}`}
+                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </Box>
+              ))}
+            </Stack>
+          </Box>
+        )}
 
         <Stack spacing={1}>
           <Box display="flex" alignItems="center" gap={1}>
@@ -497,7 +599,7 @@ const PortfolioManager = () => {
         </MenuItem>
         <MenuItem
           onClick={() => {
-            // Handle view/share functionality
+              handleOpenGallery(selectedItem);
             setAnchorEl(null);
           }}
         >
@@ -673,10 +775,13 @@ const PortfolioManager = () => {
                   Uploaded Images ({formData.images.length})
                 </Typography>
                 <ImageList cols={isMobile ? 2 : 4} gap={8}>
-                  {formData.images.map((image, index) => (
-                    <ImageListItem key={`${image}-${index}`}>
+                  {formData.images.map((image, index) => {
+                    const previewUrl = resolveMediaAssetUrl(image);
+
+                    return (
+                    <ImageListItem key={`${previewUrl || 'image'}-${index}`}>
                       <img
-                        src={image}
+                        src={previewUrl}
                         alt={`Upload ${index + 1}`}
                         loading="lazy"
                         style={{ height: 80, objectFit: 'cover' }}
@@ -695,8 +800,9 @@ const PortfolioManager = () => {
                           </IconButton>
                         }
                       />
-                    </ImageListItem>
-                  ))}
+                      </ImageListItem>
+                      );
+                    })}
                 </ImageList>
               </Grid>
             )}
@@ -724,14 +830,25 @@ const PortfolioManager = () => {
         >
           <AddIcon />
         </Fab>
-      )}      <ConfirmDialog
+      )}
+      <ProjectGallery
+        open={galleryState.open}
+        images={galleryState.images}
+        projectTitle={galleryState.title}
+        initialIndex={galleryState.index}
+        onClose={() =>
+          setGalleryState({ open: false, images: [], title: '', index: 0 })
+        }
+      />
+      <ConfirmDialog
         open={deleteConfirm.open}
         title="Delete Portfolio Item"
         message="Are you sure you want to delete this portfolio item?"
         confirmLabel="Delete"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteConfirm({ open: false, id: null })}
-      />    </Box>
+      />
+    </Box>
   );
 };
 

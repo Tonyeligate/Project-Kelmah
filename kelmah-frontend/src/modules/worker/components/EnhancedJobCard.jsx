@@ -57,6 +57,11 @@ import { motion } from 'framer-motion';
 import { format, formatDistanceToNow } from 'date-fns';
 import bidApi from '../../jobs/services/bidService';
 import { useSnackbar } from 'notistack';
+import {
+  resolveMediaAssetUrl,
+  resolveMediaAssetUrls,
+  resolveProfileImageUrl,
+} from '../../common/utils/mediaAssets';
 
 const EnhancedJobCard = ({
   job,
@@ -85,6 +90,20 @@ const EnhancedJobCard = ({
   const [bidLoading, setBidLoading] = useState(false);
   const [userPerformance, setUserPerformance] = useState(null);
   const [bidStats, setBidStats] = useState(null);
+  const jobVisuals = resolveMediaAssetUrls(
+    job?.coverImage,
+    job?.coverImageMetadata,
+    job?.images,
+    job?.attachments,
+    job?.media,
+  );
+  const coverImage = resolveMediaAssetUrl(jobVisuals);
+  const employerAvatar = resolveMediaAssetUrl([
+    job?.employer?.logo,
+    job?.employer?.avatar,
+    job?.employer?.image,
+    resolveProfileImageUrl(job?.hirer || {}),
+  ]);
 
   // Load user bid stats
   React.useEffect(() => {
@@ -206,16 +225,49 @@ const EnhancedJobCard = ({
           }}
         >
           {/* Cover Image */}
-          {job?.coverImage && (
-            <CardMedia
-              component="img"
-              height={160}
-              image={job.coverImage}
-              alt={job?.title || 'Job image'}
-              sx={{ objectFit: 'cover' }}
-              onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
-            />
-          )}
+          <Box sx={{ position: 'relative' }}>
+            {coverImage ? (
+              <CardMedia
+                component="img"
+                height={160}
+                image={coverImage}
+                alt={job?.title || 'Job image'}
+                sx={{ objectFit: 'cover' }}
+                onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
+              />
+            ) : (
+              <Box
+                sx={{
+                  height: 160,
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  p: 2,
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.22)}, ${alpha(theme.palette.secondary.main, 0.28)})`,
+                }}
+              >
+                <Chip
+                  label={job?.category || job?.type || 'Job brief'}
+                  size="small"
+                  sx={{ bgcolor: 'rgba(255,255,255,0.92)', fontWeight: 700 }}
+                />
+              </Box>
+            )}
+
+            {jobVisuals.length > 1 && (
+              <Chip
+                label={`${jobVisuals.length} visuals`}
+                size="small"
+                sx={{
+                  position: 'absolute',
+                  top: 12,
+                  left: 12,
+                  bgcolor: 'rgba(15,23,42,0.72)',
+                  color: 'white',
+                  fontWeight: 700,
+                }}
+              />
+            )}
+          </Box>
           {/* Header with Performance Tier */}
           <Box
             sx={{
@@ -246,7 +298,7 @@ const EnhancedJobCard = ({
 
             <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
               <Avatar
-                src={job.employer?.logo || job.hirer?.profileImage}
+                src={employerAvatar}
                 alt={job.employer?.name || job.hirer?.firstName || 'Employer avatar'}
                 sx={{ width: 24, height: 24, mr: 1 }}
               >

@@ -1,0 +1,15 @@
+diff --git a/kelmah-frontend/src/modules/layout/components/header/NavMenuSection.jsx b/kelmah-frontend/src/modules/layout/components/header/NavMenuSection.jsx
+index 5dbc846..cbc74e0 100644
+--- a/kelmah-frontend/src/modules/layout/components/header/NavMenuSection.jsx
++++ b/kelmah-frontend/src/modules/layout/components/header/NavMenuSection.jsx
+@@ -16,8 +16,8 @@ const NavMenuSection = ({ title, items, onNavigate }) => (
+     {items.filter(Boolean).map((item) => (
+       <MenuItem
+         key={item.label}
+-        onClick={() => {
+-          onNavigate(item.path);
++        onClick={(event) => {
++          onNavigate(item.path, event);
+           item.onClick?.();
+         }}
+         sx={{ py: 1.25 }}

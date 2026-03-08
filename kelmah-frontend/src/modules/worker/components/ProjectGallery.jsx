@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Box,
   Dialog,
@@ -24,6 +24,7 @@ import {
   NavigateNext as NextIcon,
   NavigateBefore as PrevIcon,
 } from '@mui/icons-material';
+import { resolveMediaAssetUrls } from '../../common/utils/mediaAssets';
 
 const ProjectGallery = ({
   images = [],
@@ -36,15 +37,16 @@ const ProjectGallery = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const galleryImages = useMemo(() => resolveMediaAssetUrls(images), [images]);
 
   // Handle navigation
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
+    setCurrentIndex((prev) => (prev + 1) % galleryImages.length);
     setImageLoaded(false);
   };
 
   const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    setCurrentIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
     setImageLoaded(false);
   };
 
@@ -75,10 +77,10 @@ const ProjectGallery = ({
   // Reset index when dialog opens
   React.useEffect(() => {
     if (open) {
-      setCurrentIndex(initialIndex);
+      setCurrentIndex(initialIndex >= galleryImages.length ? 0 : initialIndex);
       setImageLoaded(false);
     }
-  }, [open, initialIndex]);
+  }, [open, initialIndex, galleryImages.length]);
 
   // Handle image download
   const handleDownload = async (imageUrl, filename) => {
@@ -122,7 +124,7 @@ const ProjectGallery = ({
     }
   };
 
-  if (!images || images.length === 0) {
+  if (!galleryImages.length) {
     return null;
   }
 
@@ -179,7 +181,7 @@ const ProjectGallery = ({
             {projectTitle}
           </Typography>
           <Typography variant="body2" sx={{ opacity: 0.7 }}>
-            {currentIndex + 1} of {images.length}
+            {currentIndex + 1} of {galleryImages.length}
           </Typography>
         </Box>
 
@@ -188,7 +190,7 @@ const ProjectGallery = ({
             color="inherit"
             onClick={() =>
               handleDownload(
-                images[currentIndex],
+                galleryImages[currentIndex],
                 `${projectTitle}_${currentIndex + 1}`,
               )
             }
@@ -198,7 +200,7 @@ const ProjectGallery = ({
           </IconButton>
           <IconButton
             color="inherit"
-            onClick={() => handleShare(images[currentIndex])}
+            onClick={() => handleShare(galleryImages[currentIndex])}
             sx={{ color: 'white' }}
           >
             <ShareIcon />
@@ -223,7 +225,7 @@ const ProjectGallery = ({
         }}
       >
         {/* Navigation Buttons */}
-        {images.length > 1 && (
+        {galleryImages.length > 1 && (
           <>
             <IconButton
               onClick={handlePrevious}
@@ -266,7 +268,7 @@ const ProjectGallery = ({
         <Fade in={imageLoaded} timeout={300}>
           <Box
             component="img"
-            src={images[currentIndex]}
+            src={galleryImages[currentIndex]}
             alt={`${projectTitle} - Image ${currentIndex + 1}`}
             onLoad={() => setImageLoaded(true)}
             sx={{
@@ -298,7 +300,7 @@ const ProjectGallery = ({
         )}
 
         {/* Thumbnail Strip */}
-        {images.length > 1 && !isMobile && (
+        {galleryImages.length > 1 && !isMobile && (
           <Box
             sx={{
               position: 'absolute',
@@ -320,7 +322,7 @@ const ProjectGallery = ({
                 margin: 0,
               }}
             >
-              {images.map((image, index) => (
+              {galleryImages.map((image, index) => (
                 <ImageListItem
                   key={index}
                   sx={{
@@ -360,7 +362,7 @@ const ProjectGallery = ({
         )}
 
         {/* Mobile Thumbnail Dots */}
-        {images.length > 1 && isMobile && (
+        {galleryImages.length > 1 && isMobile && (
           <Box
             sx={{
               position: 'absolute',
@@ -371,7 +373,7 @@ const ProjectGallery = ({
               gap: 1,
             }}
           >
-            {images.map((_, index) => (
+            {galleryImages.map((_, index) => (
               <Box
                 key={index}
                 onClick={() => {

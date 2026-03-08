@@ -48,6 +48,11 @@ import { API_ENDPOINTS } from '../../../config/environment';
 import { api } from '../../../services/apiClient';
 import { secureStorage } from '../../../utils/secureStorage';
 import messagingService from '../../messaging/services/messagingService';
+import {
+  resolveMediaAssetUrl,
+  resolveMediaAssetUrls,
+  resolveProfileImageUrl,
+} from '../../common/utils/mediaAssets';
 
 // No mock data - using real API data only
 
@@ -77,6 +82,29 @@ const extractWorkerIdsFromBookmarks = (payload) => {
 
   return [];
 };
+
+const collectWorkerPortfolioImages = (worker = {}) =>
+  resolveMediaAssetUrls(
+    worker?.portfolioImages,
+    worker?.gallery,
+    worker?.images,
+    worker?.workImages,
+    worker?.projects?.map((project) => [
+      project?.mainImage,
+      project?.coverImage,
+      project?.images,
+    ]),
+    worker?.portfolio?.map((project) => [
+      project?.mainImage,
+      project?.coverImage,
+      project?.images,
+    ]),
+    worker?.portfolioItems?.map((project) => [
+      project?.mainImage,
+      project?.coverImage,
+      project?.images,
+    ]),
+  );
 
 const WorkerSearch = () => {
   const theme = useTheme();
@@ -154,6 +182,14 @@ const WorkerSearch = () => {
   ];
 
   const normalizeWorkerRecord = (worker = {}) => {
+    const portfolioPreview = collectWorkerPortfolioImages(worker);
+    const avatarImage = resolveProfileImageUrl(worker) || portfolioPreview[0] || null;
+    const heroImage = resolveMediaAssetUrl([
+      worker?.bannerImage,
+      worker?.coverImage,
+      worker?.profileBanner,
+      portfolioPreview,
+    ]);
     const skillsArray = Array.isArray(worker.skills)
       ? worker.skills
         .map((skill) => {
@@ -230,7 +266,10 @@ const WorkerSearch = () => {
       isVerified: Boolean(worker.isVerified),
       featured: Boolean(worker.featured),
       rankScore: Number(worker.rankScore ?? 0),
-      avatar: worker.profilePicture || worker.avatar || null,
+      avatar: avatarImage,
+      heroImage,
+      portfolioPreview: portfolioPreview.slice(0, 3),
+      imageCount: portfolioPreview.length,
     };
   };
 
@@ -1020,20 +1059,102 @@ const WorkerSearch = () => {
                     />
                   )}
 
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      height: 148,
+                      background: worker.heroImage
+                        ? `linear-gradient(180deg, rgba(15,23,42,0.12) 0%, rgba(15,23,42,0.72) 100%), url(${worker.heroImage})`
+                        : 'linear-gradient(135deg, rgba(212,175,55,0.18) 0%, rgba(15,118,110,0.3) 100%)',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      p: 2,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 12,
+                        left: 12,
+                        right: 12,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 1,
+                      }}
+                    >
+                      <Chip
+                        label={getAvailabilityLabel(worker.availability)}
+                        color={getAvailabilityColor(worker.availability)}
+                        size="small"
+                        sx={{ fontWeight: 600, backdropFilter: 'blur(8px)' }}
+                      />
+                      {worker.imageCount > 0 && (
+                        <Chip
+                          label={`${worker.imageCount} work visual${worker.imageCount === 1 ? '' : 's'}`}
+                          size="small"
+                          sx={{
+                            bgcolor: 'rgba(255,255,255,0.92)',
+                            color: 'text.primary',
+                            fontWeight: 700,
+                          }}
+                        />
+                      )}
+                    </Box>
+
+                    <Box
+                      sx={{
+                        bgcolor: 'rgba(15, 23, 42, 0.62)',
+                        color: 'white',
+                        borderRadius: 2,
+                        px: 1.5,
+                        py: 0.75,
+                        maxWidth: '100%',
+                      }}
+                    >
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                        {worker.title}
+                      </Typography>
+                      <Typography variant="caption" sx={{ opacity: 0.88 }}>
+                        {worker.isVerified
+                          ? 'Verified professional with ready-to-view work proof'
+                          : 'Visual portfolio helps you assess fit faster'}
+                      </Typography>
+                    </Box>
+                  </Box>
+
                   <CardContent sx={{ flexGrow: 1 }}>
                     {/* Worker Header */}
-                    <Box display="flex" alignItems="center" gap={2} mb={2}>
+                    <Box display="flex" alignItems="flex-start" gap={2} mb={2} sx={{ mt: -5, position: 'relative', zIndex: 1 }}>
                       <Avatar
                         src={worker.avatar}
                         alt={worker.name || 'Worker avatar'}
-                        sx={{ width: 64, height: 64 }}
+                        sx={{
+                          width: 72,
+                          height: 72,
+                          border: '3px solid',
+                          borderColor: 'background.paper',
+                          boxShadow: 3,
+                        }}
                       >
                         {worker.name.charAt(0)}
                       </Avatar>
                       <Box flex={1}>
-                        <Typography variant="h6" fontWeight="bold">
-                          {worker.name}
-                        </Typography>
+                        <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                          <Typography variant="h6" fontWeight="bold">
+                            {worker.name}
+                          </Typography>
+                          {worker.isVerified && (
+                            <Chip
+                              label="Verified"
+                              size="small"
+                              color="success"
+                              sx={{ fontWeight: 700 }}
+                            />
+                          )}
+                        </Box>
                         <Typography
                           variant="body2"
                           color="text.secondary"
@@ -1070,11 +1191,9 @@ const WorkerSearch = () => {
                           {worker.rating} ({worker.reviewCount})
                         </Typography>
                       </Box>
-                      <Chip
-                        label={getAvailabilityLabel(worker.availability)}
-                        color={getAvailabilityColor(worker.availability)}
-                        size="small"
-                      />
+                      <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                        Ranked for quick hiring
+                      </Typography>
                     </Box>
 
                     {/* Skills */}
@@ -1149,6 +1268,38 @@ const WorkerSearch = () => {
                         ? '...'
                         : ''}
                     </Typography>
+
+                    {worker.portfolioPreview?.length > 0 && (
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="subtitle2" gutterBottom>
+                          Recent Work Preview
+                        </Typography>
+                        <Box display="flex" gap={1}>
+                          {worker.portfolioPreview.map((imageUrl, index) => (
+                            <Box
+                              key={`${worker.id}-preview-${index}`}
+                              sx={{
+                                width: 64,
+                                height: 56,
+                                borderRadius: 2,
+                                overflow: 'hidden',
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                bgcolor: 'action.hover',
+                                flexShrink: 0,
+                              }}
+                            >
+                              <Box
+                                component="img"
+                                src={imageUrl}
+                                alt={`${worker.name} project ${index + 1}`}
+                                sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              />
+                            </Box>
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
 
                     {/* Action Buttons */}
                     <Box
