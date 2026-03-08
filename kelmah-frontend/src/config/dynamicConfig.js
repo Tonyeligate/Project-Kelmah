@@ -99,12 +99,10 @@ export const getWebSocketUrl = async () => {
 
 // Function to get API URL dynamically
 export const getApiUrl = async () => {
-  // In production mode, prioritize environment variables over ngrok
-  const isDevelopment = import.meta.env.MODE === 'development';
-  const prodApiUrl = import.meta.env.VITE_API_URL;
+  const baseUrl = await getApiBaseUrl();
 
-  if (!isDevelopment && prodApiUrl) {
-    return prodApiUrl;
+  if (baseUrl) {
+    return baseUrl;
   }
 
   // In development or when no prod URL is set, use ngrok

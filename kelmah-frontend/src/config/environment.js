@@ -36,25 +36,46 @@ const sanitizeEnvUrl = (raw) => {
   return clean || null;
 };
 
-// Ensure a URL ends with /api (the gateway mounts all routes under /api/*)
-// Works whether the user sets "https://gateway.com" or "https://gateway.com/api"
-const ensureApiSuffix = (url) => {
-  if (!url) return null;
-  // Already ends with /api or /api/ — leave it
-  if (/\/api\/?$/.test(url)) return url.replace(/\/+$/, '');
-  return `${url}/api`;
+// Normalize any configured API base so frontend calls always hit /api/*.
+// Supports:
+// - https://gateway.example.com       -> https://gateway.example.com/api
+// - https://gateway.example.com/api   -> https://gateway.example.com/api
+// - /api                              -> /api
+const normalizeApiBaseUrl = (raw) => {
+  const clean = sanitizeEnvUrl(raw);
+  if (!clean) return null;
+
+  if (clean === '/api' || /^\/api\/?$/.test(clean)) {
+    return '/api';
+  }
+
+  if (/\/api\/?$/.test(clean)) {
+    return clean.replace(/\/+$/, '');
+  }
+
+  if (clean.startsWith('/')) {
+    return clean.replace(/\/+$/, '');
+  }
+
+  return `${clean}/api`;
+};
+
+const getEnvConfiguredApiBaseUrl = () => {
+  const gatewayBase = normalizeApiBaseUrl(import.meta.env.VITE_API_GATEWAY_URL);
+  if (gatewayBase) return gatewayBase;
+
+  const apiUrl = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
+  if (apiUrl) return apiUrl;
+
+  return null;
 };
 
 // API URL — controlled entirely via VITE_API_URL or VITE_API_GATEWAY_URL in Vercel dashboard.
 // Never hardcode a gateway URL here. Set the env var in Vercel and redeploy.
 // VITE_API_URL can be the bare host OR include /api — both work.
 const PRODUCTION_API_URL = (() => {
-  // VITE_API_GATEWAY_URL: bare gateway host → we append /api
-  const gatewayBase = sanitizeEnvUrl(import.meta.env.VITE_API_GATEWAY_URL);
-  if (gatewayBase) return ensureApiSuffix(gatewayBase);
-  // VITE_API_URL: accepts both "https://gateway.com" and "https://gateway.com/api"
-  const apiUrl = sanitizeEnvUrl(import.meta.env.VITE_API_URL);
-  if (apiUrl) return ensureApiSuffix(apiUrl);
+  const envConfiguredUrl = getEnvConfiguredApiBaseUrl();
+  if (envConfiguredUrl) return envConfiguredUrl;
   // No env var set — use relative path so the app still works without crashing
   return '/api';
 })();
@@ -64,9 +85,13 @@ const loadRuntimeConfig = async () => {
     try {
       const response = await fetch('/runtime-config.json');
       runtimeConfig = await response.json();
+      const envConfiguredUrl = getEnvConfiguredApiBaseUrl();
+      const runtimeConfiguredUrl = normalizeApiBaseUrl(
+        runtimeConfig.API_URL || runtimeConfig.ngrokUrl || runtimeConfig.apiGatewayUrl,
+      );
       // Store in window for synchronous access
       window.RUNTIME_CONFIG = {
-        apiUrl: runtimeConfig.API_URL || runtimeConfig.ngrokUrl || PRODUCTION_API_URL || '/api'
+        apiUrl: envConfiguredUrl || runtimeConfiguredUrl || PRODUCTION_API_URL || '/api',
       };
       if (import.meta.env.DEV) console.log('🔧 Runtime config loaded:', runtimeConfig);
     } catch (error) {
@@ -78,31 +103,33 @@ const loadRuntimeConfig = async () => {
 
 // Simple synchronous resolution
 const getApiBaseUrl = () => {
+  // Priority 1: Explicit environment variables (single source of truth in production)
+  const envConfiguredUrl = getEnvConfiguredApiBaseUrl();
+  if (envConfiguredUrl) {
+    return envConfiguredUrl;
+  }
+
   // Priority 1: Runtime config (dynamically loaded)
   if (typeof window !== 'undefined' && window.RUNTIME_CONFIG?.apiUrl) {
-    return window.RUNTIME_CONFIG.apiUrl;
+    return normalizeApiBaseUrl(window.RUNTIME_CONFIG.apiUrl) || '/api';
   }
 
   // Priority 2: Check if runtimeConfig was loaded
   if (runtimeConfig?.API_URL || runtimeConfig?.ngrokUrl) {
-    return runtimeConfig.API_URL || runtimeConfig.ngrokUrl;
+    return normalizeApiBaseUrl(
+      runtimeConfig.API_URL || runtimeConfig.ngrokUrl || runtimeConfig.apiGatewayUrl,
+    ) || '/api';
   }
 
-  // Priority 3: Environment variable
-  const envUrl = sanitizeEnvUrl(import.meta.env.VITE_API_URL);
-  if (envUrl) {
-    return envUrl;
-  }
-
-  // Priority 4: Cached healthy URL from localStorage
+  // Priority 3: Cached healthy URL from localStorage
   if (typeof window !== 'undefined') {
     const cached = localStorage.getItem('kelmah:lastHealthyApiBase');
     if (cached) {
-      return cached;
+      return normalizeApiBaseUrl(cached) || '/api';
     }
   }
 
-  // Priority 5: Env-var-derived production URL (never hardcoded — set VITE_API_URL in Vercel dashboard)
+  // Priority 4: Env-var-derived production URL (never hardcoded — set VITE_API_URL in Vercel dashboard)
   return PRODUCTION_API_URL;
 };
 

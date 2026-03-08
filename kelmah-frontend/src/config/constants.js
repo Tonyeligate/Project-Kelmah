@@ -26,8 +26,7 @@ const getAPIUrls = async () => {
 
 // Async function to get API base URL
 const getAPIBaseUrl = async () => {
-  const urls = await getAPIUrls();
-  return process.env.VITE_API_URL || import.meta.env.VITE_API_URL || urls[ENV];
+  return getApiBaseUrl();
 };
 
 // Determine API_BASE_URL: use centralized config

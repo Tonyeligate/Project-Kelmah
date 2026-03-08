@@ -1,5 +1,94 @@
 # Kelmah Platform - Current Status & Development Log
 
+---
+
+### Session: Frontend API Base Normalization Follow-up ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Finish the env-only gateway cleanup so frontend requests always resolve to `/api/*` even when Vercel env vars omit the `/api` suffix, and remove stale baked gateway hosts from frontend env/runtime config files.
+
+**Root Cause**  
+The frontend still had multiple secondary sources that could return a bare gateway host or a stale baked host:
+- `kelmah-frontend/src/config/environment.js` normalized the env-derived production fallback but still returned raw values from runtime config, local storage, and direct `VITE_API_URL` reads.
+- `kelmah-frontend/src/config/dynamicConfig.js` and `kelmah-frontend/src/config/constants.js` could still bypass the central normalization path.
+- `kelmah-frontend/.env`, `kelmah-frontend/.env.production`, and `kelmah-frontend/public/runtime-config.json` still contained old hardcoded gateway values that could leak into local builds or async runtime resolution.
+
+**Files Changed**
+- `kelmah-frontend/src/config/environment.js` — added centralized API base normalization so env, runtime config, and cached values always resolve to `/api`-suffixed URLs.
+- `kelmah-frontend/src/config/dynamicConfig.js` — made dynamic API resolution reuse the centralized resolver.
+- `kelmah-frontend/src/config/constants.js` — removed the raw `VITE_API_URL` bypass in favor of the centralized resolver.
+- `kelmah-frontend/public/runtime-config.json` — replaced stale gateway values with generic `/api` and `/socket.io` defaults.
+- `kelmah-frontend/.env` and `kelmah-frontend/.env.production` — removed hardcoded Render gateway URLs so builds no longer bake stale hosts.
+
+**Verification**
+- Frontend build completed successfully after the normalization changes.
+- The generated frontend build no longer contains `kelmah-api-gateway-qmd7.onrender.com` or `kelmah-api-gateway-gf3g.onrender.com` baked into bundled frontend assets.
+
+---
+
+### Session: Remove All Hardcoded Gateway URLs ✅ COMPLETED
+
+**Date**: Current session  
+**Commit**: `6414b48` — `fix: remove all hardcoded gateway URLs — read VITE_API_URL from Vercel env only`
+
+**Root Cause**  
+`kelmah-frontend/vercel.json` had `"env"` and `"build.env"` sections that baked in `VITE_API_URL=https://kelmah-api-gateway-qmd7.onrender.com/api` at Vercel build time — completely overriding anything set in the Vercel dashboard. That is why changing the env var in the Vercel dashboard had zero effect.
+
+`environment.js` also had `return 'https://kelmah-api-gateway-gf3g.onrender.com/api'` as a last-resort hardcoded fallback.
+
+**Files Changed**
+- `kelmah-frontend/vercel.json` — removed `"env"`, `"build"/"env"` sections and dead proxy rewrites; kept only SPA fallback rewrite
+- `kelmah-frontend/src/config/environment.js` — replaced hardcoded URL fallback with `return '/api'` (safe relative)
+
+**Result**  
+Vercel dashboard `VITE_API_URL` / `VITE_API_GATEWAY_URL` / `VITE_WS_URL` values now fully control the gateway URL at build time. No source code changes needed to swap gateway URLs in future.
+
+**User action required (Vercel dashboard)**  
+Set these three env vars in the Vercel project settings (Production environment), then trigger a redeploy:
+```
+VITE_API_GATEWAY_URL   https://kelmah-api-gateway-gf3g.onrender.com
+VITE_API_URL           https://kelmah-api-gateway-gf3g.onrender.com/api
+VITE_WS_URL            https://kelmah-api-gateway-gf3g.onrender.com
+```
+Remove any `https://https://` or `wss://https://` double-protocol typos — `sanitizeEnvUrl()` already strips them but clean values are better.
+
+---
+
+### Session: Payment Service Paystack Test Env Update ✅ COMPLETED
+
+**Date**: March 7, 2026
+**Scope**: Add the provided Paystack test credentials to the requested payment-service environment file.
+
+**Acceptance Criteria**
+- The requested file `kelmah-backend/services/payment-service/.env` contains the provided Paystack test secret key.
+- The requested file `kelmah-backend/services/payment-service/.env` contains the provided Paystack test public key.
+- The env variable names match the payment-service Paystack integration expectations.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/services/payment-service/.env`
+- `kelmah-backend/services/payment-service/.env.example`
+- `kelmah-backend/services/payment-service/integrations/paystack.js`
+- `kelmah-backend/services/payment-service/server.js`
+- `spec-kit/STATUS_LOG.md`
+
+**End-to-end flow notes**
+- Payment requests enter `payment-service` routes/controllers and instantiate `PaystackService`.
+- `PaystackService` reads `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`, and optional `PAYSTACK_WEBHOOK_SECRET` from environment variables.
+- `initializePayment()` falls back to `FRONTEND_URL/payment/callback` for callback handling, so no separate callback env var is currently required by the integration.
+
+**Current findings**
+- The Paystack integration expects `PAYSTACK_SECRET_KEY` and `PAYSTACK_PUBLIC_KEY` specifically.
+- The provided attachment contains test-mode Paystack credentials only; webhook/callback fields are blank.
+- `payment-service/server.js` currently loads `kelmah-backend/.env` at startup, so the requested service-local `.env` update is recorded here as requested but may need mirroring into the backend-level env if runtime consumption is expected.
+
+**Changes completed**
+- Added the provided Paystack test secret key to `kelmah-backend/services/payment-service/.env` as `PAYSTACK_SECRET_KEY`.
+- Added the provided Paystack test public key to `kelmah-backend/services/payment-service/.env` as `PAYSTACK_PUBLIC_KEY`.
+
+**Verification**
+- Confirmed from `integrations/paystack.js` that the env variable names match the integration contract.
+- Confirmed from `server.js` that callback handling uses `FRONTEND_URL/payment/callback` rather than a dedicated Paystack callback env var.
+
 ### Session: Mobile Worker UI/UX Remediation Sweep ✅ COMPLETED
 
 **Date**: March 7, 2026
