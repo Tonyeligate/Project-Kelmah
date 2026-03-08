@@ -2,6 +2,7 @@ import { api } from '../../../services/apiClient';
 import {
   resolveMediaAssetUrl,
   resolveMediaAssetUrls,
+  resolveJobVisualUrl,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
 
@@ -122,11 +123,10 @@ const transformJobListItem = (job) => {
 
   const employer = getEmployerInfo();
   const imageGallery = normalizeJobMedia(job);
-  const resolvedCoverImage = resolveMediaAssetUrl([
-    job.coverImage,
-    job.coverImageMetadata,
-    imageGallery,
-  ]);
+  const resolvedCoverImage = resolveJobVisualUrl({
+    ...job,
+    images: Array.isArray(job?.images) ? job.images : imageGallery,
+  });
 
   return {
     id: job._id || job.id, // Handle MongoDB _id or regular id

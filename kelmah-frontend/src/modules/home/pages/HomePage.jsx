@@ -40,7 +40,7 @@ import jobsApi from '../../jobs/services/jobsService';
 import workerService from '../../worker/services/workerService';
 import { Helmet } from 'react-helmet-async';
 import {
-  resolveMediaAssetUrl,
+  resolveJobVisualUrl,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
 
@@ -823,7 +823,7 @@ const FeaturedJobsSection = () => {
 
       <Grid container spacing={3}>
         {(loading ? Array.from({ length: 3 }) : jobs).map((job, index) => {
-          const imageUrl = resolveMediaAssetUrl(job?.coverImage) || '';
+          const imageUrl = resolveJobVisualUrl(job) || '';
 
           return (
             <Grid item xs={12} md={4} key={job?.id || `featured-job-${index}`}>

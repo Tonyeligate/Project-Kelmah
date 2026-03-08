@@ -190,6 +190,7 @@ import useNetworkSpeed from '../../../hooks/useNetworkSpeed';
 import {
   resolveMediaAssetUrl,
   resolveMediaAssetUrls,
+  resolveJobVisualUrl,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
 
@@ -401,15 +402,7 @@ const tradeCategories = tradeCategoriesData.map((category) => ({
   icon: CATEGORY_ICON_MAP[category.value] || WorkIcon,
 }));
 
-const getJobHeroImage = (job = {}) =>
-  resolveMediaAssetUrl([
-    job?.coverImage,
-    job?.coverImageMetadata,
-    job?.images,
-    job?.attachments,
-    job?.media,
-    job?.gallery,
-  ]);
+const getJobHeroImage = (job = {}) => resolveJobVisualUrl(job);
 
 const getJobVisuals = (job = {}) =>
   resolveMediaAssetUrls(

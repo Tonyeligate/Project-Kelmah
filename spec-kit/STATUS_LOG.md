@@ -2,6 +2,93 @@
 
 ---
 
+### Session: Jobs Card Image Blur Audit ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Re-audit the jobs listing image pipeline and fix the blurred featured job card visuals visible on the public jobs page.
+
+**Acceptance Criteria**
+- Trace the jobs page image flow from frontend page/component through job service normalization to the media resolver.
+- Identify why job card hero images render blurred or placeholder-like on the jobs page.
+- Apply a focused fix that preserves existing job APIs and improves card-image clarity.
+- Verify the affected jobs page/card files and record the result in spec-kit.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/jobs/services/jobsService.js`
+- `kelmah-frontend/src/modules/common/utils/mediaAssets.js`
+- `kelmah-frontend/src/modules/common/components/cards/JobCard.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `kelmah-frontend/src/modules/worker/components/EnhancedJobCard.jsx`
+- `kelmah-frontend/src/modules/home/pages/HomePage.jsx`
+- `kelmah-backend/seed-jobs.js`
+
+**End-to-end flow notes**
+- Public jobs list flow: `JobsPage.jsx` uses `useJobsQuery()` → `jobsService.getJobs()` → `/api/jobs` → job-service routes/controllers, then renders custom job cards inline.
+- Shared image normalization flow: `jobsService.js` and multiple job surfaces call `mediaAssets.js` helpers to resolve `coverImage`, `coverImageMetadata`, and gallery media into a display URL.
+- Seeded-job data audit confirmed many live/demo jobs have no uploaded `coverImage`, so the jobs page was falling back to a soft gradient block rather than a real or crisp replacement visual.
+
+**Current findings**
+- The screenshot issue was not a broken network image; the jobs page was rendering its no-image fallback because many seeded jobs lack `coverImage` data.
+- The existing fallback on `JobsPage.jsx` was only a gradient background, which reads visually like a blurred image area.
+- The same empty-image state could also affect shared job cards, enhanced worker job cards, home featured jobs, and job details hero panels.
+
+**Changes completed**
+- Added a shared `resolveJobVisualUrl()` helper in `kelmah-frontend/src/modules/common/utils/mediaAssets.js` that first resolves real job media and then falls back to a sharp trade-themed SVG hero visual when no uploaded image exists.
+- Updated `kelmah-frontend/src/modules/jobs/services/jobsService.js` so transformed job list items now carry a clear fallback `coverImage` instead of an empty value.
+- Updated `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`, `kelmah-frontend/src/modules/common/components/cards/JobCard.jsx`, `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`, `kelmah-frontend/src/modules/worker/components/EnhancedJobCard.jsx`, and `kelmah-frontend/src/modules/home/pages/HomePage.jsx` to use the shared job visual resolver for consistent non-blurry job hero treatment.
+
+**Verification**
+- Code audit confirmed the public jobs screenshot text matched the no-image fallback path, which validated the root cause.
+- Editor diagnostics returned clean results for all touched frontend files.
+- `npm run build` completed successfully in `kelmah-frontend/` after the job visual fallback changes.
+- The build still reports the pre-existing `apiClient.js` dynamic/static import warning only; no new job-surface build errors were introduced.
+
+### Session: Ghana User Image Backfill ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Bulk-update all current user accounts with publicly licensed, Ghana-relevant profile imagery chosen to match each user's role or trade focus.
+
+**Acceptance Criteria**
+- Identify the current user-image update flow and the current database user surface.
+- Use a publicly licensed internet image source rather than arbitrary copyrighted assets.
+- Match images to each user's role/profession where possible and update user profile image fields safely in bulk.
+- Verify how many user records were updated and record the result in spec-kit.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/shared/models/User.js`
+- `kelmah-backend/shared/utils/cloudinary.js`
+- `kelmah-backend/services/user-service/controllers/upload.controller.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-frontend/src/modules/worker/pages/WorkerProfileEditPage.jsx`
+- `spec-kit/Kelmaholddocs/old-docs/scripts/complete-test-users-report.json`
+
+**End-to-end flow notes**
+- Runtime profile images persist on the shared `User` model via `profilePicture` and `profilePictureMetadata`.
+- Frontend profile editing uploads files through `fileUploadService` and persists the resulting URL/metadata back to the worker profile update endpoint.
+- Bulk backfill can safely target the shared `users` collection directly if it writes the same public URL and metadata fields that the UI already consumes.
+
+**Current findings**
+- User records already support `profilePicture` plus media metadata, so a bulk image refresh does not require schema changes.
+- Cloudinary upload utilities already exist and can store fetched external images in the same trusted media pipeline used by the app.
+- Historical docs confirm there are many seeded/demo users, but the requested scope is all current database users, so the final update source should query the live collection directly.
+
+**Planned fix direction**
+- Add a bulk backfill script that queries current users, finds Ghana-relevant public-license image candidates, uploads the chosen image into Cloudinary, and updates each user record.
+- Start with a dry-run preview, then execute the real update and record counts/results in spec-kit.
+
+**Changes completed**
+- Added `kelmah-backend/scripts/backfill-ghana-user-images.js` to bulk-select publicly licensed Wikimedia Commons profile images, upload them through the existing media pipeline when possible, and write `profilePicture` plus `profilePictureMetadata` back to live users.
+- Added resilient MongoDB Atlas connection fallback logic so the script can recover from SRV lookup failures and still reach the live cluster.
+- Refined worker trade matching so roofing, tiling/flooring, HVAC, painting, masonry, plumbing, electrical, gardening, and general craft worker accounts now prioritize trade-specific Ghana-relevant imagery instead of weaker generic results.
+- Completed a full all-user backfill run and then a worker-only refinement pass to replace weaker worker images with more explicit craft/trade imagery.
+
+**Verification**
+- Dry-runs confirmed trade-aligned worker previews such as `File:Plumber 01.jpg`, `File:Electrician 01.jpg`, `File:Mason in Ghana 2.jpg`, `File:A home painter at work.jpg`, and `File:Welder in Ghana.jpg` before the final worker rewrite.
+- Live all-user run completed with `scoped: 47`, `updated: 46`, `skipped: 1`, `failed: 0`.
+- Live worker-only refinement run completed with `scoped: 24`, `updated: 24`, `skipped: 0`, `failed: 0`.
+- Only pre-existing Mongoose duplicate-index warnings were emitted during verification; no new script errors or failed worker updates remained.
+
 ### Session: Platform Image Experience Deepening Round 2 ✅ COMPLETED
 
 **Date**: March 8, 2026  

@@ -60,6 +60,7 @@ import { useSnackbar } from 'notistack';
 import {
   resolveMediaAssetUrl,
   resolveMediaAssetUrls,
+  resolveJobVisualUrl,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
 
@@ -97,7 +98,7 @@ const EnhancedJobCard = ({
     job?.attachments,
     job?.media,
   );
-  const coverImage = resolveMediaAssetUrl(jobVisuals);
+  const coverImage = resolveJobVisualUrl(job);
   const employerAvatar = resolveMediaAssetUrl([
     job?.employer?.logo,
     job?.employer?.avatar,

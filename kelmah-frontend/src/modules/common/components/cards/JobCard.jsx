@@ -26,7 +26,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import {
-  resolveMediaAssetUrl,
+  resolveJobVisualUrl,
   resolveProfileImageUrl,
 } from '../../../common/utils/mediaAssets';
 
@@ -99,7 +99,7 @@ const JobCard = ({
     applications = 0,
     coverImage,
   } = job;
-  const resolvedCoverImage = resolveMediaAssetUrl([coverImage, job?.imageGallery, job?.images]);
+  const resolvedCoverImage = resolveJobVisualUrl(job);
   const resolvedHirerAvatar =
     resolveProfileImageUrl({
       profilePicture: hirerAvatar,

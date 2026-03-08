@@ -62,6 +62,7 @@ import { Helmet } from 'react-helmet-async';
 import {
   resolveMediaAssetUrl,
   resolveMediaAssetUrls,
+  resolveJobVisualUrl,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
 
@@ -529,10 +530,7 @@ const JobDetailsPage = () => {
     job?.images,
     job?.attachments,
   );
-  const primaryJobImage =
-    resolveMediaAssetUrl([job?.coverImage, job?.coverImageMetadata]) ||
-    jobImageGallery[0] ||
-    '';
+  const primaryJobImage = resolveJobVisualUrl(job);
   const heroHighlights = [
     {
       label: 'Budget',
