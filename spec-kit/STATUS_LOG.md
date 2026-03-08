@@ -2,6 +2,45 @@
 
 ---
 
+### Session: Real Job Cover Image Backfill ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Add real trade-relevant job cover images to current job records so listings show actual visual context for the work, not only fallback art.
+
+**Acceptance Criteria**
+- Audit the current job cover-image persistence flow and shared job media fields.
+- Source publicly licensed trade-relevant imagery that matches each live job's category/title.
+- Bulk-update current jobs with real cover image URLs and metadata without breaking existing APIs.
+- Verify current jobs now store real image data and record the outcome in spec-kit.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/shared/models/Job.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/scripts/backfill-ghana-user-images.js`
+- `kelmah-backend/seed-jobs.js`
+- `kelmah-frontend/src/modules/jobs/services/jobsService.js`
+
+**End-to-end flow notes**
+- Job media persists on the shared `Job` model through `coverImage` and `coverImageMetadata`.
+- New frontend job pages already consume these fields through `jobsService.js` and the shared media resolver, so the correct fix for the screenshot issue was to populate real job media on live job records.
+- Job creation already supports persisted cover images through `normalizeJobCoverImage()` in the job controller, which made a bulk backfill safe as long as it wrote the same public URL and metadata shape.
+
+**Current findings**
+- The blurred-looking jobs page was showing empty-image jobs, not failed user-image backfill results.
+- Many live seeded jobs had no stored `coverImage`, so the UI could only show fallback treatment.
+- The required fix was to attach real trade/job visuals to the job records themselves.
+
+**Changes completed**
+- Added `kelmah-backend/scripts/backfill-ghana-job-images.js` to bulk-match open public jobs with publicly licensed Ghana-relevant Wikimedia Commons trade imagery.
+- Added category-first job keyword derivation so interior design, flooring, painting, plumbing, construction, masonry, electrical, roofing, landscaping, carpentry, welding, HVAC, and general repair jobs receive more relevant real job visuals.
+- Stored the selected job images back onto live `Job` records via `coverImage` and `coverImageMetadata`, using Cloudinary when available and direct remote fallback if upload fails.
+
+**Verification**
+- Dry-run preview confirmed strong matches such as `File:Carpenter Ghana.jpg` for interior fit-out/carpentry jobs, `File:Plumber 01.jpg` for plumbing jobs, `File:A home painter at work.jpg` for painting jobs, `File:Electrician 01.jpg` for electrical/HVAC jobs, and `File:Ghanaian Construction Workers.jpg` for construction/roofing jobs.
+- Live run completed with `scoped: 37`, `updated: 37`, `skipped: 0`, `failed: 0`.
+- Post-update dry-run without force completed with `scoped: 37`, `updated: 0`, `skipped: 37`, `failed: 0`, confirming the jobs now persist cover images.
+- Only pre-existing Mongoose duplicate-index warnings were emitted during verification; no new job-image script errors remained.
+
 ### Session: Jobs Card Image Blur Audit ✅ COMPLETED
 
 **Date**: March 8, 2026  
