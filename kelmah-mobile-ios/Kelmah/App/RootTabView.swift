@@ -24,10 +24,10 @@ struct RootTabView: View {
                     JobsView(viewModel: environment.jobsViewModel)
                         .tag(RootTab.jobs)
                         .tabItem { Label("Jobs", systemImage: "briefcase") }
-                    MessagesView()
+                    MessagesView(viewModel: environment.messagesViewModel)
                         .tag(RootTab.messages)
                         .tabItem { Label("Messages", systemImage: "message") }
-                    NotificationsView()
+                    NotificationsView(viewModel: environment.notificationsViewModel)
                         .tag(RootTab.alerts)
                         .tabItem { Label("Alerts", systemImage: "bell") }
                     ProfileView(

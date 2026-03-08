@@ -10,6 +10,34 @@ import {
 } from '@mui/material';
 
 const PortfolioGallery = ({ items = [] }) => {
+  const resolvePreviewImage = (item) => {
+    const candidates = [
+      item?.thumbnailUrl,
+      item?.image,
+      item?.mainImage,
+      Array.isArray(item?.images) ? item.images[0] : null,
+    ];
+
+    for (const candidate of candidates) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        return candidate.trim();
+      }
+
+      if (candidate && typeof candidate === 'object') {
+        const resolved =
+          candidate.thumbnailUrl ||
+          candidate.url ||
+          candidate.secureUrl ||
+          candidate.fileUrl;
+        if (typeof resolved === 'string' && resolved.trim()) {
+          return resolved.trim();
+        }
+      }
+    }
+
+    return '';
+  };
+
   return (
     <Box>
       <Typography variant="h5" gutterBottom>
@@ -22,7 +50,7 @@ const PortfolioGallery = ({ items = [] }) => {
               <CardMedia
                 component="img"
                 height="160"
-                image={item.thumbnailUrl}
+                image={resolvePreviewImage(item)}
                 alt={item.title}
                 onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
               />

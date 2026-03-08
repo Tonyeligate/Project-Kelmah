@@ -14,6 +14,11 @@ import {
   Alert,
   Skeleton,
   Snackbar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Divider,
 } from '@mui/material';
 import {
   LocationOn,
@@ -36,6 +41,7 @@ import {
   Business,
   Visibility,
   Person,
+  MailOutline,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { styled, useTheme, alpha } from '@mui/material/styles';
@@ -53,6 +59,11 @@ import { EXTERNAL_SERVICES } from '../../../config/services';
 import jobsApi from '../services/jobsService';
 import { Z_INDEX, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import { Helmet } from 'react-helmet-async';
+import {
+  resolveMediaAssetUrl,
+  resolveMediaAssetUrls,
+  resolveProfileImageUrl,
+} from '../../common/utils/mediaAssets';
 
 // Styled components
 const SectionHeading = ({ children, icon: Icon, sx = {} }) => {
@@ -141,6 +152,25 @@ const toDisplayText = (value, fallback = '') => {
   return fallback;
 };
 
+const maskEmail = (value) => {
+  const email = toDisplayText(value);
+  if (!email || !email.includes('@')) return '';
+
+  const [localPart, domain] = email.split('@');
+  if (!localPart || !domain) return email;
+
+  const visibleLocal = localPart.length <= 2 ? localPart.charAt(0) : localPart.slice(0, 2);
+  const maskedTail = '•'.repeat(Math.max(localPart.length - visibleLocal.length, 3));
+  return `${visibleLocal}${maskedTail}@${domain}`;
+};
+
+const formatReadableDate = (value, options) => {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toLocaleDateString('en-GH', options);
+};
+
 const getJobLocationLabel = (job) => {
   const locationValue = job?.location;
 
@@ -202,6 +232,7 @@ const JobDetailsPage = () => {
   const [saved, setSaved] = useState(false);
   const [savingBookmark, setSavingBookmark] = useState(false);
   const [bidDialogOpen, setBidDialogOpen] = useState(false);
+  const [clientDetailsOpen, setClientDetailsOpen] = useState(false);
   const [shareSnackbar, setShareSnackbar] = useState('');
   const locationLabel = getJobLocationLabel(job);
   const skillLabels = normalizeSkillLabels(job?.skills);
@@ -431,8 +462,16 @@ const JobDetailsPage = () => {
   const hirerName = hirerData?.firstName && hirerData?.lastName
     ? `${hirerData.firstName} ${hirerData.lastName}`
     : hirerData?.name || job?.hirerName || (hirerData?.email ? hirerData.email.split('@')[0] : null) || 'Client';
-  const hirerRating = typeof hirerData?.rating === 'number' ? hirerData.rating.toFixed(1) : null;
-  const hirerReviews = hirerData?.reviewCount ?? hirerData?.reviews ?? 0;
+  const rawHirerReviewCount = [
+    hirerData?.reviewCount,
+    hirerData?.reviewsCount,
+    typeof hirerData?.reviews === 'number' ? hirerData.reviews : null,
+  ].find((value) => typeof value === 'number' && Number.isFinite(value));
+  const hirerRating = typeof hirerData?.rating === 'number' && Number.isFinite(hirerData.rating) && hirerData.rating > 0
+    ? hirerData.rating.toFixed(1)
+    : null;
+  const hirerReviews = typeof rawHirerReviewCount === 'number' ? rawHirerReviewCount : null;
+  const hirerAvatarUrl = resolveProfileImageUrl(hirerData) || null;
   const hirerLocation = hirerData?.location?.city || hirerData?.location?.region
     || (typeof hirerData?.location === 'string' ? hirerData.location : null) || null;
   const hirerJoined = hirerData?.createdAt
@@ -440,17 +479,9 @@ const JobDetailsPage = () => {
     : null;
   const hirerJobsPosted = hirerData?.jobsPosted ?? hirerData?.totalJobs ?? job?.hirerJobsPosted ?? null;
   const hirerVerified = Boolean(hirerData?.isVerified || hirerData?.verified || hirerData?.verification?.isVerified);
-
-  const handleOpenClientProfile = () => {
-    if (!hirerId) {
-      setShareSnackbar('Client profile is not available yet');
-      return;
-    }
-
-    navigate(`/profile/${hirerId}`, {
-      state: { profileData: hirerData, source: 'job-details', jobId: id },
-    });
-  };
+  const clientCompany = toDisplayText(hirerData?.companyName || hirerData?.company || hirerData?.organizationName);
+  const clientEmail = toDisplayText(hirerData?.email);
+  const maskedClientEmail = maskEmail(clientEmail);
 
   // ─── budget display ───────────────────────────────────────────────────
   const budgetDisplay = (() => {
@@ -467,6 +498,76 @@ const JobDetailsPage = () => {
     }
     return `${currency} ${Number(job.budget).toLocaleString()} / ${job?.paymentType || 'fixed'}`;
   })();
+
+  const postedDateLabel = formatReadableDate(job?.createdAt || job?.created_at || job?.postedDate, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+  const deadlineLabel = formatReadableDate(job?.endDate || job?.deadline, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+  const timelineLabel = job?.duration?.value
+    ? `${job.duration.value} ${job.duration.unit}${job.duration.value > 1 ? 's' : ''}`
+    : deadlineLabel
+      ? `Ends ${deadlineLabel}`
+      : 'Flexible timeline';
+  const hasClientDetails = Boolean(
+    hirerId || hirerName || clientCompany || clientEmail || hirerLocation || hirerJoined || hirerJobsPosted !== null,
+  );
+  const clientJobContext = [
+    { label: 'Job budget', value: budgetDisplay },
+    { label: 'Applications', value: `${job?.proposalCount || 0} received` },
+    { label: 'Views', value: `${job?.viewCount || 0} views` },
+    { label: 'Start date', value: formatReadableDate(job?.startDate, { day: 'numeric', month: 'long', year: 'numeric' }) || 'To be agreed' },
+  ];
+  const jobImageGallery = resolveMediaAssetUrls(
+    job?.coverImage,
+    job?.coverImageMetadata,
+    job?.images,
+    job?.attachments,
+  );
+  const primaryJobImage =
+    resolveMediaAssetUrl([job?.coverImage, job?.coverImageMetadata]) ||
+    jobImageGallery[0] ||
+    '';
+  const heroHighlights = [
+    {
+      label: 'Budget',
+      value: budgetDisplay,
+      caption: job?.paymentType ? `${job.paymentType} payment` : 'Payment terms available',
+      icon: AttachMoney,
+    },
+    {
+      label: 'Timeline',
+      value: timelineLabel,
+      caption: deadlineLabel ? `Deadline ${deadlineLabel}` : 'No fixed deadline published',
+      icon: AccessTime,
+    },
+    {
+      label: 'Applicants',
+      value: `${job?.proposalCount || 0}`,
+      caption: job?.bidding?.bidStatus === 'open' ? 'Bidding is open now' : 'Applications are open now',
+      icon: Groups,
+    },
+    {
+      label: 'Client',
+      value: hirerName,
+      caption: clientCompany || (hirerVerified ? 'Verified client' : 'Client details available below'),
+      icon: Business,
+    },
+  ];
+
+  const handleOpenClientProfile = () => {
+    if (!hasClientDetails) {
+      setShareSnackbar('Client details are not available yet');
+      return;
+    }
+
+    setClientDetailsOpen(true);
+  };
 
   return (
     <Box
@@ -504,53 +605,148 @@ const JobDetailsPage = () => {
               bgcolor: 'background.paper',
             }}
           >
-            {/* Status + category row */}
-            <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
-              <Chip
-                label={(job?.status || 'unknown').toUpperCase()}
-                size="small"
-                sx={{
-                  fontWeight: 700, fontSize: '0.7rem', letterSpacing: 0.5,
-                  bgcolor: String(job?.status || '').toLowerCase() === 'open' ? 'rgba(76,175,80,0.15)' : 'rgba(255,152,0,0.15)',
-                  color: String(job?.status || '').toLowerCase() === 'open' ? '#4caf50' : '#ff9800',
-                  border: '1px solid',
-                  borderColor: String(job?.status || '').toLowerCase() === 'open' ? 'rgba(76,175,80,0.4)' : 'rgba(255,152,0,0.4)',
-                }}
-              />
-              {job?.category && (
-                <Chip
-                  icon={<Category sx={{ fontSize: '14px !important' }} />}
-                  label={job.category}
-                  size="small"
-                  variant="outlined"
-                  sx={{ fontWeight: 600, fontSize: '0.75rem', borderColor: 'divider' }}
-                />
-              )}
-            </Box>
+            <Grid container spacing={{ xs: 2, md: 2.5 }} alignItems="stretch">
+              <Grid item xs={12} md={8}>
+                {/* Status + category row */}
+                <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
+                  <Chip
+                    label={(job?.status || 'unknown').toUpperCase()}
+                    size="small"
+                    sx={{
+                      fontWeight: 700, fontSize: '0.7rem', letterSpacing: 0.5,
+                      bgcolor: String(job?.status || '').toLowerCase() === 'open' ? 'rgba(76,175,80,0.15)' : 'rgba(255,152,0,0.15)',
+                      color: String(job?.status || '').toLowerCase() === 'open' ? '#4caf50' : '#ff9800',
+                      border: '1px solid',
+                      borderColor: String(job?.status || '').toLowerCase() === 'open' ? 'rgba(76,175,80,0.4)' : 'rgba(255,152,0,0.4)',
+                    }}
+                  />
+                  {job?.category && (
+                    <Chip
+                      icon={<Category sx={{ fontSize: '14px !important' }} />}
+                      label={job.category}
+                      size="small"
+                      variant="outlined"
+                      sx={{ fontWeight: 600, fontSize: '0.75rem', borderColor: 'divider' }}
+                    />
+                  )}
+                </Box>
 
-            {/* Big bold title */}
-            <Typography
-              variant="h4"
-              component="h1"
-              sx={{
-                fontWeight: 800,
-                fontSize: { xs: '1.55rem', sm: '1.9rem', md: '2.2rem' },
-                color: 'text.primary',
-                lineHeight: 1.25,
-                mb: 2,
-              }}
-            >
-              {job?.title || 'Job Title'}
-            </Typography>
+                <Typography
+                  variant="h4"
+                  component="h1"
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: { xs: '1.55rem', sm: '1.9rem', md: '2.2rem' },
+                    color: 'text.primary',
+                    lineHeight: 1.25,
+                    mb: 1.4,
+                    maxWidth: '18ch',
+                  }}
+                >
+                  {job?.title || 'Job Title'}
+                </Typography>
 
-            {/* Meta pills row */}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              <MetaPill icon={LocationOn} label={locationLabel} />
-              <MetaPill icon={AttachMoney} label={budgetDisplay} />
-              <MetaPill icon={CalendarToday} label={`Posted ${job?.createdAt ? new Date(job.createdAt).toLocaleDateString('en-GH', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Unknown'}`} />
-              <MetaPill icon={Groups} label={`${job?.proposalCount || 0} Applicants`} />
-              {job?.endDate && <MetaPill icon={AccessTime} label={`Deadline ${new Date(job.endDate).toLocaleDateString('en-GH', { day: 'numeric', month: 'short', year: 'numeric' })}`} />}
-            </Box>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: 'text.secondary',
+                    fontWeight: 500,
+                    lineHeight: 1.7,
+                    mb: 2,
+                    maxWidth: { md: '70ch' },
+                  }}
+                >
+                  {job?.description
+                    ? `${job.description.slice(0, 200)}${job.description.length > 200 ? '…' : ''}`
+                    : 'Review the job overview, scope, and client details below before you place a bid.'}
+                </Typography>
+
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  <MetaPill icon={LocationOn} label={locationLabel} />
+                  <MetaPill icon={AttachMoney} label={budgetDisplay} />
+                  <MetaPill icon={CalendarToday} label={`Posted ${postedDateLabel || 'Unknown'}`} />
+                  <MetaPill icon={Groups} label={`${job?.proposalCount || 0} Applicants`} />
+                  {deadlineLabel && <MetaPill icon={AccessTime} label={`Deadline ${deadlineLabel}`} />}
+                </Box>
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, height: '100%' }}>
+                  {primaryJobImage ? (
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        minHeight: { xs: 200, md: 220 },
+                        borderRadius: 2.5,
+                        overflow: 'hidden',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.55) 100%), url(${primaryJobImage})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        display: 'flex',
+                        alignItems: 'flex-end',
+                        p: 1.5,
+                      }}
+                    >
+                      <Box>
+                        <Chip
+                          label={jobImageGallery.length > 1 ? `${jobImageGallery.length} project visuals` : 'Project visual'}
+                          size="small"
+                          sx={{
+                            mb: 0.75,
+                            bgcolor: alpha(theme.palette.common.black, 0.55),
+                            color: theme.palette.common.white,
+                            fontWeight: 700,
+                          }}
+                        />
+                        <Typography variant="body2" sx={{ color: theme.palette.common.white, fontWeight: 700, lineHeight: 1.5 }}>
+                          See the kind of project context the client shared for this job.
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ) : null}
+
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(4, minmax(0, 1fr))', md: 'repeat(2, minmax(0, 1fr))' },
+                      gap: 1.25,
+                      height: '100%',
+                    }}
+                  >
+                  {heroHighlights.map(({ label, value, caption, icon: Icon }) => (
+                    <Box
+                      key={label}
+                      sx={{
+                        p: 1.5,
+                        borderRadius: 2,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        bgcolor: theme.palette.mode === 'dark'
+                          ? alpha(theme.palette.common.white, 0.02)
+                          : alpha(theme.palette.primary.main, 0.03),
+                        minHeight: { md: 0 },
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mb: 0.75 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          {label}
+                        </Typography>
+                        <Icon sx={{ fontSize: 17, color: accentColor }} />
+                      </Box>
+                      <Typography variant="subtitle1" sx={{ color: 'text.primary', fontWeight: 800, lineHeight: 1.3 }}>
+                        {value}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5, lineHeight: 1.5 }}>
+                        {caption}
+                      </Typography>
+                    </Box>
+                  ))}
+                  </Box>
+                </Box>
+              </Grid>
+            </Grid>
           </Paper>
         </motion.div>
 
@@ -589,18 +785,18 @@ const JobDetailsPage = () => {
               )}
 
               {/* Project Images */}
-              {job.images && job.images.length > 0 && (
+              {jobImageGallery.length > 0 && (
                 <DetailsPaper elevation={2} sx={{ mb: 3 }}>
                   <SectionHeading icon={Visibility}>Project Images</SectionHeading>
                   <Grid container spacing={2}>
-                    {job.images.map((image, index) => (
-                      <Grid item xs={12} sm={6} md={4} key={image?.url || image || index}>
+                    {jobImageGallery.map((image, index) => (
+                      <Grid item xs={12} sm={6} md={index === 0 ? 8 : 4} key={image || index}>
                         <Box
                           component="img"
-                          src={typeof image === 'string' ? image : image?.url}
+                          src={image}
                           alt={`Job image ${index + 1}`}
                           sx={{
-                            width: '100%', height: 180, objectFit: 'cover',
+                            width: '100%', height: index === 0 ? 220 : 180, objectFit: 'cover',
                             borderRadius: 2, cursor: 'pointer',
                             transition: 'transform 0.3s ease',
                             '&:hover': { transform: 'scale(1.03)' },
@@ -618,6 +814,7 @@ const JobDetailsPage = () => {
           {/* ─── SIDEBAR ─────────────────────────────────────────────────────── */}
           <Grid item xs={12} lg={4}>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
+              <Box sx={{ position: { lg: 'sticky' }, top: { lg: 96 } }}>
 
               {/* CTA Card */}
               <DetailsPaper elevation={3} sx={{ mb: 3 }}>
@@ -728,15 +925,15 @@ const JobDetailsPage = () => {
                   onClick={handleOpenClientProfile}
                   sx={{
                     display: 'flex', alignItems: 'center', gap: 2, p: 1.5,
-                    borderRadius: 2, cursor: hirerId ? 'pointer' : 'default',
+                    borderRadius: 2, cursor: hasClientDetails ? 'pointer' : 'default',
                     border: '1px solid', borderColor: 'divider',
                     mb: 2,
                     transition: 'all 0.2s',
-                    '&:hover': hirerId ? { bgcolor: 'action.hover', borderColor: accentColor } : {},
+                    '&:hover': hasClientDetails ? { bgcolor: 'action.hover', borderColor: accentColor } : {},
                   }}
                 >
                   <Avatar
-                    src={hirerData?.avatar || hirerData?.profilePicture}
+                    src={hirerAvatarUrl}
                     alt={hirerName}
                     sx={{
                       width: 60, height: 60, flexShrink: 0,
@@ -754,19 +951,28 @@ const JobDetailsPage = () => {
                         <CheckCircle sx={{ fontSize: 16, color: '#4caf50' }} titleAccess="Verified Client" />
                       )}
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.4 }}>
-                      <Star sx={{ fontSize: 15, color: '#FFD700' }} />
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                        {hirerRating ?? 'N/A'}
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.35 }}>
+                      {clientCompany || 'Client on Kelmah'}
+                    </Typography>
+                    {hirerRating && hirerReviews ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.45 }}>
+                        <Star sx={{ fontSize: 15, color: '#FFD700' }} />
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                          {hirerRating}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                          ({hirerReviews} review{hirerReviews !== 1 ? 's' : ''})
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.45 }}>
+                        No public reviews shared yet
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        ({hirerReviews} review{hirerReviews !== 1 ? 's' : ''})
-                      </Typography>
-                    </Box>
-                    {hirerId && (
+                    )}
+                    {hasClientDetails && (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.2 }}>
                         <OpenInNew sx={{ fontSize: 12, color: accentColor }} />
-                        <Typography variant="caption" sx={{ color: accentColor, fontWeight: 700 }}>View Profile</Typography>
+                        <Typography variant="caption" sx={{ color: accentColor, fontWeight: 700 }}>View details</Typography>
                       </Box>
                     )}
                   </Box>
@@ -774,6 +980,12 @@ const JobDetailsPage = () => {
 
                 {/* Client stats */}
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2, mb: 2.5 }}>
+                  {clientCompany && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Business sx={{ fontSize: 17, color: 'text.secondary' }} />
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{clientCompany}</Typography>
+                    </Box>
+                  )}
                   {hirerJobsPosted !== null && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <Business sx={{ fontSize: 17, color: 'text.secondary' }} />
@@ -797,6 +1009,19 @@ const JobDetailsPage = () => {
                       </Typography>
                     </Box>
                   )}
+                  {maskedClientEmail && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <MailOutline sx={{ fontSize: 17, color: 'text.secondary' }} />
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        Contact: {maskedClientEmail}
+                      </Typography>
+                    </Box>
+                  )}
+                  {!clientCompany && !hirerLocation && !hirerJoined && hirerJobsPosted === null && !maskedClientEmail && (
+                    <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
+                      This client has not shared extra public profile details yet. Use the job brief and message flow to confirm fit.
+                    </Typography>
+                  )}
                 </Box>
 
                 {/* Action buttons */}
@@ -814,7 +1039,7 @@ const JobDetailsPage = () => {
                   >
                     Message Client
                   </Button>
-                  {hirerId && (
+                  {hasClientDetails && (
                     <Button
                       variant="text"
                       fullWidth
@@ -822,11 +1047,12 @@ const JobDetailsPage = () => {
                       onClick={handleOpenClientProfile}
                       sx={{ fontWeight: 700, color: accentColor, '&:hover': { bgcolor: accentSoftBg } }}
                     >
-                      View Client Profile
+                      View Client Details
                     </Button>
                   )}
                 </Box>
               </DetailsPaper>
+              </Box>
 
             </motion.div>
           </Grid>
@@ -851,6 +1077,123 @@ const JobDetailsPage = () => {
             </Box>
           </DetailsPaper>
         </motion.div>
+
+        <Dialog
+          open={clientDetailsOpen}
+          onClose={() => setClientDetailsOpen(false)}
+          maxWidth="sm"
+          fullWidth
+          aria-labelledby="client-details-title"
+        >
+          <DialogTitle id="client-details-title" sx={{ pb: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, pr: 5 }}>
+              <Avatar
+                src={hirerAvatarUrl}
+                alt={hirerName}
+                sx={{ width: 64, height: 64, bgcolor: 'primary.main', color: 'primary.contrastText', fontWeight: 800 }}
+              >
+                {hirerName.charAt(0).toUpperCase()}
+              </Avatar>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary' }}>
+                  {hirerName}
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.35 }}>
+                  {clientCompany || 'Client on Kelmah'}
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 1 }}>
+                  <Chip size="small" label={job?.visibility === 'private' ? 'Private listing' : 'Public listing'} />
+                  <Chip size="small" label={job?.bidding?.bidStatus === 'open' ? 'Accepting bids' : 'Applications open'} />
+                  {hirerVerified && <Chip size="small" color="success" label="Verified client" />}
+                </Box>
+              </Box>
+            </Box>
+          </DialogTitle>
+          <DialogContent dividers>
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.primary', mb: 1.25 }}>
+              Client snapshot
+            </Typography>
+            <Grid container spacing={1.5} sx={{ mb: 2.5 }}>
+              {[
+                clientCompany ? { label: 'Business', value: clientCompany } : null,
+                hirerLocation ? { label: 'Location', value: hirerLocation } : null,
+                hirerJoined ? { label: 'Member since', value: hirerJoined } : null,
+                hirerJobsPosted !== null ? { label: 'Jobs posted', value: `${hirerJobsPosted}` } : null,
+                maskedClientEmail ? { label: 'Protected contact', value: maskedClientEmail } : null,
+              ].filter(Boolean).map((item) => (
+                <Grid item xs={12} sm={6} key={item.label}>
+                  <Box
+                    sx={{
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 2,
+                      p: 1.5,
+                      height: '100%',
+                    }}
+                  >
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                      {item.label}
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: 'text.primary', fontWeight: 700, mt: 0.5, lineHeight: 1.4 }}>
+                      {item.value}
+                    </Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+
+            <Divider sx={{ mb: 2.5 }} />
+
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.primary', mb: 1.25 }}>
+              From this job posting
+            </Typography>
+            <Grid container spacing={1.5}>
+              {clientJobContext.map((item) => (
+                <Grid item xs={12} sm={6} key={item.label}>
+                  <Box
+                    sx={{
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 2,
+                      p: 1.5,
+                      height: '100%',
+                      bgcolor: theme.palette.mode === 'dark'
+                        ? alpha(theme.palette.common.white, 0.02)
+                        : alpha(theme.palette.primary.main, 0.03),
+                    }}
+                  >
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                      {item.label}
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: 'text.primary', fontWeight: 700, mt: 0.5, lineHeight: 1.4 }}>
+                      {item.value}
+                    </Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+
+            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 2.5, lineHeight: 1.7 }}>
+              To protect privacy, Kelmah keeps direct client contact limited. Start a conversation or submit a bid to continue the engagement professionally.
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, py: 2 }}>
+            <Button onClick={() => setClientDetailsOpen(false)} sx={{ fontWeight: 700 }}>
+              Close
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setClientDetailsOpen(false);
+                handleMessageHirer();
+              }}
+              startIcon={<Message />}
+              disabled={!hirerId}
+            >
+              Message Client
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {/* Bid submission dialog */}
         {job && (

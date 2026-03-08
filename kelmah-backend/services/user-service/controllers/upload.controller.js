@@ -1,6 +1,12 @@
 const path = require('path');
 const fs = require('fs');
 const { logger } = require('../utils/logger');
+const {
+  hasCloudinaryConfig,
+  uploadBuffer,
+  toMediaAsset,
+  resolveResourceType,
+} = require('../../../shared/utils/cloudinary');
 
 const ensureDir = (dir) => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -17,68 +23,138 @@ const sanitizeFilename = (name) => {
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB per file
 
-exports.uploadWorkSamples = async (req, res) => {
+const uploadToLocalDisk = ({ file, folder, userId }) => {
+  const dest = path.join(__dirname, '../../uploads', folder, userId);
+  ensureDir(dest);
+  const safeName = sanitizeFilename(file.originalname);
+  const target = path.join(dest, safeName);
+  fs.writeFileSync(target, file.buffer);
+  return {
+    name: safeName,
+    url: `/uploads/${folder}/${userId}/${safeName}`,
+    secureUrl: `/uploads/${folder}/${userId}/${safeName}`,
+    originalFilename: file.originalname,
+    bytes: file.size,
+    resourceType: resolveResourceType(file.mimetype),
+    format: path.extname(safeName).replace('.', '') || null,
+    uploadedAt: new Date(),
+    storage: 'local',
+  };
+};
+
+const uploadViaConfiguredStorage = async ({ file, folder, userId, tags = [] }) => {
+  if (hasCloudinaryConfig()) {
+    const result = await uploadBuffer({
+      buffer: file.buffer,
+      folder,
+      mimeType: file.mimetype,
+      filename: sanitizeFilename(file.originalname),
+      tags,
+      context: {
+        userId: String(userId || 'anonymous'),
+        originalFilename: sanitizeFilename(file.originalname),
+      },
+    });
+
+    return {
+      name: sanitizeFilename(file.originalname),
+      storage: 'cloudinary',
+      ...toMediaAsset(result, {
+        originalFilename: file.originalname,
+        bytes: file.size,
+      }),
+    };
+  }
+
+  return uploadToLocalDisk({ file, folder, userId });
+};
+
+const validateFiles = (files, allowedTypes) => {
+  if (files.length === 0) {
+    return 'No files uploaded';
+  }
+  for (const f of files) {
+    if (!allowedTypes.has(f.mimetype)) {
+      return `Unsupported file type: ${f.mimetype}`;
+    }
+    if (f.size > MAX_FILE_SIZE) {
+      return `File too large: ${f.originalname} (max 10MB)`;
+    }
+  }
+  return null;
+};
+
+const uploadFiles = async ({ req, res, folder, allowedTypes, tags = [] }) => {
   try {
     const files = req.files || [];
-    const allowedTypes = new Set(['image/jpeg','image/png','image/gif','application/pdf']);
-    if (files.length === 0) {
-      return res.status(400).json({ success: false, message: 'No files uploaded' });
+    const validationError = validateFiles(files, allowedTypes);
+    if (validationError) {
+      return res.status(400).json({ success: false, message: validationError });
     }
-    for (const f of files) {
-      if (!allowedTypes.has(f.mimetype)) {
-        return res.status(400).json({ success: false, message: `Unsupported file type: ${f.mimetype}` });
-      }
-      if (f.size > MAX_FILE_SIZE) {
-        return res.status(400).json({ success: false, message: `File too large: ${f.originalname} (max 10MB)` });
-      }
-    }
-    const userId = req.user?.id || 'anonymous';
-    const dest = path.join(__dirname, '../../uploads', 'work-samples', userId);
-    ensureDir(dest);
+
+    const userId = req.user?.id || req.user?._id || 'anonymous';
     const saved = [];
     for (const file of files) {
-      const safeName = sanitizeFilename(file.originalname);
-      const target = path.join(dest, safeName);
-      fs.writeFileSync(target, file.buffer);
-      saved.push({ name: safeName, url: `/uploads/work-samples/${userId}/${safeName}` });
+      const stored = await uploadViaConfiguredStorage({
+        file,
+        folder,
+        userId,
+        tags,
+      });
+      saved.push(stored);
     }
     return res.json({ success: true, data: { files: saved } });
   } catch (err) {
-    logger.error('uploadWorkSamples error', err);
+    logger.error('uploadFiles error', err);
     return res.status(500).json({ success: false, message: 'Upload failed' });
   }
 };
 
+exports.uploadWorkSamples = async (req, res) => {
+  return uploadFiles({
+    req,
+    res,
+    folder: 'portfolio',
+    allowedTypes: new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'application/pdf']),
+    tags: ['portfolio'],
+  });
+};
+
 exports.uploadCertificates = async (req, res) => {
-  try {
-    const files = req.files || [];
-    const allowedTypes = new Set(['image/jpeg','image/png','image/gif','application/pdf']);
-    if (files.length === 0) {
-      return res.status(400).json({ success: false, message: 'No files uploaded' });
-    }
-    for (const f of files) {
-      if (!allowedTypes.has(f.mimetype)) {
-        return res.status(400).json({ success: false, message: `Unsupported file type: ${f.mimetype}` });
-      }
-      if (f.size > MAX_FILE_SIZE) {
-        return res.status(400).json({ success: false, message: `File too large: ${f.originalname} (max 10MB)` });
-      }
-    }
-    const userId = req.user?.id || 'anonymous';
-    const dest = path.join(__dirname, '../../uploads', 'certificates', userId);
-    ensureDir(dest);
-    const saved = [];
-    for (const file of files) {
-      const safeName = sanitizeFilename(file.originalname);
-      const target = path.join(dest, safeName);
-      fs.writeFileSync(target, file.buffer);
-      saved.push({ name: safeName, url: `/uploads/certificates/${userId}/${safeName}` });
-    }
-    return res.json({ success: true, data: { files: saved } });
-  } catch (err) {
-    logger.error('uploadCertificates error', err);
-    return res.status(500).json({ success: false, message: 'Upload failed' });
-  }
+  return uploadFiles({
+    req,
+    res,
+    folder: 'certificates',
+    allowedTypes: new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf']),
+    tags: ['certificate'],
+  });
+};
+
+exports.uploadMedia = async (req, res) => {
+  const folder = String(req.body?.folder || 'media')
+    .replace(/[^a-zA-Z0-9/_-]/g, '-')
+    .replace(/\\/g, '/')
+    .replace(/^\/+|\/+$/g, '') || 'media';
+
+  return uploadFiles({
+    req,
+    res,
+    folder,
+    allowedTypes: new Set([
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'video/mp4',
+      'video/webm',
+      'video/ogg',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+    ]),
+    tags: ['kelmah-media'],
+  });
 };
 
 

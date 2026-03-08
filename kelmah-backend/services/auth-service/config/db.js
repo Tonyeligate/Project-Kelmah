@@ -10,19 +10,52 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 let connectPromise = null;
 const DEFAULT_READY_TIMEOUT_MS = Number(process.env.DB_READY_TIMEOUT_MS || 15000);
 
+const normalizeBlankPhones = async (User) => {
+  const blankPhoneQueries = [
+    { phone: null },
+    { phone: '' },
+    { phone: /^\s+$/ },
+  ];
+
+  const result = await User.collection.updateMany(
+    { $or: blankPhoneQueries },
+    { $unset: { phone: '' } },
+  );
+
+  if (result.modifiedCount > 0) {
+    console.log(`🧼 Unset blank phone values on ${result.modifiedCount} user documents`);
+  }
+};
+
 const reconcileAuthIndexes = async () => {
   try {
     const { User } = require('../models');
-    const indexes = await User.collection.indexes();
-    const legacyUniquePhoneIndexes = indexes.filter((index) => index?.key?.phone === 1 && index.unique);
 
-    for (const index of legacyUniquePhoneIndexes) {
-      console.log(`🧹 Dropping legacy unique phone index: ${index.name}`);
+    await normalizeBlankPhones(User);
+
+    let indexes = await User.collection.indexes();
+    const stalePhoneIndexes = indexes.filter((index) => {
+      const isPhoneOnlyIndex = index?.key?.phone === 1 && Object.keys(index.key || {}).length === 1;
+      if (!isPhoneOnlyIndex) {
+        return false;
+      }
+
+      return index.unique === true || index.sparse !== true;
+    });
+
+    for (const index of stalePhoneIndexes) {
+      console.log(`🧹 Dropping stale phone index: ${index.name}`);
       await User.collection.dropIndex(index.name);
     }
 
+    indexes = await User.collection.indexes();
+
     const hasSparsePhoneIndex = indexes.some(
-      (index) => index?.key?.phone === 1 && index.sparse === true && index.unique !== true,
+      (index) =>
+        index?.key?.phone === 1
+        && Object.keys(index.key || {}).length === 1
+        && index.sparse === true
+        && index.unique !== true,
     );
 
     if (!hasSparsePhoneIndex) {
@@ -291,4 +324,5 @@ module.exports = {
   closeDB,
   mongoose,
   ensureConnection,
+  reconcileAuthIndexes,
 }; 

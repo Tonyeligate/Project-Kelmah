@@ -1,4 +1,9 @@
 import { api } from '../../../services/apiClient';
+import {
+  resolveMediaAssetUrl,
+  resolveMediaAssetUrls,
+  resolveProfileImageUrl,
+} from '../../common/utils/mediaAssets';
 
 // Use centralized jobServiceClient with auth/retry interceptors
 
@@ -42,6 +47,15 @@ const normalizeSkills = (skills) => {
     .filter(Boolean);
 };
 
+const normalizeJobMedia = (job) => {
+  if (!job || typeof job !== 'object') return [];
+
+  const rawImages = Array.isArray(job.images) ? job.images : [];
+  const rawAttachments = Array.isArray(job.attachments) ? job.attachments : [];
+
+  return resolveMediaAssetUrls(job.coverImage, job.coverImageMetadata, rawImages, rawAttachments);
+};
+
 const transformJobListItem = (job) => {
   if (!job) return null;
 
@@ -51,7 +65,13 @@ const transformJobListItem = (job) => {
     if (job.hirer && typeof job.hirer === 'object' && job.hirer.name) {
       return {
         name: job.hirer.name,
-        logo: job.hirer.logo || job.hirer.avatar || null,
+        logo:
+          resolveMediaAssetUrl([
+            job.hirer.logo,
+            job.hirer.avatar,
+            job.hirer.profilePicture,
+            job.hirer.profileImage,
+          ]) || null,
         verified: job.hirer.verified || job.hirer.isVerified || false,
         rating: job.hirer.rating || null,
         id: job.hirer._id || job.hirer.id || null,
@@ -101,6 +121,12 @@ const transformJobListItem = (job) => {
   };
 
   const employer = getEmployerInfo();
+  const imageGallery = normalizeJobMedia(job);
+  const resolvedCoverImage = resolveMediaAssetUrl([
+    job.coverImage,
+    job.coverImageMetadata,
+    imageGallery,
+  ]);
 
   return {
     id: job._id || job.id, // Handle MongoDB _id or regular id
@@ -141,7 +167,8 @@ const transformJobListItem = (job) => {
     verified: job.verified || employer.verified,
     paymentType: job.paymentType || 'fixed',
     duration: job.duration,
-    coverImage: job.coverImage || '',
+    coverImage: resolvedCoverImage || '',
+    imageGallery,
   };
 };
 
@@ -353,12 +380,33 @@ const jobsApi = {
 
       // Backend GET /api/jobs/:id returns { success, data: { ...job } }
       const raw = response.data?.data || response.data;
+      const normalizedImages = normalizeJobMedia(raw);
+      const normalizedHirer =
+        raw?.hirer && typeof raw.hirer === 'object'
+          ? {
+            ...raw.hirer,
+            id: raw.hirer.id || raw.hirer._id || null,
+            name:
+              normalizeTextValue(raw.hirer.name) ||
+              normalizeTextValue(raw.hirer.fullName) ||
+              [normalizeTextValue(raw.hirer.firstName), normalizeTextValue(raw.hirer.lastName)]
+                .filter(Boolean)
+                .join(' ') ||
+              normalizeTextValue(raw.hirer.email, 'Client'),
+            avatar: resolveProfileImageUrl(raw.hirer) || null,
+            companyName:
+              normalizeTextValue(raw.hirer.companyName) ||
+              normalizeTextValue(raw.hirer.company) ||
+              null,
+          }
+          : raw?.hirer;
       const normalized =
         raw && typeof raw === 'object'
           ? {
             ...raw,
+            hirer: normalizedHirer,
             created_at: raw.created_at || raw.createdAt || raw.postedDate,
-            hirer_name: raw.hirer_name || raw.hirer?.name,
+            hirer_name: raw.hirer_name || normalizedHirer?.name,
             postedDate:
               raw.postedDate ||
               (raw.createdAt ? new Date(raw.createdAt) : undefined),
@@ -373,6 +421,24 @@ const jobsApi = {
                   .map((s) => s.trim())
                   .filter(Boolean)
                 : [],
+            coverImage:
+              resolveMediaAssetUrl([
+                raw.coverImage,
+                raw.coverImageMetadata,
+                normalizedImages,
+              ]) || '',
+            images: normalizedImages,
+            imageGallery: normalizedImages,
+            clientProfile: normalizedHirer
+              ? {
+                id: normalizedHirer.id,
+                name: normalizedHirer.name,
+                avatar: normalizedHirer.avatar,
+                companyName: normalizedHirer.companyName,
+                email: normalizeTextValue(normalizedHirer.email),
+                verified: Boolean(normalizedHirer.verified || normalizedHirer.isVerified),
+              }
+              : null,
           }
           : raw;
       return normalized;

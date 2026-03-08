@@ -174,12 +174,18 @@ const DocumentVerification = () => {
       }
 
       let uploadedFileUrl = editingDocument?.fileUrl || null;
+      let uploadedFileMetadata = editingDocument?.metadata?.file || null;
       if (formData.file) {
         const uploadResult = await certificateService.uploadCertificateFile(
           formData.file,
           setUploadProgress,
         );
         uploadedFileUrl = uploadResult?.url || uploadedFileUrl;
+        uploadedFileMetadata = {
+          publicId: uploadResult?.publicId || null,
+          resourceType: uploadResult?.resourceType || null,
+          thumbnailUrl: uploadResult?.thumbnailUrl || null,
+        };
       }
 
       const payload = {
@@ -191,6 +197,7 @@ const DocumentVerification = () => {
         url: uploadedFileUrl,
         metadata: {
           description: formData.description,
+          file: uploadedFileMetadata,
         },
       };
 

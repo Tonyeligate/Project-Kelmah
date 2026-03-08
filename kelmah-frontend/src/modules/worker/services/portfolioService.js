@@ -1,4 +1,5 @@
 import { api } from '../../../services/apiClient';
+import fileUploadService from '../../common/services/fileUploadService';
 
 // FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
 const PROFILE_BASE = '/profile';
@@ -120,12 +121,7 @@ const portfolioService = {
    * @returns {Promise<Object>} - Upload response with URL
    */
   async uploadPortfolioImage(file) {
-    const response = await api.post(profilePath('/uploads/presign'), {
-      folder: 'portfolio',
-      filename: file.name,
-      contentType: file.type,
-    });
-    return response.data?.data || response.data;
+    return fileUploadService.uploadFile(file, 'portfolio', 'user');
   },
 
   /**

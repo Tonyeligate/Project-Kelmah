@@ -55,6 +55,7 @@ import {
 } from '../services/workerSlice';
 import { api } from '../../../services/apiClient';
 import { Helmet } from 'react-helmet-async';
+import fileUploadService from '../../common/services/fileUploadService';
 
 const Input = styled('input')({
   display: 'none',
@@ -221,7 +222,7 @@ const WorkerProfileEditPage = () => {
           pausedUntil: '',
         });
 
-        setImagePreview(profile.profileImageUrl);
+        setImagePreview(profile.profilePicture || profile.profileImageUrl || null);
         setInitialLoading(false);
       })
       .catch((err) => {
@@ -470,10 +471,21 @@ const WorkerProfileEditPage = () => {
       // Upload profile image if user selected a new one
       if (formData.profileImage instanceof File) {
         try {
-          const imgFormData = new FormData();
-          imgFormData.append('image', formData.profileImage);
-          const workerService = (await import('../services/workerService')).default;
-          await workerService.uploadProfileImage(id, imgFormData);
+          const uploadedImage = await fileUploadService.uploadFile(
+            formData.profileImage,
+            'profile-pictures',
+            'user',
+          );
+          profilePayload.profilePicture = uploadedImage.url;
+          profilePayload.profilePictureMetadata = {
+            publicId: uploadedImage.publicId || null,
+            resourceType: uploadedImage.resourceType || null,
+            thumbnailUrl: uploadedImage.thumbnailUrl || null,
+            width: uploadedImage.width || null,
+            height: uploadedImage.height || null,
+            duration: uploadedImage.duration || null,
+            format: uploadedImage.format || null,
+          };
         } catch (imgErr) {
           if (import.meta.env.DEV) console.error('Image upload failed:', imgErr);
           // Continue with profile save even if image upload fails

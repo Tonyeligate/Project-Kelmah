@@ -37,8 +37,15 @@ const MessageSchema = new Schema(
         name: String,
         fileUrl: String,
         s3Key: String,
+        publicId: String,
+        resourceType: String,
+        thumbnailUrl: String,
         fileType: String,
         fileSize: Number,
+        width: Number,
+        height: Number,
+        duration: Number,
+        format: String,
         uploadDate: Date,
         virusScan: {
           status: {

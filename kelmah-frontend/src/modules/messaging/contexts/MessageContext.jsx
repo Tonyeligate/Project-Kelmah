@@ -12,6 +12,7 @@ import { useAuth } from '../../auth/hooks/useAuth';
 // CRIT-08 FIX: Removed direct `import io` — reuse the global websocketService
 // singleton instead of creating a second Socket.IO connection.
 import websocketService from '../../../services/websocketService';
+import fileUploadService from '../../common/services/fileUploadService';
 import { normalizeAttachmentListVirusScan } from '../utils/virusScanUtils';
 
 const MessageContext = createContext(null);
@@ -46,6 +47,8 @@ const normalizeContextAttachment = (attachment = {}) => {
   const normalizedType =
     attachment.type === 'image' || String(mimeType).startsWith('image/')
       ? 'image'
+      : attachment.type === 'video' || String(mimeType).startsWith('video/')
+        ? 'video'
       : attachment.type || 'file';
 
   return {
@@ -59,6 +62,58 @@ const normalizeContextAttachment = (attachment = {}) => {
     name: attachment.name || attachment.fileName || attachment.filename || 'Attachment',
     size: attachment.size || attachment.fileSize || 0,
   };
+};
+
+const uploadPendingAttachments = async (attachments = [], conversationId) => {
+  const normalized = Array.isArray(attachments) ? attachments : [];
+
+  return Promise.all(
+    normalized.map(async (attachment) => {
+      const sourceFile =
+        typeof File !== 'undefined' && attachment?.file instanceof File
+          ? attachment.file
+          : null;
+      if (!sourceFile) {
+        return normalizeContextAttachment(attachment);
+      }
+
+      const uploaded = await fileUploadService.uploadFile(
+        sourceFile,
+        `attachments/${conversationId}`,
+        'messaging',
+      );
+
+      const mimeType =
+        attachment?.mimeType ||
+        attachment?.fileType ||
+        sourceFile.type ||
+        '';
+
+      return normalizeContextAttachment({
+        name: attachment?.name || sourceFile.name,
+        fileName: attachment?.name || sourceFile.name,
+        url: uploaded.url,
+        fileUrl: uploaded.fileUrl || uploaded.url,
+        type: String(mimeType).startsWith('image/')
+          ? 'image'
+          : String(mimeType).startsWith('video/')
+            ? 'video'
+            : 'file',
+        mimeType,
+        fileType: mimeType,
+        size: uploaded.size || sourceFile.size,
+        fileSize: uploaded.size || sourceFile.size,
+        uploadDate: new Date().toISOString(),
+        publicId: uploaded.publicId || null,
+        resourceType: uploaded.resourceType || null,
+        thumbnailUrl: uploaded.thumbnailUrl || null,
+        width: uploaded.width || null,
+        height: uploaded.height || null,
+        duration: uploaded.duration || null,
+        format: uploaded.format || null,
+      });
+    }),
+  );
 };
 
 const normalizeMessageAttachments = (message = {}) => {
@@ -678,18 +733,18 @@ export const MessageProvider = ({ children }) => {
 
   const sendMessage = useCallback(
     async (content, messageType = 'text', attachments = []) => {
-      const safeAttachments = normalizeAttachmentListVirusScan(attachments);
       if (!selectedConversation || !user) return;
 
       const currentUserId = user.id || user._id || user.userId;
       if (!currentUserId) return;
 
       const trimmedContent = typeof content === 'string' ? content.trim() : '';
-      if (!trimmedContent && safeAttachments.length === 0) return;
+      const rawAttachments = Array.isArray(attachments) ? attachments : [];
+      if (!trimmedContent && rawAttachments.length === 0) return;
 
       const normalizedMessageType =
         messageType === 'mixed'
-          ? safeAttachments.some((attachment) => {
+          ? rawAttachments.some((attachment) => {
             const mimeType =
               attachment?.type ||
               attachment?.mimeType ||
@@ -734,6 +789,14 @@ export const MessageProvider = ({ children }) => {
           setSelectedConversation(normalizedCreatedConversation);
           activeConversation = normalizedCreatedConversation;
         }
+
+        const uploadedAttachments = await uploadPendingAttachments(
+          attachments,
+          activeConversation.id,
+        );
+        const safeAttachments = normalizeAttachmentListVirusScan(
+          uploadedAttachments,
+        );
 
         // Use WebSocket for real-time messaging if available
         if (socket && isConnected) {

@@ -169,7 +169,9 @@ const EnhancedMessagingPage = () => {
   // Memoize file preview URLs to avoid creating new blob URLs on every render
   const filePreviewUrls = useMemo(
     () => selectedFiles.map((file) =>
-      file.type.startsWith('image/') ? URL.createObjectURL(file) : null
+      (file.type.startsWith('image/') || file.type.startsWith('video/'))
+        ? URL.createObjectURL(file)
+        : null
     ),
     [selectedFiles],
   );
@@ -407,7 +409,11 @@ const EnhancedMessagingPage = () => {
       hasAttachments && selectedFiles.every((file) => file.type.startsWith('image/'));
     const type = hasAttachments ? (hasOnlyImages ? 'image' : 'file') : 'text';
     const attachments = selectedFiles.map((file) => ({
-      type: file.type.startsWith('image/') ? 'image' : 'file',
+      type: file.type.startsWith('image/')
+        ? 'image'
+        : file.type.startsWith('video/')
+          ? 'video'
+          : 'file',
       mimeType: file.type,
       file,
       name: file.name,
@@ -1337,6 +1343,9 @@ const EnhancedMessagingPage = () => {
                                     const isImageAttachment =
                                       attachment.type === 'image' ||
                                       String(attachmentMime).startsWith('image/');
+                                    const isVideoAttachment =
+                                      attachment.type === 'video' ||
+                                      String(attachmentMime).startsWith('video/');
                                     const displayName =
                                       attachment.name ||
                                       attachment.fileName ||
@@ -1358,6 +1367,21 @@ const EnhancedMessagingPage = () => {
                                         cursor: 'pointer',
                                       }}
                                     />
+                                      );
+                                    }
+
+                                    if (isVideoAttachment && attachmentUrl) {
+                                      return (
+                                        <video
+                                          src={attachmentUrl}
+                                          controls
+                                          style={{
+                                            maxWidth: '100%',
+                                            maxHeight: '240px',
+                                            borderRadius: '8px',
+                                            background: '#000',
+                                          }}
+                                        />
                                       );
                                     }
 
@@ -1513,6 +1537,17 @@ const EnhancedMessagingPage = () => {
                           borderRadius: '4px',
                         }}
                       />
+                    ) : file.type.startsWith('video/') ? (
+                      <video
+                        src={filePreviewUrls[index] || ''}
+                        style={{
+                          width: '100%',
+                          height: '60px',
+                          objectFit: 'cover',
+                          borderRadius: '4px',
+                          background: '#000',
+                        }}
+                      />
                     ) : (
                       <Stack direction="row" alignItems="center" spacing={1}>
                         <FileIcon sx={{ color: 'primary.main' }} />
@@ -1542,7 +1577,7 @@ const EnhancedMessagingPage = () => {
               ref={fileInputRef}
               type="file"
               multiple
-              accept="image/*,.pdf,.doc,.docx,.txt"
+              accept="image/*,video/*,.pdf,.doc,.docx,.txt"
               style={{ display: 'none' }}
               onChange={handleFileSelect}
             />
@@ -2190,6 +2225,7 @@ const EnhancedMessagingPage = () => {
                   ref={fileInputRef}
                   type="file"
                   multiple
+                  accept="image/*,video/*,.pdf,.doc,.docx,.txt"
                   hidden
                   onChange={handleFileSelect}
                 />

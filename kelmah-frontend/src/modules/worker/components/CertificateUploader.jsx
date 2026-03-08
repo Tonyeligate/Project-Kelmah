@@ -155,9 +155,14 @@ const CertificateUploader = ({ onCertificatesChange }) => {
         setFormData((prev) => ({
           ...prev,
           file,
-          fileUrl: uploadResult.data.url,
+          fileUrl: uploadResult.url,
           fileName: file.name,
           fileSize: file.size,
+          fileMetadata: {
+            publicId: uploadResult.publicId || null,
+            resourceType: uploadResult.resourceType || null,
+            thumbnailUrl: uploadResult.thumbnailUrl || null,
+          },
         }));
 
         setUploadProgress({});
@@ -193,6 +198,10 @@ const CertificateUploader = ({ onCertificatesChange }) => {
         workerId: user?.id,
         skills: formData.skills.join(','),
         status: 'pending', // Default status
+        metadata: {
+          ...(formData.metadata || {}),
+          file: formData.fileMetadata || null,
+        },
       };
 
       if (isEditing && selectedCertificate) {

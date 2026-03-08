@@ -423,7 +423,13 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
       >
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Avatar
-              src={worker.profileImage}
+              src={
+                worker.profilePicture ||
+                worker.profileImage ||
+                worker.avatar ||
+                worker.photo ||
+                null
+              }
               alt={worker.name}
               sx={{ width: { xs: 48, md: 56 }, height: { xs: 48, md: 56 }, mr: 2 }}
             />

@@ -1,20 +1,17 @@
 import { api } from '../../../services/apiClient';
 
-// FIXED: Removed /api prefix - apiClient.baseURL already includes '/api'
 const SERVICE_TARGETS = {
   user: {
-    presign: '/profile/uploads/presign',
-    directUpload: '/profile/uploads',
+    upload: '/profile/media/upload',
   },
   messaging: {
-    presign: '/uploads/presign',
-    directUpload: (folder = 'messages') =>
+    upload: (folder = 'messages') =>
       `/messages/${folder.replace(/^attachments\//, '')}/attachments`,
   },
 };
 
 const MAX_FILE_SIZE =
-  Number(import.meta.env.VITE_S3_MAX_SIZE_MB || 25) * 1024 * 1024;
+  Number(import.meta.env.VITE_MEDIA_MAX_SIZE_MB || import.meta.env.VITE_S3_MAX_SIZE_MB || 25) * 1024 * 1024;
 const ALLOWED_FILE_TYPES = {
   images: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   documents: [
@@ -70,7 +67,7 @@ const validateFile = (file) => {
 };
 
 const fileUploadService = {
-  // Upload a single file via S3 presign
+  // Upload a single file via backend media endpoints
   uploadFile: async (file, folder = 'messages', service = 'messaging') => {
     const validation = validateFile(file);
     if (!validation.valid) {
@@ -78,50 +75,34 @@ const fileUploadService = {
     }
     try {
       const targets = SERVICE_TARGETS[service] || SERVICE_TARGETS.messaging;
-      const presignPath =
-        typeof targets.presign === 'function'
-          ? targets.presign(folder)
-          : targets.presign;
-      const response = await api.post(presignPath, {
-        folder,
-        filename: file.name,
-        contentType: file.type,
-      });
-      const payload = response?.data?.data || response?.data || response;
-      const { putUrl, getUrl, maxSizeMb } = payload;
-      if (maxSizeMb && file.size > maxSizeMb * 1024 * 1024) {
-        throw new Error(`File exceeds max size ${maxSizeMb}MB`);
+      const uploadPath =
+        typeof targets.upload === 'function'
+          ? targets.upload(folder)
+          : targets.upload;
+      const form = new FormData();
+      form.append('files', file);
+      if (service === 'user' && folder) {
+        form.append('folder', folder);
       }
-      // If presign is disabled on backend, fallback to local direct upload route
-      if (!putUrl || !getUrl) {
-        // Backend will store locally when ENABLE_S3_UPLOADS !== 'true'
-        const form = new FormData();
-        form.append('files', file);
-        const directUploadPath =
-          typeof targets.directUpload === 'function'
-            ? targets.directUpload(folder)
-            : targets.directUpload;
-        const directUploadResponse = await api.post(directUploadPath, form, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        const uploaded =
-          directUploadResponse.data?.data?.files?.[0] ||
-          directUploadResponse.data?.files?.[0];
-        return (
-          uploaded || {
-            url: directUploadResponse.data?.url,
-            name: file.name,
-            size: file.size,
-            type: file.type,
-          }
-        );
-      }
-      await fetch(putUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
-        body: file,
+
+      const response = await api.post(uploadPath, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      return { url: getUrl, name: file.name, size: file.size, type: file.type };
+
+      const uploaded =
+        response.data?.data?.files?.[0] ||
+        response.data?.files?.[0] ||
+        response.data?.data ||
+        response.data;
+
+      return {
+        ...uploaded,
+        url: uploaded?.url || uploaded?.secureUrl || uploaded?.fileUrl || null,
+        fileUrl: uploaded?.fileUrl || uploaded?.secureUrl || uploaded?.url || null,
+        name: uploaded?.name || file.name,
+        size: uploaded?.bytes || uploaded?.size || file.size,
+        type: uploaded?.fileType || uploaded?.resourceType || file.type,
+      };
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error uploading file:', error);
       throw error;

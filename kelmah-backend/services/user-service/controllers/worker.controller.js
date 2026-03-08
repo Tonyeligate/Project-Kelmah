@@ -3322,6 +3322,8 @@ class WorkerController {
         location,
         phone,
         portfolio,
+        profilePicture,
+        profilePictureMetadata,
       } = req.body;
 
       // Update basic user fields
@@ -3346,9 +3348,12 @@ class WorkerController {
       if (Array.isArray(languages)) user.workerProfile.languages = languages;
       if (Array.isArray(portfolio)) user.workerProfile.portfolio = portfolio;
 
-      // Handle profile image if provided (FormData)
-      if (req.file) {
-        user.profileImageUrl = req.file.path || req.file.url;
+      if (typeof profilePicture === 'string' && profilePicture.trim()) {
+        user.profilePicture = profilePicture.trim();
+      }
+
+      if (profilePictureMetadata && typeof profilePictureMetadata === 'object') {
+        user.profilePictureMetadata = profilePictureMetadata;
       }
 
       // Save the updated user
@@ -3362,7 +3367,8 @@ class WorkerController {
         email: user.email,
         phone: user.phone,
         role: user.role,
-        profileImageUrl: user.profileImageUrl,
+        profileImageUrl: user.profilePicture || null,
+        profilePicture: user.profilePicture || null,
         ...user.workerProfile,
       };
 

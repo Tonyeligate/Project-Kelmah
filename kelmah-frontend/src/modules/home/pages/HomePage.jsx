@@ -11,6 +11,8 @@ import {
   useMediaQuery,
   Avatar,
   Rating,
+  Chip,
+  Skeleton,
   TextField,
   InputAdornment,
 } from '@mui/material';
@@ -35,7 +37,12 @@ import {
 } from '@mui/icons-material';
 import { alpha } from '@mui/material/styles';
 import jobsApi from '../../jobs/services/jobsService';
+import workerService from '../../worker/services/workerService';
 import { Helmet } from 'react-helmet-async';
+import {
+  resolveMediaAssetUrl,
+  resolveProfileImageUrl,
+} from '../../common/utils/mediaAssets';
 
 /* =================================================================
  * DESIGN-SYSTEM PRIMITIVES
@@ -160,6 +167,46 @@ const BTN_SX = {
   fontSize: '0.95rem',
   fontWeight: 600,
   textTransform: 'none',
+};
+
+const normalizeFeaturedWorker = (worker = {}) => ({
+  id: worker.id || worker._id || worker.userId || worker.email || worker.name,
+  name:
+    worker.name ||
+    [worker.firstName, worker.lastName].filter(Boolean).join(' ') ||
+    'Skilled Professional',
+  title:
+    worker.title ||
+    worker.profession ||
+    (Array.isArray(worker.specializations) ? worker.specializations[0] : '') ||
+    'Trusted Worker',
+  location: worker.location || worker.city || 'Ghana',
+  rating: Number(worker.rating ?? worker.averageRating ?? 0),
+  reviewCount: Number(worker.reviewCount ?? worker.totalReviews ?? 0),
+  profileImage: resolveProfileImageUrl(worker) || null,
+  skills: Array.isArray(worker.skills)
+    ? worker.skills
+        .map((skill) =>
+          typeof skill === 'string'
+            ? skill
+            : skill?.name || skill?.skillName || skill?.label || '',
+        )
+        .filter(Boolean)
+    : Array.isArray(worker.specializations)
+      ? worker.specializations.filter(Boolean)
+      : [],
+  isVerified: Boolean(
+    worker.isVerified || worker.verified || worker.verification?.isVerified,
+  ),
+});
+
+const extractFeaturedWorkers = (response) => {
+  const payload = response?.data?.data || response?.data || response || {};
+  const rawWorkers = Array.isArray(payload)
+    ? payload
+    : payload?.workers || payload?.results || payload?.items || [];
+
+  return rawWorkers.map((worker) => normalizeFeaturedWorker(worker));
 };
 
 /* =================================================================
@@ -608,6 +655,241 @@ const TestimonialsSection = () => (
   </Section>
 );
 
+const FeaturedWorkersSection = () => {
+  const navigate = useNavigate();
+  const [workers, setWorkers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadWorkers = async () => {
+      try {
+        const response = await workerService.getWorkers({ limit: 3, sortBy: 'relevance' });
+        if (cancelled) return;
+        setWorkers(extractFeaturedWorkers(response).slice(0, 3));
+      } catch (_) {
+        if (!cancelled) {
+          setWorkers([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadWorkers();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!loading && workers.length === 0) {
+    return null;
+  }
+
+  return (
+    <Section>
+      <Reveal>
+        <SectionHeader
+          title="Meet skilled professionals ready to work"
+          subtitle="Live profiles from the marketplace help hirers trust what they see before they even start a conversation."
+        />
+      </Reveal>
+
+      <Grid container spacing={3}>
+        {(loading ? Array.from({ length: 3 }) : workers).map((worker, index) => (
+          <Grid item xs={12} md={4} key={worker?.id || `featured-worker-${index}`}>
+            <Reveal delay={index * 0.08}>
+              <Card sx={{ ...CARD_SX, overflow: 'hidden' }}>
+                {loading ? (
+                  <>
+                    <Box sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Skeleton variant="circular" width={72} height={72} />
+                      <Box sx={{ flex: 1 }}>
+                        <Skeleton variant="text" width="70%" height={28} />
+                        <Skeleton variant="text" width="55%" height={22} />
+                        <Skeleton variant="text" width="45%" height={20} />
+                      </Box>
+                    </Box>
+                    <Box sx={{ px: 3, pb: 3 }}>
+                      <Skeleton variant="text" width="100%" height={24} />
+                      <Skeleton variant="text" width="85%" height={24} />
+                    </Box>
+                  </>
+                ) : (
+                  <>
+                    <Box sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Avatar
+                        src={worker.profileImage}
+                        alt={worker.name}
+                        sx={{ width: 72, height: 72, fontWeight: 700 }}
+                      >
+                        {worker.name.charAt(0)}
+                      </Avatar>
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Stack direction="row" spacing={1} alignItems="center" useFlexGap flexWrap="wrap">
+                          <Typography variant="h6" sx={{ fontWeight: 700 }} noWrap>
+                            {worker.name}
+                          </Typography>
+                          {worker.isVerified ? (
+                            <Chip label="Verified" size="small" color="success" variant="outlined" />
+                          ) : null}
+                        </Stack>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.75 }}>
+                          {worker.title}
+                        </Typography>
+                        <Stack direction="row" spacing={1} alignItems="center" useFlexGap flexWrap="wrap">
+                          <Rating value={worker.rating} precision={0.5} readOnly size="small" />
+                          <Typography variant="body2" color="text.secondary">
+                            {worker.reviewCount} review{worker.reviewCount === 1 ? '' : 's'}
+                          </Typography>
+                        </Stack>
+                      </Box>
+                    </Box>
+
+                    <Box sx={{ px: 3, pb: 3 }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                        {worker.location}
+                      </Typography>
+                      <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 2 }}>
+                        {worker.skills.slice(0, 3).map((skill) => (
+                          <Chip key={`${worker.id}-${skill}`} label={skill} size="small" variant="outlined" />
+                        ))}
+                      </Stack>
+                      <Button
+                        variant="outlined"
+                        fullWidth
+                        onClick={() => navigate(`/worker-profile/${worker.id}`)}
+                        sx={{ textTransform: 'none', fontWeight: 600 }}
+                      >
+                        View profile
+                      </Button>
+                    </Box>
+                  </>
+                )}
+              </Card>
+            </Reveal>
+          </Grid>
+        ))}
+      </Grid>
+    </Section>
+  );
+};
+
+const FeaturedJobsSection = () => {
+  const navigate = useNavigate();
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadJobs = async () => {
+      try {
+        const response = await jobsApi.getJobs({ limit: 3, page: 1 });
+        if (cancelled) return;
+        setJobs((response?.jobs || response?.data || []).slice(0, 3));
+      } catch (_) {
+        if (!cancelled) {
+          setJobs([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadJobs();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!loading && jobs.length === 0) {
+    return null;
+  }
+
+  return (
+    <Section alt>
+      <Reveal>
+        <SectionHeader
+          title="Jobs with real project context"
+          subtitle="Visual job posts help workers understand the scope faster and respond with better bids."
+        />
+      </Reveal>
+
+      <Grid container spacing={3}>
+        {(loading ? Array.from({ length: 3 }) : jobs).map((job, index) => {
+          const imageUrl = resolveMediaAssetUrl(job?.coverImage) || '';
+
+          return (
+            <Grid item xs={12} md={4} key={job?.id || `featured-job-${index}`}>
+              <Reveal delay={index * 0.08}>
+                <Card sx={{ ...CARD_SX, p: 0, overflow: 'hidden', cursor: loading ? 'default' : 'pointer' }} onClick={loading ? undefined : () => navigate(`/jobs/${job.id}`)}>
+                  {loading ? (
+                    <>
+                      <Skeleton variant="rectangular" height={180} />
+                      <Box sx={{ p: 3 }}>
+                        <Skeleton variant="text" width="70%" height={30} />
+                        <Skeleton variant="text" width="100%" height={24} />
+                        <Skeleton variant="text" width="85%" height={24} />
+                      </Box>
+                    </>
+                  ) : (
+                    <>
+                      <Box
+                        sx={{
+                          height: 180,
+                          background: imageUrl
+                            ? `linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.55) 100%), url(${imageUrl})`
+                            : 'linear-gradient(135deg, rgba(212,175,55,0.18) 0%, rgba(25,118,210,0.12) 100%)',
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          display: 'flex',
+                          alignItems: 'flex-end',
+                          p: 2,
+                        }}
+                      >
+                        <Chip
+                          label={job.category || 'Open job'}
+                          size="small"
+                          sx={{
+                            bgcolor: alpha('#000', 0.55),
+                            color: '#fff',
+                            fontWeight: 700,
+                          }}
+                        />
+                      </Box>
+                      <Box sx={{ p: 3 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                          {job.title}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, minHeight: 44 }}>
+                          {job.description}
+                        </Typography>
+                        <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 2 }}>
+                          <Chip label={job.location || 'Ghana'} size="small" variant="outlined" />
+                          <Chip label={typeof job.budget === 'object' ? 'Budget set' : `GH₵${job.budget || 'TBD'}`} size="small" variant="outlined" />
+                        </Stack>
+                        <Button variant="text" sx={{ p: 0, textTransform: 'none', fontWeight: 700 }}>
+                          View job details
+                        </Button>
+                      </Box>
+                    </>
+                  )}
+                </Card>
+              </Reveal>
+            </Grid>
+          );
+        })}
+      </Grid>
+    </Section>
+  );
+};
+
 // ─── CTA BANNER ───────────────────────────────────────────
 const CTASection = () => {
   const navigate = useNavigate();
@@ -684,6 +966,8 @@ const HomePage = () => (
     <Helmet><title>Kelmah — Find Skilled Workers in Ghana</title></Helmet>
     <HeroSection />
     <CategoriesSection />
+    <FeaturedWorkersSection />
+    <FeaturedJobsSection />
     <HowItWorksSection />
     <TestimonialsSection />
     <CTASection />

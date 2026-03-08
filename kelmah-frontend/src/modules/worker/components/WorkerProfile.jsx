@@ -97,6 +97,10 @@ import TextField from '@mui/material/TextField';
 import ReviewSystem from '../../../components/reviews/ReviewSystem';
 import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import reviewService from '../../reviews/services/reviewService';
+import {
+  resolveMediaAssetUrl,
+  resolveProfileImageUrl,
+} from '../../common/utils/mediaAssets';
 
 const Input = styled('input')({
   display: 'none',
@@ -207,6 +211,30 @@ function WorkerProfile({ workerId: workerIdProp }) {
   const [editingAvailability, setEditingAvailability] = useState(false);
   const [availabilityDraft, setAvailabilityDraft] = useState(null);
   const [feedbackMessage, setFeedbackMessage] = useState('');
+
+  const getPortfolioPreviewImage = useCallback((item) => {
+    return (
+      resolveMediaAssetUrl([
+        item?.image,
+        item?.mainImage,
+        item?.thumbnailUrl,
+        item?.images,
+      ]) || null
+    );
+  }, []);
+
+  const getCertificatePreviewImage = useCallback((certificate) => {
+    return (
+      resolveMediaAssetUrl(certificate?.metadata?.file, {
+        preferThumbnail: true,
+      }) ||
+      resolveMediaAssetUrl([
+        certificate?.thumbnailUrl,
+        certificate?.url,
+      ]) ||
+      null
+    );
+  }, []);
 
   const isOwner =
     authUser?.userId && resolvedWorkerId
@@ -510,6 +538,19 @@ function WorkerProfile({ workerId: workerIdProp }) {
     );
   }
 
+  const profileAvatarUrl =
+    resolveProfileImageUrl({
+      profilePicture: profile.profile_picture,
+      profileImage: profile.profilePicture,
+    }) || null;
+  const profileHeroImage =
+    resolveMediaAssetUrl([
+      profile.bannerImage,
+      profile.profile_picture,
+      profile.profilePicture,
+      portfolio[0],
+    ]) || '';
+
   const renderProfileHeader = () => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -519,7 +560,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
       <GlassCard sx={{ mb: 4, overflow: 'visible', position: 'relative' }}>
         <Box
           sx={{
-            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+            background: profileHeroImage
+              ? `linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.6) 100%), url(${profileHeroImage})`
+              : `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
             height: 200,
             position: 'relative',
             borderRadius: '16px 16px 0 0',
@@ -602,7 +647,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
               }
             >
               <ProfileAvatar
-                src={profile.profile_picture}
+                src={profileAvatarUrl}
                 alt={`${profile.user?.firstName} ${profile.user?.lastName}`}
               >
                 {profile.user?.firstName?.charAt(0)}
@@ -673,6 +718,19 @@ function WorkerProfile({ workerId: workerIdProp }) {
               {profile.bio ||
                 'Professional craftsperson dedicated to delivering quality work.'}
             </Typography>
+
+            <Stack
+              direction="row"
+              spacing={1}
+              justifyContent="center"
+              flexWrap="wrap"
+              useFlexGap
+              sx={{ mb: 3 }}
+            >
+              <Chip label={`${portfolio.length} portfolio item${portfolio.length === 1 ? '' : 's'}`} variant="outlined" />
+              <Chip label={`${certificates.length} certificate${certificates.length === 1 ? '' : 's'}`} variant="outlined" />
+              {profileHeroImage ? <Chip label="Visual profile ready" color="success" variant="outlined" /> : null}
+            </Stack>
 
             <Stack
               direction={{ xs: 'column', sm: 'row' }}
@@ -1200,11 +1258,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
                     setPortfolioDialogOpen(true);
                   }}
                 >
-                  {item.image ? (
+                  {getPortfolioPreviewImage(item) ? (
                     <CardMedia
                       component="img"
                       height="200"
-                      image={item.image}
+                      image={getPortfolioPreviewImage(item)}
                       alt={item.title}
                       onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
                     />
@@ -1512,34 +1570,69 @@ function WorkerProfile({ workerId: workerIdProp }) {
 
         {certificates.length > 0 ? (
           <Grid container spacing={2}>
-            {certificates.map((cert, index) => (
-              <Grid
-                item
-                xs={12}
-                md={6}
-                key={cert.id || cert._id || cert.name || `certificate-${index}`}
-              >
-                <Card variant="outlined" sx={{ p: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Avatar sx={{ bgcolor: 'primary.main' }}>
-                      <AwardIcon />
-                    </Avatar>
-                    <Box sx={{ flexGrow: 1 }}>
-                      <Typography variant="h6" fontWeight={600}>
-                        {cert.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {cert.issuing_organization}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Issued: {cert.issue_date ? new Date(cert.issue_date).toLocaleDateString() : 'N/A'}
-                      </Typography>
+            {certificates.map((cert, index) => {
+              const certificatePreview = getCertificatePreviewImage(cert);
+
+              return (
+                <Grid
+                  item
+                  xs={12}
+                  md={6}
+                  key={cert.id || cert._id || cert.name || `certificate-${index}`}
+                >
+                  <Card variant="outlined" sx={{ p: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      {certificatePreview ? (
+                        <Box
+                          component="img"
+                          src={certificatePreview}
+                          alt={cert.name || 'Certificate preview'}
+                          sx={{
+                            width: 72,
+                            height: 72,
+                            borderRadius: 2,
+                            objectFit: 'cover',
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            flexShrink: 0,
+                          }}
+                        />
+                      ) : (
+                        <Avatar sx={{ bgcolor: 'primary.main', width: 72, height: 72 }}>
+                          <AwardIcon />
+                        </Avatar>
+                      )}
+                      <Box sx={{ flexGrow: 1 }}>
+                        <Typography variant="h6" fontWeight={600}>
+                          {cert.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {cert.issuing_organization}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Issued: {cert.issue_date ? new Date(cert.issue_date).toLocaleDateString() : 'N/A'}
+                        </Typography>
+                      </Box>
+                      {cert.is_verified && <VerifiedIcon color="success" />}
                     </Box>
-                    {cert.is_verified && <VerifiedIcon color="success" />}
-                  </Box>
-                </Card>
-              </Grid>
-            ))}
+                    {cert.url && (
+                      <Box sx={{ mt: 1.5, display: 'flex', justifyContent: 'flex-end' }}>
+                        <Button
+                          component="a"
+                          href={cert.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          size="small"
+                          variant="outlined"
+                        >
+                          View proof
+                        </Button>
+                      </Box>
+                    )}
+                  </Card>
+                </Grid>
+              );
+            })}
           </Grid>
         ) : (
           <Box sx={{ textAlign: 'center', py: 4 }}>
@@ -1648,9 +1741,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
               </DialogTitle>
               <DialogContent>
                 <Box sx={{ mb: 2 }}>
-                  {selectedPortfolioItem.image ? (
+                  {getPortfolioPreviewImage(selectedPortfolioItem) ? (
                     <img
-                      src={selectedPortfolioItem.image}
+                      src={getPortfolioPreviewImage(selectedPortfolioItem)}
                       alt={selectedPortfolioItem.title}
                       style={{ width: '100%', height: 'auto', borderRadius: 8 }}
                     />

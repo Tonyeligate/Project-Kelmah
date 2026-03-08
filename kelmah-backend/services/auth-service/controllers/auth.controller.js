@@ -13,6 +13,7 @@ const crypto = require("crypto");
 const secure = require('../utils/jwt-secure');
 // MongoDB operators used directly in queries (no Op import needed)
 const config = require("../config");
+const { reconcileAuthIndexes } = require("../config/db");
 const { generateOTP } = require("../utils/otp");
 const deviceUtil = require("../utils/device");
 const sessionUtil = require("../utils/session");
@@ -25,6 +26,50 @@ try {
 } catch (_) {
   // Optional; controller methods will guard usage
 }
+
+const BLANK_PHONE_SENTINELS = new Set(['', 'null', 'undefined', 'n/a', 'na', 'none']);
+
+const normalizeOptionalPhone = (phone) => {
+  if (typeof phone !== 'string') {
+    return '';
+  }
+
+  const normalized = phone.trim();
+  if (!normalized) {
+    return '';
+  }
+
+  return BLANK_PHONE_SENTINELS.has(normalized.toLowerCase()) ? '' : normalized;
+};
+
+const isDuplicatePhoneError = (error) => {
+  if (!error || error.code !== 11000) {
+    return false;
+  }
+
+  if (error.keyPattern?.phone) {
+    return true;
+  }
+
+  return /phone/i.test(error.message || '');
+};
+
+const createUserWithPhoneRecovery = async (createPayload, normalizedPhone) => {
+  try {
+    return await User.create(createPayload);
+  } catch (error) {
+    if (!isDuplicatePhoneError(error) || normalizedPhone) {
+      throw error;
+    }
+
+    logger.warn('Registration hit stale phone index state; reconciling indexes and retrying once', {
+      email: createPayload.email,
+    });
+
+    await reconcileAuthIndexes();
+    return User.create(createPayload);
+  }
+};
 
 /**
  * Register a new user
@@ -54,9 +99,7 @@ exports.register = async (req, res, next) => {
       return next(new AppError("Email already in use", 400));
     }
 
-    const normalizedPhone = typeof phone === 'string'
-      ? phone.trim()
-      : '';
+    const normalizedPhone = normalizeOptionalPhone(phone);
 
     // Create user with improved error handling
     // Omit phone completely when it is blank so sparse phone indexes do not
@@ -73,7 +116,7 @@ exports.register = async (req, res, next) => {
       createPayload.phone = normalizedPhone;
     }
 
-    const newUser = await User.create(createPayload);
+    const newUser = await createUserWithPhoneRecovery(createPayload, normalizedPhone);
 
     // Generate a verification token (raw) and store hashed version on user
     const rawToken = newUser.generateVerificationToken();

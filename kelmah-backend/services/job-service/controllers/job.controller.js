@@ -23,6 +23,12 @@ const {
 const { ensureConnection, ensureMongoReady, mongoose } = require('../config/db');
 const { transformJobsForFrontend, transformJobForFrontend } = require('../utils/jobTransform');
 const { createLogger } = require('../utils/logger');
+const {
+  hasCloudinaryConfig,
+  uploadDataUri,
+  toMediaAsset,
+  isDataUri,
+} = require('../../../shared/utils/cloudinary');
 
 const jobLogger = createLogger('job-controller');
 
@@ -98,6 +104,29 @@ const summarizeJobPayload = (body = {}) => {
 
 const READY_REUSE_WINDOW_MS = Number(process.env.DB_READY_REUSE_MS || 2000);
 
+const normalizeJobCoverImage = async (body = {}, userId) => {
+  if (!body.coverImage || !isDataUri(body.coverImage) || !hasCloudinaryConfig()) {
+    return body;
+  }
+
+  const uploaded = await uploadDataUri({
+    dataUri: body.coverImage,
+    folder: 'jobs/covers',
+    filename: `job-cover-${userId || 'unknown'}-${Date.now()}`,
+    resourceType: 'image',
+    tags: ['job-cover'],
+    context: {
+      userId: String(userId || 'unknown'),
+    },
+  });
+
+  return {
+    ...body,
+    coverImage: uploaded.secure_url,
+    coverImageMetadata: toMediaAsset(uploaded),
+  };
+};
+
 /**
  * Create a new job
  * @route POST /api/jobs
@@ -123,7 +152,8 @@ const createJob = async (req, res, next) => {
       'duration', 'location', 'locationType', 'skills', 'requirements',
       'bidding', 'locationDetails', 'region', 'district', 'locationRegion',
       'locationDistrict', 'coordinates', 'experienceLevel', 'visibility',
-      'status', 'tags', 'attachments', 'urgency', 'deadline'
+      'status', 'tags', 'attachments', 'urgency', 'deadline', 'coverImage',
+      'coverImageMetadata'
     ];
     const body = {};
     for (const key of JOB_CREATE_FIELDS) {
@@ -173,6 +203,8 @@ const createJob = async (req, res, next) => {
     if (Array.isArray(body.skills)) {
       body.skills = body.skills.map(String);
     }
+
+    Object.assign(body, await normalizeJobCoverImage(body, req.user?.id));
 
     // Valid enum values for requirements.primarySkills and secondarySkills
     const VALID_PRIMARY_SKILLS = ["Plumbing", "Electrical", "Carpentry", "Construction", "Painting", "Welding", "Masonry", "HVAC", "Roofing", "Flooring"];
@@ -1411,7 +1443,7 @@ const updateJob = async (req, res, next) => {
     // Normalize incoming payload similarly to create — SECURITY: only allow safe fields
     const JOB_UPDATE_ALLOWED = ['title', 'description', 'category', 'skills', 'budget', 'currency',
       'paymentType', 'duration', 'location', 'locationType', 'urgency', 'visibility',
-      'requirements', 'tags', 'deadline', 'attachments'];
+      'requirements', 'tags', 'deadline', 'attachments', 'coverImage', 'coverImageMetadata'];
     const body = {};
     for (const key of JOB_UPDATE_ALLOWED) {
       if (key in req.body) body[key] = req.body[key];
@@ -1443,6 +1475,8 @@ const updateJob = async (req, res, next) => {
     if (Array.isArray(body.skills)) {
       body.skills = body.skills.map(String);
     }
+
+    Object.assign(body, await normalizeJobCoverImage(body, req.user?.id));
 
     // Update job
     job = await Job.findByIdAndUpdate(req.params.id, body, {

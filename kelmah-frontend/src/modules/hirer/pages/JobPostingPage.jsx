@@ -53,6 +53,7 @@ import {
   selectHirerLoading,
   selectHirerError,
 } from '../services/hirerSlice';
+import fileUploadService from '../../common/services/fileUploadService';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
 import { Z_INDEX, STICKY_CTA_HEIGHT, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
@@ -236,6 +237,7 @@ const JobPostingPage = () => {
     coverImage: '',
   });
   const [coverImagePreview, setCoverImagePreview] = useState('');
+  const [coverImageFile, setCoverImageFile] = useState(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
@@ -547,17 +549,19 @@ const JobPostingPage = () => {
     const reader = new FileReader();
     reader.onload = () => {
       setCoverImagePreview(reader.result);
-      setFormData((prev) => ({ ...prev, coverImage: reader.result }));
+      setCoverImageFile(file);
+      setFormData((prev) => ({ ...prev, coverImage: file.name }));
     };
     reader.readAsDataURL(file);
   };
 
   const handleRemoveCoverImage = () => {
     setCoverImagePreview('');
+    setCoverImageFile(null);
     setFormData((prev) => ({ ...prev, coverImage: '' }));
   };
 
-  const handleSubmit = (asDraft = false) => {
+  const handleSubmit = async (asDraft = false) => {
     if (!asDraft) {
       const requiredSteps = [0, 1, 2, 3];
       const collectedErrors = requiredSteps.reduce((acc, step) => {
@@ -597,6 +601,23 @@ const JobPostingPage = () => {
       ? `${normalizedDescription}\n\nRequirements:\n${requirementsText}`
       : normalizedDescription;
 
+    let uploadedCoverImage = null;
+    if (coverImageFile instanceof File) {
+      try {
+        uploadedCoverImage = await fileUploadService.uploadFile(
+          coverImageFile,
+          'jobs/covers',
+          'user',
+        );
+      } catch (uploadError) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          submit: uploadError?.message || 'Failed to upload the cover image. Please try again.',
+        }));
+        return;
+      }
+    }
+
     const payload = {
       title: formData.title,
       description: fullDescription,
@@ -625,7 +646,20 @@ const JobPostingPage = () => {
       },
       visibility: formData.visibility || 'public',
       status: asDraft ? 'draft' : 'open',
-      ...(formData.coverImage && { coverImage: formData.coverImage }),
+      ...((uploadedCoverImage?.url || (!coverImageFile && formData.coverImage)) && {
+        coverImage: uploadedCoverImage?.url || formData.coverImage,
+      }),
+      ...(uploadedCoverImage && {
+        coverImageMetadata: {
+          publicId: uploadedCoverImage.publicId || null,
+          resourceType: uploadedCoverImage.resourceType || null,
+          thumbnailUrl: uploadedCoverImage.thumbnailUrl || null,
+          width: uploadedCoverImage.width || null,
+          height: uploadedCoverImage.height || null,
+          duration: uploadedCoverImage.duration || null,
+          format: uploadedCoverImage.format || null,
+        },
+      }),
       ...(formData.biddingEnabled && {
         bidding: {
           maxBidders: Number(formData.biddingMaxBidders) || 5,

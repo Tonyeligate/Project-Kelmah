@@ -20,10 +20,12 @@ import {
   Work as WorkIcon,
   Send as SendIcon,
   Gavel as BidIcon,
+  AttachFile as AttachFileIcon,
 } from '@mui/icons-material';
 import { Helmet } from 'react-helmet-async';
 import { applyForJob, fetchJobById } from '../services/jobSlice';
 import bidApi from '../services/bidService';
+import fileUploadService from '../../common/services/fileUploadService';
 
 const JobApplicationPage = () => {
   const { id: jobId } = useParams();
@@ -36,6 +38,7 @@ const JobApplicationPage = () => {
   const [coverLetter, setCoverLetter] = useState('');
   const [proposedRate, setProposedRate] = useState('');
   const [bidAmount, setBidAmount] = useState('');
+  const [attachments, setAttachments] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -53,6 +56,21 @@ const JobApplicationPage = () => {
   useEffect(() => {
     return () => clearTimeout(redirectTimerRef.current);
   }, []);
+
+  const handleAttachmentChange = (event) => {
+    const files = Array.from(event.target.files || []);
+    const validFiles = files.filter((file) => file.size <= 10 * 1024 * 1024);
+
+    if (validFiles.length !== files.length) {
+      setError('Some files were too large. Maximum size is 10MB per file.');
+    }
+
+    setAttachments((prev) => [...prev, ...validFiles]);
+  };
+
+  const handleRemoveAttachment = (name) => {
+    setAttachments((prev) => prev.filter((file, index) => `${file.name}-${index}` !== name));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -80,11 +98,39 @@ const JobApplicationPage = () => {
           estimatedDuration: '',
         });
       } else {
+        let uploadedAttachments = [];
+        if (attachments.length > 0) {
+          const results = await fileUploadService.uploadFiles(
+            attachments,
+            'applications',
+            'user',
+          );
+          const failedUpload = results.find((item) => item?.error);
+          if (failedUpload) {
+            throw new Error(failedUpload.error || 'Failed to upload an attachment');
+          }
+          uploadedAttachments = results.map((item, index) => ({
+            name: attachments[index]?.name || item.name,
+            fileUrl: item.fileUrl || item.url,
+            fileType: attachments[index]?.type || item.type,
+            fileSize: attachments[index]?.size || item.size || 0,
+            publicId: item.publicId || null,
+            resourceType: item.resourceType || null,
+            thumbnailUrl: item.thumbnailUrl || null,
+            width: item.width || null,
+            height: item.height || null,
+            duration: item.duration || null,
+            format: item.format || null,
+            uploadDate: new Date().toISOString(),
+          }));
+        }
+
         await dispatch(applyForJob({
           jobId,
           applicationData: {
             coverLetter: coverLetter.trim(),
             proposedRate: proposedRate ? parseFloat(proposedRate) : undefined,
+            attachments: uploadedAttachments,
           },
         })).unwrap();
       }
@@ -233,6 +279,27 @@ const JobApplicationPage = () => {
               helperText="Leave blank to accept the posted rate"
               sx={{ mb: 3 }}
             />
+          )}
+
+          {!isBiddingJob && (
+            <Box sx={{ mb: 3 }}>
+              <Button component="label" variant="outlined" startIcon={<AttachFileIcon />}>
+                Attach work samples or proof
+                <input hidden multiple type="file" accept="image/*,video/*,.pdf,.doc,.docx,.txt" onChange={handleAttachmentChange} />
+              </Button>
+              {attachments.length > 0 && (
+                <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1.5 }}>
+                  {attachments.map((file, index) => (
+                    <Chip
+                      key={`${file.name}-${index}`}
+                      label={file.name}
+                      onDelete={() => handleRemoveAttachment(`${file.name}-${index}`)}
+                      sx={{ mb: 1 }}
+                    />
+                  ))}
+                </Stack>
+              )}
+            </Box>
           )}
 
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>

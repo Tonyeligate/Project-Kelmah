@@ -25,6 +25,10 @@ import {
   Bookmark,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import {
+  resolveMediaAssetUrl,
+  resolveProfileImageUrl,
+} from '../../../common/utils/mediaAssets';
 
 /**
  * Unified JobCard Component
@@ -95,6 +99,12 @@ const JobCard = ({
     applications = 0,
     coverImage,
   } = job;
+  const resolvedCoverImage = resolveMediaAssetUrl([coverImage, job?.imageGallery, job?.images]);
+  const resolvedHirerAvatar =
+    resolveProfileImageUrl({
+      profilePicture: hirerAvatar,
+      avatar: hirerAvatar,
+    }) || null;
 
   // Handle save/unsave job
   const handleSaveToggle = async (e) => {
@@ -172,11 +182,11 @@ const JobCard = ({
   return (
     <Card sx={getCardSx()} onClick={handleCardClick}>
       {/* Cover image */}
-      {coverImage && variant !== 'compact' && (
+      {resolvedCoverImage && variant !== 'compact' && (
         <CardMedia
           component="img"
           height={variant === 'detailed' ? 200 : 160}
-          image={coverImage}
+          image={resolvedCoverImage}
           alt={title || 'Job image'}
           sx={{
             objectFit: 'cover',
@@ -284,7 +294,7 @@ const JobCard = ({
             <Divider sx={{ my: 2 }} />
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Avatar
-                src={hirerAvatar}
+                src={resolvedHirerAvatar}
                 alt={hirerName}
                 sx={{ width: 32, height: 32 }}
               >

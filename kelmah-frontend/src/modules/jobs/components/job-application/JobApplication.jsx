@@ -50,6 +50,7 @@ import {
   useApplyToJobMutation,
   useJobQuery,
 } from '../../hooks/useJobsQuery';
+import fileUploadService from '../../../common/services/fileUploadService';
 
 // Styled components
 const ApplicationPaper = styled(Paper)(({ theme }) => ({
@@ -307,31 +308,30 @@ function JobApplication() {
         setSubmitting(true);
 
         try {
-          // Create a FormData object for file uploads
-          const formData = new FormData();
-
-          // Append each file to the FormData
-          applicationData.attachments.forEach((attachment, index) => {
-            formData.append(`file${index}`, attachment.file);
-          });
-
-          // Upload the files first
-          const uploadResponse = await api.post('/uploads', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          });
-
-          // Get the file URLs from the response
-          processedAttachments = uploadResponse.data.files.map(
-            (fileData, index) => ({
-              fileName: applicationData.attachments[index].name,
-              fileSize: applicationData.attachments[index].size,
-              fileType: applicationData.attachments[index].type,
-              fileUrl: fileData.url,
-              fileId: fileData.id,
-            }),
+          const uploads = await fileUploadService.uploadFiles(
+            applicationData.attachments.map((attachment) => attachment.file),
+            'applications',
+            'user',
           );
+
+          const failedUpload = uploads.find((item) => item?.error);
+          if (failedUpload) {
+            throw new Error(failedUpload.error || 'Attachment upload failed');
+          }
+
+          processedAttachments = uploads.map((fileData, index) => ({
+            name: applicationData.attachments[index].name,
+            fileSize: applicationData.attachments[index].size,
+            fileType: applicationData.attachments[index].type,
+            fileUrl: fileData.fileUrl || fileData.url,
+            publicId: fileData.publicId || null,
+            resourceType: fileData.resourceType || null,
+            thumbnailUrl: fileData.thumbnailUrl || null,
+            width: fileData.width || null,
+            height: fileData.height || null,
+            duration: fileData.duration || null,
+            format: fileData.format || null,
+          }));
         } catch (uploadError) {
           setSubmissionError(
             'Failed to upload attachments. ' + (uploadError.message || ''),

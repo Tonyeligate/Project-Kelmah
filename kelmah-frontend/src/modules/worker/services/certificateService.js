@@ -1,4 +1,5 @@
 import { api } from '../../../services/apiClient';
+import fileUploadService from '../../common/services/fileUploadService';
 
 // Helper to consistently unwrap backend responses
 const unwrap = (res) => res?.data?.data ?? res?.data ?? res;
@@ -75,20 +76,16 @@ const certificateService = {
    * @returns {Promise<Object>} - Upload response with URL
    */
   uploadCertificateFile: async (file, onProgress) => {
-    const presignRes = await api.post('/profile/uploads/presign', {
-      folder: 'certificates',
-      filename: file.name,
-      contentType: file.type,
-    });
-    const { putUrl, getUrl } = unwrap(presignRes) ?? {};
-    if (!putUrl || !getUrl) throw new Error('Upload presign failed');
-    await fetch(putUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': file.type },
-      body: file,
-    });
+    const uploaded = await fileUploadService.uploadFile(file, 'certificates', 'user');
     if (onProgress) onProgress(100);
-    return { url: getUrl, fileName: file.name, fileSize: file.size };
+    return {
+      url: uploaded.url,
+      fileName: file.name,
+      fileSize: file.size,
+      publicId: uploaded.publicId || null,
+      resourceType: uploaded.resourceType || null,
+      thumbnailUrl: uploaded.thumbnailUrl || null,
+    };
   },
 
   /**

@@ -85,12 +85,20 @@ const JobSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    coverImageMetadata: mongoose.Schema.Types.Mixed,
     attachments: [
       {
         name: String,
         url: String,
         type: String,
         size: Number,
+        publicId: String,
+        resourceType: String,
+        thumbnailUrl: String,
+        width: Number,
+        height: Number,
+        duration: Number,
+        format: String,
       },
     ],
     hirer: {

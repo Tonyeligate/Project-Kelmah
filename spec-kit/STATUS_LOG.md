@@ -2,6 +2,235 @@
 
 ---
 
+### Session: Platform Image Experience Deepening ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Deep-audit and strengthen image-first trust and productivity surfaces across the frontend and connected backend media flows so the platform presents workers, jobs, projects, and conversations more visually and convincingly.
+
+**Acceptance Criteria**
+- Identify the highest-value pages and components that should present richer images or image fallbacks.
+- Trace the image data flow for each touched UI surface from page/component through service calls to backend media fields.
+- Fix missing previews, weak fallbacks, and underdeveloped image presentation patterns on the most important trust and conversion pages.
+- Validate touched files and record the outcome in spec-kit.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/modules/home/pages/HomePage.jsx`
+- `kelmah-frontend/src/modules/jobs/services/jobsService.js`
+- `kelmah-frontend/src/modules/common/components/cards/JobCard.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `kelmah-frontend/src/modules/worker/components/WorkerCard.jsx`
+- `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+- `kelmah-frontend/src/modules/worker/components/PortfolioGallery.jsx`
+- `kelmah-frontend/src/modules/search/pages/SearchPage.jsx`
+- `kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx`
+- `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx`
+- `kelmah-frontend/src/modules/worker/services/workerService.js`
+- `kelmah-frontend/src/modules/reviews/components/common/ReviewCard.jsx`
+- `kelmah-frontend/src/modules/reviews/pages/ReviewsPage.jsx`
+- `kelmah-frontend/src/components/reviews/ReviewSystem.jsx`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/review-service/controllers/review.controller.js`
+- `kelmah-backend/services/user-service/models/Portfolio.js`
+
+**End-to-end flow notes**
+- Home conversion flow: `HomePage.jsx` currently uses `jobsService.getPlatformStats()` only, so the landing page lacks live worker/job imagery even though worker and job APIs already expose avatars and cover images.
+- Job list/detail flow: `JobsPage.jsx` and `JobCard.jsx` depend on `jobsService.js` transformations → `/api/jobs` and `/api/jobs/:id` → job-service → shared `Job` model media fields (`coverImage`, `attachments`, `coverImageMetadata`), but frontend normalization is still weak for object-shaped assets.
+- Worker trust flow: `SearchPage.jsx`, `WorkerSearch.jsx`, `WorkerCard.jsx`, and `WorkerProfile.jsx` consume `/api/users/workers*` and `/api/users/workers/:id*` via `workerService.js` → `worker.controller.js`, where profile pictures, `bannerImage`, portfolio summaries, and certificate data are already available.
+- Review trust flow: `ReviewSystem.jsx`, `ReviewsPage.jsx`, and `ReviewCard.jsx` use `reviewService.js` → `/api/reviews/*` and `/api/ratings/*` → review-service, where reviewer avatars are available but the visual treatment is still basic.
+
+**Current findings**
+- The public landing page is still mostly text/icon driven and does not yet leverage live worker avatars, portfolio-style proof, or job cover imagery to sell the marketplace.
+- Job media is already stored, but list/detail pages do not consistently normalize object-shaped assets or promote the best image as a hero visual.
+- Worker profile pages have strong underlying media data (`bannerImage`, `profilePicture`, portfolio items, certificate files), but the header and certificate sections still underuse those assets.
+- Search/discovery cards lean heavily on avatars and chips; stronger image-first presentation is needed on the highest-intent surfaces.
+
+**Planned fix direction**
+- Add shared frontend media resolvers for image asset objects, thumbnails, and gallery arrays.
+- Upgrade the home page with live image-rich featured workers and featured jobs sections.
+- Strengthen job list/detail visuals with normalized cover-image handling and richer image galleries.
+- Upgrade worker profile trust surfaces with a banner/hero media treatment and certificate preview support.
+
+**Changes completed**
+- Added `kelmah-frontend/src/modules/common/utils/mediaAssets.js` to centralize media URL resolution for strings, Cloudinary-style objects, thumbnails, and mixed arrays.
+- Updated `kelmah-frontend/src/modules/jobs/services/jobsService.js` so job list/detail payloads consistently normalize `coverImage`, gallery media, and hirer avatars.
+- Updated `kelmah-frontend/src/modules/common/components/cards/JobCard.jsx` so shared job cards render normalized cover images and hirer avatars even when media arrives as mixed asset objects.
+- Updated `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx` with a true hero image panel, normalized project-image gallery handling, and consistent client avatar resolution.
+- Updated `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx` to use a richer profile hero image, stronger visual trust cues, and certificate thumbnail previews where proof media exists.
+- Updated `kelmah-frontend/src/modules/home/pages/HomePage.jsx` to include live featured-worker and featured-job sections so the landing page now sells the marketplace with real visual marketplace content instead of only text and icons.
+
+**Verification**
+- Editor diagnostics returned clean results for the new media utility and all touched frontend files.
+- `npm run build` completed successfully in `kelmah-frontend/` after the deeper image-experience changes.
+- The build still reports the pre-existing `apiClient.js` dynamic/static import warning only; no new image-flow build failures were introduced.
+
+---
+
+### Session: Cloudinary Credentials Provisioning ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Add the provided Cloudinary production credentials to the backend runtime `.env` files that are actually used by the user-service, job-service, messaging-service, and backend-level scripts.
+
+**Acceptance Criteria**
+- Add `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` to the backend runtime `.env` surface.
+- Update only the `.env` files that are loaded by the active backend media flows.
+- Avoid storing secrets in any documentation or example file.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/.env`
+- `kelmah-backend/services/user-service/.env`
+- `kelmah-backend/services/job-service/.env`
+- `kelmah-backend/services/messaging-service/.env`
+- `kelmah-backend/services/user-service/server.js`
+- `kelmah-backend/services/user-service/config/env.js`
+- `kelmah-backend/services/job-service/server.js`
+- `kelmah-backend/services/job-service/config/db.js`
+- `kelmah-backend/services/messaging-service/server.js`
+
+**Current findings**
+- `user-service`, `job-service`, and `messaging-service` load service-local `.env` files during startup.
+- `user-service` config utilities and `job-service` DB utilities also load the backend root `.env`, so the root file must be kept in sync as a fallback/runtime source.
+- The current backend runtime `.env` files do not yet contain the Cloudinary keys needed by the newly completed media pipeline.
+
+**Changes completed**
+- Added the provided Cloudinary credentials to `kelmah-backend/.env`.
+- Added the same Cloudinary credentials to `kelmah-backend/services/user-service/.env`.
+- Added the same Cloudinary credentials to `kelmah-backend/services/job-service/.env`.
+- Added the same Cloudinary credentials to `kelmah-backend/services/messaging-service/.env`.
+
+**Verification**
+- Confirmed the three required `CLOUDINARY_*` variables now exist in all four runtime `.env` files.
+- Verified the selected files match the actual runtime env-loading paths used by the media-capable backend services.
+
+---
+
+### Session: Cloudinary Media Rollout ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Replace the current mixed S3/direct-upload visual media flow with a Cloudinary-backed media pipeline for worker profile photos, portfolio media, certificate proof, job cover images, and messaging image/video attachments.
+
+**Acceptance Criteria**
+- Add shared backend Cloudinary support and environment-driven configuration.
+- Replace current image/video upload paths in the frontend with a normalized Cloudinary-backed upload contract.
+- Update the user-service, job-service, and messaging-related visual media flows without breaking existing public model fields.
+- Validate the touched frontend/backend files and document the rollout.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/env.example`
+- `kelmah-backend/package.json`
+- `kelmah-backend/shared/utils/cloudinary.js`
+- `kelmah-backend/shared/models/User.js`
+- `kelmah-backend/shared/models/Job.js`
+- `kelmah-backend/shared/models/Application.js`
+- `kelmah-backend/services/user-service/controllers/upload.controller.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/routes/profile.routes.js`
+- `kelmah-backend/services/user-service/models/Portfolio.js`
+- `kelmah-backend/services/user-service/models/Certificate.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/messaging-service/models/Message.js`
+- `kelmah-backend/services/messaging-service/utils/validation.js`
+- `kelmah-backend/services/messaging-service/routes/attachments.routes.js`
+- `kelmah-frontend/src/modules/common/services/fileUploadService.js`
+- `kelmah-frontend/src/modules/worker/pages/WorkerProfileEditPage.jsx`
+- `kelmah-frontend/src/modules/worker/services/certificateService.js`
+- `kelmah-frontend/src/modules/worker/services/portfolioService.js`
+- `kelmah-frontend/src/modules/worker/components/CertificateUploader.jsx`
+- `kelmah-frontend/src/modules/worker/components/DocumentVerification.jsx`
+- `kelmah-frontend/src/modules/worker/components/PortfolioGallery.jsx`
+- `kelmah-frontend/src/modules/worker/components/WorkerCard.jsx`
+- `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/JobPostingPage.jsx`
+- `kelmah-frontend/src/modules/jobs/components/job-application/JobApplication.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobApplicationPage.jsx`
+- `kelmah-frontend/src/modules/jobs/services/jobsService.js`
+- `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+
+**End-to-end flow notes**
+- Worker identity flow: `WorkerProfileEditPage.jsx` uploads media through `fileUploadService.js` → `/api/users/profile/media/upload` → `profile.routes.js` → `upload.controller.js` → Cloudinary/local fallback → shared `User` metadata fields persisted by `worker.controller.js`.
+- Worker trust artifacts flow: portfolio and certificate screens now use the shared upload service → user-service upload endpoints → `Portfolio`/`Certificate` documents keep existing URL fields plus metadata.
+- Hirer job media flow: `JobPostingPage.jsx` uploads cover images before submit → job payload includes `coverImage` and `coverImageMetadata` → `job.controller.js` normalizes data URIs and persists into shared `Job` fields.
+- Messaging flow: composer attachments upload through `fileUploadService.js` → `/api/messages/:conversationId/attachments` → `attachments.routes.js` uploads to Cloudinary/local fallback → `Message` attachment metadata supports image/video rendering.
+- Application evidence flow: `JobApplication.jsx` and `JobApplicationPage.jsx` upload attachments through the shared service and persist richer metadata in shared `Application` attachment fields.
+
+**Current findings**
+- The workspace already contained a partial Cloudinary migration, but several frontend trust surfaces still assumed legacy response shapes or single-field image URLs.
+- Shared model fields were flexible enough to preserve public URLs while storing Cloudinary identifiers and transformation-friendly metadata.
+- Messaging required a last-mile runtime fix because attachment normalization referenced `safeAttachments` before declaration, which editor diagnostics did not flag.
+
+**Changes completed**
+- Added the backend `cloudinary` dependency and documented `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` in `kelmah-backend/env.example`.
+- Added `kelmah-backend/shared/utils/cloudinary.js` as the shared media upload/normalization utility for buffer and data-URI uploads.
+- Updated user-service upload handling so portfolio, certificate, and generic user media uploads use Cloudinary when configured and fall back locally when not configured.
+- Extended shared/backend models to store media metadata across user profile pictures, job cover images, application attachments, and messaging attachments.
+- Updated job creation/update handling so cover images can be uploaded and normalized before persistence.
+- Updated frontend shared upload handling so worker profile, certificate, portfolio, job cover, application evidence, and messaging attachments use one backend upload contract.
+- Fixed worker/public trust-surface rendering so avatar fallbacks, portfolio previews, and certificate proof links work with the new media shapes.
+- Fixed messaging attachment handling so image/video payloads remain normalized through compose, upload, send, and render flows.
+
+**Verification**
+- Editor diagnostics returned clean results for the touched backend and frontend Cloudinary rollout files.
+- `npm run build` completed successfully in `kelmah-frontend/` after the final media-flow fixes.
+- Backend smoke-load verification succeeded for `cloudinary.js`, `upload.controller.js`, `profile.routes.js`, `attachments.routes.js`, and `job.controller.js`, printing `cloudinary-smoke-ok`.
+- Backend smoke verification surfaced only pre-existing Mongoose duplicate-index warnings on `phone`, `googleId`, `facebookId`, and `linkedinId`; no Cloudinary rollout import or syntax failures were present.
+
+---
+
+### Session: Media Trust Surface Audit ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Audit the Kelmah platform for every frontend and backend surface where images or videos would improve trust, hiring confidence, and marketplace productivity, and map the best Cloudinary-backed rollout points.
+
+**Acceptance Criteria**
+- Identify the highest-value user journeys that need image/video support.
+- Map the likely frontend modules, backend services, and shared model surfaces involved.
+- Produce a prioritized rollout recommendation for Cloudinary-backed media support.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/modules/common/services/fileUploadService.js`
+- `kelmah-frontend/src/modules/worker/components/PortfolioManager.jsx`
+- `kelmah-frontend/src/modules/worker/pages/WorkerProfileEditPage.jsx`
+- `kelmah-frontend/src/modules/worker/components/WorkerCard.jsx`
+- `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+- `kelmah-frontend/src/modules/worker/components/CertificateUploader.jsx`
+- `kelmah-frontend/src/modules/worker/services/workerService.js`
+- `kelmah-frontend/src/modules/worker/services/certificateService.js`
+- `kelmah-frontend/src/modules/hirer/pages/JobPostingPage.jsx`
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- `kelmah-frontend/src/modules/reviews/components/common/ReviewCard.jsx`
+- `kelmah-frontend/src/modules/reviews/components/common/ReviewList.jsx`
+- `kelmah-backend/services/user-service/routes/profile.routes.js`
+- `kelmah-backend/services/user-service/models/Portfolio.js`
+- `kelmah-backend/services/user-service/models/Certificate.js`
+- `kelmah-backend/shared/models/User.js`
+- `kelmah-backend/shared/models/Job.js`
+- `kelmah-backend/shared/models/Application.js`
+- `kelmah-backend/services/messaging-service/models/Message.js`
+- `kelmah-backend/services/messaging-service/controllers/message.controller.js`
+
+**Current findings**
+- Worker trust already depends on avatars, portfolio, and certificates, but the platform still stores media through mixed direct-upload/S3-presign flows rather than one unified media service.
+- The best immediate trust surfaces are worker profile photos, portfolio galleries, certificate proof, job cover images, and messaging attachments.
+- Reviews currently render reviewer avatars only; there is no review-photo/job-proof flow yet, which is a missed trust opportunity for a vocational marketplace.
+- Hirer/company identity media is still under-modeled; no dedicated company logo/business gallery field surfaced in the shared model audit.
+
+**Rollout recommendation**
+- Tier 1: Cloudinary-backed worker profile photo, worker portfolio gallery, certificate proof, and job cover image support.
+- Tier 2: Cloudinary-backed messaging image/video attachments and application/job evidence attachments.
+- Tier 3: Review photo proof, before/after project galleries, and hirer/company logo or project-board media.
+
+**Cloudinary integration points**
+- Replace S3-presign assumptions in `fileUploadService.js`, `certificateService.js`, and `profile.routes.js` with a shared Cloudinary upload contract.
+- Preserve existing public model fields (`profilePicture`, `coverImage`, `attachments`, `mainImage`, `images`, `videos`, `documents`, `url`) while extending stored metadata with Cloudinary identifiers and transformation-friendly asset info.
+- Standardize frontend previews and backend persistence around one media object shape for images/videos/documents.
+
+**Verification**
+- Confirmed current upload flows are S3/direct-upload based in the audited frontend and user-service routes.
+- Confirmed current trust/media-capable model fields already exist across users, portfolios, jobs, applications, certificates, and messages.
+- Authored the dedicated audit summary in `spec-kit/MEDIA_TRUST_SURFACE_AUDIT.md`.
+
+---
+
 ### Session: Production WebSocket + Root Vercel Config Cleanup ✅ COMPLETED
 
 **Date**: March 8, 2026  

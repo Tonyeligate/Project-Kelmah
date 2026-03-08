@@ -4,6 +4,8 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import com.kelmah.mobile.BuildConfig
 import com.kelmah.mobile.features.auth.data.AuthApiService
 import com.kelmah.mobile.features.jobs.data.JobsApiService
+import com.kelmah.mobile.features.messaging.data.MessagingApiService
+import com.kelmah.mobile.features.notifications.data.NotificationsApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -72,4 +74,14 @@ object NetworkModule {
     @Singleton
     fun provideJobsApiService(retrofit: Retrofit): JobsApiService =
         retrofit.create(JobsApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideMessagingApiService(retrofit: Retrofit): MessagingApiService =
+        retrofit.create(MessagingApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideNotificationsApiService(retrofit: Retrofit): NotificationsApiService =
+        retrofit.create(NotificationsApiService::class.java)
 }

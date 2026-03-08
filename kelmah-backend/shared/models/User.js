@@ -144,6 +144,7 @@ const userSchema = new mongoose.Schema({
 
   // Profile
   profilePicture: String,
+  profilePictureMetadata: mongoose.Schema.Types.Mixed,
   bio: {
     type: String,
     maxlength: [500, 'Bio cannot exceed 500 characters']

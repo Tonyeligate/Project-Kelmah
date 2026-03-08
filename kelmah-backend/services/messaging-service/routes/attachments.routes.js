@@ -12,6 +12,11 @@ const {
   verifyGatewayRequest,
 } = require("../../../shared/middlewares/serviceTrust");
 const {
+  hasCloudinaryConfig,
+  uploadBuffer,
+  toMediaAsset,
+} = require("../../../shared/utils/cloudinary");
+const {
   ensureAttachmentScanState,
 } = require("../utils/virusScanState");
 
@@ -24,7 +29,40 @@ try {
   uploadLimiter = (req, res, next) => next();
 }
 
-// Basic server-side validation. In production, direct uploads are disabled.
+const uploadLocalAttachment = ({ file, conversationId }) => {
+  const base = path.join(
+    __dirname,
+    "..",
+    "uploads",
+    "attachments",
+    conversationId,
+  );
+  if (!fs.existsSync(base)) fs.mkdirSync(base, { recursive: true });
+
+  const safeName = path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_');
+  const filename = `${Date.now()}_${safeName}`;
+  const dest = path.join(base, filename);
+  if (!dest.startsWith(base)) {
+    throw new Error('Invalid filename');
+  }
+  fs.writeFileSync(dest, file.buffer);
+  return {
+    name: safeName,
+    url: `/uploads/attachments/${conversationId}/${filename}`,
+    secureUrl: `/uploads/attachments/${conversationId}/${filename}`,
+    fileUrl: `/uploads/attachments/${conversationId}/${filename}`,
+    storage: 'local',
+    resourceType: file.mimetype.startsWith('image/')
+      ? 'image'
+      : file.mimetype.startsWith('video/')
+        ? 'video'
+        : 'raw',
+    bytes: file.size,
+    format: path.extname(safeName).replace('.', '') || null,
+    originalFilename: file.originalname,
+  };
+};
+
 router.post(
   "/api/messages/:conversationId/attachments",
   verifyGatewayRequest,
@@ -32,16 +70,6 @@ router.post(
   upload.array("files", 10),
   async (req, res) => {
     try {
-      if (
-        process.env.NODE_ENV === "production" ||
-        process.env.ENABLE_S3_UPLOADS === "true"
-      ) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Direct uploads disabled in this environment. Use presigned URLs.",
-        });
-      }
       const { conversationId } = req.params;
       if (!conversationId)
         return res
@@ -52,6 +80,10 @@ router.post(
         "image/jpeg",
         "image/png",
         "image/gif",
+        "image/webp",
+        "video/mp4",
+        "video/webm",
+        "video/ogg",
         "application/pdf",
         "application/msword",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -86,35 +118,53 @@ router.post(
         }
       }
 
-      // Local-only storage (non-production) below
-      const base = path.join(
-        __dirname,
-        "..",
-        "uploads",
-        "attachments",
-        conversationId,
-      );
-      if (!fs.existsSync(base)) fs.mkdirSync(base, { recursive: true });
       const saved = [];
       for (const file of req.files || []) {
-        // Sanitize filename to prevent path traversal
-        const safeName = path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_');
-        const filename = `${Date.now()}_${safeName}`;
-        const dest = path.join(base, filename);
-        // Ensure dest is still within base directory
-        if (!dest.startsWith(base)) {
-          return res.status(400).json({ success: false, message: 'Invalid filename' });
+        let stored;
+        if (hasCloudinaryConfig()) {
+          const uploaded = await uploadBuffer({
+            buffer: file.buffer,
+            folder: `messaging/${conversationId}`,
+            mimeType: file.mimetype,
+            filename: path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_'),
+            tags: ['messaging', `conversation-${conversationId}`],
+            context: {
+              conversationId,
+              originalFilename: path.basename(file.originalname),
+            },
+          });
+
+          stored = {
+            name: path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_'),
+            storage: 'cloudinary',
+            fileUrl: uploaded.secure_url,
+            ...toMediaAsset(uploaded, {
+              originalFilename: file.originalname,
+              bytes: file.size,
+            }),
+          };
+        } else {
+          stored = uploadLocalAttachment({ file, conversationId });
         }
-        fs.writeFileSync(dest, file.buffer);
+
         const attachment = ensureAttachmentScanState({
-          id: filename,
-          fileName: safeName,
+          id: stored.publicId || `${Date.now()}_${stored.name}`,
+          fileName: stored.name,
           originalname: file.originalname,
-          url: `/uploads/attachments/${conversationId}/${filename}`,
-          type: file.mimetype,
+          url: stored.secureUrl || stored.url || stored.fileUrl,
+          fileUrl: stored.fileUrl || stored.secureUrl || stored.url,
+          type: file.mimetype.startsWith('image/') ? 'image' : file.mimetype.startsWith('video/') ? 'video' : 'file',
           mimeType: file.mimetype,
           size: file.size,
-          storage: "local",
+          fileType: file.mimetype,
+          storage: stored.storage,
+          publicId: stored.publicId,
+          resourceType: stored.resourceType,
+          thumbnailUrl: stored.thumbnailUrl || null,
+          width: stored.width || null,
+          height: stored.height || null,
+          duration: stored.duration || null,
+          format: stored.format || null,
         });
         saved.push(attachment);
       }

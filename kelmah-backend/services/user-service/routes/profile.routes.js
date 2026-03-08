@@ -32,17 +32,12 @@ try {
   router.get('/portfolio/health', (req, res) => res.json({ success: true, message: 'portfolio routes loaded' }));
 }
 
-// Upload endpoints (disable when S3 presigned uploads are enabled)
+// Upload endpoints (Cloudinary-backed when configured, local fallback otherwise)
 try {
   const uploads = require('../controllers/upload.controller');
-  const allowDirect = process.env.ENABLE_S3_UPLOADS !== 'true' && process.env.NODE_ENV !== 'production';
-  if (allowDirect) {
-    router.post('/portfolio/upload', verifyGatewayRequest, upload.array('files', 10), uploads.uploadWorkSamples);
-    router.post('/certificates/upload', verifyGatewayRequest, upload.array('files', 10), uploads.uploadCertificates);
-  } else {
-    router.post('/portfolio/upload', verifyGatewayRequest, (req, res) => res.status(400).json({ success: false, message: 'Direct uploads disabled. Use presigned URLs.' }));
-    router.post('/certificates/upload', verifyGatewayRequest, (req, res) => res.status(400).json({ success: false, message: 'Direct uploads disabled. Use presigned URLs.' }));
-  }
+  router.post('/portfolio/upload', verifyGatewayRequest, upload.array('files', 10), uploads.uploadWorkSamples);
+  router.post('/certificates/upload', verifyGatewayRequest, upload.array('files', 10), uploads.uploadCertificates);
+  router.post('/media/upload', verifyGatewayRequest, upload.array('files', 10), uploads.uploadMedia);
 } catch (e) {}
 
 // Certificate routes
