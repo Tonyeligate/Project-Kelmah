@@ -17,7 +17,9 @@ const forwardToJobService = async (req, res, path, method = 'GET') => {
     const upstream = getServiceUrl(req);
     const url = `${upstream}${path}`;
 
-    console.log(`[JOB DIRECT] ${method} ${url}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[JOB DIRECT] ${method} ${url}`);
+    }
 
     const config = {
       method,
@@ -51,7 +53,9 @@ const forwardToJobService = async (req, res, path, method = 'GET') => {
 
     const response = await axios(config);
 
-    console.log(`[JOB DIRECT] Response: ${response.status}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[JOB DIRECT] Response: ${response.status}`);
+    }
     res.status(response.status).json(response.data);
   } catch (error) {
     console.error(`[JOB DIRECT] Error:`, error.message);
@@ -191,13 +195,13 @@ router.get('/:id', optionalAuth, async (req, res) => {
   await forwardToJobService(req, res, `/api/jobs/${req.params.id}`, 'GET');
 });
 
-// PUT /api/jobs/:id - Update job (protected)
-router.put('/:id', authenticate, async (req, res) => {
+// PUT /api/jobs/:id - Update job (protected, hirer/admin only)
+router.put('/:id', authenticate, authorizeRoles('hirer', 'admin'), async (req, res) => {
   await forwardToJobService(req, res, `/api/jobs/${req.params.id}`, 'PUT');
 });
 
-// DELETE /api/jobs/:id - Delete job (protected)
-router.delete('/:id', authenticate, async (req, res) => {
+// DELETE /api/jobs/:id - Delete job (protected, hirer/admin only)
+router.delete('/:id', authenticate, authorizeRoles('hirer', 'admin'), async (req, res) => {
   await forwardToJobService(req, res, `/api/jobs/${req.params.id}`, 'DELETE');
 });
 

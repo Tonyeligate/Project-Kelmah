@@ -4,6 +4,35 @@
 - State: IN PROGRESS
 - Date: March 8, 2026
 
+## March 9, 2026 Delta (Completed Hardening Pass)
+
+### Implemented in this pass
+- Preserved query forwarding on gateway recommendation proxy and added worker-role guard:
+	- `kelmah-backend/api-gateway/routes/job.routes.js`
+- Enforced allowlisted roles for signed gateway-user headers:
+	- `kelmah-backend/shared/middlewares/serviceTrust.js`
+- Added bounded worker-search pagination (`1 <= limit <= 50`, normalized page math):
+	- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- Fixed availability schema/query mismatch and `daySlots` response mapping:
+	- `kelmah-backend/services/user-service/controllers/user.controller.js`
+- Corrected authored-review retrieval to query `reviewer` (not `reviewee`):
+	- `kelmah-backend/services/review-service/controllers/review.controller.js`
+- Fixed hirer jobs selector/reducer drift (`active` alias + `id/_id` normalization):
+	- `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`
+- Fixed recent-activity application derivation for bucketized app state:
+	- `kelmah-frontend/src/modules/hirer/components/RecentActivityFeed.jsx`
+- Fixed jobs-page runtime and interaction regressions (undefined refresh callback, action bubbling, keyboard activation):
+	- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- Improved worker-search stability (deterministic fallback IDs, split bookmark hydration, stale-response guard):
+	- `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx`
+
+### Validation evidence
+- `get_errors`: no diagnostics on edited files.
+- `node --check`: passed on edited backend controllers/routes/middleware.
+- `npm run build` in `kelmah-frontend`: passed.
+- Live Render probing: `/api/users/workers/search?limit=500` currently returns `500`; `/api/users/workers/search?limit=50` observed high latency (~33s), confirming search-load risk.
+
+
 ## Scope
 - Job match scoring and worker match ranking
 - Worker profile matching and recommended workers flows

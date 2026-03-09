@@ -498,8 +498,8 @@ exports.resendVerificationEmail = async (req, res, next) => {
 
     // Return success response
     return res.status(200).json({
-      status: "success",
-      message: "Verification email sent successfully",
+      status: 'success',
+      message: 'If an account with that email exists and is unverified, a verification email has been sent.',
     });
   } catch (error) {
     return next(

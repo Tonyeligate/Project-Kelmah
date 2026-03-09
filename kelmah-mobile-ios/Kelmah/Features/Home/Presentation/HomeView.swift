@@ -83,7 +83,20 @@ struct HomeView: View {
                     HomeMessageCard(message: homeErrorMessage, tint: .red.opacity(0.12))
                 }
 
-                HomeSectionHeader(title: userRole == .hirer ? "Recent hiring activity" : "Recommended matches", actionLabel: userRole == .hirer ? "Open market" : "Browse jobs", onAction: onBrowseJobs)
+                HomeSectionHeader(
+                    title: userRole == .hirer
+                        ? "Recent hiring activity"
+                        : (jobsViewModel.recommendationsAreFallback ? "Urgent jobs while matching recovers" : "Recommended matches"),
+                    actionLabel: userRole == .hirer ? "Open market" : "Browse jobs",
+                    onAction: onBrowseJobs
+                )
+
+                if userRole == .worker,
+                   jobsViewModel.recommendationsAreFallback,
+                   let recommendationContextMessage = jobsViewModel.recommendationContextMessage,
+                   recommendationContextMessage.isEmpty == false {
+                    HomeMessageCard(message: recommendationContextMessage, tint: KelmahTheme.accent.opacity(0.12))
+                }
 
                 if jobsViewModel.isLoadingHomeFeed, homeJobs.isEmpty {
                     ProgressView("Loading the latest work intelligence...")
@@ -93,7 +106,11 @@ struct HomeView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 } else if homeJobs.isEmpty {
                     HomeMessageCard(
-                        message: userRole == .hirer ? "Your most recent jobs will appear here once your hiring activity is available." : "Your strongest matches will appear here once the recommendation feed returns results.",
+                        message: userRole == .hirer
+                            ? "Your most recent jobs will appear here once your hiring activity is available."
+                            : (jobsViewModel.recommendationsAreFallback
+                                ? "Kelmah could not recover enough urgent jobs while the recommendation feed is degraded."
+                                : "Your strongest matches will appear here once the recommendation feed returns results."),
                         tint: .white
                     )
                 } else {

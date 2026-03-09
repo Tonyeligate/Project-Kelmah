@@ -19,6 +19,8 @@ final class JobsViewModel: ObservableObject {
     @Published var selectedJob: JobDetail?
     @Published var isDetailLoading = false
     @Published var isSubmittingApplication = false
+    @Published var recommendationsAreFallback = false
+    @Published var recommendationContextMessage: String?
     @Published var homeErrorMessage: String?
     @Published var errorMessage: String?
     @Published var infoMessage: String?
@@ -59,13 +61,19 @@ final class JobsViewModel: ObservableObject {
         case .worker:
             do {
                 recommendedJobs = try await repository.getRecommendedJobs(limit: 6)
+                recommendationsAreFallback = false
+                recommendationContextMessage = nil
             } catch {
                 var fallbackFilters = JobFilters()
                 fallbackFilters.sort = .urgent
                 do {
                     recommendedJobs = try await repository.getJobs(filters: fallbackFilters, page: 1, limit: 6).jobs
+                    recommendationsAreFallback = true
+                    recommendationContextMessage = "Showing urgent jobs while personalized matching recovers."
                 } catch {
                     recommendedJobs = []
+                    recommendationsAreFallback = false
+                    recommendationContextMessage = nil
                     homeErrorMessage = error.localizedDescription
                 }
             }
@@ -81,6 +89,8 @@ final class JobsViewModel: ObservableObject {
             }
 
         case .hirer:
+            recommendationsAreFallback = false
+            recommendationContextMessage = nil
             do {
                 hirerJobs = try await repository.getMyJobs(limit: 6)
             } catch {

@@ -20,6 +20,19 @@ class ProfileRepository @Inject constructor(
     private val sessionCoordinator: Lazy<SessionCoordinator>,
 ) {
     suspend fun getWorkerProfileSnapshot(workerId: String): ApiResult<WorkerProfileSnapshot> = executeAuthorized {
+        try {
+            val response = profileApiService.getMyProfileSignals()
+            return@executeAuthorized ApiResult.Success(parseProfileSignalsSnapshot(response))
+        } catch (error: HttpException) {
+            if (error.code() != 404) {
+                throw error
+            }
+        }
+
+        loadLegacyWorkerProfileSnapshot(workerId)
+    }
+
+    private suspend fun loadLegacyWorkerProfileSnapshot(workerId: String): ApiResult<WorkerProfileSnapshot> =
         coroutineScope {
             val credentialsDeferred = async { fetchOptional { profileApiService.getMyCredentials() } }
             val availabilityDeferred = async { fetchOptional { profileApiService.getWorkerAvailability(workerId) } }
@@ -44,6 +57,17 @@ class ProfileRepository @Inject constructor(
                 ),
             )
         }
+
+    private fun parseProfileSignalsSnapshot(response: JsonObject): WorkerProfileSnapshot {
+        val raw = response.nestedObject("data") ?: response
+        return WorkerProfileSnapshot(
+            profile = parseProfileObject(raw.nestedObject("profile") ?: JsonObject(emptyMap())),
+            credentials = parseCredentials(raw.nestedObject("credentials")),
+            availability = parseAvailability(raw.nestedObject("availability")),
+            completeness = parseCompleteness(raw.nestedObject("completeness")),
+            portfolio = parsePortfolio(raw.nestedObject("portfolio")),
+        )
+    }
     }
 
     private suspend fun fetchOptional(block: suspend () -> JsonObject): JsonObject? =
@@ -69,6 +93,10 @@ class ProfileRepository @Inject constructor(
 
     private fun parseProfile(response: JsonObject): WorkerRecommendationProfile {
         val raw = response.nestedObject("data") ?: response
+        return parseProfileObject(raw)
+    }
+
+    private fun parseProfileObject(raw: JsonObject): WorkerRecommendationProfile {
         return WorkerRecommendationProfile(
             id = raw.string("id") ?: raw.string("_id"),
             firstName = raw.string("firstName") ?: "",

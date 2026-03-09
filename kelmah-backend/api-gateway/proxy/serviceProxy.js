@@ -103,16 +103,24 @@ const createServiceProxy = (options) => {
     // Ensure forwarded path includes the intended service prefix even when mounted under a sub-router
     pathRewrite: (path, req) => {
       try {
-        console.log(`[SERVICE PROXY] Input path: ${path}, baseUrl: ${req.baseUrl}`);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`[SERVICE PROXY] Input path: ${path}, baseUrl: ${req.baseUrl}`);
+        }
         let baseAppliedPath = ensureBasePrefix(path, req);
-        console.log(`[SERVICE PROXY] After ensureBasePrefix: ${baseAppliedPath}`);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`[SERVICE PROXY] After ensureBasePrefix: ${baseAppliedPath}`);
+        }
 
         // If caller supplied a function, use it directly (after base correction)
         if (typeof providedPathRewrite === 'function') {
           const rewritten = providedPathRewrite(baseAppliedPath, req);
-          console.log(`[SERVICE PROXY] After custom rewrite function: ${rewritten}`);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`[SERVICE PROXY] After custom rewrite function: ${rewritten}`);
+          }
           const normalized = normalizeSlashes(rewritten || baseAppliedPath);
-          console.log(`[SERVICE PROXY] After normalizeSlashes: ${normalized}`);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`[SERVICE PROXY] After normalizeSlashes: ${normalized}`);
+          }
           return normalized;
         }
 
@@ -189,12 +197,15 @@ const createServiceProxy = (options) => {
       } catch (_) {}
       
       // Log the proxy request
-      console.log(`Proxying ${req.method} ${req.originalUrl} to ${target}${proxyReq.path}`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`Proxying ${req.method} ${req.originalUrl} to ${target}${proxyReq.path}`);
+      }
     },
     onProxyRes: (proxyRes, req, res) => {
-      // Log the proxy response
-      console.log(`Proxy response from ${target}: ${proxyRes.statusCode}`);
       // Do not override CORS here; rely on gateway-level CORS
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`Proxy response from ${target}: ${proxyRes.statusCode}`);
+      }
     },
     onError: (err, req, res) => {
       console.error(`Proxy error to ${target}:`, err);

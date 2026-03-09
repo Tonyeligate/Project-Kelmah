@@ -6,6 +6,9 @@ import retrofit2.http.Path
 import retrofit2.http.QueryMap
 
 interface ProfileApiService {
+    @GET("users/me/profile-signals")
+    suspend fun getMyProfileSignals(): JsonObject
+
     @GET("users/profile")
     suspend fun getProfile(): JsonObject
 

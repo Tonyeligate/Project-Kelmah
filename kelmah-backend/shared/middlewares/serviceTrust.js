@@ -38,8 +38,9 @@ function validateGatewayUser(parsed) {
  */
 function timingSafeCompare(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string') return false;
-  const hashA = crypto.createHmac('sha256', 'kelmah-compare').update(a).digest();
-  const hashB = crypto.createHmac('sha256', 'kelmah-compare').update(b).digest();
+  const key = Buffer.alloc(32, 0);
+  const hashA = crypto.createHmac('sha256', key).update(a).digest();
+  const hashB = crypto.createHmac('sha256', key).update(b).digest();
   return crypto.timingSafeEqual(hashA, hashB);
 }
 

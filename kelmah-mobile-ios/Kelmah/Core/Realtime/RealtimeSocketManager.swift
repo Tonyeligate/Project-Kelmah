@@ -20,23 +20,63 @@ final class RealtimeSocketManager {
     private let subject = PassthroughSubject<RealtimeSignal, Never>()
     private var manager: SocketManager?
     private var socket: SocketIOClient?
+    private var tokenObserver: AnyCancellable?
+    private var desiredConnection = false
+    private var activeToken: String?
 
     init(environment: APIEnvironment, sessionStore: SessionStore) {
         self.environment = environment
         self.sessionStore = sessionStore
+        self.activeToken = sessionStore.accessToken
+        self.tokenObserver = sessionStore.$accessToken
+            .removeDuplicates()
+            .sink { [weak self] token in
+                self?.handleTokenChange(token)
+            }
     }
 
     func start() {
+        desiredConnection = true
         guard let token = sessionStore.accessToken, token.isEmpty == false else {
-            stop()
+            disconnect(emitDisconnected: true)
             return
         }
 
-        if let socket, socket.status == .connected || socket.status == .connecting {
+        if let socket,
+           activeToken == token,
+           socket.status == .connected || socket.status == .connecting {
             return
         }
 
-        stop()
+        activeToken = token
+        connect(with: token)
+    }
+
+    func stop() {
+        desiredConnection = false
+        disconnect(emitDisconnected: true)
+    }
+
+    private func handleTokenChange(_ token: String?) {
+        guard desiredConnection else {
+            activeToken = token
+            return
+        }
+
+        guard let token, token.isEmpty == false else {
+            activeToken = nil
+            disconnect(emitDisconnected: true)
+            return
+        }
+
+        guard activeToken != token else { return }
+
+        activeToken = token
+        connect(with: token)
+    }
+
+    private func connect(with token: String) {
+        disconnect(emitDisconnected: false)
 
         let manager = SocketManager(
             socketURL: environment.gatewayOrigin,
@@ -56,12 +96,14 @@ final class RealtimeSocketManager {
         socket.connect()
     }
 
-    func stop() {
+    private func disconnect(emitDisconnected: Bool) {
         socket?.removeAllHandlers()
         socket?.disconnect()
         socket = nil
         manager = nil
-        subject.send(.connectionChanged(false))
+        if emitDisconnected {
+            subject.send(.connectionChanged(false))
+        }
     }
 
     private func attachListeners(_ socket: SocketIOClient) {

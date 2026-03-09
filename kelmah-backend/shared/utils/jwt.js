@@ -56,9 +56,10 @@ function verifyRefreshToken(token, options = {}) {
 }
 
 function generateAuthTokens(user) {
-  const jti = cryptoRandomString();
-  const accessToken = signAccessToken(user, { jwtid: jti });
-  const refreshToken = signRefreshToken(user, { jwtid: jti });
+  const accessJti = cryptoRandomString();
+  const refreshJti = cryptoRandomString();
+  const accessToken = signAccessToken(user, { jwtid: accessJti });
+  const refreshToken = signRefreshToken(user, { jwtid: refreshJti });
   return { accessToken, refreshToken };
 }
 

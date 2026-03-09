@@ -156,10 +156,28 @@ fun HomeScreen(
 
         item {
             SectionHeader(
-                title = if (role == KelmahUserRole.HIRER) "Recent hiring activity" else "Recommended matches",
+                title = if (role == KelmahUserRole.HIRER) {
+                    "Recent hiring activity"
+                } else if (jobsState.recommendationsAreFallback) {
+                    "Urgent jobs while matching recovers"
+                } else {
+                    "Recommended matches"
+                },
                 actionLabel = if (role == KelmahUserRole.HIRER) "Open market" else "Browse jobs",
                 onAction = onBrowseJobs,
             )
+        }
+
+        if (role == KelmahUserRole.WORKER && jobsState.recommendationsAreFallback && !jobsState.recommendationContextMessage.isNullOrBlank()) {
+            item {
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+                    Text(
+                        text = jobsState.recommendationContextMessage.orEmpty(),
+                        modifier = Modifier.padding(16.dp),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    )
+                }
+            }
         }
 
         if (jobsState.isLoadingHomeFeed && primaryJobs.isEmpty()) {
@@ -179,9 +197,17 @@ fun HomeScreen(
         } else if (primaryJobs.isEmpty()) {
             item {
                 EmptyHomeSection(
-                    title = if (role == KelmahUserRole.HIRER) "No hiring activity yet" else "No recommendations yet",
+                    title = if (role == KelmahUserRole.HIRER) {
+                        "No hiring activity yet"
+                    } else if (jobsState.recommendationsAreFallback) {
+                        "No urgent jobs available"
+                    } else {
+                        "No recommendations yet"
+                    },
                     description = if (role == KelmahUserRole.HIRER) {
                         "Your most recent jobs will appear here once your hiring activity is available."
+                    } else if (jobsState.recommendationsAreFallback) {
+                        "Kelmah could not recover enough urgent jobs while the recommendation feed is degraded."
                     } else {
                         "Your strongest matches will appear here once the recommendation feed returns results."
                     },

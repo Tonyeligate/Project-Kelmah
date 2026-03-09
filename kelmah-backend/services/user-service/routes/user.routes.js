@@ -42,6 +42,7 @@ const {
   getProfileStatistics,
   getProfileActivity,
   getProfilePreferences,
+  getMyProfileSignals,
   getUserAvailability,
   getUserCredentials,
   getUserProfile,
@@ -237,6 +238,7 @@ router.put('/profile', verifyGatewayRequest, updateUserProfile);
 router.get('/profile/statistics', verifyGatewayRequest, getProfileStatistics);
 router.get('/profile/activity', verifyGatewayRequest, getProfileActivity);
 router.get('/profile/preferences', verifyGatewayRequest, getProfilePreferences);
+router.get('/me/profile-signals', verifyGatewayRequest, getMyProfileSignals);
 router.get("/me/availability", verifyGatewayRequest, getUserAvailability);
 router.get("/me/credentials", verifyGatewayRequest, getUserCredentials);
 

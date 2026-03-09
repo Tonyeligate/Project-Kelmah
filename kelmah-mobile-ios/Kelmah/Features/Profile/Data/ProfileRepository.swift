@@ -8,6 +8,20 @@ final class ProfileRepository {
     }
 
     func getWorkerProfileSnapshot(workerId: String) async throws -> WorkerProfileSnapshot {
+        do {
+            let response = try await apiClient.send(
+                path: "users/me/profile-signals",
+                method: .get,
+                requiresAuth: true,
+                responseType: ProfileRawEnvelope.self
+            )
+            return parseProfileSignals(response)
+        } catch let APIClientError.invalidStatusCode(statusCode, _) where statusCode == 404 {
+            return try await getLegacyWorkerProfileSnapshot(workerId: workerId)
+        }
+    }
+
+    private func getLegacyWorkerProfileSnapshot(workerId: String) async throws -> WorkerProfileSnapshot {
         async let credentialsResponse = optionalFetch(path: "users/me/credentials")
         async let availabilityResponse = optionalFetch(path: "users/workers/\(workerId)/availability")
         async let completenessResponse = optionalFetch(path: "users/workers/\(workerId)/completeness")
@@ -32,6 +46,17 @@ final class ProfileRepository {
         )
     }
 
+    private func parseProfileSignals(_ response: ProfileRawEnvelope) -> WorkerProfileSnapshot {
+        let object = response.data?.objectValue ?? [:]
+        return WorkerProfileSnapshot(
+            profile: parseProfileObject(object["profile"]?.objectValue ?? [:]),
+            credentials: parseCredentialsObject(object["credentials"]?.objectValue ?? [:]),
+            availability: parseAvailabilityObject(object["availability"]?.objectValue ?? [:]),
+            completeness: parseCompletenessObject(object["completeness"]?.objectValue ?? [:]),
+            portfolio: parsePortfolioObject(object["portfolio"]?.objectValue ?? [:])
+        )
+    }
+
     private func optionalFetch(path: String, queryItems: [URLQueryItem] = []) async -> ProfileRawEnvelope? {
         try? await apiClient.send(
             path: path,
@@ -43,7 +68,10 @@ final class ProfileRepository {
     }
 
     private func parseProfile(_ response: ProfileRawEnvelope) -> WorkerRecommendationProfile {
-        let object = response.data?.objectValue ?? [:]
+        parseProfileObject(response.data?.objectValue ?? [:])
+    }
+
+    private func parseProfileObject(_ object: [String: JSONValue]) -> WorkerRecommendationProfile {
         let fallbackLocation = [object.string("city"), object.string("state"), object.string("country")]
             .compactMap { $0?.nilIfEmpty }
             .joined(separator: ", ")
@@ -69,7 +97,10 @@ final class ProfileRepository {
     }
 
     private func parseCredentials(_ response: ProfileRawEnvelope?) -> WorkerCredentials {
-        let object = response?.data?.objectValue ?? [:]
+        parseCredentialsObject(response?.data?.objectValue ?? [:])
+    }
+
+    private func parseCredentialsObject(_ object: [String: JSONValue]) -> WorkerCredentials {
         let skills = object["skills"]?.arrayValue?.enumerated().compactMap { index, value in
             let data = value.objectValue
             let name = data?.string("name") ?? data?.string("label") ?? value.stringValue
@@ -108,7 +139,10 @@ final class ProfileRepository {
     }
 
     private func parseAvailability(_ response: ProfileRawEnvelope?) -> WorkerAvailability {
-        let object = response?.data?.objectValue ?? [:]
+        parseAvailabilityObject(response?.data?.objectValue ?? [:])
+    }
+
+    private func parseAvailabilityObject(_ object: [String: JSONValue]) -> WorkerAvailability {
         let schedule = (object["schedule"]?.arrayValue ?? object["daySlots"]?.arrayValue ?? []).compactMap { value -> AvailabilityDay? in
             guard let item = value.objectValue else { return nil }
             guard let day = item.string("day") else { return nil }
@@ -136,7 +170,10 @@ final class ProfileRepository {
     }
 
     private func parseCompleteness(_ response: ProfileRawEnvelope?) -> WorkerCompleteness {
-        let object = response?.data?.objectValue ?? [:]
+        parseCompletenessObject(response?.data?.objectValue ?? [:])
+    }
+
+    private func parseCompletenessObject(_ object: [String: JSONValue]) -> WorkerCompleteness {
         return WorkerCompleteness(
             completionPercentage: object.int("completionPercentage") ?? object.int("percentage") ?? 0,
             requiredCompletion: object.int("requiredCompletion") ?? 0,
@@ -148,7 +185,10 @@ final class ProfileRepository {
     }
 
     private func parsePortfolio(_ response: ProfileRawEnvelope?) -> WorkerPortfolio {
-        let object = response?.data?.objectValue ?? [:]
+        parsePortfolioObject(response?.data?.objectValue ?? [:])
+    }
+
+    private func parsePortfolioObject(_ object: [String: JSONValue]) -> WorkerPortfolio {
         let items = object["portfolioItems"]?.arrayValue?.compactMap { value -> PortfolioProject? in
             guard let item = value.objectValue else { return nil }
             guard let id = item.string("id") ?? item.string("_id") else { return nil }

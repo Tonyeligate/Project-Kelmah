@@ -113,6 +113,7 @@ router.post("/logout", verifyGatewayRequest, authController.logout);
 // Refresh token
 router.post(
   "/refresh-token",
+  createLimiter("auth"),
   [body("refreshToken").notEmpty().withMessage("Refresh token is required")],
   validate,
   authController.refreshToken,

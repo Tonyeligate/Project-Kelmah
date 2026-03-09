@@ -223,7 +223,7 @@ exports.getUserReviews = async (req, res) => {
   try {
     const { userId } = req.params;
     const { page = 1, limit = 10, status = 'approved' } = req.query;
-    const query = { reviewee: toObjectIdSafe(userId) };
+    const query = { reviewer: toObjectIdSafe(userId) };
     if (status && status !== 'all') query.status = status;
     const skip = (parseInt(page) - 1) * parseInt(limit);
 

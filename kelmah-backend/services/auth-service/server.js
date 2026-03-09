@@ -238,25 +238,22 @@ const adminVerifyUsersBatch = async (req, res) => {
       return res.status(400).json({ success: false, message: "Emails array is required" });
     }
     const { User } = require("./models");
-    const results = [];
-    for (const email of emails) {
-      try {
-        const user = await User.findOne({ email: (email || '').toLowerCase() });
-        if (user) {
-          user.isEmailVerified = true;
-          user.emailVerificationToken = undefined;
-          user.emailVerificationExpires = undefined;
-          await user.save();
-          results.push({ email, status: 'verified', success: true });
-        } else {
-          results.push({ email, status: 'not_found', success: false });
-        }
-      } catch (error) {
-        results.push({ email, status: 'error', success: false });
-      }
-    }
-    const successCount = results.filter(r => r.success).length;
-    return res.json({ success: true, message: `Verified ${successCount}/${emails.length} users`, data: results });
+    const normalizedEmails = emails.map(e => (e || '').toLowerCase()).filter(Boolean);
+    await User.bulkWrite(
+      normalizedEmails.map(email => ({
+        updateOne: {
+          filter: { email },
+          update: {
+            $set: {
+              isEmailVerified: true,
+              emailVerificationToken: null,
+              emailVerificationExpires: null,
+            },
+          },
+        },
+      }))
+    );
+    return res.json({ success: true, message: `Verified ${normalizedEmails.length} users` });
   } catch (error) {
     logger.error('Batch verify users error:', error);
     return res.status(500).json({ success: false, message: "Error verifying users" });

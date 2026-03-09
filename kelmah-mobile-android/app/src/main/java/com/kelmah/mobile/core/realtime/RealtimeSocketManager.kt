@@ -6,6 +6,12 @@ import io.socket.client.IO
 import io.socket.client.Socket
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -22,48 +28,94 @@ sealed interface RealtimeSignal {
 class RealtimeSocketManager @Inject constructor(
     private val tokenManager: TokenManager,
 ) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val _signals = MutableSharedFlow<RealtimeSignal>(extraBufferCapacity = 32)
     val signals: SharedFlow<RealtimeSignal> = _signals.asSharedFlow()
 
     @Volatile
     private var socket: Socket? = null
 
+    @Volatile
+    private var desiredConnection = false
+
+    @Volatile
+    private var activeToken: String? = null
+
+    init {
+        scope.launch {
+            tokenManager.sessionFlow
+                .map { it?.accessToken }
+                .distinctUntilChanged()
+                .collect { token ->
+                    synchronized(this@RealtimeSocketManager) {
+                        val previousToken = activeToken
+                        activeToken = token
+
+                        if (!desiredConnection) {
+                            return@synchronized
+                        }
+
+                        if (token.isNullOrBlank()) {
+                            disconnectSocketLocked(emitDisconnected = true)
+                            return@synchronized
+                        }
+
+                        if (previousToken != token) {
+                            connectSocketLocked(token)
+                        }
+                    }
+                }
+        }
+    }
+
     fun start() {
         synchronized(this) {
             val token = tokenManager.getAccessToken()
+            desiredConnection = true
+            activeToken = token
             if (token.isNullOrBlank()) {
-                stop()
+                disconnectSocketLocked(emitDisconnected = true)
                 return
             }
 
             val existingSocket = socket
-            if (existingSocket != null && existingSocket.connected()) {
+            if (existingSocket != null && existingSocket.connected() && activeToken == token) {
                 return
             }
 
-            existingSocket?.off()
-            existingSocket?.disconnect()
-
-            val options = IO.Options().apply {
-                reconnection = true
-                forceNew = true
-                path = "/socket.io"
-                transports = arrayOf("websocket", "polling")
-                auth = mutableMapOf("token" to token)
-            }
-
-            val createdSocket = IO.socket(NetworkConfig.gatewayOrigin, options)
-            attachListeners(createdSocket)
-            socket = createdSocket
-            createdSocket.connect()
+            connectSocketLocked(token)
         }
     }
 
     fun stop() {
         synchronized(this) {
-            socket?.off()
-            socket?.disconnect()
-            socket = null
+            desiredConnection = false
+            disconnectSocketLocked(emitDisconnected = true)
+        }
+    }
+
+    private fun connectSocketLocked(token: String) {
+        disconnectSocketLocked(emitDisconnected = false)
+
+        val options = IO.Options().apply {
+            reconnection = true
+            forceNew = true
+            path = "/socket.io"
+            transports = arrayOf("websocket", "polling")
+            auth = mutableMapOf("token" to token)
+        }
+
+        val createdSocket = IO.socket(NetworkConfig.gatewayOrigin, options)
+        attachListeners(createdSocket)
+        socket = createdSocket
+        createdSocket.connect()
+    }
+
+    private fun disconnectSocketLocked(emitDisconnected: Boolean) {
+        socket?.off()
+        socket?.disconnect()
+        socket = null
+        if (emitDisconnected) {
             _signals.tryEmit(RealtimeSignal.ConnectionChanged(false))
         }
     }
