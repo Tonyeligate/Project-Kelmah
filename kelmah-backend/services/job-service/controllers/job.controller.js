@@ -3321,15 +3321,27 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
     // Get user performance data
     const userPerformance = await UserPerformance.findOne({ userId });
     if (!userPerformance) {
-      return res.json({
-        success: true,
-        data: {
+      return successResponse(
+        res,
+        200,
+        'Complete your profile and start working to get personalized recommendations',
+        {
           jobs: [],
-          total: 0,
-          message: 'Complete your profile and start working to get personalized recommendations',
-          isNewUser: true
-        }
-      });
+          pagination: {
+            page,
+            limit,
+            total: 0,
+            totalPages: 1,
+          },
+          totalRecommendations: 0,
+          averageMatchScore: 0,
+          isNewUser: true,
+        },
+        {
+          recommendationSource: 'profile-incomplete',
+          contract: 'mobile-recommendations-v1',
+        },
+      );
     }
 
     // Get user's skills with null guards
@@ -3344,7 +3356,26 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
     const allSkills = [...primarySkills, ...secondarySkills];
 
     if (allSkills.length === 0) {
-      return successResponse(res, 200, 'No skills found for recommendations', []);
+      return successResponse(
+        res,
+        200,
+        'No skills found for recommendations',
+        {
+          jobs: [],
+          pagination: {
+            page,
+            limit,
+            total: 0,
+            totalPages: 1,
+          },
+          totalRecommendations: 0,
+          averageMatchScore: 0,
+        },
+        {
+          recommendationSource: 'skills-missing',
+          contract: 'mobile-recommendations-v1',
+        },
+      );
     }
 
     // Fetch ALL matching jobs (up to a reasonable cap), THEN score and paginate
@@ -3410,7 +3441,55 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
     const offset = (page - 1) * limit;
     const paginatedJobs = jobsWithScores.slice(offset, offset + limit);
 
-    return paginatedResponse(res, 200, 'Personalized job recommendations retrieved successfully', paginatedJobs, page, limit, totalCount);
+    const recommendationItems = paginatedJobs.map((job) => {
+      const matchedPrimarySkills = (job.requirements?.primarySkills || []).filter((skill) => primarySkills.includes(skill));
+      const matchedSecondarySkills = (job.requirements?.secondarySkills || []).filter((skill) => secondarySkills.includes(skill));
+      const reasons = [
+        matchedPrimarySkills.length > 0 ? `Matched ${matchedPrimarySkills.length} verified primary skill${matchedPrimarySkills.length > 1 ? 's' : ''}` : null,
+        matchedSecondarySkills.length > 0 ? `Matched ${matchedSecondarySkills.length} supporting skill${matchedSecondarySkills.length > 1 ? 's' : ''}` : null,
+        userPerformance.locationPreferences?.primaryRegion && userPerformance.locationPreferences.primaryRegion === job.locationDetails?.region
+          ? `Matches your preferred region: ${job.locationDetails?.region}`
+          : null,
+      ].filter(Boolean);
+
+      return {
+        ...transformJobForFrontend(job),
+        matchScore: Math.max(0, Math.min(100, Number(job.matchScore) || 0)),
+        aiReasoning: reasons[0] || 'Ranked from your verified skills, location, and recent performance signals.',
+        aiReasons: reasons,
+        recommendationSource: 'personalized',
+      };
+    });
+
+    const averageMatchScore = recommendationItems.length > 0
+      ? Math.round(
+        (recommendationItems.reduce((sum, item) => sum + (item.matchScore || 0), 0) /
+          recommendationItems.length) *
+        100,
+      ) / 100
+      : 0;
+
+    return successResponse(
+      res,
+      200,
+      'Personalized job recommendations retrieved successfully',
+      {
+        jobs: recommendationItems,
+        pagination: {
+          page,
+          limit,
+          total: totalCount,
+          totalPages: Math.max(1, Math.ceil(totalCount / limit)),
+        },
+        totalRecommendations: totalCount,
+        averageMatchScore,
+      },
+      {
+        recommendationSource: 'user-performance',
+        matchedSkills: allSkills.slice(0, 5),
+        contract: 'mobile-recommendations-v1',
+      },
+    );
   } catch (error) {
     next(error);
   }

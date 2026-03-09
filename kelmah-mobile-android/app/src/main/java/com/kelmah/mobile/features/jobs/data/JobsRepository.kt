@@ -248,6 +248,7 @@ class JobsRepository @Inject constructor(
     }
 
     private fun parseLocationLabel(job: JsonObject): String {
+        job.string("location")?.takeIf { it.isNotBlank() }?.let { return it }
         val location = job["location"] as? JsonObject
         val locationDetails = job["locationDetails"] as? JsonObject
         val composed = listOfNotNull(

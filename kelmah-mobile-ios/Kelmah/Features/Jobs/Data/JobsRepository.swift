@@ -224,6 +224,9 @@ final class JobsRepository {
     }
 
     private func locationLabel(from object: [String: JSONValue]) -> String {
+        if let inlineLocation = object.string("location")?.nilIfEmpty {
+            return inlineLocation
+        }
         let location = object["location"]?.objectValue
         let locationDetails = object["locationDetails"]?.objectValue
         let labels = [

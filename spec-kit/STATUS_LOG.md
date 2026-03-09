@@ -28,7 +28,7 @@
 - Live legacy worker routes remain healthy, which narrows the blocker to deployment rollout rather than the broader bid subsystem.
 - The workspace contains two plausible redeploy mechanisms: `autoDeploy: true` in `render.yaml` and Render deploy hooks referenced by `.github/workflows/deploy-backend.yml`.
 
-### Session: Native Mobile Match Hardening And Contract Cleanup 🔄 IN PROGRESS
+### Session: Native Mobile Match Hardening And Contract Cleanup ✅ COMPLETED
 
 **Date**: March 9, 2026  
 **Scope**: Execute the top native audit fixes on Android and iOS, then harden the mobile-consumed backend contracts those flows depend on without broad unrelated service churn.
@@ -45,11 +45,25 @@
 - iOS native: `JobsViewModel.swift`, `HomeView.swift`, `ProfileRepository.swift`, `ProfileView.swift`, `RealtimeSocketManager.swift`, `RootTabView.swift` if needed
 - Backend contracts: `kelmah-backend/services/job-service/controllers/job.controller.js`, `kelmah-backend/services/job-service/utils/jobTransform.js`, `kelmah-backend/services/user-service/routes/user.routes.js`, `kelmah-backend/services/user-service/controllers/user.controller.js`, and any directly related helpers required by those endpoints
 
-**Current implementation target**
-- Native recommendation UX will surface degraded fallback state explicitly instead of pretending urgent jobs are personalized matches.
-- Native profile signal loading will move to a consistent current-user worker snapshot flow.
-- Realtime socket lifecycle will become token-aware.
-- Backend will expose a cleaner mobile profile-signals contract and tighten recommendation payload stability for native consumers.
+**Implementation completed**
+- Added `GET /api/users/me/profile-signals` in `kelmah-backend/services/user-service/controllers/user.controller.js` and registered it in `kelmah-backend/services/user-service/routes/user.routes.js` so the signed-in worker now receives a single consistent profile-signals contract containing profile, credentials, availability, completeness, and portfolio data.
+- Updated Android profile loading in `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/data/ProfileApiService.kt` and `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/data/ProfileRepository.kt` to prefer the consolidated backend contract and fall back to the legacy multi-request flow only when the new route is unavailable.
+- Updated iOS profile loading in `kelmah-mobile-ios/Kelmah/Features/Profile/Data/ProfileRepository.swift` with the same contract-first and legacy-fallback behavior.
+- Hardened Android realtime token lifecycle in `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/realtime/RealtimeSocketManager.kt` so sockets reconnect when the access token rotates and disconnect cleanly on logout.
+- Hardened iOS realtime token lifecycle in `kelmah-mobile-ios/Kelmah/Core/Realtime/RealtimeSocketManager.swift` with access-token observation and token-aware reconnect logic.
+- Removed silent recommendation ambiguity on Android in `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobsViewModel.kt` and `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/home/presentation/HomeScreen.kt` by surfacing urgent-job fallback as an explicit degraded recommendation state instead of labeling it as personalized matching.
+- Removed silent recommendation ambiguity on iOS in `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobsViewModel.swift` and `kelmah-mobile-ios/Kelmah/Features/Home/Presentation/HomeView.swift` with the same degraded-state messaging.
+- Tightened personalized recommendation payloads in `kelmah-backend/services/job-service/controllers/job.controller.js` so the mobile apps now receive a stable `{ jobs, pagination, totalRecommendations, averageMatchScore }` envelope with explicit recommendation source metadata and structured reasoning.
+- Fixed native recommendation card location parsing in `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/data/JobsRepository.kt` and `kelmah-mobile-ios/Kelmah/Features/Jobs/Data/JobsRepository.swift` so string-based backend locations no longer collapse to "Location not specified".
+
+**Verification**
+- `get_errors` reported no workspace diagnostics for all edited backend, Android, and iOS files in this session.
+- Backend syntax validation was performed via workspace diagnostics on the edited `user-service` and `job-service` controller/route files.
+- Native validation is currently limited to editor diagnostics in this workspace because the Android wrapper script is not present under `kelmah-mobile-android/`, and iOS compilation is not runnable from this Windows environment.
+- Follow-up execution backlog recorded in `spec-kit/MOBILE_NATIVE_HARDENING_BACKLOG_MAR09_2026.md`.
+
+**Artifacts created**
+- `spec-kit/MOBILE_NATIVE_HARDENING_BACKLOG_MAR09_2026.md`
 
 ---
 
