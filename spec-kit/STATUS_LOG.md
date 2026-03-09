@@ -2,6 +2,45 @@
 
 ---
 
+### Session: Native Mobile Precision Audit Fix Execution ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Execute the highest-value Android and iOS native fixes identified in the mobile precision audit without restarting or redeploying backend services.
+
+**Acceptance Criteria**
+- Fix cross-platform notification deep-link parsing for the live message URL shapes.
+- Preserve recommendation match-score precision in both native apps.
+- Replace ambiguous recommendation fallback state with an explicit recommendation state model.
+- Reconcile unread counts after notification mutations.
+- Surface partial profile-signal fallback failures in native UI.
+- Remove the duplicate iOS shell bootstrap path.
+- Validate Android changes locally and validate iOS files through workspace diagnostics.
+
+**Mapped execution surface**
+- Android: `JobsModels.kt`, `JobsRepository.kt`, `JobsViewModel.kt`, `HomeScreen.kt`, `NotificationsModels.kt`, `NotificationsRepository.kt`, `NotificationsViewModel.kt`, `ProfileModels.kt`, `ProfileRepository.kt`, `ProfileScreen.kt`, `NotificationsRepositoryTest.kt`
+- iOS: `JobsModels.swift`, `JobsRepository.swift`, `JobsViewModel.swift`, `HomeView.swift`, `NotificationsModels.swift`, `NotificationsRepository.swift`, `NotificationsViewModel.swift`, `RootTabView.swift`, `ProfileModels.swift`, `ProfileRepository.swift`, `ProfileView.swift`, `MessagesViewModel.swift`, `NotificationOrderingTests.swift`
+
+**Implementation completed**
+- Fixed notification deep-link parsing on Android and iOS so live alert URLs now resolve both `?conversation=` and `/messages/{conversationId}` message routes.
+- Upgraded notification recency sorting to fall back from `createdAt` to `updatedAt`, then ObjectId-derived timestamps when timestamps are malformed.
+- Converted mobile match-score handling from integer truncation to `Double` precision and updated worker-facing home match badges to display decimal precision when needed.
+- Replaced split recommendation fallback flags with an explicit recommendation state model and updated the native home surfaces to show clearer degraded/failure messaging.
+- Tightened personalized recommendation parsing so incomplete recommendation jobs are dropped instead of being silently rendered with fabricated placeholder identity fields.
+- Reconciled notification unread counts against the unread-count endpoint after successful mutation flows on both platforms.
+- Surfaced partial-warning messages for legacy profile-signal fallback snapshots so missing credentials, availability, completeness, or portfolio data are no longer silently masked.
+- Collapsed the duplicate iOS shell bootstrap path and normalized iOS message/conversation ordering to parsed-date sorting.
+
+**Validation**
+- Android `gradle -p "c:\Users\OS\Desktop\Project-Kelmah-main\kelmah-mobile-android" testDebugUnitTest --stacktrace` passed.
+- Android `gradle -p "c:\Users\OS\Desktop\Project-Kelmah-main\kelmah-mobile-android" assembleDebug lintDebug --stacktrace` passed.
+- `get_errors` reported no diagnostics for the touched Android and iOS files.
+- Live read-only probes confirmed the notifications payload shapes targeted by the parser fix and reconfirmed that `/api/jobs/recommendations/personalized` still returns `404` in production.
+
+**Artifacts updated**
+- `spec-kit/MOBILE_NATIVE_PRECISION_MATCH_ACTIVITY_AUDIT_MAR09_2026.md`
+
+---
+
 ### Session: Earnings Gateway Origin Propagation Fix 🔄 IN PROGRESS
 
 **Date**: March 9, 2026  
@@ -3157,6 +3196,7 @@ WorkerProfile "Message Worker" click
 - ✅ Replaced 2-variable `:root` with comprehensive `[data-theme="dark"]` and `[data-theme="light"]` token blocks
 - ✅ 25+ CSS vars: `--nav-icon-active`, `--nav-icon-inactive`, `--nav-text-active`, `--nav-text-inactive`, `--nav-label`, `--nav-bg-active`, `--nav-bg-hover`, `--nav-border`, `--nav-divider`, `--nav-user-card-bg`, `--nav-collapse-icon`, `--scrollbar-thumb`, `--scrollbar-thumb-hover`, etc.
 - ✅ Light mode: `--nav-text-inactive: #374151` (dark gray, visible) vs dark mode default `#E0E0E0`
+- 🔧 **Light‑mode contrast overhaul**: darkened CSS tokens (`--k-text-primary` → #111111, `--k-text-secondary` → #2D2D33), deepened brand gold (`--k-gold` → #B8860B) and bumped body typography weight to 500. Added theme overrides so Typography color=primary and all icons render as `text.primary` in light mode. This ensures cards, headings, descriptions and icons are bold and clearly legible on parchment backgrounds.
 - ✅ Fixed global `*` scrollbar to use `var(--scrollbar-thumb)` / `var(--scrollbar-thumb-hover)`
 
 `kelmah-frontend/src/modules/layout/components/sidebar/Sidebar.jsx`:
