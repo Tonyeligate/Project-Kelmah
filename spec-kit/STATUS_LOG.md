@@ -25,9 +25,15 @@
 - The live `/api/users` mount in `kelmah-backend/api-gateway/server.js` uses `createDynamicProxy('user', ...)`, whose wrapper currently rehydrates request bodies but does not inject `x-gateway-origin`.
 - This explains why post-redeploy earnings requests return `source: fallback-missing-payment-host` even though direct gateway payment-history probes succeed.
 
+**Live verification after first gateway patch**
+- Pushed `2446484` (`Forward gateway origin on dynamic proxies`) and confirmed the API gateway restarted in production (`/health` uptime reset to ~44 seconds during verification).
+- Live `GET /api/users/workers/6892b8f766a1e818f0c46151/earnings` still returned `source: fallback-missing-payment-host` on the fresh gateway runtime.
+- Sending an explicit client-side `x-gateway-origin` header to the same live earnings route did not change the outcome, which indicates the active path still needs standard forwarded-host/proto propagation instead of relying on the custom header alone.
+- Next patch: make `createDynamicProxy` forward `x-forwarded-proto` and `x-forwarded-host` consistently, in addition to `x-gateway-origin`, so the user-service resolver can succeed through either path.
+
 ---
 
-### Session: Native Mobile Precision, Matching, And Productivity Audit 🔄 IN PROGRESS
+### Session: Native Mobile Precision, Matching, And Productivity Audit ✅ COMPLETED
 
 **Date**: March 9, 2026  
 **Scope**: Perform a deep Android and iOS native-only audit covering job matching precision, worker-profile relevance logic, search recommendations, recent activity truthfulness, session/auth/realtime resilience, mobile productivity gaps, and the backend contracts those native flows depend on.
@@ -47,7 +53,12 @@
 
 **Current findings**
 - File-surface mapping completed for the full Android and iOS native apps.
-- Deep dry-audit in progress, starting with jobs, home, profile, notifications, session, realtime, and network layers because those determine match precision and recent-activity correctness.
+- Dry-audit completed across jobs, home, profile, notifications, messaging, auth, session, realtime, and network layers on both platforms.
+- Live contract checks confirmed `GET /api/users/me/profile-signals` is healthy, notifications are live with mixed message URL shapes, and `GET /api/jobs/recommendations/personalized` is currently `404` in production, forcing native fallback behavior.
+- Highest-value native defects center on recommendation trust, deep-link correctness for recent activity, unread-count drift, precision loss from integer match-score parsing, and silent masking of incomplete payloads.
+
+**Artifacts created**
+- `spec-kit/MOBILE_NATIVE_PRECISION_MATCH_ACTIVITY_AUDIT_MAR09_2026.md`
 
 ---
 
@@ -78,6 +89,30 @@
 - `getDashboardMetrics` contains an early `return res.json(metrics)` that bypasses canonical response utilities.
 - Dashboard analytics currently performs unbounded aggregation and counts in places that can exceed gateway patience under load.
 - Frontend consumers are already tolerant of `data.workers` and `data.items`, enabling safe backend normalization.
+
+**Implementation completed**
+- Updated `kelmah-backend/services/user-service/controllers/worker.controller.js#getAllWorkers` to normalize pagination parsing and return canonical envelope shape with `data.items`, `data.workers`, and `meta.pagination`.
+- Updated `kelmah-backend/services/user-service/controllers/user.controller.js#getDashboardMetrics` to:
+  - remove non-canonical `res.json(metrics)` bypass,
+  - enforce bounded DB and downstream HTTP operations via timeout guards,
+  - preserve deterministic success responses with partial-failure metadata.
+- Updated `kelmah-backend/services/user-service/controllers/user.controller.js#getDashboardWorkers` to keep canonical paginated responses while exposing `data.workers` alongside `data.items` for compatibility.
+- Updated `kelmah-backend/services/user-service/controllers/user.controller.js#getDashboardAnalytics` to:
+  - add bounded aggregation/count/query timeouts,
+  - remove synthetic top-categories payload fallback,
+  - return deterministic fallback success payloads instead of hard failures when dependencies are slow.
+
+**Verification (current pass)**
+- `get_errors` returned no diagnostics for edited files.
+- `node --check` passed for:
+  - `kelmah-backend/services/user-service/controllers/user.controller.js`
+  - `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- Live Render probes succeeded after transient gateway instability and currently show pre-push contract state:
+  - `GET /api/users/workers?limit=3` returned `200` with legacy top-level keys `success,workers,pagination`.
+  - `POST /api/auth/login` succeeded with `giftyafisa@gmail.com / 11221122Tg` (the `1122112Ga` credential returned `401`).
+  - `GET /api/users/dashboard/workers` returned `200` with canonical envelope `success,message,data,meta` and `data.items,pagination`.
+  - `GET /api/users/dashboard/metrics` returned `200` but still uses non-canonical top-level metrics fields.
+  - `GET /api/users/dashboard/analytics` returned `200` with `success,message,data` and no timeout during this probe window.
 
 ---
 
@@ -282,6 +317,18 @@
 - `node --check` passed on edited backend files (`job.routes.js`, `serviceTrust.js`, `worker.controller.js`, `user.controller.js`, `review.controller.js`).
 - `npm run build` passed in `kelmah-frontend` (non-blocking existing Vite dynamic/static import warning remains in `src/services/apiClient.js`).
 - Live Render probes (no restart/redeploy) captured runtime evidence: `GET /api/users/workers/search?limit=500` currently fails with `500`, and even `limit=50` has high latency (~33s), validating the need for strict search caps and optimization.
+
+**Additional optimization and hardening delta (same session)**
+- Refactored `advancedJobSearch` count pipeline in `kelmah-backend/services/job-service/controllers/job.controller.js` to keep count path lightweight and avoid the full heavy aggregation chain for totals.
+- Improved recommendation query construction in the same controller to preserve visibility constraints while applying skill matching, parallelized worker/application prefetch, reduced candidate pool fanout, and added deterministic tiebreak sorting.
+- Added query-budget guards for advanced search (`query` length and token cap) in `job.controller.js`.
+- Hardened internal trust path in `kelmah-backend/shared/middlewares/serviceTrust.js` by attaching validated user context when present on internal-key requests.
+- Hardened user-scoped recent-jobs endpoint in `kelmah-backend/services/user-service/controllers/worker.controller.js` to return `401` on missing auth context and sign forwarded `x-authenticated-user` headers.
+- Added high-value compound indexes for worker search and recommendations:
+  - `kelmah-backend/shared/models/User.js`
+  - `kelmah-backend/shared/models/Job.js`
+- Produced verified route-by-route frontend ticket matrix:
+  - `spec-kit/ROUTE_UI_DEFECT_MATRIX_MAR09_2026.md`
 
 ---
 

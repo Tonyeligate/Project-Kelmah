@@ -79,7 +79,7 @@ const firstForwardedHeaderValue = (value) => {
   return null;
 };
 
-const resolveGatewayOriginHeader = (req) => {
+const resolveGatewayProxyHeaders = (req) => {
   const forwardedProto = firstForwardedHeaderValue(req.headers['x-forwarded-proto']);
   const forwardedHost = firstForwardedHeaderValue(req.headers['x-forwarded-host']);
   const requestHost = firstForwardedHeaderValue(req.headers.host);
@@ -87,10 +87,18 @@ const resolveGatewayOriginHeader = (req) => {
   const host = forwardedHost || requestHost;
 
   if (!host) {
-    return null;
+    return {
+      origin: null,
+      protocol,
+      host: null,
+    };
   }
 
-  return `${protocol}://${host}`.replace(/\/$/, '');
+  return {
+    origin: `${protocol}://${host}`.replace(/\/$/, ''),
+    protocol,
+    host,
+  };
 };
 
 /**
@@ -129,12 +137,19 @@ const createDynamicProxy = (serviceName, options = {}) => {
         proxy = createProxyMiddleware({
           target: targetUrl,
           changeOrigin: true,
+          xfwd: true,
           ...options,
           onProxyReq: (proxyReq, reqInner, resInner) => {
             rehydrateRequestBody(proxyReq, reqInner);
-            const gatewayOrigin = resolveGatewayOriginHeader(reqInner);
-            if (gatewayOrigin) {
-              proxyReq.setHeader('x-gateway-origin', gatewayOrigin);
+            const gatewayProxyHeaders = resolveGatewayProxyHeaders(reqInner);
+            if (gatewayProxyHeaders.origin) {
+              proxyReq.setHeader('x-gateway-origin', gatewayProxyHeaders.origin);
+            }
+            if (gatewayProxyHeaders.protocol) {
+              proxyReq.setHeader('x-forwarded-proto', gatewayProxyHeaders.protocol);
+            }
+            if (gatewayProxyHeaders.host) {
+              proxyReq.setHeader('x-forwarded-host', gatewayProxyHeaders.host);
             }
             if (callerOnProxyReq) callerOnProxyReq(proxyReq, reqInner, resInner);
           }
