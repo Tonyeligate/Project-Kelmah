@@ -10,7 +10,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { Helmet } from 'react-helmet-async';
 import {
   Box,
@@ -37,17 +38,14 @@ import {
   alpha,
   Paper,
   Skeleton,
-  Rating,
   LinearProgress,
 } from '@mui/material';
 import {
   Gavel as BidIcon,
-  AccessTime as TimeIcon,
   AttachMoney as MoneyIcon,
   CheckCircle as AcceptIcon,
   Cancel as RejectIcon,
   HourglassEmpty as PendingIcon,
-  Person as PersonIcon,
   ArrowBack as BackIcon,
   Star as StarIcon,
   TrendingUp as ScoreIcon,
@@ -56,6 +54,7 @@ import {
   TimerOff as ExpiredIcon,
 } from '@mui/icons-material';
 import bidApi from '../../jobs/services/bidService';
+import Toast from '../../common/components/common/Toast';
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'warning', icon: <PendingIcon fontSize="small" /> },
@@ -279,13 +278,15 @@ const BidCardSkeleton = () => (
 const JobBidsPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const { jobId } = useParams();
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
 
   const [bids, setBids] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [processing, setProcessing] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'info', title: null });
 
   // Action dialogs
   const [acceptDialog, setAcceptDialog] = useState({ open: false, bid: null });
@@ -298,7 +299,7 @@ const JobBidsPage = () => {
     setError(null);
     try {
       const result = await bidApi.getJobBids(jobId);
-      const bidsData = Array.isArray(result) ? result : result?.bids || [];
+      const bidsData = Array.isArray(result) ? [...result] : [];
       // Sort: pending first, then by score desc, then by date desc
       bidsData.sort((a, b) => {
         if (a.status === 'pending' && b.status !== 'pending') return -1;
@@ -318,10 +319,10 @@ const JobBidsPage = () => {
   }, [jobId]);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     fetchBids();
-    return () => { cancelled = true; };
-  }, [fetchBids]);
+    return () => controller.abort();
+  }, [jobId]);
 
   const handleAcceptConfirm = async () => {
     const bid = acceptDialog.bid;
@@ -338,10 +339,20 @@ const JobBidsPage = () => {
           return b;
         }),
       );
-      setSuccessMsg('Bid accepted! The worker has been notified.');
+      setToast({
+        open: true,
+        severity: 'success',
+        title: 'Bid accepted',
+        message: 'The worker has been notified, and the remaining pending bids have been closed for this job.',
+      });
       setAcceptDialog({ open: false, bid: null });
     } catch (err) {
-      setError('Failed to accept bid. Please try again.');
+      setToast({
+        open: true,
+        severity: 'error',
+        title: 'Could not accept bid',
+        message: 'The accept action did not complete. Please try again.',
+      });
       if (import.meta.env.DEV) console.error('Accept bid error:', err);
     } finally {
       setProcessing(false);
@@ -353,22 +364,45 @@ const JobBidsPage = () => {
     if (!bid) return;
     setProcessing(true);
     try {
-      await bidApi.rejectBid(bid._id || bid.id, { reason: rejectReason });
+      await bidApi.rejectBid(bid._id || bid.id, { hirerNotes: rejectReason });
       setBids((prev) =>
         prev.map((b) =>
           (b._id || b.id) === (bid._id || bid.id) ? { ...b, status: 'rejected' } : b,
         ),
       );
-      setSuccessMsg('Bid rejected.');
+      setToast({
+        open: true,
+        severity: 'info',
+        title: 'Bid rejected',
+        message: 'The worker has been notified that this bid was not accepted.',
+      });
       setRejectDialog({ open: false, bid: null });
       setRejectReason('');
     } catch (err) {
-      setError('Failed to reject bid. Please try again.');
+      setToast({
+        open: true,
+        severity: 'error',
+        title: 'Could not reject bid',
+        message: 'The reject action did not complete. Please try again.',
+      });
       if (import.meta.env.DEV) console.error('Reject bid error:', err);
     } finally {
       setProcessing(false);
     }
   };
+
+  // Auth + role guard
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location.pathname } });
+      return;
+    }
+    if (user?.role !== 'hirer' && user?.role !== 'admin') {
+      navigate('/unauthorized');
+    }
+  }, [isAuthenticated, user?.role, navigate, location.pathname]);
+
+  if (!isAuthenticated || (user?.role !== 'hirer' && user?.role !== 'admin')) return null;
 
   const pendingCount = bids.filter((b) => b.status === 'pending').length;
   const acceptedBid = bids.find((b) => b.status === 'accepted');
@@ -420,11 +454,8 @@ const JobBidsPage = () => {
           {error}
         </Alert>
       )}
-      {successMsg && (
-        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccessMsg('')}>
-          {successMsg}
-        </Alert>
-      )}
+
+      {processing && <LinearProgress sx={{ mb: 2, borderRadius: 999 }} />}
 
       {/* Loading */}
       {loading && (
@@ -544,6 +575,14 @@ const JobBidsPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Toast
+        open={toast.open}
+        title={toast.title}
+        message={toast.message}
+        severity={toast.severity}
+        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+      />
     </Container>
   );
 };

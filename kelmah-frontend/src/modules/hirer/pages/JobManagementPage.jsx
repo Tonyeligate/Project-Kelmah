@@ -54,6 +54,7 @@ import {
   HourglassEmpty as DraftIcon,
   Refresh as RefreshIcon,
   ErrorOutline as WarningIcon,
+  Gavel as BidIcon,
   Public as PublicIcon,
   Lock as PrivateIcon,
   GroupAdd as InviteIcon,
@@ -251,8 +252,24 @@ const JobManagementPage = () => {
     handleMenuClose();
   };
 
-  const handleViewApplications = (jobId) => {
-    navigate(`/hirer/applications?jobId=${jobId}`);
+  const isBiddingJob = (job) => Boolean(job?.bidding?.bidStatus);
+
+  const getJobResponseCount = (job) =>
+    job?.proposalCount ?? job?.applicantCount ?? job?.applicationsCount ?? job?.applications?.length ?? 0;
+
+  const handleReviewResponses = (job) => {
+    const jobId = job?.id || job?._id;
+    if (!jobId) {
+      handleMenuClose();
+      return;
+    }
+
+    if (isBiddingJob(job)) {
+      navigate(`/hirer/jobs/${jobId}/bids`);
+    } else {
+      navigate(`/hirer/applications?jobId=${jobId}`);
+    }
+
     handleMenuClose();
   };
 
@@ -353,27 +370,31 @@ const JobManagementPage = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Badge
-              badgeContent={job.applicantCount || job.proposalCount || job.applications?.length || 0}
+              badgeContent={getJobResponseCount(job)}
               color="primary"
               max={99}
               showZero
               sx={{ '& .MuiBadge-badge': { fontSize: '0.7rem' } }}
             >
-              <ApplicationIcon fontSize="small" color="action" />
+              {isBiddingJob(job) ? (
+                <BidIcon fontSize="small" color="action" />
+              ) : (
+                <ApplicationIcon fontSize="small" color="action" />
+              )}
             </Badge>
             <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-              applicants
+              {isBiddingJob(job) ? 'bids' : 'applicants'}
             </Typography>
           </Box>
           
           <Box sx={{ display: 'flex', gap: 0.5 }}>
             <IconButton
               size="small"
-              onClick={(e) => { e.stopPropagation(); handleViewApplications(job.id || job._id); }}
-              aria-label="View applicants"
+              onClick={(e) => { e.stopPropagation(); handleReviewResponses(job); }}
+              aria-label={isBiddingJob(job) ? 'Review bids' : 'View applications'}
               sx={{ bgcolor: 'action.hover', minWidth: 44, minHeight: 44 }}
             >
-              <PersonIcon fontSize="small" />
+              {isBiddingJob(job) ? <BidIcon fontSize="small" /> : <PersonIcon fontSize="small" />}
             </IconButton>
             <IconButton
               size="small"
@@ -467,7 +488,7 @@ const JobManagementPage = () => {
         </Box>
         {!isMobile && (
           <Typography variant="body1" color="text.secondary">
-            Manage your job postings and track applications
+            Manage your job postings and track bids or applications
           </Typography>
         )}
       </Box>
@@ -739,7 +760,7 @@ const JobManagementPage = () => {
                     <TableRow>
                       <TableCell>Job Title</TableCell>
                       <TableCell>Status</TableCell>
-                      <TableCell>Applications</TableCell>
+                      <TableCell>Responses</TableCell>
                       <TableCell>Posted</TableCell>
                       <TableCell>Expiry</TableCell>
                       <TableCell align="right">Actions</TableCell>
@@ -783,12 +804,12 @@ const JobManagementPage = () => {
                           </TableCell>
                           <TableCell>
                             <Badge
-                              badgeContent={job.applicantCount || job.proposalCount || job.applications?.length || 0}
+                              badgeContent={getJobResponseCount(job)}
                               color="primary"
                               max={999}
                               showZero
                             >
-                              <ApplicationIcon color="action" />
+                              {isBiddingJob(job) ? <BidIcon color="action" /> : <ApplicationIcon color="action" />}
                             </Badge>
                           </TableCell>
                           <TableCell>{job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '—'}</TableCell>
@@ -800,16 +821,14 @@ const JobManagementPage = () => {
                                 justifyContent: 'flex-end',
                               }}
                             >
-                              <Tooltip title="View Applications">
+                              <Tooltip title={isBiddingJob(job) ? 'Review Bids' : 'View Applications'}>
                                 <IconButton
                                   size="small"
-                                  aria-label="View applications"
-                                  onClick={() =>
-                                    handleViewApplications(job.id || job._id)
-                                  }
+                                  aria-label={isBiddingJob(job) ? 'Review bids' : 'View applications'}
+                                  onClick={() => handleReviewResponses(job)}
                                   sx={{ mr: 1 }}
                                 >
-                                  <PersonIcon />
+                                  {isBiddingJob(job) ? <BidIcon /> : <PersonIcon />}
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="View Job">
@@ -879,9 +898,13 @@ const JobManagementPage = () => {
           View Job
         </MenuItem>
 
-        <MenuItem onClick={() => handleViewApplications(selectedJob?.id || selectedJob?._id)}>
-          <PersonIcon fontSize="small" sx={{ mr: 1 }} />
-          View Applications
+        <MenuItem onClick={() => handleReviewResponses(selectedJob)}>
+          {isBiddingJob(selectedJob) ? (
+            <BidIcon fontSize="small" sx={{ mr: 1 }} />
+          ) : (
+            <PersonIcon fontSize="small" sx={{ mr: 1 }} />
+          )}
+          {isBiddingJob(selectedJob) ? 'Review Bids' : 'View Applications'}
         </MenuItem>
 
         <Divider />

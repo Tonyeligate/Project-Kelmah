@@ -8,7 +8,8 @@
  * Per spec: max 5 bidders/job, max 5 bids/worker/month, amount within min/max range
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogTitle,
@@ -26,6 +27,10 @@ import {
   Chip,
   InputAdornment,
   IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -42,29 +47,33 @@ import bidApi from '../services/bidService';
 const BidSubmissionForm = ({ open, onClose, job }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const navigate = useNavigate();
   const minBid = job?.bidding?.minBidAmount || job?.budget?.min || 100;
   const maxBid = job?.bidding?.maxBidAmount || job?.budget?.max || 50000;
   const currentBidders = job?.bidding?.currentBidders || 0;
   const maxBidders = job?.bidding?.maxBidders || 5;
 
   const [bidAmount, setBidAmount] = useState(Math.round((minBid + maxBid) / 2));
-  const [estimatedDuration, setEstimatedDuration] = useState('');
+  const [estimatedDuration, setEstimatedDuration] = useState({ value: 1, unit: 'week' });
+  const [hoursPerWeek, setHoursPerWeek] = useState(40);
   const [coverLetter, setCoverLetter] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [bidStats, setBidStats] = useState(null);
 
-  // Reset form when dialog opens
+  // Reset form only when dialog transitions from closed to open (not on every minBid/maxBid change)
+  const prevOpenRef = useRef(false);
   useEffect(() => {
-    if (open) {
+    if (open && !prevOpenRef.current) {
       setBidAmount(Math.round((minBid + maxBid) / 2));
-      setEstimatedDuration('');
+      setEstimatedDuration({ value: 1, unit: 'week' });
+      setHoursPerWeek(40);
       setCoverLetter('');
       setError(null);
       setSuccess(false);
     }
-  }, [open, minBid, maxBid]);
+    prevOpenRef.current = open;
+  }, [open]); // minBid and maxBid intentionally excluded — reset only on open transition
 
   const handleSubmit = async () => {
     if (!coverLetter.trim()) {
@@ -81,10 +90,15 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
 
     try {
       await bidApi.createBid({
-        job: job?._id || job?.id,
+        jobId: job?._id || job?.id,
         bidAmount,
-        estimatedDuration: estimatedDuration || undefined,
+        estimatedDuration,
         coverLetter: coverLetter.trim(),
+        availability: {
+          startDate: new Date().toISOString(),
+          hoursPerWeek,
+          flexible: true,
+        },
       });
       setSuccess(true);
     } catch (err) {
@@ -103,20 +117,33 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
     return (
       <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth fullScreen={isMobile} aria-labelledby="bid-submitted-dialog-title">
         <DialogTitle id="bid-submitted-dialog-title" sx={{ bgcolor: 'background.paper', color: 'primary.main' }}>
-          Bid Submitted!
+          Bid Submitted Successfully
         </DialogTitle>
         <DialogContent sx={{ bgcolor: 'background.paper', pt: 3 }}>
           <Alert severity="success" sx={{ mb: 2 }}>
             Your bid of <strong>GH₵ {bidAmount.toLocaleString()}</strong> has been
-            submitted. The hirer will review all bids and select a worker.
+            submitted with your proposed timeline and availability.
           </Alert>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
+            The hirer can now review your offer. If you want to track the status, withdraw it, or check later responses, open your bid dashboard next.
+          </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            You can view and manage your bids from your dashboard.
+            You can also stay on this job page if you want to keep reviewing the listing details.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ bgcolor: 'background.paper', p: 2 }}>
-          <Button onClick={onClose} variant="contained" color="primary">
-            Done
+          <Button onClick={onClose} color="inherit">
+            Stay on Job
+          </Button>
+          <Button
+            onClick={() => {
+              onClose();
+              navigate('/worker/bids');
+            }}
+            variant="contained"
+            color="primary"
+          >
+            View My Bids
           </Button>
         </DialogActions>
       </Dialog>
@@ -236,12 +263,67 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
         />
 
         {/* Estimated duration */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 140px' }, gap: 2, mb: 3 }}>
+          <TextField
+            label="Estimated Duration"
+            type="number"
+            value={estimatedDuration.value}
+            onChange={(e) => {
+              const nextValue = Number(e.target.value);
+              setEstimatedDuration((prev) => ({
+                ...prev,
+                value: Number.isFinite(nextValue) && nextValue > 0 ? nextValue : 1,
+              }));
+            }}
+            fullWidth
+            size="small"
+            inputProps={{ min: 1 }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                color: theme.palette.text.primary,
+                '& fieldset': { borderColor: alpha(theme.palette.primary.main, 0.3) },
+              },
+              '& .MuiInputLabel-root': { color: theme.palette.text.secondary },
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Schedule sx={{ color: alpha(theme.palette.primary.main, 0.5) }} />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <FormControl size="small" fullWidth>
+            <InputLabel id="bid-duration-unit-label">Unit</InputLabel>
+            <Select
+              labelId="bid-duration-unit-label"
+              value={estimatedDuration.unit}
+              label="Unit"
+              onChange={(e) => {
+                const nextUnit = e.target.value;
+                setEstimatedDuration((prev) => ({ ...prev, unit: nextUnit }));
+              }}
+            >
+              <MenuItem value="hour">Hours</MenuItem>
+              <MenuItem value="day">Days</MenuItem>
+              <MenuItem value="week">Weeks</MenuItem>
+              <MenuItem value="month">Months</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+
         <TextField
-          label="Estimated Duration (e.g. 5 days, 2 weeks)"
-          value={estimatedDuration}
-          onChange={(e) => setEstimatedDuration(e.target.value)}
+          label="Hours Per Week"
+          type="number"
+          value={hoursPerWeek}
+          onChange={(e) => {
+            const nextValue = Number(e.target.value);
+            setHoursPerWeek(Number.isFinite(nextValue) && nextValue > 0 ? Math.min(nextValue, 168) : 40);
+          }}
           fullWidth
           size="small"
+          inputProps={{ min: 1, max: 168 }}
+          helperText="Tell the client how much weekly time you can realistically commit."
           sx={{
             mb: 3,
             '& .MuiOutlinedInput-root': {
@@ -249,13 +331,6 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
               '& fieldset': { borderColor: alpha(theme.palette.primary.main, 0.3) },
             },
             '& .MuiInputLabel-root': { color: theme.palette.text.secondary },
-          }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Schedule sx={{ color: alpha(theme.palette.primary.main, 0.5) }} />
-              </InputAdornment>
-            ),
           }}
         />
 
@@ -280,7 +355,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
         />
 
         <Typography variant="caption" sx={{ color: 'text.disabled' }}>
-          You can submit up to 5 bids per month. Bids can be modified before the deadline.
+          You can submit up to 5 bids per month. Review your price, timeline, and availability before sending.
         </Typography>
       </DialogContent>
 

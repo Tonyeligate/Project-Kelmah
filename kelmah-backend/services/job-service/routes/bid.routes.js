@@ -52,6 +52,45 @@ router.get(
 );
 
 router.get(
+  "/me",
+  authorizeRoles("worker"),
+  (req, res, next) => {
+    req.params.workerId = req.user.id || req.user._id;
+    next();
+  },
+  bidController.getWorkerBids
+);
+
+// Statistics and analytics
+router.get(
+  "/stats/worker/:workerId",
+  bidController.getWorkerBidStats
+);
+
+router.get(
+  "/stats/me",
+  authorizeRoles("worker"),
+  (req, res, next) => {
+    req.params.workerId = req.user.id || req.user._id;
+    next();
+  },
+  bidController.getWorkerBidStats
+);
+
+// Admin routes
+router.get(
+  "/expired",
+  authorizeRoles("admin"),
+  bidController.getExpiredBids
+);
+
+router.patch(
+  "/cleanup/expired",
+  authorizeRoles("admin"),
+  bidController.cleanupExpiredBids
+);
+
+router.get(
   "/:bidId",
   bidController.getBidById
 );
@@ -79,25 +118,6 @@ router.patch(
   "/:bidId/modify",
   authorizeRoles("worker"),
   bidController.modifyBid
-);
-
-// Statistics and analytics
-router.get(
-  "/stats/worker/:workerId",
-  bidController.getWorkerBidStats
-);
-
-// Admin routes
-router.get(
-  "/expired",
-  authorizeRoles("admin"),
-  bidController.getExpiredBids
-);
-
-router.patch(
-  "/cleanup/expired",
-  authorizeRoles("admin"),
-  bidController.cleanupExpiredBids
 );
 
 module.exports = router;

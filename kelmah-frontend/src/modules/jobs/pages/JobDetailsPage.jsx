@@ -58,7 +58,7 @@ import { selectIsAuthenticated } from '../../auth/services/authSlice';
 import { secureStorage } from '../../../utils/secureStorage';
 import { EXTERNAL_SERVICES } from '../../../config/services';
 import jobsApi from '../services/jobsService';
-import { Z_INDEX, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
+import { Z_INDEX, BOTTOM_NAV_HEIGHT, STICKY_CTA_HEIGHT } from '../../../constants/layout';
 import { Helmet } from 'react-helmet-async';
 import { hasRole } from '../../../utils/userUtils';
 import {
@@ -286,6 +286,30 @@ const JobDetailsPage = () => {
     }
     // Navigate to the dedicated application form page for a consistent UX
     navigate(`/jobs/${id}/apply`);
+  };
+
+  const handlePrimaryAction = () => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location.pathname } });
+      return;
+    }
+
+    if (isHirerUser) {
+      navigate('/hirer/find-talent');
+      return;
+    }
+
+    if (!isWorkerUser) {
+      setShareSnackbar('Switch to a worker account to place a bid on this job.');
+      return;
+    }
+
+    if (job?.bidding?.bidStatus === 'open') {
+      setBidDialogOpen(true);
+      return;
+    }
+
+    handleApplyNow();
   };
 
   const handleMessageHirer = () => {
@@ -576,7 +600,7 @@ const JobDetailsPage = () => {
         minHeight: '100vh',
         py: { xs: 2, sm: 4, md: 5 },
         px: { xs: 0, sm: 1 },
-        pb: isMobile ? '90px' : undefined,
+        pb: isMobile ? `calc(${BOTTOM_NAV_HEIGHT + STICKY_CTA_HEIGHT + 64}px + env(safe-area-inset-bottom, 0px))` : undefined,
         bgcolor: 'background.default',
       }}
     >
@@ -848,12 +872,7 @@ const JobDetailsPage = () => {
                   variant="contained"
                   fullWidth
                   size="large"
-                  onClick={() => {
-                    if (!isAuthenticated) { navigate('/login', { state: { from: location.pathname } }); return; }
-                    if (isHirerUser) { navigate('/hirer/find-talent'); return; }
-                    if (job?.bidding?.bidStatus === 'open') setBidDialogOpen(true);
-                    else handleApplyNow();
-                  }}
+                  onClick={handlePrimaryAction}
                   startIcon={<NoteAlt />}
                   sx={{ mb: 1.5, background: 'linear-gradient(45deg, #FFD700, #FFA500)', color: '#000', fontWeight: 700, py: 1.4, fontSize: '1rem' }}
                 >
@@ -1227,19 +1246,33 @@ const JobDetailsPage = () => {
             px: 2,
             py: 1.5,
             pb: 'calc(12px + env(safe-area-inset-bottom, 0px))',
-            display: 'flex',
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0, 1fr) auto auto',
             alignItems: 'center',
             gap: 1,
             backdropFilter: 'blur(8px)',
+            boxShadow: `0 -12px 30px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.35 : 0.12)}`,
           }}
         >
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, display: 'block', mb: 0.35, letterSpacing: 0.3 }}>
+              {isHirerUser
+                ? 'Client action'
+                : job?.bidding?.bidStatus === 'open'
+                  ? 'Ready to bid'
+                  : 'Ready to apply'}
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 700, lineHeight: 1.3, pr: 1 }}>
+              {isHirerUser
+                ? 'Use the talent search instead of bidding on your own marketplace listing.'
+                : job?.bidding?.bidStatus === 'open'
+                  ? `Bid range ${budgetDisplay}`
+                  : budgetDisplay}
+            </Typography>
+          </Box>
           <Button
             variant="contained"
-            fullWidth
-            onClick={job?.bidding?.bidStatus === 'open' ? () => {
-              if (!isAuthenticated) { navigate('/login', { state: { from: location.pathname } }); return; }
-              setBidDialogOpen(true);
-            } : handleApplyNow}
+            onClick={handlePrimaryAction}
             sx={{
               bgcolor: '#D4AF37',
               color: '#000',
@@ -1248,10 +1281,15 @@ const JobDetailsPage = () => {
               fontSize: '0.95rem',
               minHeight: 48,
               borderRadius: 2,
+              minWidth: 156,
               '&:hover': { bgcolor: '#B8941F' },
             }}
           >
-            {job?.bidding?.bidStatus === 'open' ? 'Place Your Bid' : 'Apply Now'}
+            {isHirerUser
+              ? 'Find Talent'
+              : job?.bidding?.bidStatus === 'open'
+                ? 'Place Your Bid'
+                : 'Apply Now'}
           </Button>
           <IconButton
             onClick={handleToggleSave}

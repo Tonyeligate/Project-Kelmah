@@ -2,9 +2,9 @@
  * MyBidsPage — Worker's bid dashboard
  *
  * DATA FLOW:
- *   MyBidsPage → bidApi.getWorkerBids(userId) → GET /api/bids/worker/:workerId → Gateway → Job Service
+ *   MyBidsPage → bidApi.getMyBids() → GET /api/bids/me → Gateway → Job Service
  *   MyBidsPage → bidApi.withdrawBid(bidId) → PATCH /api/bids/:id/withdraw → Gateway → Job Service
- *   MyBidsPage → bidApi.getWorkerBidStats(userId) → GET /api/bids/stats/worker/:workerId → Gateway → Job Service
+ *   MyBidsPage → bidApi.getMyBidStats() → GET /api/bids/stats/me → Gateway → Job Service
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -57,6 +57,7 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import bidApi from '../../jobs/services/bidService';
+import Toast from '../../common/components/common/Toast';
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'warning', icon: <PendingIcon fontSize="small" /> },
@@ -300,7 +301,6 @@ const MyBidsPage = () => {
   const navigate = useNavigate();
   const { user: rawUser } = useSelector((state) => state.auth);
   const user = normalizeUser(rawUser);
-  const userId = user?.id;
 
   const [bids, setBids] = useState([]);
   const [stats, setStats] = useState(null);
@@ -310,24 +310,29 @@ const MyBidsPage = () => {
   const [withdrawDialog, setWithdrawDialog] = useState({ open: false, bid: null });
   const [withdrawReason, setWithdrawReason] = useState('');
   const [withdrawing, setWithdrawing] = useState(false);
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'info', title: null });
 
   const TAB_STATUSES = ['all', 'pending', 'accepted', 'rejected', 'withdrawn', 'expired'];
 
   const fetchBids = useCallback(async () => {
-    if (!userId) { setLoading(false); return; }
+    if (!user) {
+      navigate('/login', { state: { from: '/worker/bids' } });
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
       const [bidsResult, statsResult] = await Promise.allSettled([
-        bidApi.getWorkerBids(userId),
-        bidApi.getWorkerBidStats(userId),
+        bidApi.getMyBids(),
+        bidApi.getMyBidStats(),
       ]);
-      const bidsData = bidsResult.status === 'fulfilled'
-        ? (Array.isArray(bidsResult.value) ? bidsResult.value : bidsResult.value?.bids || [])
-        : [];
+      const bidsData = bidsResult.status === 'fulfilled' ? bidsResult.value : [];
       setBids(bidsData);
       if (statsResult.status === 'fulfilled') {
         setStats(statsResult.value);
+      }
+      if (bidsResult.status === 'rejected' && statsResult.status === 'rejected') {
+        setError('Failed to load your bids. Please try again.');
       }
     } catch (err) {
       setError('Failed to load your bids. Please try again.');
@@ -335,12 +340,12 @@ const MyBidsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [user?.id || user?._id]);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
     fetchBids();
-    return () => { cancelled = true; };
+    return () => controller.abort();
   }, [fetchBids]);
 
   const filteredBids = tabValue === 0
@@ -364,9 +369,20 @@ const MyBidsPage = () => {
         ),
       );
       setWithdrawDialog({ open: false, bid: null });
+      setToast({
+        open: true,
+        severity: 'success',
+        title: 'Bid withdrawn',
+        message: 'Your bid has been withdrawn and will no longer be considered for this job.',
+      });
     } catch (err) {
       if (import.meta.env.DEV) console.error('Failed to withdraw bid:', err);
-      setError('Failed to withdraw bid. Please try again.');
+      setToast({
+        open: true,
+        severity: 'error',
+        title: 'Could not withdraw bid',
+        message: 'The withdrawal did not complete. Please try again.',
+      });
     } finally {
       setWithdrawing(false);
     }
@@ -534,6 +550,14 @@ const MyBidsPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Toast
+        open={toast.open}
+        title={toast.title}
+        message={toast.message}
+        severity={toast.severity}
+        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+      />
     </Container>
   );
 };

@@ -124,10 +124,11 @@ const EnhancedJobCard = ({
     setBidLoading(true);
     try {
       await bidApi.createBid({
-        job: job.id || job._id,
+        jobId: job.id || job._id,
         bidAmount: bidData.bidAmount,
         estimatedDuration: bidData.estimatedDuration,
         coverLetter: bidData.coverLetter,
+        availability: bidData.availability,
       });
 
       setBidDialogOpen(false);
@@ -357,9 +358,7 @@ const EnhancedJobCard = ({
 
                 <LinearProgress
                   variant="determinate"
-                  value={
-                    (job.bidding.currentBidders / job.bidding.maxBidders) * 100
-                  }
+                  value={Math.min(100, Math.max(0, (job.bidding.currentBidders / (job.bidding.maxBidders || 1)) * 100))}
                   sx={{
                     height: 6,
                     borderRadius: 3,
@@ -438,9 +437,11 @@ const EnhancedJobCard = ({
               />
               <Typography variant="caption" color="text.secondary">
                 Posted{' '}
-                {formatDistanceToNow(new Date(job.postedDate || job.createdAt || Date.now()), {
-                  addSuffix: true,
-                })}
+                {(() => {
+                  const dateStr = job.postedDate || job.createdAt;
+                  const d = dateStr ? new Date(dateStr) : null;
+                  return d && !isNaN(d.getTime()) ? formatDistanceToNow(d, { addSuffix: true }) : 'Recently';
+                })()}
               </Typography>
             </Box>
 
@@ -455,7 +456,10 @@ const EnhancedJobCard = ({
                   }}
                 />
                 <Typography variant="caption" color="text.secondary">
-                  Apply by {format(new Date(job.applyBy), 'MMM dd')}
+                  Apply by {(() => {
+                  const d = job.applyBy ? new Date(job.applyBy) : null;
+                  return d && !isNaN(d.getTime()) ? format(d, 'MMM dd') : 'N/A';
+                })()}
                 </Typography>
               </Box>
             )}
@@ -485,7 +489,7 @@ const EnhancedJobCard = ({
             <Button
               variant="contained"
               onClick={() => setBidDialogOpen(true)}
-              disabled={!canBid()}
+              disabled={!bidStats || !canBid()}
               sx={{
                 borderRadius: 2,
                 px: 3,
@@ -497,7 +501,7 @@ const EnhancedJobCard = ({
                 },
               }}
             >
-              {canBid() ? 'Bid Now' : 'Bidding Closed'}
+              {!bidStats ? 'Loading...' : canBid() ? 'Bid Now' : 'Bidding Closed'}
             </Button>
           </CardActions>
         </Card>

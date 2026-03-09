@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
@@ -30,9 +30,10 @@ import fileUploadService from '../../common/services/fileUploadService';
 const JobApplicationPage = () => {
   const { id: jobId } = useParams();
   const navigate = useNavigate();
-  const redirectTimerRef = useRef(null);
+  const location = useLocation();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+  const isAuthenticated = !!user;
   const { currentJob, loading: jobLoading } = useSelector((state) => state.jobs);
 
   const [coverLetter, setCoverLetter] = useState('');
@@ -52,10 +53,12 @@ const JobApplicationPage = () => {
     }
   }, [dispatch, jobId]);
 
-  // Cleanup redirect timer on unmount
+  // Auth guard — redirect unauthenticated users immediately
   useEffect(() => {
-    return () => clearTimeout(redirectTimerRef.current);
-  }, []);
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location.pathname } });
+    }
+  }, [isAuthenticated, navigate, location.pathname]);
 
   const handleAttachmentChange = (event) => {
     const files = Array.from(event.target.files || []);
@@ -81,21 +84,28 @@ const JobApplicationPage = () => {
       return;
     }
 
+    if (isBiddingJob) {
+      const amount = parseFloat(bidAmount);
+      if (!bidAmount || isNaN(amount) || amount <= 0) {
+        setError('Please enter a valid bid amount.');
+        return;
+      }
+    }
+
     setSubmitting(true);
 
     try {
       if (isBiddingJob) {
         const amount = parseFloat(bidAmount);
-        if (!bidAmount || isNaN(amount) || amount <= 0) {
-          setError('Please enter a valid bid amount.');
-          setSubmitting(false);
-          return;
-        }
         await bidApi.createBid({
-          job: jobId,
+          jobId,
           bidAmount: amount,
+          estimatedDuration: currentJob?.duration || { value: 1, unit: 'week' },
           coverLetter: coverLetter.trim(),
-          estimatedDuration: '',
+          availability: {
+            startDate: new Date().toISOString(),
+            flexible: true,
+          },
         });
       } else {
         let uploadedAttachments = [];
@@ -136,20 +146,22 @@ const JobApplicationPage = () => {
       }
 
       setSuccess(true);
-      // Navigate back to the job after a short delay
-      redirectTimerRef.current = setTimeout(() => navigate(`/jobs/${jobId}`, { replace: true }), 2000);
     } catch (err) {
       const msg =
         err?.message ||
         err?.response?.data?.message ||
         err?.error ||
         (typeof err === 'string' ? err : null) ||
-        'Could not submit your application. Please try again.';
+        (isBiddingJob
+          ? 'Could not submit your bid. Please review the details and try again.'
+          : 'Could not submit your application. Please try again.');
       setError(msg);
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (!isAuthenticated) return null;
 
   if (jobLoading) {
     return (
@@ -210,121 +222,155 @@ const JobApplicationPage = () => {
           </Typography>
           <Divider sx={{ mb: 3 }} />
 
-          {success && (
-            <Alert severity="success" sx={{ mb: 3 }}>
-              {isBiddingJob
-                ? 'Your bid was submitted! You will be notified when the hirer responds.'
-                : 'Application sent! You will be notified when the hirer responds.'}
-            </Alert>
-          )}
-
           {error && (
             <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
               {error}
             </Alert>
           )}
 
-          {/* Cover letter */}
-          <TextField
-            label="Why are you the right person for this job?"
-            multiline
-            rows={5}
-            fullWidth
-            required
-            value={coverLetter}
-            onChange={(e) => setCoverLetter(e.target.value)}
-            placeholder="Tell the hirer about your experience, why you are a good fit, and how you will approach this work…"
-            inputProps={{ maxLength: 1000 }}
-            helperText={`${coverLetter.length}/1000 characters`}
-            disabled={submitting || success}
-            sx={{ mb: 3 }}
-          />
+          {success ? (
+            <Box>
+              <Alert severity="success" sx={{ mb: 2 }}>
+                {isBiddingJob
+                  ? `Your bid of GH₵${Number(bidAmount || 0).toLocaleString()} was submitted successfully.`
+                  : 'Your application was submitted successfully.'}
+              </Alert>
+              <Typography variant="body1" sx={{ mb: 1.5 }}>
+                {isBiddingJob
+                  ? 'Your bid is now saved. The next useful step is to track it from My Bids or return to the job details page.'
+                  : 'Your application is now saved. You can review the job again or open your applications dashboard.'}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                {isBiddingJob
+                  ? 'If the hirer shortlists or accepts your bid, the update will appear in your bid dashboard.'
+                  : 'If the hirer responds, the update will appear in your applications dashboard.'}
+              </Typography>
 
-          {/* Bid amount — only for bidding jobs */}
-          {isBiddingJob && (
-            <TextField
-              label="Your Bid Amount"
-              type="number"
-              fullWidth
-              required
-              value={bidAmount}
-              onChange={(e) => setBidAmount(e.target.value)}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">GH₵</InputAdornment>,
-              }}
-              inputProps={{ min: 1, step: 0.01 }}
-              disabled={submitting || success}
-              helperText={
-                currentJob?.bidding?.minBidAmount
-                  ? `Minimum bid: GH₵${Number(currentJob.bidding.minBidAmount).toLocaleString()}`
-                  : undefined
-              }
-              sx={{ mb: 3 }}
-            />
-          )}
-
-          {/* Proposed rate — only for regular application jobs */}
-          {!isBiddingJob && (
-            <TextField
-              label="Your Proposed Rate (optional)"
-              type="number"
-              fullWidth
-              value={proposedRate}
-              onChange={(e) => setProposedRate(e.target.value)}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">GH₵</InputAdornment>,
-              }}
-              inputProps={{ min: 0, step: 0.01 }}
-              disabled={submitting || success}
-              helperText="Leave blank to accept the posted rate"
-              sx={{ mb: 3 }}
-            />
-          )}
-
-          {!isBiddingJob && (
-            <Box sx={{ mb: 3 }}>
-              <Button component="label" variant="outlined" startIcon={<AttachFileIcon />}>
-                Attach work samples or proof
-                <input hidden multiple type="file" accept="image/*,video/*,.pdf,.doc,.docx,.txt" onChange={handleAttachmentChange} />
-              </Button>
-              {attachments.length > 0 && (
-                <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1.5 }}>
-                  {attachments.map((file, index) => (
-                    <Chip
-                      key={`${file.name}-${index}`}
-                      label={file.name}
-                      onDelete={() => handleRemoveAttachment(`${file.name}-${index}`)}
-                      sx={{ mb: 1 }}
-                    />
-                  ))}
-                </Stack>
-              )}
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="flex-end">
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate(`/jobs/${jobId}`)}
+                >
+                  View Job Details
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => navigate(isBiddingJob ? '/worker/bids' : '/worker/applications')}
+                  startIcon={isBiddingJob ? <BidIcon /> : <WorkIcon />}
+                >
+                  {isBiddingJob ? 'Go to My Bids' : 'View My Applications'}
+                </Button>
+              </Stack>
             </Box>
-          )}
+          ) : (
+            <>
 
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <Button
-              variant="outlined"
-              onClick={() => navigate(`/jobs/${jobId}`)}
-              disabled={submitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="secondary"
-              startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
-              disabled={submitting || success}
-              sx={{ minWidth: 140 }}
-            >
-              {submitting
-                ? 'Sending…'
-                : isBiddingJob
-                  ? 'Place Bid'
-                  : 'Submit Application'}
-            </Button>
-          </Box>
+              {/* Cover letter */}
+              <TextField
+                label="Why are you the right person for this job?"
+                multiline
+                rows={5}
+                fullWidth
+                required
+                value={coverLetter}
+                onChange={(e) => setCoverLetter(e.target.value)}
+                placeholder="Tell the hirer about your experience, why you are a good fit, and how you will approach this work…"
+                inputProps={{ maxLength: 1000 }}
+                helperText={`${coverLetter.length}/1000 characters`}
+                disabled={submitting || success}
+                sx={{ mb: 3 }}
+              />
+
+              {/* Bid amount — only for bidding jobs */}
+              {isBiddingJob && (
+                <TextField
+                  label="Your Bid Amount"
+                  type="number"
+                  fullWidth
+                  required
+                  value={bidAmount}
+                  onChange={(e) => setBidAmount(e.target.value)}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">GH₵</InputAdornment>,
+                  }}
+                  inputProps={{ min: 1, step: 0.01 }}
+                  disabled={submitting || success}
+                  helperText={
+                    currentJob?.bidding?.minBidAmount
+                      ? `Minimum bid: GH₵${Number(currentJob.bidding.minBidAmount).toLocaleString()}`
+                      : undefined
+                  }
+                  sx={{ mb: 3 }}
+                />
+              )}
+
+              {/* Proposed rate — only for regular application jobs */}
+              {!isBiddingJob && (
+                <TextField
+                  label="Your Proposed Rate (optional)"
+                  type="number"
+                  fullWidth
+                  value={proposedRate}
+                  onChange={(e) => setProposedRate(e.target.value)}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">GH₵</InputAdornment>,
+                  }}
+                  inputProps={{ min: 0, step: 0.01 }}
+                  disabled={submitting || success}
+                  helperText="Leave blank to accept the posted rate"
+                  sx={{ mb: 3 }}
+                />
+              )}
+
+              {!isBiddingJob && (
+                <Box sx={{ mb: 3 }}>
+                  <Button component="label" variant="outlined" startIcon={<AttachFileIcon />}>
+                    Attach work samples or proof
+                    <input hidden multiple type="file" accept="image/*,video/*,.pdf,.doc,.docx,.txt" onChange={handleAttachmentChange} />
+                  </Button>
+                  {attachments.length > 0 && (
+                    <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1.5 }}>
+                      {attachments.map((file, index) => (
+                        <Chip
+                          key={`${file.name}-${index}`}
+                          label={file.name}
+                          onDelete={() => handleRemoveAttachment(`${file.name}-${index}`)}
+                          sx={{ mb: 1 }}
+                        />
+                      ))}
+                    </Stack>
+                  )}
+                </Box>
+              )}
+
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate(`/jobs/${jobId}`)}
+                  disabled={submitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="secondary"
+                  startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
+                  disabled={submitting || success}
+                  sx={{ minWidth: 180 }}
+                >
+                  {submitting
+                    ? isBiddingJob
+                      ? 'Submitting Bid…'
+                      : 'Submitting Application…'
+                    : isBiddingJob
+                      ? 'Place Bid'
+                      : 'Submit Application'}
+                </Button>
+              </Box>
+            </>
+          )}
         </Paper>
       </Container>
     </>

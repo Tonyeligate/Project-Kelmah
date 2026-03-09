@@ -7,15 +7,128 @@ const { Bid, Job, UserPerformance } = require('../models');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
 const ServiceClient = require('../services/serviceClient');
 
+const DURATION_UNIT_MAP = {
+  hour: 'hour',
+  hours: 'hour',
+  hr: 'hour',
+  hrs: 'hour',
+  day: 'day',
+  days: 'day',
+  week: 'week',
+  weeks: 'week',
+  wk: 'week',
+  wks: 'week',
+  month: 'month',
+  months: 'month',
+  mo: 'month',
+  mos: 'month',
+};
+
+const DEFAULT_DURATION = { value: 1, unit: 'week' };
+
+const ensureValidObjectId = (res, value, label) => {
+  if (!mongoose.Types.ObjectId.isValid(value)) {
+    errorResponse(res, 400, `Invalid ${label}`);
+    return false;
+  }
+
+  return true;
+};
+
+const ensureValidBidId = (res, bidId) => ensureValidObjectId(res, bidId, 'bid ID');
+const ensureValidJobId = (res, jobId) => ensureValidObjectId(res, jobId, 'job ID');
+const ensureValidWorkerId = (res, workerId) => ensureValidObjectId(res, workerId, 'worker ID');
+
+const toPositiveNumber = (value) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return parsed;
+};
+
+const normalizeDurationUnit = (unit) => {
+  if (!unit || typeof unit !== 'string') return null;
+  return DURATION_UNIT_MAP[unit.trim().toLowerCase()] || null;
+};
+
+const normalizeEstimatedDuration = (estimatedDuration) => {
+  if (estimatedDuration && typeof estimatedDuration === 'object') {
+    const value = toPositiveNumber(
+      estimatedDuration.value ?? estimatedDuration.amount ?? estimatedDuration.duration,
+    );
+    const unit = normalizeDurationUnit(estimatedDuration.unit);
+    if (value && unit) {
+      return { value, unit };
+    }
+  }
+
+  if (typeof estimatedDuration === 'string') {
+    const match = estimatedDuration.trim().match(/(\d+(?:\.\d+)?)\s*([a-zA-Z]+)/);
+    if (match) {
+      const value = toPositiveNumber(match[1]);
+      const unit = normalizeDurationUnit(match[2]);
+      if (value && unit) {
+        return { value, unit };
+      }
+    }
+  }
+
+  return { ...DEFAULT_DURATION };
+};
+
+const normalizeAvailability = (availability) => {
+  if (availability && typeof availability === 'object') {
+    const startDate = availability.startDate ? new Date(availability.startDate) : new Date();
+    const normalizedAvailability = {
+      startDate: Number.isNaN(startDate.getTime()) ? new Date() : startDate,
+      flexible: availability.flexible ?? true,
+    };
+
+    const hoursPerWeek = toPositiveNumber(availability.hoursPerWeek);
+    if (hoursPerWeek) {
+      normalizedAvailability.hoursPerWeek = Math.min(hoursPerWeek, 168);
+    }
+
+    if (availability.endDate) {
+      const endDate = new Date(availability.endDate);
+      if (!Number.isNaN(endDate.getTime())) {
+        normalizedAvailability.endDate = endDate;
+      }
+    }
+
+    return normalizedAvailability;
+  }
+
+  return {
+    startDate: new Date(),
+    flexible: true,
+  };
+};
+
 // Create a new bid
 exports.createBid = async (req, res, next) => {
   try {
-    const { jobId, bidAmount, estimatedDuration, coverLetter, portfolio, availability } = req.body;
-    const workerId = req.user.id;
+    const {
+      jobId: rawJobId,
+      job: legacyJobId,
+      bidAmount: rawBidAmount,
+      estimatedDuration,
+      coverLetter,
+      portfolio,
+      availability,
+    } = req.body;
+    const workerId = req.user.id || req.user._id;
+    const jobId = rawJobId || legacyJobId;
+    const bidAmount = Number(rawBidAmount);
+    const normalizedEstimatedDuration = normalizeEstimatedDuration(estimatedDuration);
+    const normalizedAvailability = normalizeAvailability(availability);
 
     // Validate required fields
-    if (!jobId || !bidAmount || !estimatedDuration || !coverLetter || !availability) {
-      return errorResponse(res, 400, 'Missing required fields');
+    if (!jobId || !Number.isFinite(bidAmount) || bidAmount <= 0 || !String(coverLetter || '').trim()) {
+      return errorResponse(res, 400, 'Missing required bid fields');
+    }
+
+    if (!ensureValidJobId(res, jobId)) {
+      return;
     }
 
     // Check if job exists and is open for bidding
@@ -74,10 +187,10 @@ exports.createBid = async (req, res, next) => {
       job: jobId,
       worker: workerId,
       bidAmount,
-      estimatedDuration,
-      coverLetter,
+      estimatedDuration: normalizedEstimatedDuration,
+      coverLetter: String(coverLetter).trim(),
       portfolio: portfolio || [],
-      availability,
+      availability: normalizedAvailability,
       performanceScore,
       monthlyBidCount: monthlyBidCount + 1
     });
@@ -125,6 +238,10 @@ exports.getJobBids = async (req, res, next) => {
     const limit = parseInt(req.query.limit, 10) || 10;
     const offset = (page - 1) * limit;
 
+    if (!ensureValidJobId(res, jobId)) {
+      return;
+    }
+
     // Check if user is the job owner
     const job = await Job.findById(jobId);
     if (!job) {
@@ -161,6 +278,10 @@ exports.getWorkerBids = async (req, res, next) => {
     const limit = parseInt(req.query.limit, 10) || 10;
     const offset = (page - 1) * limit;
 
+    if (!ensureValidWorkerId(res, workerId)) {
+      return;
+    }
+
     // Check if user is viewing their own bids or is an admin
     if (workerId !== req.user.id && req.user.role !== 'admin') {
       return errorResponse(res, 403, 'Access denied');
@@ -188,6 +309,10 @@ exports.getWorkerBids = async (req, res, next) => {
 exports.getBidById = async (req, res, next) => {
   try {
     const { bidId } = req.params;
+
+    if (!ensureValidBidId(res, bidId)) {
+      return;
+    }
 
     const bid = await Bid.findById(bidId)
       .populate('job', 'title category locationDetails hirer')
@@ -219,6 +344,10 @@ exports.acceptBid = async (req, res, next) => {
     const { bidId } = req.params;
     const { hirerNotes } = req.body;
 
+    if (!ensureValidBidId(res, bidId)) {
+      return;
+    }
+
     const bid = await Bid.findById(bidId).populate('job');
     if (!bid) {
       return errorResponse(res, 404, 'Bid not found');
@@ -229,47 +358,49 @@ exports.acceptBid = async (req, res, next) => {
       return errorResponse(res, 403, 'Access denied. You can only accept bids for your own jobs');
     }
 
-    if (bid.status !== 'pending') {
-      return errorResponse(res, 400, 'Bid is not pending');
-    }
-
     // Accept bid, reject others, and update job in a transaction to prevent double-accept
     const session = await mongoose.startSession();
     try {
+      let freshBid;
       await session.withTransaction(async () => {
-        bid.status = 'accepted';
-        bid.hirerNotes = hirerNotes || '';
-        bid.responseTimestamp = new Date();
-        await bid.save({ session });
+        // Atomically check status and update inside the transaction to prevent race conditions
+        freshBid = await Bid.findOneAndUpdate(
+          { _id: bidId, status: 'pending' },
+          { status: 'accepted', responseTimestamp: new Date(), hirerNotes: hirerNotes || '' },
+          { new: true, session }
+        ).populate('job');
+        if (!freshBid) {
+          throw new Error('Bid is no longer pending or was already accepted');
+        }
 
         await Bid.updateMany(
-          { job: bid.job._id, _id: { $ne: bidId }, status: 'pending' },
+          { job: freshBid.job._id, _id: { $ne: bidId }, status: 'pending' },
           { status: 'rejected', hirerNotes: 'Another bid was accepted' },
           { session }
         );
 
-        bid.job.status = 'in-progress';
-        bid.job.worker = bid.worker;
-        bid.job.bidding.bidStatus = 'closed';
-        await bid.job.save({ session });
+        freshBid.job.status = 'in-progress';
+        freshBid.job.worker = freshBid.worker;
+        freshBid.job.bidding.bidStatus = 'closed';
+        await freshBid.job.save({ session });
       });
+
+      // Notify the worker whose bid was accepted
+      ServiceClient.messaging.sendBidNotification(
+        freshBid.worker.toString(),
+        'bid:accepted',
+        {
+          bidId: freshBid._id,
+          jobId: freshBid.job._id,
+          jobTitle: freshBid.job.title,
+          bidAmount: freshBid.bidAmount,
+        }
+      ).catch(() => {});
+
+      return successResponse(res, 200, 'Bid accepted successfully', freshBid);
     } finally {
       await session.endSession();
     }
-
-    // Notify the worker whose bid was accepted
-    ServiceClient.messaging.sendBidNotification(
-      bid.worker.toString(),
-      'bid:accepted',
-      {
-        bidId: bid._id,
-        jobId: bid.job._id,
-        jobTitle: bid.job.title,
-        bidAmount: bid.bidAmount,
-      }
-    ).catch(() => {});
-
-    return successResponse(res, 200, 'Bid accepted successfully', bid);
   } catch (error) {
     next(error);
   }
@@ -280,6 +411,10 @@ exports.rejectBid = async (req, res, next) => {
   try {
     const { bidId } = req.params;
     const { hirerNotes } = req.body;
+
+    if (!ensureValidBidId(res, bidId)) {
+      return;
+    }
 
     const bid = await Bid.findById(bidId).populate('job');
     if (!bid) {
@@ -321,6 +456,10 @@ exports.withdrawBid = async (req, res, next) => {
   try {
     const { bidId } = req.params;
     const { workerNotes } = req.body;
+
+    if (!ensureValidBidId(res, bidId)) {
+      return;
+    }
 
     const bid = await Bid.findById(bidId).populate('job');
     if (!bid) {
@@ -365,6 +504,10 @@ exports.modifyBid = async (req, res, next) => {
     const { bidId } = req.params;
     const { field, newValue, reason } = req.body;
 
+    if (!ensureValidBidId(res, bidId)) {
+      return;
+    }
+
     // SECURITY: Only allow modification of specific bid fields
     const BID_MODIFIABLE_FIELDS = ['bidAmount', 'proposal', 'timeline', 'deliveryDate'];
     if (!BID_MODIFIABLE_FIELDS.includes(field)) {
@@ -408,6 +551,10 @@ exports.getWorkerBidStats = async (req, res, next) => {
   try {
     const { workerId } = req.params;
     const { month, year } = req.query;
+
+    if (!ensureValidWorkerId(res, workerId)) {
+      return;
+    }
 
     // Check if user is viewing their own stats or is an admin
     if (workerId !== req.user.id && req.user.role !== 'admin') {

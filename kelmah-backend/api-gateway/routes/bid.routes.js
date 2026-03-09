@@ -77,9 +77,20 @@ router.get('/worker/:workerId', authenticate, async (req, res) => {
   await forwardToBidService(req, res, path, 'GET');
 });
 
+// GET /api/bids/me — List bids for the authenticated worker
+router.get('/me', authenticate, async (req, res) => {
+  const qs = new URLSearchParams(req.query).toString();
+  await forwardToBidService(req, res, `/api/bids/me${qs ? '?' + qs : ''}`, 'GET');
+});
+
 // GET /api/bids/stats/worker/:workerId — Worker bid stats (own/admin)
 router.get('/stats/worker/:workerId', authenticate, async (req, res) => {
   await forwardToBidService(req, res, `/api/bids/stats/worker/${req.params.workerId}`, 'GET');
+});
+
+// GET /api/bids/stats/me — Bid stats for the authenticated worker
+router.get('/stats/me', authenticate, async (req, res) => {
+  await forwardToBidService(req, res, '/api/bids/stats/me', 'GET');
 });
 
 // GET /api/bids/expired — List expired bids (admin)
