@@ -13,9 +13,33 @@ const workerProfileSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    profession: {
+        type: String,
+        trim: true,
+        maxlength: 120
+    },
+    title: {
+        type: String,
+        trim: true,
+        maxlength: 120
+    },
+    headline: {
+        type: String,
+        trim: true,
+        maxlength: 160
+    },
+    tagline: {
+        type: String,
+        trim: true,
+        maxlength: 160
+    },
     bio: {
         type: String,
         maxlength: [2000, 'Bio cannot exceed 2000 characters'],
+        trim: true
+    },
+    profilePicture: {
+        type: String,
         trim: true
     },
     hourlyRate: {
@@ -103,6 +127,10 @@ const workerProfileSchema = new mongoose.Schema({
     languages: {
         type: [String],
         default: ['English']
+    },
+    education: {
+        type: [mongoose.Schema.Types.Mixed],
+        default: []
     },
     skillEntries: [
         {
@@ -409,6 +437,12 @@ workerProfileSchema.index({ availabilityStatus: 1 });
 workerProfileSchema.index({ hourlyRate: 1 });
 workerProfileSchema.index({ experienceLevel: 1 });
 workerProfileSchema.index({ 'skillEntries.name': 1 });
+workerProfileSchema.index({ profession: 1 });
+workerProfileSchema.index({ title: 1 });
+workerProfileSchema.index({ latitude: 1, longitude: 1 });
+workerProfileSchema.index({ availabilityStatus: 1, isVerified: -1, rating: -1, totalJobsCompleted: -1, updatedAt: -1 });
+workerProfileSchema.index({ availabilityStatus: 1, hourlyRate: 1, rating: -1, updatedAt: -1 });
+workerProfileSchema.index({ isVerified: 1, rating: -1, totalJobsCompleted: -1, updatedAt: -1 });
 
 workerProfileSchema.virtual('user', {
     ref: 'User',

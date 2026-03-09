@@ -46,19 +46,27 @@ const OPTIONAL_PROFILE_FIELDS = [
 ];
 
 // Normalised mapping between UI trade filters and stored worker values
+// ALGO IMPROVEMENT: Expanded synonym map with 8 additional trades for better coverage
 const TRADE_SYNONYM_MAP = {
-  carpentry: ['Carpentry', 'Carpenter', 'Carpentry & Woodwork', 'Woodwork', 'Joinery'],
-  masonry: ['Masonry', 'Mason', 'Masonry & Stonework', 'Bricklayer', 'Stonework'],
-  plumbing: ['Plumbing', 'Plumber', 'Plumbing Services'],
-  'electrical work': ['Electrical Work', 'Electrician', 'Licensed Electrician', 'Electrical Engineer', 'Electrical Services'],
-  painting: ['Painting', 'Painter', 'Painting & Decoration', 'Decorating'],
-  welding: ['Welding', 'Welder', 'Welding Services', 'Metal Work'],
-  roofing: ['Roofing', 'Roofer', 'Roofing Services'],
-  flooring: ['Flooring', 'Flooring Specialist', 'Tile & Flooring', 'Tiling', 'Tiler'],
-  hvac: ['HVAC', 'HVAC & Climate Control', 'Air Conditioning', 'Air Conditioning Technician'],
-  landscaping: ['Landscaping', 'Landscaper', 'Gardener', 'Landscaping Services'],
-  'general construction': ['General Construction', 'Construction', 'Construction & Building', 'Builder', 'General Contractor'],
-  maintenance: ['Maintenance', 'General Maintenance', 'Handyman'],
+  carpentry: ['Carpentry', 'Carpenter', 'Carpentry & Woodwork', 'Woodwork', 'Joinery', 'Cabinet Maker', 'Furniture Making', 'Woodworker'],
+  masonry: ['Masonry', 'Mason', 'Masonry & Stonework', 'Bricklayer', 'Stonework', 'Block Layer', 'Stone Mason', 'Blockwork'],
+  plumbing: ['Plumbing', 'Plumber', 'Plumbing Services', 'Pipe Fitting', 'Pipe Fitter', 'Water Systems', 'Sanitary'],
+  'electrical work': ['Electrical Work', 'Electrician', 'Licensed Electrician', 'Electrical Engineer', 'Electrical Services', 'Wiring', 'Power Systems'],
+  painting: ['Painting', 'Painter', 'Painting & Decoration', 'Decorating', 'Spray Painting', 'Wall Finishing'],
+  welding: ['Welding', 'Welder', 'Welding Services', 'Metal Work', 'Metal Fabrication', 'Fabrication', 'Steel Work', 'Ironwork'],
+  roofing: ['Roofing', 'Roofer', 'Roofing Services', 'Roof Installation', 'Roof Repair', 'Roof Tiling'],
+  flooring: ['Flooring', 'Flooring Specialist', 'Tile & Flooring', 'Tiling', 'Tiler', 'Floor Installation', 'Floor Finishing'],
+  hvac: ['HVAC', 'HVAC & Climate Control', 'Air Conditioning', 'Air Conditioning Technician', 'Refrigeration', 'Cooling Systems', 'Heating'],
+  landscaping: ['Landscaping', 'Landscaper', 'Gardener', 'Landscaping Services', 'Lawn Care', 'Garden Design', 'Grounds Maintenance'],
+  'general construction': ['General Construction', 'Construction', 'Construction & Building', 'Builder', 'General Contractor', 'Site Work'],
+  maintenance: ['Maintenance', 'General Maintenance', 'Handyman', 'Repair', 'Property Maintenance', 'Fix-it'],
+  'solar installation': ['Solar Installation', 'Solar Panel', 'Solar Technician', 'Solar Energy', 'PV Installation'],
+  glazing: ['Glazing', 'Glazier', 'Glass Installation', 'Window Fitting', 'Glass Work'],
+  'interior design': ['Interior Design', 'Interior Decorator', 'Home Design', 'Space Planning'],
+  'pest control': ['Pest Control', 'Fumigation', 'Exterminator'],
+  'auto mechanic': ['Auto Mechanic', 'Car Mechanic', 'Vehicle Repair', 'Automotive Repair', 'Motor Mechanic'],
+  tailoring: ['Tailoring', 'Tailor', 'Seamstress', 'Dressmaking', 'Fashion Design'],
+  catering: ['Catering', 'Cook', 'Chef', 'Food Service', 'Event Catering'],
 };
 
 const buildTradeRegexes = (trade) => {
@@ -73,13 +81,15 @@ const buildTradeRegexes = (trade) => {
 };
 
 const WORKER_RANK_WEIGHTS = {
-  verified: Number(process.env.RANK_WEIGHT_VERIFIED || 0.3),
-  rating: Number(process.env.RANK_WEIGHT_RATING || 0.5),
-  jobsCompleted: Number(process.env.RANK_WEIGHT_JOBS || 0.2),
+  verified: Number(process.env.RANK_WEIGHT_VERIFIED || 0.25),
+  rating: Number(process.env.RANK_WEIGHT_RATING || 0.40),
+  jobsCompleted: Number(process.env.RANK_WEIGHT_JOBS || 0.20),
+  recency: Number(process.env.RANK_WEIGHT_RECENCY || 0.15),
 };
 
 const clamp01 = (n) => Math.max(0, Math.min(1, Number.isFinite(n) ? n : 0));
 
+// ALGO IMPROVEMENT: Added recency decay so recently-active workers rank higher
 const scoreWorker = (worker = {}) => {
   const ratingNorm = clamp01(Number(worker.rating || 0) / 5);
   const jobsNorm = clamp01(
@@ -87,10 +97,19 @@ const scoreWorker = (worker = {}) => {
   );
   const verifiedBonus = worker.isVerified ? 1 : 0;
 
+  // Recency: workers active in last 30 days score 1.0, decaying to 0 over 180 days
+  const lastActive = worker.updatedAt || worker.createdAt;
+  let recencyNorm = 0.5; // default for unknown
+  if (lastActive) {
+    const daysSinceActive = (Date.now() - new Date(lastActive).getTime()) / (1000 * 60 * 60 * 24);
+    recencyNorm = clamp01(1 - (daysSinceActive / 180));
+  }
+
   return (
     WORKER_RANK_WEIGHTS.rating * ratingNorm +
     WORKER_RANK_WEIGHTS.jobsCompleted * jobsNorm +
-    WORKER_RANK_WEIGHTS.verified * verifiedBonus
+    WORKER_RANK_WEIGHTS.verified * verifiedBonus +
+    WORKER_RANK_WEIGHTS.recency * recencyNorm
   );
 };
 
@@ -111,6 +130,8 @@ const normalizeDelimitedList = (value) => {
 
 const buildWorkerDirectorySortClause = (sortBy = 'relevance') => {
   switch (sortBy) {
+    case 'distance':
+      return { canonicalUpdatedAt: -1, canonicalRating: -1 };
     case 'rating':
       return { canonicalRating: -1, canonicalCompletedJobs: -1, canonicalUpdatedAt: -1 };
     case 'price_low':
@@ -131,6 +152,110 @@ const buildWorkerDirectorySortClause = (sortBy = 'relevance') => {
   }
 };
 
+const buildWorkerGeoSearch = ({ latitude, longitude, radius }) => {
+  const parsedLatitude = Number(latitude);
+  const parsedLongitude = Number(longitude);
+
+  if (!Number.isFinite(parsedLatitude) || !Number.isFinite(parsedLongitude)) {
+    return null;
+  }
+
+  if (parsedLatitude < -90 || parsedLatitude > 90 || parsedLongitude < -180 || parsedLongitude > 180) {
+    return null;
+  }
+
+  const parsedRadius = Number(radius);
+  const radiusKm = Number.isFinite(parsedRadius) && parsedRadius > 0 ? parsedRadius : 50;
+  const latitudeDelta = radiusKm / 111.32;
+  const longitudeScale = Math.cos((parsedLatitude * Math.PI) / 180);
+  const longitudeDelta = radiusKm / (111.32 * Math.max(Math.abs(longitudeScale), 0.01));
+
+  return {
+    latitude: parsedLatitude,
+    longitude: parsedLongitude,
+    radiusKm,
+    minLatitude: Math.max(-90, parsedLatitude - latitudeDelta),
+    maxLatitude: Math.min(90, parsedLatitude + latitudeDelta),
+    minLongitude: Math.max(-180, parsedLongitude - longitudeDelta),
+    maxLongitude: Math.min(180, parsedLongitude + longitudeDelta),
+  };
+};
+
+const buildWorkerDirectoryPrefilterConditions = ({
+  locationText,
+  workType,
+  minRating,
+  maxRate,
+  availability,
+  verified,
+}) => {
+  const conditions = [
+    { userId: { $exists: true, $ne: null } },
+  ];
+
+  if (locationText) {
+    conditions.push({
+      $or: [
+        { location: { $regex: escapeRegex(locationText), $options: 'i' } },
+        { location: { $exists: false } },
+        { location: null },
+        { location: '' },
+      ],
+    });
+  }
+
+  if (workType) {
+    conditions.push({
+      $or: [
+        { preferredJobTypes: workType },
+        { workingHoursPreference: workType },
+      ],
+    });
+  }
+
+  if (Number.isFinite(minRating) && minRating > 0) {
+    conditions.push({
+      $or: [
+        { rating: { $gte: minRating } },
+        { rating: { $exists: false } },
+        { rating: null },
+      ],
+    });
+  }
+
+  if (Number.isFinite(maxRate) && maxRate > 0) {
+    conditions.push({
+      $or: [
+        { hourlyRate: { $lte: maxRate } },
+        { hourlyRate: { $exists: false } },
+        { hourlyRate: null },
+      ],
+    });
+  }
+
+  if (availability) {
+    conditions.push({
+      $or: [
+        { availabilityStatus: availability },
+        { availabilityStatus: { $exists: false } },
+        { availabilityStatus: null },
+      ],
+    });
+  }
+
+  if (verified) {
+    conditions.push({
+      $or: [
+        { isVerified: true },
+        { isVerified: { $exists: false } },
+        { isVerified: null },
+      ],
+    });
+  }
+
+  return conditions;
+};
+
 const buildWorkerDirectoryConditions = ({
   textQuery,
   locationText,
@@ -141,6 +266,7 @@ const buildWorkerDirectoryConditions = ({
   maxRate,
   availability,
   verified,
+  geoSearch,
 }) => {
   const conditions = [];
 
@@ -211,8 +337,80 @@ const buildWorkerDirectoryConditions = ({
     conditions.push({ canonicalVerified: true });
   }
 
+  if (geoSearch) {
+    conditions.push({
+      canonicalLatitude: {
+        $gte: geoSearch.minLatitude,
+        $lte: geoSearch.maxLatitude,
+      },
+    });
+    conditions.push({
+      canonicalLongitude: {
+        $gte: geoSearch.minLongitude,
+        $lte: geoSearch.maxLongitude,
+      },
+    });
+  }
+
   return conditions;
 };
+
+const formatWorkerDirectoryWorkers = (workerDocs = [], geoSearch = null) =>
+  workerDocs
+    .map((workerDoc) => {
+      const canonicalWorker = buildCanonicalWorkerSnapshot(workerDoc.user || {}, workerDoc);
+      const workerLat = Number(
+        workerDoc?.canonicalLatitude ??
+        workerDoc?.latitude ??
+        workerDoc?.user?.latitude ??
+        workerDoc?.user?.locationCoordinates?.coordinates?.[1],
+      );
+      const workerLng = Number(
+        workerDoc?.canonicalLongitude ??
+        workerDoc?.longitude ??
+        workerDoc?.user?.longitude ??
+        workerDoc?.user?.locationCoordinates?.coordinates?.[0],
+      );
+      const hasCoordinates = Number.isFinite(workerLat) && Number.isFinite(workerLng);
+      const distance = geoSearch && hasCoordinates
+        ? Math.round(
+          haversineDistance(
+            geoSearch.latitude,
+            geoSearch.longitude,
+            workerLat,
+            workerLng,
+          ) * 10,
+        ) / 10
+        : null;
+
+      return {
+        id: canonicalWorker.id,
+        userId: canonicalWorker.userId,
+        name: canonicalWorker.name,
+        bio: canonicalWorker.bio || `${canonicalWorker.profession} with ${canonicalWorker.yearsOfExperience || 0} years of experience.`,
+        location: canonicalWorker.location,
+        city: canonicalWorker.location ? canonicalWorker.location.split(',')[0].trim() : 'Accra',
+        hourlyRate: canonicalWorker.hourlyRate || 25,
+        currency: canonicalWorker.currency || 'GHS',
+        rating: canonicalWorker.rating || 0,
+        totalReviews: canonicalWorker.totalReviews || 0,
+        totalJobsCompleted: canonicalWorker.totalJobsCompleted || 0,
+        availabilityStatus: canonicalWorker.availabilityStatus || 'available',
+        isVerified: canonicalWorker.isVerified || false,
+        profilePicture: canonicalWorker.profilePicture || null,
+        specializations: canonicalWorker.specializations.length > 0 ? canonicalWorker.specializations : ['General Maintenance'],
+        profession: canonicalWorker.profession || 'General Worker',
+        workType: canonicalWorker.workType || 'Full-time',
+        skills: canonicalWorker.skills,
+        rankScore: scoreWorker(canonicalWorker),
+        latitude: hasCoordinates ? workerLat : null,
+        longitude: hasCoordinates ? workerLng : null,
+        distance,
+        createdAt: canonicalWorker.createdAt,
+        updatedAt: canonicalWorker.updatedAt,
+      };
+    })
+    .filter((worker) => !geoSearch || (worker.distance !== null && worker.distance <= geoSearch.radiusKm));
 
 const executeWorkerDirectoryQuery = async ({
   page = 1,
@@ -224,11 +422,12 @@ const executeWorkerDirectoryQuery = async ({
   skillsList = [],
   minRating = 0,
   maxRate,
-  availability = 'available',
+  availability,
   verified = false,
   sortBy = 'relevance',
   latitude,
   longitude,
+  radius,
 }) => {
   await ensureConnection({ timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000) });
 
@@ -251,13 +450,31 @@ const executeWorkerDirectoryQuery = async ({
   const parsedLimit = Math.min(50, Math.max(1, Number.parseInt(limit, 10) || 20));
   const offset = (parsedPage - 1) * parsedLimit;
   const usersCollection = MongoUser.collection?.collectionName || 'users';
+  const geoSearch = buildWorkerGeoSearch({ latitude, longitude, radius });
+  const prefilterConditions = buildWorkerDirectoryPrefilterConditions({
+    locationText,
+    workType,
+    minRating: Number(minRating),
+    maxRate: Number(maxRate),
+    availability,
+    verified,
+  });
 
   const pipeline = [
+    { $match: { $and: prefilterConditions } },
     {
       $lookup: {
         from: usersCollection,
-        localField: 'userId',
-        foreignField: '_id',
+        let: { workerUserId: '$userId' },
+        pipeline: [
+          {
+            $match: {
+              role: 'worker',
+              isActive: true,
+              $expr: { $eq: ['$_id', '$$workerUserId'] },
+            },
+          },
+        ],
         as: 'user',
       },
     },
@@ -267,19 +484,28 @@ const executeWorkerDirectoryQuery = async ({
         preserveNullAndEmptyArrays: false,
       },
     },
-    { $match: { 'user.role': 'worker', 'user.isActive': true } },
     {
       $addFields: {
         canonicalFirstName: { $ifNull: ['$user.firstName', ''] },
         canonicalLastName: { $ifNull: ['$user.lastName', ''] },
         canonicalProfession: {
           $ifNull: [
-            '$user.profession',
+            '$profession',
             {
               $ifNull: [
-                '$profession',
+                '$title',
                 {
-                  $ifNull: [{ $arrayElemAt: ['$specializations', 0] }, { $arrayElemAt: ['$skills', 0] }],
+                  $ifNull: [
+                    '$headline',
+                    {
+                      $ifNull: [
+                        '$user.profession',
+                        {
+                          $ifNull: [{ $arrayElemAt: ['$specializations', 0] }, { $arrayElemAt: ['$skills', 0] }],
+                        },
+                      ],
+                    },
+                  ],
                 },
               ],
             },
@@ -296,6 +522,42 @@ const executeWorkerDirectoryQuery = async ({
         canonicalExperience: { $ifNull: ['$yearsOfExperience', '$user.yearsOfExperience'] },
         canonicalPreferredJobTypes: { $ifNull: ['$preferredJobTypes', []] },
         canonicalWorkingHoursPreference: { $ifNull: ['$workingHoursPreference', null] },
+        canonicalLatitude: {
+          $convert: {
+            input: {
+              $ifNull: [
+                '$latitude',
+                {
+                  $ifNull: [
+                    '$user.latitude',
+                    { $arrayElemAt: [{ $ifNull: ['$user.locationCoordinates.coordinates', []] }, 1] },
+                  ],
+                },
+              ],
+            },
+            to: 'double',
+            onError: null,
+            onNull: null,
+          },
+        },
+        canonicalLongitude: {
+          $convert: {
+            input: {
+              $ifNull: [
+                '$longitude',
+                {
+                  $ifNull: [
+                    '$user.longitude',
+                    { $arrayElemAt: [{ $ifNull: ['$user.locationCoordinates.coordinates', []] }, 0] },
+                  ],
+                },
+              ],
+            },
+            to: 'double',
+            onError: null,
+            onNull: null,
+          },
+        },
         canonicalSkills: {
           $setUnion: [
             { $ifNull: ['$skills', []] },
@@ -329,10 +591,39 @@ const executeWorkerDirectoryQuery = async ({
     maxRate: Number(maxRate),
     availability,
     verified,
+    geoSearch,
   });
 
   if (conditions.length > 0) {
     pipeline.push({ $match: { $and: conditions } });
+  }
+
+  if (geoSearch) {
+    pipeline.push({ $sort: buildWorkerDirectorySortClause(sortBy) });
+
+    const rawWorkers = await WorkerProfileModel.aggregate(pipeline);
+    const exactGeoMatches = formatWorkerDirectoryWorkers(rawWorkers, geoSearch);
+
+    if (sortBy === 'distance') {
+      exactGeoMatches.sort((left, right) => {
+        const leftDistance = Number.isFinite(left.distance) ? left.distance : Number.POSITIVE_INFINITY;
+        const rightDistance = Number.isFinite(right.distance) ? right.distance : Number.POSITIVE_INFINITY;
+        if (leftDistance !== rightDistance) {
+          return leftDistance - rightDistance;
+        }
+        return (right.rankScore || 0) - (left.rankScore || 0);
+      });
+    }
+
+    return {
+      workers: exactGeoMatches.slice(offset, offset + parsedLimit),
+      pagination: {
+        page: parsedPage,
+        limit: parsedLimit,
+        total: exactGeoMatches.length,
+        pages: Math.max(1, Math.ceil(exactGeoMatches.length / parsedLimit)),
+      },
+    };
   }
 
   pipeline.push(
@@ -353,40 +644,7 @@ const executeWorkerDirectoryQuery = async ({
   const [result] = await WorkerProfileModel.aggregate(pipeline);
   const rawWorkers = Array.isArray(result?.items) ? result.items : [];
   const totalCount = result?.total?.[0]?.count || 0;
-
-  const formattedWorkers = rawWorkers.map((workerDoc) => {
-    const canonicalWorker = buildCanonicalWorkerSnapshot(workerDoc.user || {}, workerDoc);
-    const workerLat = workerDoc?.latitude ?? workerDoc?.user?.latitude ?? workerDoc?.user?.locationCoordinates?.coordinates?.[1];
-    const workerLng = workerDoc?.longitude ?? workerDoc?.user?.longitude ?? workerDoc?.user?.locationCoordinates?.coordinates?.[0];
-    const distance = latitude && longitude && Number.isFinite(Number(workerLat)) && Number.isFinite(Number(workerLng))
-      ? Math.round(haversineDistance(Number(latitude), Number(longitude), Number(workerLat), Number(workerLng)) * 10) / 10
-      : null;
-
-    return {
-      id: canonicalWorker.id,
-      userId: canonicalWorker.userId,
-      name: canonicalWorker.name,
-      bio: canonicalWorker.bio || `${canonicalWorker.profession} with ${canonicalWorker.yearsOfExperience || 0} years of experience.`,
-      location: canonicalWorker.location,
-      city: canonicalWorker.location ? canonicalWorker.location.split(',')[0].trim() : 'Accra',
-      hourlyRate: canonicalWorker.hourlyRate || 25,
-      currency: canonicalWorker.currency || 'GHS',
-      rating: canonicalWorker.rating || 0,
-      totalReviews: canonicalWorker.totalReviews || 0,
-      totalJobsCompleted: canonicalWorker.totalJobsCompleted || 0,
-      availabilityStatus: canonicalWorker.availabilityStatus || 'available',
-      isVerified: canonicalWorker.isVerified || false,
-      profilePicture: canonicalWorker.profilePicture || null,
-      specializations: canonicalWorker.specializations.length > 0 ? canonicalWorker.specializations : ['General Maintenance'],
-      profession: canonicalWorker.profession || 'General Worker',
-      workType: canonicalWorker.workType || 'Full-time',
-      skills: canonicalWorker.skills,
-      rankScore: scoreWorker(canonicalWorker),
-      distance,
-      createdAt: canonicalWorker.createdAt,
-      updatedAt: canonicalWorker.updatedAt,
-    };
-  });
+  const formattedWorkers = formatWorkerDirectoryWorkers(rawWorkers, null);
 
   return {
     workers: formattedWorkers,
@@ -1473,7 +1731,10 @@ class WorkerController {
         maxRate,
         verified,
         search,
-        keywords // NEW: Text search
+        keywords, // NEW: Text search
+        latitude,
+        longitude,
+        radius,
       } = req.query;
 
       const searchTerm = keywords || search || '';
@@ -1490,6 +1751,9 @@ class WorkerController {
         availability,
         verified: verified === 'true',
         sortBy: req.query.sortBy || 'relevance',
+        latitude,
+        longitude,
+        radius,
       });
 
       const formattedWorkers = workers.map((worker) => ({
@@ -1554,6 +1818,7 @@ class WorkerController {
         sortBy,
         latitude,
         longitude,
+        radius,
       });
 
       return res.status(200).json({
@@ -3351,7 +3616,52 @@ class WorkerController {
         portfolio,
         profilePicture,
         profilePictureMetadata,
+        latitude,
+        longitude,
+        serviceRadius,
       } = req.body;
+
+      const hasLatitude = latitude !== undefined && latitude !== null && latitude !== '';
+      const hasLongitude = longitude !== undefined && longitude !== null && longitude !== '';
+
+      if (hasLatitude !== hasLongitude) {
+        return res.status(400).json({
+          success: false,
+          message: 'Both latitude and longitude are required to update worker coordinates',
+        });
+      }
+
+      let parsedLatitude;
+      let parsedLongitude;
+      if (hasLatitude && hasLongitude) {
+        parsedLatitude = Number(latitude);
+        parsedLongitude = Number(longitude);
+
+        if (!Number.isFinite(parsedLatitude) || parsedLatitude < -90 || parsedLatitude > 90) {
+          return res.status(400).json({
+            success: false,
+            message: 'Latitude must be between -90 and 90',
+          });
+        }
+
+        if (!Number.isFinite(parsedLongitude) || parsedLongitude < -180 || parsedLongitude > 180) {
+          return res.status(400).json({
+            success: false,
+            message: 'Longitude must be between -180 and 180',
+          });
+        }
+      }
+
+      if (serviceRadius !== undefined && serviceRadius !== null && serviceRadius !== '') {
+        const parsedServiceRadius = Number(serviceRadius);
+        if (!Number.isFinite(parsedServiceRadius) || parsedServiceRadius < 1 || parsedServiceRadius > 500) {
+          return res.status(400).json({
+            success: false,
+            message: 'Service radius must be between 1 and 500 kilometers',
+          });
+        }
+        profile.serviceRadius = parsedServiceRadius;
+      }
 
       // Update basic user fields
       if (firstName) user.firstName = sanitizeText(firstName);
@@ -3389,6 +3699,14 @@ class WorkerController {
       if (typeof profilePicture === 'string' && profilePicture.trim()) {
         profile.profilePicture = profilePicture.trim();
       }
+      if (hasLatitude && hasLongitude) {
+        profile.latitude = parsedLatitude;
+        profile.longitude = parsedLongitude;
+        user.locationCoordinates = {
+          type: 'Point',
+          coordinates: [parsedLongitude, parsedLatitude],
+        };
+      }
 
       // Save the updated user and worker profile
       await Promise.all([user.save(), profile.save()]);
@@ -3417,6 +3735,9 @@ class WorkerController {
         currency: canonicalWorker.currency || 'GHS',
         experience: canonicalWorker.yearsOfExperience ?? null,
         skills: canonicalWorker.skills,
+        latitude: Number.isFinite(Number(profile.latitude)) ? Number(profile.latitude) : null,
+        longitude: Number.isFinite(Number(profile.longitude)) ? Number(profile.longitude) : null,
+        serviceRadius: Number.isFinite(Number(profile.serviceRadius)) ? Number(profile.serviceRadius) : null,
         languages: profile.languages || [],
         education: profile.education || [],
       };

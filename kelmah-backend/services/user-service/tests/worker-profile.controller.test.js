@@ -1,4 +1,3 @@
-const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongoose = require('mongoose');
 
 const mockIsValid = jest.fn(() => true);
@@ -499,6 +498,9 @@ describe('WorkerController.getWorkerById (stubbed models)', () => {
         firstName: 'Kwame',
         phone: '+233244444444',
         profilePicture: 'updated-worker.png',
+        latitude: 5.6037,
+        longitude: -0.187,
+        serviceRadius: 25,
       },
     }, res);
 
@@ -518,6 +520,13 @@ describe('WorkerController.getWorkerById (stubbed models)', () => {
     expect(workerProfileDoc.hourlyRate).toBe(180);
     expect(workerProfileDoc.yearsOfExperience).toBe(9);
     expect(workerProfileDoc.skills).toEqual(['Wiring', 'Lighting']);
+    expect(workerProfileDoc.latitude).toBe(5.6037);
+    expect(workerProfileDoc.longitude).toBe(-0.187);
+    expect(workerProfileDoc.serviceRadius).toBe(25);
+    expect(userDoc.locationCoordinates).toEqual({
+      type: 'Point',
+      coordinates: [-0.187, 5.6037],
+    });
 
     expect(res.body?.data).toEqual(
       expect.objectContaining({
@@ -526,6 +535,9 @@ describe('WorkerController.getWorkerById (stubbed models)', () => {
         hourlyRate: 180,
         experience: 9,
         skills: ['Wiring', 'Lighting'],
+        latitude: 5.6037,
+        longitude: -0.187,
+        serviceRadius: 25,
       }),
     );
   });

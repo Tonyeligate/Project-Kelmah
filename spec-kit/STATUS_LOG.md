@@ -2,6 +2,505 @@
 
 ---
 
+### Session: CRIT-12 Verification Email Delivery Contract March 9 2026 🔄 IN PROGRESS
+
+**Date**: March 9, 2026  
+**Scope**: Audit and harden the auth-service verification email flow so registration and resend endpoints stop reporting success when the platform cannot actually deliver verification mail, and clean up SMTP headers that can reduce deliverability on the configured Gmail transport.
+
+**Acceptance Criteria**
+- Registration does not create dead unverified accounts when verification delivery is unavailable.
+- Resend verification requests fail honestly when transactional email is not configured instead of returning a misleading success response.
+- Auth-service email templates no longer attach SES-specific or forged `@kelmah.com` headers while using Gmail SMTP.
+- Focused auth-service regressions cover the new verification-delivery failure contract.
+
+**Mapped execution surface**
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/services/auth-service/services/email.service.js`
+- `kelmah-backend/services/auth-service/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/config/index.js`
+- `kelmah-backend/services/auth-service/tests/auth.controller.security.test.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Data flow trace**
+- Worker/hirer registration posts to `POST /api/auth/register` through the gateway and lands in `authController.register()`.
+- `register()` creates the user, generates the verification token, builds the frontend verification URL, and delegates delivery to `services/email.service.js`.
+- Existing resend flow uses `POST /api/auth/resend-verification-email`, rebuilds the token, and delegates to the same mailer.
+- The frontend verification page consumes the emailed token through `GET /api/auth/verify-email/:token` after the user clicks the email link.
+
+**Dry-audit findings so far**
+- `email.service.js` currently returns `{ skipped: true }` when SMTP credentials are missing, but `register()` and `resendVerificationEmail()` still return success messages that claim mail was sent.
+- `register()` creates and persists an unverified user before attempting delivery, so missing SMTP config creates dead accounts that cannot be verified.
+- Verification emails currently inject SES-specific headers plus a forged `Message-ID`/`Reply-To` pattern even though the configured transport is Gmail SMTP, which is a deliverability risk.
+
+### Session: CRIT-02 Live Parity Probe And Coordinate Backfill March 9 2026 🔄 IN PROGRESS
+
+**Date**: March 9, 2026  
+**Scope**: Verify the CRIT-02 geo-radius fix on the live gateway path and replace the legacy coordinate backfill script with a Mongo-only implementation that can safely populate missing worker coordinates for older records.
+
+**Acceptance Criteria**
+- Live `GET /api/users/workers` radius queries on the active gateway prove near/far workers are filtered by radius.
+- Backfill path no longer depends on Sequelize/SQL models and uses shared Mongo models only.
+- Backfill supports dry-run and apply modes, reports updated counts, and only writes valid coordinates.
+- Updated backfill script passes static diagnostics and executes successfully in dry-run mode.
+
+**Mapped execution surface**
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/api-gateway/server.js`
+- `kelmah-backend/services/user-service/scripts/backfill-user-geo.js`
+- `kelmah-backend/services/user-service/models/index.js`
+- `kelmah-backend/shared/models/User.js`
+- `kelmah-backend/shared/models/WorkerProfile.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Data flow trace**
+- Public worker discovery calls `GET /api/users/workers?latitude=<lat>&longitude=<lng>&radius=<km>` at the gateway.
+- Gateway `/api/users` mount in `kelmah-backend/api-gateway/server.js` forwards request path/query to user-service `/api/users/workers`.
+- User-service route `kelmah-backend/services/user-service/routes/user.routes.js` dispatches `/workers` to `WorkerController.getAllWorkers()`.
+- `getAllWorkers()` delegates into `executeWorkerDirectoryQuery()` in `kelmah-backend/services/user-service/controllers/worker.controller.js`, which applies geo bounds + exact radius filtering.
+- Coordinate backfill script reads `WorkerProfile.latitude/longitude` and writes `User.locationCoordinates` GeoJSON for legacy users missing searchable coordinates.
+
+**Dry-audit findings so far**
+- Existing `kelmah-backend/services/user-service/scripts/backfill-user-geo.js` is still legacy and imports Sequelize plus SQL env (`USER_SQL_URL`), violating the Mongo-only architecture.
+- The legacy script also imports non-canonical model paths (`../models/User`, `../models/WorkerProfile`) instead of service/shared model index usage.
+- Geo search route ordering and canonical forwarding are correct in current gateway + user routes, so parity risk is likely deployment/runtime drift rather than local routing logic.
+
+**Implementation completed**
+- Replaced `kelmah-backend/services/user-service/scripts/backfill-user-geo.js` with a Mongo-only backfill utility that imports `User` and `WorkerProfile` from `services/user-service/models/index.js`.
+- Added safe execution modes to the backfill utility: default dry-run, explicit `--apply`, optional `--sync-existing`, optional `--include-inactive`, and bounded `--limit=<n>`.
+- Added candidate coordinate resolution priority in the script:
+  1. `WorkerProfile.latitude/longitude`
+  2. legacy `User.latitude/longitude`
+  3. location-text centroid fallback for common Ghana cities/regions.
+- Added dual-write support in backfill flow so missing geo can be synchronized into both `User.locationCoordinates` and `WorkerProfile.latitude/longitude` when required.
+
+**Validation**
+- Live gateway host probe confirmed active production gateway: `https://kelmah-api-gateway-gf3g.onrender.com` (`/health` returned `200`).
+- Live parity probe result shows deployment/runtime drift still present:
+  - `GET /api/users/workers?page=1&limit=20` -> `total=20`
+  - `GET /api/users/workers?latitude=5.6037&longitude=-0.187&radius=10&page=1&limit=20&sortBy=distance` -> `total=20`
+  - All returned items had `distance: null`, so live radius filtering is not active in deployed runtime.
+- Backfill script static/runtime checks passed locally without DB access:
+  - `node scripts/backfill-user-geo.js --help` (CLI parse OK)
+  - `node --check scripts/backfill-user-geo.js` (syntax OK)
+  - `get_errors` reported no diagnostics in touched files.
+
+**Execution blocker**
+- Dry-run backfill execution currently cannot reach MongoDB Atlas from this environment:
+  - `querySrv ECONNREFUSED _mongodb._tcp.kelmah-messaging.xyqcurn.mongodb.net`
+  - Because of that network-level DNS/SRV failure, apply-mode backfill verification is pending external connectivity.
+
+### Session: CRIT-08 To CRIT-11 Auth And Bid Hardening March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Deep-audit and remediate the reported auth-service ephemeral token storage flaws, the `changePassword` password-selection bug, the job-service `rejectBid` race with bid acceptance, and the auth-service internal admin key timing leak.
+
+**Acceptance Criteria**
+- 2FA login challenges and OAuth exchange codes are no longer stored in unbounded process-global Maps.
+- Ephemeral auth challenges are persisted in replicated storage with TTL cleanup and bounded active-cardinality controls.
+- OAuth callback flow still redirects with an opaque code, and token issuance happens safely during code exchange.
+- `changePassword` explicitly loads the password field so current-password validation works.
+- `rejectBid` cannot overwrite a concurrently accepted bid.
+- Internal admin key checks use a timing-safe comparison primitive instead of direct string equality.
+- Touched backend files validate cleanly and targeted Jest regressions cover the fixed paths.
+
+**Mapped execution surface**
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/services/auth-service/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/models/index.js`
+- `kelmah-backend/services/auth-service/models/RefreshToken.js`
+- `kelmah-backend/services/auth-service/models/RevokedToken.js`
+- `kelmah-backend/services/auth-service/server.js`
+- `kelmah-backend/shared/models/User.js`
+- `kelmah-backend/shared/utils/jwt.js`
+- `kelmah-backend/services/job-service/controllers/bid.controller.js`
+- `kelmah-backend/services/job-service/models/Bid.js`
+- `kelmah-backend/services/job-service/routes/bid.routes.js`
+- `kelmah-backend/services/auth-service/tests/get-me.contract.test.js`
+
+**Data flow trace**
+- Login flow: `POST /api/auth/login` enters through `kelmah-backend/services/auth-service/routes/auth.routes.js`, runs `authController.login()`, validates credentials against the auth database, conditionally issues a 2FA challenge, and returns access/refresh tokens on success.
+- OAuth flow: provider callback routes enter `authController.googleCallback()` / `facebookCallback()` / `linkedinCallback()`, redirect the frontend with an opaque code, then `POST /api/auth/oauth/exchange` resolves that code into access and refresh tokens.
+- Password change flow: `POST /api/auth/change-password` uses gateway-authenticated `req.user.id`, loads the user document, verifies the current password, updates the password hash, and revokes refresh tokens.
+- Bid response flow: `PATCH /api/bids/:bidId/accept` and `PATCH /api/bids/:bidId/reject` pass through `kelmah-backend/services/job-service/routes/bid.routes.js` into `bid.controller.js`, where hirer ownership and bid status changes are enforced before notifications are sent.
+- Internal admin endpoints in `kelmah-backend/services/auth-service/server.js` are guarded by an internal shared-secret header before JWT role checks.
+
+**Dry-audit findings so far**
+- `auth.controller.js` stores 2FA challenges and OAuth exchange codes in global Maps with `setTimeout` cleanup, which is unbounded in memory, non-replicated across instances, and vulnerable to request-amplified memory pressure.
+- The same OAuth code storage flaw is repeated across Google, Facebook, and LinkedIn callbacks, while `exchangeOAuthCode()` reads from the same process-global Map.
+- `changePassword()` currently calls `User.findById(userId)` without overriding the schema-level `select: false` password field, so current-password validation cannot work reliably.
+- `acceptBid()` already performs an atomic pending-to-accepted transition inside a transaction, but `rejectBid()` still uses a stale read followed by a separate instance method save, allowing a concurrent accept to be overwritten.
+- `auth-service/server.js` uses direct `===` comparison for the internal admin key even though the repo already treats equivalent secrets with timing-safe comparison elsewhere.
+
+**Implementation completed**
+- Added `kelmah-backend/services/auth-service/models/AuthChallenge.js`, a Mongo-backed TTL collection for short-lived auth challenges, and exported it through the auth-service model index.
+- Replaced the login flow's process-global 2FA challenge Map in `kelmah-backend/services/auth-service/controllers/auth.controller.js` with persisted `AuthChallenge` records, one-time consumption, and bounded active-challenge pruning per challenge type.
+- Reworked Google, Facebook, and LinkedIn OAuth callbacks so they now persist only a short-lived opaque auth code, then mint access and refresh tokens during `exchangeOAuthCode()` after consuming the stored challenge.
+- Fixed `changePassword()` in `kelmah-backend/services/auth-service/controllers/auth.controller.js` to load the hidden password field explicitly with `.select('+password')` before validating the current password.
+- Added `kelmah-backend/services/auth-service/utils/timingSafeCompare.js` and switched `kelmah-backend/services/auth-service/server.js` internal admin key checks from direct equality to constant-time comparison.
+- Hardened `kelmah-backend/services/job-service/controllers/bid.controller.js` so `rejectBid()` now uses an atomic pending-status guard and returns `409` instead of overwriting a concurrently accepted bid.
+- Added focused Jest regressions in `kelmah-backend/services/auth-service/tests/auth.controller.security.test.js` and `kelmah-backend/services/job-service/tests/bid.controller.race.test.js`.
+
+**Validation**
+- `get_errors` returned no diagnostics for the touched auth-service controller, model, server, utility, job-service controller, and new regression tests.
+- Final audit grep confirmed the original live-code patterns are removed: no remaining `global._twoFactorChallenges`, no remaining `global._oauthCodes`, and no direct internal admin key equality checks remain under `kelmah-backend/services/auth-service/`.
+- Focused Jest verification passed from `kelmah-backend/`:
+  - `services/auth-service/tests/auth.controller.security.test.js`
+  - `services/job-service/tests/bid.controller.race.test.js`
+  - `services/auth-service/tests/get-me.contract.test.js`
+- Result: 3 suites passed, 4 tests passed, 0 failures.
+
+### Session: CRIT-02 Worker Geo Search Radius Enforcement March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Restore real proximity filtering for worker directory searches so radius-based queries stop returning every worker nationwide, and keep worker coordinates synchronized on profile updates.
+
+**Acceptance Criteria**
+- `radius`, `latitude`, and `longitude` materially constrain worker directory results.
+- The canonical `/api/users/workers` path and the legacy `/api/users/workers/search` path both honor the same geo-search logic.
+- Search results preserve the current response contract while exposing accurate proximity-derived fields.
+- Worker profile updates persist searchable coordinates for future geo queries.
+- Regression coverage proves the geo filter and coordinate write path.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/worker/services/workerService.js`
+- `kelmah-frontend/src/modules/search/services/searchService.js`
+- `kelmah-frontend/src/modules/map/services/mapService.js`
+- `kelmah-backend/api-gateway/server.js`
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/tests/worker-directory.controller.test.js`
+- `kelmah-backend/services/user-service/tests/worker-profile.controller.test.js`
+- `kelmah-backend/shared/models/User.js`
+- `kelmah-backend/shared/models/WorkerProfile.js`
+
+**Data flow trace**
+- Frontend worker discovery uses `workerService.searchWorkers()` / `queryWorkerDirectory()` in `kelmah-frontend/src/modules/worker/services/workerService.js`, which sends `latitude`, `longitude`, and `radius` to `GET /api/users/workers`.
+- The API Gateway public worker route in `kelmah-backend/api-gateway/server.js` forwards that query string to `GET /api/users/workers` in the user-service.
+- `kelmah-backend/services/user-service/routes/user.routes.js` dispatches `/workers` to `WorkerController.getAllWorkers()` and `/workers/search` to `WorkerController.searchWorkers()`.
+- Both controller actions normalize query params and call `executeWorkerDirectoryQuery()` in `kelmah-backend/services/user-service/controllers/worker.controller.js`.
+- `executeWorkerDirectoryQuery()` aggregates `WorkerProfile`, joins `User`, formats the canonical worker DTO, and returns the worker-directory payload.
+- Worker profile edits flow through `WorkerController.updateWorkerProfile()`, which is the write path responsible for keeping search-relevant worker location fields current.
+
+**Dry-audit findings so far**
+- The canonical frontend path no longer uses `/workers/search` for normal discovery; it calls `/users/workers`, so fixing only `searchWorkers()` would leave the live UI broken.
+- `searchWorkers()` destructures `radius`, but `executeWorkerDirectoryQuery()` ignored it and only computed display `distance` after fetching rows, so proximity never constrained the dataset.
+- `buildWorkerDirectoryConditions()` had no geo bounds, and `getAllWorkers()` did not forward `latitude`, `longitude`, or `radius` into the shared query helper.
+- Shared `WorkerProfile` stores numeric `latitude`/`longitude`, while shared `User` stores GeoJSON `locationCoordinates`; the query layer must support both because the data is mixed.
+- `updateWorkerProfile()` did not persist incoming coordinates or synchronize `User.locationCoordinates`, which meant fresh profile edits would not reliably improve geo search quality.
+
+**Implementation completed**
+- Added bounded geo-search normalization in `kelmah-backend/services/user-service/controllers/worker.controller.js` so worker directory queries derive a radius-aware latitude/longitude bounding box before exact distance filtering.
+- Extended the worker-directory aggregation to project canonical coordinates from either `WorkerProfile.latitude/longitude` or fallback `User.locationCoordinates`, then applied geo bounds inside `buildWorkerDirectoryConditions()`.
+- Updated `executeWorkerDirectoryQuery()` so geo searches bypass the old facet path, perform exact haversine filtering after the aggregation prefilter, support optional distance sorting, and return worker latitude/longitude in the normalized response items.
+- Wired `latitude`, `longitude`, and `radius` through `WorkerController.getAllWorkers()` as well as `WorkerController.searchWorkers()` so both the canonical list endpoint and the legacy search endpoint use the same geo enforcement.
+- Updated `WorkerController.updateWorkerProfile()` to validate paired coordinates, persist `latitude`, `longitude`, and `serviceRadius` on `WorkerProfile`, and synchronize `User.locationCoordinates` as GeoJSON for future search consistency.
+- Added regression coverage for canonical geo radius filtering in `kelmah-backend/services/user-service/tests/worker-directory.controller.test.js` and for coordinate persistence in `kelmah-backend/services/user-service/tests/worker-profile.controller.test.js`.
+
+**Validation**
+- `get_errors` returned no diagnostics for the touched controller, tests, and `spec-kit/STATUS_LOG.md`.
+- Focused Jest verification passed:
+  - `services/user-service/tests/worker-directory.controller.test.js`
+  - `services/user-service/tests/worker-profile.controller.test.js`
+- Jest reported an existing open-handle warning after the suites completed, but both targeted suites passed and no assertion failures remained.
+
+### Session: CRIT-04 Hirer Job Collection Contract Audit March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Audit and correct hirer job collection service methods so hirer-facing consumers receive stable arrays instead of raw Axios wrappers, while aligning frontend job-status filters with the backend's canonical status contract.
+
+**Acceptance Criteria**
+- `kelmah-frontend/src/modules/hirer/services/hirerService.js` returns arrays from `getJobs()` and `getRecentJobs()` on both success and failure paths.
+- Hirer job collection parsing handles the job-service paginated contract `{ success, data: { items, pagination } }` without leaking wrapper objects to callers.
+- Hirer status values sent to `/api/jobs/my-jobs` use backend-supported canonical values such as `open` instead of unsupported frontend aliases such as `active`.
+- Adjacent hirer collection logic using the same endpoint is audited and fixed where it currently misreads the paginated job payload.
+- Touched frontend files validate cleanly after the fix.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/hirer/services/hirerService.js`
+- `kelmah-frontend/src/modules/dashboard/services/hirerDashboardSlice.js`
+- `kelmah-backend/services/job-service/routes/job.routes.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/job-service/utils/response.js`
+
+**Data flow trace**
+- Hirer dashboard and other hirer-domain consumers call `hirerService.getRecentJobs()` / `hirerService.getJobs()` from `kelmah-frontend/src/modules/hirer/services/hirerService.js`.
+- Those methods call `GET /api/jobs/my-jobs` through the shared frontend API client.
+- The API Gateway forwards `/api/jobs/my-jobs` to the job-service route in `kelmah-backend/services/job-service/routes/job.routes.js`.
+- `jobController.getMyJobs()` returns a paginated success payload through `paginatedResponse()` with `data.items` as the job collection.
+- Dashboard Redux state in `kelmah-frontend/src/modules/dashboard/services/hirerDashboardSlice.js` stores the returned value directly into `activeJobs`, so any leaked wrapper object can break downstream array consumers.
+
+**Dry-audit findings so far**
+- `getJobs()` and `getRecentJobs()` currently return `response.data` on success but `[]` on error, which creates an unstable contract that can crash callers using array methods.
+- `/api/jobs/my-jobs` does not return a raw array; it returns `{ success, data: { items, pagination }, ... }`, so a correct fix must unwrap `data.items` instead of handing off the wrapper object.
+- The hirer service currently sends `status: 'active'` to the job service in multiple places, but the backend only recognizes canonical statuses such as `open`, so those requests silently lose their intended filtering.
+- `getApplications()` also reads `response.data?.data` as though it were an array, which causes it to drop all applications when the paginated job payload is returned.
+
+**Implementation completed**
+- Added shared job-collection helpers in `kelmah-frontend/src/modules/hirer/services/hirerService.js` to canonicalize hirer job statuses and unwrap paginated job-service payloads through one consistent path.
+- Updated `getJobs()` and `getRecentJobs()` to return array payloads from the job-service `data.items` contract instead of leaking the raw Axios success wrapper.
+- Updated `getDashboardData()` so the dashboard's active job request now uses canonical `open` status filtering and the same array extraction logic as the other hirer job collection methods.
+- Updated `getApplications()` to read the paginated jobs payload correctly before flattening per-job applications, fixing the adjacent empty-results bug uncovered during the audit.
+- Hardened `kelmah-frontend/src/modules/dashboard/services/hirerDashboardSlice.js` so `activeJobs` and `recentApplications` only store arrays even if a future service regression reintroduces a wrapper object.
+
+**Validation**
+- `get_errors` returned no diagnostics for `kelmah-frontend/src/modules/hirer/services/hirerService.js`.
+- `get_errors` returned no diagnostics for `kelmah-frontend/src/modules/dashboard/services/hirerDashboardSlice.js`.
+- `npm run build` passed successfully from `kelmah-frontend/` after the hirer service contract fixes.
+- Residual build output still includes only the pre-existing `src/services/apiClient.js` dynamic/static import warning, which is unrelated to this CRIT-04 fix.
+
+**Audit summary**
+- `hirerService.getRecentJobs()` has one confirmed direct consumer in `kelmah-frontend/src/modules/dashboard/services/hirerDashboardSlice.js`, which stores the result directly into dashboard state.
+- No direct frontend callers of `hirerService.getJobs()` were found during this scan, but the service contract was corrected anyway to prevent future `.map()` regressions on reuse.
+
+See `spec-kit/HIRER_JOB_COLLECTION_CONTRACT_AUDIT_MAR09_2026.md` for the deeper audit record.
+
+### Session: CRIT-04B Hirer Service Contract Follow-Up March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Extend the hirer contract audit across the remaining hirer service, hirer analytics service, hirer Redux thunks, and direct hirer UI transport calls so success-path payloads align with their fallback and reducer shapes.
+
+**Acceptance Criteria**
+- Remaining hirer service methods no longer leak raw Axios wrapper objects when their callers or fallback shapes expect unwrapped domain data.
+- `hirerAnalyticsService` success paths align with the domain objects returned by its fallback generators.
+- `hirerSlice` thunk payloads are normalized where reducers currently compensate for raw wrapper responses.
+- Worker review loading no longer bypasses the hirer service with a direct API call that can hand an object to array-based UI logic.
+- Touched frontend files validate cleanly and the frontend build passes.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/hirer/services/hirerService.js`
+- `kelmah-frontend/src/modules/hirer/services/hirerAnalyticsService.js`
+- `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`
+- `kelmah-frontend/src/modules/hirer/components/WorkerReview.jsx`
+
+**Dry-audit findings so far**
+- `hirerAnalyticsService` methods currently return raw `response.data` on success, but every fallback returns already-unwrapped domain objects, so the service contract changes shape depending on transport success.
+- `hirerSlice` still contains duplicate wrapper-compensation logic for job applications and job status updates, which indicates the thunk payloads are not normalized at the boundary.
+- `WorkerReview.jsx` bypasses the hirer service and calls `api.get('/users/workers/completed-jobs')` directly, then stores `response.data || []` into component state even though no matching backend route was found in the repo and any wrapped response would violate the array contract.
+
+**Implementation completed**
+- Added shared payload, worker-list, and pagination normalization helpers to `kelmah-frontend/src/modules/hirer/services/hirerService.js`, then applied them to the remaining profile, analytics-summary, worker-search, bookmark, review, milestone payment, and application update methods so success paths line up with their fallback or caller expectations.
+- Added `getCompletedWorkersForReview()` to the hirer service and updated `kelmah-frontend/src/modules/hirer/components/WorkerReview.jsx` to consume that method instead of bypassing the service with a direct transport call.
+- Normalized `kelmah-frontend/src/modules/hirer/services/hirerAnalyticsService.js` so each non-blob success path now returns the same domain shape as its catch-path fallback.
+- Normalized `kelmah-frontend/src/modules/hirer/services/hirerSlice.js` thunk payloads for job collections, job status updates, and job applications so reducers consume domain data instead of wrapper envelopes.
+- Fixed a real reducer bug in `hirerSlice`: the `updateJobStatus.fulfilled` handler now accepts the backend's updated-job response shape (`id`/`_id` plus `status`) instead of requiring a non-existent `jobId` field, so status transitions actually move jobs between state buckets.
+- Updated `kelmah-frontend/src/modules/hirer/components/ProposalReview.jsx` to route application-status updates through `hirerService.updateApplicationStatus()` so the hirer module now uses a single normalized mutation path for proposal and application decisions.
+
+**Validation**
+- `get_errors` returned no diagnostics for `kelmah-frontend/src/modules/hirer/services/hirerService.js`.
+- `get_errors` returned no diagnostics for `kelmah-frontend/src/modules/hirer/services/hirerAnalyticsService.js`.
+- `get_errors` returned no diagnostics for `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`.
+- `get_errors` returned no diagnostics for `kelmah-frontend/src/modules/hirer/components/WorkerReview.jsx`.
+- `get_errors` returned no diagnostics for `kelmah-frontend/src/modules/hirer/components/ProposalReview.jsx`.
+- `npm run build` completed successfully for `kelmah-frontend/` after the follow-up hirer contract fixes.
+- Residual build output still only includes the pre-existing `src/services/apiClient.js` dynamic/static import warning, which is unrelated to this audit.
+
+**Additional confirmed findings**
+- No matching backend route for `/users/workers/completed-jobs` was found during the repo scan, so the new review-worker service method intentionally degrades to `[]` until that API exists.
+- The only remaining raw `response.data` return in the audited hirer services is the intentional blob response from `hirerAnalyticsService.exportAnalyticsData()`.
+
+See `spec-kit/HIRER_SERVICE_CONTRACT_FOLLOWUP_MAR09_2026.md` for the deeper audit record.
+
+### Session: CRIT-04C Review Candidates Endpoint Restoration March 9 2026 🔄 IN PROGRESS
+
+**Date**: March 9, 2026  
+**Scope**: Restore a real backend data source for the hirer review screen by adding a protected review-service endpoint that returns workers and completed hirer jobs eligible for review, then point the frontend service at that canonical route.
+
+**Acceptance Criteria**
+- WorkerReview no longer depends on a nonexistent `/users/workers/completed-jobs` route.
+- Review-service exposes an authenticated endpoint that returns workers grouped with completed jobs for the current hirer.
+- Existing submitted reviews are reflected in the returned completed-jobs payload so the UI can distinguish pending vs completed reviews.
+- Frontend and backend touched files validate cleanly, and focused verification passes.
+
+**Mapped execution surface**
+- `kelmah-backend/services/review-service/controllers/review.controller.js`
+- `kelmah-backend/services/review-service/server.js`
+- `kelmah-backend/services/review-service/routes/review.routes.js`
+- `kelmah-backend/services/review-service/tests/review.controller.contract.test.js`
+- `kelmah-frontend/src/modules/hirer/services/hirerService.js`
+- `kelmah-frontend/src/modules/hirer/components/WorkerReview.jsx`
+
+**Dry-audit findings so far**
+- No matching backend route for `/users/workers/completed-jobs` exists in the repo, so the current WorkerReview data path cannot succeed against the implemented backend.
+- Review-service already owns the review eligibility rules and completed-job participant validation, making it the correct service boundary for a hirer review-candidates listing endpoint.
+- API Gateway already proxies `/api/reviews/*` with authentication for non-public GET routes, so a new authenticated review-service GET route can be added without gateway rewiring.
+
+### Session: CRIT-05 To CRIT-07 Frontend Review And Registration Audit March 9 2026 🔄 IN PROGRESS
+
+**Date**: March 9, 2026  
+**Scope**: Audit and fix the reported frontend review payload override, registration error surfacing, and Ghana phone validation issues, then scan adjacent frontend paths for the same logic flaws so the fixes cover the actual shared behavior.
+
+**Acceptance Criteria**
+- `hirerService.createWorkerReview()` cannot be coerced into overriding the target `workerId` or `jobId` through caller-supplied review payload fields.
+- Hirer review callers still submit the expected review payload contract after the service hardening.
+- Desktop registration surfaces string errors returned via `rejectWithValue()` instead of collapsing to a generic failure message.
+- Mobile registration follows the same error-display rule if it receives a string rejection payload.
+- Ghanaian phone validation accepts common space-formatted valid input while preserving the existing number rules.
+- Registration payload normalization remains consistent between validation and submit-time payload construction.
+- Touched frontend files pass static diagnostics, and the frontend build completes successfully.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/hirer/services/hirerService.js`
+- `kelmah-frontend/src/modules/hirer/components/WorkerReview.jsx`
+- `kelmah-frontend/src/modules/hirer/components/JobProgressTracker.jsx`
+- `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`
+- `kelmah-frontend/src/modules/reviews/services/reviewService.js`
+- `kelmah-frontend/src/modules/auth/components/register/Register.jsx`
+- `kelmah-frontend/src/modules/auth/components/mobile/MobileRegister.jsx`
+- `kelmah-frontend/src/modules/auth/hooks/useRegistrationForm.js`
+- `kelmah-frontend/src/modules/auth/utils/registrationSchema.js`
+- `kelmah-frontend/src/modules/auth/services/authSlice.js`
+- `kelmah-frontend/src/modules/auth/services/authService.js`
+- `kelmah-backend/services/review-service/controllers/review.controller.js`
+- `kelmah-backend/services/review-service/models/Review.js`
+- `kelmah-backend/services/review-service/routes/review.routes.js`
+- `kelmah-backend/services/review-service/server.js`
+- `kelmah-backend/shared/models/Job.js`
+- `kelmah-backend/shared/models/Application.js`
+- `kelmah-frontend/src/tests/**` or equivalent targeted smoke-test files
+- `kelmah-backend/services/review-service/tests/**` targeted controller tests
+
+**Data flow trace**
+- Hirer review flow: `WorkerReview.jsx` and `JobProgressTracker.jsx` collect review input, call `hirerService.createWorkerReview()`, and post to `/reviews` through the shared API client.
+- Desktop registration flow: `Register.jsx` uses `useRegistrationForm()` with `registrationSchema`, dispatches `register` from `authSlice.js`, and submits through `authService.register()` to `/auth/register`.
+- Mobile registration flow: `MobileRegister.jsx` performs local step validation, dispatches the same `register` thunk, and consumes the same rejection payload behavior from `authSlice.js`.
+
+**Dry-audit findings so far**
+- `hirerService.createWorkerReview()` currently spreads `reviewData` after the explicit `workerId` and `jobId`, so a caller can overwrite the review target identifiers.
+- `Register.jsx` catches thunk rejections and reads only `error?.message`, but `register` rejects with a string message via `rejectWithValue()`, so backend-specific registration errors are lost on desktop.
+- `MobileRegister.jsx` has the same string-rejection assumption in its submit catch path.
+- `registrationSchema.js` validates phone input before submit-time whitespace stripping occurs, so valid Ghana numbers entered with spaces fail the schema even though submit logic later normalizes them.
+- The safer root fix is schema-level phone normalization plus submit/error handling alignment across both desktop and mobile registration consumers.
+- Deeper audit found that `review.controller.submitReview()` still trusts the client-supplied `workerId` and does not verify it against the actual completed job assignee, so the backend still allowed forged review targets even after the frontend service hardening.
+- `review.controller.checkEligibility()` relies on `Application.status === 'completed'`, but the shared `Application` schema does not define `completed`; the durable eligibility source is the completed `Job` assignment contract.
+- `JobProgressTracker.jsx` contains a review submit path and dialog but no UI control that opens it, and it only fetches `active` jobs, leaving the second hirer review path effectively dead for completed jobs.
+
+**Implementation completed**
+- Hardened `kelmah-frontend/src/modules/hirer/services/hirerService.js` so `createWorkerReview()` strips caller-supplied `workerId` and `jobId` from `reviewData` before posting and reapplies the trusted function arguments last.
+- Updated `kelmah-frontend/src/modules/hirer/components/WorkerReview.jsx` and `kelmah-frontend/src/modules/hirer/components/JobProgressTracker.jsx` to surface string-thrown review errors cleanly in snackbar feedback during the same review-flow audit.
+- Added shared `normalizeGhanaPhone()` and `isValidGhanaPhone()` helpers in `kelmah-frontend/src/modules/auth/utils/registrationSchema.js` and moved phone normalization into schema preprocessing so space-formatted valid Ghana numbers now pass validation.
+- Updated desktop registration in `kelmah-frontend/src/modules/auth/components/register/Register.jsx` to normalize phone values with the shared helper and to surface string rejection payloads from the register thunk instead of falling back to a generic message.
+- Updated mobile registration in `kelmah-frontend/src/modules/auth/components/mobile/MobileRegister.jsx` to use the same shared Ghana phone normalization/validation helpers and the same string-aware registration error handling.
+
+**Validation**
+- `get_errors` returned no diagnostics for the touched hirer and auth frontend files.
+- `npm run build` in `kelmah-frontend/` completed successfully after the fixes.
+- Residual build output still only shows the pre-existing Vite warning about mixed dynamic/static imports for `src/services/apiClient.js`, which is unrelated to these changes.
+
+### Session: CRIT-03 Worker Directory Aggregation Prefilter March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Remove the worker-directory full-scan pattern by pushing WorkerProfile-owned filtering ahead of the users join and moving worker user gating into the lookup itself so `/users/workers` keeps its existing contract with a cheaper aggregation path.
+
+**Acceptance Criteria**
+- `executeWorkerDirectoryQuery()` no longer begins with an unconditional users join over the full WorkerProfile collection.
+- WorkerProfile-owned filters run before `$lookup` wherever possible.
+- Joined user filtering for `role=worker` and `isActive=true` occurs inside the lookup pipeline or an equivalent join-time constraint.
+- Existing `/users/workers` and `/users/workers/search` response contracts remain unchanged.
+- Regression coverage asserts the optimized aggregation shape.
+
+**Mapped execution surface**
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/user-service/models/index.js`
+- `kelmah-backend/shared/models/WorkerProfile.js`
+- `kelmah-backend/shared/models/User.js`
+- `kelmah-backend/services/user-service/tests/worker-directory.controller.test.js`
+
+**Data flow trace**
+- `GET /api/users/workers` and `GET /api/users/workers/search` enter through `kelmah-backend/services/user-service/routes/user.routes.js` and dispatch to `WorkerController.getAllWorkers()` / `WorkerController.searchWorkers()`.
+- Both controllers normalize query params and call `executeWorkerDirectoryQuery()` in `kelmah-backend/services/user-service/controllers/worker.controller.js`.
+- The aggregate runs against `WorkerProfile` via the user-service model index in `kelmah-backend/services/user-service/models/index.js`, joins to shared `User`, then formats the canonical worker DTO for the API response.
+- The public response contract is verified by `kelmah-backend/services/user-service/tests/worker-directory.controller.test.js`.
+
+**Dry-audit findings so far**
+- The current pipeline starts with `$lookup` and `$unwind`, then applies `user.role` and `user.isActive` after the join, which forces the join path to evaluate before any worker gating.
+- The route ordering in `kelmah-backend/services/user-service/routes/user.routes.js` is already correct, so this is a controller-level aggregation issue rather than an endpoint wiring issue.
+- `WorkerProfile` already exposes searchable fields and indexes for `availabilityStatus`, `hourlyRate`, `skills`, `location`, `rating`, and `skillEntries.name`, so the right fix is to prefilter on those fields before joining to `users`.
+
+**Implementation completed**
+- Added a WorkerProfile-root prefilter stage to `kelmah-backend/services/user-service/controllers/worker.controller.js` so directory aggregation now constrains `userId` presence and profile-owned filters before any users join occurs.
+- Replaced the unconditional `localField`/`foreignField` users join with a lookup pipeline that enforces `role: 'worker'` and `isActive: true` during the join itself, then unwinds only matched user documents.
+- Kept the existing post-lookup canonical filter stage intact so `/users/workers` and `/users/workers/search` continue honoring the existing response contract and legacy user-field fallbacks.
+- Updated `kelmah-backend/services/user-service/tests/worker-directory.controller.test.js` to assert the new prefilter-first pipeline shape and the absence of a post-join `user.role` / `user.isActive` match stage.
+
+**Validation**
+- `get_errors` returned no diagnostics for `kelmah-backend/services/user-service/controllers/worker.controller.js`, `kelmah-backend/services/user-service/tests/worker-directory.controller.test.js`, and `spec-kit/STATUS_LOG.md`.
+- Focused Jest verification passed: `npx jest services/user-service/tests/worker-directory.controller.test.js --runInBand` from `kelmah-backend/`.
+- Jest still reported the pre-existing open-handle warning after completion, but the worker-directory suite itself passed and the aggregation contract assertions succeeded.
+
+### Session: Worker Directory Schema And Index Hardening March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Audit the worker-directory follow-up path for hidden persistence and indexing gaps after the aggregation rewrite, then harden the shared WorkerProfile schema and query helpers so WorkerProfile-first discovery actually persists the fields it reads and sorts by.
+
+**Acceptance Criteria**
+- Shared WorkerProfile schema explicitly declares the root worker-profile fields that `updateWorkerProfile()` writes and worker-directory reads.
+- Worker directory canonical profession filtering prefers WorkerProfile-owned fields before legacy User fallbacks.
+- Shared WorkerProfile indexes cover the main worker-directory filter and sort shapes used after the CRIT-03 rewrite.
+- Regression coverage catches the schema/query hardening so future drift is visible.
+
+**Mapped execution surface**
+- `kelmah-backend/shared/models/WorkerProfile.js`
+- `kelmah-backend/shared/utils/canonicalWorker.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/tests/worker-directory.controller.test.js`
+- `kelmah-backend/services/user-service/tests/worker-profile.controller.test.js`
+
+**Dry-audit findings so far**
+- `WorkerController.updateWorkerProfile()` writes `profile.profession`, `profile.title`, `profile.headline`, `profile.education`, and `profile.profilePicture`, but those root fields are not explicitly declared in the shared WorkerProfile schema, which risks strict-mode drops on save.
+- `buildCanonicalProfession()` in `shared/utils/canonicalWorker.js` already prefers WorkerProfile profession/title/headline over `User.profession`, but the worker-directory aggregate still builds `canonicalProfession` in the reverse order, creating query-time drift.
+- The shared WorkerProfile model has only single-field indexes for most directory filters, leaving the new WorkerProfile-root aggregation without compound index support for its live availability/verification/rating/sort path.
+
+**Implementation completed**
+- Added explicit root WorkerProfile schema fields for `profession`, `title`, `headline`, `tagline`, `education`, and `profilePicture` in `kelmah-backend/shared/models/WorkerProfile.js` so the existing worker profile write path persists the fields it already mutates.
+- Added WorkerProfile compound indexes for worker-directory geo bounds and the main availability/verification/rating/sort shapes so the WorkerProfile-root directory query has index support beyond the earlier single-field defaults.
+- Updated `kelmah-backend/services/user-service/controllers/worker.controller.js` so the directory aggregate now builds `canonicalProfession` with WorkerProfile-first precedence (`profession` -> `title` -> `headline` -> `user.profession`), matching the shared canonical worker utility instead of drifting from it.
+- Tightened `kelmah-backend/services/user-service/tests/worker-directory.controller.test.js` to prove the aggregate still prefers WorkerProfile profession values over legacy `User.profession` values.
+- Added `kelmah-backend/services/user-service/tests/worker-profile.schema.test.js` so future schema drift is caught if the controller writes fields that the shared WorkerProfile schema no longer declares or indexes.
+
+**Validation**
+- `get_errors` returned no diagnostics for the touched shared model, controller, tests, and `spec-kit/STATUS_LOG.md`.
+- Focused Jest verification passed: `npx jest services/user-service/tests/worker-directory.controller.test.js services/user-service/tests/worker-profile.controller.test.js services/user-service/tests/worker-profile.schema.test.js --runInBand` from `kelmah-backend/`.
+- Jest still reported the pre-existing open-handle warning after the suite completed, but all 3 targeted suites passed with 11 assertions green.
+
+### Session: Auth White Theme Alignment March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Refine the desktop login and registration pages so light mode matches the desired white-theme direction: predominantly white surfaces, gold secondary accents, black text, and light black border/shadow definition.
+
+**Acceptance Criteria**
+- Login and registration light mode use white-first surfaces instead of cream-heavy gradients.
+- Gold remains the secondary accent for emphasis, actions, and supporting highlights.
+- Primary text and supporting labels render in black/near-black tones in light mode.
+- Borders and shadows in light mode use subtle black definition instead of brown-heavy tinting.
+- Existing dark mode, mobile auth flows, and auth logic remain intact.
+- Validate touched frontend files and rerun the frontend build.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/auth/components/common/AuthWrapper.jsx`
+- `kelmah-frontend/src/modules/auth/components/login/Login.jsx`
+- `kelmah-frontend/src/modules/auth/components/register/Register.jsx`
+- `kelmah-frontend/src/modules/auth/pages/LoginPage.jsx`
+- `kelmah-frontend/src/modules/auth/pages/RegisterPage.jsx`
+
+**Dry-audit findings so far**
+- The current login light mode is improved functionally, but it still leans warm/cream and gold-tinted in ways that keep it from reading as a crisp white-theme auth surface.
+- The current registration light mode also still uses ivory and sand gradients that feel softer than the user’s target reference.
+- The right fix is token tuning across the shared auth shell and the two desktop auth forms, not a structural redesign.
+
+**Implementation completed**
+- Updated `kelmah-frontend/src/modules/auth/components/common/AuthWrapper.jsx` so the desktop auth shell now uses whiter light-mode surfaces, softer black shadow definition, and thin near-black borders instead of gold-brown tinted framing.
+- Updated `kelmah-frontend/src/modules/auth/components/login/Login.jsx` so the desktop login panel now reads as a clean white card with black text, gold accents, and subtle black border/shadow definition while preserving the existing structure and interactions.
+- Updated `kelmah-frontend/src/modules/auth/components/register/Register.jsx` so the desktop registration shell, support panel, form panel, and step-card light-mode tokens now follow the same white, gold, and black system instead of the earlier cream-heavy palette.
+
+**Validation**
+- `get_errors` returned no diagnostics for `kelmah-frontend/src/modules/auth/components/common/AuthWrapper.jsx`.
+- `get_errors` returned no diagnostics for `kelmah-frontend/src/modules/auth/components/login/Login.jsx`.
+- `get_errors` returned no diagnostics for `kelmah-frontend/src/modules/auth/components/register/Register.jsx`.
+- `npm run build` in `kelmah-frontend/` passed successfully after the auth white-theme alignment.
+- Residual build output still only includes the pre-existing `src/services/apiClient.js` dynamic/static import warning, which is unrelated to the auth page styling work.
+
 ### Session: Worker Search Contract Consolidation And User-Service Parity Push March 9 2026 🔄 IN PROGRESS
 
 **Date**: March 9, 2026  
