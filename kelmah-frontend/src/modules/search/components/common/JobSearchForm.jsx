@@ -215,23 +215,43 @@ const JobSearchForm = ({
           </Grid>
         </Grid>
 
-        {/* Skills Section - Collapsible */}
-        {skills.length > 0 && (
-          <Box sx={{ mt: 2 }}>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {skills.map((s) => (
-                <Chip
-                  key={s}
-                  label={s}
-                  onDelete={() => handleRemoveSkill(s)}
-                  color="primary"
-                  variant="outlined"
-                  size="small"
-                />
-              ))}
-            </Box>
-          </Box>
-        )}
+        {/* FIX H5: Skills Section - Add input field + existing chips */}
+        <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+          <TextField
+            size="small"
+            label="Add skill"
+            variant="outlined"
+            value={skill}
+            onChange={(e) => setSkill(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAddSkill();
+              }
+            }}
+            placeholder="e.g., Welding"
+            sx={{ minWidth: 140, maxWidth: 200 }}
+          />
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={handleAddSkill}
+            disabled={!skill.trim()}
+            sx={{ height: '40px' }}
+          >
+            Add
+          </Button>
+          {skills.map((s) => (
+            <Chip
+              key={s}
+              label={s}
+              onDelete={() => handleRemoveSkill(s)}
+              color="primary"
+              variant="outlined"
+              size="small"
+            />
+          ))}
+        </Box>
       </Box>
     </Paper>
   );

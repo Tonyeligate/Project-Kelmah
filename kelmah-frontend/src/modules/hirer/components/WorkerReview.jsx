@@ -41,7 +41,6 @@ import {
   Schedule as ScheduleIcon,
   AttachMoney as MoneyIcon,
 } from '@mui/icons-material';
-import { api } from '../../../services/apiClient';
 import { hirerService } from '../services/hirerService';
 
 const WorkerReview = () => {
@@ -74,9 +73,15 @@ const WorkerReview = () => {
   const fetchWorkers = async () => {
     try {
       setLoading(true);
-      // Try to fetch from user service, fall back to mock data
-      const response = await api.get('/users/workers/completed-jobs');
-      setWorkers(response.data || []);
+      const response = await hirerService.getCompletedWorkersForReview();
+      const payload = response?.data?.data || response?.data || [];
+      setWorkers(
+        Array.isArray(response)
+          ? response
+          : Array.isArray(payload)
+            ? payload
+            : payload?.workers || [],
+      );
       setError(null);
     } catch (err) {
       if (import.meta.env.DEV) console.warn('User service unavailable for worker reviews:', err.message);
@@ -109,16 +114,18 @@ const WorkerReview = () => {
     setSelectedJob(job);
   };
 
-  const handleMenuClose = () => {
+  const handleMenuClose = ({ preserveSelection = false } = {}) => {
     setAnchorEl(null);
-    setSelectedWorker(null);
-    setSelectedJob(null);
+    if (!preserveSelection) {
+      setSelectedWorker(null);
+      setSelectedJob(null);
+    }
   };
 
   const handleDialogOpen = (type) => {
     setDialogType(type);
     setDialogOpen(true);
-    handleMenuClose();
+    handleMenuClose({ preserveSelection: true });
   };
 
   const handleDialogClose = () => {
@@ -172,7 +179,11 @@ const WorkerReview = () => {
         handleDialogClose();
       } catch (err) {
         if (import.meta.env.DEV) console.error('Error submitting review:', err);
-        setSnackbar({ open: true, message: err?.message || 'Failed to submit review', severity: 'error' });
+        setSnackbar({
+          open: true,
+          message: err?.message || err || 'Failed to submit review',
+          severity: 'error',
+        });
       }
     }
   };
@@ -181,6 +192,10 @@ const WorkerReview = () => {
   const getAllCompletedJobs = () => {
     const allJobs = [];
     workers.forEach((worker) => {
+      if (!Array.isArray(worker.completedJobs)) {
+        return;
+      }
+
       worker.completedJobs.forEach((job) => {
         allJobs.push({
           ...job,
@@ -488,6 +503,7 @@ const WorkerReview = () => {
                         <IconButton
                           size="small"
                           onClick={(e) => handleMenuOpen(e, job.worker, job)}
+                          aria-label={`Open review actions for ${job.worker.name}`}
                         >
                           <MoreVertIcon />
                         </IconButton>

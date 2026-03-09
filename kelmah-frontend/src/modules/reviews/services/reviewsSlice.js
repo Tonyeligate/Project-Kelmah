@@ -1,6 +1,40 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../../../services/apiClient';
 
+const unwrapPayload = (payload) => payload?.data ?? payload ?? {};
+
+const normalizeReviewCollection = (payload) => {
+  const data = unwrapPayload(payload);
+  const reviews = Array.isArray(data?.reviews)
+    ? data.reviews
+    : Array.isArray(data)
+      ? data
+      : [];
+  const pagination = data?.pagination || {};
+
+  return {
+    reviews,
+    totalCount: pagination.total ?? data?.totalCount ?? data?.total ?? reviews.length,
+    currentPage: pagination.page ?? data?.currentPage ?? data?.page ?? 1,
+  };
+};
+
+const getRecipientReviewsPath = (recipientType, recipientId) => {
+  switch (recipientType) {
+    case 'worker':
+      return `/reviews/worker/${recipientId}`;
+    case 'user':
+    case 'reviewer':
+    case 'author':
+      return `/reviews/user/${recipientId}`;
+    case 'job':
+    case 'contract':
+      return `/reviews/job/${recipientId}`;
+    default:
+      throw new Error('recipientType must be one of worker, user, reviewer, author, job, or contract');
+  }
+};
+
 // Create async thunk for submitting reviews
 export const submitReview = createAsyncThunk(
   'reviews/submit',
@@ -27,16 +61,14 @@ export const fetchReviewsByRecipient = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await api.get('/reviews', {
+      const response = await api.get(getRecipientReviewsPath(recipientType, recipientId), {
         params: {
-          recipientId,
-          recipientType,
           page,
           limit,
         },
       });
 
-      return response.data;
+      return normalizeReviewCollection(response.data);
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message ||
@@ -51,9 +83,9 @@ export const fetchReviewsByContract = createAsyncThunk(
   'reviews/fetchByContract',
   async (contractId, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/reviews/contract/${contractId}`);
+      const response = await api.get(`/reviews/job/${contractId}`);
 
-      return response.data;
+      return normalizeReviewCollection(response.data);
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message ||
@@ -118,11 +150,9 @@ const reviewsSlice = createSlice({
       })
       .addCase(fetchReviewsByRecipient.fulfilled, (state, action) => {
         state.loading = false;
-        // Handle both { data: { reviews, ... } } and flat { reviews, ... } shapes
-        const payload = action.payload?.data || action.payload || {};
-        state.reviews = payload.reviews || [];
-        state.totalCount = payload.totalCount || payload.total || 0;
-        state.currentPage = payload.currentPage || payload.page || 1;
+        state.reviews = action.payload?.reviews || [];
+        state.totalCount = action.payload?.totalCount || 0;
+        state.currentPage = action.payload?.currentPage || 1;
       })
       .addCase(fetchReviewsByRecipient.rejected, (state, action) => {
         state.loading = false;
@@ -136,9 +166,7 @@ const reviewsSlice = createSlice({
       })
       .addCase(fetchReviewsByContract.fulfilled, (state, action) => {
         state.loading = false;
-        // Unwrap { success, data: [...] } wrapper if present
-        const payload = action.payload?.data || action.payload || [];
-        state.contractReviews = Array.isArray(payload) ? payload : [];
+        state.contractReviews = action.payload?.reviews || [];
       })
       .addCase(fetchReviewsByContract.rejected, (state, action) => {
         state.loading = false;

@@ -50,6 +50,7 @@ import {
   saveRegistrationDraft,
   clearRegistrationDraft as clearDraftStorage,
 } from '@/modules/auth/utils/registrationDraftStorage';
+import { normalizeGhanaPhone } from '@/modules/auth/utils/registrationSchema';
 import {
   register as registerAction,
   selectAuthError,
@@ -187,37 +188,37 @@ const Register = () => {
   const isDarkMode = theme.palette.mode === 'dark';
   const shellBg = isDarkMode
     ? 'linear-gradient(180deg, #090B0F 0%, #11161D 55%, #0A0E13 100%)'
-    : 'linear-gradient(180deg, #FAF5EA 0%, #F3E9D1 52%, #EBDCB6 100%)';
+    : 'linear-gradient(180deg, #FCFCFA 0%, #F7F6F1 55%, #F2F0EA 100%)';
   const shellAccent = isDarkMode
     ? `radial-gradient(circle at top left, ${alpha(brandColor, 0.18)} 0%, transparent 34%), radial-gradient(circle at bottom right, ${alpha(brandColor, 0.14)} 0%, transparent 28%)`
-    : `radial-gradient(circle at top left, ${alpha(brandColor, 0.18)} 0%, transparent 32%), radial-gradient(circle at bottom right, ${alpha('#FFFFFF', 0.58)} 0%, transparent 34%)`;
+    : `radial-gradient(circle at top left, ${alpha(brandColor, 0.12)} 0%, transparent 30%), radial-gradient(circle at bottom right, ${alpha('#FFFFFF', 0.68)} 0%, transparent 34%)`;
   const supportingPanelBg = isDarkMode
     ? `linear-gradient(160deg, ${alpha('#121720', 0.96)} 0%, ${alpha('#0A0E14', 0.98)} 100%)`
-    : `linear-gradient(160deg, ${alpha('#FFF8EA', 0.98)} 0%, ${alpha('#F1DEAE', 0.98)} 100%)`;
+    : `linear-gradient(160deg, ${alpha('#FFFFFF', 0.99)} 0%, ${alpha('#F7F5EE', 0.99)} 100%)`;
   const supportingPanelText = isDarkMode ? '#F7F7F3' : '#171A1F';
-  const supportingPanelMuted = isDarkMode ? alpha('#FFFFFF', 0.76) : alpha('#171A1F', 0.72);
-  const supportingPanelSoft = isDarkMode ? alpha('#FFFFFF', 0.6) : alpha('#171A1F', 0.56);
-  const supportingPanelBorder = isDarkMode ? alpha('#FFFFFF', 0.08) : alpha('#A88419', 0.18);
-  const supportingPanelSurface = isDarkMode ? alpha('#FFFFFF', 0.04) : alpha('#FFFFFF', 0.62);
-  const supportingPanelSurfaceBorder = isDarkMode ? alpha('#FFFFFF', 0.08) : alpha('#171A1F', 0.08);
+  const supportingPanelMuted = isDarkMode ? alpha('#FFFFFF', 0.76) : alpha('#171A1F', 0.76);
+  const supportingPanelSoft = isDarkMode ? alpha('#FFFFFF', 0.6) : alpha('#171A1F', 0.6);
+  const supportingPanelBorder = isDarkMode ? alpha('#FFFFFF', 0.08) : alpha(brandInk, 0.1);
+  const supportingPanelSurface = isDarkMode ? alpha('#FFFFFF', 0.04) : alpha('#FFFFFF', 0.88);
+  const supportingPanelSurfaceBorder = isDarkMode ? alpha('#FFFFFF', 0.08) : alpha(brandInk, 0.08);
   const supportingPanelShadow = isDarkMode
     ? '0 24px 80px rgba(0, 0, 0, 0.28)'
-    : '0 24px 70px rgba(104, 80, 18, 0.14)';
+    : '0 24px 56px rgba(16, 17, 19, 0.12)';
   const formPanelBg = isDarkMode
     ? `linear-gradient(180deg, ${alpha('#121720', 0.98)} 0%, ${alpha('#0B1016', 0.98)} 100%)`
-    : `linear-gradient(180deg, ${alpha('#FFFFFF', 0.98)} 0%, ${alpha('#FAF3E0', 0.98)} 100%)`;
+    : `linear-gradient(180deg, ${alpha('#FFFFFF', 0.99)} 0%, ${alpha('#F8F7F2', 0.99)} 100%)`;
   const formPanelText = isDarkMode ? '#F7F7F3' : '#171A1F';
-  const formPanelMuted = isDarkMode ? alpha('#FFFFFF', 0.72) : alpha('#171A1F', 0.72);
-  const formPanelSoft = isDarkMode ? alpha('#FFFFFF', 0.56) : alpha('#171A1F', 0.56);
-  const formPanelBorder = isDarkMode ? alpha('#FFFFFF', 0.08) : alpha('#B89B4A', 0.18);
-  const formPanelDivider = isDarkMode ? alpha('#FFFFFF', 0.08) : alpha('#171A1F', 0.09);
-  const formPanelSurface = isDarkMode ? alpha('#FFFFFF', 0.04) : alpha('#FFFFFF', 0.84);
+  const formPanelMuted = isDarkMode ? alpha('#FFFFFF', 0.72) : alpha('#171A1F', 0.74);
+  const formPanelSoft = isDarkMode ? alpha('#FFFFFF', 0.56) : alpha('#171A1F', 0.58);
+  const formPanelBorder = isDarkMode ? alpha('#FFFFFF', 0.08) : alpha(brandInk, 0.1);
+  const formPanelDivider = isDarkMode ? alpha('#FFFFFF', 0.08) : alpha(brandInk, 0.08);
+  const formPanelSurface = isDarkMode ? alpha('#FFFFFF', 0.04) : alpha('#FFFFFF', 0.94);
   const formPanelSurfaceAlt = isDarkMode
     ? `linear-gradient(145deg, ${alpha('#11161D', 0.95)} 0%, ${alpha('#0D1117', 0.96)} 100%)`
-    : `linear-gradient(145deg, ${alpha('#FFFFFF', 0.98)} 0%, ${alpha('#FBF3DF', 0.98)} 100%)`;
+    : `linear-gradient(145deg, ${alpha('#FFFFFF', 0.99)} 0%, ${alpha('#F7F6F0', 0.99)} 100%)`;
   const formPanelShadow = isDarkMode
     ? '0 32px 100px rgba(0, 0, 0, 0.28)'
-    : '0 28px 72px rgba(105, 82, 22, 0.14)';
+    : '0 28px 56px rgba(16, 17, 19, 0.12)';
   const progressValue = ((activeStep + 1) / STEP_META.length) * 100;
   const currentStep = STEP_META[activeStep];
 
@@ -278,7 +279,9 @@ const Register = () => {
 
   useEffect(() => {
     if (authError) {
-      setFormError(authError);
+      setFormError(
+        typeof authError === 'string' ? authError : authError?.message || '',
+      );
     }
   }, [authError]);
 
@@ -363,7 +366,7 @@ const Register = () => {
     try {
       const payload = {
         ...values,
-        phone: values.phone?.replace(/\s+/g, '') ?? '',
+        phone: normalizeGhanaPhone(values.phone) ?? '',
         trades: values.trades || [],
       };
 
@@ -383,7 +386,9 @@ const Register = () => {
         });
       }, 1200);
     } catch (error) {
-      setFormError(error?.message || 'Registration failed. Please try again.');
+      setFormError(
+        error?.message || error || 'Registration failed. Please try again.',
+      );
     }
   };
 
@@ -434,7 +439,7 @@ const Register = () => {
               borderColor: alpha(brandColor, 0.65),
               boxShadow: isDarkMode
                 ? `0 18px 50px ${alpha(brandColor, 0.14)}`
-                : '0 18px 40px rgba(105, 82, 22, 0.1)',
+                : '0 16px 32px rgba(16, 17, 19, 0.08)',
             },
           }}
         >
@@ -1235,7 +1240,7 @@ const Register = () => {
                 background: formPanelBg,
                 color: formPanelText,
                 boxShadow: formPanelShadow,
-                border: `1px solid ${isDarkMode ? alpha('#FFFFFF', 0.08) : alpha('#FFFFFF', 0.28)}`,
+                border: `1px solid ${isDarkMode ? alpha('#FFFFFF', 0.08) : formPanelBorder}`,
                 display: 'flex',
                 flexDirection: 'column',
               }}

@@ -45,6 +45,30 @@ const STATUS_MAP = {
   'open': 'open',        // Direct mapping
 };
 
+const unwrapApiPayload = (payload) => payload?.data ?? payload ?? null;
+
+const extractThunkCollectionItems = (payload) => {
+  const data = unwrapApiPayload(payload);
+
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  if (Array.isArray(data?.items)) {
+    return data.items;
+  }
+
+  if (Array.isArray(data?.jobs)) {
+    return data.jobs;
+  }
+
+  if (Array.isArray(data?.applications)) {
+    return data.applications;
+  }
+
+  return [];
+};
+
 export const fetchHirerJobs = createAsyncThunk(
   'hirer/fetchJobs',
   async (status = 'all', { rejectWithValue }) => {
@@ -58,10 +82,7 @@ export const fetchHirerJobs = createAsyncThunk(
       }
 
       const response = await api.get('/jobs/my-jobs', { params });
-      // Response structure: { success: true, data: { items: [...], pagination: {...} } }
-      // Extract items array from response - check multiple possible paths
-      const responseData = response.data?.data;
-      const jobs = responseData?.items || responseData?.jobs || responseData || response.data?.jobs || [];
+      const jobs = extractThunkCollectionItems(response.data);
       devLog('[HirerSlice] Fetched jobs:', { requestedStatus: status, dbStatus, count: Array.isArray(jobs) ? jobs.length : 0 });
       return { status, jobs: Array.isArray(jobs) ? jobs : [] };
     } catch (error) {
@@ -125,7 +146,7 @@ export const updateJobStatus = createAsyncThunk(
       const response = await api.patch(`/jobs/${jobId}/status`, {
         status,
       });
-      return response.data;
+      return unwrapApiPayload(response.data) ?? response.data ?? {};
     } catch (error) {
       if (import.meta.env.DEV) console.warn(
         'Job service unavailable for status update:',
@@ -168,8 +189,7 @@ export const fetchJobApplications = createAsyncThunk(
       const response = await api.get(`/jobs/${jobId}/applications`, {
         params,
       });
-      // Unwrap { success: true, data: [...] } if present — normalizeApplicationsByStatus handles both
-      return { jobId, applications: response.data };
+      return { jobId, applications: extractThunkCollectionItems(response.data) };
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
       throw error;
@@ -325,13 +345,7 @@ const EMPTY_APPLICATION_ENTRY = createEmptyApplicationEntry();
 
 const normalizeApplicationsByStatus = (apiPayload) => {
   const buckets = createEmptyApplicationBuckets();
-  const list = Array.isArray(apiPayload?.data)
-    ? apiPayload.data
-    : Array.isArray(apiPayload?.items)
-      ? apiPayload.items
-      : Array.isArray(apiPayload)
-        ? apiPayload
-        : [];
+  const list = extractThunkCollectionItems(apiPayload);
 
   list.forEach((application) => {
     const status = application?.status || 'pending';
@@ -532,8 +546,9 @@ const hirerSlice = createSlice({
 
       // Update Job Status
       .addCase(updateJobStatus.fulfilled, (state, action) => {
-        const payload = action.payload?.data || action.payload || {};
-        const { jobId, status } = payload;
+        const payload = action.payload || {};
+        const status = payload.status;
+        const jobId = payload.jobId || payload.id || payload._id;
         if (!jobId || !status) return;
 
         // Move job between status lists
@@ -591,14 +606,7 @@ const hirerSlice = createSlice({
           return;
         }
 
-        // Compute total from the actual resolved list (handles wrapped { success, data: [] })
-        const appList = Array.isArray(applications)
-          ? applications
-          : Array.isArray(applications?.data)
-            ? applications.data
-            : Array.isArray(applications?.items)
-              ? applications.items
-              : [];
+        const appList = Array.isArray(applications) ? applications : [];
         state.applications[jobId] = {
           jobId,
           buckets: normalizeApplicationsByStatus(applications),

@@ -2,7 +2,7 @@
  * Job Service Tests
  */
 
-const { TestDataFactory, TestAssertions } = require('../../shared/test-utils');
+const { TestDataFactory, TestAssertions } = require('../../../shared/test-utils');
 
 describe('Job Service', () => {
   describe('Job Management', () => {

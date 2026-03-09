@@ -1215,23 +1215,20 @@ const getJobs = async (req, res, next) => {
     }
 
     // Try direct MongoDB driver query to bypass Mongoose
-    try {
-      const client = mongoose.connection.getClient();
-      const db = client.db();
-      const jobsCollection = db.collection('jobs');
-      const directCount = await jobsCollection.countDocuments({ status: 'open', visibility: 'public' });
-      if (isDebugJobs) {
+    // FIX M9: Only run debug count query when debug is actually enabled
+    if (isDebugJobs) {
+      try {
+        const client = mongoose.connection.getClient();
+        const db = client.db();
+        const jobsCollection = db.collection('jobs');
+        const directCount = await jobsCollection.countDocuments({ status: 'open', visibility: 'public' });
         jobLogger.info('[GET JOBS] Direct driver query SUCCESS - open jobs count:', directCount);
-      }
 
-      // If direct query works, try to use it
-      if (directCount > 0) {
-        if (isDebugJobs) {
+        // If direct query works, try to use it
+        if (directCount > 0) {
           jobLogger.info('[GET JOBS] USING DIRECT DRIVER QUERY as workaround');
         }
-      }
-    } catch (clientError) {
-      if (isDebugJobs) {
+      } catch (clientError) {
         jobLogger.error('[GET JOBS] Error with direct driver query:', clientError.message);
       }
     }
@@ -1429,9 +1426,11 @@ const getJobs = async (req, res, next) => {
     const usersCollection = db.collection('users');
 
     // Pre-filter by verified hirers to ensure correct pagination totals (CRIT-19)
+    // FIX H1: Cap the verified hirer query to prevent loading all users into memory
     if (req.query.verified === 'true') {
       const verifiedHirers = await usersCollection
         .find({ isVerified: true }, { projection: { _id: 1 } })
+        .limit(5000)
         .toArray();
       const verifiedHirerIds = verifiedHirers.map(h => h._id);
       query.hirer = { $in: verifiedHirerIds };
@@ -1927,6 +1926,7 @@ const getDashboardJobs = async (req, res) => {
     Job.countDocuments({ status: 'open', visibility: 'public' }),
     Job.countDocuments({
       status: 'open',
+      visibility: 'public',
       createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) },
     }),
   ]);
@@ -2092,7 +2092,7 @@ const getJobRecommendations = async (req, res, next) => {
     const candidateJobs = await Job.find(query)
       .populate('hirer', 'firstName lastName profilePicture profileImage rating totalJobsPosted companyName businessName')
       .sort({ createdAt: -1 })
-      .limit(Math.max(numericLimit * 4, 30))
+      .limit(Math.max(numericLimit * 10, 60))
       .lean();
 
     const scoredJobs = candidateJobs
@@ -2179,7 +2179,7 @@ const getWorkerMatches = async (req, res, next) => {
     const { limit = 20, minScore = 40 } = req.query;
 
     // Get job and verify ownership
-    const job = await Job.findById(jobId);
+    const job = await Job.findById(jobId).lean();
     if (!job) {
       return errorResponse(res, 404, 'Job not found');
     }
@@ -2201,9 +2201,12 @@ const getWorkerMatches = async (req, res, next) => {
     if (jobSkills.length > 0) {
       // Case-insensitive skill matching to handle mixed-case stored values
       const skillRegexes = jobSkills.map(s => new RegExp(`^${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'));
+      // FIX L7: Removed 'workerProfile.skills' — that field lives in
+      // the separate WorkerProfile collection, not embedded in User.
+      // Use specializations as additional matching source instead.
       workerQuery.$or = [
         { skills: { $in: skillRegexes } },
-        { 'workerProfile.skills': { $in: skillRegexes } },
+        { specializations: { $in: skillRegexes } },
       ];
     }
 
@@ -2244,7 +2247,7 @@ const getWorkerMatches = async (req, res, next) => {
 
     // Filter by minimum score and sort by match score
     const matchedWorkers = workersWithScores
-      .filter(worker => worker.matchScore >= parseInt(minScore))
+      .filter(worker => worker.matchScore >= parseInt(minScore, 10))
       .sort((a, b) => b.matchScore - a.matchScore)
       .slice(0, numericLimit);
 
@@ -2283,9 +2286,11 @@ function calculateJobMatchScore(job, worker) {
     });
   });
 
+  // FIX M1: When job has no skills listed, assign a neutral score (20/40)
+  // instead of 0 so jobs with poor metadata aren't unfairly penalized.
   const skillScore = jobSkills.length > 0
     ? (skillMatches.length / jobSkills.length) * 40
-    : 0;
+    : 20;
   breakdown.skills = Math.round(skillScore * 10) / 10;
   totalScore += skillScore;
 
@@ -2443,12 +2448,46 @@ function calculateJobMatchScore(job, worker) {
 }
 
 /**
- * Calculate worker match score for a job (inverse of above)
+ * Calculate worker match score for a job (from hirer's perspective)
+ * FIX M2: Distinct scoring from hirer viewpoint — verification, reviews,
+ * and completed jobs weigh more than budget compatibility.
  */
 function calculateWorkerMatchScore(job, worker) {
-  // This is essentially the same logic as calculateJobMatchScore
-  // but from the perspective of matching workers to a job
-  return calculateJobMatchScore(job, worker);
+  const base = calculateJobMatchScore(job, worker);
+  let score = base.totalScore;
+  const reasons = [...base.reasons];
+
+  // Boost verified workers
+  if (worker.isVerified) {
+    score += 8;
+    reasons.push('Verified worker');
+  }
+
+  // Boost workers with high review counts
+  const reviews = Number(worker.totalReviews || 0);
+  if (reviews >= 10) {
+    score += 5;
+    reasons.push(`${reviews} reviews`);
+  } else if (reviews >= 3) {
+    score += 2;
+  }
+
+  // Boost workers with strong completion history
+  const completed = Number(worker.totalJobsCompleted || 0);
+  if (completed >= 20) {
+    score += 5;
+    reasons.push(`${completed} jobs completed`);
+  } else if (completed >= 5) {
+    score += 3;
+  }
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  return {
+    totalScore: score,
+    breakdown: { ...base.breakdown, verifiedBonus: worker.isVerified ? 8 : 0, experienceBonus: completed >= 20 ? 5 : completed >= 5 ? 3 : 0 },
+    reasons
+  };
 }
 
 /**
@@ -2648,6 +2687,34 @@ const advancedJobSearch = async (req, res, next) => {
     }
 
     // Add computed fields for sorting
+    // FIX H3: Compute actual distance when user coordinates are provided
+    const distanceField = (latitude && longitude)
+      ? {
+          // Haversine approximation in km using $addFields operators
+          $let: {
+            vars: {
+              jobLat: { $ifNull: ['$locationDetails.coordinates.lat', 0] },
+              jobLng: { $ifNull: ['$locationDetails.coordinates.lng', 0] },
+              userLat: { $literal: parseFloat(latitude) },
+              userLng: { $literal: parseFloat(longitude) },
+            },
+            in: {
+              $multiply: [
+                6371,
+                {
+                  $sqrt: {
+                    $add: [
+                      { $pow: [{ $subtract: [{ $degreesToRadians: '$$jobLat' }, { $degreesToRadians: '$$userLat' }] }, 2] },
+                      { $pow: [{ $subtract: [{ $degreesToRadians: '$$jobLng' }, { $degreesToRadians: '$$userLng' }] }, 2] },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        }
+      : { $literal: 99999 };
+
     pipeline.push({
       $addFields: {
         relevanceScore: {
@@ -2659,9 +2726,7 @@ const advancedJobSearch = async (req, res, next) => {
             { $cond: [{ $gt: [{ $size: { $ifNull: ['$requirements.primarySkills', []] } }, 0] }, 2, 0] }
           ]
         },
-        distanceScore: {
-          $literal: 0
-        }
+        distanceScore: distanceField
       }
     });
 
@@ -3401,7 +3466,8 @@ const getJobsByLocation = async (req, res, next) => {
   try {
     const { region, district } = req.query;
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
+    // FIX L2: Cap limit to prevent dumping the entire collection
+    const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
     const offset = (page - 1) * limit;
 
     if (!region) {
@@ -3413,15 +3479,16 @@ const getJobsByLocation = async (req, res, next) => {
       query['locationDetails.district'] = district;
     }
 
-    // Use Mongoose syntax (NOT Sequelize)
-    const jobs = await Job.find(query)
-      .populate('hirer', 'firstName lastName profilePicture profileImage')
-      .skip(offset)
-      .limit(limit)
-      .sort({ createdAt: -1 })
-      .lean();
-
-    const totalCount = await Job.countDocuments(query);
+    // FIX L1: Run find and countDocuments in parallel instead of sequentially
+    const [jobs, totalCount] = await Promise.all([
+      Job.find(query)
+        .populate('hirer', 'firstName lastName profilePicture profileImage')
+        .skip(offset)
+        .limit(limit)
+        .sort({ createdAt: -1 })
+        .lean(),
+      Job.countDocuments(query),
+    ]);
 
     return paginatedResponse(res, 200, 'Jobs by location retrieved successfully', jobs, page, limit, totalCount);
   } catch (error) {
@@ -3434,26 +3501,30 @@ const getJobsBySkill = async (req, res, next) => {
   try {
     const { skill } = req.params;
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
+    // FIX L2: Cap limit
+    const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
     const offset = (page - 1) * limit;
 
-    const jobs = await Job.findBySkill(skill)
-      .where({ status: 'open', visibility: 'public' })
-      .populate('hirer', 'firstName lastName profilePicture profileImage')
-      .skip(offset)
-      .limit(limit)
-      .sort({ createdAt: -1 })
-      .lean();
-
-    const totalCount = await Job.countDocuments({
+    const skillQuery = {
       $or: [
-        { 'requirements.primarySkills': skill },
-        { 'requirements.secondarySkills': skill },
-        { skills: skill }
+        { 'requirements.primarySkills': { $regex: new RegExp(`^${skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } },
+        { 'requirements.secondarySkills': { $regex: new RegExp(`^${skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } },
+        { skills: { $regex: new RegExp(`^${skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } }
       ],
       status: 'open',
       visibility: 'public'
-    });
+    };
+
+    // FIX L1: Run find and countDocuments in parallel
+    const [jobs, totalCount] = await Promise.all([
+      Job.find(skillQuery)
+        .populate('hirer', 'firstName lastName profilePicture profileImage')
+        .skip(offset)
+        .limit(limit)
+        .sort({ createdAt: -1 })
+        .lean(),
+      Job.countDocuments(skillQuery),
+    ]);
 
     return paginatedResponse(res, 200, `Jobs for ${skill} skill retrieved successfully`, jobs, page, limit, totalCount);
   } catch (error) {
@@ -3466,7 +3537,8 @@ const getJobsByPerformanceTier = async (req, res, next) => {
   try {
     const { tier } = req.params;
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
+    // FIX L2: Cap limit
+    const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
     const offset = (page - 1) * limit;
 
     const validTiers = ['tier1', 'tier2', 'tier3'];
@@ -3474,14 +3546,18 @@ const getJobsByPerformanceTier = async (req, res, next) => {
       return errorResponse(res, 400, 'Invalid tier. Must be tier1, tier2, or tier3');
     }
 
-    const jobs = await Job.findByPerformanceTier(tier)
-      .where({ status: 'open', visibility: 'public' })
-      .populate('hirer', 'firstName lastName profilePicture profileImage')
-      .skip(offset)
-      .limit(limit)
-      .sort({ createdAt: -1 });
+    const tierQuery = { performanceTier: tier, status: 'open', visibility: 'public' };
 
-    const totalCount = await Job.countDocuments({ performanceTier: tier, status: 'open', visibility: 'public' });
+    // FIX L1: Run in parallel + add .lean()
+    const [jobs, totalCount] = await Promise.all([
+      Job.find(tierQuery)
+        .populate('hirer', 'firstName lastName profilePicture profileImage')
+        .skip(offset)
+        .limit(limit)
+        .sort({ createdAt: -1 })
+        .lean(),
+      Job.countDocuments(tierQuery),
+    ]);
 
     return paginatedResponse(res, 200, `Jobs for ${tier} retrieved successfully`, jobs, page, limit, totalCount);
   } catch (error) {
@@ -3547,19 +3623,25 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
     }
 
     // Fetch ALL matching jobs (up to a reasonable cap), THEN score and paginate
+    // FIX C1: Previous code had duplicate `$or` keys in the object literal which
+    // caused the skills $or to be silently overwritten by the expiry $or.
+    // Now all conditions are wrapped inside a single $and array.
     const candidateJobs = await Job.find({
-      $or: [
-        { 'requirements.primarySkills': { $in: allSkills } },
-        { 'requirements.secondarySkills': { $in: allSkills } },
-        { skills: { $in: allSkills } }
-      ],
-      status: { $in: ['open', 'Open'] },
-      $or: [
-        { expiresAt: { $exists: false } },
-        { expiresAt: null },
-        { expiresAt: { $gt: new Date() } },
-      ],
       $and: [
+        {
+          $or: [
+            { 'requirements.primarySkills': { $in: allSkills } },
+            { 'requirements.secondarySkills': { $in: allSkills } },
+            { skills: { $in: allSkills } }
+          ],
+        },
+        {
+          $or: [
+            { expiresAt: { $exists: false } },
+            { expiresAt: null },
+            { expiresAt: { $gt: new Date() } },
+          ],
+        },
         {
           $or: [
             { visibility: 'public' },
@@ -3568,6 +3650,7 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
           ],
         },
       ],
+      status: { $in: ['open', 'Open'] },
       'bidding.bidStatus': 'open'
     })
       .populate('hirer', 'firstName lastName profilePicture profileImage rating totalJobsPosted companyName businessName')

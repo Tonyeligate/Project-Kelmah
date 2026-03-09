@@ -10,6 +10,110 @@ import { api } from '../../../services/apiClient';
 
 const { USER, JOB } = API_ENDPOINTS;
 
+const JOB_STATUS_MAP = {
+  active: 'open',
+  all: null,
+  open: 'open',
+  completed: 'completed',
+  'in-progress': 'in-progress',
+  cancelled: 'cancelled',
+  draft: 'draft',
+  expired: 'expired',
+  pending: 'pending',
+  closed: 'closed',
+};
+
+const getCanonicalJobStatus = (status) => {
+  if (typeof status !== 'string') {
+    return status;
+  }
+
+  const normalizedStatus = status.trim();
+  if (!normalizedStatus) {
+    return undefined;
+  }
+
+  return JOB_STATUS_MAP[normalizedStatus] !== undefined
+    ? JOB_STATUS_MAP[normalizedStatus]
+    : normalizedStatus;
+};
+
+const unwrapPayload = (payload) => payload?.data ?? payload ?? null;
+
+const extractCollectionItems = (payload) => {
+  const data = unwrapPayload(payload);
+
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  if (Array.isArray(data?.items)) {
+    return data.items;
+  }
+
+  if (Array.isArray(data?.jobs)) {
+    return data.jobs;
+  }
+
+  if (Array.isArray(data?.applications)) {
+    return data.applications;
+  }
+
+  return [];
+};
+
+const extractWorkerItems = (payload) => {
+  const data = unwrapPayload(payload);
+
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  if (Array.isArray(data?.items)) {
+    return data.items;
+  }
+
+  if (Array.isArray(data?.workers)) {
+    return data.workers;
+  }
+
+  return [];
+};
+
+const buildNormalizedPagination = (payload, itemCount = 0) => {
+  const rawPagination =
+    payload?.meta?.pagination ||
+    payload?.pagination ||
+    payload?.data?.pagination ||
+    unwrapPayload(payload)?.pagination ||
+    {};
+
+  return {
+    currentPage: rawPagination.currentPage ?? rawPagination.page ?? 1,
+    totalPages: rawPagination.totalPages ?? 1,
+    totalItems: rawPagination.totalItems ?? rawPagination.total ?? itemCount,
+  };
+};
+
+const buildMyJobsParams = ({ status, limit, includeApplications } = {}) => {
+  const params = { role: 'hirer' };
+  const canonicalStatus = getCanonicalJobStatus(status);
+
+  if (canonicalStatus) {
+    params.status = canonicalStatus;
+  }
+
+  if (typeof limit === 'number') {
+    params.limit = limit;
+  }
+
+  if (includeApplications) {
+    params.includeApplications = true;
+  }
+
+  return params;
+};
+
 const workerBookmarkPath = (workerId) => {
   if (typeof USER.WORKER_BOOKMARK === 'function') {
     return USER.WORKER_BOOKMARK(workerId);
@@ -28,7 +132,7 @@ export const hirerService = {
     // Canonical endpoint: /users/me/credentials (verified in user-service routes)
     try {
       const response = await api.get(USER.ME_CREDENTIALS);
-      return response?.data?.data || response?.data || {};
+      return unwrapPayload(response?.data) || {};
     } catch (error) {
       if (import.meta.env.DEV) console.warn(
         'User service unavailable for hirer profile:',
@@ -37,7 +141,7 @@ export const hirerService = {
       // Fallback: try /users/profile as secondary endpoint
       try {
         const fallback = await api.get('/users/profile');
-        return fallback?.data?.data || fallback?.data || {};
+        return unwrapPayload(fallback?.data) || {};
       } catch (_) {
         throw error;
       }
@@ -47,7 +151,7 @@ export const hirerService = {
   async updateProfile(profileData) {
     try {
       const response = await api.put(USER.UPDATE, profileData);
-      return response.data;
+      return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
       throw error;
@@ -58,9 +162,9 @@ export const hirerService = {
   async getJobs(status = 'active') {
     try {
       const response = await api.get(JOB.MY_JOBS, {
-        params: { status, role: 'hirer' },
+        params: buildMyJobsParams({ status }),
       });
-      return response.data;
+      return extractCollectionItems(response?.data);
     } catch (error) {
       if (import.meta.env.DEV) console.warn(
         `Job service unavailable for hirer jobs (${status}):`,
@@ -79,32 +183,25 @@ export const hirerService = {
           api.get(USER.DASHBOARD_WORKERS),
           api.get(USER.DASHBOARD_ANALYTICS),
           api.get(JOB.MY_JOBS, {
-            params: { status: 'active', role: 'hirer', limit: 10 },
+            params: buildMyJobsParams({ status: 'active', limit: 10 }),
           }),
         ]);
 
       const metrics =
         metricsResult.status === 'fulfilled'
-          ? (metricsResult.value?.data?.data ?? metricsResult.value?.data ?? metricsResult.value)
+          ? (unwrapPayload(metricsResult.value?.data) || {})
           : {};
       const workers =
         workersResult.status === 'fulfilled'
-          ? workersResult.value?.data?.data?.items ||
-          workersResult.value?.data?.data?.workers ||
-          workersResult.value?.data?.workers ||
-          workersResult.value?.data ||
-          workersResult.value
+          ? extractWorkerItems(workersResult.value?.data)
           : [];
       const analytics =
         analyticsResult.status === 'fulfilled'
-          ? (analyticsResult.value?.data?.data ?? analyticsResult.value?.data ?? analyticsResult.value)
+          ? (unwrapPayload(analyticsResult.value?.data) || {})
           : {};
       const activeJobs =
         jobsResult.status === 'fulfilled'
-          ? jobsResult.value?.data?.data ||
-          jobsResult.value?.data?.jobs ||
-          jobsResult.value?.data ||
-          []
+          ? extractCollectionItems(jobsResult.value?.data)
           : [];
 
       return {
@@ -118,7 +215,7 @@ export const hirerService = {
         'Dashboard data unavailable, using fallback:',
         error.message,
       );
-      // Return fallback dashboard data structure
+      // FIX H4: Return fallback dashboard data matching the success path shape
       return {
         metrics: {
           activeJobs: 0,
@@ -126,9 +223,9 @@ export const hirerService = {
           newApplications: 0,
           hiredWorkers: 0,
         },
+        analytics: {},
         activeJobs: [],
-        recentApplications: [],
-        notifications: [],
+        featuredWorkers: [],
       };
     }
   },
@@ -138,7 +235,7 @@ export const hirerService = {
       const response = await api.get(USER.DASHBOARD_ANALYTICS, {
         params: { timeframe },
       });
-      return response.data?.data ?? response.data ?? response;
+      return unwrapPayload(response?.data) || {};
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Metrics unavailable, using fallback:', error.message);
       return {
@@ -157,9 +254,9 @@ export const hirerService = {
   async getRecentJobs(limit = 10) {
     try {
       const response = await api.get(JOB.MY_JOBS, {
-        params: { status: 'active', limit, role: 'hirer' },
+        params: buildMyJobsParams({ status: 'active', limit }),
       });
-      return response.data;
+      return extractCollectionItems(response?.data);
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Recent jobs unavailable:', error.message);
       return [];
@@ -170,10 +267,11 @@ export const hirerService = {
   async getApplications(filters = {}) {
     try {
       const limit = filters.limit || 10;
+      const status = filters.status || 'active';
       const response = await api.get(JOB.MY_JOBS, {
-        params: { role: 'hirer', limit, includeApplications: true },
+        params: buildMyJobsParams({ status, limit, includeApplications: true }),
       });
-      const jobs = response.data?.data || response.data?.jobs || [];
+      const jobs = extractCollectionItems(response?.data);
       // Flatten applications from all jobs
       const applications = [];
       for (const job of (Array.isArray(jobs) ? jobs : [])) {
@@ -196,18 +294,7 @@ export const hirerService = {
       const params = {};
       if (status) params.status = status;
       const response = await api.get(`/jobs/${jobId}/applications`, { params });
-      const payload = response.data;
-      const data = payload?.data || payload;
-      if (Array.isArray(data)) {
-        return data;
-      }
-      if (Array.isArray(data?.items)) {
-        return data.items;
-      }
-      if (Array.isArray(data?.applications)) {
-        return data.applications;
-      }
-      return [];
+      return extractCollectionItems(response?.data);
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Failed to fetch job applications:', error.message);
       return [];
@@ -227,7 +314,7 @@ export const hirerService = {
         `/jobs/${jobId}/applications/${applicationId}`,
         body,
       );
-      return response.data;
+      return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Failed to update application status:', error.message);
       throw error;
@@ -239,7 +326,11 @@ export const hirerService = {
       const response = await api.get(USER.WORKERS_SEARCH, {
         params: searchParams,
       });
-      return response.data;
+      const workers = extractWorkerItems(response?.data);
+      return {
+        workers,
+        pagination: buildNormalizedPagination(response?.data, workers.length),
+      };
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Worker search unavailable:', error.message);
       return {
@@ -288,10 +379,22 @@ export const hirerService = {
     }
   },
 
+  async getCompletedWorkersForReview() {
+    try {
+      const response = await api.get('/reviews/hirer/review-candidates');
+      return extractWorkerItems(response?.data);
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Completed workers unavailable for reviews:', error.message);
+      }
+      return [];
+    }
+  },
+
   async saveWorker(workerId) {
     try {
       const response = await api.post(workerBookmarkPath(workerId), {});
-      return response.data;
+      return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
       throw error;
@@ -301,7 +404,7 @@ export const hirerService = {
   async unsaveWorker(workerId) {
     try {
       const response = await api.delete(workerBookmarkPath(workerId));
-      return response.data;
+      return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
       throw error;
@@ -316,7 +419,7 @@ export const hirerService = {
         milestoneId,
         amount,
       });
-      return response.data?.data || response.data;
+      return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
       throw error;
@@ -326,12 +429,20 @@ export const hirerService = {
   // Review Management
   async createWorkerReview(workerId, jobId, reviewData) {
     try {
+      const sanitizedReviewData =
+        reviewData && typeof reviewData === 'object' ? reviewData : {};
+      const {
+        workerId: _ignoredWorkerId,
+        jobId: _ignoredJobId,
+        ...safeReviewData
+      } = sanitizedReviewData;
+
       const response = await api.post('/reviews', {
+        ...safeReviewData,
         workerId,
         jobId,
-        ...reviewData,
       });
-      return response.data?.data || response.data;
+      return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
       throw error;

@@ -6,6 +6,7 @@
 const winston = require('winston');
 const path = require('path');
 const fs = require('fs');
+const isTestEnv = process.env.NODE_ENV === 'test';
 
 // Ensure logs directory exists
 const logsDir = path.join(__dirname, '../logs');
@@ -49,26 +50,29 @@ const logger = winston.createLogger({
     version: process.env.APP_VERSION || '1.0.0',
     environment: process.env.NODE_ENV || 'development'
   },
-  transports: [
-    // File transports
-    new winston.transports.File({
-      filename: path.join(logsDir, 'error.log'),
-      level: 'error',
-      maxsize: 10485760, // 10MB
-      maxFiles: 5,
-      tailable: true
-    }),
-    new winston.transports.File({
-      filename: path.join(logsDir, 'combined.log'),
-      maxsize: 10485760, // 10MB
-      maxFiles: 5,
-      tailable: true
-    })
-  ]
+  transports: isTestEnv
+    ? []
+    : [
+        new winston.transports.File({
+          filename: path.join(logsDir, 'error.log'),
+          level: 'error',
+          maxsize: 10485760, // 10MB
+          maxFiles: 5,
+          tailable: true
+        }),
+        new winston.transports.File({
+          filename: path.join(logsDir, 'combined.log'),
+          maxsize: 10485760, // 10MB
+          maxFiles: 5,
+          tailable: true
+        })
+      ]
 });
 
 // Add console transport for non-production environments
-if (process.env.NODE_ENV !== 'production') {
+if (isTestEnv) {
+  logger.add(new winston.transports.Console({ silent: true }));
+} else if (process.env.NODE_ENV !== 'production') {
   logger.add(new winston.transports.Console({
     format: winston.format.combine(
       winston.format.colorize(),

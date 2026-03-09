@@ -12,6 +12,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 // removed morgan; using shared JSON logger
 const cookieParser = require("cookie-parser");
+const timingSafeCompare = require('./utils/timingSafeCompare');
 const config = require("./config");
 const { notFound } = require("./utils/errorTypes");
 const mongoose = require("mongoose");
@@ -198,7 +199,7 @@ const hasValidInternalAdminKey = (req) => {
   return Boolean(
     process.env.INTERNAL_API_KEY &&
     internalKey &&
-    internalKey === process.env.INTERNAL_API_KEY,
+    timingSafeCompare(internalKey, process.env.INTERNAL_API_KEY),
   );
 };
 

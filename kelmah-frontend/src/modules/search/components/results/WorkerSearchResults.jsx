@@ -338,8 +338,8 @@ const WorkerSearchResults = ({
   // Renders worker cards
   const renderWorkerCards = () => (
     <Grid container spacing={3}>
-      {workers.map((worker) => (
-        <Grid item xs={12} sm={6} md={4} key={worker.id || worker.userId}>
+      {workers.map((worker, index) => (
+        <Grid item xs={12} sm={6} md={4} key={worker.id || worker.userId || `worker-${index}`}>
           <WorkerCard
             worker={worker}
             onSave={onSaveWorker ? () => onSaveWorker(worker) : undefined}

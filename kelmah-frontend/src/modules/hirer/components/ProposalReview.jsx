@@ -42,11 +42,11 @@ import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import StarIcon from '@mui/icons-material/Star';
 import { useSnackbar } from 'notistack';
-import { api } from '../../../services/apiClient';
 import {
   DEFAULT_PROPOSAL_PAGE_SIZE,
   useProposals,
 } from '../../../hooks/useProposals';
+import { hirerService } from '../services/hirerService';
 
 const STATUS_FILTERS = [
   { label: 'All', value: 'all' },
@@ -328,10 +328,12 @@ const ProposalReview = () => {
         setActionInProgress(true);
         setActionError(null);
 
-        await api.put(`/jobs/${jobId}/applications/${proposalId}`, {
-          status: action,
-          notes: additionalData.feedback || additionalData.notes,
-        });
+        await hirerService.updateApplicationStatus(
+          jobId,
+          proposalId,
+          action,
+          additionalData.feedback || additionalData.notes,
+        );
 
         enqueueSnackbar('Proposal updated successfully.', {
           variant: 'success',

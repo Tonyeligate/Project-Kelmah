@@ -23,7 +23,9 @@ const WorkerSkill = null;
 
 // Legacy loadModels function for backwards compatibility
 function loadModels() {
-  console.log('✅ All models ready (models use mongoose.model() auto-binding)');
+  if (process.env.NODE_ENV !== 'test') {
+    console.log('✅ All models ready (models use mongoose.model() auto-binding)');
+  }
 }
 
 // Export models

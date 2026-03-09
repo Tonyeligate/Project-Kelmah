@@ -1,5 +1,28 @@
 import { api } from '../../../services/apiClient';
 
+const unwrapAnalyticsPayload = (response) => response?.data?.data ?? response?.data ?? null;
+
+const normalizeListContainer = (payload, key, fallbackList = []) => {
+  if (Array.isArray(payload)) {
+    return { [key]: payload };
+  }
+
+  if (payload && typeof payload === 'object') {
+    const list = Array.isArray(payload[key])
+      ? payload[key]
+      : Array.isArray(payload.items)
+        ? payload.items
+        : fallbackList;
+
+    return {
+      ...payload,
+      [key]: list,
+    };
+  }
+
+  return null;
+};
+
 /**
  * Service for managing hirer analytics and insights
  * NOTE: No /api/hirers gateway mount exists yet. All methods attempt real API
@@ -13,7 +36,10 @@ const hirerAnalyticsService = {
       const response = await api.get(`/hirers/${hirerId}/analytics`, {
         params: { timeRange },
       });
-      return response.data;
+      const payload = unwrapAnalyticsPayload(response);
+      return payload && typeof payload === 'object'
+        ? payload
+        : generateMockHirerAnalytics(timeRange);
     } catch {
       return generateMockHirerAnalytics(timeRange);
     }
@@ -24,7 +50,22 @@ const hirerAnalyticsService = {
       const response = await api.get(`/hirers/${hirerId}/spending`, {
         params: filters,
       });
-      return response.data;
+      const payload = unwrapAnalyticsPayload(response);
+      if (Array.isArray(payload)) {
+        return { spendingTrend: payload, total: 0 };
+      }
+      if (payload && typeof payload === 'object') {
+        return {
+          ...payload,
+          spendingTrend: Array.isArray(payload.spendingTrend)
+            ? payload.spendingTrend
+            : Array.isArray(payload.items)
+              ? payload.items
+              : [],
+          total: payload.total ?? 0,
+        };
+      }
+      return { spendingTrend: generateMockSpendingTrend(), total: 0 };
     } catch {
       return { spendingTrend: generateMockSpendingTrend(), total: 0 };
     }
@@ -33,7 +74,9 @@ const hirerAnalyticsService = {
   getWorkerPerformance: async (hirerId) => {
     try {
       const response = await api.get(`/hirers/${hirerId}/workers/performance`);
-      return response.data;
+      return normalizeListContainer(unwrapAnalyticsPayload(response), 'workers', generateMockTopWorkers()) || {
+        workers: generateMockTopWorkers(),
+      };
     } catch {
       return { workers: generateMockTopWorkers() };
     }
@@ -42,7 +85,21 @@ const hirerAnalyticsService = {
   getJobSuccessMetrics: async (hirerId) => {
     try {
       const response = await api.get(`/hirers/${hirerId}/jobs/success-metrics`);
-      return response.data;
+      const payload = unwrapAnalyticsPayload(response);
+      return payload && typeof payload === 'object'
+        ? {
+          completionRate: payload.completionRate ?? 0,
+          onTimeRate: payload.onTimeRate ?? 0,
+          workerSatisfaction: payload.workerSatisfaction ?? 0,
+          budgetAdherence: payload.budgetAdherence ?? 0,
+          ...payload,
+        }
+        : {
+          completionRate: 0,
+          onTimeRate: 0,
+          workerSatisfaction: 0,
+          budgetAdherence: 0,
+        };
     } catch {
       return {
         completionRate: 0,
@@ -56,7 +113,7 @@ const hirerAnalyticsService = {
   getMarketInsights: async (hirerId) => {
     try {
       const response = await api.get(`/hirers/${hirerId}/market-insights`);
-      return response.data;
+      return normalizeListContainer(unwrapAnalyticsPayload(response), 'insights') || { insights: [] };
     } catch {
       return { insights: [] };
     }
@@ -77,7 +134,9 @@ const hirerAnalyticsService = {
   getCostSavingsOpportunities: async (hirerId) => {
     try {
       const response = await api.get(`/hirers/${hirerId}/cost-savings`);
-      return response.data;
+      return normalizeListContainer(unwrapAnalyticsPayload(response), 'opportunities') || {
+        opportunities: [],
+      };
     } catch {
       return { opportunities: [] };
     }
@@ -86,7 +145,19 @@ const hirerAnalyticsService = {
   getHiringEfficiencyMetrics: async (hirerId) => {
     try {
       const response = await api.get(`/hirers/${hirerId}/efficiency`);
-      return response.data;
+      const payload = unwrapAnalyticsPayload(response);
+      return payload && typeof payload === 'object'
+        ? {
+          averageTimeToHire: payload.averageTimeToHire ?? 0,
+          avgCostPerHire: payload.avgCostPerHire ?? 0,
+          metrics: Array.isArray(payload.metrics)
+            ? payload.metrics
+            : Array.isArray(payload.items)
+              ? payload.items
+              : [],
+          ...payload,
+        }
+        : { averageTimeToHire: 0, avgCostPerHire: 0, metrics: [] };
     } catch {
       return { averageTimeToHire: 0, avgCostPerHire: 0, metrics: [] };
     }

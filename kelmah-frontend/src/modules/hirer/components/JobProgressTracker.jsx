@@ -64,10 +64,12 @@ const JobProgressTracker = () => {
 
   // Redux selectors
   const activeJobs = useSelector(selectHirerJobs('active'));
+  const completedJobs = useSelector(selectHirerJobs('completed'));
   const loading = useSelector(selectHirerLoading('jobs'));
 
   useEffect(() => {
     dispatch(fetchHirerJobs('active'));
+    dispatch(fetchHirerJobs('completed'));
   }, [dispatch]);
 
   const formatCurrency = (amount) => {
@@ -127,6 +129,7 @@ const JobProgressTracker = () => {
       );
       setSnackbar({ open: true, message: 'Payment released successfully!', severity: 'success' });
       dispatch(fetchHirerJobs('active'));
+      dispatch(fetchHirerJobs('completed'));
       handleDialogClose();
     } catch (err) {
       setSnackbar({ open: true, message: err?.message || 'Failed to release payment', severity: 'error' });
@@ -146,9 +149,15 @@ const JobProgressTracker = () => {
         { rating: reviewRating, comment: reviewComment },
       );
       setSnackbar({ open: true, message: 'Review submitted successfully!', severity: 'success' });
+      dispatch(fetchHirerJobs('active'));
+      dispatch(fetchHirerJobs('completed'));
       handleDialogClose();
     } catch (err) {
-      setSnackbar({ open: true, message: err?.message || 'Failed to submit review', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: err?.message || err || 'Failed to submit review',
+        severity: 'error',
+      });
     } finally {
       setActionLoading(false);
     }
@@ -177,17 +186,25 @@ const JobProgressTracker = () => {
   };
 
   // Build progress model from active jobs
+  const trackedJobs = Array.from(
+    new Map(
+      [...(Array.isArray(activeJobs) ? activeJobs : []), ...(Array.isArray(completedJobs) ? completedJobs : [])]
+        .map((job) => [job.id || job._id, job]),
+    ).values(),
+  );
+
   const jobsWithProgress =
-    Array.isArray(activeJobs) && activeJobs.length > 0
-      ? activeJobs.map((job) => ({
+    trackedJobs.length > 0
+      ? trackedJobs.map((job) => ({
           id: job.id || job._id,
           title: job.title || 'Untitled Job',
           worker: {
-            id: job.worker?.id || job.workerId || 'unknown',
+            id: job.worker?.id || job.worker?._id || job.workerId || 'unknown',
             userId:
               job.worker?.userId ||
               job.worker?.user?.id ||
               job.worker?.user?._id ||
+              job.worker?._id ||
               job.worker?.id ||
               job.workerId ||
               null,
@@ -197,7 +214,7 @@ const JobProgressTracker = () => {
             completedJobs: job.worker?.completedJobs || 0,
           },
           status: job.status || 'in_progress',
-          progress: job.progress || 0,
+          progress: job.status === 'completed' ? 100 : job.progress || 0,
           startDate: job.startDate || job.createdAt || Date.now(),
           expectedCompletion:
             job.expectedCompletion || job.dueDate || Date.now(),
@@ -318,6 +335,16 @@ const JobProgressTracker = () => {
                 >
                   <MessageIcon />
                 </IconButton>
+                {job.status === 'completed' && job.worker?.id && (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<StarIcon />}
+                    onClick={() => handleDialogOpen('review', job)}
+                  >
+                    Review Worker
+                  </Button>
+                )}
               </Box>
             </Box>
 

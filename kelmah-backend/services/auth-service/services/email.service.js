@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const config = require('../config');
 const { logger } = require('../utils/logger');
@@ -50,6 +51,41 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 const transporter = nodemailer.createTransport(smtpConfig);
+
+const resolveSenderAddress = () => EMAIL_FROM || smtpConfig.auth.user || 'noreply@localhost';
+
+const resolveMessageIdDomain = () => {
+  const senderAddress = resolveSenderAddress();
+  const atIndex = senderAddress.lastIndexOf('@');
+  return atIndex > -1 ? senderAddress.slice(atIndex + 1) : 'localhost';
+};
+
+const buildMailMetadata = (priority = 'normal') => {
+  const senderAddress = resolveSenderAddress();
+  const messageId = `<${Date.now()}.${crypto.randomBytes(8).toString('hex')}@${resolveMessageIdDomain()}>`;
+
+  const priorityHeaders = priority === 'high'
+    ? {
+        'X-Priority': '1',
+        'X-MSMail-Priority': 'High',
+        Importance: 'High',
+      }
+    : {
+        'X-Priority': '3',
+        'X-MSMail-Priority': 'Normal',
+        Importance: 'Normal',
+      };
+
+  return {
+    messageId,
+    headers: {
+      'X-Mailer': 'Kelmah Platform v1.0',
+      'X-Auto-Response-Suppress': 'OOF, DR, RN, NRN, AutoReply',
+      'Reply-To': senderAddress,
+      ...priorityHeaders,
+    },
+  };
+};
 
 const sendMailSafely = async (mailOptions, operation) => {
   if (!HAS_SMTP_CREDENTIALS) {
@@ -116,6 +152,8 @@ const createEmailTemplate = (title, content, buttonText, buttonUrl) => {
 };
 
 module.exports = {
+  isDeliveryConfigured: () => HAS_SMTP_CREDENTIALS,
+
   sendVerificationEmail: async ({ name, email, verificationUrl }) => {
     const subject = '✅ Verify Your Kelmah Account - Action Required';
     const content = `
@@ -133,35 +171,20 @@ module.exports = {
     const html = createEmailTemplate('Verify Your Email', content, 'Verify Email Address', verificationUrl);
     const text = `Welcome to Kelmah, ${name}!\n\nThank you for joining our professional services marketplace. Please verify your email address by visiting: ${verificationUrl}\n\nThis verification link will expire in 24 hours for security reasons.\n\nIf you didn't create this account, please ignore this email.\n\nBest regards,\nThe Kelmah Team`;
     
+    const { headers, messageId } = buildMailMetadata('normal');
+
     const mailOptions = {
       from: `"Kelmah Platform" <${EMAIL_FROM}>`,
       to: email,
       subject,
       text,
       html,
-      // Enhanced anti-spam headers
-      headers: {
-        'X-Mailer': 'Kelmah Platform v1.0',
-        'X-Priority': '3',
-        'X-MSMail-Priority': 'Normal',
-        'Importance': 'Normal',
-        'List-Unsubscribe': `<mailto:unsubscribe@kelmah.com>`,
-        'X-Auto-Response-Suppress': 'OOF, DR, RN, NRN, AutoReply',
-        // Additional anti-spam headers
-        'Message-ID': `<${Date.now()}-${Math.random().toString(36).substr(2, 9)}@kelmah.com>`,
-        'X-Entity-ID': 'kelmah-platform',
-        'X-MC-Subaccount': 'kelmah-transactional',
-        'Reply-To': 'noreply@kelmah.com',
-        // Authentication headers guidance
-        'X-SES-CONFIGURATION-SET': 'kelmah-transactional',
-        'X-SES-MESSAGE-TAGS': 'campaign=email-verification'
-      },
-      // Additional options to improve deliverability
+      headers,
       envelope: {
         from: EMAIL_FROM,
         to: email
       },
-      messageId: `<${Date.now()}-${Math.random().toString(36).substr(2, 9)}@kelmah.com>`
+      messageId,
     };
     
     await sendMailSafely(mailOptions, 'sendVerificationEmail');
@@ -183,20 +206,16 @@ module.exports = {
     const html = createEmailTemplate('Reset Your Password', content, 'Reset Password', resetUrl);
     const text = `Password Reset Request\n\nHello ${name},\n\nWe received a request to reset your password for your Kelmah account. If you made this request, visit: ${resetUrl}\n\nThis link will expire in 1 hour for security reasons.\n\nIf you didn't request this password reset, please ignore this email. Your password will remain unchanged.\n\nBest regards,\nThe Kelmah Team`;
     
+    const { headers, messageId } = buildMailMetadata('high');
+
     const mailOptions = {
       from: `"Kelmah Security" <${EMAIL_FROM}>`,
       to: email,
       subject,
       text,
       html,
-      headers: {
-        'X-Mailer': 'Kelmah Platform v1.0',
-        'X-Priority': '2',
-        'X-MSMail-Priority': 'High',
-        'Importance': 'High',
-        'List-Unsubscribe': `<mailto:unsubscribe@kelmah.com>`,
-        'X-Auto-Response-Suppress': 'OOF, DR, RN, NRN, AutoReply'
-      }
+      headers,
+      messageId,
     };
     
     await sendMailSafely(mailOptions, 'sendPasswordResetEmail');
@@ -219,20 +238,16 @@ module.exports = {
     const html = createEmailTemplate('Password Changed', content);
     const text = `Password Changed Successfully\n\nHello ${name},\n\nThis email confirms that your Kelmah account password was successfully changed on ${new Date().toLocaleDateString()}.\n\nIf you didn't make this change, please contact our support team immediately at support@kelmah.com\n\nBest regards,\nThe Kelmah Team`;
     
+    const { headers, messageId } = buildMailMetadata('normal');
+
     const mailOptions = {
       from: `"Kelmah Security" <${EMAIL_FROM}>`,
       to: email,
       subject,
       text,
       html,
-      headers: {
-        'X-Mailer': 'Kelmah Platform v1.0',
-        'X-Priority': '3',
-        'X-MSMail-Priority': 'Normal',
-        'Importance': 'Normal',
-        'List-Unsubscribe': `<mailto:unsubscribe@kelmah.com>`,
-        'X-Auto-Response-Suppress': 'OOF, DR, RN, NRN, AutoReply'
-      }
+      headers,
+      messageId,
     };
     
     await sendMailSafely(mailOptions, 'sendPasswordChangedEmail');
@@ -256,20 +271,16 @@ module.exports = {
     const html = createEmailTemplate('Account Deactivated', content);
     const text = `Account Deactivation Notice\n\nHello ${name},\n\nYour Kelmah account has been temporarily deactivated. This action was taken for security or policy reasons.\n\nIf you believe this was done in error, please contact our support team at support@kelmah.com\n\nBest regards,\nThe Kelmah Team`;
     
+    const { headers, messageId } = buildMailMetadata('high');
+
     const mailOptions = {
       from: `"Kelmah Support" <${EMAIL_FROM}>`,
       to: email,
       subject,
       text,
       html,
-      headers: {
-        'X-Mailer': 'Kelmah Platform v1.0',
-        'X-Priority': '2',
-        'X-MSMail-Priority': 'High',
-        'Importance': 'High',
-        'List-Unsubscribe': `<mailto:unsubscribe@kelmah.com>`,
-        'X-Auto-Response-Suppress': 'OOF, DR, RN, NRN, AutoReply'
-      }
+      headers,
+      messageId,
     };
     
     await sendMailSafely(mailOptions, 'sendAccountDeactivationEmail');
@@ -293,20 +304,16 @@ module.exports = {
     const html = createEmailTemplate('Account Reactivated', content, 'Access Your Account', `${process.env.FRONTEND_URL || 'https://kelmah-frontend-mu.vercel.app'}/login`);
     const text = `Welcome Back!\n\nHello ${name},\n\nGreat news! Your Kelmah account has been successfully reactivated and you can now access all platform features.\n\nYou can log in at: ${process.env.FRONTEND_URL || 'https://kelmah-frontend-mu.vercel.app'}/login\n\nThank you for your patience during the resolution process.\n\nBest regards,\nThe Kelmah Team`;
     
+    const { headers, messageId } = buildMailMetadata('normal');
+
     const mailOptions = {
       from: `"Kelmah Support" <${EMAIL_FROM}>`,
       to: email,
       subject,
       text,
       html,
-      headers: {
-        'X-Mailer': 'Kelmah Platform v1.0',
-        'X-Priority': '3',
-        'X-MSMail-Priority': 'Normal',
-        'Importance': 'Normal',
-        'List-Unsubscribe': `<mailto:unsubscribe@kelmah.com>`,
-        'X-Auto-Response-Suppress': 'OOF, DR, RN, NRN, AutoReply'
-      }
+      headers,
+      messageId,
     };
     
     await sendMailSafely(mailOptions, 'sendAccountReactivationEmail');
@@ -330,20 +337,16 @@ module.exports = {
     const html = createEmailTemplate('Account Locked', content);
     const text = `Account Security Alert\n\nHello ${name},\n\nYour Kelmah account has been temporarily locked due to suspicious activity or multiple failed login attempts.\n\nYour account will be automatically unlocked in 30 minutes, or you can contact support at support@kelmah.com for immediate assistance.\n\nBest regards,\nThe Kelmah Security Team`;
     
+    const { headers, messageId } = buildMailMetadata('high');
+
     const mailOptions = {
       from: `"Kelmah Security" <${EMAIL_FROM}>`,
       to: email,
       subject,
       text,
       html,
-      headers: {
-        'X-Mailer': 'Kelmah Platform v1.0',
-        'X-Priority': '1',
-        'X-MSMail-Priority': 'High',
-        'Importance': 'High',
-        'List-Unsubscribe': `<mailto:unsubscribe@kelmah.com>`,
-        'X-Auto-Response-Suppress': 'OOF, DR, RN, NRN, AutoReply'
-      }
+      headers,
+      messageId,
     };
     
     await sendMailSafely(mailOptions, 'sendAccountLockedEmail');
@@ -366,20 +369,16 @@ module.exports = {
     const html = createEmailTemplate('Login Notification', content, 'Secure My Account', `${process.env.FRONTEND_URL || 'https://kelmah-frontend-mu.vercel.app'}/change-password`);
     const text = `Login Notification\n\nHello ${name},\n\nA new login to your Kelmah account was detected on ${new Date().toLocaleString()}.\n\nIf this was you, no action is needed. If you don't recognize this login, please secure your account immediately by changing your password at: ${process.env.FRONTEND_URL || 'https://kelmah-frontend-mu.vercel.app'}/change-password\n\nBest regards,\nThe Kelmah Security Team`;
     
+    const { headers, messageId } = buildMailMetadata('normal');
+
     const mailOptions = {
       from: `"Kelmah Security" <${EMAIL_FROM}>`,
       to: email,
       subject,
       text,
       html,
-      headers: {
-        'X-Mailer': 'Kelmah Platform v1.0',
-        'X-Priority': '3',
-        'X-MSMail-Priority': 'Normal',
-        'Importance': 'Normal',
-        'List-Unsubscribe': `<mailto:unsubscribe@kelmah.com>`,
-        'X-Auto-Response-Suppress': 'OOF, DR, RN, NRN, AutoReply'
-      }
+      headers,
+      messageId,
     };
     
     await sendMailSafely(mailOptions, 'sendLoginNotificationEmail');

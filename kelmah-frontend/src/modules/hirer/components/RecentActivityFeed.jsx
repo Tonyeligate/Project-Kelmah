@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   List,
   ListItem,
@@ -149,9 +149,13 @@ function formatRelativeTime(dateStr) {
 const RecentActivityFeed = ({ jobs = [], applications = {}, activities = null }) => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const events = Array.isArray(activities)
-    ? mapBackendActivities(activities)
-    : deriveEvents(jobs, applications);
+  // FIX L1: Memoize event derivation to avoid recalculating on every render
+  const events = useMemo(
+    () => Array.isArray(activities)
+      ? mapBackendActivities(activities)
+      : deriveEvents(jobs, applications),
+    [activities, jobs, applications],
+  );
 
   return (
     <Paper
@@ -210,7 +214,7 @@ const RecentActivityFeed = ({ jobs = [], applications = {}, activities = null })
       <Box sx={{ px: { xs: 2, sm: 3 }, py: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
         <Button
           size="small"
-          onClick={() => navigate('/hirer/jobs')}
+          onClick={() => navigate('/hirer/dashboard')}
           sx={{ textTransform: 'none', fontWeight: 600 }}
         >
           View All Activity

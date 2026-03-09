@@ -3,7 +3,7 @@
  */
 
 const request = require('supertest');
-const { setupTestDatabase, cleanupTestDatabase } = require('../../shared/test-utils');
+const { setupTestDatabase, cleanupTestDatabase } = require('../../../shared/test-utils');
 
 // Import the app (you'll need to export it from server.js)
 // const app = require('../server');

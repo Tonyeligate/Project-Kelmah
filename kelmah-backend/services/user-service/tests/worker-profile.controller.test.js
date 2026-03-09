@@ -31,6 +31,32 @@ jest.mock('../config/db', () => ({
   ensureConnection: jest.fn(() => Promise.resolve()),
 }));
 
+jest.mock('../models', () => ({
+  loadModels: jest.fn(),
+  User: undefined,
+  WorkerProfile: undefined,
+  Availability: undefined,
+  Portfolio: undefined,
+  Certificate: undefined,
+  Job: undefined,
+  Application: undefined,
+}));
+
+jest.mock('../../../shared/utils/audit-logger', () => ({
+  log: jest.fn(() => Promise.resolve()),
+  query: jest.fn(() => Promise.resolve([])),
+  getStatistics: jest.fn(() => Promise.resolve({ totalEvents: 0, byAction: {}, bySeverity: {} })),
+}));
+
+jest.mock('../utils/logger', () => ({
+  logger: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+  },
+}));
+
 const modelsModule = require('../models');
 const WorkerController = require('../controllers/worker.controller');
 const { ensureConnection } = require('../config/db');

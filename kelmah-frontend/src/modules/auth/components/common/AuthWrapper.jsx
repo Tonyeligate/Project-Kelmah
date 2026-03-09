@@ -46,31 +46,31 @@ const AuthWrapper = ({ children }) => {
   const accentStrong = theme.palette.primary.dark || '#D39D00';
   const shellBackground = isDarkMode
     ? 'linear-gradient(145deg, rgba(20, 20, 20, 0.98) 0%, rgba(30, 30, 30, 0.99) 100%)'
-    : 'linear-gradient(145deg, rgba(255,255,255,0.97) 0%, rgba(248,240,219,0.99) 100%)';
+    : 'linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(248,248,244,0.99) 100%)';
   const leftPanelBackground = isDarkMode
     ? `linear-gradient(135deg, rgba(40,40,40,0.9) 0%, rgba(30,30,30,0.95) 50%, rgba(25,25,25,0.98) 100%)`
-    : 'linear-gradient(135deg, rgba(255,249,235,0.97) 0%, rgba(243,227,182,0.98) 100%)';
+    : 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(248,245,236,0.99) 100%)';
   const shellShadow = isDarkMode
     ? '0 20px 60px rgba(0,0,0,0.5)'
-    : '0 24px 72px rgba(105,82,22,0.16)';
+    : '0 24px 64px rgba(16,17,19,0.12)';
   const shellBorder = isDarkMode
     ? alpha(accentColor, 0.2)
-    : alpha(accentStrong, 0.22);
+    : alpha('#101113', 0.12);
   const leftPanelText = isDarkMode ? '#FFFFFF' : '#171A1F';
-  const leftPanelMuted = isDarkMode ? alpha('#FFFFFF', 0.82) : alpha('#171A1F', 0.72);
-  const leftPanelSoft = isDarkMode ? alpha('#FFFFFF', 0.7) : alpha('#171A1F', 0.58);
-  const featureSurface = isDarkMode ? alpha(accentColor, 0.05) : alpha('#FFFFFF', 0.56);
-  const featureSurfaceHover = isDarkMode ? alpha(accentColor, 0.1) : alpha('#FFFFFF', 0.78);
-  const featureBorder = isDarkMode ? alpha(accentColor, 0.1) : alpha('#171A1F', 0.08);
-  const overlaySurface = isDarkMode ? alpha('#000000', 0.65) : alpha('#FFFFFF', 0.84);
-  const overlayBorder = isDarkMode ? alpha(accentColor, 0.4) : alpha(accentStrong, 0.24);
+  const leftPanelMuted = isDarkMode ? alpha('#FFFFFF', 0.82) : alpha('#171A1F', 0.76);
+  const leftPanelSoft = isDarkMode ? alpha('#FFFFFF', 0.7) : alpha('#171A1F', 0.6);
+  const featureSurface = isDarkMode ? alpha(accentColor, 0.05) : alpha('#FFFFFF', 0.82);
+  const featureSurfaceHover = isDarkMode ? alpha(accentColor, 0.1) : alpha('#FFFFFF', 0.96);
+  const featureBorder = isDarkMode ? alpha(accentColor, 0.1) : alpha('#101113', 0.08);
+  const overlaySurface = isDarkMode ? alpha('#000000', 0.65) : alpha('#FFFFFF', 0.94);
+  const overlayBorder = isDarkMode ? alpha(accentColor, 0.4) : alpha('#101113', 0.12);
   const overlayChipBg = isDarkMode ? alpha(accentColor, 0.2) : alpha(accentColor, 0.14);
   const pageBackground = isDarkMode
     ? '#000000'
-    : 'linear-gradient(180deg, #FBF7EE 0%, #F3E8CB 100%)';
+    : 'linear-gradient(180deg, #FCFCFA 0%, #F4F2EB 100%)';
   const backgroundFilter = isDarkMode
     ? 'blur(3px) brightness(0.7)'
-    : 'blur(3px) brightness(1.03) saturate(0.92)';
+    : 'blur(3px) brightness(1.06) saturate(0.88)';
   const backgroundOverlay = isDarkMode
     ? `linear-gradient(135deg,
               rgba(0,0,0,0.4) 0%,
@@ -79,11 +79,11 @@ const AuthWrapper = ({ children }) => {
               rgba(0,0,0,0.2) 60%,
               rgba(0,0,0,0.4) 100%)`
     : `linear-gradient(135deg,
-              rgba(251,247,238,0.74) 0%,
-              rgba(255,255,255,0.48) 40%,
-              ${alpha(accentColor, 0.1)} 50%,
-              rgba(255,255,255,0.54) 60%,
-              rgba(243,232,203,0.72) 100%)`;
+              rgba(252,252,250,0.82) 0%,
+              rgba(255,255,255,0.58) 40%,
+              ${alpha(accentColor, 0.08)} 50%,
+              rgba(255,255,255,0.62) 60%,
+              rgba(244,242,235,0.78) 100%)`;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -386,7 +386,7 @@ const AuthWrapper = ({ children }) => {
                         overflow: 'hidden',
                         boxShadow: isDarkMode
                           ? '0 15px 40px rgba(0,0,0,0.3)'
-                          : '0 18px 48px rgba(105,82,22,0.18)',
+                          : '0 18px 44px rgba(16,17,19,0.12)',
                         border: {
                           xs: `2px solid ${alpha(accentColor, 0.3)}`,
                           md: `3px solid ${alpha(accentColor, 0.3)}`,

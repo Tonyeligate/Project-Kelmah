@@ -51,11 +51,14 @@ import {
 import { useSnackbar } from 'notistack';
 import { formatCurrency, formatRelativeTime, formatJobLocation } from '../../../utils/formatters';
 
+// FIX C2: Stable default object to prevent infinite render loops from {} !== {}
+const EMPTY_FILTER = {};
+
 const SmartJobRecommendations = ({
   maxRecommendations = 6,
   showHeader = true,
   onJobSelect = null,
-  filterCriteria = {},
+  filterCriteria = EMPTY_FILTER,
 }) => {
   const navigate = useNavigate();
   // FIXED: Use standardized user normalization for consistent user data access
@@ -137,6 +140,29 @@ const SmartJobRecommendations = ({
         );
 
         const payload = response || {};
+
+        // FIX H6: smartSearchService pre-handles 403/404 by returning
+        // { jobs: [], status: 'forbidden'|'empty' } instead of throwing.
+        // Check for these statuses in the success path so info messages display.
+        if (payload.status === 'forbidden') {
+          setRecommendations([]);
+          setAiInsights(null);
+          setInfoMessage(
+            'We could not verify a worker profile for this account. Update your profile type to receive smart recommendations.',
+          );
+          setError(null);
+          return;
+        }
+
+        if (payload.status === 'empty') {
+          setRecommendations([]);
+          setAiInsights(null);
+          setInfoMessage(
+            'No recommendations are available yet. Keep your profile up to date and check back soon.',
+          );
+          setError(null);
+          return;
+        }
 
         setRecommendations(payload.jobs || []);
         setAiInsights(payload.insights || null);
@@ -229,15 +255,12 @@ const SmartJobRecommendations = ({
       return;
     }
 
-    try {
-      await searchService.trackJobInteraction(jobId, 'view_click');
-      if (onJobSelect) {
-        onJobSelect(jobId, 'view');
-      }
-      navigate(`/jobs/${jobId}`);
-    } catch (viewError) {
-      if (import.meta.env.DEV) console.error('Failed to track job view:', viewError);
+    // FIX C3: Fire-and-forget tracking so navigation is never blocked
+    searchService.trackJobInteraction(jobId, 'view_click').catch(() => {});
+    if (onJobSelect) {
+      onJobSelect(jobId, 'view');
     }
+    navigate(`/jobs/${jobId}`);
   };
 
   // Get match score color
@@ -373,8 +396,8 @@ const SmartJobRecommendations = ({
           />
         )}
 
-        {/* Urgency indicator */}
-        {job.urgency !== 'low' && (
+        {/* FIX M7: Only show urgency chip when urgency is explicitly set and not 'low' */}
+        {job.urgency && job.urgency !== 'low' && (
           <Chip
             label={`${urgency.icon} ${urgency.label}`}
             color={urgency.color}
@@ -482,7 +505,8 @@ const SmartJobRecommendations = ({
             </Alert>
           )}
 
-          {/* Match score breakdown */}
+          {/* FIX M8: Only render breakdown section when data exists */}
+          {Array.isArray(job.matchBreakdown) && job.matchBreakdown.length > 0 && (
           <Box mt={2}>
             <Typography
               variant="caption"
@@ -493,7 +517,7 @@ const SmartJobRecommendations = ({
               Match Breakdown:
             </Typography>
             <Stack spacing={0.5}>
-              {job.matchBreakdown?.map((item, index) => (
+              {job.matchBreakdown.map((item, index) => (
                 <Box
                   key={index}
                   display="flex"
@@ -520,6 +544,7 @@ const SmartJobRecommendations = ({
               ))}
             </Stack>
           </Box>
+          )}
         </CardContent>
 
         <Divider />
@@ -543,7 +568,16 @@ const SmartJobRecommendations = ({
             </Tooltip>
 
             <Tooltip title="Share job">
-              <IconButton size="small">
+              <IconButton size="small" onClick={() => {
+                const jobUrl = `${window.location.origin}/jobs/${jobKey}`;
+                if (navigator.share) {
+                  navigator.share({ title: job.title, url: jobUrl }).catch(() => {});
+                } else {
+                  navigator.clipboard.writeText(jobUrl).then(() => {
+                    enqueueSnackbar('Link copied to clipboard', { variant: 'success' });
+                  }).catch(() => {});
+                }
+              }}>
                 <ShareIcon />
               </IconButton>
             </Tooltip>

@@ -2,6 +2,10 @@ import { z } from 'zod';
 
 export const ACCOUNT_TYPES = ['worker', 'hirer'];
 export const GHANA_PHONE_REGEX = /^(\+233|0)[0-9]{9}$/;
+export const normalizeGhanaPhone = (value) =>
+  typeof value === 'string' ? value.replace(/\s+/g, '').trim() : value;
+export const isValidGhanaPhone = (value) =>
+  typeof value === 'string' && GHANA_PHONE_REGEX.test(normalizeGhanaPhone(value));
 
 export const calculatePasswordStrength = (password = '') => {
   let score = 0;
@@ -39,10 +43,13 @@ export const registrationSchema = z
       .trim()
       .toLowerCase()
       .email('Please enter a valid email address'),
-    phone: z
-      .string({ required_error: 'Phone number is required' })
-      .trim()
-      .regex(GHANA_PHONE_REGEX, 'Please enter a valid Ghana phone number'),
+    phone: z.preprocess(
+      normalizeGhanaPhone,
+      z
+        .string({ required_error: 'Phone number is required' })
+        .min(1, 'Phone number is required')
+        .regex(GHANA_PHONE_REGEX, 'Please enter a valid Ghana phone number'),
+    ),
     password: z
       .string({ required_error: 'Password is required' })
       .min(8, 'Password must be at least 8 characters long'),

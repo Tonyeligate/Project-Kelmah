@@ -1,11 +1,30 @@
-const mongoose = require('mongoose');
-const modelsModule = require('../models');
-
 jest.mock('../config/db', () => ({
   ensureConnection: jest.fn(() => Promise.resolve()),
 }));
 
+jest.mock('../models', () => ({
+  loadModels: jest.fn(),
+  User: undefined,
+  WorkerProfile: undefined,
+}));
+
+jest.mock('../../../shared/utils/audit-logger', () => ({
+  log: jest.fn(() => Promise.resolve()),
+  query: jest.fn(() => Promise.resolve([])),
+  getStatistics: jest.fn(() => Promise.resolve({ totalEvents: 0, byAction: {}, bySeverity: {} })),
+}));
+
+jest.mock('../utils/logger', () => ({
+  logger: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+  },
+}));
+
 const { ensureConnection } = require('../config/db');
+const modelsModule = require('../models');
 const WorkerController = require('../controllers/worker.controller');
 const { createMockResponse } = require('../../../shared/test-utils');
 
@@ -31,15 +50,6 @@ describe('Worker directory controllers', () => {
       Object.defineProperty(modelsModule, key, originalDescriptors[key]);
     });
   });
-
-  afterAll(async () => {
-    await Promise.all(
-      mongoose.connections.map((connection) =>
-        connection.close().catch(() => undefined),
-      ),
-    );
-  });
-
   afterEach(() => {
     ensureConnection.mockClear();
     trackedModels.forEach((key) => {

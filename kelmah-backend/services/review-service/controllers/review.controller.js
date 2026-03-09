@@ -3,23 +3,68 @@
  * Handles review CRUD operations
  */
 
-const { Review, Job, Application } = require('../models');
+const { Review, Job, Application, User, WorkerRating } = require('../models');
 const { logger } = require('../utils/logger');
 
 const toObjectIdSafe = (value) => value;
+const toIdString = (value) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  return typeof value?.toString === 'function' ? value.toString() : String(value);
+};
+
+const formatJobDuration = (duration) => {
+  if (!duration) {
+    return 'Not specified';
+  }
+
+  if (typeof duration === 'string') {
+    return duration;
+  }
+
+  const value = Number(duration.value);
+  const unit = duration.unit;
+  if (!Number.isFinite(value) || !unit) {
+    return 'Not specified';
+  }
+
+  return `${value} ${unit}${value === 1 ? '' : 's'}`;
+};
+
+const buildWorkerName = (worker) => {
+  const fullName = [worker?.firstName, worker?.lastName].filter(Boolean).join(' ').trim();
+  return fullName || worker?.name || 'Unknown Worker';
+};
+
+const resolveAssignedWorkerIdForJob = async (job) => {
+  if (job?.worker) {
+    return job.worker;
+  }
+
+  const acceptedApplication = await Application.findOne({
+    job: job?._id,
+    status: 'accepted',
+  })
+    .select('worker')
+    .lean();
+
+  return acceptedApplication?.worker || null;
+};
 
 /**
  * Submit a new review
  */
 exports.submitReview = async (req, res) => {
   try {
-        const reviewerId = req.user?.id || req.user?._id;
-        if (!reviewerId) {
-          return res.status(401).json({
-            success: false,
-            message: 'Authentication required to submit review'
-          });
-        }
+    const reviewerId = req.user?.id || req.user?._id;
+    if (!reviewerId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required to submit review'
+      });
+    }
 
     const {
       jobId,
@@ -70,28 +115,50 @@ exports.submitReview = async (req, res) => {
       });
     }
 
-    // Also verify the reviewer was actually involved in the job
-    // (either as the hirer or as the hired worker via Application)
+    const assignedWorkerId = await resolveAssignedWorkerIdForJob(job);
+
+    // Also verify the reviewer was actually involved in the job and that the
+    // review target matches the actual completed-job participant.
     const isHirer = String(job.hirer) === String(reviewerId);
-    if (!isHirer) {
-      const wasHired = await Application.exists({
-        job: jobId,
-        worker: reviewerId,
-        status: 'completed'
-      });
-      if (!wasHired) {
-        return res.status(403).json({
+    let revieweeId;
+
+    if (isHirer) {
+      if (!assignedWorkerId) {
+        return res.status(409).json({
           success: false,
-          message: 'Only job participants (hirer or hired worker) can submit reviews'
+          message: 'This completed job does not have an assigned worker to review'
         });
       }
+
+      if (String(workerId) !== String(assignedWorkerId)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Review target must match the worker assigned to this completed job'
+        });
+      }
+
+      revieweeId = assignedWorkerId;
+    } else if (assignedWorkerId && String(assignedWorkerId) === String(reviewerId)) {
+      if (String(workerId) !== String(job.hirer)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Workers can only review the hirer for this completed job'
+        });
+      }
+
+      revieweeId = job.hirer;
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: 'Only job participants (hirer or assigned worker) can submit reviews'
+      });
     }
 
     // Create review matching the Review schema: { job, reviewer, reviewee, rating, comment }
     const review = new Review({
       job: jobId,
       reviewer: reviewerId,
-      reviewee: workerId,
+      reviewee: revieweeId,
       rating: finalRating,
       comment: (comment || '').trim(),
       jobCategory: job?.category || '',
@@ -474,6 +541,7 @@ exports.reportReview = async (req, res) => {
 exports.checkEligibility = async (req, res) => {
   try {
     const { workerId } = req.params;
+    const { jobId } = req.query;
     const reviewerId = req.user?.id || req.user?._id;
 
     if (!reviewerId) {
@@ -483,15 +551,47 @@ exports.checkEligibility = async (req, res) => {
       });
     }
 
-    // Find completed applications where the reviewer hired this worker
-    const completedApplications = await Application.find({
+    const directCompletedJobs = await Job.find({
+      hirer: reviewerId,
       worker: workerId,
-      status: 'completed'
-    }).populate('job', '_id title hirer').lean();
+      status: 'completed',
+      ...(jobId ? { _id: jobId } : {}),
+    })
+      .select('_id title')
+      .lean();
 
-    // Filter to jobs owned by the current reviewer (hirer)
-    const eligibleJobs = completedApplications.filter(
-      app => app.job && String(app.job.hirer) === String(reviewerId)
+    // Legacy fallback: older records may have a completed job without the
+    // `job.worker` mirror but still retain an accepted application.
+    let fallbackEligibleJobs = [];
+    if (!jobId || directCompletedJobs.length === 0) {
+      const acceptedApplications = await Application.find({
+        worker: workerId,
+        status: 'accepted',
+      })
+        .populate({
+          path: 'job',
+          select: '_id title hirer status',
+          match: {
+            hirer: reviewerId,
+            status: 'completed',
+            ...(jobId ? { _id: jobId } : {}),
+          },
+        })
+        .lean();
+
+      fallbackEligibleJobs = acceptedApplications
+        .map((application) => application.job)
+        .filter(Boolean)
+        .map((job) => ({ _id: job._id, title: job.title }));
+    }
+
+    const eligibleJobs = Array.from(
+      new Map(
+        [...directCompletedJobs, ...fallbackEligibleJobs].map((job) => [
+          String(job._id),
+          job,
+        ]),
+      ).values(),
     );
 
     if (eligibleJobs.length === 0) {
@@ -508,21 +608,21 @@ exports.checkEligibility = async (req, res) => {
     const existingReviews = await Review.find({
       reviewer: reviewerId,
       reviewee: workerId,
-      job: { $in: eligibleJobs.map(a => a.job._id) }
+      job: { $in: eligibleJobs.map((job) => job._id) }
     }).lean();
 
     const reviewedJobIds = new Set(existingReviews.map(r => String(r.job)));
     const unreviewedJobs = eligibleJobs.filter(
-      a => !reviewedJobIds.has(String(a.job._id))
+      (job) => !reviewedJobIds.has(String(job._id))
     );
 
     return res.json({
       success: true,
       data: {
         canReview: unreviewedJobs.length > 0,
-        eligibleJobs: unreviewedJobs.map(a => ({
-          jobId: a.job._id,
-          title: a.job.title
+        eligibleJobs: unreviewedJobs.map((job) => ({
+          jobId: job._id,
+          title: job.title
         })),
         reason: unreviewedJobs.length > 0
           ? `${unreviewedJobs.length} completed job(s) available for review`
@@ -535,6 +635,160 @@ exports.checkEligibility = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to check review eligibility'
+    });
+  }
+};
+
+/**
+ * Get workers with completed hirer jobs that can be reviewed.
+ */
+exports.getHirerReviewCandidates = async (req, res) => {
+  try {
+    const reviewerId = req.user?.id || req.user?._id;
+
+    if (!reviewerId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required to load review candidates',
+      });
+    }
+
+    const completedJobs = await Job.find({
+      hirer: reviewerId,
+      status: 'completed',
+    })
+      .select('_id title budget duration completedDate updatedAt createdAt worker')
+      .sort({ completedDate: -1, updatedAt: -1, createdAt: -1 })
+      .lean();
+
+    if (!Array.isArray(completedJobs) || completedJobs.length === 0) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const jobsMissingWorker = completedJobs
+      .filter((job) => !job.worker)
+      .map((job) => job._id);
+
+    let acceptedWorkerByJobId = new Map();
+    if (jobsMissingWorker.length > 0) {
+      const acceptedApplications = await Application.find({
+        job: { $in: jobsMissingWorker },
+        status: 'accepted',
+      })
+        .select('job worker')
+        .lean();
+
+      acceptedWorkerByJobId = new Map(
+        (acceptedApplications || [])
+          .filter((application) => application?.job && application?.worker)
+          .map((application) => [toIdString(application.job), application.worker]),
+      );
+    }
+
+    const resolvedJobs = completedJobs
+      .map((job) => ({
+        ...job,
+        resolvedWorkerId: job.worker || acceptedWorkerByJobId.get(toIdString(job._id)) || null,
+      }))
+      .filter((job) => job.resolvedWorkerId);
+
+    if (resolvedJobs.length === 0) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const workerIds = Array.from(
+      new Set(resolvedJobs.map((job) => toIdString(job.resolvedWorkerId)).filter(Boolean)),
+    );
+    const jobIds = resolvedJobs.map((job) => job._id);
+
+    const [workers, ratings, existingReviews] = await Promise.all([
+      User.find({ _id: { $in: workerIds } })
+        .select('_id firstName lastName profilePicture profileImage skills location profession')
+        .lean(),
+      WorkerRating.find({ workerId: { $in: workerIds } })
+        .select('workerId averageRating totalReviews')
+        .lean(),
+      Review.find({
+        reviewer: reviewerId,
+        job: { $in: jobIds },
+        reviewee: { $in: workerIds },
+      })
+        .select('_id job reviewee rating comment createdAt')
+        .lean(),
+    ]);
+
+    const workersById = new Map(
+      (workers || []).map((worker) => [toIdString(worker._id), worker]),
+    );
+    const ratingsByWorkerId = new Map(
+      (ratings || []).map((rating) => [toIdString(rating.workerId), rating]),
+    );
+    const reviewsByJobId = new Map(
+      (existingReviews || []).map((review) => [toIdString(review.job), review]),
+    );
+
+    const groupedWorkers = new Map();
+
+    resolvedJobs.forEach((job) => {
+      const workerId = toIdString(job.resolvedWorkerId);
+      if (!workerId) {
+        return;
+      }
+
+      const worker = workersById.get(workerId) || {};
+      const rating = ratingsByWorkerId.get(workerId) || {};
+      const review = reviewsByJobId.get(toIdString(job._id));
+
+      if (!groupedWorkers.has(workerId)) {
+        groupedWorkers.set(workerId, {
+          id: workerId,
+          _id: workerId,
+          name: buildWorkerName(worker),
+          avatar: worker.profilePicture || worker.profileImage || null,
+          overallRating: rating.averageRating || 0,
+          totalReviews: rating.totalReviews || 0,
+          skills: Array.isArray(worker.skills) ? worker.skills : [],
+          location: worker.location || '',
+          profession: worker.profession || '',
+          completedJobs: [],
+        });
+      }
+
+      groupedWorkers.get(workerId).completedJobs.push({
+        id: toIdString(job._id),
+        _id: toIdString(job._id),
+        title: job.title || 'Completed Job',
+        amount: Number(job.budget || 0),
+        budget: Number(job.budget || 0),
+        duration: formatJobDuration(job.duration),
+        completedDate: job.completedDate || job.updatedAt || job.createdAt || null,
+        review: review
+          ? {
+            id: toIdString(review._id),
+            _id: toIdString(review._id),
+            rating: Number(review.rating || 0),
+            comment: review.comment || '',
+            reviewDate: review.createdAt || null,
+          }
+          : null,
+      });
+    });
+
+    const candidates = Array.from(groupedWorkers.values()).sort((left, right) => {
+      const leftCompletedAt = new Date(left.completedJobs?.[0]?.completedDate || 0).getTime();
+      const rightCompletedAt = new Date(right.completedJobs?.[0]?.completedDate || 0).getTime();
+      return rightCompletedAt - leftCompletedAt;
+    });
+
+    return res.json({
+      success: true,
+      data: candidates,
+    });
+  } catch (error) {
+    logger.error('Failed to load hirer review candidates:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to load review candidates',
     });
   }
 };

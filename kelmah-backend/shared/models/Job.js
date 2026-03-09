@@ -400,6 +400,25 @@ JobSchema.index({ budget: 1 });
 JobSchema.index({ visibility: 1, status: 1 });
 JobSchema.index({ status: 1, visibility: 1, createdAt: -1 });
 
+// ALGO IMPROVEMENT: Additional compound indexes for recommendation/search queries
+JobSchema.index({ 'requirements.primarySkills': 1, status: 1, visibility: 1, 'bidding.bidStatus': 1 });
+JobSchema.index({ skills: 1, status: 1, visibility: 1 });
+JobSchema.index({ 'locationDetails.region': 1, status: 1, visibility: 1, createdAt: -1 });
+
+// ALGO IMPROVEMENT: Normalize skills to lowercase on save for index-friendly matching
+JobSchema.pre('save', function(next) {
+  if (Array.isArray(this.skills)) {
+    this.skills = this.skills.map(s => typeof s === 'string' ? s.trim().toLowerCase() : s);
+  }
+  if (Array.isArray(this.requirements?.primarySkills)) {
+    this.requirements.primarySkills = this.requirements.primarySkills.map(s => typeof s === 'string' ? s.trim().toLowerCase() : s);
+  }
+  if (Array.isArray(this.requirements?.secondarySkills)) {
+    this.requirements.secondarySkills = this.requirements.secondarySkills.map(s => typeof s === 'string' ? s.trim().toLowerCase() : s);
+  }
+  next();
+});
+
 // Use standard mongoose.model() - it auto-binds to the default connection
 // This works correctly whether connection is established before or after model definition
 

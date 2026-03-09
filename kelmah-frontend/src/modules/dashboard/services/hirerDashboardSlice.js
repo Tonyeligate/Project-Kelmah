@@ -134,12 +134,12 @@ const hirerDashboardSlice = createSlice({
 
       // Fetch active jobs
       .addCase(fetchActiveJobs.fulfilled, (state, action) => {
-        state.data.activeJobs = action.payload;
+        state.data.activeJobs = Array.isArray(action.payload) ? action.payload : [];
       })
 
       // Fetch recent applications
       .addCase(fetchRecentApplications.fulfilled, (state, action) => {
-        state.data.recentApplications = action.payload;
+        state.data.recentApplications = Array.isArray(action.payload) ? action.payload : [];
       });
   },
 });

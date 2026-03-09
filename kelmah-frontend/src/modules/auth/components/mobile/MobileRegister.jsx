@@ -47,15 +47,13 @@ import {
   selectAuthLoading,
   selectAuthError,
 } from '../../services/authSlice';
+import {
+  isValidGhanaPhone,
+  normalizeGhanaPhone,
+} from '../../utils/registrationSchema';
 import logoIcon from '../../../../assets/images/logo.png';
 
 // Theme hook must be used inside the component
-
-// Ghana phone validation
-const validateGhanaPhone = (phone) => {
-  const cleaned = phone.replace(/\s+/g, '');
-  return /^(\+233|0)[0-9]{9}$/.test(cleaned);
-};
 
 // Password strength
 const checkPasswordStrength = (password) => {
@@ -111,7 +109,11 @@ const MobileRegister = () => {
   const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
-    if (authError) setSubmitError(authError);
+    if (authError) {
+      setSubmitError(
+        typeof authError === 'string' ? authError : authError?.message || '',
+      );
+    }
   }, [authError]);
 
   // Handle input changes
@@ -144,7 +146,7 @@ const MobileRegister = () => {
       }
       if (!formData.phone.trim()) {
         newErrors.phone = 'Enter your phone number';
-      } else if (!validateGhanaPhone(formData.phone)) {
+      } else if (!isValidGhanaPhone(formData.phone)) {
         newErrors.phone = 'Use a valid Ghana number (e.g. 024 XXX XXXX)';
       }
       if (formData.role === 'hirer' && !formData.companyName.trim()) {
@@ -199,7 +201,7 @@ const MobileRegister = () => {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         email: formData.email.trim().toLowerCase(),
-        phone: formData.phone.replace(/\s/g, ''),
+        phone: normalizeGhanaPhone(formData.phone),
         password: formData.password,
         role: formData.role,
         ...(formData.role === 'hirer' && { companyName: formData.companyName.trim() }),
@@ -220,7 +222,7 @@ const MobileRegister = () => {
         });
       }, 1500);
     } catch (error) {
-      setSubmitError(error.message || 'Registration failed');
+      setSubmitError(error?.message || error || 'Registration failed');
     } finally {
       setIsSubmitting(false);
     }

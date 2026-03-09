@@ -293,6 +293,7 @@ const requireAdmin = (req, res, next) => {
 
 app.post('/api/reviews', verifyGatewayRequest, reviewController.submitReview);
 app.get('/api/reviews/worker/:workerId/eligibility', verifyGatewayRequest, reviewController.checkEligibility);
+app.get('/api/reviews/hirer/review-candidates', verifyGatewayRequest, reviewController.getHirerReviewCandidates);
 app.get('/api/reviews/worker/:workerId', reviewController.getWorkerReviews);
 app.get('/api/reviews/job/:jobId', reviewController.getJobReviews);
 app.get('/api/reviews/user/:userId', reviewController.getUserReviews);

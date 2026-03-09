@@ -53,19 +53,19 @@ const Login = () => {
   const panelSoft = isDarkMode ? alpha('#FFFFFF', 0.66) : alpha('#171A1F', 0.52);
   const panelBackground = isDarkMode
     ? 'linear-gradient(145deg, rgba(38, 38, 38, 0.95) 0%, rgba(28, 28, 28, 0.98) 100%)'
-    : 'linear-gradient(145deg, rgba(255,255,255,0.97) 0%, rgba(250,243,224,0.99) 100%)';
+    : 'linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(248,248,244,0.99) 100%)';
   const panelBorder = isDarkMode
     ? alpha(accentColor, 0.3)
-    : alpha(accentStrong, 0.2);
+    : alpha('#101113', 0.12);
   const panelShadow = isDarkMode
     ? '0 8px 32px 0 rgba(0,0,0,0.3)'
-    : '0 16px 42px rgba(105,82,22,0.14)';
+    : '0 16px 40px rgba(16,17,19,0.12)';
   const inputBackground = isDarkMode ? alpha('#FFFFFF', 0.08) : alpha('#FFFFFF', 0.9);
   const inputBorder = isDarkMode ? alpha(accentColor, 0.5) : alpha('#171A1F', 0.14);
-  const inputBorderHover = isDarkMode ? alpha(accentColor, 0.7) : alpha(accentStrong, 0.3);
+  const inputBorderHover = isDarkMode ? alpha(accentColor, 0.7) : alpha(accentColor, 0.38);
   const inputPlaceholder = isDarkMode ? alpha('#FFFFFF', 0.7) : alpha('#171A1F', 0.46);
   const subtleSurface = isDarkMode ? alpha(accentColor, 0.08) : alpha(accentColor, 0.1);
-  const subtleSurfaceBorder = isDarkMode ? alpha(accentColor, 0.15) : alpha(accentStrong, 0.16);
+  const subtleSurfaceBorder = isDarkMode ? alpha(accentColor, 0.15) : alpha('#101113', 0.1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);

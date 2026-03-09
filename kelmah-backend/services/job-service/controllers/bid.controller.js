@@ -426,26 +426,41 @@ exports.rejectBid = async (req, res, next) => {
       return errorResponse(res, 403, 'Access denied. You can only reject bids for your own jobs');
     }
 
-    if (bid.status !== 'pending') {
-      return errorResponse(res, 400, 'Bid is not pending');
-    }
+    const rejectedBid = await Bid.findOneAndUpdate(
+      { _id: bidId, status: 'pending' },
+      {
+        $set: {
+          status: 'rejected',
+          hirerNotes: hirerNotes || '',
+          responseTimestamp: new Date(),
+        },
+      },
+      { new: true },
+    ).populate('job');
 
-    await bid.reject(hirerNotes);
+    if (!rejectedBid) {
+      const latestBid = await Bid.findById(bidId).select('status').lean();
+      if (!latestBid) {
+        return errorResponse(res, 404, 'Bid not found');
+      }
+
+      return errorResponse(res, 409, 'Bid is no longer pending');
+    }
 
     // Notify the worker whose bid was rejected
     ServiceClient.messaging.sendBidNotification(
-      bid.worker.toString(),
+      rejectedBid.worker.toString(),
       'bid:rejected',
       {
-        bidId: bid._id,
-        jobId: bid.job._id,
-        jobTitle: bid.job.title,
-        bidAmount: bid.bidAmount,
+        bidId: rejectedBid._id,
+        jobId: rejectedBid.job._id,
+        jobTitle: rejectedBid.job.title,
+        bidAmount: rejectedBid.bidAmount,
         reason: hirerNotes || '',
       }
     ).catch(() => {});
 
-    return successResponse(res, 200, 'Bid rejected successfully', bid);
+    return successResponse(res, 200, 'Bid rejected successfully', rejectedBid);
   } catch (error) {
     next(error);
   }

@@ -102,7 +102,8 @@ const searchService = {
       return payload?.terms || payload || [];
     } catch (error) {
       if (import.meta.env.DEV) console.error('Popular terms error:', error);
-      return { error: true, message: error.message, data: [] };
+      // FIX M6: Return [] consistently on error instead of { error: true } object
+      return [];
     }
   },
 
@@ -140,7 +141,8 @@ const searchService = {
       return unwrapPayload(response) || [];
     } catch (error) {
       if (import.meta.env.DEV) console.error('Job suggestions error:', error);
-      return { error: true, message: error.message, data: [] };
+      // FIX M6: Return [] consistently on error
+      return [];
     }
   },
 
@@ -154,7 +156,8 @@ const searchService = {
       return unwrapPayload(response) || [];
     } catch (error) {
       if (import.meta.env.DEV) console.error('Popular searches error:', error);
-      return { error: true, message: error.message, data: [] };
+      // FIX M6: Return [] consistently on error
+      return [];
     }
   },
 };

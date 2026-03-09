@@ -12,8 +12,11 @@ class AuditLogger {
     this.maxFileSize = parseInt(process.env.AUDIT_MAX_FILE_SIZE || '10485760'); // 10MB
     this.maxFiles = parseInt(process.env.AUDIT_MAX_FILES || '30');
     this.enabled = process.env.AUDIT_LOGGING_ENABLED !== 'false';
-    
-    this.initializeLogDirectory();
+    this.isTestEnv = process.env.NODE_ENV === 'test';
+
+    if (!this.isTestEnv && this.enabled) {
+      this.initializeLogDirectory();
+    }
   }
   
   /**
@@ -38,7 +41,7 @@ class AuditLogger {
    * @param {Date} event.timestamp - Custom timestamp (optional)
    */
   async log(event) {
-    if (!this.enabled) return;
+    if (!this.enabled || this.isTestEnv) return;
     
     try {
       const auditEntry = {
@@ -264,6 +267,10 @@ class AuditLogger {
    * @returns {Promise<Array>} Audit log entries
    */
   async queryFromFiles(filters = {}, options = {}) {
+    if (this.isTestEnv || !this.enabled) {
+      return [];
+    }
+
     try {
       const files = await fs.readdir(this.logDir);
       const logFiles = files
@@ -316,6 +323,10 @@ class AuditLogger {
    */
   async getStatistics(filters = {}) {
     try {
+      if (this.isTestEnv || !this.enabled) {
+        return { totalEvents: 0, byAction: {}, bySeverity: {} };
+      }
+
       // TODO: Implement AuditLog model in shared/models with MongoDB if statistics needed
       // For now, return empty statistics to maintain microservice boundaries
       return { totalEvents: 0, byAction: {}, bySeverity: {} };

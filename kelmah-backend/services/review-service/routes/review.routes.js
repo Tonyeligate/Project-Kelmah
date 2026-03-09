@@ -24,6 +24,9 @@ router.post('/', verifyGatewayRequest, reviewController.submitReview);
 // Check review eligibility for a worker (authenticated) — must be before /worker/:workerId
 router.get('/worker/:workerId/eligibility', verifyGatewayRequest, reviewController.checkEligibility);
 
+// Get review candidates for the authenticated hirer (authenticated)
+router.get('/hirer/review-candidates', verifyGatewayRequest, reviewController.getHirerReviewCandidates);
+
 // Get reviews for a specific worker (public)
 router.get('/worker/:workerId', reviewController.getWorkerReviews);
 
