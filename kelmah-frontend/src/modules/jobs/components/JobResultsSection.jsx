@@ -30,7 +30,7 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import jobsApi from '../services/jobsService';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, isValid } from 'date-fns';
 import CountUp from 'react-countup';
 import { useInView } from 'react-intersection-observer';
 import {
@@ -771,7 +771,7 @@ const JobResultsSection = ({
                         <Typography variant="caption" sx={{ color: '#ff6b6b' }}>
                           Apply by{' '}
                           {job.deadline
-                            ? format(new Date(job.deadline), 'MMM dd')
+                            ? (isValid(new Date(job.deadline)) ? format(new Date(job.deadline), 'MMM dd') : 'Soon')
                             : 'Soon'}
                         </Typography>
                       </Box>

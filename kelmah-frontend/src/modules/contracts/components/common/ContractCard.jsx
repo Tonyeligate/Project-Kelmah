@@ -18,7 +18,7 @@ import {
   Error as ErrorIcon,
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, isValid } from 'date-fns';
 
 const statusConfig = {
   active: { label: 'Active', color: 'primary', icon: <HandshakeIcon /> },
@@ -149,7 +149,7 @@ const ContractCard = ({ contract }) => {
         mt={1}
       >
         <Typography variant="caption" color="text.secondary">
-          Ends: {formatDistanceToNow(new Date(endDate), { addSuffix: true })}
+          Ends: {endDate && isValid(new Date(endDate)) ? formatDistanceToNow(new Date(endDate), { addSuffix: true }) : 'unknown'}
         </Typography>
         <Button
           component={Link}

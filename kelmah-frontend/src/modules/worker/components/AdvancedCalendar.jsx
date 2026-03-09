@@ -35,6 +35,7 @@ import {
   isToday,
   isBefore,
   startOfDay,
+  isValid,
 } from 'date-fns';
 
 const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
@@ -50,7 +51,8 @@ const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
       const dates = new Set(
         schedule
           .filter(s => s.available !== false)
-          .map(s => format(new Date(s.date || s), 'yyyy-MM-dd'))
+          .map(s => { const d = new Date(s.date || s); return isValid(d) ? format(d, 'yyyy-MM-dd') : null; })
+          .filter(Boolean)
       );
       setSelectedDates(dates);
     }

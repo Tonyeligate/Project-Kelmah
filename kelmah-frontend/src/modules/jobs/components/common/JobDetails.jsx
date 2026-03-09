@@ -26,7 +26,7 @@ import {
   Person,
   CalendarToday,
 } from '@mui/icons-material';
-import { formatDistanceToNow, format } from 'date-fns';
+import { formatDistanceToNow, format, isValid } from 'date-fns';
 import {
   fetchJobById,
   applyForJob,
@@ -214,7 +214,7 @@ function JobDetails() {
               <Box display="flex" alignItems="center" gap={1}>
                 <CalendarToday color="action" />
                 <Typography color="text.secondary">
-                  Application Deadline: {format(new Date(job.deadline), 'PPP')}
+                  Application Deadline: {isValid(new Date(job.deadline)) ? format(new Date(job.deadline), 'PPP') : 'N/A'}
                 </Typography>
               </Box>
             </Grid>

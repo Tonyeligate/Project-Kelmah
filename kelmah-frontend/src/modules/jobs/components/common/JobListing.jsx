@@ -18,7 +18,7 @@ import {
 import { LocationOn, Work, AttachMoney, AccessTime } from '@mui/icons-material';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { api } from '../../../../../services/apiClient';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, isValid } from 'date-fns';
 import { formatJobLocation } from '../../../../../utils/formatters';
 
 function JobListing({ job, onApply, onViewDetails }) {
@@ -90,7 +90,7 @@ function JobListing({ job, onApply, onViewDetails }) {
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <AccessTime sx={{ mr: 1, color: 'primary.main' }} />
                 <Typography variant="body2" color="text.secondary">
-                  Posted {postedAt ? `${formatDistanceToNow(new Date(postedAt))} ago` : 'recently'}
+                  Posted {postedAt && isValid(new Date(postedAt)) ? `${formatDistanceToNow(new Date(postedAt))} ago` : 'recently'}
                 </Typography>
               </Box>
 

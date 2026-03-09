@@ -29,7 +29,7 @@ import BlockIcon from '@mui/icons-material/Block';
 import DraftsIcon from '@mui/icons-material/Drafts';
 import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, isValid } from 'date-fns';
 import { alpha } from '@mui/material/styles';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -347,7 +347,7 @@ const ContractsPage = () => {
 
                 <Typography variant="caption" color="text.secondary">
                   Updated{' '}
-                  {contract.lastUpdated
+                  {contract.lastUpdated && isValid(new Date(contract.lastUpdated))
                     ? formatDistanceToNow(new Date(contract.lastUpdated), { addSuffix: true })
                     : 'recently'}
                 </Typography>
