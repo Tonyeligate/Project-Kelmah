@@ -67,6 +67,32 @@ const rehydrateRequestBody = (proxyReq, req) => {
   proxyReq.write(bodyData);
 };
 
+const firstForwardedHeaderValue = (value) => {
+  if (Array.isArray(value)) {
+    return value[0] || null;
+  }
+
+  if (typeof value === 'string') {
+    return value.split(',')[0].trim() || null;
+  }
+
+  return null;
+};
+
+const resolveGatewayOriginHeader = (req) => {
+  const forwardedProto = firstForwardedHeaderValue(req.headers['x-forwarded-proto']);
+  const forwardedHost = firstForwardedHeaderValue(req.headers['x-forwarded-host']);
+  const requestHost = firstForwardedHeaderValue(req.headers.host);
+  const protocol = forwardedProto || req.protocol || 'http';
+  const host = forwardedHost || requestHost;
+
+  if (!host) {
+    return null;
+  }
+
+  return `${protocol}://${host}`.replace(/\/$/, '');
+};
+
 /**
  * Dynamic Proxy Middleware Creator
  * Creates proxy middleware that resolves service URLs at runtime.
@@ -106,6 +132,10 @@ const createDynamicProxy = (serviceName, options = {}) => {
           ...options,
           onProxyReq: (proxyReq, reqInner, resInner) => {
             rehydrateRequestBody(proxyReq, reqInner);
+            const gatewayOrigin = resolveGatewayOriginHeader(reqInner);
+            if (gatewayOrigin) {
+              proxyReq.setHeader('x-gateway-origin', gatewayOrigin);
+            }
             if (callerOnProxyReq) callerOnProxyReq(proxyReq, reqInner, resInner);
           }
         });

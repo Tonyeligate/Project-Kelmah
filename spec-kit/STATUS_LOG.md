@@ -2,6 +2,85 @@
 
 ---
 
+### Session: Earnings Gateway Origin Propagation Fix 🔄 IN PROGRESS
+
+**Date**: March 9, 2026  
+**Scope**: Fix the active API gateway `/api/users` proxy path so user-service can derive the live gateway base without relying on explicit payment host environment variables, then verify worker earnings uses the payment-history path instead of synthesized fallback totals.
+
+**Acceptance Criteria**
+- Dry-audit the active gateway proxy path and the user-service gateway-base resolver together.
+- Patch the active proxy implementation that serves `/api/users/**`, not just shared helpers that are bypassed by that route.
+- Preserve existing authenticated-user header forwarding behavior.
+- Validate edited backend files locally.
+- Re-probe live worker earnings and confirm the response no longer reports `fallback-missing-payment-host`.
+
+**Mapped execution surface**
+- `kelmah-backend/api-gateway/server.js`
+- `kelmah-backend/services/user-service/controllers/user.controller.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings**
+- `getEarnings` in `kelmah-backend/services/user-service/controllers/user.controller.js` already derives `gatewayBase` from `API_GATEWAY_URL`, then `x-gateway-origin`, then forwarded host/proto headers.
+- The previously patched shared proxy helper in `kelmah-backend/api-gateway/proxy/serviceProxy.js` is not the active path for `/api/users/**`.
+- The live `/api/users` mount in `kelmah-backend/api-gateway/server.js` uses `createDynamicProxy('user', ...)`, whose wrapper currently rehydrates request bodies but does not inject `x-gateway-origin`.
+- This explains why post-redeploy earnings requests return `source: fallback-missing-payment-host` even though direct gateway payment-history probes succeed.
+
+---
+
+### Session: Native Mobile Precision, Matching, And Productivity Audit 🔄 IN PROGRESS
+
+**Date**: March 9, 2026  
+**Scope**: Perform a deep Android and iOS native-only audit covering job matching precision, worker-profile relevance logic, search recommendations, recent activity truthfulness, session/auth/realtime resilience, mobile productivity gaps, and the backend contracts those native flows depend on.
+
+**Acceptance Criteria**
+- Dry-audit the Android and iOS native code surfaces end-to-end without drifting into web-only scope.
+- Review bugs, security, performance, maintainability, and edge-case handling in the match/recommendation/activity flows.
+- Validate whether mobile consumers handle backend contract drift safely for matching, profile signals, and activity feeds.
+- Produce a harsh, prioritized audit with concrete native follow-up actions that improve trust, precision, and productivity.
+
+**Mapped execution surface**
+- Android native app under `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/**`
+- Android tests under `kelmah-mobile-android/app/src/test/java/com/kelmah/mobile/**`
+- iOS native app under `kelmah-mobile-ios/Kelmah/**`
+- iOS tests under `kelmah-mobile-ios/KelmahTests/**` and `kelmah-mobile-ios/KelmahUITests/**`
+- Mobile-consumed backend contract references only where required for native flow validation
+
+**Current findings**
+- File-surface mapping completed for the full Android and iOS native apps.
+- Deep dry-audit in progress, starting with jobs, home, profile, notifications, session, realtime, and network layers because those determine match precision and recent-activity correctness.
+
+---
+
+### Session: Worker Envelope Normalization And Dashboard Timeout Hardening 🔄 IN PROGRESS
+
+**Date**: March 9, 2026  
+**Scope**: After Render redeploy, normalize worker-list response contracts and harden dashboard metrics/analytics endpoints against long-running operations that currently time out via the gateway.
+
+**Acceptance Criteria**
+- `GET /api/users/workers` returns canonical envelope (`success`, `data`, optional `meta`) with stable pagination.
+- `GET /api/users/dashboard/workers` remains aligned to canonical envelope.
+- `GET /api/users/dashboard/metrics` and `GET /api/users/dashboard/analytics` return promptly with bounded internal timeouts and deterministic fallback payloads.
+- Frontend dashboard and worker-directory consumers remain compatible with the normalized payload shape.
+- Live gateway probes confirm non-timeout behavior and contract consistency post-deploy.
+
+**Mapped execution surface**
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/controllers/user.controller.js`
+- `kelmah-backend/services/user-service/utils/response.js`
+- `kelmah-frontend/src/modules/dashboard/services/dashboardService.js`
+- `kelmah-frontend/src/modules/dashboard/services/dashboardSlice.js`
+- `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx`
+- `kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx`
+
+**Dry-audit notes**
+- `/users/workers` currently returns mixed legacy shape (`success`, top-level `workers`, top-level `pagination`).
+- `getDashboardMetrics` contains an early `return res.json(metrics)` that bypasses canonical response utilities.
+- Dashboard analytics currently performs unbounded aggregation and counts in places that can exceed gateway patience under load.
+- Frontend consumers are already tolerant of `data.workers` and `data.items`, enabling safe backend normalization.
+
+---
+
 ### Session: Live Bid Self-Route Deployment Verification 🔄 IN PROGRESS
 
 **Date**: March 9, 2026  
