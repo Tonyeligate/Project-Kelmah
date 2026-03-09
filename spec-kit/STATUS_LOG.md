@@ -157,7 +157,7 @@
 
 ---
 
-### Session: Worker Earnings 5xx Investigation 🔄 LOCALLY PATCHED, DEPLOYMENT PENDING
+### Session: Worker Earnings 5xx Investigation 🔄 SECOND PATCH READY, DEPLOYMENT PENDING
 
 **Date**: March 9, 2026  
 **Scope**: Trace the deployed worker earnings analytics failure on `/worker/earnings`, reproduce the live 5xx through the Render gateway, and fix any confirmed backend timeout/path issues in the user-service earnings endpoint.
@@ -192,12 +192,14 @@
 - Replaced the parallel `Promise.all` fan-out with a sequential first-success lookup, so one slow or stale payment host can no longer block the full earnings response.
 - Added a hard abort guard per payment-history request and preserved the existing fallback response path when no endpoint returns usable data.
 - Expanded response-shape handling so the earnings controller accepts both `response.data.transactions` and the live payment contract `response.data.data`.
+- Added a bounded WorkerProfile lookup with native-driver fallback before the payment-history step, so a hanging Mongoose profile query cannot stall the entire earnings endpoint before it reaches the existing payment fallback logic.
 
 **Verification**
 - `get_errors` on the patched `user.controller.js`: no editor errors reported.
 - Live gateway probing confirmed the failure signature before the patch: `GET /api/users/workers/6892b8f766a1e818f0c46151/earnings` returned `502` after about 29 seconds, while `GET /api/payments/transactions/history` returned `200` in about 658 ms for the same authenticated worker.
 - `GET /api/health/aggregate` from the deployed gateway reports the payment service as healthy, reinforcing that the timeout is in the user-service earnings flow rather than the payment route itself.
 - `node --check kelmah-backend/services/user-service/controllers/user.controller.js` is still blocked by a pre-existing duplicate declaration elsewhere in the file (`buildProfileActivity`), unrelated to this earnings patch.
+- After confirming `main` already contained the first earnings patch, a fresh redeploy trigger was pushed and production was re-tested; the earnings endpoint still hung for 30 seconds while payment history continued returning `200`, which indicates the remaining live stall happens before the payment-history branch executes.
 
 
 ### Session: Dashboard Activity Truthfulness And Envelope Normalization ✅ COMPLETED

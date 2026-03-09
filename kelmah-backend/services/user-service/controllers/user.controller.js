@@ -1,9 +1,10 @@
 // Use MongoDB WorkerProfile model for consistency
 const db = require('../models');
 // Destructure frequently-used models from service index (RULE-001 compliant)
-const { Bookmark, Availability, Certificate, Job, Application } = db;
+const { Bookmark, Availability, Certificate, Job, Application, Portfolio } = db;
 const { ensureConnection, mongoose: connectionInstance } = require('../config/db');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
+const { logger } = require('../utils/logger');
 const mongooseInstance = connectionInstance || require('mongoose');
 const { Types } = mongooseInstance;
 
@@ -234,6 +235,328 @@ const fetchProfileDocuments = async ({ UserModel, WorkerProfileModel, userId }) 
 
     return { userDoc, workerDoc };
   }
+};
+
+const PROFILE_COMPLETENESS_REQUIRED_FIELDS = [
+  'firstName',
+  'lastName',
+  'email',
+  'profession',
+  'bio',
+  'location',
+  'hourlyRate',
+  'skills',
+];
+
+const PROFILE_COMPLETENESS_OPTIONAL_FIELDS = [
+  'profilePicture',
+  'phone',
+  'licenses',
+  'certifications',
+  'portfolio',
+  'yearsOfExperience',
+];
+
+const hasStructuredValue = (value) => {
+  if (Array.isArray(value)) {
+    return value.length > 0;
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.keys(value).length > 0;
+  }
+
+  return value !== undefined && value !== null && value !== '';
+};
+
+const buildAvailabilityPayload = (availabilityDoc) => {
+  if (!availabilityDoc) {
+    return {
+      status: 'not_set',
+      isAvailable: false,
+      timezone: 'Africa/Accra',
+      schedule: [],
+      daySlots: [],
+      nextAvailable: null,
+      lastUpdated: null,
+      message: 'Availability not configured',
+    };
+  }
+
+  const normalizedDaySlots = Array.isArray(availabilityDoc.daySlots)
+    ? availabilityDoc.daySlots
+    : [];
+
+  const dayNameByIndex = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const parseTimeToMinutes = (value) => {
+    if (!value || typeof value !== 'string') return null;
+    const [h, m] = value.split(':').map((part) => Number(part));
+    if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+    return h * 60 + m;
+  };
+
+  const schedule = normalizedDaySlots.map((daySlot) => {
+    const slots = Array.isArray(daySlot?.slots) ? daySlot.slots : [];
+    const first = slots[0] || {};
+    const firstStartMinutes = parseTimeToMinutes(first.start);
+    const firstEndMinutes = parseTimeToMinutes(first.end);
+
+    return {
+      day: dayNameByIndex[daySlot?.dayOfWeek] || null,
+      dayOfWeek: Number.isFinite(daySlot?.dayOfWeek) ? daySlot.dayOfWeek : null,
+      available: slots.length > 0,
+      slots,
+      startHour: firstStartMinutes !== null ? Math.floor(firstStartMinutes / 60) : null,
+      startMinute: firstStartMinutes !== null ? firstStartMinutes % 60 : null,
+      endHour: firstEndMinutes !== null ? Math.floor(firstEndMinutes / 60) : null,
+      endMinute: firstEndMinutes !== null ? firstEndMinutes % 60 : null,
+    };
+  });
+
+  const now = new Date();
+  let nextAvailable = null;
+
+  if (schedule.length > 0) {
+    const currentDayIndex = now.getDay();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    for (let offset = 0; offset < 7; offset += 1) {
+      const dayIndex = (currentDayIndex + offset) % 7;
+      const dayEntry = schedule.find((item) => item.dayOfWeek === dayIndex);
+      if (!dayEntry || !Array.isArray(dayEntry.slots) || dayEntry.slots.length === 0) {
+        continue;
+      }
+
+      const candidateMinutes = dayEntry.slots
+        .map((slot) => parseTimeToMinutes(slot.start))
+        .filter((value) => value !== null)
+        .sort((a, b) => a - b)
+        .find((value) => offset > 0 || value > currentMinutes);
+
+      if (candidateMinutes !== undefined) {
+        const hour = Math.floor(candidateMinutes / 60);
+        const minute = candidateMinutes % 60;
+        nextAvailable = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+        break;
+      }
+    }
+  }
+
+  return {
+    status: availabilityDoc.isAvailable ? 'available' : 'unavailable',
+    isAvailable: Boolean(availabilityDoc.isAvailable),
+    timezone: availabilityDoc.timezone || 'Africa/Accra',
+    schedule,
+    daySlots: normalizedDaySlots,
+    nextAvailable,
+    lastUpdated: availabilityDoc.updatedAt || null,
+    message: null,
+  };
+};
+
+const normalizeCredentialSkills = (workerProfile, userId) =>
+  (Array.isArray(workerProfile?.skills) ? workerProfile.skills : [])
+    .filter(Boolean)
+    .map((skill, index) => {
+      if (typeof skill === 'string') {
+        return {
+          id: `${workerProfile?._id || userId}-skill-${index}`,
+          name: skill,
+          category: 'general',
+          proficiencyLevel: workerProfile?.experienceLevel || 'intermediate',
+          yearsOfExperience: workerProfile?.yearsOfExperience || 0,
+          isVerified: Boolean(workerProfile?.isVerified),
+        };
+      }
+
+      if (skill && typeof skill === 'object') {
+        return {
+          id: skill._id?.toString() || skill.id || `${workerProfile?._id || userId}-skill-${index}`,
+          name: skill.name || skill.label || 'Unknown Skill',
+          category: skill.category || skill.type || 'general',
+          proficiencyLevel: skill.proficiencyLevel || skill.level || workerProfile?.experienceLevel || 'intermediate',
+          yearsOfExperience: Number(skill.yearsOfExperience ?? skill.experience ?? workerProfile?.yearsOfExperience ?? 0),
+          isVerified: Boolean(skill.isVerified || skill.verified || workerProfile?.isVerified),
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean);
+
+const normalizeCredentialItems = (items = [], workerProfile, userId, kind) =>
+  (Array.isArray(items) ? items : []).map((item, index) => ({
+    id: item._id?.toString() || item.id || `${workerProfile?._id || userId}-${kind}-${index}`,
+    name: item.name || item.title || (kind === 'license' ? 'License' : 'Certification'),
+    issuingOrganization: item.issuer || item.issuingOrganization || item.provider || '',
+    issueDate: item.issueDate || item.issuedAt || null,
+    expiryDate: item.expiryDate || item.expiresAt || null,
+    status: item.status || (item.isVerified ? 'verified' : 'pending'),
+    isVerified: Boolean(item.isVerified || item.status === 'verified'),
+  }));
+
+const loadCredentialPayload = async ({ workerProfile, userId }) => {
+  if (!workerProfile) {
+    return {
+      skills: [],
+      licenses: [],
+      certifications: [],
+    };
+  }
+
+  let certificateDocs = [];
+
+  if (Certificate && typeof Certificate.find === 'function') {
+    certificateDocs = await Certificate.find({ workerId: workerProfile.userId }).lean();
+  }
+
+  const normalizedSkills = normalizeCredentialSkills(workerProfile, userId);
+
+  const normalizedCertifications = certificateDocs.length > 0
+    ? certificateDocs.map((cert) => ({
+        id: cert._id?.toString(),
+        name: cert.name,
+        issuingOrganization: cert.issuer || cert.issuingOrganization || '',
+        issueDate: cert.issuedAt || cert.issueDate || null,
+        expiryDate: cert.expiresAt || cert.expiryDate || null,
+        status: cert.status || cert.verification?.result || (cert.isVerified ? 'verified' : 'pending'),
+        isVerified: Boolean(
+          cert.status === 'verified' ||
+          cert.verification?.result === 'verified' ||
+          cert.isVerified,
+        ),
+      }))
+    : normalizeCredentialItems(workerProfile.certifications, workerProfile, userId, 'cert');
+
+  const sourceLicenses = Array.isArray(workerProfile.licenses)
+    ? workerProfile.licenses
+    : Array.isArray(workerProfile.certifications)
+      ? workerProfile.certifications.filter((item) =>
+          (item.type && item.type.toLowerCase() === 'license') ||
+          (item.category && item.category.toLowerCase() === 'license') ||
+          (item.label && item.label.toLowerCase().includes('license')),
+        )
+      : [];
+
+  return {
+    skills: normalizedSkills,
+    licenses: normalizeCredentialItems(sourceLicenses, workerProfile, userId, 'license'),
+    certifications: normalizedCertifications,
+  };
+};
+
+const formatPortfolioSignalItem = (doc = {}) => ({
+  id: doc._id?.toString() || doc.id || null,
+  title: doc.title || 'Untitled project',
+  description: doc.description || '',
+  projectType: doc.projectType || 'professional',
+  skillsUsed: Array.isArray(doc.skillsUsed) ? doc.skillsUsed : [],
+  location: doc.location || null,
+  clientRating: doc.clientRating ?? null,
+  status: doc.status || 'draft',
+  isFeatured: Boolean(doc.isFeatured),
+  createdAt: doc.createdAt || null,
+});
+
+const loadPortfolioSignalPayload = async ({ workerProfileId, limit = 6 }) => {
+  if (!workerProfileId || !Portfolio || typeof Portfolio.find !== 'function') {
+    return {
+      portfolioItems: [],
+      stats: { total: 0, published: 0, featured: 0 },
+    };
+  }
+
+  const query = {
+    workerProfileId,
+    isActive: true,
+  };
+
+  const [total, published, featured, items] = await Promise.all([
+    Portfolio.countDocuments(query),
+    Portfolio.countDocuments({ ...query, status: 'published' }),
+    Portfolio.countDocuments({ ...query, isFeatured: true }),
+    Portfolio.find(query)
+      .sort({ isFeatured: -1, sortOrder: 1, createdAt: -1 })
+      .limit(limit)
+      .lean(),
+  ]);
+
+  return {
+    portfolioItems: items.map((item) => formatPortfolioSignalItem(item)).filter((item) => item.id),
+    stats: {
+      total,
+      published,
+      featured,
+    },
+  };
+};
+
+const buildProfileCompletenessPayload = ({ profile, credentials, portfolio, workerProfile }) => {
+  const combined = {
+    firstName: profile.firstName,
+    lastName: profile.lastName,
+    email: profile.email,
+    profession: profile.profession,
+    bio: profile.bio,
+    location: profile.location,
+    hourlyRate: profile.hourlyRate,
+    skills: credentials.skills.length > 0 ? credentials.skills : profile.skills,
+    profilePicture: profile.profilePicture,
+    phone: profile.phone,
+    licenses: credentials.licenses,
+    certifications: credentials.certifications,
+    portfolio: portfolio.portfolioItems,
+    yearsOfExperience: profile.yearsOfExperience,
+  };
+
+  const completedRequired = PROFILE_COMPLETENESS_REQUIRED_FIELDS.filter((field) =>
+    hasStructuredValue(combined[field]),
+  ).length;
+  const completedOptional = PROFILE_COMPLETENESS_OPTIONAL_FIELDS.filter((field) =>
+    hasStructuredValue(combined[field]),
+  ).length;
+
+  const missingRequired = PROFILE_COMPLETENESS_REQUIRED_FIELDS.filter((field) =>
+    !hasStructuredValue(combined[field]),
+  );
+  const missingOptional = PROFILE_COMPLETENESS_OPTIONAL_FIELDS.filter((field) =>
+    !hasStructuredValue(combined[field]),
+  );
+
+  const requiredCompletion = Math.round((completedRequired / PROFILE_COMPLETENESS_REQUIRED_FIELDS.length) * 100);
+  const optionalCompletion = Math.round((completedOptional / PROFILE_COMPLETENESS_OPTIONAL_FIELDS.length) * 100);
+  const completionPercentage = Math.round((requiredCompletion * 0.7) + (optionalCompletion * 0.3));
+
+  const recommendations = [];
+  if (missingRequired.includes('bio')) {
+    recommendations.push('Complete your professional bio');
+  }
+  if (missingRequired.includes('skills')) {
+    recommendations.push('Add your top trade skills so matching stays accurate');
+  }
+  if (missingOptional.includes('certifications')) {
+    recommendations.push('List your certifications to improve trust in job recommendations');
+  }
+  if (missingOptional.includes('portfolio')) {
+    recommendations.push('Add recent portfolio work so hirers can verify your experience');
+  }
+  if (recommendations.length === 0 && completionPercentage < 100) {
+    recommendations.push('Review your profile details to reach 100% completion');
+  }
+
+  return {
+    completionPercentage,
+    requiredCompletion,
+    optionalCompletion,
+    missingRequired,
+    missingOptional,
+    recommendations,
+    source: {
+      user: true,
+      workerProfile: Boolean(workerProfile),
+      storedProfileCompleteness: Number(workerProfile?.profileCompleteness ?? completionPercentage),
+    },
+  };
 };
 
 const normalizePreferences = (preferences) => {
@@ -641,7 +964,66 @@ exports.getEarnings = async (req, res) => {
       });
     }
 
-    const worker = await workerModel.findOne({ userId });
+    const resolveWorkerProfile = async () => {
+      const workerLookupTimeoutMs = 2500;
+      const workerCollectionName = workerModel?.collection?.collectionName
+        || workerModel?.collection?.name
+        || 'workerprofiles';
+
+      const fetchWorkerProfileNative = async () => {
+        const db = getActiveDb();
+        if (!db || !Types.ObjectId.isValid(userId)) {
+          return null;
+        }
+
+        return db.collection(workerCollectionName).findOne({
+          userId: new Types.ObjectId(userId),
+        });
+      };
+
+      try {
+        const timedLookupError = new Error(
+          `WorkerProfile lookup timed out after ${workerLookupTimeoutMs}ms`,
+        );
+        timedLookupError.code = 'WORKER_PROFILE_LOOKUP_TIMEOUT';
+
+        return await Promise.race([
+          workerModel.findOne({ userId })
+            .maxTimeMS(workerLookupTimeoutMs)
+            .lean({ getters: true }),
+          new Promise((_, reject) => {
+            setTimeout(() => reject(timedLookupError), workerLookupTimeoutMs);
+          }),
+        ]);
+      } catch (error) {
+        const canFallbackToNative = isBsonVersionMismatch(error)
+          || error?.code === 'WORKER_PROFILE_LOOKUP_TIMEOUT'
+          || error?.code === 50
+          || /timed out|buffering timed out|exceeded time limit/i.test(error?.message || '');
+
+        if (!canFallbackToNative) {
+          throw error;
+        }
+
+        logger.warn('getEarnings: WorkerProfile lookup degraded, retrying with native driver', {
+          message: error?.message,
+          code: error?.code,
+          timeoutMs: workerLookupTimeoutMs,
+        });
+
+        try {
+          return await fetchWorkerProfileNative();
+        } catch (nativeError) {
+          logger.warn('getEarnings: native WorkerProfile lookup failed, using synthesized totals', {
+            message: nativeError?.message,
+            code: nativeError?.code,
+          });
+          return null;
+        }
+      }
+    };
+
+    const worker = await resolveWorkerProfile();
     if (!worker) {
       logger.warn('getEarnings: worker profile missing, returning synthesized totals');
       const fallbackTotals = buildEarningsFallback(0);
@@ -1562,6 +1944,76 @@ exports.getUserCredentials = async (req, res) => {
         code: 'USER_CREDENTIALS_ERROR',
       },
     });
+  }
+};
+
+exports.getMyProfileSignals = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return errorResponse(res, 401, 'Unauthorized - missing user context');
+    }
+
+    await ensureConnection({
+      timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
+    });
+
+    if (typeof db.loadModels === 'function') {
+      db.loadModels();
+    }
+
+    const UserModel = getUserModel();
+    const WorkerProfileModel = getWorkerProfileModel();
+
+    if (!UserModel) {
+      return errorResponse(res, 503, 'User model not initialized');
+    }
+
+    const { userDoc, workerDoc } = await fetchProfileDocuments({
+      UserModel,
+      WorkerProfileModel,
+      userId,
+    });
+
+    if (!userDoc) {
+      return errorResponse(res, 404, 'User profile not found');
+    }
+
+    const [availabilityDoc, credentials, portfolio] = await Promise.all([
+      Availability.findOne({ user: userId }).lean(),
+      loadCredentialPayload({ workerProfile: workerDoc, userId }),
+      loadPortfolioSignalPayload({ workerProfileId: workerDoc?._id, limit: 6 }),
+    ]);
+
+    const { profile, meta } = formatProfilePayload(userDoc, workerDoc);
+    const availability = buildAvailabilityPayload(availabilityDoc);
+    const completeness = buildProfileCompletenessPayload({
+      profile,
+      credentials,
+      portfolio,
+      workerProfile: workerDoc,
+    });
+
+    return successResponse(
+      res,
+      200,
+      'Profile recommendation signals retrieved successfully',
+      {
+        profile,
+        credentials,
+        availability,
+        completeness,
+        portfolio,
+      },
+      {
+        ...meta,
+        contract: 'mobile-profile-signals-v1',
+      },
+    );
+  } catch (error) {
+    logger.error('Get profile signals error:', error);
+    return errorResponse(res, 500, 'Failed to load profile recommendation signals');
   }
 };
 
