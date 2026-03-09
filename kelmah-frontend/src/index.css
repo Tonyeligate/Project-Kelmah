@@ -83,9 +83,9 @@
   --k-bg-overlay: #EFE9D9;
 
   /* Text */
-  --k-text-primary:   #1F1F25;
-  --k-text-secondary: #4A4B57;
-  --k-text-muted:     rgba(31, 31, 37, 0.55);
+  --k-text-primary:   #111111; /* darker for improved contrast */
+  --k-text-secondary: #2D2D33; /* deeper secondary hints */
+  --k-text-muted:     rgba(17, 17, 17, 0.60);
 
   /* Brand — use darker gold so it reads on cream */
   --k-gold:        #B8860B;

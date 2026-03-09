@@ -61,9 +61,10 @@ const SURFACE_TOKENS = {
     overlay: '#EFE9D9',
     stroke: 'rgba(15, 15, 23, 0.08)',
     glow: 'rgba(0, 0, 0, 0.06)',
-    textPrimary: '#1F1F25',
-    textSecondary: '#4A4B57',
-    textMuted: 'rgba(31, 31, 37, 0.6)',
+    // deep, high‑contrast text for readability in light mode
+    textPrimary: '#111111',
+    textSecondary: '#2D2D33',
+    textMuted: 'rgba(17, 17, 17, 0.6)',
   },
 };
 
@@ -124,12 +125,12 @@ const baseTheme = {
     body1: {
       fontSize: '1rem',
       lineHeight: 1.6,
-      fontWeight: 400,
+      fontWeight: 500, // bolder default body text
     },
     body2: {
       fontSize: '0.875rem',
       lineHeight: 1.6,
-      fontWeight: 400,
+      fontWeight: 500, // bolder secondary text
     },
     button: {
       fontWeight: 600,
@@ -1170,6 +1171,28 @@ const lightTheme = createTheme({
         root: {
           backgroundColor: 'rgba(0, 0, 0, 0.08)',
         },
+      },
+    },
+    // ensure typography and icons remain dark/bold in light mode
+    MuiTypography: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          fontWeight: theme.typography.fontWeightMedium || 500,
+          ...(theme.palette.mode === 'light' && {
+            '&.MuiTypography-colorPrimary': {
+              color: theme.palette.text.primary,
+            },
+          }),
+        }),
+      },
+    },
+    MuiSvgIcon: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          ...(theme.palette.mode === 'light' && {
+            color: theme.palette.text.primary,
+          }),
+        }),
       },
     },
     MuiContainer: {
