@@ -13,7 +13,17 @@ const { validateInput, handleServiceError, generatePagination } = require('../ut
 const auditLogger = require('../../../shared/utils/audit-logger');
 const { verifyAccessToken, decodeUserFromClaims } = require('../../../shared/utils/jwt');
 const { escapeRegex } = require('../../../shared/utils/sanitize');
+const { buildCanonicalWorkerSnapshot } = require('../../../shared/utils/canonicalWorker');
 const { logger } = require('../utils/logger');
+
+const sanitizeText = (val) => {
+  if (typeof val !== 'string') return val;
+  return val
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/&(?!(?:lt|gt|amp|quot|#\d+);)/g, '&amp;')
+    .trim();
+};
 
 const REQUIRED_PROFILE_FIELDS = [
   'firstName',
@@ -82,6 +92,311 @@ const scoreWorker = (worker = {}) => {
     WORKER_RANK_WEIGHTS.jobsCompleted * jobsNorm +
     WORKER_RANK_WEIGHTS.verified * verifiedBonus
   );
+};
+
+const normalizeDelimitedList = (value) => {
+  if (Array.isArray(value)) {
+    return value
+      .flatMap((item) => String(item || '').split(','))
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  if (typeof value === 'string') {
+    return value.split(',').map((item) => item.trim()).filter(Boolean);
+  }
+
+  return [];
+};
+
+const buildWorkerDirectorySortClause = (sortBy = 'relevance') => {
+  switch (sortBy) {
+    case 'rating':
+      return { canonicalRating: -1, canonicalCompletedJobs: -1, canonicalUpdatedAt: -1 };
+    case 'price_low':
+      return { canonicalHourlyRate: 1, canonicalRating: -1 };
+    case 'price_high':
+      return { canonicalHourlyRate: -1, canonicalRating: -1 };
+    case 'experience':
+      return { canonicalCompletedJobs: -1, canonicalExperience: -1, canonicalRating: -1 };
+    case 'newest':
+      return { canonicalUpdatedAt: -1 };
+    default:
+      return {
+        canonicalVerified: -1,
+        canonicalRating: -1,
+        canonicalCompletedJobs: -1,
+        canonicalUpdatedAt: -1,
+      };
+  }
+};
+
+const buildWorkerDirectoryConditions = ({
+  textQuery,
+  locationText,
+  primaryTrade,
+  workType,
+  skillsList,
+  minRating,
+  maxRate,
+  availability,
+  verified,
+}) => {
+  const conditions = [];
+
+  if (locationText) {
+    conditions.push({ canonicalLocation: { $regex: escapeRegex(locationText), $options: 'i' } });
+  }
+
+  if (textQuery) {
+    const textRegex = { $regex: escapeRegex(textQuery), $options: 'i' };
+    conditions.push({
+      $or: [
+        { canonicalFirstName: textRegex },
+        { canonicalLastName: textRegex },
+        { canonicalProfession: textRegex },
+        { canonicalBio: textRegex },
+        { canonicalLocation: textRegex },
+        { canonicalSkills: textRegex },
+        { canonicalSpecializations: textRegex },
+      ],
+    });
+  }
+
+  if (primaryTrade) {
+    const tradeRegexes = buildTradeRegexes(primaryTrade);
+    if (tradeRegexes.length > 0) {
+      conditions.push({
+        $or: [
+          { canonicalProfession: { $in: tradeRegexes } },
+          { canonicalSkills: { $in: tradeRegexes } },
+          { canonicalSpecializations: { $in: tradeRegexes } },
+        ],
+      });
+    }
+  }
+
+  if (workType) {
+    conditions.push({
+      $or: [
+        { canonicalPreferredJobTypes: workType },
+        { canonicalWorkingHoursPreference: workType },
+      ],
+    });
+  }
+
+  if (skillsList.length > 0) {
+    const skillRegexes = skillsList.map((skill) => new RegExp(`^${escapeRegex(skill)}$`, 'i'));
+    conditions.push({
+      $or: [
+        { canonicalSkills: { $in: skillRegexes } },
+        { canonicalSpecializations: { $in: skillRegexes } },
+      ],
+    });
+  }
+
+  if (Number.isFinite(minRating) && minRating > 0) {
+    conditions.push({ canonicalRating: { $gte: minRating } });
+  }
+
+  if (Number.isFinite(maxRate) && maxRate > 0) {
+    conditions.push({ canonicalHourlyRate: { $lte: maxRate } });
+  }
+
+  if (availability) {
+    conditions.push({ canonicalAvailability: availability });
+  }
+
+  if (verified) {
+    conditions.push({ canonicalVerified: true });
+  }
+
+  return conditions;
+};
+
+const executeWorkerDirectoryQuery = async ({
+  page = 1,
+  limit = 20,
+  textQuery = '',
+  locationText = '',
+  primaryTrade = '',
+  workType = '',
+  skillsList = [],
+  minRating = 0,
+  maxRate,
+  availability = 'available',
+  verified = false,
+  sortBy = 'relevance',
+  latitude,
+  longitude,
+}) => {
+  await ensureConnection({ timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000) });
+
+  if (typeof modelsModule.loadModels === 'function') {
+    modelsModule.loadModels();
+  }
+
+  const MongoUser = modelsModule.User;
+  const WorkerProfileModel = modelsModule.WorkerProfile;
+
+  if (!MongoUser) {
+    throw new Error('User model not initialized');
+  }
+
+  if (!WorkerProfileModel) {
+    throw new Error('WorkerProfile model not initialized');
+  }
+
+  const parsedPage = Math.max(1, Number.parseInt(page, 10) || 1);
+  const parsedLimit = Math.min(50, Math.max(1, Number.parseInt(limit, 10) || 20));
+  const offset = (parsedPage - 1) * parsedLimit;
+  const usersCollection = MongoUser.collection?.collectionName || 'users';
+
+  const pipeline = [
+    {
+      $lookup: {
+        from: usersCollection,
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'user',
+      },
+    },
+    {
+      $unwind: {
+        path: '$user',
+        preserveNullAndEmptyArrays: false,
+      },
+    },
+    { $match: { 'user.role': 'worker', 'user.isActive': true } },
+    {
+      $addFields: {
+        canonicalFirstName: { $ifNull: ['$user.firstName', ''] },
+        canonicalLastName: { $ifNull: ['$user.lastName', ''] },
+        canonicalProfession: {
+          $ifNull: [
+            '$user.profession',
+            {
+              $ifNull: [
+                '$profession',
+                {
+                  $ifNull: [{ $arrayElemAt: ['$specializations', 0] }, { $arrayElemAt: ['$skills', 0] }],
+                },
+              ],
+            },
+          ],
+        },
+        canonicalRating: { $ifNull: ['$rating', '$user.rating'] },
+        canonicalHourlyRate: { $ifNull: ['$hourlyRate', '$user.hourlyRate'] },
+        canonicalCompletedJobs: { $ifNull: ['$totalJobsCompleted', '$user.totalJobsCompleted'] },
+        canonicalAvailability: { $ifNull: ['$availabilityStatus', '$user.availabilityStatus'] },
+        canonicalVerified: { $ifNull: ['$isVerified', '$user.isVerified'] },
+        canonicalLocation: { $ifNull: ['$location', '$user.location'] },
+        canonicalBio: { $ifNull: ['$bio', '$user.bio'] },
+        canonicalUpdatedAt: { $ifNull: ['$updatedAt', '$user.updatedAt'] },
+        canonicalExperience: { $ifNull: ['$yearsOfExperience', '$user.yearsOfExperience'] },
+        canonicalPreferredJobTypes: { $ifNull: ['$preferredJobTypes', []] },
+        canonicalWorkingHoursPreference: { $ifNull: ['$workingHoursPreference', null] },
+        canonicalSkills: {
+          $setUnion: [
+            { $ifNull: ['$skills', []] },
+            { $ifNull: ['$user.skills', []] },
+            {
+              $map: {
+                input: { $ifNull: ['$skillEntries', []] },
+                as: 'skillEntry',
+                in: '$$skillEntry.name',
+              },
+            },
+          ],
+        },
+        canonicalSpecializations: {
+          $setUnion: [
+            { $ifNull: ['$specializations', []] },
+            { $ifNull: ['$user.specializations', []] },
+          ],
+        },
+      },
+    },
+  ];
+
+  const conditions = buildWorkerDirectoryConditions({
+    textQuery,
+    locationText,
+    primaryTrade,
+    workType,
+    skillsList,
+    minRating: Number(minRating),
+    maxRate: Number(maxRate),
+    availability,
+    verified,
+  });
+
+  if (conditions.length > 0) {
+    pipeline.push({ $match: { $and: conditions } });
+  }
+
+  pipeline.push(
+    { $sort: buildWorkerDirectorySortClause(sortBy) },
+    {
+      $facet: {
+        items: [
+          { $skip: offset },
+          { $limit: parsedLimit },
+        ],
+        total: [
+          { $count: 'count' },
+        ],
+      },
+    },
+  );
+
+  const [result] = await WorkerProfileModel.aggregate(pipeline);
+  const rawWorkers = Array.isArray(result?.items) ? result.items : [];
+  const totalCount = result?.total?.[0]?.count || 0;
+
+  const formattedWorkers = rawWorkers.map((workerDoc) => {
+    const canonicalWorker = buildCanonicalWorkerSnapshot(workerDoc.user || {}, workerDoc);
+    const workerLat = workerDoc?.latitude ?? workerDoc?.user?.latitude ?? workerDoc?.user?.locationCoordinates?.coordinates?.[1];
+    const workerLng = workerDoc?.longitude ?? workerDoc?.user?.longitude ?? workerDoc?.user?.locationCoordinates?.coordinates?.[0];
+    const distance = latitude && longitude && Number.isFinite(Number(workerLat)) && Number.isFinite(Number(workerLng))
+      ? Math.round(haversineDistance(Number(latitude), Number(longitude), Number(workerLat), Number(workerLng)) * 10) / 10
+      : null;
+
+    return {
+      id: canonicalWorker.id,
+      userId: canonicalWorker.userId,
+      name: canonicalWorker.name,
+      bio: canonicalWorker.bio || `${canonicalWorker.profession} with ${canonicalWorker.yearsOfExperience || 0} years of experience.`,
+      location: canonicalWorker.location,
+      city: canonicalWorker.location ? canonicalWorker.location.split(',')[0].trim() : 'Accra',
+      hourlyRate: canonicalWorker.hourlyRate || 25,
+      currency: canonicalWorker.currency || 'GHS',
+      rating: canonicalWorker.rating || 0,
+      totalReviews: canonicalWorker.totalReviews || 0,
+      totalJobsCompleted: canonicalWorker.totalJobsCompleted || 0,
+      availabilityStatus: canonicalWorker.availabilityStatus || 'available',
+      isVerified: canonicalWorker.isVerified || false,
+      profilePicture: canonicalWorker.profilePicture || null,
+      specializations: canonicalWorker.specializations.length > 0 ? canonicalWorker.specializations : ['General Maintenance'],
+      profession: canonicalWorker.profession || 'General Worker',
+      workType: canonicalWorker.workType || 'Full-time',
+      skills: canonicalWorker.skills,
+      rankScore: scoreWorker(canonicalWorker),
+      distance,
+      createdAt: canonicalWorker.createdAt,
+      updatedAt: canonicalWorker.updatedAt,
+    };
+  });
+
+  return {
+    workers: formattedWorkers,
+    pagination: {
+      page: parsedPage,
+      limit: parsedLimit,
+      total: totalCount,
+      pages: Math.max(1, Math.ceil(totalCount / parsedLimit)),
+    },
+  };
 };
 
 // Haversine distance calculator (returns km)
@@ -551,6 +866,39 @@ const buildRecentJobsFallback = ({ limit = 10, reason = 'RECENT_JOBS_FALLBACK' }
     },
   };
 };
+
+const normalizeRecentJobItem = (job = {}) => ({
+  id: job._id?.toString() || job.id || null,
+  _id: job._id?.toString() || job.id || null,
+  title: toSafeString(job.title, 'Untitled Job'),
+  description: toSafeString(job.description, ''),
+  category: job.category || null,
+  status: toSafeString(job.status || 'open', 'open'),
+  visibility: toSafeString(job.visibility || 'public', 'public'),
+  budget: Number(job.budget) || 0,
+  currency: toSafeString(job.currency || 'GHS', 'GHS'),
+  paymentType: job.paymentType || null,
+  location: job.location || job.locationDetails || null,
+  locationDetails: job.locationDetails || null,
+  skills: Array.isArray(job.skills) ? job.skills : [],
+  requirements: job.requirements || {},
+  createdAt: toIsoString(job.createdAt),
+  updatedAt: toIsoString(job.updatedAt),
+  expiresAt: toIsoString(job.expiresAt),
+  bidding: job.bidding || null,
+  hirer: job.hirer
+    ? {
+        id: job.hirer._id?.toString?.() || job.hirer.id || null,
+        _id: job.hirer._id?.toString?.() || job.hirer.id || null,
+        firstName: job.hirer.firstName || '',
+        lastName: job.hirer.lastName || '',
+        profilePicture: job.hirer.profilePicture || job.hirer.profileImage || null,
+        rating: Number(job.hirer.rating) || 0,
+        companyName: job.hirer.companyName || job.hirer.businessName || null,
+      }
+    : null,
+  recommendationSource: 'recent',
+});
 
 const toObjectIdOrNull = (value) => {
   if (!value) {
@@ -1104,19 +1452,13 @@ class WorkerController {
    */
   static async getAllWorkers(req, res) {
     try {
-      const isDev = process.env.NODE_ENV === 'development';
-      if (isDev) {
-        logger.info('🔍 getAllWorkers called - URL:', req.originalUrl, 'Path:', req.path);
-        logger.info('🔍 Query params:', JSON.stringify(req.query));
-      }
-      await ensureConnection({ timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000) });
       const {
         page = 1,
         limit = 20,
-        city, // NEW: Use 'city' instead of 'location'
-        location, // Keep for backward compatibility
-        primaryTrade, // NEW: Map to specializations
-        workType, // NEW: Filter by work type
+        city,
+        location,
+        primaryTrade,
+        workType,
         skills,
         rating,
         availability,
@@ -1126,202 +1468,29 @@ class WorkerController {
         keywords // NEW: Text search
       } = req.query;
 
-      const parsedPage = Math.max(1, Number.parseInt(page, 10) || 1);
-      const parsedLimit = Math.min(100, Math.max(1, Number.parseInt(limit, 10) || 20));
-      const offset = (parsedPage - 1) * parsedLimit;
-
-      // ✅ FIXED: Use direct MongoDB driver (bypass disconnected Mongoose models)
-      const mongoose = require('mongoose');
-      const client = mongoose.connection.getClient();
-      const db = client.db();
-      const usersCollection = db.collection('users');
-
-      // Build MongoDB query
-      const mongoQuery = {
-        role: 'worker',
-        isActive: true
-      };
-
-      if (isDev) {
-        logger.info('🔍 Building query with filters:', { city, location, primaryTrade, workType, keywords, search });
-      }
-
-      // FIXED: Location filter - use location field (contains city)
-      if (city || location) {
-        const locationSearch = escapeRegex(city || location);
-        mongoQuery.location = { $regex: locationSearch, $options: 'i' };
-        if (isDev) logger.info('📍 Location filter:', locationSearch);
-      }
-
-      // FIXED: Primary Trade filter - handle synonyms across multiple fields
-      if (primaryTrade) {
-        const tradeRegexes = buildTradeRegexes(primaryTrade);
-        const tradeConditions = [];
-
-        if (tradeRegexes.length > 0) {
-          tradeConditions.push({ specializations: { $in: tradeRegexes } });
-          tradeConditions.push({ profession: { $in: tradeRegexes } });
-          tradeConditions.push({ category: { $in: tradeRegexes } });
-          tradeConditions.push({ primaryTrade: { $in: tradeRegexes } });
-          tradeConditions.push({ 'workerProfile.tradeCategory': { $in: tradeRegexes } });
-          tradeConditions.push({ 'workerProfile.primaryTrade': { $in: tradeRegexes } });
-        }
-
-        if (tradeConditions.length > 0) {
-          mongoQuery.$and = mongoQuery.$and || [];
-          mongoQuery.$and.push({ $or: tradeConditions });
-        }
-
-        if (isDev) {
-          logger.info('🔧 Trade filter:', primaryTrade, '→ patterns:', tradeRegexes.map((regex) => regex.source));
-        }
-      }
-
-      // FIXED: Work Type filter - use workerProfile.workType
-      if (workType) {
-        mongoQuery['workerProfile.workType'] = workType;
-        if (isDev) logger.info('💼 Work type filter:', workType);
-      }
-
-      // Rating filter
-      if (rating) {
-        mongoQuery.rating = { $gte: parseFloat(rating) };
-      }
-
-      // Availability status
-      if (availability) {
-        mongoQuery.availabilityStatus = availability;
-      }
-
-      // Max hourly rate
-      if (maxRate) {
-        mongoQuery.hourlyRate = { $lte: parseFloat(maxRate) };
-      }
-
-      // Verified workers only
-      if (verified === 'true') {
-        mongoQuery.isVerified = true;
-      }
-
-      // FIXED: Text search - use keywords or search parameter
-      const searchTerm = keywords || search;
-      if (searchTerm) {
-        const escapedSearch = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const searchRegex = { $regex: escapedSearch, $options: 'i' };
-        mongoQuery.$or = [
-          { firstName: searchRegex },
-          { lastName: searchRegex },
-          { profession: searchRegex },
-          { bio: searchRegex },
-          { skills: searchRegex },
-        ];
-      }
-
-      // Skills filter (array of skills)
-      if (skills) {
-        const skillsArray = Array.isArray(skills) ? skills : skills.split(',');
-        mongoQuery.skills = { $in: skillsArray };
-      }
-
-      if (isDev) logger.info('📋 Final MongoDB query:', JSON.stringify(mongoQuery, null, 2));
-
-      // Execute MongoDB query using direct driver
-      const SAFE_WORKER_PROJECTION = {
-        _id: 1, firstName: 1, lastName: 1, profilePicture: 1,
-        role: 1, isActive: 1, location: 1, bio: 1,
-        profession: 1, hourlyRate: 1, currency: 1,
-        rating: 1, totalReviews: 1, totalJobsCompleted: 1,
-        availabilityStatus: 1, isVerified: 1, skills: 1,
-        specializations: 1, yearsOfExperience: 1, updatedAt: 1, createdAt: 1,
-      };
-      const [workers, totalCount] = await Promise.all([
-        usersCollection
-          .find(mongoQuery, { projection: SAFE_WORKER_PROJECTION })
-          .sort({ rating: -1, totalJobs: -1, updatedAt: -1 })
-          .skip(offset)
-          .limit(parsedLimit)
-          .toArray(),
-        usersCollection.countDocuments(mongoQuery)
-      ]);
-
-      if (isDev) logger.info(`✅ Found ${workers.length} workers (total: ${totalCount})`);
-
-      // Ranking weights from env or defaults
-      const weights = {
-        verified: Number(process.env.RANK_WEIGHT_VERIFIED || 0.3),
-        rating: Number(process.env.RANK_WEIGHT_RATING || 0.5),
-        jobsCompleted: Number(process.env.RANK_WEIGHT_JOBS || 0.2),
-      };
-      const clamp01 = (n) => Math.max(0, Math.min(1, Number.isFinite(n) ? n : 0));
-      const scoreFor = (w) => {
-        const ratingNorm = clamp01((Number(w.rating || 0)) / 5);
-        const jobsNorm = clamp01(Math.log10(1 + Number(w.totalJobsCompleted || 0)) / 3);
-        const verifiedBonus = w.isVerified ? 1 : 0;
-        return (
-          weights.rating * ratingNorm +
-          weights.jobsCompleted * jobsNorm +
-          weights.verified * verifiedBonus
-        );
-      };
-
-      // IMPORTANT: Never write during read listing.
-      // We apply defaults in-memory for response shaping only.
-      const workersWithDefaults = workers.map((worker) => {
-        const defaults = {
-          profession: worker.profession || 'General Worker',
-          skills:
-            Array.isArray(worker.skills) && worker.skills.length > 0
-              ? worker.skills
-              : ['General Work'],
-          hourlyRate: worker.hourlyRate || 25,
-          currency: worker.currency || 'GHS',
-          rating: worker.rating ?? 0,
-          totalReviews: worker.totalReviews || 0,
-          totalJobsCompleted: worker.totalJobsCompleted || 0,
-          availabilityStatus: worker.availabilityStatus || 'available',
-          isVerified: worker.isVerified ?? false,
-          bio:
-            worker.bio ||
-            `Experienced ${worker.profession || 'General Worker'} with ${worker.yearsOfExperience || 2} years of experience in ${worker.location || 'Accra, Ghana'}.`,
-        };
-        return { ...worker, ...defaults };
+      const searchTerm = keywords || search || '';
+      const { workers, pagination } = await executeWorkerDirectoryQuery({
+        page,
+        limit,
+        textQuery: searchTerm,
+        locationText: city || location || '',
+        primaryTrade,
+        workType,
+        skillsList: normalizeDelimitedList(skills),
+        minRating: Number(rating || 0),
+        maxRate: maxRate ? Number(maxRate) : undefined,
+        availability,
+        verified: verified === 'true',
+        sortBy: req.query.sortBy || 'relevance',
       });
 
-      // Format response data with ranking score
-      const formattedWorkers = workersWithDefaults.map(worker => ({
-        id: worker._id.toString(),
-        userId: worker._id.toString(),
-        name: `${worker.firstName} ${worker.lastName}`,
-        bio: worker.bio || `${worker.profession || 'Professional Worker'} with ${worker.yearsOfExperience || 0} years of experience.`,
-        location: worker.location || 'Ghana',
-        city: worker.location ? worker.location.split(',')[0].trim() : 'Accra', // Extract city from location
-        hourlyRate: worker.hourlyRate || 25,
-        currency: worker.currency || 'GHS',
-        rating: worker.rating || 0,
-        totalReviews: worker.totalReviews || 0,
-        totalJobsCompleted: worker.totalJobsCompleted || 0,
-        availabilityStatus: worker.availabilityStatus || 'available',
-        isVerified: worker.isVerified || false,
-        profilePicture: worker.profilePicture || null,
-        specializations: worker.specializations || ['General Maintenance'],
-        profession: worker.profession || 'General Worker',
-        workType: worker.workerProfile?.workType || 'Full-time',
-        skills: worker.skills?.map(skill => ({
-          name: typeof skill === 'string' ? skill : skill.skillName || skill.name || skill,
-          level: typeof skill === 'string' ? 'Intermediate' : skill.level || 'Intermediate'
-        })) || [],
-        rankScore: 0 // Will be calculated below
-      })).map((w) => ({ ...w, rankScore: scoreFor(w) }));
-
-      // Sort by rank score for better relevance
-      formattedWorkers.sort((a, b) => b.rankScore - a.rankScore);
-
-      const pagination = {
-        page: parsedPage,
-        limit: parsedLimit,
-        total: totalCount,
-        pages: Math.max(1, Math.ceil(totalCount / parsedLimit)),
-      };
+      const formattedWorkers = workers.map((worker) => ({
+        ...worker,
+        skills: (worker.skills || []).map((skill) => ({
+          name: skill,
+          level: 'Intermediate',
+        })),
+      }));
 
       return res.status(200).json({
         success: true,
@@ -1347,7 +1516,6 @@ class WorkerController {
 
   static async searchWorkers(req, res) {
     try {
-      await ensureConnection({ timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000) });
       const {
         query = '',
         location,
@@ -1365,213 +1533,27 @@ class WorkerController {
 
       const parsedPage = Math.max(1, parseInt(page, 10) || 1);
       const parsedLimit = Math.min(50, Math.max(1, parseInt(limit, 10) || 20));
-      const offset = (parsedPage - 1) * parsedLimit;
 
-      // Always get models from modelsModule (they're loaded after DB connection)
-      const MongoUser = modelsModule.User;
-
-      // Build MongoDB query
-      const mongoQuery = {
-        role: 'worker',
-        isActive: true
-      };
-
-      // Text search
-      if (query) {
-        const safeQ = escapeRegex(query);
-        mongoQuery.$or = [
-          { firstName: { $regex: safeQ, $options: 'i' } },
-          { lastName: { $regex: safeQ, $options: 'i' } },
-          { profession: { $regex: safeQ, $options: 'i' } },
-          { bio: { $regex: safeQ, $options: 'i' } }
-        ];
-      }
-
-      // Location search — standalone AND condition (not inside $or)
-      if (location) {
-        mongoQuery.location = { $regex: escapeRegex(location), $options: 'i' };
-      }
-
-      // Skills search
-      if (skills) {
-        const skillsArray = skills.split(',').map(s => s.trim()).filter(Boolean);
-        if (skillsArray.length > 0) {
-          mongoQuery.skills = { $in: skillsArray };
-        }
-      }
-
-      // Rating filter
-      if (minRating > 0) {
-        mongoQuery.rating = { $gte: parseFloat(minRating) };
-      }
-
-      // Rate filter
-      if (maxRate) {
-        mongoQuery.hourlyRate = { $lte: parseFloat(maxRate) };
-      }
-
-      // Availability status filter
-      if (availability) {
-        mongoQuery.availabilityStatus = availability;
-      }
-
-      // Geographic search
-      if (latitude && longitude && radius) {
-        mongoQuery.locationCoordinates = {
-          $near: {
-            $geometry: { type: 'Point', coordinates: [Number(longitude), Number(latitude)] },
-            $maxDistance: Number(radius) * 1000
-          }
-        };
-      }
-
-      // Sort options
-      let sortClause = {};
-      switch (sortBy) {
-        case 'rating':
-          sortClause = { rating: -1, totalReviews: -1 };
-          break;
-        case 'price_low':
-          sortClause = { hourlyRate: 1 };
-          break;
-        case 'price_high':
-          sortClause = { hourlyRate: -1 };
-          break;
-        case 'experience':
-          sortClause = { totalJobsCompleted: -1, yearsOfExperience: -1 };
-          break;
-        default: // relevance
-          sortClause = { isVerified: -1, rating: -1, totalJobsCompleted: -1 };
-      }
-
-      // Execute MongoDB query
-      const [workers, totalCount] = await Promise.all([
-        MongoUser.find(mongoQuery)
-          .select('-password -refreshToken -resetPasswordToken -resetPasswordExpire')
-          .sort(sortClause)
-          .skip(offset)
-          .limit(parsedLimit)
-          .lean(),
-        MongoUser.countDocuments(mongoQuery)
-      ]);
-
-      // Calculate ranking scores
-      const weights = {
-        verified: Number(process.env.RANK_WEIGHT_VERIFIED || 0.3),
-        rating: Number(process.env.RANK_WEIGHT_RATING || 0.5),
-        jobsCompleted: Number(process.env.RANK_WEIGHT_JOBS || 0.2),
-      };
-      const clamp01 = (n) => Math.max(0, Math.min(1, Number.isFinite(n) ? n : 0));
-      const scoreFor = (w) => {
-        const ratingNorm = clamp01((Number(w.rating || 0)) / 5);
-        const jobsNorm = clamp01(Math.log10(1 + Number(w.totalJobsCompleted || 0)) / 3);
-        const verifiedBonus = w.isVerified ? 1 : 0;
-        return (
-          weights.rating * ratingNorm +
-          weights.jobsCompleted * jobsNorm +
-          weights.verified * verifiedBonus
-        );
-      };
-
-      // Auto-populate missing worker fields for search results
-      const workersWithDefaults = await Promise.all(workers.map(async (worker) => {
-        let updateNeeded = false;
-        const updates = {};
-
-        // Add missing worker fields with defaults
-        if (!worker.profession) {
-          updates.profession = 'General Worker';
-          updateNeeded = true;
-        }
-        if (!worker.skills || worker.skills.length === 0) {
-          updates.skills = ['General Work', 'Manual Labor'];
-          updateNeeded = true;
-        }
-        if (!worker.hourlyRate) {
-          updates.hourlyRate = 25;
-          updateNeeded = true;
-        }
-        if (!worker.currency) {
-          updates.currency = 'GHS';
-          updateNeeded = true;
-        }
-        if (!worker.rating) {
-          // CRIT-07 FIX: Default to 0, not 4.5
-          updates.rating = 0;
-          updateNeeded = true;
-        }
-        if (!worker.totalReviews) {
-          updates.totalReviews = 0;
-          updateNeeded = true;
-        }
-        if (!worker.totalJobsCompleted) {
-          updates.totalJobsCompleted = 0;
-          updateNeeded = true;
-        }
-        if (!worker.availabilityStatus) {
-          updates.availabilityStatus = 'available';
-          updateNeeded = true;
-        }
-        if (worker.isVerified === undefined) {
-          updates.isVerified = false;
-          updateNeeded = true;
-        }
-        if (!worker.bio) {
-          updates.bio = `Experienced ${worker.profession || 'General Worker'} with ${worker.yearsOfExperience || 2} years of experience in ${worker.location || 'Accra, Ghana'}.`;
-          updateNeeded = true;
-        }
-
-        // Return worker with populated defaults (in-memory only — never write during search)
-        if (updateNeeded) {
-          // Apply defaults in-memory only, not to DB
-        }
-
-        // Return worker with populated defaults
-        return { ...worker, ...updates };
-      }));
-
-      // Format search results
-      const searchResults = workersWithDefaults.map(worker => ({
-        id: worker._id.toString(),
-        userId: worker._id.toString(),
-        name: `${worker.firstName} ${worker.lastName}`,
-        bio: worker.bio,
-        location: worker.location,
-        hourlyRate: worker.hourlyRate,
-        currency: worker.currency,
-        rating: worker.rating,
-        totalReviews: worker.totalReviews,
-        totalJobsCompleted: worker.totalJobsCompleted,
-        isVerified: worker.isVerified,
-        profilePicture: worker.profilePicture,
-        skills: (worker.skills || []).slice(0, 5).map(skill =>
-          typeof skill === 'string' ? skill : (skill.skillName || skill.name || String(skill))
-        ).filter(Boolean),
-        distance: (() => {
-          const workerLat = worker.latitude || worker.locationCoordinates?.coordinates?.[1];
-          const workerLng = worker.longitude || worker.locationCoordinates?.coordinates?.[0];
-          return latitude && longitude && workerLat && workerLng
-            ? Math.round(haversineDistance(parseFloat(latitude), parseFloat(longitude), workerLat, workerLng) * 10) / 10
-            : null;
-        })()
-      })).map((w) => ({ ...w, rankScore: scoreFor(w) }));
-
-      // Sort by relevance if requested
-      if (sortBy === 'relevance') {
-        searchResults.sort((a, b) => b.rankScore - a.rankScore);
-      }
+      const { workers: searchResults, pagination } = await executeWorkerDirectoryQuery({
+        page: parsedPage,
+        limit: parsedLimit,
+        textQuery: query,
+        locationText: location || '',
+        skillsList: normalizeDelimitedList(skills),
+        minRating: Number(minRating || 0),
+        maxRate: maxRate ? Number(maxRate) : undefined,
+        availability,
+        sortBy,
+        latitude,
+        longitude,
+      });
 
       return res.status(200).json({
         success: true,
         message: 'Search completed successfully',
         data: {
           workers: searchResults,
-          pagination: {
-            page: parsedPage,
-            limit: parsedLimit,
-            total: totalCount,
-            pages: Math.ceil(totalCount / parsedLimit)
-          },
+          pagination,
           searchParams: {
             query,
             location,
@@ -1635,7 +1617,7 @@ class WorkerController {
 
       const [workerDoc, workerProfileDoc] = await Promise.all([
         MongoUser.findById(workerId)
-          .select('-password -passwordResetToken -passwordResetExpires -emailVerificationToken -emailVerificationExpires -phoneVerificationToken -twoFactorSecret -__v')
+          .select('-password -passwordResetToken -passwordResetExpires -emailVerificationToken -emailVerificationExpires -phoneVerificationToken -twoFactorSecret -__v -email -phone -address -dateOfBirth -gender -googleId -facebookId -linkedinId -failedLoginAttempts -lockUntil')
           .lean()
           .catch((err) => {
             logger.error('❌ Error querying User:', err);
@@ -1974,7 +1956,7 @@ class WorkerController {
 
       const [worker, workerProfile] = await Promise.all([
         MongoUser.findById(workerId)
-          .select('-password -passwordResetToken -passwordResetExpires -emailVerificationToken -emailVerificationExpires -phoneVerificationToken -twoFactorSecret -__v')
+          .select('-password -passwordResetToken -passwordResetExpires -emailVerificationToken -emailVerificationExpires -phoneVerificationToken -twoFactorSecret -__v -email -phone -address -dateOfBirth -gender -googleId -facebookId -linkedinId -failedLoginAttempts -lockUntil')
           .lean(),
         MongoWorkerProfile ? MongoWorkerProfile.findOne({ userId: workerId }).lean() : null,
       ]);
@@ -2186,115 +2168,66 @@ class WorkerController {
         });
       }
 
-      if (circuitShouldBlockRequest()) {
-        logger.warn('Job service circuit open; serving cached job matches');
-        return respondWithCachedJobs(
-          res,
-          'JOB_SERVICE_CIRCUIT_OPEN',
-          'Job service marked unhealthy; serving cached/fallback matches.',
-          { limit: normalizedLimit },
-        );
+      await ensureConnection({
+        timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
+      });
+
+      if (typeof modelsModule.loadModels === 'function') {
+        modelsModule.loadModels();
       }
 
-      // Try to get real job data from job service
-      try {
-        const axios = require('axios');
-        const jobServiceUrl = process.env.JOB_SERVICE_URL || 'http://localhost:5003';
+      const JobModel = modelsModule.Job;
+      const ApplicationModel = modelsModule.Application;
 
-        const normalizedUserForHeaders = {
-          id: userId,
-          role: userContext?.role || 'worker',
-          email: userContext?.email || null,
-          firstName: userContext?.firstName || null,
-          lastName: userContext?.lastName || null,
-        };
-
-        const signingSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET;
-        const headers = {
-          'x-authenticated-user': JSON.stringify(normalizedUserForHeaders),
-          'x-auth-source': 'api-gateway',
-        };
-
-        if (signingSecret) {
-          headers['x-gateway-signature'] = crypto
-            .createHmac('sha256', signingSecret)
-            .update(headers['x-authenticated-user'])
-            .digest('hex');
-        }
-
-        if (req.headers.authorization) {
-          headers.Authorization = req.headers.authorization;
-        }
-
-        const response = await axios.get(`${jobServiceUrl}/api/jobs/recommendations`, {
-          params: {
-            limit: normalizedLimit,
-            includeInsights: false,
-            includeBreakdown: false,
-            includeReasons: false,
-            minScore: 20,
-          },
-          headers,
-          timeout: 8000,
-        });
-
-        const payload = response.data?.data || response.data || {};
-        const jobs = Array.isArray(payload?.jobs)
-          ? payload.jobs
-          : Array.isArray(payload)
-            ? payload
-            : [];
-
-        const normalizedJobs = jobs.slice(0, normalizedLimit);
-        const metadata = {
-          source: payload?.source || 'job-service',
-          receivedAt: new Date().toISOString(),
-          totalRecommendations: payload?.totalRecommendations,
-        };
-
-        recordCircuitSuccess({
-          jobs: normalizedJobs,
-          total: normalizedJobs.length,
-          metadata,
-        });
-
-        const responseMetadata = {
-          ...metadata,
-          circuitBreaker: getCircuitBreakerSnapshot(),
-        };
-
-        return res.json({
-          success: true,
-          data: {
-            jobs: normalizedJobs,
-            total: normalizedJobs.length,
-            metadata: responseMetadata,
-          }
-        });
-      } catch (error) {
-        logger.warn('Could not fetch recent jobs from job service:', error.message);
-        recordCircuitFailure();
-
-        if (jobServiceCircuitBreaker.state === 'open') {
-          return respondWithCachedJobs(
-            res,
-            'JOB_SERVICE_CIRCUIT_OPEN',
-            'Circuit breaker open after job service failures.',
-            { limit: normalizedLimit },
-          );
-        }
-
+      if (!JobModel) {
         const fallback = buildRecentJobsFallback({
           limit: normalizedLimit,
-          reason: 'JOB_SERVICE_UNAVAILABLE',
+          reason: 'JOB_MODEL_UNAVAILABLE',
         });
         fallback.data.metadata = {
           ...(fallback.data.metadata || {}),
           source: 'user-service-fallback',
-          circuitBreaker: getCircuitBreakerSnapshot(),
         };
         return res.status(200).json(fallback);
       }
+
+      const appliedJobIds = ApplicationModel
+        ? await ApplicationModel.find({ worker: userId }).distinct('job')
+        : [];
+
+      const jobs = await JobModel.find({
+        status: { $in: ['open', 'Open'] },
+        $and: [
+          {
+            $or: [
+              { visibility: 'public' },
+              { visibility: { $exists: false } },
+              { visibility: null },
+            ],
+          },
+          ...(appliedJobIds.length > 0 ? [{ _id: { $nin: appliedJobIds } }] : []),
+        ],
+      })
+        .populate('hirer', 'firstName lastName profilePicture profileImage rating companyName businessName')
+        .sort({ createdAt: -1 })
+        .limit(normalizedLimit)
+        .lean();
+
+      const normalizedJobs = jobs.map((job) => normalizeRecentJobItem(job));
+      const metadata = {
+        source: 'user-service-recent-jobs',
+        receivedAt: new Date().toISOString(),
+        requestedLimit: normalizedLimit,
+      };
+
+      return res.json({
+        success: true,
+        data: {
+          jobs: normalizedJobs,
+          total: normalizedJobs.length,
+          metadata,
+        },
+      });
     } catch (error) {
       logger.error('Get recent jobs error:', error);
       return handleServiceError(res, error, 'Failed to get recent jobs');
@@ -2793,10 +2726,10 @@ class WorkerController {
         isActive: true,
       };
 
-      if (req.query.status) {
-        filter.status = req.query.status;
-      } else if (!isOwner) {
+      if (!isOwner) {
         filter.status = 'published';
+      } else if (req.query.status) {
+        filter.status = req.query.status;
       }
 
       const [items, total] = await Promise.all([
@@ -2855,10 +2788,10 @@ class WorkerController {
       const isOwner = canMutateWorkerResource(req.user, userDoc._id);
       const filter = { workerId: userDoc._id };
 
-      if (req.query.status) {
-        filter.status = req.query.status;
-      } else if (!isOwner) {
+      if (!isOwner) {
         filter.status = 'verified';
+      } else if (req.query.status) {
+        filter.status = req.query.status;
       }
 
       const certificates = await CertificateModel.find(filter)
@@ -3413,11 +3346,11 @@ class WorkerController {
       } = req.body;
 
       // Update basic user fields
-      if (firstName) user.firstName = firstName;
-      if (lastName) user.lastName = lastName;
+      if (firstName) user.firstName = sanitizeText(firstName);
+      if (lastName) user.lastName = sanitizeText(lastName);
       if (phone) user.phone = phone;
-      if (location) user.location = location;
-      if (bio) user.bio = bio;
+      if (location) user.location = sanitizeText(location);
+      if (bio) user.bio = sanitizeText(bio);
       if (hourlyRate !== undefined) user.hourlyRate = Number(hourlyRate);
       if (experience !== undefined) user.yearsOfExperience = Number(experience);
       if (Array.isArray(skills)) user.skills = skills;
@@ -3427,11 +3360,11 @@ class WorkerController {
         user.workerProfile = {};
       }
 
-      if (title) user.workerProfile.title = title;
-      if (bio) user.workerProfile.bio = bio;
+      if (title) user.workerProfile.title = sanitizeText(title);
+      if (bio) user.workerProfile.bio = sanitizeText(bio);
       if (hourlyRate !== undefined) user.workerProfile.hourlyRate = Number(hourlyRate);
       if (experience !== undefined) user.workerProfile.experience = Number(experience);
-      if (location) user.workerProfile.location = location;
+      if (location) user.workerProfile.location = sanitizeText(location);
       
       // Update arrays
       if (Array.isArray(skills)) user.workerProfile.skills = skills;

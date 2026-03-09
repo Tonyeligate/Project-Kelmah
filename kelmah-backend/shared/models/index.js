@@ -13,6 +13,7 @@ const User = require('./User');
 const Job = require('./Job');
 const Application = require('./Application');
 const QuickJob = require('./QuickJob');
+const WorkerProfile = require('./WorkerProfile');
 
 // ❌ REMOVED: Portfolio (only user-service) - moved to user-service/models/
 // ❌ REMOVED: Conversation (only messaging-service) - should move to messaging-service/models/
@@ -26,5 +27,6 @@ module.exports = {
   User,        // ✅ Used by: auth, user, job, messaging, review, payment
   Job,         // ✅ Used by: job, review, payment
   Application, // ✅ Used by: job, review, payment
-  QuickJob     // ✅ Used by: job, messaging, payment - Protected Quick-Hire system
+  QuickJob,    // ✅ Used by: job, messaging, payment - Protected Quick-Hire system
+  WorkerProfile,
 };

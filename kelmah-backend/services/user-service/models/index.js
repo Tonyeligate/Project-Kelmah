@@ -6,15 +6,15 @@
 const mongoose = require('mongoose');
 
 // Import shared models - they use mongoose.model() which auto-binds correctly
-const { User, Job, Application } = require('../../../shared/models');
+const { User, Job, Application, WorkerProfile } = require('../../../shared/models');
 
 // Import service-specific models
-const WorkerProfile = require('./WorkerProfileMongo');
 const Certificate = require('./Certificate');
 const Availability = require('./Availability');
 const Bookmark = require('./Bookmark');
 const Portfolio = require('./Portfolio');
 const Settings = require('./Settings');
+const ActivityEvent = require('./ActivityEvent');
 
 // Skill models are deprecated - skills are now embedded in User/WorkerProfile
 const Skill = null;
@@ -34,6 +34,7 @@ module.exports = {
   WorkerProfile,
   Portfolio,
   Certificate,
+  ActivityEvent,
   Skill,
   SkillCategory,
   WorkerSkill,

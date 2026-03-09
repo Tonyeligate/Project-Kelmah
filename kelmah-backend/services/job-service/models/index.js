@@ -5,7 +5,7 @@
 
 // Import shared models (truly cross-service)
 // These use mongoose.model() which auto-binds to the default connection
-const { Job, Application, User, QuickJob } = require('../../../shared/models');
+const { Job, Application, User, QuickJob, WorkerProfile } = require('../../../shared/models');
 
 // Import LOCAL service-specific models
 const SavedJob = require('./SavedJob');  // ✅ Local (only job-service)
@@ -23,6 +23,7 @@ module.exports = {
   Application, // ✅ Shared (used by job, review, payment)
   User,        // ✅ Shared (used by all services)
   QuickJob,    // ✅ Shared (Protected Quick-Hire system)
+  WorkerProfile,
 
   // Local service-specific models
   SavedJob,

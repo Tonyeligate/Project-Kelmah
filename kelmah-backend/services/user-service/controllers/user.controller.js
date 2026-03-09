@@ -1,7 +1,7 @@
 // Use MongoDB WorkerProfile model for consistency
 const db = require('../models');
 // Destructure frequently-used models from service index (RULE-001 compliant)
-const { Bookmark, Availability, Certificate, Job, Application, Portfolio } = db;
+const { Bookmark, Availability, Certificate, Job, Application, Portfolio, ActivityEvent } = db;
 const { ensureConnection, mongoose: connectionInstance } = require('../config/db');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
 const { logger } = require('../utils/logger');
@@ -639,6 +639,19 @@ const parsePositiveInt = (value, fallback) => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
+const toIsoString = (value) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  try {
+    const normalized = value instanceof Date ? value : new Date(value);
+    return Number.isNaN(normalized.getTime()) ? null : normalized.toISOString();
+  } catch (_) {
+    return null;
+  }
+};
+
 const buildActivityItem = ({ id, type, timestamp, summary, details = {} }) => ({
   id: id ? String(id) : `${type}-${timestamp || Date.now()}`,
   type,
@@ -684,41 +697,72 @@ const buildActivityPagination = (page, limit, total) => {
   };
 };
 
-const buildProfileActivity = async ({ userId, userRole, workerDoc, userDoc, page, limit }) => {
-  const timeline = [];
-  const queryLimit = Math.min(page * limit * 3, 60);
+const buildPersistedActivityEvent = ({
+  userId,
+  actorUserId = userId,
+  type,
+  sourceCollection,
+  sourceId,
+  occurredAt,
+  summary,
+  details = {},
+}) => ({
+  userId,
+  actorUserId,
+  type,
+  sourceCollection,
+  sourceId: String(sourceId),
+  occurredAt: new Date(occurredAt),
+  summary,
+  details,
+});
 
-  const loginEvents = Array.isArray(userDoc?.activity?.logins)
-    ? userDoc.activity.logins.map((entry, index) => buildActivityItem({
-        id: `login-${index}-${entry?.timestamp || index}`,
-        type: 'login',
-        timestamp: entry?.timestamp,
-        summary: entry?.device ? `Signed in on ${entry.device}` : 'Login activity',
-        details: { ip: entry?.ip || null },
-      }))
-    : [];
+const didTimestampAdvance = (createdAt, updatedAt) => {
+  const createdMs = new Date(createdAt || 0).getTime();
+  const updatedMs = new Date(updatedAt || 0).getTime();
+  return Number.isFinite(updatedMs) && Number.isFinite(createdMs) && updatedMs > createdMs + 1000;
+};
 
-  timeline.push(...loginEvents);
+const collectAuthoritativeActivityEvents = async ({ userId, userRole, workerDoc, userDoc, queryLimit }) => {
+  const events = [];
+  const userCreatedAt = userDoc?.createdAt || null;
+  const latestProfileUpdate = [userDoc?.updatedAt, workerDoc?.updatedAt]
+    .map((value) => (value ? new Date(value) : null))
+    .filter((value) => value && !Number.isNaN(value.getTime()))
+    .sort((left, right) => right.getTime() - left.getTime())[0] || null;
 
-  const legacyWorkerEvents = Array.isArray(workerDoc?.activity?.recentJobs)
-    ? workerDoc.activity.recentJobs.map((job, index) => buildActivityItem({
-        id: `legacy-job-${job?._id || job?.id || index}`,
-        type: 'job_update',
-        timestamp: job?.updatedAt || job?.createdAt,
-        summary: job?.title || 'Job updated',
-        details: {
-          jobId: job?._id?.toString?.() || job?.id || null,
-          status: job?.status || null,
-          source: 'legacy-profile',
-        },
-      }))
-    : [];
+  if (userCreatedAt) {
+    events.push(buildPersistedActivityEvent({
+      userId,
+      type: 'account_created',
+      sourceCollection: 'users',
+      sourceId: userDoc?._id || userId,
+      occurredAt: userCreatedAt,
+      summary: 'You joined Kelmah',
+      details: { source: 'user-profile' },
+    }));
+  }
 
-  timeline.push(...legacyWorkerEvents);
+  if (latestProfileUpdate && didTimestampAdvance(userCreatedAt, latestProfileUpdate)) {
+    events.push(buildPersistedActivityEvent({
+      userId,
+      type: 'profile_updated',
+      sourceCollection: workerDoc?._id ? 'workerprofiles' : 'users',
+      sourceId: workerDoc?._id || userDoc?._id || userId,
+      occurredAt: latestProfileUpdate,
+      summary: 'You updated your profile',
+      details: {
+        source: workerDoc?._id ? 'worker-profile' : 'user-profile',
+      },
+    }));
+  }
+
+  const JobModel = db.Job || Job;
+  const ApplicationModel = db.Application || Application;
 
   if (userRole === 'hirer') {
-    const hirerJobs = Job
-      ? await Job.find({ hirer: userId })
+    const hirerJobs = JobModel
+      ? await JobModel.find({ hirer: userId })
           .select('title status createdAt updatedAt completedDate')
           .sort({ updatedAt: -1 })
           .limit(queryLimit)
@@ -726,8 +770,8 @@ const buildProfileActivity = async ({ userId, userRole, workerDoc, userDoc, page
       : [];
 
     const jobIds = hirerJobs.map((job) => job?._id).filter(Boolean);
-    const recentApplications = Application && jobIds.length > 0
-      ? await Application.find({ job: { $in: jobIds } })
+    const recentApplications = ApplicationModel && jobIds.length > 0
+      ? await ApplicationModel.find({ job: { $in: jobIds } })
           .select('job status createdAt updatedAt')
           .sort({ createdAt: -1 })
           .limit(queryLimit)
@@ -738,11 +782,13 @@ const buildProfileActivity = async ({ userId, userRole, workerDoc, userDoc, page
       hirerJobs.map((job) => [String(job._id), job.title || 'Untitled Job']),
     );
 
-    timeline.push(
-      ...hirerJobs.map((job) => buildActivityItem({
-        id: `hirer-job-created-${job._id}`,
+    events.push(
+      ...hirerJobs.map((job) => buildPersistedActivityEvent({
+        userId,
         type: 'job_posted',
-        timestamp: job.createdAt,
+        sourceCollection: 'jobs',
+        sourceId: job._id,
+        occurredAt: job.createdAt,
         summary: `You posted "${job.title || 'Untitled Job'}"`,
         details: {
           jobId: String(job._id),
@@ -751,17 +797,15 @@ const buildProfileActivity = async ({ userId, userRole, workerDoc, userDoc, page
       })),
     );
 
-    timeline.push(
+    events.push(
       ...hirerJobs
-        .filter((job) => {
-          const createdAt = new Date(job.createdAt || 0).getTime();
-          const updatedAt = new Date(job.updatedAt || 0).getTime();
-          return updatedAt > createdAt && !['open', 'draft'].includes(job.status);
-        })
-        .map((job) => buildActivityItem({
-          id: `hirer-job-status-${job._id}-${job.status}`,
+        .filter((job) => didTimestampAdvance(job.createdAt, job.completedDate || job.updatedAt) && !['open', 'draft'].includes(job.status))
+        .map((job) => buildPersistedActivityEvent({
+          userId,
           type: job.status === 'completed' ? 'job_completed' : 'job_status_changed',
-          timestamp: job.completedDate || job.updatedAt,
+          sourceCollection: 'jobs',
+          sourceId: `${job._id}:${job.status}`,
+          occurredAt: job.completedDate || job.updatedAt,
           summary:
             job.status === 'completed'
               ? `Job completed: ${job.title || 'Untitled Job'}`
@@ -773,11 +817,13 @@ const buildProfileActivity = async ({ userId, userRole, workerDoc, userDoc, page
         })),
     );
 
-    timeline.push(
-      ...recentApplications.map((application) => buildActivityItem({
-        id: `hirer-application-${application._id}`,
+    events.push(
+      ...recentApplications.map((application) => buildPersistedActivityEvent({
+        userId,
         type: 'application_received',
-        timestamp: application.createdAt,
+        sourceCollection: 'applications',
+        sourceId: application._id,
+        occurredAt: application.createdAt,
         summary: `New application received for "${jobTitleMap.get(String(application.job)) || 'your job'}"`,
         details: {
           applicationId: String(application._id),
@@ -787,17 +833,9 @@ const buildProfileActivity = async ({ userId, userRole, workerDoc, userDoc, page
       })),
     );
   } else {
-    const workerApplications = Application
-      ? await Application.find({ worker: userId })
+    const workerApplications = ApplicationModel
+      ? await ApplicationModel.find({ worker: userId })
           .select('job status createdAt updatedAt')
-          .sort({ updatedAt: -1 })
-          .limit(queryLimit)
-          .lean({ getters: true })
-      : [];
-
-    const workerJobs = Job
-      ? await Job.find({ worker: userId })
-          .select('title status createdAt updatedAt completedDate')
           .sort({ updatedAt: -1 })
           .limit(queryLimit)
           .lean({ getters: true })
@@ -807,22 +845,24 @@ const buildProfileActivity = async ({ userId, userRole, workerDoc, userDoc, page
       ...new Set(workerApplications.map((application) => String(application.job)).filter(Boolean)),
     ];
 
-    const referencedJobs = Job && referencedJobIds.length > 0
-      ? await Job.find({ _id: { $in: referencedJobIds } })
-          .select('title status')
+    const referencedJobs = JobModel && referencedJobIds.length > 0
+      ? await JobModel.find({ _id: { $in: referencedJobIds } })
+          .select('title status completedDate updatedAt createdAt')
           .lean({ getters: true })
       : [];
 
-    const jobTitleMap = new Map(
-      referencedJobs.map((job) => [String(job._id), job.title || 'Untitled Job']),
+    const jobMeta = new Map(
+      referencedJobs.map((job) => [String(job._id), job]),
     );
 
-    timeline.push(
-      ...workerApplications.map((application) => buildActivityItem({
-        id: `worker-application-${application._id}`,
+    events.push(
+      ...workerApplications.map((application) => buildPersistedActivityEvent({
+        userId,
         type: 'application_submitted',
-        timestamp: application.createdAt,
-        summary: `You applied to "${jobTitleMap.get(String(application.job)) || 'a job'}"`,
+        sourceCollection: 'applications',
+        sourceId: application._id,
+        occurredAt: application.createdAt,
+        summary: `You applied to "${jobMeta.get(String(application.job))?.title || 'a job'}"`,
         details: {
           applicationId: String(application._id),
           jobId: String(application.job),
@@ -831,33 +871,128 @@ const buildProfileActivity = async ({ userId, userRole, workerDoc, userDoc, page
       })),
     );
 
-    timeline.push(
-      ...workerJobs.map((job) => buildActivityItem({
-        id: `worker-job-${job._id}-${job.status}`,
-        type: job.status === 'completed' ? 'job_completed' : 'job_assigned',
-        timestamp: job.completedDate || job.updatedAt || job.createdAt,
-        summary:
-          job.status === 'completed'
-            ? `You completed "${job.title || 'Untitled Job'}"`
-            : `You are assigned to "${job.title || 'Untitled Job'}"`,
-        details: {
-          jobId: String(job._id),
-          status: job.status || null,
-        },
-      })),
+    events.push(
+      ...workerApplications
+        .filter((application) => didTimestampAdvance(application.createdAt, application.updatedAt) && !['pending', 'submitted'].includes(String(application.status || '').toLowerCase()))
+        .map((application) => buildPersistedActivityEvent({
+          userId,
+          type: 'application_status_changed',
+          sourceCollection: 'applications',
+          sourceId: `${application._id}:${application.status}`,
+          occurredAt: application.updatedAt,
+          summary: `Your application for "${jobMeta.get(String(application.job))?.title || 'a job'}" is now ${application.status || 'updated'}`,
+          details: {
+            applicationId: String(application._id),
+            jobId: String(application.job),
+            status: application.status || null,
+          },
+        })),
+    );
+
+    events.push(
+      ...referencedJobs
+        .filter((job) => String(job.status || '').toLowerCase() === 'completed')
+        .map((job) => buildPersistedActivityEvent({
+          userId,
+          type: 'job_completed',
+          sourceCollection: 'jobs',
+          sourceId: `${job._id}:completed`,
+          occurredAt: job.completedDate || job.updatedAt || job.createdAt,
+          summary: `You completed "${job.title || 'Untitled Job'}"`,
+          details: {
+            jobId: String(job._id),
+            status: job.status || 'completed',
+          },
+        })),
     );
   }
 
-  const entries = dedupeActivityItems(timeline).sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-  );
+  return dedupeActivityItems(
+    events.map((event) => buildActivityItem({
+      id: `${event.sourceCollection}:${event.sourceId}:${event.type}`,
+      type: event.type,
+      timestamp: event.occurredAt,
+      summary: event.summary,
+      details: event.details,
+    })).map((item, index) => ({ ...item, __persisted: events[index] })),
+  ).map((item) => item.__persisted);
+};
 
-  const total = entries.length;
-  const startIndex = (page - 1) * limit;
-  const items = entries.slice(startIndex, startIndex + limit);
+const syncProfileActivitySource = async ({ userId, userRole, workerDoc, userDoc, page, limit }) => {
+  const ActivityEventModel = db.ActivityEvent || ActivityEvent;
+  const queryLimit = Math.min(page * limit * 3, 60);
+  const events = await collectAuthoritativeActivityEvents({
+    userId,
+    userRole,
+    workerDoc,
+    userDoc,
+    queryLimit,
+  });
+
+  if (!ActivityEventModel) {
+    const sorted = [...events].sort((a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime());
+    const total = sorted.length;
+    const startIndex = (page - 1) * limit;
+    return {
+      items: sorted.slice(startIndex, startIndex + limit).map((event) => buildActivityItem({
+        id: `${event.sourceCollection}:${event.sourceId}:${event.type}`,
+        type: event.type,
+        timestamp: event.occurredAt,
+        summary: event.summary,
+        details: event.details,
+      })),
+      pagination: buildActivityPagination(page, limit, total),
+      role: userRole,
+    };
+  }
+
+  if (events.length > 0) {
+    await ActivityEventModel.bulkWrite(
+      events.map((event) => ({
+        updateOne: {
+          filter: {
+            userId: event.userId,
+            type: event.type,
+            sourceCollection: event.sourceCollection,
+            sourceId: event.sourceId,
+            occurredAt: event.occurredAt,
+          },
+          update: {
+            $set: {
+              actorUserId: event.actorUserId,
+              summary: event.summary,
+              details: event.details,
+            },
+            $setOnInsert: {
+              userId: event.userId,
+              type: event.type,
+              sourceCollection: event.sourceCollection,
+              sourceId: event.sourceId,
+              occurredAt: event.occurredAt,
+            },
+          },
+          upsert: true,
+        },
+      })),
+      { ordered: false },
+    );
+  }
+
+  const total = await ActivityEventModel.countDocuments({ userId });
+  const persistedEvents = await ActivityEventModel.find({ userId })
+    .sort({ occurredAt: -1, _id: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .lean({ getters: true });
 
   return {
-    items,
+    items: persistedEvents.map((event) => buildActivityItem({
+      id: event._id,
+      type: event.type,
+      timestamp: event.occurredAt,
+      summary: event.summary,
+      details: event.details || {},
+    })),
     pagination: buildActivityPagination(page, limit, total),
     role: userRole,
   };
@@ -1004,7 +1139,7 @@ exports.getProfileActivity = async (req, res) => {
     );
 
     const { workerDoc, userDoc } = await fetchProfileDocuments({ userId });
-    const activity = await buildProfileActivity({
+    const activity = await syncProfileActivitySource({
       userId,
       userRole: userDoc?.role || req.user?.role || 'worker',
       workerDoc,

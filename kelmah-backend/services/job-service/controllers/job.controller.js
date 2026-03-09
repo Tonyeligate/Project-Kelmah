@@ -10,6 +10,7 @@ const {
   SavedJob,
   Bid,
   UserPerformance,
+  WorkerProfile,
   Category,
   Contract,
   ContractDispute
@@ -29,6 +30,7 @@ const {
   toMediaAsset,
   isDataUri,
 } = require('../../../shared/utils/cloudinary');
+const { buildCanonicalWorkerSnapshot } = require('../../../shared/utils/canonicalWorker');
 
 const jobLogger = createLogger('job-controller');
 
@@ -188,8 +190,27 @@ const collectWorkerSkills = (worker = {}) => {
     new Set([
       ...normalizeSkillValues(worker.skills || []),
       ...normalizeSkillValues(worker.workerProfile?.skills || []),
+      ...normalizeSkillValues(worker.specializations || []),
+      ...normalizeSkillValues(worker.workerProfile?.specializations || []),
     ]),
   );
+};
+
+const getCanonicalWorkerContext = async (workerId) => {
+  const [workerUser, workerProfile] = await Promise.all([
+    User.findById(workerId).lean(),
+    WorkerProfile.findOne({ userId: workerId }).lean(),
+  ]);
+
+  if (!workerUser || workerUser.role !== 'worker') {
+    return null;
+  }
+
+  return {
+    workerUser,
+    workerProfile,
+    worker: buildCanonicalWorkerSnapshot(workerUser, workerProfile || {}),
+  };
 };
 
 const readLocationParts = (locationValue = {}) => {
@@ -205,6 +226,33 @@ const readLocationParts = (locationValue = {}) => {
     city: String(locationValue.city || locationValue.district || '').trim().toLowerCase(),
     region: String(locationValue.region || '').trim().toLowerCase(),
   };
+};
+
+// Haversine distance in km between two lat/lng pairs
+const haversineDistance = (lat1, lng1, lat2, lng2) => {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
+// Extract coordinates from job or worker location data
+const extractCoordinates = (entity) => {
+  if (entity.geoLocation?.coordinates?.length === 2) {
+    return { lat: entity.geoLocation.coordinates[1], lng: entity.geoLocation.coordinates[0] };
+  }
+  if (entity.locationDetails?.coordinates?.lat && entity.locationDetails?.coordinates?.lng) {
+    return { lat: Number(entity.locationDetails.coordinates.lat), lng: Number(entity.locationDetails.coordinates.lng) };
+  }
+  if (entity.locationCoordinates?.coordinates?.length === 2) {
+    return { lat: entity.locationCoordinates.coordinates[1], lng: entity.locationCoordinates.coordinates[0] };
+  }
+  return null;
 };
 
 /**
@@ -401,7 +449,11 @@ const createJob = async (req, res, next) => {
 
     // ========== COMPREHENSIVE SCHEMA VALIDATION DEBUG ==========
     // Check if data matches what the schema expects BEFORE attempting insert
-    const VALID_REGIONS = ["Greater Accra", "Ashanti", "Western", "Eastern", "Central", "Volta", "Northern", "Upper East", "Upper West", "Brong-Ahafo"];
+    const VALID_REGIONS = [
+      "Greater Accra", "Ashanti", "Western", "Eastern", "Central",
+      "Volta", "Northern", "Upper East", "Upper West", "Brong-Ahafo",
+      "Oti", "Bono East", "North East", "Savannah", "Western North", "Ahafo"
+    ];
     const VALID_SKILLS = ["Plumbing", "Electrical", "Carpentry", "Construction", "Painting", "Welding", "Masonry", "HVAC", "Roofing", "Flooring"];
     const VALID_LOCATION_TYPES = ["remote", "onsite", "hybrid"];
     const VALID_PAYMENT_TYPES = ["fixed", "hourly"];
@@ -651,6 +703,11 @@ const updateContract = async (req, res, next) => {
       return errorResponse(res, 403, 'Only contract parties can update this contract');
     }
 
+    // H-D4 FIX: Prevent modifying contracts that are no longer in draft status
+    if (contract.status !== 'draft') {
+      return errorResponse(res, 400, 'Cannot modify contract that is not in draft status');
+    }
+
     // Allowed fields for update
     const allowedFields = ['title', 'description', 'startDate', 'endDate', 'value', 'paymentTerms', 'deliverables', 'termsAndConditions'];
     const update = {};
@@ -838,6 +895,13 @@ const deleteMilestone = async (req, res, next) => {
     const contract = contracts[0];
     if (String(contract.hirer) !== String(userId) && String(contract.worker) !== String(userId)) {
       return errorResponse(res, 403, 'Only contract parties can delete milestones');
+    }
+
+    // H-D3 FIX: Prevent deletion of milestones that are in progress or already paid
+    const milestone = contract.milestones.id(req.params.milestoneId);
+    if (!milestone) return errorResponse(res, 404, 'Milestone not found');
+    if (milestone.status !== 'pending') {
+      return errorResponse(res, 400, 'Cannot delete milestone that is in progress or already paid');
     }
 
     contract.milestones.pull({ _id: req.params.milestoneId });
@@ -1904,8 +1968,8 @@ const getContracts = async (req, res, next) => {
 
     const [contracts, total] = await Promise.all([
       Contract.find(query)
-        .populate('hirer', 'firstName lastName profilePicture')
-        .populate('worker', 'firstName lastName profilePicture')
+        .populate('hirer', 'firstName lastName profilePicture profileImage')
+        .populate('worker', 'firstName lastName profilePicture profileImage')
         .populate('job', 'title category budget currency')
         .sort({ createdAt: -1 })
         .skip(skip)
@@ -1969,21 +2033,29 @@ const getJobRecommendations = async (req, res, next) => {
     const numericLimit = Math.max(1, Math.min(50, parseInt(limit, 10) || 20));
     const numericMinScore = Math.max(0, Math.min(100, parseInt(minScore, 10) || 40));
 
-    const [worker, existingApplications] = await Promise.all([
-      User.findById(workerId).lean(),
+    const [workerContext, existingApplications] = await Promise.all([
+      getCanonicalWorkerContext(workerId),
       Application.find({ worker: workerId }).select('job').lean(),
     ]);
 
-    if (!worker || worker.role !== 'worker') {
+    if (!workerContext?.worker) {
       return errorResponse(res, 403, 'Only workers can access job recommendations');
     }
+
+    const worker = workerContext.worker;
 
     const appliedJobIds = existingApplications
       .map((application) => application.job)
       .filter(Boolean);
 
     const query = {
-      status: 'open',
+      status: { $in: ['open', 'Open'] },
+      'bidding.bidStatus': 'open',
+      $or: [
+        { expiresAt: { $exists: false } },
+        { expiresAt: null },
+        { expiresAt: { $gt: new Date() } },
+      ],
       $and: [
         {
           $or: [
@@ -1998,24 +2070,23 @@ const getJobRecommendations = async (req, res, next) => {
       query._id = { $nin: appliedJobIds };
     }
 
-    // Use worker skills in the initial query to get better candidates (HIGH-31)
-    const workerSkillsList = (worker?.skills || worker?.workerProfile?.skills || [])
-      .map(s => (typeof s === 'string' ? s : s.name || s.skillName))
-      .filter(Boolean);
+    // Use worker skills in the initial query to get better candidates
+    const workerSkillsList = collectWorkerSkills(worker);
 
-    // Add skill pre-filter if worker has skills
+    // Add skill pre-filter if worker has skills — use case-insensitive regex
     if (workerSkillsList.length > 0) {
+      const skillRegexes = workerSkillsList.map(s => new RegExp(`^${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'));
       query.$and.push({
         $or: [
-          { 'requirements.primarySkills': { $in: workerSkillsList } },
-          { 'requirements.secondarySkills': { $in: workerSkillsList } },
-          { skills: { $in: workerSkillsList } },
+          { 'requirements.primarySkills': { $in: skillRegexes } },
+          { 'requirements.secondarySkills': { $in: skillRegexes } },
+          { skills: { $in: skillRegexes } },
         ],
       });
     }
 
     const candidateJobs = await Job.find(query)
-      .populate('hirer', 'firstName lastName profileImage rating totalJobsPosted companyName businessName')
+      .populate('hirer', 'firstName lastName profilePicture profileImage rating totalJobsPosted companyName businessName')
       .sort({ createdAt: -1 })
       .limit(Math.max(numericLimit * 4, 30))
       .lean();
@@ -2069,8 +2140,8 @@ const getJobRecommendations = async (req, res, next) => {
       if (Array.isArray(worker.skills)) {
         defaultInsights.tags.push(...worker.skills.slice(0, 3));
       }
-      if (typeof worker.primaryTrade === 'string') {
-        defaultInsights.tags.push(worker.primaryTrade);
+      if (typeof worker.profession === 'string' && worker.profession.trim()) {
+        defaultInsights.tags.push(worker.profession);
       }
     }
 
@@ -2124,7 +2195,12 @@ const getWorkerMatches = async (req, res, next) => {
       availabilityStatus: { $in: ['available', 'partially_available'] }
     };
     if (jobSkills.length > 0) {
-      workerQuery.skills = { $in: jobSkills };
+      // Case-insensitive skill matching to handle mixed-case stored values
+      const skillRegexes = jobSkills.map(s => new RegExp(`^${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'));
+      workerQuery.$or = [
+        { skills: { $in: skillRegexes } },
+        { 'workerProfile.skills': { $in: skillRegexes } },
+      ];
     }
 
     const workers = await User.find(workerQuery)
@@ -2132,19 +2208,30 @@ const getWorkerMatches = async (req, res, next) => {
       .limit(numericLimit * 3)
       .lean();
 
+    const workerProfiles = await WorkerProfile.find({
+      userId: { $in: workers.map((worker) => worker._id) },
+    }).lean();
+    const workerProfileMap = new Map(
+      workerProfiles.map((profile) => [String(profile.userId), profile]),
+    );
+
     // Calculate match scores for each worker
-    const workersWithScores = workers.map(worker => {
-      const matchScore = calculateWorkerMatchScore(job, worker);
+    const workersWithScores = workers.map(workerDoc => {
+      const canonicalWorker = buildCanonicalWorkerSnapshot(
+        workerDoc,
+        workerProfileMap.get(String(workerDoc._id)) || {},
+      );
+      const matchScore = calculateWorkerMatchScore(job, canonicalWorker);
 
       return {
-        id: worker._id,
-        name: `${worker.firstName} ${worker.lastName}`,
-        profileImage: worker.profileImage,
-        rating: worker.rating || 0,
-        completedJobs: worker.totalJobsCompleted || worker.completedJobs || 0,
-        skills: worker.skills || [],
-        hourlyRate: worker.hourlyRate || worker.workerProfile?.hourlyRate || 0,
-        location: worker.location,
+        id: canonicalWorker.id,
+        name: canonicalWorker.name,
+        profileImage: canonicalWorker.profilePicture,
+        rating: canonicalWorker.rating || 0,
+        completedJobs: canonicalWorker.totalJobsCompleted || canonicalWorker.completedJobs || 0,
+        skills: canonicalWorker.skills || [],
+        hourlyRate: canonicalWorker.hourlyRate || 0,
+        location: canonicalWorker.location,
         matchScore: matchScore.totalScore,
         matchDetails: matchScore.breakdown,
         matchReasons: matchScore.reasons
@@ -2180,13 +2267,17 @@ function calculateJobMatchScore(job, worker) {
   const jobSkills = collectJobSkills(job);
   const workerSkills = collectWorkerSkills(worker);
 
-  const skillMatches = jobSkills.filter(jobSkill =>
-    workerSkills.some(workerSkill =>
-      jobSkill === workerSkill ||
-      jobSkill.split(/\s+/).every(word => workerSkill.includes(word)) ||
-      workerSkill.split(/\s+/).every(word => jobSkill.includes(word))
-    )
-  );
+  const skillMatches = (jobSkills || []).filter(jobSkill => {
+    const normalizedJobSkill = jobSkill.toLowerCase().trim();
+    return (workerSkills || []).some(workerSkill => {
+      const normalizedWorkerSkill = workerSkill.toLowerCase().trim();
+      if (normalizedJobSkill === normalizedWorkerSkill) return true;
+      const jobWords = normalizedJobSkill.split(/\s+/);
+      const workerWords = normalizedWorkerSkill.split(/\s+/);
+      if (jobWords.length < 2 && workerWords.length < 2) return false;
+      return jobWords.every(w => workerWords.includes(w)) || workerWords.every(w => jobWords.includes(w));
+    });
+  });
 
   const skillScore = jobSkills.length > 0
     ? (skillMatches.length / jobSkills.length) * 40
@@ -2198,7 +2289,7 @@ function calculateJobMatchScore(job, worker) {
     reasons.push(`${skillMatches.length}/${jobSkills.length} skill matches`);
   }
 
-  // Location matching (25% weight) - handle both structured and string locations
+  // Location matching (25% weight) - distance-based with string fallback
   let locationScore = 0;
   const jobLoc = job.locationDetails || job.location || {};
   const workerLoc = worker.locationDetails || worker.location || {};
@@ -2210,39 +2301,79 @@ function calculateJobMatchScore(job, worker) {
   const jobRegion = jobLocation.region;
   const workerRegion = workerLocation.region;
 
-  if (jobCity && workerCity && jobCity === workerCity) {
+  // Try geographic distance first (most accurate)
+  const jobCoords = extractCoordinates(job);
+  const workerCoords = extractCoordinates(worker);
+
+  if (jobCoords && workerCoords) {
+    const distanceKm = haversineDistance(jobCoords.lat, jobCoords.lng, workerCoords.lat, workerCoords.lng);
+    if (distanceKm <= 5) {
+      locationScore = 25;
+      reasons.push(`Very close (${Math.round(distanceKm)}km away)`);
+    } else if (distanceKm <= 15) {
+      locationScore = 22;
+      reasons.push(`Nearby (${Math.round(distanceKm)}km away)`);
+    } else if (distanceKm <= 30) {
+      locationScore = 18;
+      reasons.push(`In your area (${Math.round(distanceKm)}km away)`);
+    } else if (distanceKm <= 50) {
+      locationScore = 15;
+      reasons.push(`Reachable (${Math.round(distanceKm)}km away)`);
+    } else if (distanceKm <= 100) {
+      locationScore = 10;
+      reasons.push(`Same broader area (${Math.round(distanceKm)}km)`);
+    } else if (jobRegion && workerRegion && jobRegion === workerRegion) {
+      locationScore = 8;
+      reasons.push('Same region but far');
+    } else {
+      locationScore = 3;
+    }
+  } else if (job.location?.type === 'remote' || job.locationType === 'remote') {
+    locationScore = 20;
+    reasons.push('Remote-friendly job');
+  } else if (jobCity && workerCity && jobCity === workerCity) {
     locationScore = 25;
     reasons.push('Same city');
   } else if (jobRegion && workerRegion && jobRegion === workerRegion) {
     locationScore = 15;
     reasons.push('Same region');
-  } else if (job.location?.type === 'remote') {
-    locationScore = 20;
-    reasons.push('Remote-friendly job');
   }
   breakdown.location = locationScore;
   totalScore += locationScore;
 
-  // Budget compatibility (20% weight) - use duration field properly
+  // Budget compatibility (20% weight) - currency-aware with duration
   let budgetScore = 0;
   const workerHourlyRate = Number(worker.hourlyRate || worker.workerProfile?.hourlyRate || 0);
-  if (job.budget && workerHourlyRate > 0) {
+  const jobCurrency = (job.currency || 'GHS').toUpperCase();
+  const workerCurrency = (worker.currency || worker.workerProfile?.currency || 'GHS').toUpperCase();
+  const currencyMatch = jobCurrency === workerCurrency;
+
+  if (job.budget && workerHourlyRate > 0 && currencyMatch) {
     if (job.paymentType === 'fixed' || !job.paymentType) {
-      // For fixed-price jobs, compare budget directly to worker's minimum acceptable fixed rate
-      // Use hourlyRate * 8 as minimum day rate proxy
-      const workerDayRate = workerHourlyRate * 8;
-      if (workerDayRate > 0 && job.budget > 0) {
-        const budgetRatio = job.budget / workerDayRate;
-        if (budgetRatio >= 1.0) budgetScore = 20;
-        else if (budgetRatio >= 0.5) budgetScore = 12;
-        else budgetScore = 5;
+      let estimatedHours = 8; // default: one day
+      if (job.duration?.value) {
+        const unit = (job.duration.unit || 'day').toLowerCase();
+        if (unit === 'hour') estimatedHours = job.duration.value;
+        else if (unit === 'day') estimatedHours = job.duration.value * 8;
+        else if (unit === 'week') estimatedHours = job.duration.value * 40;
+        else if (unit === 'month') estimatedHours = job.duration.value * 160;
+      }
+      const expectedCost = workerHourlyRate * estimatedHours;
+      const budgetRatio = expectedCost > 0 ? job.budget / expectedCost : 0;
+      if (budgetRatio >= 1.0) {
+        budgetScore = 20;
+        reasons.push('Budget exceeds your rate');
+      } else if (budgetRatio >= 0.7) {
+        budgetScore = 14;
+        reasons.push('Budget compatible');
+      } else if (budgetRatio >= 0.5) {
+        budgetScore = 10;
+        reasons.push('Budget close match');
       } else {
-        budgetScore = 3;
+        budgetScore = 5;
       }
     } else {
-      // Hourly job: compare budget to worker cost based on duration
-      // Parse duration from job schema: { value: Number, unit: String }
-      let estimatedHours = 40; // default fallback
+      let estimatedHours = 40;
       if (job.duration && job.duration.value) {
         const unit = (job.duration.unit || 'hour').toLowerCase();
         if (unit === 'hour' || unit === 'hours') estimatedHours = job.duration.value;
@@ -2267,8 +2398,10 @@ function calculateJobMatchScore(job, worker) {
         budgetScore = 5;
       }
     }
+  } else if (!currencyMatch && job.budget && workerHourlyRate > 0) {
+    budgetScore = 2; // Minimal score for currency mismatch
   } else if (workerHourlyRate <= 0) {
-    budgetScore = 3; // Low score for incomplete profile - encourages setting rate
+    budgetScore = 3; // Low score for incomplete profile
   }
   breakdown.budget = budgetScore;
   totalScore += budgetScore;
@@ -2807,7 +2940,7 @@ const getMyAssignedJobs = async (req, res, next) => {
     // totalEarnings from job.payment.amount instead of falling back to 0.
     const [jobs, total] = await Promise.all([
       Job.find(query)
-        .populate('hirer', 'firstName lastName profileImage')
+        .populate('hirer', 'firstName lastName profilePicture profileImage')
         .populate('payment', 'amount status paidAt currency')
         .skip(startIndex)
         .limit(limit)
@@ -3278,7 +3411,7 @@ const getJobsByLocation = async (req, res, next) => {
 
     // Use Mongoose syntax (NOT Sequelize)
     const jobs = await Job.find(query)
-      .populate('hirer', 'firstName lastName profilePicture')
+      .populate('hirer', 'firstName lastName profilePicture profileImage')
       .skip(offset)
       .limit(limit)
       .sort({ createdAt: -1 })
@@ -3302,7 +3435,7 @@ const getJobsBySkill = async (req, res, next) => {
 
     const jobs = await Job.findBySkill(skill)
       .where({ status: 'open', visibility: 'public' })
-      .populate('hirer', 'firstName lastName profilePicture')
+      .populate('hirer', 'firstName lastName profilePicture profileImage')
       .skip(offset)
       .limit(limit)
       .sort({ createdAt: -1 })
@@ -3339,7 +3472,7 @@ const getJobsByPerformanceTier = async (req, res, next) => {
 
     const jobs = await Job.findByPerformanceTier(tier)
       .where({ status: 'open', visibility: 'public' })
-      .populate('hirer', 'firstName lastName profilePicture')
+      .populate('hirer', 'firstName lastName profilePicture profileImage')
       .skip(offset)
       .limit(limit)
       .sort({ createdAt: -1 });
@@ -3359,48 +3492,37 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
 
-    // Get user performance data
-    const userPerformance = await UserPerformance.findOne({ userId });
-    if (!userPerformance) {
-      return successResponse(
-        res,
-        200,
-        'Complete your profile and start working to get personalized recommendations',
-        {
-          jobs: [],
-          pagination: {
-            page,
-            limit,
-            total: 0,
-            totalPages: 1,
-          },
-          totalRecommendations: 0,
-          averageMatchScore: 0,
-          isNewUser: true,
-        },
-        {
-          recommendationSource: 'profile-incomplete',
-          contract: 'mobile-recommendations-v1',
-        },
-      );
+    const [workerContext, userPerformance] = await Promise.all([
+      getCanonicalWorkerContext(userId),
+      UserPerformance.findOne({ userId }).lean(),
+    ]);
+
+    if (!workerContext?.worker) {
+      return errorResponse(res, 403, 'Only workers can access personalized job recommendations');
     }
 
-    // Get user's skills with null guards
-    const primarySkills = (userPerformance.skillVerification?.primarySkills || [])
+    const canonicalWorker = workerContext.worker;
+
+    const performancePrimarySkills = (userPerformance?.skillVerification?.primarySkills || [])
       .filter(skill => skill.verified)
       .map(skill => skill.skill);
 
-    const secondarySkills = (userPerformance.skillVerification?.secondarySkills || [])
+    const performanceSecondarySkills = (userPerformance?.skillVerification?.secondarySkills || [])
       .filter(skill => skill.verified)
       .map(skill => skill.skill);
 
-    const allSkills = [...primarySkills, ...secondarySkills];
+    const canonicalSkills = collectWorkerSkills(canonicalWorker);
+    const allSkills = Array.from(new Set([
+      ...canonicalSkills,
+      ...performancePrimarySkills,
+      ...performanceSecondarySkills,
+    ]));
 
     if (allSkills.length === 0) {
       return successResponse(
         res,
         200,
-        'No skills found for recommendations',
+        'Complete your profile and add skills to get personalized recommendations',
         {
           jobs: [],
           pagination: {
@@ -3411,9 +3533,10 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
           },
           totalRecommendations: 0,
           averageMatchScore: 0,
+          isNewUser: !userPerformance,
         },
         {
-          recommendationSource: 'skills-missing',
+          recommendationSource: userPerformance ? 'skills-missing' : 'profile-incomplete',
           contract: 'mobile-recommendations-v1',
         },
       );
@@ -3427,52 +3550,58 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
         { skills: { $in: allSkills } }
       ],
       status: { $in: ['open', 'Open'] },
+      $or: [
+        { expiresAt: { $exists: false } },
+        { expiresAt: null },
+        { expiresAt: { $gt: new Date() } },
+      ],
+      $and: [
+        {
+          $or: [
+            { visibility: 'public' },
+            { visibility: { $exists: false } },
+            { visibility: null },
+          ],
+        },
+      ],
       'bidding.bidStatus': 'open'
     })
-      .populate('hirer', 'firstName lastName profilePicture')
+      .populate('hirer', 'firstName lastName profilePicture profileImage rating totalJobsPosted companyName businessName')
       .sort({ createdAt: -1 })
       .limit(200) // reasonable cap for scoring
       .lean();
 
     // Calculate match scores for each job with null guards
     const jobsWithScores = candidateJobs.map(job => {
-      let score = 0;
+      const baseScore = calculateJobMatchScore(job, canonicalWorker);
+      let score = baseScore.totalScore;
 
-      // Skill matching (40% weight) - proportional
-      const jobPrimarySkills = job.requirements?.primarySkills || [];
-      const jobSecondarySkills = job.requirements?.secondarySkills || [];
-      const primaryMatched = jobPrimarySkills.filter(skill => primarySkills.includes(skill)).length;
-      const secondaryMatched = jobSecondarySkills.filter(skill => secondarySkills.includes(skill)).length;
-
-      if (jobPrimarySkills.length > 0) {
-        score += (primaryMatched / jobPrimarySkills.length) * 40;
-      }
-      if (jobSecondarySkills.length > 0) {
-        score += (secondaryMatched / jobSecondarySkills.length) * 20;
-      }
-
-      // Location matching (30% weight) with null guard
       const jobRegion = job.locationDetails?.region;
-      const userRegion = userPerformance.locationPreferences?.primaryRegion;
-      if (userRegion && jobRegion && userRegion === jobRegion) {
-        score += 30;
+      const workerRegion = readLocationParts(canonicalWorker.location).region;
+      const preferredRegion = userPerformance?.locationPreferences?.primaryRegion;
+
+      if (preferredRegion && jobRegion && preferredRegion === jobRegion) {
+        score += 8;
+      } else if (workerRegion && jobRegion && workerRegion === String(jobRegion).trim().toLowerCase()) {
+        score += 5;
       }
 
-      // Performance tier matching (20% weight)
-      if (userPerformance.performanceTier && userPerformance.performanceTier === job.performanceTier) {
-        score += 20;
+      if (userPerformance?.performanceTier && userPerformance.performanceTier === job.performanceTier) {
+        score += 6;
       }
 
-      // Recent job bonus (10% weight)
       const daysSincePosted = Math.floor((Date.now() - new Date(job.createdAt).getTime()) / (1000 * 60 * 60 * 24));
       if (daysSincePosted <= 3) score += 10;
       else if (daysSincePosted <= 7) score += 5;
 
-      // Normalize score to 0-100 scale (max depends on whether job has secondary skills)
-      const maxPossibleScore = 40 + (jobSecondarySkills.length > 0 ? 20 : 0) + 30 + 20 + 10;
-      score = Math.round((score / maxPossibleScore) * 100);
+      score = Math.max(0, Math.min(100, Math.round(score)));
 
-      return { ...job, matchScore: Math.round(score) };
+      return {
+        ...job,
+        matchScore: score,
+        matchBreakdown: baseScore.breakdown,
+        matchReasons: baseScore.reasons,
+      };
     });
 
     // Sort ALL by match score FIRST, THEN paginate
@@ -3483,21 +3612,25 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
     const paginatedJobs = jobsWithScores.slice(offset, offset + limit);
 
     const recommendationItems = paginatedJobs.map((job) => {
-      const matchedPrimarySkills = (job.requirements?.primarySkills || []).filter((skill) => primarySkills.includes(skill));
-      const matchedSecondarySkills = (job.requirements?.secondarySkills || []).filter((skill) => secondarySkills.includes(skill));
+      const matchedPrimarySkills = (job.requirements?.primarySkills || []).filter((skill) => allSkills.includes(skill));
+      const matchedSecondarySkills = (job.requirements?.secondarySkills || []).filter((skill) => allSkills.includes(skill));
       const reasons = [
-        matchedPrimarySkills.length > 0 ? `Matched ${matchedPrimarySkills.length} verified primary skill${matchedPrimarySkills.length > 1 ? 's' : ''}` : null,
+        matchedPrimarySkills.length > 0 ? `Matched ${matchedPrimarySkills.length} core skill${matchedPrimarySkills.length > 1 ? 's' : ''}` : null,
         matchedSecondarySkills.length > 0 ? `Matched ${matchedSecondarySkills.length} supporting skill${matchedSecondarySkills.length > 1 ? 's' : ''}` : null,
-        userPerformance.locationPreferences?.primaryRegion && userPerformance.locationPreferences.primaryRegion === job.locationDetails?.region
+        userPerformance?.locationPreferences?.primaryRegion && userPerformance.locationPreferences.primaryRegion === job.locationDetails?.region
           ? `Matches your preferred region: ${job.locationDetails?.region}`
+          : null,
+        !userPerformance && canonicalWorker.profession
+          ? `Ranked using your worker profile as a ${canonicalWorker.profession}`
           : null,
       ].filter(Boolean);
 
       return {
         ...transformJobForFrontend(job),
         matchScore: Math.max(0, Math.min(100, Number(job.matchScore) || 0)),
+        matchBreakdown: job.matchBreakdown,
         aiReasoning: reasons[0] || 'Ranked from your verified skills, location, and recent performance signals.',
-        aiReasons: reasons,
+        aiReasons: Array.from(new Set([...(job.matchReasons || []), ...reasons])),
         recommendationSource: 'personalized',
       };
     });
@@ -3526,7 +3659,7 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
         averageMatchScore,
       },
       {
-        recommendationSource: 'user-performance',
+        recommendationSource: userPerformance ? 'user-performance' : 'worker-profile',
         matchedSkills: allSkills.slice(0, 5),
         contract: 'mobile-recommendations-v1',
       },

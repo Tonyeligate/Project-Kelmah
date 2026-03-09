@@ -41,11 +41,11 @@ const searchService = {
    */
   searchWorkers: async (params = {}) => {
     try {
-      const response = await api.get('/search/workers', {
+      const response = await api.get('/users/workers/search', {
         params,
       });
       const payload = unwrapPayload(response);
-      return payload?.results || payload?.workers || payload || [];
+      return payload?.workers || payload?.items || payload?.results || payload || [];
     } catch (error) {
       if (import.meta.env.DEV) console.error('Worker search error:', error);
       throw error;

@@ -62,9 +62,9 @@ router.get("/", verifyGatewayRequest, authorizeRoles('admin'), getAllUsers);
 router.post("/", verifyGatewayRequest, authorizeRoles('admin'), createLimiter('admin'), createUser);
 
 // Dashboard routes - Protected with gateway authentication
-router.get("/dashboard/metrics", verifyGatewayRequest, getDashboardMetrics);
-router.get("/dashboard/workers", verifyGatewayRequest, getDashboardWorkers);
-router.get("/dashboard/analytics", verifyGatewayRequest, getDashboardAnalytics);
+router.get("/dashboard/metrics", verifyGatewayRequest, authorizeRoles('admin'), getDashboardMetrics);
+router.get("/dashboard/workers", verifyGatewayRequest, authorizeRoles('admin'), getDashboardWorkers);
+router.get("/dashboard/analytics", verifyGatewayRequest, authorizeRoles('admin'), getDashboardAnalytics);
 
 // Database cleanup endpoint (protected — admin only)
 router.post("/database/cleanup", verifyGatewayRequest, authorizeRoles('admin'), cleanupDatabase);
@@ -81,7 +81,7 @@ router.get("/workers/jobs/recent", verifyGatewayRequest, (req, res, next) => {
 
 // 🔥 FIX: Worker search and list routes MUST come BEFORE parameterized /:id routes
 // to prevent "/workers/search" being matched as "/workers/:id" where id="search"
-router.get('/workers/search/location', (req, res, next) => {
+router.get('/workers/search/location', optionalGatewayVerification, (req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     logger.debug('✅ [USER-ROUTES] /workers/search/location route hit (alias → searchWorkers):', {
       query: req.query,
@@ -91,7 +91,7 @@ router.get('/workers/search/location', (req, res, next) => {
   next();
 }, WorkerController.searchWorkers);
 
-router.get('/workers/search', (req, res, next) => {
+router.get('/workers/search', optionalGatewayVerification, (req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     logger.debug('✅ [USER-ROUTES] /workers/search route hit:', {
       query: req.query,
@@ -101,7 +101,7 @@ router.get('/workers/search', (req, res, next) => {
   next();
 }, WorkerController.searchWorkers);
 
-router.get('/workers', (req, res, next) => {
+router.get('/workers', optionalGatewayVerification, (req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     logger.debug('✅ [USER-ROUTES] /workers route hit:', {
       query: req.query,
