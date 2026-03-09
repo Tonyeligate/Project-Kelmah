@@ -4,6 +4,18 @@
  */
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
+const firstForwardedValue = (value) => {
+  if (Array.isArray(value)) {
+    return value[0] || null;
+  }
+
+  if (typeof value === 'string') {
+    return value.split(',')[0].trim() || null;
+  }
+
+  return null;
+};
+
 /**
  * Create a proxy middleware for a service
  * @param {Object} options - Proxy options
@@ -134,6 +146,16 @@ const createServiceProxy = (options) => {
       }
     },
     onProxyReq: (proxyReq, req, res) => {
+      const forwardedProto = firstForwardedValue(req.headers['x-forwarded-proto'])
+        || req.protocol
+        || 'https';
+      const forwardedHost = firstForwardedValue(req.headers['x-forwarded-host'])
+        || firstForwardedValue(req.headers.host);
+
+      if (forwardedHost) {
+        proxyReq.setHeader('x-gateway-origin', `${forwardedProto}://${forwardedHost}`);
+      }
+
       // Forward user information to services (serviceTrust format).
       // IMPORTANT: use the exact string already set by authenticate() in req.headers so
       // that the x-gateway-signature HMAC stays consistent — never re-serialize req.user

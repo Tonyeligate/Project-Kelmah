@@ -49,6 +49,20 @@
 - `get_errors` returned no diagnostics for `kelmah-backend/services/user-service/controllers/user.controller.js`.
 - `node --check kelmah-backend/services/user-service/controllers/user.controller.js` passed.
 
+**Post-redeploy live findings**
+- `GET /api/bids/me?limit=5` now returns `200`, confirming the bid self-service route rollout is live.
+- `GET /api/bids/stats/me` now returns `200`, confirming the worker bid stats self-route is also live.
+- `GET /api/users/workers/6892b8f766a1e818f0c46151/earnings` returns `200`, but the payload source is `fallback-missing-payment-host`, which isolates the remaining earnings issue to upstream host resolution inside user-service.
+- Direct gateway `GET /api/payments/transactions/history?...` still returns `200`, so payment history is reachable through the gateway even though user-service cannot currently discover that host in production.
+
+**Root-cause fix for earnings fallback**
+- Updated `kelmah-backend/api-gateway/proxy/serviceProxy.js` to forward a stable `x-gateway-origin` header to downstream services based on the active gateway host/protocol.
+- Updated `kelmah-backend/services/user-service/controllers/user.controller.js#getEarnings` to derive `gatewayBase` from `API_GATEWAY_URL`, then `x-gateway-origin`, then forwarded host/proto headers, and to propagate `X-Request-ID` to payment history calls for cross-service tracing.
+
+**Validation**
+- `get_errors` returned no diagnostics for `kelmah-backend/api-gateway/proxy/serviceProxy.js` and `kelmah-backend/services/user-service/controllers/user.controller.js`.
+- `node --check` passed for both edited backend files.
+
 ### Session: Native Mobile Match Hardening And Contract Cleanup ✅ COMPLETED
 
 **Date**: March 9, 2026  
@@ -192,7 +206,7 @@
 
 ---
 
-### Session: Worker Earnings 5xx Investigation 🔄 SECOND PATCH READY, DEPLOYMENT PENDING
+### Session: Worker Earnings 5xx Investigation ✅ COMPLETED
 
 **Date**: March 9, 2026  
 **Scope**: Trace the deployed worker earnings analytics failure on `/worker/earnings`, reproduce the live 5xx through the Render gateway, and fix any confirmed backend timeout/path issues in the user-service earnings endpoint.
@@ -235,6 +249,8 @@
 - `GET /api/health/aggregate` from the deployed gateway reports the payment service as healthy, reinforcing that the timeout is in the user-service earnings flow rather than the payment route itself.
 - `node --check kelmah-backend/services/user-service/controllers/user.controller.js` is still blocked by a pre-existing duplicate declaration elsewhere in the file (`buildProfileActivity`), unrelated to this earnings patch.
 - After confirming `main` already contained the first earnings patch, a fresh redeploy trigger was pushed and production was re-tested; the earnings endpoint still hung for 30 seconds while payment history continued returning `200`, which indicates the remaining live stall happens before the payment-history branch executes.
+- After the full Render redeploy, the same authenticated probe now returns `200 OK` immediately for `GET /api/users/workers/6892b8f766a1e818f0c46151/earnings` with `source: "fallback-missing-payment-host"`, while `GET /api/payments/transactions/history` still returns `200` as a healthy control.
+- Current live behavior confirms the 504/502 outage is resolved. The remaining non-blocking gap is configuration quality: the deployed user service is not seeing a payment host env at runtime, so it serves synthesized earnings totals instead of derived payment-history totals.
 
 
 ### Session: Dashboard Activity Truthfulness And Envelope Normalization ✅ COMPLETED

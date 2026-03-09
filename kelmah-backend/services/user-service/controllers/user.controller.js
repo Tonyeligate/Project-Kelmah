@@ -828,6 +828,42 @@ const resolveRequestId = (req) => (
   null
 );
 
+const firstHeaderValue = (value) => {
+  if (Array.isArray(value)) {
+    return value[0] || null;
+  }
+
+  if (typeof value === 'string') {
+    return value.split(',')[0].trim() || null;
+  }
+
+  return null;
+};
+
+const resolveGatewayBase = (req) => {
+  const explicitGatewayBase = process.env.API_GATEWAY_URL
+    ? process.env.API_GATEWAY_URL.replace(/\/$/, '')
+    : null;
+
+  if (explicitGatewayBase) {
+    return explicitGatewayBase;
+  }
+
+  const proxiedGatewayOrigin = firstHeaderValue(req?.headers?.['x-gateway-origin']);
+  if (proxiedGatewayOrigin) {
+    return proxiedGatewayOrigin.replace(/\/$/, '');
+  }
+
+  const forwardedProto = firstHeaderValue(req?.headers?.['x-forwarded-proto']) || null;
+  const forwardedHost = firstHeaderValue(req?.headers?.['x-forwarded-host']) || null;
+
+  if (forwardedProto && forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`.replace(/\/$/, '');
+  }
+
+  return null;
+};
+
 const summarizeEndpointForTrace = (endpoint) => {
   if (!endpoint) return null;
 
@@ -1116,9 +1152,7 @@ exports.getEarnings = async (req, res) => {
     const paymentServiceBase = process.env.PAYMENT_SERVICE_URL
       ? process.env.PAYMENT_SERVICE_URL.replace(/\/$/, '')
       : null;
-    const gatewayBase = process.env.API_GATEWAY_URL
-      ? process.env.API_GATEWAY_URL.replace(/\/$/, '')
-      : null;
+    const gatewayBase = resolveGatewayBase(req);
 
     const candidateEndpoints = [];
     if (gatewayBase) {
@@ -1153,6 +1187,8 @@ exports.getEarnings = async (req, res) => {
       const axios = require('axios');
       const headers = {};
       if (req.headers.authorization) headers.Authorization = req.headers.authorization;
+      const requestId = resolveRequestId(req);
+      if (requestId) headers['X-Request-ID'] = requestId;
       const requestTimeoutMs = 2500;
       const since30Date = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
       const since7Date = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -1254,6 +1290,8 @@ exports.getEarnings = async (req, res) => {
       logEarningsTrace(req, {
         stage: 'post-payment-fetch',
         effectiveUserId: userId,
+        gatewayBase,
+        paymentServiceBase,
         paymentSourceEndpoint: paymentFetchResult.sourceEndpoint,
         paymentSourceStatus: paymentFetchResult.sourceStatus,
         paymentAttemptCount: paymentFetchResult.attempts.length,
