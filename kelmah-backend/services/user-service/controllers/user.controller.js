@@ -820,6 +820,33 @@ const resolveRequesterId = (req) => {
   return req?.user?.id || req?.user?._id || null;
 };
 
+const resolveRequestId = (req) => (
+  req?.requestId ||
+  req?.id ||
+  req?.headers?.['x-request-id'] ||
+  req?.headers?.['X-Request-ID'] ||
+  null
+);
+
+const summarizeEndpointForTrace = (endpoint) => {
+  if (!endpoint) return null;
+
+  try {
+    const parsed = new URL(endpoint);
+    return `${parsed.origin}${parsed.pathname}`;
+  } catch (_) {
+    return endpoint;
+  }
+};
+
+const logEarningsTrace = (req, details = {}) => {
+  logger.info('getEarnings trace', {
+    requestId: resolveRequestId(req),
+    userId: details.effectiveUserId || details.userId || resolveRequesterId(req),
+    ...details,
+  });
+};
+
 exports.toggleBookmark = async (req, res) => {
   try {
     const userId = resolveRequesterId(req);
@@ -944,6 +971,15 @@ exports.getEarnings = async (req, res) => {
     const userId = (currentRole === 'admin' && requestedId) ? requestedId : currentUserId;
     if (!userId) return res.status(400).json({ success: false, message: 'workerId required' });
 
+    logEarningsTrace(req, {
+      stage: 'entry',
+      requestedId: requestedId || null,
+      effectiveUserId: userId,
+      requesterUserId: currentUserId || null,
+      requesterRole: currentRole || null,
+      hasAuthorizationHeader: Boolean(req.headers.authorization),
+    });
+
     const workerModel = getWorkerProfileModel();
 
     if (!workerModel) {
@@ -987,7 +1023,7 @@ exports.getEarnings = async (req, res) => {
         );
         timedLookupError.code = 'WORKER_PROFILE_LOOKUP_TIMEOUT';
 
-        return await Promise.race([
+        const worker = await Promise.race([
           workerModel.findOne({ userId })
             .maxTimeMS(workerLookupTimeoutMs)
             .lean({ getters: true }),
@@ -995,6 +1031,11 @@ exports.getEarnings = async (req, res) => {
             setTimeout(() => reject(timedLookupError), workerLookupTimeoutMs);
           }),
         ]);
+
+        return {
+          worker,
+          lookupSource: 'mongoose',
+        };
       } catch (error) {
         const canFallbackToNative = isBsonVersionMismatch(error)
           || error?.code === 'WORKER_PROFILE_LOOKUP_TIMEOUT'
@@ -1012,18 +1053,46 @@ exports.getEarnings = async (req, res) => {
         });
 
         try {
-          return await fetchWorkerProfileNative();
+          const worker = await fetchWorkerProfileNative();
+          return {
+            worker,
+            lookupSource: 'native-driver',
+            fallbackReason: error?.code || error?.message || 'unknown',
+          };
         } catch (nativeError) {
           logger.warn('getEarnings: native WorkerProfile lookup failed, using synthesized totals', {
             message: nativeError?.message,
             code: nativeError?.code,
           });
-          return null;
+          return {
+            worker: null,
+            lookupSource: 'native-driver-failed',
+            fallbackReason: error?.code || error?.message || 'unknown',
+            nativeErrorCode: nativeError?.code || null,
+          };
         }
       }
     };
 
-    const worker = await resolveWorkerProfile();
+    const {
+      worker,
+      lookupSource = 'unknown',
+      fallbackReason = null,
+      nativeErrorCode = null,
+    } = await resolveWorkerProfile();
+
+    logEarningsTrace(req, {
+      stage: 'post-worker-lookup',
+      effectiveUserId: userId,
+      lookupSource,
+      workerFound: Boolean(worker),
+      workerProfileId: worker?._id?.toString?.() || worker?._id || null,
+      fallbackReason,
+      nativeErrorCode,
+      workerCurrency: worker?.currency || null,
+      workerTotalEarnings: Number(worker?.totalEarnings ?? worker?.successStats?.lifetimeEarnings ?? 0),
+    });
+
     if (!worker) {
       logger.warn('getEarnings: worker profile missing, returning synthesized totals');
       const fallbackTotals = buildEarningsFallback(0);
@@ -1103,6 +1172,8 @@ exports.getEarnings = async (req, res) => {
       };
 
       const fetchTransactions = async (from) => {
+        const attempts = [];
+
         for (const endpoint of uniqueCandidateEndpoints) {
           const controller = typeof AbortController === 'function'
             ? new AbortController()
@@ -1124,14 +1195,39 @@ exports.getEarnings = async (req, res) => {
 
             const transactions = extractTransactions(response?.data);
             if (Array.isArray(transactions)) {
-              return transactions;
+              attempts.push({
+                endpoint: summarizeEndpointForTrace(endpoint),
+                outcome: 'success',
+                status: response?.status || null,
+                transactionCount: transactions.length,
+              });
+
+              return {
+                transactions,
+                attempts,
+                sourceEndpoint: summarizeEndpointForTrace(endpoint),
+                sourceStatus: response?.status || null,
+              };
             }
+
+            attempts.push({
+              endpoint: summarizeEndpointForTrace(endpoint),
+              outcome: 'non-array-response',
+              status: response?.status || null,
+            });
 
             logger.warn('Payment history response did not contain a transaction array', {
               endpoint,
               status: response?.status,
             });
           } catch (error) {
+            attempts.push({
+              endpoint: summarizeEndpointForTrace(endpoint),
+              outcome: 'request-failed',
+              status: error?.response?.status || null,
+              code: error?.code || null,
+            });
+
             logger.warn('Payment history request failed', {
               endpoint,
               message: error?.message,
@@ -1144,10 +1240,27 @@ exports.getEarnings = async (req, res) => {
           }
         }
 
-        return null;
+        return {
+          transactions: null,
+          attempts,
+          sourceEndpoint: null,
+          sourceStatus: null,
+        };
       };
 
-      const tx30 = await fetchTransactions(since30);
+      const paymentFetchResult = await fetchTransactions(since30);
+      const tx30 = paymentFetchResult.transactions;
+
+      logEarningsTrace(req, {
+        stage: 'post-payment-fetch',
+        effectiveUserId: userId,
+        paymentSourceEndpoint: paymentFetchResult.sourceEndpoint,
+        paymentSourceStatus: paymentFetchResult.sourceStatus,
+        paymentAttemptCount: paymentFetchResult.attempts.length,
+        paymentAttempts: paymentFetchResult.attempts,
+        paymentTransactionCount: Array.isArray(tx30) ? tx30.length : 0,
+      });
+
       if (!tx30) {
         logger.warn('getEarnings: payment service unreachable, using fallback values');
         return respondWith(fallbackTotals, 'fallback-payment-timeout');

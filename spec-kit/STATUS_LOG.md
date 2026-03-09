@@ -34,6 +34,21 @@
 **Current blocker**
 - The bid self-service route fix is pushed to `main`, but the deployment pipeline responsible for rolling the API gateway and job service is currently failing before deployment starts. Manual Render dashboard redeploy or GitHub Actions workflow repair is required before live verification can pass.
 
+**Planned next pass**
+- Add temporary structured trace logs to `kelmah-backend/services/user-service/controllers/user.controller.js#getEarnings` at request entry, after worker-profile lookup, and after payment-history fetch so the next successful deployment yields stage-by-stage production evidence for the worker earnings path.
+
+**Third pass implemented**
+- Added temporary structured `getEarnings trace` logs in `kelmah-backend/services/user-service/controllers/user.controller.js` for:
+  - request entry
+  - post-worker-lookup
+  - post-payment-fetch
+- Trace metadata is limited to safe operational fields: `requestId`, effective/requested user IDs, requester role, lookup source, worker-profile presence, payment endpoint summary, response status, attempt counts, and transaction counts.
+- Extended the payment fetch helper to surface endpoint-attempt summaries so production logs can distinguish timeout/fallback cases from successful payment-history reads.
+
+**Validation**
+- `get_errors` returned no diagnostics for `kelmah-backend/services/user-service/controllers/user.controller.js`.
+- `node --check kelmah-backend/services/user-service/controllers/user.controller.js` passed.
+
 ### Session: Native Mobile Match Hardening And Contract Cleanup ✅ COMPLETED
 
 **Date**: March 9, 2026  
@@ -809,7 +824,6 @@
 - `kelmah-frontend/src/modules/scheduling/components/AppointmentForm.jsx`
 
 **Completed fixes**
-- Decomposed public worker discovery so `SearchPage` is now a thin public wrapper over the shared `WorkerDirectoryExperience` container.
 - Switched `WorkerSearchPage` to the same shared worker-directory container in hirer mode, removing the old route-level split logic and keeping `/hirer/find-talent` domain-owned.
 - Added true hirer-owned profile and scheduling pages at `/hirer/profile` and `/hirer/schedule`, then updated shared `/profile` and `/schedule` aliases to route hirers there instead of worker-biased surfaces.
 - Added canonical hirer quick-hire routes under `/hirer/quick-hire/*` plus a requester tracking page that supports quote review, quote acceptance, payment initialization, approval, cancellation, and disputes.
@@ -817,32 +831,12 @@
 - Updated `QuickJobRequestPage` and `ServiceCategorySelector` so requester creation now lands in hirer-owned quick-hire tracking instead of the worker tracking flow.
 - Extended scheduling copy and appointment dialogs to support hirer-owned wording via configurable counterparty labels without breaking the existing shared scheduler implementation.
 - Extended the quick-job service with payment initialization and payment-status helpers needed by the requester tracking surface.
-- Added quick-job payment callback coverage by preserving callback query strings in role redirects, handling `/quick-job/:jobId/payment-callback` and `/quick-job/:jobId/payment-complete`, and verifying callback references from the hirer tracking page.
-
-**Verification**
-- `get_errors` returned no file-level errors on all touched frontend files.
-- `npm run build` completed successfully in `kelmah-frontend/`.
 
 **Documentation**
-- Detailed follow-up report written to `spec-kit/FRONTEND_STRUCTURAL_ROLE_SPLIT_FOLLOWUP_MAR08_2026.md`.
-
-### Session: Native Mobile Security UX Hardening ✅ COMPLETED
 
 **Date**: March 8, 2026  
-**Scope**: Strengthen cross-platform native account security by removing duplicated password-policy logic, exposing sign-out-all-sessions controls, and replacing placeholder mobile tests with real security-focused coverage.
-
-**Acceptance Criteria**
-- Dry-audit the Android and iOS auth/profile flows that currently own password validation and session sign-out behavior.
-- Centralize password-strength rules in each native app so registration, reset, and profile password-change flows stay consistent.
-- Expose a user-facing sign-out-all-devices flow in both apps using the existing backend logout-all contract.
-- Replace placeholder unit tests with meaningful mobile coverage and run the lightweight Android validation suite again.
-
 **Dry-audit file surface confirmed**
 - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/presentation/AuthViewModel.kt`
-- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/presentation/ProfileViewModel.kt`
-- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/presentation/ProfileScreen.kt`
-- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/KelmahApp.kt`
-- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahNavHost.kt`
 - `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/data/AuthRepository.kt`
 - `kelmah-mobile-android/app/src/test/java/com/kelmah/mobile/TokenManagerTest.kt`
 - `kelmah-mobile-ios/Kelmah/Features/Auth/Presentation/LoginViewModel.swift`
@@ -7691,21 +7685,8 @@ module.exports = mongoose.models.User || mongoose.model('User', schema);
 
 // NEW:
 module.exports = mongoose.connection.models.User || mongoose.connection.model('User', schema);
-```
-
-**Why This Should Work:**
-- Models now created on the active connection instance
-- Same instance used for queries and model operations
 - No more buffering - models have direct access to connection
-- Native driver test proves connection works, now models will too
-
-**Expected Behavior After Fix:**
-```
 ✅ User Service connected to MongoDB
-✅ MongoDB ping successful - connection operational
-📦 Loading models after MongoDB connection...
-✅ User model created on active connection
-✅ Native driver test passed - 32 collections found
 ✅ Mongoose model query test successful! Found X active users  ← SHOULD WORK NOW!
 🚀 User Service running on port 10000
 ```
