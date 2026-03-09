@@ -3,6 +3,8 @@ package com.kelmah.mobile.features.notifications.data
 import com.kelmah.mobile.core.network.ApiResult
 import com.kelmah.mobile.core.session.SessionCoordinator
 import dagger.Lazy
+import java.time.Instant
+import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.serialization.json.JsonArray
@@ -80,7 +82,7 @@ class NotificationsRepository @Inject constructor(
             else -> response.nestedArray("notifications") ?: JsonArray(emptyList())
         }
 
-        return values.mapNotNull { item ->
+        return sortNotificationsByCreatedAt(values.mapNotNull { item ->
             val obj = item as? JsonObject ?: return@mapNotNull null
             val id = obj.string("id") ?: obj.string("_id") ?: return@mapNotNull null
             val relatedEntity = obj.nestedObject("relatedEntity")
@@ -96,8 +98,26 @@ class NotificationsRepository @Inject constructor(
                 relatedEntityType = relatedEntity?.string("type"),
                 relatedEntityId = relatedEntity?.string("id") ?: relatedEntity?.string("_id"),
             )
-        }
+        })
     }
+}
+
+internal fun sortNotificationsByCreatedAt(items: List<NotificationItem>): List<NotificationItem> =
+    items.withIndex()
+        .sortedWith(
+            compareByDescending<IndexedValue<NotificationItem>> { notificationTimestampMillis(it.value.createdAt) ?: Long.MIN_VALUE }
+                .thenBy { it.index },
+        )
+        .map { it.value }
+
+private fun notificationTimestampMillis(raw: String?): Long? {
+    if (raw.isNullOrBlank()) {
+        return null
+    }
+
+    return runCatching { Instant.parse(raw).toEpochMilli() }
+        .recoverCatching { OffsetDateTime.parse(raw).toInstant().toEpochMilli() }
+        .getOrNull()
 }
 
 private fun JsonObject.string(key: String): String? = (this[key] as? JsonPrimitive)?.contentOrNull()

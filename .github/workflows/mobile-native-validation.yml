@@ -22,6 +22,9 @@ concurrency:
   group: native-mobile-validation-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  CI: true
+
 jobs:
   android-validation:
     name: Android build, unit tests, lint
@@ -59,8 +62,21 @@ jobs:
           gradle --version
           gradle testDebugUnitTest assembleDebug lintDebug --stacktrace
 
+      - name: Upload Android validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-native-validation
+          if-no-files-found: warn
+          path: |
+            kelmah-mobile-android/app/build/outputs/apk/debug/*.apk
+            kelmah-mobile-android/app/build/reports/tests/testDebugUnitTest/**
+            kelmah-mobile-android/app/build/test-results/testDebugUnitTest/**
+            kelmah-mobile-android/app/build/reports/lint-results-debug.*
+            kelmah-mobile-android/app/build/reports/lint-results-debug/**
+
   ios-validation:
-    name: iOS XcodeGen build and tests
+    name: iOS build-for-testing and tests
     runs-on: macos-latest
     defaults:
       run:
@@ -84,7 +100,7 @@ jobs:
         id: simulator
         run: |
           set -euo pipefail
-          SIMULATOR_ID=$(xcrun simctl list devices available | grep -E 'iPhone (16|15)' | head -n 1 | sed -E 's/.*\(([0-9A-F-]+)\) \(.*/\1/')
+          SIMULATOR_ID=$(xcrun simctl list devices available | grep -E 'iPhone (16|15|14)' | head -n 1 | sed -E 's/.*\(([0-9A-F-]+)\) \(.*/\1/')
           if [ -z "$SIMULATOR_ID" ]; then
             echo "Unable to find an available iPhone simulator on the runner."
             xcrun simctl list devices available
@@ -92,22 +108,47 @@ jobs:
           fi
           echo "simulator_id=$SIMULATOR_ID" >> "$GITHUB_OUTPUT"
 
-      - name: Run iOS unit tests
+      - name: Build iOS app for testing
         run: |
           set -o pipefail
-          xcodebuild test \
+          xcodebuild build-for-testing \
             -project Kelmah.xcodeproj \
             -scheme Kelmah \
             -destination "id=${{ steps.simulator.outputs.simulator_id }}" \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Run iOS unit tests
+        run: |
+          set -o pipefail
+          xcodebuild test-without-building \
+            -project Kelmah.xcodeproj \
+            -scheme Kelmah \
+            -destination "id=${{ steps.simulator.outputs.simulator_id }}" \
+            -derivedDataPath build/DerivedData \
             -only-testing:KelmahTests \
+            -resultBundlePath build/KelmahTests.xcresult \
             CODE_SIGNING_ALLOWED=NO
 
       - name: Run iOS authentication smoke UI test
         run: |
           set -o pipefail
-          xcodebuild test \
+          xcodebuild test-without-building \
             -project Kelmah.xcodeproj \
             -scheme Kelmah \
             -destination "id=${{ steps.simulator.outputs.simulator_id }}" \
+            -derivedDataPath build/DerivedData \
             -only-testing:KelmahUITests/testAuthenticationShellLoadsAndSupportsModeSwitching \
+            -resultBundlePath build/KelmahUITests.xcresult \
             CODE_SIGNING_ALLOWED=NO
+
+      - name: Upload iOS validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-native-validation
+          if-no-files-found: warn
+          path: |
+            kelmah-mobile-ios/build/KelmahTests.xcresult/**
+            kelmah-mobile-ios/build/KelmahUITests.xcresult/**
+            kelmah-mobile-ios/build/DerivedData/Logs/Test/**

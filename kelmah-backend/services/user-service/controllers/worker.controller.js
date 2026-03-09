@@ -1622,6 +1622,7 @@ class WorkerController {
 
       const [workerDoc, workerProfileDoc] = await Promise.all([
         MongoUser.findById(workerId)
+          .select('-password -passwordResetToken -passwordResetExpires -emailVerificationToken -emailVerificationExpires -phoneVerificationToken -twoFactorSecret -__v')
           .lean()
           .catch((err) => {
             logger.error('❌ Error querying User:', err);
@@ -1959,7 +1960,9 @@ class WorkerController {
       }
 
       const [worker, workerProfile] = await Promise.all([
-        MongoUser.findById(workerId).lean(),
+        MongoUser.findById(workerId)
+          .select('-password -passwordResetToken -passwordResetExpires -emailVerificationToken -emailVerificationExpires -phoneVerificationToken -twoFactorSecret -__v')
+          .lean(),
         MongoWorkerProfile ? MongoWorkerProfile.findOne({ userId: workerId }).lean() : null,
       ]);
 

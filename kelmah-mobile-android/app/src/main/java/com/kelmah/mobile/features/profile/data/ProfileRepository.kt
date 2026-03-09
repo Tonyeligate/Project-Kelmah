@@ -68,7 +68,6 @@ class ProfileRepository @Inject constructor(
             portfolio = parsePortfolio(raw.nestedObject("portfolio")),
         )
     }
-    }
 
     private suspend fun fetchOptional(block: suspend () -> JsonObject): JsonObject? =
         runCatching { block() }.getOrNull()

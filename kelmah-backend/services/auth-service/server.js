@@ -202,6 +202,28 @@ const hasValidInternalAdminKey = (req) => {
   );
 };
 
+// Middleware: require both INTERNAL_API_KEY + valid JWT with admin role
+const requireAdminRole = (req, res, next) => {
+  if (!hasValidInternalAdminKey(req)) {
+    return res.status(403).json({ success: false, message: 'Forbidden: invalid internal key' });
+  }
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ success: false, message: 'Admin JWT required' });
+  }
+  try {
+    const jwtUtils = require('../../shared/utils/jwt');
+    const decoded = jwtUtils.verifyAccessToken(authHeader.substring(7));
+    if (!decoded || !['admin', 'super_admin'].includes(decoded.role)) {
+      return res.status(403).json({ success: false, message: 'Admin role required' });
+    }
+    req.adminUser = decoded;
+    next();
+  } catch (e) {
+    return res.status(401).json({ success: false, message: 'Invalid or expired admin token' });
+  }
+};
+
 // ── Shared admin handler functions ──────────────────────────────────────────
 const adminVerifyUser = async (req, res) => {
   try {
@@ -286,14 +308,14 @@ const adminUnlockAccount = async (req, res) => {
 };
 
 // ── Canonical admin routes (auth-prefix — works behind API Gateway) ────────
-app.post("/api/auth/admin/verify-user", adminVerifyUser);
-app.post("/api/auth/admin/verify-users", adminVerifyUsersBatch);
-app.post("/api/auth/admin/unlock-account", adminUnlockAccount);
+app.post("/api/auth/admin/verify-user", requireAdminRole, adminVerifyUser);
+app.post("/api/auth/admin/verify-users", requireAdminRole, adminVerifyUsersBatch);
+app.post("/api/auth/admin/unlock-account", requireAdminRole, adminUnlockAccount);
 
 // ── Legacy aliases (direct access — same handlers, will be deprecated) ─────
-app.post("/api/admin/verify-user", adminVerifyUser);
-app.post("/api/admin/verify-users-batch", adminVerifyUsersBatch);
-app.post("/api/admin/unlock-account", adminUnlockAccount);
+app.post("/api/admin/verify-user", requireAdminRole, adminVerifyUser);
+app.post("/api/admin/verify-users-batch", requireAdminRole, adminVerifyUsersBatch);
+app.post("/api/admin/unlock-account", requireAdminRole, adminUnlockAccount);
 
 // Removed temporary job proxy routes; API Gateway should route to job-service
 

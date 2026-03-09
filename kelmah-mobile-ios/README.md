@@ -28,6 +28,8 @@ Native iOS app root.
 - GitHub Actions workflow `.github/workflows/mobile-native-validation.yml` now generates the Xcode project with XcodeGen on a macOS runner.
 - Remote validation runs `KelmahTests` plus the auth-shell smoke UI test so iOS can be build/test checked even when local development happens on Windows.
 - The workflow also pairs this with Android build, unit-test, and lint validation for one native mobile gate.
+- Android validation now uploads APK, unit-test, and lint artifacts so failures can be diagnosed from CI output instead of relying on console logs alone.
+- iOS validation now uses a build-for-testing lane and uploads `.xcresult` bundles for both unit and UI test runs so remote native verification remains actionable from Windows-based development.
 
 ## Auth and session hardening
 - single API Gateway endpoint for all API calls

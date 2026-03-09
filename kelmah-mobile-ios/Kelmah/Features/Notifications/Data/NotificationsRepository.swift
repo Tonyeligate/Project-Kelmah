@@ -66,7 +66,7 @@ final class NotificationsRepository {
             ?? response.data?.objectValue?["notifications"]?.arrayValue
             ?? []
 
-        return values.compactMap { value in
+        return sortNotificationsByCreatedAt(values.compactMap { value in
             guard let object = value.objectValue else { return nil }
             guard let id = object.string("id") ?? object.string("_id") else { return nil }
             let related = object["relatedEntity"]?.objectValue
@@ -82,12 +82,56 @@ final class NotificationsRepository {
                 relatedEntityType: related?.string("type"),
                 relatedEntityId: related?.string("id") ?? related?.string("_id")
             )
-        }
+        })
     }
 }
+
+func sortNotificationsByCreatedAt(_ items: [AppNotificationItem]) -> [AppNotificationItem] {
+    items.enumerated()
+        .sorted { lhs, rhs in
+            let leftDate = notificationSortDate(from: lhs.element.createdAt)
+            let rightDate = notificationSortDate(from: rhs.element.createdAt)
+
+            switch (leftDate, rightDate) {
+            case let (left?, right?):
+                if left != right {
+                    return left > right
+                }
+                return lhs.offset < rhs.offset
+            case (_?, nil):
+                return true
+            case (nil, _?):
+                return false
+            case (nil, nil):
+                return lhs.offset < rhs.offset
+            }
+        }
+        .map(\.element)
+}
+
+private func notificationSortDate(from raw: String?) -> Date? {
+    guard let raw, raw.isEmpty == false else { return nil }
+    if let parsed = notificationPrimaryFormatter.date(from: raw) {
+        return parsed
+    }
+    return notificationFractionalFormatter.date(from: raw)
+}
+
+private let notificationPrimaryFormatter: ISO8601DateFormatter = {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime]
+    return formatter
+}()
+
+private let notificationFractionalFormatter: ISO8601DateFormatter = {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    return formatter
+}()
 
 private extension Dictionary where Key == String, Value == JSONValue {
     func string(_ key: String) -> String? { self[key]?.stringValue }
     func int(_ key: String) -> Int? { self[key]?.intValue }
     func bool(_ key: String) -> Bool? { self[key]?.boolValue }
 }
+
