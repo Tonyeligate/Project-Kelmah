@@ -85,17 +85,19 @@ export const hirerService = {
 
       const metrics =
         metricsResult.status === 'fulfilled'
-          ? (metricsResult.value?.data ?? metricsResult.value)
+          ? (metricsResult.value?.data?.data ?? metricsResult.value?.data ?? metricsResult.value)
           : {};
       const workers =
         workersResult.status === 'fulfilled'
-          ? workersResult.value?.data?.workers ||
+          ? workersResult.value?.data?.data?.items ||
+          workersResult.value?.data?.data?.workers ||
+          workersResult.value?.data?.workers ||
           workersResult.value?.data ||
           workersResult.value
           : [];
       const analytics =
         analyticsResult.status === 'fulfilled'
-          ? (analyticsResult.value?.data ?? analyticsResult.value)
+          ? (analyticsResult.value?.data?.data ?? analyticsResult.value?.data ?? analyticsResult.value)
           : {};
       const activeJobs =
         jobsResult.status === 'fulfilled'
@@ -136,7 +138,7 @@ export const hirerService = {
       const response = await api.get(USER.DASHBOARD_ANALYTICS, {
         params: { timeframe },
       });
-      return response.data ?? response;
+      return response.data?.data ?? response.data ?? response;
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Metrics unavailable, using fallback:', error.message);
       return {
@@ -196,7 +198,16 @@ export const hirerService = {
       const response = await api.get(`/jobs/${jobId}/applications`, { params });
       const payload = response.data;
       const data = payload?.data || payload;
-      return Array.isArray(data) ? data : [];
+      if (Array.isArray(data)) {
+        return data;
+      }
+      if (Array.isArray(data?.items)) {
+        return data.items;
+      }
+      if (Array.isArray(data?.applications)) {
+        return data.applications;
+      }
+      return [];
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Failed to fetch job applications:', error.message);
       return [];

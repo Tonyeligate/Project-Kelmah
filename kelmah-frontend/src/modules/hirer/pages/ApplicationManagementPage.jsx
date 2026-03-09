@@ -93,6 +93,8 @@ const STATUS_COLORS = {
   rejected: 'error',
 };
 
+const isBiddingJob = (job) => Boolean(job?.bidding?.bidStatus);
+
 /* ─── ApplicationCard ─────────────────────────────────────────────── */
 
 const ApplicationCard = ({ application, isSelected, onSelect, showJobTitle }) => {
@@ -254,7 +256,7 @@ function ApplicationManagementPage() {
   }, [dispatch, jobsByStatus]);
 
   // Flat deduplicated job list
-  const allJobs = useMemo(() => {
+  const dedupedJobs = useMemo(() => {
     const all = Object.values(jobsByStatus || {}).flatMap((v) =>
       Array.isArray(v) ? v : [],
     );
@@ -266,6 +268,17 @@ function ApplicationManagementPage() {
       return true;
     });
   }, [jobsByStatus]);
+
+  // This screen is for application-based jobs only.
+  const allJobs = useMemo(
+    () => dedupedJobs.filter((job) => !isBiddingJob(job)),
+    [dedupedJobs],
+  );
+
+  const biddingJobsCount = useMemo(
+    () => dedupedJobs.filter((job) => isBiddingJob(job)).length,
+    [dedupedJobs],
+  );
 
   // ── State ──────────────────────────────────────────────────────
   const [selectedJobId, setSelectedJobId] = useState(urlJobId || null);
@@ -280,12 +293,20 @@ function ApplicationManagementPage() {
   const [actionType, setActionType] = useState('');
   const [showJobList, setShowJobList] = useState(!isMobile);
 
-  // Sync URL param
+  // Sync URL param and redirect bid-based jobs to the bid review screen.
   useEffect(() => {
-    if (urlJobId && urlJobId !== selectedJobId) {
+    if (!urlJobId) return;
+
+    const matchingJob = dedupedJobs.find((job) => (job.id || job._id) === urlJobId);
+    if (matchingJob && isBiddingJob(matchingJob)) {
+      navigate(`/hirer/jobs/${urlJobId}/bids`, { replace: true });
+      return;
+    }
+
+    if (urlJobId !== selectedJobId) {
       setSelectedJobId(urlJobId);
     }
-  }, [urlJobId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dedupedJobs, navigate, selectedJobId, urlJobId]);
 
   // ── Fetch all jobs' applications on mount ──────────────────────
   useEffect(() => {
@@ -494,6 +515,11 @@ function ApplicationManagementPage() {
           <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight={700}>
             Job Applications
           </Typography>
+          {biddingJobsCount > 0 && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              Bid-based jobs are reviewed from the dedicated bids screen and are excluded here.
+            </Typography>
+          )}
           {selectedJob && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
               <Chip
@@ -542,6 +568,12 @@ function ApplicationManagementPage() {
           overflow: 'hidden',
         }}
       >
+        {allJobs.length === 0 && biddingJobsCount > 0 && (
+          <Alert severity="info" sx={{ m: 2, mb: 0 }}>
+            This view only shows standard applications. Use Review Bids from job management for bidding jobs.
+          </Alert>
+        )}
+
         {/* ── Col 1: Job list sidebar ─────────────────────────── */}
         {(!isMobile || showJobList) && (
           <Box
