@@ -2,6 +2,522 @@
 
 ---
 
+### Session: Frontend Admin Route Restoration March 9 2026 🔄 IN PROGRESS
+
+**Date**: March 9, 2026  
+**Scope**: Restore the missing frontend admin route modules that currently break Vite import resolution for `/admin/skills-management` and `/admin/payouts`.
+
+**Acceptance Criteria**
+- Resolve the missing `../modules/admin/pages/SkillsAssessmentManagement` import from `src/routes/config.jsx`.
+- Restore any additional missing admin frontend modules required by the same route group.
+- Preserve the existing admin route paths and role protection in `routes/config.jsx`.
+- Validate the fix with frontend diagnostics and a Vite production build.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/admin/pages/SkillsAssessmentManagement.jsx`
+- `kelmah-frontend/src/modules/admin/pages/PayoutQueuePage.jsx`
+- `kelmah-frontend/src/modules/admin/services/adminService.js`
+- `admin/admin/pages/SkillsAssessmentManagement.jsx`
+- `admin/admin/pages/PayoutQueuePage.jsx`
+- `admin/admin/services/adminService.js`
+
+**Dry-audit findings so far**
+- `src/routes/config.jsx` still mounts two admin routes: `/admin/skills-management` and `/admin/payouts`.
+- The frontend currently has no `src/modules/admin/` directory, so both lazy imports in the admin route block are broken.
+- The missing admin pages and service layer still exist in the sibling `admin/admin/` package, which indicates this is a frontend module restoration issue rather than a route design issue.
+- `PayoutQueuePage` would become the next unresolved import even after fixing `SkillsAssessmentManagement`, so both admin pages and their service dependency need to be restored together.
+
+### Session: Desktop Registration UX Redesign March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Redesign the desktop `/register` experience so it looks focused, professional, and conversion-oriented while preserving the existing registration contract, validation, and mobile experience.
+
+**Acceptance Criteria**
+- Remove the visually noisy desktop registration composition that currently combines global marketing chrome, heavy auth-wrapper decoration, and a dense multi-step form.
+- Deliver a cleaner desktop-first register layout with stronger hierarchy, spacing, and clearer progression between steps.
+- Preserve the existing registration data flow, validation rules, draft-save behavior, and redirect-to-login success flow.
+- Keep mobile registration behavior unchanged.
+- Validate the touched frontend files with local diagnostics and build checks.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+- `kelmah-frontend/src/modules/layout/components/Header.jsx`
+- `kelmah-frontend/src/modules/layout/components/header/pageDetection.js`
+- `kelmah-frontend/src/modules/auth/pages/RegisterPage.jsx`
+- `kelmah-frontend/src/modules/auth/components/common/AuthWrapper.jsx`
+- `kelmah-frontend/src/modules/auth/components/register/Register.jsx`
+- `kelmah-frontend/src/modules/auth/components/mobile/MobileRegister.jsx`
+- `kelmah-frontend/src/modules/auth/hooks/useRegistrationForm.js`
+- `kelmah-frontend/src/modules/auth/services/authSlice.js`
+- `kelmah-frontend/src/modules/auth/services/authService.js`
+
+**Data flow trace**
+- UI route: `/register` in `routes/config.jsx` renders `RegisterPage.jsx` inside the shared public `Layout.jsx` shell.
+- Shell behavior: `Layout.jsx` now suppresses the global public header/footer on auth routes so auth pages can own their own focused onboarding composition.
+- Desktop UI: `RegisterPage.jsx` now renders `Register.jsx` directly; mobile still renders `MobileRegister.jsx` directly.
+- Form state: `Register.jsx` uses `useRegistrationForm.js` for React Hook Form state, Zod validation, and autosaved draft persistence.
+- Submit path: `Register.jsx` dispatches `register` from `modules/auth/services/authSlice.js`.
+- Service call: `authSlice.js` calls `authService.register()` in `modules/auth/services/authService.js`.
+- API call: `authService.js` posts to `/auth/register` through the shared API client and returns a non-persisted success payload.
+- Success UX: desktop/mobile both redirect to `/login` with registration success state after a successful create-account response.
+
+**Dry-audit findings so far**
+- The desktop page is rendered inside the same shared public layout used by landing pages, so the global header still competes with the auth experience.
+- `AuthWrapper.jsx` adds an additional large marketing panel, animated background, rotating illustrations, and feature blocks, creating a second hero inside an already chrome-heavy route.
+- `Register.jsx` itself also adds its own decorative framing, stepper, social-auth footer, and dense card styling, so the page currently stacks multiple attention layers instead of presenting one clear conversion path.
+- The mobile registration flow is visually simpler because it bypasses `AuthWrapper.jsx`, uses a single card, and keeps progression clearer.
+- The registration contract and UX logic are already sound; the primary issue is desktop information architecture and visual hierarchy, not backend or validation behavior.
+
+**Implementation completed**
+- Hid the global public header and footer on auth routes inside `Layout.jsx` so `/register` is no longer competing with the site-wide marketing shell.
+- Removed the desktop `AuthWrapper.jsx` dependency from `RegisterPage.jsx` while keeping the mobile path untouched.
+- Rebuilt `Register.jsx` as a cleaner desktop-first onboarding surface with:
+  - a calmer two-panel layout,
+  - stronger step hierarchy and visible progress,
+  - cleaner role selection cards,
+  - improved grouping of role-specific profile details,
+  - a lighter, more standard form card and action area,
+  - preserved draft-save, validation, and redirect behavior.
+
+**Validation**
+- `get_errors` returned no diagnostics for:
+  - `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+  - `kelmah-frontend/src/modules/auth/pages/RegisterPage.jsx`
+  - `kelmah-frontend/src/modules/auth/components/register/Register.jsx`
+- Frontend build check was executed from `kelmah-frontend/` and failed on a pre-existing unrelated missing route import in `src/routes/config.jsx`:
+  - `Could not resolve "../modules/admin/pages/SkillsAssessmentManagement"`
+- The redesign work itself introduced no file-level diagnostics; full production build verification remains blocked by that unrelated route-resolution issue.
+
+### Session: Gateway Deploy, Activity Source, And Worker Canonicalization March 9 2026 🔄 IN PROGRESS
+
+**Date**: March 9, 2026  
+**Scope**: Execute the next remediation pass for live personalized recommendations, admin-only dashboard analytics, real activity sourcing, canonical worker discovery inputs, and worker-search path consolidation.
+
+**Acceptance Criteria**
+- Validate and, if needed, trigger the current API gateway deployment so `/api/jobs/recommendations/personalized` is live.
+- Restrict `/api/users/dashboard/metrics` and `/api/users/dashboard/analytics` to admin-only access.
+- Replace profile-activity assembly that depends on ad hoc timeline heuristics with a dedicated persisted activity source derived from authoritative records.
+- Unify worker discovery and recommendation inputs around a single canonical worker profile document.
+- Remove remaining duplicate frontend worker-search service drift so routed discovery and secondary consumers hit the same backend contract.
+
+**Mapped execution surface**
+- `kelmah-backend/api-gateway/routes/job.routes.js`
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/user-service/controllers/user.controller.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/models/index.js`
+- `kelmah-backend/services/user-service/models/WorkerProfileMongo.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/job-service/models/index.js`
+- `kelmah-backend/shared/models/index.js`
+- `kelmah-frontend/src/modules/search/services/searchService.js`
+- `kelmah-frontend/src/modules/worker/services/workerService.js`
+- `scripts/trigger-render-deploys.js`
+
+**Dry-audit findings so far**
+- Gateway source already contains the personalized recommendations route; the remaining problem is live deployment state.
+- Dashboard metrics and analytics routes still lack `authorizeRoles('admin')` in user-service routing.
+- `getProfileActivity()` currently builds an in-memory timeline directly from mixed document timestamps instead of reading from a dedicated activity source.
+- Worker search in user-service still queries `User` directly even though user-service already treats `WorkerProfile` as the richer worker document.
+- Routed talent-search pages already share `WorkerDirectoryExperience`, but `searchService.searchWorkers()` still calls a divergent `/search/workers` path used by secondary consumers.
+
+**Implementation completed**
+- Added a shared canonical worker profile model and utility for cross-service worker identity normalization:
+  - `kelmah-backend/shared/models/WorkerProfile.js`
+  - `kelmah-backend/shared/utils/canonicalWorker.js`
+- Added a dedicated persisted activity event source:
+  - `kelmah-backend/services/user-service/models/ActivityEvent.js`
+- Rewired model exports so user-service and job-service both consume the shared canonical worker profile source:
+  - `kelmah-backend/shared/models/index.js`
+  - `kelmah-backend/services/user-service/models/index.js`
+  - `kelmah-backend/services/job-service/models/index.js`
+- Replaced heuristic profile-activity assembly with ActivityEvent-backed sync/query flow in:
+  - `kelmah-backend/services/user-service/controllers/user.controller.js`
+- Unified worker discovery list/search to one canonical worker query path in:
+  - `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- Unified recommendation worker input around canonical worker snapshots in:
+  - `kelmah-backend/services/job-service/controllers/job.controller.js`
+- Retired remaining duplicate frontend worker-search endpoint drift by moving `searchService.searchWorkers()` to `/users/workers/search` in:
+  - `kelmah-frontend/src/modules/search/services/searchService.js`
+
+**Deployment execution**
+- Scoped remediation commit created and pushed to `main`:
+  - Commit: `82defc9`
+  - Message: `Unify worker canonicalization and activity event source`
+
+**Final live verification entry (March 9, 2026)**
+- Worker contract probe:
+  - `POST /api/auth/login` (`kwame.asante1@kelmah.test`) -> `200`
+  - `GET /api/jobs/recommendations/personalized?limit=2` -> `200`
+- Hirer contract probe:
+  - `POST /api/auth/login` (`giftyafisa@gmail.com`) -> `200`
+  - `GET /api/jobs/recommendations/personalized?limit=2` -> `403` (role guard working)
+  - `GET /api/users/dashboard/metrics` -> `200` (expected admin-only lock not live)
+  - `GET /api/users/dashboard/analytics` -> `200` (expected admin-only lock not live)
+  - `GET /api/users/profile/activity?limit=3` -> `500` (activity route still failing live)
+
+**Deployment mismatch evidence**
+- A direct Render deploy trigger attempt via `node scripts/trigger-render-deploys.js` returned `401 Unauthorized` for all services, so forced redeploy was not available from this environment.
+- Post-push probes remained unchanged for metrics/analytics/activity behavior, indicating runtime drift persists between pushed source and deployed user-service state.
+
+**Status update**
+- Verification complete, code changes deployed to GitHub, but live admin-lock/activity fixes remain blocked by Render runtime deployment mismatch. Session remains `IN PROGRESS` pending successful user-service rollout.
+
+---
+
+### Session: Backend Worker Contract Root-Cause Audit March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Perform a read-only backend audit of the worker-facing contract drift between `/api/auth/me`, `/api/users/me/profile-signals`, and `/api/jobs/recommendations/personalized` so the remaining mobile precision blocker is explained from source code and live evidence.
+
+**Acceptance Criteria**
+- Read the exact auth-service, user-service, job-service, gateway, shared-model, and shared-utility files that shape the three contracts.
+- Trace the worker data flow from gateway auth context into each service controller and identify which persistence source each endpoint trusts.
+- Reconcile the current repo logic against live gateway responses for the same worker account.
+- Record the root cause and the minimum remediation direction in spec-kit without changing backend runtime code.
+
+**Mapped execution surface**
+- `kelmah-backend/services/auth-service/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/services/auth-service/models/index.js`
+- `kelmah-backend/services/auth-service/config/db.js`
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/user-service/controllers/user.controller.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/models/index.js`
+- `kelmah-backend/services/user-service/config/db.js`
+- `kelmah-backend/services/user-service/tests/mobile-profile-signals.contract.test.js`
+- `kelmah-backend/services/job-service/routes/job.routes.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/job-service/models/index.js`
+- `kelmah-backend/services/job-service/config/db.js`
+- `kelmah-backend/services/job-service/tests/mobile-recommendations.contract.test.js`
+- `kelmah-backend/api-gateway/routes/job.routes.js`
+- `kelmah-backend/api-gateway/routes/job.routes.test.js`
+- `kelmah-backend/shared/models/User.js`
+- `kelmah-backend/shared/models/WorkerProfile.js`
+- `kelmah-backend/shared/models/index.js`
+- `kelmah-backend/shared/utils/canonicalWorker.js`
+
+**Data flow trace**
+- `/api/auth/me` -> gateway auth middleware -> auth-service route `/me` -> `auth.controller.getMe()` -> shared `User.findById()` -> raw user payload returned under `data.user`.
+- `/api/users/me/profile-signals` -> gateway trust middleware -> user-service route `/me/profile-signals` -> `fetchProfileDocuments()` -> shared `User` plus shared `WorkerProfile` -> `formatProfilePayload()` plus availability, credentials, completeness, and portfolio builders.
+- `/api/jobs/recommendations/personalized` -> gateway worker auth route -> job-service route `/recommendations/personalized` -> `getCanonicalWorkerContext()` -> shared `User` plus shared `WorkerProfile` -> `buildCanonicalWorkerSnapshot()` -> `collectWorkerSkills()` and `UserPerformance` -> recommendation query and response metadata.
+
+**Live validation evidence**
+- Live worker login on `https://kelmah-api-gateway-gf3g.onrender.com` succeeded for `kwame.asante1@kelmah.test`.
+- `GET /api/auth/me` returned a carpentry-oriented raw user snapshot: `profession: Master Carpenter`, `hourlyRate: 45`, `yearsOfExperience: 12`, and `skills: [Carpentry, Furniture Making, Wood Finishing, Cabinet Installation]`.
+- `GET /api/users/me/profile-signals` returned a mixed worker signal payload for the same user: `bio: Professional electrical work specialist`, `hourlyRate: 43`, `experienceLevel: advanced`, `yearsOfExperience: 9`, and `skills: [electrical work, wiring, lighting]`, while still inheriting `profession: Master Carpenter`.
+- `GET /api/jobs/recommendations/personalized?limit=2&page=1` returned `200` with `jobs: []`, `isNewUser: true`, and `meta.recommendationSource: profile-incomplete`.
+
+**Root-cause findings**
+- `auth/me` is not a canonical worker profile endpoint. It returns the shared `User` document directly and does not merge `WorkerProfile`, so any stale worker-facing fields persisted on `users` leak straight into mobile session identity.
+- `profile-signals` is a composite contract. `formatProfilePayload()` explicitly prefers `WorkerProfile` values for bio, location, hourly rate, years of experience, and skills while still falling back to `User` fields such as profession when the profile document lacks them.
+- The data model duplicates mutable worker attributes across both shared models. `User.js` and `WorkerProfile.js` both store profession, skills, hourly rate, years of experience, location, and related worker metadata, which makes drift structurally easy.
+- User-service still contains dual-write behavior for worker profile edits. `worker.controller.js` updates overlapping fields on both `user` and `profile`, which confirms the system is maintaining two mutable copies of the same worker identity surface.
+- The live personalized recommendation behavior does not match the current repo controller. The checked-in controller returns the empty-state message `Complete your profile and add skills to get personalized recommendations`, but the live gateway returned `Complete your profile and start working to get personalized recommendations`, a string that does not exist in the current workspace. That is direct evidence of deployed job-service drift on top of the profile-data drift.
+
+**Audit conclusion**
+- There are two separate blockers behind the remaining mobile precision issue:
+  1. source-of-truth drift between `User` and `WorkerProfile`, which makes `auth/me` and `profile-signals` disagree for the same worker;
+  2. live deployment drift in job-service personalized recommendations, which means production is not currently running the same personalized-controller logic audited in this repo.
+
+**Recommended remediation direction**
+- Stop treating `/api/auth/me` as a worker profile source for native session identity; use a canonical worker snapshot contract instead.
+- Remove or freeze duplicated worker-profile fields on `User` so `WorkerProfile` becomes the single mutable worker recommendation source.
+- Redeploy and verify job-service personalized recommendations against the exact current repo controller before making further matching-tuning decisions.
+- Add a parity check that compares live personalized empty-state metadata and message text against the checked-in controller contract.
+
+---
+
+### Session: Mobile Reliability Fix Execution March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Execute the highest-value Android and iOS native fixes from the mobile precision audit without restarting or redeploying backend services.
+
+**Acceptance Criteria**
+- Treat `profile-incomplete` personalized recommendation responses as degraded states instead of false-success personalized states.
+- Point both native apps at the live gateway host instead of the dead `qmd7` host defaults.
+- Add real Android deep-link support for supported job and conversation paths.
+- Make session recovery less destructive for transient refresh/network failures while preserving explicit invalid-session logout behavior.
+- Validate the touched Android and iOS surfaces with available local checks.
+
+**Mapped execution surface**
+- Android: `kelmah-mobile-android/app/build.gradle.kts`, `README.md`, `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/kelmah/mobile/MainActivity.kt`, `app/src/main/java/com/kelmah/mobile/app/KelmahApp.kt`, `app/src/main/java/com/kelmah/mobile/app/navigation/KelmahNavHost.kt`, `app/src/main/java/com/kelmah/mobile/core/network/NetworkConfig.kt`, `app/src/main/java/com/kelmah/mobile/core/session/SessionCoordinator.kt`, `app/src/main/java/com/kelmah/mobile/features/auth/data/AuthRepository.kt`, `app/src/main/java/com/kelmah/mobile/features/jobs/data/JobsApiService.kt`, `app/src/main/java/com/kelmah/mobile/features/jobs/data/JobsModels.kt`, `app/src/main/java/com/kelmah/mobile/features/jobs/data/JobsRepository.kt`, `app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobsViewModel.kt`, `app/src/main/java/com/kelmah/mobile/features/home/presentation/HomeScreen.kt`
+- iOS: `kelmah-mobile-ios/Config/Debug.xcconfig`, `kelmah-mobile-ios/Config/Release.xcconfig`, `kelmah-mobile-ios/README.md`, `kelmah-mobile-ios/Kelmah/Core/Config/APIEnvironment.swift`, `kelmah-mobile-ios/Kelmah/Core/Network/APIClient.swift`, `kelmah-mobile-ios/Kelmah/Core/Session/SessionCoordinator.swift`, `kelmah-mobile-ios/Kelmah/Core/Storage/KeychainStore.swift`, `kelmah-mobile-ios/Kelmah/Features/Jobs/Data/JobsModels.swift`, `kelmah-mobile-ios/Kelmah/Features/Jobs/Data/JobsRepository.swift`, `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobsViewModel.swift`, `kelmah-mobile-ios/Kelmah/Features/Home/Presentation/HomeView.swift`, `kelmah-mobile-ios/Kelmah/Features/Auth/Data/AuthRepository.swift`
+
+**Execution design notes**
+- The live worker contract already proves that generic recommendations are available while personalized recommendations can return a `profile-incomplete` empty state, so the native fix can degrade truthfully without backend changes.
+- Android deep-link support requires both manifest intent filters and runtime intent consumption; manifest-only changes would be incomplete.
+- iOS active gateway configuration comes from xcconfig and Info.plist, so updating only the fallback constant would not fix the live app target.
+
+**Implementation completed**
+- Android personalized recommendation handling now inspects the response metadata and treats `profile-incomplete` responses as a distinct degraded state, optionally filling the home rail with general recommendations while showing truthful context.
+- iOS personalized recommendation handling now mirrors the same `profile-incomplete` degradation path instead of presenting an empty personalized success state.
+- Android and iOS gateway defaults were updated from the dead `qmd7` host to the live `gf3g` gateway in active build configuration and fallback config.
+- Android now supports host-based deep links for `/messages` and `/jobs` via manifest intent filters, runtime intent capture in `MainActivity`, and route resolution in navigation.
+- Android session refresh now preserves cached-session usability for transient refresh failures and only clears auth on explicit invalid-session HTTP codes.
+- iOS session refresh now preserves the recoverable cached session on missing-refresh-token and transient refresh failures, while still clearing on explicit invalid-session HTTP codes.
+
+**Validation**
+- Android: `gradle -p "c:\Users\OS\Desktop\Project-Kelmah-main\kelmah-mobile-android" testDebugUnitTest assembleDebug lintDebug --stacktrace` passed.
+- Android: new deep-link unit coverage passed, including query-based and path-based conversation routing plus job detail routing.
+- iOS: `get_errors` returned no diagnostics for the touched Swift/config files in the recommendation, config, and session surfaces.
+- Local iOS build/test execution remains unavailable in this Windows workspace; macOS runner validation is still blocked externally by the previously observed GitHub Actions billing lock.
+
+---
+
+### Session: Android And iOS Matching Precision Deep Audit March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Perform a harsh mobile-only audit of Android and iOS native logic for job matching precision, worker profile signals, recommendation truthfulness, recent-activity composition, session resilience, realtime refresh behavior, and mobile-facing contract drift without restarting or redeploying services.
+
+**Acceptance Criteria**
+- Read the Android and iOS native source surfaces that drive recommendations, profile signals, notifications, messaging, session, auth, realtime, and home activity.
+- Validate the highest-risk mobile assumptions against the live gateway with read-only probes.
+- Separate native logic defects from backend contract/data drift affecting the apps.
+- Record prioritized findings with exact mobile file references and remediation direction.
+
+**Mapped mobile execution surface**
+- Android: `kelmah-mobile-android/app/src/main/AndroidManifest.xml`, `MainActivity.kt`, `app/KelmahApp.kt`, `core/network/NetworkModule.kt`, `core/network/AuthInterceptor.kt`, `core/session/SessionCoordinator.kt`, `core/realtime/RealtimeSocketManager.kt`, `core/storage/TokenManager.kt`, `features/auth/data/AuthRepository.kt`, `features/jobs/data/JobsApiService.kt`, `features/jobs/data/JobsRepository.kt`, `features/jobs/presentation/JobsViewModel.kt`, `features/home/presentation/HomeScreen.kt`, `features/profile/data/ProfileRepository.kt`, `features/profile/presentation/ProfileScreen.kt`, `features/messaging/data/MessagingRepository.kt`, `features/messaging/presentation/MessagesViewModel.kt`, `features/notifications/data/NotificationsRepository.kt`, `features/notifications/data/NotificationsModels.kt`, `features/notifications/presentation/NotificationsViewModel.kt`
+- iOS: `kelmah-mobile-ios/Kelmah/App/RootTabView.swift`, `KelmahApp.swift`, `Core/Config/APIEnvironment.swift`, `Core/Network/APIClient.swift`, `Core/Session/SessionCoordinator.swift`, `Core/Realtime/RealtimeSocketManager.swift`, `Core/Storage/KeychainStore.swift`, `Core/Storage/SessionStore.swift`, `Features/Auth/Data/AuthRepository.swift`, `Features/Jobs/Data/JobsRepository.swift`, `Features/Jobs/Presentation/JobsViewModel.swift`, `Features/Home/Presentation/HomeView.swift`, `Features/Profile/Data/ProfileRepository.swift`, `Features/Profile/Presentation/ProfileView.swift`, `Features/Messaging/Data/MessagesRepository.swift`, `Features/Messaging/Presentation/MessagesViewModel.swift`, `Features/Notifications/Data/NotificationsRepository.swift`, `Features/Notifications/Data/NotificationsModels.swift`, `Features/Notifications/Presentation/NotificationsViewModel.swift`
+
+**Live verification evidence**
+- Worker login against `https://kelmah-api-gateway-gf3g.onrender.com/api/auth/login` succeeded.
+- `GET /api/jobs/recommendations?limit=2` as worker -> `200`, returned two carpentry jobs with `matchScore` values `55` and `51`.
+- `GET /api/jobs/recommendations/personalized?limit=2` as the same worker -> `200`, but returned `jobs: []`, `isNewUser: true`, and `meta.recommendationSource: profile-incomplete`.
+- `GET /api/users/me/profile-signals` as the same worker -> `200`, `completionPercentage: 85`, non-empty credentials payload, profession/bio/skills snapshot present.
+- `GET /api/auth/me` as the same worker -> `200`, but returned materially different worker summary fields from `profile-signals` for profession narrative, skills, hourly rate, and experience values.
+- `GET /api/notifications?limit=3` and `GET /api/notifications/unread/count` stayed healthy and confirmed mixed live message deep-link shapes (`/messages?conversation=...` and `/messages/{id}`) that the native parsers now tolerate.
+
+**Ranked findings summary**
+- Critical: both apps treat any successful personalized response as trustworthy even when the server reports `profile-incomplete` and zero jobs, which converts a degraded recommendation contract into a misleading “personalized but empty” home state.
+- Critical: the live worker contract is internally inconsistent (`auth/me` vs `users/me/profile-signals` vs recommendation endpoints), so different mobile surfaces are operating on conflicting worker-signal truths.
+- High: iOS still carries a dead fallback gateway origin (`qmd7`), which can silently strand the app on an obsolete host whenever Info.plist configuration is absent or malformed.
+- High: Android has no app deep-link intent filters, so OS-level notification/open-link routing cannot reliably land on conversations or jobs.
+- High: both session coordinators still clear auth aggressively after refresh failures, which is brittle for transient mobile outages.
+- Medium: both apps lack a general transient retry/backoff strategy outside narrow auth paths, so brief packet loss degrades into visible failures instead of soft recovery.
+- Medium: Android messaging still sorts conversations/messages by raw timestamp strings; iOS repository sorting still assumes lexicographically clean timestamps in the data layer even though the presentation layer later compensates.
+- Medium: both home screens compose “recent activity” from three unrelated feeds rather than from an authoritative activity stream, which makes activity freshness and meaning approximate.
+- Medium: automated coverage is extremely thin relative to the amount of recommendation/session/realtime logic now living in the apps.
+
+**Artifacts created**
+- `spec-kit/MOBILE_ANDROID_IOS_MATCHING_PRECISION_DEEP_AUDIT_MAR09_2026.md`
+
+---
+
+### Session: Matching Audit Fix Execution March 9 2026 🔄 IN PROGRESS
+
+**Date**: March 9, 2026  
+**Scope**: Execute the verified matching, recommendations, recent-activity, worker-search, and frontend trust fixes from the March 9 audit without forcing avoidable service restarts or redeploys.
+
+**Acceptance Criteria**
+- Replace the broken profile activity heuristics with a stable response path that no longer fails when legacy `activity.*` fields are absent.
+- Make worker recent-jobs output truthful chronological recency instead of recommendation data.
+- Harden personalized recommendation visibility and public worker portfolio/certificate status boundaries.
+- Remove the worker-dashboard false-success state and fix the remaining worker-search/apply trust bugs on the frontend.
+- Retire dead or duplicate search code where the active route no longer uses it.
+- Validate the touched backend and frontend surfaces with targeted tests and diagnostics.
+
+**Mapped execution surface**
+- `kelmah-backend/services/user-service/controllers/user.controller.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
+- `kelmah-frontend/src/modules/worker/services/workerService.js`
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/WorkerSearchPage.jsx`
+- `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx`
+- `kelmah-frontend/src/modules/search/contexts/SearchContext.jsx`
+- `spec-kit/MATCHING_RECOMMENDATIONS_PRODUCTIVITY_AUDIT_MAR09_2026.md`
+
+**Dry-audit findings for execution design**
+- `dashboard/metrics` and `dashboard/analytics` are currently consumed by non-admin frontend flows, so a naive admin-only lock would risk breaking existing dashboards without a compatibility path.
+- `SearchContext.jsx` appears unused in the active runtime surface and is a better retirement candidate than a code path that needs repair.
+- `WorkerSearchPage.jsx` already renders `WorkerDirectoryExperience`, which means the older `WorkerSearch.jsx` path is effectively legacy and can be removed from the routed surface.
+- `getRecentJobs()` and `buildProfileActivity()` need truthfulness fixes before frontend widgets can be trusted.
+
+**Implementation progress**
+- Confirmed the current worktree already contains the audit-driven code fixes for:
+  - stable profile activity generation backed by persisted `ActivityEvent` documents,
+  - truthful worker recent-jobs output instead of recommendation proxying,
+  - public portfolio/certificate status hardening,
+  - personalized recommendation visibility filtering,
+  - worker dashboard false-success handling,
+  - worker availability fallback truthfulness,
+  - apply-route worker-role guard,
+  - duplicate worker-directory sort fetch removal,
+  - legacy `WorkerSearch.jsx` and `SearchContext.jsx` retirement from the active tree.
+- Added admin authorization to the platform-wide dashboard endpoints in `kelmah-backend/services/user-service/routes/user.routes.js`:
+  - `/dashboard/metrics`
+  - `/dashboard/workers`
+  - `/dashboard/analytics`
+- Added focused regression coverage in `kelmah-backend/services/user-service/tests/dashboard-routes.auth.test.js` proving non-admin roles are blocked and admin access still succeeds.
+- Moved the worker directory aggregation in `kelmah-backend/services/user-service/controllers/worker.controller.js` off the `User` collection and onto the shared `WorkerProfile` source of truth:
+  - `getAllWorkers()` and `searchWorkers()` still expose the same `/users/workers` and `/users/workers/search` response contract,
+  - filtering and sorting now operate on canonical WorkerProfile-first fields (`canonicalProfession`, `canonicalSkills`, `canonicalLocation`, `canonicalAvailability`, etc.),
+  - the query joins back to `User` only for identity/display fields needed by the frontend card contract.
+- Added focused regression coverage in `kelmah-backend/services/user-service/tests/worker-directory.controller.test.js` proving:
+  - the worker directory aggregate now runs through `WorkerProfile.aggregate(...)`,
+  - `User.aggregate(...)` is no longer the search/list engine,
+  - the existing list/search payload shapes stay stable for current frontend consumers.
+- Refreshed `kelmah-backend/services/job-service/tests/mobile-recommendations.contract.test.js` so the contract test matches the current canonical worker-context and recommendation-reasoning helpers.
+
+**Validation**
+- `get_errors` returned no diagnostics for the guarded route file and the new authorization regression test.
+- Focused backend regression suite passed:
+  - `services/user-service/tests/dashboard-routes.auth.test.js`
+  - `services/user-service/tests/worker-directory.controller.test.js`
+  - `services/user-service/tests/user-profile-activity.controller.test.js`
+  - `services/user-service/tests/worker-profile.controller.test.js`
+  - `services/job-service/tests/mobile-recommendations.contract.test.js`
+- Live Render gateway probing on `https://kelmah-api-gateway-gf3g.onrender.com` showed mixed deployment state:
+  - `POST /api/auth/login` with `giftyafisa@gmail.com / 11221122Tg` still succeeds and returns `data.token`.
+  - Authenticated non-admin hirer probes still receive `200` from `/api/users/dashboard/metrics`, `/api/users/dashboard/analytics`, and `/api/users/dashboard/workers`, so the deployed user-service has not picked up the local admin-route hardening yet.
+  - Authenticated worker probe with `kwame.asante1@kelmah.test / TestUser123!` receives `200` from `/api/jobs/recommendations/personalized`, so that live route is present.
+  - Authenticated `/api/users/profile/activity?limit=3` still returns `500` for both hirer and worker probes, so the deployed activity fix is also not live yet.
+
+**Remaining blocker / residual risk**
+- Production verification still depends on deployment state. The live gateway confirms the personalized recommendations route is deployed, but the dashboard hardening and profile-activity remediation are still stale on Render, so live behavior will remain inconsistent until the current user-service revision is deployed.
+
+---
+
+### Session: Jobs Search And Find-Work UX Cleanup March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Close the remaining jobs/find-work/detail page tickets from the route UI defect matrix without restarting or redeploying services.
+
+**Acceptance Criteria**
+- Replace hard reload fallbacks on the public jobs page with in-app retry behavior.
+- Make submitted search and debounced search behave consistently on the jobs page.
+- Rehydrate worker find-work state from URL params for search, category, and location.
+- Replace non-semantic clickable sign-in text on job details with an accessible control.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/worker/pages/JobSearchPage.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `spec-kit/ROUTE_UI_DEFECT_MATRIX_MAR09_2026.md`
+
+**Implementation completed**
+- `JobsPage.jsx`
+  - replaced error-boundary and empty/error-state hard reload behavior with local retry callbacks,
+  - introduced an effective submitted-search flow so manual search submission stays stable while debounce catches up,
+  - aligned active-filter badges/chips and retry controls with the applied search term.
+- `JobSearchPage.jsx`
+  - synced `search`, `category`, and `location` state from URL params on navigation changes,
+  - kept location filter updates reflected in the URL.
+- `JobDetailsPage.jsx`
+  - replaced the clickable sign-in span with a semantic button element while preserving visual styling.
+
+**Validation**
+- `get_errors` returned no diagnostics for all three edited files.
+- `npm run build` in `kelmah-frontend` passed.
+- Existing Vite warning about mixed dynamic/static imports of `src/services/apiClient.js` remains unchanged and unrelated to this task.
+
+---
+
+### Session: Matching, Recommendations, Activity, And Productivity Audit March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Perform a deep code and live-contract audit of job matching, worker profile matching, search recommendations, recent activity logic, and the highest-leverage frontend/backend productivity risks without restarting or redeploying services.
+
+**Acceptance Criteria**
+- Dry-audit the current frontend, gateway, backend, and shared-model surfaces involved in matching, recommendations, worker search, and activity.
+- Validate the highest-risk findings against the live frontend and Render gateway with read-only probes only.
+- Separate stale findings from currently deployed behavior.
+- Record prioritized defects with severity, root cause, and remediation direction in spec-kit.
+
+**Mapped execution surface**
+- Frontend: `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`, `JobDetailsPage.jsx`, `jobsService.js`, `dashboardService.js`, `useDashboard.js`, `WorkerDashboardPage.jsx`, `WorkerDirectoryExperience.jsx`, `WorkerSearch.jsx`, `WorkerSearchPage.jsx`, `RecentActivityFeed.jsx`, `workerService.js`, `SearchContext.jsx`
+- Gateway: `kelmah-backend/api-gateway/server.js`, `kelmah-backend/api-gateway/routes/job.routes.js`
+- Backend: `kelmah-backend/services/job-service/routes/job.routes.js`, `kelmah-backend/services/job-service/controllers/job.controller.js`, `kelmah-backend/services/user-service/routes/user.routes.js`, `kelmah-backend/services/user-service/controllers/user.controller.js`, `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- Shared models: `kelmah-backend/shared/models/User.js`, `kelmah-backend/shared/models/Job.js`
+
+**Dry-audit findings summary**
+- Matching and recommendation logic is still split across multiple controllers and mismatched data sources (`User`, `WorkerProfileMongo`, `UserPerformance`, `Application`), which keeps ranking behavior inconsistent.
+- The worker `recent jobs` endpoint is semantically incorrect: it proxies recommendation output, not chronological activity.
+- Recent-activity code reads legacy `activity.*` paths after projecting them away, and the live endpoint currently fails.
+- Worker search has two frontend implementations with different request contracts and different normalization behavior.
+- The worker dashboard page treats settled thunk dispatches as success, which can mask failed loads with a false success state.
+- Public portfolio and certificate feeds still trust caller-supplied `status` filters in code.
+- Personalized recommendation code path in the repo lacks the visibility guard present in the standard recommendation path.
+
+**Live verification evidence**
+- `GET https://kelmah-frontend-cyan.vercel.app/api/jobs?limit=1` -> `404`
+- `POST https://kelmah-api-gateway-gf3g.onrender.com/api/auth/login` with `giftyafisa@gmail.com / 11221122Tg` -> `200`
+- Authenticated `GET https://kelmah-api-gateway-gf3g.onrender.com/api/jobs/recommendations/personalized?limit=2` -> `404 Endpoint not found`
+- Authenticated `GET https://kelmah-api-gateway-gf3g.onrender.com/api/users/dashboard/metrics` as a non-admin hirer -> `200`
+- Authenticated `GET https://kelmah-api-gateway-gf3g.onrender.com/api/users/profile/activity?limit=3` -> `500 Failed to fetch profile activity`
+- Anonymous `GET https://kelmah-api-gateway-gf3g.onrender.com/api/users/workers/6892f4a96c0c9f13ca24e12d/availability` -> `200`
+- Anonymous `GET https://kelmah-api-gateway-gf3g.onrender.com/api/users/workers/6892f4a96c0c9f13ca24e12d/portfolio?status=draft&limit=2` -> `200`, `ownerView: false`
+- Anonymous `GET https://kelmah-api-gateway-gf3g.onrender.com/api/users/workers/6892f4a96c0c9f13ca24e12d/certificates?status=pending&limit=2` -> `200`, `ownerView: false`
+- Production now appears hardened against earlier public email/phone leakage on worker detail and public hirer email leakage in the sampled job list.
+
+**Artifacts created**
+- `spec-kit/MATCHING_RECOMMENDATIONS_PRODUCTIVITY_AUDIT_MAR09_2026.md`
+
+---
+
+### Session: Personalized Recommendations Route Restore And iOS Remote Validation 🔄 IN PROGRESS
+
+**Date**: March 9, 2026  
+**Scope**: Restore the live `/api/jobs/recommendations/personalized` gateway route used by the native apps, verify the backend contract through the gateway, and trigger the GitHub Actions native mobile validation workflow so iOS gets a real macOS build/test run.
+
+**Acceptance Criteria**
+- Dry-audit the active gateway, job-service, and workflow files involved in the mobile personalized recommendations flow.
+- Patch the API gateway so authenticated worker requests to `/api/jobs/recommendations/personalized` reach the job service without breaking existing `/api/jobs/recommendations` behavior.
+- Validate the restored route locally and through the backend test surface.
+- Trigger the remote native validation workflow and capture the resulting iOS macOS run status or blocker.
+- Record verification evidence and any deployment/trigger constraints in spec-kit.
+
+**Mapped execution surface**
+- `kelmah-backend/api-gateway/routes/job.routes.js`
+- `kelmah-backend/api-gateway/middlewares/auth.js`
+- `kelmah-backend/api-gateway/server.js`
+- `kelmah-backend/services/job-service/routes/job.routes.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/job-service/tests/mobile-recommendations.contract.test.js`
+- `.github/workflows/mobile-native-validation.yml`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- The job service already exposes `GET /api/jobs/recommendations/personalized` behind worker authorization.
+- The mobile contract test surface already exercises `getPersonalizedJobRecommendations` directly in the job service.
+- The API gateway route file currently forwards `GET /api/jobs/recommendations` but does not expose the more specific `/recommendations/personalized` literal route.
+- Because the gateway misses that literal route, production requests to `/api/jobs/recommendations/personalized` return `404 Endpoint not found` even though the underlying controller exists.
+- The native mobile validation workflow already defines an `ios-validation` job on `macos-latest` and supports both `push` and `workflow_dispatch` triggers.
+
+**Implementation completed**
+- Added `GET /api/jobs/recommendations/personalized` to `kelmah-backend/api-gateway/routes/job.routes.js`, preserving worker auth and query-string forwarding to the job service.
+- Added focused gateway coverage in `kelmah-backend/api-gateway/routes/job.routes.test.js` to prove the personalized route forwards to the job service with the expected gateway trust headers.
+- Pushed commit `95afac8` (`Restore mobile personalized recommendations path`) to `main`, which contains the gateway route fix plus the native Android/iOS recommendation-state changes that needed remote validation.
+
+**Local validation**
+- `get_errors` returned no diagnostics for the edited gateway route and test file.
+- `npx jest api-gateway/routes/job.routes.test.js services/job-service/tests/mobile-recommendations.contract.test.js --runInBand` passed.
+
+**Remote validation outcome**
+- The push triggered GitHub Actions run `22854976790` (`Native Mobile Validation`) for commit `95afac8`.
+- Both jobs failed before any steps started: `iOS build-for-testing and tests` and `Android build, unit tests, lint` each reported the same annotation: `The job was not started because your account is locked due to a billing issue.`
+- Because no runner was assigned (`runner_id: 0`) and no workflow steps executed, this is an Actions platform/billing blocker, not a Swift test failure.
+
+**Live deployment verification**
+- The active production gateway is `https://kelmah-api-gateway-gf3g.onrender.com`; legacy `qmd7` hosts currently return `404` on health endpoints.
+- Production login with worker account `kwame.asante1@kelmah.test` succeeded, but repeated authenticated probes to `GET /api/jobs/recommendations/personalized?limit=3&page=1` on `gf3g` continued returning `404`.
+- During a multi-minute poll window, gateway `/health` uptime on `gf3g` increased monotonically from roughly `3417s` to `4013s` with no reset, showing the gateway has not redeployed to commit `95afac8` yet.
+- A targeted manual API-gateway redeploy attempt using the repo-stored Render service ID returned `401 Unauthorized`, so the stored Render API credential is not usable for forced redeploys.
+
+**Current blocker**
+- Code is fixed and pushed, but the live personalized recommendations route cannot be confirmed until Render actually deploys the new gateway commit or a valid Render deploy trigger is provided.
+- The iOS remote macOS confirmation is blocked by the GitHub Actions billing lock until runners can be started again.
+
+---
+
 ### Session: Native Mobile Precision Audit Fix Execution ✅ COMPLETED
 
 **Date**: March 9, 2026  
