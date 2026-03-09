@@ -189,6 +189,10 @@
 - Direct live user-service probe proves production still serves stale code even after push:
   - `https://kelmah-user-service-y4js.onrender.com/api/users/workers?latitude=9.4034&longitude=-0.8424&radius=10...` -> `total=20`, `non-null distance count=0`
   - that differs from the local real-data result above, so the remaining blocker is remote deployment lag/staleness, not local code or data.
+- Follow-up hardening commit `d39a9cb` (`Harden worker geo backfill follow-up`) was pushed to `origin/main`, then the live Tamale parity probe was rerun immediately after push:
+  - direct user-service -> `DIRECT_TAMALE_TOTAL=20`, `DIRECT_TAMALE_NON_NULL_DISTANCE=0`
+  - gateway -> `GATEWAY_TAMALE_TOTAL=20`, `GATEWAY_TAMALE_NON_NULL_DISTANCE=0`
+  - result stayed unchanged, confirming Render had still not rolled the live user-service/gateway runtime forward at probe time.
 
 **Execution blocker**
 - Dry-run backfill execution currently cannot reach MongoDB Atlas from this environment:
