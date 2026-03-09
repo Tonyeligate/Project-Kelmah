@@ -23,10 +23,16 @@
 - Archived deployment references under `backup/root_cleanup_20260201/misc/`
 
 **Current findings**
-- Live `GET /api/bids/me?limit=5` still returns a `500` CastError for value `"me"`, proving the old `/:bidId` route ordering is still active in production.
-- Live `GET /api/bids/stats/me` still returns `404`, proving the self-service stats route is not yet live.
-- Live legacy worker routes remain healthy, which narrows the blocker to deployment rollout rather than the broader bid subsystem.
-- The workspace contains two plausible redeploy mechanisms: `autoDeploy: true` in `render.yaml` and Render deploy hooks referenced by `.github/workflows/deploy-backend.yml`.
+
+**Deployment trigger attempt results**
+- Archived direct Render API redeploy attempt against the stored service IDs returned `401 Unauthorized`, so the backup Render API token in `backup/root_cleanup_20260201/misc/trigger-redeploy.js` is no longer valid.
+- A scoped push on commit `5ff1091` (`Document bid route deployment verification`) was sent to `main` to trigger the backend deploy workflow without pulling in unrelated worktree changes.
+- GitHub Actions confirms the backend deployment workflow did trigger for run `#349` on commit `5ff1091`, but it failed almost immediately before exposing any job steps.
+- The same workflow pattern is failing for multiple recent backend pushes (`#347`, `#348`, `#349`, `#350`, `#351`), which strongly points to a broken deployment workflow or repository Actions configuration rather than a bid-route code regression.
+- Re-probing the live gateway for roughly six minutes after push-trigger showed no rollout change: `/api/bids/me?limit=5` remained `500` with the CastError on `"me"`, and `/api/bids/stats/me` remained `404`.
+
+**Current blocker**
+- The bid self-service route fix is pushed to `main`, but the deployment pipeline responsible for rolling the API gateway and job service is currently failing before deployment starts. Manual Render dashboard redeploy or GitHub Actions workflow repair is required before live verification can pass.
 
 ### Session: Native Mobile Match Hardening And Contract Cleanup ✅ COMPLETED
 
