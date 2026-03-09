@@ -88,6 +88,8 @@ class DashboardService {
     socket.off('dashboard:update', this._onDashboardUpdate);
     socket.off('dashboard:new-job', this._onNewJob);
     socket.off('dashboard:status-change', this._onStatusChange);
+    this._overviewCache = null;
+    this._overviewCacheTime = 0;
     this.connected = false;
   }
 
@@ -171,7 +173,7 @@ class DashboardService {
 
       const workers =
         workersRes.status === 'fulfilled'
-          ? workersRes.value.data?.workers || workersRes.value.data || []
+          ? workersRes.value.data?.data?.items || workersRes.value.data?.data?.workers || workersRes.value.data?.workers || workersRes.value.data || []
           : [];
 
       const result = { metrics, jobs: jobsData, analytics, workers };
@@ -200,14 +202,24 @@ class DashboardService {
   // Get recent activity
   async getRecentActivity(page = 1, limit = 10) {
     try {
-      const response = await api.get('/jobs/dashboard', {
+      const response = await api.get('/users/profile/activity', {
         params: { page, limit },
       });
       const data = response.data?.data || response.data || {};
-      const activities = Array.isArray(data.recentJobs) ? data.recentJobs : [];
+      const activities = Array.isArray(data.items)
+        ? data.items
+        : Array.isArray(data.entries)
+          ? data.entries
+          : Array.isArray(data)
+            ? data
+            : [];
+      const pagination = data.pagination || response.data?.meta?.pagination || {};
       return {
         activities,
-        hasMore: activities.length >= limit,
+        hasMore:
+          typeof pagination.hasNextPage === 'boolean'
+            ? pagination.hasNextPage
+            : activities.length >= limit,
       };
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error fetching recent activity:', error);
@@ -236,25 +248,9 @@ class DashboardService {
     }
   }
 
-  // MED-22 FIX: Label as placeholder data derived from workers (no real tasks API yet)
+  // MED-22 FIX: Return empty results — no real tasks API exists yet
   async getUpcomingTasks() {
-    try {
-      const response = await api.get('/users/dashboard/workers');
-      const workers = response.data?.workers || response.data || [];
-      return {
-        placeholder: true,
-        message: 'Tasks feature coming soon — showing suggested follow-ups',
-        tasks: workers.slice(0, 5).map((worker, index) => ({
-          id: worker.id || index,
-          title: `Follow up with ${worker.name || 'worker'}`,
-          dueDate: new Date(Date.now() + index * 86400000).toISOString(),
-          status: worker.isAvailable ? 'scheduled' : 'pending',
-        })),
-      };
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error fetching upcoming tasks:', error);
-      return { placeholder: true, tasks: [] };
-    }
+    return [];
   }
 
   // Get recent messages

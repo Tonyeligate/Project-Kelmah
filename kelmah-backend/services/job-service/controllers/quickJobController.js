@@ -206,7 +206,10 @@ const getMyQuickJobs = async (req, res) => {
 
     const query = { client: getUserId(req) };
     if (status) {
-      query.status = status;
+      const VALID_STATUSES = ['pending', 'quoted', 'accepted', 'funded', 'worker_on_way', 'worker_arrived', 'in_progress', 'completed', 'approved', 'disputed', 'cancelled'];
+      if (typeof status === 'string' && VALID_STATUSES.includes(status)) {
+        query.status = status;
+      }
     }
 
     const jobs = await QuickJob.find(query)
@@ -555,8 +558,8 @@ const markOnWay = async (req, res) => {
     }
 
     // Verify worker
-    if (!quickJob.acceptedQuote.worker || 
-        quickJob.acceptedQuote.worker.toString() !== getUserId(req).toString()) {
+    if (!quickJob.acceptedQuote?.worker || 
+        quickJob.acceptedQuote?.worker.toString() !== getUserId(req).toString()) {
       return res.status(403).json({
         success: false,
         error: {
@@ -643,8 +646,8 @@ const markArrived = async (req, res) => {
     }
 
     // Verify worker
-    if (!quickJob.acceptedQuote.worker || 
-        quickJob.acceptedQuote.worker.toString() !== getUserId(req).toString()) {
+    if (!quickJob.acceptedQuote?.worker || 
+        quickJob.acceptedQuote?.worker.toString() !== getUserId(req).toString()) {
       return res.status(403).json({
         success: false,
         error: {
@@ -735,8 +738,8 @@ const startWork = async (req, res) => {
     }
 
     // Verify worker
-    if (!quickJob.acceptedQuote.worker || 
-        quickJob.acceptedQuote.worker.toString() !== getUserId(req).toString()) {
+    if (!quickJob.acceptedQuote?.worker || 
+        quickJob.acceptedQuote?.worker.toString() !== getUserId(req).toString()) {
       return res.status(403).json({
         success: false,
         error: {
@@ -817,8 +820,8 @@ const markComplete = async (req, res) => {
     }
 
     // Verify worker
-    if (!quickJob.acceptedQuote.worker || 
-        quickJob.acceptedQuote.worker.toString() !== getUserId(req).toString()) {
+    if (!quickJob.acceptedQuote?.worker || 
+        quickJob.acceptedQuote?.worker.toString() !== getUserId(req).toString()) {
       return res.status(403).json({
         success: false,
         error: {
@@ -943,7 +946,7 @@ const approveWork = async (req, res) => {
 
     res.json({
       success: true,
-      message: `Payment of GH₵${quickJob.escrow.workerPayout} released to ${quickJob.acceptedQuote.worker.firstName}!`,
+      message: `Payment of GH₵${quickJob.escrow.workerPayout} released to ${quickJob.acceptedQuote?.worker.firstName}!`,
       data: {
         status: quickJob.status,
         paymentReleased: quickJob.escrow.workerPayout,
@@ -995,8 +998,8 @@ const raiseDispute = async (req, res) => {
 
     // Verify user is involved
     const isClient = quickJob.client.toString() === getUserId(req).toString();
-    const isWorker = quickJob.acceptedQuote.worker && 
-                     quickJob.acceptedQuote.worker.toString() === getUserId(req).toString();
+    const isWorker = quickJob.acceptedQuote?.worker && 
+                     quickJob.acceptedQuote?.worker.toString() === getUserId(req).toString();
 
     if (!isClient && !isWorker) {
       return res.status(403).json({
@@ -1096,8 +1099,8 @@ const cancelQuickJob = async (req, res) => {
     }
 
     const isClient = quickJob.client.toString() === getUserId(req).toString();
-    const isWorker = quickJob.acceptedQuote.worker && 
-                     quickJob.acceptedQuote.worker.toString() === getUserId(req).toString();
+    const isWorker = quickJob.acceptedQuote?.worker && 
+                     quickJob.acceptedQuote?.worker.toString() === getUserId(req).toString();
 
     if (!isClient && !isWorker) {
       return res.status(403).json({

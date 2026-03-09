@@ -159,6 +159,7 @@ const JobResultsSection = ({
   onClearCategory,
   onClearLocation,
   onClearAllFilters,
+  onLoadMore,
   navigate,
   authState = { isAuthenticated: false },
   platformStats,
@@ -883,7 +884,9 @@ const JobResultsSection = ({
                 size="large"
                 startIcon={<RefreshIcon />}
                 onClick={() => {
-                  // Scroll to top — parent JobsPage handles actual pagination via infinite scroll
+                  if (onLoadMore) {
+                    onLoadMore();
+                  }
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
                 sx={{
@@ -1027,7 +1030,7 @@ const JobResultsSection = ({
                   navigate('/login', {
                     state: {
                       from: '/jobs',
-                      message: 'Sign in to create job alerts',
+                      message: 'Sign in to manage job alerts',
                     },
                   });
                   return;
@@ -1035,7 +1038,7 @@ const JobResultsSection = ({
                 // Navigate to settings with alert context
                 navigate('/notifications/settings', {
                   state: {
-                    alertCreated: true,
+                    draftAlert: true,
                     filters: {
                       category: selectedCategory || 'All categories',
                       location: selectedLocation || 'All locations',
@@ -1055,7 +1058,7 @@ const JobResultsSection = ({
                 '&:active': { transform: 'scale(0.98)' },
               }}
             >
-              Create Job Alert
+              Manage Job Alerts
             </Button>
             <Button
               variant="outlined"
@@ -1105,6 +1108,7 @@ JobResultsSection.propTypes = {
   onClearCategory: PropTypes.func.isRequired,
   onClearLocation: PropTypes.func.isRequired,
   onClearAllFilters: PropTypes.func.isRequired,
+  onLoadMore: PropTypes.func,
   navigate: PropTypes.func.isRequired,
   authState: PropTypes.shape({ isAuthenticated: PropTypes.bool }),
   platformStats: PropTypes.shape({

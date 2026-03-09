@@ -87,7 +87,7 @@ const searchService = {
       return payload?.suggestions || payload || [];
     } catch (error) {
       if (import.meta.env.DEV) console.error('Suggestions error:', error);
-      return { error: true, message: error.message, data: [] };
+      return [];
     }
   },
 

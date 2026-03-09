@@ -24,6 +24,21 @@ import { useNavigate } from 'react-router-dom';
 const deriveEvents = (jobs = [], applications = {}) => {
   const events = [];
 
+  const extractApplications = (record) => {
+    if (!record || typeof record !== 'object') return [];
+
+    if (Array.isArray(record.data)) return record.data;
+    if (Array.isArray(record.applications)) return record.applications;
+
+    if (record.buckets && typeof record.buckets === 'object') {
+      return Object.values(record.buckets)
+        .filter(Array.isArray)
+        .flat();
+    }
+
+    return [];
+  };
+
   // Jobs → "Job posted" events
   if (Array.isArray(jobs)) {
     jobs.forEach((job) => {
@@ -43,10 +58,14 @@ const deriveEvents = (jobs = [], applications = {}) => {
   // Applications → "New application" events
   if (applications && typeof applications === 'object') {
     Object.entries(applications).forEach(([jobId, record]) => {
-      const apps = record?.data || record?.applications || [];
+      const apps = extractApplications(record);
       if (!Array.isArray(apps)) return;
       apps.forEach((app, appIdx) => {
-        const jobTitle = app?.jobTitle || record?.jobTitle || 'a job';
+        const jobTitle =
+          app?.jobTitle ||
+          app?.job?.title ||
+          record?.jobTitle ||
+          'a job';
         const applicantName =
           app?.applicantName || app?.workerName || 'A worker';
         const createdAt = app?.createdAt || app?.appliedAt;
@@ -67,6 +86,41 @@ const deriveEvents = (jobs = [], applications = {}) => {
 
   return events.slice(0, 5);
 };
+
+const mapActivityTypeToDisplay = (type) => {
+  switch (type) {
+    case 'application_received':
+    case 'application_submitted':
+      return { icon: <AssignmentIcon />, iconColor: 'warning' };
+    case 'job_completed':
+      return { icon: <WorkIcon />, iconColor: 'success' };
+    case 'login':
+      return { icon: <InfoIcon />, iconColor: 'info' };
+    case 'job_posted':
+    case 'job_assigned':
+    case 'job_status_changed':
+    case 'job_update':
+    default:
+      return { icon: <WorkIcon />, iconColor: 'primary' };
+  }
+};
+
+const mapBackendActivities = (activities = []) =>
+  (Array.isArray(activities) ? activities : [])
+    .map((activity, index) => {
+      const display = mapActivityTypeToDisplay(activity?.type);
+      const timestamp = activity?.timestamp ? new Date(activity.timestamp).getTime() : 0;
+      return {
+        id: activity?.id || `activity-${index}`,
+        icon: display.icon,
+        iconColor: display.iconColor,
+        primary: activity?.summary || 'Recent activity',
+        secondary: activity?.timestamp ? formatRelativeTime(activity.timestamp) : '',
+        _timestamp: timestamp,
+      };
+    })
+    .sort((a, b) => b._timestamp - a._timestamp)
+    .slice(0, 5);
 
 /** Simple relative-time formatter */
 function formatRelativeTime(dateStr) {
@@ -92,10 +146,12 @@ function formatRelativeTime(dateStr) {
  *   jobs          (array)  — active/recent jobs
  *   applications  (object) — applicationRecords keyed by jobId
  */
-const RecentActivityFeed = ({ jobs = [], applications = {} }) => {
+const RecentActivityFeed = ({ jobs = [], applications = {}, activities = null }) => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const events = deriveEvents(jobs, applications);
+  const events = Array.isArray(activities)
+    ? mapBackendActivities(activities)
+    : deriveEvents(jobs, applications);
 
   return (
     <Paper

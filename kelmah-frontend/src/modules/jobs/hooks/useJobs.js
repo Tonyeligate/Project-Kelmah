@@ -3,6 +3,8 @@ import { useDispatch } from 'react-redux';
 import jobService from '../services/jobsService';
 import {
   setJobs,
+  setSavedJobs,
+  setFeaturedJobs,
   addJob,
   updateJobInList,
   removeJob,
@@ -154,7 +156,7 @@ export const useJobs = () => {
     try {
       dispatch(setLoading(true));
       const savedJobs = await jobService.getSavedJobs();
-      dispatch(setJobs(savedJobs));
+      dispatch(setSavedJobs(savedJobs));
     } catch (error) {
       dispatch(setError(error.message));
     } finally {
@@ -166,7 +168,7 @@ export const useJobs = () => {
     try {
       dispatch(setLoading(true));
       const featuredJobs = await jobService.getFeaturedJobs();
-      dispatch(setJobs(featuredJobs));
+      dispatch(setFeaturedJobs(featuredJobs));
     } catch (error) {
       dispatch(setError(error.message));
     } finally {

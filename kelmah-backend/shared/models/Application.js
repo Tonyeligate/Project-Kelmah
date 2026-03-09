@@ -87,6 +87,10 @@ ApplicationSchema.index({ worker: 1, createdAt: -1 });
 // Index for status-based queries
 ApplicationSchema.index({ status: 1 });
 
+// Compound indexes for filtered job/worker application lookups
+ApplicationSchema.index({ job: 1, status: 1 });
+ApplicationSchema.index({ worker: 1, status: 1 });
+
 // Add methods to the model as needed
 ApplicationSchema.methods.updateStatus = function (newStatus) {
   this.status = newStatus;

@@ -61,6 +61,10 @@ struct JobSummary: Identifiable, Hashable {
     let employerAvatar: String?
     let skills: [String]
     let postedAt: String?
+    let status: String?
+    let proposalCount: Int
+    let matchScore: Int?
+    let aiReasoning: String?
     let isVerified: Bool
     let isUrgent: Bool
     let isSaved: Bool

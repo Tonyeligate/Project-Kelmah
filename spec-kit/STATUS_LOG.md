@@ -2,6 +2,427 @@
 
 ---
 
+### Session: Deep Match/Recommendation Precision Audit And Hardening 🔄 IN PROGRESS
+
+**Date**: March 9, 2026  
+**Scope**: Perform deep end-to-end audit and targeted hardening for job matching, worker profile matching, recommendation precision, recent-activity reliability, and DB-to-backend query correctness across gateway, services, and frontend pages.
+
+**Acceptance Criteria**
+- Trace and verify matching/recommendation flows from frontend pages and services through gateway and backend controllers.
+- Identify and rank issues by severity across logic, security, performance, edge-case handling, and maintainability.
+- Apply high-impact, low-risk fixes in active code paths without service restarts/redeploy unless required.
+- Validate changed paths with local checks and document outcomes.
+
+**Dry-audit file surface (active pass)**
+- `kelmah-backend/api-gateway/routes/job.routes.js`
+- `kelmah-backend/shared/middlewares/serviceTrust.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`
+- `kelmah-frontend/src/modules/hirer/components/RecentActivityFeed.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx`
+
+**Current findings snapshot**
+- Gateway recommendations proxy path currently drops query params.
+- Service-trust middleware validates header shape but does not enforce allowlisted roles in the new header format.
+- Worker search controller accepts unbounded `limit`, increasing scraping and DB-load risk.
+- Hirer status selector usage includes an `active` alias that does not map to canonical status buckets in all consumers.
+- Recent activity feed still misses application events from bucketized state shape.
+- Jobs page empty-state refresh references an undefined `fetchJobs` function, and nested card actions still allow event bubbling.
+
+---
+
+### Session: Worker Earnings 5xx Investigation 🔄 LOCALLY PATCHED, DEPLOYMENT PENDING
+
+**Date**: March 9, 2026  
+**Scope**: Trace the deployed worker earnings analytics failure on `/worker/earnings`, reproduce the live 5xx through the Render gateway, and fix any confirmed backend timeout/path issues in the user-service earnings endpoint.
+
+**Acceptance Criteria**
+- Trace the full worker earnings flow from frontend page to gateway to user-service controller.
+- Reproduce the live failure against `https://kelmah-api-gateway-gf3g.onrender.com` with an authenticated worker account.
+- Identify whether the failure is caused by frontend request handling, gateway proxying, payment-service dependency behavior, or user-service controller logic.
+- Implement the minimal backend fix needed so the earnings endpoint returns promptly with either derived data or fallback totals.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/modules/worker/components/EarningsAnalytics.jsx`
+- `kelmah-frontend/src/modules/worker/services/earningsService.js`
+- `kelmah-frontend/src/services/apiClient.js`
+- `kelmah-backend/api-gateway/server.js`
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/user-service/controllers/user.controller.js`
+- `kelmah-backend/services/payment-service/server.js`
+- `kelmah-backend/services/payment-service/routes/transaction.routes.js`
+- `kelmah-backend/services/payment-service/routes/transactions.routes.js`
+- `kelmah-backend/services/payment-service/controllers/transaction.controller.js`
+
+**Current findings**
+- The deployed frontend calls `GET /api/users/workers/:workerId/earnings` from `EarningsAnalytics.jsx`, and the generic axios interceptor rewrites 502/503/504 into the "server is waking up" message shown in the UI.
+- Live probing with `kwame.asante1@kelmah.test` reproduces the earnings failure consistently: the gateway returns a 502 after roughly 29 seconds for `/api/users/workers/6892b8f766a1e818f0c46151/earnings`.
+- The downstream dependency endpoint `GET /api/payments/transactions/history` is healthy and returns `200` in under a second for the same authenticated worker, so the payment route itself is not down.
+- The user-service `getEarnings` controller currently fans out to multiple candidate payment endpoints with `Promise.all` and only recognizes `response.data.transactions`, while the live payment route returns transactions under `response.data.data`.
+- A slow or stale candidate endpoint can therefore block the earnings response even if another endpoint succeeds quickly, and the controller also misses the live response shape when it does succeed.
+
+**Implementation completed**
+- Updated `kelmah-backend/services/user-service/controllers/user.controller.js` so the earnings controller now prefers the gateway payment-history endpoint first, then falls back to the direct payment-service host only if needed.
+- Replaced the parallel `Promise.all` fan-out with a sequential first-success lookup, so one slow or stale payment host can no longer block the full earnings response.
+- Added a hard abort guard per payment-history request and preserved the existing fallback response path when no endpoint returns usable data.
+- Expanded response-shape handling so the earnings controller accepts both `response.data.transactions` and the live payment contract `response.data.data`.
+
+**Verification**
+- `get_errors` on the patched `user.controller.js`: no editor errors reported.
+- Live gateway probing confirmed the failure signature before the patch: `GET /api/users/workers/6892b8f766a1e818f0c46151/earnings` returned `502` after about 29 seconds, while `GET /api/payments/transactions/history` returned `200` in about 658 ms for the same authenticated worker.
+- `GET /api/health/aggregate` from the deployed gateway reports the payment service as healthy, reinforcing that the timeout is in the user-service earnings flow rather than the payment route itself.
+- `node --check kelmah-backend/services/user-service/controllers/user.controller.js` is still blocked by a pre-existing duplicate declaration elsewhere in the file (`buildProfileActivity`), unrelated to this earnings patch.
+
+
+### Session: Dashboard Activity Truthfulness And Envelope Normalization ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Normalize the active user-service dashboard/profile response envelopes and replace synthetic recent-activity behavior across worker and hirer dashboard surfaces with persisted backend data.
+
+**Acceptance Criteria**
+- Re-audit the deployed gateway contracts after the prior privacy hardening deployment.
+- Normalize the user-service dashboard/profile activity response shape so frontend consumers stop depending on mixed root-level payloads.
+- Replace fake or synthetic recent-activity flows with persisted activity derived from jobs, applications, and stored login/profile activity.
+- Remove misleading frontend “job alert created” messaging where no alert persistence exists and keep job CTAs role-correct.
+- Re-run targeted validation and document the result.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/services/user-service/utils/response.js`
+- `kelmah-backend/services/user-service/models/index.js`
+- `kelmah-backend/services/user-service/controllers/user.controller.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/shared/models/User.js`
+- `kelmah-backend/shared/models/Job.js`
+- `kelmah-backend/shared/models/Application.js`
+- `kelmah-frontend/src/modules/dashboard/services/dashboardService.js`
+- `kelmah-frontend/src/modules/dashboard/hooks/useDashboard.js`
+- `kelmah-frontend/src/modules/dashboard/services/dashboardSlice.js`
+- `kelmah-frontend/src/modules/profile/services/profileService.js`
+- `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx`
+- `kelmah-frontend/src/modules/hirer/components/RecentActivityFeed.jsx`
+- `kelmah-frontend/src/modules/hirer/services/hirerAnalyticsService.js`
+- `kelmah-frontend/src/modules/hirer/services/hirerService.js`
+- `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+
+**Current findings**
+- Live Render gateway verification now shows the earlier public DTO privacy fixes are deployed: public jobs no longer expose `hirer.email`, and public workers are reduced to a worker-safe listing payload.
+- `job-service` already uses the stronger `{ success, message, data, meta }` envelope, but active `user-service` dashboard/profile endpoints still return mixed root-level shapes.
+- Worker dashboard recent activity is incorrectly sourced from `/api/jobs/dashboard`, which is a recent-jobs feed rather than an activity feed.
+- Hirer recent activity is still synthesized in the frontend from jobs/applications, and the separate hirer analytics service still injects mock recent activity.
+- Worker recent-jobs fallback logic in `worker.controller.js` still fabricates hard-coded jobs when the job-service path is unavailable.
+- The jobs page still claims a job alert was created even though it only forwards the user to notification settings.
+
+**Implementation completed**
+- Extended `kelmah-backend/services/user-service/models/index.js` so the user-service exposes shared `Job` and `Application` models through its service index, keeping the new activity queries aligned with the consolidated import pattern.
+- Normalized `kelmah-backend/services/user-service/utils/response.js` toward the canonical service envelope and updated the active user-service dashboard/profile handlers to return structured success and paginated payloads instead of mixed root-level shapes.
+- Rebuilt `GET /api/users/profile/activity` in `kelmah-backend/services/user-service/controllers/user.controller.js` so it now derives recent activity from persisted jobs, applications, login history, and legacy worker profile activity instead of proxying a jobs dashboard feed.
+- Removed the fabricated recent-jobs fallback payload in `kelmah-backend/services/user-service/controllers/worker.controller.js`; when the job-service path is unavailable, the endpoint now returns an empty truthful fallback instead of invented jobs.
+- Updated frontend dashboard and hirer consumers to use the real profile-activity contract: `dashboardService.js`, `profileService.js`, `dashboardSlice.js`, `hirerService.js`, `hirerSlice.js`, `HirerDashboardPage.jsx`, and `RecentActivityFeed.jsx` now unwrap normalized envelopes and render backend activity entries.
+- Removed mock recent-activity fallback behavior from `kelmah-frontend/src/modules/hirer/services/hirerAnalyticsService.js`.
+- Updated the jobs listing CTAs so the live page redirects hirers toward talent flows instead of worker apply flows and replaced misleading “job alert created” copy with truthful “manage/review alerts” behavior in `JobsPage.jsx` and the legacy `JobResultsSection.jsx`.
+
+**Verification**
+- Live Render gateway re-audit confirmed the earlier public DTO hardening is deployed: public jobs no longer expose `hirer.email`, and public workers remain reduced to a worker-safe listing payload.
+- `get_errors` on all edited backend/frontend files reported no workspace diagnostics after the patch set.
+- `node --check kelmah-backend/services/user-service/controllers/user.controller.js`: passed after cleaning up the controller merge points.
+- `node --check kelmah-backend/services/user-service/controllers/worker.controller.js`: passed.
+- `npm run build` from `kelmah-frontend`: passed successfully. The only notable output was a pre-existing Vite chunking warning about mixed dynamic/static imports in `src/services/apiClient.js`, not a build failure.
+
+### Session: Native Mobile Profile Relevance And Realtime Sync ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Extend the native Android and iOS apps so worker profile signals are visible and recommendation-trustworthy on mobile, add realtime socket sync for conversations and alerts, and convert the existing remote iOS validation workflow into an actual build/test execution path.
+
+**Acceptance Criteria**
+- Expose worker profile relevance inputs on native mobile: profile basics, skills, rates, credentials, availability, portfolio, and completeness guidance.
+- Keep the new profile layer grounded in live user-service contracts instead of duplicating backend assumptions locally.
+- Add socket-driven refresh/update handling for native conversations and notifications so unread counts and home activity no longer depend solely on manual refresh.
+- Attempt real remote iOS workflow execution and record the outcome or blocker with evidence.
+- Re-run targeted validation and document final results.
+
+**Dry-audit file surface confirmed**
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/presentation/ProfileViewModel.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/presentation/ProfileScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/data/MessagingRepository.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesViewModel.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/data/NotificationsRepository.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/presentation/NotificationsViewModel.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/network/NetworkConfig.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/network/NetworkModule.kt`
+- `kelmah-mobile-ios/Kelmah/Features/Profile/Presentation/ProfileView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Messaging/Data/MessagesRepository.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Messaging/Presentation/MessagesViewModel.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Notifications/Data/NotificationsRepository.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Notifications/Presentation/NotificationsViewModel.swift`
+- `kelmah-mobile-ios/Kelmah/App/AppEnvironment.swift`
+- `kelmah-mobile-ios/project.yml`
+- `.github/workflows/mobile-native-validation.yml`
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/user-service/controllers/user.controller.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/messaging-service/socket/messageSocket.js`
+- `kelmah-backend/services/messaging-service/controllers/message.controller.js`
+- `kelmah-backend/services/messaging-service/controllers/notification.controller.js`
+
+**End-to-end flow traced**
+- Profile relevance: Native profile UI → native profile repository → gateway `/api/users/profile`, `/api/users/me/credentials`, `/api/users/workers/:id/availability`, `/api/users/workers/:id/completeness`, `/api/users/workers/:workerId/{skills,portfolio,certificates}` → user-service controllers → shared Mongo-backed models.
+- Realtime messaging: Native message shell → Socket.IO through gateway `/socket.io` → messaging-service socket rooms `user_<id>` and `conversation_<id>` → events including `new_message`, `receive_message`, `messages_read`, `message_delivered`, `message-status`, `user_typing`, and `notification`.
+- Remote iOS validation: GitHub Actions workflow dispatch/push path → macOS runner → XcodeGen → simulator selection → unit tests and smoke UI tests.
+
+**Implementation completed**
+- Added native profile data layers for Android and iOS so worker profile screens now pull live user-service data for `/users/profile`, `/users/me/credentials`, `/users/workers/:id/availability`, `/users/workers/:id/completeness`, and `/users/workers/:workerId/portfolio`.
+- Expanded both native profile screens from account-and-password views into recommendation-trust surfaces that expose profession, rate, visible skills, certifications, licenses, availability, completeness guidance, and portfolio proof.
+- Added shared realtime socket managers on both native platforms and wired the existing messaging and notifications view models to the gateway Socket.IO path so conversation lists, selected threads, unread counts, and alerts react to live `new_message`, `receive_message`, `messages_read`, `message_read`, and `notification` events.
+- Added the iOS Socket.IO Swift package to the XcodeGen project spec so the remote macOS workflow has a declared realtime dependency path instead of a placeholder-only client plan.
+- Triggered the existing remote `mobile-native-validation.yml` workflow on GitHub to convert the iOS validation path from documentation-only to an actual remote execution attempt.
+
+**Verification**
+- `get_errors` reported no editor diagnostics on all touched Android and iOS native files after the implementation pass.
+- `gradle -p "c:\Users\OS\Desktop\Project-Kelmah-main\kelmah-mobile-android" compileDebugKotlin`: passed successfully after one small follow-up Kotlin compatibility fix.
+- `gradle -p "c:\Users\OS\Desktop\Project-Kelmah-main\kelmah-mobile-android" testDebugUnitTest assembleDebug lintDebug --stacktrace`: passed successfully.
+- Remote workflow dispatch succeeded for GitHub Actions run `22835627925`, but both the Android and iOS jobs failed before runner startup with the same platform-level annotation: `The job was not started because your account is locked due to a billing issue.`
+
+**Outcome summary**
+- Android now has verified local profile-relevance and realtime-sync coverage in the native shell.
+- iOS now has the corresponding profile-relevance and realtime client wiring in source, with editor diagnostics clean.
+- The remaining validation gap is not a native app code error from this pass; it is the GitHub Actions billing lock preventing the remote macOS runner from starting.
+
+### Session: Hirer Bid Review Entry Flow Audit ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Trace the exact hirer UI entry points into the bid-review page from job management and notifications, then fix any navigation or CTA issues that can prevent hirers from reaching or understanding the review workflow.
+
+**Acceptance Criteria**
+- Identify every current hirer-facing UI path that links to `/hirer/jobs/:jobId/bids`.
+- Dry-audit the job-management screen and related components for CTA visibility, state gating, and broken route assumptions.
+- Patch any confirmed navigation or CTA issues found in the entry flow.
+- Re-run targeted validation and record the result.
+
+**Dry-audit plan**
+- `kelmah-frontend/src/modules/hirer/pages/JobManagementPage.jsx`
+- Any child job cards, tables, or action menus used by the job-management page
+- `kelmah-frontend/src/modules/jobs/hooks/useBidNotifications.js`
+- `kelmah-frontend/src/routes/config.jsx`
+
+**Findings**
+- The route wiring for `/hirer/jobs/:jobId/bids` was correct, and bid notifications already point to that route.
+- The actual hirer job-management screen had no direct CTA into bid review. Both mobile and desktop actions only exposed a generic applications flow, which is wrong for bidding jobs.
+- Live `GET /api/jobs/my-jobs` probing confirmed bidding jobs already expose enough information in the list payload to support a correct CTA: `bidding.bidStatus`, `proposalCount`, and `maxBidders` are present.
+- The job-management page also used applications-only copy in mixed bid/apply contexts, which made the entry path less clear even after the CTA issue was identified.
+- The older `kelmah-frontend/src/modules/hirer/components/HirerJobManagement.jsx` component is not mounted by the current route configuration, so the production fix surface is `JobManagementPage.jsx`.
+
+**Implementation completed**
+- Added bid-aware response helpers in `kelmah-frontend/src/modules/hirer/pages/JobManagementPage.jsx` so bidding jobs now route to `/hirer/jobs/:jobId/bids` while non-bidding jobs continue using `/hirer/applications?jobId=...`.
+- Updated both mobile and desktop job-management action affordances so bidding jobs show a direct review-bids entry point instead of a misleading applications-only action.
+- Updated response counts and labels in the job list so bidding jobs surface bid counts and bid language instead of generic applicant wording.
+- Updated page copy from applications-only language to mixed response language where appropriate.
+
+**Verification**
+- `get_errors` on `kelmah-frontend/src/modules/hirer/pages/JobManagementPage.jsx`: no workspace errors reported.
+- `npm run build` from `kelmah-frontend`: passed successfully.
+- Live `GET /api/jobs/my-jobs?limit=10` probing as the hirer account confirmed bidding metadata is present in the job-list payload used by the new CTA logic.
+
+**Follow-up note**
+- A true live end-to-end accept/reject audit still depends on deployment of the local bid UI and backend hardening changes before the deployed gateway fully reflects the repaired flows.
+
+### Session: Hirer Bid Review UI Audit ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Audit the hirer-facing bid review flow for response-shape mismatches, stale assumptions about bid data, and UX inconsistencies similar to the worker bid dashboard issue.
+
+**Acceptance Criteria**
+- Trace the hirer UI path into the job bid review page and confirm its route wiring.
+- Dry-audit the page, shared bid service, and backend `getJobBids` contract end to end.
+- Patch any confirmed response-shape, loading-state, or action-feedback issues found in the hirer bid review experience.
+- Re-run targeted validation and document the outcome.
+
+**Dry-audit plan**
+- Frontend route and entry files that navigate to the hirer bid review page.
+- `kelmah-frontend/src/modules/hirer/pages/JobBidsPage.jsx` and any child helpers it relies on.
+- `kelmah-frontend/src/modules/jobs/services/bidService.js` for the exact frontend contract.
+- `kelmah-backend/services/job-service/routes/bid.routes.js` and `controllers/bid.controller.js` for the `GET /api/bids/job/:jobId` and bid action contracts.
+
+**Findings**
+- The hirer page had the same collection-shape bug the worker page had: `JobBidsPage` expected a plain array or `result.bids`, but the live and local job-bid endpoint returns paginated data under `data.items`.
+- The reject action payload was mismatched. The page sent `reason`, while the backend controller reads `hirerNotes`, so rejection notes were being dropped even when the action itself succeeded.
+- The page UI expected worker display fields like `worker.name` and `worker.avatar`, but the backend populates `firstName`, `lastName`, and `profilePicture`. That produced generic worker labels in the review UI.
+- The page sorted and displayed `bid.score`, while the stored backend field is `performanceScore`.
+- Live gateway probing with `giftyafisa@gmail.com` confirmed the hirer list endpoint returns `items` and `pagination`, matching the backend response utility contract.
+
+**Implementation completed**
+- Normalized bid records in `kelmah-frontend/src/modules/jobs/services/bidService.js` so bid collections now map backend worker fields into stable display fields and expose `score` from `performanceScore` when needed.
+- Normalized bid action note payloads in the same service so hirer and worker UI calls now send the backend's expected keys: `hirerNotes` for accept/reject flows and `workerNotes` for withdraw flows.
+- Updated `kelmah-frontend/src/modules/hirer/pages/JobBidsPage.jsx` to consume the normalized job-bid collection instead of relying on the broken `result?.bids` fallback.
+- Updated the hirer reject flow to send the correct note field through the shared bid service.
+
+**Verification**
+- `get_errors` on the edited bid service and hirer bid page: no workspace errors reported.
+- `npm run build` from `kelmah-frontend`: passed successfully.
+- Live API audit captured in `logs/hirer-bids-live-audit.json` confirmed the job-bid response shape uses `items` and `pagination`.
+
+### Session: Worker Bid Dashboard Trace And Endpoint Validation ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Trace the exact worker UI path that should display a newly submitted live bid, fix any remaining dashboard display bugs in that path, and harden the remaining bid endpoints that still rely on weak parameter handling.
+
+**Acceptance Criteria**
+- Trace the worker flow from bid success actions into `/worker/bids` and confirm the page consumes the real API contract correctly.
+- Fix any frontend data-shape mismatches that prevent a live pending bid from rendering in the worker dashboard.
+- Review remaining bid controller endpoints for invalid-ID handling beyond the already-patched `bidId` lookups.
+- Re-run diagnostics and targeted verification after the patch.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/modules/jobs/components/BidSubmissionForm.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobApplicationPage.jsx`
+- `kelmah-frontend/src/modules/jobs/services/bidService.js`
+- `kelmah-frontend/src/modules/worker/pages/MyBidsPage.jsx`
+- `kelmah-frontend/src/modules/worker/components/EnhancedJobCard.jsx`
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-backend/services/job-service/controllers/bid.controller.js`
+- `kelmah-backend/services/job-service/routes/bid.routes.js`
+- `kelmah-backend/api-gateway/routes/bid.routes.js`
+
+**Current findings**
+- The success actions from the bid dialog and standalone bid page correctly route workers into `/worker/bids`.
+- `MyBidsPage` still parses the bid list as `value?.bids`, but the live bid endpoints return paginated data under `items`, which makes a valid live pending bid render as an empty dashboard.
+- `MyBidsPage` also expects stats keys like `count`, `quota`, and `remaining`, while the live bid stats response uses `monthlyBidCount`, `monthlyBidLimit`, and `remainingBids`.
+- Live hirer probing confirms `GET /api/bids/job/not-an-id` still throws a Mongoose cast failure in the deployed service, so invalid `jobId` handling needs the same hardening pattern already applied to `bidId`.
+
+**Implementation completed**
+- Normalized worker bid list responses in `kelmah-frontend/src/modules/jobs/services/bidService.js` so paginated `items` payloads are consumed as arrays in the UI.
+- Normalized worker bid stats in the same service so both legacy keys (`count`, `quota`, `remaining`) and backend-native keys (`monthlyBidCount`, `monthlyBidLimit`, `remainingBids`) are available to consumers.
+- Added authenticated self-service helpers in the frontend bid client for `/api/bids/me` and `/api/bids/stats/me`.
+- Updated `kelmah-frontend/src/modules/worker/pages/MyBidsPage.jsx` to load bids and bid stats through the self-service endpoints instead of depending on the raw worker ID routes.
+- Hardened `kelmah-backend/services/job-service/controllers/bid.controller.js` so invalid `jobId` and `workerId` values now return clean 400 responses before any Mongoose lookup.
+
+**Verification**
+- `get_errors` on the edited frontend and backend files: no workspace errors reported.
+- `npm run build` from `kelmah-frontend`: passed successfully.
+- `node --check kelmah-backend/services/job-service/controllers/bid.controller.js`: no syntax error reported.
+
+**Follow-up note**
+- Live verification of `/api/bids/me`, `/api/bids/stats/me`, and invalid-job probing on the deployed gateway still depends on deployment of these local backend changes.
+
+### Session: Live Bid Verification And Bid Route Hardening ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Validate the repaired worker bid flow against the active Render gateway, confirm whether bid creation still hangs in the live environment, and harden the backend bid route/controller surface where malformed route segments still produce 500s instead of clean API responses.
+
+**Acceptance Criteria**
+- Verify the active gateway health before attempting any live worker bid actions.
+- Authenticate with a known worker account, inspect live open-bidding jobs, and submit one real bid using the repaired canonical payload shape.
+- Capture any remaining API routing or controller quality issues exposed during live verification.
+- Patch the local backend so invalid bid IDs and worker-self convenience routes are handled cleanly.
+
+**Dry-audit file surface confirmed**
+- `kelmah-backend/api-gateway/routes/bid.routes.js`
+- `kelmah-backend/services/job-service/routes/bid.routes.js`
+- `kelmah-backend/services/job-service/controllers/bid.controller.js`
+- `kelmah-frontend/src/modules/jobs/services/bidService.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Current findings**
+- The active gateway `https://kelmah-api-gateway-gf3g.onrender.com` is healthy and all downstream services report healthy via aggregate health checks.
+- Live worker authentication succeeds for `kwame.asante1@kelmah.test` and the job feed exposes multiple jobs with `bidding.bidStatus === 'open'`.
+- A real live bid submission now succeeds with the canonical frontend payload shape, which confirms the repaired place-bid flow is no longer hanging on the critical create-bid path.
+- The bid API surface still has a quality gap for malformed bid IDs: accidental literal paths can fall into `/:bidId` and trigger a Mongoose cast failure instead of a clean client error.
+
+**Changes completed**
+- Performed a live bid submission against the active Render gateway and confirmed a successful `201` response for job `69a73f7c2ea54264fff62761`.
+- Added invalid-bid-ID guards to the job-service bid controller so malformed path values now return `400 Invalid bid ID` instead of bubbling up as internal errors.
+- Added authenticated worker convenience routes for `GET /api/bids/me` and `GET /api/bids/stats/me` at both the gateway and job-service layers.
+- Kept literal bid utility routes explicit ahead of the generic `/:bidId` lookup surface so route intent remains clear and easier to verify.
+
+**Verification**
+- Live gateway health checks passed for `/health` and `/api/health/aggregate` on `https://kelmah-api-gateway-gf3g.onrender.com`.
+- Live login and real bid creation succeeded for the worker account `kwame.asante1@kelmah.test` using the repaired canonical bid payload.
+- Local backend verification to follow this patch includes syntax checks plus the backend route-contract smoke test.
+
+### Session: Bid Feedback And Confirmation UX Hardening ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Tighten bid-related confirmation and error feedback across the worker submit flow, the bid dialog, the worker bid management page, and the hirer bid review page so bid actions no longer feel ambiguous or "stuck" after submission.
+
+**Acceptance Criteria**
+- Remove weak post-submit behavior in the standalone bid/application page so workers get a stable success state with clear next actions.
+- Improve the bid dialog success state so workers can immediately understand what happened and where to manage the bid.
+- Surface withdraw, accept, and reject outcomes in persistent feedback that is visible even when the page is scrolled away from the top.
+- Re-run diagnostics and a frontend build after the UX feedback patch.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/modules/jobs/pages/JobApplicationPage.jsx`
+- `kelmah-frontend/src/modules/jobs/components/BidSubmissionForm.jsx`
+- `kelmah-frontend/src/modules/worker/pages/MyBidsPage.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/JobBidsPage.jsx`
+- `kelmah-frontend/src/modules/common/components/common/Toast.jsx`
+- `kelmah-frontend/src/routes/config.jsx`
+
+**Current findings**
+- `JobApplicationPage` still auto-redirects after success, which shortens the confirmation window and makes the result feel unstable.
+- Bid success and management outcomes are mostly shown as inline alerts near the top of the page, which are easy to miss once the user has scrolled into the content or action area.
+- `BidSubmissionForm` confirms success, but it still lacks a direct next-step route into the worker's bid management flow.
+- Public/live verification remains blocked in this pass because the configured Render gateway host and localhost gateway probe are both unreachable from the current environment.
+
+**Changes completed**
+- Replaced the standalone bid/application page's short auto-redirect with a stable success state that explains what happened and gives the worker explicit next actions.
+- Added a direct `View My Bids` path to the bid dialog success screen so workers can move immediately from bid submission to bid management.
+- Added toast-style action feedback to the worker bid dashboard so withdraw results are visible even when the user is scrolled away from the top of the page.
+- Added toast-style action feedback plus a visible processing bar to the hirer bid review page so accept/reject actions no longer feel silent while the request is running.
+
+**Verification**
+- Editor diagnostics returned no errors for all touched bid feedback files.
+- Frontend production build passed with `npm run build` in `kelmah-frontend/` after the feedback patch.
+- A localhost gateway probe to `http://localhost:5000/health` failed with connection refusal, and the configured public Render gateway remains unreachable from this environment, so live bid submission testing is still blocked here.
+
+### Session: Mobile Job Details Bid Flow Repair And UX Audit ✅ COMPLETED
+
+**Date**: March 8, 2026  
+**Scope**: Diagnose why the mobile job-details "Place Your Bid" action appears to hang, trace the full CTA-to-submit flow, repair the broken bid payload contract across frontend and backend surfaces, and tighten the mobile CTA UX on the job details page.
+
+**Acceptance Criteria**
+- Trace the mobile bid flow from the job details sticky CTA through the dialog/apply pages into the gateway and job-service bid endpoints.
+- Fix the payload mismatch causing bid submissions to fail between frontend clients and the backend bid controller/model.
+- Ensure the mobile sticky CTA uses the correct role-aware behavior and does not produce misleading or dead-end bid actions.
+- Re-run diagnostics/build checks on all touched files and record the outcome.
+
+**Dry-audit file surface confirmed**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `kelmah-frontend/src/modules/jobs/components/BidSubmissionForm.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobApplicationPage.jsx`
+- `kelmah-frontend/src/modules/worker/components/JobApplicationForm.jsx`
+- `kelmah-frontend/src/modules/worker/components/EnhancedJobCard.jsx`
+- `kelmah-frontend/src/modules/jobs/services/bidService.js`
+- `kelmah-frontend/src/modules/jobs/services/jobSlice.js`
+- `kelmah-frontend/src/services/apiClient.js`
+- `kelmah-backend/api-gateway/routes/bid.routes.js`
+- `kelmah-backend/services/job-service/routes/bid.routes.js`
+- `kelmah-backend/services/job-service/controllers/bid.controller.js`
+- `kelmah-backend/services/job-service/models/Bid.js`
+- `kelmah-backend/shared/models/Job.js`
+
+**Current findings**
+- The mobile sticky CTA on `JobDetailsPage` opens the bid dialog for bidding jobs, but its mobile branch is not role-aware the same way the desktop CTA is.
+- Frontend bid clients currently send a payload shape centered on `job` and loose duration strings, while the backend controller expects `jobId`, `estimatedDuration`, and `availability` and the bid model requires structured `estimatedDuration` and `availability.startDate` data.
+- That mismatch means the current bid flow can fail even when the UI appears ready, which is consistent with the user-visible "hanging" complaint.
+- The sticky mobile footer also crowds the lower page content and weakens the action hierarchy on small screens.
+
+**Changes completed**
+- Unified bid submission payloads across the main frontend entry points by normalizing `jobId`, structured duration data, and availability in `kelmah-frontend/src/modules/jobs/services/bidService.js`.
+- Updated the mobile/desktop bid dialog and application surfaces so they now submit backend-compatible bid payloads instead of the legacy loose contract.
+- Hardened `kelmah-backend/services/job-service/controllers/bid.controller.js` so it can normalize both canonical and legacy bid request shapes into model-safe values.
+- Reworked the sticky mobile CTA on `JobDetailsPage` so it now mirrors the desktop role-aware behavior, improves the action copy, and reserves enough bottom space for the footer and bottom navigation.
+
+**Verification**
+- Editor diagnostics returned no errors for all touched frontend and backend files after the patch set.
+- Frontend production build passed with `npm run build` in `kelmah-frontend/`.
+- Backend syntax validation passed with `node --check kelmah-backend/services/job-service/controllers/bid.controller.js` after fixing one temporary variable-name collision during verification.
+- Live Render-host verification for the gateway could not be completed in this pass because the attempted public hosts returned `404 Not Found`, so runtime confirmation remains local/editor-build validated only.
+
 ### Session: Backend Contract Hardening For Worker Privacy And Job Exposure ✅ COMPLETED
 
 **Date**: March 8, 2026  
@@ -64,10 +485,21 @@
 - `kelmah-mobile-ios/Config/*.xcconfig`
 - `spec-kit/STATUS_LOG.md`
 
-**Current focus**
-- Android audit pass on jobs, home, notifications, auth/session, and network precision.
-- iOS audit pass on the equivalent feature and infrastructure layers.
-- Live gateway contract checks for recommendation/search endpoints that materially affect mobile ranking behavior.
+**Changes completed**
+- Started the next execution cycle to replace the static native home tabs with role-aware home intelligence composed from real jobs, messages, and notifications data, with worker recommendation cards and hirer active-job snapshots as the immediate focus.
+- Added role-aware home intelligence to both native apps, replacing the static copy-only home tabs with live summaries driven by jobs, messaging, and notifications state.
+- Extended both mobile jobs repositories to consume dedicated worker recommendation feeds and hirer-owned jobs for home surfaces, instead of forcing the home tabs to rely on the generic discovery list only.
+- Added match metadata support to the shared mobile job models so worker home cards can surface recommendation strength and reasoning while hirer home cards can surface status and proposal volume.
+- Hoisted the shared Android jobs view model to the signed-in shell so the home and jobs tabs now consume the same source of truth for discover feeds, saved jobs, worker recommendations, and hirer job snapshots.
+- Updated the iOS root tab shell to bootstrap jobs, messages, and notifications view models once the session is usable, so tab badges and home activity summaries no longer depend on opening those tabs first.
+- Added real mobile-side job sort controls on both Android and iOS, wiring the jobs repositories to the live API sort values already accepted by the gateway (`newest`, `oldest`, `budget_desc`, `budget_asc`, `deadline_asc`, `urgent`) instead of hard-coding `newest`.
+- Fixed stale pagination merge behavior on both platforms so later page results now overwrite older duplicates rather than silently preserving stale saved-state or metadata.
+- Added mobile-side activity context for jobs by surfacing relative posted-time and urgent-listing indicators in the list/detail flows, and added deadline-friendly formatting in job detail views.
+- Added application sanity checks on both platforms so proposal rates that are wildly above the currently loaded listing budget are blocked before they hit the backend.
+- Added shared unread badges at the signed-in shell level for iOS tab items and Android navigation items so message/alert activity becomes visible without opening each feature screen.
+- Added notification action-target parsing on both platforms and wired notification taps into mobile navigation so conversation and job alerts can now take users to the related feature flow.
+- Added pending-route handling in the iOS tab shell and Android messages route so notification-driven deep links can open the relevant conversation or job detail instead of dead-ending in the inbox list.
+- Fixed the iOS session-store refresh-token persistence bug so saving a session without a refresh token now clears any previously stored refresh token.
 
 **Highest-risk findings**
 - Both mobile apps still drive job discovery from the generic jobs list with hard-coded `sort=newest`, and neither app consumes a dedicated recommendation endpoint or sends worker-profile/activity signals for ranking.
@@ -80,7 +512,14 @@
 **Verification**
 - Read-only dry audit completed across the Android and iOS mobile source trees, including jobs, home, messaging, notifications, auth/session, storage, profile, and transport layers.
 - Live Render gateway checks confirmed public jobs and category contracts are reachable, recommendation endpoints are authenticated, and the authenticated recommendations route currently returns `403 Forbidden` for the documented hirer test account.
-- Live messaging and notification payloads were sampled successfully and confirmed that notification action URLs such as `/messages?conversation=...` exist in the backend contract but are not currently translated into mobile navigation.
+- Live messaging and notification payloads were sampled successfully and confirmed that notification action URLs such as `/messages?conversation=...` exist in the backend contract.
+- Additional live API probing confirmed the current gateway accepts the newly wired mobile sort values on the generic jobs feed without returning request errors.
+- Editor diagnostics returned no errors across all touched Android and iOS files in this implementation pass.
+- Editor diagnostics also returned no errors across the second implementation pass for the native home, jobs, and shell files on both platforms.
+- Android validation passed after the fixes with `gradle testDebugUnitTest assembleDebug lintDebug --stacktrace` in `kelmah-mobile-android/`.
+- Android validation passed again after the home-intelligence implementation with `gradle testDebugUnitTest assembleDebug lintDebug --stacktrace` in `kelmah-mobile-android/`.
+- The Android validation run surfaced only existing deprecation warnings for older Material icon constants; there were no remaining compile, test, assemble, or lint failures.
+- Native iOS runtime/build execution still cannot run locally on this Windows workstation, so iOS verification remains editor-diagnostics-only here plus the existing remote macOS workflow created earlier in the session.
 
 ### Session: Matching, Recommendations, Search, Activity, And Full Page Audit ✅ COMPLETED
 

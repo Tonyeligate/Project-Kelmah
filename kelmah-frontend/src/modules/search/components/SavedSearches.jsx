@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/hooks/useAuth';
 import smartSearchService from '../services/smartSearchService';
 import {
@@ -69,6 +70,7 @@ const SavedSearches = ({
   const { user } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
+  const navigate = useNavigate();
 
   // State management
   const [savedSearches, setSavedSearches] = useState([]);
@@ -177,7 +179,7 @@ const SavedSearches = ({
           ...search.filters,
         }).toString();
 
-        window.location.href = `/search/jobs?${queryString}`;
+        navigate(`/search/jobs?${queryString}`);
       }
 
       loadSavedSearches(); // Refresh to update last run time

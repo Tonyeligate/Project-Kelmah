@@ -1,8 +1,9 @@
 // Use MongoDB WorkerProfile model for consistency
 const db = require('../models');
 // Destructure frequently-used models from service index (RULE-001 compliant)
-const { Bookmark, Availability, Certificate } = db;
+const { Bookmark, Availability, Certificate, Job, Application } = db;
 const { ensureConnection, mongoose: connectionInstance } = require('../config/db');
+const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
 const mongooseInstance = connectionInstance || require('mongoose');
 const { Types } = mongooseInstance;
 
@@ -259,30 +260,237 @@ const buildProfileStatistics = (workerDoc) => {
   };
 };
 
-const buildProfileActivity = (workerDoc, userDoc) => {
+const ACTIVITY_DEFAULT_PAGE = 1;
+const ACTIVITY_DEFAULT_LIMIT = 10;
+const ACTIVITY_MAX_LIMIT = 25;
+
+const parsePositiveInt = (value, fallback) => {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+const buildActivityItem = ({ id, type, timestamp, summary, details = {} }) => ({
+  id: id ? String(id) : `${type}-${timestamp || Date.now()}`,
+  type,
+  timestamp: toIsoString(timestamp),
+  summary,
+  details,
+});
+
+const dedupeActivityItems = (items = []) => {
+  const seen = new Set();
+
+  return items.filter((item) => {
+    if (!item?.timestamp || !item?.summary) {
+      return false;
+    }
+
+    const key = [
+      item.type,
+      item.timestamp,
+      item.details?.jobId || '',
+      item.details?.applicationId || '',
+      item.summary,
+    ].join(':');
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+};
+
+const buildActivityPagination = (page, limit, total) => {
+  const pages = total > 0 ? Math.ceil(total / limit) : 1;
+  return {
+    page,
+    limit,
+    total,
+    pages,
+    hasNextPage: page < pages,
+    hasPrevPage: page > 1,
+  };
+};
+
+const buildProfileActivity = async ({ userId, userRole, workerDoc, userDoc, page, limit }) => {
   const timeline = [];
+  const queryLimit = Math.min(page * limit * 3, 60);
 
-  if (workerDoc?.activity?.recentJobs) {
-    timeline.push(...workerDoc.activity.recentJobs.map((job) => ({
-      type: 'job_update',
-      timestamp: job.updatedAt ? job.updatedAt.toISOString() : null,
-      summary: job.title || 'Job updated',
-      details: { status: job.status, jobId: job._id?.toString() || job.id },
-    })));
+  const loginEvents = Array.isArray(userDoc?.activity?.logins)
+    ? userDoc.activity.logins.map((entry, index) => buildActivityItem({
+        id: `login-${index}-${entry?.timestamp || index}`,
+        type: 'login',
+        timestamp: entry?.timestamp,
+        summary: entry?.device ? `Signed in on ${entry.device}` : 'Login activity',
+        details: { ip: entry?.ip || null },
+      }))
+    : [];
+
+  timeline.push(...loginEvents);
+
+  const legacyWorkerEvents = Array.isArray(workerDoc?.activity?.recentJobs)
+    ? workerDoc.activity.recentJobs.map((job, index) => buildActivityItem({
+        id: `legacy-job-${job?._id || job?.id || index}`,
+        type: 'job_update',
+        timestamp: job?.updatedAt || job?.createdAt,
+        summary: job?.title || 'Job updated',
+        details: {
+          jobId: job?._id?.toString?.() || job?.id || null,
+          status: job?.status || null,
+          source: 'legacy-profile',
+        },
+      }))
+    : [];
+
+  timeline.push(...legacyWorkerEvents);
+
+  if (userRole === 'hirer') {
+    const hirerJobs = Job
+      ? await Job.find({ hirer: userId })
+          .select('title status createdAt updatedAt completedDate')
+          .sort({ updatedAt: -1 })
+          .limit(queryLimit)
+          .lean({ getters: true })
+      : [];
+
+    const jobIds = hirerJobs.map((job) => job?._id).filter(Boolean);
+    const recentApplications = Application && jobIds.length > 0
+      ? await Application.find({ job: { $in: jobIds } })
+          .select('job status createdAt updatedAt')
+          .sort({ createdAt: -1 })
+          .limit(queryLimit)
+          .lean({ getters: true })
+      : [];
+
+    const jobTitleMap = new Map(
+      hirerJobs.map((job) => [String(job._id), job.title || 'Untitled Job']),
+    );
+
+    timeline.push(
+      ...hirerJobs.map((job) => buildActivityItem({
+        id: `hirer-job-created-${job._id}`,
+        type: 'job_posted',
+        timestamp: job.createdAt,
+        summary: `You posted "${job.title || 'Untitled Job'}"`,
+        details: {
+          jobId: String(job._id),
+          status: job.status || 'open',
+        },
+      })),
+    );
+
+    timeline.push(
+      ...hirerJobs
+        .filter((job) => {
+          const createdAt = new Date(job.createdAt || 0).getTime();
+          const updatedAt = new Date(job.updatedAt || 0).getTime();
+          return updatedAt > createdAt && !['open', 'draft'].includes(job.status);
+        })
+        .map((job) => buildActivityItem({
+          id: `hirer-job-status-${job._id}-${job.status}`,
+          type: job.status === 'completed' ? 'job_completed' : 'job_status_changed',
+          timestamp: job.completedDate || job.updatedAt,
+          summary:
+            job.status === 'completed'
+              ? `Job completed: ${job.title || 'Untitled Job'}`
+              : `${job.title || 'Untitled Job'} is now ${job.status}`,
+          details: {
+            jobId: String(job._id),
+            status: job.status || null,
+          },
+        })),
+    );
+
+    timeline.push(
+      ...recentApplications.map((application) => buildActivityItem({
+        id: `hirer-application-${application._id}`,
+        type: 'application_received',
+        timestamp: application.createdAt,
+        summary: `New application received for "${jobTitleMap.get(String(application.job)) || 'your job'}"`,
+        details: {
+          applicationId: String(application._id),
+          jobId: String(application.job),
+          status: application.status || 'pending',
+        },
+      })),
+    );
+  } else {
+    const workerApplications = Application
+      ? await Application.find({ worker: userId })
+          .select('job status createdAt updatedAt')
+          .sort({ updatedAt: -1 })
+          .limit(queryLimit)
+          .lean({ getters: true })
+      : [];
+
+    const workerJobs = Job
+      ? await Job.find({ worker: userId })
+          .select('title status createdAt updatedAt completedDate')
+          .sort({ updatedAt: -1 })
+          .limit(queryLimit)
+          .lean({ getters: true })
+      : [];
+
+    const referencedJobIds = [
+      ...new Set(workerApplications.map((application) => String(application.job)).filter(Boolean)),
+    ];
+
+    const referencedJobs = Job && referencedJobIds.length > 0
+      ? await Job.find({ _id: { $in: referencedJobIds } })
+          .select('title status')
+          .lean({ getters: true })
+      : [];
+
+    const jobTitleMap = new Map(
+      referencedJobs.map((job) => [String(job._id), job.title || 'Untitled Job']),
+    );
+
+    timeline.push(
+      ...workerApplications.map((application) => buildActivityItem({
+        id: `worker-application-${application._id}`,
+        type: 'application_submitted',
+        timestamp: application.createdAt,
+        summary: `You applied to "${jobTitleMap.get(String(application.job)) || 'a job'}"`,
+        details: {
+          applicationId: String(application._id),
+          jobId: String(application.job),
+          status: application.status || 'pending',
+        },
+      })),
+    );
+
+    timeline.push(
+      ...workerJobs.map((job) => buildActivityItem({
+        id: `worker-job-${job._id}-${job.status}`,
+        type: job.status === 'completed' ? 'job_completed' : 'job_assigned',
+        timestamp: job.completedDate || job.updatedAt || job.createdAt,
+        summary:
+          job.status === 'completed'
+            ? `You completed "${job.title || 'Untitled Job'}"`
+            : `You are assigned to "${job.title || 'Untitled Job'}"`,
+        details: {
+          jobId: String(job._id),
+          status: job.status || null,
+        },
+      })),
+    );
   }
 
-  if (userDoc?.activity?.logins) {
-    timeline.push(...userDoc.activity.logins.map((entry) => ({
-      type: 'login',
-      timestamp: entry.timestamp ? new Date(entry.timestamp).toISOString() : null,
-      summary: entry.device || 'Login activity',
-      details: { ip: entry.ip },
-    })));
-  }
+  const entries = dedupeActivityItems(timeline).sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+  );
 
-  return timeline
-    .sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0))
-    .slice(0, 20);
+  const total = entries.length;
+  const startIndex = (page - 1) * limit;
+  const items = entries.slice(startIndex, startIndex + limit);
+
+  return {
+    items,
+    pagination: buildActivityPagination(page, limit, total),
+    role: userRole,
+  };
 };
 
 const resolveRequesterId = (req) => {
@@ -339,47 +547,68 @@ exports.getProfileStatistics = async (req, res) => {
 
     const { workerDoc } = await fetchProfileDocuments({ userId });
 
-    return res.json({
-      success: true,
-      data: buildProfileStatistics(workerDoc),
-    });
+    return successResponse(
+      res,
+      200,
+      'Profile statistics retrieved successfully',
+      buildProfileStatistics(workerDoc),
+    );
   } catch (error) {
     logger.error('getProfileStatistics error:', error);
-    return res.status(500).json({ success: false, message: 'Failed to fetch profile statistics' });
+    return errorResponse(res, 500, 'Failed to fetch profile statistics');
   }
 };
 
 exports.getProfileActivity = async (req, res) => {
   try {
     const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+    if (!userId) return errorResponse(res, 401, 'Unauthorized');
+
+    const page = parsePositiveInt(req.query?.page, ACTIVITY_DEFAULT_PAGE);
+    const limit = Math.min(
+      parsePositiveInt(req.query?.limit, ACTIVITY_DEFAULT_LIMIT),
+      ACTIVITY_MAX_LIMIT,
+    );
 
     const { workerDoc, userDoc } = await fetchProfileDocuments({ userId });
-
-    return res.json({
-      success: true,
-      data: { entries: buildProfileActivity(workerDoc, userDoc) },
+    const activity = await buildProfileActivity({
+      userId,
+      userRole: userDoc?.role || req.user?.role || 'worker',
+      workerDoc,
+      userDoc,
+      page,
+      limit,
     });
+
+    return paginatedResponse(
+      res,
+      activity.items,
+      activity.pagination,
+      'Profile activity retrieved successfully',
+      { role: activity.role },
+    );
   } catch (error) {
     logger.error('getProfileActivity error:', error);
-    return res.status(500).json({ success: false, message: 'Failed to fetch profile activity' });
+    return errorResponse(res, 500, 'Failed to fetch profile activity');
   }
 };
 
 exports.getProfilePreferences = async (req, res) => {
   try {
     const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+    if (!userId) return errorResponse(res, 401, 'Unauthorized');
 
     const { userDoc } = await fetchProfileDocuments({ userId });
 
-    return res.json({
-      success: true,
-      data: { preferences: normalizePreferences(userDoc?.preferences) },
-    });
+    return successResponse(
+      res,
+      200,
+      'Profile preferences retrieved successfully',
+      { preferences: normalizePreferences(userDoc?.preferences) },
+    );
   } catch (error) {
     logger.error('getProfilePreferences error:', error);
-    return res.status(500).json({ success: false, message: 'Failed to fetch preferences' });
+    return errorResponse(res, 500, 'Failed to fetch preferences');
   }
 };
 
@@ -441,11 +670,11 @@ exports.getEarnings = async (req, res) => {
       : null;
 
     const candidateEndpoints = [];
-    if (paymentServiceBase) {
-      candidateEndpoints.push(`${paymentServiceBase}/api/payments/transactions/history`);
-    }
     if (gatewayBase) {
       candidateEndpoints.push(`${gatewayBase}/api/payments/transactions/history`);
+    }
+    if (paymentServiceBase) {
+      candidateEndpoints.push(`${paymentServiceBase}/api/payments/transactions/history`);
     }
 
     const uniqueCandidateEndpoints = [...new Set(candidateEndpoints.filter(Boolean))];
@@ -478,30 +707,62 @@ exports.getEarnings = async (req, res) => {
       const since7Date = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       const since30 = since30Date.toISOString();
 
-      const fetchTransactions = async (from) => {
-        const results = await Promise.all(
-          uniqueCandidateEndpoints.map(async (endpoint) => {
-            try {
-              const response = await axios.get(endpoint, {
-                params: { recipient: userId, from },
-                headers,
-                timeout: requestTimeoutMs,
-              });
-              return Array.isArray(response?.data?.transactions)
-                ? response.data.transactions
-                : null;
-            } catch (error) {
-              logger.warn('Payment history request failed', {
-                endpoint,
-                message: error?.message,
-                timeoutMs: requestTimeoutMs,
-              });
-              return null;
-            }
-          }),
-        );
+      const extractTransactions = (payload) => {
+        if (Array.isArray(payload?.transactions)) {
+          return payload.transactions;
+        }
+        if (Array.isArray(payload?.data)) {
+          return payload.data;
+        }
+        if (Array.isArray(payload)) {
+          return payload;
+        }
+        return null;
+      };
 
-        return results.find(Array.isArray) || null;
+      const fetchTransactions = async (from) => {
+        for (const endpoint of uniqueCandidateEndpoints) {
+          const controller = typeof AbortController === 'function'
+            ? new AbortController()
+            : null;
+          const hardTimeout = setTimeout(() => {
+            if (controller) {
+              controller.abort();
+            }
+          }, requestTimeoutMs);
+
+          try {
+            const response = await axios.get(endpoint, {
+              params: { recipient: userId, from },
+              headers,
+              timeout: requestTimeoutMs,
+              signal: controller?.signal,
+              validateStatus: (status) => status >= 200 && status < 500,
+            });
+
+            const transactions = extractTransactions(response?.data);
+            if (Array.isArray(transactions)) {
+              return transactions;
+            }
+
+            logger.warn('Payment history response did not contain a transaction array', {
+              endpoint,
+              status: response?.status,
+            });
+          } catch (error) {
+            logger.warn('Payment history request failed', {
+              endpoint,
+              message: error?.message,
+              code: error?.code,
+              status: error?.response?.status,
+              timeoutMs: requestTimeoutMs,
+            });
+          } finally {
+            clearTimeout(hardTimeout);
+          }
+        }
+
+        return null;
       };
 
       const tx30 = await fetchTransactions(since30);
@@ -743,7 +1004,13 @@ exports.getDashboardMetrics = async (req, res) => {
 
     if (!MongoUser || !MongoWorkerProfile) {
       logger.warn('Dashboard metrics: models not initialized, returning fallback data.');
-      return res.json({ ...defaultMetrics, reason: 'models-not-ready' });
+      logger.warn('Dashboard metrics: models not initialized, returning fallback data.');
+      return successResponse(
+        res,
+        200,
+        'Dashboard metrics retrieved successfully',
+        { ...defaultMetrics, reason: 'models-not-ready' },
+      );
     }
 
     const [totalUsersResult, totalWorkersResult, activeWorkersResult] = await Promise.allSettled([
@@ -808,9 +1075,20 @@ exports.getDashboardMetrics = async (req, res) => {
     };
 
     return res.json(metrics);
+    return successResponse(
+      res,
+      200,
+      'Dashboard metrics retrieved successfully',
+      metrics,
+    );
   } catch (err) {
     logger.error('Dashboard metrics error:', err);
-    return res.json({ ...defaultMetrics, reason: 'metrics-unavailable' });
+    return successResponse(
+      res,
+      200,
+      'Dashboard metrics retrieved successfully',
+      { ...defaultMetrics, reason: 'metrics-unavailable' },
+    );
   }
 };
 
@@ -822,15 +1100,17 @@ exports.getDashboardWorkers = async (req, res, next) => {
     // Use the MongoDB WorkerProfile from our models index
     const { WorkerProfile, User } = require('../models');
     const mongoose = require('mongoose');
-const { logger } = require('../utils/logger');
+    const { logger } = require('../utils/logger');
 
     // Check MongoDB connection status
     if (mongoose.connection.readyState !== 1) {
       logger.error('MongoDB not connected. ReadyState:', mongoose.connection.readyState);
-      return res.status(503).json({ 
-        error: 'Database connection not ready',
-        message: 'Service temporarily unavailable. Please try again in a moment.' 
-      });
+      return errorResponse(
+        res,
+        503,
+        'Service temporarily unavailable. Please try again in a moment.',
+        { reason: 'database-connection-not-ready' },
+      );
     }
 
     // Get workers WITHOUT populate to avoid model registration issues
@@ -844,7 +1124,12 @@ const { logger } = require('../utils/logger');
     // Handle empty result set
     if (!workers || workers.length === 0) {
       logger.info('No workers found in database');
-      return res.json({ workers: [] });
+      return paginatedResponse(
+        res,
+        [],
+        { page: 1, limit: 10, total: 0, pages: 1 },
+        'Dashboard workers retrieved successfully',
+      );
     }
 
     // Manually fetch user data for each worker to avoid populate issues
@@ -875,23 +1160,27 @@ const { logger } = require('../utils/logger');
       };
     });
 
-    return res.json({ workers: formattedWorkers });
+    return paginatedResponse(
+      res,
+      formattedWorkers,
+      {
+        page: 1,
+        limit: formattedWorkers.length || 10,
+        total: formattedWorkers.length,
+        pages: 1,
+      },
+      'Dashboard workers retrieved successfully',
+    );
   } catch (err) {
     logger.error('Dashboard workers error:', err);
     logger.error('Error stack:', err.stack);
-    
-    // Provide detailed error information
-    const errorResponse = {
-      error: 'Failed to fetch dashboard workers',
-      message: 'An internal error occurred'
-    };
-    
-    // Include stack trace in development only
-    if (process.env.NODE_ENV === 'development') {
-      errorResponse.stack = err.stack;
-    }
-    
-    return res.status(500).json(errorResponse);
+
+    return errorResponse(
+      res,
+      500,
+      'Failed to fetch dashboard workers',
+      process.env.NODE_ENV === 'development' ? { stack: err.stack } : null,
+    );
   }
 };
 
@@ -916,10 +1205,7 @@ exports.getDashboardAnalytics = async (req, res) => {
     }
 
     if (!MongoUser || !MongoWorkerProfile) {
-      return res.status(503).json({
-        success: false,
-        message: 'Models not initialized for analytics computation',
-      });
+      return errorResponse(res, 503, 'Models not initialized for analytics computation');
     }
 
     const now = new Date();
@@ -1002,22 +1288,24 @@ exports.getDashboardAnalytics = async (req, res) => {
       { name: 'Painting', count: 6 },
     ];
 
-    return res.json({
-      userGrowth,
-      jobStats,
-      topCategories,
-      workerStats: {
-        total: totalWorkers,
-        available: availableWorkers,
-        utilization: totalWorkers > 0 ? Math.round((availableWorkers / totalWorkers) * 100) : 0,
+    return successResponse(
+      res,
+      200,
+      'Dashboard analytics retrieved successfully',
+      {
+        userGrowth,
+        jobStats,
+        topCategories,
+        workerStats: {
+          total: totalWorkers,
+          available: availableWorkers,
+          utilization: totalWorkers > 0 ? Math.round((availableWorkers / totalWorkers) * 100) : 0,
+        },
       },
-    });
+    );
   } catch (err) {
     logger.error('Dashboard analytics error:', err);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to generate dashboard analytics',
-    });
+    return errorResponse(res, 500, 'Failed to generate dashboard analytics');
   }
 };
 
@@ -1031,40 +1319,82 @@ exports.getUserAvailability = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'User ID required' });
     }
 
-    const availability = await Availability.findOne({ userId }).lean();
+    const availability = await Availability.findOne({ user: userId }).lean();
 
     if (!availability) {
       return res.json({
         status: 'not_set',
-        schedule: {},
+        schedule: [],
+        daySlots: [],
         nextAvailable: null,
         message: 'Availability not configured'
       });
     }
 
-    // Calculate next available time
+    const normalizedDaySlots = Array.isArray(availability.daySlots)
+      ? availability.daySlots
+      : [];
+
+    const dayNameByIndex = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const parseTimeToMinutes = (value) => {
+      if (!value || typeof value !== 'string') return null;
+      const [h, m] = value.split(':').map((part) => Number(part));
+      if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+      return h * 60 + m;
+    };
+
+    const schedule = normalizedDaySlots.map((daySlot) => {
+      const slots = Array.isArray(daySlot?.slots) ? daySlot.slots : [];
+      const first = slots[0] || {};
+      const firstStartMinutes = parseTimeToMinutes(first.start);
+      const firstEndMinutes = parseTimeToMinutes(first.end);
+
+      return {
+        day: dayNameByIndex[daySlot?.dayOfWeek] || null,
+        dayOfWeek: Number.isFinite(daySlot?.dayOfWeek) ? daySlot.dayOfWeek : null,
+        available: slots.length > 0,
+        slots,
+        startHour: firstStartMinutes !== null ? Math.floor(firstStartMinutes / 60) : null,
+        startMinute: firstStartMinutes !== null ? firstStartMinutes % 60 : null,
+        endHour: firstEndMinutes !== null ? Math.floor(firstEndMinutes / 60) : null,
+        endMinute: firstEndMinutes !== null ? firstEndMinutes % 60 : null,
+      };
+    });
+
+    // Calculate next available time from daySlots
     const now = new Date();
     let nextAvailable = null;
 
-    if (availability.schedule && availability.schedule.length > 0) {
-      // Find next available slot in schedule
-      const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
-      const currentTime = now.getHours() * 100 + now.getMinutes();
+    if (schedule.length > 0) {
+      const currentDayIndex = now.getDay();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-      for (const slot of availability.schedule) {
-        if (slot.day === currentDay && slot.available) {
-          const startTime = slot.startHour * 100 + slot.startMinute;
-          if (startTime > currentTime) {
-            nextAvailable = `${slot.startHour}:${slot.startMinute.toString().padStart(2, '0')}`;
-            break;
-          }
+      for (let offset = 0; offset < 7; offset += 1) {
+        const dayIndex = (currentDayIndex + offset) % 7;
+        const dayEntry = schedule.find((item) => item.dayOfWeek === dayIndex);
+        if (!dayEntry || !Array.isArray(dayEntry.slots) || dayEntry.slots.length === 0) {
+          continue;
+        }
+
+        const candidateMinutes = dayEntry.slots
+          .map((slot) => parseTimeToMinutes(slot.start))
+          .filter((value) => value !== null)
+          .sort((a, b) => a - b)
+          .find((value) => offset > 0 || value > currentMinutes);
+
+        if (candidateMinutes !== undefined) {
+          const hour = Math.floor(candidateMinutes / 60);
+          const minute = candidateMinutes % 60;
+          nextAvailable = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+          break;
         }
       }
     }
 
     return res.json({
       status: availability.isAvailable ? 'available' : 'unavailable',
-      schedule: availability.schedule || {},
+      schedule,
+      daySlots: normalizedDaySlots,
       nextAvailable,
       lastUpdated: availability.updatedAt
     });

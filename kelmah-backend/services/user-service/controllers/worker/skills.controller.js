@@ -55,6 +55,11 @@ module.exports = {
   create: async (req, res) => {
     try {
       const { workerId } = req.params;
+      // Ownership check: only the worker themselves or an admin can mutate skills
+      const requestUserId = req.user?.id || req.user?.sub || req.user?.userId;
+      if (requestUserId !== workerId && req.user?.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'Forbidden: you can only manage your own skills' });
+      }
       const validation = validateInput(req.body || {}, ['name']);
       if (!validation.isValid) {
         return res.status(400).json({ success: false, errors: validation.errors });
@@ -85,6 +90,11 @@ module.exports = {
   update: async (req, res) => {
     try {
       const { workerId, skillId } = req.params;
+      // Ownership check: only the worker themselves or an admin can mutate skills
+      const requestUserId = req.user?.id || req.user?.sub || req.user?.userId;
+      if (requestUserId !== workerId && req.user?.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'Forbidden: you can only manage your own skills' });
+      }
       const profile = await getWorkerProfile(workerId);
       const skills = profile.skillEntries || [];
       const index = skills.findIndex((entry) => String(entry._id) === skillId);
@@ -116,6 +126,11 @@ module.exports = {
   remove: async (req, res) => {
     try {
       const { workerId, skillId } = req.params;
+      // Ownership check: only the worker themselves or an admin can mutate skills
+      const requestUserId = req.user?.id || req.user?.sub || req.user?.userId;
+      if (requestUserId !== workerId && req.user?.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'Forbidden: you can only manage your own skills' });
+      }
       const profile = await getWorkerProfile(workerId);
       const skills = profile.skillEntries || [];
       const filtered = skills.filter((entry) => String(entry._id) !== skillId);

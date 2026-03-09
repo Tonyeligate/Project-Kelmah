@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 
 @MainActor
@@ -14,10 +15,14 @@ final class MessagesViewModel: ObservableObject {
     @Published var infoMessage: String?
 
     private let repository: MessagesRepository
+    private let realtimeSocketManager: RealtimeSocketManager
     private var hasBootstrapped = false
+    private var subscriptions = Set<AnyCancellable>()
 
-    init(repository: MessagesRepository) {
+    init(repository: MessagesRepository, realtimeSocketManager: RealtimeSocketManager) {
         self.repository = repository
+        self.realtimeSocketManager = realtimeSocketManager
+        subscribeToRealtimeSignals()
     }
 
     var currentUserId: String? {
@@ -38,9 +43,18 @@ final class MessagesViewModel: ObservableObject {
     }
 
     func bootstrap() async {
+        realtimeSocketManager.start()
         guard hasBootstrapped == false else { return }
         hasBootstrapped = true
         await refreshConversations()
+    }
+
+    func startRealtimeSync() {
+        realtimeSocketManager.start()
+    }
+
+    func stopRealtimeSync() {
+        realtimeSocketManager.stop()
     }
 
     func clearMessages() {
@@ -158,5 +172,32 @@ final class MessagesViewModel: ObservableObject {
             errorMessage = error.localizedDescription
         }
         isSending = false
+    }
+
+    private func subscribeToRealtimeSignals() {
+        realtimeSocketManager.signals
+            .receive(on: RunLoop.main)
+            .sink { [weak self] signal in
+                guard let self else { return }
+                Task { await self.handleRealtimeSignal(signal) }
+            }
+            .store(in: &subscriptions)
+    }
+
+    private func handleRealtimeSignal(_ signal: RealtimeSignal) async {
+        switch signal {
+        case let .message(conversationId):
+            await refreshConversations()
+            if let conversationId, selectedConversation?.id == conversationId {
+                await loadMessages(conversationId: conversationId)
+            }
+        case let .messagesRead(conversationId):
+            await refreshConversations()
+            if let conversationId, selectedConversation?.id == conversationId {
+                await loadMessages(conversationId: conversationId)
+            }
+        case .notification, .connectionChanged:
+            break
+        }
     }
 }

@@ -258,33 +258,34 @@ exports.login = async (req, res, next) => {
       return next(new AppError("Incorrect email or password", 401));
     }
 
-    // Reset failed login attempts and unlock account (direct update)
-    await usersCollection.updateOne(
-      { _id: user._id },
-      {
-        $set: {
-          failedLoginAttempts: 0,
-          accountLockedUntil: null,
-          lastLogin: new Date(),
-          lastLoginIp: req.ip
-        }
-      }
-    );
-
     // Check if 2FA is enabled for this user
     if (user.isTwoFactorEnabled) {
       const { twoFactorCode } = req.body;
       if (!twoFactorCode) {
-        // Return a partial response requiring 2FA verification
+        // HIGH-6 FIX: Return a challenge token instead of userId to avoid leaking identity
+        if (!global._twoFactorChallenges) global._twoFactorChallenges = new Map();
+        const challengeToken = crypto.randomBytes(16).toString('hex');
+        global._twoFactorChallenges.set(challengeToken, {
+          userId: user._id.toString(),
+          expiresAt: Date.now() + 5 * 60 * 1000
+        });
+        setTimeout(() => { if (global._twoFactorChallenges) global._twoFactorChallenges.delete(challengeToken); }, 5 * 60 * 1000);
+
         return res.status(200).json({
           success: true,
           requiresTwoFactor: true,
           message: 'Two-factor authentication required',
-          data: {
-            requiresTwoFactor: true,
-            userId: user._id, // client needs this to submit 2FA code
-          }
+          data: { requiresTwoFactor: true, challengeToken }
         });
+      }
+
+      // If client provides challengeToken, validate it before proceeding
+      if (req.body.challengeToken) {
+        const challenge = global._twoFactorChallenges?.get(req.body.challengeToken);
+        if (!challenge || challenge.expiresAt < Date.now()) {
+          return next(new AppError('Invalid or expired 2FA challenge', 401));
+        }
+        global._twoFactorChallenges.delete(req.body.challengeToken);
       }
 
       // Verify the 2FA code
@@ -300,6 +301,20 @@ exports.login = async (req, res, next) => {
         return next(new AppError('Invalid two-factor authentication code', 401));
       }
     }
+
+    // HIGH-2 FIX: Reset failed login attempts AFTER full authentication (password + 2FA)
+    // so that a bypass of 2FA does not clear the lockout counter prematurely.
+    await usersCollection.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          failedLoginAttempts: 0,
+          accountLockedUntil: null,
+          lastLogin: new Date(),
+          lastLoginIp: req.ip
+        }
+      }
+    );
 
     // Generate access token via local JWT utils
     const accessToken = jwtUtils.signAccessToken({
@@ -524,7 +539,11 @@ exports.forgotPassword = async (req, res, next) => {
     await user.save();
 
     // Create reset URL
-    const resetUrl = `${config.frontendUrl}/reset-password?token=${resetToken}`;
+    const frontendUrl = config.frontendUrl ||
+      config.FRONTEND_URL ||
+      process.env.FRONTEND_URL ||
+      'https://kelmah-frontend-cyan.vercel.app';
+    const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
 
     // Send password reset email
     try {
@@ -706,7 +725,7 @@ exports.refreshToken = async (req, res, next) => {
     }
 
     // Check if token version matches (if versioning is implemented)
-    if (user.tokenVersion && stored.version && user.tokenVersion !== stored.version) {
+    if (user.tokenVersion !== undefined && user.tokenVersion !== null && stored.version !== undefined && stored.version !== null && user.tokenVersion !== stored.version) {
       // Token has been invalidated, remove from database
       await RefreshToken.updateMany({ tokenId: parsed.jti }, { $set: { isRevoked: true, revokedAt: new Date(), revokedByIp: req.ip } });
       return next(new AppError("Token has been invalidated", 401));
@@ -716,18 +735,29 @@ exports.refreshToken = async (req, res, next) => {
     const accessToken = jwtUtils.signAccessToken({ id: user.id, email: user.email, role: user.role, version: user.tokenVersion || 0 });
     const newRefreshData = await secure.generateRefreshToken(user, { ipAddress: req.ip, deviceInfo: { userAgent: req.headers['user-agent'], fingerprint: req.headers['x-device-id'] || 'unknown' } });
 
-    // Rotate: revoke old row by tokenId, insert new hashed row
-    await RefreshToken.updateMany({ tokenId: parsed.jti }, { $set: { isRevoked: true, revokedAt: new Date(), revokedByIp: req.ip } });
-    await RefreshToken.create({
-      userId: user.id,
-      tokenId: newRefreshData.tokenId,
-      tokenHash: newRefreshData.tokenHash,
-      version: user.tokenVersion || 0,
-      expiresAt: newRefreshData.expiresAt,
-      deviceInfo: newRefreshData.deviceInfo,
-      createdByIp: req.ip,
-      createdAt: new Date(),
-    });
+    // Rotate: revoke old token and insert new one atomically via MongoDB transaction
+    const rotationSession = await mongoose.startSession();
+    try {
+      await rotationSession.withTransaction(async () => {
+        await RefreshToken.updateMany(
+          { tokenId: parsed.jti },
+          { $set: { isRevoked: true, revokedAt: new Date(), revokedByIp: req.ip, reason: 'rotation' } },
+          { session: rotationSession }
+        );
+        await RefreshToken.create([{
+          userId: user.id,
+          tokenId: newRefreshData.tokenId,
+          tokenHash: newRefreshData.tokenHash,
+          version: user.tokenVersion || 0,
+          expiresAt: newRefreshData.expiresAt,
+          deviceInfo: newRefreshData.deviceInfo,
+          createdByIp: req.ip,
+          createdAt: new Date(),
+        }], { session: rotationSession });
+      });
+    } finally {
+      await rotationSession.endSession();
+    }
 
     // Log token refresh for audit purposes
     logger.info('Token refreshed', { email: user.email, ip: req.ip });
@@ -1003,7 +1033,7 @@ exports.googleCallback = async (req, res, next) => {
     // CRIT-05 FIX: Use the same secure refresh token generation as login
     // so that only the token hash is stored in DB, not the raw token.
     const refreshData = await secure.generateRefreshToken(
-      { sub: user.id || user._id, role: user.role, version: user.tokenVersion || 0 },
+      { id: (user.id || user._id).toString(), role: user.role, tokenVersion: user.tokenVersion || 0 },
       { ipAddress: req.ip, userAgent: req.headers['user-agent'] || 'unknown' }
     );
     await RefreshToken.create({
@@ -1054,7 +1084,7 @@ exports.facebookCallback = async (req, res, next) => {
       version: user.tokenVersion || 0
     });
     const refreshData = await secure.generateRefreshToken(
-      { sub: user.id || user._id, role: user.role, version: user.tokenVersion || 0 },
+      { id: (user.id || user._id).toString(), role: user.role, tokenVersion: user.tokenVersion || 0 },
       { ipAddress: req.ip, userAgent: req.headers['user-agent'] || 'unknown' }
     );
     await RefreshToken.create({
@@ -1098,7 +1128,7 @@ exports.linkedinCallback = async (req, res, next) => {
       version: user.tokenVersion || 0
     });
     const refreshData = await secure.generateRefreshToken(
-      { sub: user.id || user._id, role: user.role, version: user.tokenVersion || 0 },
+      { id: (user.id || user._id).toString(), role: user.role, tokenVersion: user.tokenVersion || 0 },
       { ipAddress: req.ip, userAgent: req.headers['user-agent'] || 'unknown' }
     );
     await RefreshToken.create({

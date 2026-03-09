@@ -5,8 +5,11 @@ final class JobsViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var isRefreshing = false
     @Published var isLoadingMore = false
+    @Published var isLoadingHomeFeed = false
     @Published var discoverJobs: [JobSummary] = []
     @Published var savedJobs: [JobSummary] = []
+    @Published var recommendedJobs: [JobSummary] = []
+    @Published var hirerJobs: [JobSummary] = []
     @Published var categories: [JobCategory] = [JobCategory(id: "all", name: "All", description: "")]
     @Published var filters = JobFilters()
     @Published var activeFeed: JobsFeed = .discover
@@ -16,6 +19,7 @@ final class JobsViewModel: ObservableObject {
     @Published var selectedJob: JobDetail?
     @Published var isDetailLoading = false
     @Published var isSubmittingApplication = false
+    @Published var homeErrorMessage: String?
     @Published var errorMessage: String?
     @Published var infoMessage: String?
 
@@ -43,6 +47,46 @@ final class JobsViewModel: ObservableObject {
         infoMessage = nil
         if feed == .saved, savedJobs.isEmpty {
             await loadSavedJobs()
+        }
+    }
+
+    func refreshHome(for role: KelmahUserRole) async {
+        isLoadingHomeFeed = true
+        homeErrorMessage = nil
+        defer { isLoadingHomeFeed = false }
+
+        switch role {
+        case .worker:
+            do {
+                recommendedJobs = try await repository.getRecommendedJobs(limit: 6)
+            } catch {
+                var fallbackFilters = JobFilters()
+                fallbackFilters.sort = .urgent
+                do {
+                    recommendedJobs = try await repository.getJobs(filters: fallbackFilters, page: 1, limit: 6).jobs
+                } catch {
+                    recommendedJobs = []
+                    homeErrorMessage = error.localizedDescription
+                }
+            }
+
+            if savedJobs.isEmpty {
+                do {
+                    savedJobs = try await repository.getSavedJobs(limit: 6).jobs
+                } catch {
+                    if homeErrorMessage == nil {
+                        homeErrorMessage = error.localizedDescription
+                    }
+                }
+            }
+
+        case .hirer:
+            do {
+                hirerJobs = try await repository.getMyJobs(limit: 6)
+            } catch {
+                hirerJobs = []
+                homeErrorMessage = error.localizedDescription
+            }
         }
     }
 
@@ -220,6 +264,10 @@ private extension JobSummary {
             employerAvatar: employerAvatar,
             skills: skills,
             postedAt: postedAt,
+            status: status,
+            proposalCount: proposalCount,
+            matchScore: matchScore,
+            aiReasoning: aiReasoning,
             isVerified: isVerified,
             isUrgent: isUrgent,
             isSaved: saved

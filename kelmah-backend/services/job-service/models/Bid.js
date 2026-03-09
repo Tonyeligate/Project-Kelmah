@@ -150,6 +150,7 @@ BidSchema.methods.accept = function(hirerNotes = "") {
 BidSchema.methods.reject = function(hirerNotes = "") {
   this.status = "rejected";
   this.hirerNotes = hirerNotes;
+  this.responseTimestamp = new Date();
   return this.save();
 };
 
@@ -260,15 +261,8 @@ BidSchema.pre('save', async function(next) {
   next();
 });
 
-// Pre-save middleware to check monthly bid limit
-BidSchema.pre('save', async function(next) {
-  if (this.isNew) {
-    if (this.monthlyBidCount >= 5) {
-      return next(new Error('Monthly bid limit of 5 bids exceeded'));
-    }
-  }
-  next();
-});
+// NOTE: Hardcoded monthly bid limit removed (BUG-3).
+// The controller already validates quota per tier before reaching the model.
 
 const Bid = mongoose.model("Bid", BidSchema);
 

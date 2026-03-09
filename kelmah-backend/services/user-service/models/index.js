@@ -6,7 +6,7 @@
 const mongoose = require('mongoose');
 
 // Import shared models - they use mongoose.model() which auto-binds correctly
-const { User } = require('../../../shared/models');
+const { User, Job, Application } = require('../../../shared/models');
 
 // Import service-specific models
 const WorkerProfile = require('./WorkerProfileMongo');
@@ -29,6 +29,8 @@ function loadModels() {
 // Export models
 module.exports = {
   User,
+  Job,
+  Application,
   WorkerProfile,
   Portfolio,
   Certificate,

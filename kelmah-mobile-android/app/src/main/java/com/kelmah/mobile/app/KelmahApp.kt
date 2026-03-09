@@ -33,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
+import com.kelmah.mobile.features.jobs.presentation.JobsViewModel
 import com.kelmah.mobile.features.messaging.presentation.MessagesViewModel
 import com.kelmah.mobile.features.notifications.presentation.NotificationsViewModel
 
@@ -44,6 +45,7 @@ fun KelmahApp(
     KelmahTheme {
         val sessionState by sessionCoordinator.sessionState.collectAsStateWithLifecycle()
         val appScope = rememberCoroutineScope()
+        val jobsViewModel: JobsViewModel = hiltViewModel()
         val messagesViewModel: MessagesViewModel = hiltViewModel()
         val notificationsViewModel: NotificationsViewModel = hiltViewModel()
         val messagesState by messagesViewModel.uiState.collectAsStateWithLifecycle()
@@ -51,6 +53,21 @@ fun KelmahApp(
 
         LaunchedEffect(tokenManager.getAccessToken()) {
             sessionCoordinator.bootstrapSession()
+        }
+
+        LaunchedEffect(sessionState) {
+            when (sessionState) {
+                is SessionState.Authenticated -> {
+                    messagesViewModel.startRealtimeSync()
+                    notificationsViewModel.startRealtimeSync()
+                }
+                SessionState.Loading -> Unit
+                is SessionState.Error,
+                SessionState.Unauthenticated -> {
+                    messagesViewModel.stopRealtimeSync()
+                    notificationsViewModel.stopRealtimeSync()
+                }
+            }
         }
 
         when (val state = sessionState) {
@@ -146,6 +163,7 @@ fun KelmahApp(
                 KelmahNavHost(
                     navController = navController,
                     currentUser = currentUser,
+                    jobsViewModel = jobsViewModel,
                     messagesViewModel = messagesViewModel,
                     notificationsViewModel = notificationsViewModel,
                     onLogout = { logoutAll ->

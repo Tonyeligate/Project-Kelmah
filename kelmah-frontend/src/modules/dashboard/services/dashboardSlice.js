@@ -92,7 +92,7 @@ export const fetchDashboardData = createAsyncThunk(
       // Extract successful responses or use empty defaults on failure
       const metrics =
         metricsResponse.status === 'fulfilled'
-          ? metricsResponse.value.data
+          ? metricsResponse.value.data?.data || metricsResponse.value.data
           : {
             ...initialState.data.metrics,
             _serviceUnavailable: true,
@@ -117,6 +117,8 @@ export const fetchDashboardData = createAsyncThunk(
         workersResponse.status === 'fulfilled'
           ? Array.isArray(workersResponse.value.data)
             ? workersResponse.value.data
+            : Array.isArray(workersResponse.value.data?.data?.items)
+              ? workersResponse.value.data.data.items
             : Array.isArray(workersResponse.value.data?.workers)
               ? workersResponse.value.data.workers
               : []
@@ -125,9 +127,9 @@ export const fetchDashboardData = createAsyncThunk(
       const analytics =
         analyticsResponse.status === 'fulfilled'
           ? {
-            ...analyticsResponse.value.data,
-            topSkills: Array.isArray(analyticsResponse.value.data?.topSkills)
-              ? analyticsResponse.value.data.topSkills
+            ...(analyticsResponse.value.data?.data || analyticsResponse.value.data),
+            topSkills: Array.isArray((analyticsResponse.value.data?.data || analyticsResponse.value.data)?.topSkills)
+              ? (analyticsResponse.value.data?.data || analyticsResponse.value.data).topSkills
               : [],
           }
           : {
@@ -244,7 +246,7 @@ const dashboardSlice = createSlice({
       // Update job status
       .addCase(updateJobStatus.fulfilled, (state, action) => {
         const jobIndex = state.data.recentJobs.findIndex(
-          (job) => job.id === action.payload.jobId,
+          (job) => (job.id || job._id) === action.payload.jobId,
         );
         if (jobIndex !== -1) {
           state.data.recentJobs[jobIndex] = {

@@ -3,6 +3,8 @@ package com.kelmah.mobile.features.notifications.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kelmah.mobile.core.network.ApiResult
+import com.kelmah.mobile.core.realtime.RealtimeSignal
+import com.kelmah.mobile.core.realtime.RealtimeSocketManager
 import com.kelmah.mobile.features.notifications.data.NotificationItem
 import com.kelmah.mobile.features.notifications.data.NotificationsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,16 +28,27 @@ data class NotificationsUiState(
 @HiltViewModel
 class NotificationsViewModel @Inject constructor(
     private val notificationsRepository: NotificationsRepository,
+    private val realtimeSocketManager: RealtimeSocketManager,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(NotificationsUiState())
     val uiState: StateFlow<NotificationsUiState> = _uiState.asStateFlow()
 
     init {
+        observeRealtimeSignals()
         bootstrap()
     }
 
     fun bootstrap() {
+        realtimeSocketManager.start()
         refresh()
+    }
+
+    fun startRealtimeSync() {
+        realtimeSocketManager.start()
+    }
+
+    fun stopRealtimeSync() {
+        realtimeSocketManager.stop()
     }
 
     fun clearMessages() {
@@ -136,6 +149,19 @@ class NotificationsViewModel @Inject constructor(
                 }
                 is ApiResult.Error -> {
                     _uiState.update { it.copy(isMutating = false, errorMessage = result.message) }
+                }
+            }
+        }
+    }
+
+    private fun observeRealtimeSignals() {
+        viewModelScope.launch {
+            realtimeSocketManager.signals.collect { signal ->
+                when (signal) {
+                    RealtimeSignal.NotificationReceived -> refresh()
+                    is RealtimeSignal.ConnectionChanged,
+                    is RealtimeSignal.MessageReceived,
+                    is RealtimeSignal.MessagesRead -> Unit
                 }
             }
         }

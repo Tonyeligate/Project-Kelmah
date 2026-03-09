@@ -65,6 +65,7 @@ import {
   selectHirerError,
 } from '../services/hirerSlice';
 import RecentActivityFeed from '../components/RecentActivityFeed';
+import dashboardService from '../../dashboard/services/dashboardService';
 
 /* ---------- Extracted sub-component (stable reference) ---------- */
 const LoadingOverviewSkeleton = () => (
@@ -93,6 +94,7 @@ const HirerDashboardPage = () => {
   const [isHydrating, setIsHydrating] = useState(true);
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true); // DASH-001: Auto-refresh state
   const [timeSinceRefresh, setTimeSinceRefresh] = useState('Just now'); // DASH-001: Human-readable time
+  const [recentActivity, setRecentActivity] = useState([]);
 
   const timeoutRef = useRef(null);
   const fetchPromiseRef = useRef(null);
@@ -216,15 +218,19 @@ const HirerDashboardPage = () => {
           dispatch(fetchHirerJobs('active')).unwrap(),
           dispatch(fetchHirerJobs('completed')).unwrap(),
           dispatch(fetchPaymentSummary()).unwrap().catch(() => null), // non-critical; payment service may be down
+          dashboardService.getRecentActivity(1, 5).catch(() => ({ activities: [] })),
         ];
 
         fetchPromiseRef.current = Promise.allSettled(fetchPromises);
         const results = await fetchPromiseRef.current;
         const activePayload = results[1]?.status === 'fulfilled' ? results[1].value : null;
+        const activityPayload = results[4]?.status === 'fulfilled' ? results[4].value : { activities: [] };
 
         if (!isMountedRef.current) {
           return;
         }
+
+        setRecentActivity(Array.isArray(activityPayload?.activities) ? activityPayload.activities : []);
 
         clearLoadingTimeout();
         setLoadingTimeout(false);
@@ -853,6 +859,7 @@ const HirerDashboardPage = () => {
           <RecentActivityFeed
             jobs={activeJobs || []}
             applications={applicationRecords || {}}
+            activities={recentActivity}
           />
         </Box>
       </Box>

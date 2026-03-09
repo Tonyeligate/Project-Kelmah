@@ -36,6 +36,27 @@ class JobsRepository @Inject constructor(
         ApiResult.Success(parseJobsPage(response))
     }
 
+    suspend fun getRecommendedJobs(limit: Int = 6): ApiResult<List<JobSummary>> = executeAuthorized {
+        val response = jobsApiService.getRecommendedJobs(
+            mapOf(
+                "page" to "1",
+                "limit" to limit.toString(),
+            ),
+        )
+        ApiResult.Success(parseJobsPage(response).jobs)
+    }
+
+    suspend fun getMyJobs(limit: Int = 6): ApiResult<List<JobSummary>> = executeAuthorized {
+        val response = jobsApiService.getMyJobs(
+            mapOf(
+                "page" to "1",
+                "limit" to limit.toString(),
+                "sort" to "-updatedAt",
+            ),
+        )
+        ApiResult.Success(parseJobsPage(response).jobs)
+    }
+
     suspend fun getSavedJobs(
         page: Int = 1,
         limit: Int = 20,
@@ -216,6 +237,10 @@ class JobsRepository @Inject constructor(
             employerAvatar = employer?.string("avatar") ?: employer?.string("profileImage"),
             skills = parseSkills(job),
             postedAt = job.string("createdAt") ?: job.string("created_at") ?: job.string("postedDate"),
+            status = job.string("status"),
+            proposalCount = job.int("proposalCount") ?: job.int("applicationsCount") ?: 0,
+            matchScore = job.int("matchScore") ?: job.double("matchScore")?.toInt(),
+            aiReasoning = parseAiReasoning(job),
             isVerified = employer?.bool("verified") ?: employer?.bool("isVerified") ?: false,
             isUrgent = job.bool("urgent") ?: false,
             isSaved = forcedSaved || job.bool("isSaved") ?: job.bool("saved") ?: false,
@@ -254,6 +279,20 @@ class JobsRepository @Inject constructor(
         val normalizedAmount = if (amount % 1.0 == 0.0) amount.toInt().toString() else String.format("%.2f", amount)
         val suffix = if (paymentType.equals("hourly", ignoreCase = true)) "/hr" else ""
         return "$currency $normalizedAmount$suffix"
+    }
+
+    private fun parseAiReasoning(job: JsonObject): String? {
+        val inlineReasoning = job.string("aiReasoning")?.trim()
+        if (inlineReasoning.isNullOrBlank().not()) {
+            return inlineReasoning
+        }
+
+        val reasons = job.nestedArray("aiReasons")
+            ?.mapNotNull { it.primitiveContentOrNull()?.trim() }
+            ?.filter { it.isNotBlank() }
+            .orEmpty()
+
+        return reasons.firstOrNull()
     }
 }
 

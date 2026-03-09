@@ -27,7 +27,33 @@ struct RootTabView: View {
                 ProgressView("Securing your Kelmah session...")
             } else if environment.sessionStore.isSessionUsable {
                 TabView(selection: $selectedTab) {
-                    HomeView(currentUser: environment.sessionStore.currentUser, onBrowseJobs: { selectedTab = .jobs })
+                    HomeView(
+                        currentUser: environment.sessionStore.currentUser,
+                        jobsViewModel: environment.jobsViewModel,
+                        messagesViewModel: environment.messagesViewModel,
+                        notificationsViewModel: environment.notificationsViewModel,
+                        onBrowseJobs: { selectedTab = .jobs },
+                        onOpenMessages: { selectedTab = .messages },
+                        onOpenNotifications: { selectedTab = .alerts },
+                        onOpenJob: { jobId in
+                            pendingJobId = jobId
+                            selectedTab = .jobs
+                        },
+                        onOpenConversation: { conversationId in
+                            pendingConversationId = conversationId
+                            selectedTab = .messages
+                        },
+                        onOpenNotification: { target in
+                            switch target {
+                            case let .conversation(conversationId):
+                                pendingConversationId = conversationId
+                                selectedTab = .messages
+                            case let .job(jobId):
+                                pendingJobId = jobId
+                                selectedTab = .jobs
+                            }
+                        }
+                    )
                         .tag(RootTab.home)
                         .tabItem { Label(userRole == .hirer ? "Dashboard" : "Home", systemImage: "house") }
                     JobsView(
@@ -62,6 +88,7 @@ struct RootTabView: View {
                     ProfileView(
                         sessionCoordinator: environment.sessionCoordinator,
                         authRepository: environment.authRepository,
+                        profileRepository: environment.profileRepository,
                         sessionStore: environment.sessionStore
                     )
                         .tag(RootTab.profile)
@@ -76,11 +103,22 @@ struct RootTabView: View {
         }
         .task {
             await environment.sessionCoordinator.bootstrapSession()
+            await bootstrapShellDataIfNeeded()
         }
         .task(id: environment.sessionStore.accessToken) {
             if environment.sessionStore.accessToken != nil {
                 await environment.sessionCoordinator.bootstrapSession(force: true)
+                await bootstrapShellDataIfNeeded()
+            } else {
+                environment.realtimeSocketManager.stop()
             }
         }
+    }
+
+    private func bootstrapShellDataIfNeeded() async {
+        guard environment.sessionStore.isSessionUsable else { return }
+        await environment.jobsViewModel.bootstrap()
+        await environment.messagesViewModel.bootstrap()
+        await environment.notificationsViewModel.bootstrap()
     }
 }

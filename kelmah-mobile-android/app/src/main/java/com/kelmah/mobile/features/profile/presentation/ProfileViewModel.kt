@@ -7,6 +7,8 @@ import com.kelmah.mobile.core.security.PasswordPolicy
 import com.kelmah.mobile.core.storage.SessionUser
 import com.kelmah.mobile.core.storage.TokenManager
 import com.kelmah.mobile.features.auth.data.AuthRepository
+import com.kelmah.mobile.features.profile.data.ProfileRepository
+import com.kelmah.mobile.features.profile.data.WorkerProfileSnapshot
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +19,9 @@ import kotlinx.coroutines.launch
 
 data class ProfileUiState(
     val currentUser: SessionUser? = null,
+    val isLoadingProfileSignals: Boolean = false,
+    val profileSnapshot: WorkerProfileSnapshot? = null,
+    val profileErrorMessage: String? = null,
     val currentPassword: String = "",
     val newPassword: String = "",
     val confirmPassword: String = "",
@@ -29,8 +34,10 @@ data class ProfileUiState(
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val profileRepository: ProfileRepository,
     tokenManager: TokenManager,
 ) : ViewModel() {
+    private var loadedWorkerId: String? = null
 
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
@@ -38,7 +45,27 @@ class ProfileViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             tokenManager.sessionFlow.collect { session ->
-                _uiState.update { it.copy(currentUser = session?.user) }
+                val currentUser = session?.user
+                _uiState.update { it.copy(currentUser = currentUser) }
+
+                val workerId = currentUser?.resolvedId
+                val isWorker = currentUser?.role.equals("worker", ignoreCase = true)
+                when {
+                    !isWorker || workerId.isNullOrBlank() -> {
+                        loadedWorkerId = null
+                        _uiState.update {
+                            it.copy(
+                                isLoadingProfileSignals = false,
+                                profileSnapshot = null,
+                                profileErrorMessage = null,
+                            )
+                        }
+                    }
+                    loadedWorkerId != workerId -> {
+                        loadedWorkerId = workerId
+                        refreshWorkerProfileSignals()
+                    }
+                }
             }
         }
     }
@@ -56,11 +83,42 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun clearMessages() {
-        _uiState.update { it.copy(errorMessage = null, infoMessage = null) }
+        _uiState.update { it.copy(errorMessage = null, infoMessage = null, profileErrorMessage = null) }
     }
 
     fun consumeLogoutSignal() {
         _uiState.update { it.copy(shouldLogout = false) }
+    }
+
+    fun refreshWorkerProfileSignals() {
+        val workerId = _uiState.value.currentUser?.resolvedId ?: return
+        if (!_uiState.value.currentUser?.role.equals("worker", ignoreCase = true)) {
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingProfileSignals = true, profileErrorMessage = null) }
+            when (val result = profileRepository.getWorkerProfileSnapshot(workerId)) {
+                is ApiResult.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoadingProfileSignals = false,
+                            profileSnapshot = result.data,
+                            profileErrorMessage = null,
+                        )
+                    }
+                }
+                is ApiResult.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoadingProfileSignals = false,
+                            profileSnapshot = null,
+                            profileErrorMessage = result.message,
+                        )
+                    }
+                }
+            }
+        }
     }
 
     fun changePassword() {

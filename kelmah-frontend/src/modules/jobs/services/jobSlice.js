@@ -51,6 +51,8 @@ const jobSlice = createSlice({
   name: 'jobs',
   initialState: {
     jobs: [],
+    savedJobs: [],
+    featuredJobs: [],
     currentJob: null,
     applications: [],
     loading: false,
@@ -84,6 +86,12 @@ const jobSlice = createSlice({
     },
     setJobs: (state, action) => {
       state.jobs = action.payload;
+    },
+    setSavedJobs: (state, action) => {
+      state.savedJobs = action.payload;
+    },
+    setFeaturedJobs: (state, action) => {
+      state.featuredJobs = action.payload;
     },
     addJob: (state, action) => {
       state.jobs.push(action.payload);
@@ -187,6 +195,8 @@ export const {
   clearJobError,
   setCurrentPage,
   setJobs,
+  setSavedJobs,
+  setFeaturedJobs,
   addJob,
   updateJobInList,
   removeJob,

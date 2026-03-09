@@ -9,6 +9,7 @@ import androidx.navigation.navArgument
 import com.kelmah.mobile.core.session.kelmahUserRole
 import com.kelmah.mobile.core.storage.SessionUser
 import com.kelmah.mobile.features.home.presentation.HomeScreen
+import com.kelmah.mobile.features.jobs.presentation.JobsViewModel
 import com.kelmah.mobile.features.jobs.presentation.JobApplicationScreen
 import com.kelmah.mobile.features.jobs.presentation.JobDetailScreen
 import com.kelmah.mobile.features.jobs.presentation.JobsScreen
@@ -25,6 +26,7 @@ fun KelmahNavHost(
     navController: NavHostController,
     currentUser: SessionUser?,
     onLogout: (Boolean) -> Unit,
+    jobsViewModel: JobsViewModel,
     messagesViewModel: MessagesViewModel,
     notificationsViewModel: NotificationsViewModel,
 ) {
@@ -37,7 +39,21 @@ fun KelmahNavHost(
         composable(KelmahDestination.Home.route) {
             HomeScreen(
                 currentUser = currentUser,
+                jobsViewModel = jobsViewModel,
+                messagesViewModel = messagesViewModel,
+                notificationsViewModel = notificationsViewModel,
                 onBrowseJobs = { navController.navigate(KelmahDestination.Jobs.route) },
+                onOpenMessages = { navController.navigate(KelmahDestination.Messages.route) },
+                onOpenNotifications = { navController.navigate(KelmahDestination.Notifications.route) },
+                onOpenJob = { jobId -> navController.navigate(KelmahDestination.jobDetail(jobId)) },
+                onOpenConversation = { conversationId -> navController.navigate(KelmahDestination.messages(conversationId)) },
+                onOpenNotification = { notification ->
+                    when (val target = notification.actionTarget) {
+                        is NotificationActionTarget.Conversation -> navController.navigate(KelmahDestination.messages(target.conversationId))
+                        is NotificationActionTarget.Job -> navController.navigate(KelmahDestination.jobDetail(target.jobId))
+                        null -> navController.navigate(KelmahDestination.Notifications.route)
+                    }
+                },
             )
         }
         composable(KelmahDestination.Jobs.route) {
@@ -45,6 +61,7 @@ fun KelmahNavHost(
                 userRole = currentRole,
                 onOpenJob = { jobId -> navController.navigate(KelmahDestination.jobDetail(jobId)) },
                 onApplyToJob = { jobId -> navController.navigate(KelmahDestination.jobApply(jobId)) },
+                viewModel = jobsViewModel,
             )
         }
         composable(

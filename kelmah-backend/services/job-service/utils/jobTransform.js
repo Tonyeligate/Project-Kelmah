@@ -148,7 +148,7 @@ function transformJobForFrontend(job) {
     // Additional fields
     duration: job.duration || { value: 1, unit: 'week' },
     experienceLevel: job.experienceLevel || job.requirements?.experienceLevel || 'intermediate',
-    rating: job.rating || 4.5,
+    rating: job.rating || null,
     relevanceScore: job.relevanceScore || null,
 
     // Bidding info

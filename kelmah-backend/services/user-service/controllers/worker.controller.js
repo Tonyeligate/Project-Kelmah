@@ -83,6 +83,19 @@ const scoreWorker = (worker = {}) => {
   );
 };
 
+// Haversine distance calculator (returns km)
+const haversineDistance = (lat1, lng1, lat2, lng2) => {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
 const autopopulateWorkerDefaults = async (worker, usersCollection) => {
   if (!worker) {
     return worker;
@@ -521,53 +534,18 @@ const respondWithCachedJobs = (res, reason, note, options = {}) => {
 
 const buildRecentJobsFallback = ({ limit = 10, reason = 'RECENT_JOBS_FALLBACK' } = {}) => {
   const receivedAt = new Date().toISOString();
-  const mockJobs = [
-    {
-      id: 'job_123',
-      title: 'Kitchen Cabinet Installation',
-      client: 'Sarah Johnson',
-      clientId: 'user_456',
-      status: 'completed',
-      budget: 2500,
-      currency: 'GHS',
-      completedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-      rating: 5,
-      location: 'East Legon, Accra',
-    },
-    {
-      id: 'job_124',
-      title: 'Plumbing Repair',
-      client: 'Michael Brown',
-      clientId: 'user_789',
-      status: 'in-progress',
-      budget: 800,
-      currency: 'GHS',
-      startedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-      location: 'Tema, Accra',
-    },
-    {
-      id: 'job_125',
-      title: 'Electrical Wiring',
-      client: 'Jennifer Wilson',
-      clientId: 'user_321',
-      status: 'pending',
-      budget: 1500,
-      currency: 'GHS',
-      appliedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      location: 'Airport Residential, Accra',
-    },
-  ];
 
   return {
     success: true,
     data: {
-      jobs: mockJobs.slice(0, parseInt(limit, 10) || 10),
-      total: mockJobs.length,
+      jobs: [],
+      total: 0,
       fallback: true,
       fallbackReason: reason,
       metadata: {
-        source: 'user-service-fallback',
+        source: 'user-service-empty-fallback',
         receivedAt,
+        requestedLimit: parseInt(limit, 10) || 10,
       },
     },
   };
@@ -1225,20 +1203,15 @@ class WorkerController {
       // FIXED: Text search - use keywords or search parameter
       const searchTerm = keywords || search;
       if (searchTerm) {
-        // Try text search first, fallback to regex
-        try {
-          mongoQuery.$text = { $search: searchTerm };
-          if (isDev) logger.info('🔎 Text search:', searchTerm);
-        } catch (error) {
-          if (isDev) logger.info('⚠️ Text search failed, using regex fallback');
-          mongoQuery.$or = [
-            { firstName: { $regex: escapeRegex(searchTerm), $options: 'i' } },
-            { lastName: { $regex: escapeRegex(searchTerm), $options: 'i' } },
-            { profession: { $regex: escapeRegex(searchTerm), $options: 'i' } },
-            { bio: { $regex: escapeRegex(searchTerm), $options: 'i' } },
-            { skills: { $regex: escapeRegex(searchTerm), $options: 'i' } }
-          ];
-        }
+        const escapedSearch = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const searchRegex = { $regex: escapedSearch, $options: 'i' };
+        mongoQuery.$or = [
+          { firstName: searchRegex },
+          { lastName: searchRegex },
+          { profession: searchRegex },
+          { bio: searchRegex },
+          { skills: searchRegex },
+        ];
       }
 
       // Skills filter (array of skills)
@@ -1250,12 +1223,20 @@ class WorkerController {
       if (isDev) logger.info('📋 Final MongoDB query:', JSON.stringify(mongoQuery, null, 2));
 
       // Execute MongoDB query using direct driver
+      const SAFE_WORKER_PROJECTION = {
+        _id: 1, firstName: 1, lastName: 1, profilePicture: 1,
+        role: 1, isActive: 1, location: 1, bio: 1,
+        profession: 1, hourlyRate: 1, currency: 1,
+        rating: 1, totalReviews: 1, totalJobsCompleted: 1,
+        availabilityStatus: 1, isVerified: 1, skills: 1,
+        specializations: 1, yearsOfExperience: 1, updatedAt: 1, createdAt: 1,
+      };
       const [workers, totalCount] = await Promise.all([
         usersCollection
-          .find(mongoQuery)
-          .sort({ updatedAt: -1 })
+          .find(mongoQuery, { projection: SAFE_WORKER_PROJECTION })
+          .sort({ rating: -1, totalJobs: -1, updatedAt: -1 })
           .skip(offset)
-          .limit(parseInt(limit))
+          .limit(Math.min(100, Math.max(1, parseInt(limit, 10) || 20)))
           .toArray(),
         usersCollection.countDocuments(mongoQuery)
       ]);
@@ -1369,7 +1350,9 @@ class WorkerController {
         sortBy = 'relevance'
       } = req.query;
 
-      const offset = (page - 1) * limit;
+      const parsedPage = Math.max(1, parseInt(page, 10) || 1);
+      const parsedLimit = Math.min(50, Math.max(1, parseInt(limit, 10) || 20));
+      const offset = (parsedPage - 1) * parsedLimit;
 
       // Always get models from modelsModule (they're loaded after DB connection)
       const MongoUser = modelsModule.User;
@@ -1391,16 +1374,17 @@ class WorkerController {
         ];
       }
 
-      // Location search
+      // Location search — standalone AND condition (not inside $or)
       if (location) {
-        mongoQuery.$or = mongoQuery.$or || [];
-        mongoQuery.$or.push({ location: { $regex: escapeRegex(location), $options: 'i' } });
+        mongoQuery.location = { $regex: escapeRegex(location), $options: 'i' };
       }
 
       // Skills search
       if (skills) {
-        const skillsArray = skills.split(',');
-        mongoQuery.skills = { $in: skillsArray };
+        const skillsArray = skills.split(',').map(s => s.trim()).filter(Boolean);
+        if (skillsArray.length > 0) {
+          mongoQuery.skills = { $in: skillsArray };
+        }
       }
 
       // Rating filter
@@ -1411,6 +1395,11 @@ class WorkerController {
       // Rate filter
       if (maxRate) {
         mongoQuery.hourlyRate = { $lte: parseFloat(maxRate) };
+      }
+
+      // Availability status filter
+      if (availability) {
+        mongoQuery.availabilityStatus = availability;
       }
 
       // Geographic search
@@ -1445,9 +1434,10 @@ class WorkerController {
       // Execute MongoDB query
       const [workers, totalCount] = await Promise.all([
         MongoUser.find(mongoQuery)
+          .select('-password -refreshToken -resetPasswordToken -resetPasswordExpire')
           .sort(sortClause)
           .skip(offset)
-          .limit(parseInt(limit))
+          .limit(parsedLimit)
           .lean(),
         MongoUser.countDocuments(mongoQuery)
       ]);
@@ -1541,9 +1531,16 @@ class WorkerController {
         totalJobsCompleted: worker.totalJobsCompleted,
         isVerified: worker.isVerified,
         profilePicture: worker.profilePicture,
-        skills: worker.skills?.slice(0, 5).map(skill => skill.skillName) || [],
-        distance: latitude && longitude && worker.latitude && worker.longitude ?
-          calculateDistance(latitude, longitude, worker.latitude, worker.longitude) : null
+        skills: (worker.skills || []).slice(0, 5).map(skill =>
+          typeof skill === 'string' ? skill : (skill.skillName || skill.name || String(skill))
+        ).filter(Boolean),
+        distance: (() => {
+          const workerLat = worker.latitude || worker.locationCoordinates?.coordinates?.[1];
+          const workerLng = worker.longitude || worker.locationCoordinates?.coordinates?.[0];
+          return latitude && longitude && workerLat && workerLng
+            ? Math.round(haversineDistance(parseFloat(latitude), parseFloat(longitude), workerLat, workerLng) * 10) / 10
+            : null;
+        })()
       })).map((w) => ({ ...w, rankScore: scoreFor(w) }));
 
       // Sort by relevance if requested
@@ -1557,10 +1554,10 @@ class WorkerController {
         data: {
           workers: searchResults,
           pagination: {
-            page: parseInt(page),
-            limit: parseInt(limit),
+            page: parsedPage,
+            limit: parsedLimit,
             total: totalCount,
-            pages: Math.ceil(totalCount / limit)
+            pages: Math.ceil(totalCount / parsedLimit)
           },
           searchParams: {
             query,
@@ -1824,8 +1821,8 @@ class WorkerController {
         certifications: certificationSummary,
         contact: includePrivateFields
           ? {
-            email: toSafeString(worker.email, ''),
-            phone: toSafeString(worker.phone, ''),
+            email: req.user ? toSafeString(worker.email, '') : undefined,
+            phone: req.user ? toSafeString(worker.phone, '') : undefined,
             website: toSafeString(profile.website || worker.website, ''),
             social: {
               linkedin: toSafeString(profile.linkedinUrl || profile.socialLinks?.linkedin, ''),
@@ -1860,8 +1857,8 @@ class WorkerController {
         user: includePrivateFields
           ? {
             id: worker._id ? toSafeString(worker._id) : toSafeString(profile.userId, ''),
-            email: toSafeString(worker.email, ''),
-            phone: toSafeString(worker.phone, ''),
+            email: req.user ? toSafeString(worker.email, '') : undefined,
+            phone: req.user ? toSafeString(worker.phone, '') : undefined,
             role: toSafeString(worker.role, 'worker'),
             isActive: toSafeBoolean(worker.isActive, true),
             isEmailVerified: toSafeBoolean(worker.isEmailVerified, false),
@@ -3131,8 +3128,8 @@ class WorkerController {
 
       const updated = await CertificateModel.findOneAndUpdate(
         { _id: certificateId, workerId: userDoc._id },
-        safeUpdate,
-        { new: true },
+        { $set: safeUpdate },
+        { new: true, runValidators: true },
       );
 
       if (!updated) {

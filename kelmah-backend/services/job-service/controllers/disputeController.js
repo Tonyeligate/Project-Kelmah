@@ -243,6 +243,13 @@ const resolveDispute = async (req, res) => {
       });
     }
 
+    if (quickJob.dispute.status === 'resolved' || quickJob.dispute.status === 'auto_resolved') {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'Dispute has already been resolved', code: 'ALREADY_RESOLVED' }
+      });
+    }
+
     // Check admin permission
     if (req.user.role !== 'admin') {
       return res.status(403).json({
@@ -344,19 +351,22 @@ const autoResolveExpiredDisputes = async () => {
 
     for (const job of expiredDisputes) {
       try {
-        // Default auto-resolution: release payment to worker
-        // (Client didn't respond within 48 hours)
-        job.dispute.resolution = 'payment_released';
-        job.dispute.resolutionNote = 'Auto-resolved: Client did not respond within deadline';
+        // Mark resolved FIRST to prevent re-processing on retry
+        job.dispute.status = 'auto_resolved';
+        job.dispute.resolvedAt = new Date();
+        job.dispute.resolution = 'Auto-resolved: deadline expired without hirer response. Payment released to worker.';
         job.dispute.resolvedBy = 'auto';
-        job.dispute.resolvedAt = now;
-        job.dispute.status = 'resolved';
-        job.status = 'approved';
-
-        // Release payment
-        await paystackService.releaseEscrowToWorker(job._id);
-
+        job.status = 'completed';
         await job.save();
+
+        // Now release payment - if this fails, dispute is marked resolved but payment needs manual retry
+        try {
+          await paystackService.releaseEscrowToWorker(job._id);
+        } catch (paymentError) {
+          console.error(`Payment release failed for auto-resolved dispute on job ${job._id}. Needs manual retry.`, paymentError);
+          // Don't re-throw - the dispute IS resolved, payment needs manual attention
+        }
+
         resolved++;
 
         logger.info(`Auto-resolved dispute for QuickJob ${job._id}`);

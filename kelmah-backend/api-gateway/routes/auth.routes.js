@@ -123,8 +123,8 @@ const refreshTokenDirectHandler = async (req, res) => {
     });
   }
 };
-router.post('/refresh', rateLimiters.general, refreshTokenDirectHandler);
-router.post('/refresh-token', rateLimiters.general, refreshTokenDirectHandler);
+router.post('/refresh', rateLimiters.auth, refreshTokenDirectHandler);
+router.post('/refresh-token', rateLimiters.auth, refreshTokenDirectHandler);
 // Verify auth (returns current user)
 router.get('/verify', authenticate, protectedAuthProxy);
 // Resend verification email

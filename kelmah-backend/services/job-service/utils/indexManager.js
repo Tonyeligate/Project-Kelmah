@@ -44,7 +44,7 @@ async function ensureJobIndexes(connection) {
         background: true,
       },
       {
-        key: { 'location.region': 1, status: 1 },
+        key: { 'locationDetails.region': 1, status: 1 },
         name: 'jobs_location_region_status',
         background: true,
       },
@@ -53,14 +53,8 @@ async function ensureJobIndexes(connection) {
         name: 'jobs_createdAt_desc',
         background: true,
       },
-      // Text index for full-text search (replaces regex scans)
-      {
-        key: { title: 'text', description: 'text', category: 'text', skills: 'text' },
-        name: 'jobs_text_search',
-        background: true,
-        weights: { title: 10, skills: 5, category: 3, description: 1 },
-        default_language: 'english',
-      },
+      // Text index is already defined in the Job.js schema; a second text index
+      // on the same collection is not allowed by MongoDB, so we skip it here.
       // Fix location index paths to match actual data structure
       {
         key: { 'locationDetails.region': 1, status: 1 },
@@ -87,16 +81,22 @@ async function ensureJobIndexes(connection) {
     ];
 
     await Promise.all(
-      indexSpecs.map((spec) =>
-        jobsCollection
-          .createIndex(spec.key, { name: spec.name, background: spec.background })
+      indexSpecs.map((spec) => {
+        const indexOptions = { background: true };
+        if (spec.name) indexOptions.name = spec.name;
+        if (spec.weights) indexOptions.weights = spec.weights;
+        if (spec.default_language) indexOptions.default_language = spec.default_language;
+        if (spec.unique) indexOptions.unique = spec.unique;
+        if (spec.sparse) indexOptions.sparse = spec.sparse;
+        return jobsCollection
+          .createIndex(spec.key, indexOptions)
           .catch((error) => {
             // Log but don't rethrow so one failure doesn't block others
             console.warn(
               `[JOB INDEX MANAGER] Failed to create index ${spec.name}: ${error.message}`,
             );
-          }),
-      ),
+          });
+      }),
     );
 
     ensured.jobs = true;

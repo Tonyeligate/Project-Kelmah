@@ -178,8 +178,10 @@ router.get('/analytics', authenticate, authorizeRoles('admin'), async (req, res)
 });
 
 // GET /api/jobs/recommendations - Get recommended jobs (protected)
-router.get('/recommendations', authenticate, async (req, res) => {
-  await forwardToJobService(req, res, '/api/jobs/recommendations', 'GET');
+router.get('/recommendations', authenticate, authorizeRoles('worker'), async (req, res) => {
+  const queryString = new URLSearchParams(req.query).toString();
+  const path = `/api/jobs/recommendations${queryString ? '?' + queryString : ''}`;
+  await forwardToJobService(req, res, path, 'GET');
 });
 
 // ===== PARAMETERIZED ROUTES BELOW — /:id must be LAST to avoid shadowing =====

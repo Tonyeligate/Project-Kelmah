@@ -212,18 +212,12 @@ const SmartJobRecommendations = ({
       return;
     }
 
-    try {
-      await searchService.trackJobInteraction(jobId, 'apply_click');
-      if (onJobSelect) {
-        onJobSelect(jobId, 'apply');
-      }
-      navigate(`/jobs/${jobId}/apply`);
-    } catch (applyError) {
-      if (import.meta.env.DEV) console.error('Failed to process job application:', applyError);
-      enqueueSnackbar('Failed to process job application', {
-        variant: 'error',
-      });
+    // Fire-and-forget: tracking should never block navigation
+    searchService.trackJobInteraction(jobId, 'apply_click').catch(() => {});
+    if (onJobSelect) {
+      onJobSelect(jobId, 'apply');
     }
+    navigate(`/jobs/${jobId}/apply`);
   };
 
   // Handle view job details
@@ -304,7 +298,7 @@ const SmartJobRecommendations = ({
         </Typography>
 
         <Stack direction="row" spacing={1} flexWrap="wrap">
-          {aiInsights.tags?.map((tag, index) => (
+          {(Array.isArray(aiInsights?.tags) ? aiInsights.tags : []).map((tag, index) => (
             <Chip
               key={index}
               label={tag}
@@ -510,7 +504,7 @@ const SmartJobRecommendations = ({
                   <Box display="flex" alignItems="center" gap={1} width="60%">
                     <LinearProgress
                       variant="determinate"
-                      value={item.score}
+                      value={Math.min(100, Math.max(0, item.score || 0))}
                       sx={{
                         flexGrow: 1,
                         height: 4,
@@ -709,10 +703,10 @@ const SmartJobRecommendations = ({
         </Paper>
       ) : (
         <Grid container spacing={3}>
-          {recommendations.map((job) => {
+          {recommendations.map((job, index) => {
             const jobKey = job.id || job._id || job.jobId;
             return (
-              <Grid item xs={12} sm={6} md={4} key={jobKey || job.title}>
+              <Grid item xs={12} sm={6} md={4} key={jobKey || `job-${index}`}>
                 {renderJobCard(job)}
               </Grid>
             );

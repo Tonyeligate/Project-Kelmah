@@ -9,6 +9,8 @@ final class AppEnvironment: ObservableObject {
     let jobsRepository: JobsRepository
     let messagesRepository: MessagesRepository
     let notificationsRepository: NotificationsRepository
+    let profileRepository: ProfileRepository
+    let realtimeSocketManager: RealtimeSocketManager
     let sessionCoordinator: SessionCoordinator
     let jobsViewModel: JobsViewModel
     let messagesViewModel: MessagesViewModel
@@ -22,6 +24,8 @@ final class AppEnvironment: ObservableObject {
         jobsRepository: JobsRepository,
         messagesRepository: MessagesRepository,
         notificationsRepository: NotificationsRepository,
+        profileRepository: ProfileRepository,
+        realtimeSocketManager: RealtimeSocketManager,
         sessionCoordinator: SessionCoordinator,
         jobsViewModel: JobsViewModel,
         messagesViewModel: MessagesViewModel,
@@ -34,6 +38,8 @@ final class AppEnvironment: ObservableObject {
         self.jobsRepository = jobsRepository
         self.messagesRepository = messagesRepository
         self.notificationsRepository = notificationsRepository
+        self.profileRepository = profileRepository
+        self.realtimeSocketManager = realtimeSocketManager
         self.sessionCoordinator = sessionCoordinator
         self.jobsViewModel = jobsViewModel
         self.messagesViewModel = messagesViewModel
@@ -48,10 +54,12 @@ final class AppEnvironment: ObservableObject {
         let jobsRepository = JobsRepository(apiClient: apiClient)
         let messagesRepository = MessagesRepository(apiClient: apiClient, sessionStore: sessionStore)
         let notificationsRepository = NotificationsRepository(apiClient: apiClient)
+        let profileRepository = ProfileRepository(apiClient: apiClient)
+        let realtimeSocketManager = RealtimeSocketManager(environment: apiEnvironment, sessionStore: sessionStore)
         let sessionCoordinator = SessionCoordinator(authRepository: authRepository, sessionStore: sessionStore)
         let jobsViewModel = JobsViewModel(repository: jobsRepository)
-        let messagesViewModel = MessagesViewModel(repository: messagesRepository)
-        let notificationsViewModel = NotificationsViewModel(repository: notificationsRepository)
+        let messagesViewModel = MessagesViewModel(repository: messagesRepository, realtimeSocketManager: realtimeSocketManager)
+        let notificationsViewModel = NotificationsViewModel(repository: notificationsRepository, realtimeSocketManager: realtimeSocketManager)
         apiClient.authRecoveryHandler = { [weak sessionCoordinator] in
             await sessionCoordinator?.handleUnauthorized() ?? false
         }
@@ -63,6 +71,8 @@ final class AppEnvironment: ObservableObject {
             jobsRepository: jobsRepository,
             messagesRepository: messagesRepository,
             notificationsRepository: notificationsRepository,
+            profileRepository: profileRepository,
+            realtimeSocketManager: realtimeSocketManager,
             sessionCoordinator: sessionCoordinator,
             jobsViewModel: jobsViewModel,
             messagesViewModel: messagesViewModel,

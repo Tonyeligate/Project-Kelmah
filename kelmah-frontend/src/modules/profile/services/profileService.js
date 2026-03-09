@@ -170,7 +170,14 @@ class ProfileService {
       const response = await api.get('/users/profile/activity', {
         params: filters,
       });
-      return response.data?.data || response.data || [];
+      const data = response.data?.data || response.data || {};
+      return Array.isArray(data.items)
+        ? data.items
+        : Array.isArray(data.entries)
+          ? data.entries
+          : Array.isArray(data)
+            ? data
+            : [];
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Activity service unavailable:', { error: error.message });
       return [];

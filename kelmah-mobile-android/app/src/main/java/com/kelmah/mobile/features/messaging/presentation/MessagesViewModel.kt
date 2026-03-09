@@ -3,6 +3,8 @@ package com.kelmah.mobile.features.messaging.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kelmah.mobile.core.network.ApiResult
+import com.kelmah.mobile.core.realtime.RealtimeSignal
+import com.kelmah.mobile.core.realtime.RealtimeSocketManager
 import com.kelmah.mobile.features.messaging.data.ConversationSummary
 import com.kelmah.mobile.features.messaging.data.MessagingRepository
 import com.kelmah.mobile.features.messaging.data.ThreadMessage
@@ -31,6 +33,7 @@ data class MessagesUiState(
 @HiltViewModel
 class MessagesViewModel @Inject constructor(
     private val messagingRepository: MessagingRepository,
+    private val realtimeSocketManager: RealtimeSocketManager,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         MessagesUiState(currentUserId = messagingRepository.currentUserId()),
@@ -41,11 +44,21 @@ class MessagesViewModel @Inject constructor(
         get() = _uiState.value.conversations.sumOf { it.unreadCount }
 
     init {
+        observeRealtimeSignals()
         bootstrap()
     }
 
     fun bootstrap() {
+        realtimeSocketManager.start()
         refreshConversations()
+    }
+
+    fun startRealtimeSync() {
+        realtimeSocketManager.start()
+    }
+
+    fun stopRealtimeSync() {
+        realtimeSocketManager.stop()
     }
 
     fun updateSearchQuery(value: String) {
@@ -201,6 +214,29 @@ class MessagesViewModel @Inject constructor(
                 }
                 is ApiResult.Error -> {
                     _uiState.update { it.copy(isSending = false, errorMessage = result.message) }
+                }
+            }
+        }
+    }
+
+    private fun observeRealtimeSignals() {
+        viewModelScope.launch {
+            realtimeSocketManager.signals.collect { signal ->
+                when (signal) {
+                    is RealtimeSignal.MessageReceived -> {
+                        refreshConversations()
+                        if (signal.conversationId != null && signal.conversationId == _uiState.value.selectedConversation?.id) {
+                            loadMessages(signal.conversationId)
+                        }
+                    }
+                    is RealtimeSignal.MessagesRead -> {
+                        refreshConversations()
+                        if (signal.conversationId != null && signal.conversationId == _uiState.value.selectedConversation?.id) {
+                            loadMessages(signal.conversationId)
+                        }
+                    }
+                    RealtimeSignal.NotificationReceived,
+                    is RealtimeSignal.ConnectionChanged -> Unit
                 }
             }
         }

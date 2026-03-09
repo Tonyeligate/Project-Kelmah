@@ -208,7 +208,7 @@ const generateMockHirerAnalytics = (timeRange) => {
       workerSatisfaction: 85 + Math.random() * 10,
       budgetAdherence: 75 + Math.random() * 20,
     },
-    recentActivity: generateMockRecentActivity(),
+    recentActivity: [],
     insights: [
       {
         type: 'success',
@@ -257,48 +257,6 @@ const generateMockTopWorkers = () => {
     rating: 4.2 + Math.random() * 0.7,
     totalPaid: Math.floor(Math.random() * 8000) + 3000,
   }));
-};
-
-/**
- * Generate mock recent activity
- * @returns {Array} Mock recent activity
- */
-const generateMockRecentActivity = () => {
-  const activities = [
-    {
-      id: 1,
-      type: 'job_completed',
-      title: 'Kitchen Plumbing Completed',
-      description: 'Job completed by Kwame Asante',
-      amount: 1500,
-      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: 2,
-      type: 'payment_made',
-      title: 'Payment Released',
-      description: 'Payment released for electrical work',
-      amount: 2200,
-      timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: 3,
-      type: 'job_posted',
-      title: 'New Job Posted',
-      description: 'Bathroom renovation job posted',
-      timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: 4,
-      type: 'job_completed',
-      title: 'Carpentry Work Finished',
-      description: 'Custom furniture completed',
-      amount: 3500,
-      timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-  ];
-
-  return activities;
 };
 
 /**

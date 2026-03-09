@@ -6,6 +6,7 @@ import com.kelmah.mobile.features.auth.data.AuthApiService
 import com.kelmah.mobile.features.jobs.data.JobsApiService
 import com.kelmah.mobile.features.messaging.data.MessagingApiService
 import com.kelmah.mobile.features.notifications.data.NotificationsApiService
+import com.kelmah.mobile.features.profile.data.ProfileApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -84,4 +85,9 @@ object NetworkModule {
     @Singleton
     fun provideNotificationsApiService(retrofit: Retrofit): NotificationsApiService =
         retrofit.create(NotificationsApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideProfileApiService(retrofit: Retrofit): ProfileApiService =
+        retrofit.create(ProfileApiService::class.java)
 }

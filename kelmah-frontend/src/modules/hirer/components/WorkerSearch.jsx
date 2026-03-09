@@ -106,6 +106,28 @@ const collectWorkerPortfolioImages = (worker = {}) =>
     ]),
   );
 
+const buildStableWorkerFallbackId = (worker = {}) => {
+  const seed = [
+    worker.email,
+    worker.phone,
+    worker.firstName,
+    worker.lastName,
+    worker.name,
+    worker.location,
+  ]
+    .filter(Boolean)
+    .map((value) => String(value).trim().toLowerCase())
+    .join('-');
+
+  const slug = seed
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 80);
+
+  return `worker-${slug || 'unknown'}`;
+};
+
 const WorkerSearch = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -131,6 +153,7 @@ const WorkerSearch = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const searchTimerRef = useRef(null);
+  const requestSeqRef = useRef(0);
   const [page, setPage] = useState(1);
 
   // Available filter options
@@ -228,7 +251,7 @@ const WorkerSearch = () => {
       worker.workerId ||
       worker.email ||
       null;
-    const safeId = safeIdValue || `worker-${crypto.randomUUID()}`;
+    const safeId = safeIdValue || buildStableWorkerFallbackId(worker);
 
     const normalizedRate = Number(
       worker.hourlyRate ?? worker.rate ?? worker.minRate ?? 25,
@@ -303,7 +326,10 @@ const WorkerSearch = () => {
 
   useEffect(() => {
     fetchWorkers();
-    // Hydrate saved bookmarks
+  }, [page, filters, debouncedSearch, sortOption]);
+
+  useEffect(() => {
+    // Hydrate saved bookmarks once; bookmark list is independent from worker search filters
     (async () => {
       try {
         const token = secureStorage.getAuthToken();
@@ -328,9 +354,11 @@ const WorkerSearch = () => {
         // Bookmark fetch failed silently
       }
     })();
-  }, [page, filters, debouncedSearch, sortOption]);
+  }, []);
 
   const fetchWorkers = async () => {
+    const requestId = ++requestSeqRef.current;
+
     try {
       setLoading(true);
 
@@ -397,6 +425,10 @@ const WorkerSearch = () => {
       }
 
       if (response.data) {
+        if (requestId !== requestSeqRef.current) {
+          return;
+        }
+
         const workersData =
           response.data.data?.workers || response.data.workers || [];
         const pagination = response.data.data?.pagination || {};
@@ -427,6 +459,10 @@ const WorkerSearch = () => {
 
       setError(null);
     } catch (err) {
+      if (requestId !== requestSeqRef.current) {
+        return;
+      }
+
       if (import.meta.env.DEV) console.warn('User service unavailable for worker search:', err.message);
       setError('Unable to fetch workers. Please try again later.');
       // Provide a safe fallback list for offline/unavailable service
@@ -527,7 +563,9 @@ const WorkerSearch = () => {
       setWorkers(sortedFallback);
       setTotalPages(Math.ceil((sortedFallback.length || 0) / 6) || 1);
     } finally {
-      setLoading(false);
+      if (requestId === requestSeqRef.current) {
+        setLoading(false);
+      }
     }
   };
 

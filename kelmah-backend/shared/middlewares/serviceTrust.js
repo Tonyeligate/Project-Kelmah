@@ -5,6 +5,7 @@
  */
 
 const crypto = require('crypto');
+const ALLOWED_ROLES = ['worker', 'hirer', 'admin', 'super_admin', 'staff'];
 
 /**
  * Whitelist-validate a parsed user object from the gateway header.
@@ -17,8 +18,7 @@ function validateGatewayUser(parsed) {
   // id and role are mandatory
   if (!id || typeof id !== 'string') return null;
   if (!role || typeof role !== 'string') return null;
-
-  const ALLOWED_ROLES = ['worker', 'hirer', 'admin', 'super_admin', 'staff'];
+  if (!ALLOWED_ROLES.includes(role)) return null;
 
   return {
     id,
@@ -33,11 +33,14 @@ function validateGatewayUser(parsed) {
 
 /**
  * Timing-safe string comparison to prevent timing attacks on secrets.
+ * Uses HMAC digests so the comparison operands are always the same fixed length,
+ * removing the key-length information leak present in direct Buffer comparisons.
  */
 function timingSafeCompare(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string') return false;
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+  const hashA = crypto.createHmac('sha256', 'kelmah-compare').update(a).digest();
+  const hashB = crypto.createHmac('sha256', 'kelmah-compare').update(b).digest();
+  return crypto.timingSafeEqual(hashA, hashB);
 }
 
 /**
@@ -114,7 +117,6 @@ const verifyGatewayRequest = (req, res, next) => {
         message: 'Legacy header signature mismatch'
       });
     }
-    const ALLOWED_ROLES = ['worker', 'hirer', 'admin', 'super_admin', 'staff'];
     if (!ALLOWED_ROLES.includes(userRole)) {
       return res.status(403).json({
         error: 'Invalid role',

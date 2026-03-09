@@ -21,9 +21,12 @@ const paymentProxy = (req, res, next) => {
   return proxy(req, res, next);
 };
 
-// HIGH-14 FIX: Removed `router.use(authenticate)` — authentication is already
-// handled by `createServiceProxy({ requireAuth: true })` which calls the auth
-// middleware internally. Double-applying it caused redundant token verification.
+// Webhooks must be unauthenticated (called by payment providers)
+router.post('/stripe/webhook', paymentProxy);
+router.post('/paypal/webhook', paymentProxy);
+
+// All other payment routes require authentication
+router.use(authenticate);
 
 // Wallet routes
 router.get('/wallet', paymentProxy); // Get user wallet
@@ -57,12 +60,10 @@ router.post('/jobs/:jobId/milestones/:milestoneId/release', paymentProxy); // Re
 // Stripe integration
 router.post('/stripe/payment-intent', paymentProxy); // Create Stripe payment intent
 router.post('/stripe/setup-intent', paymentProxy); // Create Stripe setup intent
-router.post('/stripe/webhook', paymentProxy); // Handle Stripe webhooks
 
 // PayPal integration
 router.post('/paypal/create-order', paymentProxy); // Create PayPal order
 router.post('/paypal/capture-order', paymentProxy); // Capture PayPal order
-router.post('/paypal/webhook', paymentProxy); // Handle PayPal webhooks
 
 // Escrow management
 // Canonical singular

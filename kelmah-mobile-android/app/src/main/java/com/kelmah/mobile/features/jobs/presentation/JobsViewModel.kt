@@ -3,6 +3,7 @@ package com.kelmah.mobile.features.jobs.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kelmah.mobile.core.network.ApiResult
+import com.kelmah.mobile.core.session.KelmahUserRole
 import com.kelmah.mobile.features.jobs.data.ApplyToJobRequest
 import com.kelmah.mobile.features.jobs.data.JobCategory
 import com.kelmah.mobile.features.jobs.data.JobDetail
@@ -23,8 +24,11 @@ data class JobsUiState(
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val isLoadingMore: Boolean = false,
+    val isLoadingHomeFeed: Boolean = false,
     val discoverJobs: List<JobSummary> = emptyList(),
     val savedJobs: List<JobSummary> = emptyList(),
+    val recommendedJobs: List<JobSummary> = emptyList(),
+    val hirerJobs: List<JobSummary> = emptyList(),
     val categories: List<JobCategory> = emptyList(),
     val filters: JobsFilterState = JobsFilterState(),
     val activeFeed: JobsFeed = JobsFeed.DISCOVER,
@@ -34,6 +38,7 @@ data class JobsUiState(
     val selectedJob: JobDetail? = null,
     val isDetailLoading: Boolean = false,
     val isSubmittingApplication: Boolean = false,
+    val homeErrorMessage: String? = null,
     val errorMessage: String? = null,
     val infoMessage: String? = null,
 )
@@ -53,6 +58,73 @@ class JobsViewModel @Inject constructor(
     fun bootstrap() {
         loadCategories()
         refreshJobs()
+    }
+
+    fun refreshHome(role: KelmahUserRole) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingHomeFeed = true, homeErrorMessage = null) }
+
+            when (role) {
+                KelmahUserRole.WORKER -> {
+                    val recommendationsResult = jobsRepository.getRecommendedJobs(limit = 6)
+                    val recommendations = when (recommendationsResult) {
+                        is ApiResult.Success -> recommendationsResult.data
+                        is ApiResult.Error -> {
+                            when (val fallback = jobsRepository.getJobs(JobsFilterState(sort = JobSortOption.URGENT), limit = 6)) {
+                                is ApiResult.Success -> fallback.data.jobs
+                                is ApiResult.Error -> emptyList()
+                            }
+                        }
+                    }
+
+                    val savedResult = if (_uiState.value.savedJobs.isEmpty()) {
+                        jobsRepository.getSavedJobs(limit = 6)
+                    } else {
+                        null
+                    }
+
+                    _uiState.update { current ->
+                        current.copy(
+                            isLoadingHomeFeed = false,
+                            recommendedJobs = recommendations,
+                            savedJobs = when (savedResult) {
+                                is ApiResult.Success -> savedResult.data.jobs
+                                else -> current.savedJobs
+                            },
+                            homeErrorMessage = when {
+                                recommendations.isEmpty() && recommendationsResult is ApiResult.Error -> recommendationsResult.message
+                                current.savedJobs.isEmpty() && savedResult is ApiResult.Error -> savedResult.message
+                                else -> null
+                            },
+                        )
+                    }
+                }
+
+                KelmahUserRole.HIRER -> {
+                    when (val result = jobsRepository.getMyJobs(limit = 6)) {
+                        is ApiResult.Success -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoadingHomeFeed = false,
+                                    hirerJobs = result.data,
+                                    homeErrorMessage = null,
+                                )
+                            }
+                        }
+
+                        is ApiResult.Error -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoadingHomeFeed = false,
+                                    hirerJobs = emptyList(),
+                                    homeErrorMessage = result.message,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fun updateSearch(value: String) {

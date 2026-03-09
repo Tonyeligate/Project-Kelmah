@@ -239,6 +239,11 @@ userSchema.index({ skills: 1 }); // Worker search by skills
 userSchema.index({ profession: 1 }); // Worker search by profession
 // Optional geo index for location if coordinates included elsewhere
 userSchema.index({ locationCoordinates: '2dsphere' });
+// Compound index for role-based active worker queries
+userSchema.index({ role: 1, isActive: 1, skills: 1 });
+// Sparse indexes for token lookups
+userSchema.index({ passwordResetToken: 1 }, { sparse: true });
+userSchema.index({ emailVerificationToken: 1 }, { sparse: true });
 
 // Virtual for full name
 userSchema.virtual('fullName').get(function () {

@@ -405,6 +405,10 @@ workerProfileSchema.index({ isAvailable: 1, rating: -1 });
 workerProfileSchema.index({ location: 1, isAvailable: 1 });
 workerProfileSchema.index({ skills: 1 });
 workerProfileSchema.index({ lastActiveAt: -1 });
+workerProfileSchema.index({ availabilityStatus: 1 });
+workerProfileSchema.index({ hourlyRate: 1 });
+workerProfileSchema.index({ experienceLevel: 1 });
+workerProfileSchema.index({ 'skillEntries.name': 1 });
 
 // Virtual for user relationship
 workerProfileSchema.virtual('user', {
@@ -430,10 +434,11 @@ workerProfileSchema.methods.getResponseRate = function () {
 };
 
 workerProfileSchema.methods.isAvailableForWork = function () {
-    return this.isAvailable &&
+    return (
+        this.isAvailable &&
         this.availabilityStatus === 'available' &&
-        !this.suspendedUntil ||
-        this.suspendedUntil < new Date();
+        (!this.suspendedUntil || this.suspendedUntil < new Date())
+    );
 };
 
 workerProfileSchema.methods.calculateProfileCompleteness = function () {

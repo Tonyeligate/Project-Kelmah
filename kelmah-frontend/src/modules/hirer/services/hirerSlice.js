@@ -186,7 +186,7 @@ export const fetchHirerAnalytics = createAsyncThunk(
   async () => {
     try {
       const response = await api.get('/users/dashboard/analytics');
-      return response.data;
+      return response.data?.data || response.data;
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
       throw error;
@@ -505,14 +505,14 @@ const hirerSlice = createSlice({
       .addCase(updateHirerJob.fulfilled, (state, action) => {
         state.loading.jobs = false;
         const updatedJob = action.payload?.data || action.payload;
-        const updatedId = updatedJob?.id;
+        const updatedId = updatedJob?.id || updatedJob?._id;
         if (!updatedJob || !updatedId) {
           return;
         }
 
         let placed = false;
         Object.keys(state.jobs).forEach((status) => {
-          const idx = state.jobs[status].findIndex((j) => j.id === updatedId);
+          const idx = state.jobs[status].findIndex((j) => (j.id || j._id) === updatedId);
           if (idx !== -1) {
             state.jobs[status][idx] = {
               ...state.jobs[status][idx],
@@ -544,7 +544,7 @@ const hirerSlice = createSlice({
         let movedJob = null;
         Object.keys(state.jobs).forEach((currentStatus) => {
           const jobIndex = state.jobs[currentStatus].findIndex(
-            (job) => job.id === jobId,
+            (job) => (job.id || job._id) === jobId,
           );
           if (jobIndex !== -1) {
             movedJob = { ...state.jobs[currentStatus][jobIndex], status };
@@ -565,7 +565,7 @@ const hirerSlice = createSlice({
         }
         Object.keys(state.jobs).forEach((status) => {
           state.jobs[status] = state.jobs[status].filter(
-            (job) => job.id !== jobId,
+            (job) => (job.id || job._id) !== jobId,
           );
         });
       })
@@ -677,7 +677,8 @@ const hirerSlice = createSlice({
 // Selectors
 export const selectHirerProfile = (state) => state.hirer.profile;
 export const selectHirerJobs = (status) => (state) => {
-  const jobs = state.hirer.jobs[status];
+  const key = status === 'active' ? 'open' : status;
+  const jobs = state.hirer.jobs[key];
   return Array.isArray(jobs) ? jobs : [];
 };
 export const selectHirerApplications = (state) => state.hirer.applications;

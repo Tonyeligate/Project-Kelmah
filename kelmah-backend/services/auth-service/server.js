@@ -89,7 +89,7 @@ const corsOptions = {
     ].filter(Boolean);
 
     const vercelPatterns = [
-      /^https:\/\/.*\.vercel\.app$/,
+      /^https:\/\/kelmah-[a-z0-9-]+\.vercel\.app$/,
       /^https:\/\/.*-kelmahs-projects\.vercel\.app$/,
       /^https:\/\/project-kelmah.*\.vercel\.app$/,
       /^https:\/\/kelmah-frontend.*\.vercel\.app$/,

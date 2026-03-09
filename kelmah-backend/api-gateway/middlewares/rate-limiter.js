@@ -96,8 +96,7 @@ const rateLimiters = {
       error: 'Too many authentication attempts',
       message: 'Too many login attempts. Please try again in 15 minutes.',
       retryAfter: 900
-    },
-    skipSuccessfulRequests: true
+    }
   }),
 
   // Job creation rate limiter

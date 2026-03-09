@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 
 @MainActor
@@ -11,16 +12,29 @@ final class NotificationsViewModel: ObservableObject {
     @Published var infoMessage: String?
 
     private let repository: NotificationsRepository
+    private let realtimeSocketManager: RealtimeSocketManager
     private var hasBootstrapped = false
+    private var subscriptions = Set<AnyCancellable>()
 
-    init(repository: NotificationsRepository) {
+    init(repository: NotificationsRepository, realtimeSocketManager: RealtimeSocketManager) {
         self.repository = repository
+        self.realtimeSocketManager = realtimeSocketManager
+        subscribeToRealtimeSignals()
     }
 
     func bootstrap() async {
+        realtimeSocketManager.start()
         guard hasBootstrapped == false else { return }
         hasBootstrapped = true
         await refresh()
+    }
+
+    func startRealtimeSync() {
+        realtimeSocketManager.start()
+    }
+
+    func stopRealtimeSync() {
+        realtimeSocketManager.stop()
     }
 
     func clearMessages() {
@@ -113,5 +127,24 @@ final class NotificationsViewModel: ObservableObject {
             errorMessage = error.localizedDescription
         }
         isMutating = false
+    }
+
+    private func subscribeToRealtimeSignals() {
+        realtimeSocketManager.signals
+            .receive(on: RunLoop.main)
+            .sink { [weak self] signal in
+                guard let self else { return }
+                Task { await self.handleRealtimeSignal(signal) }
+            }
+            .store(in: &subscriptions)
+    }
+
+    private func handleRealtimeSignal(_ signal: RealtimeSignal) async {
+        switch signal {
+        case .notification:
+            await refresh()
+        case .message, .messagesRead, .connectionChanged:
+            break
+        }
     }
 }

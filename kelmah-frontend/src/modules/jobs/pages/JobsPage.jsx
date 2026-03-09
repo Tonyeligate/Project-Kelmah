@@ -554,7 +554,7 @@ const JobsPage = () => {
 
   const handleCreateJobAlert = useCallback(() => {
     if (!authState.isAuthenticated) {
-      navigate('/login', { state: { from: '/jobs', message: 'Sign in to create job alerts' } });
+      navigate('/login', { state: { from: '/jobs', message: 'Sign in to manage job alerts' } });
       return;
     }
     // Build alert preferences from current filters
@@ -565,10 +565,43 @@ const JobsPage = () => {
     };
     setSnackbar({
       open: true,
-      message: `Job alert created! You'll be notified about ${alertFilters.category} jobs${alertFilters.location !== 'All locations' ? ` in ${alertFilters.location}` : ''}.`,
+      message: `Job alerts are not auto-saved yet. Review these ${alertFilters.category} filters${alertFilters.location !== 'All locations' ? ` for ${alertFilters.location}` : ''} in notification settings.`,
     });
-    navigate('/notifications/settings', { state: { alertCreated: true, filters: alertFilters } });
+    navigate('/notifications/settings', { state: { draftAlert: true, filters: alertFilters } });
   }, [authState.isAuthenticated, selectedCategory, selectedLocation, searchQuery, navigate]);
+
+  const handlePrimaryJobAction = useCallback((jobId) => {
+    if (!jobId) {
+      return;
+    }
+
+    if (!authState.isAuthenticated) {
+      navigate('/login', {
+        state: {
+          from: isHirerUser ? '/hirer/find-talent' : `/jobs/${jobId}/apply`,
+          message: isHirerUser
+            ? 'Sign in to find talent'
+            : 'Please sign in to apply for this job',
+        },
+      });
+      return;
+    }
+
+    if (isHirerUser) {
+      navigate('/hirer/find-talent');
+      return;
+    }
+
+    if (!isWorkerUser) {
+      setSnackbar({
+        open: true,
+        message: 'Only worker accounts can apply for jobs. Switch to a worker account to continue.',
+      });
+      return;
+    }
+
+    navigate(`/jobs/${jobId}/apply`);
+  }, [authState.isAuthenticated, isHirerUser, isWorkerUser, navigate]);
 
   // Infinite scroll sentinel (mobile): ref is placed on the sentinel element
   const { ref: loadMoreRef, inView: loadMoreInView } = useInView({ threshold: 0, rootMargin: '200px' });
@@ -1847,9 +1880,9 @@ const JobsPage = () => {
                     )}
                     <Button
                       variant="outlined"
-                      onClick={() => {
+                      onClick={async () => {
                         setPage(1);
-                        fetchJobs(1, false);
+                        await refetchJobs();
                       }}
                       sx={{
                         borderColor: 'var(--k-gold)',
@@ -1928,7 +1961,14 @@ const JobsPage = () => {
                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         }}
                         onClick={() => navigate(`/jobs/${job._id || job.id}`)}
-                        role="article"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            navigate(`/jobs/${job._id || job.id}`);
+                          }
+                        }}
+                        role="button"
+                        tabIndex={0}
                         aria-label={`Job posting: ${job.title}`}
                       >
                         <Box
@@ -2355,20 +2395,10 @@ const JobsPage = () => {
                           <Button
                             variant="contained"
                             fullWidth
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               const jobId = job._id || job.id;
-                              if (!authState.isAuthenticated) {
-                                navigate('/login', {
-                                  state: {
-                                    from: `/jobs/${jobId}/apply`,
-                                    message:
-                                      'Please sign in to apply for this job',
-                                  },
-                                });
-                                return;
-                              }
-
-                              navigate(`/jobs/${jobId}/apply`);
+                              handlePrimaryJobAction(jobId);
                             }}
                             sx={{
                               bgcolor: 'var(--k-gold)',
@@ -2386,12 +2416,15 @@ const JobsPage = () => {
                               },
                             }}
                           >
-                            Apply Now
+                            {isHirerUser ? 'Find Talent' : 'Apply Now'}
                           </Button>
                           <Box sx={{ display: 'flex', gap: 1, justifyContent: 'space-between' }}>
                             <Button
                               variant="outlined"
-                              onClick={() => navigate(`/jobs/${job._id || job.id}`)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/jobs/${job._id || job.id}`);
+                              }}
                               startIcon={<Visibility />}
                               sx={{ flex: 1, minHeight: 44 }}
                             >
@@ -2414,7 +2447,8 @@ const JobsPage = () => {
                               {savedJobIds.has(job.id || job._id) ? <BookmarkFilledIcon /> : <BookmarkBorder />}
                             </IconButton>
                             <IconButton
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 if (navigator.share) {
                                   navigator
                                     .share({
@@ -2666,7 +2700,7 @@ const JobsPage = () => {
                           from: '/jobs',
                           message: isHirerUser
                             ? 'Sign in to post a job'
-                            : 'Sign in to create job alerts',
+                            : 'Sign in to manage job alerts',
                         },
                       });
                       return;
@@ -2692,7 +2726,7 @@ const JobsPage = () => {
                     },
                   }}
                 >
-                  {isHirerUser ? 'Post a Job' : 'Create Job Alert'}
+                  {isHirerUser ? 'Post a Job' : 'Manage Job Alerts'}
                 </Button>
                 <Button
                   variant="outlined"

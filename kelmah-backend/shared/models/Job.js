@@ -162,6 +162,18 @@ const JobSchema = new mongoose.Schema(
       }
     },
 
+    geoLocation: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point'
+      },
+      coordinates: {
+        type: [Number],  // [longitude, latitude]
+        default: undefined
+      }
+    },
+
     // Enhanced location details for Ghana cities
     locationDetails: {
       region: {
@@ -235,12 +247,6 @@ const JobSchema = new mongoose.Schema(
       }
     },
 
-    createdAt: {
-      type: Date,
-    },
-    updatedAt: {
-      type: Date,
-    },
   },
   {
     timestamps: true,
@@ -286,20 +292,43 @@ JobSchema.virtual("isBiddingOpen").get(function () {
 // Instance methods — count pending bids by querying the Bid model directly
 JobSchema.methods.updateBidCount = async function () {
   const Bid = mongoose.models.Bid || mongoose.model('Bid');
-  const count = await Bid.countDocuments({
+  const activeBidCount = await Bid.countDocuments({
     job: this._id,
-    status: 'pending'
+    status: { $in: ['pending', 'accepted'] }
   });
-  this.bidding.currentBidders = count;
-  if (count >= this.bidding.maxBidders) {
-    this.bidding.bidStatus = 'full';
+
+  // Use atomic findOneAndUpdate instead of read-modify-save
+  const updateFields = { 'bidding.currentBidders': activeBidCount };
+  if (activeBidCount >= this.bidding.maxBidders) {
+    updateFields['bidding.bidStatus'] = 'full';
   }
-  return this.save();
+
+  const updated = await mongoose.model('Job').findOneAndUpdate(
+    { _id: this._id },
+    { $set: updateFields },
+    { new: true }
+  );
+
+  if (updated) {
+    this.bidding.currentBidders = updated.bidding.currentBidders;
+    this.bidding.bidStatus = updated.bidding.bidStatus;
+  }
+
+  return this;
 };
 
-JobSchema.methods.closeBidding = function () {
-  this.bidding.bidStatus = 'closed';
-  return this.save();
+JobSchema.methods.closeBidding = async function () {
+  const updated = await mongoose.model('Job').findOneAndUpdate(
+    { _id: this._id },
+    { $set: { 'bidding.bidStatus': 'closed' } },
+    { new: true }
+  );
+
+  if (updated) {
+    this.bidding.bidStatus = updated.bidding.bidStatus;
+  }
+
+  return this;
 };
 
 JobSchema.methods.extendDeadline = function (days = 7) {
@@ -355,6 +384,9 @@ JobSchema.index({
 // use a compound index on the numeric fields instead for location queries.
 JobSchema.index({ "locationDetails.coordinates.lat": 1, "locationDetails.coordinates.lng": 1 });
 
+// 2dsphere index for GeoJSON-based geo queries
+JobSchema.index({ geoLocation: '2dsphere' });
+
 // Compound indexes for performance
 JobSchema.index({ "locationDetails.region": 1, "requirements.primarySkills": 1 });
 JobSchema.index({ "performanceTier": 1, "bidding.bidStatus": 1 });
@@ -363,7 +395,21 @@ JobSchema.index({ "expiresAt": 1, "status": 1 });
 JobSchema.index({ hirer: 1 });
 JobSchema.index({ status: 1 });
 JobSchema.index({ category: 1 });
+JobSchema.index({ budget: 1 });
+JobSchema.index({ visibility: 1, status: 1 });
 
 // Use standard mongoose.model() - it auto-binds to the default connection
 // This works correctly whether connection is established before or after model definition
+
+// Pre-save hook to auto-populate geoLocation from locationDetails.coordinates
+JobSchema.pre('save', function(next) {
+  if (this.locationDetails?.coordinates?.lng != null && this.locationDetails?.coordinates?.lat != null) {
+    this.geoLocation = {
+      type: 'Point',
+      coordinates: [this.locationDetails.coordinates.lng, this.locationDetails.coordinates.lat]
+    };
+  }
+  next();
+});
+
 module.exports = mongoose.models.Job || mongoose.model("Job", JobSchema);

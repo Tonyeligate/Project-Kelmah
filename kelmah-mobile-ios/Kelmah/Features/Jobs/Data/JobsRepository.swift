@@ -19,6 +19,35 @@ final class JobsRepository {
         return parseJobsPage(response, forcedSaved: false)
     }
 
+    func getRecommendedJobs(limit: Int = 6) async throws -> [JobSummary] {
+        let response = try await apiClient.send(
+            path: "jobs/recommendations/personalized",
+            method: .get,
+            queryItems: [
+                URLQueryItem(name: "page", value: "1"),
+                URLQueryItem(name: "limit", value: String(limit)),
+            ],
+            requiresAuth: true,
+            responseType: JobsRawEnvelope.self
+        )
+        return parseJobsPage(response, forcedSaved: false).jobs
+    }
+
+    func getMyJobs(limit: Int = 6) async throws -> [JobSummary] {
+        let response = try await apiClient.send(
+            path: "jobs/my-jobs",
+            method: .get,
+            queryItems: [
+                URLQueryItem(name: "page", value: "1"),
+                URLQueryItem(name: "limit", value: String(limit)),
+                URLQueryItem(name: "sort", value: "-updatedAt"),
+            ],
+            requiresAuth: true,
+            responseType: JobsRawEnvelope.self
+        )
+        return parseJobsPage(response, forcedSaved: false).jobs
+    }
+
     func getSavedJobs(page: Int = 1, limit: Int = 20) async throws -> JobsPage {
         let response = try await apiClient.send(
             path: "jobs/saved",
@@ -184,6 +213,10 @@ final class JobsRepository {
             employerAvatar: employerObject?.string("avatar") ?? employerObject?.string("profileImage"),
             skills: skills(from: object),
             postedAt: object.string("createdAt") ?? object.string("created_at") ?? object.string("postedDate"),
+            status: object.string("status"),
+            proposalCount: object.int("proposalCount") ?? object.int("applicationsCount") ?? 0,
+            matchScore: object.int("matchScore") ?? object.double("matchScore").map(Int.init),
+            aiReasoning: parseAIReasoning(from: object),
             isVerified: employerObject?.bool("verified") ?? employerObject?.bool("isVerified") ?? false,
             isUrgent: object.bool("urgent") ?? false,
             isSaved: forcedSaved || (object.bool("isSaved") ?? object.bool("saved") ?? false)
@@ -226,6 +259,16 @@ final class JobsRepository {
         }
         let suffix = paymentType.lowercased() == "hourly" ? "/hr" : ""
         return "\(currency) \(numberText)\(suffix)"
+    }
+
+    private func parseAIReasoning(from object: [String: JSONValue]) -> String? {
+        if let inlineReasoning = object.string("aiReasoning")?.trimmingCharacters(in: .whitespacesAndNewlines), inlineReasoning.isEmpty == false {
+            return inlineReasoning
+        }
+
+        return object["aiReasons"]?.arrayValue?
+            .compactMap { $0.stringValue?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .first(where: { $0.isEmpty == false })
     }
 }
 
