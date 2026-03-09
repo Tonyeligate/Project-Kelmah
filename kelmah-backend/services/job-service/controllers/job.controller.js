@@ -1969,24 +1969,29 @@ const getJobRecommendations = async (req, res, next) => {
     const numericLimit = Math.max(1, Math.min(50, parseInt(limit, 10) || 20));
     const numericMinScore = Math.max(0, Math.min(100, parseInt(minScore, 10) || 40));
 
-    const worker = await User.findById(workerId).lean();
+    const [worker, existingApplications] = await Promise.all([
+      User.findById(workerId).lean(),
+      Application.find({ worker: workerId }).select('job').lean(),
+    ]);
+
     if (!worker || worker.role !== 'worker') {
       return errorResponse(res, 403, 'Only workers can access job recommendations');
     }
 
-    const existingApplications = await Application.find({ worker: workerId })
-      .select('job')
-      .lean();
     const appliedJobIds = existingApplications
       .map((application) => application.job)
       .filter(Boolean);
 
     const query = {
       status: 'open',
-      $or: [
-        { visibility: 'public' },
-        { visibility: { $exists: false } },
-        { visibility: null },
+      $and: [
+        {
+          $or: [
+            { visibility: 'public' },
+            { visibility: { $exists: false } },
+            { visibility: null },
+          ],
+        },
       ],
     };
     if (appliedJobIds.length > 0) {
@@ -2000,17 +2005,19 @@ const getJobRecommendations = async (req, res, next) => {
 
     // Add skill pre-filter if worker has skills
     if (workerSkillsList.length > 0) {
-      query.$or = [
-        { 'requirements.primarySkills': { $in: workerSkillsList } },
-        { 'requirements.secondarySkills': { $in: workerSkillsList } },
-        { skills: { $in: workerSkillsList } },
-      ];
+      query.$and.push({
+        $or: [
+          { 'requirements.primarySkills': { $in: workerSkillsList } },
+          { 'requirements.secondarySkills': { $in: workerSkillsList } },
+          { skills: { $in: workerSkillsList } },
+        ],
+      });
     }
 
     const candidateJobs = await Job.find(query)
       .populate('hirer', 'firstName lastName profileImage rating totalJobsPosted companyName businessName')
       .sort({ createdAt: -1 })
-      .limit(Math.max(numericLimit * 6, 30))  // broader candidate pool
+      .limit(Math.max(numericLimit * 4, 30))
       .lean();
 
     const scoredJobs = candidateJobs
@@ -2026,7 +2033,14 @@ const getJobRecommendations = async (req, res, next) => {
         };
       })
       .filter((entry) => entry.matchScore >= numericMinScore)
-      .sort((a, b) => b.matchScore - a.matchScore)
+      .sort((a, b) => {
+        if (b.matchScore !== a.matchScore) {
+          return b.matchScore - a.matchScore;
+        }
+        const aCreated = new Date(a.job?.createdAt || 0).getTime();
+        const bCreated = new Date(b.job?.createdAt || 0).getTime();
+        return bCreated - aCreated;
+      })
       .slice(0, numericLimit);
 
     const jobs = scoredJobs.map((entry) => {
@@ -2446,10 +2460,15 @@ const advancedJobSearch = async (req, res, next) => {
     }
 
     // Text search — merge with existing $or (e.g. location) via $and
-    if (query) {
+    const normalizedQuery = String(query || '').trim().slice(0, 120);
+
+    if (normalizedQuery) {
       const escapeRx = (v) => String(v).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const safeQuery = escapeRx(query);
-      const searchTerms = query.trim().split(' ');
+      const safeQuery = escapeRx(normalizedQuery);
+      const searchTerms = normalizedQuery
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 8);
       // MED-02 FIX: Removed $text search (requires text index that may not exist).
       // Regex fallbacks provide equivalent coverage without index dependency.
       const searchConditions = [
@@ -2571,8 +2590,30 @@ const advancedJobSearch = async (req, res, next) => {
     });
 
     // Execute aggregation (run jobs and count in parallel for performance)
-    const countPipeline = pipeline.slice(0, -3); // Remove skip, limit, project
+    // Keep count pipeline lightweight: reuse only filter-related stages.
+    const countPipeline = [{ $match: matchStage }];
+    if (minHirerRating) {
+      countPipeline.push(
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'hirer',
+            foreignField: '_id',
+            as: 'hirerInfo'
+          }
+        },
+        {
+          $unwind: { path: '$hirerInfo', preserveNullAndEmptyArrays: true }
+        },
+        {
+          $match: {
+            'hirerInfo.rating': { $gte: parseFloat(minHirerRating) }
+          }
+        }
+      );
+    }
     countPipeline.push({ $count: 'total' });
+
     const [jobs, countResult] = await Promise.all([
       Job.aggregate(pipeline),
       Job.aggregate(countPipeline)

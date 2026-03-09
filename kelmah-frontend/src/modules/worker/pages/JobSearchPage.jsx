@@ -785,12 +785,12 @@ const JobSearchPage = () => {
     (cat) => {
       setCategory(cat);
       setPage(1);
-      const params = new URLSearchParams(window.location.search);
+      const params = new URLSearchParams(searchParams);
       if (cat) params.set('category', cat);
       else params.delete('category');
       setSearchParams(params, { replace: true });
     },
-    [setSearchParams],
+    [searchParams, setSearchParams],
   );
 
   const handleResetFilters = useCallback(() => {

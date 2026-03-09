@@ -163,6 +163,53 @@ const isBsonVersionMismatch = (error) =>
   typeof error.message === 'string' &&
   error.message.toLowerCase().includes('unsupported bson version');
 
+const DASHBOARD_DB_TIMEOUT_MS = Number(process.env.DASHBOARD_DB_TIMEOUT_MS || 4000);
+const DASHBOARD_HTTP_TIMEOUT_MS = Number(process.env.DASHBOARD_HTTP_TIMEOUT_MS || 3500);
+const DASHBOARD_CONNECTION_TIMEOUT_MS = Number(process.env.DASHBOARD_CONNECTION_TIMEOUT_MS || 8000);
+
+const buildMonthlyZeroGrowth = (now = new Date()) =>
+  Array.from({ length: 12 }).map((_, index) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - (11 - index), 1);
+    return {
+      month: date.toLocaleString('default', { month: 'short' }),
+      users: 0,
+    };
+  });
+
+const createOperationTimeoutError = (label, timeoutMs) => {
+  const error = new Error(`Operation timed out: ${label} (${timeoutMs}ms)`);
+  error.code = 'OPERATION_TIMEOUT';
+  error.operation = label;
+  return error;
+};
+
+const runWithTimeout = async (label, operation, timeoutMs) => {
+  let timeoutHandle;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutHandle = setTimeout(() => {
+      reject(createOperationTimeoutError(label, timeoutMs));
+    }, timeoutMs);
+  });
+
+  try {
+    const operationPromise = typeof operation === 'function'
+      ? Promise.resolve().then(operation)
+      : Promise.resolve(operation);
+    return await Promise.race([operationPromise, timeoutPromise]);
+  } finally {
+    if (timeoutHandle) {
+      clearTimeout(timeoutHandle);
+    }
+  }
+};
+
+const safeCountDocuments = (model, filter, label) =>
+  runWithTimeout(
+    label,
+    () => model.countDocuments(filter).maxTimeMS(DASHBOARD_DB_TIMEOUT_MS),
+    DASHBOARD_DB_TIMEOUT_MS + 250,
+  );
+
 const fetchProfileDocuments = async ({ UserModel, WorkerProfileModel, userId }) => {
   ensureModelsLoaded();
   const resolvedUserModel = UserModel && typeof UserModel.findById === 'function'
@@ -1525,7 +1572,7 @@ exports.getDashboardMetrics = async (req, res) => {
 
   try {
     await ensureConnection({
-      timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
+      timeoutMs: DASHBOARD_CONNECTION_TIMEOUT_MS,
     });
 
     if (typeof db.loadModels === 'function') {
@@ -1537,7 +1584,6 @@ exports.getDashboardMetrics = async (req, res) => {
 
     if (!MongoUser || !MongoWorkerProfile) {
       logger.warn('Dashboard metrics: models not initialized, returning fallback data.');
-      logger.warn('Dashboard metrics: models not initialized, returning fallback data.');
       return successResponse(
         res,
         200,
@@ -1547,9 +1593,9 @@ exports.getDashboardMetrics = async (req, res) => {
     }
 
     const [totalUsersResult, totalWorkersResult, activeWorkersResult] = await Promise.allSettled([
-      MongoUser.countDocuments({ isActive: true }),
-      MongoWorkerProfile.countDocuments(),
-      MongoWorkerProfile.countDocuments({ isAvailable: true }),
+      safeCountDocuments(MongoUser, { isActive: true }, 'metrics-total-users'),
+      safeCountDocuments(MongoWorkerProfile, {}, 'metrics-total-workers'),
+      safeCountDocuments(MongoWorkerProfile, { isAvailable: true }, 'metrics-active-workers'),
     ]);
 
     const totalUsers = totalUsersResult.status === 'fulfilled' ? totalUsersResult.value : 0;
@@ -1577,20 +1623,26 @@ exports.getDashboardMetrics = async (req, res) => {
     try {
       const axios = require('axios');
       const jobServiceUrl = process.env.JOB_SERVICE_URL || process.env.API_GATEWAY_URL || 'http://localhost:5003';
-      const response = await axios.get(`${jobServiceUrl}/api/jobs/dashboard/metrics`, {
-        headers: { Authorization: req.headers.authorization },
-        timeout: 5000,
-      });
+      const response = await runWithTimeout(
+        'metrics-job-service',
+        () => axios.get(`${jobServiceUrl}/api/jobs/dashboard/metrics`, {
+          headers: { Authorization: req.headers.authorization },
+          timeout: DASHBOARD_HTTP_TIMEOUT_MS,
+        }),
+        DASHBOARD_HTTP_TIMEOUT_MS + 250,
+      );
 
-      if (response?.data && typeof response.data === 'object') {
+      const payload = response?.data?.data || response?.data || {};
+      if (payload && typeof payload === 'object') {
         jobMetrics = {
-          totalJobs: Number(response.data.totalJobs) || 0,
-          completedJobs: Number(response.data.completedJobs) || 0,
+          totalJobs: Number(payload.totalJobs ?? payload.posted ?? payload.jobsPosted) || 0,
+          completedJobs: Number(payload.completedJobs ?? payload.completed ?? payload.jobsCompleted) || 0,
         };
         jobMetricsSource = 'job-service';
       }
     } catch (error) {
       logger.warn('Dashboard metrics: could not fetch job metrics:', error.message);
+      failedMetrics.push('jobMetrics');
     }
 
     const metrics = {
@@ -1607,7 +1659,6 @@ exports.getDashboardMetrics = async (req, res) => {
       ...(failedMetrics.length > 0 && { partial: true, failedMetrics }),
     };
 
-    return res.json(metrics);
     return successResponse(
       res,
       200,
@@ -1662,6 +1713,7 @@ exports.getDashboardWorkers = async (req, res, next) => {
         [],
         { page: 1, limit: 10, total: 0, pages: 1 },
         'Dashboard workers retrieved successfully',
+        { workers: [] },
       );
     }
 
@@ -1669,7 +1721,8 @@ exports.getDashboardWorkers = async (req, res, next) => {
     const userIds = workers.map(w => w.userId).filter(Boolean);
     const users = await User.find({ _id: { $in: userIds } })
       .select('firstName lastName profilePicture')
-      .lean();
+      .lean()
+      .maxTimeMS(DASHBOARD_DB_TIMEOUT_MS);
 
     // Create a map of userId to user data
     const userMap = {};
@@ -1681,7 +1734,7 @@ exports.getDashboardWorkers = async (req, res, next) => {
     const formattedWorkers = workers.map(worker => {
       const user = userMap[worker.userId?.toString()];
       return {
-        id: worker._id,
+        id: worker._id?.toString() || null,
         name: user ? `${user.firstName} ${user.lastName}` : 'Unknown',
         skills: worker.skills || [],
         rating: worker.rating || 0,
@@ -1703,6 +1756,7 @@ exports.getDashboardWorkers = async (req, res, next) => {
         pages: 1,
       },
       'Dashboard workers retrieved successfully',
+      { workers: formattedWorkers },
     );
   } catch (err) {
     logger.error('Dashboard workers error:', err);
@@ -1721,9 +1775,22 @@ exports.getDashboardWorkers = async (req, res, next) => {
  * Get dashboard analytics (MongoDB)
  */
 exports.getDashboardAnalytics = async (req, res) => {
+  const now = new Date();
+  const defaultAnalytics = {
+    userGrowth: buildMonthlyZeroGrowth(now),
+    jobStats: { posted: 0, completed: 0, inProgress: 0, cancelled: 0 },
+    topCategories: [],
+    workerStats: {
+      total: 0,
+      available: 0,
+      utilization: 0,
+    },
+    source: 'fallback',
+  };
+
   try {
     await ensureConnection({
-      timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000),
+      timeoutMs: DASHBOARD_CONNECTION_TIMEOUT_MS,
     });
 
     let MongoUser = getUserModel();
@@ -1738,27 +1805,36 @@ exports.getDashboardAnalytics = async (req, res) => {
     }
 
     if (!MongoUser || !MongoWorkerProfile) {
-      return errorResponse(res, 503, 'Models not initialized for analytics computation');
+      return successResponse(
+        res,
+        200,
+        'Dashboard analytics retrieved successfully',
+        { ...defaultAnalytics, reason: 'models-not-ready' },
+      );
     }
 
-    const now = new Date();
     const startWindow = new Date(now.getFullYear(), now.getMonth() - 11, 1);
-    let userGrowth = [];
+    let userGrowth = buildMonthlyZeroGrowth(now);
+    const failedSections = [];
 
     try {
-      const growthAggregation = await MongoUser.aggregate([
-        { $match: { createdAt: { $gte: startWindow } } },
-        {
-          $group: {
-            _id: {
-              year: { $year: '$createdAt' },
-              month: { $month: '$createdAt' },
+      const growthAggregation = await runWithTimeout(
+        'analytics-user-growth',
+        () => MongoUser.aggregate([
+          { $match: { createdAt: { $gte: startWindow } } },
+          {
+            $group: {
+              _id: {
+                year: { $year: '$createdAt' },
+                month: { $month: '$createdAt' },
+              },
+              users: { $sum: 1 },
             },
-            users: { $sum: 1 },
           },
-        },
-        { $sort: { '_id.year': 1, '_id.month': 1 } },
-      ]);
+          { $sort: { '_id.year': 1, '_id.month': 1 } },
+        ]).option({ maxTimeMS: DASHBOARD_DB_TIMEOUT_MS }),
+        DASHBOARD_DB_TIMEOUT_MS + 250,
+      );
 
       const growthMap = new Map();
       growthAggregation.forEach((entry) => {
@@ -1775,25 +1851,22 @@ exports.getDashboardAnalytics = async (req, res) => {
         };
       });
     } catch (aggregationError) {
+      failedSections.push('userGrowth');
       logger.warn('User growth aggregation failed, using fallback data:', aggregationError.message);
-      userGrowth = Array.from({ length: 12 }).map((_, index) => {
-        const date = new Date(now.getFullYear(), now.getMonth() - (11 - index), 1);
-        return {
-          month: date.toLocaleString('default', { month: 'short' }),
-          users: 0,
-        };
-      });
+      userGrowth = buildMonthlyZeroGrowth(now);
     }
 
     const [totalWorkersResult, availableWorkersResult] = await Promise.allSettled([
-      MongoWorkerProfile.countDocuments(),
-      MongoWorkerProfile.countDocuments({ isAvailable: true }),
+      safeCountDocuments(MongoWorkerProfile, {}, 'analytics-total-workers'),
+      safeCountDocuments(MongoWorkerProfile, { isAvailable: true }, 'analytics-available-workers'),
     ]);
 
     if (totalWorkersResult.status === 'rejected') {
+      failedSections.push('workerTotals');
       logger.warn('Failed to count total workers:', totalWorkersResult.reason?.message);
     }
     if (availableWorkersResult.status === 'rejected') {
+      failedSections.push('workerAvailability');
       logger.warn('Failed to count available workers:', availableWorkersResult.reason?.message);
     }
 
@@ -1801,44 +1874,65 @@ exports.getDashboardAnalytics = async (req, res) => {
     const availableWorkers = availableWorkersResult.status === 'fulfilled' ? availableWorkersResult.value : 0;
 
     let jobStats = { posted: 0, completed: 0, inProgress: 0, cancelled: 0 };
+    let jobStatsSource = 'fallback';
     try {
       const axios = require('axios');
-      const jobServiceUrl = process.env.JOB_SERVICE_URL || 'http://localhost:5003';
-      const response = await axios.get(`${jobServiceUrl}/api/jobs/analytics/summary`, {
-        headers: { Authorization: req.headers.authorization },
-        timeout: 5000,
-      });
-      jobStats = response.data;
+      const jobServiceUrl = process.env.JOB_SERVICE_URL || process.env.API_GATEWAY_URL || 'http://localhost:5003';
+      const response = await runWithTimeout(
+        'analytics-job-summary',
+        () => axios.get(`${jobServiceUrl}/api/jobs/analytics/summary`, {
+          headers: { Authorization: req.headers.authorization },
+          timeout: DASHBOARD_HTTP_TIMEOUT_MS,
+        }),
+        DASHBOARD_HTTP_TIMEOUT_MS + 250,
+      );
+
+      const payload = response?.data?.data || response?.data || {};
+      jobStats = {
+        posted: Number(payload.posted ?? payload.totalJobs ?? payload.jobsPosted) || 0,
+        completed: Number(payload.completed ?? payload.completedJobs ?? payload.jobsCompleted) || 0,
+        inProgress: Number(payload.inProgress ?? payload.active ?? payload.open) || 0,
+        cancelled: Number(payload.cancelled ?? payload.canceled) || 0,
+      };
+      jobStatsSource = 'job-service';
     } catch (error) {
+      failedSections.push('jobStats');
       logger.warn('Could not fetch job stats:', error.message);
     }
 
-    const topCategories = [
-      { name: 'Plumbing', count: 15 },
-      { name: 'Electrical', count: 12 },
-      { name: 'Carpentry', count: 10 },
-      { name: 'Construction', count: 8 },
-      { name: 'Painting', count: 6 },
-    ];
+    const topCategories = [];
+
+    const analyticsPayload = {
+      userGrowth,
+      jobStats,
+      jobStatsSource,
+      topCategories,
+      workerStats: {
+        total: totalWorkers,
+        available: availableWorkers,
+        utilization: totalWorkers > 0 ? Math.round((availableWorkers / totalWorkers) * 100) : 0,
+      },
+      source: 'database',
+      ...(failedSections.length > 0 && { partial: true, failedSections }),
+    };
 
     return successResponse(
       res,
       200,
       'Dashboard analytics retrieved successfully',
-      {
-        userGrowth,
-        jobStats,
-        topCategories,
-        workerStats: {
-          total: totalWorkers,
-          available: availableWorkers,
-          utilization: totalWorkers > 0 ? Math.round((availableWorkers / totalWorkers) * 100) : 0,
-        },
-      },
+      analyticsPayload,
     );
   } catch (err) {
     logger.error('Dashboard analytics error:', err);
-    return errorResponse(res, 500, 'Failed to generate dashboard analytics');
+    return successResponse(
+      res,
+      200,
+      'Dashboard analytics retrieved successfully',
+      {
+        ...defaultAnalytics,
+        reason: 'analytics-unavailable',
+      },
+    );
   }
 };
 

@@ -4,6 +4,7 @@
  */
 
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 const modelsModule = require('../models');
 // DO NOT destructure models at module load time - use modelsModule.ModelName or local variables
 // Models are loaded AFTER database connection, so they're undefined at module load time
@@ -1125,7 +1126,9 @@ class WorkerController {
         keywords // NEW: Text search
       } = req.query;
 
-      const offset = (page - 1) * limit;
+      const parsedPage = Math.max(1, Number.parseInt(page, 10) || 1);
+      const parsedLimit = Math.min(100, Math.max(1, Number.parseInt(limit, 10) || 20));
+      const offset = (parsedPage - 1) * parsedLimit;
 
       // ✅ FIXED: Use direct MongoDB driver (bypass disconnected Mongoose models)
       const mongoose = require('mongoose');
@@ -1236,7 +1239,7 @@ class WorkerController {
           .find(mongoQuery, { projection: SAFE_WORKER_PROJECTION })
           .sort({ rating: -1, totalJobs: -1, updatedAt: -1 })
           .skip(offset)
-          .limit(Math.min(100, Math.max(1, parseInt(limit, 10) || 20)))
+          .limit(parsedLimit)
           .toArray(),
         usersCollection.countDocuments(mongoQuery)
       ]);
@@ -1313,15 +1316,25 @@ class WorkerController {
       // Sort by rank score for better relevance
       formattedWorkers.sort((a, b) => b.rankScore - a.rankScore);
 
+      const pagination = {
+        page: parsedPage,
+        limit: parsedLimit,
+        total: totalCount,
+        pages: Math.max(1, Math.ceil(totalCount / parsedLimit)),
+      };
+
       return res.status(200).json({
         success: true,
-        workers: formattedWorkers,
-        pagination: {
-          currentPage: Number(page),
-          limit: Number(limit),
-          totalPages: Math.ceil(totalCount / limit),
-          totalWorkers: totalCount
-        }
+        message: 'Workers retrieved successfully',
+        data: {
+          // Keep both keys during transition so existing consumers stay stable.
+          items: formattedWorkers,
+          workers: formattedWorkers,
+          pagination,
+        },
+        meta: {
+          pagination,
+        },
       });
     } catch (error) {
       logger.error('❌ Error in getAllWorkers:', error);
@@ -2165,16 +2178,12 @@ class WorkerController {
       const userId = userContext?.id;
 
       if (!userId) {
-        logger.warn('Recent jobs request missing authenticated user context; returning fallback data');
-        const fallback = buildRecentJobsFallback({
-          limit: normalizedLimit,
-          reason: 'MISSING_AUTH_CONTEXT',
+        logger.warn('Recent jobs request missing authenticated user context; rejecting request');
+        return res.status(401).json({
+          success: false,
+          message: 'Authenticated user context required',
+          code: 'MISSING_AUTH_CONTEXT',
         });
-        fallback.data.metadata = {
-          ...(fallback.data.metadata || {}),
-          circuitBreaker: getCircuitBreakerSnapshot(),
-        };
-        return res.status(200).json(fallback);
       }
 
       if (circuitShouldBlockRequest()) {
@@ -2200,19 +2209,21 @@ class WorkerController {
           lastName: userContext?.lastName || null,
         };
 
-        const internalKey = process.env.INTERNAL_API_KEY;
+        const signingSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET;
         const headers = {
           'x-authenticated-user': JSON.stringify(normalizedUserForHeaders),
           'x-auth-source': 'api-gateway',
         };
 
-        if (req.headers.authorization) {
-          headers.Authorization = req.headers.authorization;
+        if (signingSecret) {
+          headers['x-gateway-signature'] = crypto
+            .createHmac('sha256', signingSecret)
+            .update(headers['x-authenticated-user'])
+            .digest('hex');
         }
 
-        if (internalKey) {
-          headers['x-internal-key'] = internalKey;
-          headers['x-internal-request'] = internalKey;
+        if (req.headers.authorization) {
+          headers.Authorization = req.headers.authorization;
         }
 
         const response = await axios.get(`${jobServiceUrl}/api/jobs/recommendations`, {

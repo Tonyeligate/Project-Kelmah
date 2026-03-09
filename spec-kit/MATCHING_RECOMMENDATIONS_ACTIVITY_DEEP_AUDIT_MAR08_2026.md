@@ -32,6 +32,23 @@
 - `npm run build` in `kelmah-frontend`: passed.
 - Live Render probing: `/api/users/workers/search?limit=500` currently returns `500`; `/api/users/workers/search?limit=50` observed high latency (~33s), confirming search-load risk.
 
+### March 9, 2026 Additional Pass (Latency + Security + UI Matrix)
+- Optimized `advancedJobSearch` count path in `kelmah-backend/services/job-service/controllers/job.controller.js` by using a lightweight count pipeline and preserving lookup only when required by filters.
+- Improved recommendation path in the same controller:
+	- parallelized worker + application fetch,
+	- preserved visibility constraints while applying skill filters,
+	- reduced candidate fanout (`limit * 4`),
+	- deterministic tie-breaking for equal scores.
+- Added query-budget limits in advanced search (query length cap and max token count) to reduce regex amplification risk.
+- Hardened user-scoped request security:
+	- `kelmah-backend/shared/middlewares/serviceTrust.js` now attaches validated user context from internal requests when present.
+	- `kelmah-backend/services/user-service/controllers/worker.controller.js` recent-jobs endpoint now fails closed with `401` on missing auth context and forwards signed user headers downstream.
+- Added targeted compound indexes to reduce worker-search and recommendation latency:
+	- `kelmah-backend/shared/models/User.js`
+	- `kelmah-backend/shared/models/Job.js`
+- Published a verified route-by-route frontend ticket matrix:
+	- `spec-kit/ROUTE_UI_DEFECT_MATRIX_MAR09_2026.md`
+
 
 ## Scope
 - Job match scoring and worker match ranking

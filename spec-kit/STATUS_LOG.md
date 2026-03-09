@@ -31,6 +31,13 @@
 - Sending an explicit client-side `x-gateway-origin` header to the same live earnings route did not change the outcome, which indicates the active path still needs standard forwarded-host/proto propagation instead of relying on the custom header alone.
 - Next patch: make `createDynamicProxy` forward `x-forwarded-proto` and `x-forwarded-host` consistently, in addition to `x-gateway-origin`, so the user-service resolver can succeed through either path.
 
+**Live verification after forwarded-header patch**
+- Pushed `ced22bb` (`Forward standard proxy headers to services`) with `xfwd: true` enabled in `createDynamicProxy` and explicit `x-forwarded-proto` / `x-forwarded-host` propagation.
+- Local validation passed again: no editor diagnostics and `node --check kelmah-backend/api-gateway/server.js` succeeded.
+- Production verification window ran for roughly six minutes after the push; `/health` uptime increased monotonically from ~282s to ~646s with no reset, so the API gateway did not roll to the new commit during that window.
+- Because the live gateway stayed on the older runtime, `GET /api/users/workers/6892b8f766a1e818f0c46151/earnings` still returned `source: fallback-missing-payment-host`.
+- Current blocker: deployment state. The forwarded-header fix is committed on `main`, but a gateway redeploy is still required before the live earnings path can be re-verified against `ced22bb`.
+
 ---
 
 ### Session: Native Mobile Precision, Matching, And Productivity Audit ✅ COMPLETED

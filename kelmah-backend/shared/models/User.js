@@ -241,6 +241,8 @@ userSchema.index({ profession: 1 }); // Worker search by profession
 userSchema.index({ locationCoordinates: '2dsphere' });
 // Compound index for role-based active worker queries
 userSchema.index({ role: 1, isActive: 1, skills: 1 });
+// Compound index for worker discovery default relevance sorting
+userSchema.index({ role: 1, isActive: 1, isVerified: -1, rating: -1, totalJobsCompleted: -1 });
 // Sparse indexes for token lookups
 userSchema.index({ passwordResetToken: 1 }, { sparse: true });
 userSchema.index({ emailVerificationToken: 1 }, { sparse: true });

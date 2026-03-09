@@ -1187,11 +1187,8 @@ const JobsPage = () => {
                             startIcon={isJobsFetching ? <CircularProgress size={16} sx={{ color: 'black' }} /> : <SearchIcon />}
                             disabled={isJobsFetching}
                             onClick={() => {
-                              // Force re-fetch with current filters (debounce will fire immediately if search already settled)
-                              if (searchQuery && searchQuery !== debouncedSearch) {
-                                // User typed but debounce hasn't fired - search immediately
-                                setSearchQuery((prev) => prev); // force effect
-                              }
+                              setPage(1);
+                              refetchJobs();
                             }}
                             sx={{
                               bgcolor: 'var(--k-gold)',

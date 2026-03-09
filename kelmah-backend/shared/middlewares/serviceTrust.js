@@ -55,6 +55,21 @@ const verifyGatewayRequest = (req, res, next) => {
   const internalKey = req.headers['x-internal-key'];
   const internalRequest = req.headers['x-internal-request'];
 
+  const attachUserFromInternalHeader = () => {
+    if (!gatewayAuth) return;
+
+    try {
+      const parsed = JSON.parse(gatewayAuth);
+      const user = validateGatewayUser(parsed);
+      if (user) {
+        req.user = user;
+        req.isGatewayAuthenticated = true;
+      }
+    } catch (error) {
+      // Keep internal request handling resilient for machine-to-machine traffic.
+    }
+  };
+
   // Allow requests from API Gateway with authenticated user info (new format)
   if (gatewayAuth && authSource === 'api-gateway') {
     // Verify HMAC signature — MANDATORY when INTERNAL_API_KEY is configured (prevents header spoofing)
@@ -135,11 +150,13 @@ const verifyGatewayRequest = (req, res, next) => {
 
   // Allow internal service requests with internal key (timing-safe comparison)
   if (internalKey && process.env.INTERNAL_API_KEY && timingSafeCompare(internalKey, process.env.INTERNAL_API_KEY)) {
+    attachUserFromInternalHeader();
     req.isInternalRequest = true;
     return next();
   }
 
   if (internalRequest && process.env.INTERNAL_API_KEY && timingSafeCompare(internalRequest, process.env.INTERNAL_API_KEY)) {
+    attachUserFromInternalHeader();
     req.isInternalRequest = true;
     return next();
   }

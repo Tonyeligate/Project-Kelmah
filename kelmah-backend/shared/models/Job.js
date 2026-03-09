@@ -397,6 +397,7 @@ JobSchema.index({ status: 1 });
 JobSchema.index({ category: 1 });
 JobSchema.index({ budget: 1 });
 JobSchema.index({ visibility: 1, status: 1 });
+JobSchema.index({ status: 1, visibility: 1, createdAt: -1 });
 
 // Use standard mongoose.model() - it auto-binds to the default connection
 // This works correctly whether connection is established before or after model definition
