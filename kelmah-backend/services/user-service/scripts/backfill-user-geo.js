@@ -238,7 +238,7 @@ async function main() {
 
   const profileQuery = {};
   if (!options.includeInactive) {
-    profileQuery.isActive = true;
+    profileQuery.isActive = { $ne: false };
   }
 
   const profileCursor = WorkerProfile.find(profileQuery)
@@ -287,7 +287,7 @@ async function main() {
     stats.sourceCounts[sourceKey] = (stats.sourceCounts[sourceKey] || 0) + 1;
 
     const existingUserGeo = extractUserGeo(user);
-    const shouldUpdateUser = !existingUserGeo || options.syncExisting || geoDiffers(existingUserGeo, candidate);
+    const shouldUpdateUser = !existingUserGeo || (options.syncExisting && geoDiffers(existingUserGeo, candidate));
 
     const profileGeo = normalizeGeo(workerProfile?.latitude, workerProfile?.longitude);
     const profileHasValidGeo = isValidLatLng(profileGeo.lat, profileGeo.lng);
@@ -353,7 +353,7 @@ async function main() {
     stats.sourceCounts[sourceKey] = (stats.sourceCounts[sourceKey] || 0) + 1;
 
     const existingUserGeo = extractUserGeo(user);
-    const shouldUpdateUser = !existingUserGeo || options.syncExisting || geoDiffers(existingUserGeo, candidate);
+    const shouldUpdateUser = !existingUserGeo || (options.syncExisting && geoDiffers(existingUserGeo, candidate));
     if (!shouldUpdateUser) {
       stats.skippedExistingGeo += 1;
       continue;

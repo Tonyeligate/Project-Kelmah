@@ -2,6 +2,68 @@
 
 ---
 
+### Session: CRIT-13 Live Auth Parity And Backend Hidden-Field Sweep March 9 2026 ⚠️ PARTIALLY COMPLETE
+
+**Date**: March 9, 2026  
+**Scope**: Probe the deployed gateway for the auth and bid flows hardened under CRIT-08 through CRIT-11, and extend the hidden-field plus hashed-token cleanup audit across the remaining backend services.
+
+**Acceptance Criteria**
+- Live gateway probes confirm deployed parity for login, 2FA, OAuth exchange, password change, and bid rejection.
+- Any remaining hidden `select: false` field misuse in backend services is identified and fixed.
+- Any remaining hashed refresh-token cleanup logic still deleting by raw token is identified and fixed.
+- Touched backend code validates cleanly and regressions remain green after fixes.
+
+**Mapped execution surface**
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/services/auth-service/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/tests/auth.controller.security.test.js`
+- `kelmah-backend/services/auth-service/server.js`
+- `kelmah-backend/services/job-service/controllers/bid.controller.js`
+- `kelmah-backend/services/job-service/routes/bid.routes.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/shared/models/User.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Data flow trace**
+- Live auth probes run through `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/mfa/setup`, `POST /api/auth/change-password`, `GET /api/auth/google`, and `POST /api/auth/oauth/exchange` on the deployed API gateway.
+- Live bid probes run through `GET /api/jobs/my-jobs`, `GET /api/bids/job/:jobId`, and `PATCH /api/bids/:bidId/reject` using the same authenticated hirer session.
+- Hidden-field audit traces every backend `validatePassword()` call and `twoFactorSecret` access back to the shared `User` schema, which marks `password`, verification tokens, reset tokens, and `twoFactorSecret` as `select: false`.
+
+**Dry-audit findings so far**
+- One additional auth-service hidden-field bug remained locally: `deactivateAccount()` still loaded the user without `.select('+password')` before calling `validatePassword()`.
+- No remaining raw refresh-token cleanup code deleting by `{ token: ... }` exists in live backend source outside the historical copies under `spec-kit/`.
+- No non-auth backend service currently calls `validatePassword()`, so the hidden-password misuse class remains isolated to auth-service.
+
+**Implementation completed**
+- Fixed `kelmah-backend/services/auth-service/controllers/auth.controller.js` so `deactivateAccount()` explicitly selects `+password` before verifying the submitted password.
+- Extended `kelmah-backend/services/auth-service/tests/auth.controller.security.test.js` with a regression that locks the `deactivateAccount()` password-selection requirement in place.
+
+**Validation**
+- `get_errors` reported no diagnostics in the touched auth controller, auth regression file, or this status log.
+- Focused auth regression passed from `kelmah-backend/`:
+  - `services/auth-service/tests/auth.controller.security.test.js`
+  - Result: 1 suite passed, 10 tests passed, 0 failures.
+- Broad auth/job verification passed again from `kelmah-backend/` after the final fix:
+  - `services/auth-service/tests`
+  - `services/job-service/tests`
+  - Result: 9 suites passed, 26 tests passed, 0 failures.
+- Live deployed gateway probe results:
+  - `POST /api/auth/login` with `giftyafisa@gmail.com / 11221122Tg` -> `200`.
+  - `GET /api/auth/me` with that token -> `200` and returned the expected session user payload.
+  - `POST /api/auth/mfa/setup` -> `504` gateway proxy timeout (`Error occurred while trying to proxy`).
+  - `POST /api/auth/change-password` -> `504` gateway proxy timeout (`Error occurred while trying to proxy`).
+  - `GET /api/auth/google` -> `404 Endpoint not found` on the deployed gateway.
+  - `POST /api/auth/oauth/exchange` -> `404 Endpoint not found` on the deployed gateway.
+  - `GET /api/jobs/my-jobs` -> `200` and returned live hirer jobs.
+  - `GET /api/bids/job/69a73f7c2ea54264fff6276d` -> `200` and returned live bid `69ae2cdfca587f5eee1e7e24` in `accepted` status.
+  - `PATCH /api/bids/69ae2cdfca587f5eee1e7e24/reject` -> `400 Bid is not pending`, which confirms deployed behavior still differs from the local hardened `409 Bid is no longer pending` response.
+  - Post-probe login confirmed the live test account still authenticates with the original password `11221122Tg`; the timed-out password-change attempt did not leave the account mutated.
+
+**Current state**
+- Local backend source is hardened and fully covered for the hidden-field and hashed-token issues audited in this sweep.
+- Deployed auth and bid endpoints are not in parity with local source for MFA, OAuth, change-password, and reject-bid behavior, indicating deployment/runtime drift that cannot be resolved from the workspace without a new deployment.
+
 ### Session: CRIT-12 Verification Email Delivery Contract March 9 2026 🔄 IN PROGRESS
 
 **Date**: March 9, 2026  
@@ -31,6 +93,30 @@
 - `email.service.js` currently returns `{ skipped: true }` when SMTP credentials are missing, but `register()` and `resendVerificationEmail()` still return success messages that claim mail was sent.
 - `register()` creates and persists an unverified user before attempting delivery, so missing SMTP config creates dead accounts that cannot be verified.
 - Verification emails currently inject SES-specific headers plus a forged `Message-ID`/`Reply-To` pattern even though the configured transport is Gmail SMTP, which is a deliverability risk.
+
+**Implementation completed**
+- Added explicit mail-delivery availability exposure in `kelmah-backend/services/auth-service/services/email.service.js` so auth controllers can distinguish a configured transactional mail path from a silent skip.
+- Simplified transactional email headers to provider-agnostic Gmail-safe metadata and removed the SES-specific / forged `@kelmah.com` header set that was attached to verification mail.
+- Hardened `kelmah-backend/services/auth-service/controllers/auth.controller.js` so `register()` now fails fast when verification delivery is unavailable, and rolls back newly created unverified users if verification sending fails after creation.
+- Hardened `resendVerificationEmail()` so it now returns an actual delivery-unavailable failure instead of claiming success when transactional mail is unavailable.
+- Hardened `forgotPassword()` so it no longer proceeds when the password-reset delivery path is entirely unavailable.
+- Added focused regressions in `kelmah-backend/services/auth-service/tests/auth.controller.security.test.js` for fast-fail registration, rollback on verification-send failure, and resend-verification failure handling.
+
+**Validation**
+- `get_errors` returned no diagnostics for:
+  - `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+  - `kelmah-backend/services/auth-service/services/email.service.js`
+  - `kelmah-backend/services/auth-service/tests/auth.controller.security.test.js`
+  - `spec-kit/STATUS_LOG.md`
+- Focused auth-service Jest verification passed from `kelmah-backend/`:
+  - `services/auth-service/tests/auth.controller.security.test.js`
+  - `services/auth-service/tests/get-me.contract.test.js`
+- Result: 2 suites passed, 10 tests passed, 0 failures.
+
+**Live deployment status**
+- Smoke check against `https://kelmah-api-gateway-gf3g.onrender.com/api/auth/resend-verification-email` still returned the old pre-fix success contract:
+  - `{ "status": "success", "message": "If an account with that email exists and is unverified, a verification email has been sent." }`
+- Conclusion: the local fix is validated, but the deployed auth service has not picked up this change yet, so the live parity blocker remains on the remote environment until deployment sync happens.
 
 ### Session: CRIT-02 Live Parity Probe And Coordinate Backfill March 9 2026 🔄 IN PROGRESS
 
@@ -73,6 +159,9 @@
   2. legacy `User.latitude/longitude`
   3. location-text centroid fallback for common Ghana cities/regions.
 - Added dual-write support in backfill flow so missing geo can be synchronized into both `User.locationCoordinates` and `WorkerProfile.latitude/longitude` when required.
+- Hardened the backfill utility after live-data audit:
+  - changed WorkerProfile scanning from strict `isActive: true` to `isActive: { $ne: false }` so canonical profiles missing the flag are still processed.
+  - fixed the non-sync write guard so existing coordinates are only overwritten when `--sync-existing` is explicitly provided.
 
 **Validation**
 - Live gateway host probe confirmed active production gateway: `https://kelmah-api-gateway-gf3g.onrender.com` (`/health` returned `200`).
@@ -80,15 +169,32 @@
   - `GET /api/users/workers?page=1&limit=20` -> `total=20`
   - `GET /api/users/workers?latitude=5.6037&longitude=-0.187&radius=10&page=1&limit=20&sortBy=distance` -> `total=20`
   - All returned items had `distance: null`, so live radius filtering is not active in deployed runtime.
+- Atlas backfill execution completed successfully using a direct `mongodb://` replica-set URI (bypassing local SRV lookup failures):
+  - initial dry-run found `plannedUserUpdates=26`
+  - apply run updated `26` user `locationCoordinates`
+  - follow-up dry-run confirmed those user updates were consumed (`plannedUserUpdates=0` for that pass)
+- Real data audit then uncovered `22` WorkerProfile documents with `isActive` missing and `20` missing profile coordinates, which the first backfill pass had skipped due to the strict active filter.
+- After hardening the script, Atlas verification completed successfully:
+  - hardened dry-run found `plannedProfileUpdates=20`, `plannedUserUpdates=0`
+  - apply run updated `20` WorkerProfile `latitude/longitude` pairs
+  - final dry-run returned `plannedUserUpdates=0`, `plannedProfileUpdates=0`
 - Backfill script static/runtime checks passed locally without DB access:
   - `node scripts/backfill-user-geo.js --help` (CLI parse OK)
   - `node --check scripts/backfill-user-geo.js` (syntax OK)
   - `get_errors` reported no diagnostics in touched files.
+- Local controller verification against the real Atlas dataset confirmed the code path is correct:
+  - local `GET /workers?page=1&limit=20` equivalent -> `total=20`
+  - local geo query centered on Accra returned `20` items with non-null `distance` values
+  - local geo query centered on Tamale (`latitude=9.4034&longitude=-0.8424&radius=10`) returned `total=0`
+- Direct live user-service probe proves production still serves stale code even after push:
+  - `https://kelmah-user-service-y4js.onrender.com/api/users/workers?latitude=9.4034&longitude=-0.8424&radius=10...` -> `total=20`, `non-null distance count=0`
+  - that differs from the local real-data result above, so the remaining blocker is remote deployment lag/staleness, not local code or data.
 
 **Execution blocker**
 - Dry-run backfill execution currently cannot reach MongoDB Atlas from this environment:
   - `querySrv ECONNREFUSED _mongodb._tcp.kelmah-messaging.xyqcurn.mongodb.net`
-  - Because of that network-level DNS/SRV failure, apply-mode backfill verification is pending external connectivity.
+  - Workaround used successfully: direct replica-set `mongodb://` URI assembled from PowerShell DNS results.
+- Runtime blocker remains: production Render user-service has not yet picked up commit `b83659a` despite the successful push to `main`, so live parity confirmation is pending remote rollout completion.
 
 ### Session: CRIT-08 To CRIT-11 Auth And Bid Hardening March 9 2026 ✅ COMPLETED
 
@@ -140,6 +246,9 @@
 - Added `kelmah-backend/services/auth-service/utils/timingSafeCompare.js` and switched `kelmah-backend/services/auth-service/server.js` internal admin key checks from direct equality to constant-time comparison.
 - Hardened `kelmah-backend/services/job-service/controllers/bid.controller.js` so `rejectBid()` now uses an atomic pending-status guard and returns `409` instead of overwriting a concurrently accepted bid.
 - Added focused Jest regressions in `kelmah-backend/services/auth-service/tests/auth.controller.security.test.js` and `kelmah-backend/services/job-service/tests/bid.controller.race.test.js`.
+- Continued the audit into adjacent auth flows and fixed the same hidden-field bug class in `verifyTwoFactor()`, `disableTwoFactor()`, `deactivateAccount()`, and `reactivateAccount()` by explicitly selecting `password` and `twoFactorSecret` where required.
+- Fixed refresh-token invalid-user cleanup in `kelmah-backend/services/auth-service/controllers/auth.controller.js` so hashed refresh-token records are revoked via `tokenId` parsing instead of attempting to delete by a raw `token` field that is no longer stored.
+- Repaired discovered test-harness drift in `kelmah-backend/services/job-service/tests/setup.js`, `health.test.js`, and `job.test.js` by correcting the shared test utility import path so the broader job-service suite can execute.
 
 **Validation**
 - `get_errors` returned no diagnostics for the touched auth-service controller, model, server, utility, job-service controller, and new regression tests.
@@ -149,6 +258,10 @@
   - `services/job-service/tests/bid.controller.race.test.js`
   - `services/auth-service/tests/get-me.contract.test.js`
 - Result: 3 suites passed, 4 tests passed, 0 failures.
+- Broad Jest verification then passed from `kelmah-backend/`:
+  - `services/auth-service/tests`
+  - `services/job-service/tests`
+- Result: 9 suites passed, 22 tests passed, 0 failures.
 
 ### Session: CRIT-02 Worker Geo Search Radius Enforcement March 9 2026 ✅ COMPLETED
 
@@ -301,7 +414,7 @@ See `spec-kit/HIRER_JOB_COLLECTION_CONTRACT_AUDIT_MAR09_2026.md` for the deeper 
 
 See `spec-kit/HIRER_SERVICE_CONTRACT_FOLLOWUP_MAR09_2026.md` for the deeper audit record.
 
-### Session: CRIT-04C Review Candidates Endpoint Restoration March 9 2026 🔄 IN PROGRESS
+### Session: CRIT-04C Review Candidates Endpoint Restoration March 9 2026 ✅ COMPLETED
 
 **Date**: March 9, 2026  
 **Scope**: Restore a real backend data source for the hirer review screen by adding a protected review-service endpoint that returns workers and completed hirer jobs eligible for review, then point the frontend service at that canonical route.
@@ -325,7 +438,22 @@ See `spec-kit/HIRER_SERVICE_CONTRACT_FOLLOWUP_MAR09_2026.md` for the deeper audi
 - Review-service already owns the review eligibility rules and completed-job participant validation, making it the correct service boundary for a hirer review-candidates listing endpoint.
 - API Gateway already proxies `/api/reviews/*` with authentication for non-public GET routes, so a new authenticated review-service GET route can be added without gateway rewiring.
 
-### Session: CRIT-05 To CRIT-07 Frontend Review And Registration Audit March 9 2026 🔄 IN PROGRESS
+**Implementation completed**
+- Added `getHirerReviewCandidates()` to `kelmah-backend/services/review-service/controllers/review.controller.js` to group completed hirer jobs by worker, resolve legacy accepted-application fallbacks when `job.worker` is absent, enrich worker details and rating summaries, and attach any existing review state per completed job.
+- Exposed the new protected route at `/api/reviews/hirer/review-candidates` in both `kelmah-backend/services/review-service/server.js` and `kelmah-backend/services/review-service/routes/review.routes.js`, keeping it ahead of parameter routes.
+- Repointed `kelmah-frontend/src/modules/hirer/services/hirerService.js` so `getCompletedWorkersForReview()` now uses the canonical review-service endpoint instead of the nonexistent user-service path.
+- Added focused controller coverage in `kelmah-backend/services/review-service/tests/review.controller.contract.test.js` for grouped worker candidates, existing review hydration, and accepted-application fallback.
+
+**Validation**
+- `get_errors` returned no diagnostics for the touched review-service controller, route, server, test, and frontend hirer service files.
+- Focused Jest verification passed from `kelmah-backend/`:
+  - `services/review-service/tests/review.controller.contract.test.js`
+- `npm run build` completed successfully for `kelmah-frontend/` after the frontend service repoint.
+- Residual frontend build output still only includes the pre-existing `src/services/apiClient.js` dynamic/static import warning, unrelated to this restoration.
+
+See `spec-kit/REVIEW_CANDIDATES_ENDPOINT_RESTORATION_MAR09_2026.md` for the deeper audit record.
+
+### Session: CRIT-05 To CRIT-07 Frontend Review And Registration Audit March 9 2026 ✅ COMPLETED
 
 **Date**: March 9, 2026  
 **Scope**: Audit and fix the reported frontend review payload override, registration error surfacing, and Ghana phone validation issues, then scan adjacent frontend paths for the same logic flaws so the fixes cover the actual shared behavior.
@@ -381,10 +509,20 @@ See `spec-kit/HIRER_SERVICE_CONTRACT_FOLLOWUP_MAR09_2026.md` for the deeper audi
 - Added shared `normalizeGhanaPhone()` and `isValidGhanaPhone()` helpers in `kelmah-frontend/src/modules/auth/utils/registrationSchema.js` and moved phone normalization into schema preprocessing so space-formatted valid Ghana numbers now pass validation.
 - Updated desktop registration in `kelmah-frontend/src/modules/auth/components/register/Register.jsx` to normalize phone values with the shared helper and to surface string rejection payloads from the register thunk instead of falling back to a generic message.
 - Updated mobile registration in `kelmah-frontend/src/modules/auth/components/mobile/MobileRegister.jsx` to use the same shared Ghana phone normalization/validation helpers and the same string-aware registration error handling.
+- Hardened `kelmah-backend/services/review-service/controllers/review.controller.js` so review submission validates the target against the actual completed job participant and eligibility checks derive from completed jobs plus an accepted-application fallback instead of the invalid `Application.status === 'completed'` assumption.
+- Restored the dormant second hirer review path in `kelmah-frontend/src/modules/hirer/components/JobProgressTracker.jsx` by loading completed jobs, exposing a completed-job `Review Worker` action, and preserving worker `_id` when submitting the review target.
+- Fixed `kelmah-frontend/src/modules/hirer/components/WorkerReview.jsx` so opening the review dialog from the action menu no longer clears the selected worker/job before submission.
+- Added a dedicated frontend smoke-test harness in `kelmah-frontend/jest.smoke.config.cjs`, `kelmah-frontend/babel.jest.config.cjs`, `kelmah-frontend/src/tests/testSetup.js`, and `kelmah-frontend/src/tests/testFileStub.js` to avoid repo-level Jest collisions from archived/package-manifest duplicates.
+- Added targeted smoke coverage in `kelmah-frontend/src/tests/smoke/register-flows.smoke.test.jsx` and `kelmah-frontend/src/tests/smoke/hirer-review-flows.smoke.test.jsx`, plus backend controller coverage in `kelmah-backend/services/review-service/tests/review.controller.contract.test.js`.
+- Fixed the adjacent stale frontend review-domain contract in `kelmah-frontend/src/modules/reviews/services/reviewsSlice.js` so the slice now reads from the real worker, user, and job review endpoints instead of guaranteed-404 `/reviews` and `/reviews/contract/:id` paths.
 
 **Validation**
 - `get_errors` returned no diagnostics for the touched hirer and auth frontend files.
 - `npm run build` in `kelmah-frontend/` completed successfully after the fixes.
+- Frontend smoke verification passed from `kelmah-frontend/` using `npx jest --config jest.smoke.config.cjs --runInBand`.
+- Result: 2 suites passed, 5 tests passed, 0 failures.
+- Backend review-controller verification passed from `kelmah-backend/` using `npx jest services/review-service/tests/review.controller.contract.test.js --runInBand`.
+- Result: 1 suite passed, 4 tests passed, 0 failures.
 - Residual build output still only shows the pre-existing Vite warning about mixed dynamic/static imports for `src/services/apiClient.js`, which is unrelated to these changes.
 
 ### Session: CRIT-03 Worker Directory Aggregation Prefilter March 9 2026 ✅ COMPLETED
@@ -463,6 +601,49 @@ See `spec-kit/HIRER_SERVICE_CONTRACT_FOLLOWUP_MAR09_2026.md` for the deeper audi
 - `get_errors` returned no diagnostics for the touched shared model, controller, tests, and `spec-kit/STATUS_LOG.md`.
 - Focused Jest verification passed: `npx jest services/user-service/tests/worker-directory.controller.test.js services/user-service/tests/worker-profile.controller.test.js services/user-service/tests/worker-profile.schema.test.js --runInBand` from `kelmah-backend/`.
 - Jest still reported the pre-existing open-handle warning after the suite completed, but all 3 targeted suites passed with 11 assertions green.
+
+### Session: Worker Controller Jest Shutdown Hardening March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Remove the lingering Jest shutdown warning in the worker-focused user-service suites by isolating unit tests from real model-graph and logger side effects that are not part of the controller contract under test.
+
+**Acceptance Criteria**
+- Focused worker controller and schema suites exit without the `Jest did not exit one second after the test run has completed` warning.
+- Worker controller unit tests no longer import the real user-service model graph when they only need stubbed model surfaces.
+- Test-only logger and audit side effects are disabled or mocked so controller tests stay deterministic and fast.
+
+**Mapped execution surface**
+- `kelmah-backend/services/user-service/tests/worker-directory.controller.test.js`
+- `kelmah-backend/services/user-service/tests/worker-profile.controller.test.js`
+- `kelmah-backend/services/user-service/tests/worker-profile.schema.test.js`
+- `kelmah-backend/services/user-service/models/index.js`
+- `kelmah-backend/shared/utils/audit-logger.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Data flow trace**
+- The worker controller unit suites import `WorkerController`, then replace service dependencies with mocked `../config/db` and stubbed model accessors before invoking controller methods directly.
+- Prior to this fix, both controller suites still loaded the real `../models` module, which pulled the full shared/service model graph into the Jest process even though the tests only asserted controller behavior against stubbed model methods.
+- The schema regression suite intentionally continues to load the real shared `WorkerProfile` schema because it validates declared fields and indexes rather than controller logic.
+
+**Dry-audit findings so far**
+- `worker-directory.controller.test.js` reproduced the shutdown warning in isolation, while `--detectOpenHandles` did not report a durable socket/timer leak, indicating import-time side effects rather than a live server resource.
+- Teardown inspection showed only stdio handles plus a pending filesystem request, which aligned with unnecessary module-load work rather than controller logic.
+- The controller unit suites were importing the real `../models` module and real logger/audit utilities even though the tests immediately replaced those dependencies with stubs.
+
+**Implementation completed**
+- Reworked `kelmah-backend/services/user-service/tests/worker-directory.controller.test.js` to mock `../models` directly and provide only the `User`, `WorkerProfile`, and `loadModels` surfaces needed by the controller unit.
+- Reworked `kelmah-backend/services/user-service/tests/worker-profile.controller.test.js` to mock `../models` directly and expose only the controller-facing model members under test.
+- Mocked unused controller logging dependencies in both controller suites so unit tests no longer load audit/logger side effects they do not assert.
+- Silenced the compatibility `loadModels()` log in `kelmah-backend/services/user-service/models/index.js` for `NODE_ENV === 'test'` so focused Jest runs avoid unnecessary test noise.
+- Disabled shared audit logger initialization/work in test mode inside `kelmah-backend/shared/utils/audit-logger.js` to keep unit runs from performing background file-system work.
+
+**Validation**
+- `get_errors` returned no diagnostics for the touched worker controller tests, `kelmah-backend/services/user-service/models/index.js`, `kelmah-backend/shared/utils/audit-logger.js`, and `spec-kit/STATUS_LOG.md`.
+- Focused Jest verification passed cleanly from `kelmah-backend/`:
+  - `services/user-service/tests/worker-directory.controller.test.js`
+  - `services/user-service/tests/worker-profile.controller.test.js`
+  - `services/user-service/tests/worker-profile.schema.test.js`
+- Result: 3 suites passed, 11 tests passed, and the prior Jest shutdown warning no longer appeared.
 
 ### Session: Auth White Theme Alignment March 9 2026 ✅ COMPLETED
 
