@@ -207,7 +207,7 @@ const DisputeSchema = new mongoose.Schema({
   }],
   status: {
     type: String,
-    enum: ['open', 'under_review', 'resolved', 'escalated'],
+    enum: ['open', 'under_review', 'resolved', 'escalated', 'auto_resolved'],
     default: 'open'
   },
   resolution: {
@@ -444,6 +444,14 @@ QuickJobSchema.pre('save', function(next) {
     const platformFeeRate = 0.15; // 15%
     this.escrow.platformFee = Math.round(this.escrow.amount * platformFeeRate * 100) / 100;
     this.escrow.workerPayout = this.escrow.amount - this.escrow.platformFee;
+  }
+  next();
+});
+
+// Pre-save middleware to prevent TTL auto-deletion of disputed QuickJobs (M-D5)
+QuickJobSchema.pre('save', function(next) {
+  if (this.dispute && ['open', 'under_review'].includes(this.dispute.status)) {
+    this.expiresAt = undefined;
   }
   next();
 });

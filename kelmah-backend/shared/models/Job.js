@@ -283,7 +283,8 @@ JobSchema.virtual("isExpired").get(function () {
 
 // Virtual field to check if bidding is open
 JobSchema.virtual("isBiddingOpen").get(function () {
-  return this.bidding.bidStatus === "open" &&
+  return this.status === 'open' &&
+    this.bidding.bidStatus === "open" &&
     this.bidding.currentBidders < this.bidding.maxBidders &&
     this.bidding.bidDeadline > new Date() &&
     !this.isExpired;
@@ -403,12 +404,17 @@ JobSchema.index({ status: 1, visibility: 1, createdAt: -1 });
 // This works correctly whether connection is established before or after model definition
 
 // Pre-save hook to auto-populate geoLocation from locationDetails.coordinates
+// and normalize status to lowercase for consistent querying
 JobSchema.pre('save', function(next) {
   if (this.locationDetails?.coordinates?.lng != null && this.locationDetails?.coordinates?.lat != null) {
     this.geoLocation = {
       type: 'Point',
       coordinates: [this.locationDetails.coordinates.lng, this.locationDetails.coordinates.lat]
     };
+  }
+  // Normalize status to lowercase to prevent case-inconsistency issues
+  if (this.status && typeof this.status === 'string') {
+    this.status = this.status.toLowerCase();
   }
   next();
 });

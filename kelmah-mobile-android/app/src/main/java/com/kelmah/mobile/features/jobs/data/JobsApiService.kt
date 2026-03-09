@@ -12,6 +12,9 @@ interface JobsApiService {
     @GET("jobs")
     suspend fun getJobs(@QueryMap query: Map<String, String>): JsonObject
 
+    @GET("jobs/recommendations")
+    suspend fun getGeneralRecommendations(@QueryMap query: Map<String, String>): JsonObject
+
     @GET("jobs/recommendations/personalized")
     suspend fun getRecommendedJobs(@QueryMap query: Map<String, String>): JsonObject
 

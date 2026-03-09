@@ -15,16 +15,21 @@ export const ContractProvider = ({ children }) => {
   // Call hook unconditionally (Rules of Hooks) — the context returns null
   // when there is no NotificationProvider ancestor.
   const notifications = useNotifications();
-  const showToast = notifications?.showToast || (() => {});
+  const rawShowToast = notifications?.showToast;
+  const showToast = useCallback(
+    (...args) => { if (rawShowToast) rawShowToast(...args); },
+    [rawShowToast]
+  );
 
-  const [loading, setLoading] = useState(true);
+  const [listLoading, setListLoading] = useState(true);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState(null);
   const [contracts, setContracts] = useState([]);
 
   const fetchContracts = useCallback(async () => {
     // Always use real API data - no mock data fallbacks
     if (!user) return;
-    setLoading(true);
+    setListLoading(true);
     if (import.meta.env.DEV) console.log('🔄 Fetching real contract data from API...');
 
     try {
@@ -39,7 +44,7 @@ export const ContractProvider = ({ children }) => {
       setError('Could not load contract information. Please try again later.');
       showToast('Failed to load contracts.', 'error');
     } finally {
-      setLoading(false);
+      setListLoading(false);
     }
   }, [user, showToast]);
 
@@ -49,14 +54,14 @@ export const ContractProvider = ({ children }) => {
 
   const getContractById = useCallback(
     async (id) => {
-      setLoading(true);
+      setDetailLoading(true);
       try {
         return await contractService.getContractById(id);
       } catch (err) {
         showToast(`Failed to retrieve contract ${id}.`, 'error');
         return null;
       } finally {
-        setLoading(false);
+        setDetailLoading(false);
       }
     },
     [showToast],
@@ -77,7 +82,7 @@ export const ContractProvider = ({ children }) => {
               return {
                 ...c,
                 milestones: c.milestones.map((m) =>
-                  m.id === milestoneId ? { ...m, status: 'paid' } : m,
+                  m.id === milestoneId ? { ...m, status: 'approved' } : m,
                 ),
               };
             }),
@@ -94,7 +99,9 @@ export const ContractProvider = ({ children }) => {
   );
 
   const value = {
-    loading,
+    loading: listLoading || detailLoading, // backward-compatible aggregate
+    listLoading,
+    detailLoading,
     error,
     contracts,
     getContractById,

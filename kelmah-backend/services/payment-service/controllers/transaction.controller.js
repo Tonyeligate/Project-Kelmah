@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { Transaction, Wallet, PaymentMethod, WebhookEvent } = require("../models");
 const logger = require('../utils/logger');
 const stripe = require("../services/stripe");
@@ -189,7 +190,7 @@ exports.cancelTransaction = async (req, res) => {
 
 // Helper functions
 const generateTransactionId = () => {
-  return `TRX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `TRX-${Date.now()}-${crypto.randomUUID()}`;
 };
 
 const processPayment = async (transaction) => {
@@ -359,8 +360,8 @@ const processWithdrawal = async (transaction) => {
         throw new Error("Unsupported payment provider");
     }
 
-    // Balance was already deducted atomically above — just mark completed
-    await transaction.updateStatus("completed");
+    // Balance was already deducted atomically above — mark processing until provider confirms
+    await transaction.updateStatus("processing");
   } catch (error) {
     // CRIT-02 FIX: Roll back the wallet deduction if the provider call failed
     // (balance was deducted atomically before the provider call)

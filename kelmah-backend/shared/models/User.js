@@ -147,7 +147,7 @@ const userSchema = new mongoose.Schema({
   profilePictureMetadata: mongoose.Schema.Types.Mixed,
   bio: {
     type: String,
-    maxlength: [500, 'Bio cannot exceed 500 characters']
+    maxlength: [2000, 'Bio cannot exceed 2000 characters']
   },
 
   // Worker-specific fields

@@ -197,46 +197,59 @@ exports.releaseMilestonePayment = async (req, res, next) => {
     if (escrow.hirerId.toString() !== hirerId) return res.status(403).json({ success: false, message: 'Access denied' });
     if (escrow.status !== 'active') return res.status(400).json({ success: false, message: 'Escrow is not active' });
 
-    // Find the milestone
-    const milestone = escrow.milestones.find(m => m.milestoneId === milestoneId);
-    if (!milestone) return res.status(404).json({ success: false, message: 'Milestone not found' });
-    if (milestone.status === 'released') return res.status(400).json({ success: false, message: 'Milestone already released' });
+    // Atomic milestone status guard — prevents double-release race condition
+    const atomicResult = await Escrow.findOneAndUpdate(
+      {
+        _id: escrowId,
+        'milestones.milestoneId': milestoneId,
+        'milestones.status': { $ne: 'released' }
+      },
+      {
+        $set: {
+          'milestones.$.status': 'released',
+          'milestones.$.releasedDate': new Date()
+        }
+      },
+      { new: true }
+    );
+
+    if (!atomicResult) {
+      return res.status(400).json({ success: false, message: 'Milestone already released or not found' });
+    }
+
+    // Find the milestone for amount info
+    const milestone = atomicResult.milestones.find(m => m.milestoneId === milestoneId);
 
     // Create transaction for milestone payment
     const tx = await new Transaction({
       transactionId: `TRX-${Date.now()}-${require('crypto').randomUUID().slice(0, 8)}`,
       amount: milestone.amount,
-      currency: escrow.currency,
+      currency: atomicResult.currency,
       type: 'milestone_payment',
-      paymentMethod: { metadata: { provider: escrow.provider, milestoneId } },
-      sender: escrow.hirerId,
-      recipient: escrow.workerId,
-      relatedContract: escrow.contractId,
-      relatedJob: escrow.jobId,
+      paymentMethod: { type: 'paystack', details: { provider: atomicResult.provider, milestoneId } },
+      sender: atomicResult.hirerId,
+      recipient: atomicResult.workerId,
+      relatedContract: atomicResult.contractId,
+      relatedJob: atomicResult.jobId,
       description: `Milestone payment: ${milestone.description || milestoneId}`,
       status: 'completed'
     }).save();
 
     // Atomic balance update — prevents race-condition double-credit
     await Wallet.findOneAndUpdate(
-      { user: escrow.workerId },
+      { user: atomicResult.workerId },
       { $inc: { balance: milestone.amount } },
       { new: true }
     );
 
-    // Update milestone status
-    milestone.status = 'released';
-    milestone.releasedDate = new Date();
-    escrow.transactions.push(tx._id);
-
-    // Check if all milestones are released
-    const allReleased = escrow.milestones.every(m => m.status === 'released');
+    // Push transaction and check if all milestones released
+    atomicResult.transactions.push(tx._id);
+    const allReleased = atomicResult.milestones.every(m => m.status === 'released');
     if (allReleased) {
-      escrow.status = 'released';
-      escrow.releasedAt = new Date();
+      atomicResult.status = 'released';
+      atomicResult.releasedAt = new Date();
     }
-
-    await escrow.save();
+    await atomicResult.save();
 
     return res.json({ 
       success: true, 

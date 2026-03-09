@@ -458,8 +458,8 @@ class VodafoneCashService {
     try {
       const webhookSecret = process.env.VODAFONE_WEBHOOK_SECRET;
       if (!webhookSecret) {
-        console.warn('Vodafone webhook secret not configured');
-        return true; // Skip verification if no secret configured
+        console.error('SECURITY: Vodafone webhook secret not configured — rejecting webhook');
+        return false; // Reject unverified webhooks when secret is missing
       }
 
       const expectedSignature = crypto

@@ -18,13 +18,37 @@ const buildJobQuery = (items) => ({
   lean: jest.fn().mockResolvedValue(items),
 });
 
+const buildLeanQuery = (result) => ({
+  lean: jest.fn().mockResolvedValue(result),
+});
+
+const {
+  MOBILE_RECOMMENDATIONS_CONTRACT,
+  PROFILE_INCOMPLETE_RECOMMENDATION_MESSAGE,
+} = require('../../../shared/constants/recommendations');
+
 jest.mock('../models', () => {
   const jobFind = jest.fn();
-  const userPerformanceFindOne = jest.fn();
+  const userPerformanceFindOne = jest.fn(() => buildLeanQuery(null));
+  const userFindById = jest.fn(() => buildLeanQuery({
+    _id: 'worker-1',
+    role: 'worker',
+    firstName: 'Kwame',
+    lastName: 'Asante',
+    skills: ['Wiring'],
+    profession: 'Electrician',
+    location: 'Accra, Ghana',
+  }));
+  const workerProfileFindOne = jest.fn(() => buildLeanQuery({
+    userId: 'worker-1',
+    skills: ['Wiring'],
+    specializations: ['Safety'],
+    location: 'Accra, Ghana',
+  }));
 
   return {
     Job: { find: jobFind },
-    User: {},
+    User: { findById: userFindById },
     Application: {},
     SavedJob: {},
     Bid: {},
@@ -32,9 +56,12 @@ jest.mock('../models', () => {
     Category: {},
     Contract: {},
     ContractDispute: {},
+    WorkerProfile: { findOne: workerProfileFindOne },
     __mocks: {
       jobFind,
       userPerformanceFindOne,
+      userFindById,
+      workerProfileFindOne,
     },
   };
 });
@@ -90,13 +117,29 @@ describe('mobile personalized recommendations contract', () => {
     const req = { user: { id: 'worker-1' }, query: { page: '1', limit: '6' } };
     const res = createResponse();
 
-    models.__mocks.userPerformanceFindOne.mockResolvedValue(null);
+    models.__mocks.userFindById.mockReturnValue(buildLeanQuery({
+      _id: 'worker-1',
+      role: 'worker',
+      firstName: 'Kwame',
+      lastName: 'Asante',
+      profession: 'Electrician',
+      location: 'Accra, Ghana',
+      skills: [],
+    }));
+    models.__mocks.workerProfileFindOne.mockReturnValue(buildLeanQuery({
+      userId: 'worker-1',
+      skills: [],
+      specializations: [],
+      location: 'Accra, Ghana',
+    }));
+    models.__mocks.userPerformanceFindOne.mockReturnValue(buildLeanQuery(null));
 
     await getPersonalizedJobRecommendations(req, res, jest.fn());
 
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.meta.contract).toBe('mobile-recommendations-v1');
+    expect(res.body.meta.contract).toBe(MOBILE_RECOMMENDATIONS_CONTRACT);
+    expect(res.body.message).toBe(PROFILE_INCOMPLETE_RECOMMENDATION_MESSAGE);
     expect(res.body.data).toMatchObject({
       jobs: [],
       pagination: { page: 1, limit: 6, total: 0, totalPages: 1 },
@@ -112,7 +155,7 @@ describe('mobile personalized recommendations contract', () => {
     const req = { user: { id: 'worker-1' }, query: { page: '1', limit: '5' } };
     const res = createResponse();
 
-    models.__mocks.userPerformanceFindOne.mockResolvedValue({
+    models.__mocks.userPerformanceFindOne.mockReturnValue(buildLeanQuery({
       userId: 'worker-1',
       performanceTier: 'tier1',
       locationPreferences: { primaryRegion: 'Greater Accra' },
@@ -120,7 +163,7 @@ describe('mobile personalized recommendations contract', () => {
         primarySkills: [{ skill: 'Wiring', verified: true }],
         secondarySkills: [{ skill: 'Safety', verified: true }],
       },
-    });
+    }));
     models.__mocks.jobFind.mockReturnValue(
       buildJobQuery([
         {
@@ -148,7 +191,7 @@ describe('mobile personalized recommendations contract', () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.meta.contract).toBe('mobile-recommendations-v1');
+    expect(res.body.meta.contract).toBe(MOBILE_RECOMMENDATIONS_CONTRACT);
     expect(res.body.data).toMatchObject({
       pagination: { page: 1, limit: 5, total: 1, totalPages: 1 },
       totalRecommendations: 1,
@@ -161,10 +204,25 @@ describe('mobile personalized recommendations contract', () => {
           recommendationSource: 'personalized',
           aiReasoning: expect.any(String),
           aiReasons: expect.arrayContaining([
-            expect.stringContaining('Matched 1 verified primary skill'),
+            expect.stringContaining('Matched 1 core skill'),
           ]),
         }),
       ]),
+    );
+    expect(models.__mocks.jobFind).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: { $in: ['open', 'Open'] },
+        'bidding.bidStatus': 'open',
+        $and: expect.arrayContaining([
+          expect.objectContaining({
+            $or: expect.arrayContaining([
+              { visibility: 'public' },
+              { visibility: { $exists: false } },
+              { visibility: null },
+            ]),
+          }),
+        ]),
+      }),
     );
   });
 });

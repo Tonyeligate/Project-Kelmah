@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { PayoutQueue, Transaction, PaymentMethod, User } = require('../models');
 
 // Enqueue a payout (admin)
@@ -29,7 +30,7 @@ exports.processBatch = async (req, res) => {
         await item.save();
         // Create a withdrawal transaction and process via real flow
         const tx = await new Transaction({
-          transactionId: `TRX-${Date.now()}-${Math.random().toString(36).substring(2,8)}`,
+          transactionId: `TRX-${Date.now()}-${crypto.randomUUID()}`,
           amount: item.amount,
           currency: item.currency,
           type: 'withdrawal',

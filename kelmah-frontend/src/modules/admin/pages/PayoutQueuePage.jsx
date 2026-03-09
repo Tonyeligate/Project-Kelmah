@@ -31,11 +31,11 @@ import {
   useTheme,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import SendIcon from '@mui/icons-material/Send';
-import { adminService } from '../services/adminService';
 import { Helmet } from 'react-helmet-async';
+import { adminService } from '../services/adminService';
 
 const STATUS_COLOR_MAP = {
   queued: 'warning',
@@ -44,18 +44,92 @@ const STATUS_COLOR_MAP = {
   failed: 'error',
 };
 
+const EnqueueForm = ({ onSubmitted }) => {
+  const [user, setUser] = useState('');
+  const [amount, setAmount] = useState('');
+  const [currency, setCurrency] = useState('GHS');
+  const [provider, setProvider] = useState('mtn_momo');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [ok, setOk] = useState('');
+
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    setSubmitting(true);
+    setError('');
+    setOk('');
+
+    try {
+      if (!user || !amount || !paymentMethod) {
+        throw new Error('User ID, amount, and payment method are required');
+      }
+
+      await adminService.enqueuePayout({
+        user,
+        amount: parseFloat(amount),
+        currency,
+        provider,
+        paymentMethod,
+      });
+
+      setOk('Payout queued successfully');
+      setUser('');
+      setAmount('');
+      setPaymentMethod('');
+      if (onSubmitted) {
+        onSubmitted();
+      }
+    } catch (requestError) {
+      setError(requestError?.message || 'Failed to enqueue');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Box component="form" onSubmit={onSubmit}>
+      <Grid container spacing={2} alignItems="flex-end">
+        <Grid item xs={12} sm={6} md={2}>
+          <TextField fullWidth size="small" label="User ID" value={user} onChange={(event) => setUser(event.target.value)} placeholder="ObjectId" />
+        </Grid>
+        <Grid item xs={6} sm={3} md={2}>
+          <TextField fullWidth size="small" label="Amount" type="number" value={amount} onChange={(event) => setAmount(event.target.value)} inputProps={{ min: 0, step: 0.01 }} />
+        </Grid>
+        <Grid item xs={6} sm={3} md={1}>
+          <TextField fullWidth size="small" label="Currency" value={currency} onChange={(event) => setCurrency(event.target.value)} />
+        </Grid>
+        <Grid item xs={12} sm={4} md={2}>
+          <FormControl fullWidth size="small">
+            <InputLabel>Provider</InputLabel>
+            <Select value={provider} label="Provider" onChange={(event) => setProvider(event.target.value)}>
+              <MenuItem value="mtn_momo">MTN MoMo</MenuItem>
+              <MenuItem value="vodafone_cash">Vodafone Cash</MenuItem>
+              <MenuItem value="airteltigo">AirtelTigo</MenuItem>
+              <MenuItem value="paystack">Paystack</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={4} md={3}>
+          <TextField fullWidth size="small" label="Payment Method ID" value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value)} placeholder="ObjectId" />
+        </Grid>
+        <Grid item xs={12} sm={4} md={2}>
+          <Button type="submit" variant="contained" fullWidth disabled={submitting} startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : <SendIcon />}>
+            Enqueue
+          </Button>
+        </Grid>
+      </Grid>
+      {error && <Alert severity="error" sx={{ mt: 1 }}>{error}</Alert>}
+      {ok && <Alert severity="success" sx={{ mt: 1 }}>{ok}</Alert>}
+    </Box>
+  );
+};
+
 const PayoutQueuePage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
-
-  // Admin-only guard
-  useEffect(() => {
-    if (!isAuthenticated || (user?.role !== 'admin' && user?.userType !== 'admin')) {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [isAuthenticated, user, navigate]);
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -65,14 +139,20 @@ const PayoutQueuePage = () => {
   const [error, setError] = useState('');
   const [processing, setProcessing] = useState(false);
 
+  useEffect(() => {
+    if (!isAuthenticated || (user?.role !== 'admin' && user?.userType !== 'admin')) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate, user]);
+
   const load = async () => {
     setLoading(true);
     setError('');
     try {
-      const res = await adminService.listPayouts({ status, page, limit });
-      setItems(res.data || res.items || []);
-    } catch (e) {
-      setError(e?.message || 'Failed to load payouts');
+      const response = await adminService.listPayouts({ status, page, limit });
+      setItems(response.data || response.items || []);
+    } catch (requestError) {
+      setError(requestError?.message || 'Failed to load payouts');
     } finally {
       setLoading(false);
     }
@@ -87,8 +167,8 @@ const PayoutQueuePage = () => {
     try {
       await adminService.processPayoutBatch(limit);
       await load();
-    } catch (e) {
-      setError(e?.message || 'Failed to process batch');
+    } catch (requestError) {
+      setError(requestError?.message || 'Failed to process batch');
     } finally {
       setProcessing(false);
     }
@@ -101,7 +181,6 @@ const PayoutQueuePage = () => {
         Payout Queue
       </Typography>
 
-      {/* Enqueue Form */}
       <Accordion sx={{ mb: 3, borderRadius: 2, '&:before': { display: 'none' } }} disableGutters>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography fontWeight={600}>Enqueue Payout (Admin)</Typography>
@@ -111,11 +190,10 @@ const PayoutQueuePage = () => {
         </AccordionDetails>
       </Accordion>
 
-      {/* Filters & Actions */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3, alignItems: 'center' }}>
         <FormControl size="small" sx={{ minWidth: 140 }}>
           <InputLabel>Status</InputLabel>
-          <Select value={status} label="Status" onChange={(e) => setStatus(e.target.value)}>
+          <Select value={status} label="Status" onChange={(event) => setStatus(event.target.value)}>
             <MenuItem value="">All</MenuItem>
             <MenuItem value="queued">Queued</MenuItem>
             <MenuItem value="processing">Processing</MenuItem>
@@ -123,49 +201,18 @@ const PayoutQueuePage = () => {
             <MenuItem value="failed">Failed</MenuItem>
           </Select>
         </FormControl>
-        <TextField
-          size="small"
-          label="Page"
-          type="number"
-          value={page}
-          onChange={(e) => { const n = parseInt(e.target.value); if (!isNaN(n) && n >= 1) setPage(n); }}
-          inputProps={{ min: 1 }}
-          sx={{ width: 100 }}
-        />
-        <TextField
-          size="small"
-          label="Limit"
-          type="number"
-          value={limit}
-          onChange={(e) => { const n = parseInt(e.target.value); if (!isNaN(n) && n >= 1 && n <= 100) setLimit(n); }}
-          inputProps={{ min: 1, max: 100 }}
-          sx={{ width: 100 }}
-        />
-        <Button
-          variant="contained"
-          startIcon={processing ? <CircularProgress size={16} color="inherit" /> : <PlayArrowIcon />}
-          onClick={onProcessBatch}
-          disabled={processing}
-        >
-          {processing ? 'Processing…' : 'Process Batch'}
+        <TextField size="small" label="Page" type="number" value={page} onChange={(event) => { const next = parseInt(event.target.value, 10); if (!Number.isNaN(next) && next >= 1) setPage(next); }} inputProps={{ min: 1 }} sx={{ width: 100 }} />
+        <TextField size="small" label="Limit" type="number" value={limit} onChange={(event) => { const next = parseInt(event.target.value, 10); if (!Number.isNaN(next) && next >= 1 && next <= 100) setLimit(next); }} inputProps={{ min: 1, max: 100 }} sx={{ width: 100 }} />
+        <Button variant="contained" startIcon={processing ? <CircularProgress size={16} color="inherit" /> : <PlayArrowIcon />} onClick={onProcessBatch} disabled={processing}>
+          {processing ? 'Processing...' : 'Process Batch'}
         </Button>
-        <Button
-          variant="outlined"
-          startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />}
-          onClick={load}
-          disabled={loading}
-        >
+        <Button variant="outlined" startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />} onClick={load} disabled={loading}>
           Refresh
         </Button>
       </Box>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      {/* Content */}
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
           <CircularProgress />
@@ -175,27 +222,26 @@ const PayoutQueuePage = () => {
           <Typography color="text.secondary">No payout items found.</Typography>
         </Box>
       ) : isMobile ? (
-        /* Mobile Card View */
         <Grid container spacing={2}>
-          {items.map((it) => (
-            <Grid item xs={12} key={it._id}>
+          {items.map((item) => (
+            <Grid item xs={12} key={item._id}>
               <Card variant="outlined">
                 <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                     <Typography variant="subtitle2" fontWeight={600} noWrap sx={{ maxWidth: '55%' }}>
-                      {it.user}
+                      {item.user}
                     </Typography>
-                    <Chip label={it.status} color={STATUS_COLOR_MAP[it.status] || 'default'} size="small" />
+                    <Chip label={item.status} color={STATUS_COLOR_MAP[item.status] || 'default'} size="small" />
                   </Box>
                   <Typography variant="body2" color="text.secondary">
-                    {it.currency === 'GHS' ? 'GH₵' : (it.currency || 'GH₵')}{it.amount} &bull; {it.provider}
+                    {item.currency === 'GHS' ? 'GH₵' : item.currency || 'GH₵'}{item.amount} • {item.provider}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Attempts: {it.attempts} &bull; {it.createdAt ? new Date(it.createdAt).toLocaleDateString() : '—'}
+                    Attempts: {item.attempts} • {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '—'}
                   </Typography>
-                  {it.lastError?.message && (
+                  {item.lastError?.message && (
                     <Typography variant="caption" color="error.main" display="block" sx={{ mt: 0.5 }}>
-                      {it.lastError.message}
+                      {item.lastError.message}
                     </Typography>
                   )}
                 </CardContent>
@@ -204,7 +250,6 @@ const PayoutQueuePage = () => {
           ))}
         </Grid>
       ) : (
-        /* Desktop Table View */
         <TableContainer component={Paper} variant="outlined">
           <Table size="small">
             <TableHead>
@@ -220,18 +265,18 @@ const PayoutQueuePage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {items.map((it) => (
-                <TableRow key={it._id} hover>
-                  <TableCell>{it.user}</TableCell>
-                  <TableCell>{it.amount}</TableCell>
-                  <TableCell>{it.currency === 'GHS' ? 'GH₵' : (it.currency || 'GH₵')}</TableCell>
-                  <TableCell>{it.provider}</TableCell>
+              {items.map((item) => (
+                <TableRow key={item._id} hover>
+                  <TableCell>{item.user}</TableCell>
+                  <TableCell>{item.amount}</TableCell>
+                  <TableCell>{item.currency === 'GHS' ? 'GH₵' : item.currency || 'GH₵'}</TableCell>
+                  <TableCell>{item.provider}</TableCell>
                   <TableCell>
-                    <Chip label={it.status} color={STATUS_COLOR_MAP[it.status] || 'default'} size="small" />
+                    <Chip label={item.status} color={STATUS_COLOR_MAP[item.status] || 'default'} size="small" />
                   </TableCell>
-                  <TableCell>{it.attempts}</TableCell>
-                  <TableCell>{it.createdAt ? new Date(it.createdAt).toLocaleString() : '—'}</TableCell>
-                  <TableCell>{it.lastError?.message || '—'}</TableCell>
+                  <TableCell>{item.attempts}</TableCell>
+                  <TableCell>{item.createdAt ? new Date(item.createdAt).toLocaleString() : '—'}</TableCell>
+                  <TableCell>{item.lastError?.message || '—'}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -243,93 +288,3 @@ const PayoutQueuePage = () => {
 };
 
 export default PayoutQueuePage;
-
-/* ---------- Enqueue Form ---------- */
-const EnqueueForm = ({ onSubmitted }) => {
-  const [user, setUser] = useState('');
-  const [amount, setAmount] = useState('');
-  const [currency, setCurrency] = useState('GHS');
-  const [provider, setProvider] = useState('mtn_momo');
-  const [paymentMethod, setPaymentMethod] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [ok, setOk] = useState('');
-
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError('');
-    setOk('');
-    try {
-      if (!user || !amount || !paymentMethod)
-        throw new Error('User ID, amount, and payment method are required');
-      await adminService.enqueuePayout({
-        user,
-        amount: parseFloat(amount),
-        currency,
-        provider,
-        paymentMethod,
-      });
-      setOk('Payout queued successfully');
-      setUser('');
-      setAmount('');
-      setPaymentMethod('');
-      onSubmitted && onSubmitted();
-    } catch (e) {
-      setError(e?.message || 'Failed to enqueue');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <Box component="form" onSubmit={onSubmit}>
-      <Grid container spacing={2} alignItems="flex-end">
-        <Grid item xs={12} sm={6} md={2}>
-          <TextField fullWidth size="small" label="User ID" value={user} onChange={(e) => setUser(e.target.value)} placeholder="ObjectId" />
-        </Grid>
-        <Grid item xs={6} sm={3} md={2}>
-          <TextField fullWidth size="small" label="Amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} inputProps={{ min: 0, step: 0.01 }} />
-        </Grid>
-        <Grid item xs={6} sm={3} md={1}>
-          <TextField fullWidth size="small" label="Currency" value={currency} onChange={(e) => setCurrency(e.target.value)} />
-        </Grid>
-        <Grid item xs={12} sm={4} md={2}>
-          <FormControl fullWidth size="small">
-            <InputLabel>Provider</InputLabel>
-            <Select value={provider} label="Provider" onChange={(e) => setProvider(e.target.value)}>
-              <MenuItem value="mtn_momo">MTN MoMo</MenuItem>
-              <MenuItem value="vodafone_cash">Vodafone Cash</MenuItem>
-              <MenuItem value="airteltigo">AirtelTigo</MenuItem>
-              <MenuItem value="paystack">Paystack</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sm={4} md={3}>
-          <TextField fullWidth size="small" label="Payment Method ID" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} placeholder="ObjectId" />
-        </Grid>
-        <Grid item xs={12} sm={4} md={2}>
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            disabled={submitting}
-            startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : <SendIcon />}
-          >
-            Enqueue
-          </Button>
-        </Grid>
-      </Grid>
-      {error && (
-        <Alert severity="error" sx={{ mt: 1 }}>
-          {error}
-        </Alert>
-      )}
-      {ok && (
-        <Alert severity="success" sx={{ mt: 1 }}>
-          {ok}
-        </Alert>
-      )}
-    </Box>
-  );
-};

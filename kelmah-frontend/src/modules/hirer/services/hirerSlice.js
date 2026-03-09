@@ -47,7 +47,7 @@ const STATUS_MAP = {
 
 export const fetchHirerJobs = createAsyncThunk(
   'hirer/fetchJobs',
-  async (status = 'all') => {
+  async (status = 'all', { rejectWithValue }) => {
     try {
       // Map frontend status to database canonical status
       const dbStatus = STATUS_MAP[status] !== undefined ? STATUS_MAP[status] : status;
@@ -65,25 +65,21 @@ export const fetchHirerJobs = createAsyncThunk(
       devLog('[HirerSlice] Fetched jobs:', { requestedStatus: status, dbStatus, count: Array.isArray(jobs) ? jobs.length : 0 });
       return { status, jobs: Array.isArray(jobs) ? jobs : [] };
     } catch (error) {
-      if (import.meta.env.DEV) console.warn(
-        `Job service unavailable for hirer jobs (${status}):`,
-        error.message,
-      );
-      // Always return empty array on error
-      return { status, jobs: [] };
+      if (import.meta.env.DEV) console.warn('fetchHirerJobs error:', error);
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to fetch jobs');
     }
   },
 );
 
 export const createHirerJob = createAsyncThunk(
   'hirer/createJob',
-  async (jobData) => {
+  async (jobData, { rejectWithValue }) => {
     try {
       const response = await api.post('/jobs', jobData);
       return response.data.data || response.data;
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Job service unavailable for job creation:', error.message);
-      throw error;
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to create job');
     }
   },
 );
@@ -108,7 +104,7 @@ export const updateHirerJob = createAsyncThunk(
 
 export const updateHirerProfile = createAsyncThunk(
   'hirer/updateProfile',
-  async (profileData) => {
+  async (profileData, { rejectWithValue }) => {
     try {
       const response = await api.put('/users/profile', profileData);
       return response.data.data || response.data;
@@ -117,14 +113,14 @@ export const updateHirerProfile = createAsyncThunk(
         'User service unavailable for profile update:',
         error.message,
       );
-      throw error;
+      return rejectWithValue(error.response?.data || error.message);
     }
   },
 );
 
 export const updateJobStatus = createAsyncThunk(
   'hirer/updateJobStatus',
-  async ({ jobId, status }) => {
+  async ({ jobId, status }, { rejectWithValue }) => {
     try {
       const response = await api.patch(`/jobs/${jobId}/status`, {
         status,
@@ -132,26 +128,26 @@ export const updateJobStatus = createAsyncThunk(
       return response.data;
     } catch (error) {
       if (import.meta.env.DEV) console.warn(
-        'Job service unavailable for status update, simulating success:',
+        'Job service unavailable for status update:',
         error.message,
       );
-      throw error;
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to update job status');
     }
   },
 );
 
 export const deleteHirerJob = createAsyncThunk(
   'hirer/deleteJob',
-  async (jobId) => {
+  async (jobId, { rejectWithValue }) => {
     try {
       await api.delete(`/jobs/${jobId}`);
       return { jobId };
     } catch (error) {
       if (import.meta.env.DEV) console.warn(
-        'Job service unavailable for job deletion, simulating success:',
+        'Job service unavailable for job deletion:',
         error.message,
       );
-      throw error;
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to delete job');
     }
   },
 );
@@ -183,13 +179,13 @@ export const fetchJobApplications = createAsyncThunk(
 
 export const fetchHirerAnalytics = createAsyncThunk(
   'hirer/fetchAnalytics',
-  async () => {
+  async (_, { rejectWithValue }) => {
     try {
       const response = await api.get('/users/dashboard/analytics');
       return response.data?.data || response.data;
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
-      throw error;
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to fetch analytics');
     }
   },
 );

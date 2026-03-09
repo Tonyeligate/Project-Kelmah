@@ -31,6 +31,10 @@ const {
   isDataUri,
 } = require('../../../shared/utils/cloudinary');
 const { buildCanonicalWorkerSnapshot } = require('../../../shared/utils/canonicalWorker');
+const {
+  MOBILE_RECOMMENDATIONS_CONTRACT,
+  PROFILE_INCOMPLETE_RECOMMENDATION_MESSAGE,
+} = require('../../../shared/constants/recommendations');
 
 const jobLogger = createLogger('job-controller');
 
@@ -3522,7 +3526,7 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
       return successResponse(
         res,
         200,
-        'Complete your profile and add skills to get personalized recommendations',
+        PROFILE_INCOMPLETE_RECOMMENDATION_MESSAGE,
         {
           jobs: [],
           pagination: {
@@ -3537,7 +3541,7 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
         },
         {
           recommendationSource: userPerformance ? 'skills-missing' : 'profile-incomplete',
-          contract: 'mobile-recommendations-v1',
+          contract: MOBILE_RECOMMENDATIONS_CONTRACT,
         },
       );
     }
@@ -3661,7 +3665,7 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
       {
         recommendationSource: userPerformance ? 'user-performance' : 'worker-profile',
         matchedSkills: allSkills.slice(0, 5),
-        contract: 'mobile-recommendations-v1',
+        contract: MOBILE_RECOMMENDATIONS_CONTRACT,
       },
     );
   } catch (error) {

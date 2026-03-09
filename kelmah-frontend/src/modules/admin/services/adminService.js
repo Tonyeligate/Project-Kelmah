@@ -1,193 +1,34 @@
-/**
- * Admin Service
- *
- * Service layer for admin-related operations including user management,
- * system monitoring, and administrative tasks.
- */
-
 import { api } from '../../../services/apiClient';
 
 export const adminService = {
-  // User Management
-  async getUsers(page = 1, limit = 10, search = '') {
-    try {
-      const params = { page, limit };
-      if (search) {
-        const response = await api.get('/users/search', {
-          params: { ...params, q: search },
-        });
-        return response.data;
-      }
-      const response = await api.get('/users', { params });
-      return response.data;
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error fetching users:', error);
-      throw error;
-    }
-  },
-
-  // Payout queue
   async listPayouts(params = {}) {
-    try {
-      const response = await api.get('/payments/admin/payouts', {
-        params,
-      });
-      return response.data;
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error listing payouts:', error);
-      throw error;
-    }
+    const response = await api.get('/payments/admin/payouts', { params });
+    return response.data;
   },
 
   async enqueuePayout(data) {
-    try {
-      const response = await api.post('/payments/admin/payouts/queue', data);
-      return response.data;
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error enqueueing payout:', error);
-      throw error;
-    }
+    const response = await api.post('/payments/admin/payouts/queue', data);
+    return response.data;
   },
 
   async processPayoutBatch(limit = 10) {
-    try {
-      const response = await api.post('/payments/admin/payouts/process', {
-        limit,
-      });
-      return response.data;
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error processing payout batch:', error);
-      throw error;
-    }
+    const response = await api.post('/payments/admin/payouts/process', {
+      limit,
+    });
+    return response.data;
   },
 
-  // Provider status and aggregate health
-  async getProviderStatus() {
-    try {
-      const response = await api.get('/health/aggregate');
-      return response.data;
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error fetching provider status:', error);
-      throw error;
-    }
-  },
-
-  // Worker analytics
-  async getWorkerAnalytics(workerId, params = {}) {
-    try {
-      const response = await api.get(`/users/analytics/worker/${workerId}`, {
-        params,
-      });
-      return response.data;
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error fetching worker analytics:', error);
-      throw error;
-    }
-  },
-
-  async getUserById(userId) {
-    try {
-      const response = await api.get(`/users/${userId}`);
-      return response.data;
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error fetching user:', error);
-      throw error;
-    }
-  },
-
-  async createUser(userData) {
-    try {
-      const response = await api.post('/users', userData);
-      return response.data;
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error creating user:', error);
-      throw error;
-    }
-  },
-
-  async updateUser(userId, userData) {
-    try {
-      const response = await api.put(`/users/${userId}`, userData);
-      return response.data;
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error updating user:', error);
-      throw error;
-    }
-  },
-
-  async deleteUser(userId) {
-    try {
-      const response = await api.delete(`/users/${userId}`);
-      return response.data;
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error deleting user:', error);
-      throw error;
-    }
-  },
-
-  // User Status Management
-  async toggleUserStatus(userId, status) {
-    try {
-      const response = await api.put(`/users/${userId}`, {
-        isActive: status,
-      });
-      return response.data;
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error toggling user status:', error);
-      throw error;
-    }
-  },
-
-  async verifyUser(userId, verified = true) {
-    try {
-      const response = await api.put(`/users/${userId}`, {
-        isEmailVerified: verified,
-      });
-      return response.data;
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error verifying user:', error);
-      throw error;
-    }
-  },
-
-  // Bulk Operations — single batch request instead of N+1
-  async bulkUpdateUsers(userIds, updateData) {
-    try {
-      const response = await api.put('/users/bulk-update', { userIds, updateData });
-      return response.data;
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error bulk updating users:', error);
-      throw error;
-    }
-  },
-
-  async bulkDeleteUsers(userIds) {
-    try {
-      const response = await api.delete('/users/bulk-delete', { data: { userIds } });
-      return response.data;
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error bulk deleting users:', error);
-      throw error;
-    }
-  },
-
-  // System Analytics — uses the user-service platform analytics endpoint
   async getSystemStats() {
-    try {
-      const response = await api.get('/users/analytics/platform');
-      const stats = response.data?.data || response.data || {};
+    const response = await api.get('/users/analytics/platform');
+    const stats = response.data?.data || response.data || {};
 
-      return {
-        totalUsers: stats.totalUsers ?? 0,
-        activeUsers: stats.activeUsers ?? 0,
-        newUsersThisMonth: stats.newUsers ?? 0,
-        totalWorkers: stats.totalWorkers ?? 0,
-        systemHealth: stats.systemHealth ?? 'unknown',
-      };
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Error fetching system stats:', error);
-      throw error;
-    }
+    return {
+      totalUsers: stats.totalUsers ?? 0,
+      activeUsers: stats.activeUsers ?? 0,
+      newUsersThisMonth: stats.newUsers ?? 0,
+      totalWorkers: stats.totalWorkers ?? 0,
+      systemHealth: stats.systemHealth ?? 'unknown',
+    };
   },
 };
 

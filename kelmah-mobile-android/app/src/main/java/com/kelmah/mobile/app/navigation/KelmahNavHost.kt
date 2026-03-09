@@ -1,6 +1,7 @@
 package com.kelmah.mobile.app.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavType
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -25,12 +26,25 @@ import com.kelmah.mobile.features.profile.presentation.ProfileScreen
 fun KelmahNavHost(
     navController: NavHostController,
     currentUser: SessionUser?,
+    pendingDeepLinkUrl: String?,
+    onDeepLinkConsumed: (String) -> Unit,
     onLogout: (Boolean) -> Unit,
     jobsViewModel: JobsViewModel,
     messagesViewModel: MessagesViewModel,
     notificationsViewModel: NotificationsViewModel,
 ) {
     val currentRole = currentUser.kelmahUserRole
+
+    LaunchedEffect(currentUser?.resolvedId, pendingDeepLinkUrl) {
+        if (currentUser == null || pendingDeepLinkUrl.isNullOrBlank()) return@LaunchedEffect
+
+        resolveKelmahDeepLink(pendingDeepLinkUrl)?.let { route ->
+            navController.navigate(route) {
+                launchSingleTop = true
+            }
+        }
+        onDeepLinkConsumed(pendingDeepLinkUrl)
+    }
 
     NavHost(
         navController = navController,

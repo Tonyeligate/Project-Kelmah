@@ -161,6 +161,8 @@ fun HomeScreen(
                     "Recent hiring activity"
                 } else if (jobsState.recommendationState == RecommendationFeedState.FALLBACK) {
                     "Urgent jobs while matching recovers"
+                } else if (jobsState.recommendationState == RecommendationFeedState.PROFILE_INCOMPLETE) {
+                    "General matches while profile completes"
                 } else if (jobsState.recommendationState == RecommendationFeedState.FAILED) {
                     "Matching temporarily unavailable"
                 } else {
@@ -202,6 +204,8 @@ fun HomeScreen(
                 EmptyHomeSection(
                     title = if (role == KelmahUserRole.HIRER) {
                         "No hiring activity yet"
+                    } else if (jobsState.recommendationState == RecommendationFeedState.PROFILE_INCOMPLETE) {
+                        "Complete your profile for better matches"
                     } else if (jobsState.recommendationState == RecommendationFeedState.FALLBACK) {
                         "No urgent jobs available"
                     } else if (jobsState.recommendationState == RecommendationFeedState.FAILED) {
@@ -211,6 +215,8 @@ fun HomeScreen(
                     },
                     description = if (role == KelmahUserRole.HIRER) {
                         "Your most recent jobs will appear here once your hiring activity is available."
+                    } else if (jobsState.recommendationState == RecommendationFeedState.PROFILE_INCOMPLETE) {
+                        "Kelmah needs a more complete worker profile before it can rank personalized matches accurately."
                     } else if (jobsState.recommendationState == RecommendationFeedState.FALLBACK) {
                         "Kelmah could not recover enough urgent jobs while the recommendation feed is degraded."
                     } else if (jobsState.recommendationState == RecommendationFeedState.FAILED) {
@@ -359,7 +365,8 @@ private fun HomeJobCard(
 @Composable
 private fun recommendationBannerColor(state: RecommendationFeedState) = when (state) {
     RecommendationFeedState.FAILED -> MaterialTheme.colorScheme.errorContainer
-    RecommendationFeedState.FALLBACK -> MaterialTheme.colorScheme.secondaryContainer
+    RecommendationFeedState.FALLBACK,
+    RecommendationFeedState.PROFILE_INCOMPLETE -> MaterialTheme.colorScheme.secondaryContainer
     RecommendationFeedState.PERSONALIZED,
     RecommendationFeedState.IDLE -> MaterialTheme.colorScheme.surfaceVariant
 }
@@ -367,7 +374,8 @@ private fun recommendationBannerColor(state: RecommendationFeedState) = when (st
 @Composable
 private fun recommendationBannerTextColor(state: RecommendationFeedState) = when (state) {
     RecommendationFeedState.FAILED -> MaterialTheme.colorScheme.onErrorContainer
-    RecommendationFeedState.FALLBACK -> MaterialTheme.colorScheme.onSecondaryContainer
+    RecommendationFeedState.FALLBACK,
+    RecommendationFeedState.PROFILE_INCOMPLETE -> MaterialTheme.colorScheme.onSecondaryContainer
     RecommendationFeedState.PERSONALIZED,
     RecommendationFeedState.IDLE -> MaterialTheme.colorScheme.onSurfaceVariant
 }

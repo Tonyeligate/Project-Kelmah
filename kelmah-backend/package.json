@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon start-services.js",
+    "verify:personalized-parity": "node scripts/verify-personalized-recommendations-parity.js",
     "start:gateway": "cd api-gateway && node server.js",
     "start:auth": "cd services/auth-service && node server.js",
     "start:user": "cd services/user-service && node server.js",

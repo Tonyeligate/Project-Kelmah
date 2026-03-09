@@ -6,7 +6,7 @@ struct APIEnvironment {
     let socketBaseURL: URL
     let environmentName: String
 
-    private static let defaultGatewayOriginString = "https://kelmah-api-gateway-qmd7.onrender.com"
+    private static let defaultGatewayOriginString = "https://kelmah-api-gateway-gf3g.onrender.com"
 
     static var current: APIEnvironment {
         let bundle = Bundle.main

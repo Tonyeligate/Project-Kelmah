@@ -54,7 +54,42 @@ ConversationSchema.index({ relatedJob: 1 });
 ConversationSchema.index({ relatedContract: 1 });
 ConversationSchema.index({ status: 1 });
 
-// Helper methods
+// ---------------------------------------------------------------------------
+// Atomic static helpers (H-MSG2)
+// These use MongoDB update operators so they are safe under concurrent writes.
+// ---------------------------------------------------------------------------
+
+/**
+ * Atomically increment the unread count for a participant in a conversation.
+ * If the participant does not yet have an unreadCounts entry, one is pushed.
+ */
+ConversationSchema.statics.atomicIncrementUnread = async function (conversationId, userId) {
+  const result = await this.updateOne(
+    { _id: conversationId, 'unreadCounts.user': userId },
+    { $inc: { 'unreadCounts.$.count': 1 } },
+  );
+  if (result.matchedCount === 0) {
+    await this.updateOne(
+      { _id: conversationId },
+      { $push: { unreadCounts: { user: userId, count: 1 } } },
+    );
+  }
+};
+
+/**
+ * Atomically reset the unread count for a participant in a conversation.
+ */
+ConversationSchema.statics.atomicResetUnread = async function (conversationId, userId) {
+  await this.updateOne(
+    { _id: conversationId, 'unreadCounts.user': userId },
+    { $set: { 'unreadCounts.$.count': 0 } },
+  );
+};
+
+// ---------------------------------------------------------------------------
+// DEPRECATED instance methods -- kept for backward compatibility only.
+// New code MUST use the atomic statics above.
+// ---------------------------------------------------------------------------
 // NOTE: These methods mutate the document in-place. Callers MUST call .save() themselves.
 ConversationSchema.methods.incrementUnreadCount = function (userId) {
   const unreadCount = this.unreadCounts.find(
@@ -75,6 +110,31 @@ ConversationSchema.methods.resetUnreadCount = function (userId) {
     unreadCount.count = 0;
   }
 };
+
+// ---------------------------------------------------------------------------
+// Pre-delete middleware to clean up orphaned messages (M-MSG5)
+// Covers deleteOne (document & query) and findOneAndDelete.
+// ---------------------------------------------------------------------------
+ConversationSchema.pre('deleteOne', { document: true, query: false }, async function () {
+  const Message = mongoose.model('Message');
+  await Message.deleteMany({ conversation: this._id });
+});
+
+ConversationSchema.pre('deleteOne', { document: false, query: true }, async function () {
+  const doc = await this.model.findOne(this.getFilter()).select('_id');
+  if (doc) {
+    const Message = mongoose.model('Message');
+    await Message.deleteMany({ conversation: doc._id });
+  }
+});
+
+ConversationSchema.pre('findOneAndDelete', async function () {
+  const doc = await this.model.findOne(this.getFilter()).select('_id');
+  if (doc) {
+    const Message = mongoose.model('Message');
+    await Message.deleteMany({ conversation: doc._id });
+  }
+});
 
 const Conversation = mongoose.model("Conversation", ConversationSchema);
 

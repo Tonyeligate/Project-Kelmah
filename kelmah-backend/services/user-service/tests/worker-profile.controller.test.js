@@ -4,21 +4,29 @@ const mongoose = require('mongoose');
 const mockIsValid = jest.fn(() => true);
 let mockReadyState = 1;
 
-jest.mock('mongoose', () => ({
-  Types: {
-    ObjectId: {
-      isValid: (...args) => mockIsValid(...args),
+jest.mock('mongoose', () => {
+  const actual = jest.requireActual('mongoose');
+
+  return {
+    ...actual,
+    Types: {
+      ...actual.Types,
+      ObjectId: {
+        ...actual.Types.ObjectId,
+        isValid: (...args) => mockIsValid(...args),
+      },
     },
-  },
-  connection: {
-    get readyState() {
-      return mockReadyState;
+    connection: {
+      ...actual.connection,
+      get readyState() {
+        return mockReadyState;
+      },
+      set readyState(value) {
+        mockReadyState = value;
+      },
     },
-    set readyState(value) {
-      mockReadyState = value;
-    },
-  },
-}));
+  };
+});
 
 jest.mock('../config/db', () => ({
   ensureConnection: jest.fn(() => Promise.resolve()),
@@ -29,7 +37,7 @@ const WorkerController = require('../controllers/worker.controller');
 const { ensureConnection } = require('../config/db');
 const { createMockResponse } = require('../../../shared/test-utils');
 
-const trackedModels = ['User', 'WorkerProfile', 'Availability', 'Portfolio', 'Certificate'];
+const trackedModels = ['User', 'WorkerProfile', 'Availability', 'Portfolio', 'Certificate', 'Job', 'Application'];
 const originalDescriptors = {};
 
 const setModel = (name, value) => {
@@ -40,10 +48,12 @@ const setModel = (name, value) => {
 };
 
 const createLeanQuery = (result) => ({
+  select: jest.fn().mockReturnThis(),
   lean: jest.fn().mockResolvedValue(result),
 });
 
 const createFindQuery = (result) => ({
+  populate: jest.fn().mockReturnThis(),
   sort: jest.fn().mockReturnThis(),
   limit: jest.fn().mockReturnThis(),
   lean: jest.fn().mockResolvedValue(result),
@@ -248,7 +258,10 @@ describe('WorkerController.getWorkerById (stubbed models)', () => {
       find: jest.fn(() => createFindQuery(certificateDocs)),
     });
 
-    await WorkerController.getWorkerById({ params: { id: workerId } }, res);
+    await WorkerController.getWorkerById({
+      params: { id: workerId },
+      user: { id: workerId, role: 'worker' },
+    }, res);
 
     expect(ensureConnection).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(200);
@@ -268,5 +281,252 @@ describe('WorkerController.getWorkerById (stubbed models)', () => {
     expect(payload.skills.some((skill) => skill.name === 'Panel Installation')).toBe(true);
     expect(payload.contact.email).toBe('ama@example.com');
     expect(payload.business?.name).toBe('Ama Power Services');
+  });
+
+  test('returns chronological recent jobs instead of recommendation metadata', async () => {
+    const res = createMockResponse();
+    const workerId = '64f2e0b5f1f79b2a9c123458';
+
+    const appliedJobQuery = {
+      distinct: jest.fn().mockResolvedValue(['job-applied']),
+    };
+
+    setModel('Application', {
+      find: jest.fn(() => appliedJobQuery),
+    });
+
+    setModel('Job', {
+      find: jest.fn(() => createFindQuery([
+        {
+          _id: 'job-recent-1',
+          title: 'Recent Electrical Inspection',
+          description: 'Need an electrician for a same-week inspection.',
+          status: 'open',
+          visibility: 'public',
+          budget: 350,
+          currency: 'GHS',
+          createdAt: '2026-03-08T09:00:00.000Z',
+          updatedAt: '2026-03-08T09:00:00.000Z',
+          hirer: {
+            _id: 'hirer-1',
+            firstName: 'Kojo',
+            lastName: 'Mensah',
+            rating: 4.8,
+          },
+        },
+      ])),
+    });
+
+    await WorkerController.getRecentJobs({
+      user: { id: workerId, role: 'worker' },
+      query: { limit: '1' },
+      headers: {},
+    }, res);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body?.data?.metadata?.source).toBe('user-service-recent-jobs');
+    expect(res.body?.data?.jobs).toEqual([
+      expect.objectContaining({
+        id: 'job-recent-1',
+        recommendationSource: 'recent',
+        title: 'Recent Electrical Inspection',
+      }),
+    ]);
+  });
+
+  test('forces public-only portfolio and certificate status filters for anonymous requests', async () => {
+    const workerId = '64f2e0b5f1f79b2a9c123459';
+
+    setModel('User', {
+      findOne: jest.fn(() => createLeanQuery({
+        _id: workerId,
+        role: 'worker',
+        isActive: true,
+        firstName: 'Efua',
+        lastName: 'Owusu',
+      })),
+    });
+
+    setModel('WorkerProfile', {
+      findOne: jest.fn(() => createLeanQuery({
+        _id: 'worker-profile-2',
+        userId: workerId,
+      })),
+    });
+
+    const portfolioFindQuery = {
+      sort: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockResolvedValue([]),
+    };
+    const portfolioFind = jest.fn(() => portfolioFindQuery);
+    const portfolioCountDocuments = jest.fn().mockResolvedValue(0);
+
+    setModel('Portfolio', {
+      find: portfolioFind,
+      countDocuments: portfolioCountDocuments,
+    });
+
+    const certificateFindQuery = {
+      sort: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockResolvedValue([]),
+    };
+    const certificateFind = jest.fn(() => certificateFindQuery);
+
+    setModel('Certificate', {
+      find: certificateFind,
+    });
+
+    const portfolioRes = createMockResponse();
+    await WorkerController.getWorkerPortfolio({
+      params: { id: workerId },
+      query: { status: 'draft', limit: '2' },
+      user: null,
+    }, portfolioRes);
+
+    expect(portfolioRes.statusCode).toBe(200);
+    expect(portfolioFind).toHaveBeenCalledWith(expect.objectContaining({ status: 'published' }));
+
+    const certificateRes = createMockResponse();
+    await WorkerController.getWorkerCertificates({
+      params: { id: workerId },
+      query: { status: 'pending', limit: '2' },
+      user: null,
+    }, certificateRes);
+
+    expect(certificateRes.statusCode).toBe(200);
+    expect(certificateFind).toHaveBeenCalledWith(expect.objectContaining({ status: 'verified' }));
+  });
+
+  test('updateWorkerProfile keeps mutable worker fields on WorkerProfile instead of dual-writing User', async () => {
+    const workerId = '64f2e0b5f1f79b2a9c123460';
+    const res = createMockResponse();
+
+    const userDoc = {
+      _id: workerId,
+      firstName: 'Kojo',
+      lastName: 'Asare',
+      email: 'kojo@example.com',
+      phone: '+233201111111',
+      role: 'worker',
+      location: 'Kumasi, Ghana',
+      bio: 'Legacy user bio',
+      hourlyRate: 90,
+      yearsOfExperience: 2,
+      profession: 'Plumber',
+      skills: ['Pipe Repair'],
+      currency: 'GHS',
+      availabilityStatus: 'available',
+      isVerified: false,
+      profilePicture: 'legacy-user.png',
+      save: jest.fn().mockResolvedValue(undefined),
+      toObject: jest.fn(function toObject() {
+        return {
+          _id: this._id,
+          firstName: this.firstName,
+          lastName: this.lastName,
+          email: this.email,
+          phone: this.phone,
+          role: this.role,
+          location: this.location,
+          bio: this.bio,
+          hourlyRate: this.hourlyRate,
+          yearsOfExperience: this.yearsOfExperience,
+          profession: this.profession,
+          skills: this.skills,
+          currency: this.currency,
+          availabilityStatus: this.availabilityStatus,
+          isVerified: this.isVerified,
+          profilePicture: this.profilePicture,
+        };
+      }),
+    };
+
+    const workerProfileDoc = {
+      _id: 'worker-profile-3',
+      userId: workerId,
+      profession: 'Plumber',
+      title: 'Plumber',
+      headline: 'Plumber',
+      bio: 'Existing worker bio',
+      location: 'Kumasi, Ghana',
+      hourlyRate: 120,
+      currency: 'GHS',
+      yearsOfExperience: 4,
+      skills: ['Leak Detection'],
+      languages: ['English'],
+      education: [],
+      profilePicture: 'worker-profile.png',
+      save: jest.fn().mockResolvedValue(undefined),
+      toObject: jest.fn(function toObject() {
+        return {
+          _id: this._id,
+          userId: this.userId,
+          profession: this.profession,
+          title: this.title,
+          headline: this.headline,
+          bio: this.bio,
+          location: this.location,
+          hourlyRate: this.hourlyRate,
+          currency: this.currency,
+          yearsOfExperience: this.yearsOfExperience,
+          skills: this.skills,
+          languages: this.languages,
+          education: this.education,
+          profilePicture: this.profilePicture,
+        };
+      }),
+    };
+
+    setModel('User', {
+      findById: jest.fn().mockResolvedValue(userDoc),
+    });
+
+    setModel('WorkerProfile', {
+      findOne: jest.fn().mockResolvedValue(workerProfileDoc),
+    });
+
+    await WorkerController.updateWorkerProfile({
+      params: { id: workerId },
+      user: { id: workerId, role: 'worker' },
+      body: {
+        title: 'Master Electrician',
+        bio: 'Worker profile bio',
+        location: 'Accra, Ghana',
+        hourlyRate: 180,
+        experience: 9,
+        skills: ['Wiring', 'Lighting'],
+        firstName: 'Kwame',
+        phone: '+233244444444',
+        profilePicture: 'updated-worker.png',
+      },
+    }, res);
+
+    expect(res.statusCode).toBe(200);
+    expect(userDoc.firstName).toBe('Kwame');
+    expect(userDoc.phone).toBe('+233244444444');
+    expect(userDoc.profilePicture).toBe('updated-worker.png');
+    expect(userDoc.location).toBe('Kumasi, Ghana');
+    expect(userDoc.bio).toBe('Legacy user bio');
+    expect(userDoc.hourlyRate).toBe(90);
+    expect(userDoc.yearsOfExperience).toBe(2);
+    expect(userDoc.skills).toEqual(['Pipe Repair']);
+
+    expect(workerProfileDoc.profession).toBe('Master Electrician');
+    expect(workerProfileDoc.bio).toBe('Worker profile bio');
+    expect(workerProfileDoc.location).toBe('Accra, Ghana');
+    expect(workerProfileDoc.hourlyRate).toBe(180);
+    expect(workerProfileDoc.yearsOfExperience).toBe(9);
+    expect(workerProfileDoc.skills).toEqual(['Wiring', 'Lighting']);
+
+    expect(res.body?.data).toEqual(
+      expect.objectContaining({
+        profession: 'Master Electrician',
+        location: 'Accra, Ghana',
+        hourlyRate: 180,
+        experience: 9,
+        skills: ['Wiring', 'Lighting'],
+      }),
+    );
   });
 });

@@ -12,7 +12,7 @@
  *   useUnsaveJobMutation()→ jobsService.unsaveJob()  → DELETE /api/jobs/:id/save
  */
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   Box,
   Button,
@@ -678,7 +678,10 @@ const JobSearchPage = () => {
   const [location, setLocation] = useState(searchParams.get('location') || '');
   const [budgetRange, setBudgetRange] = useState([0, 50000]);
   const [sortBy, setSortBy] = useState('newest');
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(() => {
+    const p = parseInt(searchParams.get('page'), 10);
+    return p > 0 ? p : 1;
+  });
   const [viewMode, setViewMode] = useState('grid');
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({
@@ -728,6 +731,32 @@ const JobSearchPage = () => {
         severity: 'error',
       }),
   });
+
+  // ─── Bookmark toggle race-condition guard (M-FE2) ──────
+  // Prevents double-click from firing two mutations for the same job.
+  const togglingBookmarksRef = useRef(new Set());
+
+  const handleSaveJob = useCallback(async (payload) => {
+    if (togglingBookmarksRef.current.has(payload.jobId)) return;
+    togglingBookmarksRef.current.add(payload.jobId);
+    try {
+      await saveMutation.mutateAsync(payload);
+    } catch (_) { /* error handled by mutation callbacks */ }
+    finally {
+      togglingBookmarksRef.current.delete(payload.jobId);
+    }
+  }, [saveMutation]);
+
+  const handleUnsaveJob = useCallback(async (payload) => {
+    if (togglingBookmarksRef.current.has(payload.jobId)) return;
+    togglingBookmarksRef.current.add(payload.jobId);
+    try {
+      await unsaveMutation.mutateAsync(payload);
+    } catch (_) { /* error handled by mutation callbacks */ }
+    finally {
+      togglingBookmarksRef.current.delete(payload.jobId);
+    }
+  }, [unsaveMutation]);
 
   // ─── Derived data ────────────────────────────────────────
   const jobs = useMemo(() => {
@@ -804,12 +833,20 @@ const JobSearchPage = () => {
     setSearchParams({}, { replace: true });
   }, [setSearchParams]);
 
-  // Sync URL params on mount
+  // Sync UI state with URL params, including browser back/forward navigation.
   useEffect(() => {
+    const search = searchParams.get('search') || '';
     const cat = searchParams.get('category');
+    const nextLocation = searchParams.get('location') || '';
+    const nextPage = parseInt(searchParams.get('page'), 10) || 1;
+
+    if (search !== searchText) setSearchText(search);
+    if (search !== activeSearch) setActiveSearch(search);
     if (cat && cat !== category) setCategory(cat);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (!cat && category) setCategory('');
+    if (nextLocation !== location) setLocation(nextLocation);
+    if (nextPage !== page) setPage(nextPage);
+  }, [searchParams, searchText, activeSearch, category, location, page]);
 
   // ─── Filter panel content ────────────────────────────────
   const filterContent = (
@@ -818,6 +855,10 @@ const JobSearchPage = () => {
       setLocation={(v) => {
         setLocation(v);
         setPage(1);
+        const params = new URLSearchParams(searchParams);
+        if (v) params.set('location', v);
+        else params.delete('location');
+        setSearchParams(params, { replace: true });
       }}
       budgetRange={budgetRange}
       setBudgetRange={setBudgetRange}
@@ -1012,8 +1053,8 @@ const JobSearchPage = () => {
                           <FindWorkJobCard
                             job={job}
                             isSaved={savedIds.has(jobId)}
-                            onSave={(payload) => saveMutation.mutate(payload)}
-                            onUnsave={(payload) => unsaveMutation.mutate(payload)}
+                            onSave={handleSaveJob}
+                            onUnsave={handleUnsaveJob}
                           />
                         </Grid>
                         );
@@ -1029,6 +1070,10 @@ const JobSearchPage = () => {
                         page={page}
                         onChange={(_, p) => {
                           setPage(p);
+                          const params = new URLSearchParams(searchParams);
+                          if (p > 1) params.set('page', String(p));
+                          else params.delete('page');
+                          setSearchParams(params, { replace: true });
                           window.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
                         color="primary"

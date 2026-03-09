@@ -15,6 +15,17 @@ const logger = require('../utils/logger');
 // Helper: get user ID compatible with both gateway (req.user.id) and local (getUserId(req))
 const getUserId = (req) => req.user?.id || req.user?._id;
 
+// H-D1 FIX: Validate evidence URLs to prevent SSRF/XSS
+const isValidUrl = (url) => {
+  try {
+    const parsed = new URL(url);
+    return ['http:', 'https:'].includes(parsed.protocol);
+  } catch { return false; }
+};
+
+// H-D1 FIX: Strip HTML tags from user-supplied text to prevent stored XSS
+const stripHtmlTags = (str) => (typeof str === 'string' ? str.replace(/<[^>]*>/g, '') : str);
+
 // Dispute resolution percentages
 const RESOLUTION_PERCENTAGES = {
   worker_returns: 0,       // Worker returns to fix, no refund yet
@@ -30,6 +41,9 @@ const RESOLUTION_PERCENTAGES = {
  */
 const getAllDisputes = async (req, res) => {
   try {
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, error: { message: 'Admin access required', code: 'FORBIDDEN' } });
+    }
     const { status, page = 1, limit = 20 } = req.query;
     const parsedLimit = Math.min(100, parseInt(limit) || 20);
     const parsedPage = parseInt(page) || 1;
@@ -156,6 +170,14 @@ const addEvidence = async (req, res) => {
       });
     }
 
+    // H-D1 FIX: Validate evidence URL to prevent SSRF/XSS
+    if (!isValidUrl(url)) {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'Invalid evidence URL. Only http and https URLs are allowed.', code: 'VALIDATION_ERROR' }
+      });
+    }
+
     const quickJob = await QuickJob.findById(id);
 
     if (!quickJob || !quickJob.dispute) {
@@ -187,7 +209,7 @@ const addEvidence = async (req, res) => {
     quickJob.dispute.evidence.push({
       type,
       url,
-      description: description || '',
+      description: stripHtmlTags(description) || '',
       uploadedAt: new Date()
     });
 
@@ -217,6 +239,14 @@ const resolveDispute = async (req, res) => {
   try {
     const { id } = req.params;
     const { resolution, note, refundPercentage } = req.body;
+
+    // H-D2 FIX: Validate refund percentage is within valid range
+    if (refundPercentage !== undefined && (refundPercentage < 0 || refundPercentage > 100)) {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'Refund percentage must be between 0 and 100', code: 'VALIDATION_ERROR' }
+      });
+    }
 
     if (!resolution) {
       return res.status(400).json({
@@ -311,7 +341,38 @@ const resolveDispute = async (req, res) => {
       staffHandler: getUserId(req)
     });
 
-    // TODO: Notify both parties of resolution
+    // Notify both parties of resolution
+    try {
+      const axios = require('axios');
+      const messagingUrl = process.env.MESSAGING_SERVICE_URL || 'http://localhost:3004';
+      const notifyParty = async (recipientId, title, content) => {
+        try {
+          await axios.post(`${messagingUrl}/api/notifications`, {
+            recipientId,
+            type: 'dispute_resolved',
+            title,
+            content,
+            priority: 'high',
+            relatedEntity: { type: 'job', id: quickJob._id },
+            actionUrl: `/quick-jobs/${quickJob._id}`,
+          }, {
+            headers: { 'x-service-name': 'job-service', 'x-gateway-secret': process.env.GATEWAY_SECRET || '' },
+            timeout: 5000,
+          });
+        } catch (notifErr) {
+          logger.warn(`Failed to notify ${recipientId}:`, notifErr.message);
+        }
+      };
+      const resolutionText = resolution.replace(/_/g, ' ');
+      if (quickJob.hirer) {
+        await notifyParty(quickJob.hirer, 'Dispute Resolved', `Your dispute for "${quickJob.title}" has been resolved: ${resolutionText}.`);
+      }
+      if (quickJob.worker) {
+        await notifyParty(quickJob.worker, 'Dispute Resolved', `The dispute for "${quickJob.title}" has been resolved: ${resolutionText}.`);
+      }
+    } catch (notifError) {
+      logger.warn('Dispute resolution notification failed:', notifError.message);
+    }
 
     res.json({
       success: true,

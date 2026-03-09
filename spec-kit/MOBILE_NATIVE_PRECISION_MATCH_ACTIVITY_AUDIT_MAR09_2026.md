@@ -128,6 +128,53 @@ Scope: Android and iOS native apps only, with limited live contract checks again
 6. Remove duplicate iOS shell bootstrap paths.
 7. Surface partial profile-signal failures instead of silently empty sections.
 
+## Execution Status
+- Implemented on Android and iOS:
+  - notification deep-link parsing now handles both `?conversation=` and `/messages/{conversationId}` forms
+  - notification recency sorting now falls back to `updatedAt`, then ObjectId-derived time when `createdAt` is invalid
+  - match scores now preserve `Double` precision instead of truncating to integers
+  - home recommendation flows now use an explicit recommendation state instead of only fallback booleans
+  - recommendation cards now drop incomplete jobs when parsing personalized recommendation payloads
+  - notification mutation flows now reconcile unread counts against the unread-count endpoint after successful mutations
+  - legacy profile-signal fallback now surfaces partial-warning messages instead of silently looking complete
+- Implemented on iOS only:
+  - duplicate shell bootstrap tasks in `RootTabView` were collapsed into one token-driven bootstrap path
+  - message and conversation ordering now sort by parsed dates instead of raw timestamp strings
+- Implemented on Android only:
+  - notification action parsing was switched from `android.net.Uri`-dependent parsing to string-based path/query parsing so JVM unit tests and runtime behavior stay aligned
+
+## March 9 Reliability Follow-Up
+- Implemented on Android and iOS:
+  - personalized recommendation flows now detect `profile-incomplete` contracts and degrade truthfully instead of showing an empty personalized-success state
+  - active gateway defaults were updated from `qmd7` to `gf3g` in both native apps
+  - session recovery now distinguishes explicit invalid-session failures from transient refresh problems so cached user state is preserved more safely
+- Implemented on Android only:
+  - app-link intent filters were added for supported `jobs` and `messages` paths
+  - runtime deep-link intake was added in `MainActivity`, `KelmahApp`, and navigation so verified links can land inside the app instead of terminating at process launch
+  - dedicated deep-link resolver unit tests were added and passed locally
+
+## Reliability Validation
+- Android local validation passed after the follow-up patch:
+  - `testDebugUnitTest`
+  - `assembleDebug`
+  - `lintDebug`
+- iOS touched files remained clean under workspace diagnostics.
+- macOS-native iOS build/test validation is still externally blocked by the GitHub Actions billing lock noted elsewhere in the March 9 records.
+
+## Remaining External Constraint
+- The live personalized recommendations endpoint still returned `404 Endpoint not found` during execution. Native apps now degrade more honestly, but restoring true personalized recommendations still requires backend rollout outside this mobile-only pass.
+
+## Backend Restore Follow-Up
+- March 9, 2026 follow-up patch added the missing API gateway route for `GET /api/jobs/recommendations/personalized` and pushed commit `95afac8` to `main`.
+- Local backend validation passed, including a new gateway forwarding test plus the existing personalized recommendations contract test.
+- Production gateway `https://kelmah-api-gateway-gf3g.onrender.com` still served `404` for the personalized route after the push because the Render runtime never restarted during the verification window.
+- A targeted manual Render redeploy attempt for the API gateway returned `401 Unauthorized`, so the route remains deployment-blocked rather than code-blocked.
+
+## Remote iOS Validation Follow-Up
+- The push triggered GitHub Actions workflow run `22854976790` (`Native Mobile Validation`) against commit `95afac8`.
+- Both Android and iOS jobs failed before runner startup with the annotation: `The job was not started because your account is locked due to a billing issue.`
+- That means the Swift changes are queued in a real remote validation attempt, but no macOS build/test confirmation is currently possible until GitHub Actions billing is restored.
+
 ## Areas That Look Healthy
 - Both native apps now use a consolidated `profile-signals` contract first and fall back only when needed.
 - Realtime token observers exist on both platforms, which is the correct direction for socket freshness.

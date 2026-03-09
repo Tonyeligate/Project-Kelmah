@@ -60,9 +60,10 @@ final class JobsViewModel: ObservableObject {
         switch role {
         case .worker:
             do {
-                recommendedJobs = try await repository.getRecommendedJobs(limit: 6)
-                recommendationState = .personalized
-                recommendationContextMessage = nil
+                let recommendationFeed = try await repository.getRecommendedJobs(limit: 6)
+                recommendedJobs = recommendationFeed.jobs
+                recommendationState = recommendationFeed.state
+                recommendationContextMessage = recommendationFeed.contextMessage
             } catch {
                 var fallbackFilters = JobFilters()
                 fallbackFilters.sort = .urgent

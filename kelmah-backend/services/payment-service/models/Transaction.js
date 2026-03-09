@@ -11,7 +11,7 @@ const TransactionSchema = new Schema(
     amount: {
       type: Number,
       required: true,
-      min: 0,
+      min: 0.01,
     },
     currency: {
       type: String,
@@ -20,18 +20,18 @@ const TransactionSchema = new Schema(
     },
     type: {
       type: String,
-      enum: ["payment", "refund", "withdrawal", "deposit"],
+      enum: ["payment", "refund", "withdrawal", "deposit", "milestone_payment"],
       required: true,
     },
     status: {
       type: String,
-      enum: ["pending", "processing", "completed", "failed", "cancelled"],
+      enum: ["pending", "processing", "pending_confirmation", "completed", "failed", "cancelled", "milestone_payment"],
       default: "pending",
     },
     paymentMethod: {
       type: {
         type: String,
-        enum: ["credit_card", "bank_transfer", "paypal", "stripe"],
+        enum: ["credit_card", "bank_transfer", "paypal", "stripe", "paystack", "mtn_momo", "vodafone_cash", "airtel_tigo", "mobile_money"],
         required: true,
       },
       details: {

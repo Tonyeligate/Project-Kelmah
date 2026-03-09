@@ -28,6 +28,10 @@ const NotificationSchema = new Schema(
         "system_alert",
         "profile_update",
         "review_received",
+        "dispute_opened",
+        "dispute_resolved",
+        "dispute_escalated",
+        "job_recommendation",
       ],
       required: true,
     },
@@ -104,6 +108,7 @@ NotificationSchema.pre("insertMany", function (next, docs) {
 NotificationSchema.index({ recipient: 1, createdAt: -1 });
 NotificationSchema.index({ type: 1 });
 NotificationSchema.index({ "readStatus.isRead": 1 }); // Fixed: index the boolean, not subdocument
+NotificationSchema.index({ recipient: 1, 'readStatus.isRead': 1, createdAt: -1 }); // Composite index for unread queries per user
 
 // TTL index: auto-delete notifications older than 90 days
 NotificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });

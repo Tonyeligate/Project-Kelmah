@@ -16,6 +16,7 @@ class SessionCoordinator @Inject constructor(
     private val authRepository: AuthRepository,
     private val tokenManager: TokenManager,
 ) {
+    private val invalidSessionCodes = setOf(400, 401, 403)
     private val refreshMutex = Mutex()
     private var didBootstrap = false
 
@@ -80,8 +81,12 @@ class SessionCoordinator @Inject constructor(
                 true
             }
             is ApiResult.Error -> {
-                tokenManager.clearSession()
-                _sessionState.value = SessionState.Unauthenticated
+                if (refreshResult.code in invalidSessionCodes) {
+                    tokenManager.clearSession()
+                    _sessionState.value = SessionState.Unauthenticated
+                } else {
+                    recoverOrClear(refreshResult.message)
+                }
                 false
             }
         }
@@ -90,9 +95,9 @@ class SessionCoordinator @Inject constructor(
     private fun recoverOrClear(message: String) {
         val cachedUser = tokenManager.getStoredSession()?.user
         if (cachedUser != null) {
-            _sessionState.value = SessionState.Error(
-                message = message,
-                cachedUser = cachedUser,
+            _sessionState.value = SessionState.Authenticated(
+                user = cachedUser,
+                recoveredFromCache = true,
             )
         } else {
             tokenManager.clearSession()

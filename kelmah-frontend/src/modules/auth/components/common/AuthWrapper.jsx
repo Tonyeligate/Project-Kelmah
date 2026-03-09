@@ -21,6 +21,7 @@ import {
   Construction as ConstructionIcon,
   Verified as VerifiedIcon,
 } from '@mui/icons-material';
+import { alpha } from '@mui/material/styles';
 
 const cartoonScenes = [
   {
@@ -40,6 +41,49 @@ const AuthWrapper = ({ children }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
   const [currentImage, setCurrentImage] = useState(0);
+  const isDarkMode = theme.palette.mode === 'dark';
+  const accentColor = theme.palette.primary.main || '#FFD700';
+  const accentStrong = theme.palette.primary.dark || '#D39D00';
+  const shellBackground = isDarkMode
+    ? 'linear-gradient(145deg, rgba(20, 20, 20, 0.98) 0%, rgba(30, 30, 30, 0.99) 100%)'
+    : 'linear-gradient(145deg, rgba(255,255,255,0.97) 0%, rgba(248,240,219,0.99) 100%)';
+  const leftPanelBackground = isDarkMode
+    ? `linear-gradient(135deg, rgba(40,40,40,0.9) 0%, rgba(30,30,30,0.95) 50%, rgba(25,25,25,0.98) 100%)`
+    : 'linear-gradient(135deg, rgba(255,249,235,0.97) 0%, rgba(243,227,182,0.98) 100%)';
+  const shellShadow = isDarkMode
+    ? '0 20px 60px rgba(0,0,0,0.5)'
+    : '0 24px 72px rgba(105,82,22,0.16)';
+  const shellBorder = isDarkMode
+    ? alpha(accentColor, 0.2)
+    : alpha(accentStrong, 0.22);
+  const leftPanelText = isDarkMode ? '#FFFFFF' : '#171A1F';
+  const leftPanelMuted = isDarkMode ? alpha('#FFFFFF', 0.82) : alpha('#171A1F', 0.72);
+  const leftPanelSoft = isDarkMode ? alpha('#FFFFFF', 0.7) : alpha('#171A1F', 0.58);
+  const featureSurface = isDarkMode ? alpha(accentColor, 0.05) : alpha('#FFFFFF', 0.56);
+  const featureSurfaceHover = isDarkMode ? alpha(accentColor, 0.1) : alpha('#FFFFFF', 0.78);
+  const featureBorder = isDarkMode ? alpha(accentColor, 0.1) : alpha('#171A1F', 0.08);
+  const overlaySurface = isDarkMode ? alpha('#000000', 0.65) : alpha('#FFFFFF', 0.84);
+  const overlayBorder = isDarkMode ? alpha(accentColor, 0.4) : alpha(accentStrong, 0.24);
+  const overlayChipBg = isDarkMode ? alpha(accentColor, 0.2) : alpha(accentColor, 0.14);
+  const pageBackground = isDarkMode
+    ? '#000000'
+    : 'linear-gradient(180deg, #FBF7EE 0%, #F3E8CB 100%)';
+  const backgroundFilter = isDarkMode
+    ? 'blur(3px) brightness(0.7)'
+    : 'blur(3px) brightness(1.03) saturate(0.92)';
+  const backgroundOverlay = isDarkMode
+    ? `linear-gradient(135deg,
+              rgba(0,0,0,0.4) 0%,
+              rgba(0,0,0,0.2) 40%,
+              ${alpha(accentColor, 0.05)} 50%,
+              rgba(0,0,0,0.2) 60%,
+              rgba(0,0,0,0.4) 100%)`
+    : `linear-gradient(135deg,
+              rgba(251,247,238,0.74) 0%,
+              rgba(255,255,255,0.48) 40%,
+              ${alpha(accentColor, 0.1)} 50%,
+              rgba(255,255,255,0.54) 60%,
+              rgba(243,232,203,0.72) 100%)`;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -90,7 +134,7 @@ const AuthWrapper = ({ children }) => {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        backgroundColor: '#000',
+        background: pageBackground,
         py: { xs: 2, sm: 4, md: 5 },
         px: { xs: 1, sm: 2, md: 3 },
         overflowY: 'auto',
@@ -110,7 +154,7 @@ const AuthWrapper = ({ children }) => {
           backgroundImage: `url(${backgroundImg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          filter: 'blur(3px) brightness(0.7)',
+          filter: backgroundFilter,
           '&::after': {
             content: '""',
             position: 'absolute',
@@ -118,12 +162,7 @@ const AuthWrapper = ({ children }) => {
             left: 0,
             width: '100%',
             height: '100%',
-            background: `linear-gradient(135deg, 
-              rgba(0,0,0,0.4) 0%, 
-              rgba(0,0,0,0.2) 40%, 
-              rgba(255,215,0,0.05) 50%, 
-              rgba(0,0,0,0.2) 60%, 
-              rgba(0,0,0,0.4) 100%)`,
+            background: backgroundOverlay,
             zIndex: 1,
           },
         }}
@@ -148,8 +187,7 @@ const AuthWrapper = ({ children }) => {
             width: '300px',
             height: '300px',
             borderRadius: '50%',
-            background:
-              'radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%)',
+            background: `radial-gradient(circle, ${alpha(accentColor, isDarkMode ? 0.1 : 0.14)} 0%, transparent 70%)`,
             animation: 'float 6s ease-in-out infinite',
           },
           '&::after': {
@@ -160,8 +198,7 @@ const AuthWrapper = ({ children }) => {
             width: '200px',
             height: '200px',
             borderRadius: '50%',
-            background:
-              'radial-gradient(circle, rgba(255,215,0,0.08) 0%, transparent 70%)',
+            background: `radial-gradient(circle, ${alpha(accentColor, isDarkMode ? 0.08 : 0.12)} 0%, transparent 70%)`,
             animation: 'float 4s ease-in-out infinite reverse',
           },
           '@keyframes float': {
@@ -196,11 +233,10 @@ const AuthWrapper = ({ children }) => {
               mx: 'auto',
               overflow: 'visible',
               borderRadius: { xs: 3, sm: 4, md: 5 },
-              background:
-                'linear-gradient(145deg, rgba(20, 20, 20, 0.98) 0%, rgba(30, 30, 30, 0.99) 100%)',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+              background: shellBackground,
+              boxShadow: shellShadow,
               backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,215,0,0.2)',
+              border: `1px solid ${shellBorder}`,
               position: 'relative',
               '&::before': {
                 content: '""',
@@ -210,7 +246,7 @@ const AuthWrapper = ({ children }) => {
                 right: 0,
                 height: { xs: '3px', sm: '4px' },
                 background:
-                  'linear-gradient(90deg, #FFD700 0%, #FFC000 50%, #FFD700 100%)',
+                  `linear-gradient(90deg, ${accentColor} 0%, #FFC000 50%, ${accentColor} 100%)`,
                 zIndex: 3,
                 borderRadius: '5px 5px 0 0',
               },
@@ -225,14 +261,11 @@ const AuthWrapper = ({ children }) => {
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   p: { xs: 2, sm: 3, md: 4 },
-                  background: `linear-gradient(135deg, 
-                    rgba(40,40,40,0.9) 0%, 
-                    rgba(30,30,30,0.95) 50%, 
-                    rgba(25,25,25,0.98) 100%)`,
+                  background: leftPanelBackground,
                   borderRight: isTablet
                     ? 'none'
-                    : '1px solid rgba(255,215,0,0.15)',
-                  color: theme.palette.primary.contrastText,
+                    : `1px solid ${alpha(accentStrong, isDarkMode ? 0.15 : 0.18)}`,
+                  color: leftPanelText,
                   position: 'relative',
                   minWidth: { xs: 'auto', md: 380, lg: 420 },
                   minHeight: { xs: 'auto', md: 650 },
@@ -255,12 +288,11 @@ const AuthWrapper = ({ children }) => {
                         width: { xs: 60, sm: 70, md: 80 },
                         height: { xs: 60, sm: 70, md: 80 },
                         borderRadius: '50%',
-                        background:
-                          'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                        background: `linear-gradient(135deg, ${accentColor} 0%, #FFC000 100%)`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        boxShadow: '0 8px 25px rgba(255,215,0,0.3)',
+                        boxShadow: `0 8px 25px ${alpha(accentColor, 0.3)}`,
                       }}
                     >
                       <EngineeringIcon
@@ -278,14 +310,14 @@ const AuthWrapper = ({ children }) => {
                         sx={{
                           fontWeight: 800,
                           letterSpacing: 1,
-                          color: theme.palette.secondary.main,
+                          color: accentColor,
                           fontSize: {
                             xs: '1.5rem',
                             sm: '1.75rem',
                             md: '2rem',
                             lg: '2.2rem',
                           },
-                          textShadow: '0 2px 15px rgba(255,215,0,0.3)',
+                          textShadow: `0 2px 15px ${alpha(accentColor, 0.22)}`,
                           lineHeight: 1.2,
                         }}
                       >
@@ -295,7 +327,7 @@ const AuthWrapper = ({ children }) => {
                       <Typography
                         variant="h6"
                         sx={{
-                          color: '#FFFFFF',
+                          color: leftPanelText,
                           fontWeight: 500,
                           fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
                         }}
@@ -306,7 +338,7 @@ const AuthWrapper = ({ children }) => {
                       <Typography
                         variant="body1"
                         sx={{
-                          color: '#FFFFFF',
+                          color: leftPanelMuted,
                           maxWidth: { xs: 250, sm: 280, md: 320 },
                           lineHeight: 1.5,
                           fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
@@ -352,10 +384,12 @@ const AuthWrapper = ({ children }) => {
                         position: 'relative',
                         borderRadius: '50%',
                         overflow: 'hidden',
-                        boxShadow: '0 15px 40px rgba(0,0,0,0.3)',
+                        boxShadow: isDarkMode
+                          ? '0 15px 40px rgba(0,0,0,0.3)'
+                          : '0 18px 48px rgba(105,82,22,0.18)',
                         border: {
-                          xs: '2px solid rgba(255,215,0,0.3)',
-                          md: '3px solid rgba(255,215,0,0.3)',
+                          xs: `2px solid ${alpha(accentColor, 0.3)}`,
+                          md: `3px solid ${alpha(accentColor, 0.3)}`,
                         },
                       }}
                     >
@@ -365,8 +399,7 @@ const AuthWrapper = ({ children }) => {
                           position: 'absolute',
                           inset: { xs: '-15px', md: '-20px' },
                           borderRadius: '50%',
-                          background:
-                            'radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 70%)',
+                          background: `radial-gradient(circle, ${alpha(accentColor, isDarkMode ? 0.15 : 0.18)} 0%, transparent 70%)`,
                           animation: 'pulse 3s ease-in-out infinite',
                           '@keyframes pulse': {
                             '0%, 100%': { opacity: 0.7, transform: 'scale(1)' },
@@ -412,11 +445,11 @@ const AuthWrapper = ({ children }) => {
                           spacing={0.5}
                           alignItems="center"
                           sx={{
-                            backgroundColor: 'rgba(0,0,0,0.65)',
+                            backgroundColor: overlaySurface,
                             borderRadius: 3,
                             px: 2,
                             py: 1.2,
-                            border: '1px solid rgba(255,215,0,0.4)',
+                            border: `1px solid ${overlayBorder}`,
                             mx: 'auto',
                             maxWidth: '85%',
                           }}
@@ -426,8 +459,8 @@ const AuthWrapper = ({ children }) => {
                             label={cartoonScenes[currentImage].label}
                             size="small"
                             sx={{
-                              backgroundColor: 'rgba(255,215,0,0.2)',
-                              color: '#FFD700',
+                              backgroundColor: overlayChipBg,
+                              color: accentColor,
                               fontWeight: 700,
                               fontSize: '0.7rem',
                               textTransform: 'uppercase',
@@ -437,7 +470,7 @@ const AuthWrapper = ({ children }) => {
                           <Typography
                             variant="caption"
                             sx={{
-                              color: '#FFFFFF',
+                              color: isDarkMode ? '#FFFFFF' : '#171A1F',
                               textAlign: 'center',
                               fontSize: { xs: '0.7rem', md: '0.75rem' },
                               lineHeight: 1.3,
@@ -471,12 +504,12 @@ const AuthWrapper = ({ children }) => {
                             alignItems: 'center',
                             p: { xs: 1.5, sm: 2 },
                             borderRadius: { xs: 1.5, sm: 2 },
-                            background: 'rgba(255,215,0,0.05)',
-                            border: '1px solid rgba(255,215,0,0.1)',
+                            background: featureSurface,
+                            border: `1px solid ${featureBorder}`,
                             transition: 'all 0.3s ease',
                             '&:hover': {
-                              background: 'rgba(255,215,0,0.1)',
-                              border: '1px solid rgba(255,215,0,0.2)',
+                              background: featureSurfaceHover,
+                              border: `1px solid ${alpha(accentStrong, isDarkMode ? 0.2 : 0.16)}`,
                               transform: 'translateX(5px)',
                             },
                           }}
@@ -488,7 +521,7 @@ const AuthWrapper = ({ children }) => {
                             <Typography
                               variant="subtitle2"
                               sx={{
-                                color: '#FFD700',
+                                color: accentColor,
                                 fontWeight: 700,
                                 mb: 0.5,
                                 fontSize: {
@@ -503,7 +536,7 @@ const AuthWrapper = ({ children }) => {
                             <Typography
                               variant="caption"
                               sx={{
-                                color: '#FFFFFF',
+                                color: leftPanelMuted,
                                 fontSize: {
                                   xs: '0.7rem',
                                   sm: '0.75rem',
@@ -535,7 +568,7 @@ const AuthWrapper = ({ children }) => {
                     <Typography
                       variant="body2"
                       sx={{
-                        color: 'rgba(255,255,255,0.7)',
+                        color: leftPanelSoft,
                         fontWeight: 600,
                         fontSize: { xs: '0.8rem', sm: '0.85rem' },
                       }}
@@ -565,18 +598,18 @@ const AuthWrapper = ({ children }) => {
                             label={trade}
                             size="small"
                             sx={{
-                              backgroundColor: 'rgba(255,215,0,0.15)',
-                              color: '#FFD700',
+                              backgroundColor: isDarkMode ? alpha(accentColor, 0.15) : alpha('#FFFFFF', 0.6),
+                              color: accentColor,
                               fontSize: {
                                 xs: '0.65rem',
                                 sm: '0.7rem',
                                 md: '0.75rem',
                               },
                               fontWeight: 600,
-                              border: '1px solid rgba(255,215,0,0.3)',
+                              border: `1px solid ${alpha(accentStrong, isDarkMode ? 0.3 : 0.18)}`,
                               height: { xs: '24px', sm: '28px' },
                               '&:hover': {
-                                backgroundColor: 'rgba(255,215,0,0.25)',
+                                backgroundColor: isDarkMode ? alpha(accentColor, 0.25) : alpha('#FFFFFF', 0.82),
                                 transform: 'scale(1.05)',
                               },
                               transition: 'all 0.2s ease',
@@ -603,9 +636,8 @@ const AuthWrapper = ({ children }) => {
                   sx={{
                     textAlign: 'center',
                     p: 1.5,
-                    background:
-                      'linear-gradient(135deg, rgba(40,40,40,0.8) 0%, rgba(30,30,30,0.9) 100%)',
-                    borderBottom: '1px solid rgba(255,215,0,0.1)',
+                    background: leftPanelBackground,
+                    borderBottom: `1px solid ${alpha(accentStrong, isDarkMode ? 0.1 : 0.16)}`,
                   }}
                 >
                   <Box
@@ -613,12 +645,11 @@ const AuthWrapper = ({ children }) => {
                       width: 35,
                       height: 35,
                       borderRadius: '50%',
-                      background:
-                        'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                      background: `linear-gradient(135deg, ${accentColor} 0%, #FFC000 100%)`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      boxShadow: '0 4px 15px rgba(255,215,0,0.3)',
+                      boxShadow: `0 4px 15px ${alpha(accentColor, 0.3)}`,
                     }}
                   >
                     <EngineeringIcon sx={{ fontSize: 18, color: '#000' }} />
@@ -631,12 +662,11 @@ const AuthWrapper = ({ children }) => {
                         width: 60,
                         height: 60,
                         borderRadius: '50%',
-                        background:
-                          'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+                        background: `linear-gradient(135deg, ${accentColor} 0%, #FFA500 100%)`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        boxShadow: '0 4px 15px rgba(255, 215, 0, 0.4)',
+                        boxShadow: `0 4px 15px ${alpha(accentColor, 0.4)}`,
                         mb: 1,
                         color: '#000000',
                         fontWeight: 800,
@@ -650,9 +680,9 @@ const AuthWrapper = ({ children }) => {
                       variant="h5"
                       sx={{
                         fontWeight: 800,
-                        color: '#FFD700',
+                        color: accentColor,
                         fontSize: '1.4rem',
-                        textShadow: '0 2px 10px rgba(255,215,0,0.3)',
+                        textShadow: `0 2px 10px ${alpha(accentColor, 0.24)}`,
                       }}
                     >
                       Kelmah
@@ -660,7 +690,7 @@ const AuthWrapper = ({ children }) => {
                     <Typography
                       variant="body2"
                       sx={{
-                        color: '#FFFFFF',
+                        color: leftPanelMuted,
                         fontSize: '0.85rem',
                       }}
                     >
@@ -682,8 +712,8 @@ const AuthWrapper = ({ children }) => {
                         label={tag}
                         size="small"
                         sx={{
-                          backgroundColor: 'rgba(255,215,0,0.15)',
-                          color: '#FFD700',
+                          backgroundColor: isDarkMode ? alpha(accentColor, 0.15) : alpha('#FFFFFF', 0.6),
+                          color: accentColor,
                           fontSize: '0.65rem',
                           fontWeight: 600,
                           height: '22px',

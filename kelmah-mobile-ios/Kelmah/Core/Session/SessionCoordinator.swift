@@ -47,7 +47,7 @@ final class SessionCoordinator: ObservableObject {
             return sessionStore.isAuthenticated
         }
         guard let refreshToken = sessionStore.refreshToken, refreshToken.isEmpty == false else {
-            sessionStore.clear()
+            recoverOrClear("Session refresh is unavailable right now.")
             return false
         }
 
@@ -57,8 +57,11 @@ final class SessionCoordinator: ObservableObject {
         do {
             try await authRepository.refreshSession(refreshToken: refreshToken)
             return true
-        } catch {
+        } catch let APIClientError.invalidStatusCode(statusCode, _) where [400, 401, 403].contains(statusCode) {
             sessionStore.clear()
+            return false
+        } catch {
+            recoverOrClear(error.localizedDescription)
             return false
         }
     }

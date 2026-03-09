@@ -74,8 +74,9 @@ class JobsViewModel @Inject constructor(
                     var recommendationContextMessage: String? = null
                     val recommendations = when (recommendationsResult) {
                         is ApiResult.Success -> {
-                            recommendationState = RecommendationFeedState.PERSONALIZED
-                            recommendationsResult.data
+                            recommendationState = recommendationsResult.data.state
+                            recommendationContextMessage = recommendationsResult.data.contextMessage
+                            recommendationsResult.data.jobs
                         }
                         is ApiResult.Error -> {
                             when (val fallback = jobsRepository.getJobs(JobsFilterState(sort = JobSortOption.URGENT), limit = 6)) {

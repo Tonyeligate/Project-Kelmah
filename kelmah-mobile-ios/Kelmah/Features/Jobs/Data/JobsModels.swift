@@ -15,8 +15,15 @@ enum JobsFeed: String, CaseIterable, Hashable {
 enum RecommendationFeedState: Hashable {
     case idle
     case personalized
+    case profileIncomplete
     case fallback
     case failed
+}
+
+struct RecommendationFeed: Hashable {
+    let jobs: [JobSummary]
+    let state: RecommendationFeedState
+    let contextMessage: String?
 }
 
 enum JobSortOption: String, CaseIterable, Hashable, Identifiable {

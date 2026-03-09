@@ -39,11 +39,33 @@ import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 // import { useAuth } from '../../contexts/AuthContext';
 import { checkApiHealth } from '../../../common/utils/apiUtils';
 import MobileLogin from '../mobile/MobileLogin';
+import { alpha } from '@mui/material/styles';
 
 const Login = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isActualMobile = useMediaQuery('(max-width: 768px)');
+  const isDarkMode = theme.palette.mode === 'dark';
+  const accentColor = theme.palette.primary.main || '#FFD700';
+  const accentStrong = theme.palette.primary.dark || '#D39D00';
+  const panelText = isDarkMode ? '#FFFFFF' : '#171A1F';
+  const panelMuted = isDarkMode ? alpha('#FFFFFF', 0.8) : alpha('#171A1F', 0.7);
+  const panelSoft = isDarkMode ? alpha('#FFFFFF', 0.66) : alpha('#171A1F', 0.52);
+  const panelBackground = isDarkMode
+    ? 'linear-gradient(145deg, rgba(38, 38, 38, 0.95) 0%, rgba(28, 28, 28, 0.98) 100%)'
+    : 'linear-gradient(145deg, rgba(255,255,255,0.97) 0%, rgba(250,243,224,0.99) 100%)';
+  const panelBorder = isDarkMode
+    ? alpha(accentColor, 0.3)
+    : alpha(accentStrong, 0.2);
+  const panelShadow = isDarkMode
+    ? '0 8px 32px 0 rgba(0,0,0,0.3)'
+    : '0 16px 42px rgba(105,82,22,0.14)';
+  const inputBackground = isDarkMode ? alpha('#FFFFFF', 0.08) : alpha('#FFFFFF', 0.9);
+  const inputBorder = isDarkMode ? alpha(accentColor, 0.5) : alpha('#171A1F', 0.14);
+  const inputBorderHover = isDarkMode ? alpha(accentColor, 0.7) : alpha(accentStrong, 0.3);
+  const inputPlaceholder = isDarkMode ? alpha('#FFFFFF', 0.7) : alpha('#171A1F', 0.46);
+  const subtleSurface = isDarkMode ? alpha(accentColor, 0.08) : alpha(accentColor, 0.1);
+  const subtleSurfaceBorder = isDarkMode ? alpha(accentColor, 0.15) : alpha(accentStrong, 0.16);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -197,15 +219,15 @@ const Login = () => {
               borderRadius: { xs: 0, sm: 4 },
               background: {
                 xs: 'transparent',
-                sm: 'linear-gradient(145deg, rgba(38, 38, 38, 0.95) 0%, rgba(28, 28, 28, 0.98) 100%)',
+                sm: panelBackground,
               },
               boxShadow: {
                 xs: 'none',
-                sm: '0 8px 32px 0 rgba(0,0,0,0.3)',
+                sm: panelShadow,
               },
               border: {
                 xs: 'none',
-                sm: '2px solid rgba(255,215,0,0.3)',
+                sm: `2px solid ${panelBorder}`,
               },
               backdropFilter: { xs: 'none', sm: 'blur(20px)' },
               position: 'relative',
@@ -221,8 +243,7 @@ const Login = () => {
                 left: 0,
                 right: 0,
                 height: { xs: '2px', sm: '3px' },
-                background:
-                  'linear-gradient(90deg, #FFD700 0%, #FFC000 50%, #FFD700 100%)',
+                background: `linear-gradient(90deg, ${accentColor} 0%, #FFC000 50%, ${accentColor} 100%)`,
                 animation: 'shimmer 2s ease-in-out infinite',
                 '@keyframes shimmer': {
                   '0%': { opacity: 0.5 },
@@ -248,12 +269,11 @@ const Login = () => {
                     width: { xs: 45, sm: 55 },
                     height: { xs: 45, sm: 55 },
                     borderRadius: '50%',
-                    background:
-                      'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
+                    background: `linear-gradient(135deg, ${accentColor} 0%, #FFC000 100%)`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 4px 15px rgba(255,215,0,0.3)',
+                    boxShadow: `0 4px 15px ${alpha(accentColor, 0.3)}`,
                   }}
                 >
                   <WorkOutline
@@ -273,11 +293,11 @@ const Login = () => {
                     variant="h4"
                     component="h1"
                     sx={{
-                      color: '#FFD700',
+                      color: accentColor,
                       fontWeight: 800,
                       fontSize: { xs: '1.4rem', sm: '1.6rem' },
                       letterSpacing: 0.3,
-                      textShadow: '0 2px 10px rgba(255,215,0,0.3)',
+                      textShadow: `0 2px 10px ${alpha(accentColor, 0.24)}`,
                       lineHeight: 1.1,
                     }}
                   >
@@ -286,7 +306,7 @@ const Login = () => {
                   <Typography
                     variant="body2"
                     sx={{
-                      color: 'rgba(255,255,255,0.8)',
+                      color: panelMuted,
                       fontSize: { xs: '0.8rem', sm: '0.85rem' },
                       textAlign: 'center',
                     }}
@@ -305,9 +325,8 @@ const Login = () => {
                     mb: { xs: 1.5, sm: 2 },
                     p: { xs: 1, sm: 1.5 },
                     borderRadius: 1.5,
-                    background:
-                      'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,215,0,0.03) 100%)',
-                    border: '1px solid rgba(255,215,0,0.15)',
+                    background: `linear-gradient(135deg, ${subtleSurface} 0%, ${alpha(accentColor, isDarkMode ? 0.03 : 0.05)} 100%)`,
+                    border: `1px solid ${subtleSurfaceBorder}`,
                     display: 'flex',
                     alignItems: 'center',
                     gap: 1,
@@ -315,7 +334,7 @@ const Login = () => {
                 >
                   <SecurityOutlined
                     sx={{
-                      color: '#FFD700',
+                      color: accentColor,
                       fontSize: { xs: 16, sm: 18 },
                       flexShrink: 0,
                     }}
@@ -323,7 +342,7 @@ const Login = () => {
                   <Typography
                     variant="caption"
                     sx={{
-                      color: '#FFD700',
+                      color: accentStrong,
                       fontWeight: 600,
                       fontSize: { xs: '0.7rem', sm: '0.75rem' },
                       lineHeight: 1.2,
@@ -384,7 +403,7 @@ const Login = () => {
                         <InputAdornment position="start">
                           <EmailOutlined
                             sx={{
-                              color: '#FFD700',
+                              color: accentColor,
                               fontSize: { xs: 18, sm: 20 },
                             }}
                           />
@@ -393,42 +412,42 @@ const Login = () => {
                       sx: {
                         fontSize: { xs: '0.9rem', sm: '1rem' },
                         fontWeight: 500,
-                        color: '#FFFFFF',
-                        background: 'rgba(255,255,255,0.08)',
+                        color: panelText,
+                        background: inputBackground,
                         borderRadius: 1.5,
                         minHeight: { xs: '56px', sm: '48px' },
                         '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(255,215,0,0.5)',
+                          borderColor: inputBorder,
                           borderWidth: 2,
                         },
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(255,215,0,0.7)',
+                          borderColor: inputBorderHover,
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#FFD700',
-                          boxShadow: '0 0 0 2px rgba(255,215,0,0.3)',
+                          borderColor: accentColor,
+                          boxShadow: `0 0 0 2px ${alpha(accentColor, 0.2)}`,
                         },
                         '& .MuiInputBase-input': {
-                          color: '#FFFFFF',
+                          color: panelText,
                           fontWeight: 500,
                           fontSize: { xs: '1rem', sm: '1rem' },
                         },
                         '& .MuiInputBase-input::placeholder': {
-                          color: 'rgba(255,255,255,0.7)',
+                          color: inputPlaceholder,
                           opacity: 1,
                         },
                       },
                     }}
                     InputLabelProps={{
                       sx: {
-                        color: '#FFD700',
+                        color: panelSoft,
                         fontWeight: 700,
                         fontSize: { xs: '0.9rem', sm: '0.9rem' },
                         '&.Mui-focused': {
-                          color: '#FFD700',
+                          color: accentColor,
                         },
                         '&.Mui-filled': {
-                          color: '#FFD700',
+                          color: accentColor,
                         },
                       },
                     }}
@@ -436,7 +455,7 @@ const Login = () => {
                       sx: {
                         fontSize: { xs: '0.8rem', sm: '0.75rem' },
                         mt: 0.5,
-                        color: '#ff6b6b',
+                        color: theme.palette.error.main,
                         fontWeight: 500,
                       },
                     }}
@@ -461,7 +480,7 @@ const Login = () => {
                         <InputAdornment position="start">
                           <LockOutlined
                             sx={{
-                              color: '#FFD700',
+                              color: accentColor,
                               fontSize: { xs: 18, sm: 20 },
                             }}
                           />
@@ -474,7 +493,7 @@ const Login = () => {
                             edge="end"
                             size="small"
                             sx={{
-                              color: '#FFD700',
+                              color: accentColor,
                               minWidth: '44px',
                               minHeight: '44px',
                             }}
@@ -490,42 +509,42 @@ const Login = () => {
                       sx: {
                         fontSize: { xs: '0.9rem', sm: '1rem' },
                         fontWeight: 500,
-                        color: '#FFFFFF',
-                        background: 'rgba(255,255,255,0.08)',
+                        color: panelText,
+                        background: inputBackground,
                         borderRadius: 1.5,
                         minHeight: { xs: '56px', sm: '48px' },
                         '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(255,215,0,0.5)',
+                          borderColor: inputBorder,
                           borderWidth: 2,
                         },
                         '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'rgba(255,215,0,0.7)',
+                          borderColor: inputBorderHover,
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#FFD700',
-                          boxShadow: '0 0 0 2px rgba(255,215,0,0.3)',
+                          borderColor: accentColor,
+                          boxShadow: `0 0 0 2px ${alpha(accentColor, 0.2)}`,
                         },
                         '& .MuiInputBase-input': {
-                          color: '#FFFFFF',
+                          color: panelText,
                           fontWeight: 500,
                           fontSize: { xs: '1rem', sm: '1rem' },
                         },
                         '& .MuiInputBase-input::placeholder': {
-                          color: 'rgba(255,255,255,0.7)',
+                          color: inputPlaceholder,
                           opacity: 1,
                         },
                       },
                     }}
                     InputLabelProps={{
                       sx: {
-                        color: '#FFD700',
+                        color: panelSoft,
                         fontWeight: 700,
                         fontSize: { xs: '0.9rem', sm: '0.9rem' },
                         '&.Mui-focused': {
-                          color: '#FFD700',
+                          color: accentColor,
                         },
                         '&.Mui-filled': {
-                          color: '#FFD700',
+                          color: accentColor,
                         },
                       },
                     }}
@@ -533,7 +552,7 @@ const Login = () => {
                       sx: {
                         fontSize: { xs: '0.8rem', sm: '0.75rem' },
                         mt: 0.5,
-                        color: '#ff6b6b',
+                        color: theme.palette.error.main,
                         fontWeight: 500,
                       },
                     }}
@@ -557,8 +576,8 @@ const Login = () => {
                           onChange={(e) => setRememberMe(e.target.checked)}
                           size="small"
                           sx={{
-                            color: 'rgba(255,215,0,0.7)',
-                            '&.Mui-checked': { color: '#FFD700' },
+                            color: alpha(accentColor, 0.7),
+                            '&.Mui-checked': { color: accentColor },
                             p: 0.5,
                           }}
                         />
@@ -566,7 +585,7 @@ const Login = () => {
                       label={
                         <Typography
                           sx={{
-                            color: 'rgba(255,255,255,0.9)',
+                            color: panelMuted,
                             fontWeight: 500,
                             fontSize: { xs: '0.8rem', sm: '0.85rem' },
                           }}
@@ -585,7 +604,7 @@ const Login = () => {
                       to="/forgot-password"
                       variant="body2"
                       sx={{
-                        color: '#FFD700',
+                        color: accentColor,
                         fontWeight: 600,
                         textDecoration: 'none',
                         fontSize: { xs: '0.9rem', sm: '0.85rem' },
@@ -619,7 +638,9 @@ const Login = () => {
                         background:
                           'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                         color: '#000',
-                        boxShadow: '0 4px 16px rgba(255,215,0,0.2)',
+                        boxShadow: isDarkMode
+                          ? '0 4px 16px rgba(255,215,0,0.2)'
+                          : '0 10px 24px rgba(170,129,19,0.2)',
                         borderRadius: 1.5,
                         textTransform: 'none',
                         '&:hover': {
@@ -666,7 +687,7 @@ const Login = () => {
                 <Typography
                   variant="body2"
                   sx={{
-                    color: 'rgba(255,255,255,0.9)',
+                    color: panelMuted,
                     textAlign: 'center',
                     fontSize: { xs: '0.8rem', sm: '0.85rem' },
                     fontWeight: 500,
@@ -678,7 +699,7 @@ const Login = () => {
                     to="/register"
                     variant="body2"
                     sx={{
-                      color: '#FFD700',
+                      color: accentColor,
                       fontWeight: 700,
                       textDecoration: 'none',
                       fontSize: 'inherit',
@@ -696,7 +717,7 @@ const Login = () => {
                 <Divider
                   sx={{
                     width: '100%',
-                    borderColor: 'rgba(255,215,0,0.25)',
+                    borderColor: alpha(accentStrong, isDarkMode ? 0.25 : 0.16),
                     '& .MuiDivider-wrapper': {
                       px: 1.5,
                     },
@@ -705,7 +726,7 @@ const Login = () => {
                   <Typography
                     variant="caption"
                     sx={{
-                      color: 'rgba(255,215,0,0.5)',
+                      color: alpha(accentStrong, isDarkMode ? 0.5 : 0.62),
                       fontWeight: 600,
                       fontSize: { xs: '0.7rem', sm: '0.75rem' },
                       letterSpacing: 0.3,
@@ -734,9 +755,9 @@ const Login = () => {
                           minHeight: { xs: '48px', sm: '42px' },
                           fontWeight: 600,
                           fontSize: { xs: '0.9rem', sm: '0.85rem' },
-                          background: 'rgba(255,255,255,0.3)',
+                          background: isDarkMode ? alpha('#FFFFFF', 0.3) : alpha('#FFFFFF', 0.72),
                           color: 'rgba(66,133,244,0.5)',
-                          borderColor: 'rgba(66,133,244,0.3)',
+                          borderColor: isDarkMode ? 'rgba(66,133,244,0.3)' : 'rgba(66,133,244,0.22)',
                           borderWidth: 1.5,
                           borderRadius: 1.5,
                           textTransform: 'none',
@@ -759,9 +780,9 @@ const Login = () => {
                           minHeight: { xs: '48px', sm: '42px' },
                           fontWeight: 600,
                           fontSize: { xs: '0.9rem', sm: '0.85rem' },
-                          background: 'rgba(255,255,255,0.3)',
+                          background: isDarkMode ? alpha('#FFFFFF', 0.3) : alpha('#FFFFFF', 0.72),
                           color: 'rgba(0,119,181,0.5)',
-                          borderColor: 'rgba(0,119,181,0.3)',
+                          borderColor: isDarkMode ? 'rgba(0,119,181,0.3)' : 'rgba(0,119,181,0.22)',
                           borderWidth: 1.5,
                           borderRadius: 1.5,
                           textTransform: 'none',

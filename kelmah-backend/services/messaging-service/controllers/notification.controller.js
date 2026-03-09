@@ -2,6 +2,25 @@ const { Notification, NotificationPreference, User } = require("../models");
 const { handleError } = require("../utils/errorHandler");
 const logger = require("../utils/logger");
 
+/**
+ * Sanitize user-supplied content to strip HTML/script injection vectors.
+ * Lightweight, zero-dependency alternative used because we cannot add npm packages.
+ */
+function sanitizeContent(input) {
+  if (typeof input !== 'string') return '';
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<\/?[^>]+(>|$)/g, '')
+    .replace(/on\w+\s*=\s*(['"])[^'"]*\1/gi, '')
+    .replace(/javascript\s*:/gi, '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .trim();
+}
+
 const getRequesterId = (req) => req?.user?._id || req?.user?.id;
 
 // Allowed fields for preference updates (whitelist)
@@ -20,14 +39,15 @@ const createNotificationForUser = async (
   try {
     // Check user preferences — skip if type is explicitly disabled
     const prefs = await NotificationPreference.findOne({ user: recipientId });
+    let skipInApp = false;
     if (prefs) {
       // Check if the notification type is disabled
       if (prefs.types && prefs.types[type] === false) {
         return null; // User has disabled this notification type
       }
-      // Check if in-app channel is disabled
+      // Check if in-app channel is disabled — only skip socket emit, not email
       if (prefs.channels && prefs.channels.inApp === false) {
-        return null; // User has disabled in-app notifications
+        skipInApp = true;
       }
     }
 
@@ -40,19 +60,23 @@ const createNotificationForUser = async (
         }
       : undefined;
 
+    // Sanitize title and content before persisting or emailing
+    const sanitizedTitle = sanitizeContent(title);
+    const sanitizedContent = sanitizeContent(content);
+
     const notification = await Notification.create({
       recipient: recipientId,
       type,
-      title,
-      content,
+      title: sanitizedTitle,
+      content: sanitizedContent,
       actionUrl,
       relatedEntity: entityData,
       priority: priority || "medium",
       metadata: metadata || {},
     });
 
-    // Emit real-time notification via socket if io instance is available
-    if (io) {
+    // Emit real-time notification via socket if io instance is available and in-app is not disabled
+    if (io && !skipInApp) {
       io.to(`user_${recipientId}`).emit("notification", {
         id: notification._id,
         type: notification.type,

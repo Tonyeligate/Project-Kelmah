@@ -10,6 +10,21 @@ const {
 } = require("../utils/virusScanState");
 const auditLogger = require("../utils/audit-logger");
 
+/**
+ * CRIT-MSG-01: Sanitize user-supplied content via HTML entity encoding.
+ * Encodes dangerous characters so that content is safe for storage and
+ * rendering without relying on fragile regex-based tag stripping.
+ */
+function sanitizeContent(input) {
+  if (typeof input !== 'string') return '';
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 const toIdString = (value) => {
   if (!value) return null;
   if (typeof value === "string") return value;
@@ -25,6 +40,9 @@ class MessageSocketHandler {
     this.connectedUsers = new Map(); // userId -> socketId mapping
     this.userSockets = new Map(); // socketId -> user info mapping
     this.typingUsers = new Map(); // conversationId -> Set of userIds typing
+    // H-MSG5: Cache of userId -> Set of participant userIds from their conversations.
+    // Populated on connection, updated on join/leave. Avoids DB query on every status broadcast.
+    this.userConversationContacts = new Map();
 
     this.setupMiddleware();
     this.setupEventHandlers();
@@ -37,8 +55,8 @@ class MessageSocketHandler {
     // Authentication middleware
     this.io.use(async (socket, next) => {
       try {
-        const token =
-          socket.handshake.auth.token || socket.handshake.query.token;
+        // CRIT-MSG-02: Only accept token from auth header, never from query string
+        const token = socket.handshake.auth.token;
 
         if (!token) {
           return next(new Error("Authentication token required"));
@@ -150,7 +168,10 @@ class MessageSocketHandler {
       const user = socket.user;
 
       // Store connection mapping
-      this.connectedUsers.set(String(userId), socket.id);
+      if (!this.connectedUsers.has(String(userId))) {
+        this.connectedUsers.set(String(userId), new Set());
+      }
+      this.connectedUsers.get(String(userId)).add(socket.id);
       this.userSockets.set(socket.id, {
         userId,
         user,
@@ -174,6 +195,18 @@ class MessageSocketHandler {
       conversations.forEach((conversation) => {
         socket.join(`conversation_${conversation.id}`);
       });
+
+      // H-MSG5: Build and cache the set of participant IDs from all conversations
+      const contactIds = new Set();
+      conversations.forEach((conv) => {
+        (conv.participants || []).forEach((p) => {
+          const pid = toIdString(p._id || p);
+          if (pid && pid !== toIdString(userId)) {
+            contactIds.add(pid);
+          }
+        });
+      });
+      this.userConversationContacts.set(String(userId), contactIds);
 
       // Notify other users that this user is online
       this.broadcastUserStatus(userId, "online");
@@ -241,7 +274,17 @@ class MessageSocketHandler {
       const userId = socket.userId;
       const attachmentsArray = Array.isArray(attachments) ? attachments : [];
       const normalizedContent =
-        typeof content === "string" ? content.trim() : "";
+        typeof content === "string" ? sanitizeContent(content) : "";
+
+      // H-MSG3: Enforce content constraints on WebSocket messages (DoS prevention)
+      if (messageType === 'text' && (!content || typeof content !== 'string' || content.trim().length === 0) && attachmentsArray.length === 0) {
+        if (typeof ack === 'function') ack({ ok: false, error: 'Message content is required' });
+        return;
+      }
+      if (content && typeof content === 'string' && content.length > 5000) {
+        if (typeof ack === 'function') ack({ ok: false, error: 'Message too long. Maximum 5000 characters.' });
+        return;
+      }
 
       // Rate limiting check
       const now = Date.now();
@@ -249,9 +292,12 @@ class MessageSocketHandler {
         socket.rateLimitData.messages = [];
       }
 
-      socket.rateLimitData.messages.push(now);
+      // Prune timestamps older than 60 seconds before checking
+      socket.rateLimitData.messages = socket.rateLimitData.messages.filter(
+        (t) => now - t < 60000
+      );
 
-      if (socket.rateLimitData.messages.length > 60) {
+      if (socket.rateLimitData.messages.length >= 60) {
         socket.emit("error", {
           message: "Too many messages. Please slow down.",
         });
@@ -259,6 +305,8 @@ class MessageSocketHandler {
           ack({ ok: false, error: "rate_limited" });
         return;
       }
+
+      socket.rateLimitData.messages.push(now);
 
       // Validate input
       if (
@@ -312,18 +360,20 @@ class MessageSocketHandler {
       });
       await message.save();
 
-      // Update conversation's last message timestamp
+      // Update conversation's last message
       const recipientId = toIdString(
         conversation.participants.find(
           (p) => toIdString(p) !== toIdString(userId),
         ),
       );
 
-      conversation.lastMessage = message._id;
+      // H-MSG2: Use atomic operations for both lastMessage and unread count
+      await Conversation.findByIdAndUpdate(conversationId, {
+        lastMessage: message._id,
+      });
       if (recipientId) {
-        conversation.incrementUnreadCount(recipientId);
+        await Conversation.atomicIncrementUnread(conversationId, recipientId);
       }
-      await conversation.save();
 
       // Populate sender details
       await message.populate("sender", "firstName lastName profilePicture");
@@ -457,6 +507,24 @@ class MessageSocketHandler {
         ? attachments
         : [];
       const userId = socket.userId;
+
+      // H-MSG4: Apply the same rate limiting as normal messages
+      const now = Date.now();
+      if (!socket.rateLimitData) {
+        socket.rateLimitData = { messages: [], connections: [] };
+      }
+      if (!socket.rateLimitData.messages) {
+        socket.rateLimitData.messages = [];
+      }
+      socket.rateLimitData.messages = socket.rateLimitData.messages.filter(
+        (t) => now - t < 60000
+      );
+      if (socket.rateLimitData.messages.length >= 60) {
+        if (typeof ack === "function") ack({ ok: false, error: "rate_limited" });
+        return;
+      }
+      socket.rateLimitData.messages.push(now);
+
       if (!conversationId || !encryptedBody || !encryption) {
         if (typeof ack === "function")
           ack({ ok: false, error: "invalid_envelope" });
@@ -470,6 +538,9 @@ class MessageSocketHandler {
         if (typeof ack === "function") ack({ ok: false, error: "not_found" });
         return;
       }
+      // Sanitize the encrypted body in case it contains injection vectors
+      const sanitizedEncryptedBody = sanitizeContent(encryptedBody);
+
       const message = new Message({
         conversation: conversationId,
         sender: userId,
@@ -480,12 +551,22 @@ class MessageSocketHandler {
         messageType,
         attachments: ensureAttachmentScanStateList(attachmentsArray),
         readStatus: { isRead: false },
-        encryptedBody,
+        encryptedBody: sanitizedEncryptedBody,
         encryption,
       });
       await message.save();
-      conversation.lastMessage = message._id;
-      await conversation.save();
+      // H-MSG2: Use atomic operations for lastMessage and unread count
+      const recipientId = toIdString(
+        conversation.participants.find(
+          (p) => p.toString() !== userId.toString(),
+        ),
+      );
+      await Conversation.findByIdAndUpdate(conversationId, {
+        lastMessage: message._id,
+      });
+      if (recipientId) {
+        await Conversation.atomicIncrementUnread(conversationId, recipientId);
+      }
       await message.populate("sender", "firstName lastName profilePicture");
       const messageData = {
         id: message._id,
@@ -554,9 +635,8 @@ class MessageSocketHandler {
         "readStatus.readAt": new Date(),
       });
 
-      // Reset unread count on the conversation
-      conversation.resetUnreadCount(userId);
-      await conversation.save();
+      // H-MSG2: Atomic reset of unread count (avoids race condition)
+      await Conversation.atomicResetUnread(conversationId, userId);
 
       // Broadcast read receipt to conversation participants
       this.io.to(`conversation_${conversationId}`).emit("messages_read", {
@@ -679,6 +759,16 @@ class MessageSocketHandler {
 
       // Join conversation room
       socket.join(`conversation_${conversationId}`);
+
+      // H-MSG5: Update the conversation contacts cache with new participants
+      const userContacts = this.userConversationContacts.get(String(userId)) || new Set();
+      (conversation.participants || []).forEach((p) => {
+        const pid = toIdString(p);
+        if (pid && pid !== toIdString(userId)) {
+          userContacts.add(pid);
+        }
+      });
+      this.userConversationContacts.set(String(userId), userContacts);
 
       // Get recent messages scoped to THIS conversation by ID
       const messages = await Message.find({
@@ -835,7 +925,15 @@ class MessageSocketHandler {
       const connectedAt = socketMeta?.connectedAt?.getTime() || Date.now();
 
       // Remove from connected users
-      this.connectedUsers.delete(String(userId));
+      const userSocketSet = this.connectedUsers.get(String(userId));
+      if (userSocketSet) {
+        userSocketSet.delete(socket.id);
+        if (userSocketSet.size === 0) {
+          this.connectedUsers.delete(String(userId));
+          // H-MSG5: Clear contacts cache when user fully disconnects
+          this.userConversationContacts.delete(String(userId));
+        }
+      }
       this.userSockets.delete(socket.id);
 
       // Clean up typing indicators
@@ -895,46 +993,56 @@ class MessageSocketHandler {
 
   /**
    * Broadcast user status to relevant users
+   * H-MSG5: Uses the in-memory contacts cache instead of querying the DB
+   * on every status change. Falls back to a DB query only if the cache is
+   * not populated (e.g. user connected before cache was introduced).
    */
   broadcastUserStatus(userId, status) {
     try {
-      // Get user's conversations to determine who should receive the status update
-      Conversation.find({
-        participants: { $in: [userId] },
-      })
-        .then((conversations) => {
-          const notifyUsers = new Set();
+      const cachedContacts = this.userConversationContacts.get(String(userId));
 
-          conversations.forEach((conv) => {
-            conv.participants.forEach((participantId) => {
-              const normalizedParticipantId = toIdString(participantId);
-              if (
-                normalizedParticipantId &&
-                normalizedParticipantId !== toIdString(userId) &&
-                this.connectedUsers.has(normalizedParticipantId)
-              ) {
-                notifyUsers.add(normalizedParticipantId);
-              }
+      const emitToContacts = (contactIds) => {
+        const statusData = {
+          userId,
+          status,
+          timestamp: new Date(),
+        };
+        contactIds.forEach((contactId) => {
+          if (!this.connectedUsers.has(contactId)) return;
+          const socketSet = this.connectedUsers.get(contactId);
+          if (socketSet && socketSet.size > 0) {
+            socketSet.forEach((sid) => {
+              this.io.to(sid).emit("user_status_changed", statusData);
+              this.io.to(sid).emit(status === "online" ? "user_online" : "user_offline", statusData);
             });
-          });
-
-          // Send status update to relevant users
-          notifyUsers.forEach((notifyUserId) => {
-            const socketId = this.connectedUsers.get(notifyUserId);
-            if (socketId) {
-              const statusData = {
-                userId,
-                status,
-                timestamp: new Date(),
-              };
-              this.io.to(socketId).emit("user_status_changed", statusData);
-              this.io.to(socketId).emit(status === "online" ? "user_online" : "user_offline", statusData);
-            }
-          });
-        })
-        .catch((error) => {
-          console.error("Error broadcasting user status:", error);
+          }
         });
+      };
+
+      if (cachedContacts && cachedContacts.size > 0) {
+        // Fast path: use the cache
+        emitToContacts(cachedContacts);
+      } else {
+        // Fallback: query DB once and populate cache
+        Conversation.find({ participants: { $in: [userId] } })
+          .then((conversations) => {
+            const contactIds = new Set();
+            conversations.forEach((conv) => {
+              conv.participants.forEach((participantId) => {
+                const pid = toIdString(participantId);
+                if (pid && pid !== toIdString(userId)) {
+                  contactIds.add(pid);
+                }
+              });
+            });
+            // Store for future calls
+            this.userConversationContacts.set(String(userId), contactIds);
+            emitToContacts(contactIds);
+          })
+          .catch((error) => {
+            console.error("Error broadcasting user status:", error);
+          });
+      }
     } catch (error) {
       console.error("Broadcast user status error:", error);
     }
@@ -989,10 +1097,10 @@ class MessageSocketHandler {
    * Get user's online status
    */
   getUserStatus(userId) {
-    const socketId = this.connectedUsers.get(String(userId));
-    if (!socketId) return "offline";
-
-    const socketData = this.userSockets.get(socketId);
+    const socketSet = this.connectedUsers.get(String(userId));
+    if (!socketSet || socketSet.size === 0) return "offline";
+    const firstSocketId = socketSet.values().next().value;
+    const socketData = this.userSockets.get(firstSocketId);
     return socketData?.status || "online";
   }
 
@@ -1000,9 +1108,9 @@ class MessageSocketHandler {
    * Send message to specific user
    */
   sendToUser(userId, event, data) {
-    const socketId = this.connectedUsers.get(String(userId));
-    if (socketId) {
-      this.io.to(socketId).emit(event, data);
+    const socketSet = this.connectedUsers.get(String(userId));
+    if (socketSet && socketSet.size > 0) {
+      socketSet.forEach((sid) => this.io.to(sid).emit(event, data));
       return true;
     }
     return false;

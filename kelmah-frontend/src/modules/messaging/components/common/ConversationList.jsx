@@ -386,18 +386,30 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
     setFilterAnchorEl(null);
   };
 
-  const handleArchiveConversation = () => {
-    setFilteredConversations((prevConversations) =>
-      prevConversations.filter((c) => c.id !== selectedConversation.id),
-    );
+  const handleArchiveConversation = async () => {
+    const target = selectedConversation;
     handleMenuClose();
+    setFilteredConversations((prev) => prev.filter((c) => c.id !== target?.id && c._id !== target?._id));
+    try {
+      if (messagingService?.archiveConversation) {
+        await messagingService.archiveConversation(target?.id || target?._id);
+      }
+    } catch (err) {
+      setFilteredConversations((prev) => (target ? [target, ...prev] : prev));
+    }
   };
 
-  const handleDeleteConversation = () => {
-    setFilteredConversations((prevConversations) =>
-      prevConversations.filter((c) => c.id !== selectedConversation.id),
-    );
+  const handleDeleteConversation = async () => {
+    const target = selectedConversation;
     handleMenuClose();
+    setFilteredConversations((prev) => prev.filter((c) => c.id !== target?.id && c._id !== target?._id));
+    try {
+      if (messagingService?.deleteConversation) {
+        await messagingService.deleteConversation(target?.id || target?._id);
+      }
+    } catch (err) {
+      setFilteredConversations((prev) => (target ? [target, ...prev] : prev));
+    }
   };
 
   const handleTabChange = (event, newValue) => {

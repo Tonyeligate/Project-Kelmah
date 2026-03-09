@@ -1,0 +1,313 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Grid,
+  IconButton,
+  Chip,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Alert,
+  CircularProgress,
+  Card,
+  CardContent,
+  Tabs,
+  Stack,
+  Tab,
+  Divider,
+  Tooltip,
+} from '@mui/material';
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Visibility as ViewIcon,
+  Assessment as AssessmentIcon,
+  School as SchoolIcon,
+} from '@mui/icons-material';
+import { useAuth } from '../../../modules/auth/hooks/useAuth';
+import ResponsiveDataView from '../../../components/common/ResponsiveDataView';
+import { Helmet } from 'react-helmet-async';
+
+// Custom TabPanel component
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`skills-admin-tabpanel-${index}`}
+      aria-labelledby={`skills-admin-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
+    </div>
+  );
+}
+
+const SkillsAssessmentManagement = () => {
+  const { user } = useAuth();
+  const [tabValue, setTabValue] = useState(0);
+  const [tests, setTests] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [openCreateDialog, setOpenCreateDialog] = useState(false);
+
+  if (!user || user.role !== 'admin') {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Alert severity="error">
+          Access denied. Admin privileges required.
+        </Alert>
+      </Container>
+    );
+  }
+
+  return (
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Helmet><title>Skills Assessment Management | Kelmah</title></Helmet>
+      <Typography variant="h4" gutterBottom>
+        Skills Assessment Management
+      </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      <Paper sx={{ p: 3 }}>
+        <Tabs
+          value={tabValue}
+          onChange={(e, newValue) => setTabValue(newValue)}
+          indicatorColor="primary"
+          textColor="primary"
+          variant="scrollable"
+          scrollButtons="auto"
+        >
+          <Tab label="Overview" icon={<AssessmentIcon />} />
+          <Tab label="Test Management" icon={<SchoolIcon />} />
+          <Tab label="Analytics" icon={<AssessmentIcon />} />
+        </Tabs>
+
+        <Divider sx={{ my: 2 }} />
+
+        <TabPanel value={tabValue} index={0}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    Assessment Overview
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Total Tests: {tests.length}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Active Tests: 0
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    Recent Activity
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    No recent activity
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={1}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 3,
+            }}
+          >
+            <Typography variant="h6">Manage Assessment Tests</Typography>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              disabled={loading}
+              onClick={() => setOpenCreateDialog(true)}
+            >
+              Create New Test
+            </Button>
+          </Box>
+
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <ResponsiveDataView
+              rows={tests}
+              emptyMessage="No assessment tests found. Create your first test to get started."
+              renderCard={(test) => (
+                <Stack spacing={0.5}>
+                  <Typography variant="subtitle2" fontWeight={600}>{test.title}</Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Chip label={test.category} size="small" />
+                    <Chip
+                      label={test.status || 'Draft'}
+                      color={test.status === 'Active' ? 'success' : 'default'}
+                      size="small"
+                    />
+                  </Stack>
+                  <Typography variant="caption" color="text.secondary">
+                    {test.questions?.length || 0} questions
+                  </Typography>
+                  <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
+                    <Tooltip title="Coming Soon"><span><IconButton size="small" disabled><ViewIcon /></IconButton></span></Tooltip>
+                    <Tooltip title="Coming Soon"><span><IconButton size="small" disabled><EditIcon /></IconButton></span></Tooltip>
+                    <Tooltip title="Coming Soon"><span><IconButton size="small" disabled><DeleteIcon /></IconButton></span></Tooltip>
+                  </Stack>
+                </Stack>
+              )}
+            >
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Test Name</TableCell>
+                    <TableCell>Category</TableCell>
+                    <TableCell>Questions</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell align="center">Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {tests.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          No assessment tests found. Create your first test to
+                          get started.
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    tests.map((test) => (
+                      <TableRow key={test.id || test._id}>
+                        <TableCell>{test.title}</TableCell>
+                        <TableCell>
+                          <Chip label={test.category} size="small" />
+                        </TableCell>
+                        <TableCell>{test.questions?.length || 0}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={test.status || 'Draft'}
+                            color={
+                              test.status === 'Active' ? 'success' : 'default'
+                            }
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          <Tooltip title="Coming Soon"><span><IconButton size="small" disabled>
+                            <ViewIcon />
+                          </IconButton></span></Tooltip>
+                          <Tooltip title="Coming Soon"><span><IconButton size="small" disabled>
+                            <EditIcon />
+                          </IconButton></span></Tooltip>
+                          <Tooltip title="Coming Soon"><span><IconButton size="small" disabled>
+                            <DeleteIcon />
+                          </IconButton></span></Tooltip>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            </ResponsiveDataView>
+          )}
+        </TabPanel>
+
+        <TabPanel value={tabValue} index={2}>
+          <Typography variant="h6" gutterBottom>
+            Assessment Analytics
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={4}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" color="primary">
+                    0
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Total Assessments Taken
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" color="primary">
+                    0%
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Average Success Rate
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" color="primary">
+                    0
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Active Users
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </TabPanel>
+      </Paper>
+
+      {/* Create New Test Dialog — placeholder for future implementation */}
+      <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Create New Test</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            Test creation form coming soon.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCreateDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
+  );
+};
+
+export default SkillsAssessmentManagement;

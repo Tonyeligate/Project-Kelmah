@@ -86,7 +86,9 @@ struct HomeView: View {
                 HomeSectionHeader(
                     title: userRole == .hirer
                         ? "Recent hiring activity"
-                        : recommendationSectionTitle,
+                        : (jobsViewModel.recommendationState == .profileIncomplete
+                            ? "General matches while profile completes"
+                            : recommendationSectionTitle),
                     actionLabel: userRole == .hirer ? "Open market" : "Browse jobs",
                     onAction: onBrowseJobs
                 )
@@ -107,11 +109,13 @@ struct HomeView: View {
                     HomeMessageCard(
                         message: userRole == .hirer
                             ? "Your most recent jobs will appear here once your hiring activity is available."
-                            : (jobsViewModel.recommendationState == .fallback
-                                ? "Kelmah could not recover enough urgent jobs while the recommendation feed is degraded."
-                                : (jobsViewModel.recommendationState == .failed
-                                    ? "Browse the jobs feed while personalized matching is unavailable."
-                                : "Your strongest matches will appear here once the recommendation feed returns results."),
+                            : (jobsViewModel.recommendationState == .profileIncomplete
+                                ? "Kelmah needs a more complete worker profile before it can rank personalized matches accurately."
+                                : (jobsViewModel.recommendationState == .fallback
+                                    ? "Kelmah could not recover enough urgent jobs while the recommendation feed is degraded."
+                                    : (jobsViewModel.recommendationState == .failed
+                                        ? "Browse the jobs feed while personalized matching is unavailable."
+                                        : "Your strongest matches will appear here once the recommendation feed returns results."))),
                         tint: .white
                     )
                 } else {
@@ -285,6 +289,8 @@ private struct HomeJobCard: View {
 private extension HomeView {
     var recommendationSectionTitle: String {
         switch jobsViewModel.recommendationState {
+        case .profileIncomplete:
+            return "General matches while profile completes"
         case .fallback:
             return "Urgent jobs while matching recovers"
         case .failed:
@@ -298,7 +304,7 @@ private extension HomeView {
         switch jobsViewModel.recommendationState {
         case .failed:
             return .red.opacity(0.12)
-        case .fallback:
+        case .fallback, .profileIncomplete:
             return KelmahTheme.accent.opacity(0.12)
         case .idle, .personalized:
             return .white

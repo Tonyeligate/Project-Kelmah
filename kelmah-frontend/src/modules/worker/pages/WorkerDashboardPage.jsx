@@ -121,11 +121,13 @@ const WorkerDashboardPage = () => {
 
   // Enhanced state for error handling and loading feedback
   const [retryCount, setRetryCount] = useState(0);
+  const retryCountRef = useRef(0);
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('info');
   const loadingTimeoutRef = useRef(null);
+  const isRetryingRef = useRef(false);
   const MAX_RETRIES = 3;
   const LOADING_TIMEOUT = 15000; // 15 seconds
 
@@ -170,6 +172,9 @@ const WorkerDashboardPage = () => {
   }, []);
 
   // Fetch data with retry logic
+  // NOTE: retryCountRef (not retryCount state) is read inside the callback to
+  // keep the function identity stable and avoid an infinite re-render loop where
+  // retryCount change → new fetchDashboardData → useEffect re-fires → fail → retry → loop.
   const fetchDashboardData = useCallback(async () => {
     setLoadingTimeout(false);
 
@@ -184,19 +189,25 @@ const WorkerDashboardPage = () => {
 
     try {
       const results = await Promise.allSettled([
-        dispatch(fetchWorkerApplications('pending')),
-        dispatch(fetchWorkerApplications('accepted')),
-        dispatch(fetchWorkerApplications('rejected')),
-        dispatch(fetchWorkerJobs('completed')),
+        dispatch(fetchWorkerApplications('pending')).unwrap(),
+        dispatch(fetchWorkerApplications('accepted')).unwrap(),
+        dispatch(fetchWorkerApplications('rejected')).unwrap(),
+        dispatch(fetchWorkerJobs('completed')).unwrap(),
       ]);
+      const hasFailures = results.some((result) => result.status === 'rejected');
+
       clearTimeout(timeoutId);
       if (loadingTimeoutRef.current === timeoutId) {
         loadingTimeoutRef.current = null;
       }
       setLoadingTimeout(false);
-      if (retryCount > 0) {
+      if (retryCountRef.current > 0 && !hasFailures) {
         setSnackbarMessage('Dashboard data loaded successfully!');
         setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+      } else if (retryCountRef.current > 0 && hasFailures) {
+        setSnackbarMessage('Some dashboard sections are still unavailable.');
+        setSnackbarSeverity('warning');
         setSnackbarOpen(true);
       }
     } catch (err) {
@@ -205,8 +216,10 @@ const WorkerDashboardPage = () => {
         loadingTimeoutRef.current = null;
       }
       // Error captured by Redux slice — no manual logging needed
+    } finally {
+      isRetryingRef.current = false;
     }
-  }, [dispatch, retryCount]);
+  }, [dispatch]);
 
   // Initial fetch on mount
   useEffect(() => {
@@ -334,13 +347,15 @@ const WorkerDashboardPage = () => {
   // Handle refresh with retry logic
   const handleRefresh = useCallback(() => {
     dispatch(clearWorkerErrors());
-    setRetryCount(prev => prev + 1);
+    retryCountRef.current += 1;
+    setRetryCount(retryCountRef.current);
     fetchDashboardData();
   }, [dispatch, fetchDashboardData]);
 
-  // Auto-retry on error (up to MAX_RETRIES)
+  // Auto-retry on error (up to MAX_RETRIES) — guarded to prevent re-entrant loops
   useEffect(() => {
-    if (error && retryCount < MAX_RETRIES && !isLoading) {
+    if (error && retryCount < MAX_RETRIES && !isLoading && !isRetryingRef.current) {
+      isRetryingRef.current = true;
       const retryTimer = setTimeout(() => {
         setSnackbarMessage(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
         setSnackbarSeverity('info');

@@ -274,10 +274,10 @@ const JobDetailsPage = () => {
   useEffect(() => {
     if (!id || id === 'undefined' || id === 'null') return;
     const params = new URLSearchParams(search);
-    if (params.get('apply') === 'true' && isAuthenticated) {
+    if (params.get('apply') === 'true' && isAuthenticated && isWorkerUser) {
       navigate(`/jobs/${id}/apply`, { replace: true });
     }
-  }, [search, isAuthenticated, navigate, id]);
+  }, [search, isAuthenticated, isWorkerUser, navigate, id]);
 
   const handleApplyNow = () => {
     if (!isAuthenticated) {
@@ -905,7 +905,23 @@ const JobDetailsPage = () => {
 
                 {!isAuthenticated && (
                   <Typography variant="caption" sx={{ color: 'text.secondary', mt: 1.5, display: 'block', textAlign: 'center' }}>
-                    <Box component="span" onClick={handleSignIn} sx={{ color: accentColor, cursor: 'pointer', fontWeight: 700 }}>Sign in</Box>
+                    <Box
+                      component="button"
+                      type="button"
+                      onClick={handleSignIn}
+                      sx={{
+                        color: accentColor,
+                        cursor: 'pointer',
+                        fontWeight: 700,
+                        font: 'inherit',
+                        background: 'none',
+                        border: 0,
+                        padding: 0,
+                        textDecoration: 'underline',
+                      }}
+                    >
+                      Sign in
+                    </Box>
                     {' '}to apply or save this job
                   </Typography>
                 )}

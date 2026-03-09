@@ -5,9 +5,10 @@
 
 const mongoose = require('mongoose');
 const models = require("../models");
-const { User, RefreshToken, RevokedToken } = models;
+const { User, RefreshToken, RevokedToken, WorkerProfile } = models;
 const { AppError } = require("../utils/errorTypes");
 const jwtUtils = require("../../../shared/utils/jwt");
+const { buildAuthSessionUser } = require('../../../shared/utils/canonicalWorker');
 const emailService = require("../services/email.service");
 const crypto = require("crypto");
 const secure = require('../utils/jwt-secure');
@@ -834,17 +835,49 @@ exports.getMe = async (req, res, next) => {
     const userId = req.user.id;
 
     // Find user
-    const user = await User.findById(userId).select("-password -tokenVersion");
+    const user = await User.findById(userId)
+      .select("-password -tokenVersion")
+      .lean();
 
     if (!user) {
       return next(new AppError("User not found", 404));
     }
 
+    const workerProfile = user.role === 'worker'
+      ? await WorkerProfile.findOne({ userId })
+          .select({
+            profession: 1,
+            title: 1,
+            headline: 1,
+            location: 1,
+            hourlyRate: 1,
+            currency: 1,
+            yearsOfExperience: 1,
+            skills: 1,
+            specializations: 1,
+            availabilityStatus: 1,
+            isVerified: 1,
+            profileCompleteness: 1,
+            profilePicture: 1,
+            createdAt: 1,
+            updatedAt: 1,
+          })
+          .lean()
+      : null;
+
     // Return user profile
     return res.status(200).json({
       status: "success",
       data: {
-        user,
+        user: buildAuthSessionUser(user, workerProfile || {}),
+      },
+      meta: {
+        contract: 'auth-session-v2',
+        workerProfileSource: workerProfile
+          ? 'worker-profile'
+          : user.role === 'worker'
+            ? 'user-fallback'
+            : 'not-applicable',
       },
     });
   } catch (error) {

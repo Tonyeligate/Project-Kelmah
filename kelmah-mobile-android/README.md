@@ -48,7 +48,7 @@ Native Android app root.
 
 ## Backend target
 - Gateway origin is configured once through `KELMAH_GATEWAY_ORIGIN`
-- Default gateway origin: `https://kelmah-api-gateway-qmd7.onrender.com`
+- Default gateway origin: `https://kelmah-api-gateway-gf3g.onrender.com`
 - API base is derived internally as `<gateway-origin>/api`
 - Realtime base is derived internally as `<gateway-origin>/socket.io`
 

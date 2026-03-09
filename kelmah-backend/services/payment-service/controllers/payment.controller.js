@@ -154,10 +154,10 @@ class PaymentController {
         });
         await payment.save();
 
+        // H-P5 FIX: Do not expose provider error internals to the client
         return res.status(400).json({
           success: false,
-          message: 'Payment initialization failed',
-          error: result.error,
+          message: 'Payment processing failed. Please try again.',
           code: 'PAYMENT_INIT_FAILED'
         });
       }
@@ -347,7 +347,7 @@ class PaymentController {
       // double-spend race conditions.  Uses findOneAndUpdate with $gte guard
       // so concurrent requests cannot both pass the balance check.
       const wallet = await Wallet.findOneAndUpdate(
-        { userId, balance: { $gte: amount } },
+        { user: userId, balance: { $gte: amount } },
         { $inc: { balance: -amount, pendingWithdrawals: amount } },
         { new: true }
       );
@@ -433,10 +433,11 @@ class PaymentController {
           });
 
           if (!recipientResult.success) {
+            // H-P5 FIX: Do not expose provider error internals to the client
             return res.status(400).json({
               success: false,
-              message: 'Failed to create transfer recipient',
-              error: recipientResult.error
+              message: 'Failed to create transfer recipient. Please verify your bank details.',
+              code: 'RECIPIENT_CREATION_FAILED'
             });
           }
 
@@ -474,8 +475,7 @@ class PaymentController {
 
         return res.status(400).json({
           success: false,
-          message: 'Payout initialization failed',
-          error: result.error,
+          message: 'Payout processing failed. Please try again.',
           code: 'PAYOUT_INIT_FAILED'
         });
       }
@@ -554,7 +554,10 @@ class PaymentController {
         endDate
       } = req.query;
 
-      const offset = (page - 1) * limit;
+      // H-P3 FIX: Clamp pagination limit to prevent DoS via unbounded queries
+      const numericLimit = Math.min(Math.max(1, parseInt(limit, 10) || 20), 100);
+      const numericPage = Math.max(1, parseInt(page, 10) || 1);
+      const offset = (numericPage - 1) * numericLimit;
       const whereClause = { userId };
 
       // Filter by type
@@ -583,7 +586,7 @@ class PaymentController {
       // Use Mongoose syntax (NOT Sequelize)
       const payments = await Payment.find(whereClause)
         .skip(offset)
-        .limit(parseInt(limit))
+        .limit(numericLimit)
         .sort({ createdAt: -1 });
 
       const totalCount = await Payment.countDocuments(whereClause);
@@ -607,10 +610,10 @@ class PaymentController {
         data: {
           payments: paymentHistory,
           pagination: {
-            page: parseInt(page),
-            limit: parseInt(limit),
+            page: numericPage,
+            limit: numericLimit,
             total: totalCount,
-            pages: Math.ceil(totalCount / limit)
+            pages: Math.ceil(totalCount / numericLimit)
           }
         }
       });
@@ -782,10 +785,10 @@ class PaymentController {
   async createTransactionRecord(payment, providerData) {
     try {
       // Find or create wallet
-      let wallet = await Wallet.findOne({ userId: payment.userId });
+      let wallet = await Wallet.findOne({ user: payment.userId });
       if (!wallet) {
         wallet = await Wallet.create({
-          userId: payment.userId,
+          user: payment.userId,
           balance: 0,
           currency: payment.currency
         });

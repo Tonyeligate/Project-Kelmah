@@ -1,3 +1,3 @@
 PRODUCT_NAME = Kelmah
-GATEWAY_ORIGIN = https://kelmah-api-gateway-qmd7.onrender.com
+GATEWAY_ORIGIN = https://kelmah-api-gateway-gf3g.onrender.com
 APP_ENVIRONMENT = debug

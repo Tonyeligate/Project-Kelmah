@@ -673,10 +673,10 @@ class PaystackService {
         .update(payload)
         .digest('hex');
 
-      return crypto.timingSafeEqual(
-        Buffer.from(signature),
-        Buffer.from(expectedSignature)
-      );
+      const sigBuf = Buffer.from(signature || '', 'hex');
+      const expBuf = Buffer.from(expectedSignature, 'hex');
+      if (sigBuf.length !== expBuf.length) return false;
+      return crypto.timingSafeEqual(sigBuf, expBuf);
     } catch (error) {
       console.error('Webhook signature verification error:', error);
       return false;

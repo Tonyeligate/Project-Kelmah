@@ -29,9 +29,16 @@ enum class JobsFeed {
 enum class RecommendationFeedState {
     IDLE,
     PERSONALIZED,
+    PROFILE_INCOMPLETE,
     FALLBACK,
     FAILED,
 }
+
+data class RecommendationFeed(
+    val jobs: List<JobSummary>,
+    val state: RecommendationFeedState,
+    val contextMessage: String? = null,
+)
 
 data class JobsPage(
     val jobs: List<JobSummary>,

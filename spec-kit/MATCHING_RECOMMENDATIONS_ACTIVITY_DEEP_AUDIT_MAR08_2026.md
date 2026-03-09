@@ -49,6 +49,20 @@
 - Published a verified route-by-route frontend ticket matrix:
 	- `spec-kit/ROUTE_UI_DEFECT_MATRIX_MAR09_2026.md`
 
+### March 9, 2026 Final Frontend Ticket Closure
+- Finished the remaining route-matrix UX defects without reload fallbacks:
+	- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+		- replaced reload-based retry paths with local retry handlers,
+		- stabilized submitted-search vs debounced-search behavior,
+		- aligned active-filter UI with the applied query.
+	- `kelmah-frontend/src/modules/worker/pages/JobSearchPage.jsx`
+		- rehydrated `search`, `category`, and `location` from URL params and kept location sync bidirectional.
+	- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+		- replaced non-semantic sign-in text with an accessible button control.
+- Validation:
+	- `get_errors`: no diagnostics on the edited files.
+	- `npm run build` in `kelmah-frontend`: passed.
+
 
 ## Scope
 - Job match scoring and worker match ranking

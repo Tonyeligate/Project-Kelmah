@@ -217,8 +217,26 @@ const getGatewayUser = (req) => {
   return null;
 };
 
+/**
+ * Role-based authorization middleware
+ * Works with gateway-authenticated requests to enforce role checks
+ */
+const authorize = (allowedRoles = []) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Authentication required' });
+    }
+    const userRole = req.user.role || req.user.userType;
+    if (allowedRoles.length && !allowedRoles.includes(userRole)) {
+      return res.status(403).json({ success: false, message: 'Insufficient permissions' });
+    }
+    next();
+  };
+};
+
 module.exports = {
   verifyGatewayRequest,
   optionalGatewayVerification,
-  getGatewayUser
+  getGatewayUser,
+  authorize
 };

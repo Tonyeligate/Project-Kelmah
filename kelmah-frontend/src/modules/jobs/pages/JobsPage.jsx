@@ -431,6 +431,7 @@ class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false };
+    this.handleRetry = this.handleRetry.bind(this);
   }
 
   static getDerivedStateFromError() {
@@ -439,6 +440,14 @@ class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     if (import.meta.env.DEV) console.error('JobsPage Error:', error, errorInfo);
+  }
+
+  handleRetry() {
+    this.setState({ hasError: false }, () => {
+      if (typeof this.props.onRetry === 'function') {
+        this.props.onRetry();
+      }
+    });
   }
 
   render() {
@@ -454,10 +463,10 @@ class ErrorBoundary extends React.Component {
             </Typography>
             <Button
               variant="contained"
-              onClick={() => window.location.reload()}
+              onClick={this.handleRetry}
               sx={{ bgcolor: 'var(--k-gold)', color: 'var(--k-text-on-accent)' }}
             >
-              Refresh Page
+              Try Again
             </Button>
           </Box>
         )
@@ -485,6 +494,7 @@ const JobsPage = () => {
     : {};
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 350);
+  const [submittedSearch, setSubmittedSearch] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [budgetRange, setBudgetRange] = useState([0, 100000]);
@@ -610,13 +620,18 @@ const JobsPage = () => {
     setQuickFilters((prev) => ({ ...prev, [key]: !prev[key] }));
   }, []);
 
+  const effectiveSearch = submittedSearch !== null && searchQuery !== debouncedSearch
+    ? submittedSearch
+    : debouncedSearch;
+
   const hasActiveFilters = Boolean(
-    debouncedSearch || selectedCategory || selectedLocation || budgetFilterActive ||
+    effectiveSearch || selectedCategory || selectedLocation || budgetFilterActive ||
     quickFilters.urgent || quickFilters.verified || quickFilters.fullTime || quickFilters.contract
   );
 
   const clearAllFilters = useCallback(() => {
     setSearchQuery('');
+    setSubmittedSearch(null);
     setSelectedCategory('');
     setSelectedLocation('');
     setBudgetRange([0, 100000]);
@@ -674,20 +689,26 @@ const JobsPage = () => {
   // Reset page to 1 when any filter changes
   const prevFiltersRef = useRef('');
   useEffect(() => {
-    const filterKey = JSON.stringify({ debouncedSearch, selectedCategory, selectedLocation, debouncedBudgetRange, sortBy, quickFilters });
+    const filterKey = JSON.stringify({ effectiveSearch, selectedCategory, selectedLocation, debouncedBudgetRange, sortBy, quickFilters });
     if (prevFiltersRef.current && prevFiltersRef.current !== filterKey) {
       setPage(1);
     }
     prevFiltersRef.current = filterKey;
-  }, [debouncedSearch, selectedCategory, selectedLocation, debouncedBudgetRange, sortBy, quickFilters]);
+  }, [effectiveSearch, selectedCategory, selectedLocation, debouncedBudgetRange, sortBy, quickFilters]);
 
   const JOBS_PER_PAGE = 12;
+
+  useEffect(() => {
+    if (submittedSearch !== null && debouncedSearch === submittedSearch) {
+      setSubmittedSearch(null);
+    }
+  }, [debouncedSearch, submittedSearch]);
 
   const jobsQueryFilters = useMemo(
     () => {
       const params = {
         status: 'open',
-        search: debouncedSearch || undefined,
+        search: effectiveSearch || undefined,
         category: selectedCategory || undefined,
         location: selectedLocation || undefined,
         sort: sortBy !== 'relevance' ? sortBy : undefined,
@@ -706,7 +727,7 @@ const JobsPage = () => {
       if (quickFilters.contract) params.paymentType = 'fixed';
       return params;
     },
-    [debouncedSearch, selectedCategory, selectedLocation, debouncedBudgetRange, sortBy, quickFilters, page],
+    [effectiveSearch, selectedCategory, selectedLocation, debouncedBudgetRange, sortBy, quickFilters, page],
   );
 
   const {
@@ -716,6 +737,28 @@ const JobsPage = () => {
     error: jobsQueryError,
     refetch: refetchJobs,
   } = useJobsQuery(jobsQueryFilters, { keepPreviousData: true });
+
+  const retryJobsFetch = useCallback(async () => {
+    setError(null);
+    if (page !== 1) {
+      setPage(1);
+      return;
+    }
+    await refetchJobs();
+  }, [page, refetchJobs]);
+
+  const handleSearchSubmit = useCallback(async () => {
+    const nextSearch = searchQuery.trim();
+    setSubmittedSearch(nextSearch);
+    setError(null);
+    if (page !== 1) {
+      setPage(1);
+      return;
+    }
+    if (nextSearch === effectiveSearch) {
+      await refetchJobs();
+    }
+  }, [searchQuery, page, effectiveSearch, refetchJobs]);
 
   // Infinite scroll: auto-load next page when sentinel enters viewport (mobile)
   useEffect(() => {
@@ -843,7 +886,7 @@ const JobsPage = () => {
 
   return (
     <ErrorBoundary>
-      <PullToRefresh onRefresh={async () => { setPage(1); await refetchJobs(); }}>
+      <PullToRefresh onRefresh={retryJobsFetch}>
       <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', color: 'text.primary' }}>
         {/* Breadcrumb Navigation */}
         <BreadcrumbNavigation />
@@ -933,7 +976,7 @@ const JobsPage = () => {
                       <JobsCompactSearchBar
                         searchValue={searchQuery}
                         onSearchChange={setSearchQuery}
-                        onSearchSubmit={() => {}}
+                        onSearchSubmit={handleSearchSubmit}
                         onFilterClick={() => setMobileFilterOpen(true)}
                         placeholder={isSmallMobile ? 'Search jobs...' : 'Search jobs, skills...'}
                       />
@@ -942,12 +985,14 @@ const JobsPage = () => {
                         onClose={() => setMobileFilterOpen(false)}
                         onApply={(filters) => {
                           if (filters.search !== undefined) setSearchQuery(filters.search);
+                          if (filters.search !== undefined) setSubmittedSearch(filters.search.trim());
                           if (filters.category !== undefined) setSelectedCategory(filters.category);
                           if (filters.location !== undefined) setSelectedLocation(filters.location);
                           if (filters.salaryRange) {
                             setBudgetRange(filters.salaryRange);
                             setBudgetFilterActive(true);
                           }
+                          setPage(1);
                           setMobileFilterOpen(false);
                         }}
                         initialFilters={{
@@ -990,7 +1035,7 @@ const JobsPage = () => {
                           onChange={(e) => setSearchQuery(e.target.value)}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                              // Search is already triggered by state change
+                              handleSearchSubmit();
                             }
                           }}
                           placeholder={
@@ -1186,10 +1231,7 @@ const JobsPage = () => {
                             size="medium"
                             startIcon={isJobsFetching ? <CircularProgress size={16} sx={{ color: 'black' }} /> : <SearchIcon />}
                             disabled={isJobsFetching}
-                            onClick={() => {
-                              setPage(1);
-                              refetchJobs();
-                            }}
+                            onClick={handleSearchSubmit}
                             sx={{
                               bgcolor: 'var(--k-gold)',
                               color: 'var(--k-text-on-accent)',
@@ -1243,7 +1285,7 @@ const JobsPage = () => {
                         {showFilters ? 'Hide' : 'Show'} Filters
                         {hasActiveFilters && (
                           <Badge 
-                            badgeContent={[debouncedSearch, selectedCategory, selectedLocation, budgetFilterActive, quickFilters.urgent, quickFilters.verified, quickFilters.fullTime, quickFilters.contract].filter(Boolean).length}
+                            badgeContent={[effectiveSearch, selectedCategory, selectedLocation, budgetFilterActive, quickFilters.urgent, quickFilters.verified, quickFilters.fullTime, quickFilters.contract].filter(Boolean).length}
                             sx={{ ml: 1, '& .MuiBadge-badge': { bgcolor: 'var(--k-gold)', color: 'var(--k-text-on-accent)', fontSize: '0.65rem', minWidth: 16, height: 16 } }}
                           />
                         )}
@@ -1588,11 +1630,14 @@ const JobsPage = () => {
                     >
                       Active filters:
                     </Typography>
-                    {searchQuery && (
+                    {effectiveSearch && (
                       <Chip
-                        label={`Search: "${searchQuery}"`}
+                        label={`Search: "${effectiveSearch}"`}
                         size="small"
-                        onDelete={() => setSearchQuery('')}
+                        onDelete={() => {
+                          setSearchQuery('');
+                          setSubmittedSearch(null);
+                        }}
                         sx={{
                           bgcolor: 'var(--k-accent-soft-strong)',
                           color: 'var(--k-gold)',
@@ -1806,7 +1851,7 @@ const JobsPage = () => {
                   </Typography>
                   <Button
                     variant="contained"
-                    onClick={() => window.location.reload()}
+                    onClick={retryJobsFetch}
                     sx={{
                       bgcolor: 'var(--k-gold)',
                       color: 'var(--k-text-on-accent)',
@@ -1845,7 +1890,7 @@ const JobsPage = () => {
                     variant="body1"
                     sx={{ color: 'text.secondary', mb: 3 }}
                   >
-                    {searchQuery || selectedCategory || selectedLocation
+                    {effectiveSearch || selectedCategory || selectedLocation
                       ? "We couldn't find any jobs matching your filters. Clear a filter or widen your search to see more work."
                       : 'No jobs are currently available. Check back soon for new opportunities!'}
                   </Typography>
@@ -1857,14 +1902,10 @@ const JobsPage = () => {
                       flexWrap: 'wrap',
                     }}
                   >
-                    {(searchQuery || selectedCategory || selectedLocation) && (
+                    {(effectiveSearch || selectedCategory || selectedLocation) && (
                       <Button
                         variant="contained"
-                        onClick={() => {
-                          setSearchQuery('');
-                          setSelectedCategory('');
-                          setSelectedLocation('');
-                        }}
+                        onClick={clearAllFilters}
                         sx={{
                           bgcolor: 'var(--k-gold)',
                           color: 'var(--k-text-on-accent)',
@@ -1877,10 +1918,7 @@ const JobsPage = () => {
                     )}
                     <Button
                       variant="outlined"
-                      onClick={async () => {
-                        setPage(1);
-                        await refetchJobs();
-                      }}
+                      onClick={retryJobsFetch}
                       sx={{
                         borderColor: 'var(--k-gold)',
                         color: 'var(--k-gold)',

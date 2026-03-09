@@ -1,3 +1,5 @@
+import java.net.URI
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -8,9 +10,13 @@ plugins {
 
 val gatewayOrigin = providers.gradleProperty("KELMAH_GATEWAY_ORIGIN")
     .orElse(providers.environmentVariable("KELMAH_GATEWAY_ORIGIN"))
-    .orElse("https://kelmah-api-gateway-qmd7.onrender.com")
+    .orElse("https://kelmah-api-gateway-gf3g.onrender.com")
     .get()
     .trimEnd('/')
+
+val gatewayHost = runCatching { URI(gatewayOrigin).host }
+    .getOrNull()
+    .orEmpty()
 
 android {
     namespace = "com.kelmah.mobile"
@@ -25,6 +31,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "GATEWAY_ORIGIN", "\"$gatewayOrigin\"")
+        manifestPlaceholders["kelmahGatewayHost"] = gatewayHost
         vectorDrawables {
             useSupportLibrary = true
         }

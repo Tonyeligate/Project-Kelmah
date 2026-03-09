@@ -206,7 +206,7 @@ export const NotificationProvider = ({ children }) => {
     };
   }, [fetchNotifications, userId]); // ⚠️ CRITICAL: Depend on userId, not user object
 
-  const markAsRead = async (id) => {
+  const markAsRead = useCallback(async (id) => {
     try {
       await notificationServiceUser.markAsRead(id);
       setNotifications((prev) =>
@@ -228,9 +228,9 @@ export const NotificationProvider = ({ children }) => {
       if (import.meta.env.DEV) console.error('Failed to mark notification as read:', err);
       setError('Failed to update notification status.');
     }
-  };
+  }, []);
 
-  const markAllAsRead = async () => {
+  const markAllAsRead = useCallback(async () => {
     try {
       await notificationServiceUser.markAllAsRead();
       setNotifications((prev) =>
@@ -248,9 +248,9 @@ export const NotificationProvider = ({ children }) => {
       if (import.meta.env.DEV) console.error('Failed to mark all notifications as read:', err);
       setError('Failed to update notifications.');
     }
-  };
+  }, []);
 
-  const deleteNotification = async (id) => {
+  const deleteNotification = useCallback(async (id) => {
     try {
       await notificationServiceUser.deleteNotification(id);
       setNotifications((prev) =>
@@ -260,9 +260,9 @@ export const NotificationProvider = ({ children }) => {
       if (import.meta.env.DEV) console.error('Failed to delete notification:', err);
       setError('Failed to delete notification.');
     }
-  };
+  }, []);
 
-  const clearAllNotifications = async () => {
+  const clearAllNotifications = useCallback(async () => {
     try {
       await notificationServiceUser.clearAllNotifications();
       setNotifications([]);
@@ -270,7 +270,7 @@ export const NotificationProvider = ({ children }) => {
       if (import.meta.env.DEV) console.error('Failed to clear notifications:', err);
       setError('Failed to clear notifications.');
     }
-  };
+  }, []);
 
   const showToast = useCallback((message, severity = 'info') => {
     setToast({ open: true, message, severity });

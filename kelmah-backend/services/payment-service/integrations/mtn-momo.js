@@ -15,7 +15,11 @@ class MTNMoMoService {
     this.subscriptionKey = process.env.MTN_SUBSCRIPTION_KEY;
     this.apiUserId = process.env.MTN_API_USER_ID;
     this.apiKey = process.env.MTN_API_KEY;
-    this.callbackHost = process.env.CALLBACK_HOST || 'https://webhook.site/unique-id';
+    this.callbackHost = process.env.CALLBACK_HOST;
+    if (!this.callbackHost && process.env.NODE_ENV === 'production') {
+      throw new Error('MTN_MOMO: CALLBACK_HOST environment variable is required in production');
+    }
+    this.callbackHost = this.callbackHost || 'http://localhost:3000';
     
     // Collection API credentials
     this.collectionApiUserId = process.env.MTN_COLLECTION_API_USER_ID;
@@ -515,10 +519,44 @@ class MTNMoMoService {
   }
 
   /**
+   * Verify webhook signature from MTN MoMo
+   */
+  verifyWebhookSignature(payload, signature) {
+    try {
+      const webhookSecret = process.env.MTN_WEBHOOK_SECRET;
+      if (!webhookSecret) {
+        console.error('SECURITY: MTN MoMo webhook secret not configured — rejecting webhook');
+        return false;
+      }
+
+      const expectedSignature = crypto
+        .createHmac('sha256', webhookSecret)
+        .update(typeof payload === 'string' ? payload : JSON.stringify(payload))
+        .digest('hex');
+
+      return crypto.timingSafeEqual(
+        Buffer.from(signature || '', 'hex'),
+        Buffer.from(expectedSignature, 'hex')
+      );
+    } catch (error) {
+      console.error('MTN webhook signature verification error:', error.message);
+      return false;
+    }
+  }
+
+  /**
    * Process webhook notification
    */
-  processWebhook(webhookData) {
+  processWebhook(webhookData, signature) {
     try {
+      // Verify signature before processing
+      if (!this.verifyWebhookSignature(webhookData, signature)) {
+        return {
+          success: false,
+          error: 'Invalid webhook signature'
+        };
+      }
+
       return {
         success: true,
         data: {

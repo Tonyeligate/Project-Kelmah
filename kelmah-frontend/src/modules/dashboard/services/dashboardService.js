@@ -102,6 +102,8 @@ class DashboardService {
     if (!this.listeners[event]) {
       this.listeners[event] = [];
     }
+    // Guard against duplicate listeners to prevent memory leaks
+    if (this.listeners[event].includes(callback)) return;
     this.listeners[event].push(callback);
   }
 
@@ -373,9 +375,15 @@ class DashboardService {
   // Get job matches for workers
   async getJobMatches() {
     try {
-      const response = await api.get('/jobs/recommendations');
+      const response = await api.get('/jobs/recommendations/personalized');
       return response.data?.data || response.data || [];
     } catch (error) {
+      try {
+        const fallback = await api.get('/jobs/recommendations');
+        return fallback.data?.data || fallback.data || [];
+      } catch (_) {
+        // Fall through to the stable empty payload below.
+      }
       if (import.meta.env.DEV) console.error('Error fetching job matches:', error);
       return [];
     }
@@ -384,9 +392,15 @@ class DashboardService {
   // Get personalized recommendations
   async getRecommendations() {
     try {
-      const response = await api.get('/jobs/recommendations');
+      const response = await api.get('/jobs/recommendations/personalized');
       return response.data?.data || response.data || [];
     } catch (error) {
+      try {
+        const fallback = await api.get('/jobs/recommendations');
+        return fallback.data?.data || fallback.data || [];
+      } catch (_) {
+        // Fall through to the stable empty payload below.
+      }
       if (import.meta.env.DEV) console.error('Error fetching recommendations:', error);
       return [];
     }

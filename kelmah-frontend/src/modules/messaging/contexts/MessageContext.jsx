@@ -261,6 +261,7 @@ export const MessageProvider = ({ children }) => {
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [sendError, setSendError] = useState(null);
 
   useEffect(() => {
     selectedConversationRef.current = selectedConversation;
@@ -982,6 +983,7 @@ export const MessageProvider = ({ children }) => {
         }
       } catch (error) {
         if (import.meta.env.DEV) console.error('Error sending message:', error);
+        setSendError(error?.message || 'Failed to send message. Please try again.');
       } finally {
         setSendingMessage(false);
       }
@@ -1120,6 +1122,7 @@ export const MessageProvider = ({ children }) => {
     loadingConversations,
     loadingMessages,
     sendingMessage,
+    sendError,
     unreadCount,
 
     // Core messaging actions

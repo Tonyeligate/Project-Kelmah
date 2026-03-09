@@ -7,6 +7,7 @@ import com.kelmah.mobile.core.storage.TokenManager
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.delay
+import retrofit2.HttpException
 
 @Singleton
 class AuthRepository @Inject constructor(
@@ -171,7 +172,11 @@ class AuthRepository @Inject constructor(
     ): ApiResult<T> {
         var currentDelay = baseDelayMs
         repeat(maxRetries) { attempt ->
-            val result = runCatching { block() }.getOrElse { error ->
+            val result = try {
+                block()
+            } catch (error: HttpException) {
+                ApiResult.Error(message = error.message ?: "Request failed", code = error.code())
+            } catch (error: Exception) {
                 ApiResult.Error(message = error.message ?: "Request failed")
             }
 

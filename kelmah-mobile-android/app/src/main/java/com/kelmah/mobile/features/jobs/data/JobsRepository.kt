@@ -36,14 +36,38 @@ class JobsRepository @Inject constructor(
         ApiResult.Success(parseJobsPage(response))
     }
 
-    suspend fun getRecommendedJobs(limit: Int = 6): ApiResult<List<JobSummary>> = executeAuthorized {
+    suspend fun getRecommendedJobs(limit: Int = 6): ApiResult<RecommendationFeed> = executeAuthorized {
         val response = jobsApiService.getRecommendedJobs(
             mapOf(
                 "page" to "1",
                 "limit" to limit.toString(),
             ),
         )
-        ApiResult.Success(parseJobsPage(response, strictJobQuality = true).jobs)
+        val personalizedJobs = parseJobsPage(response, strictJobQuality = true).jobs
+        val recommendationSource = response.nestedObject("meta")?.string("recommendationSource")
+        val isProfileIncomplete = recommendationSource.equals("profile-incomplete", ignoreCase = true) ||
+            (response.nestedObject("data")?.bool("isNewUser") == true && personalizedJobs.isEmpty())
+
+        if (isProfileIncomplete) {
+            val generalRecommendations = fetchGeneralRecommendations(limit)
+            ApiResult.Success(
+                RecommendationFeed(
+                    jobs = generalRecommendations,
+                    state = RecommendationFeedState.PROFILE_INCOMPLETE,
+                    contextMessage = buildProfileIncompleteMessage(
+                        serverMessage = response.string("message"),
+                        hasGeneralRecommendations = generalRecommendations.isNotEmpty(),
+                    ),
+                ),
+            )
+        } else {
+            ApiResult.Success(
+                RecommendationFeed(
+                    jobs = personalizedJobs,
+                    state = RecommendationFeedState.PERSONALIZED,
+                ),
+            )
+        }
     }
 
     suspend fun getMyJobs(limit: Int = 6): ApiResult<List<JobSummary>> = executeAuthorized {
@@ -307,6 +331,30 @@ class JobsRepository @Inject constructor(
             .orEmpty()
 
         return reasons.firstOrNull()
+    }
+
+    private suspend fun fetchGeneralRecommendations(limit: Int): List<JobSummary> {
+        return try {
+            val response = jobsApiService.getGeneralRecommendations(
+                mapOf(
+                    "page" to "1",
+                    "limit" to limit.toString(),
+                ),
+            )
+            parseJobsPage(response, strictJobQuality = true).jobs
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    private fun buildProfileIncompleteMessage(serverMessage: String?, hasGeneralRecommendations: Boolean): String {
+        val baseMessage = serverMessage?.takeIf { it.isNotBlank() }
+            ?: "Complete your profile to unlock personalized job matches."
+        return if (hasGeneralRecommendations) {
+            "$baseMessage Showing general recommendations while you complete your profile."
+        } else {
+            baseMessage
+        }
     }
 }
 

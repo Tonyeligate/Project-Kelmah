@@ -41,6 +41,8 @@ import com.kelmah.mobile.features.notifications.presentation.NotificationsViewMo
 fun KelmahApp(
     tokenManager: TokenManager,
     sessionCoordinator: SessionCoordinator,
+    pendingDeepLinkUrl: String?,
+    onDeepLinkConsumed: (String) -> Unit,
 ) {
     KelmahTheme {
         val sessionState by sessionCoordinator.sessionState.collectAsStateWithLifecycle()
@@ -163,6 +165,8 @@ fun KelmahApp(
                 KelmahNavHost(
                     navController = navController,
                     currentUser = currentUser,
+                    pendingDeepLinkUrl = pendingDeepLinkUrl,
+                    onDeepLinkConsumed = onDeepLinkConsumed,
                     jobsViewModel = jobsViewModel,
                     messagesViewModel = messagesViewModel,
                     notificationsViewModel = notificationsViewModel,

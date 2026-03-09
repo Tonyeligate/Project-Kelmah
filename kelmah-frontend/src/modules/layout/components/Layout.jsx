@@ -45,9 +45,17 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   // ✅ MOBILE-AUDIT FIX: Use MUI breakpoint instead of custom query to avoid 769-899px dead zone
   const isMobile = !isMdUp;
+  const currentPath = location.pathname || '';
+  const isAuthPage =
+    currentPath === '/login' ||
+    currentPath === '/register' ||
+    currentPath === '/forgot-password' ||
+    currentPath === '/role-selection' ||
+    currentPath === '/mfa/setup' ||
+    currentPath.startsWith('/reset-password') ||
+    currentPath.startsWith('/verify-email');
   // 🎯 ENHANCED: Comprehensive dashboard page detection
   // FIX: Added missing paths that should render with dashboard sidebar layout
-  const currentPath = location.pathname || '';
   const isMessagesPage =
     currentPath === '/messages' || currentPath.startsWith('/messages');
   const isPublicWorkerProfile = currentPath.startsWith('/worker-profile');
@@ -205,11 +213,13 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
         overflowY: 'visible', // Let body handle vertical scrolling
       }}
     >
-      <Header
-        toggleTheme={resolvedToggleTheme}
-        mode={resolvedMode}
-        setThemeMode={resolvedSetThemeMode}
-      />
+      {!isAuthPage && (
+        <Header
+          toggleTheme={resolvedToggleTheme}
+          mode={resolvedMode}
+          setThemeMode={resolvedSetThemeMode}
+        />
+      )}
       <Fade in timeout={500}>
         <Box
           component="main"
@@ -218,15 +228,17 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             minWidth: 0,
             // Fixed header on mobile (48px) needs padding-top so content isn't hidden
             // Desktop header is static so no compensation needed (except standard spacing)
-            pt: isHomePage
+            pt: isAuthPage
+              ? 0
+              : isHomePage
               ? 0
               : {
                   xs: `calc(${HEADER_HEIGHT_MOBILE}px + env(safe-area-inset-top, 0px) + 12px)`,
                   sm: `calc(${HEADER_HEIGHT_MOBILE}px + 16px)`,
                   md: 3,
                 },
-            pb: isHomePage ? 0 : { xs: 2, sm: 2.5, md: 3 },
-            px: isHomePage ? 0 : { xs: 1, sm: 2, md: 3 },
+            pb: isAuthPage ? 0 : isHomePage ? 0 : { xs: 2, sm: 2.5, md: 3 },
+            px: isAuthPage ? 0 : isHomePage ? 0 : { xs: 1, sm: 2, md: 3 },
             overflowX: 'hidden',
             overflowY: 'visible',
             '@media (min-width: 1px)': {
@@ -239,7 +251,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
         </Box>
       </Fade>
       {/* Footer hidden on mobile — bottom nav replaces it (Binance pattern) */}
-      {!isMobile && <Footer />}
+      {!isMobile && !isAuthPage && <Footer />}
     </Box>
   );
 };

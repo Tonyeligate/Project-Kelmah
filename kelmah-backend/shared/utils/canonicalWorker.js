@@ -41,19 +41,34 @@ const normalizeSkillNames = (skills = []) => uniqStrings(
   }),
 );
 
+const buildCanonicalProfession = (userDoc = {}, workerProfileDoc = {}) =>
+  toSafeString(workerProfileDoc.profession, '').trim() ||
+  toSafeString(workerProfileDoc.title, '').trim() ||
+  toSafeString(workerProfileDoc.headline, '').trim() ||
+  toSafeString(userDoc.profession, '').trim() ||
+  '';
+
 const buildCanonicalWorkerSnapshot = (userDoc = {}, workerProfileDoc = {}) => {
   const firstName = toSafeString(userDoc.firstName, '').trim();
   const lastName = toSafeString(userDoc.lastName, '').trim();
-  const mergedSkills = uniqStrings([
-    ...normalizeSkillNames(userDoc.skills || []),
+  const workerOwnedSkills = uniqStrings([
     ...normalizeSkillNames(workerProfileDoc.skills || []),
     ...normalizeSkillNames((workerProfileDoc.skillEntries || []).map((entry) => entry?.name || entry)),
   ]);
+  const fallbackUserSkills = normalizeSkillNames(userDoc.skills || []);
+  const mergedSkills = workerOwnedSkills.length > 0
+    ? workerOwnedSkills
+    : uniqStrings(fallbackUserSkills);
 
-  const mergedSpecializations = uniqStrings([
-    ...(Array.isArray(userDoc.specializations) ? userDoc.specializations : []),
-    ...(Array.isArray(workerProfileDoc.specializations) ? workerProfileDoc.specializations : []),
-  ]);
+  const workerOwnedSpecializations = uniqStrings(
+    Array.isArray(workerProfileDoc.specializations) ? workerProfileDoc.specializations : [],
+  );
+  const fallbackUserSpecializations = uniqStrings(
+    Array.isArray(userDoc.specializations) ? userDoc.specializations : [],
+  );
+  const mergedSpecializations = workerOwnedSpecializations.length > 0
+    ? workerOwnedSpecializations
+    : fallbackUserSpecializations;
 
   const canonical = {
     id: userDoc._id?.toString?.() || userDoc.id || workerProfileDoc.userId?.toString?.() || null,
@@ -64,8 +79,7 @@ const buildCanonicalWorkerSnapshot = (userDoc = {}, workerProfileDoc = {}) => {
     role: userDoc.role || 'worker',
     isActive: userDoc.isActive !== false,
     profession:
-      toSafeString(userDoc.profession, '').trim() ||
-      toSafeString(workerProfileDoc.profession, '').trim() ||
+      buildCanonicalProfession(userDoc, workerProfileDoc) ||
       mergedSpecializations[0] ||
       mergedSkills[0] ||
       'General Worker',
@@ -114,7 +128,55 @@ const buildCanonicalWorkerSnapshot = (userDoc = {}, workerProfileDoc = {}) => {
   return canonical;
 };
 
+const buildCanonicalWorkerProfileSummary = (userDoc = {}, workerProfileDoc = {}) => {
+  if ((userDoc.role || 'worker') !== 'worker') {
+    return null;
+  }
+
+  const worker = buildCanonicalWorkerSnapshot(userDoc, workerProfileDoc);
+
+  return {
+    profession: worker.profession || null,
+    location: worker.location || null,
+    hourlyRate: Number.isFinite(worker.hourlyRate) ? worker.hourlyRate : null,
+    currency: worker.currency || 'GHS',
+    yearsOfExperience: Number.isFinite(worker.yearsOfExperience)
+      ? worker.yearsOfExperience
+      : null,
+    skills: Array.isArray(worker.skills) ? worker.skills : [],
+    specializations: Array.isArray(worker.specializations)
+      ? worker.specializations
+      : [],
+    availabilityStatus: worker.availabilityStatus || null,
+    isVerified: Boolean(worker.isVerified),
+    profileCompleteness: Number.isFinite(workerProfileDoc?.profileCompleteness)
+      ? workerProfileDoc.profileCompleteness
+      : null,
+  };
+};
+
+const buildAuthSessionUser = (userDoc = {}, workerProfileDoc = {}) => ({
+  id: userDoc._id?.toString?.() || userDoc.id || null,
+  _id: userDoc._id?.toString?.() || userDoc.id || null,
+  email: userDoc.email || null,
+  firstName: userDoc.firstName || '',
+  lastName: userDoc.lastName || '',
+  phone: userDoc.phone || '',
+  role: userDoc.role || 'worker',
+  isEmailVerified: Boolean(userDoc.isEmailVerified),
+  isPhoneVerified: Boolean(userDoc.isPhoneVerified),
+  isActive: userDoc.isActive !== false,
+  profilePicture: workerProfileDoc.profilePicture || userDoc.profilePicture || null,
+  lastLogin: userDoc.lastLogin || null,
+  createdAt: userDoc.createdAt || null,
+  updatedAt: workerProfileDoc.updatedAt || userDoc.updatedAt || null,
+  workerProfileSummary: buildCanonicalWorkerProfileSummary(userDoc, workerProfileDoc),
+});
+
 module.exports = {
+  buildAuthSessionUser,
+  buildCanonicalProfession,
+  buildCanonicalWorkerProfileSummary,
   buildCanonicalWorkerSnapshot,
   normalizeSkillNames,
 };

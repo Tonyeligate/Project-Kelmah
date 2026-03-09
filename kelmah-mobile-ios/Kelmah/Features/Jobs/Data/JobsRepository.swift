@@ -19,7 +19,7 @@ final class JobsRepository {
         return parseJobsPage(response, forcedSaved: false)
     }
 
-    func getRecommendedJobs(limit: Int = 6) async throws -> [JobSummary] {
+    func getRecommendedJobs(limit: Int = 6) async throws -> RecommendationFeed {
         let response = try await apiClient.send(
             path: "jobs/recommendations/personalized",
             method: .get,
@@ -30,7 +30,29 @@ final class JobsRepository {
             requiresAuth: true,
             responseType: JobsRawEnvelope.self
         )
-        return parseJobsPage(response, forcedSaved: false, strictJobQuality: true).jobs
+        let personalizedPage = parseJobsPage(response, forcedSaved: false, strictJobQuality: true)
+        let recommendationSource = response.meta?.objectValue?["recommendationSource"]?.stringValue
+            ?? response.data?.objectValue?["recommendationSource"]?.stringValue
+        let isNewUser = response.data?.objectValue?["isNewUser"]?.boolValue ?? false
+        let isProfileIncomplete = recommendationSource == "profile-incomplete" || (isNewUser && personalizedPage.jobs.isEmpty)
+
+        if isProfileIncomplete {
+            let generalRecommendations = await fetchGeneralRecommendations(limit: limit)
+            return RecommendationFeed(
+                jobs: generalRecommendations,
+                state: .profileIncomplete,
+                contextMessage: buildProfileIncompleteMessage(
+                    serverMessage: response.message,
+                    hasGeneralRecommendations: generalRecommendations.isEmpty == false
+                )
+            )
+        }
+
+        return RecommendationFeed(
+            jobs: personalizedPage.jobs,
+            state: .personalized,
+            contextMessage: nil
+        )
     }
 
     func getMyJobs(limit: Int = 6) async throws -> [JobSummary] {
@@ -277,6 +299,33 @@ final class JobsRepository {
         return object["aiReasons"]?.arrayValue?
             .compactMap { $0.stringValue?.trimmingCharacters(in: .whitespacesAndNewlines) }
             .first(where: { $0.isEmpty == false })
+    }
+
+    private func fetchGeneralRecommendations(limit: Int) async -> [JobSummary] {
+        do {
+            let response = try await apiClient.send(
+                path: "jobs/recommendations",
+                method: .get,
+                queryItems: [
+                    URLQueryItem(name: "page", value: "1"),
+                    URLQueryItem(name: "limit", value: String(limit)),
+                ],
+                requiresAuth: true,
+                responseType: JobsRawEnvelope.self
+            )
+            return parseJobsPage(response, forcedSaved: false, strictJobQuality: true).jobs
+        } catch {
+            return []
+        }
+    }
+
+    private func buildProfileIncompleteMessage(serverMessage: String?, hasGeneralRecommendations: Bool) -> String {
+        let baseMessage = serverMessage?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
+            ?? "Complete your profile to unlock personalized job matches."
+        if hasGeneralRecommendations {
+            return "\(baseMessage) Showing general recommendations while you complete your profile."
+        }
+        return baseMessage
     }
 }
 

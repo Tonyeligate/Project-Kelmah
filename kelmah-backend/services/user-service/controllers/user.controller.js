@@ -5,6 +5,7 @@ const { Bookmark, Availability, Certificate, Job, Application, Portfolio, Activi
 const { ensureConnection, mongoose: connectionInstance } = require('../config/db');
 const { successResponse, errorResponse, paginatedResponse } = require('../utils/response');
 const { logger } = require('../utils/logger');
+const { buildCanonicalWorkerSnapshot } = require('../../../shared/utils/canonicalWorker');
 const mongooseInstance = connectionInstance || require('mongoose');
 const { Types } = mongooseInstance;
 
@@ -78,6 +79,8 @@ const buildEarningsFallback = (total, overrides = {}) => {
 const formatProfilePayload = (userDoc, workerDoc) => {
   const userData = normalizeDocument(userDoc);
   const workerData = normalizeDocument(workerDoc);
+  const isWorker = (userData.role || 'worker') === 'worker';
+  const canonicalWorker = buildCanonicalWorkerSnapshot(userData, workerData);
 
   const profile = {
     id: userData._id?.toString() || userData.id || null,
@@ -86,28 +89,30 @@ const formatProfilePayload = (userDoc, workerDoc) => {
     email: userData.email || '',
     phone: userData.phone || '',
     role: userData.role || 'worker',
-    profilePicture: userData.profilePicture || workerData.profilePicture || null,
-    bio: workerData.bio ?? userData.bio ?? '',
-    location: workerData.location ?? userData.location ?? '',
+    profilePicture: isWorker ? canonicalWorker.profilePicture : userData.profilePicture || workerData.profilePicture || null,
+    bio: isWorker ? canonicalWorker.bio : workerData.bio ?? userData.bio ?? '',
+    location: isWorker ? canonicalWorker.location : workerData.location ?? userData.location ?? '',
     address: userData.address || '',
     city: userData.city || '',
     state: userData.state || '',
     country: userData.country || 'Ghana',
     countryCode: userData.countryCode || 'GH',
-    profession: workerData.profession ?? userData.profession ?? '',
-    hourlyRate: workerData.hourlyRate ?? userData.hourlyRate ?? null,
-    currency: workerData.currency ?? userData.currency ?? 'GHS',
+    profession: isWorker ? canonicalWorker.profession : workerData.profession ?? userData.profession ?? '',
+    hourlyRate: isWorker ? canonicalWorker.hourlyRate ?? null : workerData.hourlyRate ?? userData.hourlyRate ?? null,
+    currency: isWorker ? canonicalWorker.currency : workerData.currency ?? userData.currency ?? 'GHS',
     experienceLevel: workerData.experienceLevel ?? null,
-    yearsOfExperience: workerData.yearsOfExperience ?? userData.yearsOfExperience ?? null,
-    skills: Array.isArray(workerData.skills)
-      ? workerData.skills
-      : Array.isArray(userData.skills)
-        ? userData.skills
-        : [],
+    yearsOfExperience: isWorker ? canonicalWorker.yearsOfExperience ?? null : workerData.yearsOfExperience ?? userData.yearsOfExperience ?? null,
+    skills: isWorker
+      ? canonicalWorker.skills
+      : Array.isArray(workerData.skills)
+        ? workerData.skills
+        : Array.isArray(userData.skills)
+          ? userData.skills
+          : [],
     isEmailVerified: Boolean(userData.isEmailVerified),
     isPhoneVerified: Boolean(userData.isPhoneVerified),
     createdAt: userData.createdAt || null,
-    updatedAt: userData.updatedAt || null,
+    updatedAt: canonicalWorker.updatedAt || userData.updatedAt || null,
   };
 
   const meta = {
@@ -147,12 +152,19 @@ const WORKER_PROFILE_PROJECTION = {
   bio: 1,
   location: 1,
   profession: 1,
+  title: 1,
+  headline: 1,
   hourlyRate: 1,
   currency: 1,
   experienceLevel: 1,
   yearsOfExperience: 1,
   skills: 1,
+  skillEntries: 1,
+  specializations: 1,
   profilePicture: 1,
+  availabilityStatus: 1,
+  isVerified: 1,
+  profileCompleteness: 1,
   updatedAt: 1,
   createdAt: 1,
   userId: 1,
@@ -402,7 +414,10 @@ const buildAvailabilityPayload = (availabilityDoc) => {
 };
 
 const normalizeCredentialSkills = (workerProfile, userId) =>
-  (Array.isArray(workerProfile?.skills) ? workerProfile.skills : [])
+  ([
+    ...(Array.isArray(workerProfile?.skills) ? workerProfile.skills : []),
+    ...(Array.isArray(workerProfile?.skillEntries) ? workerProfile.skillEntries : []),
+  ])
     .filter(Boolean)
     .map((skill, index) => {
       if (typeof skill === 'string') {
