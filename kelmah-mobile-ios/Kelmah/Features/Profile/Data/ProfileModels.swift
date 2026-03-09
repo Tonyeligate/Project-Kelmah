@@ -6,6 +6,7 @@ struct WorkerProfileSnapshot: Hashable {
     let availability: WorkerAvailability
     let completeness: WorkerCompleteness
     let portfolio: WorkerPortfolio
+    let partialWarnings: [String]
 
     var visibleSkills: [String] {
         let credentialSkills = credentials.skills.map(\ .name)

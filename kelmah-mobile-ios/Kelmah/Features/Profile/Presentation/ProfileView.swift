@@ -261,6 +261,12 @@ private struct WorkerProfileSignalsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            if snapshot.partialWarnings.isEmpty == false {
+                Text(snapshot.partialWarnings.joined(separator: " "))
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+            }
+
             Text(snapshot.profile.profession.nilIfEmpty ?? "Profession pending")
                 .font(.title3.bold())
 

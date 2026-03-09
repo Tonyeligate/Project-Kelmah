@@ -30,7 +30,7 @@ final class JobsRepository {
             requiresAuth: true,
             responseType: JobsRawEnvelope.self
         )
-        return parseJobsPage(response, forcedSaved: false).jobs
+        return parseJobsPage(response, forcedSaved: false, strictJobQuality: true).jobs
     }
 
     func getMyJobs(limit: Int = 6) async throws -> [JobSummary] {
@@ -126,7 +126,7 @@ final class JobsRepository {
         return items
     }
 
-    private func parseJobsPage(_ response: JobsRawEnvelope, forcedSaved: Bool) -> JobsPage {
+    private func parseJobsPage(_ response: JobsRawEnvelope, forcedSaved: Bool, strictJobQuality: Bool = false) -> JobsPage {
         let dataArray = response.data?.arrayValue
         let dataObject = response.data?.objectValue
         let items = dataArray
@@ -138,7 +138,7 @@ final class JobsRepository {
         let metaPagination = response.meta?.objectValue?["pagination"]?.objectValue
 
         return JobsPage(
-            jobs: items.compactMap { parseJobSummary($0, forcedSaved: forcedSaved) },
+            jobs: items.compactMap { parseJobSummary($0, forcedSaved: forcedSaved, strictJobQuality: strictJobQuality) },
             page: pagination?["page"]?.intValue ?? metaPagination?["page"]?.intValue ?? 1,
             totalPages: pagination?["totalPages"]?.intValue ?? metaPagination?["totalPages"]?.intValue ?? 1,
             totalItems: pagination?["total"]?.intValue ?? metaPagination?["total"]?.intValue ?? items.count
@@ -161,7 +161,7 @@ final class JobsRepository {
         guard let object = response.data?.objectValue ?? response.data?.arrayValue?.first?.objectValue else {
             throw APIClientError.invalidStatusCode(500, "Job detail payload was invalid")
         }
-        guard let summary = parseJobSummary(.object(object), forcedSaved: object.bool("isSaved") ?? false) else {
+        guard let summary = parseJobSummary(.object(object), forcedSaved: object.bool("isSaved") ?? false, strictJobQuality: false) else {
             throw APIClientError.invalidStatusCode(500, "Job detail payload was invalid")
         }
 
@@ -179,9 +179,11 @@ final class JobsRepository {
         )
     }
 
-    private func parseJobSummary(_ value: JSONValue, forcedSaved: Bool) -> JobSummary? {
+    private func parseJobSummary(_ value: JSONValue, forcedSaved: Bool, strictJobQuality: Bool = false) -> JobSummary? {
         guard let object = value.objectValue else { return nil }
         guard let id = object.string("_id") ?? object.string("id") else { return nil }
+        let title = object.string("title")?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let description = object.string("description")?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
         let budgetObject = object["budget"]?.objectValue
         let employerObject = object["hirer"]?.objectValue
@@ -193,7 +195,10 @@ final class JobsRepository {
                 .nilIfEmpty
             ?? object.string("hirer_name")
             ?? object.string("company")
-            ?? "Employer Name Pending"
+
+        if strictJobQuality && (title.isEmpty || description.isEmpty || employerName?.isEmpty != false) {
+            return nil
+        }
 
         let paymentType = object.string("paymentType") ?? budgetObject?.string("type") ?? "fixed"
         let budgetAmount = object.double("budget") ?? budgetObject?.double("amount") ?? budgetObject?.double("max") ?? 0
@@ -201,21 +206,21 @@ final class JobsRepository {
 
         return JobSummary(
             id: id,
-            title: object.string("title") ?? "Untitled Job",
-            description: object.string("description") ?? "",
+            title: title.isEmpty ? "Untitled Job" : title,
+            description: description,
             category: object.string("category") ?? "General",
             locationLabel: locationLabel(from: object),
             budgetLabel: formatBudgetLabel(amount: budgetAmount, currency: currency, paymentType: paymentType),
             budgetAmount: budgetAmount,
             currency: currency,
             paymentType: paymentType,
-            employerName: employerName,
+            employerName: employerName ?? "Employer Name Pending",
             employerAvatar: employerObject?.string("avatar") ?? employerObject?.string("profileImage"),
             skills: skills(from: object),
             postedAt: object.string("createdAt") ?? object.string("created_at") ?? object.string("postedDate"),
             status: object.string("status"),
             proposalCount: object.int("proposalCount") ?? object.int("applicationsCount") ?? 0,
-            matchScore: object.int("matchScore") ?? object.double("matchScore").map(Int.init),
+            matchScore: object.double("matchScore") ?? object.int("matchScore").map(Double.init),
             aiReasoning: parseAIReasoning(from: object),
             isVerified: employerObject?.bool("verified") ?? employerObject?.bool("isVerified") ?? false,
             isUrgent: object.bool("urgent") ?? false,

@@ -79,6 +79,7 @@ final class NotificationsRepository {
                 priority: object.string("priority") ?? "medium",
                 isRead: object["readStatus"]?.objectValue?.bool("isRead") ?? object.bool("read") ?? false,
                 createdAt: object.string("createdAt"),
+                updatedAt: object.string("updatedAt"),
                 relatedEntityType: related?.string("type"),
                 relatedEntityId: related?.string("id") ?? related?.string("_id")
             )
@@ -90,7 +91,11 @@ func sortNotificationsByCreatedAt(_ items: [AppNotificationItem]) -> [AppNotific
     items.enumerated()
         .sorted { lhs, rhs in
             let leftDate = notificationSortDate(from: lhs.element.createdAt)
+                ?? notificationSortDate(from: lhs.element.updatedAt)
+                ?? notificationObjectIDDate(from: lhs.element.id)
             let rightDate = notificationSortDate(from: rhs.element.createdAt)
+                ?? notificationSortDate(from: rhs.element.updatedAt)
+                ?? notificationObjectIDDate(from: rhs.element.id)
 
             switch (leftDate, rightDate) {
             case let (left?, right?):
@@ -107,6 +112,13 @@ func sortNotificationsByCreatedAt(_ items: [AppNotificationItem]) -> [AppNotific
             }
         }
         .map(\.element)
+}
+
+private func notificationObjectIDDate(from id: String) -> Date? {
+    guard id.count >= 8 else { return nil }
+    let prefix = String(id.prefix(8))
+    guard let seconds = Int(prefix, radix: 16) else { return nil }
+    return Date(timeIntervalSince1970: TimeInterval(seconds))
 }
 
 private func notificationSortDate(from raw: String?) -> Date? {

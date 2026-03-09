@@ -151,9 +151,9 @@ final class MessagesViewModel: ObservableObject {
         infoMessage = nil
         do {
             let message = try await repository.sendMessage(conversationId: selectedConversation.id, content: trimmed)
-            messages = Array((messages + [message]).reduce(into: [String: MessageThreadItem]()) { result, item in
+            messages = sortMessagesChronologically(Array((messages + [message]).reduce(into: [String: MessageThreadItem]()) { result, item in
                 result[item.id] = item
-            }.values).sorted(by: { ($0.createdAt ?? "") < ($1.createdAt ?? "") })
+            }.values))
             let updatedConversation = MessageConversation(
                 id: selectedConversation.id,
                 title: selectedConversation.title,
@@ -164,9 +164,9 @@ final class MessagesViewModel: ObservableObject {
                 lastMessageAt: message.createdAt
             )
             self.selectedConversation = updatedConversation
-            conversations = conversations.map { conversation in
+            conversations = sortConversationsByActivity(conversations.map { conversation in
                 conversation.id == updatedConversation.id ? updatedConversation : conversation
-            }.sorted(by: { ($0.lastMessageAt ?? "") > ($1.lastMessageAt ?? "") })
+            })
             draftMessage = ""
         } catch {
             errorMessage = error.localizedDescription
@@ -200,4 +200,51 @@ final class MessagesViewModel: ObservableObject {
             break
         }
     }
+}
+
+private func sortMessagesChronologically(_ messages: [MessageThreadItem]) -> [MessageThreadItem] {
+    messages.sorted { lhs, rhs in
+        let leftDate = messageTimestamp(from: lhs.createdAt)
+        let rightDate = messageTimestamp(from: rhs.createdAt)
+
+        switch (leftDate, rightDate) {
+        case let (left?, right?):
+            if left != right {
+                return left < right
+            }
+            return lhs.id < rhs.id
+        case (_?, nil):
+            return true
+        case (nil, _?):
+            return false
+        case (nil, nil):
+            return lhs.id < rhs.id
+        }
+    }
+}
+
+private func sortConversationsByActivity(_ conversations: [MessageConversation]) -> [MessageConversation] {
+    conversations.sorted { lhs, rhs in
+        let leftDate = messageTimestamp(from: lhs.lastMessageAt)
+        let rightDate = messageTimestamp(from: rhs.lastMessageAt)
+
+        switch (leftDate, rightDate) {
+        case let (left?, right?):
+            if left != right {
+                return left > right
+            }
+            return lhs.id < rhs.id
+        case (_?, nil):
+            return true
+        case (nil, _?):
+            return false
+        case (nil, nil):
+            return lhs.id < rhs.id
+        }
+    }
+}
+
+private func messageTimestamp(from raw: String?) -> Date? {
+    guard let raw, raw.isEmpty == false else { return nil }
+    return notificationSortDate(from: raw)
 }

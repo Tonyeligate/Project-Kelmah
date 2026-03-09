@@ -95,6 +95,7 @@ class NotificationsRepository @Inject constructor(
                 priority = obj.string("priority") ?: "medium",
                 isRead = obj.nestedObject("readStatus")?.bool("isRead") ?: obj.bool("read") ?: false,
                 createdAt = obj.string("createdAt"),
+                updatedAt = obj.string("updatedAt"),
                 relatedEntityType = relatedEntity?.string("type"),
                 relatedEntityId = relatedEntity?.string("id") ?: relatedEntity?.string("_id"),
             )
@@ -105,7 +106,13 @@ class NotificationsRepository @Inject constructor(
 internal fun sortNotificationsByCreatedAt(items: List<NotificationItem>): List<NotificationItem> =
     items.withIndex()
         .sortedWith(
-            compareByDescending<IndexedValue<NotificationItem>> { notificationTimestampMillis(it.value.createdAt) ?: Long.MIN_VALUE }
+            compareByDescending<IndexedValue<NotificationItem>> {
+                notificationTimestampMillis(it.value.createdAt)
+                    ?: notificationTimestampMillis(it.value.updatedAt)
+                    ?: notificationObjectIdTimestampMillis(it.value.id)
+                    ?: Long.MIN_VALUE
+            }
+                .thenByDescending { notificationObjectIdTimestampMillis(it.value.id) ?: Long.MIN_VALUE }
                 .thenBy { it.index },
         )
         .map { it.value }
@@ -118,6 +125,15 @@ private fun notificationTimestampMillis(raw: String?): Long? {
     return runCatching { Instant.parse(raw).toEpochMilli() }
         .recoverCatching { OffsetDateTime.parse(raw).toInstant().toEpochMilli() }
         .getOrNull()
+}
+
+private fun notificationObjectIdTimestampMillis(id: String): Long? {
+    if (id.length < 8) {
+        return null
+    }
+
+    val timestampSeconds = id.substring(0, 8).toLongOrNull(16) ?: return null
+    return timestampSeconds * 1_000
 }
 
 private fun JsonObject.string(key: String): String? = (this[key] as? JsonPrimitive)?.contentOrNull()

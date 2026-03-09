@@ -12,6 +12,13 @@ enum JobsFeed: String, CaseIterable, Hashable {
     }
 }
 
+enum RecommendationFeedState: Hashable {
+    case idle
+    case personalized
+    case fallback
+    case failed
+}
+
 enum JobSortOption: String, CaseIterable, Hashable, Identifiable {
     case newest
     case oldest
@@ -63,7 +70,7 @@ struct JobSummary: Identifiable, Hashable {
     let postedAt: String?
     let status: String?
     let proposalCount: Int
-    let matchScore: Int?
+    let matchScore: Double?
     let aiReasoning: String?
     let isVerified: Bool
     let isUrgent: Bool

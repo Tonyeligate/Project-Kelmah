@@ -1,7 +1,5 @@
 package com.kelmah.mobile.features.notifications.data
 
-import android.net.Uri
-
 data class NotificationItem(
     val id: String,
     val type: String,
@@ -11,6 +9,7 @@ data class NotificationItem(
     val priority: String = "medium",
     val isRead: Boolean = false,
     val createdAt: String? = null,
+    val updatedAt: String? = null,
     val relatedEntityType: String? = null,
     val relatedEntityId: String? = null,
 )
@@ -34,12 +33,13 @@ val NotificationItem.displayTag: String
 
 val NotificationItem.actionTarget: NotificationActionTarget?
     get() {
-        val parsedUrl = actionUrl?.let { runCatching { Uri.parse(it) }.getOrNull() }
-        val path = parsedUrl?.path.orEmpty()
-        val conversationId = parsedUrl?.getQueryParameter("conversation")
+        val rawActionUrl = actionUrl?.trim().orEmpty()
+        val path = notificationActionPath(rawActionUrl)
+        val conversationId = notificationActionQueryParameter(rawActionUrl, "conversation")
 
         return when {
             !conversationId.isNullOrBlank() -> NotificationActionTarget.Conversation(conversationId)
+            path.startsWith("/messages/") -> path.substringAfterLast('/').takeIf { it.isNotBlank() }?.let(NotificationActionTarget::Conversation)
             path.startsWith("/jobs/") -> path.substringAfterLast('/').takeIf { it.isNotBlank() }?.let(NotificationActionTarget::Job)
             relatedEntityType.equals("message", ignoreCase = true) -> relatedEntityId?.let(NotificationActionTarget::Conversation)
             relatedEntityType.equals("job", ignoreCase = true) -> relatedEntityId?.let(NotificationActionTarget::Job)
@@ -53,3 +53,22 @@ val NotificationItem.actionLabel: String?
         is NotificationActionTarget.Job -> "Open job"
         null -> null
     }
+
+private fun notificationActionPath(rawActionUrl: String): String {
+    val withoutQuery = rawActionUrl.substringBefore('?')
+    if (withoutQuery.startsWith("http://") || withoutQuery.startsWith("https://")) {
+        return "/" + withoutQuery.substringAfter("://").substringAfter('/', "").trimStart('/')
+    }
+    return withoutQuery
+}
+
+private fun notificationActionQueryParameter(rawActionUrl: String, key: String): String? =
+    rawActionUrl.substringAfter('?', "")
+        .split('&')
+        .asSequence()
+        .mapNotNull { part ->
+            val name = part.substringBefore('=', "")
+            val value = part.substringAfter('=', "")
+            if (name == key && value.isNotBlank()) value else null
+        }
+        .firstOrNull()

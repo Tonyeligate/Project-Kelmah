@@ -43,7 +43,7 @@ class JobsRepository @Inject constructor(
                 "limit" to limit.toString(),
             ),
         )
-        ApiResult.Success(parseJobsPage(response).jobs)
+        ApiResult.Success(parseJobsPage(response, strictJobQuality = true).jobs)
     }
 
     suspend fun getMyJobs(limit: Int = 6): ApiResult<List<JobSummary>> = executeAuthorized {
@@ -117,7 +117,11 @@ class JobsRepository @Inject constructor(
         }
     }
 
-    private fun parseJobsPage(response: JsonObject, forcedSaved: Boolean = false): JobsPage {
+    private fun parseJobsPage(
+        response: JsonObject,
+        forcedSaved: Boolean = false,
+        strictJobQuality: Boolean = false,
+    ): JobsPage {
         val dataNode = response["data"]
         val dataObject = dataNode as? JsonObject
         val items = when (dataNode) {
@@ -146,7 +150,7 @@ class JobsRepository @Inject constructor(
             ?: items.size
 
         return JobsPage(
-            jobs = items.mapNotNull { parseJobSummary(it, forcedSaved) },
+            jobs = items.mapNotNull { parseJobSummary(it, forcedSaved, strictJobQuality) },
             page = page,
             totalPages = totalPages,
             totalItems = totalItems,
@@ -174,7 +178,7 @@ class JobsRepository @Inject constructor(
 
     private fun parseJobDetail(response: JsonObject): JobDetail {
         val raw = response.nestedObject("data") ?: response
-        val summary = parseJobSummary(raw, forcedSaved = raw.bool("isSaved") ?: false)
+        val summary = parseJobSummary(raw, forcedSaved = raw.bool("isSaved") ?: false, strictJobQuality = false)
             ?: throw IllegalStateException("Job detail payload was invalid")
 
         val fullDescription = raw.string("description") ?: summary.description
@@ -202,9 +206,15 @@ class JobsRepository @Inject constructor(
         )
     }
 
-    private fun parseJobSummary(element: JsonElement, forcedSaved: Boolean = false): JobSummary? {
+    private fun parseJobSummary(
+        element: JsonElement,
+        forcedSaved: Boolean = false,
+        strictJobQuality: Boolean = false,
+    ): JobSummary? {
         val job = element as? JsonObject ?: return null
         val id = job.string("_id") ?: job.string("id") ?: return null
+        val title = job.string("title")?.trim().orEmpty()
+        val description = (job.string("description") ?: "").trim()
         val budgetValue = job.double("budget")
             ?: job.nestedObject("budget")?.double("amount")
             ?: job.nestedObject("budget")?.double("max")
@@ -217,12 +227,15 @@ class JobsRepository @Inject constructor(
             ?: job.string("hirer_name")
             ?: listOfNotNull(employer?.string("firstName"), employer?.string("lastName")).joinToString(" ").ifBlank { null }
             ?: job.string("company")
-            ?: "Employer Name Pending"
+
+        if (strictJobQuality && (title.isBlank() || description.isBlank() || employerName.isNullOrBlank())) {
+            return null
+        }
 
         return JobSummary(
             id = id,
-            title = job.string("title") ?: "Untitled Job",
-            description = (job.string("description") ?: "").trim(),
+            title = title.ifBlank { "Untitled Job" },
+            description = description,
             category = job.string("category") ?: "General",
             locationLabel = parseLocationLabel(job),
             budgetLabel = formatBudgetLabel(
@@ -233,13 +246,13 @@ class JobsRepository @Inject constructor(
             budgetAmount = budgetValue,
             currency = currency,
             paymentType = job.string("paymentType") ?: job.nestedObject("budget")?.string("type") ?: "fixed",
-            employerName = employerName,
+            employerName = employerName ?: "Employer Name Pending",
             employerAvatar = employer?.string("avatar") ?: employer?.string("profileImage"),
             skills = parseSkills(job),
             postedAt = job.string("createdAt") ?: job.string("created_at") ?: job.string("postedDate"),
             status = job.string("status"),
             proposalCount = job.int("proposalCount") ?: job.int("applicationsCount") ?: 0,
-            matchScore = job.int("matchScore") ?: job.double("matchScore")?.toInt(),
+            matchScore = job.double("matchScore") ?: job.int("matchScore")?.toDouble(),
             aiReasoning = parseAiReasoning(job),
             isVerified = employer?.bool("verified") ?: employer?.bool("isVerified") ?: false,
             isUrgent = job.bool("urgent") ?: false,

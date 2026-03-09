@@ -6,6 +6,7 @@ data class WorkerProfileSnapshot(
     val availability: WorkerAvailability = WorkerAvailability(),
     val completeness: WorkerCompleteness = WorkerCompleteness(),
     val portfolio: WorkerPortfolio = WorkerPortfolio(),
+    val partialWarnings: List<String> = emptyList(),
 ) {
     val visibleSkills: List<String>
         get() = credentials.skills.map { it.name }.ifEmpty { profile.skills }

@@ -12,6 +12,7 @@ import com.kelmah.mobile.features.jobs.data.JobSummary
 import com.kelmah.mobile.features.jobs.data.JobsFeed
 import com.kelmah.mobile.features.jobs.data.JobsFilterState
 import com.kelmah.mobile.features.jobs.data.JobsRepository
+import com.kelmah.mobile.features.jobs.data.RecommendationFeedState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +39,7 @@ data class JobsUiState(
     val selectedJob: JobDetail? = null,
     val isDetailLoading: Boolean = false,
     val isSubmittingApplication: Boolean = false,
-    val recommendationsAreFallback: Boolean = false,
+    val recommendationState: RecommendationFeedState = RecommendationFeedState.IDLE,
     val recommendationContextMessage: String? = null,
     val homeErrorMessage: String? = null,
     val errorMessage: String? = null,
@@ -69,19 +70,23 @@ class JobsViewModel @Inject constructor(
             when (role) {
                 KelmahUserRole.WORKER -> {
                     val recommendationsResult = jobsRepository.getRecommendedJobs(limit = 6)
-                    var recommendationsAreFallback = false
+                    var recommendationState = RecommendationFeedState.FAILED
                     var recommendationContextMessage: String? = null
                     val recommendations = when (recommendationsResult) {
-                        is ApiResult.Success -> recommendationsResult.data
+                        is ApiResult.Success -> {
+                            recommendationState = RecommendationFeedState.PERSONALIZED
+                            recommendationsResult.data
+                        }
                         is ApiResult.Error -> {
                             when (val fallback = jobsRepository.getJobs(JobsFilterState(sort = JobSortOption.URGENT), limit = 6)) {
                                 is ApiResult.Success -> {
-                                    recommendationsAreFallback = true
+                                    recommendationState = RecommendationFeedState.FALLBACK
                                     recommendationContextMessage = "Showing urgent jobs while personalized matching recovers."
                                     fallback.data.jobs
                                 }
                                 is ApiResult.Error -> {
-                                    recommendationContextMessage = recommendationsResult.message
+                                    recommendationState = RecommendationFeedState.FAILED
+                                    recommendationContextMessage = "Personalized matching is unavailable right now. Browse jobs while it recovers."
                                     emptyList()
                                 }
                             }
@@ -98,14 +103,14 @@ class JobsViewModel @Inject constructor(
                         current.copy(
                             isLoadingHomeFeed = false,
                             recommendedJobs = recommendations,
-                            recommendationsAreFallback = recommendationsAreFallback,
+                            recommendationState = recommendationState,
                             recommendationContextMessage = recommendationContextMessage,
                             savedJobs = when (savedResult) {
                                 is ApiResult.Success -> savedResult.data.jobs
                                 else -> current.savedJobs
                             },
                             homeErrorMessage = when {
-                                recommendations.isEmpty() && recommendationsResult is ApiResult.Error -> recommendationsResult.message
+                                recommendationState == RecommendationFeedState.FAILED -> recommendationContextMessage
                                 current.savedJobs.isEmpty() && savedResult is ApiResult.Error -> savedResult.message
                                 else -> null
                             },
@@ -121,7 +126,7 @@ class JobsViewModel @Inject constructor(
                                     isLoadingHomeFeed = false,
                                     hirerJobs = result.data,
                                     homeErrorMessage = null,
-                                    recommendationsAreFallback = false,
+                                    recommendationState = RecommendationFeedState.IDLE,
                                     recommendationContextMessage = null,
                                 )
                             }
@@ -133,7 +138,7 @@ class JobsViewModel @Inject constructor(
                                     isLoadingHomeFeed = false,
                                     hirerJobs = emptyList(),
                                     homeErrorMessage = result.message,
-                                    recommendationsAreFallback = false,
+                                    recommendationState = RecommendationFeedState.IDLE,
                                     recommendationContextMessage = null,
                                 )
                             }

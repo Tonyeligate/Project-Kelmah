@@ -185,6 +185,13 @@ private fun WorkerProfileSignalsContent(snapshot: WorkerProfileSnapshot) {
     val completenessProgress = snapshot.completeness.completionPercentage.coerceIn(0, 100) / 100f
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (snapshot.partialWarnings.isNotEmpty()) {
+            Text(
+                snapshot.partialWarnings.joinToString(" "),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
         Text(
             profile.profession.ifBlank { "Profession pending" },
             style = MaterialTheme.typography.titleMedium,

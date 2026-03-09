@@ -181,6 +181,13 @@ router.get('/analytics', authenticate, authorizeRoles('admin'), async (req, res)
   await forwardToJobService(req, res, '/api/jobs/analytics', 'GET');
 });
 
+// GET /api/jobs/recommendations/personalized - Get personalized recommended jobs (protected)
+router.get('/recommendations/personalized', authenticate, authorizeRoles('worker'), async (req, res) => {
+  const queryString = new URLSearchParams(req.query).toString();
+  const path = `/api/jobs/recommendations/personalized${queryString ? '?' + queryString : ''}`;
+  await forwardToJobService(req, res, path, 'GET');
+});
+
 // GET /api/jobs/recommendations - Get recommended jobs (protected)
 router.get('/recommendations', authenticate, authorizeRoles('worker'), async (req, res) => {
   const queryString = new URLSearchParams(req.query).toString();

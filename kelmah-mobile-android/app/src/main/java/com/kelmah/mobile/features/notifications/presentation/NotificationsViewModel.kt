@@ -143,8 +143,17 @@ class NotificationsViewModel @Inject constructor(
             _uiState.update { it.copy(isMutating = true, errorMessage = null, infoMessage = null) }
             when (val result = action()) {
                 is ApiResult.Success -> {
+                    val updatedState = _uiState.value.onSuccess()
+                    val authoritativeUnreadCount = when (val unreadCountResult = notificationsRepository.getUnreadCount()) {
+                        is ApiResult.Success -> unreadCountResult.data
+                        is ApiResult.Error -> updatedState.unreadCount
+                    }
                     _uiState.update { current ->
-                        current.onSuccess().copy(isMutating = false, infoMessage = success)
+                        updatedState.copy(
+                            isMutating = false,
+                            unreadCount = authoritativeUnreadCount,
+                            infoMessage = success,
+                        )
                     }
                 }
                 is ApiResult.Error -> {

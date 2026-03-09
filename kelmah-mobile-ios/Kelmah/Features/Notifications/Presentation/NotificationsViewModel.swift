@@ -75,6 +75,7 @@ final class NotificationsViewModel: ObservableObject {
                         priority: item.priority,
                         isRead: true,
                         createdAt: item.createdAt,
+                        updatedAt: item.updatedAt,
                         relatedEntityType: item.relatedEntityType,
                         relatedEntityId: item.relatedEntityId
                     )
@@ -100,6 +101,7 @@ final class NotificationsViewModel: ObservableObject {
                     priority: item.priority,
                     isRead: true,
                     createdAt: item.createdAt,
+                    updatedAt: item.updatedAt,
                     relatedEntityType: item.relatedEntityType,
                     relatedEntityId: item.relatedEntityId
                 )
@@ -122,6 +124,8 @@ final class NotificationsViewModel: ObservableObject {
         infoMessage = nil
         do {
             try await operation()
+            let localUnreadCount = notifications.filter { $0.isRead == false }.count
+            unreadCount = (try? await repository.getUnreadCount()) ?? localUnreadCount
             infoMessage = successMessage
         } catch {
             errorMessage = error.localizedDescription

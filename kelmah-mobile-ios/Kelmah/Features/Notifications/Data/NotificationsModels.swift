@@ -23,6 +23,7 @@ struct AppNotificationItem: Identifiable, Hashable {
     let priority: String
     let isRead: Bool
     let createdAt: String?
+    let updatedAt: String?
     let relatedEntityType: String?
     let relatedEntityId: String?
 
@@ -47,14 +48,19 @@ struct AppNotificationItem: Identifiable, Hashable {
 
     var actionTarget: NotificationActionTarget? {
         if let actionURL, actionURL.isEmpty == false {
-            let baseURL = URL(string: "https://kelmah.local")
-            if let components = URLComponents(string: actionURL, relativeTo: baseURL) {
+            if let components = URLComponents(string: actionURL) {
                 if let conversationId = components.queryItems?.first(where: { $0.name == "conversation" })?.value,
                    conversationId.isEmpty == false {
                     return .conversation(conversationId)
                 }
 
                 let path = components.path
+                if path.hasPrefix("/messages/") {
+                    let conversationId = path.split(separator: "/").last.map(String.init)
+                    if let conversationId, conversationId.isEmpty == false {
+                        return .conversation(conversationId)
+                    }
+                }
                 if path.hasPrefix("/jobs/") {
                     let jobId = path.split(separator: "/").last.map(String.init)
                     if let jobId, jobId.isEmpty == false {

@@ -19,7 +19,7 @@ final class JobsViewModel: ObservableObject {
     @Published var selectedJob: JobDetail?
     @Published var isDetailLoading = false
     @Published var isSubmittingApplication = false
-    @Published var recommendationsAreFallback = false
+    @Published var recommendationState: RecommendationFeedState = .idle
     @Published var recommendationContextMessage: String?
     @Published var homeErrorMessage: String?
     @Published var errorMessage: String?
@@ -61,20 +61,20 @@ final class JobsViewModel: ObservableObject {
         case .worker:
             do {
                 recommendedJobs = try await repository.getRecommendedJobs(limit: 6)
-                recommendationsAreFallback = false
+                recommendationState = .personalized
                 recommendationContextMessage = nil
             } catch {
                 var fallbackFilters = JobFilters()
                 fallbackFilters.sort = .urgent
                 do {
                     recommendedJobs = try await repository.getJobs(filters: fallbackFilters, page: 1, limit: 6).jobs
-                    recommendationsAreFallback = true
+                    recommendationState = .fallback
                     recommendationContextMessage = "Showing urgent jobs while personalized matching recovers."
                 } catch {
                     recommendedJobs = []
-                    recommendationsAreFallback = false
-                    recommendationContextMessage = nil
-                    homeErrorMessage = error.localizedDescription
+                    recommendationState = .failed
+                    recommendationContextMessage = "Personalized matching is unavailable right now. Browse jobs while it recovers."
+                    homeErrorMessage = recommendationContextMessage
                 }
             }
 
@@ -89,7 +89,7 @@ final class JobsViewModel: ObservableObject {
             }
 
         case .hirer:
-            recommendationsAreFallback = false
+            recommendationState = .idle
             recommendationContextMessage = nil
             do {
                 hirerJobs = try await repository.getMyJobs(limit: 6)

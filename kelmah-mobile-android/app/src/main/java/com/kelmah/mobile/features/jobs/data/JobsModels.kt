@@ -26,6 +26,13 @@ enum class JobsFeed {
     SAVED,
 }
 
+enum class RecommendationFeedState {
+    IDLE,
+    PERSONALIZED,
+    FALLBACK,
+    FAILED,
+}
+
 data class JobsPage(
     val jobs: List<JobSummary>,
     val page: Int,
@@ -55,7 +62,7 @@ data class JobSummary(
     val postedAt: String? = null,
     val status: String? = null,
     val proposalCount: Int = 0,
-    val matchScore: Int? = null,
+    val matchScore: Double? = null,
     val aiReasoning: String? = null,
     val isVerified: Boolean = false,
     val isUrgent: Boolean = false,

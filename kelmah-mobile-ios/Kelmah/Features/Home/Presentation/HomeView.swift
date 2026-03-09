@@ -86,16 +86,15 @@ struct HomeView: View {
                 HomeSectionHeader(
                     title: userRole == .hirer
                         ? "Recent hiring activity"
-                        : (jobsViewModel.recommendationsAreFallback ? "Urgent jobs while matching recovers" : "Recommended matches"),
+                        : recommendationSectionTitle,
                     actionLabel: userRole == .hirer ? "Open market" : "Browse jobs",
                     onAction: onBrowseJobs
                 )
 
                 if userRole == .worker,
-                   jobsViewModel.recommendationsAreFallback,
                    let recommendationContextMessage = jobsViewModel.recommendationContextMessage,
                    recommendationContextMessage.isEmpty == false {
-                    HomeMessageCard(message: recommendationContextMessage, tint: KelmahTheme.accent.opacity(0.12))
+                    HomeMessageCard(message: recommendationContextMessage, tint: recommendationBannerTint)
                 }
 
                 if jobsViewModel.isLoadingHomeFeed, homeJobs.isEmpty {
@@ -108,8 +107,10 @@ struct HomeView: View {
                     HomeMessageCard(
                         message: userRole == .hirer
                             ? "Your most recent jobs will appear here once your hiring activity is available."
-                            : (jobsViewModel.recommendationsAreFallback
+                            : (jobsViewModel.recommendationState == .fallback
                                 ? "Kelmah could not recover enough urgent jobs while the recommendation feed is degraded."
+                                : (jobsViewModel.recommendationState == .failed
+                                    ? "Browse the jobs feed while personalized matching is unavailable."
                                 : "Your strongest matches will appear here once the recommendation feed returns results."),
                         tint: .white
                     )
@@ -225,7 +226,7 @@ private struct HomeJobCard: View {
                         .multilineTextAlignment(.leading)
                     Spacer()
                     if role == .worker, let matchScore = job.matchScore {
-                        Text("\(matchScore)% match")
+                        Text("\(formatMatchScore(matchScore))% match")
                             .font(.caption.weight(.semibold))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
@@ -279,6 +280,37 @@ private struct HomeJobCard: View {
         }
         .buttonStyle(.plain)
     }
+}
+
+private extension HomeView {
+    var recommendationSectionTitle: String {
+        switch jobsViewModel.recommendationState {
+        case .fallback:
+            return "Urgent jobs while matching recovers"
+        case .failed:
+            return "Matching temporarily unavailable"
+        case .idle, .personalized:
+            return "Recommended matches"
+        }
+    }
+
+    var recommendationBannerTint: Color {
+        switch jobsViewModel.recommendationState {
+        case .failed:
+            return .red.opacity(0.12)
+        case .fallback:
+            return KelmahTheme.accent.opacity(0.12)
+        case .idle, .personalized:
+            return .white
+        }
+    }
+}
+
+private func formatMatchScore(_ score: Double) -> String {
+    if score.truncatingRemainder(dividingBy: 1) == 0 {
+        return String(Int(score))
+    }
+    return String(format: "%.1f", score)
 }
 
 private struct HomeConversationCard: View {

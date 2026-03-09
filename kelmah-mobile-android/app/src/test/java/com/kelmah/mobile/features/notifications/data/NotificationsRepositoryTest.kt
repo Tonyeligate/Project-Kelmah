@@ -1,6 +1,7 @@
 package com.kelmah.mobile.features.notifications.data
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class NotificationsRepositoryTest {
@@ -22,11 +23,27 @@ class NotificationsRepositoryTest {
         val notifications = listOf(
             NotificationItem(id = "undated", type = "system_alert", title = "Undated", content = "", createdAt = null),
             NotificationItem(id = "dated", type = "system_alert", title = "Dated", content = "", createdAt = "2026-03-09T10:15:00Z"),
-            NotificationItem(id = "invalid", type = "system_alert", title = "Invalid", content = "", createdAt = "not-a-date"),
+            NotificationItem(id = "invalid", type = "system_alert", title = "Invalid", content = "", createdAt = "not-a-date", updatedAt = "2026-03-09T09:15:00Z"),
         )
 
         val sorted = sortNotificationsByCreatedAt(notifications)
 
-        assertEquals(listOf("dated", "undated", "invalid"), sorted.map { it.id })
+        assertEquals(listOf("dated", "invalid", "undated"), sorted.map { it.id })
+    }
+
+    @Test
+    fun actionTarget_parsesConversationIdFromPath() {
+        val notification = NotificationItem(
+            id = "notification-1",
+            type = "message_received",
+            title = "Message",
+            content = "",
+            actionUrl = "https://kelmah.example/messages/69aa0b13e0a41572beebe499",
+        )
+
+        val target = notification.actionTarget
+
+        assertTrue(target is NotificationActionTarget.Conversation)
+        assertEquals("69aa0b13e0a41572beebe499", (target as NotificationActionTarget.Conversation).conversationId)
     }
 }

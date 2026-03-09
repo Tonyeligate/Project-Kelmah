@@ -32,6 +32,7 @@ import com.kelmah.mobile.core.session.kelmahUserRole
 import com.kelmah.mobile.core.storage.SessionUser
 import com.kelmah.mobile.core.utils.RelativeTimeFormatter
 import com.kelmah.mobile.features.jobs.data.JobSummary
+import com.kelmah.mobile.features.jobs.data.RecommendationFeedState
 import com.kelmah.mobile.features.jobs.presentation.JobsViewModel
 import com.kelmah.mobile.features.messaging.data.ConversationSummary
 import com.kelmah.mobile.features.messaging.presentation.MessagesViewModel
@@ -158,8 +159,10 @@ fun HomeScreen(
             SectionHeader(
                 title = if (role == KelmahUserRole.HIRER) {
                     "Recent hiring activity"
-                } else if (jobsState.recommendationsAreFallback) {
+                } else if (jobsState.recommendationState == RecommendationFeedState.FALLBACK) {
                     "Urgent jobs while matching recovers"
+                } else if (jobsState.recommendationState == RecommendationFeedState.FAILED) {
+                    "Matching temporarily unavailable"
                 } else {
                     "Recommended matches"
                 },
@@ -168,13 +171,13 @@ fun HomeScreen(
             )
         }
 
-        if (role == KelmahUserRole.WORKER && jobsState.recommendationsAreFallback && !jobsState.recommendationContextMessage.isNullOrBlank()) {
+        if (role == KelmahUserRole.WORKER && !jobsState.recommendationContextMessage.isNullOrBlank()) {
             item {
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+                Card(colors = CardDefaults.cardColors(containerColor = recommendationBannerColor(jobsState.recommendationState))) {
                     Text(
                         text = jobsState.recommendationContextMessage.orEmpty(),
                         modifier = Modifier.padding(16.dp),
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        color = recommendationBannerTextColor(jobsState.recommendationState),
                     )
                 }
             }
@@ -199,15 +202,19 @@ fun HomeScreen(
                 EmptyHomeSection(
                     title = if (role == KelmahUserRole.HIRER) {
                         "No hiring activity yet"
-                    } else if (jobsState.recommendationsAreFallback) {
+                    } else if (jobsState.recommendationState == RecommendationFeedState.FALLBACK) {
                         "No urgent jobs available"
+                    } else if (jobsState.recommendationState == RecommendationFeedState.FAILED) {
+                        "Matching unavailable"
                     } else {
                         "No recommendations yet"
                     },
                     description = if (role == KelmahUserRole.HIRER) {
                         "Your most recent jobs will appear here once your hiring activity is available."
-                    } else if (jobsState.recommendationsAreFallback) {
+                    } else if (jobsState.recommendationState == RecommendationFeedState.FALLBACK) {
                         "Kelmah could not recover enough urgent jobs while the recommendation feed is degraded."
+                    } else if (jobsState.recommendationState == RecommendationFeedState.FAILED) {
+                        "Browse the jobs feed while personalized matching is unavailable."
                     } else {
                         "Your strongest matches will appear here once the recommendation feed returns results."
                     },
@@ -319,7 +326,7 @@ private fun HomeJobCard(
                     overflow = TextOverflow.Ellipsis,
                 )
                 if (job.matchScore != null && role == KelmahUserRole.WORKER) {
-                    AssistChip(onClick = {}, enabled = false, label = { Text("${job.matchScore}% match") })
+                    AssistChip(onClick = {}, enabled = false, label = { Text("${formatMatchScore(job.matchScore)}% match") })
                 } else if (!job.status.isNullOrBlank()) {
                     AssistChip(onClick = {}, enabled = false, label = { Text(job.status.replaceFirstChar { it.uppercase() }) })
                 }
@@ -346,6 +353,31 @@ private fun HomeJobCard(
                 Text(meta.joinToString(" • "), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
+    }
+}
+
+@Composable
+private fun recommendationBannerColor(state: RecommendationFeedState) = when (state) {
+    RecommendationFeedState.FAILED -> MaterialTheme.colorScheme.errorContainer
+    RecommendationFeedState.FALLBACK -> MaterialTheme.colorScheme.secondaryContainer
+    RecommendationFeedState.PERSONALIZED,
+    RecommendationFeedState.IDLE -> MaterialTheme.colorScheme.surfaceVariant
+}
+
+@Composable
+private fun recommendationBannerTextColor(state: RecommendationFeedState) = when (state) {
+    RecommendationFeedState.FAILED -> MaterialTheme.colorScheme.onErrorContainer
+    RecommendationFeedState.FALLBACK -> MaterialTheme.colorScheme.onSecondaryContainer
+    RecommendationFeedState.PERSONALIZED,
+    RecommendationFeedState.IDLE -> MaterialTheme.colorScheme.onSurfaceVariant
+}
+
+private fun formatMatchScore(score: Double?): String {
+    if (score == null) return "0"
+    return if (score % 1.0 == 0.0) {
+        score.toInt().toString()
+    } else {
+        String.format("%.1f", score)
     }
 }
 

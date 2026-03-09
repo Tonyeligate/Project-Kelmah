@@ -101,13 +101,9 @@ struct RootTabView: View {
                 }
             }
         }
-        .task {
-            await environment.sessionCoordinator.bootstrapSession()
-            await bootstrapShellDataIfNeeded()
-        }
-        .task(id: environment.sessionStore.accessToken) {
+        .task(id: environment.sessionStore.accessToken ?? "guest") {
+            await environment.sessionCoordinator.bootstrapSession(force: true)
             if environment.sessionStore.accessToken != nil {
-                await environment.sessionCoordinator.bootstrapSession(force: true)
                 await bootstrapShellDataIfNeeded()
             } else {
                 environment.realtimeSocketManager.stop()

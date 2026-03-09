@@ -47,13 +47,23 @@ class ProfileRepository @Inject constructor(
             }
 
             val profileResponse = profileApiService.getProfile()
+            val credentialsResponse = credentialsDeferred.await()
+            val availabilityResponse = availabilityDeferred.await()
+            val completenessResponse = completenessDeferred.await()
+            val portfolioResponse = portfolioDeferred.await()
             ApiResult.Success(
                 WorkerProfileSnapshot(
                     profile = parseProfile(profileResponse),
-                    credentials = parseCredentials(credentialsDeferred.await()),
-                    availability = parseAvailability(availabilityDeferred.await()),
-                    completeness = parseCompleteness(completenessDeferred.await()),
-                    portfolio = parsePortfolio(portfolioDeferred.await()),
+                    credentials = parseCredentials(credentialsResponse),
+                    availability = parseAvailability(availabilityResponse),
+                    completeness = parseCompleteness(completenessResponse),
+                    portfolio = parsePortfolio(portfolioResponse),
+                    partialWarnings = buildList {
+                        if (credentialsResponse == null) add("Credentials could not be loaded. Recommendation quality may be reduced.")
+                        if (availabilityResponse == null) add("Availability details could not be loaded. Match freshness may be reduced.")
+                        if (completenessResponse == null) add("Profile completeness could not be checked. Recommendation guidance may be incomplete.")
+                        if (portfolioResponse == null) add("Portfolio proof could not be loaded. Hirer trust signals may be reduced.")
+                    },
                 ),
             )
         }

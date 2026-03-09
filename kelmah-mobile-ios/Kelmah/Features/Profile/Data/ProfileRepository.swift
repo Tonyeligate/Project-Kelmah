@@ -37,12 +37,23 @@ final class ProfileRepository {
             responseType: ProfileRawEnvelope.self
         )
 
+        let resolvedCredentials = await credentialsResponse
+        let resolvedAvailability = await availabilityResponse
+        let resolvedCompleteness = await completenessResponse
+        let resolvedPortfolio = await portfolioResponse
+
         return WorkerProfileSnapshot(
             profile: parseProfile(profileResponse),
-            credentials: parseCredentials(await credentialsResponse),
-            availability: parseAvailability(await availabilityResponse),
-            completeness: parseCompleteness(await completenessResponse),
-            portfolio: parsePortfolio(await portfolioResponse)
+            credentials: parseCredentials(resolvedCredentials),
+            availability: parseAvailability(resolvedAvailability),
+            completeness: parseCompleteness(resolvedCompleteness),
+            portfolio: parsePortfolio(resolvedPortfolio),
+            partialWarnings: [
+                resolvedCredentials == nil ? "Credentials could not be loaded. Recommendation quality may be reduced." : nil,
+                resolvedAvailability == nil ? "Availability details could not be loaded. Match freshness may be reduced." : nil,
+                resolvedCompleteness == nil ? "Profile completeness could not be checked. Recommendation guidance may be incomplete." : nil,
+                resolvedPortfolio == nil ? "Portfolio proof could not be loaded. Hirer trust signals may be reduced." : nil,
+            ].compactMap { $0 }
         )
     }
 
@@ -53,7 +64,8 @@ final class ProfileRepository {
             credentials: parseCredentialsObject(object["credentials"]?.objectValue ?? [:]),
             availability: parseAvailabilityObject(object["availability"]?.objectValue ?? [:]),
             completeness: parseCompletenessObject(object["completeness"]?.objectValue ?? [:]),
-            portfolio: parsePortfolioObject(object["portfolio"]?.objectValue ?? [:])
+            portfolio: parsePortfolioObject(object["portfolio"]?.objectValue ?? [:]),
+            partialWarnings: []
         )
     }
 
