@@ -1,4 +1,5 @@
 import { api } from '../../../services/apiClient';
+import workerService from '../../worker/services/workerService';
 
 const unwrapPayload = (response) => {
   const payload = response?.data;
@@ -41,11 +42,7 @@ const searchService = {
    */
   searchWorkers: async (params = {}) => {
     try {
-      const response = await api.get('/users/workers/search', {
-        params,
-      });
-      const payload = unwrapPayload(response);
-      return payload?.workers || payload?.items || payload?.results || payload || [];
+      return await workerService.searchWorkers(params);
     } catch (error) {
       if (import.meta.env.DEV) console.error('Worker search error:', error);
       throw error;

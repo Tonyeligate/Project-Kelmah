@@ -2,7 +2,211 @@
 
 ---
 
-### Session: Frontend Admin Route Restoration March 9 2026 🔄 IN PROGRESS
+### Session: Worker Search Contract Consolidation And User-Service Parity Push March 9 2026 🔄 IN PROGRESS
+
+**Date**: March 9, 2026  
+**Scope**: Collapse the remaining frontend worker-search drift onto the canonical worker-directory contract, verify the local user-service parity fixes, and trigger the next deploy/re-probe cycle because Render is still serving stale dashboard/profile-activity behavior.
+
+**Acceptance Criteria**
+- Secondary frontend worker-search consumers use the same canonical `/users/workers` contract as the primary worker directory.
+- The worker-directory contract translation and result normalization live in shared service code instead of being duplicated across consumers.
+- Local frontend build passes after the consolidation.
+- Local user-service regressions covering dashboard auth, profile activity, worker-directory canonicalization, and worker-profile updates pass before deployment.
+- Live stale behavior is documented before the redeploy trigger.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/worker/services/workerService.js`
+- `kelmah-frontend/src/modules/search/services/searchService.js`
+- `kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx`
+- `kelmah-frontend/src/modules/map/services/mapService.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/user-service/tests/worker-directory.controller.test.js`
+- `kelmah-backend/services/user-service/tests/dashboard-routes.auth.test.js`
+- `kelmah-backend/services/user-service/tests/user-profile-activity.controller.test.js`
+- `kelmah-backend/services/user-service/tests/worker-profile.controller.test.js`
+
+**Dry-audit findings so far**
+- The main hirer worker directory already used the canonical `/users/workers` list contract, but shared services and secondary consumers still drifted through `/users/workers/search` and `/workers/search/location`.
+- `WorkerDirectoryExperience.jsx` still owned its own query translation and payload extraction logic, which meant fixes in shared services would not automatically propagate to the main directory surface.
+- The latest live Render probe with a non-admin hirer token still returned `200` from `/api/users/dashboard/metrics`, `/api/users/dashboard/analytics`, and `/api/users/dashboard/workers`, while `/api/users/profile/activity?limit=3` still returned `500`, confirming the deployed user-service remains behind the audited local code.
+
+**Implementation completed**
+- Added canonical worker-directory query translation, payload extraction, pagination normalization, and worker DTO normalization to `kelmah-frontend/src/modules/worker/services/workerService.js` through `queryWorkerDirectory()`.
+- Updated `kelmah-frontend/src/modules/search/services/searchService.js` so worker search delegates to the shared worker service instead of maintaining a separate `/users/workers/search` request path.
+- Updated `kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx` so the primary worker directory now also consumes the shared worker-directory service path rather than duplicating inline request/pagination logic.
+- Updated `kelmah-frontend/src/modules/map/services/mapService.js` so location-based worker lookup also routes through the canonical worker-directory contract and accepts the normalized worker DTO shape for map rendering.
+- Tightened the new `worker-directory.controller.test.js` expectations to the current WorkerProfile-root contract so the regression suite validates the canonical backend response instead of outdated merged legacy skill mirrors.
+
+**Validation**
+- `get_errors` returned no diagnostics for the touched frontend worker-search files.
+- `npm run build` in `kelmah-frontend/` passed after the worker-search consolidation.
+- Focused user-service Jest verification passed:
+  - `services/user-service/tests/worker-directory.controller.test.js`
+  - `services/user-service/tests/dashboard-routes.auth.test.js`
+  - `services/user-service/tests/user-profile-activity.controller.test.js`
+  - `services/user-service/tests/worker-profile.controller.test.js`
+- Pre-deploy live probe against `https://kelmah-api-gateway-gf3g.onrender.com` still shows stale runtime behavior:
+  - `/api/users/dashboard/metrics` -> `200` for non-admin hirer token
+  - `/api/users/dashboard/analytics` -> `200` for non-admin hirer token
+  - `/api/users/dashboard/workers` -> `200` for non-admin hirer token
+  - `/api/users/profile/activity?limit=3` -> `500`
+
+### Session: Desktop Login Light Theme Support March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Keep the current desktop login composition and behavior, but make the light theme actually render as a proper light-mode experience instead of staying visually locked to dark surfaces.
+
+**Acceptance Criteria**
+- Preserve the current desktop login layout and interaction flow.
+- Make the desktop login wrapper and form card respond coherently to `theme.palette.mode`.
+- Keep mobile login behavior unchanged.
+- Preserve login validation, auth dispatch, redirect behavior, and alert banners.
+- Validate the touched frontend files and rerun the frontend build.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/auth/pages/LoginPage.jsx`
+- `kelmah-frontend/src/modules/auth/components/common/AuthWrapper.jsx`
+- `kelmah-frontend/src/modules/auth/components/login/Login.jsx`
+- `kelmah-frontend/src/modules/auth/components/mobile/MobileLogin.jsx`
+- `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+- `kelmah-frontend/src/modules/auth/services/authSlice.js`
+
+**Data flow trace**
+- UI route: `/login` in `kelmah-frontend/src/routes/config.jsx` renders `LoginPage.jsx` inside the shared `Layout.jsx` auth route shell.
+- Page split: `LoginPage.jsx` sends mobile users to `MobileLogin.jsx` and desktop users to `AuthWrapper.jsx` containing `Login.jsx` plus any banner alerts.
+- Form state: `Login.jsx` owns email, password, remember-me, validation errors, and loading states locally.
+- Submit path: `Login.jsx` dispatches `login` from `kelmah-frontend/src/modules/auth/services/authSlice.js`.
+- Service call: `authSlice.js` calls `authService.login()` and returns the authenticated user/token payload to Redux.
+- Success UX: `Login.jsx` resolves the intended redirect path and navigates to the proper dashboard or requested route on success.
+
+**Dry-audit findings so far**
+- The desktop login page still uses `AuthWrapper.jsx`, which hard-codes dark shells, dark overlays, and white-on-black content regardless of theme mode.
+- `Login.jsx` also hard-codes dark panel backgrounds, white input text, and dark-only field styling, so toggling to light theme does not materially change the desktop experience.
+- Mobile login already uses theme-aware tokens and does not need behavioral changes for this task.
+
+**Implementation completed**
+- Updated `kelmah-frontend/src/modules/auth/components/common/AuthWrapper.jsx` so the shared desktop auth shell now derives its outer page background, shell gradient, left-panel surfaces, overlay cards, and supportive chips from theme-aware tokens instead of fixed black-only styling.
+- Updated `kelmah-frontend/src/modules/auth/components/login/Login.jsx` so the desktop login card, header copy, security banner, input fields, muted text, dividers, and disabled social buttons now render correctly in both dark and light mode while preserving the current composition.
+- Kept `LoginPage.jsx` routing behavior, mobile login rendering, validation, Redux auth dispatch, and redirect flow unchanged.
+
+**Validation**
+- `get_errors` returned no diagnostics for `kelmah-frontend/src/modules/auth/components/common/AuthWrapper.jsx`.
+- `get_errors` returned no diagnostics for `kelmah-frontend/src/modules/auth/components/login/Login.jsx`.
+- `npm run build` in `kelmah-frontend/` passed successfully after the light-theme support changes.
+- Residual build output still only includes the pre-existing `src/services/apiClient.js` dynamic/static import warning, which is unrelated to the login theme fix.
+
+### Session: Backend Worker Canonicalization And Parity Guard March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Make `WorkerProfile` the canonical mutable worker source for mobile-facing worker fields, stop `auth/me` from returning raw top-level worker profile attributes, and add a live parity guard for personalized recommendations so deployment drift is caught explicitly.
+
+**Acceptance Criteria**
+- `auth/me` returns a session-safe identity contract instead of exposing raw mutable worker fields from `User`.
+- shared canonical worker projection prefers `WorkerProfile` worker attributes over legacy `User` worker attributes.
+- the legacy `WorkerController.updateWorkerProfile` path stops dual-writing mutable worker attributes back onto `User`.
+- regression tests cover the session contract and the canonical write-path behavior.
+- a backend parity check exists for live `recommendations/personalized` contract verification.
+
+**Mapped execution surface**
+- `kelmah-backend/shared/utils/canonicalWorker.js`
+- `kelmah-backend/shared/constants/recommendations.js`
+- `kelmah-backend/services/auth-service/models/index.js`
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/services/auth-service/tests/get-me.contract.test.js`
+- `kelmah-backend/services/user-service/controllers/user.controller.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/tests/worker-profile.controller.test.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/job-service/tests/mobile-recommendations.contract.test.js`
+- `kelmah-backend/scripts/verify-personalized-recommendations-parity.js`
+- `kelmah-backend/package.json`
+
+**Dry-audit findings so far**
+- `auth.controller.getMe()` still returns the raw `User` document, which preserves stale top-level worker fields even when `WorkerProfile` has newer data.
+- `worker.controller.updateWorkerProfile()` is the remaining live dual-write path that mutates worker location, bio, rate, experience, and skills on both `User` and `WorkerProfile`.
+- shared canonical worker projection still preferred legacy `User.profession` before worker-profile profession/title fields.
+- the job-service personalized empty-state string is the clearest repo-vs-live drift fingerprint, so the parity guard should assert that string when `recommendationSource=profile-incomplete`.
+
+**Implementation completed**
+- Added shared recommendation-contract constants and updated job-service recommendation responses/tests to use one canonical empty-state message and contract identifier.
+- Updated `shared/utils/canonicalWorker.js` so worker-facing profession, skills, and specializations prefer `WorkerProfile`, and added a session-safe auth DTO builder plus worker summary helper.
+- Updated auth-service `getMe()` to read `WorkerProfile` for workers and return an `auth-session-v2` contract instead of exposing raw mutable worker profile fields from `User`.
+- Updated user-service profile formatting to consume the shared canonical worker snapshot and expanded worker profile projections to include worker-owned fields such as `title`, `headline`, `skillEntries`, `specializations`, and profile completeness signals.
+- Removed the last legacy dual-write path in `WorkerController.updateWorkerProfile()` so mutable worker fields now update `WorkerProfile` rather than re-mutating `User` worker mirrors.
+- Added regression tests for the auth session contract and the canonical worker update path.
+- Added `npm run verify:personalized-parity` to probe live `/api/jobs/recommendations/personalized` contract parity through the deployed gateway.
+
+**Validation**
+- Targeted Jest verification passed: `services/auth-service/tests/get-me.contract.test.js`, `services/user-service/tests/worker-profile.controller.test.js`, and `services/job-service/tests/mobile-recommendations.contract.test.js`.
+- Static diagnostics reported no errors in the touched backend controllers, utilities, tests, or parity script.
+- Live parity probe script executed successfully but remote verification remains environment-blocked:
+  - `giftyafisa@gmail.com / 1122112Ga` returned `401 Incorrect email or password` from the deployed auth service.
+  - `giftyafisa@gmail.com / 11221122Tg` authenticated but the recommendations call returned `403 Access denied. Insufficient permissions.`
+  - Result: the parity checker is in place and runnable, but final remote contract confirmation depends on a deployed worker credential with access to personalized recommendations.
+
+### Session: Desktop Registration Light Mode Refinement March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Refine the desktop registration page in light mode so it feels intentional, high-contrast, and premium instead of washed out and inconsistent.
+
+**Acceptance Criteria**
+- Improve light-mode contrast, spacing, and surface treatment across the desktop register page.
+- Remove the washed-out light background and weak selector-surface contrast.
+- Keep the dark-mode improvements intact.
+- Preserve the registration flow, validation, draft-save behavior, and mobile experience.
+- Validate the touched frontend file and rerun the frontend build.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/auth/components/register/Register.jsx`
+
+**Dry-audit findings so far**
+- The new dark-mode token pass fixed the right panel in dark mode, but the light-mode palette still looks too pale and low-contrast.
+- The desktop register page still mixes a strong dark left panel with a washed-out cream right panel and shell background in light mode.
+- The next fix is a palette and surface refinement, not a logic or layout change.
+
+**Implementation completed**
+- Refined the desktop registration light-mode shell in `kelmah-frontend/src/modules/auth/components/register/Register.jsx` so the page now uses warmer gold-ivory gradients with clearer separation between the outer shell, the support panel, and the main form panel.
+- Reworked the left support panel in light mode to use theme-aware text, muted copy, card surfaces, and borders instead of reusing dark-only styling, which removes the mismatched dark-vs-cream split.
+- Tightened unselected selector, step, and action surfaces in light mode with stronger contrast, slightly brighter input fields, and softer premium shadows while keeping the existing dark-mode tokens and registration logic unchanged.
+
+**Validation**
+- `get_errors` returned no diagnostics for `kelmah-frontend/src/modules/auth/components/register/Register.jsx` after the refinement.
+- `npm run build` in `kelmah-frontend/` passed successfully after the light-mode refinement.
+- Residual build output still only includes the pre-existing `src/services/apiClient.js` dynamic/static import warning, which is unrelated to this registration UI work.
+
+### Session: Desktop Registration Dark Mode Consistency March 9 2026 ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Correct the desktop registration page so dark mode renders consistently across the form shell, selector cards, and step surfaces instead of mixing a dark wrapper with light-mode form sections.
+
+**Acceptance Criteria**
+- Remove the hard-coded light desktop form surface that conflicts with dark mode.
+- Ensure role selector cards, step chips, and form sections follow a coherent dark-mode palette when the theme is dark.
+- Preserve the existing register flow, validation, draft-save behavior, and mobile experience.
+- Validate the touched frontend file and rerun the frontend build.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/auth/components/register/Register.jsx`
+- `kelmah-frontend/src/modules/auth/pages/RegisterPage.jsx`
+- `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+
+**Dry-audit findings so far**
+- `Register.jsx` currently hard-codes a light right-hand form panel while the page shell and supporting panel are dark.
+- The desktop register UI uses fixed light colors for the active form region instead of deriving from `theme.palette.mode`.
+- The user-visible inconsistency is strongest on the role selector cards and step surfaces because they sit inside a bright panel on a dark-mode page.
+
+**Implementation completed**
+- Reworked the desktop register color system in `kelmah-frontend/src/modules/auth/components/register/Register.jsx` so the form panel, step surfaces, selector cards, helper text, and action rows now derive from theme-aware tokens instead of fixed cream/light-mode values.
+- Kept the left-side branding panel intact while making the right-side form shell render dark in dark mode and light in light mode.
+- Updated selector cards, progress blocks, summary cards, and text colors to use the same dark-mode surface language as the surrounding page.
+
+**Validation**
+- `get_errors` returned no diagnostics for `kelmah-frontend/src/modules/auth/components/register/Register.jsx`.
+- `npm run build` in `kelmah-frontend/` passed successfully after the theme-consistency refinement.
+- Residual build output still only includes the pre-existing `src/services/apiClient.js` dynamic/static import warning, which is unrelated to this UI fix.
+
+### Session: Frontend Admin Route Restoration March 9 2026 ✅ COMPLETED
 
 **Date**: March 9, 2026  
 **Scope**: Restore the missing frontend admin route modules that currently break Vite import resolution for `/admin/skills-management` and `/admin/payouts`.
@@ -27,6 +231,22 @@
 - The frontend currently has no `src/modules/admin/` directory, so both lazy imports in the admin route block are broken.
 - The missing admin pages and service layer still exist in the sibling `admin/admin/` package, which indicates this is a frontend module restoration issue rather than a route design issue.
 - `PayoutQueuePage` would become the next unresolved import even after fixing `SkillsAssessmentManagement`, so both admin pages and their service dependency need to be restored together.
+
+**Implementation completed**
+- Restored the frontend admin service layer in `kelmah-frontend/src/modules/admin/services/adminService.js` with the payout queue and platform-stats calls required by the routed admin pages.
+- Restored `kelmah-frontend/src/modules/admin/pages/PayoutQueuePage.jsx` so `/admin/payouts` resolves again and keeps the existing admin payout queue flow available.
+- Restored `kelmah-frontend/src/modules/admin/pages/SkillsAssessmentManagement.jsx` as a stable consolidated admin page so `/admin/skills-management` resolves again without pulling in more dead legacy dependencies.
+- Left `kelmah-frontend/src/routes/config.jsx` route paths and admin role guards unchanged; the fix is at the missing module surface rather than via route removal.
+
+**Validation**
+- `get_errors` returned no diagnostics for:
+  - `kelmah-frontend/src/modules/admin/services/adminService.js`
+  - `kelmah-frontend/src/modules/admin/pages/PayoutQueuePage.jsx`
+  - `kelmah-frontend/src/modules/admin/pages/SkillsAssessmentManagement.jsx`
+  - `kelmah-frontend/src/routes/config.jsx`
+- `npm run build` in `kelmah-frontend/` now passes successfully.
+- The original Vite import-analysis failure on `../modules/admin/pages/SkillsAssessmentManagement` is resolved.
+- Residual build output only reports the existing dynamic/static import warning around `src/services/apiClient.js`, which is unrelated to this route restoration.
 
 ### Session: Desktop Registration UX Redesign March 9 2026 ✅ COMPLETED
 

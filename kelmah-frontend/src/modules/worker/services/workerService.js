@@ -5,6 +5,207 @@ const WORKERS_BASE = '/users/workers';
 const workerPath = (workerId, suffix = '') =>
   `/users/workers/${workerId}${suffix}`;
 
+const extractLocationString = (location) => {
+  if (!location) {
+    return '';
+  }
+
+  if (typeof location === 'string') {
+    return location;
+  }
+
+  if (typeof location === 'object') {
+    return (
+      location.address || location.city || location.name || location.label || ''
+    );
+  }
+
+  return '';
+};
+
+const normalizeWorkerSkills = (worker = {}) => {
+  if (Array.isArray(worker.skills)) {
+    return worker.skills
+      .map((skill) =>
+        typeof skill === 'string'
+          ? skill
+          : skill?.name || skill?.skillName || skill?.label || '',
+      )
+      .filter(Boolean);
+  }
+
+  if (Array.isArray(worker.specializations)) {
+    return worker.specializations.filter(Boolean);
+  }
+
+  return [];
+};
+
+const normalizeWorkerSearchRecord = (worker = {}) => {
+  const id =
+    worker.id ||
+    worker.userId ||
+    (worker._id && worker._id.toString ? worker._id.toString() : worker._id);
+
+  return {
+    ...worker,
+    id,
+    userId: worker.userId || id,
+    name:
+      worker.name ||
+      [worker.firstName, worker.lastName].filter(Boolean).join(' ') ||
+      'Skilled Worker',
+    title:
+      worker.title ||
+      worker.profession ||
+      (Array.isArray(worker.specializations) ? worker.specializations[0] : '') ||
+      'Professional Worker',
+    profession:
+      worker.profession ||
+      worker.title ||
+      (Array.isArray(worker.specializations) ? worker.specializations[0] : '') ||
+      'Professional Worker',
+    location: worker.location || worker.city || 'Ghana',
+    city: worker.city || extractLocationString(worker.location) || 'Ghana',
+    rating: Number(worker.rating ?? worker.averageRating ?? 0),
+    reviewCount: Number(worker.reviewCount ?? worker.totalReviews ?? 0),
+    hourlyRate: Number(worker.hourlyRate ?? worker.rate ?? worker.minRate ?? 0),
+    bio:
+      worker.bio ||
+      'Experienced professional delivering quality craftsmanship and reliable service.',
+    skills: normalizeWorkerSkills(worker),
+    availabilityStatus:
+      worker.availabilityStatus || worker.availability || 'available',
+    profilePicture:
+      worker.profilePicture || worker.avatar || worker.profileImage || null,
+    isVerified: Boolean(
+      worker.isVerified || worker.verified || worker.verification?.isVerified,
+    ),
+    latitude:
+      worker.latitude ??
+      worker.location?.latitude ??
+      worker.location?.coordinates?.latitude ??
+      worker.location?.coordinates?.[1] ??
+      null,
+    longitude:
+      worker.longitude ??
+      worker.location?.longitude ??
+      worker.location?.coordinates?.longitude ??
+      worker.location?.coordinates?.[0] ??
+      null,
+  };
+};
+
+const extractWorkerCollection = (payload = {}) => {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  return payload?.workers || payload?.results || payload?.items || [];
+};
+
+const extractWorkerPagination = (payload = {}, requestParams = {}) => {
+  const pagination = payload?.pagination || payload?.meta?.pagination || {};
+  const total =
+    pagination.totalWorkers ||
+    pagination.totalItems ||
+    pagination.total ||
+    extractWorkerCollection(payload).length;
+  const limit = pagination.limit || requestParams.limit || 12;
+
+  return {
+    page: pagination.currentPage || pagination.page || requestParams.page || 1,
+    limit,
+    totalItems: total,
+    totalPages:
+      pagination.totalPages ||
+      pagination.pages ||
+      Math.max(1, Math.ceil(total / limit)),
+    total,
+  };
+};
+
+const buildWorkerSearchQueryParams = (params = {}) => {
+  const query = {
+    page: params.page || 1,
+    limit: params.limit || 12,
+  };
+
+  const keyword =
+    params.keyword ||
+    params.query ||
+    params.search ||
+    params.workNeeded ||
+    params.keywords;
+  if (keyword) {
+    query.keywords = keyword;
+  }
+
+  const locationValue = extractLocationString(params.location);
+  if (locationValue) {
+    query.city = locationValue.split(',')[0].trim();
+  } else if (params.city) {
+    query.city = params.city;
+  }
+
+  const latitude =
+    params.latitude ??
+    params.location?.coordinates?.latitude ??
+    params.location?.coordinates?.[1];
+  const longitude =
+    params.longitude ??
+    params.location?.coordinates?.longitude ??
+    params.location?.coordinates?.[0];
+  if (latitude !== undefined && longitude !== undefined) {
+    query.latitude = latitude;
+    query.longitude = longitude;
+    if (params.distance || params.radius) {
+      query.radius = params.distance || params.radius;
+    }
+  }
+
+  const trade = params.trade || params.category || params.primaryTrade;
+  if (trade) {
+    query.primaryTrade = trade;
+  }
+
+  const jobType = params.jobType || params.workType || params.type;
+  if (jobType) {
+    query.workType = jobType;
+  }
+
+  const skills = params.skills || params.skill;
+  if (Array.isArray(skills) && skills.length > 0) {
+    query.skills = skills.join(',');
+  } else if (typeof skills === 'string' && skills) {
+    query.skills = skills;
+  }
+
+  const minRating = params.minRating || params.rating || params.minimumRating;
+  if (minRating) {
+    query.rating = minRating;
+  }
+
+  const maxRate = params.budgetMax || params.maxRate;
+  if (maxRate) {
+    query.maxRate = maxRate;
+  }
+
+  if (params.availability || params.available) {
+    query.availability = params.availability || params.available;
+  }
+
+  if (params.verifiedOnly || params.verified) {
+    query.verified = 'true';
+  }
+
+  if (params.sort || params.sortBy) {
+    query.sort = params.sort || params.sortBy;
+  }
+
+  return query;
+};
+
 const unwrapPayload = (response) =>
   response?.data?.data ?? response?.data ?? {};
 
@@ -29,6 +230,24 @@ const attachMetadata = (data, payload = {}) => {
  * Service for making API calls related to workers
  */
 const workerService = {
+  buildWorkerSearchQueryParams,
+  normalizeWorkerSearchRecord,
+
+  queryWorkerDirectory: async (searchParams = {}, requestOptions = {}) => {
+    const queryParams = buildWorkerSearchQueryParams(searchParams);
+    const response = await api.get(WORKERS_BASE, {
+      params: queryParams,
+      signal: requestOptions.signal,
+    });
+    const payload = unwrapPayload(response);
+
+    return {
+      workers: extractWorkerCollection(payload).map(normalizeWorkerSearchRecord),
+      pagination: extractWorkerPagination(payload, queryParams),
+      payload,
+    };
+  },
+
   /**
    * Get all workers with optional filtering
    * @param {Object} filters - Filter criteria
@@ -287,20 +506,20 @@ const workerService = {
         throw error;
       }
 
-      // Fallback: try user profile endpoint for embedded availability data
-      const fallback = await api.get(`/users/profile`);
-      const profileData = unwrapPayload(fallback);
       return attachMetadata({
-        status: profileData?.availability?.status || 'unknown',
-        isAvailable: profileData?.availability?.isAvailable ?? false,
-        timezone: profileData?.timezone || 'Africa/Accra',
+        status: 'not_set',
+        isAvailable: false,
+        timezone: 'Africa/Accra',
         daySlots: [],
         schedule: [],
         nextAvailable: null,
-        message: null,
+        message: 'Availability not configured',
         pausedUntil: null,
         lastUpdated: null,
-      }, profileData);
+      }, {
+        fallback: true,
+        fallbackReason: 'availability-endpoint-unavailable',
+      });
     }
     const payload = unwrapPayload(response);
     const status = payload?.status;
@@ -476,9 +695,9 @@ const workerService = {
    * @returns {Promise<Object>} - Search results with pagination
    */
   searchWorkers: (searchParams) => {
-    return api.get(`${WORKERS_BASE}/search`, {
-      params: searchParams,
-    });
+    return workerService
+      .queryWorkerDirectory(searchParams)
+      .then((result) => result.workers);
   },
 
   /**
@@ -619,12 +838,19 @@ const workerService = {
       throw new Error('jobId is required to get application status');
     }
 
-    const response = await api.get('/jobs/applications/me');
+    // Pass jobId filter and limit to avoid fetching ALL applications (M-FE8).
+    // The server filters when it supports the param; the client-side find()
+    // below acts as a safety net for backward compatibility.
+    const response = await api.get('/jobs/applications/me', {
+      params: { jobId, limit: 1 },
+    });
     const applications = response?.data?.data ?? response?.data ?? [];
     const list = Array.isArray(applications) ? applications : [];
     const match = list.find(
       (application) =>
-        application?.job?._id === jobId || application?.job?.id === jobId,
+        application?.job?._id === jobId ||
+        application?.job?.id === jobId ||
+        application?.jobId === jobId,
     );
 
     return {

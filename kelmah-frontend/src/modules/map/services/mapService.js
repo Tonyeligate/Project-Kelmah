@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { api } from '../../../services/apiClient';
 import { EXTERNAL_SERVICES } from '../../../config/services';
+import workerService from '../../worker/services/workerService';
 
 /**
  * Professional Map Service for Vocational Job Platform
@@ -130,37 +131,12 @@ class MapService {
    */
   async searchWorkersNearLocation(params = {}) {
     try {
-      const {
-        latitude,
-        longitude,
-        radius = 25,
-        category,
-        skills,
-        rating,
-        page = 1,
-        limit = 20,
-      } = params;
-
-      const searchParams = {
-        page,
-        limit,
-        latitude,
-        longitude,
-        radius,
+      const workers = await workerService.searchWorkers({
+        ...params,
         available: true,
-      };
-
-      if (category) searchParams.category = category;
-      if (skills) searchParams.skills = skills.join(',');
-      if (rating) searchParams.minRating = rating;
-
-      // Changed from '/workers/search/location' to '/workers/search/location'
-      // baseURL='/api' is provided by axiosInstance on Vercel, preventing /api duplication
-      const response = await api.get('/workers/search/location', {
-        params: searchParams,
       });
 
-      return this.transformWorkersForMap(response.data.data || []);
+      return this.transformWorkersForMap(workers);
     } catch (error) {
       if (import.meta.env.DEV) console.error('Workers API unavailable:', error);
       throw error;
@@ -196,23 +172,34 @@ class MapService {
   transformWorkersForMap(workers) {
     return workers.map((worker) => ({
       id: worker._id || worker.id,
-      name: `${worker.firstName} ${worker.lastName}`,
-      title: worker.profile?.title || worker.skills?.[0] || 'Skilled Worker',
-      bio: worker.profile?.bio || worker.description,
+      name:
+        worker.name ||
+        [worker.firstName, worker.lastName].filter(Boolean).join(' ') ||
+        'Skilled Worker',
+      title:
+        worker.title ||
+        worker.profession ||
+        worker.profile?.title ||
+        worker.skills?.[0] ||
+        'Skilled Worker',
+      bio: worker.bio || worker.profile?.bio || worker.description,
       category:
-        worker.profile?.category || this.getCategoryFromSkills(worker.skills),
+        worker.profile?.category ||
+        worker.profession ||
+        this.getCategoryFromSkills(worker.skills),
       skills: worker.skills || [],
-      hourlyRate: worker.profile?.hourlyRate,
-      rating: worker.rating || 0,
-      reviewCount: worker.reviewCount || 0,
+      hourlyRate: worker.hourlyRate || worker.profile?.hourlyRate,
+      rating: worker.rating || worker.averageRating || 0,
+      reviewCount: worker.reviewCount || worker.totalReviews || 0,
       coordinates: this.extractCoordinates(worker),
-      profileImage: worker.profileImage,
+      profileImage: worker.profileImage || worker.profilePicture,
       type: 'worker',
       color: '#1a1a1a', // Black for workers
-      verified: worker.verified || false,
+      verified:
+        worker.verified || worker.isVerified || worker.verification?.isVerified || false,
       online: worker.isOnline || false,
       distance: worker.distance,
-      availability: worker.availability,
+      availability: worker.availability || worker.availabilityStatus,
     }));
   }
 

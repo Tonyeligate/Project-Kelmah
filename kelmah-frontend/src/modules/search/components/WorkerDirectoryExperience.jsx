@@ -35,24 +35,6 @@ const PageWrapper = styled(Box)(({ theme }) => ({
   minHeight: 'calc(100dvh - 64px)',
 }));
 
-const extractLocationString = (location) => {
-  if (!location) {
-    return '';
-  }
-
-  if (typeof location === 'string') {
-    return location;
-  }
-
-  if (typeof location === 'object') {
-    return (
-      location.address || location.city || location.name || location.label || ''
-    );
-  }
-
-  return '';
-};
-
 const normalizeWorkerRecord = (worker = {}) => {
   const id =
     worker.id ||
@@ -135,79 +117,6 @@ const sortWorkerResults = (workers = [], sortOption = 'relevance') => {
   }
 };
 
-const buildWorkerQueryParams = (params = {}) => {
-  const query = {
-    page: params.page || 1,
-    limit: params.limit || 12,
-  };
-
-  const keyword =
-    params.keyword ||
-    params.query ||
-    params.search ||
-    params.workNeeded ||
-    params.keywords;
-  if (keyword) {
-    query.keywords = keyword;
-  }
-
-  const locationValue = extractLocationString(params.location);
-  if (locationValue) {
-    query.city = locationValue.split(',')[0].trim();
-  }
-
-  if (params.location && params.location.coordinates) {
-    const { coordinates } = params.location;
-    const latitude = coordinates.latitude ?? coordinates[0];
-    const longitude = coordinates.longitude ?? coordinates[1];
-
-    if (latitude !== undefined && longitude !== undefined) {
-      query.latitude = latitude;
-      query.longitude = longitude;
-      if (params.distance) {
-        query.radius = params.distance;
-      }
-    }
-  }
-
-  const trade = params.trade || params.category || params.primaryTrade;
-  if (trade) {
-    query.primaryTrade = trade;
-  }
-
-  const jobType = params.jobType || params.workType || params.type;
-  if (jobType) {
-    query.workType = jobType;
-  }
-
-  const skills = params.skills || params.skill;
-  if (Array.isArray(skills) && skills.length > 0) {
-    query.skills = skills.join(',');
-  } else if (typeof skills === 'string' && skills) {
-    query.skills = skills;
-  }
-
-  const minRating = params.minRating || params.rating || params.minimumRating;
-  if (minRating) {
-    query.rating = minRating;
-  }
-
-  const maxRate = params.budgetMax || params.maxRate;
-  if (maxRate) {
-    query.maxRate = maxRate;
-  }
-
-  const availability = params.availability;
-  if (availability) {
-    query.availability = availability;
-  }
-
-  if (params.verifiedOnly) {
-    query.verified = 'true';
-  }
-
-  return query;
-};
 
 const WorkerDirectoryExperience = ({
   variant = 'public',
@@ -243,10 +152,14 @@ const WorkerDirectoryExperience = ({
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const abortControllerRef = useRef(null);
+  const suggestionsAbortRef = useRef(null);
 
-  useEffect(() => () => abortControllerRef.current?.abort(), []);
+  useEffect(() => () => {
+    abortControllerRef.current?.abort();
+    suggestionsAbortRef.current?.abort();
+  }, []);
 
-  const fetchSearchSuggestions = async (query) => {
+  const fetchSearchSuggestions = async (query, signal) => {
     if (!query || query.length < 2) {
       setSearchSuggestions([]);
       setShowSuggestions(false);
@@ -256,6 +169,7 @@ const WorkerDirectoryExperience = ({
     try {
       const response = await api.get('/users/workers/suggest', {
         params: { query },
+        signal,
       });
 
       if (response.data?.success) {
@@ -265,7 +179,8 @@ const WorkerDirectoryExperience = ({
         setSearchSuggestions([]);
         setShowSuggestions(false);
       }
-    } catch {
+    } catch (err) {
+      if (err.name === 'AbortError' || err.name === 'CanceledError') return;
       setSearchSuggestions([]);
       setShowSuggestions(false);
     }
@@ -274,11 +189,17 @@ const WorkerDirectoryExperience = ({
   useEffect(() => {
     const handler = setTimeout(() => {
       if (searchParams.keyword) {
-        fetchSearchSuggestions(searchParams.keyword);
+        suggestionsAbortRef.current?.abort();
+        const controller = new AbortController();
+        suggestionsAbortRef.current = controller;
+        fetchSearchSuggestions(searchParams.keyword, controller.signal);
       }
     }, 300);
 
-    return () => clearTimeout(handler);
+    return () => {
+      clearTimeout(handler);
+      suggestionsAbortRef.current?.abort();
+    };
   }, [searchParams.keyword]);
 
   const executeWorkerSearch = useCallback(
@@ -286,59 +207,21 @@ const WorkerDirectoryExperience = ({
       abortControllerRef.current?.abort();
       const controller = new AbortController();
       abortControllerRef.current = controller;
-
-      const apiParams = buildWorkerQueryParams(params);
       setLoading(true);
       setError(null);
 
       try {
-        const response = await api.get('/users/workers', {
-          params: apiParams,
+        const result = await workerService.queryWorkerDirectory(params, {
           signal: controller.signal,
         });
-
-        if (!response.data || !response.data.success) {
-          throw new Error(
-            response.data?.message || 'Failed to fetch worker search results',
-          );
-        }
-
-        const payload = response.data.data || response.data;
-        const rawWorkers = Array.isArray(payload)
-          ? payload
-          : payload?.workers || payload?.results || [];
-        const normalizedWorkers = rawWorkers.map((worker) =>
+        const normalizedWorkers = result.workers.map((worker) =>
           normalizeWorkerRecord(worker),
         );
         const activeSort = sortOption || params.sort || sortOrder || 'relevance';
         const sortedWorkers = sortWorkerResults(normalizedWorkers, activeSort);
 
         setSearchResults(sortedWorkers);
-
-        const paginationData =
-          payload?.pagination || response.data.meta?.pagination || {};
-        const totalItems =
-          paginationData.totalWorkers ||
-          paginationData.totalItems ||
-          paginationData.total ||
-          sortedWorkers.length;
-        const perPage = paginationData.limit || apiParams.limit || 12;
-        const totalPages =
-          paginationData.totalPages ||
-          paginationData.pages ||
-          Math.max(1, Math.ceil(totalItems / perPage));
-
-        setPagination({
-          page:
-            paginationData.currentPage ||
-            paginationData.page ||
-            apiParams.page ||
-            1,
-          limit: perPage,
-          totalItems,
-          totalPages,
-          total: totalItems,
-        });
+        setPagination(result.pagination);
       } catch (requestError) {
         if (
           requestError.name === 'AbortError' ||
@@ -531,16 +414,11 @@ const WorkerDirectoryExperience = ({
     updateSearchURL(newParams, newParams.sort || sortOrder);
   };
 
-  const performSearchWithSort = async (params, sort) => {
-    await executeWorkerSearch(params, { sortOption: sort });
-  };
-
   const handleSortChange = (newSortOrder) => {
     setSortOrder(newSortOrder);
     const newParams = { ...searchParams, sort: newSortOrder };
     setSearchParams(newParams);
     updateSearchURL(newParams, newSortOrder);
-    performSearchWithSort(newParams, newSortOrder);
   };
 
   const handleRemoveFilter = (filterKey, filterValue) => {

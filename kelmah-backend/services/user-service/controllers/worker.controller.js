@@ -980,11 +980,19 @@ const getMutableWorkerProfile = async (userDoc) => {
   if (!profile) {
     profile = new WorkerProfileModel({
       userId: userDoc._id,
+      profession: userDoc.profession,
+      title: userDoc.profession,
+      headline: userDoc.profession,
       location: userDoc.location,
       bio: userDoc.bio,
       skills: userDoc.skills || [],
+      specializations: userDoc.specializations || [],
       hourlyRate: userDoc.hourlyRate,
       currency: userDoc.currency,
+      yearsOfExperience: userDoc.yearsOfExperience,
+      availabilityStatus: userDoc.availabilityStatus,
+      isVerified: userDoc.isVerified,
+      profilePicture: userDoc.profilePicture,
     });
   }
   return profile;
@@ -3349,28 +3357,13 @@ class WorkerController {
       if (firstName) user.firstName = sanitizeText(firstName);
       if (lastName) user.lastName = sanitizeText(lastName);
       if (phone) user.phone = phone;
-      if (location) user.location = sanitizeText(location);
-      if (bio) user.bio = sanitizeText(bio);
-      if (hourlyRate !== undefined) user.hourlyRate = Number(hourlyRate);
-      if (experience !== undefined) user.yearsOfExperience = Number(experience);
-      if (Array.isArray(skills)) user.skills = skills;
 
-      // Update embedded worker profile fields for backward compatibility
-      if (!user.workerProfile || typeof user.workerProfile !== 'object') {
-        user.workerProfile = {};
-      }
-
-      if (title) user.workerProfile.title = sanitizeText(title);
-      if (bio) user.workerProfile.bio = sanitizeText(bio);
-      if (hourlyRate !== undefined) user.workerProfile.hourlyRate = Number(hourlyRate);
-      if (experience !== undefined) user.workerProfile.experience = Number(experience);
-      if (location) user.workerProfile.location = sanitizeText(location);
-      
-      // Update arrays
-      if (Array.isArray(skills)) user.workerProfile.skills = skills;
-      if (Array.isArray(education)) user.workerProfile.education = education;
-      if (Array.isArray(languages)) user.workerProfile.languages = languages;
-      if (Array.isArray(portfolio)) user.workerProfile.portfolio = portfolio;
+      const sanitizedTitle = title ? sanitizeText(title) : null;
+      const sanitizedBio = bio ? sanitizeText(bio) : null;
+      const sanitizedLocation = location ? sanitizeText(location) : null;
+      const normalizedSkills = Array.isArray(skills)
+        ? skills.map((skill) => sanitizeText(skill)).filter(Boolean)
+        : null;
 
       if (typeof profilePicture === 'string' && profilePicture.trim()) {
         user.profilePicture = profilePicture.trim();
@@ -3380,15 +3373,16 @@ class WorkerController {
         user.profilePictureMetadata = profilePictureMetadata;
       }
 
-      if (title) {
-        profile.title = title;
-        profile.headline = title;
+      if (sanitizedTitle) {
+        profile.title = sanitizedTitle;
+        profile.headline = sanitizedTitle;
+        profile.profession = sanitizedTitle;
       }
-      if (bio) profile.bio = bio;
+      if (sanitizedBio) profile.bio = sanitizedBio;
       if (hourlyRate !== undefined) profile.hourlyRate = Number(hourlyRate);
       if (experience !== undefined) profile.yearsOfExperience = Number(experience);
-      if (location) profile.location = location;
-      if (Array.isArray(skills)) profile.skills = skills;
+      if (sanitizedLocation) profile.location = sanitizedLocation;
+      if (normalizedSkills) profile.skills = normalizedSkills;
       if (Array.isArray(education)) profile.education = education;
       if (Array.isArray(languages)) profile.languages = languages;
       if (Array.isArray(portfolio)) profile.portfolioItems = portfolio;
@@ -3399,6 +3393,11 @@ class WorkerController {
       // Save the updated user and worker profile
       await Promise.all([user.save(), profile.save()]);
 
+      const canonicalWorker = buildCanonicalWorkerSnapshot(
+        typeof user.toObject === 'function' ? user.toObject() : user,
+        typeof profile.toObject === 'function' ? profile.toObject() : profile,
+      );
+
       // Return the updated profile
       const updatedProfile = {
         id: user._id,
@@ -3407,15 +3406,17 @@ class WorkerController {
         email: user.email,
         phone: user.phone,
         role: user.role,
-        profileImageUrl: user.profilePicture || null,
-        profilePicture: user.profilePicture || null,
-        ...user.workerProfile,
+        profileImageUrl: canonicalWorker.profilePicture || null,
+        profilePicture: canonicalWorker.profilePicture || null,
         workerProfileId: profile._id,
-        bio: profile.bio || user.bio || null,
-        location: profile.location || user.location || null,
-        hourlyRate: profile.hourlyRate ?? user.hourlyRate ?? null,
-        experience: profile.yearsOfExperience ?? user.yearsOfExperience ?? null,
-        skills: Array.isArray(profile.skills) && profile.skills.length > 0 ? profile.skills : (user.skills || []),
+        profession: canonicalWorker.profession || null,
+        title: profile.title || profile.headline || canonicalWorker.profession || null,
+        bio: canonicalWorker.bio || null,
+        location: canonicalWorker.location || null,
+        hourlyRate: canonicalWorker.hourlyRate ?? null,
+        currency: canonicalWorker.currency || 'GHS',
+        experience: canonicalWorker.yearsOfExperience ?? null,
+        skills: canonicalWorker.skills,
         languages: profile.languages || [],
         education: profile.education || [],
       };
