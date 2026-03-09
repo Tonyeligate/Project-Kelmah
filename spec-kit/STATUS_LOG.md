@@ -2,7 +2,115 @@
 
 ---
 
-### Session: Deep Match/Recommendation Precision Audit And Hardening 🔄 IN PROGRESS
+### Session: Live Bid Self-Route Deployment Verification 🔄 IN PROGRESS
+
+**Date**: March 9, 2026  
+**Scope**: Confirm whether Render has rolled the bid self-service route fixes for the API gateway and job service, trigger a redeploy if the workspace exposes a safe mechanism, and re-verify only the stale live endpoints.
+
+**Acceptance Criteria**
+- Prove whether the live gateway still serves stale bid self-service behavior.
+- Identify a repo-backed Render deploy trigger or equivalent safe redeploy path.
+- Trigger the minimum required redeploy scope for the affected backend services when possible.
+- Re-test `GET /api/bids/me?limit=5` and `GET /api/bids/stats/me` against `https://kelmah-api-gateway-gf3g.onrender.com`.
+- Record whether the remaining blocker is deployment state or code correctness.
+
+**Mapped execution surface**
+- `kelmah-backend/api-gateway/routes/bid.routes.js`
+- `kelmah-backend/services/job-service/routes/bid.routes.js`
+- `kelmah-backend/services/job-service/controllers/bid.controller.js`
+- `.github/workflows/deploy-backend.yml`
+- `render.yaml`
+- Archived deployment references under `backup/root_cleanup_20260201/misc/`
+
+**Current findings**
+- Live `GET /api/bids/me?limit=5` still returns a `500` CastError for value `"me"`, proving the old `/:bidId` route ordering is still active in production.
+- Live `GET /api/bids/stats/me` still returns `404`, proving the self-service stats route is not yet live.
+- Live legacy worker routes remain healthy, which narrows the blocker to deployment rollout rather than the broader bid subsystem.
+- The workspace contains two plausible redeploy mechanisms: `autoDeploy: true` in `render.yaml` and Render deploy hooks referenced by `.github/workflows/deploy-backend.yml`.
+
+### Session: Native Mobile Match Hardening And Contract Cleanup 🔄 IN PROGRESS
+
+**Date**: March 9, 2026  
+**Scope**: Execute the top native audit fixes on Android and iOS, then harden the mobile-consumed backend contracts those flows depend on without broad unrelated service churn.
+
+**Acceptance Criteria**
+- Remove silent recommendation-fallback ambiguity on both native apps.
+- Improve realtime token handling so mobile sockets can recover cleanly across token changes.
+- Remove the current-user/worker-id identity mixing in the native profile relevance snapshot flow.
+- Harden the mobile-consumed backend contracts for job recommendations and worker profile signals at the source.
+- Validate touched backend and Android files locally and write a prioritized follow-up backlog.
+
+**Mapped execution surface**
+- Android native: `JobsViewModel.kt`, `HomeScreen.kt`, `ProfileRepository.kt`, `ProfileApiService.kt`, `ProfileViewModel.kt`, `RealtimeSocketManager.kt`, `KelmahApp.kt`
+- iOS native: `JobsViewModel.swift`, `HomeView.swift`, `ProfileRepository.swift`, `ProfileView.swift`, `RealtimeSocketManager.swift`, `RootTabView.swift` if needed
+- Backend contracts: `kelmah-backend/services/job-service/controllers/job.controller.js`, `kelmah-backend/services/job-service/utils/jobTransform.js`, `kelmah-backend/services/user-service/routes/user.routes.js`, `kelmah-backend/services/user-service/controllers/user.controller.js`, and any directly related helpers required by those endpoints
+
+**Current implementation target**
+- Native recommendation UX will surface degraded fallback state explicitly instead of pretending urgent jobs are personalized matches.
+- Native profile signal loading will move to a consistent current-user worker snapshot flow.
+- Realtime socket lifecycle will become token-aware.
+- Backend will expose a cleaner mobile profile-signals contract and tighten recommendation payload stability for native consumers.
+
+---
+
+### Session: Native Mobile Match, Activity, And Reliability Audit ✅ COMPLETED
+
+**Date**: March 9, 2026  
+**Scope**: Perform a deep native-only audit across the Android and iOS apps for job-match precision, worker-profile matching trust, search/recommendation behavior, recent-activity truthfulness, session/auth resilience, realtime freshness, and mobile-specific productivity gaps.
+
+**Acceptance Criteria**
+- Dry-audit the active Android and iOS native source surfaces without mixing web or backend fix scope.
+- Rank findings across bugs, security, performance, maintainability, and edge-case handling.
+- Identify the highest-value changes that would most improve recommendation trust, recent activity truthfulness, and realtime productivity.
+- Record the audit in spec-kit with concrete native follow-up priorities.
+
+**Dry-audit file surface confirmed**
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobsViewModel.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/data/JobsRepository.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/home/presentation/HomeScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/data/ProfileRepository.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/data/MessagingRepository.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesViewModel.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/data/NotificationsRepository.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/presentation/NotificationsViewModel.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/realtime/RealtimeSocketManager.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/storage/TokenManager.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/session/SessionCoordinator.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/security/PasswordPolicy.kt`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobsViewModel.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Data/JobsRepository.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Home/Presentation/HomeView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Profile/Data/ProfileRepository.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Messaging/Data/MessagesRepository.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Messaging/Presentation/MessagesViewModel.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Notifications/Data/NotificationsRepository.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Notifications/Presentation/NotificationsViewModel.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Realtime/RealtimeSocketManager.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Network/APIClient.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Storage/KeychainStore.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Storage/SessionStore.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Session/SessionCoordinator.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Security/PasswordPolicy.swift`
+- Native test targets on both platforms.
+
+**Key findings snapshot**
+- Both native apps silently replace recommendation failures with urgent jobs, masking degraded match quality.
+- Both native jobs repositories use permissive fallback-heavy parsing for ranking-critical fields, allowing malformed matches to render as valid recommendations.
+- Both native profile repositories combine `users/me/credentials` with worker-ID-specific endpoints, producing an identity-mixing risk in the profile relevance snapshot abstraction.
+- Both native realtime flows reconnect without token rotation logic and refresh entire message/notification lists on each signal, which is expensive and fragile under heavy activity.
+- Recent alert previews rely on repository order without local timestamp sorting, so “recent activity” is not guaranteed to be recent.
+- Password policy and automated test coverage are both too weak for a marketplace app with messaging and payment-adjacent flows.
+
+**Artifacts created**
+- `spec-kit/MOBILE_NATIVE_MATCH_ACTIVITY_AUDIT_MAR09_2026.md`
+
+**Verification**
+- Read-only audit completed across the native Android and iOS code surfaces listed above.
+- Findings cross-checked directly against active source locations in jobs, home, profile, messaging, notifications, session, realtime, security, and test files.
+
+---
+
+### Session: Deep Match/Recommendation Precision Audit And Hardening ✅ COMPLETED
 
 **Date**: March 9, 2026  
 **Scope**: Perform deep end-to-end audit and targeted hardening for job matching, worker profile matching, recommendation precision, recent-activity reliability, and DB-to-backend query correctness across gateway, services, and frontend pages.
@@ -22,13 +130,30 @@
 - `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
 - `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx`
 
-**Current findings snapshot**
+**Key findings snapshot**
 - Gateway recommendations proxy path currently drops query params.
 - Service-trust middleware validates header shape but does not enforce allowlisted roles in the new header format.
 - Worker search controller accepts unbounded `limit`, increasing scraping and DB-load risk.
 - Hirer status selector usage includes an `active` alias that does not map to canonical status buckets in all consumers.
 - Recent activity feed still misses application events from bucketized state shape.
 - Jobs page empty-state refresh references an undefined `fetchJobs` function, and nested card actions still allow event bubbling.
+
+**Implementation completed**
+- Updated `kelmah-backend/api-gateway/routes/job.routes.js` so `GET /api/jobs/recommendations` now preserves query params and enforces `worker` role at gateway level.
+- Hardened `kelmah-backend/shared/middlewares/serviceTrust.js` by enforcing allowlisted roles for the signed `x-authenticated-user` header path.
+- Added strict pagination normalization in `kelmah-backend/services/user-service/controllers/worker.controller.js` for worker search (`page >= 1`, `1 <= limit <= 50`).
+- Fixed availability schema/query mismatch in `kelmah-backend/services/user-service/controllers/user.controller.js` (`user` field + `daySlots` mapping) and returned a compatible response with `schedule` and `daySlots`.
+- Corrected authored-reviews query in `kelmah-backend/services/review-service/controllers/review.controller.js` from `reviewee` to `reviewer`.
+- Normalized hirer job selectors and reducers in `kelmah-frontend/src/modules/hirer/services/hirerSlice.js` to support `active -> open` alias and resilient `id/_id` handling.
+- Updated `kelmah-frontend/src/modules/hirer/components/RecentActivityFeed.jsx` to derive application events from `buckets` state shape.
+- Fixed `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx` empty-state refresh action (undefined `fetchJobs`) and prevented nested card-action click bubbling; added keyboard accessibility for card activation.
+- Improved `kelmah-frontend/src/modules/hirer/components/WorkerSearch.jsx` by replacing random fallback IDs with stable deterministic IDs, separating bookmark hydration from search fetches, and adding stale-response guards.
+
+**Verification**
+- `get_errors` reported no editor diagnostics on all edited files.
+- `node --check` passed on edited backend files (`job.routes.js`, `serviceTrust.js`, `worker.controller.js`, `user.controller.js`, `review.controller.js`).
+- `npm run build` passed in `kelmah-frontend` (non-blocking existing Vite dynamic/static import warning remains in `src/services/apiClient.js`).
+- Live Render probes (no restart/redeploy) captured runtime evidence: `GET /api/users/workers/search?limit=500` currently fails with `500`, and even `limit=50` has high latency (~33s), validating the need for strict search caps and optimization.
 
 ---
 

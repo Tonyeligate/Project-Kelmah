@@ -180,6 +180,20 @@ ALLOWED_ORIGINS=https://kelmah.com,https://www.kelmah.com,https://staging.kelmah
 4. [ ] Real-time messaging verification
 5. [ ] Mobile app performance
 
+### Bid Self-Service Route Verification
+Run these smoke checks after any API gateway or job-service deployment that changes bid routing.
+
+```bash
+# Worker-authenticated smoke checks
+GET /api/bids/me?limit=5
+GET /api/bids/stats/me
+
+# Expected behavior
+- /api/bids/me returns 200 with paginated bid data under data.items or equivalent normalized data
+- /api/bids/stats/me returns 200 with worker bid quota and usage statistics
+- Neither endpoint should fall through to /:bidId handlers or return CastError for value "me"
+```
+
 ## 🎉 SUCCESS METRICS
 
 **Launch Targets:**
