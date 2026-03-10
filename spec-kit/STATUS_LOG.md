@@ -2,6 +2,55 @@
 
 ---
 
+### Session: CRIT-16 Gateway Auth Proxy Parity March 10 2026 🔄 IN PROGRESS
+
+**Date**: March 10, 2026  
+**Scope**: Fix the API gateway auth router so deployed OAuth, MFA setup, and change-password requests reach auth-service with the correct route surface and request-forwarding contract.
+
+**Acceptance Criteria**
+- `GET /api/auth/google` and `POST /api/auth/oauth/exchange` are mounted on the gateway and forwarded to auth-service.
+- Protected auth mutations that carry JSON bodies no longer rely on the generic proxy path that is timing out on Render.
+- OAuth redirects preserve upstream `Location` headers through the gateway.
+- Gateway auth route coverage locks the new forwarding contract in place.
+- After deployment, live probes confirm gateway parity for OAuth entry, OAuth exchange, MFA setup, change-password, and reject-bid.
+
+**Mapped execution surface**
+- `kelmah-backend/api-gateway/routes/auth.routes.js`
+- `kelmah-backend/api-gateway/routes/auth.routes.test.js`
+- `kelmah-backend/api-gateway/proxy/serviceProxy.js`
+- `kelmah-backend/api-gateway/middlewares/auth.js`
+- `kelmah-backend/services/auth-service/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/shared/middlewares/serviceTrust.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Data flow trace**
+- Frontend auth requests enter `GET|POST /api/auth/*` on the API gateway and are first matched by `kelmah-backend/api-gateway/routes/auth.routes.js`.
+- Public OAuth entry and exchange must forward into `kelmah-backend/services/auth-service/routes/auth.routes.js`, which owns `/google`, `/google/callback`, and `/oauth/exchange`.
+- Protected MFA and password mutations authenticate at the gateway, then must forward the original bearer token plus the signed gateway trust headers into auth-service so `verifyGatewayRequest` can populate `req.user`.
+- Auth-service then resolves `setupTwoFactor()`, `changePassword()`, or `exchangeOAuthCode()` in `auth.controller.js` and returns the REST response back through the gateway.
+
+**Dry-audit findings so far**
+- The gateway auth router mounted neither `/google` nor `/oauth/exchange`, so the deployed `404 Endpoint not found` responses were coming from the gateway layer, not auth-service.
+- `POST /api/auth/change-password` and `POST /api/auth/mfa/setup` still used the generic protected proxy path, while stable login already bypassed that proxy via direct axios forwarding.
+- The generic proxy path remains the only layer shared by the live `504` MFA and change-password failures, which isolates the timeout to gateway forwarding rather than auth controller logic.
+- The direct gateway response helper previously stripped upstream `Location` headers, which would have broken OAuth redirects even after adding the missing routes.
+
+**Implementation completed**
+- Added direct axios forwarding for missing OAuth endpoints in `kelmah-backend/api-gateway/routes/auth.routes.js`, including Google, Facebook, LinkedIn, and `POST /oauth/exchange`.
+- Routed protected auth JSON mutations through direct axios forwarding with bearer token plus signed gateway trust headers instead of the generic proxy path for `change-password`, MFA setup/verify/disable, legacy MFA aliases, `validate`, and account deactivation.
+- Preserved upstream `Location` headers in the gateway direct-forward response helper so OAuth redirects survive the gateway.
+- Added focused coverage in `kelmah-backend/api-gateway/routes/auth.routes.test.js` for OAuth exchange forwarding, OAuth redirect preservation, protected change-password forwarding, and protected MFA setup forwarding.
+
+**Validation**
+- Focused gateway auth route verification passed from the repository root:
+  - `npm test -- auth.routes.test.js --runInBand`
+  - Result: 1 suite passed, 4 tests passed, 0 failures.
+
+**Current state**
+- The gateway route fix is implemented and validated locally.
+- A new deployment trigger and live parity rerun are still required to confirm that OAuth, MFA setup, and change-password now behave correctly on the deployed gateway.
+
 ### Session: CRIT-15 Live Worker Verification And Recommendation Parity Rerun March 10 2026 ⚠️ PARTIALLY COMPLETE
 
 **Date**: March 10, 2026  
@@ -552,7 +601,7 @@ See `spec-kit/HIRER_SERVICE_CONTRACT_FOLLOWUP_MAR09_2026.md` for the deeper audi
 
 See `spec-kit/REVIEW_CANDIDATES_ENDPOINT_RESTORATION_MAR09_2026.md` for the deeper audit record.
 
-### Session: CRIT-04D apiClient Mixed Import Build Warning March 10 2026 🔄 IN PROGRESS
+### Session: CRIT-04D apiClient Mixed Import Build Warning March 10 2026 ✅ COMPLETED
 
 **Date**: March 10, 2026  
 **Scope**: Remove the remaining Vite mixed dynamic/static import warning around `src/services/apiClient.js` by auditing every dynamic import caller, converting safe lazy imports to consistent static imports, and revalidating the frontend build output.
@@ -580,10 +629,17 @@ See `spec-kit/REVIEW_CANDIDATES_ENDPOINT_RESTORATION_MAR09_2026.md` for the deep
 - Exactly five dynamic-import call sites still target `src/services/apiClient.js`: auth service refresh handling, premium upgrade, quick-job request photo upload, quick-job tracking completion upload, and the PWA helper wrapper.
 - The audited call sites use lazy imports as convenience wrappers rather than as verified cycle breakers, so they are candidates for direct static imports.
 - `authService.js` already statically imports named `api`, so the remaining dynamic import there should be replaceable with a static default `apiClient` import while preserving the shared refresh lock.
-- The residual frontend build warning after CRIT-04 through CRIT-04C is isolated to this mixed import pattern.
+- The residual frontend build warning after CRIT-04 through CRIT-04C was not caused by remaining source-level `import()` calls; after re-auditing the live tree, the real source was Rollup warning that route-lazy chunks and eagerly loaded modules both consume the shared `apiClient` singleton.
 
-**Implementation status**
-- Dry audit completed; static import cleanup and build verification in progress.
+**Implementation completed**
+- Re-audited the live frontend tree and confirmed the previously flagged source files already use static `api` / `apiClient` imports, so no additional service or page refactor was required.
+- Updated `kelmah-frontend/vite.config.js` chunking so `src/services/apiClient.js` is emitted through an explicit `shared-api` manual chunk instead of relying on implicit chunk inference.
+- Added a targeted note in the Vite warning handler documenting that `apiClient` is an intentional shared singleton consumed by both eager modules and route-lazy chunks.
+
+**Validation**
+- `get_errors` returned no diagnostics for `kelmah-frontend/vite.config.js`.
+- An isolated frontend build completed successfully from `kelmah-frontend/` with the new `build/assets/shared-api-*.js` chunk present.
+- The previous `src/services/apiClient.js` mixed dynamic/static import warning no longer appeared in the clean isolated frontend build output.
 
 See `spec-kit/APICLIENT_IMPORT_WARNING_FIX_MAR10_2026.md` for the deeper audit record.
 

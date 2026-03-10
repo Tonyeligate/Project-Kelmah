@@ -37,10 +37,41 @@ const protectedAuthProxy = (req, res, next) => {
 // Authentication middleware for protected routes
 const { authenticate } = require('../middlewares/auth');
 
+const buildForwardHeaders = (req, { includeGatewayHeaders = false } = {}) => {
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-Request-ID': req.id || '',
+    'User-Agent': 'kelmah-api-gateway',
+  };
+
+  if (!includeGatewayHeaders) {
+    headers['ngrok-skip-browser-warning'] = 'true';
+  }
+
+  if (req.headers.authorization) {
+    headers.Authorization = req.headers.authorization;
+  }
+
+  if (includeGatewayHeaders) {
+    if (req.headers['x-authenticated-user']) {
+      headers['x-authenticated-user'] = req.headers['x-authenticated-user'];
+    }
+    if (req.headers['x-auth-source']) {
+      headers['x-auth-source'] = req.headers['x-auth-source'];
+    }
+    if (req.headers['x-gateway-signature']) {
+      headers['x-gateway-signature'] = req.headers['x-gateway-signature'];
+    }
+  }
+
+  return headers;
+};
+
 const sendUpstreamResponse = (res, upstreamResponse) => {
   const safeHeaders = {};
   if (upstreamResponse.headers['content-type']) safeHeaders['content-type'] = upstreamResponse.headers['content-type'];
   if (upstreamResponse.headers['set-cookie']) safeHeaders['set-cookie'] = upstreamResponse.headers['set-cookie'];
+  if (upstreamResponse.headers.location) safeHeaders.location = upstreamResponse.headers.location;
 
   res.status(upstreamResponse.status).set(safeHeaders);
   if (typeof upstreamResponse.data === 'string') {
@@ -53,6 +84,7 @@ const forwardPublicAuthDirect = async (req, res, authPath, {
   method = 'post',
   timeout = 60000,
   data = req.body,
+  params = req.query,
 } = {}) => {
   try {
     const upstream = getServiceUrl(req);
@@ -61,12 +93,39 @@ const forwardPublicAuthDirect = async (req, res, authPath, {
       method,
       url,
       data,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Request-ID': req.id || '',
-        'User-Agent': 'kelmah-api-gateway',
-        'ngrok-skip-browser-warning': 'true'
-      },
+      params,
+      headers: buildForwardHeaders(req),
+      maxRedirects: 0,
+      timeout,
+      validateStatus: () => true,
+    });
+
+    return sendUpstreamResponse(res, response);
+  } catch (error) {
+    const status = error.response?.status || 504;
+    return res.status(status).json({
+      success: false,
+      message: error.message || 'Authentication service temporarily unavailable'
+    });
+  }
+};
+
+const forwardProtectedAuthDirect = async (req, res, authPath, {
+  method = 'post',
+  timeout = 60000,
+  data = req.body,
+  params = req.query,
+} = {}) => {
+  try {
+    const upstream = getServiceUrl(req);
+    const url = `${upstream}/api/auth${authPath}`;
+    const response = await axios({
+      method,
+      url,
+      data,
+      params,
+      headers: buildForwardHeaders(req, { includeGatewayHeaders: true }),
+      maxRedirects: 0,
       timeout,
       validateStatus: () => true,
     });
@@ -125,6 +184,51 @@ const refreshTokenDirectHandler = async (req, res) => {
 };
 router.post('/refresh', rateLimiters.auth, refreshTokenDirectHandler);
 router.post('/refresh-token', rateLimiters.auth, refreshTokenDirectHandler);
+router.post('/oauth/exchange', rateLimiters.auth, (req, res) => {
+  return forwardPublicAuthDirect(req, res, '/oauth/exchange', { timeout: 60000 });
+});
+router.get('/google', rateLimiters.auth, (req, res) => {
+  return forwardPublicAuthDirect(req, res, '/google', {
+    method: 'get',
+    timeout: 60000,
+    data: undefined,
+  });
+});
+router.get('/google/callback', rateLimiters.auth, (req, res) => {
+  return forwardPublicAuthDirect(req, res, '/google/callback', {
+    method: 'get',
+    timeout: 60000,
+    data: undefined,
+  });
+});
+router.get('/facebook', rateLimiters.auth, (req, res) => {
+  return forwardPublicAuthDirect(req, res, '/facebook', {
+    method: 'get',
+    timeout: 60000,
+    data: undefined,
+  });
+});
+router.get('/facebook/callback', rateLimiters.auth, (req, res) => {
+  return forwardPublicAuthDirect(req, res, '/facebook/callback', {
+    method: 'get',
+    timeout: 60000,
+    data: undefined,
+  });
+});
+router.get('/linkedin', rateLimiters.auth, (req, res) => {
+  return forwardPublicAuthDirect(req, res, '/linkedin', {
+    method: 'get',
+    timeout: 60000,
+    data: undefined,
+  });
+});
+router.get('/linkedin/callback', rateLimiters.auth, (req, res) => {
+  return forwardPublicAuthDirect(req, res, '/linkedin/callback', {
+    method: 'get',
+    timeout: 60000,
+    data: undefined,
+  });
+});
 // Verify auth (returns current user)
 router.get('/verify', authenticate, protectedAuthProxy);
 // Resend verification email
@@ -136,17 +240,33 @@ router.post('/resend-verification-email', rateLimiters.auth, (req, res) => {
 router.post('/logout', authenticate, protectedAuthProxy);
 router.get('/me', authenticate, protectedAuthProxy);
 // Both frontend and auth-service use POST for change-password
-router.post('/change-password', authenticate, protectedAuthProxy);
-router.post('/validate', authenticate, protectedAuthProxy);
+router.post('/change-password', authenticate, (req, res) => {
+  return forwardProtectedAuthDirect(req, res, '/change-password', { timeout: 60000 });
+});
+router.post('/validate', authenticate, (req, res) => {
+  return forwardProtectedAuthDirect(req, res, '/validate', { timeout: 60000 });
+});
 
 // MFA routes — auth-service expects /mfa/setup, /mfa/verify, /mfa/disable
-router.post('/mfa/setup', authenticate, protectedAuthProxy);
-router.post('/mfa/verify', authenticate, protectedAuthProxy);
-router.post('/mfa/disable', authenticate, protectedAuthProxy);
+router.post('/mfa/setup', authenticate, (req, res) => {
+  return forwardProtectedAuthDirect(req, res, '/mfa/setup', { timeout: 60000 });
+});
+router.post('/mfa/verify', authenticate, (req, res) => {
+  return forwardProtectedAuthDirect(req, res, '/mfa/verify', { timeout: 60000 });
+});
+router.post('/mfa/disable', authenticate, (req, res) => {
+  return forwardProtectedAuthDirect(req, res, '/mfa/disable', { timeout: 60000 });
+});
 // Legacy aliases (setup-mfa, verify-mfa, disable-mfa)
-router.post('/setup-mfa', authenticate, protectedAuthProxy);
-router.post('/verify-mfa', authenticate, protectedAuthProxy);
-router.post('/disable-mfa', authenticate, protectedAuthProxy);
+router.post('/setup-mfa', authenticate, (req, res) => {
+  return forwardProtectedAuthDirect(req, res, '/setup-mfa', { timeout: 60000 });
+});
+router.post('/verify-mfa', authenticate, (req, res) => {
+  return forwardProtectedAuthDirect(req, res, '/verify-mfa', { timeout: 60000 });
+});
+router.post('/disable-mfa', authenticate, (req, res) => {
+  return forwardProtectedAuthDirect(req, res, '/disable-mfa', { timeout: 60000 });
+});
 
 // Session management routes
 router.get('/sessions', authenticate, protectedAuthProxy);
@@ -154,7 +274,9 @@ router.delete('/sessions', authenticate, protectedAuthProxy);
 router.delete('/sessions/:sessionId', authenticate, protectedAuthProxy);
 
 // Account management routes
-router.post('/account/deactivate', authenticate, protectedAuthProxy);
+router.post('/account/deactivate', authenticate, (req, res) => {
+  return forwardProtectedAuthDirect(req, res, '/account/deactivate', { timeout: 60000 });
+});
 router.post('/account/reactivate', publicAuthProxy); // Public — reactivation doesn't require active auth
 
 // Auth stats (admin)
