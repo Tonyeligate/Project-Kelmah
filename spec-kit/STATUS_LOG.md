@@ -2,6 +2,95 @@
 
 ---
 
+### Session: CRIT-15 Live Worker Verification And Recommendation Parity Rerun March 10 2026 ⚠️ PARTIALLY COMPLETE
+
+**Date**: March 10, 2026  
+**Scope**: Rerun the deployed worker verification smoke and the personalized recommendations parity probe after the latest deployment activity so the repo reflects current remote truth instead of stale assumptions.
+
+**Acceptance Criteria**
+- Live `POST /api/auth/register` and `POST /api/auth/resend-verification-email` behavior is rechecked against the deployed gateway.
+- A real deployed worker credential is used to rerun the checked-in personalized recommendations parity probe.
+- The status log records whether remote verification and remote personalized recommendations are both healthy, partially healthy, or still drifted.
+
+**Mapped execution surface**
+- `kelmah-backend/scripts/verify-personalized-recommendations-parity.js`
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/services/auth-service/services/email.service.js`
+- `spec-kit/Kelmaholddocs/old-docs/scripts/ALL-USER-CREDENTIALS.json`
+- `spec-kit/STATUS_LOG.md`
+
+**Data flow trace**
+- Worker verification smoke runs through the deployed gateway at `POST /api/auth/register` and `POST /api/auth/resend-verification-email`, which proxy into auth-service registration and email-delivery logic.
+- Personalized recommendations parity uses `kelmah-backend/scripts/verify-personalized-recommendations-parity.js`, which logs in through `POST /api/auth/login`, captures the worker token, then calls `GET /api/jobs/recommendations/personalized` and asserts the deployed response contract.
+
+**Dry-audit findings so far**
+- The checked-in parity script still requires a real worker credential and still asserts the shared `mobile-recommendations-v1` contract plus the `profile-incomplete` message when that branch is hit.
+- Local auth-service source still reflects the honest-failure verification-delivery hardening from CRIT-12.
+- The archived worker inventory under `spec-kit/Kelmaholddocs/old-docs/scripts/ALL-USER-CREDENTIALS.json` contains worker credentials that can be used to probe for a still-valid deployed worker session.
+
+**Validation**
+- Deployed gateway health remained reachable during the rerun.
+- Live verification smoke still failed on the deployed auth service:
+  - `POST /api/auth/resend-verification-email` -> `503` with generic internal-error envelope.
+  - Fresh worker `POST /api/auth/register` -> `503` with the same generic internal-error envelope.
+- Archived worker credential probe found one live worker account that still authenticates successfully:
+  - `kwame.asante1@kelmah.test / TestUser123!` -> `POST /api/auth/login` `200`.
+  - `GET /api/auth/me` -> `200`, `role=worker`, `meta.contract=auth-session-v2`.
+- Checked-in parity script rerun from `kelmah-backend/` passed against the deployed gateway with that worker credential:
+  - `npm run verify:personalized-parity`
+  - Result: `Personalized recommendations parity check passed.`
+  - Returned contract: `mobile-recommendations-v1`
+  - Returned `recommendationSource`: `worker-profile`
+  - Returned `totalRecommendations`: `0`
+
+**Current state**
+- Live worker verification remains blocked by the deployed auth-service runtime because register and resend-verification both still fail with `503` responses.
+- Live personalized recommendations parity is now confirmed against the deployed gateway with a real worker account, so the recommendation contract drift blocker is cleared even though verification delivery is still unhealthy remotely.
+
+### Session: CRIT-14 Frontend ApiClient Import Boundary March 10 2026 ✅ COMPLETED
+
+**Date**: March 10, 2026  
+**Scope**: Eliminate the frontend build warning caused by mixed dynamic and static imports of the shared `apiClient`, and audit the affected callers for adjacent transport-boundary drift while keeping request behavior unchanged.
+
+**Acceptance Criteria**
+- `kelmah-frontend` build no longer reports the mixed dynamic/static import warning for `src/services/apiClient.js`.
+- All current `apiClient` callers use one consistent import boundary unless a lazy-load constraint is proven necessary.
+- Affected pages and helpers preserve their existing request behavior, including multipart uploads, auth refresh sharing, and push-subscription delivery.
+- Adjacent stale transport drift uncovered in the same caller surface is corrected where it is low-risk and directly related.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/services/apiClient.js`
+- `kelmah-frontend/src/modules/auth/services/authService.js`
+- `kelmah-frontend/src/modules/quickjobs/pages/QuickJobRequestPage.jsx`
+- `kelmah-frontend/src/modules/quickjobs/pages/QuickJobTrackingPage.jsx`
+- `kelmah-frontend/src/modules/premium/pages/PremiumPage.jsx`
+- `kelmah-frontend/src/utils/pwaHelpers.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Data flow trace**
+- Shared frontend API traffic enters through `kelmah-frontend/src/services/apiClient.js`, which owns request IDs, auth token injection, GET deduplication, retry behavior, and shared refresh-token locking.
+- `authService.refreshToken()` reuses the shared client lock to avoid concurrent refresh races.
+- Quick-job request and completion flows upload photos through the same shared client before calling their domain services.
+- Premium subscription upgrade and PWA push-subscription registration also post through the shared client and therefore participate in the same auth/interceptor behavior.
+
+**Dry-audit findings so far**
+- The build warning is real: four frontend pages/helpers plus `authService.refreshToken()` dynamically import `src/services/apiClient.js` while the rest of the app statically imports it.
+- None of the dynamic import sites require code-splitting for correctness because the shared client is already part of the main bundle through many static imports.
+- `authService.js` still contains stale comments referencing a nonexistent `modules/common/services/axios.js` client, even though the live code path already uses `src/services/apiClient.js`.
+- `pwaHelpers.js` caches the imported `api` object in a local singleton, but that cache is redundant once the file uses the shared static import directly.
+
+**Implementation completed**
+- Replaced the remaining dynamic `apiClient` imports in `kelmah-frontend/src/modules/auth/services/authService.js`, `kelmah-frontend/src/modules/quickjobs/pages/QuickJobRequestPage.jsx`, `kelmah-frontend/src/modules/quickjobs/pages/QuickJobTrackingPage.jsx`, `kelmah-frontend/src/modules/premium/pages/PremiumPage.jsx`, and `kelmah-frontend/src/utils/pwaHelpers.js` with static imports from the shared transport module.
+- Kept the existing shared refresh-token lock intact by statically importing the default `apiClient` instance in `authService.js` rather than lazily importing it inside `refreshToken()`.
+- Removed the redundant lazy `getApiClient()` cache in `pwaHelpers.js` and posted the push subscription directly through the shared `api` export.
+- Cleaned adjacent stale transport comments in `authService.js` so the file now points at the real shared client boundary in `src/services/apiClient.js` instead of a nonexistent axios wrapper.
+
+**Validation**
+- `get_errors` reported no diagnostics in all touched frontend transport files and `spec-kit/STATUS_LOG.md`.
+- Source audit after the edits found no remaining dynamic `apiClient` imports under `kelmah-frontend/src/`.
+- Fresh frontend production build verification passed from `kelmah-frontend/`.
+- Result: `NO_DYNAMIC_IMPORT_WARNING` and `BUILD_COMPLETED`, which confirms the original Vite mixed-import warning for `src/services/apiClient.js` is resolved.
+
 ### Session: CRIT-13 Live Auth Parity And Backend Hidden-Field Sweep March 9 2026 ⚠️ PARTIALLY COMPLETE
 
 **Date**: March 9, 2026  
@@ -462,6 +551,41 @@ See `spec-kit/HIRER_SERVICE_CONTRACT_FOLLOWUP_MAR09_2026.md` for the deeper audi
 - Residual frontend build output still only includes the pre-existing `src/services/apiClient.js` dynamic/static import warning, unrelated to this restoration.
 
 See `spec-kit/REVIEW_CANDIDATES_ENDPOINT_RESTORATION_MAR09_2026.md` for the deeper audit record.
+
+### Session: CRIT-04D apiClient Mixed Import Build Warning March 10 2026 🔄 IN PROGRESS
+
+**Date**: March 10, 2026  
+**Scope**: Remove the remaining Vite mixed dynamic/static import warning around `src/services/apiClient.js` by auditing every dynamic import caller, converting safe lazy imports to consistent static imports, and revalidating the frontend build output.
+
+**Acceptance Criteria**
+- All frontend callers use a consistent static import pattern for `kelmah-frontend/src/services/apiClient.js` unless a verified cycle requires otherwise.
+- The current Vite build no longer emits the `src/services/apiClient.js` mixed dynamic/static import warning.
+- Auth refresh logic still uses the shared `apiClient` instance and `_refreshPromise` lock semantics after the import cleanup.
+- Touched frontend files validate cleanly and the frontend build passes after the warning fix.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/services/apiClient.js`
+- `kelmah-frontend/src/modules/auth/services/authService.js`
+- `kelmah-frontend/src/modules/premium/pages/PremiumPage.jsx`
+- `kelmah-frontend/src/modules/quickjobs/pages/QuickJobRequestPage.jsx`
+- `kelmah-frontend/src/modules/quickjobs/pages/QuickJobTrackingPage.jsx`
+- `kelmah-frontend/src/utils/pwaHelpers.js`
+
+**Data flow trace**
+- Shared frontend service and page modules import `api` or the default `apiClient` from `kelmah-frontend/src/services/apiClient.js` and use that singleton to perform authenticated `/api/*` requests.
+- Vite currently sees both static imports and dynamic `import('../../../services/apiClient')` style calls targeting the same module, which triggers the warning during production bundling.
+- `authService.refreshToken()` depends on the same default `apiClient` instance so `_refreshPromise` deduplicates token refresh attempts across the app.
+
+**Dry-audit findings so far**
+- Exactly five dynamic-import call sites still target `src/services/apiClient.js`: auth service refresh handling, premium upgrade, quick-job request photo upload, quick-job tracking completion upload, and the PWA helper wrapper.
+- The audited call sites use lazy imports as convenience wrappers rather than as verified cycle breakers, so they are candidates for direct static imports.
+- `authService.js` already statically imports named `api`, so the remaining dynamic import there should be replaceable with a static default `apiClient` import while preserving the shared refresh lock.
+- The residual frontend build warning after CRIT-04 through CRIT-04C is isolated to this mixed import pattern.
+
+**Implementation status**
+- Dry audit completed; static import cleanup and build verification in progress.
+
+See `spec-kit/APICLIENT_IMPORT_WARNING_FIX_MAR10_2026.md` for the deeper audit record.
 
 ### Session: CRIT-05 To CRIT-07 Frontend Review And Registration Audit March 9 2026 ✅ COMPLETED
 
