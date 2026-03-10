@@ -118,7 +118,7 @@
   - `{ "status": "success", "message": "If an account with that email exists and is unverified, a verification email has been sent." }`
 - Conclusion: the local fix is validated, but the deployed auth service has not picked up this change yet, so the live parity blocker remains on the remote environment until deployment sync happens.
 
-### Session: CRIT-02 Live Parity Probe And Coordinate Backfill March 9 2026 🔄 IN PROGRESS
+### Session: CRIT-02 Live Parity Probe And Coordinate Backfill March 9 2026 ✅ COMPLETED
 
 **Date**: March 9, 2026  
 **Scope**: Verify the CRIT-02 geo-radius fix on the live gateway path and replace the legacy coordinate backfill script with a Mongo-only implementation that can safely populate missing worker coordinates for older records.
@@ -193,12 +193,18 @@
   - direct user-service -> `DIRECT_TAMALE_TOTAL=20`, `DIRECT_TAMALE_NON_NULL_DISTANCE=0`
   - gateway -> `GATEWAY_TAMALE_TOTAL=20`, `GATEWAY_TAMALE_NON_NULL_DISTANCE=0`
   - result stayed unchanged, confirming Render had still not rolled the live user-service/gateway runtime forward at probe time.
+- March 10, 2026 rollout verification confirms live parity is now restored:
+  - direct user-service Tamale probe -> `DIRECT_TAMALE_TOTAL=0`, `DIRECT_TAMALE_NON_NULL_DISTANCE=0`
+  - direct user-service Accra control probe -> `DIRECT_ACCRA_TOTAL=20`, `DIRECT_ACCRA_NON_NULL_DISTANCE=20`, `DIRECT_ACCRA_MAX_DISTANCE=0`
+  - gateway Tamale probe -> `GATEWAY_TAMALE_TOTAL=0`, `GATEWAY_TAMALE_NON_NULL_DISTANCE=0`
+  - gateway Accra control probe -> `GATEWAY_ACCRA_TOTAL=20`, `GATEWAY_ACCRA_NON_NULL_DISTANCE=20`, `GATEWAY_ACCRA_MAX_DISTANCE=0`
+  - these results match the previously verified local controller behavior against the same Atlas dataset, confirming the live runtime now enforces radius filtering and emits distance values when geo matches exist.
 
-**Execution blocker**
+**Final state**
 - Dry-run backfill execution currently cannot reach MongoDB Atlas from this environment:
   - `querySrv ECONNREFUSED _mongodb._tcp.kelmah-messaging.xyqcurn.mongodb.net`
   - Workaround used successfully: direct replica-set `mongodb://` URI assembled from PowerShell DNS results.
-- Runtime blocker remains: production Render user-service has not yet picked up commit `b83659a` despite the successful push to `main`, so live parity confirmation is pending remote rollout completion.
+- Runtime rollout blocker is resolved: production Render user-service and gateway now reflect the CRIT-02 controller path and the hardened coordinate backfill state.
 
 ### Session: CRIT-08 To CRIT-11 Auth And Bid Hardening March 9 2026 ✅ COMPLETED
 
