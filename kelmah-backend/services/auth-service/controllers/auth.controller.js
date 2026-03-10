@@ -97,6 +97,8 @@ const createUserWithPhoneRecovery = async (createPayload, normalizedPhone) => {
 const buildEmailDeliveryUnavailableError = (message) => {
   const error = new AppError(message, 503);
   error.code = EMAIL_DELIVERY_UNAVAILABLE_CODE;
+  error.expose = true;
+  error.exposeMessage = true;
   return error;
 };
 
@@ -129,7 +131,19 @@ const rollbackUnverifiedRegistration = async (user) => {
   }
 };
 
-const buildInvalidCredentialsError = () => new AppError(INVALID_CREDENTIALS_MESSAGE, 401);
+const buildInvalidCredentialsError = () => {
+  const error = new AppError(INVALID_CREDENTIALS_MESSAGE, 401);
+  error.expose = true;
+  error.exposeMessage = true;
+  return error;
+};
+
+const buildServiceUnavailableError = () => {
+  const error = new AppError('Service temporarily unavailable. Please try again shortly.', 503);
+  error.expose = true;
+  error.exposeMessage = true;
+  return error;
+};
 
 const didEmailSendSkip = (result) => Boolean(result && typeof result === 'object' && result.skipped);
 
@@ -402,7 +416,7 @@ exports.login = async (req, res, next) => {
     const mongoose = require('mongoose');
     if (!mongoose?.connection || mongoose.connection.readyState !== 1) {
       logger.warn('Login attempted while DB not ready', { readyState: mongoose?.connection?.readyState });
-      return next(new AppError('Service temporarily unavailable. Please try again shortly.', 503));
+      return next(buildServiceUnavailableError());
     }
 
     const { email, password, rememberMe = false } = req.body;
@@ -1557,9 +1571,7 @@ exports.verifyAuth = async (req, res, next) => {
       logger.warn('verifyAuth attempted while DB not ready', {
         readyState: mongoose?.connection?.readyState,
       });
-      return next(
-        new AppError('Service temporarily unavailable. Please try again shortly.', 503),
-      );
+      return next(buildServiceUnavailableError());
     }
 
     let userObjectId;

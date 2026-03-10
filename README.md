@@ -370,7 +370,7 @@ node test-connectivity.js
 
 ### Test Credentials
 - **Email**: `giftyafisa@gmail.com`
-- **Password**: `1221122Ga`
+- **Password**: `Vx7!Rk2#Lm9@Qa4`
 - **Role**: Test user with full platform access
 
 ---

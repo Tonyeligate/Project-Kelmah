@@ -12,19 +12,19 @@ jest.mock('../services/jobsService', () => ({
   },
 }));
 
-const createWrapper = () => {
-  const queryClient = new QueryClient({
+const createTestQueryClient = () =>
+  new QueryClient({
     defaultOptions: {
       queries: {
         retry: false,
+        gcTime: Infinity,
       },
     },
   });
 
-  return ({ children }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
-};
+const createWrapper = (queryClient) => ({ children }) => (
+  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+);
 
 describe('useSavedJobsQuery param normalization', () => {
   beforeEach(() => {
@@ -33,9 +33,10 @@ describe('useSavedJobsQuery param normalization', () => {
   });
 
   test('normalizes empty saved-job params before calling the service', async () => {
-    const wrapper = createWrapper();
+    const queryClient = createTestQueryClient();
+    const wrapper = createWrapper(queryClient);
 
-    renderHook(
+    const { unmount } = renderHook(
       () => useSavedJobsQuery({ search: '   ', tags: [], includeClosed: undefined }),
       { wrapper },
     );
@@ -43,11 +44,15 @@ describe('useSavedJobsQuery param normalization', () => {
     await waitFor(() => {
       expect(jobsApi.getSavedJobs).toHaveBeenCalledWith({});
     });
+
+    unmount();
+    queryClient.clear();
   });
 
   test('does not refetch when rerendered with fresh equal empty params', async () => {
-    const wrapper = createWrapper();
-    const { result, rerender } = renderHook(
+    const queryClient = createTestQueryClient();
+    const wrapper = createWrapper(queryClient);
+    const { result, rerender, unmount } = renderHook(
       ({ params }) => useSavedJobsQuery(params),
       {
         initialProps: {
@@ -68,5 +73,8 @@ describe('useSavedJobsQuery param normalization', () => {
     });
 
     expect(jobsApi.getSavedJobs).toHaveBeenCalledTimes(1);
+
+    unmount();
+    queryClient.clear();
   });
 });

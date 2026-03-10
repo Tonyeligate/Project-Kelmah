@@ -5,9 +5,10 @@ const { logger } = require('../utils/logger');
 
 const normalizeEnvString = (value) => (typeof value === 'string' ? value.trim() : value);
 const normalizeSmtpPassword = (value) => (typeof value === 'string' ? value.replace(/\s+/g, '') : value);
+const PLACEHOLDER_FROM_PATTERN = /^no-?reply@kelmah\.com$/i;
 
 // Map config properties to expected names
-const EMAIL_FROM = config.FROM_EMAIL || config.EMAIL_FROM || 'noreply@kelmah.com';
+const EMAIL_FROM = normalizeEnvString(config.FROM_EMAIL || config.EMAIL_FROM || process.env.EMAIL_FROM);
 const SMTP_HOST = config.SMTP_HOST || 'smtp.gmail.com';
 const SMTP_PORT = config.SMTP_PORT || 465;
 const SMTP_USER = normalizeEnvString(config.SMTP_USER || process.env.SMTP_USER);
@@ -61,7 +62,21 @@ if (process.env.NODE_ENV === 'development') {
 
 const transporter = nodemailer.createTransport(smtpConfig);
 
-const resolveSenderAddress = () => EMAIL_FROM || smtpConfig.auth.user || 'noreply@localhost';
+const resolveSenderAddress = () => {
+  const configuredSender = normalizeEnvString(EMAIL_FROM);
+  const smtpSender = normalizeEnvString(smtpConfig.auth.user);
+
+  if (
+    configuredSender &&
+    (!PLACEHOLDER_FROM_PATTERN.test(configuredSender) || !smtpSender || smtpSender === configuredSender)
+  ) {
+    return configuredSender;
+  }
+
+  return smtpSender || configuredSender || 'noreply@localhost';
+};
+
+const buildFromHeader = (displayName) => `"${displayName}" <${resolveSenderAddress()}>`;
 
 const resolveMessageIdDomain = () => {
   const senderAddress = resolveSenderAddress();
@@ -213,14 +228,14 @@ module.exports = {
     const { headers, messageId } = buildMailMetadata('normal');
 
     const mailOptions = {
-      from: `"Kelmah Platform" <${EMAIL_FROM}>`,
+      from: buildFromHeader('Kelmah Platform'),
       to: email,
       subject,
       text,
       html,
       headers,
       envelope: {
-        from: EMAIL_FROM,
+        from: resolveSenderAddress(),
         to: email
       },
       messageId,
@@ -249,7 +264,7 @@ module.exports = {
     const { headers, messageId } = buildMailMetadata('high');
 
     const mailOptions = {
-      from: `"Kelmah Security" <${EMAIL_FROM}>`,
+      from: buildFromHeader('Kelmah Security'),
       to: email,
       subject,
       text,
@@ -282,7 +297,7 @@ module.exports = {
     const { headers, messageId } = buildMailMetadata('normal');
 
     const mailOptions = {
-      from: `"Kelmah Security" <${EMAIL_FROM}>`,
+      from: buildFromHeader('Kelmah Security'),
       to: email,
       subject,
       text,
@@ -316,7 +331,7 @@ module.exports = {
     const { headers, messageId } = buildMailMetadata('high');
 
     const mailOptions = {
-      from: `"Kelmah Support" <${EMAIL_FROM}>`,
+      from: buildFromHeader('Kelmah Support'),
       to: email,
       subject,
       text,
@@ -350,7 +365,7 @@ module.exports = {
     const { headers, messageId } = buildMailMetadata('normal');
 
     const mailOptions = {
-      from: `"Kelmah Support" <${EMAIL_FROM}>`,
+      from: buildFromHeader('Kelmah Support'),
       to: email,
       subject,
       text,
@@ -384,7 +399,7 @@ module.exports = {
     const { headers, messageId } = buildMailMetadata('high');
 
     const mailOptions = {
-      from: `"Kelmah Security" <${EMAIL_FROM}>`,
+      from: buildFromHeader('Kelmah Security'),
       to: email,
       subject,
       text,
@@ -417,7 +432,7 @@ module.exports = {
     const { headers, messageId } = buildMailMetadata('normal');
 
     const mailOptions = {
-      from: `"Kelmah Security" <${EMAIL_FROM}>`,
+      from: buildFromHeader('Kelmah Security'),
       to: email,
       subject,
       text,

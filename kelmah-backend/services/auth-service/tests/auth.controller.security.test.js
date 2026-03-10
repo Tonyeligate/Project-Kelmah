@@ -175,6 +175,7 @@ describe('auth controller security regressions', () => {
     expect(next).toHaveBeenCalledWith(expect.objectContaining({
       statusCode: 503,
       code: 'EMAIL_DELIVERY_UNAVAILABLE',
+      exposeMessage: true,
       message: 'Registration is temporarily unavailable because verification email delivery is unavailable.',
     }));
   });
@@ -224,6 +225,7 @@ describe('auth controller security regressions', () => {
     expect(next).toHaveBeenCalledWith(expect.objectContaining({
       statusCode: 503,
       code: 'EMAIL_DELIVERY_UNAVAILABLE',
+      exposeMessage: true,
       message: 'Registration is temporarily unavailable because verification email delivery is unavailable.',
     }));
   });
@@ -353,6 +355,34 @@ describe('auth controller security regressions', () => {
       statusCode: 401,
       message: 'Invalid credentials',
     }));
+  });
+
+  test('login exposes a stable 503 when the database is not ready', async () => {
+    const originalReadyState = mongoose.connection.readyState;
+    mongoose.connection.readyState = 0;
+
+    try {
+      const req = {
+        body: {
+          email: 'kwame@example.com',
+          password: 'ValidPassword123!',
+        },
+        ip: '127.0.0.1',
+        headers: {},
+      };
+      const res = createMockResponse();
+      const next = jest.fn();
+
+      await authController.login(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(expect.objectContaining({
+        statusCode: 503,
+        message: 'Service temporarily unavailable. Please try again shortly.',
+        exposeMessage: true,
+      }));
+    } finally {
+      mongoose.connection.readyState = originalReadyState;
+    }
   });
 
   test('exchangeOAuthCode consumes a persisted challenge and mints tokens during exchange', async () => {

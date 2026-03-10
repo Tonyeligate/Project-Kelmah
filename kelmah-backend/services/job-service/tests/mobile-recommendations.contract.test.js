@@ -154,6 +154,26 @@ describe('mobile personalized recommendations contract', () => {
     const { getPersonalizedJobRecommendations } = require('../controllers/job.controller');
     const req = { user: { id: 'worker-1' }, query: { page: '1', limit: '5' } };
     const res = createResponse();
+    const jobQuery = buildJobQuery([
+      {
+        _id: 'job-1',
+        title: 'Commercial Rewire',
+        description: 'Need a licensed electrician for a fast office rewire.',
+        category: 'Electrical',
+        budget: 1200,
+        createdAt: new Date().toISOString(),
+        location: 'Accra, Ghana',
+        locationDetails: { region: 'Greater Accra' },
+        performanceTier: 'tier1',
+        requirements: {
+          primarySkills: ['Wiring'],
+          secondarySkills: ['Safety'],
+        },
+        skills: ['Wiring'],
+        status: 'open',
+        bidding: { bidStatus: 'open' },
+      },
+    ]);
 
     models.__mocks.userPerformanceFindOne.mockReturnValue(buildLeanQuery({
       userId: 'worker-1',
@@ -164,28 +184,7 @@ describe('mobile personalized recommendations contract', () => {
         secondarySkills: [{ skill: 'Safety', verified: true }],
       },
     }));
-    models.__mocks.jobFind.mockReturnValue(
-      buildJobQuery([
-        {
-          _id: 'job-1',
-          title: 'Commercial Rewire',
-          description: 'Need a licensed electrician for a fast office rewire.',
-          category: 'Electrical',
-          budget: 1200,
-          createdAt: new Date().toISOString(),
-          location: 'Accra, Ghana',
-          locationDetails: { region: 'Greater Accra' },
-          performanceTier: 'tier1',
-          requirements: {
-            primarySkills: ['Wiring'],
-            secondarySkills: ['Safety'],
-          },
-          skills: ['Wiring'],
-          status: 'open',
-          bidding: { bidStatus: 'open' },
-        },
-      ]),
-    );
+    models.__mocks.jobFind.mockReturnValue(jobQuery);
 
     await getPersonalizedJobRecommendations(req, res, jest.fn());
 
@@ -224,5 +223,28 @@ describe('mobile personalized recommendations contract', () => {
         ]),
       }),
     );
+    expect(jobQuery.limit).toHaveBeenCalledWith(60);
+  });
+
+  test('scales the personalized candidate window with higher requested pages', async () => {
+    const models = require('../models');
+    const { getPersonalizedJobRecommendations } = require('../controllers/job.controller');
+    const req = { user: { id: 'worker-1' }, query: { page: '3', limit: '10' } };
+    const res = createResponse();
+    const jobQuery = buildJobQuery([]);
+
+    models.__mocks.userPerformanceFindOne.mockReturnValue(buildLeanQuery({
+      userId: 'worker-1',
+      skillVerification: {
+        primarySkills: [{ skill: 'Wiring', verified: true }],
+        secondarySkills: [],
+      },
+    }));
+    models.__mocks.jobFind.mockReturnValue(jobQuery);
+
+    await getPersonalizedJobRecommendations(req, res, jest.fn());
+
+    expect(res.statusCode).toBe(200);
+    expect(jobQuery.limit).toHaveBeenCalledWith(120);
   });
 });

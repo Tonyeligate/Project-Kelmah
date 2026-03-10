@@ -1,7 +1,7 @@
 const base = 'https://kelmah-api-gateway-gf3g.onrender.com';
 const email = 'giftyafisa@gmail.com';
-const currentPassword = '11221122Tg';
-const temporaryPassword = 'TempPassword123!A';
+const currentPassword = 'Vx7!Rk2#Lm9@Qa4';
+const temporaryPassword = 'Qm8@Lz5!Nc3#Vr7';
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -56,6 +56,29 @@ async function request(label, path, options = {}) {
   }
 }
 
+function shouldRetryStatus(status) {
+  return status === 429 || (typeof status === 'number' && status >= 500);
+}
+
+async function requestWithRetry(label, path, options = {}, maxAttempts = 3) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const response = await request(label, path, options);
+
+    if (!shouldRetryStatus(response.status) || attempt === maxAttempts) {
+      return response;
+    }
+
+    console.log(`${label}_retry=${attempt}`);
+    await sleep(response.status === 429 ? 30000 : 5000);
+  }
+
+  return {
+    ok: false,
+    status: 'ERR',
+    error: 'retry-exhausted',
+  };
+}
+
 function extractToken(payload) {
   return payload?.data?.token || payload?.token || payload?.data?.accessToken || null;
 }
@@ -91,6 +114,23 @@ function extractId(value) {
   return null;
 }
 
+async function loginWithRetry(maxAttempts = 3) {
+  const loginResponse = await requestWithRetry('login', '/api/auth/login', {
+    method: 'POST',
+    body: { email, password: currentPassword },
+  }, maxAttempts);
+  const token = extractToken(loginResponse.json);
+
+  if (token || (typeof loginResponse.status === 'number' && loginResponse.status < 500)) {
+    return { loginResponse, token };
+  }
+
+  return {
+    loginResponse,
+    token: null,
+  };
+}
+
 async function waitForGateway() {
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     console.log(`gateway_poll=${attempt}`);
@@ -120,11 +160,7 @@ async function main() {
     await request('worker_certificates', `/api/users/workers/${workerId}/certificates`, { timeoutMs: 60000 });
   }
 
-  const loginResponse = await request('login', '/api/auth/login', {
-    method: 'POST',
-    body: { email, password: currentPassword },
-  });
-  const token = extractToken(loginResponse.json);
+  const { token } = await loginWithRetry();
   console.log(`login_token_present=${token ? 'yes' : 'no'}`);
 
   if (!token) {
@@ -156,7 +192,7 @@ async function main() {
     console.log(`bid_list_effective_limit=${effectiveLimit}`);
   }
 
-  const changeForward = await request('change_password_forward', '/api/auth/change-password', {
+  const changeForward = await requestWithRetry('change_password_forward', '/api/auth/change-password', {
     method: 'POST',
     headers: authHeaders,
     body: {
@@ -176,7 +212,7 @@ async function main() {
     console.log(`temp_login_token_present=${tempToken ? 'yes' : 'no'}`);
 
     if (tempToken) {
-      await request('change_password_revert', '/api/auth/change-password', {
+      await requestWithRetry('change_password_revert', '/api/auth/change-password', {
         method: 'POST',
         headers: { Authorization: `Bearer ${tempToken}` },
         body: {

@@ -110,6 +110,13 @@ Search forms → `searchService.getCategories()` / `getSkills()` → job metadat
 	- `src/utils/__tests__/secureStorage.test.js`
 	- `src/modules/search/components/results/WorkerSearchResults.test.jsx`
 - Result: 2 suites passed, 7 tests passed, 0 failures.
+- Focused backend Jest verification passed:
+	- `services/job-service/tests/mobile-recommendations.contract.test.js`
+	- `services/user-service/tests/worker-profile.controller.test.js`
+- Result: 2 suites passed, 11 tests passed, 0 failures.
+- Frontend production build verification passed:
+	- `npm run build`
+	- Result: Vite production build completed successfully.
 
 ## Stale Findings Confirmed
 
@@ -120,3 +127,4 @@ Search forms → `searchService.getCategories()` / `getSkills()` → job metadat
 ## Residual Notes
 
 - React Router future-flag warnings still appear in the worker-results test environment. They did not block the focused regression pass and are unrelated to the fixes here.
+- Post-redeploy live authenticated verification could not be completed from this workspace because both known fixture-password variants for `giftyafisa@gmail.com` returned `401 Invalid credentials` from the redeployed gateway. The code-level and unit-level coverage is complete, but live worker-session probes for personalized recommendations and bulk skill updates still require a current valid worker credential.

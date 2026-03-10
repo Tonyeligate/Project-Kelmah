@@ -10,6 +10,11 @@ const Redis = require('redis');
 // Redis client for distributed rate limiting
 let redisClient = null;
 
+const buildLoginRateLimitKey = (req) => {
+  const normalizedEmail = String(req.body?.email || '').trim().toLowerCase();
+  return normalizedEmail ? `${req.ip}:${normalizedEmail}` : req.ip;
+};
+
 /**
  * Initialize Redis client for distributed rate limiting
  * @param {string} redisUrl - Redis connection URL
@@ -96,6 +101,18 @@ const rateLimiters = {
       error: 'Too many authentication attempts',
       message: 'Too many login attempts. Please try again in 15 minutes.',
       retryAfter: 900
+    }
+  }),
+
+  login: createRateLimiter({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    skipSuccessfulRequests: true,
+    keyGenerator: buildLoginRateLimitKey,
+    message: {
+      error: 'Too many authentication attempts',
+      message: 'Too many login attempts. Please try again in 15 minutes.',
+      retryAfter: 900,
     }
   }),
 

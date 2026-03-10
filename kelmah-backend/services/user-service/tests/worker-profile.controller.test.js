@@ -596,4 +596,25 @@ describe('WorkerController.getWorkerById (stubbed models)', () => {
       }),
     );
   });
+
+  test('rejects oversized bulk skill updates before touching the database', async () => {
+    const res = createMockResponse();
+    const workerId = '64f2e0b5f1f79b2a9c123457';
+    const oversizedSkills = Array.from({ length: 51 }, (_, index) => ({
+      name: `Skill ${index + 1}`,
+    }));
+
+    await WorkerController.upsertWorkerSkillsBulk({
+      params: { workerId },
+      body: { skills: oversizedSkills },
+      user: { id: workerId, role: 'worker' },
+    }, res);
+
+    expect(res.status).toHaveBeenCalledWith(422);
+    expect(res.body).toMatchObject({
+      success: false,
+      message: expect.stringContaining('up to 50 skills'),
+    });
+    expect(ensureConnection).not.toHaveBeenCalled();
+  });
 });

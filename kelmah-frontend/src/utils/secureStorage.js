@@ -9,6 +9,8 @@ import CryptoJS from 'crypto-js';
 
 const AUTH_TOKEN_TTL = 2 * 60 * 60 * 1000;
 const REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60 * 1000;
+const SHOULD_START_CLEANUP_INTERVAL =
+  typeof process === 'undefined' || process.env.NODE_ENV !== 'test';
 
 class SecureStorage {
   constructor() {
@@ -21,12 +23,15 @@ class SecureStorage {
     this.initializeStorage();
 
     // MED-26 FIX: Store interval reference so it can be cleared
-    this.cleanupInterval = setInterval(
-      () => {
-        this.cleanupExpiredData();
-      },
-      60 * 60 * 1000,
-    ); // Every hour
+    this.cleanupInterval = null;
+    if (SHOULD_START_CLEANUP_INTERVAL) {
+      this.cleanupInterval = setInterval(
+        () => {
+          this.cleanupExpiredData();
+        },
+        60 * 60 * 1000,
+      ); // Every hour
+    }
   }
 
   /**

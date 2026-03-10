@@ -15,6 +15,7 @@ const cookieParser = require("cookie-parser");
 const timingSafeCompare = require('./utils/timingSafeCompare');
 const config = require("./config");
 const { notFound } = require("./utils/errorTypes");
+const { buildServiceErrorResponse } = require('./utils/errorResponse');
 const mongoose = require("mongoose");
 const { connectDB } = require("./config/db");
 
@@ -393,16 +394,8 @@ app.use(notFound);
 
 // Error handler
 app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  const status = err.status || "error";
-
-  res.status(statusCode).json({
-    success: false,
-    status,
-    message: statusCode >= 500 ? 'An internal error occurred' : err.message,
-    errors: err.errors || null,
-    stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
-  });
+  const { statusCode, body } = buildServiceErrorResponse(err, process.env.NODE_ENV);
+  res.status(statusCode).json(body);
 });
 
 // Start server

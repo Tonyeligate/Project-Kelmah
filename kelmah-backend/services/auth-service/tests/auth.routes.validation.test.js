@@ -37,7 +37,10 @@ jest.mock('../../../shared/middlewares/serviceTrust', () => ({
   },
 }));
 jest.mock('../middlewares/rateLimiter', () => ({
-  createLimiter: () => (_req, _res, next) => next(),
+  createLimiter: (key) => (req, res, next) => {
+    res.set('x-auth-rate-limit-profile', key);
+    next();
+  },
 }));
 jest.mock('../config/passport', () => ({
   authenticate: () => (_req, _res, next) => next(),
@@ -86,5 +89,18 @@ describe('auth-service route password validation', () => {
     expect(mockAuthController.changePassword).not.toHaveBeenCalled();
     expect(response.body.errors[0].message).toContain('at least 12 characters long');
     expect(response.body.errors[0].message).toContain('special character');
+  });
+
+  test('login uses the dedicated login limiter', async () => {
+    const response = await request(app)
+      .post('/login')
+      .send({
+        email: 'kwame@example.com',
+        password: 'CurrentPassword123!',
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.headers['x-auth-rate-limit-profile']).toBe('login');
+    expect(mockAuthController.login).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,5 +1,5 @@
 ---
-alwaysApply: true
+applyTo: "**"
 ---
 # Kelmah Platform - AI Coding Agent Instructions
 
@@ -256,7 +256,7 @@ shared/
 **Common Issues & Solutions:**
 
 #### Credential Management
-- **Test User**: `giftyafisa@gmail.com` with password `1221122Ga`
+- **Test User**: `giftyafisa@gmail.com` with password `Vx7!Rk2#Lm9@Qa4`
 - **Email Verification**: Must be set to `true` in database to avoid 403 errors
 - **Password Hashing**: Uses bcrypt with 12 salt rounds
 - **Setup Script**: Use `node create-gifty-user.js` to ensure test user exists
@@ -339,7 +339,7 @@ shared/
 - For LocalTunnel: No special headers required (advantage over ngrok)
 - For Legacy Ngrok: Include `ngrok-skip-browser-warning: true` header when needed
 - Use provided credentials for auth flows:
-  - Gifty password: `1122112Ga`
+  - Gifty password: `Vx7!Rk2#Lm9@Qa4`
   - All other users: `TestUser123!`
 - Database reference for investigations when needed:
   - `MONGODB_URI=mongodb+srv://TonyGate:0553366244Aj@kelmah-messaging.xyqcurn.mongodb.net/kelmah_platform?retryWrites=true&w=majority&appName=Kelmah-messaging`

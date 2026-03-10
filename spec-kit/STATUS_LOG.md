@@ -2,6 +2,173 @@
 
 ---
 
+### Session: HIGH-09 To HIGH-12 Stability Follow-Up March 10 2026 ✅ COMPLETED
+
+**Date**: March 10, 2026  
+**Scope**: Finish the active shared-test-credential cleanup and trace the source-level cause of transient live auth `429` noise seen during the earlier HIGH-09 to HIGH-12 redeploy verification.
+
+**Acceptance Criteria**
+- Active instruction and helper surfaces no longer point at weak legacy shared-test passwords.
+- Login rate limiting only counts failed authentication attempts, so successful logins do not burn the brute-force budget and trigger avoidable `429` responses.
+- The tightened limiter behavior is covered by focused backend regression tests.
+- The follow-up status is documented alongside the original HIGH-09 to HIGH-12 audit trail.
+
+**Mapped execution surface**
+- `kelmah-backend/api-gateway/middlewares/rate-limiter.js`
+- `kelmah-backend/api-gateway/routes/auth.routes.js`
+- `kelmah-backend/api-gateway/routes/auth.routes.test.js`
+- `kelmah-backend/api-gateway/middlewares/rate-limiter.test.js`
+- `kelmah-backend/services/auth-service/middlewares/rateLimiter.js`
+- `kelmah-backend/services/auth-service/tests/auth.routes.validation.test.js`
+- `kelmah-backend/services/auth-service/tests/rate-limiter.config.test.js`
+- `create-gifty-user.js`
+- `spec-kit/create-gifty-user.js`
+- `.github/copilot-instructions.md`
+- `spec-kit/.github/copilot-instructions.md`
+- `README.md`
+- `spec-kit/HIGH_09_12_BACKEND_SECURITY_ROUTE_AUDIT_MAR10_2026.md`
+
+**Dry-audit findings**
+- The gateway and auth-service login limiters keyed requests by IP and email, but successful logins still counted against the same auth budget, which created avoidable live `429` responses during repeated health and smoke verification even when credentials were correct.
+- Active instruction and helper surfaces had mostly been updated to the compliant baseline password, but the root `README.md` still advertised the older weak credential.
+- The root helper path documented in active instructions did not yet exist as a real top-level script, which kept the live-test-user setup path inconsistent with the documented workflow.
+
+**Implementation completed**
+- Added a dedicated gateway `login` limiter profile in `api-gateway/middlewares/rate-limiter.js` with `skipSuccessfulRequests: true` and normalized email-based keys, then bound `/api/auth/login` to that dedicated limiter in `api-gateway/routes/auth.routes.js`.
+- Hardened the auth-service login limiter so successful requests no longer consume the login budget, and trimmed plus lowercased the email portion of the default key generator to keep normalization aligned with the gateway.
+- Added focused regression coverage for both limiter layers so the gateway and auth-service now explicitly test successful-request skipping and normalized key generation.
+- Created a real top-level `create-gifty-user.js` helper that provisions the compliant shared test users, and converted `spec-kit/create-gifty-user.js` into a delegate to that root helper.
+- Updated the remaining active credential reference in `README.md` to the compliant shared baseline `Vx7!Rk2#Lm9@Qa4`.
+
+**Validation**
+- VS Code diagnostics reported no errors in the touched limiter, helper, and instruction files after the follow-up edits.
+- Focused backend Jest verification passed from `kelmah-backend/`:
+  - `api-gateway/routes/auth.routes.test.js`
+  - `api-gateway/middlewares/rate-limiter.test.js`
+  - `services/auth-service/tests/auth.routes.validation.test.js`
+  - `services/auth-service/tests/rate-limiter.config.test.js`
+  - `services/auth-service/tests/auth.controller.security.test.js`
+- Result: 5 suites passed, 25 tests passed, 0 failures.
+- Targeted credential-reference sweep across active instruction and helper surfaces confirmed the root `README.md` was the last live weak-password reference in scope, and it is now corrected.
+
+**Current state**
+- Active shared-test-user instructions are aligned on the compliant baseline password `Vx7!Rk2#Lm9@Qa4`.
+- Successful login traffic no longer consumes the auth brute-force budget at either the gateway or auth-service layer, reducing one real code-level source of transient live `429` noise.
+- Remaining transient live `502` and `503` behavior still looks operational and deployment-related rather than a regression in the HIGH-09 to HIGH-12 source fixes.
+
+### Session: Frontend Jest Lifecycle Follow-Up March 10 2026 ✅ COMPLETED
+
+**Date**: March 10, 2026  
+**Scope**: Re-audit the frontend Jest environment after the earlier regression pass, verify whether the prior open-handle or shell-lifecycle issue still reproduces, and fix any root-cause test-harness leaks that remain.
+
+**Acceptance Criteria**
+- The previously noted frontend Jest open-handle or shell-lifecycle issue is either reproduced with a concrete culprit or disproven with fresh clean-shell validation.
+- Any source-level lifecycle leaks uncovered in the frontend test harness or touched component tests are fixed at the root cause.
+- The audit record distinguishes between a real Jest open-handle defect and a stale shell-only artifact.
+
+**Mapped execution surface**
+- `kelmah-frontend/jest.config.cjs`
+- `kelmah-frontend/package.json`
+- `kelmah-frontend/src/tests/setup.js`
+- `kelmah-frontend/src/tests/components/auth/Login.test.jsx`
+- `kelmah-frontend/src/modules/auth/components/login/Login.jsx`
+- `kelmah-frontend/src/modules/search/components/common/JobSearchForm.test.jsx`
+- `kelmah-frontend/src/modules/jobs/hooks/useJobsQuery.test.jsx`
+- `spec-kit/STATUS_LOG.md`
+- `spec-kit/FRONTEND_REGRESSION_TESTS_MAR10_2026.md`
+
+**Implementation completed**
+- Re-ran the focused frontend regression suites in a fresh terminal with JSON reporting enabled and confirmed all four suites passed.
+- Dry-audited the auth/storage import path and identified two real Jest lifecycle risks even though the original warning no longer reproduced directly: the `secureStorage` singleton created an hourly interval at module import time, and the React Query hook regression test left its test `QueryClient` lifecycle implicit.
+- Hardened `kelmah-frontend/src/utils/secureStorage.js` so the background cleanup interval does not start while `NODE_ENV === 'test'`.
+- Hardened `kelmah-frontend/src/modules/jobs/hooks/useJobsQuery.test.jsx` with a dedicated test QueryClient using `gcTime: Infinity` plus explicit `unmount()` and `queryClient.clear()` cleanup.
+- Re-ran the focused frontend regression suites again in a clean shell without `--forceExit`, this time with `--detectOpenHandles`, and confirmed normal Jest shutdown.
+
+**Validation**
+- Fresh JSON report from `kelmah-frontend/frontend-redeploy-regressions.json`:
+  - `4` suites passed
+  - `10` tests passed
+  - `0` failed suites
+  - `openHandles: []`
+- Clean-shell Jest rerun passed from `kelmah-frontend/` without `--forceExit`:
+  - `src/modules/search/components/results/WorkerSearchResults.test.jsx`
+  - `src/modules/auth/pages/RegisterPage.test.jsx`
+  - `src/modules/search/services/searchService.test.js`
+  - `src/tests/components/auth/Login.test.jsx`
+- Additional clean-shell Jest reruns passed from `kelmah-frontend/` without `--forceExit`:
+  - `src/modules/search/components/common/JobSearchForm.test.jsx`
+  - `src/tests/components/auth/Login.test.jsx`
+  - `src/modules/jobs/hooks/useJobsQuery.test.jsx`
+  - `src/modules/auth/pages/RegisterPage.test.jsx`
+  - `src/modules/search/services/searchService.test.js`
+  - `src/utils/__tests__/secureStorage.test.js`
+
+**Current state**
+- The previously noted frontend Jest lifecycle concern is no longer reproducible, and the auth/storage plus React Query test paths have been hardened so they no longer rely on implicit background timers during Jest runs.
+- Remaining console output in the focused batch is limited to React Router future-flag warnings, not leaked handles or hanging async work.
+
+### Session: Post-Redeploy Live Verification March 10 2026 ⚠️ PARTIALLY COMPLETE
+
+**Date**: March 10, 2026  
+**Scope**: Verify the newly redeployed backend against the previously deployment-blocked live parity gaps, then continue the fix audit only if fresh live or source-level defects remain.
+
+**Acceptance Criteria**
+- Previously stale deployed routes are rechecked live after redeploy: OAuth entry, OAuth exchange, MFA setup, change-password, worker nested resources, and capped bid pagination.
+- The auth mail/register live path is rechecked after redeploy so the status log distinguishes between fixed-by-deploy and still-live failures.
+- Any newly surfaced live defects are traced back to source and either fixed immediately or documented as external/runtime-only blockers.
+
+**Mapped execution surface**
+- `scripts/tmp-live-gateway-smoke-high0912.js`
+- `kelmah-backend/api-gateway/routes/auth.routes.js`
+- `kelmah-backend/api-gateway/routes/messaging.routes.js`
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/services/auth-service/services/email.service.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Implementation completed**
+- Re-ran the live gateway parity smoke against `https://kelmah-api-gateway-gf3g.onrender.com` after the backend redeploy.
+- Confirmed the redeployed backend now serves the worker nested-resource endpoints successfully:
+  - `GET /api/users/workers`
+  - `GET /api/users/workers/:workerId/skills`
+  - `GET /api/users/workers/:workerId/work-history`
+  - `GET /api/users/workers/:workerId/portfolio`
+  - `GET /api/users/workers/:workerId/certificates`
+- Re-ran a fresh live registration timing probe using new email addresses and confirmed `POST /api/auth/register` still fails with the generic `503` envelope after roughly `18s` on the redeployed service.
+- Re-ran public OAuth parity checks after redeploy and confirmed the entry route `GET /api/auth/google` now consistently responds with the expected `501 Google authentication is not configured on the server` guard instead of a stale missing-route failure.
+- Re-ran the Google OAuth entry route after redeploy and confirmed the live `501 Google authentication is not configured on the server` response matches the current auth-service route guard for an environment where Google credentials are not configured.
+- Re-checked authenticated auth entry with the probe credentials, confirmed stable login again with the restored known password, and verified `POST /api/auth/mfa/setup` now returns `200` with a live TOTP secret and QR payload.
+- Re-ran `POST /api/auth/oauth/exchange` in a fresh shell with a correctly encoded invalid-code payload and observed a live `502`, so that public auth-mutation route remains unstable in production despite earlier parity improvement.
+- Dry-audited the current auth mailer again and identified an additional source-level gap: the mailer still treated the placeholder default `noreply@kelmah.com` sender as authoritative instead of falling back to the authenticated SMTP mailbox.
+- Patched `kelmah-backend/services/auth-service/services/email.service.js` so placeholder Kelmah noreply defaults now fall back to the authenticated SMTP user, and added regression coverage in `kelmah-backend/services/auth-service/tests/email.service.test.js`.
+
+**Validation**
+- Live post-redeploy parity probe results:
+  - gateway health: `200`
+  - worker nested resources: all `200`
+  - OAuth entry: `501` with `Google authentication is not configured on the server`
+  - OAuth exchange: later fresh-shell probe returned `502`, so the route is still unstable in production.
+  - login with the restored known password returned `200` and live MFA setup returned `200`.
+- Live post-redeploy registration timing probe results:
+  - fresh worker registrations: repeated `503` generic internal-error envelope after roughly `18s`.
+- Local auth-service regression verification passed from `kelmah-backend/services/auth-service/`:
+  - `tests/email.service.test.js`
+  - `tests/auth.controller.security.test.js`
+  - Result: 2 suites passed, 15 tests passed, 0 failures.
+- Local broader backend regression verification also passed from `kelmah-backend/`:
+  - `api-gateway/routes/auth.routes.test.js`
+  - `services/auth-service/tests/auth.controller.security.test.js`
+  - `services/auth-service/tests/email.service.test.js`
+  - `services/job-service/tests/bid.controller.race.test.js`
+  - Result: 4 suites passed, 23 tests passed, 0 failures.
+
+**Current state**
+- The redeploy fixed the previously stale worker nested-resource live parity gap.
+- Live Google entry remains intentionally disabled by missing server-side OAuth credentials, but the OAuth exchange mutation is still unstable in production.
+- The live registration/mail path is still broken, so the earlier timeout/password normalization fix was not sufficient by itself.
+- Live authenticated auth verification is no longer blocked at login: the restored known password and MFA setup route both work again after redeploy.
+- Local source now also guards against placeholder sender-address drift, but that new mailer fix still needs deployment before live registration can be re-verified.
+- Read-only Render environment inspection from this workspace is currently blocked because the stored Render API credential in `scripts/restore-render-env-vars.js` now returns `401 Unauthorized`.
+
 ### Session: MED-10 To MED-18 Follow-Up Regression And Validation March 10 2026 ✅ COMPLETED
 
 **Date**: March 10, 2026  
@@ -100,6 +267,11 @@
 - Added explicit SMTP transport timeouts (`connectionTimeout`, `greetingTimeout`, `socketTimeout`) and raised the default mail send timeout from `8000ms` to `30000ms` so Render cold starts / Gmail handshakes do not fail prematurely.
 - Cleared the timeout timer after successful mail sends so the timeout wrapper does not leak open handles.
 - Added `kelmah-backend/services/auth-service/tests/email.service.test.js` to lock the SMTP normalization and timeout configuration in place.
+- Added sender-address fallback logic so the placeholder default `noreply@kelmah.com` no longer overrides a real authenticated SMTP mailbox when `EMAIL_FROM` is missing or stale.
+- Extended `kelmah-backend/services/auth-service/tests/email.service.test.js` to cover placeholder-sender fallback to `SMTP_USER`.
+- Patched `kelmah-backend/services/auth-service/server.js` so the live auth-service error middleware now uses the shared `buildServiceErrorResponse()` helper instead of an older inline envelope that masked all `503` responses.
+- Patched `kelmah-backend/services/auth-service/controllers/auth.controller.js` so deliberate service-unavailable `503` branches in login and auth verification are marked as safe operational messages (`expose` / `exposeMessage`).
+- Added controller-level regression coverage in `kelmah-backend/services/auth-service/tests/auth.controller.security.test.js` for the DB-not-ready login path so the safe `503` contract stays locked in.
 
 **Validation**
 - Live probes against `https://kelmah-api-gateway-gf3g.onrender.com` showed:
@@ -112,11 +284,24 @@
   - `tests/email.service.test.js`
   - `tests/auth.controller.security.test.js`
   - Result: 2 suites passed, 14 tests passed, 0 failures.
+- Follow-up auth-service regression verification now also passes from `kelmah-backend/` after the `503` envelope fix:
+  - `services/auth-service/tests/auth.controller.security.test.js`
+  - `services/auth-service/tests/error-response.test.js`
+  - `services/auth-service/tests/server.error-envelope.test.js`
+  - Result: 3 suites passed, 18 tests passed, 0 failures.
+- Post-redeploy live probes now show the failure persists on the current deployed build, but with a longer runtime profile:
+  - fresh worker registrations still return `503` after roughly `18s`.
+- After the sender-fallback hardening, auth-service regression verification still passes from `kelmah-backend/services/auth-service/`:
+  - `tests/email.service.test.js`
+  - `tests/auth.controller.security.test.js`
+  - Result: 2 suites passed, 15 tests passed, 0 failures.
 
 **Current state**
 - The deployed register failure is traced to the auth-service verification email send path, not to gateway routing or basic auth-service availability.
-- The most likely live root cause is SMTP transport drift on Render: either the Gmail app password is stored in a human-formatted form with spaces, or the previous `8s` timeout is aborting a real but slow SMTP handshake/send.
-- Local source now contains a root-cause mitigation for both failure modes, but live worker verification will not recover until the updated auth-service build is deployed with the intended SMTP environment values.
+- The earlier timeout/password normalization mitigation is deployed, but live registration still fails, which means a second source-level or runtime sender/config issue remained.
+- Local source now contains a third root-cause mitigation for that mail path: placeholder sender defaults no longer override the authenticated SMTP mailbox.
+- Local source now also preserves intentional operational `503` messages and error codes instead of collapsing them into a generic internal-error envelope, which will make the next live deploy materially easier to diagnose.
+- Live worker verification will not recover until the updated auth-service build is deployed and the registration path is re-probed again.
 
 ### Session: MED Follow-Up Messaging And Frontend Regression March 10 2026 ✅ COMPLETED
 
@@ -266,10 +451,18 @@
   - `src/utils/__tests__/secureStorage.test.js`
   - `src/modules/search/components/results/WorkerSearchResults.test.jsx`
 - Result: 2 suites passed, 7 tests passed, 0 failures.
+- Focused backend Jest verification passed from `kelmah-backend/`:
+  - `services/job-service/tests/mobile-recommendations.contract.test.js`
+  - `services/user-service/tests/worker-profile.controller.test.js`
+- Result: 2 suites passed, 11 tests passed, 0 failures.
+- Frontend production build passed from `kelmah-frontend/`:
+  - `npm run build`
+  - Result: Vite production build completed successfully.
 
 **Residual notes**
 - The React Router v7 future-flag warnings still appear during the worker-results test render; they are test-environment warnings, not regressions from this pass.
 - Two originally reported findings were confirmed stale and therefore documented rather than re-fixed: the shared relative-time helper already supports weeks/months, and `searchService.getSuggestions()` already debounces/cancels/deduplicates requests.
+- Post-redeploy authenticated live verification is currently blocked by the worker fixture credentials available in this workspace: both known password variants for `giftyafisa@gmail.com` now return `401 Invalid credentials`, so the live `/api/jobs/recommendations/personalized` and `/api/users/workers/:id/skills/bulk` probes could not be completed against the redeployed gateway.
 
 **Date**: March 10, 2026  
 **Scope**: Add focused regression coverage for the recently fixed frontend render/auth/query issues, and repair any stale frontend Jest tests uncovered while wiring those regressions into the current test harness.
@@ -758,6 +951,67 @@
 
 **Date**: March 10, 2026  
 **Scope**: Eliminate the frontend build warning caused by mixed dynamic and static imports of the shared `apiClient`, and audit the affected callers for adjacent transport-boundary drift while keeping request behavior unchanged.
+
+### Session: CRIT-17 Auth Delivery Error Envelope And Post-Redeploy Verification March 10 2026 ✅ COMPLETED
+
+**Date**: March 10, 2026  
+**Scope**: Re-check the redeployed backend for the previously blocked gateway/auth parity endpoints, then fix the auth-service error-envelope bug that was still hiding the real registration/resend failure behind a generic 503 body.
+
+**Acceptance Criteria**
+- Post-redeploy live probes confirm whether gateway auth parity fixes are now active remotely.
+- The auth-service preserves safe operational 503 messages such as `EMAIL_DELIVERY_UNAVAILABLE` instead of collapsing them into `An internal error occurred`.
+- Focused auth-service tests cover the new error-envelope behavior alongside the existing registration/resend mail-delivery regressions.
+
+**Mapped execution surface**
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/services/auth-service/server.js`
+- `kelmah-backend/services/auth-service/utils/errorResponse.js`
+- `kelmah-backend/services/auth-service/tests/error-response.test.js`
+- `kelmah-backend/services/auth-service/tests/server.error-envelope.test.js`
+- `kelmah-backend/services/auth-service/tests/email.service.test.js`
+- `kelmah-backend/services/auth-service/tests/auth.controller.security.test.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Data flow trace**
+- Public auth registration hits `POST /api/auth/register` -> `auth.controller.register()` -> verification email preflight and send -> auth-service global error handler in `server.js`.
+- Verification resend hits `POST /api/auth/resend-verification-email` -> `auth.controller.resendVerificationEmail()` -> same delivery guard -> auth-service global error handler.
+- The service-level error handler is the final serialization boundary before responses return through the API gateway.
+
+**Dry-audit findings**
+- The backend redeploy fixed the gateway-forwarding class of failures: live probes now reach the auth-service for OAuth exchange, MFA setup, and change-password instead of dying at the old gateway proxy path.
+- Live `POST /api/auth/register` still returns `503`, but the current body is generic because `auth.controller.js` raises a trusted `EMAIL_DELIVERY_UNAVAILABLE` AppError while `server.js` masks all `>=500` messages.
+- This means the underlying mail-delivery outage remains environmental, but the user-visible error contract was still wrong in the live code.
+
+**Implementation completed**
+- Added `kelmah-backend/services/auth-service/utils/errorResponse.js` to centralize auth-service error-envelope serialization.
+- Updated `kelmah-backend/services/auth-service/server.js` to use that helper instead of masking every `>=500` message indiscriminately.
+- Marked the trusted auth controller delivery errors as explicitly exposable by setting `expose` / `exposeMessage` on `EMAIL_DELIVERY_UNAVAILABLE` errors and on generic invalid-credential errors.
+- Added focused coverage in `tests/error-response.test.js` for exposed 503s, masked unexpected 500s, and visible 4xx messages.
+- Aligned the legacy `tests/server.error-envelope.test.js` with the shared helper contract so the auth-service regression surface stays consistent.
+
+**Validation**
+- Post-redeploy live probes against `https://kelmah-api-gateway-gf3g.onrender.com` returned:
+  - `POST /api/auth/login` (`giftyafisa@gmail.com / 11221122Tg`) -> `200` during the first redeploy verification pass.
+  - `POST /api/auth/login` (`kwame.asante1@kelmah.test / TestUser123!`) -> `200`.
+  - `GET /api/auth/me` with the worker token -> `200`, `role=worker`.
+  - `GET /api/jobs/recommendations/personalized?limit=3&page=1` with the worker token -> `200`, `contract=mobile-recommendations-v1`, `recommendationSource=worker-profile`.
+  - `GET /api/auth/google` -> `501`, which confirms the request now reaches auth-service instead of the stale gateway `404` route gap.
+  - `POST /api/auth/oauth/exchange` with invalid code -> `400`, which confirms the gateway route is mounted and forwarded.
+  - `POST /api/auth/mfa/setup` -> `200` with authenticated session.
+  - `POST /api/auth/change-password` -> `200` with authenticated session.
+  - `POST /api/auth/register` with a fresh synthetic email -> `503` and generic body, which exposed the error-envelope masking bug.
+- Focused auth-service regression verification passed from `kelmah-backend/services/auth-service/`:
+  - `tests/error-response.test.js`
+  - `tests/server.error-envelope.test.js`
+  - `tests/email.service.test.js`
+  - `tests/auth.controller.security.test.js`
+  - Result: 4 suites passed, 19 tests passed.
+
+**Current state**
+- Gateway auth parity is materially improved on the redeployed backend: the old 404/504 forwarding failures are gone for the audited auth routes.
+- Authenticated worker flows remain healthy on the redeployed backend, including `/api/auth/me` and personalized recommendations.
+- Public registration still depends on restoring transactional mail delivery in the deployed environment.
+- Once the new auth-service code is deployed, users will at least receive the honest 503 message instead of a generic internal-error envelope while that environmental mail outage persists.
 
 **Acceptance Criteria**
 - `kelmah-frontend` build no longer reports the mixed dynamic/static import warning for `src/services/apiClient.js`.
@@ -1364,8 +1618,11 @@ See `spec-kit/APICLIENT_IMPORT_WARNING_FIX_MAR10_2026.md` for the deeper audit r
   - `api-gateway/routes/auth.routes.test.js`
   - `services/job-service/tests/bid.controller.race.test.js`
   - Result: 2 suites passed, 8 tests passed, 0 failures.
-- Live smoke against `https://kelmah-api-gateway-gf3g.onrender.com` still showed stale deployed behavior for `POST /api/auth/change-password` (`504`) and oversized bid pagination (`limit=100000` echoed back).
-- Deployment audit showed the backend `Deploy Backend to Render` GitHub Actions workflow failed immediately for commit `cf4bff4`, so the remaining live mismatch is a deployment blocker rather than a local code regression.
+- Initial live smoke against `https://kelmah-api-gateway-gf3g.onrender.com` showed stale deployed behavior for `POST /api/auth/change-password` (`504`) and oversized bid pagination (`limit=100000` echoed back).
+- After backend redeployment, live smoke confirmed the deployed fixes are active: worker nested-resource reads returned `200`, login returned `200`, bid pagination was capped at `50`, and `POST /api/auth/change-password` succeeded through the gateway.
+- The redeployed audit also surfaced a follow-up operational mismatch: the historical shared test password `11221122Tg` is now below the hardened password policy, so successful password-change verification cannot revert the account to that weak value. The shared live test account was rotated to the compliant baseline `Vx7!Rk2#Lm9@Qa4`, and the live smoke probe now verifies password change using compliant forward and revert passwords only.
+- Final live smoke passed end to end with the compliant baseline credential: login `200`, worker nested-resource reads `200`, bid pagination capped at `50`, change-password forward `200`, temporary-password login `200`, and change-password revert `200`.
+- Repeated live probing also showed transient gateway and auth instability (`502`, `503`, `429`) even while the functional routes were correct, so the checked-in smoke probe now retries and backs off on temporary upstream or rate-limit responses.
 
 See `spec-kit/HIGH_09_12_BACKEND_SECURITY_ROUTE_AUDIT_MAR10_2026.md` for the deeper audit record.
 

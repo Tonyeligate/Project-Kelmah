@@ -5,7 +5,14 @@ const axios = require('axios');
 jest.mock('axios', () => jest.fn());
 jest.mock('../middlewares/rate-limiter', () => ({
   rateLimiters: {
-    auth: (req, res, next) => next(),
+    login: (req, res, next) => {
+      res.set('x-gateway-rate-limit-profile', 'login');
+      next();
+    },
+    auth: (req, res, next) => {
+      res.set('x-gateway-rate-limit-profile', 'auth');
+      next();
+    },
     general: (req, res, next) => next(),
     verificationToken: (req, res, next) => next(),
   },
@@ -86,6 +93,26 @@ describe('auth gateway routes', () => {
         },
       }),
     );
+  });
+
+  test('uses the dedicated login limiter for the login route', async () => {
+    axios.mockResolvedValue({
+      status: 200,
+      data: { success: true },
+      headers: {
+        'content-type': 'application/json',
+      },
+    });
+
+    const response = await request(app)
+      .post('/api/auth/login')
+      .send({
+        email: 'hirer@example.com',
+        password: 'CurrentPassword123!',
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.headers['x-gateway-rate-limit-profile']).toBe('login');
   });
 
   test('preserves upstream redirect headers for google oauth entry', async () => {

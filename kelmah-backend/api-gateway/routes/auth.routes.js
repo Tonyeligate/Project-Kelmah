@@ -156,7 +156,7 @@ const forwardProtectedAuthDirect = async (req, res, authPath, {
 // Public routes
 // Bypass the generic proxy for public auth mutations so Express body parsing
 // cannot interfere with upstream request completion during cloud deployments.
-router.post('/login', rateLimiters.auth, (req, res) => forwardPublicAuthDirect(req, res, '/login', { timeout: 30000 }));
+router.post('/login', rateLimiters.login, (req, res) => forwardPublicAuthDirect(req, res, '/login', { timeout: 30000 }));
 router.post('/register', rateLimiters.auth, (req, res) => forwardPublicAuthDirect(req, res, '/register', { timeout: 60000 }));
 router.post('/forgot-password', rateLimiters.auth, (req, res) => forwardPublicAuthDirect(req, res, '/forgot-password', { timeout: 60000 }));
 router.post('/reset-password', rateLimiters.auth, (req, res) => forwardPublicAuthDirect(req, res, '/reset-password', { timeout: 60000 }));

@@ -70,7 +70,7 @@ function getRedisClient() {
 }
 
 const LIMITS = {
-  login: { windowMs: 15 * 60 * 1000, max: 20 },
+  login: { windowMs: 15 * 60 * 1000, max: 20, skipSuccessfulRequests: true },
   register: { windowMs: 60 * 60 * 1000, max: 30 },
   emailVerification: { windowMs: 15 * 60 * 1000, max: 20 },
   verificationToken: { windowMs: 15 * 60 * 1000, max: 10 },
@@ -115,9 +115,11 @@ function createLimiter(key = 'default') {
     max: cfg.max,
     standardHeaders: true,
     legacyHeaders: false,
+    skipSuccessfulRequests: Boolean(cfg.skipSuccessfulRequests),
+    skipFailedRequests: Boolean(cfg.skipFailedRequests),
     message: { success: false, message: 'Too many requests. Please try again later.' },
     ...(store ? { store } : {}),
-    keyGenerator: (req) => `${req.ip}:${(req.body?.email || '').toLowerCase()}`,
+    keyGenerator: cfg.keyGenerator || ((req) => `${req.ip}:${String(req.body?.email || '').trim().toLowerCase()}`),
   });
 }
 

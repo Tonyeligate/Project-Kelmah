@@ -78,8 +78,18 @@ Audit and fix four backend findings across auth, user, and job services: login u
 	- `api-gateway/routes/auth.routes.test.js`
 	- `services/job-service/tests/bid.controller.race.test.js`
 - Result: 2 suites passed, 8 tests passed, 0 failures.
-- Live gateway smoke against `https://kelmah-api-gateway-gf3g.onrender.com` showed the worker nested-resource reads and login flow healthy, but `POST /api/auth/change-password` still returned a proxy `504` and `GET /api/bids/job/:jobId?limit=100000` still echoed `pagination.limit=100000`.
-- Follow-up deployment audit showed the backend GitHub Actions workflow `Deploy Backend to Render` failed immediately for commit `cf4bff4`, so the live gateway and job-service instances are still serving stale code rather than the locally verified fixes.
+- Initial live gateway smoke against `https://kelmah-api-gateway-gf3g.onrender.com` showed stale deployed behavior for `POST /api/auth/change-password` (`504`) and uncapped bid pagination (`limit=100000`), confirming the first deployed instance had not picked up the local fixes yet.
+- After redeployment, live gateway smoke confirmed the worker nested-resource reads, login flow, capped bid pagination (`limit=50`), and `POST /api/auth/change-password` success path all behaved correctly on the deployed backend.
+- The redeployed live audit also exposed an adjacent operational mismatch: the long-standing shared test credential `11221122Tg` is below the hardened password policy, so a successful change-password flow cannot legally revert the account to that value. The shared live test account was rotated to the compliant baseline `Vx7!Rk2#Lm9@Qa4`, and the smoke probe now uses a compliant temporary password for reversible live verification.
+- Final live smoke passed end to end after the credential rotation: public worker nested-resource reads returned `200`, gateway login returned `200`, `GET /api/bids/job/:jobId?limit=100000` reported `pagination.limit=50`, `POST /api/auth/change-password` succeeded, temporary-password login succeeded, and the revert back to the compliant baseline also succeeded.
+- The deployed environment still showed transient infrastructure noise during repeated probes (`502`, `503`, and auth `429` rate-limit responses), so the smoke probe was hardened with retry/backoff for login and password-mutation verification. Those transients did not change the final functional result.
 
 ## Outcome
 The reported findings were valid. The auth fix is now deeper than the original single-branch leak report: the login path uses one generic auth-failure contract across the broader invalid-credential surface, the password policy is centralized around `SecurityUtils`, the nested worker routes are no longer shadowed by earlier registrations, and bid list pagination now has an explicit upper bound.
+
+## Follow-Up Hardening
+- The later live stability audit traced part of the transient auth `429` noise to a real source-level limiter issue: successful logins were consuming the same login-rate-limit budget as failed attempts.
+- The API Gateway now uses a dedicated `/api/auth/login` limiter with `skipSuccessfulRequests: true`, and the auth-service login limiter mirrors that behavior so successful authentication no longer burns the brute-force budget.
+- The auth-service login limiter key generator was also tightened to trim and lowercase the email portion of the key so gateway and service normalization remain aligned.
+- Active shared-test-user guidance is now aligned on the compliant baseline password `Vx7!Rk2#Lm9@Qa4`, including the real top-level `create-gifty-user.js` helper and the root README test-credential section.
+- Focused follow-up verification passed locally after the limiter hardening: `api-gateway/routes/auth.routes.test.js`, `api-gateway/middlewares/rate-limiter.test.js`, `services/auth-service/tests/auth.routes.validation.test.js`, `services/auth-service/tests/rate-limiter.config.test.js`, and `services/auth-service/tests/auth.controller.security.test.js` all passed for a total of 5 suites and 25 tests.

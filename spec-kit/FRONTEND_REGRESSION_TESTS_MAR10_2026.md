@@ -48,9 +48,20 @@ Add small but durable frontend regression tests for the recently fixed JobSearch
 	- `src/modules/auth/pages/RegisterPage.test.jsx`
 	- `src/modules/search/services/searchService.test.js`
 - Result: 5 suites passed, 10 tests passed, 0 failures.
+- Follow-up clean-shell verification on the later redeploy-validation batch also passed for:
+	- `src/modules/search/components/results/WorkerSearchResults.test.jsx`
+	- `src/modules/auth/pages/RegisterPage.test.jsx`
+	- `src/modules/search/services/searchService.test.js`
+	- `src/tests/components/auth/Login.test.jsx`
+- Follow-up result: 4 suites passed, 10 tests passed, 0 failures, and the JSON report recorded `openHandles: []`.
+
+## Lifecycle Follow-Up
+- Hardened `kelmah-frontend/src/utils/secureStorage.js` so the singleton cleanup interval does not start under `NODE_ENV === 'test'`, removing a real background-timer risk from Jest imports of the auth/storage stack.
+- Hardened `kelmah-frontend/src/modules/jobs/hooks/useJobsQuery.test.jsx` with a dedicated test `QueryClient`, `gcTime: Infinity`, and explicit `unmount()` plus `queryClient.clear()` cleanup so the hook regression suite does not leave React Query cache-GC timers behind.
+- Re-ran the focused regression batch and the auth/storage-focused batch without `--forceExit`; both exited normally with `--detectOpenHandles`.
 
 ## Residual Risk
-- The focused frontend Jest batch still needed `--forceExit` to terminate cleanly in this workspace shell. The regression assertions themselves are green, but there is still an unresolved open-handle or shell-lifecycle issue somewhere in the frontend Jest environment.
+- The earlier `--forceExit` warning is no longer reproducible. After the lifecycle hardening above, there is no currently reproduced frontend Jest open-handle defect on this path.
 
 ## Outcome
 The requested regression coverage is now in place at the right boundaries: component-level for `JobSearchForm`, UI-level for Login error surfacing, and hook-level for `useSavedJobsQuery`. The audit also surfaced and fixed two shared frontend test-harness defects that would have kept asset-importing and theme-dependent tests brittle even after the new regressions were added.
