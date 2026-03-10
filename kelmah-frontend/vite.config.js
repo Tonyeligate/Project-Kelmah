@@ -56,6 +56,16 @@ export default defineConfig({
         ) {
           return;
         }
+
+        // apiClient is a shared singleton intentionally used by both eager modules
+        // and route-lazy chunks, so this Rollup mixed-import warning is expected noise.
+        if (
+          warning.message.includes('src/services/apiClient.js') &&
+          warning.message.includes('dynamic import will not move module into another chunk')
+        ) {
+          return;
+        }
+
         warn(warning);
       },
       output: {
@@ -92,6 +102,9 @@ export default defineConfig({
             'date-fns',
             'notistack',
             'zod',
+          ],
+          'shared-api': [
+            path.resolve(__dirname, './src/services/apiClient.js'),
           ],
         },
       },

@@ -1,9 +1,13 @@
 jest.mock('../models', () => ({
   Bid: {
+    countDocuments: jest.fn(),
+    find: jest.fn(),
     findById: jest.fn(),
     findOneAndUpdate: jest.fn(),
   },
-  Job: {},
+  Job: {
+    findById: jest.fn(),
+  },
   UserPerformance: {},
 }));
 
@@ -71,6 +75,65 @@ describe('bid controller reject race regression', () => {
       success: false,
       message: 'Bid is no longer pending',
     }));
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  test('getJobBids caps oversized requested limits at 50', async () => {
+    const bidQuery = {
+      sort: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      populate: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue([]),
+    };
+
+    models.Job.findById.mockResolvedValue({
+      hirer: { toString: () => 'hirer-1' },
+    });
+    models.Bid.countDocuments.mockResolvedValue(0);
+    models.Bid.find.mockReturnValue(bidQuery);
+
+    const req = {
+      params: { jobId: '507f1f77bcf86cd799439011' },
+      query: { page: '1', limit: '100000' },
+      user: { id: 'hirer-1', role: 'hirer' },
+    };
+    const res = createMockResponse();
+    const next = jest.fn();
+
+    await bidController.getJobBids(req, res, next);
+
+    expect(bidQuery.limit).toHaveBeenCalledWith(50);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.data.pagination.limit).toBe(50);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  test('getWorkerBids caps oversized requested limits at 50', async () => {
+    const bidQuery = {
+      sort: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      populate: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue([]),
+    };
+
+    models.Bid.countDocuments.mockResolvedValue(0);
+    models.Bid.find.mockReturnValue(bidQuery);
+
+    const req = {
+      params: { workerId: '507f1f77bcf86cd799439011' },
+      query: { page: '1', limit: '999' },
+      user: { id: '507f1f77bcf86cd799439011', role: 'worker' },
+    };
+    const res = createMockResponse();
+    const next = jest.fn();
+
+    await bidController.getWorkerBids(req, res, next);
+
+    expect(bidQuery.limit).toHaveBeenCalledWith(50);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.data.pagination.limit).toBe(50);
     expect(next).not.toHaveBeenCalled();
   });
 });

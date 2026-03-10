@@ -128,22 +128,110 @@ const normalizeDelimitedList = (value) => {
   return [];
 };
 
+const buildArrayToSearchStringExpression = (fieldPath) => ({
+  $reduce: {
+    input: { $ifNull: [fieldPath, []] },
+    initialValue: '',
+    in: {
+      $concat: [
+        '$$value',
+        ' ',
+        {
+          $toLower: {
+            $ifNull: [
+              {
+                $cond: [
+                  { $eq: [{ $type: '$$this' }, 'object'] },
+                  {
+                    $ifNull: [
+                      '$$this.name',
+                      {
+                        $ifNull: ['$$this.skillName', { $ifNull: ['$$this.label', ''] }],
+                      },
+                    ],
+                  },
+                  { $toString: '$$this' },
+                ],
+              },
+              '',
+            ],
+          },
+        },
+      ],
+    },
+  },
+});
+
+const buildTextRelevanceScoreExpression = (textQuery = '') => {
+  const normalizedQuery = toSafeString(textQuery, '').trim().toLowerCase();
+  if (!normalizedQuery) {
+    return { $literal: 0 };
+  }
+
+  const tokens = Array.from(
+    new Set(
+      normalizedQuery
+        .split(/\s+/)
+        .map((token) => token.trim())
+        .filter((token) => token.length > 1),
+    ),
+  ).slice(0, 6);
+
+  const professionInput = { $toLower: { $ifNull: ['$canonicalProfession', ''] } };
+  const nameInput = {
+    $toLower: {
+      $concat: [
+        { $ifNull: ['$canonicalFirstName', ''] },
+        ' ',
+        { $ifNull: ['$canonicalLastName', ''] },
+      ],
+    },
+  };
+  const bioInput = { $toLower: { $ifNull: ['$canonicalBio', ''] } };
+  const locationInput = { $toLower: { $ifNull: ['$canonicalLocation', ''] } };
+  const skillsInput = buildArrayToSearchStringExpression('$canonicalSkills');
+  const specializationsInput = buildArrayToSearchStringExpression('$canonicalSpecializations');
+  const exactPattern = escapeRegex(normalizedQuery);
+
+  const scoreParts = [
+    { $cond: [{ $regexMatch: { input: professionInput, regex: exactPattern } }, 140, 0] },
+    { $cond: [{ $regexMatch: { input: skillsInput, regex: exactPattern } }, 120, 0] },
+    { $cond: [{ $regexMatch: { input: specializationsInput, regex: exactPattern } }, 110, 0] },
+    { $cond: [{ $regexMatch: { input: nameInput, regex: exactPattern } }, 90, 0] },
+    { $cond: [{ $regexMatch: { input: bioInput, regex: exactPattern } }, 40, 0] },
+    { $cond: [{ $regexMatch: { input: locationInput, regex: exactPattern } }, 20, 0] },
+  ];
+
+  tokens.forEach((token) => {
+    const tokenPattern = escapeRegex(token);
+    scoreParts.push({ $cond: [{ $regexMatch: { input: professionInput, regex: tokenPattern } }, 30, 0] });
+    scoreParts.push({ $cond: [{ $regexMatch: { input: skillsInput, regex: tokenPattern } }, 24, 0] });
+    scoreParts.push({ $cond: [{ $regexMatch: { input: specializationsInput, regex: tokenPattern } }, 22, 0] });
+    scoreParts.push({ $cond: [{ $regexMatch: { input: nameInput, regex: tokenPattern } }, 16, 0] });
+    scoreParts.push({ $cond: [{ $regexMatch: { input: bioInput, regex: tokenPattern } }, 8, 0] });
+    scoreParts.push({ $cond: [{ $regexMatch: { input: locationInput, regex: tokenPattern } }, 4, 0] });
+  });
+
+  return { $add: scoreParts };
+};
+
 const buildWorkerDirectorySortClause = (sortBy = 'relevance') => {
   switch (sortBy) {
     case 'distance':
-      return { canonicalUpdatedAt: -1, canonicalRating: -1 };
+      return { canonicalTextScore: -1, canonicalUpdatedAt: -1, canonicalRating: -1 };
     case 'rating':
-      return { canonicalRating: -1, canonicalCompletedJobs: -1, canonicalUpdatedAt: -1 };
+      return { canonicalTextScore: -1, canonicalRating: -1, canonicalCompletedJobs: -1, canonicalUpdatedAt: -1 };
     case 'price_low':
-      return { canonicalHourlyRate: 1, canonicalRating: -1 };
+      return { canonicalTextScore: -1, canonicalHourlyRate: 1, canonicalRating: -1 };
     case 'price_high':
-      return { canonicalHourlyRate: -1, canonicalRating: -1 };
+      return { canonicalTextScore: -1, canonicalHourlyRate: -1, canonicalRating: -1 };
     case 'experience':
-      return { canonicalCompletedJobs: -1, canonicalExperience: -1, canonicalRating: -1 };
+      return { canonicalTextScore: -1, canonicalCompletedJobs: -1, canonicalExperience: -1, canonicalRating: -1 };
     case 'newest':
-      return { canonicalUpdatedAt: -1 };
+      return { canonicalTextScore: -1, canonicalUpdatedAt: -1 };
     default:
       return {
+        canonicalTextScore: -1,
         canonicalVerified: -1,
         canonicalRating: -1,
         canonicalCompletedJobs: -1,
@@ -577,6 +665,7 @@ const executeWorkerDirectoryQuery = async ({
             { $ifNull: ['$user.specializations', []] },
           ],
         },
+        canonicalTextScore: buildTextRelevanceScoreExpression(textQuery),
       },
     },
   ];
@@ -668,88 +757,6 @@ const haversineDistance = (lat1, lng1, lat2, lng2) => {
     Math.cos((lat2 * Math.PI) / 180) *
     Math.sin(dLng / 2) * Math.sin(dLng / 2);
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-};
-
-const autopopulateWorkerDefaults = async (worker, usersCollection) => {
-  if (!worker) {
-    return worker;
-  }
-
-  let updateNeeded = false;
-  const updates = {};
-
-  if (!worker.profession) {
-    updates.profession = 'General Worker';
-    updateNeeded = true;
-  }
-
-  if (!worker.skills || worker.skills.length === 0) {
-    updates.skills = ['General Work'];
-    updateNeeded = true;
-  }
-
-  if (!worker.hourlyRate) {
-    updates.hourlyRate = 25;
-    updateNeeded = true;
-  }
-
-  if (!worker.currency) {
-    updates.currency = 'GHS';
-    updateNeeded = true;
-  }
-
-  if (worker.rating === undefined) {
-    // CRIT-07 FIX: Default to 0, not 4.5 — inflated ratings mislead hirers
-    updates.rating = 0;
-    updateNeeded = true;
-  }
-
-  if (!worker.totalReviews) {
-    updates.totalReviews = 0;
-    updateNeeded = true;
-  }
-
-  if (!worker.totalJobsCompleted) {
-    updates.totalJobsCompleted = 0;
-    updateNeeded = true;
-  }
-
-  if (!worker.availabilityStatus) {
-    updates.availabilityStatus = 'available';
-    updateNeeded = true;
-  }
-
-  if (worker.isVerified === undefined) {
-    updates.isVerified = false;
-    updateNeeded = true;
-  }
-
-  if (!worker.bio) {
-    updates.bio = `Experienced ${worker.profession || 'General Worker'
-      } with ${worker.yearsOfExperience || 2} years of experience in ${worker.location || 'Accra, Ghana'
-      }.`;
-    updateNeeded = true;
-  }
-
-  if (updateNeeded && usersCollection) {
-    try {
-      await usersCollection.updateOne(
-        { _id: worker._id },
-        { $set: updates },
-      );
-      logger.info(
-        `✅ Auto-populated worker fields for ${worker.firstName || ''
-        } ${worker.lastName || ''}`,
-      );
-    } catch (error) {
-      logger.error(
-        `❌ Failed to auto-populate worker fields for ${worker._id}:`,
-        error,
-      );
-    }
-  }
-
-  return { ...worker, ...updates };
 };
 
 const formatWorkerForResponse = (workerDoc) => {
@@ -1758,10 +1765,27 @@ class WorkerController {
 
       const formattedWorkers = workers.map((worker) => ({
         ...worker,
-        skills: (worker.skills || []).map((skill) => ({
-          name: skill,
-          level: 'Intermediate',
-        })),
+        skills: (worker.skills || []).map((skill) => {
+          if (typeof skill === 'string') {
+            return {
+              name: skill,
+              level: 'Intermediate',
+            };
+          }
+
+          if (skill && typeof skill === 'object') {
+            return {
+              ...skill,
+              name: skill.name || skill.skillName || skill.label || '',
+              level: skill.level || 'Intermediate',
+            };
+          }
+
+          return {
+            name: String(skill || ''),
+            level: 'Intermediate',
+          };
+        }).filter((skill) => skill.name),
       }));
 
       return res.status(200).json({
@@ -1794,7 +1818,7 @@ class WorkerController {
         skills,
         minRating = 0,
         maxRate,
-        availability = 'available',
+        availability,
         radius = 50,
         latitude,
         longitude,
@@ -2395,7 +2419,7 @@ class WorkerController {
     try {
       const { limit = 10 } = req.query;
       const normalizedLimit = Math.min(parseInt(limit, 10) || 10, 12);
-      const parseGatewayUser = () => {
+      const parseGatewayUser = async () => {
         if (req.user?.id) {
           return req.user;
         }
@@ -2416,7 +2440,7 @@ class WorkerController {
         if (authHeader && authHeader.startsWith('Bearer ')) {
           const token = authHeader.slice(7);
           try {
-            const decoded = verifyAccessToken(token);
+            const decoded = await verifyAccessToken(token);
             const claims = decodeUserFromClaims(decoded);
             if (claims?.id) {
               return claims;
@@ -2429,7 +2453,7 @@ class WorkerController {
         return null;
       };
 
-      const userContext = parseGatewayUser();
+      const userContext = await parseGatewayUser();
       const userId = userContext?.id;
 
       if (!userId) {
@@ -2665,6 +2689,7 @@ class WorkerController {
    * Replaces the previous N+1 client mutation pattern.
    */
   static async upsertWorkerSkillsBulk(req, res) {
+    const MAX_WORKER_SKILL_ENTRIES = 50;
     const workerId = req.params.workerId || req.params.id;
     if (!workerId) {
       return res.status(400).json({ success: false, message: 'workerId parameter is required' });
@@ -2673,6 +2698,13 @@ class WorkerController {
     const inputSkills = Array.isArray(req.body?.skills) ? req.body.skills : null;
     if (!inputSkills) {
       return res.status(400).json({ success: false, message: 'skills array is required' });
+    }
+
+    if (inputSkills.length > MAX_WORKER_SKILL_ENTRIES) {
+      return res.status(422).json({
+        success: false,
+        message: `You can save up to ${MAX_WORKER_SKILL_ENTRIES} skills at a time`,
+      });
     }
 
     try {

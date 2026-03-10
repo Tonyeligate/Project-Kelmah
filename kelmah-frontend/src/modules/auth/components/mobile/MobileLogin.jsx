@@ -86,8 +86,6 @@ const MobileLogin = ({ registrationSuccess = false }) => {
 
     if (!password) {
       newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'At least 6 characters';
     }
 
     setErrors(newErrors);
@@ -356,6 +354,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
                       <IconButton
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
                         sx={{ color: 'text.disabled', minWidth: 44, minHeight: 44 }}
                       >
                         {showPassword ? <VisibilityOff /> : <Visibility />}

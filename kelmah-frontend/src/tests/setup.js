@@ -1,15 +1,6 @@
 /* eslint-env jest */
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
-import React from 'react';
-
-// Mock MUI components to avoid style-related errors
-jest.mock('@mui/material', () => ({
-  ...jest.requireActual('@mui/material'),
-  ThemeProvider: ({ children }) => <div>{children}</div>,
-  createTheme: () => ({}),
-  useTheme: () => ({}),
-}));
 
 // Mock IntersectionObserver
 global.IntersectionObserver = jest.fn(() => ({

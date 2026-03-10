@@ -7,6 +7,9 @@
 const crypto = require('crypto');
 const ALLOWED_ROLES = ['worker', 'hirer', 'admin', 'super_admin', 'staff'];
 
+const getServiceTrustSecret = () =>
+  process.env.SERVICE_TRUST_HMAC_SECRET || process.env.INTERNAL_API_KEY || '';
+
 /**
  * Whitelist-validate a parsed user object from the gateway header.
  * Only known, safe properties are kept — everything else is stripped.
@@ -74,21 +77,25 @@ const verifyGatewayRequest = (req, res, next) => {
   if (gatewayAuth && authSource === 'api-gateway') {
     // Verify HMAC signature — MANDATORY when INTERNAL_API_KEY is configured (prevents header spoofing)
     const signature = req.headers['x-gateway-signature'];
-    const hmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET;
-    if (hmacSecret) {
-      if (!signature) {
-        return res.status(401).json({
-          error: 'Missing gateway signature',
-          message: 'Gateway requests must include x-gateway-signature when HMAC is configured'
-        });
-      }
-      const expected = crypto.createHmac('sha256', hmacSecret).update(gatewayAuth).digest('hex');
-      if (!timingSafeCompare(signature, expected)) {
-        return res.status(401).json({
-          error: 'Invalid gateway signature',
-          message: 'Gateway authentication header signature mismatch'
-        });
-      }
+    const hmacSecret = getServiceTrustSecret();
+    if (!hmacSecret) {
+      return res.status(500).json({
+        error: 'Service trust misconfigured',
+        message: 'SERVICE_TRUST_HMAC_SECRET or INTERNAL_API_KEY must be configured for gateway verification'
+      });
+    }
+    if (!signature) {
+      return res.status(401).json({
+        error: 'Missing gateway signature',
+        message: 'Gateway requests must include x-gateway-signature when HMAC is configured'
+      });
+    }
+    const expected = crypto.createHmac('sha256', hmacSecret).update(gatewayAuth).digest('hex');
+    if (!timingSafeCompare(signature, expected)) {
+      return res.status(401).json({
+        error: 'Invalid gateway signature',
+        message: 'Gateway authentication header signature mismatch'
+      });
     }
     try {
       const parsed = JSON.parse(gatewayAuth);
@@ -119,8 +126,14 @@ const verifyGatewayRequest = (req, res, next) => {
   if (userId && userRole) {
     // Verify HMAC signature for legacy headers too
     const legacySignature = req.headers['x-gateway-signature'];
-    const legacyHmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET || '';
-    if (!legacyHmacSecret || !legacySignature) {
+    const legacyHmacSecret = getServiceTrustSecret();
+    if (!legacyHmacSecret) {
+      return res.status(500).json({
+        error: 'Service trust misconfigured',
+        message: 'SERVICE_TRUST_HMAC_SECRET or INTERNAL_API_KEY must be configured for gateway verification'
+      });
+    }
+    if (!legacySignature) {
       return res.status(401).json({
         error: 'Legacy gateway headers require HMAC verification',
         message: 'Missing signature for legacy service trust'
@@ -180,7 +193,7 @@ const optionalGatewayVerification = (req, res, next) => {
     try {
       // Verify HMAC signature before trusting gateway headers
       const signature = req.headers['x-gateway-signature'];
-      const hmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET;
+      const hmacSecret = getServiceTrustSecret();
       if (hmacSecret) {
         if (!signature) {
           // No signature on optional route — skip populating req.user

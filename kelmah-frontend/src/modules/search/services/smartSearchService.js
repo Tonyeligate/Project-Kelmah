@@ -41,11 +41,13 @@ const smartSearchService = {
    */
   getSmartJobRecommendations: async (userId, options = {}) => {
     try {
+      const { signal, ...queryOptions } = options || {};
       const response = await api.get(JOB_RECOMMENDATIONS_ENDPOINT, {
         params: {
           userId,
-          ...options,
+          ...queryOptions,
         },
+        signal,
       });
       const payload = response?.data?.data || response?.data || {};
       return {

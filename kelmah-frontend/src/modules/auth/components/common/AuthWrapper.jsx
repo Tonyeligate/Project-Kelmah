@@ -3,7 +3,7 @@ import {
   Box,
   Paper,
   Typography,
-  Container,
+  IconButton,
   useTheme,
   useMediaQuery,
   Chip,
@@ -20,6 +20,8 @@ import {
   Engineering as EngineeringIcon,
   Construction as ConstructionIcon,
   Verified as VerifiedIcon,
+  PauseCircleOutline as PauseIcon,
+  PlayCircleOutline as PlayIcon,
 } from '@mui/icons-material';
 import { alpha } from '@mui/material/styles';
 
@@ -41,6 +43,7 @@ const AuthWrapper = ({ children }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
   const [currentImage, setCurrentImage] = useState(0);
+  const [isCarouselAutoPlay, setIsCarouselAutoPlay] = useState(true);
   const isDarkMode = theme.palette.mode === 'dark';
   const accentColor = theme.palette.primary.main || '#FFD700';
   const accentStrong = theme.palette.primary.dark || '#D39D00';
@@ -58,7 +61,7 @@ const AuthWrapper = ({ children }) => {
     : alpha('#101113', 0.12);
   const leftPanelText = isDarkMode ? '#FFFFFF' : '#171A1F';
   const leftPanelMuted = isDarkMode ? alpha('#FFFFFF', 0.82) : alpha('#171A1F', 0.76);
-  const leftPanelSoft = isDarkMode ? alpha('#FFFFFF', 0.7) : alpha('#171A1F', 0.6);
+  const leftPanelSoft = isDarkMode ? alpha('#FFFFFF', 0.76) : alpha('#171A1F', 0.68);
   const featureSurface = isDarkMode ? alpha(accentColor, 0.05) : alpha('#FFFFFF', 0.82);
   const featureSurfaceHover = isDarkMode ? alpha(accentColor, 0.1) : alpha('#FFFFFF', 0.96);
   const featureBorder = isDarkMode ? alpha(accentColor, 0.1) : alpha('#101113', 0.08);
@@ -86,11 +89,15 @@ const AuthWrapper = ({ children }) => {
               rgba(244,242,235,0.78) 100%)`;
 
   useEffect(() => {
+    if (!isCarouselAutoPlay) {
+      return undefined;
+    }
+
     const interval = setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % cartoonScenes.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isCarouselAutoPlay]);
 
   const features = [
     {
@@ -393,6 +400,25 @@ const AuthWrapper = ({ children }) => {
                         },
                       }}
                     >
+                      <IconButton
+                        onClick={() => setIsCarouselAutoPlay((prev) => !prev)}
+                        aria-label={isCarouselAutoPlay ? 'Pause slideshow' : 'Play slideshow'}
+                        sx={{
+                          position: 'absolute',
+                          top: 10,
+                          right: 10,
+                          zIndex: 2,
+                          color: isDarkMode ? '#FFFFFF' : '#171A1F',
+                          backgroundColor: overlaySurface,
+                          border: `1px solid ${overlayBorder}`,
+                          '&:hover': {
+                            backgroundColor: isDarkMode ? alpha('#000000', 0.78) : alpha('#FFFFFF', 0.98),
+                          },
+                        }}
+                      >
+                        {isCarouselAutoPlay ? <PauseIcon fontSize="small" /> : <PlayIcon fontSize="small" />}
+                      </IconButton>
+
                       {/* Golden glow effect */}
                       <Box
                         sx={{

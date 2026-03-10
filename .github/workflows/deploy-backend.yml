@@ -22,32 +22,57 @@ jobs:
           node-version: '18'
           
       - name: Trigger Render Deploy
+        env:
+          RENDER_API_GATEWAY_DEPLOY_HOOK: ${{ secrets.RENDER_API_GATEWAY_DEPLOY_HOOK }}
+          RENDER_AUTH_SERVICE_DEPLOY_HOOK: ${{ secrets.RENDER_AUTH_SERVICE_DEPLOY_HOOK }}
+          RENDER_MESSAGING_SERVICE_DEPLOY_HOOK: ${{ secrets.RENDER_MESSAGING_SERVICE_DEPLOY_HOOK }}
+          RENDER_PAYMENT_SERVICE_DEPLOY_HOOK: ${{ secrets.RENDER_PAYMENT_SERVICE_DEPLOY_HOOK }}
+          RENDER_JOB_SERVICE_DEPLOY_HOOK: ${{ secrets.RENDER_JOB_SERVICE_DEPLOY_HOOK }}
+          RENDER_USER_SERVICE_DEPLOY_HOOK: ${{ secrets.RENDER_USER_SERVICE_DEPLOY_HOOK }}
         run: |
+          set -euo pipefail
+
           echo "🚀 Triggering Render deployment..."
+
+          missing_hooks=0
+
+          check_hook() {
+            local hook_name="$1"
+            local hook_value="$2"
+
+            if [ -z "$hook_value" ]; then
+              echo "::error title=Missing deploy hook::$hook_name is not configured"
+              missing_hooks=1
+            fi
+          }
+
+          trigger_hook() {
+            local service_name="$1"
+            local hook_url="$2"
+
+            echo "🚀 Triggering ${service_name} deployment..."
+            curl --fail --silent --show-error -X POST "$hook_url" > /dev/null
+            echo "✅ ${service_name} deployment triggered"
+          }
+
+          check_hook "RENDER_API_GATEWAY_DEPLOY_HOOK" "$RENDER_API_GATEWAY_DEPLOY_HOOK"
+          check_hook "RENDER_AUTH_SERVICE_DEPLOY_HOOK" "$RENDER_AUTH_SERVICE_DEPLOY_HOOK"
+          check_hook "RENDER_MESSAGING_SERVICE_DEPLOY_HOOK" "$RENDER_MESSAGING_SERVICE_DEPLOY_HOOK"
+          check_hook "RENDER_PAYMENT_SERVICE_DEPLOY_HOOK" "$RENDER_PAYMENT_SERVICE_DEPLOY_HOOK"
+          check_hook "RENDER_JOB_SERVICE_DEPLOY_HOOK" "$RENDER_JOB_SERVICE_DEPLOY_HOOK"
+          check_hook "RENDER_USER_SERVICE_DEPLOY_HOOK" "$RENDER_USER_SERVICE_DEPLOY_HOOK"
+
+          if [ "$missing_hooks" -ne 0 ]; then
+            echo "❌ Backend deploy hooks are incomplete. Populate the missing Render hook secrets before retrying this workflow."
+            exit 1
+          fi
           
-          # API Gateway
-          curl -X POST "${{ secrets.RENDER_API_GATEWAY_DEPLOY_HOOK }}"
-          echo "✅ API Gateway deployment triggered"
-          
-          # Auth Service  
-          curl -X POST "${{ secrets.RENDER_AUTH_SERVICE_DEPLOY_HOOK }}"
-          echo "✅ Auth Service deployment triggered"
-          
-          # Messaging Service
-          curl -X POST "${{ secrets.RENDER_MESSAGING_SERVICE_DEPLOY_HOOK }}"
-          echo "✅ Messaging Service deployment triggered"
-          
-          # Payment Service
-          curl -X POST "${{ secrets.RENDER_PAYMENT_SERVICE_DEPLOY_HOOK }}"
-          echo "✅ Payment Service deployment triggered"
-          
-          # Job Service
-          curl -X POST "${{ secrets.RENDER_JOB_SERVICE_DEPLOY_HOOK }}"
-          echo "✅ Job Service deployment triggered"
-          
-          # User Service
-          curl -X POST "${{ secrets.RENDER_USER_SERVICE_DEPLOY_HOOK }}"
-          echo "✅ User Service deployment triggered"
+          trigger_hook "API Gateway" "$RENDER_API_GATEWAY_DEPLOY_HOOK"
+          trigger_hook "Auth Service" "$RENDER_AUTH_SERVICE_DEPLOY_HOOK"
+          trigger_hook "Messaging Service" "$RENDER_MESSAGING_SERVICE_DEPLOY_HOOK"
+          trigger_hook "Payment Service" "$RENDER_PAYMENT_SERVICE_DEPLOY_HOOK"
+          trigger_hook "Job Service" "$RENDER_JOB_SERVICE_DEPLOY_HOOK"
+          trigger_hook "User Service" "$RENDER_USER_SERVICE_DEPLOY_HOOK"
           
           echo "🎉 All backend services deployment triggered successfully!"
           

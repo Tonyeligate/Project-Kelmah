@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Grid,
@@ -27,6 +28,8 @@ import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import WorkerCard from '../../../worker/components/WorkerCard';
 
+const INITIAL_RENDERED_WORKERS = 12;
+
 const WorkerSearchResults = ({
   workers = [],
   loading = false,
@@ -44,6 +47,17 @@ const WorkerSearchResults = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { isAuthenticated } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+  const [renderedWorkerCount, setRenderedWorkerCount] = useState(INITIAL_RENDERED_WORKERS);
+
+  useEffect(() => {
+    setRenderedWorkerCount(INITIAL_RENDERED_WORKERS);
+  }, [workers.length, pagination?.page]);
+
+  const visibleWorkers = useMemo(
+    () => workers.slice(0, renderedWorkerCount),
+    [workers, renderedWorkerCount],
+  );
+  const hasHiddenWorkers = workers.length > visibleWorkers.length;
 
   // Handle page change in pagination
   const handlePageChange = (event, value) => {
@@ -54,6 +68,10 @@ const WorkerSearchResults = ({
 
   // Handle sort change
   const handleSortChange = (event) => {
+    if (loading) {
+      return;
+    }
+
     if (onSortChange) {
       onSortChange(event.target.value);
     }
@@ -337,8 +355,9 @@ const WorkerSearchResults = ({
 
   // Renders worker cards
   const renderWorkerCards = () => (
-    <Grid container spacing={3}>
-      {workers.map((worker, index) => (
+    <>
+      <Grid container spacing={3}>
+      {visibleWorkers.map((worker, index) => (
         <Grid item xs={12} sm={6} md={4} key={worker.id || worker.userId || `worker-${index}`}>
           <WorkerCard
             worker={worker}
@@ -347,7 +366,19 @@ const WorkerSearchResults = ({
           />
         </Grid>
       ))}
-    </Grid>
+      </Grid>
+
+      {hasHiddenWorkers && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+          <Button
+            variant="outlined"
+            onClick={() => setRenderedWorkerCount(workers.length)}
+          >
+            Show remaining {workers.length - visibleWorkers.length} workers
+          </Button>
+        </Box>
+      )}
+    </>
   );
 
   // Renders pagination
@@ -422,6 +453,7 @@ const WorkerSearchResults = ({
             value={filters.sort || 'relevance'}
             onChange={handleSortChange}
             label="Sort by"
+            disabled={loading}
           >
             <MenuItem value="relevance">Relevance</MenuItem>
             <MenuItem value="rating">Highest Rated</MenuItem>
@@ -436,6 +468,7 @@ const WorkerSearchResults = ({
             variant="outlined"
             startIcon={<MapIcon />}
             onClick={onToggleView}
+            disabled={loading}
             size="small"
             sx={{ display: { xs: 'none', sm: 'flex' } }}
           >

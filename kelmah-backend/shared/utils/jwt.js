@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 const DEFAULT_ISSUER = process.env.JWT_ISSUER || 'kelmah-auth-service';
 const DEFAULT_AUDIENCE = process.env.JWT_AUDIENCE || 'kelmah-platform';
@@ -11,11 +12,21 @@ function ensureSecret(name) {
   return value;
 }
 
+function resolveSubject(payload = {}) {
+  const subject = payload.id ?? payload.sub;
+
+  if (subject === undefined || subject === null || subject === '') {
+    throw new Error('JWT subject is required');
+  }
+
+  return String(subject);
+}
+
 function signAccessToken(payload, options = {}) {
   const secret = ensureSecret('JWT_SECRET');
   const { expiresIn = '15m', issuer = DEFAULT_ISSUER, audience = DEFAULT_AUDIENCE, jwtid } = options;
   const body = {
-    sub: String(payload.id || payload.sub),
+    sub: resolveSubject(payload),
     email: payload.email,
     role: payload.role,
     version: payload.version ?? payload.tokenVersion ?? 0,
@@ -32,7 +43,7 @@ function signRefreshToken(payload, options = {}) {
   const secret = ensureSecret('JWT_REFRESH_SECRET');
   const { expiresIn = '7d', issuer = DEFAULT_ISSUER, audience = DEFAULT_AUDIENCE, jwtid } = options;
   const body = {
-    sub: String(payload.id || payload.sub),
+    sub: resolveSubject(payload),
     version: payload.version ?? payload.tokenVersion ?? 0,
   };
   // Only include jwtid if it's provided and is a string
@@ -43,10 +54,39 @@ function signRefreshToken(payload, options = {}) {
   return jwt.sign(body, secret, signOptions);
 }
 
-function verifyAccessToken(token, options = {}) {
+async function findRevokedTokenByJti(jti) {
+  if (!jti || !mongoose?.connection || mongoose.connection.readyState !== 1) {
+    return null;
+  }
+
+  try {
+    return await mongoose.connection
+      .db
+      .collection('revoked_tokens')
+      .findOne({
+        jti,
+        expiresAt: { $gt: new Date() },
+      });
+  } catch (_) {
+    return null;
+  }
+}
+
+async function verifyAccessToken(token, options = {}) {
   const secret = ensureSecret('JWT_SECRET');
   const { issuer = DEFAULT_ISSUER, audience = DEFAULT_AUDIENCE } = options;
-  return jwt.verify(token, secret, { issuer, audience, algorithms: ['HS256'] });
+  const decoded = jwt.verify(token, secret, { issuer, audience, algorithms: ['HS256'] });
+
+  if (decoded?.jti) {
+    const revokedToken = await findRevokedTokenByJti(decoded.jti);
+    if (revokedToken) {
+      const error = new Error('Token revoked');
+      error.name = 'JsonWebTokenError';
+      throw error;
+    }
+  }
+
+  return decoded;
 }
 
 function verifyRefreshToken(token, options = {}) {
@@ -63,7 +103,7 @@ function generateAuthTokens(user) {
   return { accessToken, refreshToken };
 }
 
-function verifyAuthToken(token) {
+async function verifyAuthToken(token) {
   return verifyAccessToken(token);
 }
 
@@ -94,6 +134,7 @@ module.exports = {
   signRefreshToken,
   verifyAccessToken,
   verifyRefreshToken,
+  findRevokedTokenByJti,
   decodeUserFromClaims,
   generateAuthTokens,
   verifyAuthToken,

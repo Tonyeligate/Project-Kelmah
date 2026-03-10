@@ -3,14 +3,20 @@ const nodemailer = require('nodemailer');
 const config = require('../config');
 const { logger } = require('../utils/logger');
 
+const normalizeEnvString = (value) => (typeof value === 'string' ? value.trim() : value);
+const normalizeSmtpPassword = (value) => (typeof value === 'string' ? value.replace(/\s+/g, '') : value);
+
 // Map config properties to expected names
 const EMAIL_FROM = config.FROM_EMAIL || config.EMAIL_FROM || 'noreply@kelmah.com';
 const SMTP_HOST = config.SMTP_HOST || 'smtp.gmail.com';
 const SMTP_PORT = config.SMTP_PORT || 465;
-const SMTP_USER = config.SMTP_USER;
-const SMTP_PASS = config.SMTP_PASSWORD || config.SMTP_PASS;
-const EMAIL_SEND_TIMEOUT_MS = Number(config.EMAIL_SEND_TIMEOUT_MS || process.env.EMAIL_SEND_TIMEOUT_MS || 8000);
-const HAS_SMTP_CREDENTIALS = Boolean((SMTP_USER || process.env.SMTP_USER) && (SMTP_PASS || process.env.SMTP_PASS));
+const SMTP_USER = normalizeEnvString(config.SMTP_USER || process.env.SMTP_USER);
+const SMTP_PASS = normalizeSmtpPassword(config.SMTP_PASSWORD || config.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.SMTP_PASS);
+const SMTP_CONNECTION_TIMEOUT_MS = Number(config.SMTP_CONNECTION_TIMEOUT_MS || process.env.SMTP_CONNECTION_TIMEOUT_MS || 15000);
+const SMTP_GREETING_TIMEOUT_MS = Number(config.SMTP_GREETING_TIMEOUT_MS || process.env.SMTP_GREETING_TIMEOUT_MS || 15000);
+const SMTP_SOCKET_TIMEOUT_MS = Number(config.SMTP_SOCKET_TIMEOUT_MS || process.env.SMTP_SOCKET_TIMEOUT_MS || 30000);
+const EMAIL_SEND_TIMEOUT_MS = Number(config.EMAIL_SEND_TIMEOUT_MS || process.env.EMAIL_SEND_TIMEOUT_MS || 30000);
+const HAS_SMTP_CREDENTIALS = Boolean(SMTP_USER && SMTP_PASS);
 
 // Debug logging only in development
 if (process.env.NODE_ENV === 'development') {
@@ -25,12 +31,15 @@ const smtpConfig = {
   port: Number(SMTP_PORT) || 465,
   secure: (Number(SMTP_PORT) === 465) || false,
   auth: {
-    user: SMTP_USER || process.env.SMTP_USER,
-    pass: SMTP_PASS || process.env.SMTP_PASS
+    user: SMTP_USER,
+    pass: SMTP_PASS,
   },
   tls: {
     rejectUnauthorized: process.env.NODE_ENV !== 'development',
   },
+  connectionTimeout: SMTP_CONNECTION_TIMEOUT_MS,
+  greetingTimeout: SMTP_GREETING_TIMEOUT_MS,
+  socketTimeout: SMTP_SOCKET_TIMEOUT_MS,
   // Connection pooling for better delivery
   pool: true,
   maxConnections: 5,
@@ -96,25 +105,54 @@ const sendMailSafely = async (mailOptions, operation) => {
     return { skipped: true };
   }
 
-  return Promise.race([
-    transporter.sendMail(mailOptions),
-    new Promise((_, reject) => {
-      setTimeout(() => {
-        reject(new Error(`Email send timed out after ${EMAIL_SEND_TIMEOUT_MS}ms`));
-      }, EMAIL_SEND_TIMEOUT_MS);
-    }),
-  ]);
+  let timeoutId;
+
+  try {
+    return await Promise.race([
+      transporter.sendMail(mailOptions),
+      new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error(`Email send timed out after ${EMAIL_SEND_TIMEOUT_MS}ms`));
+        }, EMAIL_SEND_TIMEOUT_MS);
+      }),
+    ]);
+  } catch (error) {
+    logger.warn('SMTP delivery failed', {
+      operation,
+      to: mailOptions.to,
+      error: error.message,
+    });
+    throw error;
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
 };
+
+const escapeHtml = (value) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const escapeHtmlAttribute = (value) => escapeHtml(value).replace(/`/g, '&#96;');
 
 // Helper function to create professional email templates
 const createEmailTemplate = (title, content, buttonText, buttonUrl) => {
+  const safeTitle = escapeHtml(title);
+  const safeButtonText = escapeHtml(buttonText);
+  const safeButtonUrl = buttonUrl ? escapeHtmlAttribute(buttonUrl) : '';
+
   return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${title}</title>
+        <title>${safeTitle}</title>
         <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
@@ -135,7 +173,7 @@ const createEmailTemplate = (title, content, buttonText, buttonUrl) => {
             </div>
             <div class="content">
                 ${content}
-                ${buttonUrl ? `<div style="text-align: center;"><a href="${buttonUrl}" class="button">${buttonText}</a></div>` : ''}
+              ${safeButtonUrl ? `<div style="text-align: center;"><a href="${safeButtonUrl}" class="button">${safeButtonText}</a></div>` : ''}
                 <div class="security-notice">
                     <strong>Security Notice:</strong> This email was sent from a secure server. If you didn't request this action, please ignore this email or contact our support team.
                 </div>
@@ -155,9 +193,10 @@ module.exports = {
   isDeliveryConfigured: () => HAS_SMTP_CREDENTIALS,
 
   sendVerificationEmail: async ({ name, email, verificationUrl }) => {
+    const safeName = escapeHtml(name || 'there');
     const subject = '✅ Verify Your Kelmah Account - Action Required';
     const content = `
-      <h2>Welcome to Kelmah, ${name}!</h2>
+      <h2>Welcome to Kelmah, ${safeName}!</h2>
       <p>Thank you for joining our professional services marketplace. To complete your registration and start using your account, please verify your email address.</p>
       <p><strong>Why verify your email?</strong></p>
       <ul>
@@ -190,10 +229,11 @@ module.exports = {
     await sendMailSafely(mailOptions, 'sendVerificationEmail');
   },
   sendPasswordResetEmail: async ({ name, email, resetUrl }) => {
+      const safeName = escapeHtml(name || 'there');
     const subject = '🔐 Reset Your Kelmah Password - Secure Action Required';
     const content = `
       <h2>Password Reset Request</h2>
-      <p>Hello ${name},</p>
+        <p>Hello ${safeName},</p>
       <p>We received a request to reset your password for your Kelmah account. If you made this request, click the button below to create a new password.</p>
       <p><strong>Security Information:</strong></p>
       <ul>
@@ -222,10 +262,11 @@ module.exports = {
   },
 
   sendPasswordChangedEmail: async ({ name, email }) => {
+    const safeName = escapeHtml(name || 'there');
     const subject = '✅ Your Kelmah Password Was Changed Successfully';
     const content = `
       <h2>Password Changed Successfully</h2>
-      <p>Hello ${name},</p>
+      <p>Hello ${safeName},</p>
       <p>This email confirms that your Kelmah account password was successfully changed on ${new Date().toLocaleDateString()}.</p>
       <p><strong>What this means:</strong></p>
       <ul>
@@ -254,10 +295,11 @@ module.exports = {
   },
 
   sendAccountDeactivationEmail: async ({ name, email }) => {
+    const safeName = escapeHtml(name || 'there');
     const subject = '⚠️ Your Kelmah Account Has Been Deactivated';
     const content = `
       <h2>Account Deactivation Notice</h2>
-      <p>Hello ${name},</p>
+      <p>Hello ${safeName},</p>
       <p>Your Kelmah account has been temporarily deactivated. This action was taken for security or policy reasons.</p>
       <p><strong>What happens next:</strong></p>
       <ul>
@@ -287,10 +329,11 @@ module.exports = {
   },
 
   sendAccountReactivationEmail: async ({ name, email }) => {
+    const safeName = escapeHtml(name || 'there');
     const subject = '🎉 Your Kelmah Account Has Been Reactivated';
     const content = `
       <h2>Welcome Back!</h2>
-      <p>Hello ${name},</p>
+      <p>Hello ${safeName},</p>
       <p>Great news! Your Kelmah account has been successfully reactivated and you can now access all platform features.</p>
       <p><strong>You can now:</strong></p>
       <ul>
@@ -320,10 +363,11 @@ module.exports = {
   },
 
   sendAccountLockedEmail: async ({ name, email }) => {
+    const safeName = escapeHtml(name || 'there');
     const subject = '🔒 Your Kelmah Account Has Been Temporarily Locked';
     const content = `
       <h2>Account Security Alert</h2>
-      <p>Hello ${name},</p>
+      <p>Hello ${safeName},</p>
       <p>Your Kelmah account has been temporarily locked due to suspicious activity or multiple failed login attempts.</p>
       <p><strong>This security measure protects your account from:</strong></p>
       <ul>
@@ -353,10 +397,11 @@ module.exports = {
   },
 
   sendLoginNotificationEmail: async ({ name, email }) => {
+    const safeName = escapeHtml(name || 'there');
     const subject = '🔐 New Login to Your Kelmah Account';
     const content = `
       <h2>Login Notification</h2>
-      <p>Hello ${name},</p>
+      <p>Hello ${safeName},</p>
       <p>A new login to your Kelmah account was detected on ${new Date().toLocaleString()}.</p>
       <p><strong>Login Details:</strong></p>
       <ul>

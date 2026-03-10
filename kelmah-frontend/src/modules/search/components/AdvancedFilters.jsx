@@ -36,6 +36,10 @@ import {
 } from '@mui/icons-material';
 import { formatCurrency } from '../../../utils/formatters';
 
+const SEARCH_QUERY_MAX_LENGTH = 120;
+const SEARCH_LOCATION_MAX_LENGTH = 80;
+const SEARCH_SKILL_MAX_LENGTH = 40;
+
 const AdvancedFilters = ({
   onFiltersChange,
   initialFilters = {},
@@ -239,11 +243,12 @@ const AdvancedFilters = ({
   // Debounced query change to avoid firing API on every keystroke
   const queryTimerRef = useRef(null);
   const handleQueryChange = useCallback((value) => {
-    setFilters((prev) => ({ ...prev, query: value }));
+    const normalizedValue = value.slice(0, SEARCH_QUERY_MAX_LENGTH);
+    setFilters((prev) => ({ ...prev, query: normalizedValue }));
     clearTimeout(queryTimerRef.current);
     queryTimerRef.current = setTimeout(() => {
       if (onFiltersChange) {
-        onFiltersChange({ ...filters, query: value });
+        onFiltersChange({ ...filters, query: normalizedValue });
       }
     }, 400);
   }, [filters, onFiltersChange]);
@@ -420,6 +425,7 @@ const AdvancedFilters = ({
               placeholder="e.g., kitchen renovation, emergency plumbing"
               value={filters.query}
               onChange={(e) => handleQueryChange(e.target.value)}
+              inputProps={{ maxLength: SEARCH_QUERY_MAX_LENGTH }}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -451,6 +457,10 @@ const AdvancedFilters = ({
                   {...params}
                   label="Location"
                   placeholder="Select location"
+                  inputProps={{
+                    ...params.inputProps,
+                    maxLength: SEARCH_LOCATION_MAX_LENGTH,
+                  }}
                 />
               )}
             />
@@ -658,6 +668,10 @@ const AdvancedFilters = ({
                   {...params}
                   label="Required Skills"
                   placeholder="Select skills"
+                  inputProps={{
+                    ...params.inputProps,
+                    maxLength: SEARCH_SKILL_MAX_LENGTH,
+                  }}
                 />
               )}
             />

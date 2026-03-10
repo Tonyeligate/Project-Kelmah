@@ -17,6 +17,7 @@ import WorkIcon from '@mui/icons-material/Work';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import InfoIcon from '@mui/icons-material/Info';
 import { useNavigate } from 'react-router-dom';
+import { formatRelativeTime } from '../../../utils/formatters';
 
 /**
  * Derive a flat list of recent events from active jobs and application records.
@@ -39,6 +40,29 @@ const deriveEvents = (jobs = [], applications = {}) => {
     return [];
   };
 
+  const appendApplicationEvents = (apps = [], record = {}, jobIdFallback = null) => {
+    if (!Array.isArray(apps)) return;
+
+    apps.forEach((app, appIdx) => {
+      const jobTitle =
+        app?.jobTitle ||
+        app?.job?.title ||
+        record?.jobTitle ||
+        'a job';
+      const applicantName =
+        app?.applicantName || app?.workerName || 'A worker';
+      const createdAt = app?.createdAt || app?.appliedAt;
+      events.push({
+        id: `app-${app?._id || app?.id || jobIdFallback || 'activity'}-${appIdx}`,
+        icon: <AssignmentIcon />,
+        iconColor: 'warning',
+        primary: `${applicantName} applied for "${jobTitle}"`,
+        secondary: createdAt ? formatRelativeTime(createdAt) : '',
+        _timestamp: createdAt ? new Date(createdAt).getTime() : 0,
+      });
+    });
+  };
+
   // Jobs → "Job posted" events
   if (Array.isArray(jobs)) {
     jobs.forEach((job) => {
@@ -56,28 +80,12 @@ const deriveEvents = (jobs = [], applications = {}) => {
   }
 
   // Applications → "New application" events
-  if (applications && typeof applications === 'object') {
+  if (Array.isArray(applications)) {
+    appendApplicationEvents(applications);
+  } else if (applications && typeof applications === 'object') {
     Object.entries(applications).forEach(([jobId, record]) => {
       const apps = extractApplications(record);
-      if (!Array.isArray(apps)) return;
-      apps.forEach((app, appIdx) => {
-        const jobTitle =
-          app?.jobTitle ||
-          app?.job?.title ||
-          record?.jobTitle ||
-          'a job';
-        const applicantName =
-          app?.applicantName || app?.workerName || 'A worker';
-        const createdAt = app?.createdAt || app?.appliedAt;
-        events.push({
-          id: `app-${app?._id || app?.id || jobId}-${appIdx}`,
-          icon: <AssignmentIcon />,
-          iconColor: 'warning',
-          primary: `${applicantName} applied for "${jobTitle}"`,
-          secondary: createdAt ? formatRelativeTime(createdAt) : '',
-          _timestamp: createdAt ? new Date(createdAt).getTime() : 0,
-        });
-      });
+      appendApplicationEvents(apps, record, jobId);
     });
   }
 
@@ -122,29 +130,12 @@ const mapBackendActivities = (activities = []) =>
     .sort((a, b) => b._timestamp - a._timestamp)
     .slice(0, 5);
 
-/** Simple relative-time formatter */
-function formatRelativeTime(dateStr) {
-  try {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1) return 'Just now';
-    if (mins < 60) return `${mins} min${mins > 1 ? 's' : ''} ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs} hour${hrs > 1 ? 's' : ''} ago`;
-    const days = Math.floor(hrs / 24);
-    if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
-    return new Date(dateStr).toLocaleDateString();
-  } catch {
-    return '';
-  }
-}
-
 /**
  * RecentActivityFeed — shows up to 5 recent events derived from jobs & applications.
  *
  * Props:
  *   jobs          (array)  — active/recent jobs
- *   applications  (object) — applicationRecords keyed by jobId
+ *   applications  (object|array) — application records keyed by jobId or a flat application list
  */
 const RecentActivityFeed = ({ jobs = [], applications = {}, activities = null }) => {
   const theme = useTheme();

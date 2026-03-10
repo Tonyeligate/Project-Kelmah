@@ -116,4 +116,22 @@ describe('user-service dashboard route authorization', () => {
     expect(response.status).toBe(200);
     expect(controllerMock).toHaveBeenCalledTimes(1);
   });
+
+  test('does not duplicate worker nested resource routes on the top-level router', () => {
+    const directPaths = router.stack
+      .filter((layer) => layer.route)
+      .map((layer) => layer.route.path);
+
+    expect(directPaths).not.toEqual(expect.arrayContaining([
+      '/workers/:workerId/skills',
+      '/workers/:workerId/skills/bulk',
+      '/workers/:workerId/skills/:skillId',
+      '/workers/:workerId/work-history',
+      '/workers/:workerId/work-history/:entryId',
+      '/workers/:workerId/portfolio',
+      '/workers/:workerId/portfolio/:portfolioId',
+      '/workers/:workerId/certificates',
+      '/workers/:workerId/certificates/:certificateId',
+    ]));
+  });
 });

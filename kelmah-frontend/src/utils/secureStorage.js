@@ -7,9 +7,13 @@
 
 import CryptoJS from 'crypto-js';
 
+const AUTH_TOKEN_TTL = 2 * 60 * 60 * 1000;
+const REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60 * 1000;
+
 class SecureStorage {
   constructor() {
     this.storageKey = 'kelmah_secure_data';
+    this.sessionStorageKey = 'kelmah_secure_session_data';
     this.encryptionKey = this.generateEncryptionKey();
     this.maxAge = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -215,16 +219,34 @@ class SecureStorage {
    * Get all secure data
    */
   getSecureData() {
+    const sessionData = this.getScopedSecureData(false);
+    const persistentData = this.getScopedSecureData(true);
+
+    return {
+      ...persistentData,
+      ...sessionData,
+    };
+  }
+
+  getScopedStorage(persistent = true) {
+    return persistent ? localStorage : sessionStorage;
+  }
+
+  getScopedStorageKey(persistent = true) {
+    return persistent ? this.storageKey : this.sessionStorageKey;
+  }
+
+  getScopedSecureData(persistent = true) {
     try {
-      const encryptedData = localStorage.getItem(this.storageKey);
+      const storage = this.getScopedStorage(persistent);
+      const encryptedData = storage.getItem(this.getScopedStorageKey(persistent));
       if (!encryptedData) {
         return {};
       }
 
       const decryptedData = this.decrypt(encryptedData);
       if (!decryptedData) {
-        // Clear corrupted data
-        this.clear();
+        storage.removeItem(this.getScopedStorageKey(persistent));
         return {};
       }
 
@@ -239,7 +261,7 @@ class SecureStorage {
   /**
    * Set secure data
    */
-  setSecureData(data) {
+  setSecureData(data, persistent = true) {
     try {
       const dataWithTimestamp = {
         ...data,
@@ -249,7 +271,10 @@ class SecureStorage {
 
       const encrypted = this.encrypt(dataWithTimestamp);
       if (encrypted) {
-        localStorage.setItem(this.storageKey, encrypted);
+        this.getScopedStorage(persistent).setItem(
+          this.getScopedStorageKey(persistent),
+          encrypted,
+        );
         return true;
       }
       return false;
@@ -262,51 +287,95 @@ class SecureStorage {
   /**
    * Set a specific key in secure storage
    */
-  setItem(key, value, ttl = this.maxAge) {
-    const currentData = this.getSecureData();
+  hasItemInScope(key, persistent = true) {
+    const data = this.getScopedSecureData(persistent);
+    return Boolean(data[key]);
+  }
+
+  getPreferredScopeForKey(key) {
+    if (this.hasItemInScope(key, false)) {
+      return false;
+    }
+
+    if (this.hasItemInScope(key, true)) {
+      return true;
+    }
+
+    return true;
+  }
+
+  removeItemFromScope(key, persistent = true) {
+    const currentData = this.getScopedSecureData(persistent);
+    if (!currentData[key]) {
+      return false;
+    }
+
+    delete currentData[key];
+    this.setSecureData(currentData, persistent);
+    return true;
+  }
+
+  setItem(key, value, ttl = this.maxAge, options = {}) {
+    const persistent =
+      typeof options.persistent === 'boolean'
+        ? options.persistent
+        : this.getPreferredScopeForKey(key);
+    const currentData = this.getScopedSecureData(persistent);
+    this.removeItemFromScope(key, !persistent);
     currentData[key] = {
       value,
       timestamp: Date.now(),
       ttl,
     };
-    return this.setSecureData(currentData);
+    return this.setSecureData(currentData, persistent);
   }
 
   /**
    * Get a specific key from secure storage
    */
   getItem(key, maxAge) {
-    const data = this.getSecureData();
-    const item = data[key];
+    const readItem = (persistent) => {
+      const data = this.getScopedSecureData(persistent);
+      const item = data[key];
 
-    if (!item) {
-      return null;
+      if (!item) {
+        return null;
+      }
+
+      const storedTtl = typeof item.ttl === 'number' ? item.ttl : this.maxAge;
+      const effectiveTtl =
+        maxAge === undefined
+          ? storedTtl
+          : Math.min(storedTtl, maxAge ?? storedTtl);
+
+      if (
+        effectiveTtl !== Infinity &&
+        Date.now() - item.timestamp > effectiveTtl
+      ) {
+        this.removeItemFromScope(key, persistent);
+        return null;
+      }
+
+      return item.value;
+    };
+
+    const sessionValue = readItem(false);
+    if (sessionValue !== null) {
+      return sessionValue;
     }
-    const storedTtl = typeof item.ttl === 'number' ? item.ttl : this.maxAge;
-    const effectiveTtl =
-      maxAge === undefined
-        ? storedTtl
-        : Math.min(storedTtl, maxAge ?? storedTtl);
 
-    // Check if item has expired
-    if (
-      effectiveTtl !== Infinity &&
-      Date.now() - item.timestamp > effectiveTtl
-    ) {
-      this.removeItem(key);
-      return null;
-    }
-
-    return item.value;
+    return readItem(true);
   }
 
   /**
    * Remove a specific key from secure storage
    */
   removeItem(key) {
-    const currentData = this.getSecureData();
-    delete currentData[key];
-    return this.setSecureData(currentData);
+    [false, true].forEach((persistent) => {
+      this.removeItemFromScope(key, persistent);
+    });
+
+    return true;
   }
 
   /**
@@ -318,6 +387,7 @@ class SecureStorage {
   clear() {
     try {
       localStorage.removeItem(this.storageKey);
+      sessionStorage.removeItem(this.sessionStorageKey);
       // CRIT-09: Do NOT remove encryption key — other tabs may still need it
       // localStorage.removeItem('kelmah_encryption_secret');  // REMOVED
       sessionStorage.removeItem('session_id');
@@ -341,53 +411,55 @@ class SecureStorage {
    */
   cleanupExpiredData() {
     try {
-      const data = this.getSecureData();
-      let hasChanges = false;
+      [false, true].forEach((persistent) => {
+        const data = this.getScopedSecureData(persistent);
+        let hasChanges = false;
 
-      Object.keys(data).forEach((key) => {
-        if (key.startsWith('_')) return; // Skip metadata
+        Object.keys(data).forEach((key) => {
+          if (key.startsWith('_')) return; // Skip metadata
 
-        const item = data[key];
-        const storedTtl =
-          item && typeof item.ttl === 'number' ? item.ttl : this.maxAge;
-        if (
-          item &&
-          item.timestamp &&
-          storedTtl !== Infinity &&
-          Date.now() - item.timestamp > storedTtl
-        ) {
-          delete data[key];
-          hasChanges = true;
+          const item = data[key];
+          const storedTtl =
+            item && typeof item.ttl === 'number' ? item.ttl : this.maxAge;
+          if (
+            item &&
+            item.timestamp &&
+            storedTtl !== Infinity &&
+            Date.now() - item.timestamp > storedTtl
+          ) {
+            delete data[key];
+            hasChanges = true;
+          }
+        });
+
+        if (hasChanges) {
+          this.setSecureData(data, persistent);
         }
       });
-
-      if (hasChanges) {
-        this.setSecureData(data);
-      }
     } catch (error) {
       if (import.meta.env.DEV) console.error('Failed to cleanup expired data:', error);
     }
   }
 
   // Auth-specific methods
-  setAuthToken(token) {
-    return this.setItem('auth_token', token);
+  setAuthToken(token, options = {}) {
+    return this.setItem('auth_token', token, AUTH_TOKEN_TTL, options);
   }
 
   getAuthToken() {
-    return this.getItem('auth_token', 2 * 60 * 60 * 1000); // 2 hours for auth token
+    return this.getItem('auth_token', AUTH_TOKEN_TTL);
   }
 
-  setRefreshToken(token) {
-    return this.setItem('refresh_token', token, 7 * 24 * 60 * 60 * 1000); // 7 days
+  setRefreshToken(token, options = {}) {
+    return this.setItem('refresh_token', token, REFRESH_TOKEN_TTL, options);
   }
 
   getRefreshToken() {
-    return this.getItem('refresh_token', 7 * 24 * 60 * 60 * 1000); // 7 days
+    return this.getItem('refresh_token', REFRESH_TOKEN_TTL);
   }
 
-  setUserData(userData) {
-    return this.setItem('user_data', userData);
+  setUserData(userData, options = {}) {
+    return this.setItem('user_data', userData, this.maxAge, options);
   }
 
   getUserData() {

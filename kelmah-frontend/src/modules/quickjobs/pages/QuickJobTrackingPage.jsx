@@ -54,6 +54,7 @@ import {
   formatCurrency
 } from '../services/quickJobService';
 import { Helmet } from 'react-helmet-async';
+import { api } from '../../../services/apiClient';
 
 // Job status steps for worker
 const workerSteps = [
@@ -207,7 +208,6 @@ const QuickJobTrackingPage = () => {
       // Upload completion photos to get real server URLs before submitting
       let uploadedPhotos;
       try {
-        const { api } = await import('../../../services/apiClient');
         const formData = new FormData();
         completionPhotos.forEach((p, i) => formData.append('photos', p.file, `completion-${i}`));
         const uploadRes = await api.post('/jobs/upload-photos', formData, {

@@ -35,7 +35,7 @@ const protectedAuthProxy = (req, res, next) => {
 };
 
 // Authentication middleware for protected routes
-const { authenticate } = require('../middlewares/auth');
+const { authenticate, invalidateUserCache } = require('../middlewares/auth');
 
 const buildForwardHeaders = (req, { includeGatewayHeaders = false } = {}) => {
   const headers = {
@@ -115,6 +115,7 @@ const forwardProtectedAuthDirect = async (req, res, authPath, {
   timeout = 60000,
   data = req.body,
   params = req.query,
+  onSuccess = null,
 } = {}) => {
   try {
     const upstream = getServiceUrl(req);
@@ -129,6 +130,18 @@ const forwardProtectedAuthDirect = async (req, res, authPath, {
       timeout,
       validateStatus: () => true,
     });
+
+    if (
+      typeof onSuccess === 'function' &&
+      response.status >= 200 &&
+      response.status < 300
+    ) {
+      try {
+        await onSuccess(response);
+      } catch (cacheError) {
+        console.warn('Post-auth mutation hook failed:', cacheError?.message || cacheError);
+      }
+    }
 
     return sendUpstreamResponse(res, response);
   } catch (error) {
@@ -147,7 +160,7 @@ router.post('/login', rateLimiters.auth, (req, res) => forwardPublicAuthDirect(r
 router.post('/register', rateLimiters.auth, (req, res) => forwardPublicAuthDirect(req, res, '/register', { timeout: 60000 }));
 router.post('/forgot-password', rateLimiters.auth, (req, res) => forwardPublicAuthDirect(req, res, '/forgot-password', { timeout: 60000 }));
 router.post('/reset-password', rateLimiters.auth, (req, res) => forwardPublicAuthDirect(req, res, '/reset-password', { timeout: 60000 }));
-router.get('/verify-email/:token', rateLimiters.general, (req, res) => {
+router.get('/verify-email/:token', rateLimiters.verificationToken, (req, res) => {
   return forwardPublicAuthDirect(req, res, `/verify-email/${req.params.token}`, {
     method: 'get',
     timeout: 60000,
@@ -241,7 +254,10 @@ router.post('/logout', authenticate, protectedAuthProxy);
 router.get('/me', authenticate, protectedAuthProxy);
 // Both frontend and auth-service use POST for change-password
 router.post('/change-password', authenticate, (req, res) => {
-  return forwardProtectedAuthDirect(req, res, '/change-password', { timeout: 60000 });
+  return forwardProtectedAuthDirect(req, res, '/change-password', {
+    timeout: 60000,
+    onSuccess: () => invalidateUserCache(req.user?.id),
+  });
 });
 router.post('/validate', authenticate, (req, res) => {
   return forwardProtectedAuthDirect(req, res, '/validate', { timeout: 60000 });
@@ -275,7 +291,10 @@ router.delete('/sessions/:sessionId', authenticate, protectedAuthProxy);
 
 // Account management routes
 router.post('/account/deactivate', authenticate, (req, res) => {
-  return forwardProtectedAuthDirect(req, res, '/account/deactivate', { timeout: 60000 });
+  return forwardProtectedAuthDirect(req, res, '/account/deactivate', {
+    timeout: 60000,
+    onSuccess: () => invalidateUserCache(req.user?.id),
+  });
 });
 router.post('/account/reactivate', publicAuthProxy); // Public — reactivation doesn't require active auth
 

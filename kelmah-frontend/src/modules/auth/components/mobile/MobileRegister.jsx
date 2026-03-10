@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
+  ButtonBase,
   TextField,
   Typography,
   Alert,
@@ -21,9 +22,6 @@ import {
   Chip,
   Autocomplete,
   LinearProgress,
-  Radio,
-  RadioGroup,
-  FormControl,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import {
@@ -252,49 +250,60 @@ const MobileRegister = () => {
             <Typography sx={{ color: 'text.primary', fontWeight: 600, mb: 2, textAlign: 'center' }}>
               I want to...
             </Typography>
-            <Stack spacing={2}>
+            <Stack spacing={2} role="radiogroup" aria-label="Choose account type">
               {[
                 { value: 'worker', icon: <WorkIcon />, label: 'Find Work', desc: 'I\'m a skilled tradesperson' },
                 { value: 'hirer', icon: <BusinessIcon />, label: 'Hire Workers', desc: 'I need skilled professionals' },
               ].map((option) => (
-                <Box
+                <ButtonBase
                   key={option.value}
                   onClick={() => setFormData((p) => ({ ...p, role: option.value }))}
-                  sx={{
-                    p: 2.5,
-                    borderRadius: 2,
-                    border: formData.role === option.value
-                      ? `2px solid ${theme.palette.primary.main}`
-                      : `2px solid ${alpha(theme.palette.text.primary, 0.15)}`,
-                    backgroundColor: formData.role === option.value
-                      ? alpha(theme.palette.primary.main, 0.1)
-                      : alpha(theme.palette.text.primary, 0.03),
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    '&:hover': { borderColor: alpha(theme.palette.primary.main, 0.5) },
-                  }}
+                  role="radio"
+                  aria-checked={formData.role === option.value}
+                  aria-label={option.label}
+                  sx={{ width: '100%', borderRadius: 2, textAlign: 'left' }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box
-                      sx={{
-                        width: 45,
-                        height: 45,
-                        borderRadius: '50%',
-                        backgroundColor: formData.role === option.value ? theme.palette.primary.main : alpha(theme.palette.text.primary, 0.1),
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: formData.role === option.value ? theme.palette.primary.contrastText : theme.palette.text.secondary,
-                      }}
-                    >
-                      {option.icon}
-                    </Box>
-                    <Box>
-                      <Typography sx={{ color: 'text.primary', fontWeight: 600 }}>{option.label}</Typography>
-                      <Typography sx={{ color: 'text.secondary', fontSize: '14px' }}>{option.desc}</Typography>
+                  <Box
+                    sx={{
+                      width: '100%',
+                      p: 2.5,
+                      borderRadius: 2,
+                      border: formData.role === option.value
+                        ? `2px solid ${theme.palette.primary.main}`
+                        : `2px solid ${alpha(theme.palette.text.primary, 0.15)}`,
+                      backgroundColor: formData.role === option.value
+                        ? alpha(theme.palette.primary.main, 0.1)
+                        : alpha(theme.palette.text.primary, 0.03),
+                      transition: 'all 0.2s',
+                      '&:hover': { borderColor: alpha(theme.palette.primary.main, 0.5) },
+                      '&:focus-visible': {
+                        outline: `3px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                        outlineOffset: 2,
+                      },
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Box
+                        sx={{
+                          width: 45,
+                          height: 45,
+                          borderRadius: '50%',
+                          backgroundColor: formData.role === option.value ? theme.palette.primary.main : alpha(theme.palette.text.primary, 0.1),
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: formData.role === option.value ? theme.palette.primary.contrastText : theme.palette.text.secondary,
+                        }}
+                      >
+                        {option.icon}
+                      </Box>
+                      <Box>
+                        <Typography sx={{ color: 'text.primary', fontWeight: 600 }}>{option.label}</Typography>
+                        <Typography sx={{ color: 'text.secondary', fontSize: '14px' }}>{option.desc}</Typography>
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
+                </ButtonBase>
               ))}
             </Stack>
             {errors.role && (
@@ -446,7 +455,11 @@ const MobileRegister = () => {
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)} sx={{ color: 'rgba(255,255,255,0.4)', minWidth: 44, minHeight: 44 }}>
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      sx={{ color: 'text.secondary', minWidth: 44, minHeight: 44 }}
+                    >
                       {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                     </IconButton>
                   </InputAdornment>
@@ -491,7 +504,11 @@ const MobileRegister = () => {
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} sx={{ color: 'rgba(255,255,255,0.4)', minWidth: 44, minHeight: 44 }}>
+                    <IconButton
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                      sx={{ color: 'text.secondary', minWidth: 44, minHeight: 44 }}
+                    >
                       {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                     </IconButton>
                   </InputAdornment>

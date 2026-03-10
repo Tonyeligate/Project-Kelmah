@@ -22,6 +22,8 @@ import {
 } from '@mui/icons-material';
 import mapService from '../../services/mapService';
 
+const LOCATION_QUERY_MAX_LENGTH = 120;
+
 const LocationSelector = ({
   value = '',
   onChange = () => {},
@@ -110,7 +112,7 @@ const LocationSelector = ({
 
   // Handle input change
   const handleInputChange = (event) => {
-    const newValue = event.target.value;
+    const newValue = event.target.value.slice(0, LOCATION_QUERY_MAX_LENGTH);
     setInputValue(newValue);
     onChange(newValue);
 
@@ -235,6 +237,7 @@ const LocationSelector = ({
         error={error}
         helperText={helperText}
         autoFocus={autoFocus}
+        inputProps={{ maxLength: LOCATION_QUERY_MAX_LENGTH }}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">

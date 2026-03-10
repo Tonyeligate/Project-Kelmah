@@ -50,6 +50,7 @@ const EMAIL_DELIVERY_UNAVAILABLE_CODE = 'EMAIL_DELIVERY_UNAVAILABLE';
 const EMAIL_VERIFICATION_UNAVAILABLE_MESSAGE = 'Verification email delivery is temporarily unavailable. Please try again later.';
 const REGISTRATION_UNAVAILABLE_MESSAGE = 'Registration is temporarily unavailable because verification email delivery is unavailable.';
 const PASSWORD_RESET_DELIVERY_UNAVAILABLE_MESSAGE = 'Password reset email delivery is temporarily unavailable. Please try again later.';
+const INVALID_CREDENTIALS_MESSAGE = 'Invalid credentials';
 
 const normalizeOptionalPhone = (phone) => {
   if (typeof phone !== 'string') {
@@ -127,6 +128,8 @@ const rollbackUnverifiedRegistration = async (user) => {
     });
   }
 };
+
+const buildInvalidCredentialsError = () => new AppError(INVALID_CREDENTIALS_MESSAGE, 401);
 
 const didEmailSendSkip = (result) => Boolean(result && typeof result === 'object' && result.skipped);
 
@@ -298,6 +301,11 @@ exports.register = async (req, res, next) => {
       return next(new AppError(`Missing required fields: ${missing.join(', ')}`, 400));
     }
 
+    const passwordValidation = SecurityUtils.validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return next(new AppError(passwordValidation.errors.join('. '), 400));
+    }
+
     const userRole = ["worker", "hirer"].includes(role) ? role : "worker";
 
     // Check if user exists
@@ -405,7 +413,7 @@ exports.login = async (req, res, next) => {
     }
     // H5 FIX: Prevent bcrypt DoS — bcrypt only uses first 72 bytes; reject absurdly long passwords
     if (typeof password !== 'string' || password.length > 128) {
-      return next(new AppError("Incorrect email or password", 401));
+      return next(buildInvalidCredentialsError());
     }
 
     const sanitizedEmail = email.trim().toLowerCase();
@@ -427,7 +435,7 @@ exports.login = async (req, res, next) => {
     if (!user) {
       // Simulate password verification time to prevent timing attacks
       await require('bcryptjs').hash('dummy-password', 12);
-      return next(new AppError("Incorrect email or password", 401));
+      return next(buildInvalidCredentialsError());
     }
 
     // Check account status — equalize timing to prevent enumeration (H6)
@@ -436,17 +444,16 @@ exports.login = async (req, res, next) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!user.isActive) {
-      return next(new AppError("Incorrect email or password", 401));
+      return next(buildInvalidCredentialsError());
     }
 
     if (!user.isEmailVerified) {
-      return next(new AppError("Please verify your email before logging in", 403));
+      return next(buildInvalidCredentialsError());
     }
 
     // AUTH-1/2 FIX: Check account lock AFTER bcrypt to equalize timing
     if (user.accountLockedUntil && user.accountLockedUntil > new Date()) {
-      const minutesLeft = Math.ceil((user.accountLockedUntil - new Date()) / (60 * 1000));
-      return next(new AppError(`Account locked. Try again in ${minutesLeft} minutes`, 423));
+      return next(buildInvalidCredentialsError());
     }
 
     if (!isPasswordValid) {
@@ -466,14 +473,14 @@ exports.login = async (req, res, next) => {
           }
         );
 
-        return next(new AppError("Account locked due to too many failed login attempts. Try again in 30 minutes.", 423));
+        return next(buildInvalidCredentialsError());
       }
 
       await usersCollection.updateOne(
         { _id: user._id },
         { $set: { failedLoginAttempts: failedAttempts } }
       );
-      return next(new AppError("Incorrect email or password", 401));
+      return next(buildInvalidCredentialsError());
     }
 
     // Check if 2FA is enabled for this user
@@ -1616,8 +1623,9 @@ exports.validateAuthToken = async (req, res, next) => {
     if (!token) {
       return res.status(200).json({ valid: false });
     }
-    const decoded = jwtUtils.verifyAuthToken(token);
-    const user = await User.findById(decoded.id).select("id firstName lastName email role isEmailVerified");
+    const decoded = await jwtUtils.verifyAuthToken(token);
+    const userId = decoded.sub || decoded.id;
+    const user = await User.findById(userId).select("id firstName lastName email role isEmailVerified");
     if (!user) {
       return res.status(200).json({ valid: false });
     }

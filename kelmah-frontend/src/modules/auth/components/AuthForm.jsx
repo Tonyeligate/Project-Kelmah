@@ -8,7 +8,6 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-import { useAuth } from '../hooks/useAuth';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectAuthLoading, selectAuthError, login, register } from '../services/authSlice';
 
@@ -41,11 +40,12 @@ const AuthForm = ({ mode = 'login', onSuccess }) => {
 
     if (!formData.password) {
       errors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
     }
 
     if (mode === 'register') {
+      if (formData.password.length < 8) {
+        errors.password = 'Password must be at least 8 characters';
+      }
       if (!formData.firstName) {
         errors.firstName = 'First name is required';
       }

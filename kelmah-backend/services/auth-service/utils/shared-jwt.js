@@ -12,11 +12,21 @@ function ensureSecret(name) {
   return value;
 }
 
+function resolveSubject(payload = {}) {
+  const subject = payload.id ?? payload.sub;
+
+  if (subject === undefined || subject === null || subject === '') {
+    throw new Error('JWT subject is required');
+  }
+
+  return String(subject);
+}
+
 function signAccessToken(payload, options = {}) {
   const secret = ensureSecret('JWT_SECRET');
   const { expiresIn = '15m', issuer = DEFAULT_ISSUER, audience = DEFAULT_AUDIENCE, jwtid } = options;
   const body = {
-    sub: String(payload.id || payload.sub),
+    sub: resolveSubject(payload),
     email: payload.email,
     role: payload.role,
     version: payload.version ?? payload.tokenVersion ?? 0,
@@ -34,7 +44,7 @@ function signRefreshToken(payload, options = {}) {
   const secret = ensureSecret('JWT_REFRESH_SECRET');
   const { expiresIn = '7d', issuer = DEFAULT_ISSUER, audience = DEFAULT_AUDIENCE, jwtid } = options;
   const body = {
-    sub: String(payload.id || payload.sub),
+    sub: resolveSubject(payload),
     version: payload.version ?? payload.tokenVersion ?? 0,
   };
   

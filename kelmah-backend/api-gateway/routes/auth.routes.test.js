@@ -7,6 +7,7 @@ jest.mock('../middlewares/rate-limiter', () => ({
   rateLimiters: {
     auth: (req, res, next) => next(),
     general: (req, res, next) => next(),
+    verificationToken: (req, res, next) => next(),
   },
 }));
 jest.mock('../middlewares/auth', () => ({
@@ -24,6 +25,7 @@ jest.mock('../middlewares/auth', () => ({
   },
   authorizeRoles: () => (req, res, next) => next(),
   optionalAuth: (req, res, next) => next(),
+  invalidateUserCache: jest.fn(),
 }));
 jest.mock('../proxy/serviceProxy', () => ({
   createServiceProxy: jest.fn(() => (req, res) => {
@@ -32,12 +34,14 @@ jest.mock('../proxy/serviceProxy', () => ({
 }));
 
 const authRoutes = require('./auth.routes');
+const { invalidateUserCache } = require('../middlewares/auth');
 
 describe('auth gateway routes', () => {
   let app;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    invalidateUserCache.mockClear();
     app = express();
     app.set('serviceUrls', {
       AUTH_SERVICE: 'http://auth-service.test',
@@ -149,6 +153,7 @@ describe('auth gateway routes', () => {
         }),
       }),
     );
+    expect(invalidateUserCache).toHaveBeenCalledWith('hirer-1');
   });
 
   test('forwards protected mfa setup without using the generic proxy middleware', async () => {
@@ -183,5 +188,30 @@ describe('auth gateway routes', () => {
         url: 'http://auth-service.test/api/auth/mfa/setup',
       }),
     );
+  });
+
+  test('invalidates the gateway cache after account deactivation succeeds', async () => {
+    axios.mockResolvedValue({
+      status: 200,
+      data: {
+        status: 'success',
+        message: 'Account deactivated successfully',
+      },
+      headers: {
+        'content-type': 'application/json',
+      },
+    });
+
+    const response = await request(app)
+      .post('/api/auth/account/deactivate')
+      .set('Authorization', 'Bearer live-token')
+      .send({ password: 'CurrentPassword123!' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      status: 'success',
+      message: 'Account deactivated successfully',
+    });
+    expect(invalidateUserCache).toHaveBeenCalledWith('hirer-1');
   });
 });

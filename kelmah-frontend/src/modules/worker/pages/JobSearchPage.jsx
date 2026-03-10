@@ -72,6 +72,8 @@ import {
   HomeRepairService as HomeIcon,
   Verified as VerifiedIcon,
 } from '@mui/icons-material';
+
+const EMPTY_QUERY_PARAMS = {};
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -708,7 +710,7 @@ const JobSearchPage = () => {
     isFetching,
     error,
   } = useJobsQuery(queryFilters);
-  const { data: savedData } = useSavedJobsQuery({}, { enabled: Boolean(user) });
+  const { data: savedData } = useSavedJobsQuery(EMPTY_QUERY_PARAMS, { enabled: Boolean(user) });
   const savedIds = useSavedJobIds(savedData);
 
   const saveMutation = useSaveJobMutation({

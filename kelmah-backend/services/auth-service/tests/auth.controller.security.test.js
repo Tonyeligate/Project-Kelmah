@@ -24,6 +24,24 @@ jest.mock('../models', () => ({
   },
 }));
 
+jest.mock('mongoose', () => {
+  const actual = jest.requireActual('mongoose');
+  const mockedConnection = {
+    readyState: 1,
+    getClient: jest.fn(),
+  };
+
+  return {
+    ...actual,
+    connection: mockedConnection,
+  };
+});
+
+jest.mock('bcryptjs', () => ({
+  compare: jest.fn(),
+  hash: jest.fn().mockResolvedValue('dummy-hash'),
+}));
+
 jest.mock('../utils/errorTypes', () => ({
   AppError: class AppError extends Error {
     constructor(message, statusCode) {
@@ -75,10 +93,13 @@ jest.mock('../utils/security', () => ({
 }));
 
 const { createMockResponse } = require('../../../shared/test-utils');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 const models = require('../models');
 const emailService = require('../services/email.service');
 const secure = require('../utils/jwt-secure');
 const jwtUtils = require('../../../shared/utils/jwt');
+const SecurityUtils = require('../utils/security');
 const authController = require('../controllers/auth.controller');
 
 describe('auth controller security regressions', () => {
@@ -98,6 +119,37 @@ describe('auth controller security regressions', () => {
     models.RefreshToken.create.mockResolvedValue({ _id: 'refresh-1' });
     emailService.isDeliveryConfigured.mockReturnValue(true);
     emailService.sendVerificationEmail.mockResolvedValue({ accepted: ['kwame@example.com'] });
+    mongoose.connection.getClient.mockReset();
+    bcrypt.compare.mockReset();
+    bcrypt.hash.mockResolvedValue('dummy-hash');
+    SecurityUtils.validatePassword.mockReturnValue({ isValid: true, errors: [] });
+  });
+
+  test('register rejects weak passwords via the shared security validator', async () => {
+    SecurityUtils.validatePassword.mockReturnValueOnce({
+      isValid: false,
+      errors: ['Password must be at least 12 characters long'],
+    });
+
+    const req = {
+      body: {
+        firstName: 'Kwame',
+        lastName: 'Asante',
+        email: 'kwame@example.com',
+        password: 'Password1',
+        role: 'worker',
+      },
+    };
+    const res = createMockResponse();
+    const next = jest.fn();
+
+    await authController.register(req, res, next);
+
+    expect(models.User.findByEmail).not.toHaveBeenCalled();
+    expect(next).toHaveBeenCalledWith(expect.objectContaining({
+      statusCode: 400,
+      message: 'Password must be at least 12 characters long',
+    }));
   });
 
   test('register fails fast when verification email delivery is unavailable', async () => {
@@ -224,6 +276,83 @@ describe('auth controller security regressions', () => {
     expect(models.RefreshToken.deleteMany).toHaveBeenCalledWith({ userId: 'user-1' });
     expect(res.statusCode).toBe(200);
     expect(next).not.toHaveBeenCalled();
+  });
+
+  test('login returns generic invalid credentials for unverified accounts', async () => {
+    const usersCollection = {
+      findOne: jest.fn().mockResolvedValue({
+        _id: '507f1f77bcf86cd799439011',
+        email: 'kwame@example.com',
+        password: 'stored-password-hash',
+        isActive: true,
+        isEmailVerified: false,
+      }),
+      updateOne: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
+    };
+
+    mongoose.connection.getClient.mockReturnValue({
+      db: jest.fn(() => ({
+        collection: jest.fn(() => usersCollection),
+      })),
+    });
+    bcrypt.compare.mockResolvedValue(true);
+
+    const req = {
+      body: {
+        email: 'kwame@example.com',
+        password: 'ValidPassword123!',
+      },
+      ip: '127.0.0.1',
+      headers: {},
+    };
+    const res = createMockResponse();
+    const next = jest.fn();
+
+    await authController.login(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(expect.objectContaining({
+      statusCode: 401,
+      message: 'Invalid credentials',
+    }));
+  });
+
+  test('login returns generic invalid credentials for locked accounts', async () => {
+    const usersCollection = {
+      findOne: jest.fn().mockResolvedValue({
+        _id: '507f1f77bcf86cd799439011',
+        email: 'kwame@example.com',
+        password: 'stored-password-hash',
+        isActive: true,
+        isEmailVerified: true,
+        accountLockedUntil: new Date(Date.now() + 5 * 60 * 1000),
+      }),
+      updateOne: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
+    };
+
+    mongoose.connection.getClient.mockReturnValue({
+      db: jest.fn(() => ({
+        collection: jest.fn(() => usersCollection),
+      })),
+    });
+    bcrypt.compare.mockResolvedValue(true);
+
+    const req = {
+      body: {
+        email: 'kwame@example.com',
+        password: 'ValidPassword123!',
+      },
+      ip: '127.0.0.1',
+      headers: {},
+    };
+    const res = createMockResponse();
+    const next = jest.fn();
+
+    await authController.login(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(expect.objectContaining({
+      statusCode: 401,
+      message: 'Invalid credentials',
+    }));
   });
 
   test('exchangeOAuthCode consumes a persisted challenge and mints tokens during exchange', async () => {

@@ -91,7 +91,64 @@ const normalizeWorkerRecord = (worker = {}) => {
   };
 };
 
-const sortWorkerResults = (workers = [], sortOption = 'relevance') => {
+const tokenizeSearchQuery = (query = '') =>
+  Array.from(
+    new Set(
+      String(query)
+        .toLowerCase()
+        .trim()
+        .split(/\s+/)
+        .filter((token) => token.length > 1),
+    ),
+  ).slice(0, 6);
+
+const scoreWorkerTextRelevance = (worker = {}, query = '') => {
+  const normalizedQuery = String(query).toLowerCase().trim();
+  if (!normalizedQuery) {
+    return 0;
+  }
+
+  const tokens = tokenizeSearchQuery(normalizedQuery);
+  const fullName = [worker.name, worker.firstName, worker.lastName]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  const title = String(worker.title || worker.profession || '').toLowerCase();
+  const bio = String(worker.bio || '').toLowerCase();
+  const location = String(worker.location || worker.city || '').toLowerCase();
+  const skills = [
+    ...(Array.isArray(worker.skills) ? worker.skills : []),
+    ...(Array.isArray(worker.specializations) ? worker.specializations : []),
+  ]
+    .map((skill) =>
+      typeof skill === 'string'
+        ? skill
+        : skill?.name || skill?.skillName || skill?.label || '',
+    )
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  let score = 0;
+
+  if (title.includes(normalizedQuery)) score += 140;
+  if (skills.includes(normalizedQuery)) score += 120;
+  if (fullName.includes(normalizedQuery)) score += 90;
+  if (bio.includes(normalizedQuery)) score += 40;
+  if (location.includes(normalizedQuery)) score += 20;
+
+  tokens.forEach((token) => {
+    if (title.includes(token)) score += 30;
+    if (skills.includes(token)) score += 24;
+    if (fullName.includes(token)) score += 16;
+    if (bio.includes(token)) score += 8;
+    if (location.includes(token)) score += 4;
+  });
+
+  return score;
+};
+
+const sortWorkerResults = (workers = [], sortOption = 'relevance', query = '') => {
   const list = [...workers];
 
   switch (sortOption) {
@@ -113,7 +170,19 @@ const sortWorkerResults = (workers = [], sortOption = 'relevance') => {
       return list;
     case 'relevance':
     default:
-      return list.sort((a, b) => (b.rankScore || 0) - (a.rankScore || 0));
+      return list.sort((a, b) => {
+        const textDelta =
+          scoreWorkerTextRelevance(b, query) - scoreWorkerTextRelevance(a, query);
+        if (textDelta !== 0) {
+          return textDelta;
+        }
+
+        return (
+          (b.rankScore || 0) - (a.rankScore || 0) ||
+          (b.rating || 0) - (a.rating || 0) ||
+          (b.reviewCount || 0) - (a.reviewCount || 0)
+        );
+      });
   }
 };
 
@@ -218,7 +287,13 @@ const WorkerDirectoryExperience = ({
           normalizeWorkerRecord(worker),
         );
         const activeSort = sortOption || params.sort || sortOrder || 'relevance';
-        const sortedWorkers = sortWorkerResults(normalizedWorkers, activeSort);
+        const activeQuery =
+          params.keyword || params.query || params.search || params.keywords || '';
+        const sortedWorkers = sortWorkerResults(
+          normalizedWorkers,
+          activeSort,
+          activeQuery,
+        );
 
         setSearchResults(sortedWorkers);
         setPagination(result.pagination);
@@ -415,6 +490,10 @@ const WorkerDirectoryExperience = ({
   };
 
   const handleSortChange = (newSortOrder) => {
+    if (loading) {
+      return;
+    }
+
     setSortOrder(newSortOrder);
     const newParams = { ...searchParams, sort: newSortOrder };
     setSearchParams(newParams);

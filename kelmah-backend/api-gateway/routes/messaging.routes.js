@@ -10,6 +10,26 @@ const { authenticate } = require('../middlewares/auth');
 const axios = require('axios');
 const crypto = require('crypto');
 
+const getServiceTrustSecret = () =>
+  process.env.SERVICE_TRUST_HMAC_SECRET || process.env.INTERNAL_API_KEY || '';
+
+const createServiceTrustConfigurationError = () => {
+  const error = new Error(
+    'SERVICE_TRUST_HMAC_SECRET or INTERNAL_API_KEY must be configured for messaging trust headers',
+  );
+  error.statusCode = 500;
+  error.responseBody = {
+    success: false,
+    message: 'Messaging gateway trust is misconfigured',
+    error: {
+      code: 'SERVICE_TRUST_MISCONFIGURED',
+      message: 'SERVICE_TRUST_HMAC_SECRET or INTERNAL_API_KEY must be configured',
+    },
+  };
+
+  return error;
+};
+
 /**
  * Build gateway-trust headers from req.user (populated by authenticate middleware).
  * The messaging service's verifyGatewayRequest middleware requires these headers.
@@ -27,13 +47,15 @@ const buildGatewayTrustHeaders = (req) => {
     headers['x-authenticated-user'] = userPayload;
     headers['x-auth-source'] = 'api-gateway';
     // Generate HMAC signature so verifyGatewayRequest trusts the user payload
-    const hmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET;
-    if (hmacSecret) {
-      headers['x-gateway-signature'] = crypto
-        .createHmac('sha256', hmacSecret)
-        .update(userPayload)
-        .digest('hex');
+    const hmacSecret = getServiceTrustSecret();
+    if (!hmacSecret) {
+      throw createServiceTrustConfigurationError();
     }
+
+    headers['x-gateway-signature'] = crypto
+      .createHmac('sha256', hmacSecret)
+      .update(userPayload)
+      .digest('hex');
   }
 
   const internalKey = process.env.INTERNAL_API_KEY;
@@ -98,10 +120,12 @@ router.post('/conversations', async (req, res) => {
     res.status(r.status).json(r.data);
   } catch (e) {
     console.error(`[MESSAGING] POST /conversations error:`, e.message);
-    res.status(504).json({
-      success: false,
-      message: 'Messaging service temporarily unavailable',
-    });
+    res.status(e.statusCode || 504).json(
+      e.responseBody || {
+        success: false,
+        message: 'Messaging service temporarily unavailable',
+      },
+    );
   }
 });
 
@@ -140,7 +164,9 @@ router.post('/conversations/:conversationId/messages', async (req, res) => {
     res.status(r.status).json(r.data);
   } catch (e) {
     console.error(`[MESSAGING] POST message error:`, e.message);
-    res.status(504).json({ success: false, message: 'Messaging service temporarily unavailable' });
+    res.status(e.statusCode || 504).json(
+      e.responseBody || { success: false, message: 'Messaging service temporarily unavailable' },
+    );
   }
 });
 
@@ -161,10 +187,12 @@ const postMessageFallback = async (req, res) => {
     return res.status(r.status).json(r.data);
   } catch (e) {
     console.error('[MESSAGING] POST message(root) error:', e.message);
-    return res.status(504).json({
-      success: false,
-      message: 'Messaging service temporarily unavailable',
-    });
+    return res.status(e.statusCode || 504).json(
+      e.responseBody || {
+        success: false,
+        message: 'Messaging service temporarily unavailable',
+      },
+    );
   }
 };
 

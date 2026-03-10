@@ -25,6 +25,8 @@ const DURATION_UNIT_MAP = {
 };
 
 const DEFAULT_DURATION = { value: 1, unit: 'week' };
+const DEFAULT_BID_PAGE_LIMIT = 10;
+const MAX_BID_PAGE_LIMIT = 50;
 
 const ensureValidObjectId = (res, value, label) => {
   if (!mongoose.Types.ObjectId.isValid(value)) {
@@ -101,6 +103,22 @@ const normalizeAvailability = (availability) => {
   return {
     startDate: new Date(),
     flexible: true,
+  };
+};
+
+const parseBidPagination = (query = {}) => {
+  const parsedPage = Number.parseInt(query.page, 10);
+  const parsedLimit = Number.parseInt(query.limit, 10);
+  const page = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+  const normalizedLimit = Number.isInteger(parsedLimit) && parsedLimit > 0
+    ? parsedLimit
+    : DEFAULT_BID_PAGE_LIMIT;
+  const limit = Math.min(normalizedLimit, MAX_BID_PAGE_LIMIT);
+
+  return {
+    page,
+    limit,
+    offset: (page - 1) * limit,
   };
 };
 
@@ -234,9 +252,7 @@ exports.createBid = async (req, res, next) => {
 exports.getJobBids = async (req, res, next) => {
   try {
     const { jobId } = req.params;
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
-    const offset = (page - 1) * limit;
+    const { page, limit, offset } = parseBidPagination(req.query);
 
     if (!ensureValidJobId(res, jobId)) {
       return;
@@ -274,9 +290,7 @@ exports.getJobBids = async (req, res, next) => {
 exports.getWorkerBids = async (req, res, next) => {
   try {
     const { workerId } = req.params;
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
-    const offset = (page - 1) * limit;
+    const { page, limit, offset } = parseBidPagination(req.query);
 
     if (!ensureValidWorkerId(res, workerId)) {
       return;

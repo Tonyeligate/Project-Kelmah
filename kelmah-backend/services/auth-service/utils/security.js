@@ -144,10 +144,14 @@ class SecurityUtils {
    */
   static validateCSRFToken(token, expected) {
     if (!token || !expected) return false;
-    return crypto.timingSafeEqual(
-      Buffer.from(token),
-      Buffer.from(expected)
-    );
+    const tokenBuffer = Buffer.from(String(token));
+    const expectedBuffer = Buffer.from(String(expected));
+
+    if (tokenBuffer.length !== expectedBuffer.length) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(tokenBuffer, expectedBuffer);
   }
   
   /**

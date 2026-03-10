@@ -200,7 +200,7 @@ const buildWorkerSearchQueryParams = (params = {}) => {
   }
 
   if (params.sort || params.sortBy) {
-    query.sort = params.sort || params.sortBy;
+    query.sortBy = params.sort || params.sortBy;
   }
 
   return query;

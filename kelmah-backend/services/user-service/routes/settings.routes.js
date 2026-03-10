@@ -33,6 +33,42 @@ const DEFAULT_SETTINGS = {
   privacy: DEFAULT_PRIVACY,
 };
 
+const mergeNotifications = (overrides = {}) => ({
+  ...DEFAULT_NOTIFICATIONS,
+  ...overrides,
+  quietHours: {
+    ...DEFAULT_NOTIFICATIONS.quietHours,
+    ...(overrides.quietHours || {}),
+  },
+});
+
+const mergePrivacy = (overrides = {}) => ({
+  ...DEFAULT_PRIVACY,
+  ...overrides,
+});
+
+const buildDefaultSettings = () => ({
+  theme: DEFAULT_SETTINGS.theme,
+  language: DEFAULT_SETTINGS.language,
+  notifications: mergeNotifications(),
+  privacy: mergePrivacy(),
+});
+
+const mergeSettingsWithDefaults = (settings) => {
+  const defaults = buildDefaultSettings();
+
+  if (!settings) {
+    return defaults;
+  }
+
+  return {
+    ...defaults,
+    ...settings,
+    notifications: mergeNotifications(settings.notifications),
+    privacy: mergePrivacy(settings.privacy),
+  };
+};
+
 const AVAILABLE_LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
   { code: 'tw', name: 'Twi', flag: '🇬🇭' },
@@ -50,17 +86,13 @@ const getUserId = (req) => req.user?.id || null;
 
 const respond = (res, data) => res.json({ success: true, data });
 
-/**
- * Get or create settings for a user. Returns defaults for anonymous requests.
- */
-const getOrCreateSettings = async (userId) => {
-  if (!userId) return { ...DEFAULT_SETTINGS };
-
-  let settings = await Settings.findOne({ userId }).lean();
-  if (!settings) {
-    settings = (await Settings.create({ userId, ...DEFAULT_SETTINGS })).toObject();
+const getEffectiveSettings = async (userId) => {
+  if (!userId) {
+    return buildDefaultSettings();
   }
-  return settings;
+
+  const settings = await Settings.findOne({ userId }).lean();
+  return mergeSettingsWithDefaults(settings);
 };
 
 // ==================== Base settings endpoints ====================
@@ -68,7 +100,7 @@ const getOrCreateSettings = async (userId) => {
 router.get('/', async (req, res) => {
   try {
     const userId = getUserId(req);
-    const settings = await getOrCreateSettings(userId);
+    const settings = await getEffectiveSettings(userId);
     respond(res, settings);
   } catch (err) {
     logger.error('[SETTINGS] GET / error:', err.message);
@@ -88,13 +120,13 @@ router.put('/', verifyGatewayRequest, async (req, res) => {
       const NOTIF_ALLOWED = ['email', 'push', 'sms', 'inApp', 'quietHours'];
       const filtered = {};
       for (const k of NOTIF_ALLOWED) { if (k in req.body.notifications) filtered[k] = req.body.notifications[k]; }
-      update.notifications = { ...DEFAULT_NOTIFICATIONS, ...filtered };
+      update.notifications = mergeNotifications(filtered);
     }
     if (req.body.privacy) {
       const PRIV_ALLOWED = ['profileVisibility', 'showEmail', 'showPhone'];
       const filtered = {};
       for (const k of PRIV_ALLOWED) { if (k in req.body.privacy) filtered[k] = req.body.privacy[k]; }
-      update.privacy = { ...DEFAULT_PRIVACY, ...filtered };
+      update.privacy = mergePrivacy(filtered);
     }
 
     const settings = await Settings.findOneAndUpdate(
@@ -115,7 +147,7 @@ router.put('/', verifyGatewayRequest, async (req, res) => {
 router.get('/notifications', async (req, res) => {
   try {
     const userId = getUserId(req);
-    const settings = await getOrCreateSettings(userId);
+    const settings = await getEffectiveSettings(userId);
     respond(res, settings.notifications || DEFAULT_NOTIFICATIONS);
   } catch (err) {
     logger.error('[SETTINGS] GET /notifications error:', err.message);
@@ -131,7 +163,7 @@ router.put('/notifications', verifyGatewayRequest, async (req, res) => {
     const NOTIF_ALLOWED = ['email', 'push', 'sms', 'inApp', 'quietHours'];
     const filteredNotif = {};
     for (const k of NOTIF_ALLOWED) { if (k in req.body) filteredNotif[k] = req.body[k]; }
-    const notifications = { ...DEFAULT_NOTIFICATIONS, ...filteredNotif };
+    const notifications = mergeNotifications(filteredNotif);
     const settings = await Settings.findOneAndUpdate(
       { userId },
       { $set: { notifications } },
@@ -150,7 +182,7 @@ router.put('/notifications', verifyGatewayRequest, async (req, res) => {
 router.get('/privacy', async (req, res) => {
   try {
     const userId = getUserId(req);
-    const settings = await getOrCreateSettings(userId);
+    const settings = await getEffectiveSettings(userId);
     respond(res, settings.privacy || DEFAULT_PRIVACY);
   } catch (err) {
     logger.error('[SETTINGS] GET /privacy error:', err.message);
@@ -166,7 +198,7 @@ router.put('/privacy', verifyGatewayRequest, async (req, res) => {
     const PRIV_ALLOWED = ['profileVisibility', 'showEmail', 'showPhone'];
     const filteredPriv = {};
     for (const k of PRIV_ALLOWED) { if (k in req.body) filteredPriv[k] = req.body[k]; }
-    const privacy = { ...DEFAULT_PRIVACY, ...filteredPriv };
+    const privacy = mergePrivacy(filteredPriv);
     const settings = await Settings.findOneAndUpdate(
       { userId },
       { $set: { privacy } },
@@ -236,8 +268,12 @@ router.post('/reset', verifyGatewayRequest, async (req, res) => {
     if (!userId) return res.status(401).json({ success: false, error: { message: 'Authentication required' } });
 
     await Settings.findOneAndDelete({ userId });
-    const settings = await getOrCreateSettings(userId);
-    respond(res, settings);
+    const settings = await Settings.findOneAndUpdate(
+      { userId },
+      { $set: buildDefaultSettings() },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    ).lean();
+    respond(res, mergeSettingsWithDefaults(settings));
   } catch (err) {
     logger.error('[SETTINGS] POST /reset error:', err.message);
     return res.status(500).json({ success: false, error: { message: 'Failed to reset settings' } });

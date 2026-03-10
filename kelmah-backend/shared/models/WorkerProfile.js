@@ -461,8 +461,17 @@ workerProfileSchema.methods.getCompletionRate = function () {
 };
 
 workerProfileSchema.methods.getResponseRate = function () {
-    if (this.totalMessagesReceived === 0) return 0;
-    return Math.round((this.totalMessagesResponded / this.totalMessagesReceived) * 100);
+    const storedRate = Number(this.responseRate ?? this.successStats?.responseRate);
+    if (Number.isFinite(storedRate)) {
+        return Math.max(0, Math.min(100, Math.round(storedRate)));
+    }
+
+    const totalMessagesReceived = Number(this.totalMessagesReceived);
+    const totalMessagesResponded = Number(this.totalMessagesResponded);
+    if (!Number.isFinite(totalMessagesReceived) || totalMessagesReceived <= 0) return 0;
+    if (!Number.isFinite(totalMessagesResponded) || totalMessagesResponded < 0) return 0;
+
+    return Math.round((totalMessagesResponded / totalMessagesReceived) * 100);
 };
 
 workerProfileSchema.methods.isAvailableForWork = function () {

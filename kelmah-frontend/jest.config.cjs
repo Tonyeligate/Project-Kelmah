@@ -1,11 +1,16 @@
+const path = require('path');
+
 module.exports = {
   testEnvironment: 'jsdom',
   transform: {
-    '^.+\\.[jt]sx?$': 'babel-jest',
+    '^.+\.[jt]sx?$': [
+      'babel-jest',
+      { configFile: path.join(__dirname, 'babel.jest.config.cjs') },
+    ],
   },
   moduleNameMapper: {
-    '\\.(css|less|scss|sass)$': '<rootDir>/../test-setup/mocks/styleMock.js',
-    '\\.(jpg|jpeg|png|gif|webp|svg)$': '<rootDir>/../test-setup/mocks/fileMock.js'
+    '\\.(css|less|scss|sass)$': '<rootDir>/src/tests/mocks/styleMock.js',
+    '\\.(jpg|jpeg|png|gif|webp|svg)$': '<rootDir>/src/tests/mocks/fileMock.js'
   },
   // Coverage configuration
   collectCoverageFrom: [

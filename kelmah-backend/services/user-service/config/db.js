@@ -34,7 +34,7 @@ mongoose.set('bufferTimeoutMS', 45000); // 45 seconds buffer timeout - allow tim
 const options = {
   retryWrites: true, // Enable retry writes for reliability
   w: 1, // Single server acknowledgment (fast enough, safer than w:0)
-  j: false, // Don't wait for journal fsync
+  journal: false, // Don't wait for journal fsync
   maxPoolSize: 10,
   minPoolSize: 2,
   serverSelectionTimeoutMS: 30000, // 30 seconds to find/select server

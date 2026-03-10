@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { login as loginAction } from '../../services/authSlice';
+import { clearError, login as loginAction } from '../../services/authSlice';
 import {
   Box,
   Button,
@@ -17,7 +17,6 @@ import {
   Alert,
   CircularProgress,
   Fade,
-  Container,
   Stack,
   useTheme,
   useMediaQuery,
@@ -33,24 +32,40 @@ import {
   SecurityOutlined,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { FEATURES, getApiBaseUrl } from '../../../../config/environment';
+import { AUTH_CONFIG, getApiBaseUrl } from '../../../../config/environment';
 import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 // Removed AuthContext import to use Redux auth system
 // import { useAuth } from '../../contexts/AuthContext';
 import { checkApiHealth } from '../../../common/utils/apiUtils';
-import MobileLogin from '../mobile/MobileLogin';
 import { alpha } from '@mui/material/styles';
+
+const normalizeErrorMessage = (value) => {
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+
+  if (value && typeof value === 'object') {
+    if (typeof value.message === 'string') {
+      return value.message.trim();
+    }
+
+    if (value.error && typeof value.error.message === 'string') {
+      return value.error.message.trim();
+    }
+  }
+
+  return '';
+};
 
 const Login = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isActualMobile = useMediaQuery('(max-width: 768px)');
   const isDarkMode = theme.palette.mode === 'dark';
   const accentColor = theme.palette.primary.main || '#FFD700';
   const accentStrong = theme.palette.primary.dark || '#D39D00';
   const panelText = isDarkMode ? '#FFFFFF' : '#171A1F';
   const panelMuted = isDarkMode ? alpha('#FFFFFF', 0.8) : alpha('#171A1F', 0.7);
-  const panelSoft = isDarkMode ? alpha('#FFFFFF', 0.66) : alpha('#171A1F', 0.52);
+  const panelSoft = isDarkMode ? alpha('#FFFFFF', 0.74) : alpha('#171A1F', 0.64);
   const panelBackground = isDarkMode
     ? 'linear-gradient(145deg, rgba(38, 38, 38, 0.95) 0%, rgba(28, 28, 28, 0.98) 100%)'
     : 'linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(248,248,244,0.99) 100%)';
@@ -63,7 +78,7 @@ const Login = () => {
   const inputBackground = isDarkMode ? alpha('#FFFFFF', 0.08) : alpha('#FFFFFF', 0.9);
   const inputBorder = isDarkMode ? alpha(accentColor, 0.5) : alpha('#171A1F', 0.14);
   const inputBorderHover = isDarkMode ? alpha(accentColor, 0.7) : alpha(accentColor, 0.38);
-  const inputPlaceholder = isDarkMode ? alpha('#FFFFFF', 0.7) : alpha('#171A1F', 0.46);
+  const inputPlaceholder = isDarkMode ? alpha('#FFFFFF', 0.76) : alpha('#171A1F', 0.58);
   const subtleSurface = isDarkMode ? alpha(accentColor, 0.08) : alpha(accentColor, 0.1);
   const subtleSurfaceBorder = isDarkMode ? alpha(accentColor, 0.15) : alpha('#101113', 0.1);
   const [email, setEmail] = useState('');
@@ -95,6 +110,36 @@ const Login = () => {
   const { loading: authLoading, error: authError } = useSelector(
     (state) => state.auth,
   );
+  const errorMessages = Array.from(
+    new Set(
+      [apiError, loginError, authError]
+        .map(normalizeErrorMessage)
+        .filter(Boolean),
+    ),
+  );
+  const socialProviders = useMemo(
+    () => [
+      {
+        key: 'google',
+        label: 'Google',
+        authPath: '/auth/google',
+        enabled: Boolean(AUTH_CONFIG.googleClientId),
+        icon: GoogleIcon,
+      },
+      {
+        key: 'linkedin',
+        label: 'LinkedIn',
+        authPath: '/auth/linkedin',
+        enabled: Boolean(AUTH_CONFIG.linkedinClientId),
+        icon: LinkedInIcon,
+      },
+    ].filter((provider) => provider.enabled),
+    [],
+  );
+
+  const handleSocialLogin = useCallback((authPath) => {
+    window.location.assign(`${getApiBaseUrl()}${authPath}`);
+  }, []);
 
   const getDefaultRouteByRole = (role) => {
     if (role === 'worker') return '/worker/dashboard';
@@ -122,6 +167,8 @@ const Login = () => {
     // Reset errors
     setErrors({});
     setLoginError('');
+    setApiError('');
+    dispatch(clearError());
 
     // Enhanced validation
     let valid = true;
@@ -137,9 +184,6 @@ const Login = () => {
 
     if (!password) {
       newErrors.password = 'Password is required';
-      valid = false;
-    } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
       valid = false;
     }
 
@@ -355,24 +399,28 @@ const Login = () => {
             )}
 
             {/* Compact Error Alerts */}
-            {(apiError || loginError || authError) && (
+            {errorMessages.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.2 }}
               >
-                <Alert
-                  severity="error"
-                  sx={{
-                    mb: { xs: 1.5, sm: 2 },
-                    borderRadius: 1.5,
-                    fontSize: { xs: '0.75rem', sm: '0.8rem' },
-                    py: { xs: 0.5, sm: 1 },
-                    '& .MuiAlert-message': { fontWeight: 500 },
-                  }}
-                >
-                  {apiError || loginError || authError}
-                </Alert>
+                <Stack spacing={1} sx={{ mb: { xs: 1.5, sm: 2 } }}>
+                  {errorMessages.map((message) => (
+                    <Alert
+                      key={message}
+                      severity="error"
+                      sx={{
+                        borderRadius: 1.5,
+                        fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                        py: { xs: 0.5, sm: 1 },
+                        '& .MuiAlert-message': { fontWeight: 500 },
+                      }}
+                    >
+                      {message}
+                    </Alert>
+                  ))}
+                </Stack>
               </motion.div>
             )}
 
@@ -492,6 +540,7 @@ const Login = () => {
                             onClick={() => setShowPassword(!showPassword)}
                             edge="end"
                             size="small"
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
                             sx={{
                               color: accentColor,
                               minWidth: '44px',
@@ -713,86 +762,72 @@ const Login = () => {
                   </Link>
                 </Typography>
 
-                {/* Social Login - Coming Soon */}
-                <Divider
-                  sx={{
-                    width: '100%',
-                    borderColor: alpha(accentStrong, isDarkMode ? 0.25 : 0.16),
-                    '& .MuiDivider-wrapper': {
-                      px: 1.5,
-                    },
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: alpha(accentStrong, isDarkMode ? 0.5 : 0.62),
-                      fontWeight: 600,
-                      fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                      letterSpacing: 0.3,
-                    }}
-                  >
-                    SOCIAL LOGIN COMING SOON
-                  </Typography>
-                </Divider>
+                {socialProviders.length > 0 && (
+                  <>
+                    <Divider
+                      sx={{
+                        width: '100%',
+                        borderColor: alpha(accentStrong, isDarkMode ? 0.25 : 0.16),
+                        '& .MuiDivider-wrapper': {
+                          px: 1.5,
+                        },
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: alpha(accentStrong, isDarkMode ? 0.5 : 0.62),
+                          fontWeight: 600,
+                          fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                          letterSpacing: 0.3,
+                        }}
+                      >
+                        SOCIAL LOGIN
+                      </Typography>
+                    </Divider>
 
-                {/* Disabled Social Buttons with Coming Soon label */}
-                <Grid
-                  container
-                  spacing={{ xs: 2, sm: 1.5 }}
-                  sx={{ width: '100%' }}
-                >
-                  <Grid item xs={6}>
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        disabled
-                        startIcon={
-                          <GoogleIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
-                        }
-                        sx={{
-                          py: { xs: 1.5, sm: 1.2 },
-                          minHeight: { xs: '48px', sm: '42px' },
-                          fontWeight: 600,
-                          fontSize: { xs: '0.9rem', sm: '0.85rem' },
-                          background: isDarkMode ? alpha('#FFFFFF', 0.3) : alpha('#FFFFFF', 0.72),
-                          color: 'rgba(66,133,244,0.5)',
-                          borderColor: isDarkMode ? 'rgba(66,133,244,0.3)' : 'rgba(66,133,244,0.22)',
-                          borderWidth: 1.5,
-                          borderRadius: 1.5,
-                          textTransform: 'none',
-                          opacity: 0.6,
-                        }}
-                      >
-                        Google
-                      </Button>
-                  </Grid>
-                  <Grid item xs={6}>
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        disabled
-                        startIcon={
-                          <LinkedInIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
-                        }
-                        sx={{
-                          py: { xs: 1.5, sm: 1.2 },
-                          minHeight: { xs: '48px', sm: '42px' },
-                          fontWeight: 600,
-                          fontSize: { xs: '0.9rem', sm: '0.85rem' },
-                          background: isDarkMode ? alpha('#FFFFFF', 0.3) : alpha('#FFFFFF', 0.72),
-                          color: 'rgba(0,119,181,0.5)',
-                          borderColor: isDarkMode ? 'rgba(0,119,181,0.3)' : 'rgba(0,119,181,0.22)',
-                          borderWidth: 1.5,
-                          borderRadius: 1.5,
-                          textTransform: 'none',
-                          opacity: 0.6,
-                        }}
-                      >
-                        LinkedIn
-                      </Button>
-                  </Grid>
-                </Grid>
+                    <Grid
+                      container
+                      spacing={{ xs: 2, sm: 1.5 }}
+                      sx={{ width: '100%' }}
+                    >
+                      {socialProviders.map((provider) => {
+                        const ProviderIcon = provider.icon;
+
+                        return (
+                          <Grid item xs={12 / socialProviders.length} key={provider.key}>
+                            <Button
+                              fullWidth
+                              variant="outlined"
+                              onClick={() => handleSocialLogin(provider.authPath)}
+                              startIcon={
+                                <ProviderIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+                              }
+                              sx={{
+                                py: { xs: 1.5, sm: 1.2 },
+                                minHeight: { xs: '48px', sm: '42px' },
+                                fontWeight: 600,
+                                fontSize: { xs: '0.9rem', sm: '0.85rem' },
+                                background: isDarkMode ? alpha('#FFFFFF', 0.08) : alpha('#FFFFFF', 0.72),
+                                color: panelText,
+                                borderColor: isDarkMode ? alpha('#FFFFFF', 0.18) : alpha('#171A1F', 0.14),
+                                borderWidth: 1.5,
+                                borderRadius: 1.5,
+                                textTransform: 'none',
+                                '&:hover': {
+                                  borderColor: alpha(accentColor, 0.42),
+                                  background: isDarkMode ? alpha('#FFFFFF', 0.12) : alpha('#FFFFFF', 0.9),
+                                },
+                              }}
+                            >
+                              {provider.label}
+                            </Button>
+                          </Grid>
+                        );
+                      })}
+                    </Grid>
+                  </>
+                )}
               </Stack>
             </motion.div>
           </Paper>

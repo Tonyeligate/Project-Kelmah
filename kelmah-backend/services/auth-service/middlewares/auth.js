@@ -28,7 +28,7 @@ const authenticate = async (req, res, next) => {
     // Verify token
     let decoded;
     try {
-      decoded = jwtUtils.verifyAccessToken(token);
+      decoded = await jwtUtils.verifyAccessToken(token);
     } catch (jwtError) {
       if (jwtError.name === 'TokenExpiredError') {
         return next(new AppError('Token has expired. Please login again.', 401));
@@ -94,7 +94,7 @@ const optionalAuth = async (req, res, next) => {
     if (!process.env.JWT_SECRET) {
       return next();
     }
-    const decoded = jwtUtils.verifyAccessToken(token);
+    const decoded = await jwtUtils.verifyAccessToken(token);
     const userId = decoded.sub || decoded.id;
     const user = await User.findById(userId);
     

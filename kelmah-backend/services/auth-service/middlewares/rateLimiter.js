@@ -73,6 +73,7 @@ const LIMITS = {
   login: { windowMs: 15 * 60 * 1000, max: 20 },
   register: { windowMs: 60 * 60 * 1000, max: 30 },
   emailVerification: { windowMs: 15 * 60 * 1000, max: 20 },
+  verificationToken: { windowMs: 15 * 60 * 1000, max: 10 },
   forgotPassword: { windowMs: 15 * 60 * 1000, max: 5 },
   auth: { windowMs: 15 * 60 * 1000, max: 15 },       // refresh-token endpoint
   validateToken: { windowMs: 15 * 60 * 1000, max: 60 }, // internal token validation

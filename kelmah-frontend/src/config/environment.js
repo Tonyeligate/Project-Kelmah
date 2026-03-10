@@ -171,6 +171,15 @@ export const FEATURES = {
   notifications: import.meta.env.VITE_ENABLE_NOTIFICATIONS !== 'false',
   payments: import.meta.env.VITE_ENABLE_PAYMENTS !== 'false',
   reviews: import.meta.env.VITE_ENABLE_REVIEWS !== 'false',
+  socialGoogle:
+    import.meta.env.VITE_ENABLE_SOCIAL_GOOGLE === 'true' &&
+    Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID),
+  socialLinkedIn:
+    import.meta.env.VITE_ENABLE_SOCIAL_LINKEDIN === 'true' &&
+    Boolean(import.meta.env.VITE_LINKEDIN_CLIENT_ID),
+  socialFacebook:
+    import.meta.env.VITE_ENABLE_SOCIAL_FACEBOOK === 'true' &&
+    Boolean(import.meta.env.VITE_FACEBOOK_APP_ID),
 
   // Development features
   debugMode: import.meta.env.VITE_DEBUG_MODE === 'true',

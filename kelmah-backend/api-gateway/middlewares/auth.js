@@ -14,6 +14,11 @@ const MAX_CACHE_SIZE = 500;
 const userCache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+const getServiceTrustSecret = () =>
+  process.env.SERVICE_TRUST_HMAC_SECRET || process.env.INTERNAL_API_KEY || '';
+
+const getCacheKey = (userId) => `user:${userId}`;
+
 // LRU-style set: evict oldest entry when cache exceeds max size
 function cacheSet(key, value) {
   if (userCache.size >= MAX_CACHE_SIZE) {
@@ -22,6 +27,36 @@ function cacheSet(key, value) {
     userCache.delete(oldestKey);
   }
   userCache.set(key, value);
+}
+
+function invalidateUserCache(userId) {
+  if (!userId) {
+    return;
+  }
+
+  userCache.delete(getCacheKey(String(userId)));
+}
+
+function clearUserCache() {
+  userCache.clear();
+}
+
+async function loadCanonicalUser(userId) {
+  const cacheKey = getCacheKey(userId);
+  const cachedUser = userCache.get(cacheKey);
+
+  if (cachedUser && Date.now() - cachedUser.cachedAt <= CACHE_TTL) {
+    return cachedUser;
+  }
+
+  const user = await User.findById(userId).select('-password');
+  if (!user) {
+    return null;
+  }
+
+  const normalizedUser = { ...user.toObject(), cachedAt: Date.now() };
+  cacheSet(cacheKey, normalizedUser);
+  return normalizedUser;
 }
 
 const sendAuthError = (res, status, message, code = 'AUTHENTICATION_ERROR') => {
@@ -64,7 +99,7 @@ const authenticate = async (req, res, next) => {
     // Verify JWT token using shared utility
     let decoded;
     try {
-      decoded = jwtUtils.verifyAccessToken(token);
+      decoded = await jwtUtils.verifyAccessToken(token);
     } catch (jwtError) {
       if (jwtError.name === 'TokenExpiredError') {
         return sendAuthError(res, 401, 'Please refresh your token', 'TOKEN_EXPIRED');
@@ -81,38 +116,46 @@ const authenticate = async (req, res, next) => {
       return sendAuthError(res, 401, 'Token missing user ID', 'INVALID_TOKEN_PAYLOAD');
     }
 
-    // Prefer JWT claims to avoid DB dependency in gateway auth path.
-    // Fallback to DB only if token lacks role (legacy tokens).
-    let authUser = buildUserFromDecodedToken(decoded, userId);
+    let user;
 
-    if (!authUser.role) {
-      const cacheKey = `user:${userId}`;
-      let user = userCache.get(cacheKey);
-
-      if (!user || Date.now() - user.cachedAt > CACHE_TTL) {
-        try {
-          user = await User.findById(userId).select('-password');
-          if (!user) {
-            return sendAuthError(res, 401, 'Token references non-existent user', 'USER_NOT_FOUND');
-          }
-
-          cacheSet(cacheKey, { ...user.toObject(), cachedAt: Date.now() });
-        } catch (dbError) {
-          console.error('Database error during authentication:', dbError);
-          return sendAuthError(res, 500, 'Unable to verify user', 'AUTH_DB_ERROR');
-        }
-      }
-
-      authUser = {
-        id: user._id || user.id,
-        email: user.email,
-        role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        isEmailVerified: user.isEmailVerified,
-        tokenVersion: decoded.version || 0,
-      };
+    try {
+      user = await loadCanonicalUser(userId);
+    } catch (dbError) {
+      console.error('Database error during authentication:', dbError);
+      return sendAuthError(res, 500, 'Unable to verify user', 'AUTH_DB_ERROR');
     }
+
+    if (!user) {
+      return sendAuthError(res, 401, 'Token references non-existent user', 'USER_NOT_FOUND');
+    }
+
+    if (user.isActive === false) {
+      invalidateUserCache(userId);
+      return sendAuthError(res, 401, 'Token references an inactive user', 'USER_INACTIVE');
+    }
+
+    if (
+      Number.isFinite(decoded?.version) &&
+      Number.isFinite(user.tokenVersion) &&
+      decoded.version !== user.tokenVersion
+    ) {
+      invalidateUserCache(userId);
+      return sendAuthError(res, 401, 'Please refresh your token', 'TOKEN_REVOKED');
+    }
+
+    const tokenUser = buildUserFromDecodedToken(decoded, userId);
+    const authUser = {
+      id: user._id || user.id || tokenUser.id,
+      email: user.email || tokenUser.email,
+      role: user.role || tokenUser.role,
+      firstName: user.firstName || tokenUser.firstName,
+      lastName: user.lastName || tokenUser.lastName,
+      isEmailVerified:
+        typeof user.isEmailVerified === 'boolean'
+          ? user.isEmailVerified
+          : tokenUser.isEmailVerified,
+      tokenVersion: user.tokenVersion ?? tokenUser.tokenVersion ?? 0,
+    };
 
     req.user = authUser;
 
@@ -121,9 +164,9 @@ const authenticate = async (req, res, next) => {
     req.headers['x-authenticated-user'] = userPayload;
     req.headers['x-auth-source'] = 'api-gateway';
     // HMAC signature to prevent header spoofing on direct service access
-    const hmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET;
+    const hmacSecret = getServiceTrustSecret();
     if (!hmacSecret) {
-      console.error('CRITICAL: No HMAC secret configured (INTERNAL_API_KEY or JWT_SECRET)');
+      console.error('CRITICAL: No service trust HMAC secret configured (SERVICE_TRUST_HMAC_SECRET or INTERNAL_API_KEY)');
       return sendAuthError(res, 500, 'Server misconfiguration', 'HMAC_SECRET_MISSING');
     }
     const signature = crypto.createHmac('sha256', hmacSecret).update(userPayload).digest('hex');
@@ -176,47 +219,49 @@ const optionalAuth = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwtUtils.verifyAccessToken(token);
+    const decoded = await jwtUtils.verifyAccessToken(token);
     const userId = decoded.sub || decoded.id;
     if (!userId) {
       return next();
     }
 
-    let authUser = buildUserFromDecodedToken(decoded, userId);
-
-    if (!authUser.role) {
-      const cacheKey = `user:${userId}`;
-      let user = userCache.get(cacheKey);
-
-      if (!user || Date.now() - user.cachedAt > CACHE_TTL) {
-        const dbUser = await User.findById(userId).select('-password');
-        if (!dbUser) {
-          return next();
-        }
-
-        user = { ...dbUser.toObject(), cachedAt: Date.now() };
-        cacheSet(cacheKey, user);
-      }
-
-      authUser = {
-        id: user._id || user.id,
-        email: user.email,
-        role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        isEmailVerified: user.isEmailVerified,
-        tokenVersion: decoded.version || 0,
-      };
+    const user = await loadCanonicalUser(userId);
+    if (!user || user.isActive === false) {
+      invalidateUserCache(userId);
+      return next();
     }
+
+    if (
+      Number.isFinite(decoded?.version) &&
+      Number.isFinite(user.tokenVersion) &&
+      decoded.version !== user.tokenVersion
+    ) {
+      invalidateUserCache(userId);
+      return next();
+    }
+
+    const tokenUser = buildUserFromDecodedToken(decoded, userId);
+    const authUser = {
+      id: user._id || user.id || tokenUser.id,
+      email: user.email || tokenUser.email,
+      role: user.role || tokenUser.role,
+      firstName: user.firstName || tokenUser.firstName,
+      lastName: user.lastName || tokenUser.lastName,
+      isEmailVerified:
+        typeof user.isEmailVerified === 'boolean'
+          ? user.isEmailVerified
+          : tokenUser.isEmailVerified,
+      tokenVersion: user.tokenVersion ?? tokenUser.tokenVersion ?? 0,
+    };
 
     req.user = authUser;
 
     const userPayload = JSON.stringify(req.user);
     req.headers['x-authenticated-user'] = userPayload;
     req.headers['x-auth-source'] = 'api-gateway';
-    const hmacSecret = process.env.INTERNAL_API_KEY || process.env.JWT_SECRET;
+    const hmacSecret = getServiceTrustSecret();
     if (!hmacSecret) {
-      console.error('CRITICAL: No HMAC secret configured in optionalAuth');
+      console.error('CRITICAL: No service trust HMAC secret configured in optionalAuth');
       // Continue without setting gateway headers since we can't sign them
       req.user = authUser;
       return next();
@@ -235,5 +280,7 @@ const optionalAuth = async (req, res, next) => {
 module.exports = {
   authenticate,
   authorizeRoles,
-  optionalAuth
+  optionalAuth,
+  invalidateUserCache,
+  clearUserCache
 }; 

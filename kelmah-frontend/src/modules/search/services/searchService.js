@@ -1,12 +1,110 @@
 import { api } from '../../../services/apiClient';
 import workerService from '../../worker/services/workerService';
 
+const SUGGESTION_DEBOUNCE_MS = 250;
+const STATIC_LOOKUP_TTL_MS = 5 * 60 * 1000;
+
+let scheduledSuggestionTimer = null;
+let scheduledSuggestionQuery = null;
+let scheduledSuggestionPromise = null;
+let scheduledSuggestionResolve = null;
+let activeSuggestionController = null;
+let activeSuggestionRequest = null;
+const staticLookupCache = {
+  categories: { data: null, expiresAt: 0, promise: null },
+  skills: { data: null, expiresAt: 0, promise: null },
+};
+
+const isSuggestionAbort = (error) =>
+  error?.name === 'AbortError' ||
+  error?.name === 'CanceledError' ||
+  error?.code === 'ERR_CANCELED';
+
+const resolveScheduledSuggestion = (value) => {
+  if (scheduledSuggestionResolve) {
+    scheduledSuggestionResolve(value);
+  }
+  scheduledSuggestionTimer = null;
+  scheduledSuggestionQuery = null;
+  scheduledSuggestionPromise = null;
+  scheduledSuggestionResolve = null;
+};
+
+const cancelScheduledSuggestion = () => {
+  if (scheduledSuggestionTimer) {
+    clearTimeout(scheduledSuggestionTimer);
+  }
+  resolveScheduledSuggestion([]);
+};
+
+const bindExternalAbort = (signal, controller) => {
+  if (!signal) {
+    return () => {};
+  }
+
+  if (signal.aborted) {
+    controller.abort();
+    return () => {};
+  }
+
+  const handleAbort = () => controller.abort();
+  signal.addEventListener('abort', handleAbort, { once: true });
+  return () => signal.removeEventListener('abort', handleAbort);
+};
+
 const unwrapPayload = (response) => {
   const payload = response?.data;
   if (payload?.success && payload?.data !== undefined) {
     return payload.data;
   }
   return payload;
+};
+
+const normalizeArrayPayload = (payload, keys = []) => {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  for (const key of keys) {
+    if (Array.isArray(payload?.[key])) {
+      return payload[key];
+    }
+  }
+
+  return [];
+};
+
+const getCachedLookup = async (cacheKey, requestFactory, responseKeys = []) => {
+  const cacheEntry = staticLookupCache[cacheKey];
+  const now = Date.now();
+
+  if (cacheEntry?.data && cacheEntry.expiresAt > now) {
+    return cacheEntry.data;
+  }
+
+  if (cacheEntry?.promise) {
+    return cacheEntry.promise;
+  }
+
+  cacheEntry.promise = requestFactory()
+    .then((response) => {
+      const payload = unwrapPayload(response);
+      const normalized = normalizeArrayPayload(payload, responseKeys);
+      cacheEntry.data = normalized;
+      cacheEntry.expiresAt = Date.now() + STATIC_LOOKUP_TTL_MS;
+      return normalized;
+    })
+    .catch((error) => {
+      if (cacheEntry?.data) {
+        return cacheEntry.data;
+      }
+      throw error;
+    })
+    .finally(() => {
+      cacheEntry.promise = null;
+    });
+
+  return cacheEntry.promise;
 };
 
 /**
@@ -28,7 +126,7 @@ const searchService = {
         },
       });
       const payload = unwrapPayload(response);
-      return payload?.results || payload || [];
+      return normalizeArrayPayload(payload, ['results', 'items']);
     } catch (error) {
       if (import.meta.env.DEV) console.error('Search error:', error);
       throw error;
@@ -69,23 +167,78 @@ const searchService = {
    * @param {string} partialQuery - Partial search query
    * @returns {Promise<Array>} - Search suggestions
    */
-  getSuggestions: async (partialQuery) => {
-    if (!partialQuery || partialQuery.trim() === '') {
-      return [];
+  getSuggestions: (partialQuery, options = {}) => {
+    const normalizedQuery = partialQuery?.trim();
+
+    if (!normalizedQuery) {
+      cancelScheduledSuggestion();
+      activeSuggestionController?.abort();
+      return Promise.resolve([]);
     }
 
-    try {
-      const response = await api.get('/search/suggestions', {
-        params: {
-          q: partialQuery,
-        },
-      });
-      const payload = unwrapPayload(response);
-      return payload?.suggestions || payload || [];
-    } catch (error) {
-      if (import.meta.env.DEV) console.error('Suggestions error:', error);
-      return [];
+    if (scheduledSuggestionQuery === normalizedQuery && scheduledSuggestionPromise) {
+      return scheduledSuggestionPromise;
     }
+
+    if (activeSuggestionRequest?.query === normalizedQuery) {
+      return activeSuggestionRequest.promise;
+    }
+
+    cancelScheduledSuggestion();
+
+    if (activeSuggestionRequest?.query !== normalizedQuery) {
+      activeSuggestionController?.abort();
+    }
+
+    const debounceMs = Number.isFinite(options.debounceMs)
+      ? options.debounceMs
+      : SUGGESTION_DEBOUNCE_MS;
+
+    scheduledSuggestionQuery = normalizedQuery;
+    scheduledSuggestionPromise = new Promise((resolve) => {
+      scheduledSuggestionResolve = resolve;
+      scheduledSuggestionTimer = setTimeout(() => {
+        const controller = new AbortController();
+        const unbindAbort = bindExternalAbort(options.signal, controller);
+
+        const requestPromise = api
+          .get('/search/suggestions', {
+            params: {
+              q: normalizedQuery,
+            },
+            signal: controller.signal,
+          })
+          .then((response) => {
+            const payload = unwrapPayload(response);
+            return normalizeArrayPayload(payload, ['suggestions']);
+          })
+          .catch((error) => {
+            if (!isSuggestionAbort(error) && import.meta.env.DEV) {
+              console.error('Suggestions error:', error);
+            }
+            return [];
+          })
+          .finally(() => {
+            unbindAbort();
+            if (activeSuggestionController === controller) {
+              activeSuggestionController = null;
+            }
+            if (activeSuggestionRequest?.query === normalizedQuery) {
+              activeSuggestionRequest = null;
+            }
+          });
+
+        activeSuggestionController = controller;
+        activeSuggestionRequest = {
+          query: normalizedQuery,
+          promise: requestPromise,
+        };
+
+        resolveScheduledSuggestion(requestPromise);
+      }, debounceMs);
+    });
+
+    return scheduledSuggestionPromise;
   },
 
   /**
@@ -99,7 +252,7 @@ const searchService = {
         params: { limit },
       });
       const payload = unwrapPayload(response);
-      return payload?.terms || payload || [];
+      return normalizeArrayPayload(payload, ['terms']);
     } catch (error) {
       if (import.meta.env.DEV) console.error('Popular terms error:', error);
       // FIX M6: Return [] consistently on error instead of { error: true } object
@@ -110,8 +263,11 @@ const searchService = {
   // Get job categories
   getCategories: async () => {
     try {
-      const response = await api.get('/jobs/categories');
-      return unwrapPayload(response) || [];
+      return await getCachedLookup(
+        'categories',
+        () => api.get('/jobs/categories'),
+        ['categories', 'items'],
+      );
     } catch (error) {
       if (import.meta.env.DEV) console.error('Categories fetch error:', error);
       throw error;
@@ -121,8 +277,11 @@ const searchService = {
   // Get job skills
   getSkills: async () => {
     try {
-      const response = await api.get('/jobs/skills');
-      return unwrapPayload(response) || [];
+      return await getCachedLookup(
+        'skills',
+        () => api.get('/jobs/skills'),
+        ['skills', 'items'],
+      );
     } catch (error) {
       if (import.meta.env.DEV) console.error('Skills fetch error:', error);
       throw error;

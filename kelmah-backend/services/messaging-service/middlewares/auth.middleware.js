@@ -51,7 +51,7 @@ const authenticate = async (req, res, next) => {
     }
 
     // Verify JWT token using shared utility
-    const decoded = verifyAccessToken(token);
+    const decoded = await verifyAccessToken(token);
 
     if (process.env.NODE_ENV === "development") {
       console.log("🔓 Token decoded successfully:", {

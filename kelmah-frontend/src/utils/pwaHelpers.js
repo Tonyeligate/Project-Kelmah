@@ -3,6 +3,8 @@
  * Optimized for Ghana's mobile market and network conditions
  */
 
+import { api } from '../services/apiClient';
+
 const HEALTHY_GATEWAY_DB = 'kelmah-gateway-db';
 const HEALTHY_GATEWAY_STORE = 'healthyGatewayStore';
 const HEALTHY_GATEWAY_KEY = 'lastHealthyGateway';
@@ -598,19 +600,8 @@ const urlBase64ToUint8Array = (base64String) => {
   return outputArray;
 };
 
-// Send subscription to server using shared apiClient for auth/interceptors
-let _apiClient = null;
-const getApiClient = async () => {
-  if (!_apiClient) {
-    const mod = await import('../services/apiClient');
-    _apiClient = mod.api;
-  }
-  return _apiClient;
-};
-
 const sendSubscriptionToServer = async (subscription) => {
   try {
-    const api = await getApiClient();
     await api.post('/notifications/push/subscribe', subscription);
     if (import.meta.env.DEV) console.log('Subscription sent to server successfully');
     return { success: true };

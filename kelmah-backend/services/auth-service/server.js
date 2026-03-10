@@ -204,7 +204,7 @@ const hasValidInternalAdminKey = (req) => {
 };
 
 // Middleware: require both INTERNAL_API_KEY + valid JWT with admin role
-const requireAdminRole = (req, res, next) => {
+const requireAdminRole = async (req, res, next) => {
   if (!hasValidInternalAdminKey(req)) {
     return res.status(403).json({ success: false, message: 'Forbidden: invalid internal key' });
   }
@@ -214,7 +214,7 @@ const requireAdminRole = (req, res, next) => {
   }
   try {
     const jwtUtils = require('../../shared/utils/jwt');
-    const decoded = jwtUtils.verifyAccessToken(authHeader.substring(7));
+    const decoded = await jwtUtils.verifyAccessToken(authHeader.substring(7));
     if (!decoded || !['admin', 'super_admin'].includes(decoded.role)) {
       return res.status(403).json({ success: false, message: 'Admin role required' });
     }
@@ -387,9 +387,6 @@ app.get("/", (req, res) => {
     }
   });
 });
-
-// Backward compatibility: also mount auth routes at `/auth`
-app.use("/auth", authRoutes);
 
 // 404 handler
 app.use(notFound);

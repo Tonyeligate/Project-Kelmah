@@ -37,6 +37,7 @@ import {
 } from '@mui/icons-material';
 import { Helmet } from 'react-helmet-async';
 import { selectIsAuthenticated } from '../../auth/services/authSlice';
+import { api } from '../../../services/apiClient';
 
 // --- Reusable Components ---
 
@@ -200,7 +201,6 @@ const PremiumPage = () => {
     setIsUpgrading(true);
     setUpgradeError('');
     try {
-      const { api } = await import('../../../services/apiClient');
       const billingCycle = isYearly ? 'yearly' : 'monthly';
       const priceKey = selectedPlan.toLowerCase();
       const amount = plans[billingCycle]?.[priceKey] || 0;

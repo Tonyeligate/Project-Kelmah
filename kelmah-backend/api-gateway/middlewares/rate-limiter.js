@@ -99,6 +99,18 @@ const rateLimiters = {
     }
   }),
 
+  // Verification token limiter for public email-verification links
+  verificationToken: createRateLimiter({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10,
+    message: {
+      error: 'Too many verification attempts',
+      message: 'Too many email verification attempts. Please wait before trying again.',
+      retryAfter: 900,
+    },
+    keyGenerator: (req) => req.ip,
+  }),
+
   // Job creation rate limiter
   jobCreation: createRateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour

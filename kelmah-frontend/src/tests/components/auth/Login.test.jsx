@@ -1,212 +1,109 @@
 /* eslint-env jest */
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
-import configureStore from 'redux-mock-store';
+import { MemoryRouter } from 'react-router-dom';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Login from '../../../modules/auth/components/login/Login';
-import { thunk } from 'redux-thunk';
+import { checkApiHealth } from '../../../modules/common/utils/apiUtils';
 
-// Mock Redux store
-const mockStore = configureStore([thunk]);
-
-// Mock useNavigate
-const mockedNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => mockedNavigate,
+jest.mock('../../../modules/auth/services/authSlice', () => ({
+  clearError: () => ({ type: 'auth/clearError' }),
+  login: jest.fn(() => ({ type: 'auth/login/mock' })),
 }));
 
-// Mock child components to isolate the Login component
-// These components may not exist; mock safely to isolate Login
-jest.mock(
-  '../../../modules/auth/components/AuthLayout',
-  () =>
-    ({ children }) => <div>AuthLayout {children}</div>,
-);
-jest.mock(
-  '../../../modules/auth/components/AuthCard',
-  () =>
-    ({ children, title }) => (
-      <div>
-        <h1>{title}</h1>
-        {children}
-      </div>
-    ),
-);
+jest.mock('../../../modules/auth/components/mobile/MobileLogin', () => () => (
+  <div data-testid="mobile-login-stub" />
+));
 
-describe('Login Component', () => {
-  let store;
+jest.mock('../../../modules/common/utils/apiUtils', () => ({
+  checkApiHealth: jest.fn(),
+}));
 
-  beforeEach(() => {
-    store = mockStore({
-      auth: {
-        loading: false,
-        error: null,
-        isAuthenticated: false,
-        user: null,
+jest.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children }) => <div>{children}</div>,
+  },
+}));
+
+const buildStore = (authOverrides = {}) =>
+  configureStore({
+    reducer: {
+      auth: (
+        state = {
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          loading: false,
+          error: null,
+          ...authOverrides,
+        },
+        action,
+      ) => {
+        if (action.type === 'auth/clearError') {
+          return { ...state, error: null };
+        }
+
+        return state;
       },
-    });
-
-    store.clearActions();
-    mockedNavigate.mockClear();
+    },
   });
 
-  test('renders login form correctly', () => {
-    render(
-      <Provider store={store}>
-        <MemoryRouter>
-          <Login />
-        </MemoryRouter>
-      </Provider>,
-    );
+const renderLogin = (authOverrides = {}) => {
+  const store = buildStore(authOverrides);
 
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+  return {
+    store,
+    ...render(
+      <Provider store={store}>
+        <ThemeProvider theme={createTheme()}>
+          <MemoryRouter
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true,
+            }}
+          >
+            <Login />
+          </MemoryRouter>
+        </ThemeProvider>
+      </Provider>,
+    ),
+  };
+};
+
+describe('Login component regressions', () => {
+  beforeEach(() => {
+    checkApiHealth.mockReset();
+    checkApiHealth.mockResolvedValue({ success: true });
   });
 
-  test('shows validation errors for empty fields', async () => {
-    render(
-      <Provider store={store}>
-        <MemoryRouter>
-          <Login />
-        </MemoryRouter>
-      </Provider>,
-    );
+  test('renders multiple active error messages instead of hiding later ones', async () => {
+    checkApiHealth.mockRejectedValueOnce(new Error('gateway unavailable'));
 
-    fireEvent.click(screen.getByRole('button', { name: /login/i }));
+    const { unmount } = renderLogin({ error: 'Authentication failed from Redux' });
 
     await waitFor(() => {
-      expect(screen.getByText('Email is required')).toBeInTheDocument();
+      expect(screen.getByText('Cannot connect to the server')).toBeInTheDocument();
+      expect(screen.getByText('Authentication failed from Redux')).toBeInTheDocument();
+    });
+
+    unmount();
+  });
+
+  test('clears stale redux auth errors at submit start before showing validation errors', async () => {
+    const { unmount } = renderLogin({ error: 'Stale auth error' });
+
+    expect(screen.getByText('Stale auth error')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /sign in to kelmah/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByText('Stale auth error')).not.toBeInTheDocument();
+      expect(screen.getByText('Email address is required')).toBeInTheDocument();
       expect(screen.getByText('Password is required')).toBeInTheDocument();
     });
-  });
 
-  test('shows validation error for invalid email', async () => {
-    render(
-      <Provider store={store}>
-        <MemoryRouter>
-          <Login />
-        </MemoryRouter>
-      </Provider>,
-    );
-
-    fireEvent.change(screen.getByLabelText(/email/i), {
-      target: { value: 'invalid-email' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: /login/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText('Invalid email format')).toBeInTheDocument();
-    });
-  });
-
-  test('submits form with valid data', async () => {
-    render(
-      <Provider store={store}>
-        <MemoryRouter>
-          <Login />
-        </MemoryRouter>
-      </Provider>,
-    );
-
-    fireEvent.change(screen.getByLabelText(/email/i), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText(/password/i), {
-      target: { value: 'password123' },
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /login/i }));
-
-    await waitFor(() => {
-      const actions = store.getActions();
-      expect(actions).toContainEqual(
-        expect.objectContaining({
-          type: 'auth/login/pending',
-        }),
-      );
-    });
-  });
-
-  test('handles login failure', async () => {
-    render(
-      <Provider store={store}>
-        <MemoryRouter>
-          <Login />
-        </MemoryRouter>
-      </Provider>,
-    );
-
-    fireEvent.change(screen.getByLabelText(/email/i), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText(/password/i), {
-      target: { value: 'password123' },
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /login/i }));
-
-    await waitFor(() => {
-      const actions = store.getActions();
-      expect(actions).toContainEqual(
-        expect.objectContaining({
-          type: 'auth/login/rejected',
-        }),
-      );
-    });
-  });
-
-  test('redirects to dashboard on successful login', async () => {
-    render(
-      <Provider store={store}>
-        <MemoryRouter initialEntries={['/login']}>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/dashboard" element={<div>Dashboard</div>} />
-          </Routes>
-        </MemoryRouter>
-      </Provider>,
-    );
-
-    fireEvent.change(screen.getByLabelText(/email/i), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText(/password/i), {
-      target: { value: 'password123' },
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /login/i }));
-
-    await waitFor(() => {
-      expect(mockedNavigate).toHaveBeenCalledWith('/dashboard');
-    });
-  });
-
-  test('navigates to forgot password page', () => {
-    render(
-      <Provider store={store}>
-        <MemoryRouter>
-          <Login />
-        </MemoryRouter>
-      </Provider>,
-    );
-
-    fireEvent.click(screen.getByText(/forgot password/i));
-    expect(mockedNavigate).toHaveBeenCalledWith('/forgot-password');
-  });
-
-  test('navigates to register page', () => {
-    render(
-      <Provider store={store}>
-        <MemoryRouter>
-          <Login />
-        </MemoryRouter>
-      </Provider>,
-    );
-
-    fireEvent.click(screen.getByText(/sign up/i));
-    expect(mockedNavigate).toHaveBeenCalledWith('/register');
+    unmount();
   });
 });

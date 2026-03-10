@@ -13,7 +13,7 @@ export const fetchHirerProfile = createAsyncThunk(
     // Canonical endpoint: /users/me/credentials (verified in user-service routes)
     try {
       const response = await api.get('/users/me/credentials');
-      return response?.data?.data || response?.data || {};
+      return response?.data?.data ?? response?.data ?? {};
     } catch (error) {
       if (import.meta.env.DEV) console.warn(
         'User service unavailable for hirer profile:',
@@ -22,7 +22,7 @@ export const fetchHirerProfile = createAsyncThunk(
       // Fallback: try /users/profile as secondary endpoint
       try {
         const fallback = await api.get('/users/profile');
-        return fallback?.data?.data || fallback?.data || {};
+        return fallback?.data?.data ?? fallback?.data ?? {};
       } catch (fallbackError) {
         return rejectWithValue(
           fallbackError?.response?.data?.message ||
@@ -128,7 +128,7 @@ export const updateHirerProfile = createAsyncThunk(
   async (profileData, { rejectWithValue }) => {
     try {
       const response = await api.put('/users/profile', profileData);
-      return response.data.data || response.data;
+      return response.data.data ?? response.data;
     } catch (error) {
       if (import.meta.env.DEV) console.warn(
         'User service unavailable for profile update:',
@@ -202,7 +202,7 @@ export const fetchHirerAnalytics = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get('/users/dashboard/analytics');
-      return response.data?.data || response.data;
+      return response.data?.data ?? response.data;
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);
       return rejectWithValue(error.response?.data?.message || error.message || 'Failed to fetch analytics');

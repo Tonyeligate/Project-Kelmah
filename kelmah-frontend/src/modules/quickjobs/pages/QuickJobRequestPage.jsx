@@ -55,6 +55,7 @@ import {
   getCurrentLocation 
 } from '../services/quickJobService';
 import { Helmet } from 'react-helmet-async';
+import { api } from '../../../services/apiClient';
 
 // Steps for the stepper
 const steps = ['Describe Problem', 'Confirm Location', 'When do you need it?'];
@@ -268,7 +269,6 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
       let photoUrls = [];
       if (photos.length > 0) {
         try {
-          const { api } = await import('../../../services/apiClient');
           const formData = new FormData();
           photos.forEach((p, i) => formData.append('photos', p.file || p, `photo-${i}`));
           const uploadRes = await api.post('/jobs/upload-photos', formData, {

@@ -3571,6 +3571,8 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
     const userId = req.user.id;
     const page = parseInt(req.query.page, 10) || 1;
     const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
+    const offset = (page - 1) * limit;
+    const candidateLimit = Math.min(Math.max((offset + limit) * 4, 60), 120);
 
     const [workerContext, userPerformance] = await Promise.all([
       getCanonicalWorkerContext(userId),
@@ -3622,7 +3624,9 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
       );
     }
 
-    // Fetch ALL matching jobs (up to a reasonable cap), THEN score and paginate
+    // Fetch a bounded candidate window tied to the requested page, THEN score and paginate.
+    // This avoids scoring a fixed 200 jobs for every request while still giving the sort
+    // enough headroom to find strong matches beyond the visible page size.
     // FIX C1: Previous code had duplicate `$or` keys in the object literal which
     // caused the skills $or to be silently overwritten by the expiry $or.
     // Now all conditions are wrapped inside a single $and array.
@@ -3655,7 +3659,7 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
     })
       .populate('hirer', 'firstName lastName profilePicture profileImage rating totalJobsPosted companyName businessName')
       .sort({ createdAt: -1 })
-      .limit(200) // reasonable cap for scoring
+      .limit(candidateLimit)
       .lean();
 
     // Calculate match scores for each job with null guards
@@ -3695,7 +3699,6 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
     jobsWithScores.sort((a, b) => b.matchScore - a.matchScore);
 
     const totalCount = jobsWithScores.length;
-    const offset = (page - 1) * limit;
     const paginatedJobs = jobsWithScores.slice(offset, offset + limit);
 
     const recommendationItems = paginatedJobs.map((job) => {

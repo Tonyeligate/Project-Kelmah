@@ -11,8 +11,21 @@ const localStorageMock = {
   key: jest.fn(),
 };
 
+const sessionStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+  length: 0,
+  key: jest.fn(),
+};
+
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
+});
+
+Object.defineProperty(window, 'sessionStorage', {
+  value: sessionStorageMock,
 });
 
 describe('secureStorage', () => {
@@ -23,6 +36,10 @@ describe('secureStorage', () => {
     localStorageMock.setItem.mockReturnValue(undefined);
     localStorageMock.removeItem.mockReturnValue(undefined);
     localStorageMock.clear.mockReturnValue(undefined);
+    sessionStorageMock.getItem.mockReturnValue(null);
+    sessionStorageMock.setItem.mockReturnValue(undefined);
+    sessionStorageMock.removeItem.mockReturnValue(undefined);
+    sessionStorageMock.clear.mockReturnValue(undefined);
   });
 
   describe('setAuthToken', () => {
@@ -58,12 +75,24 @@ describe('secureStorage', () => {
     });
   });
 
+  describe('session scoped auth', () => {
+    test('stores auth token in session storage when remember me is disabled', () => {
+      secureStorage.setAuthToken('session-token', { persistent: false });
+
+      expect(sessionStorageMock.setItem).toHaveBeenCalledWith(
+        'kelmah_secure_session_data',
+        expect.any(String),
+      );
+    });
+  });
+
   describe('clear', () => {
     test('clears all stored data', () => {
       secureStorage.setAuthToken('token');
       secureStorage.clear();
 
-      expect(localStorageMock.clear).toHaveBeenCalled();
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith('kelmah_secure_data');
+      expect(sessionStorageMock.removeItem).toHaveBeenCalledWith('kelmah_secure_session_data');
     });
   });
 });

@@ -9,6 +9,12 @@ import { API_ENDPOINTS } from '../../../config/environment';
 import { api } from '../../../services/apiClient';
 
 const { USER, JOB } = API_ENDPOINTS;
+const DASHBOARD_CACHE_TTL_MS = 30 * 1000;
+const dashboardDataCache = {
+  data: null,
+  expiresAt: 0,
+  promise: null,
+};
 
 const JOB_STATUS_MAP = {
   active: 'open',
@@ -175,41 +181,56 @@ export const hirerService = {
   },
 
   // Dashboard Data
-  async getDashboardData() {
+  async getDashboardData(options = {}) {
+    const forceRefresh = Boolean(options?.forceRefresh);
+
+    if (!forceRefresh && dashboardDataCache.data && dashboardDataCache.expiresAt > Date.now()) {
+      return dashboardDataCache.data;
+    }
+
+    if (!forceRefresh && dashboardDataCache.promise) {
+      return dashboardDataCache.promise;
+    }
+
     try {
-      const [metricsResult, workersResult, analyticsResult, jobsResult] =
-        await Promise.allSettled([
-          api.get(USER.DASHBOARD_METRICS),
-          api.get(USER.DASHBOARD_WORKERS),
-          api.get(USER.DASHBOARD_ANALYTICS),
-          api.get(JOB.MY_JOBS, {
-            params: buildMyJobsParams({ status: 'active', limit: 10 }),
-          }),
-        ]);
+      dashboardDataCache.promise = Promise.allSettled([
+        api.get(USER.DASHBOARD_METRICS),
+        api.get(USER.DASHBOARD_WORKERS),
+        api.get(USER.DASHBOARD_ANALYTICS),
+        api.get(JOB.MY_JOBS, {
+          params: buildMyJobsParams({ status: 'active', limit: 10 }),
+        }),
+      ]).then(([metricsResult, workersResult, analyticsResult, jobsResult]) => {
+        const metrics =
+          metricsResult.status === 'fulfilled'
+            ? (unwrapPayload(metricsResult.value?.data) || {})
+            : {};
+        const workers =
+          workersResult.status === 'fulfilled'
+            ? extractWorkerItems(workersResult.value?.data)
+            : [];
+        const analytics =
+          analyticsResult.status === 'fulfilled'
+            ? (unwrapPayload(analyticsResult.value?.data) || {})
+            : {};
+        const activeJobs =
+          jobsResult.status === 'fulfilled'
+            ? extractCollectionItems(jobsResult.value?.data)
+            : [];
 
-      const metrics =
-        metricsResult.status === 'fulfilled'
-          ? (unwrapPayload(metricsResult.value?.data) || {})
-          : {};
-      const workers =
-        workersResult.status === 'fulfilled'
-          ? extractWorkerItems(workersResult.value?.data)
-          : [];
-      const analytics =
-        analyticsResult.status === 'fulfilled'
-          ? (unwrapPayload(analyticsResult.value?.data) || {})
-          : {};
-      const activeJobs =
-        jobsResult.status === 'fulfilled'
-          ? extractCollectionItems(jobsResult.value?.data)
-          : [];
+        const dashboardData = {
+          metrics,
+          analytics,
+          activeJobs: Array.isArray(activeJobs) ? activeJobs : [],
+          featuredWorkers: Array.isArray(workers) ? workers : [],
+        };
 
-      return {
-        metrics,
-        analytics,
-        activeJobs: Array.isArray(activeJobs) ? activeJobs : [],
-        featuredWorkers: Array.isArray(workers) ? workers : [],
-      };
+        dashboardDataCache.data = dashboardData;
+        dashboardDataCache.expiresAt = Date.now() + DASHBOARD_CACHE_TTL_MS;
+        return dashboardData;
+      });
+
+      return await dashboardDataCache.promise;
     } catch (error) {
       if (import.meta.env.DEV) console.warn(
         'Dashboard data unavailable, using fallback:',
@@ -227,6 +248,8 @@ export const hirerService = {
         activeJobs: [],
         featuredWorkers: [],
       };
+    } finally {
+      dashboardDataCache.promise = null;
     }
   },
 
@@ -266,8 +289,8 @@ export const hirerService = {
   // MED-23 FIX: Actually call the API to get hirer's applications across all jobs
   async getApplications(filters = {}) {
     try {
-      const limit = filters.limit || 10;
-      const status = filters.status || 'active';
+      const limit = filters.limit ?? 10;
+      const status = filters.status ?? 'active';
       const response = await api.get(JOB.MY_JOBS, {
         params: buildMyJobsParams({ status, limit, includeApplications: true }),
       });
@@ -275,7 +298,7 @@ export const hirerService = {
       // Flatten applications from all jobs
       const applications = [];
       for (const job of (Array.isArray(jobs) ? jobs : [])) {
-        const jobApps = job.applications || [];
+        const jobApps = Array.isArray(job?.applications) ? job.applications : [];
         for (const app of jobApps) {
           applications.push({ ...app, jobTitle: job.title, jobId: job._id || job.id });
         }
@@ -352,7 +375,7 @@ export const hirerService = {
         response = await api.get('/bookmarks');
       }
 
-      const payload = response.data?.data || response.data || {};
+      const payload = response.data?.data ?? response.data ?? {};
 
       if (Array.isArray(payload.workerIds)) {
         return payload.workerIds.map((id) => String(id));

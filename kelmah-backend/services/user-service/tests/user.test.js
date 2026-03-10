@@ -2,7 +2,7 @@
  * User Service Tests
  */
 
-const { TestDataFactory, TestAssertions } = require('../../shared/test-utils');
+const { TestDataFactory, TestAssertions } = require('../../../shared/test-utils');
 
 describe('User Service', () => {
   describe('User Profile Management', () => {

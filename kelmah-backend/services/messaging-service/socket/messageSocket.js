@@ -63,7 +63,7 @@ class MessageSocketHandler {
         }
 
         // Verify JWT token using shared utility
-        const decoded = verifyAccessToken(token);
+        const decoded = await verifyAccessToken(token);
         const claims = {
           id: decoded.id || decoded.sub,
           email: decoded.email,

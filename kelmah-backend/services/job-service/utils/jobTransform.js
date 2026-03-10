@@ -13,6 +13,7 @@ function transformJobForFrontend(job) {
 
   // Ensure _id is string
   const jobId = job._id ? job._id.toString() : job.id || null;
+  const hirerId = job.hirer?._id?.toString?.() || job.hirer?.id?.toString?.() || null;
 
   // Build budget object (frontend expects { min, max, type, amount, currency })
   const budgetObj = typeof job.budget === 'object' && job.budget !== null
@@ -37,8 +38,8 @@ function transformJobForFrontend(job) {
                   'Hiring Client' || 
                   'Unknown';
       hirerObj = {
-        _id: job.hirer._id ? job.hirer._id.toString() : String(job.hirer._id || job.hirer.id),
-        id: job.hirer._id ? job.hirer._id.toString() : String(job.hirer._id || job.hirer.id),
+        _id: hirerId,
+        id: hirerId,
         firstName: job.hirer.firstName || '',
         lastName: job.hirer.lastName || '',
         name: hirerName,

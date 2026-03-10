@@ -5,29 +5,27 @@
  * using the new environment configuration system.
  */
 
-import { api } from '../../../services/apiClient';
+import apiClient, { api } from '../../../services/apiClient';
 import { secureStorage } from '../../../utils/secureStorage';
 import { normalizeUser } from '../../../utils/userUtils';
 
 const __DEV__ = import.meta.env.DEV;
 const devLog = (...args) => { if (__DEV__) console.log(...args); };
 
-// Use centralized authServiceClient with standard interceptors
-
-// Response interceptors are handled by the centralized service client configuration
-// in modules/common/services/axios.js
+// Shared response interceptors and token refresh locking are handled by
+// the centralized apiClient in src/services/apiClient.js.
 
 // Token refresh tracking
 let tokenRefreshTimeout = null;
 
-const persistNormalizedUser = (user) => {
+const persistNormalizedUser = (user, options = {}) => {
   if (!user) {
     return null;
   }
 
   const normalizedUser = normalizeUser(user._raw || user);
   if (normalizedUser) {
-    secureStorage.setUserData(normalizedUser);
+    secureStorage.setUserData(normalizedUser, options);
   }
 
   return normalizedUser;
@@ -72,7 +70,10 @@ const authService = {
       // Extract data from response (handle different response structures)
       const responseData = response.data.data || response.data;
       const { token, refreshToken, user } = responseData;
-      const normalizedUser = persistNormalizedUser(user);
+      const persistOptions = {
+        persistent: Boolean(credentials?.rememberMe),
+      };
+      const normalizedUser = persistNormalizedUser(user, persistOptions);
 
       if (!token || !user) {
         throw new Error(
@@ -81,9 +82,9 @@ const authService = {
       }
 
       // Store authentication data securely
-      secureStorage.setAuthToken(token);
+      secureStorage.setAuthToken(token, persistOptions);
       if (refreshToken) {
-        secureStorage.setRefreshToken(refreshToken);
+        secureStorage.setRefreshToken(refreshToken, persistOptions);
       }
 
       // Setup automatic token refresh
@@ -226,8 +227,6 @@ const authService = {
 
   // Refresh token — uses shared lock with apiClient interceptor to prevent races
   refreshToken: async () => {
-    const { default: apiClient } = await import('../../../services/apiClient');
-
     // Reuse an in-flight refresh from the axios interceptor if one exists
     if (apiClient._refreshPromise) {
       try {

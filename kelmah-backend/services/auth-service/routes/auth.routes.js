@@ -7,11 +7,22 @@ const { body } = require("express-validator");
 const authController = require("../controllers/auth.controller");
 const { verifyGatewayRequest } = require("../../../shared/middlewares/serviceTrust");
 const { createLimiter } = require("../middlewares/rateLimiter");
+const SecurityUtils = require("../utils/security");
 const { validate } = require("../utils/validation");
 const passport = require("../config/passport");
 const { logger } = require("../utils/logger");
 
 const router = express.Router();
+
+const buildStrictPasswordValidation = (fieldName) =>
+  body(fieldName).custom((value) => {
+    const passwordValidation = SecurityUtils.validatePassword(value);
+    if (!passwordValidation.isValid) {
+      throw new Error(passwordValidation.errors.join('. '));
+    }
+
+    return true;
+  });
 
 // Registration route with validation
 router.post(
@@ -19,13 +30,7 @@ router.post(
   createLimiter("register"),
   [
     body("email").isEmail().withMessage("Please enter a valid email address"),
-    body("password")
-      .isLength({ min: 8 })
-      .withMessage("Password must be at least 8 characters long")
-      .matches(/\d/)
-      .withMessage("Password must contain at least one number")
-      .matches(/[A-Z]/)
-      .withMessage("Password must contain at least one uppercase letter"),
+    buildStrictPasswordValidation("password"),
     body("firstName").trim().notEmpty().withMessage("First name is required"),
     body("lastName").trim().notEmpty().withMessage("Last name is required"),
     body("role")
@@ -50,7 +55,7 @@ router.post(
 );
 
 // Email verification route (matches frontend call)
-router.get("/verify-email/:token", authController.verifyEmail);
+router.get("/verify-email/:token", createLimiter("verificationToken"), authController.verifyEmail);
 
 // Resend verification email (matches frontend call)
 router.post(
@@ -74,13 +79,7 @@ router.post(
 router.post(
   "/reset-password/:token",
   [
-    body("password")
-      .isLength({ min: 8 })
-      .withMessage("Password must be at least 8 characters long")
-      .matches(/\d/)
-      .withMessage("Password must contain at least one number")
-      .matches(/[A-Z]/)
-      .withMessage("Password must contain at least one uppercase letter"),
+    buildStrictPasswordValidation("password"),
   ],
   validate,
   authController.resetPassword,
@@ -91,13 +90,7 @@ router.post(
   "/reset-password",
   [
     body("token").notEmpty().withMessage("Reset token is required"),
-    body("password")
-      .isLength({ min: 8 })
-      .withMessage("Password must be at least 8 characters long")
-      .matches(/\d/)
-      .withMessage("Password must contain at least one number")
-      .matches(/[A-Z]/)
-      .withMessage("Password must contain at least one uppercase letter"),
+    buildStrictPasswordValidation("password"),
   ],
   validate,
   (req, res, next) => {
@@ -136,13 +129,7 @@ router.post(
     body("currentPassword")
       .notEmpty()
       .withMessage("Current password is required"),
-    body("newPassword")
-      .isLength({ min: 8 })
-      .withMessage("Password must be at least 8 characters long")
-      .matches(/\d/)
-      .withMessage("Password must contain at least one number")
-      .matches(/[A-Z]/)
-      .withMessage("Password must contain at least one uppercase letter"),
+    buildStrictPasswordValidation("newPassword"),
   ],
   validate,
   authController.changePassword,

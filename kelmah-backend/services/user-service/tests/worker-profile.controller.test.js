@@ -139,6 +139,35 @@ describe('WorkerController.getWorkerById (stubbed models)', () => {
     expect(res.body?.code).toBe('NOT_AN_ACTIVE_WORKER');
   });
 
+  test('does not write worker defaults during public profile reads', async () => {
+    const res = createMockResponse();
+    const workerId = '64f2e0b5f1f79b2a9c123450';
+    const updateOne = jest.fn();
+
+    setModel('User', {
+      findById: jest.fn(() => createLeanQuery({
+        _id: workerId,
+        role: 'worker',
+        isActive: true,
+        firstName: 'Yaw',
+        lastName: 'Boateng',
+      })),
+      updateOne,
+    });
+
+    setModel('WorkerProfile', {
+      findOne: jest.fn(() => createLeanQuery({
+        _id: 'worker-profile-public-read',
+        userId: workerId,
+      })),
+    });
+
+    await WorkerController.getWorkerById({ params: { id: workerId } }, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(updateOne).not.toHaveBeenCalled();
+  });
+
   test('returns enriched payload with merged profile, availability, portfolio, and certificates', async () => {
     const res = createMockResponse();
     const workerId = '64f2e0b5f1f79b2a9c123457';

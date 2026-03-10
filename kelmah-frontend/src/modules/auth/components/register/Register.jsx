@@ -20,6 +20,7 @@ import {
   Stack,
   TextField,
   Typography,
+  useMediaQuery,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import {
@@ -44,7 +45,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Controller } from 'react-hook-form';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { FEATURES } from '@/config/environment';
+import { AUTH_CONFIG, getApiBaseUrl } from '@/config/environment';
+import MobileRegister from '@/modules/auth/components/mobile/MobileRegister';
 import useRegistrationForm from '@/modules/auth/hooks/useRegistrationForm';
 import {
   saveRegistrationDraft,
@@ -147,6 +149,7 @@ const Register = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
+  const isCompactViewport = useMediaQuery(theme.breakpoints.down('md'));
 
   const {
     control,
@@ -221,6 +224,10 @@ const Register = () => {
     : '0 28px 56px rgba(16, 17, 19, 0.12)';
   const progressValue = ((activeStep + 1) / STEP_META.length) * 100;
   const currentStep = STEP_META[activeStep];
+
+  if (isCompactViewport) {
+    return <MobileRegister />;
+  }
 
   const fieldSx = useMemo(
     () => ({
@@ -343,6 +350,29 @@ const Register = () => {
     if (passwordStrength.score >= 3) return 'warning';
     return 'error';
   }, [passwordStrength.score]);
+  const socialProviders = useMemo(
+    () => [
+      {
+        key: 'google',
+        label: 'Continue with Google',
+        authPath: '/auth/google',
+        enabled: Boolean(AUTH_CONFIG.googleClientId),
+        icon: GoogleIcon,
+      },
+      {
+        key: 'linkedin',
+        label: 'Continue with LinkedIn',
+        authPath: '/auth/linkedin',
+        enabled: Boolean(AUTH_CONFIG.linkedinClientId),
+        icon: LinkedInIcon,
+      },
+    ].filter((provider) => provider.enabled),
+    [],
+  );
+
+  const handleSocialLogin = useCallback((authPath) => {
+    window.location.assign(`${getApiBaseUrl()}${authPath}`);
+  }, []);
 
   const handleManualDraftSave = useCallback(() => {
     const payload = { ...getValues(), step: activeStep };
@@ -1000,8 +1030,8 @@ const Register = () => {
           width: '100%',
           maxWidth: 1320,
           mx: 'auto',
-          px: { md: 4, lg: 5 },
-          py: { md: 4, lg: 5 },
+          px: { xs: 2, sm: 3, md: 4, lg: 5 },
+          py: { xs: 2, sm: 3, md: 4, lg: 5 },
         }}
       >
         <Stack
@@ -1047,9 +1077,9 @@ const Register = () => {
               elevation={0}
               sx={{
                 height: '100%',
-                minHeight: 760,
-                p: { md: 4, lg: 4.5 },
-                borderRadius: 6,
+                minHeight: { xs: 'auto', md: 760 },
+                p: { xs: 2.5, sm: 3, md: 4, lg: 4.5 },
+                borderRadius: { xs: 4, md: 6 },
                 color: supportingPanelText,
                 background: supportingPanelBg,
                 border: `1px solid ${supportingPanelBorder}`,
@@ -1234,9 +1264,9 @@ const Register = () => {
             <Paper
               elevation={0}
               sx={{
-                minHeight: 760,
-                p: { md: 3.5, lg: 4 },
-                borderRadius: 6,
+                minHeight: { xs: 'auto', md: 760 },
+                p: { xs: 2.5, sm: 3, md: 3.5, lg: 4 },
+                borderRadius: { xs: 4, md: 6 },
                 background: formPanelBg,
                 color: formPanelText,
                 boxShadow: formPanelShadow,
@@ -1433,45 +1463,42 @@ const Register = () => {
 
                 <Divider sx={{ borderColor: formPanelDivider }} />
 
-                <Stack spacing={2.25}>
-                  <Typography variant="body2" sx={{ color: formPanelMuted }}>
-                    Prefer a social sign-up? Choose a provider below if it is enabled.
-                  </Typography>
-                  <Stack direction="row" spacing={1.5}>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      startIcon={<GoogleIcon />}
-                      disabled={!FEATURES?.socialGoogle}
-                      sx={{
-                        borderRadius: 999,
-                        textTransform: 'none',
-                        fontWeight: 800,
-                        backgroundColor: !isDarkMode ? alpha('#FFFFFF', 0.52) : 'transparent',
-                        borderColor: isDarkMode ? alpha('#FFFFFF', 0.14) : alpha('#171A1F', 0.14),
-                        color: formPanelText,
-                      }}
-                    >
-                      Continue with Google
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      startIcon={<LinkedInIcon />}
-                      disabled={!FEATURES?.socialLinkedIn}
-                      sx={{
-                        borderRadius: 999,
-                        textTransform: 'none',
-                        fontWeight: 800,
-                        backgroundColor: !isDarkMode ? alpha('#FFFFFF', 0.52) : 'transparent',
-                        borderColor: isDarkMode ? alpha('#FFFFFF', 0.14) : alpha('#171A1F', 0.14),
-                        color: formPanelText,
-                      }}
-                    >
-                      Continue with LinkedIn
-                    </Button>
+                {socialProviders.length > 0 && (
+                  <Stack spacing={2.25}>
+                    <Typography variant="body2" sx={{ color: formPanelMuted }}>
+                      Prefer a social sign-up? Choose a configured provider below.
+                    </Typography>
+                    <Stack direction="row" spacing={1.5}>
+                      {socialProviders.map((provider) => {
+                        const ProviderIcon = provider.icon;
+
+                        return (
+                          <Button
+                            key={provider.key}
+                            variant="outlined"
+                            fullWidth
+                            startIcon={<ProviderIcon />}
+                            onClick={() => handleSocialLogin(provider.authPath)}
+                            sx={{
+                              borderRadius: 999,
+                              textTransform: 'none',
+                              fontWeight: 800,
+                              backgroundColor: !isDarkMode ? alpha('#FFFFFF', 0.52) : 'transparent',
+                              borderColor: isDarkMode ? alpha('#FFFFFF', 0.14) : alpha('#171A1F', 0.14),
+                              color: formPanelText,
+                              '&:hover': {
+                                borderColor: alpha(brandColor, 0.45),
+                                backgroundColor: !isDarkMode ? alpha('#FFFFFF', 0.74) : alpha('#FFFFFF', 0.04),
+                              },
+                            }}
+                          >
+                            {provider.label}
+                          </Button>
+                        );
+                      })}
+                    </Stack>
                   </Stack>
-                </Stack>
+                )}
               </Stack>
             </Paper>
           </Grid>

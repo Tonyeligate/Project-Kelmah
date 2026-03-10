@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   TextField,
@@ -14,6 +14,14 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import PropTypes from 'prop-types';
 
+const EMPTY_SKILLS = [];
+const SEARCH_QUERY_MAX_LENGTH = 120;
+const SEARCH_LOCATION_MAX_LENGTH = 80;
+const SEARCH_SKILL_MAX_LENGTH = 40;
+
+const areSkillsEqual = (left = EMPTY_SKILLS, right = EMPTY_SKILLS) =>
+  left.length === right.length && left.every((skillName, index) => skillName === right[index]);
+
 const JobSearchForm = ({
   onSubmit,
   onSearch,
@@ -26,14 +34,20 @@ const JobSearchForm = ({
     location: initialLocation = '',
     jobType: initialJobType = '',
     category: initialCategory = '',
-    skills: initialSkills = [],
   } = resolvedInitials;
+  const initialSkillsKey = JSON.stringify(
+    Array.isArray(resolvedInitials.skills) ? resolvedInitials.skills : EMPTY_SKILLS,
+  );
+  const normalizedInitialSkills = useMemo(
+    () => (Array.isArray(resolvedInitials.skills) ? resolvedInitials.skills : EMPTY_SKILLS),
+    [initialSkillsKey],
+  );
 
   const [keyword, setKeyword] = useState(initialKeyword);
   const [location, setLocation] = useState(initialLocation);
   const [jobType, setJobType] = useState(initialJobType);
   const [category, setCategory] = useState(initialCategory);
-  const [skills, setSkills] = useState(initialSkills);
+  const [skills, setSkills] = useState(normalizedInitialSkills);
   const [skill, setSkill] = useState('');
 
   useEffect(() => {
@@ -53,8 +67,12 @@ const JobSearchForm = ({
   }, [initialCategory]);
 
   useEffect(() => {
-    setSkills(Array.isArray(initialSkills) ? initialSkills : []);
-  }, [initialSkills]);
+    setSkills((currentSkills) => (
+      areSkillsEqual(currentSkills, normalizedInitialSkills)
+        ? currentSkills
+        : normalizedInitialSkills
+    ));
+  }, [normalizedInitialSkills]);
 
   const submitHandler = onSearch || onSubmit;
 
@@ -109,8 +127,9 @@ const JobSearchForm = ({
   };
 
   const handleAddSkill = () => {
-    if (skill && !skills.includes(skill)) {
-      const nextSkills = [...skills, skill];
+    const normalizedSkill = skill.trim().slice(0, SEARCH_SKILL_MAX_LENGTH);
+    if (normalizedSkill && !skills.includes(normalizedSkill)) {
+      const nextSkills = [...skills, normalizedSkill];
       setSkills(nextSkills);
       emitSearch({ skills: nextSkills });
       setSkill('');
@@ -135,10 +154,11 @@ const JobSearchForm = ({
               size="small"
               value={keyword}
               onChange={(e) => {
-                const nextKeyword = e.target.value;
+                const nextKeyword = e.target.value.slice(0, SEARCH_QUERY_MAX_LENGTH);
                 setKeyword(nextKeyword);
               }}
               placeholder="e.g., Carpenter, Plumber"
+              inputProps={{ maxLength: SEARCH_QUERY_MAX_LENGTH }}
             />
           </Grid>
 
@@ -150,10 +170,11 @@ const JobSearchForm = ({
               size="small"
               value={location}
               onChange={(e) => {
-                const nextLocation = e.target.value;
+                const nextLocation = e.target.value.slice(0, SEARCH_LOCATION_MAX_LENGTH);
                 setLocation(nextLocation);
               }}
               placeholder="e.g., Accra, Kumasi"
+              inputProps={{ maxLength: SEARCH_LOCATION_MAX_LENGTH }}
             />
           </Grid>
 
@@ -222,7 +243,7 @@ const JobSearchForm = ({
             label="Add skill"
             variant="outlined"
             value={skill}
-            onChange={(e) => setSkill(e.target.value)}
+            onChange={(e) => setSkill(e.target.value.slice(0, SEARCH_SKILL_MAX_LENGTH))}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
@@ -230,6 +251,7 @@ const JobSearchForm = ({
               }
             }}
             placeholder="e.g., Welding"
+            inputProps={{ maxLength: SEARCH_SKILL_MAX_LENGTH }}
             sx={{ minWidth: 140, maxWidth: 200 }}
           />
           <Button

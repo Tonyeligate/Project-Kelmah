@@ -167,70 +167,12 @@ router.get("/workers/:id/completeness", optionalGatewayVerification, (req, res, 
   next();
 }, WorkerController.getProfileCompletion);
 
-// Worker sub-resource routes (public reads, protected mutations)
-router.get('/workers/:workerId/skills', optionalGatewayVerification, WorkerController.getWorkerSkills);
-router.put('/workers/:workerId/skills/bulk', verifyGatewayRequest, requireOwnership, WorkerController.upsertWorkerSkillsBulk);
-router.post('/workers/:workerId/skills', verifyGatewayRequest, requireOwnership, createLimiter('default'), WorkerController.createWorkerSkill);
-router.put('/workers/:workerId/skills/:skillId', verifyGatewayRequest, requireOwnership, createLimiter('default'), WorkerController.updateWorkerSkill);
-router.delete('/workers/:workerId/skills/:skillId', verifyGatewayRequest, requireOwnership, createLimiter('default'), WorkerController.deleteWorkerSkill);
-
-router.get('/workers/:workerId/work-history', optionalGatewayVerification, WorkerController.getWorkerWorkHistory);
-router.post('/workers/:workerId/work-history', verifyGatewayRequest, requireOwnership, createLimiter('default'), WorkerController.addWorkHistoryEntry);
-router.put('/workers/:workerId/work-history/:entryId', verifyGatewayRequest, requireOwnership, createLimiter('default'), WorkerController.updateWorkHistoryEntry);
-router.delete('/workers/:workerId/work-history/:entryId', verifyGatewayRequest, requireOwnership, createLimiter('default'), WorkerController.deleteWorkHistoryEntry);
-
-router.get('/workers/:workerId/portfolio', optionalGatewayVerification, WorkerController.getWorkerPortfolio);
-router.post(
-  '/workers/:workerId/portfolio',
-  verifyGatewayRequest,
-  requireOwnership,
-  createLimiter('default'),
-  WorkerController.createWorkerPortfolioItem,
-);
-router.put(
-  '/workers/:workerId/portfolio/:portfolioId',
-  verifyGatewayRequest,
-  requireOwnership,
-  createLimiter('default'),
-  WorkerController.updateWorkerPortfolioItem,
-);
-router.delete(
-  '/workers/:workerId/portfolio/:portfolioId',
-  verifyGatewayRequest,
-  requireOwnership,
-  createLimiter('default'),
-  WorkerController.deleteWorkerPortfolioItem,
-);
-
-router.get('/workers/:workerId/certificates', optionalGatewayVerification, WorkerController.getWorkerCertificates);
-router.post(
-  '/workers/:workerId/certificates',
-  verifyGatewayRequest,
-  requireOwnership,
-  createLimiter('default'),
-  WorkerController.addWorkerCertificate,
-);
-router.put(
-  '/workers/:workerId/certificates/:certificateId',
-  verifyGatewayRequest,
-  requireOwnership,
-  createLimiter('default'),
-  WorkerController.updateWorkerCertificate,
-);
-router.delete(
-  '/workers/:workerId/certificates/:certificateId',
-  verifyGatewayRequest,
-  requireOwnership,
-  createLimiter('default'),
-  WorkerController.deleteWorkerCertificate,
-);
+// Worker nested resources (skills, certificates, work history, portfolio, analytics)
+router.use('/workers/:workerId', workerDetailRouter);
 
 router.post('/workers/:id/bookmark', verifyGatewayRequest, createLimiter('default'), toggleBookmark);
 router.delete('/workers/:id/bookmark', verifyGatewayRequest, createLimiter('default'), toggleBookmark);
 router.get('/workers/:workerId/earnings', verifyGatewayRequest, getEarnings);
-
-// Worker nested resources (skills, certificates, work history, portfolio, analytics)
-router.use('/workers/:workerId', workerDetailRouter);
 
 // User profile routes
 router.get('/profile', verifyGatewayRequest, getUserProfile);

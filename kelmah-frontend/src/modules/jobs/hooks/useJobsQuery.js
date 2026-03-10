@@ -7,10 +7,12 @@ import {
 } from '@tanstack/react-query';
 import jobsApi from '../services/jobsService';
 
-const sanitizeFilters = (rawFilters = {}) => {
+const EMPTY_QUERY_PARAMS = {};
+
+const sanitizeParams = (rawParams = EMPTY_QUERY_PARAMS, defaults = EMPTY_QUERY_PARAMS) => {
     const merged = {
-        status: 'open',
-        ...rawFilters,
+        ...defaults,
+        ...rawParams,
     };
 
     return Object.entries(merged).reduce((acc, [key, value]) => {
@@ -30,6 +32,12 @@ const sanitizeFilters = (rawFilters = {}) => {
         return acc;
     }, {});
 };
+
+const sanitizeFilters = (rawFilters = EMPTY_QUERY_PARAMS) =>
+    sanitizeParams(rawFilters, { status: 'open' });
+
+const buildStableParamsKey = (params = EMPTY_QUERY_PARAMS) =>
+    JSON.stringify(params ?? EMPTY_QUERY_PARAMS);
 
 export const jobKeys = {
     all: () => ['jobs'],
@@ -82,8 +90,8 @@ const updateSavedJobsCache = (current, job, mode = 'add') => {
     return { ...current, jobs: nextJobs, data: nextJobs };
 };
 
-export const useJobsQuery = (filters = {}, options = {}) => {
-    const filtersKey = JSON.stringify(filters ?? {});
+export const useJobsQuery = (filters = EMPTY_QUERY_PARAMS, options = {}) => {
+    const filtersKey = buildStableParamsKey(filters);
     const normalizedFilters = useMemo(
         () => sanitizeFilters(filters),
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -110,14 +118,22 @@ export const useJobQuery = (jobId, options = {}) =>
         ...options,
     });
 
-export const useSavedJobsQuery = (params = {}, options = {}) =>
-    useQuery({
-        queryKey: jobKeys.saved(params),
-        queryFn: () => jobsApi.getSavedJobs(params),
+export const useSavedJobsQuery = (params = EMPTY_QUERY_PARAMS, options = {}) => {
+    const paramsKey = buildStableParamsKey(params);
+    const normalizedParams = useMemo(
+        () => sanitizeParams(params),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [paramsKey],
+    );
+
+    return useQuery({
+        queryKey: jobKeys.saved(normalizedParams),
+        queryFn: () => jobsApi.getSavedJobs(normalizedParams),
         staleTime: 2 * 60 * 1000, // AUD2-L08
         gcTime: 5 * 60 * 1000,
         ...options,
     });
+};
 
 export const useCreateJobMutation = (options = {}) => {
     const queryClient = useQueryClient();

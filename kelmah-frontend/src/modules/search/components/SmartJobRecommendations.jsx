@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -54,6 +54,11 @@ import { formatCurrency, formatRelativeTime, formatJobLocation } from '../../../
 // FIX C2: Stable default object to prevent infinite render loops from {} !== {}
 const EMPTY_FILTER = {};
 
+const isRequestAbort = (error) =>
+  error?.name === 'AbortError' ||
+  error?.name === 'CanceledError' ||
+  error?.code === 'ERR_CANCELED';
+
 const SmartJobRecommendations = ({
   maxRecommendations = 6,
   showHeader = true,
@@ -74,7 +79,7 @@ const SmartJobRecommendations = ({
     [userRole, userType],
   );
   const savedJobsQuery = useSavedJobsQuery(
-    {},
+    EMPTY_FILTER,
     { enabled: Boolean(isAuthenticated) },
   );
   const savedJobIds = useSavedJobIds(savedJobsQuery.data);
@@ -97,37 +102,69 @@ const SmartJobRecommendations = ({
   const [refreshing, setRefreshing] = useState(false);
   const [aiInsights, setAiInsights] = useState(null);
   const [infoMessage, setInfoMessage] = useState(null);
+  const activeRequestRef = useRef(null);
+  const isMountedRef = useRef(false);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+      activeRequestRef.current?.abort();
+      activeRequestRef.current = null;
+    };
+  }, []);
 
   // Load recommendations
   const loadRecommendations = useCallback(
     async (refresh = false) => {
-      try {
-        if (refresh) {
-          setRefreshing(true);
-        } else {
-          setLoading(true);
+      activeRequestRef.current?.abort();
+      const controller = new AbortController();
+      activeRequestRef.current = controller;
+
+      const canUpdateState = () =>
+        isMountedRef.current &&
+        activeRequestRef.current === controller &&
+        !controller.signal.aborted;
+
+      const applyState = (updater) => {
+        if (!canUpdateState()) {
+          return false;
         }
+
+        updater();
+        return true;
+      };
+
+      try {
+        applyState(() => {
+          if (refresh) {
+            setRefreshing(true);
+          } else {
+            setLoading(true);
+          }
+        });
 
         // If no authenticated user, skip personalized recommendations gracefully
         if (!userId) {
-          setRecommendations([]);
-          setAiInsights(null);
-          setError(null);
-          setInfoMessage('Sign in to see personalized job recommendations.');
-          setLoading(false);
-          setRefreshing(false);
+          applyState(() => {
+            setRecommendations([]);
+            setAiInsights(null);
+            setError(null);
+            setInfoMessage('Sign in to see personalized job recommendations.');
+          });
           return;
         }
 
         if (!isWorker) {
-          setRecommendations([]);
-          setAiInsights(null);
-          setError(null);
-          setInfoMessage(
-            'Smart job recommendations are available for worker accounts. Switch to a worker profile to discover tailored opportunities.',
-          );
-          setLoading(false);
-          setRefreshing(false);
+          applyState(() => {
+            setRecommendations([]);
+            setAiInsights(null);
+            setError(null);
+            setInfoMessage(
+              'Smart job recommendations are available for worker accounts. Switch to a worker profile to discover tailored opportunities.',
+            );
+          });
           return;
         }
 
@@ -135,9 +172,14 @@ const SmartJobRecommendations = ({
           userId,
           {
             limit: maxRecommendations,
+            signal: controller.signal,
             ...filterCriteria,
           },
         );
+
+        if (!canUpdateState()) {
+          return;
+        }
 
         const payload = response || {};
 
@@ -145,56 +187,84 @@ const SmartJobRecommendations = ({
         // { jobs: [], status: 'forbidden'|'empty' } instead of throwing.
         // Check for these statuses in the success path so info messages display.
         if (payload.status === 'forbidden') {
-          setRecommendations([]);
-          setAiInsights(null);
-          setInfoMessage(
-            'We could not verify a worker profile for this account. Update your profile type to receive smart recommendations.',
-          );
-          setError(null);
+          applyState(() => {
+            setRecommendations([]);
+            setAiInsights(null);
+            setInfoMessage(
+              'We could not verify a worker profile for this account. Update your profile type to receive smart recommendations.',
+            );
+            setError(null);
+          });
           return;
         }
 
         if (payload.status === 'empty') {
-          setRecommendations([]);
-          setAiInsights(null);
-          setInfoMessage(
-            'No recommendations are available yet. Keep your profile up to date and check back soon.',
-          );
-          setError(null);
+          applyState(() => {
+            setRecommendations([]);
+            setAiInsights(null);
+            setInfoMessage(
+              'No recommendations are available yet. Keep your profile up to date and check back soon.',
+            );
+            setError(null);
+          });
           return;
         }
 
-        setRecommendations(payload.jobs || []);
-        setAiInsights(payload.insights || null);
-        setInfoMessage(
-          payload.jobs && payload.jobs.length === 0
-            ? 'Complete your worker profile to unlock AI-powered job matches tailored to your skills.'
-            : null,
-        );
-        setError(null);
+        applyState(() => {
+          setRecommendations(Array.isArray(payload.jobs) ? payload.jobs : []);
+          setAiInsights(payload.insights || null);
+          setInfoMessage(
+            Array.isArray(payload.jobs) && payload.jobs.length === 0
+              ? 'Complete your worker profile to unlock AI-powered job matches tailored to your skills.'
+              : null,
+          );
+          setError(null);
+        });
       } catch (err) {
+        if (isRequestAbort(err)) {
+          return;
+        }
+
+        if (!canUpdateState()) {
+          return;
+        }
+
         const status = err?.response?.status;
 
         if (status === 403) {
-          setInfoMessage(
-            'We could not verify a worker profile for this account. Update your profile type to receive smart recommendations.',
-          );
-          setError(null);
+          applyState(() => {
+            setInfoMessage(
+              'We could not verify a worker profile for this account. Update your profile type to receive smart recommendations.',
+            );
+            setError(null);
+          });
         } else if (status === 404 || status === 204) {
-          setInfoMessage(
-            'No recommendations are available yet. Keep your profile up to date and check back soon.',
-          );
-          setError(null);
+          applyState(() => {
+            setInfoMessage(
+              'No recommendations are available yet. Keep your profile up to date and check back soon.',
+            );
+            setError(null);
+          });
         } else {
-          setError('Failed to load job recommendations');
-          setInfoMessage(null);
+          applyState(() => {
+            setError('Failed to load job recommendations');
+            setInfoMessage(null);
+          });
           enqueueSnackbar('Failed to load smart recommendations', {
             variant: 'error',
           });
         }
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        const shouldFinalizeState = canUpdateState();
+
+        if (activeRequestRef.current === controller) {
+          activeRequestRef.current = null;
+        }
+
+        if (shouldFinalizeState) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     },
     [userId, isWorker, maxRecommendations, filterCriteria, enqueueSnackbar],
@@ -206,7 +276,7 @@ const SmartJobRecommendations = ({
   }, [loadRecommendations]);
 
   // Handle save/unsave job
-  const handleToggleSave = async (job) => {
+  const handleToggleSave = useCallback(async (job) => {
     const jobId = job?.id || job?._id || job?.jobId;
     if (!jobId) {
       enqueueSnackbar('Job reference unavailable. Please refresh.', {
@@ -227,10 +297,10 @@ const SmartJobRecommendations = ({
       // Notification handled inside mutation callbacks.
       if (import.meta.env.DEV) console.warn('Saved job mutation failed:', mutationError);
     }
-  };
+  }, [enqueueSnackbar, saveJobMutation, savedJobIds, unsaveJobMutation]);
 
   // Handle job application
-  const handleApplyToJob = async (jobId) => {
+  const handleApplyToJob = useCallback(async (jobId) => {
     if (!jobId) {
       enqueueSnackbar('Job reference unavailable. Please refresh.', {
         variant: 'warning',
@@ -244,10 +314,10 @@ const SmartJobRecommendations = ({
       onJobSelect(jobId, 'apply');
     }
     navigate(`/jobs/${jobId}/apply`);
-  };
+  }, [enqueueSnackbar, navigate, onJobSelect]);
 
   // Handle view job details
-  const handleViewJob = async (jobId) => {
+  const handleViewJob = useCallback(async (jobId) => {
     if (!jobId) {
       enqueueSnackbar('Job reference unavailable. Please refresh.', {
         variant: 'warning',
@@ -261,7 +331,7 @@ const SmartJobRecommendations = ({
       onJobSelect(jobId, 'view');
     }
     navigate(`/jobs/${jobId}`);
-  };
+  }, [enqueueSnackbar, navigate, onJobSelect]);
 
   // Get match score color
   const getMatchScoreColor = (score) => {
@@ -336,7 +406,7 @@ const SmartJobRecommendations = ({
   };
 
   // Render job recommendation card
-  const renderJobCard = (job) => {
+  const renderJobCard = useCallback((job) => {
     const hasMatchScore = job.matchScore != null && !isNaN(job.matchScore);
     const matchColor = hasMatchScore ? getMatchScoreColor(job.matchScore) : 'default';
     const urgency = getUrgencyIndicator(job.urgency);
@@ -594,7 +664,19 @@ const SmartJobRecommendations = ({
         </CardActions>
       </Card>
     );
-  };
+  }, [enqueueSnackbar, handleApplyToJob, handleToggleSave, handleViewJob, savedJobIds, theme]);
+
+  const renderedRecommendationCards = useMemo(
+    () => recommendations.map((job, index) => {
+      const jobKey = job.id || job._id || job.jobId;
+      return (
+        <Grid item xs={12} sm={6} md={4} key={jobKey || `job-${index}`}>
+          {renderJobCard(job)}
+        </Grid>
+      );
+    }),
+    [recommendations, renderJobCard],
+  );
 
   // Render loading skeleton
   const renderLoadingSkeleton = () => (
@@ -737,14 +819,7 @@ const SmartJobRecommendations = ({
         </Paper>
       ) : (
         <Grid container spacing={3}>
-          {recommendations.map((job, index) => {
-            const jobKey = job.id || job._id || job.jobId;
-            return (
-              <Grid item xs={12} sm={6} md={4} key={jobKey || `job-${index}`}>
-                {renderJobCard(job)}
-              </Grid>
-            );
-          })}
+          {renderedRecommendationCards}
         </Grid>
       )}
 
