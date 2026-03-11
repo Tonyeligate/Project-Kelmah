@@ -228,25 +228,52 @@ export const useDashboard = () => {
     }
   }, [dispatch]);
 
-  // Load all dashboard data when authenticated (FIXED: No function dependencies)
+  const loadSummary = useCallback(async () => {
+    try {
+      dispatch(setLoading({ summary: true }));
+      const summary = await dashboardService.getSummary();
+      dispatch(
+        setDashboardData({
+          overview: summary?.overview || {},
+          metrics: summary?.overview?.metrics || {},
+          recentJobs: summary?.overview?.jobs?.recentJobs || [],
+          activeWorkers: summary?.overview?.workers || [],
+          analytics: summary?.overview?.analytics || {},
+          recentActivity: summary?.recentActivity?.activities || [],
+          statistics: summary?.statistics || {},
+          upcomingTasks: summary?.upcomingTasks || [],
+          recentMessages: summary?.recentMessages || [],
+          performanceMetrics: summary?.performanceMetrics || {},
+          quickActions: summary?.quickActions || [],
+          notificationsSummary: summary?.notificationsSummary || {},
+          realTimeStats: summary?.realTimeStats || {},
+        }),
+      );
+      setHasMore(summary?.recentActivity?.hasMore ?? false);
+      if (summary?.realTimeStats) {
+        setRealTimeData((prev) => ({ ...prev, stats: summary.realTimeStats }));
+      }
+      return summary;
+    } catch (error) {
+      dispatch(setError({ summary: error.message }));
+      throw error;
+    } finally {
+      dispatch(setLoading({ summary: false }));
+    }
+  }, [dispatch]);
+
+  // Load a single dashboard summary payload when authenticated.
   useEffect(() => {
     if (isAuthenticated) {
-      loadOverview();
-      loadRecentActivity(true);
-      loadStatistics();
-      loadUpcomingTasks();
-      loadRecentMessages();
-      loadPerformanceMetrics();
-      loadQuickActions();
-      loadNotificationsSummary();
-      loadRealTimeStats();
+      loadSummary();
     }
-  }, [isAuthenticated]); // Fixed: Only depend on isAuthenticated to prevent infinite loop
+  }, [isAuthenticated, loadSummary]);
 
   return {
     hasMore,
     realTimeData,
     isSocketConnected,
+    loadSummary,
     loadOverview,
     loadRecentActivity,
     loadStatistics,

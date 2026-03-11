@@ -159,6 +159,31 @@ class AirtelTigoService {
     }
   }
 
+  /**
+   * Refund by issuing a compensating disbursement to the original payer.
+   */
+  async refundPayment({ amount, phoneNumber, externalId, description, originalReferenceId }) {
+    const transferResult = await this.transfer({
+      amount,
+      phoneNumber,
+      externalId,
+      description: description || 'Kelmah refund',
+    });
+
+    if (!transferResult.success) {
+      return transferResult;
+    }
+
+    return {
+      success: true,
+      data: {
+        ...transferResult.data,
+        originalReferenceId,
+        refundMode: 'return_transfer',
+      }
+    };
+  }
+
   async getTransferStatus(referenceId) {
     try {
       const tokenResult = await this.getAccessToken();

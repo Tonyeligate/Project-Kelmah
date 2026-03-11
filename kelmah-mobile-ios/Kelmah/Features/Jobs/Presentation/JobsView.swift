@@ -38,7 +38,7 @@ struct JobsView: View {
                 } else {
                     Section {
                         MessageBannerView(
-                            message: "Hirer mode is active. Use this tab to benchmark pricing, review live demand, and save listings for hiring research while messages and alerts handle candidate follow-up.",
+                            message: "Use this tab to check pay, demand, and saved listings before you hire.",
                             tint: KelmahTheme.accent.opacity(0.12)
                         )
                     }
@@ -46,7 +46,7 @@ struct JobsView: View {
 
                 if viewModel.activeFeed == .discover {
                     Section(isWorker ? "Quick Search" : "Filters") {
-                        TextField(isWorker ? "Type job name" : "Search live jobs", text: $viewModel.filters.search)
+                        TextField(isWorker ? "Type job name" : "Search jobs", text: $viewModel.filters.search)
                         TextField(isWorker ? "Town or area" : "Location", text: $viewModel.filters.location)
 
                         Menu {
@@ -79,7 +79,7 @@ struct JobsView: View {
                             }
                         }
 
-                        Button(isWorker ? "Show Jobs" : "Apply Filters") {
+                        Button("Show Jobs") {
                             Task { await viewModel.refreshJobs() }
                         }
                     }
@@ -105,7 +105,7 @@ struct JobsView: View {
                         ContentUnavailableView(
                             viewModel.activeFeed == .saved ? (isWorker ? "No saved jobs" : "No saved market listings yet") : (isWorker ? "No jobs found" : "No market listings found"),
                             systemImage: "briefcase",
-                            description: Text(viewModel.activeFeed == .saved ? (isWorker ? "Jobs you save will stay here." : "Saved market listings will appear here so you can revisit rates, scope, and demand signals.") : (isWorker ? "Try fewer filters or tap refresh." : "Try broadening your filters or refreshing the market feed to review more live hiring signals."))
+                            description: Text(viewModel.activeFeed == .saved ? (isWorker ? "Jobs you save will stay here." : "Saved listings stay here so you can compare pay, work, and demand later.") : (isWorker ? "Try fewer filters or tap refresh." : "Try fewer filters or tap refresh to see more live jobs."))
                         )
                     } else {
                         ForEach(viewModel.displayedJobs) { job in
@@ -130,7 +130,7 @@ struct JobsView: View {
                                     ProgressView()
                                         .frame(maxWidth: .infinity)
                                 } else {
-                                    Text(isWorker ? "Show More Jobs" : "Load More Jobs")
+                                    Text("Show More Jobs")
                                         .frame(maxWidth: .infinity)
                                 }
                             }
@@ -259,7 +259,7 @@ private struct JobCardView: View {
             }
 
             HStack(spacing: 10) {
-                Button(userRole == .worker ? "Open Job" : "Review", action: onOpen)
+                Button("Open Job", action: onOpen)
                     .buttonStyle(.bordered)
                 if userRole == .worker {
                     Button("Apply Now", action: onApply)

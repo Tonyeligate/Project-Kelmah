@@ -99,7 +99,7 @@ struct JobDetailView: View {
                                 .background(KelmahTheme.card)
                                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                         } else {
-                            Text("Hirer mode keeps this view focused on market research and pricing review. Worker application steps stay hidden for hirer accounts.")
+                            Text("Hirer mode is for market review. Workers are the ones who can apply.")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -131,7 +131,7 @@ struct JobDetailView: View {
                 .background(KelmahTheme.background.ignoresSafeArea())
             }
         }
-        .navigationTitle(userRole == .hirer ? "Market Listing" : "Job Details")
+        .navigationTitle("Job Details")
         .navigationBarTitleDisplayMode(.inline)
         .task(id: jobId) {
             await viewModel.loadJobDetail(jobId: jobId)

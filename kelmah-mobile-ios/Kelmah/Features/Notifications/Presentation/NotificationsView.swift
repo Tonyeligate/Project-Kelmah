@@ -49,7 +49,7 @@ struct NotificationsView: View {
                         ContentUnavailableView(
                             viewModel.unreadOnly ? "No new alerts" : "No alerts yet",
                             systemImage: "bell",
-                            description: Text("Job and message updates will show here.")
+                            description: Text("New job and message updates will show here.")
                         )
                     } else {
                         ForEach(viewModel.notifications) { notification in
@@ -76,7 +76,7 @@ struct NotificationsView: View {
                                         Button {
                                             Task { await viewModel.markAsRead(notificationId: notification.id) }
                                         } label: {
-                                            Label("Mark read", systemImage: "checkmark.circle")
+                                            Label("Mark as read", systemImage: "checkmark.circle")
                                         }
                                         .tint(KelmahTheme.accent)
                                     }
@@ -166,7 +166,7 @@ private struct NotificationRowView: View {
             }
 
             if notification.actionTarget != nil {
-                Text("Tap to open")
+                Text("Tap to open alert")
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(KelmahTheme.accent)
             }

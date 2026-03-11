@@ -48,7 +48,7 @@ fun ProfileScreen(
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
             title = { Text("Sign out") },
-            text = { Text("Are you sure you want to sign out of this device?") },
+            text = { Text("You will be signed out of this device.") },
             confirmButton = {
                 TextButton(onClick = { showLogoutDialog = false; onLogout() }) { Text("Sign out") }
             },
@@ -60,8 +60,8 @@ fun ProfileScreen(
     if (showLogoutAllDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutAllDialog = false },
-            title = { Text("Sign out all devices") },
-            text = { Text("This will sign you out of every device where you are logged in. Continue?") },
+            title = { Text("Sign out everywhere") },
+            text = { Text("You will be signed out everywhere.") },
             confirmButton = {
                 TextButton(onClick = { showLogoutAllDialog = false; onLogoutAll() }) { Text("Sign out all") }
             },
@@ -94,10 +94,10 @@ fun ProfileScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(uiState.currentUser?.displayName ?: "Kelmah User", style = MaterialTheme.typography.titleLarge)
-                    Text(uiState.currentUser?.email ?: "Email unavailable")
+                    Text(uiState.currentUser?.email ?: "No email added")
                     Text("Role: ${(uiState.currentUser?.role ?: "worker").replaceFirstChar { it.uppercase() }}")
                     Text(
-                        if (uiState.currentUser?.isEmailVerified == true) "Email verified" else "Email verification pending",
+                        if (uiState.currentUser?.isEmailVerified == true) "Email verified" else "Email not verified yet",
                         color = if (uiState.currentUser?.isEmailVerified == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                     )
                 }
@@ -110,9 +110,9 @@ fun ProfileScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Text("Recommendation signals", style = MaterialTheme.typography.titleLarge)
+                        Text("Your work details", style = MaterialTheme.typography.titleLarge)
                         Text(
-                            "These details shape how Kelmah ranks and explains your mobile job recommendations.",
+                            "These details help Kelmah show you better jobs.",
                             style = MaterialTheme.typography.bodyMedium,
                         )
 
@@ -123,9 +123,9 @@ fun ProfileScreen(
                                 }
                             }
                             uiState.profileErrorMessage != null -> {
-                                Text(uiState.profileErrorMessage ?: "Profile signals are unavailable", color = MaterialTheme.colorScheme.error)
+                                Text(uiState.profileErrorMessage ?: "We could not load your work details.", color = MaterialTheme.colorScheme.error)
                                 Button(onClick = viewModel::refreshWorkerProfileSignals) {
-                                    Text("Retry profile sync")
+                                    Text("Try again")
                                 }
                             }
                             uiState.profileSnapshot != null -> {
@@ -134,7 +134,7 @@ fun ProfileScreen(
                                 }
                             }
                             else -> {
-                                Text("Profile signals will appear here once your worker account is loaded.")
+                                Text("Your work details will show here.")
                             }
                         }
                     }
@@ -147,8 +147,8 @@ fun ProfileScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Text("Security", style = MaterialTheme.typography.titleLarge)
-                    Text("Change your password to keep your Kelmah account secure across devices.")
+                    Text("Password", style = MaterialTheme.typography.titleLarge)
+                    Text("Change your password.")
 
                     uiState.infoMessage?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
                     uiState.errorMessage?.let { Text(it, color = MaterialTheme.colorScheme.error) }
@@ -207,7 +207,7 @@ fun ProfileScreen(
                     onClick = { showLogoutAllDialog = true },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("Sign out all devices")
+                    Text("Sign out everywhere")
                 }
             }
         }
@@ -229,24 +229,24 @@ private fun WorkerProfileSignalsContent(snapshot: WorkerProfileSnapshot) {
             )
         }
         Text(
-            profile.profession.ifBlank { "Profession pending" },
+            profile.profession.ifBlank { "Add your job title" },
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
         )
         if (profile.bio.isNotBlank()) {
             Text(profile.bio, style = MaterialTheme.typography.bodyMedium)
         }
-        ProfileFact("Location", profile.location.ifBlank { "Add your working location" })
-        ProfileFact("Rate", profile.hourlyRate?.let { "${profile.currency} ${formatRate(it)}/hr" } ?: "Set an hourly rate")
+        ProfileFact("Location", profile.location.ifBlank { "Add your work area" })
+        ProfileFact("Rate", profile.hourlyRate?.let { "${profile.currency} ${formatRate(it)}/hr" } ?: "Add your rate")
         ProfileFact(
             "Experience",
             buildString {
-                append(profile.experienceLevel?.replaceFirstChar { it.uppercase() } ?: "Experience level pending")
+                append(profile.experienceLevel?.replaceFirstChar { it.uppercase() } ?: "Add your experience")
                 profile.yearsOfExperience?.takeIf { it > 0 }?.let { append(" • ${it}y") }
             },
         )
         ProfileFact(
-            "Verification",
+            "Checks",
             listOfNotNull(
                 "Email ${if (profile.isEmailVerified) "verified" else "pending"}",
                 "Phone ${if (profile.isPhoneVerified) "verified" else "pending"}",
@@ -255,13 +255,13 @@ private fun WorkerProfileSignalsContent(snapshot: WorkerProfileSnapshot) {
 
         HorizontalDivider()
 
-        Text("Visible skills", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
+        Text("Skills people can see", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
         Text(
-            if (visibleSkills.isNotEmpty()) visibleSkills.joinToString(" • ") else "Add skills so recommendation matches have enough precision.",
+            if (visibleSkills.isNotEmpty()) visibleSkills.joinToString(" • ") else "Add skills so people can find your work.",
             style = MaterialTheme.typography.bodyMedium,
         )
         ProfileFact(
-            "Credentials",
+            "Certificates",
             "${snapshot.credentials.certifications.count { it.isVerified }} verified certifications • ${snapshot.credentials.licenses.size} licenses",
         )
         snapshot.credentials.certifications.take(3).forEach { certification ->
@@ -273,12 +273,12 @@ private fun WorkerProfileSignalsContent(snapshot: WorkerProfileSnapshot) {
 
         HorizontalDivider()
 
-        Text("Availability and completeness", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
+        Text("Availability and profile", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
         ProfileFact(
             "Availability",
             when {
                 snapshot.availability.isAvailable -> "Available${snapshot.availability.nextAvailable?.let { " • next $it" } ?: ""}"
-                snapshot.availability.status == "not_set" -> snapshot.availability.message ?: "Availability not configured"
+                snapshot.availability.status == "not_set" -> snapshot.availability.message ?: "Add when you can work"
                 else -> "Unavailable${snapshot.availability.nextAvailable?.let { " • next $it" } ?: ""}"
             },
         )
@@ -287,7 +287,7 @@ private fun WorkerProfileSignalsContent(snapshot: WorkerProfileSnapshot) {
         }
         LinearProgressIndicator(progress = { completenessProgress }, modifier = Modifier.fillMaxWidth())
         Text(
-            "${snapshot.completeness.completionPercentage}% complete • required ${snapshot.completeness.requiredCompletion}% • optional ${snapshot.completeness.optionalCompletion}%",
+            "Profile done: ${snapshot.completeness.completionPercentage}% • needed ${snapshot.completeness.requiredCompletion}% • extra ${snapshot.completeness.optionalCompletion}%",
             style = MaterialTheme.typography.bodySmall,
         )
         snapshot.completeness.recommendations.take(3).forEach { recommendation ->
@@ -296,13 +296,13 @@ private fun WorkerProfileSignalsContent(snapshot: WorkerProfileSnapshot) {
 
         HorizontalDivider()
 
-        Text("Portfolio proof", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
+        Text("Past work", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
         Text(
-            "${snapshot.portfolio.publishedCount} published items out of ${snapshot.portfolio.totalCount}",
+            "${snapshot.portfolio.publishedCount} shown out of ${snapshot.portfolio.totalCount}",
             style = MaterialTheme.typography.bodyMedium,
         )
         if (snapshot.portfolio.items.isEmpty()) {
-            Text("Add portfolio work to support recommendation trust and conversion.", style = MaterialTheme.typography.bodySmall)
+            Text("Add past work so hirers can trust your profile.", style = MaterialTheme.typography.bodySmall)
         } else {
             snapshot.portfolio.items.take(3).forEach { project ->
                 Text(

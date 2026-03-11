@@ -29,14 +29,8 @@ const TransactionSchema = new Schema(
       default: "pending",
     },
     paymentMethod: {
-      type: {
-        type: String,
-        enum: ["credit_card", "bank_transfer", "paypal", "stripe", "paystack", "mtn_momo", "vodafone_cash", "airtel_tigo", "mobile_money"],
-        required: true,
-      },
-      details: {
-        type: Schema.Types.Mixed,
-      },
+      type: Schema.Types.ObjectId,
+      ref: "PaymentMethod",
     },
     sender: {
       type: Schema.Types.ObjectId,
@@ -46,7 +40,10 @@ const TransactionSchema = new Schema(
     recipient: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+    },
+    relatedTransaction: {
+      type: String,
+      index: true,
     },
     relatedContract: {
       type: Schema.Types.ObjectId,
@@ -63,6 +60,9 @@ const TransactionSchema = new Schema(
       taxAmount: Number,
       paymentProvider: String,
       paymentProviderTransactionId: String,
+    },
+    gatewayData: {
+      type: Schema.Types.Mixed,
     },
     errorDetails: {
       code: String,
@@ -83,6 +83,7 @@ TransactionSchema.index({ status: 1 });
 TransactionSchema.index({ createdAt: -1 });
 TransactionSchema.index({ relatedContract: 1 });
 TransactionSchema.index({ relatedJob: 1 });
+TransactionSchema.index({ relatedTransaction: 1 });
 
 // Helper methods
 TransactionSchema.methods.updateStatus = async function (
@@ -103,10 +104,13 @@ TransactionSchema.methods.calculateFees = function () {
   const platformFeeRate = 0.1; // 10% platform fee
   const processingFeeRate = 0.029; // 2.9% processing fee
   const taxRate = 0.05; // 5% tax
+  const roundCurrency = (value) => Math.round(Number(value || 0) * 100) / 100;
 
-  this.metadata.platformFee = this.amount * platformFeeRate;
-  this.metadata.processingFee = this.amount * processingFeeRate;
-  this.metadata.taxAmount = this.amount * taxRate;
+  this.metadata = this.metadata || {};
+
+  this.metadata.platformFee = roundCurrency(this.amount * platformFeeRate);
+  this.metadata.processingFee = roundCurrency(this.amount * processingFeeRate);
+  this.metadata.taxAmount = roundCurrency(this.amount * taxRate);
 
   return this.save();
 };

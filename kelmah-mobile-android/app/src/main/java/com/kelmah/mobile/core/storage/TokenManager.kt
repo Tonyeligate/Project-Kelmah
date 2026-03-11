@@ -9,11 +9,13 @@ import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Singleton
+@OptIn(ExperimentalSerializationApi::class)
 class TokenManager @Inject constructor(
     @ApplicationContext context: Context,
 ) {

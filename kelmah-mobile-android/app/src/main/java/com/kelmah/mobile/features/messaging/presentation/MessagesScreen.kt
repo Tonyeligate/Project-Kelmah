@@ -22,10 +22,10 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.Forum
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -118,13 +118,13 @@ fun MessagesScreen(
                 navigationIcon = {
                     if (state.selectedConversation != null) {
                         IconButton(onClick = viewModel::closeConversation) {
-                            Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back to chats")
+                            Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back to messages")
                         }
                     }
                 },
                 actions = {
                     IconButton(onClick = viewModel::refreshSelectedConversation) {
-                        Icon(Icons.Outlined.Refresh, contentDescription = "Refresh chat")
+                        Icon(Icons.Outlined.Refresh, contentDescription = "Refresh messages")
                     }
                 },
             )
@@ -176,7 +176,7 @@ private fun ConversationListContent(
             onValueChange = onSearchChange,
             modifier = Modifier.fillMaxWidth(),
             leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-            placeholder = { Text("Search chats") },
+            placeholder = { Text("Search messages") },
             singleLine = true,
         )
 
@@ -187,7 +187,7 @@ private fun ConversationListContent(
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         CircularProgressIndicator()
-                        Text("Loading chats...")
+                        Text("Loading messages...")
                     }
                 }
             }
@@ -275,7 +275,7 @@ private fun ConversationCard(
         }
 
         Text(
-            text = "Tap to open",
+            text = "Tap to open chat",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(start = 72.dp, end = 16.dp, bottom = 12.dp),
@@ -332,7 +332,7 @@ private fun ThreadContent(
                 Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                     EmptyStateCard(
                         title = "No messages yet",
-                        subtitle = "Write the first message.",
+                        subtitle = "Send the first message.",
                     )
                 }
             }
@@ -362,7 +362,7 @@ private fun ThreadContent(
                 value = draftMessage,
                 onValueChange = onDraftChange,
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Write message") },
+                placeholder = { Text("Type message") },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = { onSend() }),
                 maxLines = 4,
@@ -385,7 +385,7 @@ private fun ThreadContent(
                     Text("Sending")
                 } else {
                     Icon(
-                        Icons.Outlined.Send,
+                        Icons.AutoMirrored.Outlined.Send,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimary,
                     )

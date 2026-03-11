@@ -137,7 +137,7 @@ fun NotificationsScreen(
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         EmptyStateCard(
                             title = if (state.unreadOnly) "No new alerts" else "No alerts yet",
-                            subtitle = "Job and message updates will show here.",
+                            subtitle = "New job and message updates will show here.",
                         )
                     }
                 }
@@ -225,7 +225,7 @@ private fun NotificationCard(
                 Spacer(modifier = Modifier.weight(1f))
                 if (!notification.isRead) {
                     TextButton(onClick = onMarkRead, enabled = isMutating.not()) {
-                        Text("Mark read")
+                        Text("Mark as read")
                     }
                 }
                 notification.actionLabel?.let { actionLabel ->
@@ -243,7 +243,7 @@ private fun NotificationCard(
 
             if (notification.actionTarget != null) {
                 Text(
-                    text = "Tap to open",
+                    text = "Tap to open alert",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                 )

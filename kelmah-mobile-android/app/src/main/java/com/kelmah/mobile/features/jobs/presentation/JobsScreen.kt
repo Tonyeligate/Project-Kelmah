@@ -13,12 +13,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -74,12 +74,12 @@ fun JobsScreen(
     val emptySavedDescription = if (isWorker) {
         "Jobs you save will stay here."
     } else {
-        "Saved market listings will appear here so you can revisit rates, scope, and demand signals."
+        "Saved listings stay here so you can compare pay, work, and demand later."
     }
     val emptyDiscoverDescription = if (isWorker) {
         "Try fewer filters or tap refresh."
     } else {
-        "Try broadening your filters or refreshing the market feed to review more live hiring signals."
+        "Try fewer filters or tap refresh to see more live jobs."
     }
 
     LaunchedEffect(uiState.errorMessage) {
@@ -141,7 +141,7 @@ fun JobsScreen(
             } else {
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
                     Text(
-                        text = "Hirer mode is active. Use this tab to benchmark pricing, review live demand, and save listings for hiring research while messages and alerts handle candidate follow-up.",
+                        text = "Use this tab to check pay, demand, and saved listings before you hire.",
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.bodyMedium,
                     )
@@ -153,7 +153,7 @@ fun JobsScreen(
                     value = uiState.filters.search,
                     onValueChange = viewModel::updateSearch,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text(if (isWorker) "Type job name" else "Search live jobs") },
+                    label = { Text(if (isWorker) "Type job name" else "Search jobs") },
                     leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                     trailingIcon = {
                         TextButton(onClick = viewModel::applyFilters) {
@@ -233,7 +233,7 @@ fun JobsScreen(
                                 if (uiState.isLoadingMore) {
                                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                                 } else {
-                                    Text(if (isWorker) "Show More Jobs" else "Load More Jobs")
+                                    Text(if (isWorker) "Show More Jobs" else "Show More Jobs")
                                 }
                             }
                         }
@@ -297,11 +297,11 @@ private fun JobCard(
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = onOpen, modifier = Modifier.weight(1f)) {
-                    Text(if (isWorker) "Open Job" else "Review")
+                    Text(if (isWorker) "Open Job" else "Open Job")
                 }
                 if (isWorker) {
                     OutlinedButton(onClick = onApply, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Outlined.Send, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Apply Now")
                     }

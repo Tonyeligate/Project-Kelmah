@@ -50,6 +50,7 @@ import {
   raiseDispute,
   verifyQuickJobPayment,
 } from '../../quickjobs/services/quickJobService';
+import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
 
 const requesterSteps = [
   { status: 'pending', label: 'Waiting for quotes' },
@@ -220,11 +221,15 @@ const HirerQuickJobTrackingPage = () => {
     }
   }, [jobId]);
 
-  useEffect(() => {
-    fetchJob();
-    const intervalId = setInterval(fetchJob, 30000);
-    return () => clearInterval(intervalId);
-  }, [fetchJob]);
+  useVisibilityPolling({
+    enabled: Boolean(jobId),
+    intervalMs: 30_000,
+    maxIntervalMs: 3 * 60 * 1000,
+    shouldPause: () => actionLoading || verifyingPayment,
+    callback: async () => {
+      await fetchJob();
+    },
+  });
 
   useEffect(() => {
     if (!verificationReference || paymentVerificationRef.current === verificationReference) {

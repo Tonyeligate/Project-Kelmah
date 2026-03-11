@@ -41,22 +41,22 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(displayName)
                         .font(.largeTitle.bold())
-                    Text(userRole == .hirer ? "Track active hiring work, unread follow-up, and fresh alerts from one screen." : "See your jobs, saved jobs, messages, and alerts in one place.")
+                    Text(userRole == .hirer ? "See active jobs, new chats, and alerts in one place." : "See your jobs, saved jobs, messages, and alerts in one place.")
                         .foregroundStyle(.secondary)
                 }
 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text(userRole == .hirer ? "Hirer command view" : "Your work today")
+                    Text(userRole == .hirer ? "Hiring overview" : "Your work today")
                         .font(.headline)
-                    Text(userRole == .hirer ? "Use this surface to spot active jobs that need attention, keep candidate conversations moving, and react to alerts faster." : "Check good jobs, saved jobs, and new alerts. Then open a job and apply.")
+                    Text(userRole == .hirer ? "Check jobs that need attention, keep chats moving, and open alerts faster." : "Check good jobs, saved jobs, and new alerts. Then open a job and apply.")
                     HStack(spacing: 10) {
                         SummaryTile(label: userRole == .hirer ? "Active jobs" : "Good jobs", value: userRole == .hirer ? activeJobs : homeJobs.count)
-                        SummaryTile(label: userRole == .hirer ? "Unread chats" : "Saved jobs", value: userRole == .hirer ? unreadMessages : jobsViewModel.savedJobs.count)
+                        SummaryTile(label: userRole == .hirer ? "New chats" : "Saved jobs", value: userRole == .hirer ? unreadMessages : jobsViewModel.savedJobs.count)
                         SummaryTile(label: "Alerts", value: notificationsViewModel.unreadCount)
                     }
                     HStack(spacing: 10) {
                         Button(action: onBrowseJobs) {
-                            Text(userRole == .hirer ? "Open Hiring Market" : "Find Work")
+                            Text(userRole == .hirer ? "Open Market" : "Find Work")
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent)
@@ -126,7 +126,7 @@ struct HomeView: View {
                     }
                 }
 
-                HomeSectionHeader(title: userRole == .worker ? "Messages" : "Recent conversations", actionLabel: userRole == .worker ? "Open" : "Open messages", onAction: onOpenMessages)
+                HomeSectionHeader(title: "Messages", actionLabel: userRole == .worker ? "Open" : "Open messages", onAction: onOpenMessages)
 
                 if messagesViewModel.conversations.isEmpty {
                     HomeMessageCard(message: userRole == .worker ? "New messages will show here." : "Messages created from job and hiring flows will appear here for quick follow-up.", tint: .white)
@@ -138,7 +138,7 @@ struct HomeView: View {
                     }
                 }
 
-                HomeSectionHeader(title: userRole == .worker ? "Alerts" : "Recent alerts", actionLabel: userRole == .worker ? "Open" : "Open alerts", onAction: onOpenNotifications)
+                HomeSectionHeader(title: "Alerts", actionLabel: userRole == .worker ? "Open" : "Open alerts", onAction: onOpenNotifications)
 
                 if notificationsViewModel.notifications.isEmpty {
                     HomeMessageCard(message: userRole == .worker ? "New alerts will show here." : "Job, payment, and message alerts will appear here as activity comes in.", tint: .white)
@@ -358,6 +358,9 @@ private struct HomeConversationCard: View {
                 Text(RelativeTimeFormatter.relativeOrFallback(conversation.lastMessageAt) ?? "Just now")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                Text("Tap to open chat")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(KelmahTheme.accent)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
@@ -403,6 +406,9 @@ private struct HomeNotificationCard: View {
                             .foregroundStyle(KelmahTheme.accent)
                     }
                 }
+                Text("Tap to open alert")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(KelmahTheme.accent)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()

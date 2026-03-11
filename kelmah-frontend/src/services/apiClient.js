@@ -38,6 +38,9 @@ const apiClient = axios.create({
     },
 });
 
+apiClient._refreshPromise = null;
+apiClient._isRefreshing = false;
+
 // Helper to generate request key for deduplication
 const getRequestKey = (method, url, params) => {
     return `${method}:${url}:${JSON.stringify(params || '')}`;
@@ -130,6 +133,7 @@ apiClient.interceptors.response.use(
 
             // Lock concurrent refreshes — share a single in-flight promise
             if (!apiClient._refreshPromise) {
+                apiClient._isRefreshing = true;
                 apiClient._refreshPromise = (async () => {
                     const refreshToken = secureStorage.getItem('refresh_token');
                     if (!refreshToken) throw new Error('No refresh token');
@@ -157,10 +161,13 @@ apiClient.interceptors.response.use(
 
                     processUnauthorizedQueue(null, token);
                     return token;
-                })().catch((refreshError) => {
+                })()
+                .catch((refreshError) => {
                     processUnauthorizedQueue(refreshError, null);
-                    throw refreshError;
-                })().finally(() => {
+                    return Promise.reject(refreshError);
+                })
+                .finally(() => {
+                    apiClient._isRefreshing = false;
                     apiClient._refreshPromise = null;
                 });
             }

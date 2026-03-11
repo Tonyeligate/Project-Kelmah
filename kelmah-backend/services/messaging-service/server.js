@@ -15,6 +15,7 @@ const helmet = require("helmet");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
 const mongoose = require("mongoose");
+const { createOriginMatcher } = require("../../shared/utils/corsPolicy");
 
 // Import components
 const MessageSocketHandler = require("./socket/messageSocket");
@@ -63,34 +64,18 @@ try {
 app.set("trust proxy", true);
 
 // CORS configuration (env-driven allowlist + Vercel previews + LocalTunnel)
-const envAllow = (process.env.ALLOWED_ORIGINS || "")
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean);
-
-const vercelPatterns = [
-  /^https:\/\/.*\.vercel\.app$/,
-  /^https:\/\/.*-kelmahs-projects\.vercel\.app$/,
-  /^https:\/\/project-kelmah.*\.vercel\.app$/,
-  /^https:\/\/kelmah-frontend.*\.vercel\.app$/,
-];
-
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  process.env.FRONTEND_URL,
-  ...envAllow,
-  // Allow specific LocalTunnel URL if set
-  process.env.LOCALTUNNEL_URL,
-  // Allow all LocalTunnel URLs for development
-  /^https:\/\/.*\.loca\.lt$/,
-  ...vercelPatterns,
-].filter(Boolean);
+const { allowedOrigins, isAllowedOrigin } = createOriginMatcher();
 
 // Socket.IO setup with CORS
 const io = socketIo(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -126,10 +111,14 @@ const connectDB = async () => {
       "mongodb://localhost:27017/kelmah-messaging";
 
     console.log("🔗 Messaging Service connecting to MongoDB...");
-    console.log(
-      "🔗 Connection string preview:",
-      mongoUri.substring(0, 50) + "...",
-    );
+    const safeMongoHost = (() => {
+      try {
+        return new URL(mongoUri).host || 'unknown-host';
+      } catch (error) {
+        return 'unknown-host';
+      }
+    })();
+    console.log("🔗 MongoDB host:", safeMongoHost);
 
     const conn = await mongoose.connect(mongoUri, {
       bufferCommands: true, // FIXED: Enable buffering for connection establishment
@@ -215,11 +204,7 @@ app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin) return callback(null, true);
-      if (
-        allowedOrigins.includes(origin) ||
-        vercelPatterns.some((re) => re.test(origin)) ||
-        /^https:\/\/.*\.loca\.lt$/.test(origin)
-      ) {
+      if (isAllowedOrigin(origin)) {
         return callback(null, true);
       }
       return callback(new Error("Not allowed by CORS"));

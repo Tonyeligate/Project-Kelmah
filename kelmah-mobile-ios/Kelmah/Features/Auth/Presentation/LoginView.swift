@@ -15,7 +15,7 @@ struct LoginView: View {
                     .foregroundStyle(KelmahTheme.primary)
                     .accessibilityIdentifier("auth.title")
 
-                Text("Find skilled workers. Get hired for jobs.")
+                Text("Find workers. Find jobs.")
                     .foregroundStyle(.secondary)
 
                 Picker("Mode", selection: $viewModel.mode) {
@@ -44,12 +44,12 @@ struct LoginView: View {
                 }
 
                 if viewModel.mode != .verifyEmail {
-                    textField("Email", text: $viewModel.email, keyboard: .emailAddress, accessibilityId: "auth.emailField")
+                    textField("Email address", text: $viewModel.email, keyboard: .emailAddress, accessibilityId: "auth.emailField")
                         .textContentType(.emailAddress)
                 }
 
                 if viewModel.mode == .register {
-                    textField("Phone number (optional)", text: $viewModel.phone, keyboard: .phonePad, accessibilityId: "auth.phoneField")
+                    textField("Phone (optional)", text: $viewModel.phone, keyboard: .phonePad, accessibilityId: "auth.phoneField")
                     Picker("Role", selection: $viewModel.role) {
                         Text("Worker").tag("worker")
                         Text("Hirer").tag("hirer")
@@ -60,7 +60,7 @@ struct LoginView: View {
 
                 if viewModel.mode == .resetPassword || viewModel.mode == .verifyEmail {
                     textField(
-                        viewModel.mode == .resetPassword ? "Reset token" : "Verification token",
+                        viewModel.mode == .resetPassword ? "Reset code" : "Verification code",
                         text: $viewModel.token,
                         accessibilityId: "auth.tokenField"
                     )
@@ -109,11 +109,11 @@ struct LoginView: View {
 
     private var primaryButtonTitle: String {
         switch viewModel.mode {
-        case .login: return "Sign In"
-        case .register: return "Create Account"
-        case .forgotPassword: return "Send Reset Link"
-        case .resetPassword: return "Reset Password"
-        case .verifyEmail: return "Verify Email"
+        case .login: return "Sign in"
+        case .register: return "Create account"
+        case .forgotPassword: return "Send reset link"
+        case .resetPassword: return "Reset password"
+        case .verifyEmail: return "Verify email"
         }
     }
 
@@ -126,7 +126,7 @@ struct LoginView: View {
                 }
                 .buttonStyle(.plain)
 
-                Button("Already have a verification token?") {
+                Button("Have a verification code?") {
                     viewModel.switchMode(.verifyEmail)
                 }
                 .buttonStyle(.plain)
@@ -145,7 +145,7 @@ struct LoginView: View {
                 .buttonStyle(.plain)
 
                 if viewModel.mode == .forgotPassword {
-                    Button("Resend verification") {
+                    Button("Resend email") {
                         Task { await viewModel.resendVerificationEmail() }
                     }
                     .buttonStyle(.plain)

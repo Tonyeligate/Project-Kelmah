@@ -95,9 +95,6 @@ exports.releaseEscrow = async (req, res, next) => {
       return res.status(409).json({ success: false, message: 'Escrow release already in progress or completed' });
     }
 
-    const workerWallet = await Wallet.findOne({ user: escrow.workerId }).session(session);
-    if (!workerWallet) { await session.abortTransaction(); return res.status(404).json({ success: false, message: 'Worker wallet not found' }); }
-
     const tx = await new Transaction({
       transactionId: `TRX-${Date.now()}-${require('crypto').randomUUID().slice(0, 8)}`,
       amount: escrow.amount,
@@ -112,7 +109,17 @@ exports.releaseEscrow = async (req, res, next) => {
       status: 'completed'
     }).save({ session });
 
-    await workerWallet.addFunds(escrow.amount, tx);
+    const workerWallet = await creditWalletInSession({
+      userId: escrow.workerId,
+      amount: escrow.amount,
+      transactionId: tx._id,
+      session,
+      trackEarnings: true,
+    });
+    if (!workerWallet) {
+      await session.abortTransaction();
+      return res.status(404).json({ success: false, message: 'Worker wallet not found' });
+    }
 
     escrow.status = 'released';
     escrow.releasedAt = new Date();
@@ -419,8 +426,9 @@ exports.addMilestone = async (req, res, next) => {
     const { escrowId } = req.params;
     const hirerId = req.user?.id;
     const { milestoneId, description, amount, dueDate } = req.body;
+    const parsedAmount = Number(amount);
     
-    if (!milestoneId || !amount) {
+    if (!milestoneId || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       return res.status(400).json({ success: false, message: 'milestoneId and amount are required' });
     }
 
@@ -433,11 +441,22 @@ exports.addMilestone = async (req, res, next) => {
     const existingMilestone = escrow.milestones.find(m => m.milestoneId === milestoneId);
     if (existingMilestone) return res.status(400).json({ success: false, message: 'Milestone already exists' });
 
+    const existingTotal = (escrow.milestones || []).reduce(
+      (sum, milestone) => sum + Number(milestone?.amount || 0),
+      0,
+    );
+    if (existingTotal + parsedAmount > Number(escrow.amount || 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Milestone amounts cannot exceed the escrow total',
+      });
+    }
+
     // Add new milestone
     escrow.milestones.push({
       milestoneId,
       description,
-      amount,
+      amount: parsedAmount,
       dueDate: dueDate ? new Date(dueDate) : null,
       status: 'pending'
     });

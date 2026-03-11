@@ -6,6 +6,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const { createOriginMatcher } = require('../../shared/utils/corsPolicy');
 const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
@@ -73,30 +74,13 @@ if (process.env.NODE_ENV === 'production') {
 app.set('trust proxy', 1);
 
 // CORS configuration
+const { isAllowedOrigin } = createOriginMatcher();
+
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, server-to-server, etc.)
     if (!origin) return callback(null, true);
 
-    // In development, allow all origins
-    if (process.env.NODE_ENV !== 'production') {
-      return callback(null, true);
-    }
-
-    // In production, check against allowed origins
-    // Include all production frontend URLs and local development
-    const defaultOrigins = [
-      'http://localhost:3000',
-      'http://localhost:5173',
-      'https://kelmah.com',
-      'https://www.kelmah.com',
-      'https://kelmah-frontend-cyan.vercel.app',
-      'https://kelmah-frontend.vercel.app'
-    ];
-    const envOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [];
-    const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
-
-    if (allowedOrigins.some(allowed => origin === allowed || origin.endsWith('.vercel.app'))) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
 
@@ -144,7 +128,6 @@ async function connectDbWithRetry() {
       }
 
       console.log('🔗 Review Service connecting to MongoDB...');
-      console.log('🔗 Connection string preview:', mongoUri.substring(0, 50) + '...');
 
       await mongoose.connect(mongoUri, {
         bufferCommands: true, // Enable buffering for connection establishment

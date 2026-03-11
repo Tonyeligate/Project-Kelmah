@@ -155,7 +155,7 @@ class NotificationsViewModel @Inject constructor(
                         is ApiResult.Success -> unreadCountResult.data
                         is ApiResult.Error -> updatedState.unreadCount
                     }
-                    _uiState.update { current ->
+                    _uiState.update {
                         updatedState.copy(
                             isMutating = false,
                             unreadCount = authoritativeUnreadCount,

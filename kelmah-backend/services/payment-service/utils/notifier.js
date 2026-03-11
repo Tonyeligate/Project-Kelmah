@@ -4,12 +4,19 @@ const axios = require('axios');
 exports.notifyUser = async (userId, payload = {}) => {
   try {
     const url = process.env.MESSAGING_SERVICE_URL || 'http://localhost:3003';
+    const serviceToken = process.env.INTERNAL_SERVICE_TOKEN;
+
+    if (!serviceToken) {
+      console.error('Payment notifier error: INTERNAL_SERVICE_TOKEN is not configured');
+      return;
+    }
+
     await axios.post(`${url}/api/socket/send-to-user`, {
       userId,
       event: 'notification',
       data: payload,
     }, {
-      headers: { Authorization: `Bearer ${process.env.INTERNAL_SERVICE_TOKEN || 'service'}` }
+      headers: { Authorization: `Bearer ${serviceToken}` }
     });
   } catch (e) {
     console.error('Payment notifier error:', e.message);

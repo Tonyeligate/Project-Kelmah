@@ -6,22 +6,6 @@ const __DEV__ = import.meta.env.DEV;
 const devLog = (...args) => { if (__DEV__) console.log(...args); };
 
 /**
- * MED-20 FIX: Safe JWT decode utility (handles malformed tokens gracefully)
- */
-function safeDecodeUserId(token) {
-  try {
-    if (!token || typeof token !== 'string') return null;
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    const payload = JSON.parse(atob(base64));
-    return payload.sub || payload.id || payload.userId || null;
-  } catch {
-    return null;
-  }
-}
-
-/**
  * Dashboard service to handle dashboard data fetching and real-time updates.
  * MED-19: Reuses the shared websocketService singleton instead of creating its own Socket.IO connection.
  */
@@ -46,6 +30,64 @@ class DashboardService {
     this.token = token;
   }
 
+  async getSummary() {
+    try {
+      const response = await api.get('/dashboard/summary');
+      return response.data?.data || response.data || {};
+    } catch (error) {
+      if (import.meta.env.DEV) console.error('Error fetching dashboard summary:', error);
+      const overview = await this.getOverview();
+      const [recentActivity, recentMessages] = await Promise.all([
+        this.getRecentActivity(1, 10),
+        this.getRecentMessages(),
+      ]);
+      const performanceMetrics = {
+        completionRate: overview.analytics?.completionRate || 0,
+        clientSatisfaction: overview.analytics?.clientSatisfaction || 0,
+        averageResponseTime: overview.analytics?.averageResponseTime || 'N/A',
+        jobsThisMonth: overview.analytics?.jobsThisMonth || 0,
+        earningsThisMonth: overview.analytics?.earningsThisMonth || 0,
+      };
+      const topJob = overview.jobs?.recentJobs?.[0];
+
+      return {
+        overview,
+        recentActivity,
+        statistics: overview.analytics || {},
+        upcomingTasks: [],
+        recentMessages,
+        performanceMetrics,
+        quickActions: topJob
+          ? [
+            {
+              id: topJob.id || topJob._id || 'job-highlight',
+              label: `Review ${topJob.title}`,
+              type: 'job',
+              source: 'jobs',
+            },
+            {
+              id: 'update-profile',
+              label: 'Update your profile details',
+              type: 'profile',
+            },
+          ]
+          : [
+            {
+              id: 'refresh-dashboard',
+              label: 'Refresh dashboard data',
+              type: 'action',
+            },
+          ],
+        notificationsSummary: {
+          unreadMessages: overview.metrics?.unreadMessages || 0,
+          pendingJobs: overview.jobs?.totalOpenJobs || 0,
+          newApplicants: overview.metrics?.newApplicants || overview.jobs?.totalJobsToday || 0,
+        },
+        realTimeStats: overview.metrics || {},
+      };
+    }
+  }
+
   /**
    * Subscribe to dashboard events on the shared socket
    */
@@ -60,12 +102,6 @@ class DashboardService {
 
     devLog('📡 Dashboard subscribing to shared websocket events');
 
-    // Join dashboard channel using safely decoded user ID
-    const userId = safeDecodeUserId(this.token);
-    if (userId && socket.connected) {
-      socket.emit('join:dashboard', userId);
-    }
-
     // Subscribe to dashboard-specific events on the shared socket
     socket.on('dashboard:update', this._onDashboardUpdate);
     socket.on('dashboard:new-job', this._onNewJob);
@@ -79,11 +115,6 @@ class DashboardService {
   disconnect() {
     const socket = websocketService.socket;
     if (!socket) return;
-
-    const userId = safeDecodeUserId(this.token);
-    if (userId && socket.connected) {
-      socket.emit('leave:dashboard', userId);
-    }
 
     socket.off('dashboard:update', this._onDashboardUpdate);
     socket.off('dashboard:new-job', this._onNewJob);

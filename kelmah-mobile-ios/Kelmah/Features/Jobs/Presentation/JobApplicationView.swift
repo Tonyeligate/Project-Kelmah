@@ -17,11 +17,11 @@ struct JobApplicationView: View {
                 ContentUnavailableView(
                     "Worker-only flow",
                     systemImage: "person.crop.circle.badge.exclamationmark",
-                    description: Text("Applications are only available for worker accounts. Hirer accounts stay in research and hiring coordination mode inside this shared app shell.")
+                    description: Text("Only worker accounts can apply. Hirer accounts use this app to review the market and manage hiring.")
                 )
                 .toolbar {
                     ToolbarItem(placement: .bottomBar) {
-                        Button("Back to Hiring Market") {
+                        Button("Back to Market") {
                             dismiss()
                         }
                     }
@@ -31,7 +31,7 @@ struct JobApplicationView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         Text(viewModel.jobTitle(for: jobId))
                             .font(.title2.bold())
-                        Text("Share your price, time, and a short message.")
+                        Text("Add your price, time, and short message.")
                             .foregroundStyle(.secondary)
                         Text("Write simple words about the work you can do.")
                             .font(.subheadline)
@@ -41,8 +41,8 @@ struct JobApplicationView: View {
                             let currency = viewModel.jobDetail(for: jobId)?.summary.currency ?? "GHS"
                             TextField("Your price (\(currency))", text: $proposedRate)
                                 .keyboardType(.decimalPad)
-                            TextField("Time to finish", text: $estimatedDuration)
-                            TextField("Short message to hirer", text: $coverLetter, axis: .vertical)
+                            TextField("How long it will take", text: $estimatedDuration)
+                            TextField("Short message", text: $coverLetter, axis: .vertical)
                                 .lineLimit(8, reservesSpace: true)
                         }
                         .textFieldStyle(.roundedBorder)
@@ -64,7 +64,7 @@ struct JobApplicationView: View {
                             if viewModel.isSubmittingApplication {
                                 HStack(spacing: 8) {
                                     ProgressView()
-                                    Text("Sending...")
+                                    Text("Sending")
                                 }
                                 .frame(maxWidth: .infinity)
                             } else {
@@ -82,7 +82,7 @@ struct JobApplicationView: View {
                 .background(KelmahTheme.background.ignoresSafeArea())
             }
         }
-        .navigationTitle(userRole == .hirer ? "Hiring Mode" : "Apply Now")
+        .navigationTitle("Apply Now")
         .navigationBarTitleDisplayMode(.inline)
         .task(id: jobId) {
             guard userRole == .worker else { return }

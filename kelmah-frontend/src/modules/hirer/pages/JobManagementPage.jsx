@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Helmet } from 'react-helmet-async';
 import {
   Box,
@@ -60,13 +60,11 @@ import {
   GroupAdd as InviteIcon,
 } from '@mui/icons-material';
 import {
-  fetchHirerJobs,
   updateJobStatus,
   deleteHirerJob,
-  selectHirerLoading,
-  selectHirerError,
 } from '../services/hirerSlice';
 import { formatJobLocation } from '../../../utils/formatters';
+import { api } from '../../../services/apiClient';
 
 // Visibility chip — tells the hirer whether the job appears on the public Jobs page
 const VisibilityChip = ({ visibility }) => {
@@ -152,16 +150,16 @@ const JobManagementPage = () => {
   const dispatch = useDispatch();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  // Redux state
-  const jobsByStatus = useSelector((state) => state.hirer.jobs);
-  const loading = useSelector(selectHirerLoading('jobs'));
-  const error = useSelector(selectHirerError('jobs'));
-  const jobs = useMemo(
-    () => Object.values(jobsByStatus).flat(),
-    [jobsByStatus],
-  );
+  const emptyStatusCounts = useMemo(() => ({
+    open: 0,
+    'in-progress': 0,
+    completed: 0,
+    cancelled: 0,
+    draft: 0,
+  }), []);
 
   // Local state
+  const [jobs, setJobs] = useState([]);
   const [tabValue, setTabValue] = useState(0);
   const [searchText, setSearchText] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
@@ -171,17 +169,10 @@ const JobManagementPage = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [uiMessage, setUiMessage] = useState(null);
-
-  // Single consolidated fetch — replaces 5 separate per-status calls (AUD2-M09 fix).
-  // The 'all' thunk requests /api/jobs/my-jobs?limit=200 with no status filter and the
-  // reducer distributes results into the correct per-status buckets.
-  useEffect(() => {
-    dispatch(fetchHirerJobs('all'));
-  }, [dispatch]);
-
-  const handleRefresh = () => {
-    dispatch(fetchHirerJobs('all'));
-  };
+  const [statusCounts, setStatusCounts] = useState(emptyStatusCounts);
+  const [totalJobs, setTotalJobs] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Tab statuses (canonical)
   const tabStatuses = [
@@ -193,31 +184,63 @@ const JobManagementPage = () => {
     'draft',
   ];
 
-  // Memoize status counts to avoid repeated .filter() calls per render
-  const statusCounts = useMemo(() => {
-    const counts = { open: 0, 'in-progress': 0, completed: 0, cancelled: 0, draft: 0 };
-    for (const job of jobs) {
-      if (counts[job.status] !== undefined) counts[job.status]++;
+  const activeStatus = tabStatuses[tabValue];
+
+  const loadJobs = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const params = {
+        role: 'hirer',
+        page: page + 1,
+        limit: rowsPerPage,
+      };
+
+      if (activeStatus !== 'all') {
+        params.status = activeStatus;
+      }
+
+      const trimmedSearch = searchText.trim();
+      if (trimmedSearch) {
+        params.search = trimmedSearch;
+      }
+
+      const response = await api.get('/jobs/my-jobs', { params });
+      const payload = response.data?.data || {};
+      const pagination = payload.pagination || response.data?.meta?.pagination || {};
+      const counts = response.data?.meta?.countsByStatus || {};
+
+      setJobs(Array.isArray(payload.items) ? payload.items : []);
+      setTotalJobs(Number(pagination.total) || 0);
+      setStatusCounts({
+        open: Number(counts.open) || 0,
+        'in-progress': Number(counts['in-progress']) || 0,
+        completed: Number(counts.completed) || 0,
+        cancelled: Number(counts.cancelled) || 0,
+        draft: Number(counts.draft) || 0,
+      });
+    } catch (loadError) {
+      setJobs([]);
+      setTotalJobs(0);
+      setStatusCounts(emptyStatusCounts);
+      setError(loadError?.response?.data?.message || loadError.message || 'Failed to fetch jobs');
+    } finally {
+      setLoading(false);
     }
-    return counts;
-  }, [jobs]);
+  }, [activeStatus, emptyStatusCounts, page, rowsPerPage, searchText]);
 
-  // Filter jobs based on tab and search
-  const filteredJobs = jobs.filter((job) => {
-    const matchesTab = tabValue === 0 || job.status === tabStatuses[tabValue];
-    const locationStr = formatJobLocation(job.location);
-    const matchesSearch =
-      searchText === '' ||
-      job.title.toLowerCase().includes(searchText.toLowerCase()) ||
-      locationStr.toLowerCase().includes(searchText.toLowerCase());
+  useEffect(() => {
+    loadJobs();
+  }, [loadJobs]);
 
-    return matchesTab && matchesSearch;
-  });
+  const handleRefresh = () => {
+    loadJobs();
+  };
 
-  // Paginated jobs
-  const paginatedJobs = filteredJobs.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage,
+  const allJobsCount = useMemo(
+    () => Object.values(statusCounts).reduce((sum, count) => sum + count, 0),
+    [statusCounts],
   );
 
   // Handlers
@@ -288,7 +311,7 @@ const JobManagementPage = () => {
         .unwrap()
         .then(() => {
           setUiMessage({ text: `Job status updated to ${status}`, severity: 'success' });
-          dispatch(fetchHirerJobs('all')); // refresh the list
+          loadJobs();
         })
         .catch((err) => setUiMessage({ text: err?.message || 'Failed to update status', severity: 'error' }));
     }
@@ -302,7 +325,7 @@ const JobManagementPage = () => {
         .unwrap()
         .then(() => {
           setUiMessage({ text: 'Job deleted successfully', severity: 'success' });
-          dispatch(fetchHirerJobs('all')); // refresh the list
+          loadJobs();
         })
         .catch((err) => setUiMessage({ text: err?.message || 'Failed to delete job', severity: 'error' }))
         .finally(() => {
@@ -447,7 +470,7 @@ const JobManagementPage = () => {
           >
             {isMobile
               ? `${privateCount} job${privateCount > 1 ? 's' : ''} not visible publicly. Check the 🔒 badge.`
-              : `${privateCount} of your ${jobs.length} jobs ${privateCount > 1 ? 'are' : 'is'} not visible on the public Jobs page. Jobs marked 🔒 Private won't be found by workers. Look for the visibility badge on each job.`}
+              : `${privateCount} of the ${totalJobs} job${totalJobs !== 1 ? 's' : ''} in this view ${privateCount > 1 ? 'are' : 'is'} not visible on the public Jobs page. Jobs marked 🔒 Private won't be found by workers. Look for the visibility badge on each job.`}
           </Alert>
         );
       })()}
@@ -499,7 +522,7 @@ const JobManagementPage = () => {
         </Alert>
       )}
 
-      {/* Data consistency warning - shows when API returned data but display shows 0 */}
+      {/* Empty-state helper for the current filtered page */}
       {!loading && jobs.length === 0 && !error && (
         <Alert
           severity="info"
@@ -512,7 +535,7 @@ const JobManagementPage = () => {
         >
           {isMobile 
             ? 'No jobs yet. Tap + New Job to create one!' 
-            : 'Loading your jobs... If you\'ve posted jobs and don\'t see them, try refreshing or contact support.'}
+            : 'No jobs found for this view. Adjust the filters, refresh, or post a new job.'}
         </Alert>
       )}
 
@@ -595,9 +618,9 @@ const JobManagementPage = () => {
             label={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <span>All</span>
-                {jobs.length > 0 && (
+                {allJobsCount > 0 && (
                   <Chip
-                    label={jobs.length}
+                    label={allJobsCount}
                     size="small"
                     sx={{ height: 18, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
                   />
@@ -687,7 +710,7 @@ const JobManagementPage = () => {
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
               <CircularProgress size={32} />
             </Box>
-          ) : filteredJobs.length === 0 ? (
+          ) : jobs.length === 0 ? (
             <Box
               sx={{
                 display: 'flex',
@@ -698,28 +721,28 @@ const JobManagementPage = () => {
               }}
             >
               <WarningIcon
-                sx={{ fontSize: { xs: 40, md: 48 }, color: jobs.length > 0 ? 'warning.main' : 'text.secondary', mb: 2 }}
+                sx={{ fontSize: { xs: 40, md: 48 }, color: allJobsCount > 0 ? 'warning.main' : 'text.secondary', mb: 2 }}
               />
               <Typography variant={isMobile ? 'body1' : 'h6'} fontWeight={500} gutterBottom textAlign="center">
-                {jobs.length > 0 && filteredJobs.length === 0
+                {allJobsCount > 0
                   ? 'No jobs match current filter'
                   : 'No jobs yet'}
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom sx={{ textAlign: 'center', maxWidth: 300, px: 2 }}>
                 {searchText
                   ? 'Try different search terms.'
-                  : jobs.length > 0 && tabValue !== 0
-                    ? `${jobs.length} job${jobs.length !== 1 ? 's' : ''} in other tabs.`
+                  : allJobsCount > 0 && tabValue !== 0
+                    ? `${allJobsCount} job${allJobsCount !== 1 ? 's' : ''} in other tabs.`
                     : 'Create your first job posting!'}
               </Typography>
-              {jobs.length > 0 && tabValue !== 0 && (
+              {allJobsCount > 0 && tabValue !== 0 && (
                 <Button
                   variant="outlined"
                   size="small"
                   onClick={() => setTabValue(0)}
                   sx={{ mt: 2 }}
                 >
-                  View All ({jobs.length})
+                  View All ({allJobsCount})
                 </Button>
               )}
               <Button
@@ -735,18 +758,27 @@ const JobManagementPage = () => {
           ) : isMobile ? (
             /* Mobile: Card-based layout */
             <>
-              {paginatedJobs.map((job) => (
+              {jobs.map((job) => (
                 <MobileJobCard key={job.id || job._id} job={job} />
               ))}
-              {filteredJobs.length > rowsPerPage && (
+              {totalJobs > rowsPerPage && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                   <Button
                     variant="outlined"
                     size="small"
-                    onClick={() => setRowsPerPage(prev => prev + 10)}
-                    disabled={paginatedJobs.length >= filteredJobs.length}
+                    onClick={() => setPage((prev) => Math.max(0, prev - 1))}
+                    disabled={page === 0}
+                    sx={{ mr: 1 }}
                   >
-                    Load More ({filteredJobs.length - paginatedJobs.length} remaining)
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => setPage((prev) => prev + 1)}
+                    disabled={(page + 1) * rowsPerPage >= totalJobs}
+                  >
+                    Next
                   </Button>
                 </Box>
               )}
@@ -767,7 +799,7 @@ const JobManagementPage = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {paginatedJobs.map((job) => (
+                    {jobs.map((job) => (
                         <TableRow
                           key={job.id || job._id}
                           sx={{
@@ -871,7 +903,7 @@ const JobManagementPage = () => {
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25]}
                 component="div"
-                count={filteredJobs.length}
+                count={totalJobs}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}

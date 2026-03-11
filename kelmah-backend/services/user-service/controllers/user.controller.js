@@ -587,7 +587,7 @@ const buildProfileCompletenessPayload = ({ profile, credentials, portfolio, work
 
   const requiredCompletion = Math.round((completedRequired / PROFILE_COMPLETENESS_REQUIRED_FIELDS.length) * 100);
   const optionalCompletion = Math.round((completedOptional / PROFILE_COMPLETENESS_OPTIONAL_FIELDS.length) * 100);
-  const completionPercentage = Math.round((requiredCompletion * 0.7) + (optionalCompletion * 0.3));
+  const completionPercentage = requiredCompletion;
 
   const recommendations = [];
   if (missingRequired.includes('bio')) {

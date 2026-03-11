@@ -6,13 +6,49 @@
 const { Review, Job, Application, User, WorkerRating } = require('../models');
 const { logger } = require('../utils/logger');
 
-const toObjectIdSafe = (value) => value;
+const mongoose = require('mongoose');
+
+const toObjectIdSafe = (value) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  const normalized = typeof value === 'string' ? value.trim() : value;
+  if (!normalized) {
+    return null;
+  }
+
+  return mongoose.Types.ObjectId.isValid(normalized)
+    ? new mongoose.Types.ObjectId(normalized)
+    : normalized;
+};
 const toIdString = (value) => {
   if (value === null || value === undefined) {
     return null;
   }
 
   return typeof value?.toString === 'function' ? value.toString() : String(value);
+};
+
+const shouldExposeReviewerPII = (req) => Boolean(req.user?.id || req.user?._id);
+
+const sanitizeReviewerForPublic = (review = {}) => ({
+  ...review,
+  reviewer: review.reviewer
+    ? {
+        isVerified: Boolean(review.reviewer.isVerified),
+      }
+    : null,
+});
+
+const maybeSanitizeReviewCollection = (req, reviews = []) =>
+  shouldExposeReviewerPII(req) ? reviews : reviews.map((review) => sanitizeReviewerForPublic(review));
+
+const maybeSanitizeReview = (req, review = null) => {
+  if (!review) {
+    return review;
+  }
+  return shouldExposeReviewerPII(req) ? review : sanitizeReviewerForPublic(review);
 };
 
 const formatJobDuration = (duration) => {
@@ -197,7 +233,11 @@ exports.getWorkerReviews = async (req, res) => {
     } = req.query;
 
     // Build query
-    const query = { reviewee: toObjectIdSafe(workerId) };
+    const revieweeId = toObjectIdSafe(workerId);
+    if (!revieweeId) {
+      return res.status(400).json({ success: false, message: 'Invalid worker ID' });
+    }
+    const query = { reviewee: revieweeId };
     if (status && status !== 'all') query.status = status;
     if (category) query.jobCategory = category;
     if (minRating) query.rating = { $gte: parseInt(minRating) };
@@ -222,7 +262,7 @@ exports.getWorkerReviews = async (req, res) => {
     return res.json({
       success: true,
       data: {
-        reviews,
+        reviews: maybeSanitizeReviewCollection(req, reviews),
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
@@ -248,7 +288,11 @@ exports.getJobReviews = async (req, res) => {
     const { jobId } = req.params;
     const { page = 1, limit = 10, status = 'approved' } = req.query;
 
-    const query = { job: toObjectIdSafe(jobId) };
+    const normalizedJobId = toObjectIdSafe(jobId);
+    if (!normalizedJobId) {
+      return res.status(400).json({ success: false, message: 'Invalid job ID' });
+    }
+    const query = { job: normalizedJobId };
     if (status && status !== 'all') query.status = status;
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
@@ -266,7 +310,7 @@ exports.getJobReviews = async (req, res) => {
     return res.json({
       success: true,
       data: {
-        reviews,
+        reviews: maybeSanitizeReviewCollection(req, reviews),
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
@@ -290,7 +334,11 @@ exports.getUserReviews = async (req, res) => {
   try {
     const { userId } = req.params;
     const { page = 1, limit = 10, status = 'approved' } = req.query;
-    const query = { reviewer: toObjectIdSafe(userId) };
+    const normalizedUserId = toObjectIdSafe(userId);
+    if (!normalizedUserId) {
+      return res.status(400).json({ success: false, message: 'Invalid user ID' });
+    }
+    const query = { reviewer: normalizedUserId };
     if (status && status !== 'all') query.status = status;
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
@@ -308,7 +356,7 @@ exports.getUserReviews = async (req, res) => {
     return res.json({
       success: true,
       data: {
-        reviews,
+        reviews: maybeSanitizeReviewCollection(req, reviews),
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
@@ -332,7 +380,12 @@ exports.getReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
 
-    const review = await Review.findById(reviewId)
+    const normalizedReviewId = toObjectIdSafe(reviewId);
+    if (!normalizedReviewId) {
+      return res.status(400).json({ success: false, message: 'Invalid review ID' });
+    }
+
+    const review = await Review.findById(normalizedReviewId)
       .populate('reviewee', 'firstName lastName profilePicture profession')
       .populate('reviewer', 'firstName lastName profilePicture isVerified')
       .populate('job', 'title completedDate budget')
@@ -347,7 +400,7 @@ exports.getReview = async (req, res) => {
 
     return res.json({
       success: true,
-      data: review
+      data: maybeSanitizeReview(req, review)
     });
 
   } catch (error) {
@@ -497,12 +550,23 @@ exports.reportReview = async (req, res) => {
       });
     }
 
-    // Use $addToSet to prevent duplicate reports from the same user
     const REPORT_THRESHOLD = 3;
+    const existingReport = await Review.findOne({ _id: reviewId, 'reporters.userId': userId }).lean();
+    if (existingReport) {
+      return res.json({ success: true, message: 'Review already reported' });
+    }
+
     const review = await Review.findByIdAndUpdate(
       reviewId,
       {
-        $addToSet: { reporters: userId }
+        $push: {
+          reporters: {
+            userId,
+            reason: reason.trim(),
+            timestamp: new Date(),
+          },
+        },
+        $inc: { reportCount: 1 },
       },
       { new: true }
     );
@@ -551,21 +615,25 @@ exports.checkEligibility = async (req, res) => {
       });
     }
 
-    const directCompletedJobs = await Job.find({
+    let directCompletedJobsQuery = Job.find({
       hirer: reviewerId,
       worker: workerId,
       status: 'completed',
       ...(jobId ? { _id: jobId } : {}),
     })
-      .select('_id title')
-      .limit(500)
-      .lean();
+      .select('_id title');
+
+    if (typeof directCompletedJobsQuery.limit === 'function') {
+      directCompletedJobsQuery = directCompletedJobsQuery.limit(500);
+    }
+
+    const directCompletedJobs = await directCompletedJobsQuery.lean();
 
     // Legacy fallback: older records may have a completed job without the
     // `job.worker` mirror but still retain an accepted application.
     let fallbackEligibleJobs = [];
     if (!jobId || directCompletedJobs.length === 0) {
-      const acceptedApplications = await Application.find({
+      let acceptedApplicationsQuery = Application.find({
         worker: workerId,
         status: 'accepted',
       })
@@ -577,9 +645,13 @@ exports.checkEligibility = async (req, res) => {
             status: 'completed',
             ...(jobId ? { _id: jobId } : {}),
           },
-        })
-        .limit(500)
-        .lean();
+        });
+
+      if (typeof acceptedApplicationsQuery.limit === 'function') {
+        acceptedApplicationsQuery = acceptedApplicationsQuery.limit(500);
+      }
+
+      const acceptedApplications = await acceptedApplicationsQuery.lean();
 
       fallbackEligibleJobs = acceptedApplications
         .map((application) => application.job)
@@ -655,14 +727,18 @@ exports.getHirerReviewCandidates = async (req, res) => {
       });
     }
 
-    const completedJobs = await Job.find({
+    let completedJobsQuery = Job.find({
       hirer: reviewerId,
       status: 'completed',
     })
       .select('_id title budget duration completedDate updatedAt createdAt worker')
-      .sort({ completedDate: -1, updatedAt: -1, createdAt: -1 })
-      .limit(500)
-      .lean();
+      .sort({ completedDate: -1, updatedAt: -1, createdAt: -1 });
+
+    if (typeof completedJobsQuery.limit === 'function') {
+      completedJobsQuery = completedJobsQuery.limit(500);
+    }
+
+    const completedJobs = await completedJobsQuery.lean();
 
     if (!Array.isArray(completedJobs) || completedJobs.length === 0) {
       return res.json({ success: true, data: [] });

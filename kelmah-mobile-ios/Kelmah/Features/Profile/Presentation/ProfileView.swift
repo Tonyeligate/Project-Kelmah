@@ -51,11 +51,11 @@ final class ProfileViewModel: ObservableObject {
         guard currentPassword.isEmpty == false,
               newPassword.isEmpty == false,
               confirmPassword.isEmpty == false else {
-            errorMessage = "Complete all password fields"
+            errorMessage = "Fill in all password boxes"
             return false
         }
         guard PasswordPolicy.isStrong(newPassword) else {
-            errorMessage = "New \(PasswordPolicy.requirementMessage.lowercased())"
+            errorMessage = PasswordPolicy.requirementMessage
             return false
         }
         guard newPassword == confirmPassword else {
@@ -109,10 +109,10 @@ struct ProfileView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(sessionStore.currentUser?.displayName ?? "Kelmah User")
                         .font(.title2.bold())
-                    Text(sessionStore.currentUser?.email ?? "Email unavailable")
+                    Text(sessionStore.currentUser?.email ?? "No email added")
                         .foregroundStyle(.secondary)
                     Text("Role: \((sessionStore.currentUser?.role ?? "worker").capitalized)")
-                    Text(sessionStore.currentUser?.isEmailVerified == true ? "Email verified" : "Email verification pending")
+                    Text(sessionStore.currentUser?.isEmailVerified == true ? "Email verified" : "Email not verified yet")
                         .foregroundStyle(sessionStore.currentUser?.isEmailVerified == true ? KelmahTheme.primary : .red)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -122,9 +122,9 @@ struct ProfileView: View {
 
                 if sessionStore.currentUser?.kelmahUserRole == .worker {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Recommendation signals")
+                        Text("Your work details")
                             .font(.headline)
-                        Text("These details shape how Kelmah ranks and explains your mobile job recommendations.")
+                        Text("These details help Kelmah show you better jobs.")
                             .foregroundStyle(.secondary)
 
                         if viewModel.isLoadingProfileSignals {
@@ -135,13 +135,13 @@ struct ProfileView: View {
                             }
                             .padding(.vertical, 12)
                         } else if let profileErrorMessage = viewModel.profileErrorMessage {
-                            Text(profileErrorMessage)
+                            Text(profileErrorMessage.isEmpty ? "We could not load your work details." : profileErrorMessage)
                                 .foregroundStyle(.red)
                                 .font(.footnote)
                             Button {
                                 Task { await viewModel.refreshProfileSignals(user: sessionStore.currentUser) }
                             } label: {
-                                Text("Retry profile sync")
+                                Text("Try again")
                                     .fontWeight(.semibold)
                                     .frame(maxWidth: .infinity)
                                     .padding()
@@ -152,7 +152,7 @@ struct ProfileView: View {
                         } else if let snapshot = viewModel.profileSnapshot {
                             WorkerProfileSignalsView(snapshot: snapshot)
                         } else {
-                            Text("Profile signals will appear here once your worker account is loaded.")
+                            Text("Your work details will show here.")
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -163,9 +163,9 @@ struct ProfileView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Security")
+                    Text("Password")
                         .font(.headline)
-                    Text("Change your password to keep your Kelmah account secure across devices.")
+                    Text("Change your password.")
                         .foregroundStyle(.secondary)
 
                     if let infoMessage = viewModel.infoMessage {
@@ -210,7 +210,7 @@ struct ProfileView: View {
                                 ProgressView()
                                     .tint(.white)
                             } else {
-                                Text("Change Password")
+                                Text("Change password")
                                     .fontWeight(.semibold)
                             }
                             Spacer()
@@ -230,7 +230,7 @@ struct ProfileView: View {
                 Button(role: .destructive) {
                     showSignOutAlert = true
                 } label: {
-                    Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+                    Label("Sign out", systemImage: "rectangle.portrait.and.arrow.right")
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -241,7 +241,7 @@ struct ProfileView: View {
                 Button(role: .destructive) {
                     showSignOutAllAlert = true
                 } label: {
-                    Label("Sign Out All Devices", systemImage: "iphone.and.arrow.forward")
+                    Label("Sign out everywhere", systemImage: "iphone.and.arrow.forward")
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -266,21 +266,21 @@ struct ProfileView: View {
             Text("You will be signed out of this device.")
         }
         // Confirm sign out (all devices)
-        .alert("Sign out all devices?", isPresented: $showSignOutAllAlert) {
+        .alert("Sign out everywhere?", isPresented: $showSignOutAllAlert) {
             Button("Sign out all", role: .destructive) {
                 Task { await sessionCoordinator.logout(logoutAll: true) }
             }
             Button("Cancel", role: .cancel) { }
         } message: {
-            Text("You will be signed out on every device where you are logged in.")
+            Text("You will be signed out everywhere.")
         }
         // Warn user before auto-logout after password change
         .alert("Password changed", isPresented: $showPasswordChangedAlert) {
-            Button("Sign out now") {
+            Button("Sign in again") {
                 Task { await sessionCoordinator.logout() }
             }
         } message: {
-            Text("Your password was changed. You will be signed out so you can log in with your new password.")
+            Text("Your password changed. Sign in again with the new password.")
         }
     }
 }
@@ -296,7 +296,7 @@ private struct WorkerProfileSignalsView: View {
                     .foregroundStyle(.red)
             }
 
-            Text(snapshot.profile.profession.nilIfEmpty ?? "Profession pending")
+            Text(snapshot.profile.profession.nilIfEmpty ?? "Add your job title")
                 .font(.title3.bold())
 
             if snapshot.profile.bio.isEmpty == false {
@@ -304,25 +304,25 @@ private struct WorkerProfileSignalsView: View {
                     .foregroundStyle(.primary)
             }
 
-            ProfileFactView(label: "Location", value: snapshot.profile.location.nilIfEmpty ?? "Add your working location")
-            ProfileFactView(label: "Rate", value: snapshot.profile.hourlyRate.map { "\(snapshot.profile.currency) \(formatRate($0))/hr" } ?? "Set an hourly rate")
+            ProfileFactView(label: "Location", value: snapshot.profile.location.nilIfEmpty ?? "Add your work area")
+            ProfileFactView(label: "Rate", value: snapshot.profile.hourlyRate.map { "\(snapshot.profile.currency) \(formatRate($0))/hr" } ?? "Add your rate")
             ProfileFactView(
                 label: "Experience",
                 value: experienceLabel(for: snapshot.profile)
             )
             ProfileFactView(
-                label: "Verification",
+                label: "Checks",
                 value: "Email \(snapshot.profile.isEmailVerified ? "verified" : "pending") • Phone \(snapshot.profile.isPhoneVerified ? "verified" : "pending")"
             )
 
             Divider()
 
-            Text("Visible skills")
+            Text("Skills people can see")
                 .font(.headline)
-            Text(snapshot.visibleSkills.isEmpty ? "Add skills so recommendation matches have enough precision." : snapshot.visibleSkills.joined(separator: " • "))
+            Text(snapshot.visibleSkills.isEmpty ? "Add skills so people can find your work." : snapshot.visibleSkills.joined(separator: " • "))
 
             ProfileFactView(
-                label: "Credentials",
+                label: "Certificates",
                 value: "\(snapshot.credentials.certifications.filter(\ .isVerified).count) verified certifications • \(snapshot.credentials.licenses.count) licenses"
             )
             ForEach(snapshot.credentials.certifications.prefix(3)) { certification in
@@ -333,7 +333,7 @@ private struct WorkerProfileSignalsView: View {
 
             Divider()
 
-            Text("Availability and completeness")
+            Text("Availability and profile")
                 .font(.headline)
             ProfileFactView(label: "Availability", value: availabilityLabel(snapshot.availability))
             ForEach(snapshot.availability.schedule.prefix(3)) { day in
@@ -343,7 +343,7 @@ private struct WorkerProfileSignalsView: View {
             }
             ProgressView(value: Double(snapshot.completeness.completionPercentage), total: 100)
                 .tint(KelmahTheme.primary)
-            Text("\(snapshot.completeness.completionPercentage)% complete • required \(snapshot.completeness.requiredCompletion)% • optional \(snapshot.completeness.optionalCompletion)%")
+            Text("Profile done: \(snapshot.completeness.completionPercentage)% • needed \(snapshot.completeness.requiredCompletion)% • extra \(snapshot.completeness.optionalCompletion)%")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
             ForEach(snapshot.completeness.recommendations.prefix(3), id: \.self) { recommendation in
@@ -354,12 +354,12 @@ private struct WorkerProfileSignalsView: View {
 
             Divider()
 
-            Text("Portfolio proof")
+            Text("Past work")
                 .font(.headline)
-            Text("\(snapshot.portfolio.publishedCount) published items out of \(snapshot.portfolio.totalCount)")
+            Text("\(snapshot.portfolio.publishedCount) shown out of \(snapshot.portfolio.totalCount)")
                 .foregroundStyle(.secondary)
             if snapshot.portfolio.items.isEmpty {
-                Text("Add portfolio work to support recommendation trust and conversion.")
+                Text("Add past work so hirers can trust your profile.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             } else {
@@ -373,7 +373,7 @@ private struct WorkerProfileSignalsView: View {
     }
 
     private func experienceLabel(for profile: WorkerRecommendationProfile) -> String {
-        let level = profile.experienceLevel?.capitalized ?? "Experience level pending"
+        let level = profile.experienceLevel?.capitalized ?? "Add your experience"
         if let years = profile.yearsOfExperience, years > 0 {
             return "\(level) • \(years)y"
         }
@@ -385,7 +385,7 @@ private struct WorkerProfileSignalsView: View {
             return "Available\(availability.nextAvailable.map { " • next \($0)" } ?? "")"
         }
         if availability.status == "not_set" {
-            return availability.message ?? "Availability not configured"
+            return availability.message ?? "Add when you can work"
         }
         return "Unavailable\(availability.nextAvailable.map { " • next \($0)" } ?? "")"
     }

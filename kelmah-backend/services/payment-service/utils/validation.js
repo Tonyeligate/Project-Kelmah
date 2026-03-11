@@ -2,16 +2,25 @@ const Joi = require("joi");
 
 // Transaction validation schema
 const transactionSchema = Joi.object({
-  amount: Joi.number().required().min(0),
+  amount: Joi.number().required().min(0.01),
   currency: Joi.string().default("USD"),
   type: Joi.string()
     .valid("payment", "refund", "withdrawal", "deposit")
     .required(),
-  paymentMethod: Joi.string().required(),
-  recipient: Joi.string().when("type", {
-    is: "payment",
+  paymentMethod: Joi.string().when("type", {
+    is: Joi.valid("payment", "withdrawal", "deposit"),
     then: Joi.required(),
-    otherwise: Joi.forbidden(),
+    otherwise: Joi.optional(),
+  }),
+  recipient: Joi.string().when("type", {
+    is: Joi.valid("payment", "refund"),
+    then: Joi.required(),
+    otherwise: Joi.optional(),
+  }),
+  relatedTransaction: Joi.string().when("type", {
+    is: "refund",
+    then: Joi.required(),
+    otherwise: Joi.optional(),
   }),
   relatedContract: Joi.string(),
   relatedJob: Joi.string(),

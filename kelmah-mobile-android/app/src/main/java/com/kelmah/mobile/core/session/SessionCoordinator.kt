@@ -55,11 +55,11 @@ class SessionCoordinator @Inject constructor(
                             _sessionState.value = SessionState.Authenticated(retriedUserResult.data)
                         }
                         is ApiResult.Error -> {
-                            recoverOrClear(retriedUserResult.message)
+                            recoverOrClear()
                         }
                     }
                 } else {
-                    recoverOrClear(currentUserResult.message)
+                    recoverOrClear()
                 }
             }
         }
@@ -99,14 +99,14 @@ class SessionCoordinator @Inject constructor(
                     tokenManager.clearSession()
                     _sessionState.value = SessionState.Unauthenticated
                 } else {
-                    recoverOrClear(refreshResult.message)
+                    recoverOrClear()
                 }
                 false
             }
         }
     }
 
-    private fun recoverOrClear(message: String) {
+    private fun recoverOrClear() {
         val cachedUser = tokenManager.getStoredSession()?.user
         if (cachedUser != null) {
             _sessionState.value = SessionState.Authenticated(

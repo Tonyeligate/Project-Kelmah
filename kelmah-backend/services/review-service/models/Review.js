@@ -63,8 +63,19 @@ const ReviewSchema = new Schema(
     },
     reporters: [
       {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: 'User',
+        },
+        reason: {
+          type: String,
+          trim: true,
+          default: '',
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
       },
     ],
     moderationNotes: [

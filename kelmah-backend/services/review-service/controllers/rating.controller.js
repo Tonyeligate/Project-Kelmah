@@ -46,10 +46,10 @@ const buildRatingsBreakdown = (averageRating) => {
   const rounded = roundRating(averageRating);
   return {
     overall: rounded,
-    quality: rounded,
-    communication: rounded,
-    timeliness: rounded,
-    professionalism: rounded,
+    quality: 0,
+    communication: 0,
+    timeliness: 0,
+    professionalism: 0,
   };
 };
 

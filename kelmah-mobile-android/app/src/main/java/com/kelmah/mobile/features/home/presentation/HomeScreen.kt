@@ -60,7 +60,7 @@ fun HomeScreen(
     val notificationsState by notificationsViewModel.uiState.collectAsStateWithLifecycle()
     val displayName = currentUser?.displayName ?: "Kelmah ${role.title}"
     val headline = if (role == KelmahUserRole.HIRER) {
-        "Track active hiring work, unread follow-up, and fresh alerts from one screen."
+        "See active jobs, new chats, and alerts in one place."
     } else {
         "See your jobs, saved jobs, messages, and alerts in one place."
     }
@@ -101,13 +101,13 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(
-                        text = if (role == KelmahUserRole.HIRER) "Hirer command view" else "Your work today",
+                        text = if (role == KelmahUserRole.HIRER) "Hiring overview" else "Your work today",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
                         text = if (role == KelmahUserRole.HIRER) {
-                            "Use this surface to spot active jobs that need attention, keep candidate conversations moving, and react to alerts faster."
+                            "Check jobs that need attention, keep chats moving, and open alerts faster."
                         } else {
                             "Check good jobs, saved jobs, and new alerts. Then open a job and apply."
                         },
@@ -120,7 +120,7 @@ fun HomeScreen(
                         )
                         SummaryCard(
                             modifier = Modifier.weight(1f),
-                            label = if (role == KelmahUserRole.HIRER) "Unread chats" else "Saved jobs",
+                            label = if (role == KelmahUserRole.HIRER) "New chats" else "Saved jobs",
                             value = if (role == KelmahUserRole.HIRER) unreadMessages else savedJobs,
                         )
                         SummaryCard(
@@ -131,7 +131,7 @@ fun HomeScreen(
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Button(onClick = onBrowseJobs, modifier = Modifier.weight(1f)) {
-                            Text(if (role == KelmahUserRole.HIRER) "Open Hiring Market" else "Find Work")
+                            Text(if (role == KelmahUserRole.HIRER) "Open Market" else "Find Work")
                         }
                         OutlinedButton(onClick = onOpenMessages, modifier = Modifier.weight(1f)) {
                             Text("Messages")
@@ -238,7 +238,7 @@ fun HomeScreen(
         }
 
         item {
-            SectionHeader(title = if (role == KelmahUserRole.WORKER) "Messages" else "Recent conversations", actionLabel = if (role == KelmahUserRole.WORKER) "Open" else "Open messages", onAction = onOpenMessages)
+            SectionHeader(title = "Messages", actionLabel = if (role == KelmahUserRole.WORKER) "Open" else "Open messages", onAction = onOpenMessages)
         }
 
         if (messagesState.conversations.isEmpty()) {
@@ -255,7 +255,7 @@ fun HomeScreen(
         }
 
         item {
-            SectionHeader(title = if (role == KelmahUserRole.WORKER) "Alerts" else "Recent alerts", actionLabel = if (role == KelmahUserRole.WORKER) "Open" else "Open alerts", onAction = onOpenNotifications)
+            SectionHeader(title = "Alerts", actionLabel = if (role == KelmahUserRole.WORKER) "Open" else "Open alerts", onAction = onOpenNotifications)
         }
 
         if (notificationsState.notifications.isEmpty()) {
@@ -430,6 +430,11 @@ private fun ConversationPreviewCard(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Text(
+                text = "Tap to open chat",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
     }
 }
@@ -480,6 +485,11 @@ private fun NotificationPreviewCard(
                     )
                 }
             }
+            Text(
+                text = "Tap to open alert",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
     }
 }

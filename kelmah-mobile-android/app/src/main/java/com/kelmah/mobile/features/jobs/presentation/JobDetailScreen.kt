@@ -12,10 +12,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -67,10 +67,10 @@ fun JobDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (userRole == KelmahUserRole.HIRER) "Market Listing" else "Job Details") },
+                title = { Text("Job Details") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
                     }
                 },
             )
@@ -91,7 +91,7 @@ fun JobDetailScreen(
             return@Scaffold
         }
 
-        val job = uiState.selectedJob ?: return@Scaffold
+        val job = uiState.selectedJob
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -156,7 +156,7 @@ fun JobDetailScreen(
                             onClick = { onApply(job.summary.id) },
                             modifier = Modifier.weight(1f),
                         ) {
-                            Icon(Icons.Outlined.Send, contentDescription = null)
+                            Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Apply Now")
                         }
@@ -170,7 +170,7 @@ fun JobDetailScreen(
                     )
                 } else {
                     Text(
-                        text = "Hirer mode keeps this view focused on market research and pricing review. Worker application steps stay hidden for hirer accounts.",
+                        text = "Hirer mode is for market review. Workers are the ones who can apply.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

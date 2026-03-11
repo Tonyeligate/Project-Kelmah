@@ -187,8 +187,13 @@ router.post('/vodafone', express.raw({ type: 'application/json' }), async (req, 
     let webhookData;
     try { webhookData = JSON.parse(payload); } catch { return res.status(400).send('Invalid JSON'); }
 
+    if (!vodafoneCash) {
+      logger.error('SECURITY: Vodafone webhook service unavailable - rejecting webhook');
+      return res.status(503).json({ success: false, error: 'Vodafone webhook verification unavailable' });
+    }
+
     // Verify signature
-    if (vodafoneCash && !vodafoneCash.verifyWebhookSignature(webhookData, signature)) {
+    if (!vodafoneCash.verifyWebhookSignature(webhookData, signature)) {
       return res.status(400).json({ success: false, error: 'Invalid webhook signature' });
     }
 

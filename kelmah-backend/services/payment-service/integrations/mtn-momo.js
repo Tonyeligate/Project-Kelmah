@@ -396,6 +396,42 @@ class MTNMoMoService {
   }
 
   /**
+   * Refund by sending a compensating transfer back to the original payer.
+   * MTN's current integration surface in this service does not expose a native refund endpoint.
+   */
+  async refundPayment(refundData) {
+    const {
+      amount,
+      phoneNumber,
+      externalId,
+      payerMessage,
+      payeeNote,
+      originalReferenceId,
+    } = refundData;
+
+    const transferResult = await this.transfer({
+      amount,
+      phoneNumber,
+      externalId,
+      payerMessage: payerMessage || 'Kelmah refund',
+      payeeNote: payeeNote || 'Refund return transfer',
+    });
+
+    if (!transferResult.success) {
+      return transferResult;
+    }
+
+    return {
+      success: true,
+      data: {
+        ...transferResult.data,
+        originalReferenceId,
+        refundMode: 'return_transfer',
+      }
+    };
+  }
+
+  /**
    * Get transfer status
    */
   async getTransferStatus(referenceId) {
@@ -505,8 +541,7 @@ class MTNMoMoService {
    * This would typically use a currency conversion service
    */
   convertGHSToEUR(amountGHS) {
-    // This is a simplified conversion - use actual exchange rates in production
-    const exchangeRate = 0.076; // Approximate GHS to EUR rate
+    const exchangeRate = Number(process.env.MTN_MOMO_GHS_TO_EUR_RATE || 0.076);
     return Math.round(amountGHS * exchangeRate * 100) / 100;
   }
 
@@ -514,7 +549,7 @@ class MTNMoMoService {
    * Convert EUR to GHS
    */
   convertEURToGHS(amountEUR) {
-    const exchangeRate = 13.16; // Approximate EUR to GHS rate
+    const exchangeRate = Number(process.env.MTN_MOMO_EUR_TO_GHS_RATE || 13.16);
     return Math.round(amountEUR * exchangeRate * 100) / 100;
   }
 

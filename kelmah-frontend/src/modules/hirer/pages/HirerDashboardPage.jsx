@@ -66,6 +66,7 @@ import {
 } from '../services/hirerSlice';
 import RecentActivityFeed from '../components/RecentActivityFeed';
 import dashboardService from '../../dashboard/services/dashboardService';
+import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
 
 /* ---------- Extracted sub-component (stable reference) ---------- */
 const LoadingOverviewSkeleton = () => (
@@ -100,8 +101,6 @@ const HirerDashboardPage = () => {
   const fetchPromiseRef = useRef(null);
   const isMountedRef = useRef(true);
   const applicationRecordsRef = useRef({});
-  const autoRefreshRef = useRef(null); // DASH-001: Auto-refresh interval ref
-
   // Memoize curried selectors to prevent new function references every render
   const selectActive = useMemo(() => selectHirerJobs('active'), []);
   const selectCompleted = useMemo(() => selectHirerJobs('completed'), []);
@@ -326,35 +325,19 @@ const HirerDashboardPage = () => {
     }
   };
 
-  // DASH-001: Auto-refresh interval for real-time updates
-  useEffect(() => {
-    if (!autoRefreshEnabled || isHydrating) {
-      return;
-    }
-
-    autoRefreshRef.current = setInterval(async () => {
-      // Skip refresh when tab is in the background — saves bandwidth and credits
-      if (!isMountedRef.current || refreshing || document.hidden) {
-        return;
-      }
-
-      try {
-        // Silent background refresh
-        await dispatch(fetchHirerJobs('active')).unwrap();
+  useVisibilityPolling({
+    enabled: autoRefreshEnabled && !isHydrating,
+    intervalMs: AUTO_REFRESH_INTERVAL_MS,
+    maxIntervalMs: AUTO_REFRESH_INTERVAL_MS * 4,
+    shouldPause: () => refreshing || !isMountedRef.current,
+    callback: async () => {
+      await dispatch(fetchHirerJobs('active')).unwrap();
+      if (isMountedRef.current) {
         setLastRefreshed(Date.now());
         setTimeSinceRefresh('Just now');
-      } catch (err) {
-        // Silent failure on background refresh — intentional
-        // Don't show error for background refresh failures
       }
-    }, AUTO_REFRESH_INTERVAL_MS);
-
-    return () => {
-      if (autoRefreshRef.current) {
-        clearInterval(autoRefreshRef.current);
-      }
-    };
-  }, [autoRefreshEnabled, isHydrating, dispatch, refreshing]);
+    },
+  });
 
   // DASH-001: Update "time since refresh" display
   useEffect(() => {

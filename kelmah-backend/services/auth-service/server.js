@@ -10,6 +10,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const { createOriginMatcher } = require('../../shared/utils/corsPolicy');
 // removed morgan; using shared JSON logger
 const cookieParser = require("cookie-parser");
 const timingSafeCompare = require('./utils/timingSafeCompare');
@@ -77,28 +78,12 @@ app.use(cookieParser());
 app.use(helmet());
 
 // CORS configuration for production and development (env-driven with Vercel preview support)
+const { isAllowedOrigin } = createOriginMatcher();
+
 const corsOptions = {
   origin: function (origin, callback) {
-    const envAllow = (process.env.ALLOWED_ORIGINS || '')
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:5173',
-      process.env.FRONTEND_URL,
-      ...envAllow,
-    ].filter(Boolean);
-
-    const vercelPatterns = [
-      /^https:\/\/kelmah-[a-z0-9-]+\.vercel\.app$/,
-      /^https:\/\/.*-kelmahs-projects\.vercel\.app$/,
-      /^https:\/\/project-kelmah.*\.vercel\.app$/,
-      /^https:\/\/kelmah-frontend.*\.vercel\.app$/,
-    ];
-
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin) || vercelPatterns.some((re) => re.test(origin))) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
     logger.warn(`CORS blocked origin: ${origin}`);

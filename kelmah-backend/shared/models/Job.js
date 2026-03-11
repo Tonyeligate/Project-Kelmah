@@ -399,6 +399,9 @@ JobSchema.index({ category: 1 });
 JobSchema.index({ budget: 1 });
 JobSchema.index({ visibility: 1, status: 1 });
 JobSchema.index({ status: 1, visibility: 1, createdAt: -1 });
+JobSchema.index({ status: 1, 'bidding.bidStatus': 1, createdAt: -1 });
+JobSchema.index({ status: 1, skills: 1, createdAt: -1 });
+JobSchema.index({ status: 1, category: 1, createdAt: -1 });
 
 // ALGO IMPROVEMENT: Additional compound indexes for recommendation/search queries
 JobSchema.index({ 'requirements.primarySkills': 1, status: 1, visibility: 1, 'bidding.bidStatus': 1 });

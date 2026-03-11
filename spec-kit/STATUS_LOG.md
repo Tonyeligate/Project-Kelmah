@@ -2,18 +2,455 @@
 
 ---
 
-### Session: Native Worker Messaging Alerts Copy And QA Handoff March 11 2026 ✅ COMPLETED
+### Session: Hirer Applications Summary Endpoint Pass March 11 2026 🔄 IN PROGRESS
 
 **Date**: March 11, 2026  
-**Scope**: Continue the low-literacy native mobile pass on worker messaging and alerts surfaces, then produce a shorter QA handoff sheet with pass/fail fields for native testers.
+**Scope**: Replace the remaining N+1 application-management loading pattern with a dedicated hirer applications summary endpoint backed by a single server-side fan-in query.
 
 **Acceptance Criteria**
-- Worker-facing messaging and alerts screens use shorter, more direct copy across search, empty states, composer hints, unread badges, and action labels.
-- Message and notification success text is simpler in the native view-model banner/snackbar layer.
-- A short QA handoff sheet exists with pass/fail fields for iOS and Android testers.
-- Touched files are diagnostics-clean and the validation boundary is documented.
+- Hirer application management loads jobs and grouped applications through one backend endpoint instead of one request per job.
+- The new endpoint follows existing job-service auth and response conventions.
+- Frontend application management consumes the summary endpoint without changing the page’s existing interaction model.
 
 **Mapped execution surface**
+- `kelmah-backend/services/job-service/routes/job.routes.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-frontend/src/modules/hirer/services/hirerService.js`
+- `kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- `ApplicationManagementPage.jsx` still loads the full hirer job list first and then fires one applications request per non-bidding job.
+- `job-service` already has the primitives needed: authenticated hirer job ownership checks, the shared `Application` model, and per-job application queries.
+- The page state shape already matches a grouped backend payload well, so a dedicated summary endpoint can remove the N+1 pattern with a minimal frontend refactor.
+
+### Session: Gateway Search And Transaction Coverage March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Add gateway-level coverage for `/api/jobs/search` and `/api/payments/transactions`, then add an executable payment-provider verification helper so refund integrations have a repeatable validation path beyond unit tests.
+
+**Acceptance Criteria**
+- Gateway route tests cover `/api/jobs/search` query forwarding and `/api/payments/transactions` proxy configuration.
+- The payment-service test run includes the broader local suite after the new gateway coverage lands.
+- A helper exists to verify refund-capable provider wiring and optionally run provider health checks when sandbox credentials are present.
+
+**Mapped execution surface**
+- `kelmah-backend/api-gateway/routes/job.routes.test.js`
+- `kelmah-backend/api-gateway/routes/payment.routes.test.js`
+- `kelmah-backend/services/payment-service/scripts/verify-refund-providers.js`
+- `spec-kit/GATEWAY_SEARCH_TRANSACTION_COVERAGE_MAR11_2026.md`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- The gateway already has a direct-axios job route test harness, but it only covers personalized recommendations and not `/api/jobs/search` query forwarding.
+- The payment gateway routes have no dedicated tests, even though `/transactions` is now a critical contract after the refund work.
+- The payment service has local unit coverage for refund routing, but no executable helper exists to verify provider capabilities or health outside Jest.
+
+**Implementation completed**
+- Extended the gateway jobs route tests to cover `/api/jobs/search` and verify exact query-string forwarding to the job service.
+- Added dedicated payment gateway route tests for `GET /api/payments/transactions` and `POST /api/payments/transactions`, asserting correct payment-service proxy configuration.
+- Added `services/payment-service/scripts/verify-refund-providers.js` so refund-capable providers can be checked outside Jest, with optional `--health` support for sandbox-configured environments.
+
+**Validation**
+- Gateway and payment-service Jest validation passed from `kelmah-backend`:
+  - `api-gateway/routes/job.routes.test.js`
+  - `api-gateway/routes/payment.routes.test.js`
+  - `services/payment-service/tests/transaction.controller.test.js`
+  - `services/payment-service/tests/payment.test.js`
+  - `services/payment-service/tests/health.test.js`
+  - `services/payment-service/tests/escrow.controller.test.js`
+  - `services/payment-service/tests/wallet.controller.test.js`
+- Result: `7` suites passed, `13` tests passed, `0` failures.
+- Provider capability helper passed with:
+  - `node services/payment-service/scripts/verify-refund-providers.js`
+  - Confirmed local refund support wiring for `paystack`, `mtn_momo`, `vodafone_cash`, and `airtel_tigo`.
+- Environment note: `PAYSTACK_SECRET_KEY` is not configured in this workspace, so live Paystack sandbox verification remains pending credentials.
+
+### Session: Hirer Fetch-All Removal And Polling Backoff Pass March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Remove the last active `fetchHirerJobs('all')` dependency in hirer flows and harden the remaining dashboard/live polling loops with visibility-aware backoff behavior.
+
+**Acceptance Criteria**
+- Application management no longer depends on the fetch-all hirer jobs thunk.
+- Remaining dashboard and live polling loops pause when the tab is hidden and back off after failed refresh attempts.
+- The pass stays focused on active hirer/worker dashboard and live-tracking flows, with verification recorded after implementation.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx`
+- `kelmah-frontend/src/modules/hirer/services/hirerSlice.js`
+- `kelmah-frontend/src/modules/hirer/services/hirerService.js`
+- `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx`
+- `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/HirerQuickJobTrackingPage.jsx`
+- `kelmah-frontend/src/modules/quickjobs/pages/QuickJobTrackingPage.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- `ApplicationManagementPage.jsx` is the only remaining active hirer page still dispatching `fetchHirerJobs('all')`.
+- Hirer and worker dashboards both still contain interval-driven refresh loops that skip hidden tabs but do not back off after consecutive failures.
+- Quick-job tracking pages still poll every 30 seconds with no visibility listener or retry backoff.
+
+**Implementation completed**
+- Removed the last active `fetchHirerJobs('all')` consumer by moving `ApplicationManagementPage.jsx` onto a page-local hirer job loader backed by new paginated helpers in `hirerService.js`.
+- Added shared `useVisibilityPolling` in `kelmah-frontend/src/hooks/useVisibilityPolling.js` to centralize hidden-tab pause, single-flight protection, and exponential backoff.
+- Replaced bespoke polling loops in `HirerDashboardPage.jsx`, `WorkerDashboardPage.jsx`, `HirerQuickJobTrackingPage.jsx`, and `QuickJobTrackingPage.jsx` with the shared polling hook.
+- Preserved the hirer dashboard live toggle and refresh timestamp while moving its background updates onto the new backoff-aware polling flow.
+
+**Validation**
+- Frontend production build passed from `kelmah-frontend` with `npm run build`.
+- Workspace search confirmed there are no remaining `fetchHirerJobs('all')` usages in `kelmah-frontend/src`.
+
+
+### Session: Backend Recommendation Search And Refund Expansion March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Rebalance recommendation scoring to stop top-end compression, move advanced job search onto Mongo text-score ranking, and close the incomplete refund-provider contract in the payment service.
+
+**Acceptance Criteria**
+- Recommendation scores use a normalized 100-point scale without stacking post-clamp bonuses into the top band.
+- Advanced search uses the existing `Job` text index and text-score ordering for relevance queries while preserving non-text filters.
+- Refunds accept and persist `relatedTransaction`, resolve provider references deterministically, and support Paystack, Vodafone Cash, MTN MoMo, and AirtelTigo flows.
+- Focused Jest coverage validates the new ranking and refund contracts.
+
+**Mapped execution surface**
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/job-service/tests/job-ranking.contract.test.js`
+- `kelmah-backend/services/payment-service/models/Transaction.js`
+- `kelmah-backend/services/payment-service/controllers/transaction.controller.js`
+- `kelmah-backend/services/payment-service/integrations/paystack.js`
+- `kelmah-backend/services/payment-service/integrations/mtn-momo.js`
+- `kelmah-backend/services/payment-service/integrations/airteltigo.js`
+- `kelmah-backend/services/payment-service/utils/validation.js`
+- `kelmah-backend/services/payment-service/tests/transaction.controller.test.js`
+- `spec-kit/BACKEND_RECOMMENDATION_SEARCH_REFUND_EXPANSION_MAR11_2026.md`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- `calculateJobMatchScore()` still stacks weighted sections above 100 and then clamps, compressing strong matches into the same top-end bucket.
+- `calculateWorkerMatchScore()` still adds trust bonuses after the base score, so hirer-facing matches compress similarly.
+- `advancedJobSearch()` still runs regex-first relevance instead of using the existing Mongo text index.
+- `Transaction` still lacks a declared `relatedTransaction` field, stores provider responses on an undeclared `gatewayData` path, and validates refunds as if they were generic payments.
+- `processRefund()` still hard-fails for Paystack, MTN MoMo, AirtelTigo, and Vodafone-cash-backed transactions despite those providers being in the live payment surface.
+
+**Implementation completed**
+- Rebalanced recommendation scoring onto a normalized 100-point model so high-fit matches no longer collapse into the same top-end score band.
+- Switched advanced search relevance queries to Mongo `$text` matching and text-score ordering while preserving the existing structured filters and stable tie-breakers.
+- Fixed the payment transaction contract by declaring `relatedTransaction`, `gatewayData`, and a referenced `paymentMethod`, and updated validation so refunds require `relatedTransaction` without requiring a redundant payment-method input.
+- Added Paystack refund support plus explicit MTN MoMo and AirtelTigo return-transfer refund helpers, and expanded `processRefund()` to support those providers alongside Vodafone Cash.
+- Added focused job-ranking and transaction-refund controller tests to lock the new search, scoring, and refund contracts.
+
+**Validation**
+- Focused backend Jest validation passed from `kelmah-backend`:
+  - `services/job-service/tests/job-ranking.contract.test.js`
+  - `services/job-service/tests/mobile-recommendations.contract.test.js`
+  - `services/payment-service/tests/transaction.controller.test.js`
+  - `services/payment-service/tests/wallet.controller.test.js`
+  - `services/payment-service/tests/escrow.controller.test.js`
+- Adjacent lightweight validation also passed:
+  - `services/payment-service/tests/payment.test.js`
+  - `services/payment-service/tests/health.test.js`
+  - `services/job-service/tests/health.test.js`
+- Result: `8` suites passed, `15` tests passed, `0` failures.
+
+### Session: Dashboard Aggregation And Hirer Pagination Pass March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Reduce dashboard mount fan-out and remove the hirer job-management fetch-all pattern by moving those views onto consolidated server-backed payloads.
+
+**Acceptance Criteria**
+- Authenticated dashboard consumers can fetch a single summary payload instead of firing the full multi-request dashboard burst on mount.
+- Hirer job management no longer depends on `limit=200` plus client-side filtering and pagination.
+- Backend and frontend changes compile cleanly, and the implementation is logged with verification results.
+
+**Mapped execution surface**
+- `kelmah-backend/api-gateway/routes/dashboard.routes.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-frontend/src/modules/dashboard/services/dashboardService.js`
+- `kelmah-frontend/src/modules/dashboard/hooks/useDashboard.js`
+- `kelmah-frontend/src/modules/hirer/pages/JobManagementPage.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- The gateway dashboard router was still proxy-only, so authenticated dashboard consumers had no single fan-in endpoint.
+- `useDashboard()` still issued the full mount burst of overview, activity, statistics, messages, performance, quick actions, notifications, and real-time calls.
+- `JobManagementPage.jsx` still used `fetchHirerJobs('all')`, local search filtering, and local slicing after the backend had already paginated the endpoint.
+- `getMyJobs()` did not expose search-aware status counts, which blocked the hirer page from preserving tab badges after moving to server-side pagination.
+
+**Implementation completed**
+- Added `GET /api/dashboard/summary` in the API Gateway to aggregate dashboard metrics, jobs, analytics, workers, activity, and recent conversations behind the existing authenticated trust chain.
+- Added `dashboardService.getSummary()` and updated `useDashboard()` to load a single summary payload and normalize it into the existing Redux dashboard state shape.
+- Extended `job-service` `getMyJobs()` with bounded search support plus `countsByStatus` metadata so the hirer UI can keep tab badges without loading every record.
+- Refactored `JobManagementPage.jsx` to call `/jobs/my-jobs` directly with tab, page, limit, and search params, and to render the returned page instead of client-side filtering and slicing a 200-row cache.
+- Updated hirer empty-state and refresh behavior so status changes and deletions reload the current server-backed page.
+
+**Validation**
+- Frontend production build passed from `kelmah-frontend` with `npm run build`.
+- Direct backend module-load validation passed for:
+  - `kelmah-backend/api-gateway/routes/dashboard.routes.js`
+  - `kelmah-backend/services/job-service/controllers/job.controller.js`
+  - Result: `backend module load ok`
+
+---
+
+### Session: iOS Copy And Style Parity Pass March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Align active iOS native presentation copy with the simpler Android mobile wording so both native apps use the same plain-language affordances across core worker and hirer flows.
+
+**Acceptance Criteria**
+- Active iOS auth, home, jobs, messaging, notifications, and profile screens use shorter, clearer wording consistent with the Android native experience.
+- The pass remains presentation-only and does not change navigation, data flow, or backend contracts.
+- Source diagnostics stay clean, and the local iOS runtime-validation limitation is documented accurately.
+
+**Mapped execution surface**
+- `kelmah-mobile-ios/Kelmah/Features/Auth/Presentation/LoginView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Home/Presentation/HomeView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobsView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobDetailView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobApplicationView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Messaging/Presentation/MessagesView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Notifications/Presentation/NotificationsView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Profile/Presentation/ProfileView.swift`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- Active iOS native screens still had several older phrases that the Android pass had already simplified, especially around auth token wording, hirer market guidance, and message/alert tap affordances.
+- iOS jobs and home surfaces still used longer hirer-facing wording such as `Hirer command view`, `Open Hiring Market`, `Search live jobs`, and `Review`.
+- iOS messages and profile screens still mixed in more technical or inconsistent labels such as `Search chats`, `Refresh conversations`, `Email unavailable`, and `Save new password`.
+
+**Implementation completed**
+- Simplified iOS auth wording to match Android-native plain language, including `Email address`, `Phone (optional)`, `Reset code`, `Verification code`, and lower-friction action labels such as `Have a verification code?`.
+- Simplified iOS hirer home wording and summary labels, shortened the market CTA to `Open Market`, and added explicit `Tap to open chat` / `Tap to open alert` affordances on home preview cards.
+- Simplified iOS jobs-market wording for hirers, normalized the main action labels to `Show Jobs`, `Show More Jobs`, and `Open Job`, and reduced the hirer guidance text in job detail and application flows.
+- Simplified iOS messaging wording to consistently use `messages` instead of mixing in `chat` for search, loading, refresh, and compose placeholders.
+- Simplified iOS notifications wording to `New job and message updates will show here`, `Mark as read`, and `Tap to open alert`.
+- Simplified iOS profile wording to `No email added`, `Email not verified yet`, `Change your password.`, `Change password`, and `Sign out`.
+
+**Validation**
+- Source re-read and grep verification confirmed the targeted new wording is present in the active iOS presentation files and the main old phrases removed in scope.
+- Local executable iOS validation is not available from this workspace because the Windows host does not provide Apple toolchain commands:
+  - `SWIFT_MISSING`
+  - `XCODEGEN_MISSING`
+  - `XCRUN_MISSING`
+- No simulator or XCTest run was possible in this session.
+
+
+### Session: Backend Audit Hardening Pass March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Apply the still-open backend fixes confirmed from the March 11 comprehensive audit report across job recommendations/search, payment integrity, messaging privacy/safety, review-service data hygiene, and worker-directory search input limits.
+
+**Acceptance Criteria**
+- Personalized recommendations become case-insensitive, exclude already-applied jobs, and score a wider candidate pool.
+- Payment wallet and escrow flows close the remaining atomicity and fail-open gaps.
+- Messaging stops leaking credential or presence data and aligns REST safety with the socket path.
+- Review public endpoints stop exposing reviewer PII to anonymous callers and moderation updates worker aggregates.
+
+**Mapped execution surface**
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/shared/models/Job.js`
+- `kelmah-backend/services/payment-service/models/Wallet.js`
+- `kelmah-backend/services/payment-service/controllers/escrow.controller.js`
+- `kelmah-backend/services/payment-service/routes/webhooks.routes.js`
+- `kelmah-backend/services/payment-service/models/Transaction.js`
+- `kelmah-backend/services/payment-service/utils/validation.js`
+- `kelmah-backend/services/payment-service/integrations/mtn-momo.js`
+- `kelmah-backend/services/messaging-service/server.js`
+- `kelmah-backend/services/messaging-service/controllers/message.controller.js`
+- `kelmah-backend/services/messaging-service/socket/messageSocket.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/review-service/models/Review.js`
+- `kelmah-backend/services/review-service/controllers/review.controller.js`
+- `kelmah-backend/services/review-service/controllers/analytics.controller.js`
+- `kelmah-backend/services/review-service/controllers/rating.controller.js`
+- `spec-kit/BACKEND_AUDIT_RECOMMENDATION_PAYMENT_MESSAGING_REVIEW_MAR11_2026.md`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- The currently deployed controller and model code still contains the recommendation, wallet atomicity, messaging privacy, and review-data issues identified in the audit excerpt.
+- Some earlier March 11 hardening already landed, so this pass is targeting only the remaining live defects rather than reworking previously-fixed flows.
+- Payment refund-provider expansion and some broader ranking redesign items need separate follow-up if provider support is absent or if the change requires wider contract updates.
+
+**Implementation completed**
+- Hardened personalized recommendations with case-insensitive skill matching, already-applied filtering, a larger DB-backed candidate pool, stale-job decay, and safer budget/location fallbacks.
+- Added stable public job sorting and additional compound indexes for common status/skills/category query paths.
+- Converted wallet credit/debit helpers to atomic update semantics and kept escrow release wallet credit inside the MongoDB transaction session.
+- Made Vodafone webhooks fail closed when verification bootstrap is unavailable, rounded transaction fee math, rejected zero-value transactions, enforced milestone total ceilings, and moved MTN exchange rates to env-configurable values.
+- Removed Mongo credential preview logging from messaging, narrowed Socket.IO CORS Vercel trust, aligned REST message safety with socket rules, and limited online user exposure to conversation contacts.
+- Stripped reviewer PII from anonymous public review reads, persisted report reasons, recomputed worker aggregates on moderation, and stopped returning fabricated identical rating-category values.
+- Capped worker-directory regex-backed search text and trade inputs to 100 characters.
+
+**Validation**
+- Focused backend Jest validation passed from `kelmah-backend` with:
+  - `services/job-service/tests/mobile-recommendations.contract.test.js`
+  - `services/payment-service/tests/escrow.controller.test.js`
+  - `services/payment-service/tests/wallet.controller.test.js`
+  - `services/messaging-service/tests/messaging.test.js`
+  - `services/review-service/tests/review.controller.contract.test.js`
+  - `services/user-service/tests/worker-directory.controller.test.js`
+- Result: `6` suites passed, `21` tests passed, `0` failures.
+
+**Documentation**
+- Added `spec-kit/BACKEND_AUDIT_RECOMMENDATION_PAYMENT_MESSAGING_REVIEW_MAR11_2026.md`.
+
+---
+
+### Session: Android Form And Empty-State Consistency Pass March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Perform one more Android-native presentation pass focused only on auth, profile, and messages form labels plus empty-state consistency, keeping behavior and routing unchanged.
+
+**Acceptance Criteria**
+- Android auth, profile, and messages screens use consistent plain-language form labels, loading text, and empty-state copy.
+- The pass stays presentation-only with no business-logic or navigation changes.
+- Focused Android validation passes after the copy cleanup.
+
+**Mapped execution surface**
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/presentation/LoginScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/presentation/ProfileScreen.kt`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- Android auth still used technical `token` wording on verify/reset forms even though nearby flows already favored simpler user-facing copy.
+- Android messages mixed `chat` and `messages` wording in placeholders, button descriptions, and empty-state text.
+- Android profile still had a few technical fallback labels such as `Email unavailable`, `Email verification pending`, and `Save new password`.
+
+**Implementation completed**
+- Simplified Android auth form wording to `Email address`, `Phone (optional)`, `Reset code`, and `Verification code`.
+- Shortened Android auth helper actions from `Already have a verification token?` to `Have a verification code?` and from `Resend verification` to `Resend email`.
+- Standardized Android messaging wording around `messages` instead of mixing in `chat` for search, refresh, back-navigation, and empty-state helper text.
+- Simplified Android profile fallback and account wording to `No email added`, `Email not verified yet`, `We could not load your work details.`, and `Change password`.
+
+**Validation**
+- Editor diagnostics reported no errors in all touched Android presentation files.
+- Focused Android unit validation passed from `kelmah-mobile-android` using system Gradle with `--no-daemon`:
+  - `com.kelmah.mobile.TokenManagerTest`
+  - `com.kelmah.mobile.app.navigation.KelmahDeepLinkResolverTest`
+  - `com.kelmah.mobile.features.notifications.data.NotificationsRepositoryTest`
+  - Result: `BUILD SUCCESSFUL`.
+
+
+### Session: Android Worker And Hirer Copy Consistency Pass March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Continue the Android-native-only cleanup by removing remaining copy and style inconsistencies across active worker and hirer presentation flows, with emphasis on plain-language actions and consistent affordances.
+
+**Acceptance Criteria**
+- Active Android worker and hirer presentation screens use consistent plain-language labels, helper text, and action wording.
+- Copy mismatches between similar Android flows are reduced without changing navigation, business logic, or web modules.
+- Focused Android validation passes after the copy-only pass.
+
+**Mapped execution surface**
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/home/presentation/HomeScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobsScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobDetailScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobApplicationScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/presentation/NotificationsScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/presentation/ProfileScreen.kt`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- Worker-facing Android flows were already close to the low-literacy target, but several hirer-facing banners and helper paragraphs still used longer enterprise-style language.
+- Tap affordances were inconsistent: worker home job cards explicitly said `Tap to open job`, while message and alert preview cards did not give equally clear tap hints.
+- Similar actions used different labels across screens (`Review`, `Load More Jobs`, `Mark read`, `Search live jobs`) even when the user task was the same.
+
+**Implementation completed**
+- Simplified hirer-facing headline and overview copy on the Android home screen and shortened the market entry button label.
+- Normalized Android home section titles so both roles use consistent `Messages` and `Alerts` headers.
+- Added explicit tap hints to Android home conversation and alert preview cards.
+- Simplified hirer-facing jobs-market helper text, empty states, and search wording in the Android jobs list.
+- Standardized Android job-card action wording so both roles use `Open Job`, and kept the worker `Apply Now` affordance unchanged.
+- Simplified hirer guidance on the Android job detail and job application screens and shortened several worker application labels (`How long it will take`, `Short message`, `Sending`).
+- Simplified Android messaging and notifications phrasing for search/loading/action consistency (`Loading messages`, `Tap to open chat`, `Type message`, `Mark as read`, `Tap to open alert`).
+- Shortened Android profile password helper text to match the simpler tone used elsewhere in the native app.
+
+**Validation**
+- Editor diagnostics reported no errors in all touched Android presentation files.
+- Focused Android unit validation passed from `kelmah-mobile-android` using system Gradle with `--no-daemon`:
+  - `com.kelmah.mobile.TokenManagerTest`
+  - `com.kelmah.mobile.app.navigation.KelmahDeepLinkResolverTest`
+  - `com.kelmah.mobile.features.notifications.data.NotificationsRepositoryTest`
+  - Result: `BUILD SUCCESSFUL`.
+
+
+### Session: Android Warning Hygiene Pass March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Remove the active Android mobile deprecation and low-signal compiler warnings surfaced during focused unit-test compilation, while keeping the current mobile-only scope intact.
+
+**Acceptance Criteria**
+- Deprecated icon references in active Android auth, jobs, and messaging screens are replaced with current Compose equivalents.
+- Low-signal compiler warnings caused by unused parameters, unnecessary Elvis logic, and missing serialization opt-in are removed where safe.
+- Focused Android unit validation passes after the cleanup.
+
+**Mapped execution surface**
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/presentation/LoginScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobApplicationScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobDetailScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobsScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/storage/TokenManager.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/session/SessionCoordinator.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/presentation/NotificationsViewModel.kt`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- Active Android warnings were limited to deprecated `Icons.Outlined.*` usages in auth, jobs, and messaging screens plus low-signal compiler hygiene warnings in token storage, session recovery, and notifications state updates.
+- `JobsScreen.kt` also had an active import inconsistency in the current workspace state, with `Card` still in use but no matching import present.
+
+**Implementation completed**
+- Replaced deprecated `Icons.Outlined.Login`, `Icons.Outlined.ArrowBack`, and `Icons.Outlined.Send` usages with `Icons.AutoMirrored.Outlined.*` equivalents in the active Android auth, jobs, and messaging screens.
+- Added `@OptIn(ExperimentalSerializationApi::class)` to `TokenManager` so the configured `Json` builder no longer emits the serialization opt-in warning.
+- Removed the unused `message` parameter from `SessionCoordinator.recoverOrClear()` and updated its callers.
+- Removed the unused lambda parameter in `NotificationsViewModel` mutation-state updates.
+- Restored the missing `Card` import and cleaned duplicate `Send` imports in `JobsScreen.kt` so the screen compiles cleanly in the current branch state.
+
+**Validation**
+- Editor diagnostics reported no errors in all touched Android files.
+- Focused Android unit validation passed from `kelmah-mobile-android` using system Gradle with `--no-daemon`:
+  - `com.kelmah.mobile.TokenManagerTest`
+  - `com.kelmah.mobile.app.navigation.KelmahDeepLinkResolverTest`
+  - `com.kelmah.mobile.features.notifications.data.NotificationsRepositoryTest`
+  - Result: `BUILD SUCCESSFUL`.
+- Workspace grep verification found no remaining `Icons.Outlined.Login`, `Icons.Outlined.ArrowBack`, or `Icons.Outlined.Send` usages under the Android app source tree.
+
+
+### Session: Native Mobile Stability And Routing Hardening March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Continue mobile-only hardening across Android and iOS with compile stability fixes, notification action routing accuracy, stricter auth input handling, and targeted test-alignment updates.
+
+- Available local Android unit tests pass; iOS runtime test limitation is documented.
+
+**Implementation completed**
+- Added missing Compose imports in Android job screens to restore compile stability.
+- Strengthened iOS auth email checks in login/register/forgot flows.
+- Narrowed iOS refresh-token invalidation to auth-invalid responses (`401`, `403`) instead of including generic `400`.
+  - Result: `BUILD SUCCESSFUL`.
+- Swift/iOS tests could not be executed in this workspace because the Windows host does not provide Swift/Xcode tooling (`swift` command unavailable).
+**Documentation**
+- Updated `spec-kit/STATUS_LOG.md` with this session entry.
+
+### Session: Native Worker Profile Account Copy Simplification March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+
+**Acceptance Criteria**
+- User-facing profile warning text and password-change validation remain clear in the native state/repository layer.
+
+**Mapped execution surface**
+- `kelmah-mobile-ios/Kelmah/Features/Profile/Presentation/ProfileView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Profile/Data/ProfileRepository.swift`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/presentation/ProfileScreen.kt`
+**Dry-audit findings so far**
+- The active worker profile/account screens still use enterprise-style wording such as `Recommendation signals`, `Retry profile sync`, `Change your password to keep your Kelmah account secure across devices`, and `Sign out all devices`.
+- Added `spec-kit/NATIVE_WORKER_PROFILE_ACCOUNT_COPY_SIMPLIFICATION_MAR11_2026.md`.
+
+- Worker-facing messaging and alerts screens use shorter, more direct copy across search, empty states, composer hints, unread badges, and action labels.
+- Message and notification success text is simpler in the native view-model banner/snackbar layer.
 - `kelmah-mobile-ios/Kelmah/Features/Messaging/Presentation/MessagesView.swift`
 - `kelmah-mobile-ios/Kelmah/Features/Messaging/Presentation/MessagesViewModel.swift`
 - `kelmah-mobile-ios/Kelmah/Features/Notifications/Presentation/NotificationsView.swift`

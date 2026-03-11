@@ -52,6 +52,7 @@ import QuickActionsRow from '../components/QuickActionsRow';
 import { Helmet } from 'react-helmet-async';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import InboxOutlinedIcon from '@mui/icons-material/InboxOutlined';
+import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
 
 /* ---------- Keyframes for spin animation ---------- */
 const spinKeyframes = {
@@ -230,18 +231,15 @@ const WorkerDashboardPage = () => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // AUD2-M05 FIX: Auto-refresh every 90 seconds so workers see new acceptances/rejections
-  // without manually refreshing — mirrors HirerDashboard DASH-001 auto-refresh pattern.
-  useEffect(() => {
-    const AUTO_REFRESH_MS = 90_000;
-    const intervalId = setInterval(() => {
-      // Skip refresh when tab is in the background — saves bandwidth
-      if (document.hidden) return;
-      // Silent background refresh — errors are captured in Redux state
-      fetchDashboardData();
-    }, AUTO_REFRESH_MS);
-    return () => clearInterval(intervalId);
-  }, [fetchDashboardData]);
+  useVisibilityPolling({
+    enabled: true,
+    intervalMs: 90_000,
+    maxIntervalMs: 6 * 60 * 1000,
+    shouldPause: () => isLoading || isRetryingRef.current || Boolean(error),
+    callback: async () => {
+      await fetchDashboardData();
+    },
+  });
 
   // Fetch profile completion data (Phase 1)
   useEffect(() => {

@@ -433,6 +433,58 @@ class PaystackService {
   }
 
   /**
+   * Refund a settled Paystack transaction
+   */
+  async refundPayment(reference, refundData = {}) {
+    this._requireConfig();
+    try {
+      const { amount, reason, customerNote, merchantNote } = refundData;
+      const requestData = {
+        transaction: reference,
+        currency: (refundData.currency || 'GHS').toUpperCase(),
+        merchant_note: merchantNote || reason || 'Kelmah refund',
+        customer_note: customerNote || reason || 'Refund processed',
+      };
+
+      if (Number.isFinite(Number(amount)) && Number(amount) > 0) {
+        requestData.amount = Math.round(Number(amount) * 100);
+      }
+
+      const doCall = () => http.post(
+        `${this.baseURL}/refund`,
+        requestData,
+        {
+          headers: {
+            'Authorization': `Bearer ${this.secretKey}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      const breaker = new CircuitBreaker(doCall, { failureThreshold: 4, cooldownMs: 20000, timeoutMs: 12000 });
+      const response = await breaker.fire();
+      const refund = response.data.data;
+
+      return {
+        success: true,
+        data: {
+          refundId: refund.id,
+          reference: refund.transaction_reference || refund.transaction?.reference || reference,
+          status: refund.status || 'pending',
+          amount: Number(refund.amount || requestData.amount || 0) / 100,
+          currency: refund.currency || requestData.currency,
+          reason: refund.customer_note || refund.merchant_note || reason,
+        }
+      };
+    } catch (error) {
+      console.error('Paystack Refund Payment Error:', error.response?.data || error.message);
+      return {
+        success: false,
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
    * Get supported banks
    */
   async getBanks(country = 'ghana', currency = 'GHS') {

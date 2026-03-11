@@ -24,6 +24,7 @@ exports.createTransaction = async (req, res) => {
       type,
       paymentMethod,
       recipient,
+      relatedTransaction,
       relatedContract,
       relatedJob,
       description,
@@ -46,6 +47,7 @@ exports.createTransaction = async (req, res) => {
       paymentMethod,
       sender: getUserId(req),
       recipient,
+      relatedTransaction,
       relatedContract,
       relatedJob,
       description,
@@ -193,13 +195,81 @@ const generateTransactionId = () => {
   return `TRX-${Date.now()}-${crypto.randomUUID()}`;
 };
 
+const normalizeProviderName = (provider) => {
+  const normalized = String(provider || '').trim().toLowerCase();
+  if (normalized === 'airteltigo') return 'airtel_tigo';
+  return normalized;
+};
+
+const ensureTrackingContainers = (transaction) => {
+  transaction.metadata = transaction.metadata || {};
+  transaction.gatewayData = transaction.gatewayData || {};
+};
+
+const persistProviderTracking = (transaction, provider, data, providerTransactionId) => {
+  const normalizedProvider = normalizeProviderName(provider);
+  ensureTrackingContainers(transaction);
+  transaction.metadata.paymentProvider = normalizedProvider;
+  if (providerTransactionId) {
+    transaction.metadata.paymentProviderTransactionId = providerTransactionId;
+  }
+  transaction.gatewayData[normalizedProvider] = data;
+  transaction.markModified('metadata');
+  transaction.markModified('gatewayData');
+};
+
+const resolveStoredPaymentMethod = async (transaction) => {
+  if (!transaction?.paymentMethod) {
+    return null;
+  }
+  return PaymentMethod.findById(transaction.paymentMethod);
+};
+
+const resolveProviderReference = (transaction, provider) => {
+  if (!transaction) {
+    return undefined;
+  }
+
+  const normalizedProvider = normalizeProviderName(provider || transaction.metadata?.paymentProvider);
+  const metadataReference = transaction.metadata?.paymentProviderTransactionId;
+  if (metadataReference) {
+    return metadataReference;
+  }
+
+  const gatewayData = transaction.gatewayData || {};
+  const providerData = gatewayData[normalizedProvider]
+    || gatewayData.vodafone
+    || gatewayData.airteltigo
+    || gatewayData.momo;
+
+  if (!providerData) {
+    return undefined;
+  }
+
+  switch (normalizedProvider) {
+    case 'paystack':
+      return providerData.reference || providerData.transfer_code;
+    case 'mtn_momo':
+      return providerData.referenceId;
+    case 'vodafone_cash':
+      return providerData.paymentId || providerData.referenceId;
+    case 'airtel_tigo':
+      return providerData.referenceId;
+    default:
+      return providerData.reference || providerData.id || providerData.referenceId;
+  }
+};
+
 const processPayment = async (transaction) => {
   try {
-    const paymentMethod = await PaymentMethod.findById(
-      transaction.paymentMethod,
-    );
+    const paymentMethod = await resolveStoredPaymentMethod(transaction);
+    if (!paymentMethod) {
+      throw new Error('Payment method not found');
+    }
 
-    switch (paymentMethod.metadata.provider) {
+    const provider = normalizeProviderName(paymentMethod.metadata?.provider);
+
+    switch (provider) {
       case "stripe":
         await stripe.processPayment(transaction, paymentMethod);
         break;
@@ -215,7 +285,7 @@ const processPayment = async (transaction) => {
           escrowReference: transaction.relatedContract || transaction.relatedJob,
         });
         if (!resp.success) throw new Error(resp.error?.message || 'Paystack init failed: missing email?');
-        transaction.gatewayData = { paystack: resp.data };
+        persistProviderTracking(transaction, provider, resp.data, resp.data.reference);
         break;
       }
       case "mtn_momo": {
@@ -228,7 +298,7 @@ const processPayment = async (transaction) => {
           payeeNote: 'Kelmah payment',
         });
         if (!resp.success) throw new Error(resp.error?.message || 'MoMo R2P failed');
-        transaction.gatewayData = { momo: resp.data };
+        persistProviderTracking(transaction, provider, resp.data, resp.data.referenceId);
         break;
       }
       case "vodafone_cash": {
@@ -240,10 +310,10 @@ const processPayment = async (transaction) => {
           description: transaction.description,
         });
         if (!resp.success) throw new Error(resp.error?.message || 'Vodafone payment failed');
-        transaction.gatewayData = { vodafone: resp.data };
+        persistProviderTracking(transaction, provider, resp.data, resp.data.paymentId || resp.data.referenceId);
         break;
       }
-      case "airteltigo": {
+      case "airtel_tigo": {
         const at = new AirtelTigoService();
         const resp = await at.requestToPay({
           amount: transaction.amount,
@@ -252,7 +322,7 @@ const processPayment = async (transaction) => {
           description: transaction.description,
         });
         if (!resp.success) throw new Error(resp.error?.message || 'AirtelTigo payment failed');
-        transaction.gatewayData = { airteltigo: resp.data };
+        persistProviderTracking(transaction, provider, resp.data, resp.data.referenceId);
         break;
       }
       default:
@@ -288,11 +358,14 @@ const processWithdrawal = async (transaction) => {
       throw new Error("Insufficient funds");
     }
 
-    const paymentMethod = await PaymentMethod.findById(
-      transaction.paymentMethod,
-    );
+    const paymentMethod = await resolveStoredPaymentMethod(transaction);
+    if (!paymentMethod) {
+      throw new Error('Payment method not found');
+    }
 
-    switch (paymentMethod.metadata.provider) {
+    const provider = normalizeProviderName(paymentMethod.metadata?.provider);
+
+    switch (provider) {
       case "stripe":
         await stripe.processWithdrawal(transaction, paymentMethod);
         break;
@@ -316,7 +389,7 @@ const processWithdrawal = async (transaction) => {
           currency: transaction.currency || 'GHS',
         });
         if (!init.success) throw new Error(init.error?.message || 'Paystack transfer failed');
-        transaction.gatewayData = { paystack: init.data };
+        persistProviderTracking(transaction, provider, init.data, init.data.reference || init.data.transfer_code);
         break;
       }
       case "mtn_momo": {
@@ -329,7 +402,7 @@ const processWithdrawal = async (transaction) => {
           payeeNote: transaction.description || 'Payout',
         });
         if (!resp.success) throw new Error(resp.error?.message || 'MoMo payout failed');
-        transaction.gatewayData = { momo: resp.data };
+        persistProviderTracking(transaction, provider, resp.data, resp.data.referenceId);
         break;
       }
       case "vodafone_cash": {
@@ -341,10 +414,10 @@ const processWithdrawal = async (transaction) => {
           description: transaction.description,
         });
         if (!resp.success) throw new Error(resp.error?.message || 'Vodafone payout failed');
-        transaction.gatewayData = { vodafone: resp.data };
+        persistProviderTracking(transaction, provider, resp.data, resp.data.payoutId || resp.data.referenceId);
         break;
       }
-      case "airteltigo": {
+      case "airtel_tigo": {
         const at = new AirtelTigoService();
         const resp = await at.transfer({
           amount: transaction.amount,
@@ -353,7 +426,7 @@ const processWithdrawal = async (transaction) => {
           description: transaction.description,
         });
         if (!resp.success) throw new Error(resp.error?.message || 'AirtelTigo payout failed');
-        transaction.gatewayData = { airteltigo: resp.data };
+        persistProviderTracking(transaction, provider, resp.data, resp.data.referenceId);
         break;
       }
       default:
@@ -392,17 +465,121 @@ const processRefund = async (transaction) => {
       throw new Error("Original transaction not found");
     }
 
-    const paymentMethod = await PaymentMethod.findById(
-      originalTransaction.paymentMethod,
+    const paymentMethod = await resolveStoredPaymentMethod(originalTransaction);
+    const provider = normalizeProviderName(
+      paymentMethod?.metadata?.provider || originalTransaction.metadata?.paymentProvider,
     );
+    const providerReference = resolveProviderReference(originalTransaction, provider);
 
-    switch (paymentMethod.metadata.provider) {
+    transaction.paymentMethod = originalTransaction.paymentMethod;
+
+    switch (provider) {
       case "stripe":
         await stripe.processRefund(transaction, originalTransaction);
+        persistProviderTracking(
+          transaction,
+          provider,
+          { originalTransactionId: originalTransaction.transactionId },
+          providerReference || originalTransaction.transactionId,
+        );
         break;
       case "paypal":
         await paypal.processRefund(transaction, originalTransaction);
+        persistProviderTracking(
+          transaction,
+          provider,
+          { originalTransactionId: originalTransaction.transactionId },
+          providerReference || originalTransaction.transactionId,
+        );
         break;
+      case 'paystack': {
+        if (!providerReference) {
+          throw new Error('Original Paystack reference not found');
+        }
+        const paystack = new PaystackService();
+        const refundResult = await paystack.refundPayment(providerReference, {
+          amount: transaction.amount,
+          currency: originalTransaction.currency || transaction.currency,
+          reason: transaction.description || `Refund for ${originalTransaction.transactionId}`,
+        });
+        if (!refundResult.success) {
+          throw new Error(refundResult.error?.message || refundResult.error || 'Paystack refund failed');
+        }
+        persistProviderTracking(
+          transaction,
+          provider,
+          refundResult.data,
+          refundResult.data.refundId || refundResult.data.reference || providerReference,
+        );
+        break;
+      }
+      case 'vodafone_cash': {
+        if (!providerReference) {
+          throw new Error('Original Vodafone reference not found');
+        }
+        const voda = new VodafoneCashService();
+        const refundResult = await voda.refundPayment(providerReference, {
+          amount: transaction.amount,
+          reason: transaction.description || `Refund for ${originalTransaction.transactionId}`,
+        });
+        if (!refundResult.success) {
+          throw new Error(refundResult.error?.message || refundResult.error || 'Vodafone refund failed');
+        }
+        persistProviderTracking(
+          transaction,
+          provider,
+          refundResult.data,
+          refundResult.data.refundId || refundResult.data.paymentId || providerReference,
+        );
+        break;
+      }
+      case 'mtn_momo': {
+        if (!paymentMethod?.metadata?.phoneNumber) {
+          throw new Error('Refund phone number not available for MTN MoMo payment method');
+        }
+        const momo = new MTNMoMoService();
+        const refundResult = await momo.refundPayment({
+          amount: transaction.amount,
+          phoneNumber: paymentMethod.metadata.phoneNumber,
+          externalId: transaction.transactionId,
+          payerMessage: 'Kelmah refund',
+          payeeNote: transaction.description || `Refund for ${originalTransaction.transactionId}`,
+          originalReferenceId: providerReference,
+        });
+        if (!refundResult.success) {
+          throw new Error(refundResult.error?.message || refundResult.error || 'MTN MoMo refund failed');
+        }
+        persistProviderTracking(
+          transaction,
+          provider,
+          refundResult.data,
+          refundResult.data.referenceId || providerReference || transaction.transactionId,
+        );
+        break;
+      }
+      case 'airtel_tigo': {
+        if (!paymentMethod?.metadata?.phoneNumber) {
+          throw new Error('Refund phone number not available for AirtelTigo payment method');
+        }
+        const airtel = new AirtelTigoService();
+        const refundResult = await airtel.refundPayment({
+          amount: transaction.amount,
+          phoneNumber: paymentMethod.metadata.phoneNumber,
+          externalId: transaction.transactionId,
+          description: transaction.description || `Refund for ${originalTransaction.transactionId}`,
+          originalReferenceId: providerReference,
+        });
+        if (!refundResult.success) {
+          throw new Error(refundResult.error?.message || refundResult.error || 'AirtelTigo refund failed');
+        }
+        persistProviderTracking(
+          transaction,
+          provider,
+          refundResult.data,
+          refundResult.data.referenceId || providerReference || transaction.transactionId,
+        );
+        break;
+      }
       default:
         throw new Error("Unsupported payment provider");
     }

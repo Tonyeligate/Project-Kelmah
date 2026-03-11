@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Button
@@ -74,7 +74,7 @@ fun JobApplicationScreen(
                 title = { Text("Apply Now") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
                     }
                 },
             )
@@ -98,11 +98,11 @@ fun JobApplicationScreen(
                     ) {
                         Text(text = "Worker-only flow", style = MaterialTheme.typography.headlineSmall)
                         Text(
-                            text = "Applications are only available for worker accounts. Hirer accounts stay in research and hiring coordination mode inside this shared app shell.",
+                            text = "Only worker accounts can apply. Hirer accounts use this app to review the market and manage hiring.",
                             style = MaterialTheme.typography.bodyLarge,
                         )
                         Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
-                            Text("Back to Hiring Market")
+                            Text("Back to Market")
                         }
                     }
                 }
@@ -119,7 +119,7 @@ fun JobApplicationScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(text = jobTitle, style = MaterialTheme.typography.headlineSmall)
-            Text(text = "Share your price, time, and a short message.")
+            Text(text = "Add your price, time, and short message.")
             Text(
                 text = "Write simple words about the work you can do.",
                 style = MaterialTheme.typography.bodyMedium,
@@ -137,14 +137,14 @@ fun JobApplicationScreen(
             OutlinedTextField(
                 value = estimatedDuration,
                 onValueChange = { estimatedDuration = it },
-                label = { Text("Time to finish") },
+                label = { Text("How long it will take") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
             OutlinedTextField(
                 value = coverLetter,
                 onValueChange = { coverLetter = it },
-                label = { Text("Short message to hirer") },
+                label = { Text("Short message") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(220.dp),
@@ -168,7 +168,7 @@ fun JobApplicationScreen(
                 if (uiState.isSubmittingApplication) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Sending...")
+                    Text("Sending")
                 } else {
                     Text("Send Application")
                 }

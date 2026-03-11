@@ -1,6 +1,70 @@
 const asTrimmedString = (value) =>
   typeof value === 'string' && value.trim() ? value.trim() : '';
 
+const DEFAULT_ALLOWED_MEDIA_HOSTS = new Set([
+  'localhost',
+  '127.0.0.1',
+  'kelmah.com',
+  'www.kelmah.com',
+  'project-kelmah.vercel.app',
+  'kelmah-frontend.vercel.app',
+  'kelmah-frontend-cyan.vercel.app',
+  'res.cloudinary.com',
+  'lh3.googleusercontent.com',
+  'secure.gravatar.com',
+  'cdnjs.cloudflare.com',
+  'basemaps.cartocdn.com',
+  'tile.openstreetmap.org',
+]);
+
+const EXTRA_ALLOWED_MEDIA_HOSTS = String(import.meta.env.VITE_ALLOWED_MEDIA_HOSTS || '')
+  .split(',')
+  .map((host) => host.trim().toLowerCase())
+  .filter(Boolean);
+
+const ALLOWED_MEDIA_HOSTS = new Set([
+  ...DEFAULT_ALLOWED_MEDIA_HOSTS,
+  ...EXTRA_ALLOWED_MEDIA_HOSTS,
+]);
+
+const isAllowedMediaUrl = (value) => {
+  const normalized = asTrimmedString(value);
+  if (!normalized) {
+    return false;
+  }
+
+  if (
+    normalized.startsWith('/') ||
+    normalized.startsWith('./') ||
+    normalized.startsWith('../') ||
+    normalized.startsWith('blob:') ||
+    normalized.startsWith('data:image/')
+  ) {
+    return true;
+  }
+
+  try {
+    const parsed = new URL(normalized);
+
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      return false;
+    }
+
+    if (typeof window !== 'undefined' && parsed.origin === window.location.origin) {
+      return true;
+    }
+
+    return ALLOWED_MEDIA_HOSTS.has(parsed.hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+};
+
+const sanitizeMediaUrl = (value) => {
+  const normalized = asTrimmedString(value);
+  return isAllowedMediaUrl(normalized) ? normalized : '';
+};
+
 const truncateText = (value, maxLength = 32) => {
   const normalized = asTrimmedString(value);
   if (!normalized) return '';
@@ -33,7 +97,7 @@ export const resolveMediaAssetUrl = (asset, options = {}) => {
   }
 
   if (typeof asset === 'string') {
-    return asTrimmedString(asset);
+    return sanitizeMediaUrl(asset);
   }
 
   if (Array.isArray(asset)) {
@@ -71,7 +135,7 @@ export const resolveMediaAssetUrl = (asset, options = {}) => {
       ];
 
   for (const candidate of preferredCandidates) {
-    const resolved = asTrimmedString(candidate);
+    const resolved = sanitizeMediaUrl(candidate);
     if (resolved) {
       return resolved;
     }

@@ -201,6 +201,69 @@ const collectWorkerSkills = (worker = {}) => {
   );
 };
 
+const escapeRegexLiteral = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const buildCaseInsensitiveExactRegexes = (values = []) =>
+  Array.from(new Set(normalizeSkillValues(values))).map(
+    (value) => new RegExp(`^${escapeRegexLiteral(value)}$`, 'i'),
+  );
+
+const SKILL_SYNONYM_MAP = {
+  electrician: ['electrical', 'electrical work', 'wiring'],
+  electrical: ['electrician', 'electrical work', 'wiring'],
+  'electrical work': ['electrician', 'electrical', 'wiring'],
+  plumbing: ['plumber', 'pipe fitting', 'sanitary'],
+  plumber: ['plumbing', 'pipe fitting', 'sanitary'],
+  carpentry: ['carpenter', 'woodwork', 'joinery'],
+  carpenter: ['carpentry', 'woodwork', 'joinery'],
+  masonry: ['mason', 'bricklaying', 'construction'],
+  mason: ['masonry', 'bricklaying', 'construction'],
+  painting: ['painter', 'decorating'],
+  painter: ['painting', 'decorating'],
+  welding: ['welder', 'metal work', 'fabrication'],
+  welder: ['welding', 'metal work', 'fabrication'],
+};
+
+const expandSkillSynonyms = (skill = '') => {
+  const normalized = String(skill || '').trim().toLowerCase();
+  if (!normalized) {
+    return [];
+  }
+
+  return Array.from(new Set([normalized, ...(SKILL_SYNONYM_MAP[normalized] || [])]));
+};
+
+const skillsSemanticallyMatch = (leftSkill = '', rightSkill = '') => {
+  const normalizedLeft = String(leftSkill || '').trim().toLowerCase();
+  const normalizedRight = String(rightSkill || '').trim().toLowerCase();
+
+  if (!normalizedLeft || !normalizedRight) {
+    return false;
+  }
+
+  if (normalizedLeft === normalizedRight) {
+    return true;
+  }
+
+  const leftVariants = expandSkillSynonyms(normalizedLeft);
+  const rightVariants = expandSkillSynonyms(normalizedRight);
+
+  if (leftVariants.some((variant) => rightVariants.includes(variant))) {
+    return true;
+  }
+
+  const leftWords = normalizedLeft.split(/\s+/).filter(Boolean);
+  const rightWords = normalizedRight.split(/\s+/).filter(Boolean);
+  if (leftWords.length < 2 && rightWords.length < 2) {
+    return false;
+  }
+
+  return (
+    leftWords.every((word) => rightWords.includes(word)) ||
+    rightWords.every((word) => leftWords.includes(word))
+  );
+};
+
 const getCanonicalWorkerContext = async (workerId) => {
   const [workerUser, workerProfile, userPerformance, activeContractsCount, availability] = await Promise.all([
     User.findById(workerId).lean(),
@@ -1311,7 +1374,7 @@ const getJobs = async (req, res, next) => {
 
     if (req.query.skills) {
       const skillTokens = req.query.skills.split(",").slice(0, 10); // max 10 skills
-      query.skills = { $in: skillTokens };
+      query.skills = { $in: buildCaseInsensitiveExactRegexes(skillTokens) };
     }
 
     if (req.query.budget) {
@@ -1472,10 +1535,10 @@ const getJobs = async (req, res, next) => {
 
     // Determine sort strategy based on frontend sort parameter
     const SORT_MAP = {
-      newest: { createdAt: -1 },
-      budget_high: { budget: -1, createdAt: -1 },
-      budget_low: { budget: 1, createdAt: -1 },
-      oldest: { createdAt: 1 },
+      newest: { createdAt: -1, _id: -1 },
+      budget_high: { budget: -1, createdAt: -1, _id: -1 },
+      budget_low: { budget: 1, createdAt: -1, _id: -1 },
+      oldest: { createdAt: 1, _id: 1 },
     };
     let sortSpec;
     if (req.query.sort && SORT_MAP[req.query.sort]) {
@@ -1486,13 +1549,13 @@ const getJobs = async (req, res, next) => {
       const sortOrder = sortField.startsWith('-') ? -1 : 1;
       const sortKey = sortField.replace(/^-/, '');
       if (ALLOWED_SORT_FIELDS.includes(sortKey)) {
-        sortSpec = { [sortKey]: sortOrder };
+        sortSpec = { [sortKey]: sortOrder, _id: sortOrder };
       } else {
-        sortSpec = { createdAt: -1 }; // fallback to default
+        sortSpec = { createdAt: -1, _id: -1 }; // fallback to default
       }
     } else {
       // Default: newest first
-      sortSpec = { createdAt: -1 };
+      sortSpec = { createdAt: -1, _id: -1 };
     }
 
     const jobsCursor = jobsCollection
@@ -1754,6 +1817,8 @@ const getMyJobs = async (req, res, next) => {
       return errorResponse(res, 400, 'Invalid hirer identifier');
     }
 
+    const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;
     const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
@@ -1764,8 +1829,25 @@ const getMyJobs = async (req, res, next) => {
     const jobsCollection = db.collection('jobs');
     const usersCollection = db.collection('users');
 
+    const search = typeof req.query.search === 'string' ? req.query.search.trim().slice(0, 100) : '';
+
+    const baseQuery = { hirer: hirerObjectId };
+    if (search) {
+      const searchRegex = new RegExp(escapeRegex(search), 'i');
+      baseQuery.$or = [
+        { title: searchRegex },
+        { description: searchRegex },
+        { location: searchRegex },
+        { 'location.city': searchRegex },
+        { 'location.region': searchRegex },
+        { 'location.address': searchRegex },
+        { 'locationDetails.region': searchRegex },
+        { 'locationDetails.district': searchRegex },
+      ];
+    }
+
     // Build query
-    const query = { hirer: hirerObjectId };
+    const query = { ...baseQuery };
     if (req.query.status) {
       const VALID_STATUSES = ['open', 'closed', 'in-progress', 'completed', 'cancelled', 'draft', 'expired', 'pending'];
       if (typeof req.query.status === 'string' && VALID_STATUSES.includes(req.query.status)) {
@@ -1834,7 +1916,29 @@ const getMyJobs = async (req, res, next) => {
       };
     });
 
-    const total = await jobsCollection.countDocuments(query);
+    const [total, statusCounts] = await Promise.all([
+      jobsCollection.countDocuments(query),
+      jobsCollection.aggregate([
+        { $match: baseQuery },
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ]).toArray(),
+    ]);
+
+    const countsByStatus = statusCounts.reduce((acc, entry) => {
+      if (entry?._id) {
+        acc[entry._id] = entry.count;
+      }
+      return acc;
+    }, {
+      open: 0,
+      'in-progress': 0,
+      completed: 0,
+      cancelled: 0,
+      draft: 0,
+      closed: 0,
+      expired: 0,
+      pending: 0,
+    });
 
     return paginatedResponse(
       res,
@@ -1844,6 +1948,7 @@ const getMyJobs = async (req, res, next) => {
       page,
       limit,
       total,
+      { countsByStatus },
     );
   } catch (error) {
     next(error);
@@ -2300,31 +2405,30 @@ const getWorkerMatches = async (req, res, next) => {
  * Calculate job match score for a worker
  */
 function calculateJobMatchScore(job, worker) {
+  const WEIGHTS = {
+    skills: 30,
+    location: 18,
+    budget: 14,
+    rating: 10,
+    experience: 10,
+    availability: 10,
+    performance: 8,
+  };
+
   let totalScore = 0;
   const breakdown = {};
   const reasons = [];
 
-  // Skills matching (40% weight) - proportional scoring
   const jobSkills = collectJobSkills(job);
   const workerSkills = collectWorkerSkills(worker);
+  const skillMatches = (jobSkills || []).filter((jobSkill) =>
+    (workerSkills || []).some((workerSkill) => skillsSemanticallyMatch(jobSkill, workerSkill)),
+  );
 
-  const skillMatches = (jobSkills || []).filter(jobSkill => {
-    const normalizedJobSkill = jobSkill.toLowerCase().trim();
-    return (workerSkills || []).some(workerSkill => {
-      const normalizedWorkerSkill = workerSkill.toLowerCase().trim();
-      if (normalizedJobSkill === normalizedWorkerSkill) return true;
-      const jobWords = normalizedJobSkill.split(/\s+/);
-      const workerWords = normalizedWorkerSkill.split(/\s+/);
-      if (jobWords.length < 2 && workerWords.length < 2) return false;
-      return jobWords.every(w => workerWords.includes(w)) || workerWords.every(w => jobWords.includes(w));
-    });
-  });
-
-  // FIX M1: When job has no skills listed, assign a neutral score (20/40)
-  // instead of 0 so jobs with poor metadata aren't unfairly penalized.
-  const skillScore = jobSkills.length > 0
-    ? (skillMatches.length / jobSkills.length) * 40
-    : 20;
+  const skillFit = jobSkills.length > 0
+    ? (skillMatches.length / jobSkills.length)
+    : 0.5;
+  const skillScore = skillFit * WEIGHTS.skills;
   breakdown.skills = Math.round(skillScore * 10) / 10;
   totalScore += skillScore;
 
@@ -2332,7 +2436,6 @@ function calculateJobMatchScore(job, worker) {
     reasons.push(`${skillMatches.length}/${jobSkills.length} skill matches`);
   }
 
-  // Location matching (25% weight) - distance-based with string fallback
   let locationScore = 0;
   const jobLoc = job.locationDetails || job.location || {};
   const workerLoc = worker.locationDetails || worker.location || {};
@@ -2344,7 +2447,6 @@ function calculateJobMatchScore(job, worker) {
   const jobRegion = jobLocation.region;
   const workerRegion = workerLocation.region;
 
-  // Try geographic distance first (most accurate)
   const jobCoords = extractCoordinates(job);
   const workerCoords = extractCoordinates(worker);
 
@@ -2380,12 +2482,23 @@ function calculateJobMatchScore(job, worker) {
   } else if (jobRegion && workerRegion && jobRegion === workerRegion) {
     locationScore = 15;
     reasons.push('Same region');
+  } else {
+    const jobLocationText = String(job.location?.city || job.location || job.locationDetails?.district || '').trim().toLowerCase();
+    const workerLocationText = String(worker.location?.city || worker.location || worker.locationDetails?.district || '').trim().toLowerCase();
+    if (
+      jobLocationText &&
+      workerLocationText &&
+      (jobLocationText.includes(workerLocationText) || workerLocationText.includes(jobLocationText))
+    ) {
+      locationScore = 20;
+      reasons.push('Location match (text)');
+    }
   }
-  breakdown.location = locationScore;
-  totalScore += locationScore;
+  const normalizedLocationScore = (locationScore / 25) * WEIGHTS.location;
+  breakdown.location = Math.round(normalizedLocationScore * 10) / 10;
+  totalScore += normalizedLocationScore;
 
-  // Budget compatibility (20% weight) - currency-aware with duration
-  let budgetScore = 0;
+  let budgetFit = 0;
   const workerHourlyRate = Number(worker.hourlyRate || worker.workerProfile?.hourlyRate || 0);
   const jobCurrency = (job.currency || 'GHS').toUpperCase();
   const workerCurrency = (worker.currency || worker.workerProfile?.currency || 'GHS').toUpperCase();
@@ -2393,7 +2506,7 @@ function calculateJobMatchScore(job, worker) {
 
   if (job.budget && workerHourlyRate > 0 && currencyMatch) {
     if (job.paymentType === 'fixed' || !job.paymentType) {
-      let estimatedHours = 8; // default: one day
+      let estimatedHours = 8;
       if (job.duration?.value) {
         const unit = (job.duration.unit || 'day').toLowerCase();
         if (unit === 'hour') estimatedHours = job.duration.value;
@@ -2404,16 +2517,16 @@ function calculateJobMatchScore(job, worker) {
       const expectedCost = workerHourlyRate * estimatedHours;
       const budgetRatio = expectedCost > 0 ? job.budget / expectedCost : 0;
       if (budgetRatio >= 1.0) {
-        budgetScore = 20;
+        budgetFit = 1;
         reasons.push('Budget exceeds your rate');
       } else if (budgetRatio >= 0.7) {
-        budgetScore = 14;
+        budgetFit = 0.75;
         reasons.push('Budget compatible');
       } else if (budgetRatio >= 0.5) {
-        budgetScore = 10;
+        budgetFit = 0.55;
         reasons.push('Budget close match');
       } else {
-        budgetScore = 5;
+        budgetFit = 0.25;
       }
     } else {
       let estimatedHours = 40;
@@ -2429,28 +2542,29 @@ function calculateJobMatchScore(job, worker) {
       const budgetRatio = job.budget / workerCost;
 
       if (budgetRatio >= 1.0) {
-        budgetScore = 20;
+        budgetFit = 1;
         reasons.push('Budget exceeds your rate');
       } else if (budgetRatio >= 0.8) {
-        budgetScore = 15;
+        budgetFit = 0.8;
         reasons.push('Budget compatible');
       } else if (budgetRatio >= 0.6) {
-        budgetScore = 10;
+        budgetFit = 0.55;
         reasons.push('Budget close match');
       } else if (budgetRatio >= 0.4) {
-        budgetScore = 5;
+        budgetFit = 0.25;
       }
     }
   } else if (!currencyMatch && job.budget && workerHourlyRate > 0) {
-    budgetScore = 2; // Minimal score for currency mismatch
+    budgetFit = 0.1;
   } else if (workerHourlyRate <= 0) {
-    budgetScore = 3; // Low score for incomplete profile
+    budgetFit = 0.5;
+    reasons.push('Budget neutral until your rate is set');
   }
-  breakdown.budget = budgetScore;
+  const budgetScore = budgetFit * WEIGHTS.budget;
+  breakdown.budget = Math.round(budgetScore * 10) / 10;
   totalScore += budgetScore;
 
-  // Worker rating (10% weight)
-  const ratingScore = ((worker.rating || 0) / 5) * 10;
+  const ratingScore = ((worker.rating || 0) / 5) * WEIGHTS.rating;
   breakdown.rating = Math.round(ratingScore * 10) / 10;
   totalScore += ratingScore;
 
@@ -2458,7 +2572,6 @@ function calculateJobMatchScore(job, worker) {
     reasons.push('Highly rated worker');
   }
 
-  // Experience level (5% weight)
   let experienceScore = 0;
   const completedJobs = worker.totalJobsCompleted || worker.completedJobs || 0;
   const workerYearsOfExperience = Number(
@@ -2478,25 +2591,23 @@ function calculateJobMatchScore(job, worker) {
     experienceScore = Math.max(experienceScore, 1);
   }
 
-  breakdown.experience = experienceScore;
-  totalScore += experienceScore;
+  const normalizedExperienceScore = (experienceScore / 5) * WEIGHTS.experience;
+  breakdown.experience = Math.round(normalizedExperienceScore * 10) / 10;
+  totalScore += normalizedExperienceScore;
 
   if (completedJobs >= 20) {
     reasons.push('Experienced worker');
   }
 
-  // ---- Availability scoring (schedule-aware when Availability doc exists) ----
-  const avail = worker.availability; // from Availability model (may be null)
+  const avail = worker.availability;
   const availabilityStatus = String(
     worker.availabilityStatus || worker.workerProfile?.availabilityStatus || '',
   ).trim().toLowerCase();
   let availabilityScore = 0;
 
   if (avail) {
-    // Rich schedule data available
     const now = new Date();
 
-    // Check if worker has paused availability
     if (avail.isAvailable === false) {
       availabilityScore = 0;
       reasons.push('Worker is currently unavailable');
@@ -2504,10 +2615,8 @@ function calculateJobMatchScore(job, worker) {
       availabilityScore = 0;
       reasons.push('Worker availability paused');
     } else {
-      // Base: available
       availabilityScore = 3;
 
-      // Check if today is a holiday
       const todayStr = now.toISOString().slice(0, 10);
       const isHoliday = Array.isArray(avail.holidays) && avail.holidays.some((h) => {
         const hDate = h.date ? new Date(h.date).toISOString().slice(0, 10) : '';
@@ -2517,8 +2626,7 @@ function calculateJobMatchScore(job, worker) {
       if (isHoliday) {
         availabilityScore = 1;
       } else {
-        // Check daySlots for current day of week
-        const dayOfWeek = now.getDay(); // 0=Sunday
+        const dayOfWeek = now.getDay();
         const todaySlots = Array.isArray(avail.daySlots)
           ? avail.daySlots.find((ds) => ds.dayOfWeek === dayOfWeek)
           : null;
@@ -2527,37 +2635,31 @@ function calculateJobMatchScore(job, worker) {
           availabilityScore = 5;
           reasons.push('Currently available (schedule confirmed)');
         } else if (Array.isArray(avail.daySlots) && avail.daySlots.length > 0) {
-          // Has schedule but not working today — still generally available
           availabilityScore = 3;
           reasons.push('Available (not scheduled today)');
+        } else if (avail.dailyHours && avail.dailyHours >= 4) {
+          availabilityScore = 4;
+          reasons.push('Currently available');
         } else {
-          // No day slots configured — use dailyHours as signal
-          if (avail.dailyHours && avail.dailyHours >= 4) {
-            availabilityScore = 4;
-            reasons.push('Currently available');
-          } else {
-            availabilityScore = 3;
-            reasons.push('Currently available');
-          }
+          availabilityScore = 3;
+          reasons.push('Currently available');
         }
       }
 
-      // Weekly capacity check
       if (avail.weeklyHoursCap && avail.weeklyHoursCap < 20) {
         availabilityScore = Math.max(1, availabilityScore - 1);
       }
     }
-  } else {
-    // Fall back to simple status string
-    if (availabilityStatus === 'available') {
-      availabilityScore = 5;
-      reasons.push('Currently available');
-    } else if (availabilityStatus === 'busy') {
-      availabilityScore = 1;
-    }
+  } else if (availabilityStatus === 'available') {
+    availabilityScore = 5;
+    reasons.push('Currently available');
+  } else if (availabilityStatus === 'busy') {
+    availabilityScore = 1;
   }
-  breakdown.availability = availabilityScore;
-  totalScore += availabilityScore;
+
+  const normalizedAvailabilityScore = (availabilityScore / 5) * WEIGHTS.availability;
+  breakdown.availability = Math.round(normalizedAvailabilityScore * 10) / 10;
+  totalScore += normalizedAvailabilityScore;
 
   const performanceMetrics = worker.userPerformance?.metrics || {};
   const jobCompletionRate = Number(performanceMetrics.jobCompletionRate || 0);
@@ -2568,8 +2670,9 @@ function calculateJobMatchScore(job, worker) {
   const performanceScore = Math.round(
     ((jobCompletionRate * 0.4) + (onTimeDeliveryRate * 0.35) + (clientSatisfaction * 0.25)) / 10,
   );
-  breakdown.performance = performanceScore;
-  totalScore += performanceScore;
+  const normalizedPerformanceScore = (performanceScore / 10) * WEIGHTS.performance;
+  breakdown.performance = Math.round(normalizedPerformanceScore * 10) / 10;
+  totalScore += normalizedPerformanceScore;
 
   if (performanceScore >= 7) {
     reasons.push('Strong historical performance');
@@ -2600,38 +2703,60 @@ function calculateJobMatchScore(job, worker) {
  */
 function calculateWorkerMatchScore(job, worker) {
   const base = calculateJobMatchScore(job, worker);
-  let score = base.totalScore;
+  const rebalancedBaseScore = base.totalScore * 0.8;
+  let score = rebalancedBaseScore;
   const reasons = [...base.reasons];
+  const breakdown = {
+    ...base.breakdown,
+    baseMatch: Math.round(rebalancedBaseScore * 10) / 10,
+  };
 
   // Boost verified workers
   if (worker.isVerified) {
-    score += 8;
+    score += 6;
     reasons.push('Verified worker');
+    breakdown.verifiedBonus = 6;
+  } else {
+    breakdown.verifiedBonus = 0;
   }
 
   // Boost workers with high review counts
   const reviews = Number(worker.totalReviews || 0);
   if (reviews >= 10) {
-    score += 5;
+    score += 8;
     reasons.push(`${reviews} reviews`);
+    breakdown.reviewHistory = 8;
+  } else if (reviews >= 5) {
+    score += 5;
+    breakdown.reviewHistory = 5;
   } else if (reviews >= 3) {
-    score += 2;
+    score += 3;
+    breakdown.reviewHistory = 3;
+  } else {
+    breakdown.reviewHistory = 0;
   }
 
   // Boost workers with strong completion history
   const completed = Number(worker.totalJobsCompleted || 0);
   if (completed >= 20) {
-    score += 5;
+    score += 6;
     reasons.push(`${completed} jobs completed`);
+    breakdown.completionHistory = 6;
+  } else if (completed >= 10) {
+    score += 4;
+    breakdown.completionHistory = 4;
   } else if (completed >= 5) {
     score += 3;
+    breakdown.completionHistory = 3;
+  } else {
+    breakdown.completionHistory = 0;
   }
 
   score = Math.max(0, Math.min(100, Math.round(score)));
 
   return {
     totalScore: score,
-    breakdown: { ...base.breakdown, verifiedBonus: worker.isVerified ? 8 : 0, experienceBonus: completed >= 20 ? 5 : completed >= 5 ? 3 : 0 },
+    breakdown,
     reasons
   };
 }
@@ -2693,12 +2818,13 @@ const advancedJobSearch = async (req, res, next) => {
 
     // Skills filter
     if (skills) {
-      const skillsArray = skills.split(',').map(s => s.trim());
+      const skillsArray = skills.split(',').map((s) => s.trim());
+      const skillRegexes = buildCaseInsensitiveExactRegexes(skillsArray);
       matchStage.$and.push({
         $or: [
-          { skills: { $in: skillsArray } },
-          { 'requirements.primarySkills': { $in: skillsArray } },
-          { 'requirements.secondarySkills': { $in: skillsArray } }
+          { skills: { $in: skillRegexes } },
+          { 'requirements.primarySkills': { $in: skillRegexes } },
+          { 'requirements.secondarySkills': { $in: skillRegexes } }
         ]
       });
     }
@@ -2781,30 +2907,12 @@ const advancedJobSearch = async (req, res, next) => {
       };
     }
 
-    // Text search — merge with existing $or (e.g. location) via $and
+    // Text search — use Mongo text-score ranking when the schema text index is available.
     const normalizedQuery = String(query || '').trim().slice(0, 120);
+    const hasTextQuery = Boolean(normalizedQuery);
 
-    if (normalizedQuery) {
-      const escapeRx = (v) => String(v).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const safeQuery = escapeRx(normalizedQuery);
-      const searchTerms = normalizedQuery
-        .split(/\s+/)
-        .filter(Boolean)
-        .slice(0, 8);
-      // MED-02 FIX: Removed $text search (requires text index that may not exist).
-      // Regex fallbacks provide equivalent coverage without index dependency.
-      const searchConditions = [
-        { title: { $regex: safeQuery, $options: 'i' } },
-        { description: { $regex: safeQuery, $options: 'i' } },
-        { skills: { $in: searchTerms.map(term => new RegExp(escapeRx(term), 'i')) } },
-        { category: { $regex: safeQuery, $options: 'i' } },
-        { 'requirements.primarySkills': { $in: searchTerms.map(term => new RegExp(escapeRx(term), 'i')) } },
-        { 'requirements.secondarySkills': { $in: searchTerms.map(term => new RegExp(escapeRx(term), 'i')) } },
-        { 'locationDetails.region': { $regex: safeQuery, $options: 'i' } },
-        { 'locationDetails.district': { $regex: safeQuery, $options: 'i' } }
-      ];
-
-      matchStage.$and.push({ $or: searchConditions });
+    if (hasTextQuery) {
+      matchStage.$text = { $search: normalizedQuery };
     }
 
     pipeline.push({ $match: matchStage });
@@ -2880,26 +2988,28 @@ const advancedJobSearch = async (req, res, next) => {
     let sortStage = {};
     switch (sortBy) {
       case 'newest':
-        sortStage = { createdAt: -1 };
+        sortStage = { createdAt: -1, _id: -1 };
         break;
       case 'oldest':
-        sortStage = { createdAt: 1 };
+        sortStage = { createdAt: 1, _id: 1 };
         break;
       case 'budget_high':
-        sortStage = { budget: -1, createdAt: -1 };
+        sortStage = { budget: -1, createdAt: -1, _id: -1 };
         break;
       case 'budget_low':
-        sortStage = { budget: 1, createdAt: -1 };
+        sortStage = { budget: 1, createdAt: -1, _id: -1 };
         break;
       case 'rating':
-        sortStage = { 'hirerInfo.rating': -1, createdAt: -1 };
+        sortStage = { 'hirerInfo.rating': -1, createdAt: -1, _id: -1 };
         break;
       case 'distance':
-        sortStage = { distanceScore: 1, relevanceScore: -1 };
+        sortStage = { distanceScore: 1, relevanceScore: -1, createdAt: -1, _id: -1 };
         break;
       case 'relevance':
       default:
-        sortStage = { relevanceScore: -1, createdAt: -1 };
+        sortStage = hasTextQuery
+          ? { score: { $meta: 'textScore' }, relevanceScore: -1, createdAt: -1, _id: -1 }
+          : { relevanceScore: -1, createdAt: -1, _id: -1 };
         break;
     }
 
@@ -2926,6 +3036,7 @@ const advancedJobSearch = async (req, res, next) => {
         createdAt: 1,
         updatedAt: 1,
         relevanceScore: 1,
+        ...(hasTextQuery ? { textScore: { $meta: 'textScore' } } : {}),
         hirer: {
           _id: '$hirerInfo._id',
           firstName: '$hirerInfo.firstName',
@@ -3312,6 +3423,131 @@ const getJobApplications = async (req, res, next) => {
       code: error.code,
       name: error.name
     });
+    next(error);
+  }
+};
+
+/**
+ * Get grouped applications summary across all non-bidding jobs for the authenticated hirer
+ * @route GET /api/jobs/applications/received-summary
+ * @access Private (Hirer only)
+ */
+const getHirerApplicationsSummary = async (req, res, next) => {
+  try {
+    const hirerId = req.user?.id;
+    const statusFilter = typeof req.query.status === 'string' ? req.query.status.trim().toLowerCase() : '';
+    const validStatuses = new Set(['pending', 'accepted', 'rejected', 'under_review', 'withdrawn']);
+
+    const jobs = await Job.find({ hirer: hirerId })
+      .select('title status budget budgetRange paymentType bidding createdAt')
+      .sort({ createdAt: -1 })
+      .lean()
+      .maxTimeMS(8000);
+
+    const standardJobs = jobs.filter((job) => !job?.bidding?.bidStatus);
+    if (standardJobs.length === 0) {
+      return successResponse(res, 200, 'Hirer applications summary retrieved', {
+        jobs: [],
+        applicationsByJob: {},
+        summary: {
+          totalJobs: 0,
+          totalApplications: 0,
+          countsByStatus: {
+            pending: 0,
+            accepted: 0,
+            rejected: 0,
+            under_review: 0,
+            withdrawn: 0,
+          },
+        },
+      });
+    }
+
+    const jobIds = standardJobs.map((job) => job._id);
+    const applicationQuery = { job: { $in: jobIds } };
+    if (validStatuses.has(statusFilter)) {
+      applicationQuery.status = statusFilter;
+    }
+
+    const applications = await Application.find(applicationQuery)
+      .populate('worker', 'firstName lastName profileImage rating')
+      .sort({ createdAt: -1 })
+      .lean()
+      .maxTimeMS(8000);
+
+    const applicationsByJob = {};
+    const countsByStatus = {
+      pending: 0,
+      accepted: 0,
+      rejected: 0,
+      under_review: 0,
+      withdrawn: 0,
+    };
+    const jobMap = new Map(
+      standardJobs.map((job) => {
+        const jobId = job._id?.toString?.() || String(job._id);
+        return [jobId, job];
+      }),
+    );
+
+    applications.forEach((application) => {
+      const jobId = application.job?.toString?.() || String(application.job);
+      const status = application.status || 'pending';
+
+      if (!Array.isArray(applicationsByJob[jobId])) {
+        applicationsByJob[jobId] = [];
+      }
+
+      applicationsByJob[jobId].push({
+        ...application,
+        id: application._id?.toString?.() || String(application._id),
+        jobId,
+        jobTitle: jobMap.get(jobId)?.title || 'Unknown Job',
+      });
+
+      if (countsByStatus[status] !== undefined) {
+        countsByStatus[status] += 1;
+      }
+    });
+
+    const jobsWithCounts = standardJobs.map((job) => {
+      const jobId = job._id?.toString?.() || String(job._id);
+      const groupedApplications = applicationsByJob[jobId] || [];
+      const applicationCounts = groupedApplications.reduce((acc, application) => {
+        const status = application.status || 'pending';
+        if (acc[status] === undefined) {
+          acc[status] = 0;
+        }
+        acc[status] += 1;
+        acc.total += 1;
+        return acc;
+      }, {
+        pending: 0,
+        accepted: 0,
+        rejected: 0,
+        under_review: 0,
+        withdrawn: 0,
+        total: 0,
+      });
+
+      return {
+        ...job,
+        _id: jobId,
+        id: jobId,
+        applicationCounts,
+      };
+    });
+
+    return successResponse(res, 200, 'Hirer applications summary retrieved', {
+      jobs: jobsWithCounts,
+      applicationsByJob,
+      summary: {
+        totalJobs: jobsWithCounts.length,
+        totalApplications: applications.length,
+        countsByStatus,
+      },
+    });
+  } catch (error) {
     next(error);
   }
 };
@@ -3718,11 +3954,15 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
     const offset = (page - 1) * limit;
-    const candidateLimit = Math.min(Math.max((offset + limit) * 4, 60), 120);
+    const candidateLimit = Math.max((offset + limit) * 4, 60);
+    const databaseCandidateLimit = Math.min(candidateLimit * 2, 1000);
 
-    const [workerContext, userPerformance] = await Promise.all([
+    const [workerContext, userPerformance, appliedJobIds] = await Promise.all([
       getCanonicalWorkerContext(userId),
       UserPerformance.findOne({ userId }).lean(),
+      typeof Application.distinct === 'function'
+        ? Application.distinct('job', { worker: userId })
+        : Promise.resolve([]),
     ]);
 
     if (!workerContext?.worker) {
@@ -3745,6 +3985,7 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
       ...performancePrimarySkills,
       ...performanceSecondarySkills,
     ]));
+    const allSkillSet = new Set(allSkills.map((skill) => String(skill).trim().toLowerCase()));
 
     if (allSkills.length === 0) {
       return successResponse(
@@ -3776,13 +4017,18 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
     // FIX C1: Previous code had duplicate `$or` keys in the object literal which
     // caused the skills $or to be silently overwritten by the expiry $or.
     // Now all conditions are wrapped inside a single $and array.
-    const candidateJobs = await Job.find({
+    const skillRegexes = buildCaseInsensitiveExactRegexes(allSkills);
+    const regexMatchConditions = skillRegexes.map((regex) => ({ $regexMatch: { input: { $toString: '$$skill' }, regex } }));
+    const baseCandidateQuery = {
+      status: { $in: ['open', 'Open'] },
+      'bidding.bidStatus': 'open',
+      ...(appliedJobIds.length > 0 ? { _id: { $nin: appliedJobIds } } : {}),
       $and: [
         {
           $or: [
-            { 'requirements.primarySkills': { $in: allSkills } },
-            { 'requirements.secondarySkills': { $in: allSkills } },
-            { skills: { $in: allSkills } }
+            { 'requirements.primarySkills': { $in: skillRegexes } },
+            { 'requirements.secondarySkills': { $in: skillRegexes } },
+            { skills: { $in: skillRegexes } },
           ],
         },
         {
@@ -3800,13 +4046,70 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
           ],
         },
       ],
-      status: { $in: ['open', 'Open'] },
-      'bidding.bidStatus': 'open'
-    })
-      .populate('hirer', 'firstName lastName profilePicture profileImage rating totalJobsPosted companyName businessName')
-      .sort({ createdAt: -1 })
-      .limit(candidateLimit)
-      .lean();
+    };
+
+    let candidateJobs;
+    if (typeof Job.aggregate === 'function') {
+      const candidatePipeline = [
+        { $match: baseCandidateQuery },
+        {
+          $addFields: {
+            matchedPrimarySkills: {
+              $filter: {
+                input: { $ifNull: ['$requirements.primarySkills', []] },
+                as: 'skill',
+                cond: { $or: regexMatchConditions },
+              },
+            },
+            matchedSecondarySkills: {
+              $filter: {
+                input: { $ifNull: ['$requirements.secondarySkills', []] },
+                as: 'skill',
+                cond: { $or: regexMatchConditions },
+              },
+            },
+            matchedExplicitSkills: {
+              $filter: {
+                input: { $ifNull: ['$skills', []] },
+                as: 'skill',
+                cond: { $or: regexMatchConditions },
+              },
+            },
+          },
+        },
+        {
+          $addFields: {
+            skillOverlapCount: {
+              $add: [
+                { $size: '$matchedPrimarySkills' },
+                { $size: '$matchedSecondarySkills' },
+                { $size: '$matchedExplicitSkills' },
+              ],
+            },
+          },
+        },
+        { $sort: { skillOverlapCount: -1, createdAt: -1, _id: -1 } },
+        { $limit: databaseCandidateLimit },
+      ];
+
+      candidateJobs = await Job.aggregate(candidatePipeline);
+      const hirerIds = Array.from(new Set(candidateJobs.map((job) => job.hirer).filter(Boolean)));
+      const hirers = await User.find({ _id: { $in: hirerIds } })
+        .select('firstName lastName profilePicture profileImage rating totalJobsPosted companyName businessName')
+        .lean();
+      const hirerMap = new Map(hirers.map((hirer) => [String(hirer._id), hirer]));
+      candidateJobs.forEach((job) => {
+        if (job.hirer) {
+          job.hirer = hirerMap.get(String(job.hirer)) || job.hirer;
+        }
+      });
+    } else {
+      candidateJobs = await Job.find(baseCandidateQuery)
+        .populate('hirer', 'firstName lastName profilePicture profileImage rating totalJobsPosted companyName businessName')
+        .sort({ createdAt: -1, _id: -1 })
+        .limit(candidateLimit)
+        .lean();
+    }
 
     // Calculate match scores for each job with null guards
     const jobsWithScores = candidateJobs.map(job => {
@@ -3830,6 +4133,8 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
       const daysSincePosted = Math.floor((Date.now() - new Date(job.createdAt).getTime()) / (1000 * 60 * 60 * 24));
       if (daysSincePosted <= 3) score += 10;
       else if (daysSincePosted <= 7) score += 5;
+      else if (daysSincePosted > 30) score -= 10;
+      else if (daysSincePosted > 14) score -= 5;
 
       score = Math.max(0, Math.min(100, Math.round(score)));
 
@@ -3842,14 +4147,23 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
     });
 
     // Sort ALL by match score FIRST, THEN paginate
-    jobsWithScores.sort((a, b) => b.matchScore - a.matchScore);
+    jobsWithScores.sort((a, b) => {
+      if (b.matchScore !== a.matchScore) {
+        return b.matchScore - a.matchScore;
+      }
+      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+    });
 
     const totalCount = jobsWithScores.length;
     const paginatedJobs = jobsWithScores.slice(offset, offset + limit);
 
     const recommendationItems = paginatedJobs.map((job) => {
-      const matchedPrimarySkills = (job.requirements?.primarySkills || []).filter((skill) => allSkills.includes(skill));
-      const matchedSecondarySkills = (job.requirements?.secondarySkills || []).filter((skill) => allSkills.includes(skill));
+      const matchedPrimarySkills = (job.requirements?.primarySkills || []).filter((skill) =>
+        allSkillSet.has(String(skill || '').trim().toLowerCase()),
+      );
+      const matchedSecondarySkills = (job.requirements?.secondarySkills || []).filter((skill) =>
+        allSkillSet.has(String(skill || '').trim().toLowerCase()),
+      );
       const reasons = [
         matchedPrimarySkills.length > 0 ? `Matched ${matchedPrimarySkills.length} core skill${matchedPrimarySkills.length > 1 ? 's' : ''}` : null,
         matchedSecondarySkills.length > 0 ? `Matched ${matchedSecondarySkills.length} supporting skill${matchedSecondarySkills.length > 1 ? 's' : ''}` : null,
@@ -4114,6 +4428,7 @@ module.exports = {
   getJobAnalytics,
   applyToJob,
   getJobApplications,
+  getHirerApplicationsSummary,
   getHirerProposals,
   updateApplicationStatus,
   withdrawApplication,
@@ -4134,4 +4449,8 @@ module.exports = {
   getExpiredJobs,
   getPlatformStats,
   getSearchSuggestions,
+  __testables: {
+    calculateJobMatchScore,
+    calculateWorkerMatchScore,
+  },
 };

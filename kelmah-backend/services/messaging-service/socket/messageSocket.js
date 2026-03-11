@@ -207,6 +207,9 @@ class MessageSocketHandler {
         });
       });
       this.userConversationContacts.set(String(userId), contactIds);
+      const visibleOnlineContacts = Array.from(contactIds).filter((contactId) =>
+        this.connectedUsers.has(String(contactId)),
+      );
 
       // Notify other users that this user is online
       this.broadcastUserStatus(userId, "online");
@@ -215,7 +218,7 @@ class MessageSocketHandler {
       socket.emit("connected", {
         message: "Successfully connected to messaging service",
         userId,
-        onlineUsers: Array.from(this.connectedUsers.keys()).map((id) => String(id)),
+        onlineUsers: visibleOnlineContacts,
         conversations: conversations.map((conv) => ({
           id: conv._id,
           participants: (conv.participants || []).map((participant) => ({

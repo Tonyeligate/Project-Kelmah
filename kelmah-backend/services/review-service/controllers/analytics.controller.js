@@ -4,7 +4,81 @@
  */
 
 const mongoose = require('mongoose');
-const { Review } = require('../models');
+const { Review, WorkerRating } = require('../models');
+
+const roundRating = (value) => (Number.isFinite(value) ? parseFloat(value.toFixed(1)) : 0);
+
+const updateWorkerRating = async (workerId) => {
+  if (!workerId || !mongoose.Types.ObjectId.isValid(workerId)) {
+    return null;
+  }
+
+  const reviews = await Review.find({ reviewee: workerId, status: 'approved' })
+    .sort({ createdAt: -1 })
+    .select('rating response jobCategory')
+    .lean();
+
+  const totalReviews = reviews.length;
+  const averageRating = totalReviews > 0
+    ? reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / totalReviews
+    : 0;
+  const highRated = reviews.filter((review) => Number(review.rating || 0) >= 4).length;
+  const responded = reviews.filter((review) => review.response?.comment).length;
+  const recentReviews = reviews.slice(0, 10);
+  const ratingDistribution = reviews.reduce(
+    (distribution, review) => {
+      const rating = Math.min(Math.max(Math.round(Number(review.rating || 0)), 1), 5);
+      distribution[rating] += 1;
+      return distribution;
+    },
+    { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+  );
+
+  const categorySummary = Array.from(
+    reviews.reduce((map, review) => {
+      const category = String(review.jobCategory || '').trim();
+      if (!category) {
+        return map;
+      }
+      const bucket = map.get(category) || { total: 0, count: 0 };
+      bucket.total += Number(review.rating || 0);
+      bucket.count += 1;
+      map.set(category, bucket);
+      return map;
+    }, new Map()).entries(),
+  ).map(([category, bucket]) => ({
+    category,
+    averageRating: roundRating(bucket.count > 0 ? bucket.total / bucket.count : 0),
+    reviewCount: bucket.count,
+  }));
+
+  return WorkerRating.findOneAndUpdate(
+    { workerId },
+    {
+      totalReviews,
+      averageRating: roundRating(averageRating),
+      ratings: {
+        overall: roundRating(averageRating),
+        quality: 0,
+        communication: 0,
+        timeliness: 0,
+        professionalism: 0,
+      },
+      ratingDistribution,
+      categoryRatings: categorySummary,
+      recommendationRate: totalReviews > 0 ? Math.round((highRated / totalReviews) * 100) : 0,
+      verifiedReviewsCount: 0,
+      responseRate: totalReviews > 0 ? Math.round((responded / totalReviews) * 100) : 0,
+      recentRating: roundRating(
+        recentReviews.length > 0
+          ? recentReviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / recentReviews.length
+          : 0,
+      ),
+      lastUpdated: new Date(),
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true },
+  );
+};
 
 /**
  * Get review analytics (admin only)
@@ -102,8 +176,7 @@ exports.moderateReview = async (req, res) => {
       });
     }
 
-    // Update worker rating if review was approved/rejected
-    // await updateWorkerRating(review.workerId);
+    await updateWorkerRating(review.reviewee);
 
     return res.json({
       success: true,

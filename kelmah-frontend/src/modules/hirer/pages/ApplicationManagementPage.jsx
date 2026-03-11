@@ -48,10 +48,8 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
 import { hirerService } from '../services/hirerService';
-import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { messagingService } from '../../messaging/services/messagingService';
-import { fetchHirerJobs } from '../services/hirerSlice';
 import { useSnackbar } from 'notistack';
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
@@ -241,33 +239,22 @@ function ApplicationManagementPage() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
   const [searchParams, setSearchParams] = useSearchParams();
   const urlJobId = searchParams.get('jobId');
 
-  // Redux: hirer jobs
-  const jobsByStatus = useSelector((state) => state.hirer?.jobs);
-
-  useEffect(() => {
-    if (!jobsByStatus || Object.keys(jobsByStatus).length === 0) {
-      dispatch(fetchHirerJobs('all'));
-    }
-  }, [dispatch, jobsByStatus]);
+  const [jobs, setJobs] = useState([]);
 
   // Flat deduplicated job list
   const dedupedJobs = useMemo(() => {
-    const all = Object.values(jobsByStatus || {}).flatMap((v) =>
-      Array.isArray(v) ? v : [],
-    );
     const seen = new Set();
-    return all.filter((j) => {
+    return (Array.isArray(jobs) ? jobs : []).filter((j) => {
       const id = j?.id || j?._id;
       if (!id || seen.has(id)) return false;
       seen.add(id);
       return true;
     });
-  }, [jobsByStatus]);
+  }, [jobs]);
 
   // This screen is for application-based jobs only.
   const allJobs = useMemo(
@@ -308,57 +295,56 @@ function ApplicationManagementPage() {
     }
   }, [dedupedJobs, navigate, selectedJobId, urlJobId]);
 
-  // ── Fetch all jobs' applications on mount ──────────────────────
+  // ── Fetch jobs and their applications on mount ─────────────────
   useEffect(() => {
     let cancelled = false;
+
     const load = async () => {
       setInitialLoading(true);
-      if (allJobs.length === 0) {
+      setError(null);
+
+      try {
+        const summary = await hirerService.getApplicationsSummary();
+        if (cancelled) return;
+
+        const summaryJobs = Array.isArray(summary?.jobs) ? summary.jobs : [];
+        const normalizedMap = Object.entries(summary?.applicationsByJob || {}).reduce((acc, [jobId, rawApplications]) => {
+          const job = summaryJobs.find((entry) => (entry.id || entry._id) === jobId);
+          acc[jobId] = (Array.isArray(rawApplications) ? rawApplications : []).map((app) =>
+            normalizeApplication(app, jobId, job?.title),
+          );
+          return acc;
+        }, {});
+
+        setJobs(summaryJobs);
+        setApplicationsByJob(normalizedMap);
+
+        // Auto-select first job with applications if none specified in URL
+        if (!urlJobId) {
+          const firstWithApps = summaryJobs.find((job) => {
+            const jobId = job.id || job._id;
+            return (normalizedMap[jobId] || []).length > 0;
+          });
+          if (firstWithApps) {
+            const fid = firstWithApps.id || firstWithApps._id;
+            setSelectedJobId(fid);
+          }
+        }
+
         setInitialLoading(false);
-        return;
+      } catch (loadError) {
+        if (cancelled) return;
+        setJobs([]);
+        setApplicationsByJob({});
+        setError(loadError?.response?.data?.message || loadError.message || 'Failed to load applications');
+        setInitialLoading(false);
       }
-
-      const results = await Promise.allSettled(
-        allJobs.map(async (job) => {
-          const jobId = job.id || job._id;
-          const list = await hirerService.getJobApplications(jobId);
-          return {
-            jobId,
-            apps: (Array.isArray(list) ? list : []).map((app) =>
-              normalizeApplication(app, jobId, job.title),
-            ),
-          };
-        }),
-      );
-
-      if (cancelled) return;
-
-      const newMap = {};
-      results.forEach((r) => {
-        if (r.status === 'fulfilled') {
-          newMap[r.value.jobId] = r.value.apps;
-        }
-      });
-      setApplicationsByJob(newMap);
-
-      // Auto-select first job with applications if none specified in URL
-      if (!urlJobId) {
-        const firstWithApps = allJobs.find((j) => {
-          const jid = j.id || j._id;
-          return (newMap[jid] || []).length > 0;
-        });
-        if (firstWithApps) {
-          const fid = firstWithApps.id || firstWithApps._id;
-          setSelectedJobId(fid);
-        }
-      }
-      setInitialLoading(false);
     };
     load();
     return () => {
       cancelled = true;
     };
-  }, [allJobs, urlJobId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [urlJobId]);
 
   // ── Derived data ───────────────────────────────────────────────
   const selectedJob = useMemo(

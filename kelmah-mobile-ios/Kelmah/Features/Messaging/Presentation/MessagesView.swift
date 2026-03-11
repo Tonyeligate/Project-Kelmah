@@ -10,7 +10,7 @@ struct MessagesView: View {
         NavigationStack(path: $path) {
             List {
                 Section {
-                    TextField("Search chats", text: $viewModel.searchQuery)
+                    TextField("Search messages", text: $viewModel.searchQuery)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                 }
@@ -27,9 +27,9 @@ struct MessagesView: View {
                     }
                 }
 
-                Section("Chats") {
+                Section("Messages") {
                     if viewModel.isLoadingConversations, viewModel.filteredConversations.isEmpty {
-                        ProgressView("Loading chats...")
+                        ProgressView("Loading messages...")
                             .frame(maxWidth: .infinity, alignment: .center)
                     } else if viewModel.filteredConversations.isEmpty {
                         ContentUnavailableView(
@@ -65,7 +65,7 @@ struct MessagesView: View {
                     } label: {
                         Image(systemName: "arrow.clockwise")
                     }
-                    .accessibilityLabel("Refresh conversations")
+                    .accessibilityLabel("Refresh messages")
                 }
             }
             .refreshable {
@@ -135,7 +135,7 @@ private struct ConversationRowView: View {
         .background(KelmahTheme.card)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(alignment: .bottomTrailing) {
-            Text("Tap to open")
+            Text("Tap to open chat")
                 .font(.caption2.weight(.semibold))
                 .foregroundStyle(KelmahTheme.accent)
                 .padding(.trailing, 14)
@@ -163,14 +163,14 @@ private struct MessageThreadView: View {
 
             if viewModel.isLoadingMessages, viewModel.messages.isEmpty {
                 Spacer()
-                ProgressView("Opening chat...")
+                ProgressView("Opening messages...")
                 Spacer()
             } else if viewModel.messages.isEmpty {
                 Spacer()
                 ContentUnavailableView(
                     "No messages yet",
                     systemImage: "ellipsis.message",
-                    description: Text("Write the first message.")
+                    description: Text("Send the first message.")
                 )
                 Spacer()
             } else {
@@ -199,7 +199,7 @@ private struct MessageThreadView: View {
             }
         }
         .background(KelmahTheme.background)
-        .navigationTitle(viewModel.selectedConversation?.displayTitle ?? "Chat")
+        .navigationTitle(viewModel.selectedConversation?.displayTitle ?? "Messages")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -208,12 +208,12 @@ private struct MessageThreadView: View {
                 } label: {
                     Image(systemName: "arrow.clockwise")
                 }
-                .accessibilityLabel("Refresh thread")
+                .accessibilityLabel("Refresh messages")
             }
         }
         .safeAreaInset(edge: .bottom) {
             HStack(spacing: 10) {
-                TextField("Write message", text: $viewModel.draftMessage, axis: .vertical)
+                TextField("Type message", text: $viewModel.draftMessage, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(1...4)
 

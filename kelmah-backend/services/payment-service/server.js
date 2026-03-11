@@ -4,6 +4,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
+const { createOriginMatcher } = require('../../shared/utils/corsPolicy');
 // removed morgan; using shared JSON logger
 
 // Import routes
@@ -72,31 +73,15 @@ try { const monitoring = require('../../shared/utils/monitoring'); monitoring.in
 // Middleware
 app.use(helmet());
 // Unified CORS (env-driven allowlist + Vercel previews)
+const { allowedOrigins, isAllowedOrigin } = createOriginMatcher();
+
 const corsOptions = {
   origin: function (origin, callback) {
-    const envAllow = (process.env.ALLOWED_ORIGINS || '')
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:5173',
-      process.env.FRONTEND_URL,
-      ...envAllow,
-    ].filter(Boolean);
-
-    const vercelPatterns = [
-      /^https:\/\/.*\.vercel\.app$/,
-      /^https:\/\/.*-kelmahs-projects\.vercel\.app$/,
-      /^https:\/\/project-kelmah.*\.vercel\.app$/,
-      /^https:\/\/kelmah-frontend.*\.vercel\.app$/,
-    ];
-
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin) || vercelPatterns.some((re) => re.test(origin))) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
-    logger.info(`🚨 CORS blocked origin: ${origin}`);
+    logger.info(`🚨 CORS blocked origin: ${origin}`, { allowedOrigins });
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,

@@ -82,34 +82,111 @@ WalletSchema.index({ user: 1 }, { unique: true });
 WalletSchema.index({ status: 1 });
 WalletSchema.index({ "metadata.lastTransactionDate": -1 });
 
-// Helper methods
-WalletSchema.methods.addFunds = async function (amount, transaction) {
-  this.balance += amount;
-  this.transactionHistory.push({
-    transaction: transaction._id,
-    type: "credit",
-    amount: amount,
-    timestamp: new Date(),
-  });
-  this.metadata.lastTransactionDate = new Date();
-  this.metadata.totalEarnings += amount;
-  return this.save();
+const buildWalletHistoryUpdate = ({ amount, transactionId, type, metricKey }) => {
+  const timestamp = new Date();
+  const update = {
+    $inc: {
+      balance: type === 'credit' ? amount : -amount,
+    },
+    $set: {
+      'metadata.lastTransactionDate': timestamp,
+    },
+  };
+
+  if (metricKey) {
+    update.$inc[`metadata.${metricKey}`] = amount;
+  }
+
+  if (transactionId) {
+    update.$push = {
+      transactionHistory: {
+        transaction: transactionId,
+        type,
+        amount,
+        timestamp,
+      },
+    };
+  }
+
+  return update;
 };
 
-WalletSchema.methods.deductFunds = async function (amount, transaction) {
-  if (this.balance < amount) {
-    throw new Error("Insufficient funds");
+WalletSchema.statics.atomicCredit = async function ({
+  walletId,
+  userId,
+  amount,
+  transactionId,
+  session,
+  trackEarnings = true,
+}) {
+  return this.findOneAndUpdate(
+    walletId ? { _id: walletId } : { user: userId },
+    buildWalletHistoryUpdate({
+      amount,
+      transactionId,
+      type: 'credit',
+      metricKey: trackEarnings ? 'totalEarnings' : null,
+    }),
+    { new: true, session },
+  );
+};
+
+WalletSchema.statics.atomicDeduct = async function ({
+  walletId,
+  userId,
+  amount,
+  transactionId,
+  session,
+  trackSpend = true,
+}) {
+  const wallet = await this.findOneAndUpdate(
+    {
+      ...(walletId ? { _id: walletId } : { user: userId }),
+      balance: { $gte: amount },
+    },
+    buildWalletHistoryUpdate({
+      amount,
+      transactionId,
+      type: 'debit',
+      metricKey: trackSpend ? 'totalSpent' : null,
+    }),
+    { new: true, session },
+  );
+
+  if (!wallet) {
+    throw new Error('Insufficient funds');
   }
-  this.balance -= amount;
-  this.transactionHistory.push({
-    transaction: transaction._id,
-    type: "debit",
-    amount: amount,
-    timestamp: new Date(),
+
+  return wallet;
+};
+
+// Helper methods
+WalletSchema.methods.addFunds = async function (amount, transaction, options = {}) {
+  const updatedWallet = await this.constructor.atomicCredit({
+    walletId: this._id,
+    amount,
+    transactionId: transaction?._id,
+    session: options.session,
+    trackEarnings: true,
   });
-  this.metadata.lastTransactionDate = new Date();
-  this.metadata.totalSpent += amount;
-  return this.save();
+  if (updatedWallet) {
+    this.set(updatedWallet.toObject());
+  }
+  return updatedWallet;
+};
+
+WalletSchema.methods.deductFunds = async function (amount, transaction, options = {}) {
+  const updatedWallet = await this.constructor.atomicDeduct({
+    walletId: this._id,
+    amount,
+    transactionId: transaction?._id,
+    session: options.session,
+    trackSpend: true,
+  });
+  if (updatedWallet) {
+    this.set(updatedWallet.toObject());
+  }
+  return updatedWallet;
 };
 
 WalletSchema.methods.addPaymentMethod = async function (paymentMethod) {

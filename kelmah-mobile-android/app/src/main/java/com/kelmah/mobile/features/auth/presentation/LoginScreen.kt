@@ -13,8 +13,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Login
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Login
 import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Key
@@ -60,7 +60,7 @@ fun LoginScreen(
             }
             item {
                 Text(
-                    text = "Find skilled workers. Get hired for jobs.",
+                    text = "Find workers. Find jobs.",
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
@@ -74,7 +74,7 @@ fun LoginScreen(
                             leadingIcon = {
                                 Icon(
                                     imageVector = when (mode) {
-                                        AuthMode.LOGIN -> Icons.Outlined.Login
+                                        AuthMode.LOGIN -> Icons.AutoMirrored.Outlined.Login
                                         AuthMode.REGISTER -> Icons.Outlined.PersonAdd
                                         AuthMode.FORGOT_PASSWORD -> Icons.Outlined.Lock
                                         AuthMode.RESET_PASSWORD -> Icons.Outlined.Key
@@ -137,7 +137,7 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = uiState.email,
                         onValueChange = viewModel::onEmailChanged,
-                        label = { Text("Email") },
+                        label = { Text("Email address") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                     )
@@ -149,7 +149,7 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = uiState.phone,
                         onValueChange = viewModel::onPhoneChanged,
-                        label = { Text("Phone number (optional)") },
+                        label = { Text("Phone (optional)") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                     )
@@ -172,7 +172,7 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = uiState.token,
                         onValueChange = viewModel::onTokenChanged,
-                        label = { Text(if (uiState.mode == AuthMode.RESET_PASSWORD) "Reset token" else "Verification token") },
+                        label = { Text(if (uiState.mode == AuthMode.RESET_PASSWORD) "Reset code" else "Verification code") },
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -233,7 +233,7 @@ fun LoginScreen(
                             Text("Forgot password?")
                         }
                         TextButton(onClick = { viewModel.switchMode(AuthMode.VERIFY_EMAIL) }) {
-                            Text("Already have a verification token?")
+                            Text("Have a verification code?")
                         }
                         TextButton(
                             onClick = viewModel::resendVerificationEmail,
@@ -253,7 +253,7 @@ fun LoginScreen(
                                 onClick = viewModel::resendVerificationEmail,
                                 enabled = !uiState.isLoading && uiState.email.isNotBlank(),
                             ) {
-                                Text("Resend verification")
+                                Text("Resend email")
                             }
                         }
                     }

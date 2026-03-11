@@ -129,11 +129,11 @@ class ProfileViewModel @Inject constructor(
         val state = _uiState.value
         when {
             state.currentPassword.isBlank() || state.newPassword.isBlank() || state.confirmPassword.isBlank() -> {
-                _uiState.update { it.copy(errorMessage = "Complete all password fields") }
+                _uiState.update { it.copy(errorMessage = "Fill in all password boxes") }
                 return
             }
             !PasswordPolicy.isStrong(state.newPassword) -> {
-                _uiState.update { it.copy(errorMessage = "New ${PasswordPolicy.requirementMessage.lowercase()}") }
+                _uiState.update { it.copy(errorMessage = PasswordPolicy.requirementMessage) }
                 return
             }
             state.newPassword != state.confirmPassword -> {

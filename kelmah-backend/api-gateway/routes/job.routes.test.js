@@ -75,4 +75,37 @@ describe('job gateway routes', () => {
       }),
     );
   });
+
+  test('forwards job search requests with the original query string', async () => {
+    axios.mockResolvedValue({
+      status: 200,
+      data: {
+        success: true,
+        data: {
+          jobs: [{ id: 'job-1' }],
+        },
+      },
+    });
+
+    const response = await request(app)
+      .get('/api/jobs/search?q=commercial+wiring&location=Accra&page=2&limit=10');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      success: true,
+      data: {
+        jobs: [{ id: 'job-1' }],
+      },
+    });
+    expect(axios).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'GET',
+        url: 'http://job-service.test/api/jobs/search?q=commercial+wiring&location=Accra&page=2&limit=10',
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+          'User-Agent': 'kelmah-api-gateway',
+        }),
+      }),
+    );
+  });
 });

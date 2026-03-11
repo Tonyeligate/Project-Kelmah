@@ -83,9 +83,9 @@ const buildTradeRegexes = (trade) => {
     return [];
   }
 
-  const normalisedKey = trade.trim().toLowerCase();
+  const normalisedKey = trade.trim().slice(0, 100).toLowerCase();
   const synonyms = TRADE_SYNONYM_MAP[normalisedKey] || [trade];
-  const canonical = Array.from(new Set([trade, ...synonyms]));
+  const canonical = Array.from(new Set([normalisedKey, ...synonyms])).slice(0, 20);
   return canonical.map((term) => new RegExp(escapeRegex(term), 'i'));
 };
 
@@ -1868,13 +1868,13 @@ class WorkerController {
         radius,
       } = req.query;
 
-      const searchTerm = keywords || search || '';
+      const searchTerm = String(keywords || search || '').trim().slice(0, 100);
       const { workers, pagination } = await executeWorkerDirectoryQuery({
         page,
         limit,
         textQuery: searchTerm,
-        locationText: city || location || '',
-        primaryTrade,
+        locationText: String(city || location || '').trim().slice(0, 100),
+        primaryTrade: String(primaryTrade || '').trim().slice(0, 100),
         workType,
         skillsList: normalizeDelimitedList(skills),
         minRating: Number(rating || 0),
@@ -1957,8 +1957,8 @@ class WorkerController {
       const { workers: searchResults, pagination } = await executeWorkerDirectoryQuery({
         page: parsedPage,
         limit: parsedLimit,
-        textQuery: query,
-        locationText: location || '',
+        textQuery: String(query || '').trim().slice(0, 100),
+        locationText: String(location || '').trim().slice(0, 100),
         skillsList: normalizeDelimitedList(skills),
         minRating: Number(minRating || 0),
         maxRate: maxRate ? Number(maxRate) : undefined,
@@ -2498,9 +2498,9 @@ class WorkerController {
         }
       });
 
-      const requiredPercentage = (completedRequired / REQUIRED_PROFILE_FIELDS.length) * 70; // 70% weight
-      const optionalPercentage = (completedOptional / OPTIONAL_PROFILE_FIELDS.length) * 30; // 30% weight
-      const totalPercentage = Math.round(requiredPercentage + optionalPercentage);
+      const totalPercentage = Math.round(
+        (completedRequired / REQUIRED_PROFILE_FIELDS.length) * 100,
+      );
 
       // Determine missing fields
       const missingRequired = REQUIRED_PROFILE_FIELDS.filter((field) => !hasValue(getFieldValue(field)));

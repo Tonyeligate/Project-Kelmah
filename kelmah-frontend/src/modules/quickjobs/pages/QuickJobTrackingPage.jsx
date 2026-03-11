@@ -55,6 +55,7 @@ import {
 } from '../services/quickJobService';
 import { Helmet } from 'react-helmet-async';
 import { api } from '../../../services/apiClient';
+import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
 
 // Job status steps for worker
 const workerSteps = [
@@ -104,12 +105,15 @@ const QuickJobTrackingPage = () => {
     }
   }, [jobId]);
 
-  useEffect(() => {
-    fetchJob();
-    // Poll for updates every 30 seconds
-    const interval = setInterval(fetchJob, 30000);
-    return () => clearInterval(interval);
-  }, [fetchJob]);
+  useVisibilityPolling({
+    enabled: Boolean(jobId),
+    intervalMs: 30_000,
+    maxIntervalMs: 3 * 60 * 1000,
+    shouldPause: () => actionLoading || locationLoading,
+    callback: async () => {
+      await fetchJob();
+    },
+  });
 
   // Get current step index
   const getCurrentStepIndex = () => {

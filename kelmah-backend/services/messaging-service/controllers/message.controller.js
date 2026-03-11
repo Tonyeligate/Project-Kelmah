@@ -34,6 +34,16 @@ const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const isMissingTextIndexError = (error) =>
   /text index required|text index/i.test(String(error?.message || ''));
 
+const sanitizeContent = (input) => {
+  if (typeof input !== 'string') return '';
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+};
+
 // Create a new message
 exports.createMessage = async (req, res) => {
   try {
@@ -57,7 +67,11 @@ exports.createMessage = async (req, res) => {
     const safeAttachments = ensureAttachmentScanStateList(attachments);
     const hasAttachments = Array.isArray(safeAttachments) && safeAttachments.length > 0;
     const trimmedContent = typeof content === "string" ? content.trim() : "";
+    if (trimmedContent.length > 5000) {
+      return res.status(400).json({ success: false, message: 'Message content cannot exceed 5000 characters' });
+    }
     const normalizedContent = trimmedContent || (hasAttachments ? "[Attachment]" : "");
+    const sanitizedContent = sanitizeContent(normalizedContent);
     const normalizedMessageType =
       messageType === "mixed"
         ? hasAttachments
@@ -117,7 +131,7 @@ exports.createMessage = async (req, res) => {
       // Enforce sender as the authenticated user for security
       sender: req.user?._id || req.user?.id,
       recipient: resolvedRecipient,
-      content: normalizedContent,
+      content: sanitizedContent,
       messageType: normalizedMessageType,
       attachments: safeAttachments,
       relatedJob,
@@ -133,10 +147,12 @@ exports.createMessage = async (req, res) => {
 
     await message.save();
 
-    // Update conversation's last message
-    conversation.lastMessage = message._id;
-    if (resolvedRecipient) conversation.incrementUnreadCount(resolvedRecipient);
-    await conversation.save();
+    await Promise.all([
+      Conversation.findByIdAndUpdate(conversation._id, { $set: { lastMessage: message._id } }),
+      resolvedRecipient
+        ? Conversation.atomicIncrementUnread(conversation._id, resolvedRecipient)
+        : Promise.resolve(),
+    ]);
 
     await message.populate("sender", "firstName lastName profilePicture");
 
@@ -318,6 +334,9 @@ exports.editMessage = async (req, res) => {
     if (!content || typeof content !== "string" || !content.trim()) {
       return res.status(400).json({ message: "Content is required" });
     }
+    if (content.trim().length > 5000) {
+      return res.status(400).json({ message: 'Content cannot exceed 5000 characters' });
+    }
     const message = await Message.findById(messageId);
     if (!message) return res.status(404).json({ message: "Message not found" });
     if (String(message.sender) !== String(getUserId(req))) {
@@ -325,7 +344,7 @@ exports.editMessage = async (req, res) => {
         .status(403)
         .json({ message: "Not authorized to edit this message" });
     }
-    message.content = content.trim();
+    message.content = sanitizeContent(content.trim());
     message.editedAt = new Date();
     await message.save();
     return res.json({

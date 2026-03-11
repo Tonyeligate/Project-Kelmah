@@ -101,7 +101,7 @@ const buildNormalizedPagination = (payload, itemCount = 0) => {
   };
 };
 
-const buildMyJobsParams = ({ status, limit, includeApplications } = {}) => {
+const buildMyJobsParams = ({ status, limit, includeApplications, page, search } = {}) => {
   const params = { role: 'hirer' };
   const canonicalStatus = getCanonicalJobStatus(status);
 
@@ -111,6 +111,14 @@ const buildMyJobsParams = ({ status, limit, includeApplications } = {}) => {
 
   if (typeof limit === 'number') {
     params.limit = limit;
+  }
+
+  if (typeof page === 'number') {
+    params.page = page;
+  }
+
+  if (typeof search === 'string' && search.trim()) {
+    params.search = search.trim();
   }
 
   if (includeApplications) {
@@ -178,6 +186,60 @@ export const hirerService = {
       );
       return [];
     }
+  },
+
+  async getJobsPage(options = {}) {
+    try {
+      const response = await api.get(JOB.MY_JOBS, {
+        params: buildMyJobsParams(options),
+      });
+
+      const data = response?.data || {};
+      const jobs = extractCollectionItems(data);
+      const pagination =
+        data?.meta?.pagination ||
+        data?.data?.pagination ||
+        data?.pagination ||
+        {};
+
+      return {
+        jobs,
+        pagination: {
+          page: Number(pagination.page) || Number(options.page) || 1,
+          totalPages: Number(pagination.totalPages) || 1,
+          total: Number(pagination.total) || jobs.length,
+        },
+        countsByStatus: data?.meta?.countsByStatus || {},
+      };
+    } catch (error) {
+      if (import.meta.env.DEV) console.warn('Paged hirer jobs unavailable:', error.message);
+      return {
+        jobs: [],
+        pagination: { page: Number(options.page) || 1, totalPages: 1, total: 0 },
+        countsByStatus: {},
+      };
+    }
+  },
+
+  async getAllJobs(options = {}) {
+    const pageSize = Math.min(Number(options.limit) || 50, 50);
+    const aggregatedJobs = [];
+    let currentPage = 1;
+    let totalPages = 1;
+
+    do {
+      const pageResult = await this.getJobsPage({
+        ...options,
+        page: currentPage,
+        limit: pageSize,
+      });
+
+      aggregatedJobs.push(...(Array.isArray(pageResult.jobs) ? pageResult.jobs : []));
+      totalPages = Number(pageResult.pagination?.totalPages) || 1;
+      currentPage += 1;
+    } while (currentPage <= totalPages);
+
+    return aggregatedJobs;
   },
 
   // Dashboard Data
@@ -307,6 +369,33 @@ export const hirerService = {
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Applications unavailable:', error.message);
       return [];
+    }
+  },
+
+  async getApplicationsSummary(filters = {}) {
+    try {
+      const params = {};
+      if (typeof filters.status === 'string' && filters.status.trim()) {
+        params.status = filters.status.trim();
+      }
+
+      const response = await api.get('/jobs/applications/received-summary', { params });
+      const data = unwrapPayload(response?.data) || {};
+
+      return {
+        jobs: Array.isArray(data?.jobs) ? data.jobs : [],
+        applicationsByJob: data?.applicationsByJob && typeof data.applicationsByJob === 'object'
+          ? data.applicationsByJob
+          : {},
+        summary: data?.summary || {
+          totalJobs: 0,
+          totalApplications: 0,
+          countsByStatus: {},
+        },
+      };
+    } catch (error) {
+      if (import.meta.env.DEV) console.warn('Applications summary unavailable:', error.message);
+      throw error;
     }
   },
 

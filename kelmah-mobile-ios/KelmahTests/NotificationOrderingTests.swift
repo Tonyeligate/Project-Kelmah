@@ -39,4 +39,40 @@ final class NotificationOrderingTests: XCTestCase {
 
         XCTAssertEqual(notification.actionTarget, .conversation("69aa0b13e0a41572beebe499"))
     }
+
+    func testActionTargetParsesJobIdFromPath() {
+        let notification = AppNotificationItem(
+            id: "notification-2",
+            type: "job_offer",
+            title: "Job",
+            content: "",
+            actionURL: "/jobs/abc123xyz",
+            priority: "medium",
+            isRead: false,
+            createdAt: nil,
+            updatedAt: nil,
+            relatedEntityType: nil,
+            relatedEntityId: nil
+        )
+
+        XCTAssertEqual(notification.actionTarget, .job("abc123xyz"))
+    }
+
+    func testActionTargetParsesConversationIdFromQueryString() {
+        let notification = AppNotificationItem(
+            id: "notification-3",
+            type: "message_received",
+            title: "Message",
+            content: "",
+            actionURL: "/messages/thread?conversation=convo-42",
+            priority: "medium",
+            isRead: false,
+            createdAt: nil,
+            updatedAt: nil,
+            relatedEntityType: nil,
+            relatedEntityId: nil
+        )
+
+        XCTAssertEqual(notification.actionTarget, .conversation("convo-42"))
+    }
 }

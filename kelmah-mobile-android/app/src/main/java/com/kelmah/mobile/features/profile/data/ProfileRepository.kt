@@ -60,10 +60,10 @@ class ProfileRepository @Inject constructor(
                     completeness = parseCompleteness(completenessResponse),
                     portfolio = parsePortfolio(portfolioResponse),
                     partialWarnings = buildList {
-                        if (credentialsResponse == null) add("Credentials could not be loaded. Recommendation quality may be reduced.")
-                        if (availabilityResponse == null) add("Availability details could not be loaded. Match freshness may be reduced.")
-                        if (completenessResponse == null) add("Profile completeness could not be checked. Recommendation guidance may be incomplete.")
-                        if (portfolioResponse == null) add("Portfolio proof could not be loaded. Hirer trust signals may be reduced.")
+                        if (credentialsResponse == null) add("Your certificates could not load. Job matches may be less accurate.")
+                        if (availabilityResponse == null) add("Your work time could not load. Job matches may be less up to date.")
+                        if (completenessResponse == null) add("Your profile check could not load.")
+                        if (portfolioResponse == null) add("Your past work could not load. Hirers may see less proof.")
                     },
                 ),
             )

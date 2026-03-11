@@ -49,10 +49,10 @@ final class ProfileRepository {
             completeness: parseCompleteness(resolvedCompleteness),
             portfolio: parsePortfolio(resolvedPortfolio),
             partialWarnings: [
-                resolvedCredentials == nil ? "Credentials could not be loaded. Recommendation quality may be reduced." : nil,
-                resolvedAvailability == nil ? "Availability details could not be loaded. Match freshness may be reduced." : nil,
-                resolvedCompleteness == nil ? "Profile completeness could not be checked. Recommendation guidance may be incomplete." : nil,
-                resolvedPortfolio == nil ? "Portfolio proof could not be loaded. Hirer trust signals may be reduced." : nil,
+                resolvedCredentials == nil ? "Your certificates could not load. Job matches may be less accurate." : nil,
+                resolvedAvailability == nil ? "Your work time could not load. Job matches may be less up to date." : nil,
+                resolvedCompleteness == nil ? "Your profile check could not load." : nil,
+                resolvedPortfolio == nil ? "Your past work could not load. Hirers may see less proof." : nil,
             ].compactMap { $0 }
         )
     }
