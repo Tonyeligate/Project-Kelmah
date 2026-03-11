@@ -601,7 +601,7 @@ const JobDetailsPage = () => {
         minHeight: '100vh',
         py: { xs: 2, sm: 4, md: 5 },
         px: { xs: 0, sm: 1 },
-        pb: isMobile ? `calc(${BOTTOM_NAV_HEIGHT + STICKY_CTA_HEIGHT + 64}px + env(safe-area-inset-bottom, 0px))` : undefined,
+        pb: isMobile ? `calc(${STICKY_CTA_HEIGHT + 16}px + env(safe-area-inset-bottom, 0px))` : undefined,
         bgcolor: 'background.default',
       }}
     >
@@ -1252,7 +1252,7 @@ const JobDetailsPage = () => {
         <Box
           sx={{
             position: 'fixed',
-            bottom: { xs: `${BOTTOM_NAV_HEIGHT}px`, md: 0 },
+            bottom: 0,
             left: 0,
             right: 0,
             zIndex: Z_INDEX.stickyCta,
@@ -1300,7 +1300,7 @@ const JobDetailsPage = () => {
                 fontSize: '0.95rem',
                 minHeight: 48,
                 borderRadius: 2,
-                minWidth: { xs: 132, sm: 156 },
+                minWidth: { xs: 108, sm: 156 },
                 whiteSpace: 'nowrap',
                 '&:hover': { bgcolor: '#B8941F' },
               }}
