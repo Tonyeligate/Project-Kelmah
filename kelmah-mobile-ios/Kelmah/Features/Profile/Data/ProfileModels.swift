@@ -9,7 +9,7 @@ struct WorkerProfileSnapshot: Hashable {
     let partialWarnings: [String]
 
     var visibleSkills: [String] {
-        let credentialSkills = credentials.skills.map(\ .name)
+        let credentialSkills = credentials.skills.map(\.name)
         return credentialSkills.isEmpty ? profile.skills : credentialSkills
     }
 }
@@ -171,10 +171,4 @@ struct ProfileRawEnvelope: Decodable {
     let message: String?
     let data: JSONValue?
     let meta: JSONValue?
-}
-
-private extension String {
-    var nilIfEmpty: String? {
-        trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : self
-    }
 }

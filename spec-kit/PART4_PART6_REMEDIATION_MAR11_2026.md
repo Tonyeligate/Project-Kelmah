@@ -109,6 +109,18 @@
 - Backend syntax verification succeeded:
   - Command: `node --check` run across edited backend controllers/models
   - Result: `SYNTAX_OK`.
+- Focused backend Jest runtime validation (auth/payment/messaging) was executed from `kelmah-backend/`:
+  - Passing focused subset:
+    - `services/auth-service/tests/auth.controller.security.test.js`
+    - `services/auth-service/tests/auth.routes.validation.test.js`
+    - `services/payment-service/tests/escrow.controller.test.js`
+    - `services/payment-service/tests/wallet.controller.test.js`
+    - `services/messaging-service/tests/pagination-readreceipts.test.js`
+    - Result: `5` suites passed, `23` tests passed, `0` failures.
+  - Known legacy suite issue observed when included:
+    - `services/messaging-service/tests/messaging.test.js`
+    - Failure: missing test helper import `../../shared/test-utils`.
+    - Impact: this is a test-harness import issue, not a runtime regression in the remediated auth/payment paths.
 
 ## Final State
 - Part 4 to Part 6 remediation items addressed in this pass are implemented and validated.

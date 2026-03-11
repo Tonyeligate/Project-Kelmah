@@ -1,6 +1,7 @@
 package com.kelmah.mobile.features.jobs.data
 
 import com.kelmah.mobile.core.network.ApiResult
+import com.kelmah.mobile.core.network.executeAuthorizedApiCall
 import com.kelmah.mobile.core.session.SessionCoordinator
 import dagger.Lazy
 import javax.inject.Inject
@@ -10,7 +11,6 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import retrofit2.HttpException
 
 @Singleton
 class JobsRepository @Inject constructor(
@@ -22,7 +22,7 @@ class JobsRepository @Inject constructor(
         filters: JobsFilterState,
         page: Int = 1,
         limit: Int = 20,
-    ): ApiResult<JobsPage> = executeAuthorized {
+    ): ApiResult<JobsPage> = executeAuthorizedApiCall(sessionCoordinator) {
         val response = jobsApiService.getJobs(
             buildMap {
                 put("page", page.toString())
@@ -36,7 +36,7 @@ class JobsRepository @Inject constructor(
         ApiResult.Success(parseJobsPage(response))
     }
 
-    suspend fun getRecommendedJobs(limit: Int = 6): ApiResult<RecommendationFeed> = executeAuthorized {
+    suspend fun getRecommendedJobs(limit: Int = 6): ApiResult<RecommendationFeed> = executeAuthorizedApiCall(sessionCoordinator) {
         val response = jobsApiService.getRecommendedJobs(
             mapOf(
                 "page" to "1",
@@ -70,7 +70,7 @@ class JobsRepository @Inject constructor(
         }
     }
 
-    suspend fun getMyJobs(limit: Int = 6): ApiResult<List<JobSummary>> = executeAuthorized {
+    suspend fun getMyJobs(limit: Int = 6): ApiResult<List<JobSummary>> = executeAuthorizedApiCall(sessionCoordinator) {
         val response = jobsApiService.getMyJobs(
             mapOf(
                 "page" to "1",
@@ -84,7 +84,7 @@ class JobsRepository @Inject constructor(
     suspend fun getSavedJobs(
         page: Int = 1,
         limit: Int = 20,
-    ): ApiResult<JobsPage> = executeAuthorized {
+    ): ApiResult<JobsPage> = executeAuthorizedApiCall(sessionCoordinator) {
         val response = jobsApiService.getSavedJobs(
             mapOf(
                 "page" to page.toString(),
@@ -94,17 +94,17 @@ class JobsRepository @Inject constructor(
         ApiResult.Success(parseJobsPage(response, forcedSaved = true))
     }
 
-    suspend fun getCategories(): ApiResult<List<JobCategory>> = executeAuthorized {
+    suspend fun getCategories(): ApiResult<List<JobCategory>> = executeAuthorizedApiCall(sessionCoordinator) {
         val response = jobsApiService.getCategories()
         ApiResult.Success(parseCategories(response))
     }
 
-    suspend fun getJobDetail(jobId: String): ApiResult<JobDetail> = executeAuthorized {
+    suspend fun getJobDetail(jobId: String): ApiResult<JobDetail> = executeAuthorizedApiCall(sessionCoordinator) {
         val response = jobsApiService.getJobById(jobId)
         ApiResult.Success(parseJobDetail(response))
     }
 
-    suspend fun toggleSaved(jobId: String, shouldSave: Boolean): ApiResult<Boolean> = executeAuthorized {
+    suspend fun toggleSaved(jobId: String, shouldSave: Boolean): ApiResult<Boolean> = executeAuthorizedApiCall(sessionCoordinator) {
         if (shouldSave) {
             jobsApiService.saveJob(jobId)
         } else {
@@ -113,32 +113,14 @@ class JobsRepository @Inject constructor(
         ApiResult.Success(shouldSave)
     }
 
-    suspend fun applyToJob(jobId: String, request: ApplyToJobRequest): ApiResult<JobApplicationResult> = executeAuthorized {
+    suspend fun applyToJob(jobId: String, request: ApplyToJobRequest): ApiResult<JobApplicationResult> = executeAuthorizedApiCall(sessionCoordinator) {
         val response = jobsApiService.applyToJob(jobId, request)
         ApiResult.Success(
             JobApplicationResult(
-                success = response.string("success")?.toBooleanStrictOrNull() ?: true,
+                success = response.string("success")?.toBooleanStrictOrNull() ?: false,
                 message = response.string("message") ?: response.nestedObject("data")?.string("message") ?: "Application submitted successfully",
             ),
         )
-    }
-
-    private suspend fun <T> executeAuthorized(block: suspend () -> ApiResult<T>): ApiResult<T> {
-        return try {
-            block()
-        } catch (error: HttpException) {
-            if (error.code() == 401 && sessionCoordinator.get().refreshSession()) {
-                try {
-                    block()
-                } catch (retryError: Exception) {
-                    ApiResult.Error(message = retryError.message ?: "Request failed after session refresh")
-                }
-            } else {
-                ApiResult.Error(message = error.message ?: "Request failed", code = error.code())
-            }
-        } catch (error: Exception) {
-            ApiResult.Error(message = error.message ?: "Request failed")
-        }
     }
 
     private fun parseJobsPage(
@@ -314,7 +296,7 @@ class JobsRepository @Inject constructor(
     }
 
     private fun formatBudgetLabel(amount: Double, currency: String, paymentType: String): String {
-        val normalizedAmount = if (amount % 1.0 == 0.0) amount.toInt().toString() else String.format("%.2f", amount)
+        val normalizedAmount = if (amount % 1.0 == 0.0) amount.toInt().toString() else String.format(java.util.Locale.US, "%.2f", amount)
         val suffix = if (paymentType.equals("hourly", ignoreCase = true)) "/hr" else ""
         return "$currency $normalizedAmount$suffix"
     }

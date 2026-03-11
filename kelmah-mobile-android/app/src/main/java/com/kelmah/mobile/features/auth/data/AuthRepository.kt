@@ -4,10 +4,13 @@ import com.kelmah.mobile.core.network.ApiResult
 import com.kelmah.mobile.core.storage.SessionUser
 import com.kelmah.mobile.core.storage.StoredSession
 import com.kelmah.mobile.core.storage.TokenManager
+import java.util.concurrent.CancellationException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import retrofit2.HttpException
+import kotlin.coroutines.coroutineContext
 
 @Singleton
 class AuthRepository @Inject constructor(
@@ -155,14 +158,21 @@ class AuthRepository @Inject constructor(
 
     suspend fun logout(logoutAll: Boolean = false): ApiResult<Unit> {
         val refreshToken = tokenManager.getRefreshToken()
-        return executeWithRetry(maxRetries = 1) {
-            authApiService.logout(
-                LogoutRequest(
-                    refreshToken = refreshToken,
-                    logoutAll = logoutAll,
-                ),
-            )
-            ApiResult.Success(Unit)
+        // Always clear local session regardless of server response.
+        // A user who taps "Sign out" must be signed out locally even if the
+        // server revocation call fails (e.g. network timeout).
+        return try {
+            executeWithRetry(maxRetries = 1) {
+                authApiService.logout(
+                    LogoutRequest(
+                        refreshToken = refreshToken,
+                        logoutAll = logoutAll,
+                    ),
+                )
+                ApiResult.Success(Unit)
+            }
+        } finally {
+            tokenManager.clearSession()
         }
     }
 
@@ -173,8 +183,14 @@ class AuthRepository @Inject constructor(
     ): ApiResult<T> {
         var currentDelay = baseDelayMs
         repeat(maxRetries) { attempt ->
+            // Ensure structured concurrency: if the coroutine was cancelled,
+            // exit immediately instead of silently swallowing CancellationException.
+            coroutineContext.ensureActive()
             val result = try {
                 block()
+            } catch (error: CancellationException) {
+                // Never swallow CancellationException -- rethrow to honour coroutine cancellation
+                throw error
             } catch (error: HttpException) {
                 ApiResult.Error(message = error.message ?: "Request failed", code = error.code())
             } catch (error: Exception) {

@@ -1,6 +1,7 @@
 package com.kelmah.mobile.features.profile.data
 
 import com.kelmah.mobile.core.network.ApiResult
+import com.kelmah.mobile.core.network.executeAuthorizedApiCall
 import com.kelmah.mobile.core.session.SessionCoordinator
 import dagger.Lazy
 import javax.inject.Inject
@@ -19,10 +20,10 @@ class ProfileRepository @Inject constructor(
     private val profileApiService: ProfileApiService,
     private val sessionCoordinator: Lazy<SessionCoordinator>,
 ) {
-    suspend fun getWorkerProfileSnapshot(workerId: String): ApiResult<WorkerProfileSnapshot> = executeAuthorized {
+    suspend fun getWorkerProfileSnapshot(workerId: String): ApiResult<WorkerProfileSnapshot> = executeAuthorizedApiCall(sessionCoordinator) {
         try {
             val response = profileApiService.getMyProfileSignals()
-            return@executeAuthorized ApiResult.Success(parseProfileSignalsSnapshot(response))
+            return@executeAuthorizedApiCall ApiResult.Success(parseProfileSignalsSnapshot(response))
         } catch (error: HttpException) {
             if (error.code() != 404) {
                 throw error
@@ -81,24 +82,6 @@ class ProfileRepository @Inject constructor(
 
     private suspend fun fetchOptional(block: suspend () -> JsonObject): JsonObject? =
         runCatching { block() }.getOrNull()
-
-    private suspend fun <T> executeAuthorized(block: suspend () -> ApiResult<T>): ApiResult<T> {
-        return try {
-            block()
-        } catch (error: HttpException) {
-            if (error.code() == 401 && sessionCoordinator.get().refreshSession()) {
-                try {
-                    block()
-                } catch (retryError: Exception) {
-                    ApiResult.Error(message = retryError.message ?: "Request failed after session refresh")
-                }
-            } else {
-                ApiResult.Error(message = error.message ?: "Request failed", code = error.code())
-            }
-        } catch (error: Exception) {
-            ApiResult.Error(message = error.message ?: "Request failed")
-        }
-    }
 
     private fun parseProfile(response: JsonObject): WorkerRecommendationProfile {
         val raw = response.nestedObject("data") ?: response
@@ -236,7 +219,10 @@ class ProfileRepository @Inject constructor(
     }
 }
 
-private fun JsonObject.string(key: String): String? = (this[key] as? JsonPrimitive)?.content?.takeIf { it.isNotBlank() }
+private fun JsonObject.string(key: String): String? = (this[key] as? JsonPrimitive)
+    ?.takeIf { it != JsonNull }
+    ?.content
+    ?.takeIf { it.isNotBlank() }
 
 private fun JsonObject.int(key: String): Int? = (this[key] as? JsonPrimitive)?.content?.toIntOrNull()
 

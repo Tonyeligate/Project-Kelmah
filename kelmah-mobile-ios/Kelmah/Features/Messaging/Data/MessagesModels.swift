@@ -56,9 +56,3 @@ struct SendMessagePayload: Encodable {
         self.messageType = messageType
     }
 }
-
-private extension String {
-    var nilIfEmpty: String? {
-        trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : self
-    }
-}

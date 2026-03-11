@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -60,15 +61,17 @@ fun JobApplicationScreen(
         viewModel.loadJobDetail(jobId)
     }
 
-    LaunchedEffect(uiState.errorMessage, uiState.infoMessage) {
+    LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let { snackbars.showSnackbar(it); viewModel.clearMessages() }
+    }
+    LaunchedEffect(uiState.infoMessage) {
         uiState.infoMessage?.let { snackbars.showSnackbar(it); viewModel.clearMessages() }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Apply to Job") },
+                title = { Text("Apply Now") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "Back")
@@ -116,12 +119,17 @@ fun JobApplicationScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(text = jobTitle, style = MaterialTheme.typography.headlineSmall)
-            Text(text = "Submit a strong, professional application through the Kelmah API Gateway.")
+            Text(text = "Share your price, time, and a short message.")
+            Text(
+                text = "Write simple words about the work you can do.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
             OutlinedTextField(
                 value = proposedRate,
                 onValueChange = { proposedRate = it },
-                label = { Text("Proposed rate (GHS)") },
+                label = { Text("Your price (GHS)") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -129,14 +137,14 @@ fun JobApplicationScreen(
             OutlinedTextField(
                 value = estimatedDuration,
                 onValueChange = { estimatedDuration = it },
-                label = { Text("Estimated duration") },
+                label = { Text("Time to finish") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
             OutlinedTextField(
                 value = coverLetter,
                 onValueChange = { coverLetter = it },
-                label = { Text("Cover letter") },
+                label = { Text("Short message to hirer") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(220.dp),
@@ -159,8 +167,10 @@ fun JobApplicationScreen(
             ) {
                 if (uiState.isSubmittingApplication) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Sending...")
                 } else {
-                    Text("Submit Application")
+                    Text("Send Application")
                 }
             }
             Spacer(modifier = Modifier.height(32.dp))

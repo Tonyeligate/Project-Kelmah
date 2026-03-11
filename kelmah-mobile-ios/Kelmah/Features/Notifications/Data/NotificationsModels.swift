@@ -55,15 +55,16 @@ struct AppNotificationItem: Identifiable, Hashable {
                 }
 
                 let path = components.path
-                if path.hasPrefix("/messages/") {
-                    let conversationId = path.split(separator: "/").last.map(String.init)
-                    if let conversationId, conversationId.isEmpty == false {
+                let pathParts = path.split(separator: "/")
+                if path.hasPrefix("/messages/"), pathParts.count > 1 {
+                    let conversationId = String(pathParts.last ?? "")
+                    if conversationId.isEmpty == false {
                         return .conversation(conversationId)
                     }
                 }
-                if path.hasPrefix("/jobs/") {
-                    let jobId = path.split(separator: "/").last.map(String.init)
-                    if let jobId, jobId.isEmpty == false {
+                if path.hasPrefix("/jobs/"), pathParts.count > 1 {
+                    let jobId = String(pathParts.last ?? "")
+                    if jobId.isEmpty == false {
                         return .job(jobId)
                     }
                 }

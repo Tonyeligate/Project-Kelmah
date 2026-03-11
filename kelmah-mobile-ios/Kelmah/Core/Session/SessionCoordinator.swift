@@ -57,7 +57,7 @@ final class SessionCoordinator: ObservableObject {
         do {
             try await authRepository.refreshSession(refreshToken: refreshToken)
             return true
-        } catch let APIClientError.invalidStatusCode(statusCode, _) where [400, 401, 403].contains(statusCode) {
+        } catch let APIClientError.invalidStatusCode(statusCode, _) where [401, 403].contains(statusCode) {
             sessionStore.clear()
             return false
         } catch {

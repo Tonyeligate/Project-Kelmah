@@ -104,7 +104,7 @@ final class MessagesViewModel: ObservableObject {
         if let refreshed = conversations.first(where: { $0.id == conversationId }) {
             await openConversation(refreshed)
         } else {
-            errorMessage = "Conversation could not be found"
+            errorMessage = "Chat not found"
         }
     }
 
@@ -153,7 +153,7 @@ final class MessagesViewModel: ObservableObject {
         guard let selectedConversation else { return }
         let trimmed = draftMessage.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.isEmpty == false else {
-            errorMessage = "Enter a message before sending"
+            errorMessage = "Write a message first"
             return
         }
 
@@ -187,7 +187,7 @@ final class MessagesViewModel: ObservableObject {
 
     private func subscribeToRealtimeSignals() {
         realtimeSocketManager.signals
-            .receive(on: RunLoop.main)
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] signal in
                 guard let self else { return }
                 Task { await self.handleRealtimeSignal(signal) }

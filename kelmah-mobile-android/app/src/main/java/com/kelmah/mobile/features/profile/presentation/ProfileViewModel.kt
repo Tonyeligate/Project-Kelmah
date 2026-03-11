@@ -29,7 +29,11 @@ data class ProfileUiState(
     val errorMessage: String? = null,
     val infoMessage: String? = null,
     val shouldLogout: Boolean = false,
-)
+) {
+    // Redact passwords from toString() to prevent log/crash-report leakage
+    override fun toString(): String =
+        "ProfileUiState(currentUser=$currentUser, isLoadingProfileSignals=$isLoadingProfileSignals, isSaving=$isSaving, shouldLogout=$shouldLogout)"
+}
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(

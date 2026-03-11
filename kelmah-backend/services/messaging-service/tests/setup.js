@@ -8,7 +8,7 @@ const {
   setupTestEnvironment,
   setupTestDatabase,
   cleanupTestDatabase,
-} = require("../../shared/test-utils");
+} = require("../../../shared/test-utils");
 
 // Setup test environment
 setupTestEnvironment();
@@ -33,7 +33,7 @@ afterAll(async () => {
 });
 
 // Global test utilities
-global.testUtils = require("../../shared/test-utils");
+global.testUtils = require("../../../shared/test-utils");
 
 // Mock console methods in tests to reduce noise
 global.console = {

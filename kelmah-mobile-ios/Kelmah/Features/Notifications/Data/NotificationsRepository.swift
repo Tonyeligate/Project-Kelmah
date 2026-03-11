@@ -36,7 +36,7 @@ final class NotificationsRepository {
 
     func markAsRead(notificationId: String) async throws {
         _ = try await apiClient.send(
-            path: "notifications/\(notificationId)/read",
+            path: "notifications/\(notificationId.urlPathEncoded)/read",
             method: .patch,
             requiresAuth: true,
             responseType: NotificationsEnvelope.self
@@ -54,7 +54,7 @@ final class NotificationsRepository {
 
     func deleteNotification(notificationId: String) async throws {
         _ = try await apiClient.send(
-            path: "notifications/\(notificationId)",
+            path: "notifications/\(notificationId.urlPathEncoded)",
             method: .delete,
             requiresAuth: true,
             responseType: NotificationsEnvelope.self
@@ -115,13 +115,14 @@ func sortNotificationsByCreatedAt(_ items: [AppNotificationItem]) -> [AppNotific
 }
 
 private func notificationObjectIDDate(from id: String) -> Date? {
-    guard id.count >= 8 else { return nil }
+    // Only extract timestamp from valid 24-character MongoDB ObjectID hex strings
+    guard id.count == 24, id.allSatisfy({ $0.isHexDigit }) else { return nil }
     let prefix = String(id.prefix(8))
     guard let seconds = Int(prefix, radix: 16) else { return nil }
     return Date(timeIntervalSince1970: TimeInterval(seconds))
 }
 
-private func notificationSortDate(from raw: String?) -> Date? {
+func notificationSortDate(from raw: String?) -> Date? {
     guard let raw, raw.isEmpty == false else { return nil }
     if let parsed = notificationPrimaryFormatter.date(from: raw) {
         return parsed

@@ -23,10 +23,10 @@ final class ProfileRepository {
 
     private func getLegacyWorkerProfileSnapshot(workerId: String) async throws -> WorkerProfileSnapshot {
         async let credentialsResponse = optionalFetch(path: "users/me/credentials")
-        async let availabilityResponse = optionalFetch(path: "users/workers/\(workerId)/availability")
-        async let completenessResponse = optionalFetch(path: "users/workers/\(workerId)/completeness")
+        async let availabilityResponse = optionalFetch(path: "users/workers/\(workerId.urlPathEncoded)/availability")
+        async let completenessResponse = optionalFetch(path: "users/workers/\(workerId.urlPathEncoded)/completeness")
         async let portfolioResponse = optionalFetch(
-            path: "users/workers/\(workerId)/portfolio",
+            path: "users/workers/\(workerId.urlPathEncoded)/portfolio",
             queryItems: [URLQueryItem(name: "limit", value: "6")]
         )
 
@@ -231,10 +231,4 @@ private extension Dictionary where Key == String, Value == JSONValue {
     func int(_ key: String) -> Int? { self[key]?.intValue }
     func double(_ key: String) -> Double? { self[key]?.doubleValue }
     func bool(_ key: String) -> Bool? { self[key]?.boolValue }
-}
-
-private extension String {
-    var nilIfEmpty: String? {
-        trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : self
-    }
 }

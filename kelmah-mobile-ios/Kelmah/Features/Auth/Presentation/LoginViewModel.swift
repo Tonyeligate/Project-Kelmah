@@ -71,7 +71,7 @@ final class LoginViewModel: ObservableObject {
             errorMessage = "Email and password are required"
             return
         }
-        guard trimmedEmail.contains("@"), trimmedEmail.contains(".") else {
+        guard isValidEmail(trimmedEmail) else {
             errorMessage = "Please enter a valid email address"
             return
         }
@@ -93,7 +93,7 @@ final class LoginViewModel: ObservableObject {
             errorMessage = "Email is required"
             return
         }
-        guard trimmedEmail.contains("@"), trimmedEmail.contains(".") else {
+        guard isValidEmail(trimmedEmail) else {
             errorMessage = "Please enter a valid email address"
             return
         }
@@ -130,7 +130,7 @@ final class LoginViewModel: ObservableObject {
             errorMessage = "Email is required"
             return
         }
-        guard trimmedEmail.contains("@"), trimmedEmail.contains(".") else {
+        guard isValidEmail(trimmedEmail) else {
             errorMessage = "Please enter a valid email address"
             return
         }
@@ -190,5 +190,18 @@ final class LoginViewModel: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func isValidEmail(_ value: String) -> Bool {
+        guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue) else {
+            return false
+        }
+        let range = NSRange(value.startIndex..<value.endIndex, in: value)
+        guard let match = detector.firstMatch(in: value, options: [], range: range) else {
+            return false
+        }
+        return match.resultType == .link
+            && match.url?.scheme == "mailto"
+            && match.range == range
     }
 }

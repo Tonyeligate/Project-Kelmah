@@ -1,6 +1,7 @@
 package com.kelmah.mobile.features.messaging.data
 
 import com.kelmah.mobile.core.network.ApiResult
+import com.kelmah.mobile.core.network.executeAuthorizedApiCall
 import com.kelmah.mobile.core.session.SessionCoordinator
 import com.kelmah.mobile.core.storage.TokenManager
 import dagger.Lazy
@@ -11,7 +12,6 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import retrofit2.HttpException
 
 @Singleton
 class MessagingRepository @Inject constructor(
@@ -21,7 +21,7 @@ class MessagingRepository @Inject constructor(
 ) {
     fun currentUserId(): String? = tokenManager.getStoredSession()?.user?.resolvedId
 
-    suspend fun getConversations(): ApiResult<List<ConversationSummary>> = executeAuthorized {
+    suspend fun getConversations(): ApiResult<List<ConversationSummary>> = executeAuthorizedApiCall(sessionCoordinator) {
         val response = messagingApiService.getConversations(emptyMap())
         ApiResult.Success(parseConversations(response))
     }
@@ -29,7 +29,7 @@ class MessagingRepository @Inject constructor(
     suspend fun getMessages(
         conversationId: String,
         limit: Int = 50,
-    ): ApiResult<List<ThreadMessage>> = executeAuthorized {
+    ): ApiResult<List<ThreadMessage>> = executeAuthorizedApiCall(sessionCoordinator) {
         val response = messagingApiService.getMessages(
             conversationId = conversationId,
             query = mapOf("limit" to limit.toString()),
@@ -40,7 +40,7 @@ class MessagingRepository @Inject constructor(
     suspend fun sendMessage(
         conversationId: String,
         content: String,
-    ): ApiResult<ThreadMessage> = executeAuthorized {
+    ): ApiResult<ThreadMessage> = executeAuthorizedApiCall(sessionCoordinator) {
         val response = messagingApiService.sendMessage(
             conversationId = conversationId,
             request = SendMessageRequest(
@@ -49,24 +49,6 @@ class MessagingRepository @Inject constructor(
             ),
         )
         ApiResult.Success(parseSentMessage(response, conversationId))
-    }
-
-    private suspend fun <T> executeAuthorized(block: suspend () -> ApiResult<T>): ApiResult<T> {
-        return try {
-            block()
-        } catch (error: HttpException) {
-            if (error.code() == 401 && sessionCoordinator.get().refreshSession()) {
-                try {
-                    block()
-                } catch (retryError: Exception) {
-                    ApiResult.Error(message = retryError.message ?: "Request failed after session refresh")
-                }
-            } else {
-                ApiResult.Error(message = error.message ?: "Request failed", code = error.code())
-            }
-        } catch (error: Exception) {
-            ApiResult.Error(message = error.message ?: "Request failed")
-        }
     }
 
     private fun parseConversations(response: JsonObject): List<ConversationSummary> {
@@ -99,6 +81,7 @@ class MessagingRepository @Inject constructor(
     }
 
     private fun parseMessages(response: JsonObject, conversationId: String): List<ThreadMessage> {
+        val cachedUserId = currentUserId()
         val dataNode = response["data"]
         val values = when (dataNode) {
             is JsonObject -> dataNode.nestedArray("messages") ?: JsonArray(emptyList())
@@ -106,13 +89,13 @@ class MessagingRepository @Inject constructor(
             else -> response.nestedArray("messages") ?: JsonArray(emptyList())
         }
 
-        return values.mapNotNull { parseMessage(it as? JsonObject ?: return@mapNotNull null, conversationId) }
+        return values.mapNotNull { parseMessage(it as? JsonObject ?: return@mapNotNull null, conversationId, cachedUserId) }
             .sortedBy { it.createdAt ?: "" }
     }
 
     private fun parseSentMessage(response: JsonObject, conversationId: String): ThreadMessage {
         val raw = response.nestedObject("data") ?: response
-        return parseMessage(raw, conversationId)
+        return parseMessage(raw, conversationId, currentUserId())
             ?: throw IllegalStateException("Sent message payload was invalid")
     }
 
@@ -133,7 +116,7 @@ class MessagingRepository @Inject constructor(
         )
     }
 
-    private fun parseMessage(obj: JsonObject, conversationId: String): ThreadMessage? {
+    private fun parseMessage(obj: JsonObject, conversationId: String, cachedUserId: String? = null): ThreadMessage? {
         val id = obj.string("id") ?: obj.string("_id") ?: return null
         val senderObject = obj.nestedObject("sender") ?: obj.nestedObject("senderInfo")
         val senderId = obj.string("senderId")
@@ -141,9 +124,10 @@ class MessagingRepository @Inject constructor(
             ?: senderObject?.string("id")
             ?: senderObject?.string("_id")
             ?: return null
+        val resolvedUserId = cachedUserId ?: currentUserId()
         val senderName = senderObject?.string("name")
             ?: listOfNotNull(senderObject?.string("firstName"), senderObject?.string("lastName")).joinToString(" ").ifBlank { null }
-            ?: if (senderId == currentUserId()) "You" else "Kelmah User"
+            ?: if (senderId == resolvedUserId) "You" else "Kelmah User"
         val messageType = obj.string("messageType") ?: "text"
         val content = obj.string("content") ?: obj.string("text") ?: previewFor(obj)
 

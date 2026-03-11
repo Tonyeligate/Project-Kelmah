@@ -36,7 +36,11 @@ data class AuthUiState(
     val isAuthenticated: Boolean = false,
     val errorMessage: String? = null,
     val infoMessage: String? = null,
-)
+) {
+    // Redact passwords from toString() to prevent log/crash-report leakage
+    override fun toString(): String =
+        "AuthUiState(mode=$mode, email=$email, role=$role, isLoading=$isLoading, isAuthenticated=$isAuthenticated)"
+}
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
@@ -134,7 +138,7 @@ class AuthViewModel @Inject constructor(
             _uiState.update { it.copy(errorMessage = "Email and password are required") }
             return
         }
-        if (!state.email.trim().contains("@") || !state.email.trim().contains(".")) {
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(state.email.trim()).matches()) {
             _uiState.update { it.copy(errorMessage = "Please enter a valid email address") }
             return
         }
@@ -164,7 +168,7 @@ class AuthViewModel @Inject constructor(
                 _uiState.update { it.copy(errorMessage = "Email is required") }
                 return
             }
-            !state.email.trim().contains("@") || !state.email.trim().contains(".") -> {
+            !android.util.Patterns.EMAIL_ADDRESS.matcher(state.email.trim()).matches() -> {
                 _uiState.update { it.copy(errorMessage = "Please enter a valid email address") }
                 return
             }

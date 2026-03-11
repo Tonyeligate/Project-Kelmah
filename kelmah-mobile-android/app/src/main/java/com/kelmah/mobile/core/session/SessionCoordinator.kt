@@ -16,7 +16,7 @@ class SessionCoordinator @Inject constructor(
     private val authRepository: AuthRepository,
     private val tokenManager: TokenManager,
 ) {
-    private val invalidSessionCodes = setOf(400, 401, 403)
+    private val invalidSessionCodes = setOf(401, 403)
     private val refreshMutex = Mutex()
     @Volatile
     private var didBootstrap = false

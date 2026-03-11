@@ -2,7 +2,7 @@
  * Messaging Service Tests
  */
 
-const { TestDataFactory, TestAssertions } = require('../../shared/test-utils');
+const { TestDataFactory, TestAssertions } = require('../../../shared/test-utils');
 
 describe('Messaging Service', () => {
   describe('Message Operations', () => {

@@ -15,12 +15,12 @@ struct NotificationsView: View {
                         }
                     )) {
                         Text("All").tag(false)
-                        Text("Unread").tag(true)
+                        Text("New").tag(true)
                     }
                     .pickerStyle(.segmented)
 
                     HStack {
-                        Label("Unread", systemImage: "bell.badge")
+                        Label("New alerts", systemImage: "bell.badge")
                             .font(.subheadline.weight(.semibold))
                         Spacer()
                         Text("\(viewModel.unreadCount)")
@@ -41,15 +41,15 @@ struct NotificationsView: View {
                     }
                 }
 
-                Section("Inbox") {
+                Section("Alerts") {
                     if viewModel.isLoading, viewModel.notifications.isEmpty {
-                        ProgressView("Loading notifications...")
+                        ProgressView("Loading alerts...")
                             .frame(maxWidth: .infinity, alignment: .center)
                     } else if viewModel.notifications.isEmpty {
                         ContentUnavailableView(
-                            viewModel.unreadOnly ? "No unread alerts" : "No notifications yet",
+                            viewModel.unreadOnly ? "No new alerts" : "No alerts yet",
                             systemImage: "bell",
-                            description: Text("Job activity, payment updates, and message alerts will appear here.")
+                            description: Text("Job and message updates will show here.")
                         )
                     } else {
                         ForEach(viewModel.notifications) { notification in
@@ -76,7 +76,7 @@ struct NotificationsView: View {
                                         Button {
                                             Task { await viewModel.markAsRead(notificationId: notification.id) }
                                         } label: {
-                                            Label("Read", systemImage: "checkmark.circle")
+                                            Label("Mark read", systemImage: "checkmark.circle")
                                         }
                                         .tint(KelmahTheme.accent)
                                     }
@@ -90,7 +90,7 @@ struct NotificationsView: View {
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
             .background(KelmahTheme.background)
-            .navigationTitle("Notifications")
+            .navigationTitle("Alerts")
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button {
@@ -98,12 +98,14 @@ struct NotificationsView: View {
                     } label: {
                         Image(systemName: "arrow.clockwise")
                     }
+                    .accessibilityLabel("Refresh notifications")
 
                     Button {
                         Task { await viewModel.markAllAsRead() }
                     } label: {
                         Image(systemName: "checkmark.circle")
                     }
+                    .accessibilityLabel("Mark all as read")
                     .disabled(viewModel.unreadCount == 0 || viewModel.isMutating)
                 }
             }
@@ -134,7 +136,7 @@ private struct NotificationRowView: View {
                 Spacer()
 
                 if notification.isRead == false {
-                    Text("Unread")
+                    Text("New")
                         .font(.caption.weight(.bold))
                         .foregroundStyle(KelmahTheme.accent)
                 }
@@ -162,10 +164,16 @@ private struct NotificationRowView: View {
                         .lineLimit(1)
                 }
             }
+
+            if notification.actionTarget != nil {
+                Text("Tap to open")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(KelmahTheme.accent)
+            }
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(notification.isRead ? Color.white : KelmahTheme.accent.opacity(0.08))
+        .background(notification.isRead ? KelmahTheme.card : KelmahTheme.accent.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 }

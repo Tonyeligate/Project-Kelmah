@@ -41,22 +41,22 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(displayName)
                         .font(.largeTitle.bold())
-                    Text(userRole == .hirer ? "Track active hiring work, unread follow-up, and fresh alerts from one screen." : "Review your strongest job matches, unread work, and recent alerts before you start applying.")
+                    Text(userRole == .hirer ? "Track active hiring work, unread follow-up, and fresh alerts from one screen." : "See your jobs, saved jobs, messages, and alerts in one place.")
                         .foregroundStyle(.secondary)
                 }
 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text(userRole == .hirer ? "Hirer command view" : "Worker command view")
+                    Text(userRole == .hirer ? "Hirer command view" : "Your work today")
                         .font(.headline)
-                    Text(userRole == .hirer ? "Use this surface to spot active jobs that need attention, keep candidate conversations moving, and react to alerts faster." : "Use this surface to review your best matches, keep saved opportunities close, and react to work alerts faster.")
+                    Text(userRole == .hirer ? "Use this surface to spot active jobs that need attention, keep candidate conversations moving, and react to alerts faster." : "Check good jobs, saved jobs, and new alerts. Then open a job and apply.")
                     HStack(spacing: 10) {
-                        SummaryTile(label: userRole == .hirer ? "Active jobs" : "Matches", value: userRole == .hirer ? activeJobs : homeJobs.count)
+                        SummaryTile(label: userRole == .hirer ? "Active jobs" : "Good jobs", value: userRole == .hirer ? activeJobs : homeJobs.count)
                         SummaryTile(label: userRole == .hirer ? "Unread chats" : "Saved jobs", value: userRole == .hirer ? unreadMessages : jobsViewModel.savedJobs.count)
                         SummaryTile(label: "Alerts", value: notificationsViewModel.unreadCount)
                     }
                     HStack(spacing: 10) {
                         Button(action: onBrowseJobs) {
-                            Text(userRole == .hirer ? "Open Hiring Market" : "Browse Jobs")
+                            Text(userRole == .hirer ? "Open Hiring Market" : "Find Work")
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent)
@@ -76,7 +76,7 @@ struct HomeView: View {
                     }
                 }
                 .padding()
-                .background(.white)
+                .background(KelmahTheme.card)
                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
 
                 if let homeErrorMessage = jobsViewModel.homeErrorMessage {
@@ -87,9 +87,9 @@ struct HomeView: View {
                     title: userRole == .hirer
                         ? "Recent hiring activity"
                         : (jobsViewModel.recommendationState == .profileIncomplete
-                            ? "General matches while profile completes"
+                            ? "More jobs while you finish your profile"
                             : recommendationSectionTitle),
-                    actionLabel: userRole == .hirer ? "Open market" : "Browse jobs",
+                    actionLabel: userRole == .hirer ? "Open market" : "Find work",
                     onAction: onBrowseJobs
                 )
 
@@ -100,22 +100,22 @@ struct HomeView: View {
                 }
 
                 if jobsViewModel.isLoadingHomeFeed, homeJobs.isEmpty {
-                    ProgressView("Loading the latest work intelligence...")
+                    ProgressView("Loading jobs for you...")
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding()
-                        .background(.white)
+                        .background(KelmahTheme.card)
                         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 } else if homeJobs.isEmpty {
                     HomeMessageCard(
                         message: userRole == .hirer
                             ? "Your most recent jobs will appear here once your hiring activity is available."
                             : (jobsViewModel.recommendationState == .profileIncomplete
-                                ? "Kelmah needs a more complete worker profile before it can rank personalized matches accurately."
+                                ? "Finish your profile to get better job matches."
                                 : (jobsViewModel.recommendationState == .fallback
-                                    ? "Kelmah could not recover enough urgent jobs while the recommendation feed is degraded."
+                                    ? "No urgent jobs right now. Tap Find Work to see all jobs."
                                     : (jobsViewModel.recommendationState == .failed
-                                        ? "Browse the jobs feed while personalized matching is unavailable."
-                                        : "Your strongest matches will appear here once the recommendation feed returns results."))),
+                                        ? "Job matches are not ready now. Tap Find Work."
+                                        : "Jobs for you will show here soon."))),
                         tint: .white
                     )
                 } else {
@@ -126,10 +126,10 @@ struct HomeView: View {
                     }
                 }
 
-                HomeSectionHeader(title: "Recent conversations", actionLabel: "Open messages", onAction: onOpenMessages)
+                HomeSectionHeader(title: userRole == .worker ? "Messages" : "Recent conversations", actionLabel: userRole == .worker ? "Open" : "Open messages", onAction: onOpenMessages)
 
                 if messagesViewModel.conversations.isEmpty {
-                    HomeMessageCard(message: "Messages created from job and hiring flows will appear here for quick follow-up.", tint: .white)
+                    HomeMessageCard(message: userRole == .worker ? "New messages will show here." : "Messages created from job and hiring flows will appear here for quick follow-up.", tint: .white)
                 } else {
                     ForEach(Array(messagesViewModel.conversations.prefix(3))) { conversation in
                         HomeConversationCard(conversation: conversation) {
@@ -138,10 +138,10 @@ struct HomeView: View {
                     }
                 }
 
-                HomeSectionHeader(title: "Recent alerts", actionLabel: "Open alerts", onAction: onOpenNotifications)
+                HomeSectionHeader(title: userRole == .worker ? "Alerts" : "Recent alerts", actionLabel: userRole == .worker ? "Open" : "Open alerts", onAction: onOpenNotifications)
 
                 if notificationsViewModel.notifications.isEmpty {
-                    HomeMessageCard(message: "Job, payment, and message alerts will appear here as activity comes in.", tint: .white)
+                    HomeMessageCard(message: userRole == .worker ? "New alerts will show here." : "Job, payment, and message alerts will appear here as activity comes in.", tint: .white)
                 } else {
                     ForEach(Array(notificationsViewModel.notifications.prefix(3))) { notification in
                         HomeNotificationCard(notification: notification) {
@@ -158,7 +158,10 @@ struct HomeView: View {
         }
         .background(KelmahTheme.background.ignoresSafeArea())
         .task(id: currentUser?.id ?? "guest") {
-            await jobsViewModel.refreshHome(for: userRole)
+            async let jobs: () = jobsViewModel.refreshHome(for: userRole)
+            async let msgs: () = messagesViewModel.refreshConversations()
+            async let notifs: () = notificationsViewModel.refresh()
+            _ = await (jobs, msgs, notifs)
         }
         .refreshable {
             async let jobs: () = jobsViewModel.refreshHome(for: userRole)
@@ -231,7 +234,7 @@ private struct HomeJobCard: View {
                         .multilineTextAlignment(.leading)
                     Spacer()
                     if role == .worker, let matchScore = job.matchScore {
-                        Text("\(formatMatchScore(matchScore))% match")
+                        Text("\(formatMatchScore(matchScore))% fit")
                             .font(.caption.weight(.semibold))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
@@ -270,17 +273,23 @@ private struct HomeJobCard: View {
 
                 let meta = [
                     RelativeTimeFormatter.relativeOrFallback(job.postedAt),
-                    job.isUrgent ? "Priority listing" : nil,
+                    job.isUrgent ? "Urgent" : nil,
                 ].compactMap { $0 }
                 if meta.isEmpty == false {
                     Text(meta.joined(separator: " • "))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+
+                if role == .worker {
+                    Text("Tap to open job")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(KelmahTheme.accent)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
-            .background(.white)
+            .background(KelmahTheme.card)
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
         .buttonStyle(.plain)
@@ -291,13 +300,13 @@ private extension HomeView {
     var recommendationSectionTitle: String {
         switch jobsViewModel.recommendationState {
         case .profileIncomplete:
-            return "General matches while profile completes"
+            return "More jobs while you finish your profile"
         case .fallback:
-            return "Urgent jobs while matching recovers"
+            return "Urgent jobs right now"
         case .failed:
-            return "Matching temporarily unavailable"
+            return "Jobs feed"
         case .idle, .personalized:
-            return "Recommended matches"
+            return "Jobs for you"
         }
     }
 
@@ -352,7 +361,7 @@ private struct HomeConversationCard: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
-            .background(.white)
+            .background(KelmahTheme.card)
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
         .buttonStyle(.plain)
@@ -373,7 +382,7 @@ private struct HomeNotificationCard: View {
                         .lineLimit(2)
                     Spacer()
                     if notification.isRead == false {
-                        Text("Unread")
+                        Text("New")
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(KelmahTheme.accent)
                     }
@@ -397,7 +406,7 @@ private struct HomeNotificationCard: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
-            .background(.white)
+            .background(KelmahTheme.card)
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
         .buttonStyle(.plain)

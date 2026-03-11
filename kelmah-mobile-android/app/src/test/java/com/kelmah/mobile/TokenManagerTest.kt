@@ -12,12 +12,29 @@ import org.junit.Test
 class TokenManagerTest {
     @Test
     fun passwordPolicy_accepts_expected_strong_password() {
-        assertTrue(PasswordPolicy.isStrong("Kelmah2026"))
+        assertTrue(PasswordPolicy.isStrong("Kelmah2026!"))
     }
 
     @Test
     fun passwordPolicy_rejects_password_without_uppercase() {
-        assertFalse(PasswordPolicy.isStrong("kelmah2026"))
+        assertFalse(PasswordPolicy.isStrong("kelmah2026!"))
+    }
+
+    @Test
+    fun passwordPolicy_rejects_password_without_lowercase() {
+        assertFalse(PasswordPolicy.isStrong("KELMAH2026!"))
+    }
+
+    @Test
+    fun passwordPolicy_rejects_password_without_special_character() {
+        assertFalse(PasswordPolicy.isStrong("Kelmah2026"))
+    }
+
+    @Test
+    fun passwordPolicy_rejects_password_longer_than_maximum_length() {
+        val tooLongPassword = "Aa1!" + "b".repeat(125)
+
+        assertFalse(PasswordPolicy.isStrong(tooLongPassword))
     }
 
     @Test

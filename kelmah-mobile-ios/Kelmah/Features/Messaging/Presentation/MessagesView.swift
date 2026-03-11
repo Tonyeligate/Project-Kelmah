@@ -10,7 +10,7 @@ struct MessagesView: View {
         NavigationStack(path: $path) {
             List {
                 Section {
-                    TextField("Search conversations", text: $viewModel.searchQuery)
+                    TextField("Search chats", text: $viewModel.searchQuery)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                 }
@@ -27,15 +27,15 @@ struct MessagesView: View {
                     }
                 }
 
-                Section("Conversations") {
+                Section("Chats") {
                     if viewModel.isLoadingConversations, viewModel.filteredConversations.isEmpty {
-                        ProgressView("Loading messages...")
+                        ProgressView("Loading chats...")
                             .frame(maxWidth: .infinity, alignment: .center)
                     } else if viewModel.filteredConversations.isEmpty {
                         ContentUnavailableView(
-                            "No conversations yet",
+                            "No messages yet",
                             systemImage: "message",
-                            description: Text("Messages opened from worker, hirer, and job flows will appear here.")
+                            description: Text("Your job messages will show here.")
                         )
                     } else {
                         ForEach(viewModel.filteredConversations) { conversation in
@@ -65,6 +65,7 @@ struct MessagesView: View {
                     } label: {
                         Image(systemName: "arrow.clockwise")
                     }
+                    .accessibilityLabel("Refresh conversations")
                 }
             }
             .refreshable {
@@ -120,7 +121,7 @@ private struct ConversationRowView: View {
             Spacer()
 
             if conversation.unreadCount > 0 {
-                Text(String(conversation.unreadCount))
+                Text("\(conversation.unreadCount) new")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)
@@ -131,8 +132,15 @@ private struct ConversationRowView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.white)
+        .background(KelmahTheme.card)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(alignment: .bottomTrailing) {
+            Text("Tap to open")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(KelmahTheme.accent)
+                .padding(.trailing, 14)
+                .padding(.bottom, 12)
+        }
     }
 }
 
@@ -144,7 +152,7 @@ private struct MessageThreadView: View {
         VStack(spacing: 0) {
             if let participant = viewModel.selectedConversation?.otherParticipant {
                 HStack {
-                    Text(participant.isActive == true ? "\(participant.name) • active" : participant.name)
+                    Text(participant.isActive == true ? "\(participant.name) • online" : participant.name)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.secondary)
                     Spacer()
@@ -155,14 +163,14 @@ private struct MessageThreadView: View {
 
             if viewModel.isLoadingMessages, viewModel.messages.isEmpty {
                 Spacer()
-                ProgressView("Loading thread...")
+                ProgressView("Opening chat...")
                 Spacer()
             } else if viewModel.messages.isEmpty {
                 Spacer()
                 ContentUnavailableView(
                     "No messages yet",
                     systemImage: "ellipsis.message",
-                    description: Text("Send the first message to start this thread.")
+                    description: Text("Write the first message.")
                 )
                 Spacer()
             } else {
@@ -191,7 +199,7 @@ private struct MessageThreadView: View {
             }
         }
         .background(KelmahTheme.background)
-        .navigationTitle(viewModel.selectedConversation?.displayTitle ?? "Thread")
+        .navigationTitle(viewModel.selectedConversation?.displayTitle ?? "Chat")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -200,11 +208,12 @@ private struct MessageThreadView: View {
                 } label: {
                     Image(systemName: "arrow.clockwise")
                 }
+                .accessibilityLabel("Refresh thread")
             }
         }
         .safeAreaInset(edge: .bottom) {
             HStack(spacing: 10) {
-                TextField("Write a message", text: $viewModel.draftMessage, axis: .vertical)
+                TextField("Write message", text: $viewModel.draftMessage, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(1...4)
 
@@ -212,11 +221,14 @@ private struct MessageThreadView: View {
                     Task { await viewModel.sendMessage() }
                 } label: {
                     if viewModel.isSending {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .tint(.white)
+                        HStack(spacing: 8) {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .tint(.white)
+                            Text("Sending")
+                        }
                     } else {
-                        Image(systemName: "paperplane.fill")
+                        Label("Send", systemImage: "paperplane.fill")
                     }
                 }
                 .buttonStyle(.borderedProminent)
@@ -255,7 +267,7 @@ private struct MessageBubbleView: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
-            .background(isOwnMessage ? KelmahTheme.accent.opacity(0.18) : Color.white)
+            .background(isOwnMessage ? KelmahTheme.accent.opacity(0.18) : KelmahTheme.card)
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
         .frame(maxWidth: .infinity, alignment: isOwnMessage ? .trailing : .leading)

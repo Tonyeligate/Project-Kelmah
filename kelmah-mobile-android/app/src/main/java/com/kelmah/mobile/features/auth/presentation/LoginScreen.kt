@@ -12,9 +12,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Login
+import androidx.compose.material.icons.outlined.PersonAdd
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -53,7 +60,7 @@ fun LoginScreen(
             }
             item {
                 Text(
-                    text = "Production-focused native auth for Ghana's vocational marketplace.",
+                    text = "Find skilled workers. Get hired for jobs.",
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
@@ -64,6 +71,18 @@ fun LoginScreen(
                             selected = uiState.mode == mode,
                             onClick = { viewModel.switchMode(mode) },
                             label = { Text(mode.label) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = when (mode) {
+                                        AuthMode.LOGIN -> Icons.Outlined.Login
+                                        AuthMode.REGISTER -> Icons.Outlined.PersonAdd
+                                        AuthMode.FORGOT_PASSWORD -> Icons.Outlined.Lock
+                                        AuthMode.RESET_PASSWORD -> Icons.Outlined.Key
+                                        AuthMode.VERIFY_EMAIL -> Icons.Outlined.Email
+                                    },
+                                    contentDescription = null,
+                                )
+                            },
                         )
                     }
                 }

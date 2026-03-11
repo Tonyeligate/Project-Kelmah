@@ -29,19 +29,24 @@ struct JobApplicationView: View {
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        Text(viewModel.selectedJob?.summary.id == jobId ? (viewModel.selectedJob?.summary.title ?? "Kelmah Job") : "Kelmah Job")
+                        Text(viewModel.jobTitle(for: jobId))
                             .font(.title2.bold())
-                        Text("Submit a strong, professional application through the Kelmah API Gateway.")
+                        Text("Share your price, time, and a short message.")
+                            .foregroundStyle(.secondary)
+                        Text("Write simple words about the work you can do.")
+                            .font(.subheadline)
                             .foregroundStyle(.secondary)
 
                         VStack(spacing: 12) {
-                            TextField("Proposed rate (GHS)", text: $proposedRate)
+                            let currency = viewModel.jobDetail(for: jobId)?.summary.currency ?? "GHS"
+                            TextField("Your price (\(currency))", text: $proposedRate)
                                 .keyboardType(.decimalPad)
-                            TextField("Estimated duration", text: $estimatedDuration)
-                            TextField("Cover letter", text: $coverLetter, axis: .vertical)
+                            TextField("Time to finish", text: $estimatedDuration)
+                            TextField("Short message to hirer", text: $coverLetter, axis: .vertical)
                                 .lineLimit(8, reservesSpace: true)
                         }
                         .textFieldStyle(.roundedBorder)
+                        .disabled(viewModel.isSubmittingApplication)
 
                         Button {
                             Task {
@@ -57,10 +62,13 @@ struct JobApplicationView: View {
                             }
                         } label: {
                             if viewModel.isSubmittingApplication {
-                                ProgressView()
-                                    .frame(maxWidth: .infinity)
+                                HStack(spacing: 8) {
+                                    ProgressView()
+                                    Text("Sending...")
+                                }
+                                .frame(maxWidth: .infinity)
                             } else {
-                                Text("Submit Application")
+                                Text("Send Application")
                                     .frame(maxWidth: .infinity)
                             }
                         }
@@ -74,7 +82,7 @@ struct JobApplicationView: View {
                 .background(KelmahTheme.background.ignoresSafeArea())
             }
         }
-        .navigationTitle(userRole == .hirer ? "Hiring Mode" : "Apply")
+        .navigationTitle(userRole == .hirer ? "Hiring Mode" : "Apply Now")
         .navigationBarTitleDisplayMode(.inline)
         .task(id: jobId) {
             guard userRole == .worker else { return }

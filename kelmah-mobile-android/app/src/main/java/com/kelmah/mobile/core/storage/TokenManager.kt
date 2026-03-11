@@ -22,13 +22,25 @@ class TokenManager @Inject constructor(
         explicitNulls = false
     }
 
-    private val prefs = EncryptedSharedPreferences.create(
-        context,
-        FILE_NAME,
-        MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-    )
+    private val prefs = try {
+        EncryptedSharedPreferences.create(
+            context,
+            FILE_NAME,
+            MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+        )
+    } catch (_: Exception) {
+        // Keystore corruption after OTA update / backup restore -- delete corrupted file and recreate
+        context.deleteSharedPreferences(FILE_NAME)
+        EncryptedSharedPreferences.create(
+            context,
+            FILE_NAME,
+            MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+        )
+    }
 
     private val _sessionFlow = MutableStateFlow(loadSession())
     val sessionFlow: StateFlow<StoredSession?> = _sessionFlow.asStateFlow()
@@ -82,10 +94,12 @@ class TokenManager @Inject constructor(
                 ?.let { return it }
         }
 
-        val accessToken = getAccessToken() ?: return null
+        // Fallback: read tokens directly from prefs (not from _sessionFlow which is not yet initialized)
+        val accessToken = prefs.getString(KEY_ACCESS_TOKEN, null)
+        if (accessToken.isNullOrBlank()) return null
         return StoredSession(
             accessToken = accessToken,
-            refreshToken = getRefreshToken(),
+            refreshToken = prefs.getString(KEY_REFRESH_TOKEN, null),
         )
     }
 

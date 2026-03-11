@@ -88,6 +88,9 @@ struct ProfileView: View {
     let sessionStore: SessionStore
 
     @StateObject private var viewModel: ProfileViewModel
+    @State private var showSignOutAlert = false
+    @State private var showSignOutAllAlert = false
+    @State private var showPasswordChangedAlert = false
 
     init(sessionCoordinator: SessionCoordinator, authRepository: AuthRepository, profileRepository: ProfileRepository, sessionStore: SessionStore) {
         self.sessionCoordinator = sessionCoordinator
@@ -114,7 +117,7 @@ struct ProfileView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
-                .background(.white)
+                .background(KelmahTheme.card)
                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
 
                 if sessionStore.currentUser?.kelmahUserRole == .worker {
@@ -155,7 +158,7 @@ struct ProfileView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
-                    .background(.white)
+                    .background(KelmahTheme.card)
                     .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                 }
 
@@ -178,23 +181,26 @@ struct ProfileView: View {
                     }
 
                     SecureField("Current password", text: $viewModel.currentPassword)
+                        .textContentType(.password)
                         .padding()
-                        .background(.white)
+                        .background(KelmahTheme.card)
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     SecureField("New password", text: $viewModel.newPassword)
+                        .textContentType(.newPassword)
                         .padding()
-                        .background(.white)
+                        .background(KelmahTheme.card)
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     SecureField("Confirm new password", text: $viewModel.confirmPassword)
+                        .textContentType(.newPassword)
                         .padding()
-                        .background(.white)
+                        .background(KelmahTheme.card)
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 
                     Button {
                         Task {
                             let changed = await viewModel.changePassword()
                             if changed {
-                                await sessionCoordinator.logout()
+                                showPasswordChangedAlert = true
                             }
                         }
                     } label: {
@@ -218,33 +224,29 @@ struct ProfileView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
-                .background(.white)
+                .background(KelmahTheme.card)
                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
 
                 Button(role: .destructive) {
-                    Task {
-                        await sessionCoordinator.logout()
-                    }
+                    showSignOutAlert = true
                 } label: {
-                    Text("Sign Out")
+                    Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
                         .padding()
                 }
-                .background(.white)
+                .background(KelmahTheme.card)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 
                 Button(role: .destructive) {
-                    Task {
-                        await sessionCoordinator.logout(logoutAll: true)
-                    }
+                    showSignOutAllAlert = true
                 } label: {
-                    Text("Sign Out All Devices")
+                    Label("Sign Out All Devices", systemImage: "iphone.and.arrow.forward")
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
                         .padding()
                 }
-                .background(.white)
+                .background(KelmahTheme.card)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
             .padding(20)
@@ -253,6 +255,32 @@ struct ProfileView: View {
         .background(KelmahTheme.background.ignoresSafeArea())
         .task(id: sessionStore.currentUser?.resolvedID) {
             await viewModel.bootstrap(user: sessionStore.currentUser)
+        }
+        // Confirm sign out (this device)
+        .alert("Sign out?", isPresented: $showSignOutAlert) {
+            Button("Sign out", role: .destructive) {
+                Task { await sessionCoordinator.logout() }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("You will be signed out of this device.")
+        }
+        // Confirm sign out (all devices)
+        .alert("Sign out all devices?", isPresented: $showSignOutAllAlert) {
+            Button("Sign out all", role: .destructive) {
+                Task { await sessionCoordinator.logout(logoutAll: true) }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("You will be signed out on every device where you are logged in.")
+        }
+        // Warn user before auto-logout after password change
+        .alert("Password changed", isPresented: $showPasswordChangedAlert) {
+            Button("Sign out now") {
+                Task { await sessionCoordinator.logout() }
+            }
+        } message: {
+            Text("Your password was changed. You will be signed out so you can log in with your new password.")
         }
     }
 }
@@ -389,8 +417,3 @@ private struct ProfileFactView: View {
     }
 }
 
-private extension String {
-    var nilIfEmpty: String? {
-        trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : self
-    }
-}

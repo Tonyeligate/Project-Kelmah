@@ -9,6 +9,8 @@ import com.kelmah.mobile.features.notifications.data.NotificationItem
 import com.kelmah.mobile.features.notifications.data.NotificationsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,12 +35,17 @@ class NotificationsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(NotificationsUiState())
     val uiState: StateFlow<NotificationsUiState> = _uiState.asStateFlow()
 
+    private var hasBootstrapped = false
+    private var signalDebounceJob: Job? = null
+
     init {
         observeRealtimeSignals()
         bootstrap()
     }
 
     fun bootstrap() {
+        if (hasBootstrapped) return
+        hasBootstrapped = true
         realtimeSocketManager.start()
         refresh()
     }
@@ -92,7 +99,7 @@ class NotificationsViewModel @Inject constructor(
     fun markAsRead(notificationId: String) {
         mutateNotification(
             action = { notificationsRepository.markAsRead(notificationId) },
-            success = "Notification marked as read",
+            success = "Marked as read",
         ) {
             val updated = notifications.map { notification ->
                 if (notification.id == notificationId) {
@@ -111,7 +118,7 @@ class NotificationsViewModel @Inject constructor(
     fun markAllAsRead() {
         mutateNotification(
             action = { notificationsRepository.markAllAsRead() },
-            success = "All notifications marked as read",
+            success = "Marked all as read",
         ) {
             val updated = notifications.map { it.copy(isRead = true) }
             copy(
@@ -124,7 +131,7 @@ class NotificationsViewModel @Inject constructor(
     fun deleteNotification(notificationId: String) {
         mutateNotification(
             action = { notificationsRepository.deleteNotification(notificationId) },
-            success = "Notification removed",
+            success = "Alert removed",
         ) {
             val updated = notifications.filterNot { it.id == notificationId }
             copy(
@@ -167,7 +174,14 @@ class NotificationsViewModel @Inject constructor(
         viewModelScope.launch {
             realtimeSocketManager.signals.collect { signal ->
                 when (signal) {
-                    RealtimeSignal.NotificationReceived -> refresh()
+                    RealtimeSignal.NotificationReceived -> {
+                        // Debounce rapid bursts of notification signals
+                        signalDebounceJob?.cancel()
+                        signalDebounceJob = viewModelScope.launch {
+                            delay(300)
+                            refresh()
+                        }
+                    }
                     is RealtimeSignal.ConnectionChanged,
                     is RealtimeSignal.MessageReceived,
                     is RealtimeSignal.MessagesRead -> Unit

@@ -16,8 +16,8 @@ final class JobsViewModel: ObservableObject {
     @Published var currentPage = 1
     @Published var totalPages = 1
     @Published var totalItems = 0
-    @Published var selectedJob: JobDetail?
-    @Published var isDetailLoading = false
+    @Published private(set) var jobDetailsById: [String: JobDetail] = [:]
+    @Published private(set) var loadingDetailJobIds: Set<String> = []
     @Published var isSubmittingApplication = false
     @Published var recommendationState: RecommendationFeedState = .idle
     @Published var recommendationContextMessage: String?
@@ -34,6 +34,18 @@ final class JobsViewModel: ObservableObject {
 
     var displayedJobs: [JobSummary] {
         activeFeed == .discover ? discoverJobs : savedJobs
+    }
+
+    func jobDetail(for jobId: String) -> JobDetail? {
+        jobDetailsById[jobId]
+    }
+
+    func isDetailLoading(for jobId: String) -> Bool {
+        loadingDetailJobIds.contains(jobId)
+    }
+
+    func jobTitle(for jobId: String) -> String {
+        jobSummary(for: jobId)?.title ?? "Kelmah Job"
     }
 
     func bootstrap() async {
@@ -70,11 +82,11 @@ final class JobsViewModel: ObservableObject {
                 do {
                     recommendedJobs = try await repository.getJobs(filters: fallbackFilters, page: 1, limit: 6).jobs
                     recommendationState = .fallback
-                    recommendationContextMessage = "Showing urgent jobs while personalized matching recovers."
+                    recommendationContextMessage = "Showing urgent jobs for now."
                 } catch {
                     recommendedJobs = []
                     recommendationState = .failed
-                    recommendationContextMessage = "Personalized matching is unavailable right now. Browse jobs while it recovers."
+                    recommendationContextMessage = "Job matches are not ready now. Tap Find Work."
                     homeErrorMessage = recommendationContextMessage
                 }
             }
@@ -151,14 +163,14 @@ final class JobsViewModel: ObservableObject {
     }
 
     func loadJobDetail(jobId: String) async {
-        if selectedJob?.summary.id == jobId { return }
-        isDetailLoading = true
+        if jobDetailsById[jobId] != nil { return }
+        setDetailLoading(jobId, isLoading: true)
         errorMessage = nil
         infoMessage = nil
-        defer { isDetailLoading = false }
+        defer { setDetailLoading(jobId, isLoading: false) }
 
         do {
-            selectedJob = try await repository.getJobDetail(jobId: jobId)
+            cacheJobDetail(try await repository.getJobDetail(jobId: jobId))
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -170,17 +182,24 @@ final class JobsViewModel: ObservableObject {
             discoverJobs = discoverJobs.map { job in
                 job.id == jobId ? job.withSaved(shouldSave) : job
             }
+            recommendedJobs = recommendedJobs.map { job in
+                job.id == jobId ? job.withSaved(shouldSave) : job
+            }
+            hirerJobs = hirerJobs.map { job in
+                job.id == jobId ? job.withSaved(shouldSave) : job
+            }
             if shouldSave {
-                if let saved = discoverJobs.first(where: { $0.id == jobId }) ?? selectedJob?.summary.withSaved(true) {
+                if let saved = discoverJobs.first(where: { $0.id == jobId })
+                    ?? recommendedJobs.first(where: { $0.id == jobId })
+                    ?? hirerJobs.first(where: { $0.id == jobId })
+                    ?? jobDetailsById[jobId]?.summary.withSaved(true) {
                     savedJobs = mergeJobsPreservingLatest([saved] + savedJobs)
                 }
             } else {
                 savedJobs.removeAll { $0.id == jobId }
             }
-            if selectedJob?.summary.id == jobId, let selectedJob {
-                self.selectedJob = selectedJob.withSaved(shouldSave)
-            }
-            infoMessage = shouldSave ? "Job saved" : "Job removed from saved jobs"
+            updateCachedJobDetail(jobId: jobId) { $0.withSaved(shouldSave) }
+            infoMessage = shouldSave ? "Saved for later" : "Removed from saved jobs"
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
@@ -194,15 +213,15 @@ final class JobsViewModel: ObservableObject {
         estimatedDuration: String
     ) async -> Bool {
         guard let rate = Double(proposedRate), rate > 0 else {
-            errorMessage = "Enter a valid proposed rate"
+            errorMessage = "Enter your price"
             return false
         }
-        if let selectedJob, selectedJob.summary.id == jobId, selectedJob.summary.budgetAmount > 0, rate > selectedJob.summary.budgetAmount * 2 {
-            errorMessage = "Proposed rate is too far above the listed budget of \(Int(selectedJob.summary.budgetAmount)) \(selectedJob.summary.currency)"
+        if let jobDetail = jobDetailsById[jobId], jobDetail.summary.budgetAmount > 0, rate > jobDetail.summary.budgetAmount * 2 {
+            errorMessage = "Your price is far above the listed budget of \(Int(jobDetail.summary.budgetAmount)) \(jobDetail.summary.currency). Check the amount and try again."
             return false
         }
         guard coverLetter.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false else {
-            errorMessage = "Cover letter is required"
+            errorMessage = "Write a short message to the hirer"
             return false
         }
 
@@ -237,7 +256,10 @@ final class JobsViewModel: ObservableObject {
         hasBootstrapped = false
         discoverJobs = []
         savedJobs = []
-        selectedJob = nil
+        recommendedJobs = []
+        hirerJobs = []
+        jobDetailsById = [:]
+        loadingDetailJobIds = []
         errorMessage = nil
     }
 
@@ -264,6 +286,38 @@ final class JobsViewModel: ObservableObject {
         }
 
         return orderedIds.compactMap { jobsById[$0] }
+    }
+
+    private func jobSummary(for jobId: String) -> JobSummary? {
+        jobDetailsById[jobId]?.summary
+            ?? discoverJobs.first(where: { $0.id == jobId })
+            ?? savedJobs.first(where: { $0.id == jobId })
+            ?? recommendedJobs.first(where: { $0.id == jobId })
+            ?? hirerJobs.first(where: { $0.id == jobId })
+    }
+
+    private func cacheJobDetail(_ detail: JobDetail) {
+        var updatedDetails = jobDetailsById
+        updatedDetails[detail.summary.id] = detail
+        jobDetailsById = updatedDetails
+    }
+
+    private func updateCachedJobDetail(jobId: String, transform: (JobDetail) -> JobDetail) {
+        guard let existingDetail = jobDetailsById[jobId] else { return }
+
+        var updatedDetails = jobDetailsById
+        updatedDetails[jobId] = transform(existingDetail)
+        jobDetailsById = updatedDetails
+    }
+
+    private func setDetailLoading(_ jobId: String, isLoading: Bool) {
+        var updatedLoadingJobIds = loadingDetailJobIds
+        if isLoading {
+            updatedLoadingJobIds.insert(jobId)
+        } else {
+            updatedLoadingJobIds.remove(jobId)
+        }
+        loadingDetailJobIds = updatedLoadingJobIds
     }
 }
 

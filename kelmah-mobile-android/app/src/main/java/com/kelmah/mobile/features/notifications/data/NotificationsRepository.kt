@@ -1,6 +1,7 @@
 package com.kelmah.mobile.features.notifications.data
 
 import com.kelmah.mobile.core.network.ApiResult
+import com.kelmah.mobile.core.network.executeAuthorizedApiCall
 import com.kelmah.mobile.core.session.SessionCoordinator
 import dagger.Lazy
 import java.time.Instant
@@ -11,7 +12,6 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import retrofit2.HttpException
 
 @Singleton
 class NotificationsRepository @Inject constructor(
@@ -21,7 +21,7 @@ class NotificationsRepository @Inject constructor(
     suspend fun getNotifications(
         unreadOnly: Boolean = false,
         limit: Int = 50,
-    ): ApiResult<List<NotificationItem>> = executeAuthorized {
+    ): ApiResult<List<NotificationItem>> = executeAuthorizedApiCall(sessionCoordinator) {
         val response = notificationsApiService.getNotifications(
             buildMap {
                 put("limit", limit.toString())
@@ -33,7 +33,7 @@ class NotificationsRepository @Inject constructor(
         ApiResult.Success(parseNotifications(response))
     }
 
-    suspend fun getUnreadCount(): ApiResult<Int> = executeAuthorized {
+    suspend fun getUnreadCount(): ApiResult<Int> = executeAuthorizedApiCall(sessionCoordinator) {
         val response = notificationsApiService.getUnreadCount()
         val unreadCount = response.int("unreadCount")
             ?: response.nestedObject("data")?.int("unreadCount")
@@ -41,37 +41,19 @@ class NotificationsRepository @Inject constructor(
         ApiResult.Success(unreadCount)
     }
 
-    suspend fun markAsRead(notificationId: String): ApiResult<Unit> = executeAuthorized {
+    suspend fun markAsRead(notificationId: String): ApiResult<Unit> = executeAuthorizedApiCall(sessionCoordinator) {
         notificationsApiService.markAsRead(notificationId)
         ApiResult.Success(Unit)
     }
 
-    suspend fun markAllAsRead(): ApiResult<Unit> = executeAuthorized {
+    suspend fun markAllAsRead(): ApiResult<Unit> = executeAuthorizedApiCall(sessionCoordinator) {
         notificationsApiService.markAllAsRead()
         ApiResult.Success(Unit)
     }
 
-    suspend fun deleteNotification(notificationId: String): ApiResult<Unit> = executeAuthorized {
+    suspend fun deleteNotification(notificationId: String): ApiResult<Unit> = executeAuthorizedApiCall(sessionCoordinator) {
         notificationsApiService.deleteNotification(notificationId)
         ApiResult.Success(Unit)
-    }
-
-    private suspend fun <T> executeAuthorized(block: suspend () -> ApiResult<T>): ApiResult<T> {
-        return try {
-            block()
-        } catch (error: HttpException) {
-            if (error.code() == 401 && sessionCoordinator.get().refreshSession()) {
-                try {
-                    block()
-                } catch (retryError: Exception) {
-                    ApiResult.Error(message = retryError.message ?: "Request failed after session refresh")
-                }
-            } else {
-                ApiResult.Error(message = error.message ?: "Request failed", code = error.code())
-            }
-        } catch (error: Exception) {
-            ApiResult.Error(message = error.message ?: "Request failed")
-        }
     }
 
     private fun parseNotifications(response: JsonObject): List<NotificationItem> {
@@ -128,7 +110,7 @@ private fun notificationTimestampMillis(raw: String?): Long? {
 }
 
 private fun notificationObjectIdTimestampMillis(id: String): Long? {
-    if (id.length < 8) {
+    if (id.length != 24 || id.any { it !in '0'..'9' && it !in 'a'..'f' && it !in 'A'..'F' }) {
         return null
     }
 

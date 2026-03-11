@@ -59,18 +59,27 @@ final class NotificationsViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
+
+        // Fetch independently so one failure doesn't discard the other's result
         do {
-            async let loadedNotifications = repository.getNotifications(unreadOnly: unreadOnly)
-            async let loadedUnreadCount = repository.getUnreadCount()
-            notifications = try await loadedNotifications
-            unreadCount = try await loadedUnreadCount
+            notifications = try await repository.getNotifications(unreadOnly: unreadOnly)
         } catch {
             errorMessage = error.localizedDescription
+        }
+
+        do {
+            unreadCount = try await repository.getUnreadCount()
+        } catch {
+            // Fall back to local count when server count is unavailable
+            unreadCount = notifications.filter { $0.isRead == false }.count
+            if errorMessage == nil {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 
     func markAsRead(notificationId: String) async {
-        await mutate(successMessage: "Notification marked as read") {
+        await mutate(successMessage: "Marked as read") {
             try await repository.markAsRead(notificationId: notificationId)
             notifications = notifications.map { item in
                 item.id == notificationId
@@ -97,7 +106,7 @@ final class NotificationsViewModel: ObservableObject {
     }
 
     func markAllAsRead() async {
-        await mutate(successMessage: "All notifications marked as read") {
+        await mutate(successMessage: "Marked all as read") {
             try await repository.markAllAsRead()
             notifications = unreadOnly ? [] : notifications.map { item in
                 AppNotificationItem(
@@ -119,7 +128,7 @@ final class NotificationsViewModel: ObservableObject {
     }
 
     func deleteNotification(notificationId: String) async {
-        await mutate(successMessage: "Notification removed") {
+        await mutate(successMessage: "Alert removed") {
             try await repository.deleteNotification(notificationId: notificationId)
             notifications.removeAll { $0.id == notificationId }
             unreadCount = notifications.filter { $0.isRead == false }.count
@@ -143,7 +152,7 @@ final class NotificationsViewModel: ObservableObject {
 
     private func subscribeToRealtimeSignals() {
         realtimeSocketManager.signals
-            .receive(on: RunLoop.main)
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] signal in
                 guard let self else { return }
                 Task { await self.handleRealtimeSignal(signal) }

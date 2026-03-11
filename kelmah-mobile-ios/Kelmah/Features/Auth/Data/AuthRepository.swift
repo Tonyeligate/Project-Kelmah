@@ -82,7 +82,7 @@ final class AuthRepository {
 
     func verifyEmail(token: String) async throws -> VerificationResult {
         let response = try await apiClient.send(
-            path: "auth/verify-email/\(token)",
+            path: "auth/verify-email/\(token.urlPathEncoded)",
             method: .get,
             requiresAuth: false,
             allowAuthRecovery: false,

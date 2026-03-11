@@ -68,25 +68,27 @@ fun JobsScreen(
     val snackbars = remember { SnackbarHostState() }
     val jobs = if (uiState.activeFeed == JobsFeed.DISCOVER) uiState.discoverJobs else uiState.savedJobs
     val isWorker = userRole == KelmahUserRole.WORKER
-    val screenTitle = if (isWorker) "Jobs" else "Hiring Market"
-    val discoverLabel = if (isWorker) "Discover" else "Market"
+    val screenTitle = if (isWorker) "Find Work" else "Hiring Market"
+    val discoverLabel = if (isWorker) "Find" else "Market"
     val savedLabel = if (isWorker) "Saved" else "Watchlist"
     val emptySavedDescription = if (isWorker) {
-        "Jobs you save will appear here for quick access."
+        "Jobs you save will stay here."
     } else {
         "Saved market listings will appear here so you can revisit rates, scope, and demand signals."
     }
     val emptyDiscoverDescription = if (isWorker) {
-        "Try broadening your filters or refreshing the marketplace feed."
+        "Try fewer filters or tap refresh."
     } else {
         "Try broadening your filters or refreshing the market feed to review more live hiring signals."
     }
 
-    LaunchedEffect(uiState.errorMessage, uiState.infoMessage) {
+    LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let {
             snackbars.showSnackbar(it)
             viewModel.clearMessages()
         }
+    }
+    LaunchedEffect(uiState.infoMessage) {
         uiState.infoMessage?.let {
             snackbars.showSnackbar(it)
             viewModel.clearMessages()
@@ -128,7 +130,15 @@ fun JobsScreen(
                 )
             }
 
-            if (!isWorker) {
+            if (isWorker) {
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                    Text(
+                        text = "Find work. Open a job. Save it, or tap Apply Now.",
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            } else {
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
                     Text(
                         text = "Hirer mode is active. Use this tab to benchmark pricing, review live demand, and save listings for hiring research while messages and alerts handle candidate follow-up.",
@@ -143,11 +153,11 @@ fun JobsScreen(
                     value = uiState.filters.search,
                     onValueChange = viewModel::updateSearch,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text(if (isWorker) "Search jobs" else "Search live jobs") },
+                    label = { Text(if (isWorker) "Type job name" else "Search live jobs") },
                     leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                     trailingIcon = {
                         TextButton(onClick = viewModel::applyFilters) {
-                            Text("Go")
+                            Text(if (isWorker) "Show" else "Go")
                         }
                     },
                     singleLine = true,
@@ -156,7 +166,7 @@ fun JobsScreen(
                     value = uiState.filters.location,
                     onValueChange = viewModel::updateLocation,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Location") },
+                    label = { Text(if (isWorker) "Town or area" else "Location") },
                     leadingIcon = { Icon(Icons.Outlined.LocationOn, contentDescription = null) },
                     singleLine = true,
                 )
@@ -189,7 +199,7 @@ fun JobsScreen(
             } else if (jobs.isEmpty()) {
                 EmptyJobsState(
                     title = if (uiState.activeFeed == JobsFeed.SAVED) {
-                        if (isWorker) "No saved jobs yet" else "No saved market listings yet"
+                        if (isWorker) "No saved jobs" else "No saved market listings yet"
                     } else {
                         if (isWorker) "No jobs found" else "No market listings found"
                     },
@@ -223,7 +233,7 @@ fun JobsScreen(
                                 if (uiState.isLoadingMore) {
                                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                                 } else {
-                                    Text("Load More Jobs")
+                                    Text(if (isWorker) "Show More Jobs" else "Load More Jobs")
                                 }
                             }
                         }
@@ -256,11 +266,13 @@ private fun JobCard(
                     Text(job.title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Text(job.employerName, style = MaterialTheme.typography.titleSmall)
                 }
-                IconButton(onClick = onSaveToggle) {
+                OutlinedButton(onClick = onSaveToggle) {
                     Icon(
                         if (job.isSaved) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
-                        contentDescription = null,
+                        contentDescription = if (job.isSaved) "Remove from saved" else "Save job",
                     )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(if (job.isSaved) "Saved" else "Save")
                 }
             }
             Text(job.description, maxLines = 3, overflow = TextOverflow.Ellipsis)
@@ -274,7 +286,7 @@ private fun JobCard(
             Text(job.budgetLabel, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
             val activityMeta = listOfNotNull(
                 RelativeTimeFormatter.relativeOrFallback(job.postedAt),
-                if (job.isUrgent) "Priority listing" else null,
+                if (job.isUrgent) "Urgent" else null,
             )
             if (activityMeta.isNotEmpty()) {
                 Text(
@@ -285,13 +297,13 @@ private fun JobCard(
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = onOpen, modifier = Modifier.weight(1f)) {
-                    Text(if (isWorker) "View" else "Review")
+                    Text(if (isWorker) "Open Job" else "Review")
                 }
                 if (isWorker) {
                     OutlinedButton(onClick = onApply, modifier = Modifier.weight(1f)) {
                         Icon(Icons.Outlined.Send, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Apply")
+                        Text("Apply Now")
                     }
                 }
             }

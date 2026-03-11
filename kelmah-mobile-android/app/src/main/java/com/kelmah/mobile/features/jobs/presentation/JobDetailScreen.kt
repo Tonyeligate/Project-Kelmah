@@ -57,8 +57,10 @@ fun JobDetailScreen(
         viewModel.loadJobDetail(jobId)
     }
 
-    LaunchedEffect(uiState.errorMessage, uiState.infoMessage) {
+    LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let { snackbars.showSnackbar(it); viewModel.clearMessages() }
+    }
+    LaunchedEffect(uiState.infoMessage) {
         uiState.infoMessage?.let { snackbars.showSnackbar(it); viewModel.clearMessages() }
     }
 
@@ -83,6 +85,8 @@ fun JobDetailScreen(
                 verticalArrangement = Arrangement.Center,
             ) {
                 CircularProgressIndicator(modifier = Modifier.padding(horizontal = 24.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(text = "Opening job...", modifier = Modifier.padding(horizontal = 24.dp))
             }
             return@Scaffold
         }
@@ -106,7 +110,7 @@ fun JobDetailScreen(
                         Text(text = "Posted $posted", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     if (job.summary.isUrgent) {
-                        Text(text = "Urgent listing", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                        Text(text = "Urgent", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
                     }
                     Text(text = job.fullDescription.ifBlank { job.summary.description }, style = MaterialTheme.typography.bodyLarge)
                 }
@@ -114,19 +118,19 @@ fun JobDetailScreen(
 
             Card {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(text = "Requirements", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                    Text(text = "What you need", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
                     if (job.requirements.isEmpty()) {
-                        Text(text = "No specific requirements were provided.")
+                        Text(text = "No extra requirements listed.")
                     } else {
                         job.requirements.forEach { requirement ->
                             Text(text = "• $requirement")
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Applications: ${job.proposalCount}")
-                    Text(text = "Views: ${job.viewCount}")
+                    Text(text = "${job.proposalCount} people applied")
+                    Text(text = "${job.viewCount} people viewed")
                     job.deadline?.let {
-                        Text(text = "Deadline: ${RelativeTimeFormatter.deadlineLabel(it) ?: it}")
+                        Text(text = "Apply by: ${RelativeTimeFormatter.deadlineLabel(it) ?: it}")
                     }
                 }
             }
@@ -142,10 +146,10 @@ fun JobDetailScreen(
                     ) {
                         Icon(
                             if (job.summary.isSaved) Icons.Outlined.Bookmark else Icons.Outlined.BookmarkBorder,
-                            contentDescription = null,
+                            contentDescription = if (job.summary.isSaved) "Remove from saved" else "Save job",
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(if (job.summary.isSaved) "Saved" else "Save")
+                        Text(if (job.summary.isSaved) "Saved Job" else "Save Job")
                     }
                     if (userRole == KelmahUserRole.WORKER) {
                         Button(
@@ -154,11 +158,17 @@ fun JobDetailScreen(
                         ) {
                             Icon(Icons.Outlined.Send, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Apply")
+                            Text("Apply Now")
                         }
                     }
                 }
-                if (userRole == KelmahUserRole.HIRER) {
+                if (userRole == KelmahUserRole.WORKER) {
+                    Text(
+                        text = "Read the job. If it fits you, tap Apply Now.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
                     Text(
                         text = "Hirer mode keeps this view focused on market research and pricing review. Worker application steps stay hidden for hirer accounts.",
                         style = MaterialTheme.typography.bodyMedium,

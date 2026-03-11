@@ -15,7 +15,7 @@ struct LoginView: View {
                     .foregroundStyle(KelmahTheme.primary)
                     .accessibilityIdentifier("auth.title")
 
-                Text("Production-focused native onboarding for a national vocational marketplace.")
+                Text("Find skilled workers. Get hired for jobs.")
                     .foregroundStyle(.secondary)
 
                 Picker("Mode", selection: $viewModel.mode) {
@@ -166,7 +166,7 @@ struct LoginView: View {
             .keyboardType(keyboard)
             .autocorrectionDisabled()
             .padding()
-            .background(.white)
+            .background(KelmahTheme.card)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .accessibilityIdentifier(accessibilityId)
     }
@@ -174,7 +174,7 @@ struct LoginView: View {
     private func secureField(_ title: String, text: Binding<String>, accessibilityId: String) -> some View {
         SecureField(title, text: text)
             .padding()
-            .background(.white)
+            .background(KelmahTheme.card)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .accessibilityIdentifier(accessibilityId)
     }

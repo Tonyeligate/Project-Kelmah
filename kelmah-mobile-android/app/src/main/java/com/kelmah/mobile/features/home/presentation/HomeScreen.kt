@@ -39,6 +39,7 @@ import com.kelmah.mobile.features.messaging.presentation.MessagesViewModel
 import com.kelmah.mobile.features.notifications.data.NotificationItem
 import com.kelmah.mobile.features.notifications.data.actionLabel
 import com.kelmah.mobile.features.notifications.presentation.NotificationsViewModel
+import java.util.Locale
 
 @Composable
 fun HomeScreen(
@@ -61,7 +62,7 @@ fun HomeScreen(
     val headline = if (role == KelmahUserRole.HIRER) {
         "Track active hiring work, unread follow-up, and fresh alerts from one screen."
     } else {
-        "Review your strongest job matches, unread work, and recent alerts before you start applying."
+        "See your jobs, saved jobs, messages, and alerts in one place."
     }
     val primaryJobs = if (role == KelmahUserRole.HIRER) jobsState.hirerJobs else jobsState.recommendedJobs
     val unreadMessages = messagesState.conversations.sumOf { it.unreadCount }
@@ -100,7 +101,7 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(
-                        text = if (role == KelmahUserRole.HIRER) "Hirer command view" else "Worker command view",
+                        text = if (role == KelmahUserRole.HIRER) "Hirer command view" else "Your work today",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -108,13 +109,13 @@ fun HomeScreen(
                         text = if (role == KelmahUserRole.HIRER) {
                             "Use this surface to spot active jobs that need attention, keep candidate conversations moving, and react to alerts faster."
                         } else {
-                            "Use this surface to review your best matches, keep saved opportunities close, and react to work alerts faster."
+                            "Check good jobs, saved jobs, and new alerts. Then open a job and apply."
                         },
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         SummaryCard(
                             modifier = Modifier.weight(1f),
-                            label = if (role == KelmahUserRole.HIRER) "Active jobs" else "Matches",
+                            label = if (role == KelmahUserRole.HIRER) "Active jobs" else "Good jobs",
                             value = if (role == KelmahUserRole.HIRER) activeJobs else primaryJobs.size,
                         )
                         SummaryCard(
@@ -130,7 +131,7 @@ fun HomeScreen(
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Button(onClick = onBrowseJobs, modifier = Modifier.weight(1f)) {
-                            Text(if (role == KelmahUserRole.HIRER) "Open Hiring Market" else "Browse Jobs")
+                            Text(if (role == KelmahUserRole.HIRER) "Open Hiring Market" else "Find Work")
                         }
                         OutlinedButton(onClick = onOpenMessages, modifier = Modifier.weight(1f)) {
                             Text("Messages")
@@ -160,15 +161,15 @@ fun HomeScreen(
                 title = if (role == KelmahUserRole.HIRER) {
                     "Recent hiring activity"
                 } else if (jobsState.recommendationState == RecommendationFeedState.FALLBACK) {
-                    "Urgent jobs while matching recovers"
+                    "Urgent jobs right now"
                 } else if (jobsState.recommendationState == RecommendationFeedState.PROFILE_INCOMPLETE) {
-                    "General matches while profile completes"
+                    "More jobs while you finish your profile"
                 } else if (jobsState.recommendationState == RecommendationFeedState.FAILED) {
-                    "Matching temporarily unavailable"
+                    "Jobs feed"
                 } else {
-                    "Recommended matches"
+                    "Jobs for you"
                 },
-                actionLabel = if (role == KelmahUserRole.HIRER) "Open market" else "Browse jobs",
+                actionLabel = if (role == KelmahUserRole.HIRER) "Open market" else "Find work",
                 onAction = onBrowseJobs,
             )
         }
@@ -195,7 +196,7 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         CircularProgressIndicator(modifier = Modifier.width(20.dp))
-                        Text("Loading the latest work intelligence...")
+                        Text("Loading jobs for you...")
                     }
                 }
             }
@@ -205,24 +206,24 @@ fun HomeScreen(
                     title = if (role == KelmahUserRole.HIRER) {
                         "No hiring activity yet"
                     } else if (jobsState.recommendationState == RecommendationFeedState.PROFILE_INCOMPLETE) {
-                        "Complete your profile for better matches"
+                        "Finish your profile for better job matches"
                     } else if (jobsState.recommendationState == RecommendationFeedState.FALLBACK) {
                         "No urgent jobs available"
                     } else if (jobsState.recommendationState == RecommendationFeedState.FAILED) {
-                        "Matching unavailable"
+                        "Jobs feed"
                     } else {
-                        "No recommendations yet"
+                        "No jobs yet"
                     },
                     description = if (role == KelmahUserRole.HIRER) {
                         "Your most recent jobs will appear here once your hiring activity is available."
                     } else if (jobsState.recommendationState == RecommendationFeedState.PROFILE_INCOMPLETE) {
-                        "Kelmah needs a more complete worker profile before it can rank personalized matches accurately."
+                        "Finish your profile to get better job matches."
                     } else if (jobsState.recommendationState == RecommendationFeedState.FALLBACK) {
-                        "Kelmah could not recover enough urgent jobs while the recommendation feed is degraded."
+                        "No urgent jobs right now. Tap Find Work to see all jobs."
                     } else if (jobsState.recommendationState == RecommendationFeedState.FAILED) {
-                        "Browse the jobs feed while personalized matching is unavailable."
+                        "Job matches are not ready now. Tap Find Work."
                     } else {
-                        "Your strongest matches will appear here once the recommendation feed returns results."
+                        "Jobs for you will show here soon."
                     },
                 )
             }
@@ -237,14 +238,14 @@ fun HomeScreen(
         }
 
         item {
-            SectionHeader(title = "Recent conversations", actionLabel = "Open messages", onAction = onOpenMessages)
+            SectionHeader(title = if (role == KelmahUserRole.WORKER) "Messages" else "Recent conversations", actionLabel = if (role == KelmahUserRole.WORKER) "Open" else "Open messages", onAction = onOpenMessages)
         }
 
         if (messagesState.conversations.isEmpty()) {
             item {
                 EmptyHomeSection(
-                    title = "No conversations yet",
-                    description = "Messages created from job and hiring flows will appear here for quick follow-up.",
+                    title = if (role == KelmahUserRole.WORKER) "No messages yet" else "No conversations yet",
+                    description = if (role == KelmahUserRole.WORKER) "New messages will show here." else "Messages created from job and hiring flows will appear here for quick follow-up.",
                 )
             }
         } else {
@@ -254,14 +255,14 @@ fun HomeScreen(
         }
 
         item {
-            SectionHeader(title = "Recent alerts", actionLabel = "Open alerts", onAction = onOpenNotifications)
+            SectionHeader(title = if (role == KelmahUserRole.WORKER) "Alerts" else "Recent alerts", actionLabel = if (role == KelmahUserRole.WORKER) "Open" else "Open alerts", onAction = onOpenNotifications)
         }
 
         if (notificationsState.notifications.isEmpty()) {
             item {
                 EmptyHomeSection(
-                    title = "No alerts yet",
-                    description = "Job, payment, and message alerts will appear here as activity comes in.",
+                    title = if (role == KelmahUserRole.WORKER) "No alerts yet" else "No alerts yet",
+                    description = if (role == KelmahUserRole.WORKER) "New alerts will show here." else "Job, payment, and message alerts will appear here as activity comes in.",
                 )
             }
         } else {
@@ -332,7 +333,7 @@ private fun HomeJobCard(
                     overflow = TextOverflow.Ellipsis,
                 )
                 if (job.matchScore != null && role == KelmahUserRole.WORKER) {
-                    AssistChip(onClick = {}, enabled = false, label = { Text("${formatMatchScore(job.matchScore)}% match") })
+                    AssistChip(onClick = {}, enabled = false, label = { Text("${formatMatchScore(job.matchScore)}% fit") })
                 } else if (!job.status.isNullOrBlank()) {
                     AssistChip(onClick = {}, enabled = false, label = { Text(job.status.replaceFirstChar { it.uppercase() }) })
                 }
@@ -353,10 +354,13 @@ private fun HomeJobCard(
             }
             val meta = listOfNotNull(
                 RelativeTimeFormatter.relativeOrFallback(job.postedAt),
-                if (job.isUrgent) "Priority listing" else null,
+                if (job.isUrgent) "Urgent" else null,
             )
             if (meta.isNotEmpty()) {
                 Text(meta.joinToString(" • "), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if (role == KelmahUserRole.WORKER) {
+                Text("Tap to open job", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
             }
         }
     }
@@ -385,7 +389,7 @@ private fun formatMatchScore(score: Double?): String {
     return if (score % 1.0 == 0.0) {
         score.toInt().toString()
     } else {
-        String.format("%.1f", score)
+        String.format(Locale.US, "%.1f", score)
     }
 }
 
@@ -452,7 +456,7 @@ private fun NotificationPreviewCard(
                     overflow = TextOverflow.Ellipsis,
                 )
                 if (!notification.isRead) {
-                    AssistChip(onClick = {}, enabled = false, label = { Text("Unread") })
+                    AssistChip(onClick = {}, enabled = false, label = { Text("New") })
                 }
             }
             Text(

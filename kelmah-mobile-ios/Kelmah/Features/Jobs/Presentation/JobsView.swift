@@ -28,7 +28,14 @@ struct JobsView: View {
                     .pickerStyle(.segmented)
                 }
 
-                if isWorker == false {
+                if isWorker {
+                    Section {
+                        MessageBannerView(
+                            message: "Find work. Open a job. Save it, or tap Apply Now.",
+                            tint: KelmahTheme.accent.opacity(0.12)
+                        )
+                    }
+                } else {
                     Section {
                         MessageBannerView(
                             message: "Hirer mode is active. Use this tab to benchmark pricing, review live demand, and save listings for hiring research while messages and alerts handle candidate follow-up.",
@@ -38,9 +45,9 @@ struct JobsView: View {
                 }
 
                 if viewModel.activeFeed == .discover {
-                    Section("Filters") {
-                        TextField(isWorker ? "Search jobs" : "Search live jobs", text: $viewModel.filters.search)
-                        TextField("Location", text: $viewModel.filters.location)
+                    Section(isWorker ? "Quick Search" : "Filters") {
+                        TextField(isWorker ? "Type job name" : "Search live jobs", text: $viewModel.filters.search)
+                        TextField(isWorker ? "Town or area" : "Location", text: $viewModel.filters.location)
 
                         Menu {
                             ForEach(viewModel.categories) { category in
@@ -50,7 +57,7 @@ struct JobsView: View {
                             }
                         } label: {
                             HStack {
-                                Text("Category")
+                                Text(isWorker ? "Job type" : "Category")
                                 Spacer()
                                 Text(viewModel.filters.category)
                                     .foregroundStyle(.secondary)
@@ -65,14 +72,14 @@ struct JobsView: View {
                             }
                         } label: {
                             HStack {
-                                Text("Sort")
+                                Text(isWorker ? "Show first" : "Sort")
                                 Spacer()
                                 Text(viewModel.filters.sort.label)
                                     .foregroundStyle(.secondary)
                             }
                         }
 
-                        Button("Apply Filters") {
+                        Button(isWorker ? "Show Jobs" : "Apply Filters") {
                             Task { await viewModel.refreshJobs() }
                         }
                     }
@@ -92,13 +99,13 @@ struct JobsView: View {
 
                 Section(viewModel.activeFeed == .saved ? (isWorker ? "Saved Jobs" : "Saved Market Listings") : (isWorker ? "Open Jobs" : "Live Market Listings")) {
                     if viewModel.isLoading && viewModel.displayedJobs.isEmpty {
-                        ProgressView("Loading jobs...")
+                        ProgressView(isWorker ? "Finding jobs..." : "Loading jobs...")
                             .frame(maxWidth: .infinity, alignment: .center)
                     } else if viewModel.displayedJobs.isEmpty {
                         ContentUnavailableView(
-                            viewModel.activeFeed == .saved ? (isWorker ? "No saved jobs yet" : "No saved market listings yet") : (isWorker ? "No jobs found" : "No market listings found"),
+                            viewModel.activeFeed == .saved ? (isWorker ? "No saved jobs" : "No saved market listings yet") : (isWorker ? "No jobs found" : "No market listings found"),
                             systemImage: "briefcase",
-                            description: Text(viewModel.activeFeed == .saved ? (isWorker ? "Jobs you save will appear here for quick access." : "Saved market listings will appear here so you can revisit rates, scope, and demand signals.") : (isWorker ? "Try broadening your filters or refreshing the marketplace feed." : "Try broadening your filters or refreshing the market feed to review more live hiring signals."))
+                            description: Text(viewModel.activeFeed == .saved ? (isWorker ? "Jobs you save will stay here." : "Saved market listings will appear here so you can revisit rates, scope, and demand signals.") : (isWorker ? "Try fewer filters or tap refresh." : "Try broadening your filters or refreshing the market feed to review more live hiring signals."))
                         )
                     } else {
                         ForEach(viewModel.displayedJobs) { job in
@@ -123,7 +130,7 @@ struct JobsView: View {
                                     ProgressView()
                                         .frame(maxWidth: .infinity)
                                 } else {
-                                    Text("Load More Jobs")
+                                    Text(isWorker ? "Show More Jobs" : "Load More Jobs")
                                         .frame(maxWidth: .infinity)
                                 }
                             }
@@ -135,7 +142,7 @@ struct JobsView: View {
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
             .background(KelmahTheme.background)
-            .navigationTitle(isWorker ? "Jobs" : "Hiring Market")
+            .navigationTitle(isWorker ? "Find Work" : "Hiring Market")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -149,6 +156,7 @@ struct JobsView: View {
                     } label: {
                         Image(systemName: "arrow.clockwise")
                     }
+                    .accessibilityLabel("Refresh jobs")
                 }
             }
             .refreshable {
@@ -187,7 +195,7 @@ struct JobsView: View {
     private func feedTitle(for feed: JobsFeed) -> String {
         switch (feed, userRole) {
         case (.discover, .worker):
-            return "Discover"
+            return "Find"
         case (.discover, .hirer):
             return "Market"
         case (.saved, .worker):
@@ -211,15 +219,16 @@ private struct JobCardView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(job.title)
                         .font(.headline)
+                        .lineLimit(2)
                     Text(job.employerName)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
                 Button(action: onToggleSave) {
-                    Image(systemName: job.isSaved ? "bookmark.fill" : "bookmark")
+                    Label(job.isSaved ? "Saved" : "Save", systemImage: job.isSaved ? "bookmark.fill" : "bookmark")
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.bordered)
             }
 
             Text(job.description)
@@ -241,7 +250,7 @@ private struct JobCardView: View {
 
             let meta = [
                 RelativeTimeFormatter.relativeOrFallback(job.postedAt),
-                job.isUrgent ? "Priority listing" : nil,
+                job.isUrgent ? "Urgent" : nil,
             ].compactMap { $0 }
             if meta.isEmpty == false {
                 Text(meta.joined(separator: " • "))
@@ -250,10 +259,10 @@ private struct JobCardView: View {
             }
 
             HStack(spacing: 10) {
-                Button(userRole == .worker ? "View" : "Review", action: onOpen)
+                Button(userRole == .worker ? "Open Job" : "Review", action: onOpen)
                     .buttonStyle(.bordered)
                 if userRole == .worker {
-                    Button("Apply", action: onApply)
+                    Button("Apply Now", action: onApply)
                         .buttonStyle(.borderedProminent)
                         .tint(KelmahTheme.accent)
                 }
@@ -261,7 +270,7 @@ private struct JobCardView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.white)
+        .background(KelmahTheme.card)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -16,9 +17,13 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -36,6 +41,35 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    var showLogoutAllDialog by remember { mutableStateOf(false) }
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Sign out") },
+            text = { Text("Are you sure you want to sign out of this device?") },
+            confirmButton = {
+                TextButton(onClick = { showLogoutDialog = false; onLogout() }) { Text("Sign out") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) { Text("Cancel") }
+            },
+        )
+    }
+    if (showLogoutAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutAllDialog = false },
+            title = { Text("Sign out all devices") },
+            text = { Text("This will sign you out of every device where you are logged in. Continue?") },
+            confirmButton = {
+                TextButton(onClick = { showLogoutAllDialog = false; onLogoutAll() }) { Text("Sign out all") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutAllDialog = false }) { Text("Cancel") }
+            },
+        )
+    }
 
     LaunchedEffect(uiState.shouldLogout) {
         if (uiState.shouldLogout) {
@@ -95,7 +129,9 @@ fun ProfileScreen(
                                 }
                             }
                             uiState.profileSnapshot != null -> {
-                                WorkerProfileSignalsContent(snapshot = uiState.profileSnapshot!!)
+                                uiState.profileSnapshot?.let { snapshot ->
+                                    WorkerProfileSignalsContent(snapshot = snapshot)
+                                }
                             }
                             else -> {
                                 Text("Profile signals will appear here once your worker account is loaded.")
@@ -162,13 +198,13 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Button(
-                    onClick = onLogout,
+                    onClick = { showLogoutDialog = true },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text("Sign out")
                 }
                 Button(
-                    onClick = onLogoutAll,
+                    onClick = { showLogoutAllDialog = true },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text("Sign out all devices")
@@ -249,7 +285,7 @@ private fun WorkerProfileSignalsContent(snapshot: WorkerProfileSnapshot) {
         snapshot.availability.schedule.take(3).forEach { day ->
             Text("• ${formatDay(day)}", style = MaterialTheme.typography.bodySmall)
         }
-        LinearProgressIndicator(progress = completenessProgress, modifier = Modifier.fillMaxWidth())
+        LinearProgressIndicator(progress = { completenessProgress }, modifier = Modifier.fillMaxWidth())
         Text(
             "${snapshot.completeness.completionPercentage}% complete • required ${snapshot.completeness.requiredCompletion}% • optional ${snapshot.completeness.optionalCompletion}%",
             style = MaterialTheme.typography.bodySmall,
@@ -287,7 +323,7 @@ private fun ProfileFact(label: String, value: String) {
 }
 
 private fun formatRate(value: Double): String =
-    if (value % 1.0 == 0.0) value.toInt().toString() else String.format("%.2f", value)
+    if (value % 1.0 == 0.0) value.toInt().toString() else String.format(java.util.Locale.US, "%.2f", value)
 
 private fun formatDay(day: AvailabilityDay): String {
     val dayLabel = day.day.replaceFirstChar { it.uppercase() }

@@ -3,11 +3,19 @@ import XCTest
 
 final class KelmahTests: XCTestCase {
     func testPasswordPolicyAcceptsStrongPassword() {
-        XCTAssertTrue(PasswordPolicy.isStrong("Kelmah2026"))
+        XCTAssertTrue(PasswordPolicy.isStrong("Kelmah2026!"))
     }
 
-    func testPasswordPolicyRejectsPasswordWithoutNumber() {
-        XCTAssertFalse(PasswordPolicy.isStrong("KelmahPass"))
+    func testPasswordPolicyRejectsPasswordWithoutSpecialCharacter() {
+        XCTAssertFalse(PasswordPolicy.isStrong("Kelmah2026"))
+    }
+
+    func testPasswordPolicyRejectsPasswordWithoutLowercase() {
+        XCTAssertFalse(PasswordPolicy.isStrong("KELMAH2026!"))
+    }
+
+    func testPasswordPolicyRejectsPasswordWithoutUppercase() {
+        XCTAssertFalse(PasswordPolicy.isStrong("kelmah2026!"))
     }
 
     func testSessionUserDefaultsUnknownRoleToWorker() {

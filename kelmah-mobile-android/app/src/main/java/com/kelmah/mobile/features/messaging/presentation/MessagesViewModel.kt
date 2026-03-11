@@ -10,6 +10,8 @@ import com.kelmah.mobile.features.messaging.data.MessagingRepository
 import com.kelmah.mobile.features.messaging.data.ThreadMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,12 +45,17 @@ class MessagesViewModel @Inject constructor(
     val totalUnreadCount: Int
         get() = _uiState.value.conversations.sumOf { it.unreadCount }
 
+    private var hasBootstrapped = false
+    private var signalDebounceJob: Job? = null
+
     init {
         observeRealtimeSignals()
         bootstrap()
     }
 
     fun bootstrap() {
+        if (hasBootstrapped) return
+        hasBootstrapped = true
         realtimeSocketManager.start()
         refreshConversations()
     }
@@ -101,7 +108,7 @@ class MessagesViewModel @Inject constructor(
                         it.copy(
                             conversations = result.data,
                             selectedConversation = conversation ?: it.selectedConversation,
-                            errorMessage = if (conversation == null) "Conversation could not be found" else null,
+                            errorMessage = if (conversation == null) "Chat not found" else null,
                         )
                     }
                     conversation?.let(::openConversation)
@@ -186,7 +193,7 @@ class MessagesViewModel @Inject constructor(
         val conversation = state.selectedConversation ?: return
         val content = state.draftMessage.trim()
         if (content.isBlank()) {
-            _uiState.update { it.copy(errorMessage = "Enter a message before sending") }
+            _uiState.update { it.copy(errorMessage = "Write a message first") }
             return
         }
 
@@ -224,15 +231,24 @@ class MessagesViewModel @Inject constructor(
             realtimeSocketManager.signals.collect { signal ->
                 when (signal) {
                     is RealtimeSignal.MessageReceived -> {
-                        refreshConversations()
-                        if (signal.conversationId != null && signal.conversationId == _uiState.value.selectedConversation?.id) {
-                            loadMessages(signal.conversationId)
+                        // Debounce rapid bursts of signals to avoid N+1 API call storms
+                        signalDebounceJob?.cancel()
+                        signalDebounceJob = viewModelScope.launch {
+                            delay(300)
+                            refreshConversations()
+                            if (signal.conversationId != null && signal.conversationId == _uiState.value.selectedConversation?.id) {
+                                loadMessages(signal.conversationId)
+                            }
                         }
                     }
                     is RealtimeSignal.MessagesRead -> {
-                        refreshConversations()
-                        if (signal.conversationId != null && signal.conversationId == _uiState.value.selectedConversation?.id) {
-                            loadMessages(signal.conversationId)
+                        signalDebounceJob?.cancel()
+                        signalDebounceJob = viewModelScope.launch {
+                            delay(300)
+                            refreshConversations()
+                            if (signal.conversationId != null && signal.conversationId == _uiState.value.selectedConversation?.id) {
+                                loadMessages(signal.conversationId)
+                            }
                         }
                     }
                     RealtimeSignal.NotificationReceived,

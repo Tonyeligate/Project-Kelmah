@@ -2,6 +2,330 @@
 
 ---
 
+### Session: Native Worker Messaging Alerts Copy And QA Handoff March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Continue the low-literacy native mobile pass on worker messaging and alerts surfaces, then produce a shorter QA handoff sheet with pass/fail fields for native testers.
+
+**Acceptance Criteria**
+- Worker-facing messaging and alerts screens use shorter, more direct copy across search, empty states, composer hints, unread badges, and action labels.
+- Message and notification success text is simpler in the native view-model banner/snackbar layer.
+- A short QA handoff sheet exists with pass/fail fields for iOS and Android testers.
+- Touched files are diagnostics-clean and the validation boundary is documented.
+
+**Mapped execution surface**
+- `kelmah-mobile-ios/Kelmah/Features/Messaging/Presentation/MessagesView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Messaging/Presentation/MessagesViewModel.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Notifications/Presentation/NotificationsView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Notifications/Presentation/NotificationsViewModel.swift`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/presentation/MessagesViewModel.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/presentation/NotificationsScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/presentation/NotificationsViewModel.kt`
+- `spec-kit/MOBILE_NATIVE_WORKER_JOB_QA_HANDOFF_MAR11_2026.md`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- Worker messaging and alerts screens still use enterprise-style copy such as `Search conversations`, `Loading notifications`, `Send the first message to start this thread`, `Mark all as read`, and `Notification marked as read`.
+- Conversation and notification rows do not explicitly reinforce the tap/open affordance in the worker flow.
+- The next local step is a copy-only pass on native messaging and alerts surfaces plus a condensed QA handoff sheet derived from the larger smoke checklist.
+
+**Implementation completed**
+- Simplified worker-facing messaging copy across iOS and Android, including chat search labels, loading states, empty states, thread helper text, composer placeholders, and explicit `Send` / `Sending` affordances.
+- Simplified worker-facing alerts copy across iOS and Android, including screen titles, counters, loading states, empty states, row status labels, tap hints, and shorter success feedback messages.
+- Normalized remaining worker-facing alert status labels from `Unread` to `New`, including the alerts filter in both native apps plus the iOS and Android home notification cards.
+- Added the condensed tester handoff sheet in `spec-kit/MOBILE_NATIVE_WORKER_JOB_QA_HANDOFF_MAR11_2026.md`.
+
+**Validation**
+- Editor diagnostics reported no errors in all touched iOS and Android messaging/alerts files.
+- Grep verification confirmed the new worker messaging and alerts wording is present in the active presentation files in scope.
+- No simulator, device, or runtime execution was performed in this session; verification for this pass is source audit plus diagnostics only.
+- Local executable iOS validation remains unavailable on this Windows workstation.
+
+**Documentation**
+- Added `spec-kit/NATIVE_WORKER_MESSAGING_ALERTS_COPY_SIMPLIFICATION_MAR11_2026.md`.
+- Added `spec-kit/MOBILE_NATIVE_WORKER_JOB_QA_HANDOFF_MAR11_2026.md`.
+
+### Session: Native Worker Home Copy And Smoke Checklist March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Continue the low-literacy native mobile pass on worker home and recommendation surfaces, then add a focused manual smoke-test checklist for the worker browse → detail → apply flow on both platforms.
+
+**Acceptance Criteria**
+- Worker home/dashboard copy uses shorter, more direct wording across headlines, recommendation sections, empty states, and helper text.
+- Recommendation state messages are simpler in the native view-model and home-screen layers.
+- A platform-specific manual smoke checklist exists for the current native worker browse → detail → apply flow.
+- Touched files are diagnostics-clean and the validation boundary is documented.
+
+**Mapped execution surface**
+- `kelmah-mobile-ios/Kelmah/Features/Home/Presentation/HomeView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobsViewModel.swift`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/home/presentation/HomeScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobsViewModel.kt`
+- `spec-kit/MOBILE_NATIVE_WORKER_JOB_SMOKE_CHECKLIST_MAR11_2026.md`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- Both native worker home screens still use enterprise-style copy such as `Worker command view`, `Review your strongest job matches`, `Loading the latest work intelligence`, and `Recommended matches`.
+- Worker recommendation fallback and failure messages in the jobs view models are still technically worded.
+- Worker recommendation cards on the home surface remain tappable but do not explicitly say they open the job.
+- The next local step is a copy-and-affordance-only pass on native home surfaces plus a documented manual smoke checklist.
+
+**Implementation completed**
+- Simplified worker home copy across iOS and Android dashboards, including the top headline, command-card text, summary labels, recommendation section titles, and empty states.
+- Simplified worker recommendation fallback and failure messages in the native jobs view models.
+- Added `Tap to open job` affordance text to native worker recommendation cards.
+- Added the focused manual smoke checklist in `spec-kit/MOBILE_NATIVE_WORKER_JOB_SMOKE_CHECKLIST_MAR11_2026.md`.
+
+**Validation**
+- Editor diagnostics reported no errors in all touched iOS and Android files.
+- Grep verification confirmed the new worker home wording is present in both native apps and the targeted old wording is removed from the active files in scope.
+- The smoke checklist was prepared but not executed in this session.
+
+**Documentation**
+- Added `spec-kit/NATIVE_WORKER_HOME_COPY_SIMPLIFICATION_MAR11_2026.md`.
+- Added `spec-kit/MOBILE_NATIVE_WORKER_JOB_SMOKE_CHECKLIST_MAR11_2026.md`.
+
+### Session: Native Worker Job Flow Copy Simplification March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Perform a manual low-literacy pass on native worker job flows across iOS and Android by simplifying browse, detail, save, and apply copy plus making the primary affordances clearer.
+
+**Acceptance Criteria**
+- Worker-facing job browse, detail, and apply screens use shorter, more concrete language.
+- Save and apply affordances are clearer than icon-only or abstract wording.
+- Touched native job-flow files are diagnostics-clean, and validation limits are documented.
+
+**Mapped execution surface**
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobsView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobDetailView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobApplicationView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobsViewModel.swift`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobsScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobDetailScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobApplicationScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/presentation/JobsViewModel.kt`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- Both native apps still use abstract or wordy worker copy such as `Discover`, `Apply Filters`, `Submit a strong, professional application through the Kelmah API Gateway`, and `Cover letter` in the jobs flow.
+- The save action in job cards is icon-only on both iOS and Android, which weakens affordance clarity for low-literacy users.
+- The most effective local fix is a copy-only and affordance-only pass on browse, detail, and apply surfaces without changing navigation or backend contracts.
+
+**Implementation completed**
+- Simplified worker browse-flow copy in iOS and Android job lists, including `Find Work`, `Find`, `Quick Search`, clearer empty states, and clearer worker helper banners.
+- Replaced icon-only save affordances in native worker job cards with explicit text-plus-icon save buttons.
+- Simplified worker detail and apply copy across both native apps, including `Open Job`, `Apply Now`, `Save Job`, plain-language helper text, and clearer loading states.
+- Updated iOS and Android jobs view-model feedback messages to use simpler worker-facing validation and save-state wording.
+
+**Validation**
+- Editor diagnostics reported no errors in all touched iOS and Android job-flow files.
+- Grep verification confirmed the targeted old worker-specific browse/detail/apply copy was removed from the active flow files in scope.
+- No simulator, device, or runtime execution was run in this session; verification for this pass is source audit plus diagnostics only.
+
+**Documentation**
+- Added `spec-kit/NATIVE_WORKER_JOB_FLOW_COPY_SIMPLIFICATION_MAR11_2026.md`.
+
+### Session: iOS Job State And String Utility Remediation March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Continue the local-only native medium backlog by isolating iOS job-detail navigation state away from the shared `selectedJob` singleton and extracting duplicated `nilIfEmpty` extensions into one shared utility.
+
+**Acceptance Criteria**
+- iOS job detail and application flows no longer depend on one shared `selectedJob` slot across navigation contexts.
+- Duplicated `nilIfEmpty` extensions in iOS jobs, messaging, and profile files are replaced by one shared utility.
+- Touched iOS files remain diagnostics-clean, and the local validation boundary is documented accurately.
+
+**Mapped execution surface**
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobsViewModel.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobDetailView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobApplicationView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Data/JobsRepository.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Messaging/Data/MessagesRepository.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Messaging/Data/MessagesModels.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Profile/Data/ProfileRepository.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Profile/Data/ProfileModels.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Profile/Presentation/ProfileView.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Utils/StringExtensions.swift`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- `JobsViewModel` currently stores one published `selectedJob`, but `JobsView`, `JobDetailView`, and `JobApplicationView` can navigate per `jobId`, which makes rapid-tap or multi-destination navigation race against one shared slot.
+- The same `nilIfEmpty` extension is duplicated across jobs, messaging, profile data, and profile presentation files in the iOS app.
+- The cleanest fix is a per-job cached detail map in `JobsViewModel` plus one shared `Core/Utils/StringExtensions.swift` extension file.
+
+**Implementation completed**
+- Replaced the shared `selectedJob` detail slot in `JobsViewModel` with per-job caches: `jobDetailsById` and `loadingDetailJobIds`.
+- Updated `JobDetailView` and `JobApplicationView` to resolve job state by `jobId` through `JobsViewModel` helpers instead of a shared singleton detail object.
+- Added shared `kelmah-mobile-ios/Kelmah/Core/Utils/StringExtensions.swift` and removed duplicated `nilIfEmpty` extensions from jobs, messaging, and profile sources.
+
+**Validation**
+- Editor diagnostics reported no errors in all touched iOS files.
+- Workspace grep confirms only one `nilIfEmpty` extension remains in the iOS app source tree.
+- Workspace grep confirms no remaining shared `selectedJob` state usage in iOS jobs sources; only a closure parameter name remains in `JobsView.swift`.
+- Local executable iOS simulator/XCTest validation was not run because this workstation is Windows-based and does not provide the Apple toolchain.
+
+**Documentation**
+- Added `spec-kit/IOS_JOB_STATE_AND_STRING_UTILITY_REMEDIATION_MAR11_2026.md`.
+
+### Session: Messaging Test Harness And Search Coverage March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Fix the broken messaging test harness import path and add focused Jest coverage for the recently remediated messaging search and conversation duplicate-handling logic.
+
+**Acceptance Criteria**
+- `services/messaging-service/tests/messaging.test.js` no longer fails with missing shared test utility imports.
+- Messaging tests include real controller coverage for `searchMessages` and `searchConversations` text-search and regex-fallback behavior.
+- Messaging tests include coverage for race-safe duplicate direct-conversation handling in `createConversation`.
+- Focused messaging Jest run passes for the updated suites.
+
+**Mapped execution surface**
+- `kelmah-backend/services/messaging-service/tests/messaging.test.js`
+- `kelmah-backend/services/messaging-service/tests/setup.js`
+- `kelmah-backend/services/messaging-service/tests/search-conversation.controller.test.js`
+- `kelmah-backend/services/messaging-service/controllers/message.controller.js`
+- `kelmah-backend/services/messaging-service/controllers/conversation.controller.js`
+- `spec-kit/MESSAGING_TEST_HARDENING_MAR11_2026.md`
+- `spec-kit/STATUS_LOG.md`
+
+**Implementation completed**
+- Fixed broken shared test utility import path in `kelmah-backend/services/messaging-service/tests/messaging.test.js`.
+- Fixed setup harness shared utility import path resolution in `kelmah-backend/services/messaging-service/tests/setup.js`.
+- Added focused controller tests in `kelmah-backend/services/messaging-service/tests/search-conversation.controller.test.js` for:
+  - `searchMessages` text-search-first behavior,
+  - `searchMessages` regex fallback when text index is missing,
+  - `searchConversations` regex fallback when text index is missing,
+  - `createConversation` duplicate-key race handling for `directConversationKey`.
+
+**Validation**
+- Focused messaging run from backend root passed:
+  - `services/messaging-service/tests/messaging.test.js`
+  - `services/messaging-service/tests/search-conversation.controller.test.js`
+  - `services/messaging-service/tests/pagination-readreceipts.test.js`
+  - Result: `3` suites passed, `10` tests passed, `0` failures.
+- Service-native Jest config run passed from `kelmah-backend/services/messaging-service/`:
+  - `tests/messaging.test.js`
+  - `tests/search-conversation.controller.test.js`
+  - Result: `2` suites passed, `9` tests passed, `0` failures.
+- Consolidated backend confidence batch passed from `kelmah-backend/`:
+  - Auth + Payment + Messaging targeted suites
+  - Result: `7` suites passed, `32` tests passed, `0` failures.
+
+**Current state**
+- Messaging harness regression is fixed and targeted controller coverage for the remediated search/conversation logic is now present and passing.
+
+### Session: Native Medium Backlog Remediation March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Tackle the next medium native backlog items by fixing iOS dark-mode-breaking hardcoded white surfaces and deduplicating Android authorized repository execution, then validate what can be executed from the current environment.
+
+**Acceptance Criteria**
+- Active iOS SwiftUI surfaces no longer hardcode `.background(.white)` for the targeted screens and instead use adaptive theme-backed surfaces.
+- Android repositories no longer duplicate the same `executeAuthorized` retry/refresh helper.
+- Native validation is rerun where the current machine supports it, and macOS-only validation constraints are documented precisely.
+- Relevant spec-kit documentation records the file surface, dry-audit findings, implementation, and validation boundary.
+
+**Mapped execution surface**
+- `kelmah-mobile-ios/Kelmah/Core/Design/KelmahTheme.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Auth/Presentation/LoginView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Home/Presentation/HomeView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobDetailView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobsView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Messaging/Presentation/MessagesView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Profile/Presentation/ProfileView.swift`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/network/ApiResult.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/session/SessionCoordinator.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/jobs/data/JobsRepository.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/messaging/data/MessagingRepository.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/data/NotificationsRepository.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/data/ProfileRepository.kt`
+- `.github/workflows/mobile-native-validation.yml`
+- `kelmah-mobile-ios/project.yml`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings**
+- The iOS theme still defined fixed light tokens before this pass, and the targeted views also hardcoded `.background(.white)` or `Color.white`, which kept dark mode visibly broken.
+- Android `JobsRepository`, `MessagingRepository`, `NotificationsRepository`, and `ProfileRepository` each carried the same `executeAuthorized` implementation around `401` refresh/retry behavior.
+- A macOS XCTest/simulator path exists in `.github/workflows/mobile-native-validation.yml`, and GitHub CLI is authenticated with workflow scope in this workspace, but the workflow runs only against remote refs, not uncommitted local changes.
+
+**Implementation completed**
+- Made `KelmahTheme.background` and `KelmahTheme.card` adaptive to system appearance in `kelmah-mobile-ios/Kelmah/Core/Design/KelmahTheme.swift`.
+- Replaced the targeted hardcoded iOS white surfaces in auth, home, jobs, messaging, notifications, and profile presentation files with `KelmahTheme.card`.
+- Added shared Android helper `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/network/AuthorizedApiRequest.kt` and removed duplicated repository-local `executeAuthorized` methods from the four Android repositories.
+- Re-aligned `kelmah-mobile-android/app/src/test/java/com/kelmah/mobile/TokenManagerTest.kt` with the strengthened password policy so Android validation remains representative.
+- Documented the pass in `spec-kit/MOBILE_NATIVE_MEDIUM_BACKLOG_REMEDIATION_MAR11_2026.md`.
+
+**Validation**
+- Grep verification found no remaining `.background(.white)` or `Color.white` uses in `kelmah-mobile-ios/Kelmah/**/*.swift`.
+- Grep verification found no remaining duplicated private `executeAuthorized` repository methods in `kelmah-mobile-android/app/src/main/java/**/*.kt`.
+- VS Code diagnostics reported no errors on all touched Android/iOS files.
+- Android targeted Gradle validation passed: `gradle --no-daemon testDebugUnitTest --tests "com.kelmah.mobile.TokenManagerTest" --tests "com.kelmah.mobile.app.navigation.KelmahDeepLinkResolverTest"`.
+- The macOS iOS workflow was not run against these exact edits because the changes are uncommitted local state; running the remote workflow would require a commit/push or equivalent remote publication step.
+
+**Current state**
+- The requested starting medium backlog items are implemented in source.
+- Android validation is green.
+- iOS executable validation on a macOS runner remains pending source publication to a remote ref.
+
+### Session: Mobile Native Stability Verification March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Verify the reported Android and iOS native stabilization fixes in active source, reconcile any validation drift, and document the remaining native backlog boundary.
+
+**Acceptance Criteria**
+- The listed Android native fixes are confirmed in active source.
+- The listed iOS native fixes are confirmed in active source.
+- Available local validation is executed without overstating unsupported platform checks.
+- Any fix-related failing test coverage uncovered during verification is corrected.
+
+**Mapped execution surface**
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/network/AuthInterceptor.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/storage/TokenManager.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/session/SessionCoordinator.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/network/NetworkModule.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/security/PasswordPolicy.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/presentation/AuthViewModel.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/auth/data/AuthRepository.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/KelmahApp.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahNavHost.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/notifications/presentation/NotificationsScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/utils/RelativeTimeFormatter.kt`
+- `kelmah-mobile-android/app/src/test/java/com/kelmah/mobile/TokenManagerTest.kt`
+- `kelmah-mobile-ios/Kelmah/Features/Auth/Data/AuthRepository.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Auth/Presentation/LoginViewModel.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Home/Presentation/HomeView.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Security/PasswordPolicy.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Messaging/Presentation/MessagesViewModel.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Notifications/Presentation/NotificationsViewModel.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobsViewModel.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobsView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Messaging/Presentation/MessagesView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Auth/Presentation/LoginView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Profile/Presentation/ProfileView.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Jobs/Presentation/JobApplicationView.swift`
+- `kelmah-mobile-ios/Kelmah/Core/Utils/RelativeTimeFormatter.swift`
+- `spec-kit/MOBILE_NATIVE_STABILITY_VERIFICATION_MAR11_2026.md`
+
+**Dry-audit findings**
+- All reported Android and iOS production fixes were already present in active source.
+- The only actionable gap in this pass was stale Android unit coverage that still expected the weaker pre-hardening password policy.
+- Spot checks confirmed several user-listed medium/low native backlog items still remain open and should be handled separately from this completed stabilization set.
+
+**Implementation completed**
+- Updated `kelmah-mobile-android/app/src/test/java/com/kelmah/mobile/TokenManagerTest.kt` so password-policy tests now match the strengthened Android production rules.
+- Added focused password-policy regression coverage for lowercase, special-character, and max-length requirements.
+- Documented the full verification pass in `spec-kit/MOBILE_NATIVE_STABILITY_VERIFICATION_MAR11_2026.md`.
+
+**Validation**
+- VS Code diagnostics reported no errors in `kelmah-mobile-android/` or `kelmah-mobile-ios/`.
+- Targeted Android unit verification passed: `gradle --no-daemon testDebugUnitTest --tests "com.kelmah.mobile.TokenManagerTest" --tests "com.kelmah.mobile.app.navigation.KelmahDeepLinkResolverTest"`.
+- iOS runtime/test execution was not possible on this Windows machine because `swift` and `xcodegen` are unavailable locally and no generated Xcode project is committed.
+
+**Current state**
+- The reported native stabilization pass is present in source and documented.
+- Android targeted verification is green.
+- iOS still requires macOS/Xcode execution for runtime validation beyond source audit.
+
 ### Session: Payment Coverage And Public Trade Stats Follow-Up March 11 2026 🔄 IN PROGRESS
 
 **Date**: March 11, 2026  
@@ -94,6 +418,14 @@
 - VS Code diagnostics reported no issues on edited backend/frontend files.
 - Frontend production build passed via `npm --prefix kelmah-frontend run build`.
 - Backend syntax checks passed on edited backend files via `node --check` (`SYNTAX_OK`).
+- Focused backend Jest subset passed:
+  - `services/auth-service/tests/auth.controller.security.test.js`
+  - `services/auth-service/tests/auth.routes.validation.test.js`
+  - `services/payment-service/tests/escrow.controller.test.js`
+  - `services/payment-service/tests/wallet.controller.test.js`
+  - `services/messaging-service/tests/pagination-readreceipts.test.js`
+  - Result: `5` suites passed, `23` tests passed.
+- Note: `services/messaging-service/tests/messaging.test.js` currently fails due a missing legacy test helper import (`../../shared/test-utils`), which is a test-harness issue.
 
 **Current state**
 - Part 4 to Part 6 remediation is completed for the targeted source-level items in this pass.

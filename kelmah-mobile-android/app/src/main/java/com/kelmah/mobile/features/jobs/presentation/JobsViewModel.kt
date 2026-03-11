@@ -54,11 +54,15 @@ class JobsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(JobsUiState())
     val uiState: StateFlow<JobsUiState> = _uiState.asStateFlow()
 
+    private var hasBootstrapped = false
+
     init {
         bootstrap()
     }
 
     fun bootstrap() {
+        if (hasBootstrapped) return
+        hasBootstrapped = true
         loadCategories()
         refreshJobs()
     }
@@ -82,12 +86,12 @@ class JobsViewModel @Inject constructor(
                             when (val fallback = jobsRepository.getJobs(JobsFilterState(sort = JobSortOption.URGENT), limit = 6)) {
                                 is ApiResult.Success -> {
                                     recommendationState = RecommendationFeedState.FALLBACK
-                                    recommendationContextMessage = "Showing urgent jobs while personalized matching recovers."
+                                    recommendationContextMessage = "Showing urgent jobs for now."
                                     fallback.data.jobs
                                 }
                                 is ApiResult.Error -> {
                                     recommendationState = RecommendationFeedState.FAILED
-                                    recommendationContextMessage = "Personalized matching is unavailable right now. Browse jobs while it recovers."
+                                    recommendationContextMessage = "Job matches are not ready now. Tap Find Work."
                                     emptyList()
                                 }
                             }
@@ -223,10 +227,12 @@ class JobsViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingMore = true, errorMessage = null) }
-            when (val result = jobsRepository.getJobs(state.filters, page = state.currentPage + 1)) {
+            // Re-read state inside coroutine to avoid stale filters/page after user changes
+            val currentState = _uiState.value
+            when (val result = jobsRepository.getJobs(currentState.filters, page = currentState.currentPage + 1)) {
                 is ApiResult.Success -> {
                     val mergedJobs = LinkedHashMap<String, JobSummary>()
-                    (state.discoverJobs + result.data.jobs).forEach { job ->
+                    (_uiState.value.discoverJobs + result.data.jobs).forEach { job ->
                         mergedJobs[job.id] = job
                     }
                     _uiState.update {
@@ -290,20 +296,29 @@ class JobsViewModel @Inject constructor(
                     val updatedDiscover = _uiState.value.discoverJobs.map { job ->
                         if (job.id == jobId) job.copy(isSaved = shouldSave) else job
                     }
+                    val updatedRecommended = _uiState.value.recommendedJobs.map { job ->
+                        if (job.id == jobId) job.copy(isSaved = shouldSave) else job
+                    }
+                    val updatedHirer = _uiState.value.hirerJobs.map { job ->
+                        if (job.id == jobId) job.copy(isSaved = shouldSave) else job
+                    }
                     val currentDetail = _uiState.value.selectedJob?.let { detail ->
                         if (detail.summary.id == jobId) detail.copy(summary = detail.summary.copy(isSaved = shouldSave)) else detail
                     }
                     _uiState.update {
                         it.copy(
                             discoverJobs = updatedDiscover,
+                            recommendedJobs = updatedRecommended,
+                            hirerJobs = updatedHirer,
                             savedJobs = if (shouldSave) {
                                 val added = updatedDiscover.firstOrNull { job -> job.id == jobId }
+                                    ?: updatedRecommended.firstOrNull { job -> job.id == jobId }
                                 (it.savedJobs + listOfNotNull(added)).distinctBy(JobSummary::id)
                             } else {
                                 it.savedJobs.filterNot { job -> job.id == jobId }
                             },
                             selectedJob = currentDetail,
-                            infoMessage = if (shouldSave) "Job saved" else "Job removed from saved jobs",
+                            infoMessage = if (shouldSave) "Saved for later" else "Removed from saved jobs",
                             errorMessage = null,
                         )
                     }
@@ -329,17 +344,17 @@ class JobsViewModel @Inject constructor(
                 ?.summary
                 ?.budgetAmount
             if (rate == null || rate <= 0.0) {
-                _uiState.update { it.copy(errorMessage = "Enter a valid proposed rate") }
+                _uiState.update { it.copy(errorMessage = "Enter your price") }
                 return@launch
             }
             if (selectedBudget != null && selectedBudget > 0.0 && rate > selectedBudget * 2) {
                 _uiState.update {
-                    it.copy(errorMessage = "Proposed rate is too far above the listed budget of ${selectedBudget.toInt()} ${_uiState.value.selectedJob?.summary?.currency ?: "GHS"}")
+                    it.copy(errorMessage = "Your price is far above the listed budget of ${selectedBudget.toInt()} ${_uiState.value.selectedJob?.summary?.currency ?: "GHS"}. Check the amount and try again.")
                 }
                 return@launch
             }
             if (coverLetter.trim().isBlank()) {
-                _uiState.update { it.copy(errorMessage = "Cover letter is required") }
+                _uiState.update { it.copy(errorMessage = "Write a short message to the hirer") }
                 return@launch
             }
 

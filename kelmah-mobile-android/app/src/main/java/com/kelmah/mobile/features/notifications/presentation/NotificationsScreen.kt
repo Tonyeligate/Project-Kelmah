@@ -60,11 +60,13 @@ fun NotificationsScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbars = remember { SnackbarHostState() }
 
-    LaunchedEffect(state.errorMessage, state.infoMessage) {
+    LaunchedEffect(state.errorMessage) {
         state.errorMessage?.let {
             snackbars.showSnackbar(it)
             viewModel.clearMessages()
         }
+    }
+    LaunchedEffect(state.infoMessage) {
         state.infoMessage?.let {
             snackbars.showSnackbar(it)
             viewModel.clearMessages()
@@ -74,10 +76,10 @@ fun NotificationsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notifications") },
+                title = { Text("Alerts") },
                 actions = {
                     IconButton(onClick = viewModel::refresh) {
-                        Icon(Icons.Outlined.Refresh, contentDescription = "Refresh notifications")
+                        Icon(Icons.Outlined.Refresh, contentDescription = "Refresh alerts")
                     }
                     IconButton(
                         onClick = viewModel::markAllAsRead,
@@ -109,13 +111,13 @@ fun NotificationsScreen(
                 FilterChip(
                     selected = state.unreadOnly,
                     onClick = { viewModel.setUnreadOnly(true) },
-                    label = { Text("Unread") },
+                    label = { Text("New") },
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 AssistChip(
                     onClick = {},
                     enabled = false,
-                    label = { Text("${state.unreadCount} unread") },
+                    label = { Text("${state.unreadCount} new") },
                 )
             }
 
@@ -124,15 +126,18 @@ fun NotificationsScreen(
             when {
                 state.isLoading && state.notifications.isEmpty() -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            CircularProgressIndicator()
+                            Text("Loading alerts...")
+                        }
                     }
                 }
 
                 state.notifications.isEmpty() -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         EmptyStateCard(
-                            title = if (state.unreadOnly) "No unread alerts" else "No notifications yet",
-                            subtitle = "Job activity, payment updates, and message alerts will appear here.",
+                            title = if (state.unreadOnly) "No new alerts" else "No alerts yet",
+                            subtitle = "Job and message updates will show here.",
                         )
                     }
                 }
@@ -190,7 +195,7 @@ private fun NotificationCard(
                 Spacer(modifier = Modifier.weight(1f))
                 if (!notification.isRead) {
                     Text(
-                        text = "Unread",
+                        text = "New",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.SemiBold,
@@ -232,8 +237,16 @@ private fun NotificationCard(
                     )
                 }
                 IconButton(onClick = onDelete, enabled = isMutating.not()) {
-                    Icon(Icons.Outlined.DeleteOutline, contentDescription = "Delete notification")
+                    Icon(Icons.Outlined.DeleteOutline, contentDescription = "Delete alert")
                 }
+            }
+
+            if (notification.actionTarget != null) {
+                Text(
+                    text = "Tap to open",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
             }
         }
     }

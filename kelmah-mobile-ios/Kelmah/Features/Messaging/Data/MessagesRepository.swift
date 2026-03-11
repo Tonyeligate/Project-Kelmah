@@ -25,7 +25,7 @@ final class MessagesRepository {
 
     func getMessages(conversationId: String, limit: Int = 50) async throws -> [MessageThreadItem] {
         let response = try await apiClient.send(
-            path: "messages/conversations/\(conversationId)/messages",
+            path: "messages/conversations/\(conversationId.urlPathEncoded)/messages",
             method: .get,
             queryItems: [URLQueryItem(name: "limit", value: String(limit))],
             requiresAuth: true,
@@ -36,7 +36,7 @@ final class MessagesRepository {
 
     func sendMessage(conversationId: String, content: String) async throws -> MessageThreadItem {
         let response = try await apiClient.send(
-            path: "messages/conversations/\(conversationId)/messages",
+            path: "messages/conversations/\(conversationId.urlPathEncoded)/messages",
             method: .post,
             body: SendMessagePayload(conversationId: conversationId, content: content.trimmingCharacters(in: .whitespacesAndNewlines)),
             requiresAuth: true,
@@ -151,10 +151,4 @@ private extension Dictionary where Key == String, Value == JSONValue {
     func string(_ key: String) -> String? { self[key]?.stringValue }
     func int(_ key: String) -> Int? { self[key]?.intValue }
     func bool(_ key: String) -> Bool? { self[key]?.boolValue }
-}
-
-private extension String {
-    var nilIfEmpty: String? {
-        trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : self
-    }
 }

@@ -96,7 +96,7 @@ final class JobsRepository {
 
     func getJobDetail(jobId: String) async throws -> JobDetail {
         let response = try await apiClient.send(
-            path: "jobs/\(jobId)",
+            path: "jobs/\(jobId.urlPathEncoded)",
             method: .get,
             requiresAuth: true,
             responseType: JobsRawEnvelope.self
@@ -107,7 +107,7 @@ final class JobsRepository {
     func toggleSaved(jobId: String, shouldSave: Bool) async throws -> Bool {
         let method: HTTPMethod = shouldSave ? .post : .delete
         _ = try await apiClient.send(
-            path: "jobs/\(jobId)/save",
+            path: "jobs/\(jobId.urlPathEncoded)/save",
             method: method,
             requiresAuth: true,
             responseType: JobsRawEnvelope.self
@@ -117,7 +117,7 @@ final class JobsRepository {
 
     func applyToJob(jobId: String, request: ApplyToJobRequest) async throws -> JobApplicationResult {
         let response = try await apiClient.send(
-            path: "jobs/\(jobId)/apply",
+            path: "jobs/\(jobId.urlPathEncoded)/apply",
             method: .post,
             body: request,
             requiresAuth: true,
@@ -125,7 +125,7 @@ final class JobsRepository {
         )
 
         return JobApplicationResult(
-            success: response.success ?? true,
+            success: response.success ?? false,
             message: response.message ?? response.data?["message"]?.stringValue ?? "Application submitted successfully"
         )
     }
@@ -334,10 +334,4 @@ private extension Dictionary where Key == String, Value == JSONValue {
     func int(_ key: String) -> Int? { self[key]?.intValue }
     func double(_ key: String) -> Double? { self[key]?.doubleValue }
     func bool(_ key: String) -> Bool? { self[key]?.boolValue }
-}
-
-private extension String {
-    var nilIfEmpty: String? {
-        trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : self
-    }
 }

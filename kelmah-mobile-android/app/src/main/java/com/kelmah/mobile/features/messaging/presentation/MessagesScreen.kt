@@ -29,6 +29,7 @@ import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -84,11 +85,13 @@ fun MessagesScreen(
         }
     }
 
-    LaunchedEffect(state.errorMessage, state.infoMessage) {
+    LaunchedEffect(state.errorMessage) {
         state.errorMessage?.let {
             snackbars.showSnackbar(it)
             viewModel.clearMessages()
         }
+    }
+    LaunchedEffect(state.infoMessage) {
         state.infoMessage?.let {
             snackbars.showSnackbar(it)
             viewModel.clearMessages()
@@ -115,13 +118,13 @@ fun MessagesScreen(
                 navigationIcon = {
                     if (state.selectedConversation != null) {
                         IconButton(onClick = viewModel::closeConversation) {
-                            Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back to conversations")
+                            Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back to chats")
                         }
                     }
                 },
                 actions = {
                     IconButton(onClick = viewModel::refreshSelectedConversation) {
-                        Icon(Icons.Outlined.Refresh, contentDescription = "Refresh messages")
+                        Icon(Icons.Outlined.Refresh, contentDescription = "Refresh chat")
                     }
                 },
             )
@@ -173,7 +176,7 @@ private fun ConversationListContent(
             onValueChange = onSearchChange,
             modifier = Modifier.fillMaxWidth(),
             leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-            placeholder = { Text("Search conversations") },
+            placeholder = { Text("Search chats") },
             singleLine = true,
         )
 
@@ -182,15 +185,18 @@ private fun ConversationListContent(
         when {
             isLoading && conversations.isEmpty() -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        CircularProgressIndicator()
+                        Text("Loading chats...")
+                    }
                 }
             }
 
             conversations.isEmpty() -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     EmptyStateCard(
-                        title = "No conversations yet",
-                        subtitle = "Messages created from worker, hirer, and job flows will appear here.",
+                        title = "No messages yet",
+                        subtitle = "Your job messages will show here.",
                     )
                 }
             }
@@ -267,6 +273,13 @@ private fun ConversationCard(
                 }
             }
         }
+
+        Text(
+            text = "Tap to open",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 72.dp, end = 16.dp, bottom = 12.dp),
+        )
     }
 }
 
@@ -297,7 +310,7 @@ private fun ThreadContent(
                 label = {
                     Text(
                         text = if (participant.isActive == true) {
-                            "${participant.name} • active"
+                            "${participant.name} • online"
                         } else {
                             participant.name
                         },
@@ -319,7 +332,7 @@ private fun ThreadContent(
                 Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                     EmptyStateCard(
                         title = "No messages yet",
-                        subtitle = "Send the first message to start this thread.",
+                        subtitle = "Write the first message.",
                     )
                 }
             }
@@ -349,7 +362,7 @@ private fun ThreadContent(
                 value = draftMessage,
                 onValueChange = onDraftChange,
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Write a message") },
+                placeholder = { Text("Write message") },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = { onSend() }),
                 maxLines = 4,
@@ -357,29 +370,27 @@ private fun ThreadContent(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            Surface(
-                modifier = Modifier.size(52.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primary,
-                tonalElevation = 4.dp,
+            Button(
+                onClick = onSend,
+                enabled = isSending.not(),
+                modifier = Modifier.height(52.dp),
             ) {
-                IconButton(
-                    onClick = onSend,
-                    enabled = isSending.not(),
-                ) {
-                    if (isSending) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                        )
-                    } else {
-                        Icon(
-                            Icons.Outlined.Send,
-                            contentDescription = "Send message",
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                        )
-                    }
+                if (isSending) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Sending")
+                } else {
+                    Icon(
+                        Icons.Outlined.Send,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Send")
                 }
             }
         }
