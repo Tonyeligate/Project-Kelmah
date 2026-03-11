@@ -577,6 +577,7 @@ const PaymentCenterPage = () => {
     loading,
     error,
     walletBalance,
+    walletMissing,
     transactions,
     paymentMethods,
     escrows,
@@ -745,6 +746,11 @@ const PaymentCenterPage = () => {
       <Typography color="text.secondary" sx={{ mb: 4 }}>
         Manage your wallet, transactions, and payment methods.
       </Typography>
+      {walletMissing && !error && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          Your wallet will be provisioned automatically on your first deposit or payout. Until then, a GH₵0.00 balance means no wallet exists yet, not that funds were cleared.
+        </Alert>
+      )}
 
       <Grid container spacing={4}>
         <Grid item xs={12} lg={4}>

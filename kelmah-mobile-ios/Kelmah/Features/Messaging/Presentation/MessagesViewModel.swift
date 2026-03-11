@@ -62,9 +62,21 @@ final class MessagesViewModel: ObservableObject {
         infoMessage = nil
     }
 
+    func reset() {
+        hasBootstrapped = false
+        conversations = []
+        messages = []
+        selectedConversation = nil
+        draftMessage = ""
+        searchQuery = ""
+        errorMessage = nil
+        infoMessage = nil
+    }
+
     func refreshConversations() async {
         isLoadingConversations = true
         errorMessage = nil
+        defer { isLoadingConversations = false }
         do {
             let refreshed = try await repository.getConversations()
             conversations = refreshed
@@ -74,7 +86,6 @@ final class MessagesViewModel: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
-        isLoadingConversations = false
     }
 
     func openConversation(_ conversation: MessageConversation) async {
@@ -114,6 +125,7 @@ final class MessagesViewModel: ObservableObject {
     func loadMessages(conversationId: String) async {
         isLoadingMessages = true
         errorMessage = nil
+        defer { isLoadingMessages = false }
         do {
             messages = try await repository.getMessages(conversationId: conversationId)
             conversations = conversations.map { conversation in
@@ -135,7 +147,6 @@ final class MessagesViewModel: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
-        isLoadingMessages = false
     }
 
     func sendMessage() async {
@@ -149,6 +160,7 @@ final class MessagesViewModel: ObservableObject {
         isSending = true
         errorMessage = nil
         infoMessage = nil
+        defer { isSending = false }
         do {
             let message = try await repository.sendMessage(conversationId: selectedConversation.id, content: trimmed)
             messages = sortMessagesChronologically(Array((messages + [message]).reduce(into: [String: MessageThreadItem]()) { result, item in
@@ -171,7 +183,6 @@ final class MessagesViewModel: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
-        isSending = false
     }
 
     private func subscribeToRealtimeSignals() {

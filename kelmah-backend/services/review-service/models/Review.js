@@ -107,6 +107,10 @@ ReviewSchema.set('toObject', { virtuals: true });
 // Index for fast lookup
 ReviewSchema.index({ reviewee: 1 });
 ReviewSchema.index({ job: 1 });
+// Unique index preventing one reviewer from submitting multiple reviews for the same job
+ReviewSchema.index({ reviewer: 1, job: 1 }, { unique: true });
+// Compound index optimised for listing a worker's approved reviews newest-first
+ReviewSchema.index({ reviewee: 1, status: 1, createdAt: -1 });
 
 const Review = mongoose.model("Review", ReviewSchema);
 module.exports = Review;

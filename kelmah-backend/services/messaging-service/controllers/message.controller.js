@@ -31,6 +31,9 @@ const getUserId = (req) => {
  */
 const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+const isMissingTextIndexError = (error) =>
+  /text index required|text index/i.test(String(error?.message || ''));
+
 // Create a new message
 exports.createMessage = async (req, res) => {
   try {
@@ -437,11 +440,7 @@ exports.searchMessages = async (req, res) => {
 
     const andFilters = [];
 
-    if (q && typeof q === "string") {
-      // Escape regex special characters to prevent NoSQL regex injection/DoS
-      const safeQ = escapeRegex(q.trim());
-      andFilters.push({ content: { $regex: safeQ, $options: "i" } });
-    }
+    const rawQuery = typeof q === 'string' ? q.trim() : '';
 
     if (attachments === "true") {
       // Check if at least one attachment exists
@@ -471,44 +470,61 @@ exports.searchMessages = async (req, res) => {
       andFilters.push({ createdAt: { $gte: start } });
     }
 
-    const query =
-      andFilters.length > 0 ? { $and: [baseScope, ...andFilters] } : baseScope;
-
     const page = parseInt(req.query.page, 10) || 1;
     const searchLimit = Math.min(100, parseInt(req.query.limit, 10) || 50);
 
-    const [messages, conversations] = await Promise.all([
-      Message.find(query)
-        .sort({ createdAt: -1 })
+    const fetchMessages = async (useTextSearch) => {
+      const scopedFilters = [...andFilters];
+
+      if (rawQuery) {
+        if (useTextSearch) {
+          scopedFilters.push({ $text: { $search: rawQuery } });
+        } else {
+          const safeQ = escapeRegex(rawQuery);
+          scopedFilters.push({ content: { $regex: safeQ, $options: 'i' } });
+        }
+      }
+
+      const query =
+        scopedFilters.length > 0
+          ? { $and: [baseScope, ...scopedFilters] }
+          : baseScope;
+
+      let cursor = Message.find(query)
         .skip((page - 1) * searchLimit)
         .limit(searchLimit)
-        .populate("sender", "firstName lastName name profilePicture")
-        .populate("recipient", "firstName lastName name profilePicture")
-        .lean(),
-      Conversation.find({ participants: userId }).select(
-        "_id participants title",
-      ),
-    ]);
+        .populate('conversation', 'metadata.title')
+        .populate('sender', 'firstName lastName name profilePicture')
+        .populate('recipient', 'firstName lastName name profilePicture');
 
-    // Build a quick lookup map by participant pair "a:b"
-    const convByPair = new Map();
-    conversations.forEach((c) => {
-      if (Array.isArray(c.participants) && c.participants.length === 2) {
-        const [a, b] = c.participants.map((p) => p.toString()).sort();
-        convByPair.set(`${a}:${b}`, c);
+      if (rawQuery && useTextSearch) {
+        cursor = cursor
+          .sort({ score: { $meta: 'textScore' }, createdAt: -1 });
+      } else {
+        cursor = cursor.sort({ createdAt: -1 });
       }
-    });
+
+      return cursor.lean();
+    };
+
+    let messages;
+    try {
+      messages = await fetchMessages(Boolean(rawQuery));
+    } catch (error) {
+      if (!rawQuery || !isMissingTextIndexError(error)) {
+        throw error;
+      }
+
+      messages = await fetchMessages(false);
+    }
 
     const results = messages.map((m) => {
-      const a = m.sender?._id?.toString?.() || m.sender.toString();
-      const b = m.recipient?._id?.toString?.() || m.recipient.toString();
-      const key = [a, b].sort().join(":");
-      const conv = convByPair.get(key);
       return {
         id: m._id,
-        conversation: conv
-          ? { id: conv._id, title: conv.title || "Conversation" }
-          : { id: null, title: "Conversation" },
+        conversation: {
+          id: m.conversation?._id || null,
+          title: m.conversation?.metadata?.title || 'Conversation',
+        },
         sender: m.sender,
         recipient: m.recipient,
         content: m.content,

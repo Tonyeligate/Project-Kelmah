@@ -12,15 +12,19 @@ class AuthInterceptor @Inject constructor(
     private val tokenManager: TokenManager,
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
-        val requestBuilder = chain.request().newBuilder()
-        requestBuilder.addHeader("X-Request-ID", UUID.randomUUID().toString())
-        requestBuilder.addHeader("X-Client-Platform", "android")
-        requestBuilder.addHeader("X-Client-App", "kelmah-native")
+        val original = chain.request()
+        val requestBuilder = original.newBuilder()
+        requestBuilder.header("X-Request-ID", UUID.randomUUID().toString())
+        requestBuilder.header("X-Client-Platform", "android")
+        requestBuilder.header("X-Client-App", "kelmah-native")
         tokenManager.getAccessToken()?.let { token ->
-            requestBuilder.addHeader("Authorization", "Bearer $token")
+            requestBuilder.header("Authorization", "Bearer $token")
         }
-        requestBuilder.addHeader("Accept", "application/json")
-        requestBuilder.addHeader("Content-Type", "application/json")
+        requestBuilder.header("Accept", "application/json")
+        // Only set Content-Type if not already set (preserves multipart/form-data boundaries)
+        if (original.header("Content-Type") == null && original.body != null) {
+            requestBuilder.header("Content-Type", "application/json")
+        }
         return chain.proceed(requestBuilder.build())
     }
 }

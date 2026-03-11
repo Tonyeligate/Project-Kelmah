@@ -558,6 +558,7 @@ exports.checkEligibility = async (req, res) => {
       ...(jobId ? { _id: jobId } : {}),
     })
       .select('_id title')
+      .limit(500)
       .lean();
 
     // Legacy fallback: older records may have a completed job without the
@@ -577,6 +578,7 @@ exports.checkEligibility = async (req, res) => {
             ...(jobId ? { _id: jobId } : {}),
           },
         })
+        .limit(500)
         .lean();
 
       fallbackEligibleJobs = acceptedApplications
@@ -659,6 +661,7 @@ exports.getHirerReviewCandidates = async (req, res) => {
     })
       .select('_id title budget duration completedDate updatedAt createdAt worker')
       .sort({ completedDate: -1, updatedAt: -1, createdAt: -1 })
+      .limit(500)
       .lean();
 
     if (!Array.isArray(completedJobs) || completedJobs.length === 0) {

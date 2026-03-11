@@ -105,6 +105,8 @@ MessageSchema.index({ sender: 1, recipient: 1 });
 MessageSchema.index({ createdAt: -1 });
 MessageSchema.index({ relatedJob: 1 });
 MessageSchema.index({ relatedContract: 1 });
+// Full-text search index — replaces $regex collection scans in searchMessages/searchConversations
+MessageSchema.index({ content: 'text' }, { default_language: 'english', weights: { content: 1 } });
 
 // Helper methods
 MessageSchema.methods.markAsRead = function () {

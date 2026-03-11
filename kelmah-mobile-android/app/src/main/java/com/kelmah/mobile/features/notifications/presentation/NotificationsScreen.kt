@@ -213,7 +213,7 @@ private fun NotificationCard(
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = notification.createdAt ?: "Just now",
+                    text = com.kelmah.mobile.core.utils.RelativeTimeFormatter.relativeOrFallback(notification.createdAt) ?: "Just now",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

@@ -38,12 +38,14 @@ fun KelmahNavHost(
     LaunchedEffect(currentUser?.resolvedId, pendingDeepLinkUrl) {
         if (currentUser == null || pendingDeepLinkUrl.isNullOrBlank()) return@LaunchedEffect
 
-        resolveKelmahDeepLink(pendingDeepLinkUrl)?.let { route ->
+        val route = resolveKelmahDeepLink(pendingDeepLinkUrl)
+        if (route != null) {
             navController.navigate(route) {
                 launchSingleTop = true
             }
+            onDeepLinkConsumed(pendingDeepLinkUrl)
         }
-        onDeepLinkConsumed(pendingDeepLinkUrl)
+        // Do not consume unresolvable deep links -- leave them pending for retry
     }
 
     NavHost(
@@ -100,8 +102,9 @@ fun KelmahNavHost(
                 userRole = currentRole,
                 onBack = { navController.popBackStack() },
                 onSubmitted = {
-                    navController.popBackStack()
-                    navController.popBackStack()
+                    // Pop back to the Jobs list instead of double-popBackStack
+                    // which is fragile if navigated via deep link
+                    navController.popBackStack(KelmahDestination.Jobs.route, inclusive = false)
                 },
             )
         }

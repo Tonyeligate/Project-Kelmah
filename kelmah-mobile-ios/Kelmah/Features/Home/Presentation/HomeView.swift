@@ -161,9 +161,10 @@ struct HomeView: View {
             await jobsViewModel.refreshHome(for: userRole)
         }
         .refreshable {
-            await jobsViewModel.refreshHome(for: userRole)
-            await messagesViewModel.refreshConversations()
-            await notificationsViewModel.refresh()
+            async let jobs: () = jobsViewModel.refreshHome(for: userRole)
+            async let msgs: () = messagesViewModel.refreshConversations()
+            async let notifs: () = notificationsViewModel.refresh()
+            _ = await (jobs, msgs, notifs)
         }
     }
 }

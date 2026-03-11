@@ -51,6 +51,11 @@ const EMAIL_VERIFICATION_UNAVAILABLE_MESSAGE = 'Verification email delivery is t
 const REGISTRATION_UNAVAILABLE_MESSAGE = 'Registration is temporarily unavailable because verification email delivery is unavailable.';
 const PASSWORD_RESET_DELIVERY_UNAVAILABLE_MESSAGE = 'Password reset email delivery is temporarily unavailable. Please try again later.';
 const INVALID_CREDENTIALS_MESSAGE = 'Invalid credentials';
+const REGISTRATION_FAILURE_MESSAGE = 'Registration failed. Please try again later.';
+const LOGIN_FAILURE_MESSAGE = 'Login temporarily unavailable. Please try again later.';
+const EMAIL_VERIFICATION_FAILURE_MESSAGE = 'Email verification failed. Please try again later.';
+const RESEND_VERIFICATION_FAILURE_MESSAGE = 'Failed to resend verification email. Please try again later.';
+const FORGOT_PASSWORD_FAILURE_MESSAGE = 'Failed to send password reset email. Please try again later.';
 
 const normalizeOptionalPhone = (phone) => {
   if (typeof phone !== 'string') {
@@ -404,7 +409,7 @@ exports.register = async (req, res, next) => {
       return next(new AppError(`${field} already exists`, 400));
     }
 
-    return next(new AppError(`Registration failed: ${error.message}`, 500));
+    return next(new AppError(REGISTRATION_FAILURE_MESSAGE, 500));
   }
 };
 
@@ -511,12 +516,15 @@ exports.login = async (req, res, next) => {
         });
       }
 
-      // If client provides challengeToken, validate it before proceeding
-      if (req.body.challengeToken) {
-        const challenge = await consumeAuthChallenge(AUTH_CHALLENGE_TYPES.TWO_FACTOR, req.body.challengeToken);
-        if (!challenge) {
-          return next(new AppError('Invalid or expired 2FA challenge', 401));
-        }
+      // challengeToken is mandatory — it proves the client completed the challenge step
+      // before supplying the TOTP code, preventing direct 2FA code submission attacks.
+      const { challengeToken } = req.body;
+      if (!challengeToken) {
+        return next(new AppError('2FA challenge token is required. Please restart the login flow.', 401));
+      }
+      const challenge = await consumeAuthChallenge(AUTH_CHALLENGE_TYPES.TWO_FACTOR, challengeToken);
+      if (!challenge) {
+        return next(new AppError('Invalid or expired 2FA challenge. Please restart the login flow.', 401));
       }
 
       // Verify the 2FA code
@@ -617,7 +625,7 @@ exports.login = async (req, res, next) => {
     });
   } catch (error) {
     logger.error('Login error', { error: error.message, stack: error.stack });
-    return next(new AppError(`Login failed: ${error.message}`, 500));
+    return next(new AppError(LOGIN_FAILURE_MESSAGE, 500));
   }
 };
 
@@ -676,7 +684,7 @@ exports.verifyEmail = async (req, res, next) => {
     });
   } catch (error) {
     return next(
-      new AppError(`Email verification failed: ${error.message}`, 500),
+      new AppError(EMAIL_VERIFICATION_FAILURE_MESSAGE, 500),
     );
   }
 };
@@ -745,10 +753,7 @@ exports.resendVerificationEmail = async (req, res, next) => {
     }
 
     return next(
-      new AppError(
-        `Failed to resend verification email: ${error.message}`,
-        500,
-      ),
+      new AppError(RESEND_VERIFICATION_FAILURE_MESSAGE, 500),
     );
   }
 };
@@ -811,10 +816,7 @@ exports.forgotPassword = async (req, res, next) => {
     }
 
     return next(
-      new AppError(
-        `Failed to send password reset email: ${error.message}`,
-        500,
-      ),
+      new AppError(FORGOT_PASSWORD_FAILURE_MESSAGE, 500),
     );
   }
 };

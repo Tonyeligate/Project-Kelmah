@@ -138,7 +138,7 @@ final class AuthRepository {
         await sessionStore.save(
             accessToken: token,
             refreshToken: payload.refreshToken ?? refreshToken,
-            user: sessionStore.currentUser
+            user: payload.user ?? sessionStore.currentUser
         )
     }
 

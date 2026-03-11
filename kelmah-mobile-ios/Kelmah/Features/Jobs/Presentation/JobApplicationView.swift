@@ -70,12 +70,14 @@ struct JobApplicationView: View {
                     }
                     .padding(20)
                 }
+                .scrollDismissesKeyboard(.interactively)
                 .background(KelmahTheme.background.ignoresSafeArea())
             }
         }
         .navigationTitle(userRole == .hirer ? "Hiring Mode" : "Apply")
         .navigationBarTitleDisplayMode(.inline)
         .task(id: jobId) {
+            guard userRole == .worker else { return }
             await viewModel.loadJobDetail(jobId: jobId)
         }
     }

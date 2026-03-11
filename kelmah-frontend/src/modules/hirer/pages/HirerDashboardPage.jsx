@@ -333,7 +333,8 @@ const HirerDashboardPage = () => {
     }
 
     autoRefreshRef.current = setInterval(async () => {
-      if (!isMountedRef.current || refreshing) {
+      // Skip refresh when tab is in the background — saves bandwidth and credits
+      if (!isMountedRef.current || refreshing || document.hidden) {
         return;
       }
 

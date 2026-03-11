@@ -69,6 +69,15 @@ const TRADE_SYNONYM_MAP = {
   catering: ['Catering', 'Cook', 'Chef', 'Food Service', 'Event Catering'],
 };
 
+const LANDING_TRADE_CATEGORIES = [
+  { key: 'carpentry', label: 'Carpentry', trade: 'carpentry' },
+  { key: 'masonry', label: 'Masonry', trade: 'masonry' },
+  { key: 'electrical', label: 'Electrical', trade: 'electrical' },
+  { key: 'plumbing', label: 'Plumbing', trade: 'plumbing' },
+  { key: 'painting', label: 'Painting', trade: 'painting' },
+  { key: 'roofing', label: 'Roofing', trade: 'roofing' },
+];
+
 const buildTradeRegexes = (trade) => {
   if (!trade) {
     return [];
@@ -744,6 +753,121 @@ const executeWorkerDirectoryQuery = async ({
       pages: Math.max(1, Math.ceil(totalCount / parsedLimit)),
     },
   };
+};
+
+const buildTradeCategoryFacet = () =>
+  LANDING_TRADE_CATEGORIES.reduce((facet, category) => {
+    const tradeRegexes = buildTradeRegexes(category.trade);
+    facet[category.key] = [
+      {
+        $match: {
+          $or: [
+            { canonicalProfession: { $in: tradeRegexes } },
+            { canonicalSkills: { $in: tradeRegexes } },
+            { canonicalSpecializations: { $in: tradeRegexes } },
+          ],
+        },
+      },
+      { $count: 'count' },
+    ];
+    return facet;
+  }, {});
+
+const executeTradeCategoryStatsQuery = async () => {
+  await ensureConnection({ timeoutMs: Number(process.env.DB_READY_TIMEOUT_MS || 30000) });
+
+  if (typeof modelsModule.loadModels === 'function') {
+    modelsModule.loadModels();
+  }
+
+  const MongoUser = modelsModule.User;
+  const WorkerProfileModel = modelsModule.WorkerProfile;
+
+  if (!MongoUser) {
+    throw new Error('User model not initialized');
+  }
+
+  if (!WorkerProfileModel) {
+    throw new Error('WorkerProfile model not initialized');
+  }
+
+  const usersCollection = MongoUser.collection?.collectionName || 'users';
+  const pipeline = [
+    {
+      $match: {
+        userId: { $exists: true, $ne: null },
+      },
+    },
+    {
+      $lookup: {
+        from: usersCollection,
+        let: { workerUserId: '$userId' },
+        pipeline: [
+          {
+            $match: {
+              role: 'worker',
+              isActive: true,
+              $expr: { $eq: ['$_id', '$$workerUserId'] },
+            },
+          },
+        ],
+        as: 'user',
+      },
+    },
+    {
+      $match: {
+        'user.0': { $exists: true },
+      },
+    },
+    {
+      $addFields: {
+        canonicalProfession: {
+          $ifNull: [
+            '$title',
+            {
+              $ifNull: [
+                '$headline',
+                {
+                  $ifNull: ['$profession', { $ifNull: ['$user.profession', ''] }],
+                },
+              ],
+            },
+          ],
+        },
+        canonicalSkills: {
+          $setUnion: [
+            { $ifNull: ['$skills', []] },
+            { $ifNull: ['$user.skills', []] },
+            {
+              $map: {
+                input: { $ifNull: ['$skillEntries', []] },
+                as: 'skillEntry',
+                in: '$$skillEntry.name',
+              },
+            },
+          ],
+        },
+        canonicalSpecializations: {
+          $setUnion: [
+            { $ifNull: ['$specializations', []] },
+            { $ifNull: ['$user.specializations', []] },
+          ],
+        },
+      },
+    },
+    {
+      $facet: buildTradeCategoryFacet(),
+    },
+  ];
+
+  const [result] = await WorkerProfileModel.aggregate(pipeline);
+
+  return LANDING_TRADE_CATEGORIES.map(({ key, label }) => ({
+    key,
+    label,
+    query: key,
+    count: result?.[key]?.[0]?.count || 0,
+  }));
 };
 
 // Haversine distance calculator (returns km)
@@ -1875,6 +1999,32 @@ class WorkerController {
     }
   }
 
+
+      static async getTradeCategoryStats(req, res) {
+        try {
+          const categories = await executeTradeCategoryStatsQuery();
+
+          return res.status(200).json({
+            success: true,
+            message: 'Trade category stats retrieved successfully',
+            data: {
+              categories,
+            },
+          });
+        } catch (error) {
+          logger.error('Trade category stats error:', error);
+
+          if (error?.message?.toLowerCase().includes('timed out waiting for mongodb connection')) {
+            return res.status(503).json({
+              success: false,
+              message: 'User Service database is reconnecting. Please try again shortly.',
+              code: 'USER_DB_NOT_READY',
+            });
+          }
+
+          return handleServiceError(res, error, 'Failed to retrieve trade category stats');
+        }
+      }
   static async getWorkerById(req, res) {
     const workerId = req.params.id;
 

@@ -51,6 +51,9 @@ class AuthViewModel @Inject constructor(
             it.copy(
                 mode = mode,
                 isLoading = false,
+                password = "",
+                confirmPassword = "",
+                token = "",
                 errorMessage = null,
                 infoMessage = null,
             )
@@ -94,6 +97,8 @@ class AuthViewModel @Inject constructor(
     }
 
     fun submitPrimaryAction() {
+        // Prevent duplicate submissions while loading
+        if (_uiState.value.isLoading) return
         when (_uiState.value.mode) {
             AuthMode.LOGIN -> login()
             AuthMode.REGISTER -> register()
@@ -129,12 +134,17 @@ class AuthViewModel @Inject constructor(
             _uiState.update { it.copy(errorMessage = "Email and password are required") }
             return
         }
+        if (!state.email.trim().contains("@") || !state.email.trim().contains(".")) {
+            _uiState.update { it.copy(errorMessage = "Please enter a valid email address") }
+            return
+        }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null, infoMessage = null) }
             when (val result = authRepository.login(state.email.trim(), state.password)) {
                 is ApiResult.Success -> {
-                    _uiState.update { it.copy(isLoading = false, isAuthenticated = true, errorMessage = null) }
+                    // Clear password from memory after successful login
+                    _uiState.update { it.copy(isLoading = false, isAuthenticated = true, password = "", errorMessage = null) }
                 }
                 is ApiResult.Error -> {
                     _uiState.update { it.copy(isLoading = false, errorMessage = result.message) }
@@ -152,6 +162,10 @@ class AuthViewModel @Inject constructor(
             }
             state.email.isBlank() -> {
                 _uiState.update { it.copy(errorMessage = "Email is required") }
+                return
+            }
+            !state.email.trim().contains("@") || !state.email.trim().contains(".") -> {
+                _uiState.update { it.copy(errorMessage = "Please enter a valid email address") }
                 return
             }
             !PasswordPolicy.isStrong(state.password) -> {

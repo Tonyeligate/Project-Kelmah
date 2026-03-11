@@ -21,7 +21,7 @@ import TransactionsList from '../components/TransactionsList';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
 
 const WalletPage = () => {
-  const { loading, error, walletBalance, transactions, fetchTransactions } =
+  const { loading, error, walletBalance, walletMissing, transactions, fetchTransactions } =
     usePayments();
   // Filters
   const [startDate, setStartDate] = useState('');
@@ -102,6 +102,11 @@ const WalletPage = () => {
         >
           {currencyFormatter.format(walletBalance)}
         </Typography>
+        {walletMissing && (
+          <Alert severity="info" sx={{ mt: 2 }}>
+            Your wallet has not been funded yet. It will be created automatically the first time you add funds or receive a payment.
+          </Alert>
+        )}
       </Paper>
       {/* Transaction Filters */}
       <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 2, md: 2, lg: 1.5 }, alignItems: 'center' }}>

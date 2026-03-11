@@ -125,11 +125,12 @@ class AuthRepository @Inject constructor(
             if (accessToken.isNullOrBlank()) {
                 ApiResult.Error(message = "Refresh response did not include a new access token")
             } else {
-                val currentUser = tokenManager.getStoredSession()?.user
+                // Prefer fresh user from server, fall back to cached
+                val resolvedUser = payload.user ?: tokenManager.getStoredSession()?.user
                 val rotatedSession = StoredSession(
                     accessToken = accessToken,
                     refreshToken = payload.refreshToken ?: refreshToken,
-                    user = currentUser,
+                    user = resolvedUser,
                 )
                 tokenManager.saveSession(
                     accessToken = rotatedSession.accessToken,
@@ -181,6 +182,13 @@ class AuthRepository @Inject constructor(
             }
 
             if (result is ApiResult.Success) {
+                return result
+            }
+
+            // Do not retry on 4xx client errors (auth failures, validation, conflicts)
+            // Only retry on transient errors (5xx, network errors with no code)
+            val errorCode = (result as? ApiResult.Error)?.code
+            if (errorCode != null && errorCode in 400..499) {
                 return result
             }
 

@@ -2,6 +2,204 @@
 
 ---
 
+### Session: Payment Coverage And Public Trade Stats Follow-Up March 11 2026 🔄 IN PROGRESS
+
+**Date**: March 11, 2026  
+**Scope**: Add focused Jest coverage for the hardened escrow and wallet transaction paths, and replace landing-page trade-card placeholders with a real public per-trade worker-count endpoint.
+
+**Acceptance Criteria**
+- Payment-service Jest includes focused controller tests that verify refund and milestone-release transaction/session behavior plus wallet upsert behavior.
+- A public endpoint returns worker counts per landing-page trade category from live backend data.
+- The landing page reads those public trade counts instead of rendering placeholders or static category counts.
+- New backend/frontend follow-up changes are documented and validated.
+
+**Mapped execution surface**
+- `kelmah-backend/services/payment-service/controllers/escrow.controller.js`
+- `kelmah-backend/services/payment-service/controllers/wallet.controller.js`
+- `kelmah-backend/services/payment-service/tests/setup.js`
+- `kelmah-backend/services/payment-service/tests/payment.test.js`
+- `kelmah-backend/services/payment-service/tests/escrow.controller.test.js`
+- `kelmah-backend/services/payment-service/tests/wallet.controller.test.js`
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/tests/worker-directory.controller.test.js`
+- `kelmah-frontend/src/pages/HomeLanding.jsx`
+- `kelmah-frontend/src/services/apiClient.js`
+- `spec-kit/PAYMENT_COVERAGE_AND_PUBLIC_TRADE_STATS_MAR11_2026.md`
+
+**Dry-audit findings so far**
+- Payment-service tests are mostly placeholders today; there is no focused controller coverage for escrow transactions or wallet upserts.
+- The landing page already uses live `/api/jobs/stats` for overall platform metrics, so the missing piece is only a real public per-trade worker count surface.
+- The cleanest backend location for trade-card counts is `user-service`, where worker discovery and trade synonym logic already live.
+
+**Current state**
+- Follow-up scope logged and dry audit completed.
+- Source edits pending.
+
+### Session: PART 4 To PART 6 Remediation March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Execute the requested remediation pass for the listed database/indexing, backend query-performance, schema-drift, frontend structural/performance, accessibility, and medium/low security issues.
+
+**Acceptance Criteria**
+- Missing database indexes and uniqueness guards listed in the audit are implemented in the active source models.
+- The flagged backend query anti-patterns are reduced at the source, including targeted `lean()`, bounded result sets, and removal of avoidable unbounded in-memory work.
+- Worker profile schema drift between shared and user-service definitions is reduced and documented.
+- The listed frontend state/performance issues with safe, focused fixes are addressed without destabilizing route flows.
+- The flagged medium/low security issues that can be fixed in source without external infrastructure changes are remediated and verified.
+- Relevant spec-kit audit notes capture the mapped file surface, dry-audit findings, implemented changes, and validation results.
+
+**Mapped execution surface**
+- `kelmah-backend/services/review-service/models/Review.js`
+- `kelmah-backend/shared/models/Job.js`
+- `kelmah-backend/services/messaging-service/models/Message.js`
+- `kelmah-backend/services/payment-service/models/Transaction.js`
+- `kelmah-backend/services/messaging-service/models/Conversation.js`
+- `kelmah-backend/services/user-service/models/Portfolio.js`
+- `kelmah-backend/shared/models/WorkerProfile.js`
+- `kelmah-backend/services/user-service/models/WorkerProfileMongo.js`
+- `kelmah-backend/services/messaging-service/controllers/message.controller.js`
+- `kelmah-backend/services/review-service/controllers/review.controller.js`
+- `kelmah-backend/services/payment-service/controllers/wallet.controller.js`
+- `kelmah-backend/services/messaging-service/controllers/conversation.controller.js`
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/api-gateway/server.js`
+- `kelmah-backend/api-gateway/middlewares/auth.js`
+- `kelmah-backend/services/auth-service/middlewares/rateLimiter.js`
+- `kelmah-backend/services/auth-service/utils/security.js`
+- `kelmah-backend/shared/models/User.js`
+- `kelmah-frontend/src/utils/secureStorage.js`
+- `kelmah-frontend/src/modules/auth/utils/registrationDraftStorage.js`
+- `kelmah-frontend/src/modules/auth/components/register/Register.jsx`
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+- `kelmah-frontend/src/modules/auth/pages/ForgotPasswordPage.jsx`
+- `kelmah-frontend/src/modules/payment/contexts/PaymentContext.jsx`
+- `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx`
+- `kelmah-frontend/src/services/websocketService.js`
+- `kelmah-frontend/src/modules/contracts/contexts/ContractContext.jsx`
+- `spec-kit/PART4_PART6_REMEDIATION_MAR11_2026.md`
+
+**Implementation completed**
+- Added and aligned missing index/uniqueness protections in active source where still needed, including message full-text search support, conversation duplicate prevention, transaction access-path indexes, and review integrity/listing indexes.
+- Reworked messaging search paths to use text-search-first strategy with escaped-regex fallback only when text indexes are unavailable, while removing avoidable in-memory pair-map reconstruction.
+- Hardened auth error handling in targeted catch paths to avoid leaking internal exception details and aligned shared password hashing cost with the stronger auth posture.
+- Added bounded query limits in targeted review-controller eligibility paths to prevent avoidable high-volume scans.
+- Fixed wallet-missing semantics in frontend payment flows so `404` wallet states are represented explicitly (`walletMissing`) instead of being silently collapsed into a regular zero-balance state.
+- Added frontend runtime hardening and performance fixes in touched modules, including websocket token-freshness guard, dashboard route detection centralization, reduced persisted registration draft PII, callback dependency cleanup, recursion-depth guard in amount normalization, and hidden-tab auto-refresh throttling.
+
+**Validation**
+- VS Code diagnostics reported no issues on edited backend/frontend files.
+- Frontend production build passed via `npm --prefix kelmah-frontend run build`.
+- Backend syntax checks passed on edited backend files via `node --check` (`SYNTAX_OK`).
+
+**Current state**
+- Part 4 to Part 6 remediation is completed for the targeted source-level items in this pass.
+- Full implementation trace and file-level details are documented in `spec-kit/PART4_PART6_REMEDIATION_MAR11_2026.md`.
+
+### Session: Security, Financial Integrity, Frontend, And Matching Hardening March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Fix the reported S4-S8 security issues, F1-F4 payment-integrity issues, B1-B3 frontend defects, and harden the current matching stack where the user-reported gaps still exist in active source.
+
+**Acceptance Criteria**
+- Shared JWT random ID generation fails closed instead of silently falling back to `Math.random()`.
+- Auth password-reset endpoints are rate limited.
+- Worker profile mutation routes enforce ownership before controller logic runs.
+- Login redirect handling rejects protocol-relative redirects and does not trust poisonable API-base storage when launching social login.
+- Escrow refund and milestone-release flows are wrapped in MongoDB transactions so wallet credits, transaction creation, and escrow status changes commit atomically.
+- Wallet uniqueness is enforced by a unique index on `user`, and wallet upsert/update paths no longer use read-then-write patterns vulnerable to duplicate creation under concurrency.
+- Frontend token refresh queues concurrent `401` retries behind one refresh operation instead of letting multiple failed requests race and flicker navigation.
+- Messaging initialization no longer fires authenticated messaging work before auth is known/allowed.
+- Landing page trade cards no longer show fabricated worker counts.
+- Matching audit is updated to distinguish already-fixed geo support from still-open availability/performance/budget-fit gaps, and at least the cleanest active-source hardening in scope is implemented.
+
+**Mapped execution surface**
+- `kelmah-backend/shared/utils/jwt.js`
+- `kelmah-backend/services/auth-service/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/middlewares/rateLimiter.js`
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/models/Availability.js`
+- `kelmah-backend/services/payment-service/controllers/escrow.controller.js`
+- `kelmah-backend/services/payment-service/controllers/wallet.controller.js`
+- `kelmah-backend/services/payment-service/models/Wallet.js`
+- `kelmah-backend/services/payment-service/models/index.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/job-service/routes/job.routes.js`
+- `kelmah-backend/services/job-service/models/UserPerformance.js`
+- `kelmah-backend/shared/models/User.js`
+- `kelmah-backend/shared/models/Job.js`
+- `kelmah-frontend/src/services/apiClient.js`
+- `kelmah-frontend/src/modules/auth/components/login/Login.jsx`
+- `kelmah-frontend/src/config/environment.js`
+- `kelmah-frontend/src/modules/auth/components/common/ProtectedRoute.jsx`
+- `kelmah-frontend/src/modules/auth/hooks/useAuth.js`
+- `kelmah-frontend/src/modules/auth/services/authSlice.js`
+- `kelmah-frontend/src/modules/auth/services/authService.js`
+- `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/pages/HomeLanding.jsx`
+- `kelmah-frontend/src/main.jsx`
+- `spec-kit/STATUS_LOG.md`
+- `spec-kit/SECURITY_FINANCIAL_FRONTEND_MATCHING_HARDENING_MAR11_2026.md`
+
+**Data Flow Trace**
+- Login redirect / social login: `Login.jsx` submit or OAuth button -> auth Redux thunk / `window.location.assign()` -> `getApiBaseUrl()` resolution in `environment.js` -> gateway `/api/auth/*`.
+- Password reset: frontend reset form -> gateway `/api/auth/reset-password*` -> auth-service `auth.routes.js` -> limiter middleware -> controller.
+- Worker profile update: worker edit UI -> frontend worker service -> gateway `/api/users/workers/:id` -> user-service `user.routes.js` -> ownership middleware -> `WorkerController.updateWorkerProfile()` -> shared `User` + worker profile documents.
+- Escrow refund / milestone release: payment route -> controller -> `Escrow`, `Transaction`, and `Wallet` writes -> MongoDB session commit or abort.
+- Frontend refresh race: `apiClient.js` interceptor -> one refresh request -> replay queued failed requests after refresh result -> auth redirect only on refresh failure.
+- Messaging auth gate: app boot -> global `MessageProvider` in `main.jsx` -> auth hook / token availability -> messaging REST/socket bootstrap. This currently occurs before page-level route guards matter.
+- Landing page category cards: `HomeLanding.jsx` renders static trade metadata today; public platform stats are available via `GET /api/jobs/stats` in job-service.
+
+**Dry-audit findings so far**
+- `shared/utils/jwt.js` still falls back to a timestamp plus `Math.random()` string when `crypto.randomBytes()` throws.
+- `auth.routes.js` rate limits forgot-password but not either reset-password entry point.
+- `user.routes.js` already defines `requireOwnership` locally, but the `PUT /workers/:id` route does not use it.
+- `Login.jsx` accepts any string starting with `/` as a post-login redirect, including protocol-relative `//evil.com`, and social login builds its target from `getApiBaseUrl()` without validating whether that base came from poisonable runtime/local storage.
+- `escrow.controller.js` wraps release in a session, but refund and milestone release still mix wallet credits, transaction creation, and escrow updates without a transaction.
+- `Wallet.js` has `unique: true` on the schema field but also adds a non-unique `WalletSchema.index({ user: 1 })`, which weakens clarity and invites duplicate-wallet risk under concurrency.
+- `wallet.controller.js#createOrUpdateWallet` still uses `findOne()` followed by conditional `new Wallet()`/`save()`.
+- `apiClient.js` shares one refresh promise but retries each `401` caller independently, so simultaneous failures can still stampede retries and trigger multiple redirect side effects if refresh fails mid-burst.
+- `MessageProvider` is mounted globally in `main.jsx` and performs conversation/socket bootstrap based on auth-hook state before the `/messages` page route guard can prevent that work.
+- `HomeLanding.jsx` still hardcodes per-trade counts like `800+ carpenters` and renders them as factual data.
+- Matching audit delta: active worker directory code already supports coordinate-aware filtering through bounding-box prefilter plus haversine distance scoring, so the stale claim that there is no proximity support is no longer fully accurate. Real open gaps remain around availability-aware ranking, job-budget fit, and performance/history inputs.
+
+**Implementation completed**
+- Removed the insecure `Math.random()` fallback from `kelmah-backend/shared/utils/jwt.js`; token ID generation now depends solely on secure Node crypto.
+- Added reset-password rate limiting in `kelmah-backend/services/auth-service/routes/auth.routes.js` for both token-in-path and token-in-body reset flows.
+- Mounted the existing `requireOwnership` middleware on `PUT /workers/:id` in `kelmah-backend/services/user-service/routes/user.routes.js`, so non-owners are rejected before controller work begins.
+- Hardened payment integrity in `kelmah-backend/services/payment-service/controllers/escrow.controller.js` by wrapping refund and milestone release flows in MongoDB sessions and ensuring wallet credit, transaction creation, and escrow mutation commit atomically.
+- Removed the wallet read-then-write race in `kelmah-backend/services/payment-service/controllers/wallet.controller.js` by converting create/update to a single `findOneAndUpdate(..., { upsert: true })` path.
+- Made wallet uniqueness explicit in `kelmah-backend/services/payment-service/models/Wallet.js` with a unique `{ user: 1 }` index instead of a plain duplicate lookup index.
+- Hardened `kelmah-frontend/src/modules/auth/components/login/Login.jsx` so post-login redirects reject protocol-relative targets and social login uses a trusted API base instead of the poisonable cached base.
+- Added trusted API-base helpers in `kelmah-frontend/src/config/environment.js` so security-sensitive flows can ignore local-storage cache drift while the general API resolver remains backward-compatible.
+- Reworked `kelmah-frontend/src/services/apiClient.js` to queue concurrent `401` retries behind a single refresh flow and collapse refresh-failure redirects to one guarded navigation.
+- Fixed the real messaging auth-gate root cause in `kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx`: the globally mounted provider now waits for settled authenticated state before conversation/socket bootstrap.
+- Removed fabricated trade counts from `kelmah-frontend/src/pages/HomeLanding.jsx`.
+- Hardened job recommendation matching in `kelmah-backend/services/job-service/controllers/job.controller.js` so availability, explicit experience-level fit, historical performance, and active contract load now influence worker/job scoring. The same audit also confirmed coordinate-aware worker proximity filtering already exists in active source, so the earlier “no geo support” claim is now stale.
+
+**Validation**
+- VS Code diagnostics reported no errors across all touched backend, frontend, and spec-kit files.
+- Focused backend Jest verification passed from `kelmah-backend/`:
+  - `services/auth-service/tests/shared-jwt.test.js`
+  - `services/auth-service/tests/auth.routes.validation.test.js`
+  - `services/auth-service/tests/auth.controller.security.test.js`
+  - `services/job-service/tests/mobile-recommendations.contract.test.js`
+  - Result: 4 suites passed, 28 tests passed, 0 failures.
+- Focused frontend Jest verification passed from `kelmah-frontend/`:
+  - `src/tests/components/auth/Login.test.jsx`
+  - Result: 1 suite passed, 2 tests passed, 0 failures.
+- No focused escrow, wallet, or MessageContext automated suites currently exist in this repo, so those paths were validated with source audit plus editor diagnostics.
+
+**Current state**
+- S4-S8, F1-F4, and B1-B3 are fixed in active source.
+- Matching now uses more real worker readiness and performance data, while the spec-kit record now correctly distinguishes already-present proximity support from still-open future recommendation opportunities such as language-aware matching or richer availability schedules.
+
 ### Session: HIGH-09 To HIGH-12 Stability Follow-Up March 10 2026 ✅ COMPLETED
 
 **Date**: March 10, 2026  

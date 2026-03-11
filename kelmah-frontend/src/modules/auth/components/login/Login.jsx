@@ -32,7 +32,7 @@ import {
   SecurityOutlined,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { AUTH_CONFIG, getApiBaseUrl } from '../../../../config/environment';
+import { AUTH_CONFIG, getTrustedApiBaseUrl } from '../../../../config/environment';
 import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 // Removed AuthContext import to use Redux auth system
 // import { useAuth } from '../../contexts/AuthContext';
@@ -138,7 +138,7 @@ const Login = () => {
   );
 
   const handleSocialLogin = useCallback((authPath) => {
-    window.location.assign(`${getApiBaseUrl()}${authPath}`);
+    window.location.assign(`${getTrustedApiBaseUrl()}${authPath}`);
   }, []);
 
   const getDefaultRouteByRole = (role) => {
@@ -153,6 +153,7 @@ const Login = () => {
     if (
       typeof requestedPath === 'string' &&
       requestedPath.startsWith('/') &&
+      !requestedPath.startsWith('//') &&
       !requestedPath.startsWith('/login') &&
       !requestedPath.startsWith('/register')
     ) {

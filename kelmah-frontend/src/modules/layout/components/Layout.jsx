@@ -18,6 +18,37 @@ import { useThemeMode } from '../../../theme/ThemeProvider';
 import { BOTTOM_NAV_HEIGHT, HEADER_HEIGHT_MOBILE } from '../../../constants/layout';
 // Header functionality integrated into Header component
 
+const DASHBOARD_PATH_PREFIXES = [
+  '/dashboard',
+  '/worker',
+  '/hirer',
+  '/messages',
+  '/notifications',
+  '/settings',
+  '/support',
+];
+
+const DASHBOARD_PATH_MATCHERS = [
+  '/profile/edit',
+  '/applications',
+  '/contracts',
+  '/payments',
+  '/wallet',
+  '/schedule',
+  '/reviews',
+  '/profile',
+];
+
+const isDashboardRoute = (path = '') => {
+  if (!path || path.startsWith('/worker-profile')) {
+    return false;
+  }
+
+  return DASHBOARD_PATH_PREFIXES.some(
+    (prefix) => path === prefix || path.startsWith(`${prefix}/`),
+  ) || DASHBOARD_PATH_MATCHERS.some((segment) => path.includes(segment));
+};
+
 /**
  * Main layout component that wraps the entire application
  * Provides consistent header, footer, and container structure
@@ -58,31 +89,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
   // FIX: Added missing paths that should render with dashboard sidebar layout
   const isMessagesPage =
     currentPath === '/messages' || currentPath.startsWith('/messages');
-  const isPublicWorkerProfile = currentPath.startsWith('/worker-profile');
-  const isDashboardPage =
-    !isPublicWorkerProfile &&
-    (currentPath.includes('/dashboard') ||
-      currentPath.startsWith('/worker') ||
-      currentPath.startsWith('/hirer') ||
-      currentPath === '/dashboard' ||
-      // Additional dashboard-related paths
-      currentPath.includes('/profile/edit') ||
-      currentPath.includes('/applications') ||
-      currentPath.includes('/contracts') ||
-      currentPath.includes('/payments') ||
-      currentPath.includes('/wallet') ||
-      currentPath.includes('/schedule') ||
-      currentPath.includes('/reviews') ||
-      // FIX: Added missing shared routes that need dashboard layout
-      currentPath === '/notifications' ||
-      currentPath.startsWith('/notifications') ||
-      currentPath === '/settings' ||
-      currentPath.startsWith('/settings') ||
-      currentPath === '/support' ||
-      currentPath.startsWith('/support') ||
-      currentPath === '/profile' ||
-      currentPath === '/messages' ||
-      currentPath.startsWith('/messages'));
+  const isDashboardPage = isDashboardRoute(currentPath);
 
   // Session expired banner state - moved outside conditional blocks
   const [sessionExpired, setSessionExpired] = useState(false);

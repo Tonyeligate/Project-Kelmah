@@ -78,6 +78,7 @@ router.post(
 // Reset password
 router.post(
   "/reset-password/:token",
+  createLimiter("forgotPassword"),
   [
     buildStrictPasswordValidation("password"),
   ],
@@ -88,6 +89,7 @@ router.post(
 // Backward-compatible reset route that accepts token in body
 router.post(
   "/reset-password",
+  createLimiter("forgotPassword"),
   [
     body("token").notEmpty().withMessage("Reset token is required"),
     buildStrictPasswordValidation("password"),

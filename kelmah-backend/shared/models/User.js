@@ -273,8 +273,8 @@ userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
   try {
-    // Hash password with cost of 12
-    this.password = await bcrypt.hash(this.password, 12);
+    // Match auth-service hashing cost so newly written passwords are consistent.
+    this.password = await bcrypt.hash(this.password, 14);
     next();
   } catch (error) {
     next(error);

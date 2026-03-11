@@ -75,6 +75,7 @@ const LIMITS = {
   emailVerification: { windowMs: 15 * 60 * 1000, max: 20 },
   verificationToken: { windowMs: 15 * 60 * 1000, max: 10 },
   forgotPassword: { windowMs: 15 * 60 * 1000, max: 5 },
+  resetPassword: { windowMs: 15 * 60 * 1000, max: 5, skipSuccessfulRequests: false },
   auth: { windowMs: 15 * 60 * 1000, max: 15 },       // refresh-token endpoint
   validateToken: { windowMs: 15 * 60 * 1000, max: 60 }, // internal token validation
   reactivateAccount: { windowMs: 60 * 60 * 1000, max: 5 },

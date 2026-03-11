@@ -381,4 +381,59 @@ describe('Worker directory controllers', () => {
       }),
     ]);
   });
+
+  test('getTradeCategoryStats returns live per-trade counts from active worker profiles', async () => {
+    const res = createMockResponse();
+    const mockWorkerProfileAggregate = jest.fn().mockResolvedValue([
+      {
+        carpentry: [{ count: 4 }],
+        masonry: [{ count: 2 }],
+        electrical: [{ count: 7 }],
+        plumbing: [],
+        painting: [{ count: 1 }],
+        roofing: [{ count: 3 }],
+      },
+    ]);
+
+    setModel('User', {
+      collection: { collectionName: 'users' },
+    });
+
+    setModel('WorkerProfile', {
+      collection: { collectionName: 'workerprofiles' },
+      aggregate: mockWorkerProfileAggregate,
+    });
+
+    await WorkerController.getTradeCategoryStats({ query: {} }, res);
+
+    expect(ensureConnection).toHaveBeenCalled();
+    expect(mockWorkerProfileAggregate).toHaveBeenCalledTimes(1);
+
+    const pipeline = mockWorkerProfileAggregate.mock.calls[0][0];
+    const lookupStage = pipeline.find((stage) => stage.$lookup);
+    expect(lookupStage?.$lookup?.pipeline?.[0]).toEqual(expect.objectContaining({
+      $match: expect.objectContaining({
+        role: 'worker',
+        isActive: true,
+      }),
+    }));
+
+    const facetStage = pipeline.find((stage) => stage.$facet);
+    expect(Object.keys(facetStage?.$facet || {})).toEqual(expect.arrayContaining([
+      'carpentry',
+      'masonry',
+      'electrical',
+      'plumbing',
+      'painting',
+      'roofing',
+    ]));
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body?.success).toBe(true);
+    expect(res.body?.data?.categories).toEqual(expect.arrayContaining([
+      expect.objectContaining({ key: 'carpentry', count: 4 }),
+      expect.objectContaining({ key: 'plumbing', count: 0 }),
+      expect.objectContaining({ key: 'roofing', count: 3 }),
+    ]));
+  });
 });

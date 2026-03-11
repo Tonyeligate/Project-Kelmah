@@ -7,8 +7,6 @@ const SAFE_FIELDS = [
   'role',
   'firstName',
   'lastName',
-  'email',
-  'phone',
   'companyName',
   'trades',
   'experienceYears',

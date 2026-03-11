@@ -1,4 +1,41 @@
+const mongoose = require('mongoose');
 const { Escrow, Wallet, Transaction, User } = require('../models');
+
+const creditWalletInSession = async ({
+  userId,
+  amount,
+  transactionId,
+  session,
+  trackEarnings = false,
+}) => {
+  const timestamp = new Date();
+  const update = {
+    $inc: {
+      balance: amount,
+    },
+    $push: {
+      transactionHistory: {
+        transaction: transactionId,
+        type: 'credit',
+        amount,
+        timestamp,
+      },
+    },
+    $set: {
+      'metadata.lastTransactionDate': timestamp,
+    },
+  };
+
+  if (trackEarnings) {
+    update.$inc['metadata.totalEarnings'] = amount;
+  }
+
+  return Wallet.findOneAndUpdate(
+    { user: userId },
+    update,
+    { new: true, session },
+  );
+};
 
 exports.getEscrows = async (req, res, next) => {
   try {
@@ -35,7 +72,6 @@ exports.getEscrowDetails = async (req, res, next) => {
 };
 
 exports.releaseEscrow = async (req, res, next) => {
-  const mongoose = require('mongoose');
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
@@ -127,58 +163,73 @@ exports.fundEscrow = async (req, res, next) => {
 };
 
 exports.refundEscrow = async (req, res, next) => {
+  const session = await mongoose.startSession();
   try {
+    session.startTransaction();
     const { escrowId } = req.params;
     const userId = req.user?.id;
     if (!escrowId) return res.status(400).json({ success: false, message: 'escrowId is required' });
-    const escrow = await Escrow.findById(escrowId);
+    const escrow = await Escrow.findById(escrowId).session(session);
     if (!escrow) return res.status(404).json({ success: false, message: 'Escrow not found' });
     // Only hirer or admin can refund
     if (escrow.hirerId.toString() !== userId && req.user?.role !== 'admin') {
+      await session.abortTransaction();
       return res.status(403).json({ success: false, message: 'Only the hirer or admin can refund escrow' });
     }
-    if (!['active', 'disputed'].includes(escrow.status)) return res.status(400).json({ success: false, message: 'Escrow is not refundable' });
+    if (!['active', 'disputed'].includes(escrow.status)) {
+      await session.abortTransaction();
+      return res.status(400).json({ success: false, message: 'Escrow is not refundable' });
+    }
 
     // Idempotency: atomically set status to 'refunding' to prevent double-refund
     const lockResult = await Escrow.findOneAndUpdate(
       { _id: escrowId, status: { $in: ['active', 'disputed'] } },
       { $set: { status: 'refunding' } },
-      { new: true }
+      { new: true, session }
     );
     if (!lockResult) {
+      await session.abortTransaction();
       return res.status(409).json({ success: false, message: 'Escrow refund already in progress or completed' });
     }
 
     const tx = await new Transaction({
       transactionId: `TRX-${Date.now()}-${require('crypto').randomUUID().slice(0, 8)}`,
-      amount: escrow.amount,
-      currency: escrow.currency,
+      amount: lockResult.amount,
+      currency: lockResult.currency,
       type: 'refund',
-      paymentMethod: { metadata: { provider: escrow.provider } },
-      sender: escrow.workerId,
-      recipient: escrow.hirerId,
-      relatedContract: escrow.contractId,
-      relatedJob: escrow.jobId,
+      paymentMethod: { metadata: { provider: lockResult.provider } },
+      sender: lockResult.workerId,
+      recipient: lockResult.hirerId,
+      relatedContract: lockResult.contractId,
+      relatedJob: lockResult.jobId,
       description: 'Escrow refund',
       status: 'completed'
-    }).save();
+    }).save({ session });
 
-    // Atomic balance update — prevents race-condition double-credit
-    const walletUpdate = await Wallet.findOneAndUpdate(
-      { user: escrow.hirerId },
-      { $inc: { balance: escrow.amount } },
-      { new: true }
-    );
-    if (!walletUpdate) return res.status(500).json({ success: false, message: 'Failed to credit hirer wallet' });
-
-    await Escrow.findByIdAndUpdate(escrowId, {
-      $set: { status: 'refunded', refundedAt: new Date() },
-      $push: { transactions: tx._id }
+    const walletUpdate = await creditWalletInSession({
+      userId: lockResult.hirerId,
+      amount: lockResult.amount,
+      transactionId: tx._id,
+      session,
+      trackEarnings: false,
     });
+    if (!walletUpdate) {
+      await session.abortTransaction();
+      return res.status(404).json({ success: false, message: 'Hirer wallet not found' });
+    }
 
-    return res.json({ success: true, message: 'Escrow refunded successfully', data: { escrowId: escrow._id } });
+    lockResult.status = 'refunded';
+    lockResult.refundedAt = new Date();
+    lockResult.transactions.push(tx._id);
+    await lockResult.save({ session });
+
+    await session.commitTransaction();
+    return res.json({ success: true, message: 'Escrow refunded successfully', data: { escrowId: lockResult._id } });
   } catch (err) {
+    await session.abortTransaction();
     next(err);
+  } finally {
+    session.endSession();
   }
 };
 
@@ -188,21 +239,33 @@ exports.refundEscrow = async (req, res, next) => {
  * @access Private (Hirer only)
  */
 exports.releaseMilestonePayment = async (req, res, next) => {
+  const session = await mongoose.startSession();
   try {
+    session.startTransaction();
     const { escrowId, milestoneId } = req.params;
     const hirerId = req.user?.id;
     
-    const escrow = await Escrow.findById(escrowId);
+    const escrow = await Escrow.findById(escrowId).session(session);
     if (!escrow) return res.status(404).json({ success: false, message: 'Escrow not found' });
-    if (escrow.hirerId.toString() !== hirerId) return res.status(403).json({ success: false, message: 'Access denied' });
-    if (escrow.status !== 'active') return res.status(400).json({ success: false, message: 'Escrow is not active' });
+    if (escrow.hirerId.toString() !== hirerId) {
+      await session.abortTransaction();
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+    if (escrow.status !== 'active') {
+      await session.abortTransaction();
+      return res.status(400).json({ success: false, message: 'Escrow is not active' });
+    }
 
     // Atomic milestone status guard — prevents double-release race condition
     const atomicResult = await Escrow.findOneAndUpdate(
       {
         _id: escrowId,
-        'milestones.milestoneId': milestoneId,
-        'milestones.status': { $ne: 'released' }
+        milestones: {
+          $elemMatch: {
+            milestoneId,
+            status: { $ne: 'released' },
+          },
+        },
       },
       {
         $set: {
@@ -210,15 +273,20 @@ exports.releaseMilestonePayment = async (req, res, next) => {
           'milestones.$.releasedDate': new Date()
         }
       },
-      { new: true }
+      { new: true, session }
     );
 
     if (!atomicResult) {
+      await session.abortTransaction();
       return res.status(400).json({ success: false, message: 'Milestone already released or not found' });
     }
 
     // Find the milestone for amount info
-    const milestone = atomicResult.milestones.find(m => m.milestoneId === milestoneId);
+    const milestone = atomicResult.milestones.find((entry) => String(entry.milestoneId) === String(milestoneId));
+    if (!milestone) {
+      await session.abortTransaction();
+      return res.status(404).json({ success: false, message: 'Milestone not found' });
+    }
 
     // Create transaction for milestone payment
     const tx = await new Transaction({
@@ -233,14 +301,19 @@ exports.releaseMilestonePayment = async (req, res, next) => {
       relatedJob: atomicResult.jobId,
       description: `Milestone payment: ${milestone.description || milestoneId}`,
       status: 'completed'
-    }).save();
+    }).save({ session });
 
-    // Atomic balance update — prevents race-condition double-credit
-    await Wallet.findOneAndUpdate(
-      { user: atomicResult.workerId },
-      { $inc: { balance: milestone.amount } },
-      { new: true }
-    );
+    const workerWallet = await creditWalletInSession({
+      userId: atomicResult.workerId,
+      amount: milestone.amount,
+      transactionId: tx._id,
+      session,
+      trackEarnings: true,
+    });
+    if (!workerWallet) {
+      await session.abortTransaction();
+      return res.status(404).json({ success: false, message: 'Worker wallet not found' });
+    }
 
     // Push transaction and check if all milestones released
     atomicResult.transactions.push(tx._id);
@@ -249,21 +322,26 @@ exports.releaseMilestonePayment = async (req, res, next) => {
       atomicResult.status = 'released';
       atomicResult.releasedAt = new Date();
     }
-    await atomicResult.save();
+    await atomicResult.save({ session });
+
+    await session.commitTransaction();
 
     return res.json({ 
       success: true, 
       message: 'Milestone payment released successfully', 
       data: { 
-        escrowId: escrow._id, 
+        escrowId: atomicResult._id, 
         milestoneId,
         amount: milestone.amount,
         transactionId: tx._id,
-        escrowStatus: escrow.status
+        escrowStatus: atomicResult.status
       } 
     });
   } catch (err) {
+    await session.abortTransaction();
     next(err);
+  } finally {
+    session.endSession();
   }
 };
 

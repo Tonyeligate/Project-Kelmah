@@ -179,6 +179,7 @@ private struct MessageThreadView: View {
                         }
                         .padding()
                     }
+                    .scrollDismissesKeyboard(.interactively)
                     .onChange(of: viewModel.messages.count) { _ in
                         if let last = viewModel.messages.last?.id {
                             withAnimation {
@@ -220,7 +221,7 @@ private struct MessageThreadView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(KelmahTheme.accent)
-                .disabled(viewModel.isSending)
+                .disabled(viewModel.isSending || viewModel.draftMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
             .padding()
             .background(.ultraThinMaterial)

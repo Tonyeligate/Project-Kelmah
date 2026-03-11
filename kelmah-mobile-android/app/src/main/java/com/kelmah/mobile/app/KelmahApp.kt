@@ -53,7 +53,11 @@ fun KelmahApp(
         val messagesState by messagesViewModel.uiState.collectAsStateWithLifecycle()
         val notificationsState by notificationsViewModel.uiState.collectAsStateWithLifecycle()
 
-        LaunchedEffect(tokenManager.getAccessToken()) {
+        // Use session flow reactively instead of reading EncryptedSharedPreferences during
+        // composition, which blocks the main thread with AES decryption.
+        val currentSession by tokenManager.sessionFlow.collectAsStateWithLifecycle()
+
+        LaunchedEffect(currentSession?.accessToken) {
             sessionCoordinator.bootstrapSession()
         }
 

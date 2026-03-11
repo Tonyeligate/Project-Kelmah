@@ -8,6 +8,10 @@ const auditLogger = require("../utils/audit-logger");
 const logger = require("../utils/logger");
 const mongoose = require("mongoose");
 
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const isMissingTextIndexError = (error) =>
+  /text index required|text index/i.test(String(error?.message || ''));
+
 class ConversationController {
   /**
    * Get user's conversations
@@ -144,7 +148,7 @@ class ConversationController {
       const existingUsers = await User.find({
         _id: { $in: allParticipants },
         isActive: true,
-      }).select("_id");
+      }).select("_id").lean();
 
       if (existingUsers.length !== allParticipants.length) {
         return res.status(400).json({
@@ -159,7 +163,7 @@ class ConversationController {
         const existingConversation = await Conversation.findOne({
           participants: { $all: allParticipants },
           status: { $ne: "deleted" },
-        }).populate("participants", "firstName lastName profilePicture");
+        }).populate("participants", "firstName lastName profilePicture").lean();
 
         if (existingConversation) {
           // Return fully-populated conversation so the frontend can
@@ -196,7 +200,7 @@ class ConversationController {
       // Get participant details for response
       const participants = await User.find({
         _id: { $in: allParticipants },
-      }).select("firstName lastName profilePicture");
+      }).select("firstName lastName profilePicture").lean();
 
       // Log conversation creation
       await auditLogger.log({
@@ -229,6 +233,39 @@ class ConversationController {
         },
       });
     } catch (error) {
+      if (error?.code === 11000 && error?.keyPattern?.directConversationKey) {
+        const { participantIds } = req.body;
+        const userId = req.user.id || req.user._id;
+        const participantStrings = [...new Set([String(userId), ...(participantIds || []).map(String)])];
+        const allParticipants = participantStrings.map((id) => new mongoose.Types.ObjectId(id));
+        const existingConversation = await Conversation.findOne({
+          participants: { $all: allParticipants },
+          status: { $ne: 'deleted' },
+        }).populate('participants', 'firstName lastName profilePicture').lean();
+
+        if (existingConversation) {
+          return res.status(200).json({
+            success: true,
+            message: 'Conversation already exists',
+            data: {
+              conversation: {
+                id: existingConversation._id,
+                type: 'direct',
+                title: existingConversation.metadata?.title || null,
+                participants: (existingConversation.participants || []).map((p) => ({
+                  id: p._id,
+                  name: `${p.firstName} ${p.lastName}`.trim(),
+                  profilePicture: p.profilePicture,
+                })),
+                lastMessage: existingConversation.lastMessage || null,
+                createdAt: existingConversation.createdAt,
+                lastMessageAt: existingConversation.updatedAt,
+              },
+            },
+          });
+        }
+      }
+
       logger.error("Create conversation error:", error);
       return res.status(500).json({
         success: false,
@@ -332,7 +369,7 @@ class ConversationController {
       const conversation = await Conversation.findOne({
         _id: id,
         participants: { $in: [new mongoose.Types.ObjectId(userId)] },
-      });
+      }).lean();
 
       if (!conversation) {
         return res.status(404).json({
@@ -361,7 +398,7 @@ class ConversationController {
         const existingUsers = await User.find({
           _id: { $in: normalized },
           isActive: true,
-        }).select("_id");
+        }).select("_id").lean();
         if (existingUsers.length !== normalized.length) {
           return res.status(400).json({
             success: false,
@@ -428,7 +465,7 @@ class ConversationController {
       const conversation = await Conversation.findOne({
         _id: id,
         participants: { $in: [new mongoose.Types.ObjectId(userId)] },
-      });
+      }).lean();
 
       if (!conversation) {
         return res.status(404).json({
@@ -486,7 +523,7 @@ class ConversationController {
       const conversation = await Conversation.findOne({
         _id: id,
         participants: { $in: [new mongoose.Types.ObjectId(userId)] },
-      });
+      }).lean();
 
       if (!conversation) {
         return res.status(404).json({
@@ -557,31 +594,57 @@ class ConversationController {
       };
       if (type && type !== "all") convQuery.status = type;
 
-      const conversations = await Conversation.find(convQuery)
+      const visibleConversationIds = await Conversation.find(convQuery)
+        .select('_id')
+        .lean();
+
+      const conversationIds = visibleConversationIds.map((conversation) => conversation._id);
+      if (conversationIds.length === 0) {
+        return res.status(200).json({
+          success: true,
+          message: 'Conversation search completed',
+          data: {
+            conversations: [],
+            pagination: { page: pageNum, limit: pageSize, total: 0 },
+            searchQuery: query,
+          },
+        });
+      }
+
+      const fetchMatchingConversationIds = async (useTextSearch) => {
+        const messageQuery = {
+          conversation: { $in: conversationIds },
+        };
+
+        if (useTextSearch) {
+          messageQuery.$text = { $search: query.trim() };
+        } else {
+          const escapedQuery = escapeRegex(query.trim());
+          messageQuery.content = { $regex: escapedQuery, $options: 'i' };
+        }
+
+        return Message.find(messageQuery).distinct('conversation');
+      };
+
+      let matchedConversationIds;
+      try {
+        matchedConversationIds = await fetchMatchingConversationIds(true);
+      } catch (error) {
+        if (!isMissingTextIndexError(error)) {
+          throw error;
+        }
+
+        matchedConversationIds = await fetchMatchingConversationIds(false);
+      }
+
+      const matched = await Conversation.find({
+        ...convQuery,
+        _id: { $in: matchedConversationIds },
+      })
         .sort({ updatedAt: -1 })
         .skip(skip)
         .limit(pageSize)
         .lean();
-
-      const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(escapedQuery, "i");
-
-      // Find conversations that have at least one matching message (scoped by conversation ID)
-      const conversationIds = conversations.map((c) => c._id);
-      const matchingMessages = await Message.find({
-        conversation: { $in: conversationIds },
-        content: { $regex: regex },
-      }).select("conversation").lean();
-
-      // Build a set of conversation IDs that have matching messages
-      const matchedConvIds = new Set(
-        matchingMessages.map((msg) => String(msg.conversation)),
-      );
-
-      // Filter conversations that have at least one matching message
-      const matched = conversations.filter((conv) =>
-        matchedConvIds.has(String(conv._id)),
-      );
 
       return res.status(200).json({
         success: true,
@@ -593,7 +656,7 @@ class ConversationController {
             title: conv.metadata?.title || null,
             lastMessageAt: conv.updatedAt,
           })),
-          pagination: { page: pageNum, limit: pageSize, total: matched.length },
+          pagination: { page: pageNum, limit: pageSize, total: matchedConversationIds.length },
           searchQuery: query,
         },
       });

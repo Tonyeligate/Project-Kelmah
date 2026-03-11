@@ -27,7 +27,6 @@ object NetworkModule {
     @Singleton
     fun provideJson(): Json = Json {
         ignoreUnknownKeys = true
-        isLenient = true
         explicitNulls = false
     }
 
@@ -36,9 +35,13 @@ object NetworkModule {
     fun provideLoggingInterceptor(): HttpLoggingInterceptor =
         HttpLoggingInterceptor().apply {
             level = if (BuildConfig.ENABLE_VERBOSE_LOGGING) {
-                HttpLoggingInterceptor.Level.BODY
+                HttpLoggingInterceptor.Level.HEADERS
             } else {
                 HttpLoggingInterceptor.Level.BASIC
+            }
+            if (BuildConfig.ENABLE_VERBOSE_LOGGING) {
+                redactHeader("Authorization")
+                redactHeader("Cookie")
             }
         }
 

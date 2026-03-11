@@ -18,6 +18,7 @@ class SessionCoordinator @Inject constructor(
 ) {
     private val invalidSessionCodes = setOf(400, 401, 403)
     private val refreshMutex = Mutex()
+    @Volatile
     private var didBootstrap = false
 
     private val _sessionState = MutableStateFlow<SessionState>(
@@ -26,8 +27,11 @@ class SessionCoordinator @Inject constructor(
     val sessionState: StateFlow<SessionState> = _sessionState.asStateFlow()
 
     suspend fun bootstrapSession(force: Boolean = false) {
-        if (didBootstrap && !force) return
-        didBootstrap = true
+        // Thread-safe check-then-act using mutex to prevent duplicate bootstrap
+        refreshMutex.withLock {
+            if (didBootstrap && !force) return
+            didBootstrap = true
+        }
 
         val storedSession = tokenManager.getStoredSession()
         if (storedSession == null) {
@@ -68,16 +72,26 @@ class SessionCoordinator @Inject constructor(
     suspend fun refreshSession(): Boolean = refreshSessionInternal()
 
     suspend fun logout(logoutAll: Boolean = false) {
-        authRepository.logout(logoutAll)
+        // Always clear local session first, regardless of server response
         tokenManager.clearSession()
         _sessionState.value = SessionState.Unauthenticated
+        didBootstrap = false
+        // Best-effort server-side logout (ignore failures)
+        try {
+            authRepository.logout(logoutAll)
+        } catch (_: Exception) {
+            // Server-side revocation is best-effort; local cleanup is guaranteed above
+        }
     }
 
     private suspend fun refreshSessionInternal(): Boolean = refreshMutex.withLock {
         val currentRefreshToken = tokenManager.getRefreshToken() ?: return@withLock false
         when (val refreshResult = authRepository.refreshSession(currentRefreshToken)) {
             is ApiResult.Success -> {
-                _sessionState.value = SessionState.Authenticated(refreshResult.data.user)
+                // refreshSession already persists tokens via tokenManager.saveSession in AuthRepository
+                // Prefer fresh user from server response if available
+                val resolvedUser = refreshResult.data.user ?: tokenManager.getStoredSession()?.user
+                _sessionState.value = SessionState.Authenticated(resolvedUser)
                 true
             }
             is ApiResult.Error -> {

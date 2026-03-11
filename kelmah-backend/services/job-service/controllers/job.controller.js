@@ -13,7 +13,8 @@ const {
   WorkerProfile,
   Category,
   Contract,
-  ContractDispute
+  ContractDispute,
+  Availability
 } = require("../models");
 const { AppError } = require("../middlewares/error");
 const {
@@ -201,20 +202,53 @@ const collectWorkerSkills = (worker = {}) => {
 };
 
 const getCanonicalWorkerContext = async (workerId) => {
-  const [workerUser, workerProfile] = await Promise.all([
+  const [workerUser, workerProfile, userPerformance, activeContractsCount, availability] = await Promise.all([
     User.findById(workerId).lean(),
     WorkerProfile.findOne({ userId: workerId }).lean(),
+    UserPerformance.findOne({ userId: workerId }).lean(),
+    typeof Contract?.countDocuments === 'function'
+      ? Contract.countDocuments({
+        worker: workerId,
+        status: { $in: ['pending', 'active'] },
+      })
+      : 0,
+    Availability ? Availability.findOne({ user: workerId }).lean() : null,
   ]);
 
   if (!workerUser || workerUser.role !== 'worker') {
     return null;
   }
 
+  const worker = {
+    ...buildCanonicalWorkerSnapshot(workerUser, workerProfile || {}),
+    userPerformance,
+    activeContractsCount,
+    availability,
+  };
+
   return {
     workerUser,
     workerProfile,
-    worker: buildCanonicalWorkerSnapshot(workerUser, workerProfile || {}),
+    userPerformance,
+    activeContractsCount,
+    availability,
+    worker,
   };
+};
+
+const mapExperienceLevelToMinimumYears = (level = '') => {
+  switch (String(level).trim().toLowerCase()) {
+    case 'expert':
+      return 8;
+    case 'advanced':
+      return 5;
+    case 'intermediate':
+      return 2;
+    case 'beginner':
+      return 0;
+    default:
+      return null;
+  }
 };
 
 const readLocationParts = (locationValue = {}) => {
@@ -2427,11 +2461,22 @@ function calculateJobMatchScore(job, worker) {
   // Experience level (5% weight)
   let experienceScore = 0;
   const completedJobs = worker.totalJobsCompleted || worker.completedJobs || 0;
+  const workerYearsOfExperience = Number(
+    worker.yearsOfExperience || worker.workerProfile?.yearsOfExperience || 0,
+  );
+  const requiredExperienceYears = mapExperienceLevelToMinimumYears(job.requirements?.experienceLevel);
   if (completedJobs >= 50) experienceScore = 5;
   else if (completedJobs >= 20) experienceScore = 4;
   else if (completedJobs >= 10) experienceScore = 3;
   else if (completedJobs >= 5) experienceScore = 2;
   else if (completedJobs >= 1) experienceScore = 1;
+
+  if (requiredExperienceYears !== null && workerYearsOfExperience >= requiredExperienceYears) {
+    experienceScore = Math.max(experienceScore, 5);
+    reasons.push(`Experience level fits ${job.requirements?.experienceLevel} work`);
+  } else if (workerYearsOfExperience >= 1) {
+    experienceScore = Math.max(experienceScore, 1);
+  }
 
   breakdown.experience = experienceScore;
   totalScore += experienceScore;
@@ -2440,8 +2485,109 @@ function calculateJobMatchScore(job, worker) {
     reasons.push('Experienced worker');
   }
 
+  // ---- Availability scoring (schedule-aware when Availability doc exists) ----
+  const avail = worker.availability; // from Availability model (may be null)
+  const availabilityStatus = String(
+    worker.availabilityStatus || worker.workerProfile?.availabilityStatus || '',
+  ).trim().toLowerCase();
+  let availabilityScore = 0;
+
+  if (avail) {
+    // Rich schedule data available
+    const now = new Date();
+
+    // Check if worker has paused availability
+    if (avail.isAvailable === false) {
+      availabilityScore = 0;
+      reasons.push('Worker is currently unavailable');
+    } else if (avail.pausedUntil && new Date(avail.pausedUntil) > now) {
+      availabilityScore = 0;
+      reasons.push('Worker availability paused');
+    } else {
+      // Base: available
+      availabilityScore = 3;
+
+      // Check if today is a holiday
+      const todayStr = now.toISOString().slice(0, 10);
+      const isHoliday = Array.isArray(avail.holidays) && avail.holidays.some((h) => {
+        const hDate = h.date ? new Date(h.date).toISOString().slice(0, 10) : '';
+        return hDate === todayStr;
+      });
+
+      if (isHoliday) {
+        availabilityScore = 1;
+      } else {
+        // Check daySlots for current day of week
+        const dayOfWeek = now.getDay(); // 0=Sunday
+        const todaySlots = Array.isArray(avail.daySlots)
+          ? avail.daySlots.find((ds) => ds.dayOfWeek === dayOfWeek)
+          : null;
+
+        if (todaySlots && Array.isArray(todaySlots.slots) && todaySlots.slots.length > 0) {
+          availabilityScore = 5;
+          reasons.push('Currently available (schedule confirmed)');
+        } else if (Array.isArray(avail.daySlots) && avail.daySlots.length > 0) {
+          // Has schedule but not working today — still generally available
+          availabilityScore = 3;
+          reasons.push('Available (not scheduled today)');
+        } else {
+          // No day slots configured — use dailyHours as signal
+          if (avail.dailyHours && avail.dailyHours >= 4) {
+            availabilityScore = 4;
+            reasons.push('Currently available');
+          } else {
+            availabilityScore = 3;
+            reasons.push('Currently available');
+          }
+        }
+      }
+
+      // Weekly capacity check
+      if (avail.weeklyHoursCap && avail.weeklyHoursCap < 20) {
+        availabilityScore = Math.max(1, availabilityScore - 1);
+      }
+    }
+  } else {
+    // Fall back to simple status string
+    if (availabilityStatus === 'available') {
+      availabilityScore = 5;
+      reasons.push('Currently available');
+    } else if (availabilityStatus === 'busy') {
+      availabilityScore = 1;
+    }
+  }
+  breakdown.availability = availabilityScore;
+  totalScore += availabilityScore;
+
+  const performanceMetrics = worker.userPerformance?.metrics || {};
+  const jobCompletionRate = Number(performanceMetrics.jobCompletionRate || 0);
+  const onTimeDeliveryRate = Number(performanceMetrics.onTimeDeliveryRate || 0);
+  const clientSatisfaction = Number(
+    performanceMetrics.clientSatisfaction || performanceMetrics.averageRating || 0,
+  );
+  const performanceScore = Math.round(
+    ((jobCompletionRate * 0.4) + (onTimeDeliveryRate * 0.35) + (clientSatisfaction * 0.25)) / 10,
+  );
+  breakdown.performance = performanceScore;
+  totalScore += performanceScore;
+
+  if (performanceScore >= 7) {
+    reasons.push('Strong historical performance');
+  }
+
+  const activeContractsCount = Number(worker.activeContractsCount || 0);
+  let capacityPenalty = 0;
+  if (activeContractsCount >= 5) {
+    capacityPenalty = 8;
+    reasons.push('Multiple active contracts already in progress');
+  } else if (activeContractsCount >= 3) {
+    capacityPenalty = 4;
+  }
+  breakdown.capacity = -capacityPenalty;
+  totalScore -= capacityPenalty;
+
   return {
-    totalScore: Math.round(totalScore),
+    totalScore: Math.max(0, Math.min(100, Math.round(totalScore))),
     breakdown,
     reasons
   };

@@ -76,7 +76,9 @@ const TransactionSchema = new Schema(
 // Indexes for better query performance
 TransactionSchema.index({ transactionId: 1 });
 TransactionSchema.index({ sender: 1 });
+TransactionSchema.index({ sender: 1, createdAt: -1 });
 TransactionSchema.index({ recipient: 1 });
+TransactionSchema.index({ recipient: 1, createdAt: -1 });
 TransactionSchema.index({ status: 1 });
 TransactionSchema.index({ createdAt: -1 });
 TransactionSchema.index({ relatedContract: 1 });

@@ -39,17 +39,22 @@ class TokenManager @Inject constructor(
             refreshToken = refreshToken,
             user = user,
         )
+        // Use commit() (synchronous) instead of apply() (async) to ensure tokens
+        // are persisted to disk before updating the in-memory flow. Prevents token
+        // loss on process death between apply() and disk write.
         prefs.edit()
             .putString(KEY_ACCESS_TOKEN, accessToken)
             .putString(KEY_REFRESH_TOKEN, refreshToken)
             .putString(KEY_SESSION_PAYLOAD, json.encodeToString(session))
-            .apply()
+            .commit()
         _sessionFlow.value = session
     }
 
-    fun getAccessToken(): String? = prefs.getString(KEY_ACCESS_TOKEN, null)
+    // Read from in-memory flow (single source of truth) instead of disk to avoid
+    // dual-read inconsistency between disk and memory.
+    fun getAccessToken(): String? = _sessionFlow.value?.accessToken
 
-    fun getRefreshToken(): String? = prefs.getString(KEY_REFRESH_TOKEN, null)
+    fun getRefreshToken(): String? = _sessionFlow.value?.refreshToken
 
     fun getStoredSession(): StoredSession? = _sessionFlow.value
 
@@ -58,12 +63,12 @@ class TokenManager @Inject constructor(
         val updated = current.copy(user = user)
         prefs.edit()
             .putString(KEY_SESSION_PAYLOAD, json.encodeToString(updated))
-            .apply()
+            .commit()
         _sessionFlow.value = updated
     }
 
     fun clearSession() {
-        prefs.edit().clear().apply()
+        prefs.edit().clear().commit()
         _sessionFlow.value = null
     }
 

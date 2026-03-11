@@ -235,7 +235,7 @@ export const useMessages = () => {
 };
 
 export const MessageProvider = ({ children }) => {
-  const { user, getToken } = useAuth();
+  const { user, getToken, isAuthenticated, loading: authLoading } = useAuth();
   const socketRef = useRef(null);
   const connectingRef = useRef(false);
   const selectedConversationRef = useRef(null);
@@ -309,7 +309,7 @@ export const MessageProvider = ({ children }) => {
   // creating a second Socket.IO connection. We subscribe to the
   // messaging-specific events on the shared socket.
   const connectWebSocket = useCallback(async () => {
-    if (!user) return;
+    if (!user || !isAuthenticated || authLoading) return;
     if (socketRef.current || connectingRef.current) return;
 
     const token = getTokenRef.current?.();
@@ -543,7 +543,7 @@ export const MessageProvider = ({ children }) => {
       setRealtimeIssue('Real-time connection failed. Using standard refresh mode.');
       connectingRef.current = false;
     }
-  }, [user]);
+  }, [authLoading, isAuthenticated, user]);
 
   // Disconnect WebSocket
   // CRIT-08 FIX: Only remove messaging-specific listeners from the shared
@@ -586,7 +586,9 @@ export const MessageProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (user) {
+    const canInitializeMessaging = Boolean(user && isAuthenticated && !authLoading && getTokenRef.current?.());
+
+    if (canInitializeMessaging) {
       loadConversations();
       connectWebSocket();
     } else {
@@ -594,12 +596,13 @@ export const MessageProvider = ({ children }) => {
       setConversations([]);
       setSelectedConversation(null);
       setMessages([]);
+      setLoadingConversations(Boolean(authLoading));
     }
 
     return () => {
       disconnectWebSocket();
     };
-  }, [user, loadConversations, connectWebSocket, disconnectWebSocket]);
+  }, [authLoading, isAuthenticated, user, loadConversations, connectWebSocket, disconnectWebSocket]);
 
   const loadingMessagesRef = useRef(false);
 

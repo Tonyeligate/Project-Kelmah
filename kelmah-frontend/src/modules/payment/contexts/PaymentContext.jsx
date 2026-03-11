@@ -18,6 +18,7 @@ export const PaymentProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [serviceUnavailable, setServiceUnavailable] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
+  const [walletMissing, setWalletMissing] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [escrows, setEscrows] = useState([]);
@@ -58,13 +59,17 @@ export const PaymentProvider = ({ children }) => {
       }
       setServiceUnavailable(false);
 
-      // Wallet (404 -> zero balance)
+      // Wallet (404 -> preserve missing-wallet semantics instead of masking as a real zero)
       if (walletRes.status === 'fulfilled') {
         // Normalize: API may return a number, or {total, available, pending}
         const bal = walletRes.value?.balance ?? walletRes.value ?? 0;
+        setWalletMissing(false);
         setWalletBalance(typeof bal === 'number' ? bal : (bal?.available ?? bal?.total ?? 0));
       } else if (walletRes.reason?.response?.status === 404) {
+        setWalletMissing(true);
         setWalletBalance(0);
+      } else {
+        setWalletMissing(false);
       }
 
       // Methods
@@ -267,6 +272,7 @@ export const PaymentProvider = ({ children }) => {
     error,
     serviceUnavailable,
     walletBalance,
+    walletMissing,
     paymentMethods,
     transactions,
     escrows,

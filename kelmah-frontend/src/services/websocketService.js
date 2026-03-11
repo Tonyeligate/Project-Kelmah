@@ -5,6 +5,7 @@ import {
 } from '../modules/notifications/services/notificationSlice';
 import { WS_CONFIG, API_ENDPOINTS } from '../config/environment';
 import { getWebSocketUrl } from './socketUrl';
+import { isTokenValid } from '../modules/auth/utils/tokenUtils';
 
 /** Only log in development builds — prevents leaking metadata in production */
 const __DEV__ = import.meta.env.DEV;
@@ -42,6 +43,13 @@ class WebSocketService {
    */
   async connect(userId, userRole, token) {
     try {
+      if (!token || !isTokenValid(token)) {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('auth:tokenExpired'));
+        }
+        return;
+      }
+
       // Prevent multiple concurrent connections
       if (this._connecting) return;
       this._connecting = true;

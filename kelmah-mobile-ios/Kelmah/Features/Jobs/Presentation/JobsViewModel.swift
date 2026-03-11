@@ -233,6 +233,14 @@ final class JobsViewModel: ObservableObject {
         infoMessage = nil
     }
 
+    func reset() {
+        hasBootstrapped = false
+        discoverJobs = []
+        savedJobs = []
+        selectedJob = nil
+        errorMessage = nil
+    }
+
     private func loadCategories() async {
         do {
             let remoteCategories = try await repository.getCategories()

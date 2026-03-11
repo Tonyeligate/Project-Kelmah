@@ -42,6 +42,14 @@ final class NotificationsViewModel: ObservableObject {
         infoMessage = nil
     }
 
+    func reset() {
+        hasBootstrapped = false
+        notifications = []
+        unreadCount = 0
+        errorMessage = nil
+        infoMessage = nil
+    }
+
     func setUnreadOnly(_ value: Bool) async {
         unreadOnly = value
         await refresh()
@@ -50,6 +58,7 @@ final class NotificationsViewModel: ObservableObject {
     func refresh() async {
         isLoading = true
         errorMessage = nil
+        defer { isLoading = false }
         do {
             async let loadedNotifications = repository.getNotifications(unreadOnly: unreadOnly)
             async let loadedUnreadCount = repository.getUnreadCount()
@@ -58,7 +67,6 @@ final class NotificationsViewModel: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
-        isLoading = false
     }
 
     func markAsRead(notificationId: String) async {
@@ -122,6 +130,7 @@ final class NotificationsViewModel: ObservableObject {
         isMutating = true
         errorMessage = nil
         infoMessage = nil
+        defer { isMutating = false }
         do {
             try await operation()
             let localUnreadCount = notifications.filter { $0.isRead == false }.count
@@ -130,7 +139,6 @@ final class NotificationsViewModel: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
-        isMutating = false
     }
 
     private func subscribeToRealtimeSignals() {

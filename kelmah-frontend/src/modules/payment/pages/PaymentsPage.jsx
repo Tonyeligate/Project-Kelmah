@@ -50,7 +50,7 @@ const PaymentsPage = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [animate] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
-  const { loading, error, walletBalance, transactions, fetchTransactions } =
+  const { loading, error, walletBalance, walletMissing, transactions, fetchTransactions } =
     usePayments();
   const user = useSelector((state) => state.auth.user);
   const canManagePaymentMethods = hasRole(user, ['worker', 'admin']);
@@ -193,6 +193,11 @@ const PaymentsPage = () => {
             {error && (
               <Alert severity="error" sx={{ mb: 2 }}>
                 {error}
+              </Alert>
+            )}
+            {walletMissing && !error && (
+              <Alert severity="info" sx={{ mt: 2 }}>
+                Your wallet is empty because it has not been provisioned yet. It will be created automatically when you add funds or receive a payout.
               </Alert>
             )}
           </Paper>

@@ -95,7 +95,7 @@ export const ContractProvider = ({ children }) => {
         showToast('Failed to approve milestone.', 'error');
       }
     },
-    [contracts, showToast],
+    [showToast],
   );
 
   const value = {

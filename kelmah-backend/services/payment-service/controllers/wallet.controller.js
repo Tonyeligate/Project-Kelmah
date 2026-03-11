@@ -155,14 +155,8 @@ exports.getWallet = async (req, res) => {
   try {
     const userId = getUserId(req);
     let wallet = await Wallet.findOne({ user: userId })
-      .populate("paymentMethods")
-      .populate({
-        path: "transactionHistory.transaction",
-        populate: [
-          { path: "sender", select: "name email" },
-          { path: "recipient", select: "name email" },
-        ],
-      });
+      .select('-transactionHistory')
+      .lean();
 
     if (!wallet) {
       // Auto-provision an empty wallet on first access (race-safe via unique index)
@@ -170,7 +164,7 @@ exports.getWallet = async (req, res) => {
         { user: userId },
         { $setOnInsert: { user: userId, balance: 0 } },
         { new: true, upsert: true }
-      );
+      ).select('-transactionHistory').lean();
     }
 
     return res.json({ success: true, data: wallet });
@@ -190,24 +184,36 @@ exports.createOrUpdateWallet = async (req, res) => {
     const { currency, paymentMethods } = req.body;
     const userId = getUserId(req);
 
-    let wallet = await Wallet.findOne({ user: userId });
-
-    if (wallet) {
-      // Update existing wallet
-      wallet.currency = currency;
-      if (paymentMethods) {
-        wallet.paymentMethods = paymentMethods;
-      }
-    } else {
-      // Create new wallet
-      wallet = new Wallet({
+    const update = {
+      $setOnInsert: {
         user: userId,
+      },
+    };
+
+    if (currency !== undefined) {
+      update.$set = {
+        ...(update.$set || {}),
         currency,
-        paymentMethods,
-      });
+      };
     }
 
-    await wallet.save();
+    if (paymentMethods !== undefined) {
+      update.$set = {
+        ...(update.$set || {}),
+        paymentMethods,
+      };
+    }
+
+    const wallet = await Wallet.findOneAndUpdate(
+      { user: userId },
+      update,
+      {
+        new: true,
+        upsert: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    );
 
     return res.status(200).json({
       success: true,
@@ -293,25 +299,29 @@ exports.setDefaultPaymentMethod = async (req, res) => {
 // Get transaction history
 exports.getTransactionHistory = async (req, res) => {
   try {
-    const { page = 1, limit = 20 } = req.query;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
 
     const userId = getUserId(req);
-    const wallet = await Wallet.findOne({ user: userId });
+    const wallet = await Wallet.findOne({ user: userId }).select('_id').lean();
     if (!wallet) {
       return res.status(404).json({ message: "Wallet not found" });
     }
 
-    const transactions = await Transaction.find({
-      $or: [{ sender: userId }, { recipient: userId }],
-    })
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit))
-      .populate("sender recipient relatedContract relatedJob");
+    const filter = { $or: [{ sender: userId }, { recipient: userId }] };
 
-    const total = await Transaction.countDocuments({
-      $or: [{ sender: userId }, { recipient: userId }],
-    });
+    const [transactions, total] = await Promise.all([
+      Transaction.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .populate({ path: 'sender', select: 'firstName lastName email profilePicture' })
+        .populate({ path: 'recipient', select: 'firstName lastName email profilePicture' })
+        .populate({ path: 'relatedContract', select: 'title status' })
+        .populate({ path: 'relatedJob', select: 'title status' })
+        .lean(),
+      Transaction.countDocuments(filter),
+    ]);
 
     return res.json({
       success: true,

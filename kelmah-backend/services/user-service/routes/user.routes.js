@@ -101,6 +101,15 @@ router.get('/workers/search', optionalGatewayVerification, (req, res, next) => {
   next();
 }, WorkerController.searchWorkers);
 
+router.get('/workers/stats/trades', optionalGatewayVerification, (req, res, next) => {
+  if (process.env.NODE_ENV === 'development') {
+    logger.debug('✅ [USER-ROUTES] /workers/stats/trades route hit:', {
+      fullPath: req.originalUrl,
+    });
+  }
+  next();
+}, WorkerController.getTradeCategoryStats);
+
 router.get('/workers', optionalGatewayVerification, (req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     logger.debug('✅ [USER-ROUTES] /workers route hit:', {
@@ -149,7 +158,7 @@ router.put('/workers/:id', verifyGatewayRequest, (req, res, next) => {
     fullPath: req.originalUrl
   });
   next();
-}, WorkerController.updateWorkerProfile);
+}, requireOwnership, WorkerController.updateWorkerProfile);
 
 router.get("/workers/:id/availability", optionalGatewayVerification, (req, res, next) => {
   logger.debug('✅ [USER-ROUTES] /workers/:id/availability route hit:', {
@@ -172,7 +181,7 @@ router.use('/workers/:workerId', workerDetailRouter);
 
 router.post('/workers/:id/bookmark', verifyGatewayRequest, createLimiter('default'), toggleBookmark);
 router.delete('/workers/:id/bookmark', verifyGatewayRequest, createLimiter('default'), toggleBookmark);
-router.get('/workers/:workerId/earnings', verifyGatewayRequest, getEarnings);
+router.get('/workers/:workerId/earnings', verifyGatewayRequest, requireOwnership, getEarnings);
 
 // User profile routes
 router.get('/profile', verifyGatewayRequest, getUserProfile);

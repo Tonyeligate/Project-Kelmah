@@ -131,7 +131,11 @@ const WorkerDashboardPage = () => {
   const MAX_RETRIES = 3;
   const LOADING_TIMEOUT = 15000; // 15 seconds
 
-  const getAmountValue = useCallback((value) => {
+  const getAmountValue = useCallback((value, depth = 0) => {
+    if (depth > 3) {
+      return 0;
+    }
+
     if (typeof value === 'number' && Number.isFinite(value)) {
       return value;
     }
@@ -152,7 +156,7 @@ const WorkerDashboardPage = () => {
       ];
 
       for (const candidate of candidates) {
-        const normalized = getAmountValue(candidate);
+        const normalized = getAmountValue(candidate, depth + 1);
         if (normalized > 0) {
           return normalized;
         }
@@ -231,6 +235,8 @@ const WorkerDashboardPage = () => {
   useEffect(() => {
     const AUTO_REFRESH_MS = 90_000;
     const intervalId = setInterval(() => {
+      // Skip refresh when tab is in the background — saves bandwidth
+      if (document.hidden) return;
       // Silent background refresh — errors are captured in Redux state
       fetchDashboardData();
     }, AUTO_REFRESH_MS);

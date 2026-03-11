@@ -70,6 +70,78 @@ const getEnvConfiguredApiBaseUrl = () => {
   return null;
 };
 
+const getRuntimeConfiguredApiBaseUrl = () => {
+  if (typeof window !== 'undefined' && window.RUNTIME_CONFIG?.apiUrl) {
+    return normalizeApiBaseUrl(window.RUNTIME_CONFIG.apiUrl);
+  }
+
+  if (runtimeConfig?.API_URL || runtimeConfig?.ngrokUrl || runtimeConfig?.apiGatewayUrl) {
+    return normalizeApiBaseUrl(
+      runtimeConfig.API_URL || runtimeConfig.ngrokUrl || runtimeConfig.apiGatewayUrl,
+    );
+  }
+
+  return null;
+};
+
+const getCachedApiBaseUrl = () => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const cached = localStorage.getItem('kelmah:lastHealthyApiBase');
+  if (!cached) {
+    return null;
+  }
+
+  return normalizeApiBaseUrl(cached);
+};
+
+const resolveAllowedApiOrigins = () => {
+  const allowedOrigins = new Set();
+  const candidates = [
+    getEnvConfiguredApiBaseUrl(),
+    getRuntimeConfiguredApiBaseUrl(),
+    PRODUCTION_API_URL,
+  ].filter(Boolean);
+
+  candidates.forEach((candidate) => {
+    if (candidate.startsWith('/')) {
+      return;
+    }
+
+    try {
+      allowedOrigins.add(new URL(candidate).origin);
+    } catch (_) {
+      // Ignore malformed candidates.
+    }
+  });
+
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    allowedOrigins.add(window.location.origin);
+  }
+
+  return allowedOrigins;
+};
+
+const isTrustedApiBaseUrl = (raw) => {
+  const normalized = normalizeApiBaseUrl(raw);
+  if (!normalized) {
+    return false;
+  }
+
+  if (normalized.startsWith('/')) {
+    return normalized === '/api' || normalized.startsWith('/api/');
+  }
+
+  try {
+    const parsed = new URL(normalized);
+    return resolveAllowedApiOrigins().has(parsed.origin);
+  } catch (_) {
+    return false;
+  }
+};
+
 // API URL — controlled entirely via VITE_API_URL or VITE_API_GATEWAY_URL in Vercel dashboard.
 // Never hardcode a gateway URL here. Set the env var in Vercel and redeploy.
 // VITE_API_URL can be the bare host OR include /api — both work.
@@ -110,23 +182,15 @@ const getApiBaseUrl = () => {
   }
 
   // Priority 1: Runtime config (dynamically loaded)
-  if (typeof window !== 'undefined' && window.RUNTIME_CONFIG?.apiUrl) {
-    return normalizeApiBaseUrl(window.RUNTIME_CONFIG.apiUrl) || '/api';
-  }
-
-  // Priority 2: Check if runtimeConfig was loaded
-  if (runtimeConfig?.API_URL || runtimeConfig?.ngrokUrl) {
-    return normalizeApiBaseUrl(
-      runtimeConfig.API_URL || runtimeConfig.ngrokUrl || runtimeConfig.apiGatewayUrl,
-    ) || '/api';
+  const runtimeConfiguredUrl = getRuntimeConfiguredApiBaseUrl();
+  if (runtimeConfiguredUrl) {
+    return runtimeConfiguredUrl || '/api';
   }
 
   // Priority 3: Cached healthy URL from localStorage
-  if (typeof window !== 'undefined') {
-    const cached = localStorage.getItem('kelmah:lastHealthyApiBase');
-    if (cached) {
-      return normalizeApiBaseUrl(cached) || '/api';
-    }
+  const cachedApiBaseUrl = getCachedApiBaseUrl();
+  if (cachedApiBaseUrl) {
+    return cachedApiBaseUrl || '/api';
   }
 
   // Priority 4: Env-var-derived production URL (never hardcoded — set VITE_API_URL in Vercel dashboard)
@@ -134,6 +198,18 @@ const getApiBaseUrl = () => {
 };
 
 export const API_BASE_URL = getApiBaseUrl();
+
+export const getTrustedApiBaseUrl = () => {
+  const candidates = [
+    getEnvConfiguredApiBaseUrl(),
+    getRuntimeConfiguredApiBaseUrl(),
+    PRODUCTION_API_URL,
+    '/api',
+  ].filter(Boolean);
+
+  const trustedCandidate = candidates.find((candidate) => isTrustedApiBaseUrl(candidate));
+  return trustedCandidate || '/api';
+};
 
 // Export async function for backward compatibility if needed, but prefer direct export
 export const getApiBaseUrlAsync = async () => {

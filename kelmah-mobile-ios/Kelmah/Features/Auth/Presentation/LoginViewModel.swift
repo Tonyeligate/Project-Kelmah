@@ -60,6 +60,9 @@ final class LoginViewModel: ObservableObject {
         mode = newMode
         errorMessage = nil
         infoMessage = nil
+        password = ""
+        confirmPassword = ""
+        token = ""
     }
 
     private func login() async {
@@ -68,9 +71,14 @@ final class LoginViewModel: ObservableObject {
             errorMessage = "Email and password are required"
             return
         }
+        guard trimmedEmail.contains("@"), trimmedEmail.contains(".") else {
+            errorMessage = "Please enter a valid email address"
+            return
+        }
 
         await runAction {
             try await authRepository.login(email: trimmedEmail, password: password)
+            password = ""
         }
     }
 
@@ -83,6 +91,10 @@ final class LoginViewModel: ObservableObject {
         }
         guard trimmedEmail.isEmpty == false else {
             errorMessage = "Email is required"
+            return
+        }
+        guard trimmedEmail.contains("@"), trimmedEmail.contains(".") else {
+            errorMessage = "Please enter a valid email address"
             return
         }
         guard PasswordPolicy.isStrong(password) else {
@@ -116,6 +128,10 @@ final class LoginViewModel: ObservableObject {
         let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmedEmail.isEmpty == false else {
             errorMessage = "Email is required"
+            return
+        }
+        guard trimmedEmail.contains("@"), trimmedEmail.contains(".") else {
+            errorMessage = "Please enter a valid email address"
             return
         }
 

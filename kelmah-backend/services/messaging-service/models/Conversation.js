@@ -44,6 +44,11 @@ const ConversationSchema = new Schema(
       description: String,
       tags: [String],
     },
+    directConversationKey: {
+      type: String,
+      sparse: true,
+      trim: true,
+    },
   },
   { timestamps: true },
 );
@@ -53,6 +58,20 @@ ConversationSchema.index({ participants: 1 });
 ConversationSchema.index({ relatedJob: 1 });
 ConversationSchema.index({ relatedContract: 1 });
 ConversationSchema.index({ status: 1 });
+ConversationSchema.index({ directConversationKey: 1 }, { unique: true, sparse: true });
+
+ConversationSchema.pre('validate', function (next) {
+  if (Array.isArray(this.participants) && this.participants.length === 2) {
+    this.directConversationKey = this.participants
+      .map((participant) => participant?.toString?.() || String(participant))
+      .sort()
+      .join(':');
+  } else {
+    this.directConversationKey = undefined;
+  }
+
+  next();
+});
 
 // ---------------------------------------------------------------------------
 // Atomic static helpers (H-MSG2)

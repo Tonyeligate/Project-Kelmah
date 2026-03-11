@@ -45,6 +45,7 @@ struct LoginView: View {
 
                 if viewModel.mode != .verifyEmail {
                     textField("Email", text: $viewModel.email, keyboard: .emailAddress, accessibilityId: "auth.emailField")
+                        .textContentType(.emailAddress)
                 }
 
                 if viewModel.mode == .register {
@@ -67,6 +68,7 @@ struct LoginView: View {
 
                 if viewModel.mode == .login || viewModel.mode == .register || viewModel.mode == .resetPassword {
                     secureField("Password", text: $viewModel.password, accessibilityId: "auth.passwordField")
+                        .textContentType(viewModel.mode == .login ? .password : .newPassword)
                 }
 
                 if viewModel.mode == .register || viewModel.mode == .resetPassword {
@@ -101,6 +103,7 @@ struct LoginView: View {
             }
             .padding(24)
         }
+        .scrollDismissesKeyboard(.interactively)
         .background(KelmahTheme.background.ignoresSafeArea())
     }
 

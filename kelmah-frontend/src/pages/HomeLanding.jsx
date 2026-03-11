@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -44,6 +44,7 @@ import heroBg from '../assets/images/background.jpg';
 import carpentryImg from '../assets/images/carpentry.jpg';
 import constructionImg from '../assets/images/construction.jpg';
 import electricalImg from '../assets/images/electrical.jpg';
+import { API_BASE_URL } from '../config/environment';
 
 /* ─── animation variants ─────────────────────────────────
  * heroAnim  → fires immediately on mount (animate, not whileInView)
@@ -66,12 +67,12 @@ const scrollIn = {
 
 /* ─── Category data ─── */
 const TRADE_CATEGORIES = [
-  { icon: <CarpenterIcon />, label: 'Carpentry', img: carpentryImg, count: '800+', query: 'carpentry' },
-  { icon: <MasonIcon />, label: 'Masonry', img: constructionImg, count: '650+', query: 'masonry' },
-  { icon: <ElectricianIcon />, label: 'Electrical', img: electricalImg, count: '500+', query: 'electrical' },
-  { icon: <PlumberIcon />, label: 'Plumbing', img: null, count: '420+', query: 'plumbing' },
-  { icon: <PainterIcon />, label: 'Painting', img: null, count: '380+', query: 'painting' },
-  { icon: <RoofingIcon />, label: 'Roofing', img: null, count: '310+', query: 'roofing' },
+  { icon: <CarpenterIcon />, label: 'Carpentry', img: carpentryImg, query: 'carpentry' },
+  { icon: <MasonIcon />, label: 'Masonry', img: constructionImg, query: 'masonry' },
+  { icon: <ElectricianIcon />, label: 'Electrical', img: electricalImg, query: 'electrical' },
+  { icon: <PlumberIcon />, label: 'Plumbing', img: null, query: 'plumbing' },
+  { icon: <PainterIcon />, label: 'Painting', img: null, query: 'painting' },
+  { icon: <RoofingIcon />, label: 'Roofing', img: null, query: 'roofing' },
 ];
 
 /* ─── Testimonials ─── */
@@ -111,6 +112,57 @@ const HomeLanding = () => {
   const ctaBg = isDark ? '#0B1220' : '#0F172A';
   const cardBorder = isDark ? 'rgba(255,215,0,0.12)' : 'divider';
   const goldAlpha = (a) => `rgba(255,215,0,${a})`;
+
+  // Live platform stats fetched from the backend — fall back to empty string while loading
+  const [platformStats, setPlatformStats] = useState(null);
+  const [tradeCategoryStats, setTradeCategoryStats] = useState({});
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/jobs/stats`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((body) => {
+        if (body?.data) setPlatformStats(body.data);
+      })
+      .catch(() => { /* silently keep null — hardcoded fallbacks will display */ });
+  }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    fetch(`${API_BASE_URL}/users/workers/stats/trades`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((body) => {
+        if (!isActive || !Array.isArray(body?.data?.categories)) {
+          return;
+        }
+
+        setTradeCategoryStats(
+          body.data.categories.reduce((stats, category) => {
+            stats[category.query] = Number(category.count) || 0;
+            return stats;
+          }, {}),
+        );
+      })
+      .catch(() => { /* silently keep fallback copy */ });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  const fmtNum = (n, fallback = '') => {
+    if (n == null || n === 0) return fallback;
+    if (n >= 1000) return `${(n / 1000).toFixed(0)}k+`;
+    return `${n}+`;
+  };
+
+  const formatTradeCount = (query) => {
+    if (!(query in tradeCategoryStats)) {
+      return 'Explore trade';
+    }
+
+    const count = tradeCategoryStats[query];
+    return `${count.toLocaleString()} ${count === 1 ? 'worker' : 'workers'}`;
+  };
 
   return (
     <Box sx={{ bgcolor: 'background.default', color: 'text.primary' }}>
@@ -277,11 +329,11 @@ const HomeLanding = () => {
                 {/* Trust badges */}
                 <Stack direction="row" spacing={{ xs: 1.5, sm: 2.5 }} flexWrap="wrap" useFlexGap>
                   {[
-                    { icon: <VerifiedIcon />, text: '5,000+ verified workers' },
-                    { icon: <SecurityIcon />, text: 'Secure payments' },
-                    { icon: <StarIcon />, text: '98% satisfaction' },
+                    { key: 'workers', icon: <VerifiedIcon />, text: platformStats ? `${fmtNum(platformStats.skilledWorkers, '0')} verified workers` : '5,000+ verified workers' },
+                    { key: 'payments', icon: <SecurityIcon />, text: 'Secure payments' },
+                    { key: 'satisfaction', icon: <StarIcon />, text: platformStats && platformStats.successRate > 0 ? `${platformStats.successRate}% satisfaction` : '98% satisfaction' },
                   ].map((badge) => (
-                    <Stack key={badge.text} direction="row" spacing={0.75} alignItems="center">
+                    <Stack key={badge.key} direction="row" spacing={0.75} alignItems="center">
                       {React.cloneElement(badge.icon, { sx: { color: '#FFD700', fontSize: 18 } })}
                       <Typography variant="body2" sx={{ opacity: 0.85, fontSize: '0.78rem', whiteSpace: 'nowrap' }}>
                         {badge.text}
@@ -408,7 +460,7 @@ const HomeLanding = () => {
                       color="text.secondary"
                       sx={{ fontSize: '0.7rem' }}
                     >
-                      {cat.count} pros
+                      {formatTradeCount(cat.query)}
                     </Typography>
                   </Card>
                 </motion.div>
@@ -772,12 +824,12 @@ const HomeLanding = () => {
         <Container maxWidth="lg">
           <Grid container spacing={3} justifyContent="center" textAlign="center">
             {[
-              { val: '12,000+', label: 'Jobs completed', icon: <WorkIcon /> },
-              { val: '5,000+', label: 'Verified workers', icon: <VerifiedIcon /> },
-              { val: '98%', label: 'Satisfaction rate', icon: <StarIcon /> },
-              { val: '24/7', label: 'Support available', icon: <SupportIcon /> },
+              { key: 'jobs', val: platformStats ? fmtNum(platformStats.availableJobs, '0') : '12,000+', label: 'Jobs available', icon: <WorkIcon /> },
+              { key: 'workers', val: platformStats ? fmtNum(platformStats.skilledWorkers, '0') : '5,000+', label: 'Verified workers', icon: <VerifiedIcon /> },
+              { key: 'satisfaction', val: platformStats && platformStats.successRate > 0 ? `${platformStats.successRate}%` : '98%', label: 'Satisfaction rate', icon: <StarIcon /> },
+              { key: 'support', val: '24/7', label: 'Support available', icon: <SupportIcon /> },
             ].map((stat, i) => (
-              <Grid item xs={6} sm={3} key={stat.val}>
+              <Grid item xs={6} sm={3} key={stat.key}>
                 <motion.div {...scrollIn} transition={{ duration: 0.35, delay: i * 0.06 }}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                     {React.cloneElement(stat.icon, { sx: { color: '#FFD700', fontSize: 32 } })}

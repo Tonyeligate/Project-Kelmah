@@ -26,6 +26,7 @@ const EscrowSchema = new mongoose.Schema({
 }, { timestamps: true, collection: 'escrows' });
 
 EscrowSchema.index({ hirerId: 1, workerId: 1, status: 1 });
+EscrowSchema.index({ status: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Escrow', EscrowSchema);
 

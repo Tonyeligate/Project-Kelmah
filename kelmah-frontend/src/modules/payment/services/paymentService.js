@@ -63,29 +63,8 @@ const normalizePaymentMethodsResponse = (payload) => {
 const paymentService = {
   // Wallet operations
   getWallet: async () => {
-    try {
-      // Backend exposes wallet at /api/payments/wallet
-      // Backend returns { success: true, data: walletDoc } — unwrap to walletDoc
-      const { data } = await api.get('/payments/wallet');
-      return data?.success ? (data.data ?? data) : data;
-    } catch (error) {
-      if (import.meta.env.DEV) console.warn('Wallet service unavailable:', error.message);
-      // Return empty wallet state — do NOT show fake balances
-      return {
-        id: null,
-        userId: null,
-        balance: {
-          total: 0,
-          available: 0,
-          pending: 0,
-          currency: 'GHS',
-        },
-        accounts: [],
-        recentActivity: [],
-        lastUpdated: null,
-        _serviceUnavailable: true,
-      };
-    }
+    const { data } = await api.get('/payments/wallet');
+    return data?.success ? (data.data ?? data) : data;
   },
 
   // Payment methods

@@ -26,6 +26,8 @@ const uuidv4 = () => {
 
 // GET request deduplication — concurrent identical GETs share one in-flight promise
 const inflightGets = new Map();
+const pendingUnauthorizedRequests = [];
+let hasTriggeredAuthRedirect = false;
 
 // Create axios instance
 const apiClient = axios.create({
@@ -39,6 +41,41 @@ const apiClient = axios.create({
 // Helper to generate request key for deduplication
 const getRequestKey = (method, url, params) => {
     return `${method}:${url}:${JSON.stringify(params || '')}`;
+};
+
+const isRefreshRequest = (request) =>
+    typeof request?.url === 'string' && request.url.includes('/auth/refresh-token');
+
+const enqueueUnauthorizedRequest = (request) =>
+    new Promise((resolve, reject) => {
+        pendingUnauthorizedRequests.push({ request, resolve, reject });
+    });
+
+const processUnauthorizedQueue = (error, token = null) => {
+    while (pendingUnauthorizedRequests.length > 0) {
+        const queued = pendingUnauthorizedRequests.shift();
+        if (!queued) {
+            continue;
+        }
+
+        if (error) {
+            queued.reject(error);
+            continue;
+        }
+
+        queued.request.headers = queued.request.headers || {};
+        queued.request.headers.Authorization = `Bearer ${token}`;
+        queued.resolve(apiClient(queued.request));
+    }
+};
+
+const redirectToLogin = () => {
+    if (hasTriggeredAuthRedirect || typeof window === 'undefined') {
+        return;
+    }
+
+    hasTriggeredAuthRedirect = true;
+    window.location.replace('/login');
 };
 
 // Request interceptor
@@ -82,8 +119,14 @@ apiClient.interceptors.response.use(
         }
 
         // Handle 401 Token Refresh
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (
+            error.response?.status === 401 &&
+            originalRequest &&
+            !originalRequest._retry &&
+            !isRefreshRequest(originalRequest)
+        ) {
             originalRequest._retry = true;
+            const queuedRetry = enqueueUnauthorizedRequest(originalRequest);
 
             // Lock concurrent refreshes — share a single in-flight promise
             if (!apiClient._refreshPromise) {
@@ -112,23 +155,22 @@ apiClient.interceptors.response.use(
                         secureStorage.setItem('refresh_token', newRefresh);
                     }
 
+                    processUnauthorizedQueue(null, token);
                     return token;
+                })().catch((refreshError) => {
+                    processUnauthorizedQueue(refreshError, null);
+                    throw refreshError;
                 })().finally(() => {
                     apiClient._refreshPromise = null;
                 });
             }
 
-            try {
-                const token = await apiClient._refreshPromise;
-                originalRequest.headers.Authorization = `Bearer ${token}`;
-                return apiClient(originalRequest);
-            } catch (refreshError) {
+            return queuedRetry.catch((refreshError) => {
                 secureStorage.removeItem('auth_token');
                 secureStorage.removeItem('refresh_token');
-                // LOW-18: Use replace instead of href to prevent back-button loop
-                window.location.replace('/login');
-                return Promise.reject(refreshError);
-            }
+                redirectToLogin();
+                throw refreshError;
+            });
         }
 
         return Promise.reject(error);

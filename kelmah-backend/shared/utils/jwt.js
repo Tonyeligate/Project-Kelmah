@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 
@@ -108,12 +109,7 @@ async function verifyAuthToken(token) {
 }
 
 function cryptoRandomString() {
-  try {
-    const crypto = require('crypto');
-    return crypto.randomBytes(16).toString('hex');
-  } catch (_) {
-    return `${Date.now()}_${Math.random().toString(36).slice(2)}`;
-  }
+  return crypto.randomBytes(16).toString('hex');
 }
 
 function decodeUserFromClaims(decoded) {

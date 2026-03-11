@@ -249,6 +249,7 @@ struct ProfileView: View {
             }
             .padding(20)
         }
+        .scrollDismissesKeyboard(.interactively)
         .background(KelmahTheme.background.ignoresSafeArea())
         .task(id: sessionStore.currentUser?.resolvedID) {
             await viewModel.bootstrap(user: sessionStore.currentUser)

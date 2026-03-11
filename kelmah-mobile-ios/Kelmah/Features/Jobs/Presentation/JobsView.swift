@@ -46,7 +46,6 @@ struct JobsView: View {
                             ForEach(viewModel.categories) { category in
                                 Button(category.name) {
                                     viewModel.filters.category = category.name
-                                    Task { await viewModel.refreshJobs() }
                                 }
                             }
                         } label: {
@@ -62,7 +61,6 @@ struct JobsView: View {
                             ForEach(JobSortOption.allCases) { option in
                                 Button(option.label) {
                                     viewModel.filters.sort = option
-                                    Task { await viewModel.refreshJobs() }
                                 }
                             }
                         } label: {
@@ -266,7 +264,6 @@ private struct JobCardView: View {
         .background(.white)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .onTapGesture(perform: onOpen)
     }
 }
 
