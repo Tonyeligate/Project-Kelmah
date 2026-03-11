@@ -137,6 +137,30 @@ const normalizeDelimitedList = (value) => {
   return [];
 };
 
+const buildSkillEntryNamesExpression = () => ({
+  $map: {
+    input: { $ifNull: ['$skillEntries', []] },
+    as: 'skillEntry',
+    in: '$$skillEntry.name',
+  },
+});
+
+const buildPreferredArrayExpression = (primaryArrays = [], fallbackArrays = []) => ({
+  $let: {
+    vars: {
+      primary: { $setUnion: primaryArrays },
+      fallback: { $setUnion: fallbackArrays },
+    },
+    in: {
+      $cond: [
+        { $gt: [{ $size: '$$primary' }, 0] },
+        '$$primary',
+        '$$fallback',
+      ],
+    },
+  },
+});
+
 const buildArrayToSearchStringExpression = (fieldPath) => ({
   $reduce: {
     input: { $ifNull: [fieldPath, []] },
@@ -656,23 +680,25 @@ const executeWorkerDirectoryQuery = async ({
           },
         },
         canonicalSkills: {
-          $setUnion: [
-            { $ifNull: ['$skills', []] },
-            { $ifNull: ['$user.skills', []] },
-            {
-              $map: {
-                input: { $ifNull: ['$skillEntries', []] },
-                as: 'skillEntry',
-                in: '$$skillEntry.name',
-              },
-            },
-          ],
+          $let: buildPreferredArrayExpression(
+            [
+              { $ifNull: ['$skills', []] },
+              buildSkillEntryNamesExpression(),
+            ],
+            [
+              { $ifNull: ['$user.skills', []] },
+            ],
+          ).$let,
         },
         canonicalSpecializations: {
-          $setUnion: [
-            { $ifNull: ['$specializations', []] },
-            { $ifNull: ['$user.specializations', []] },
-          ],
+          $let: buildPreferredArrayExpression(
+            [
+              { $ifNull: ['$specializations', []] },
+            ],
+            [
+              { $ifNull: ['$user.specializations', []] },
+            ],
+          ).$let,
         },
         canonicalTextScore: buildTextRelevanceScoreExpression(textQuery),
       },
@@ -835,23 +861,25 @@ const executeTradeCategoryStatsQuery = async () => {
           ],
         },
         canonicalSkills: {
-          $setUnion: [
-            { $ifNull: ['$skills', []] },
-            { $ifNull: ['$user.skills', []] },
-            {
-              $map: {
-                input: { $ifNull: ['$skillEntries', []] },
-                as: 'skillEntry',
-                in: '$$skillEntry.name',
-              },
-            },
-          ],
+          $let: buildPreferredArrayExpression(
+            [
+              { $ifNull: ['$skills', []] },
+              buildSkillEntryNamesExpression(),
+            ],
+            [
+              { $ifNull: ['$user.skills', []] },
+            ],
+          ).$let,
         },
         canonicalSpecializations: {
-          $setUnion: [
-            { $ifNull: ['$specializations', []] },
-            { $ifNull: ['$user.specializations', []] },
-          ],
+          $let: buildPreferredArrayExpression(
+            [
+              { $ifNull: ['$specializations', []] },
+            ],
+            [
+              { $ifNull: ['$user.specializations', []] },
+            ],
+          ).$let,
         },
       },
     },
@@ -1938,11 +1966,23 @@ class WorkerController {
     try {
       const {
         query = '',
+        keywords,
+        search,
         location,
+        city,
+        primaryTrade,
+        trade,
+        category,
+        workType,
+        jobType,
+        type,
         skills,
         minRating = 0,
+        rating,
+        minimumRating,
         maxRate,
         availability,
+        verified,
         radius = 50,
         latitude,
         longitude,
@@ -1951,18 +1991,27 @@ class WorkerController {
         sortBy = 'relevance'
       } = req.query;
 
+      const canonicalQuery = String(query || keywords || search || '').trim().slice(0, 100);
+      const canonicalLocation = String(location || city || '').trim().slice(0, 100);
+      const canonicalTrade = String(primaryTrade || trade || category || '').trim().slice(0, 100);
+      const canonicalWorkType = String(workType || jobType || type || '').trim().slice(0, 100);
+      const canonicalMinRating = Number(minRating || rating || minimumRating || 0);
+
       const parsedPage = Math.max(1, parseInt(page, 10) || 1);
       const parsedLimit = Math.min(50, Math.max(1, parseInt(limit, 10) || 20));
 
       const { workers: searchResults, pagination } = await executeWorkerDirectoryQuery({
         page: parsedPage,
         limit: parsedLimit,
-        textQuery: String(query || '').trim().slice(0, 100),
-        locationText: String(location || '').trim().slice(0, 100),
+        textQuery: canonicalQuery,
+        locationText: canonicalLocation,
+        primaryTrade: canonicalTrade,
+        workType: canonicalWorkType,
         skillsList: normalizeDelimitedList(skills),
-        minRating: Number(minRating || 0),
+        minRating: canonicalMinRating,
         maxRate: maxRate ? Number(maxRate) : undefined,
         availability,
+        verified: verified === 'true',
         sortBy,
         latitude,
         longitude,
@@ -1976,12 +2025,15 @@ class WorkerController {
           workers: searchResults,
           pagination,
           searchParams: {
-            query,
-            location,
+            query: canonicalQuery,
+            location: canonicalLocation,
+            primaryTrade: canonicalTrade,
+            workType: canonicalWorkType,
             skills,
-            minRating,
+            minRating: canonicalMinRating,
             maxRate,
-            radius
+            radius,
+            verified: verified === 'true',
           }
         }
       });

@@ -48,6 +48,24 @@ final class MessagesRepository {
         return message
     }
 
+    func createConversation(participantId: String, jobId: String? = nil) async throws -> String {
+        let response = try await apiClient.send(
+            path: "messages/conversations",
+            method: .post,
+            body: CreateConversationPayload(participantIds: [participantId], jobId: jobId),
+            requiresAuth: true,
+            responseType: MessagingRawEnvelope.self
+        )
+
+        let data = response.data?.objectValue
+        let conversation = data?["conversation"]?.objectValue
+        if let conversationId = conversation?.string("id") ?? conversation?.string("_id") ?? data?.string("conversationId") ?? data?.string("id") {
+            return conversationId
+        }
+
+        throw APIClientError.invalidStatusCode(500, "Conversation payload was invalid")
+    }
+
     private func parseConversations(_ response: MessagingRawEnvelope) -> [MessageConversation] {
         let values = response.data?.objectValue?["conversations"]?.arrayValue
             ?? response.data?.arrayValue

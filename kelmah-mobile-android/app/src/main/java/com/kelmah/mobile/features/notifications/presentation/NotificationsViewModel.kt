@@ -40,7 +40,6 @@ class NotificationsViewModel @Inject constructor(
 
     init {
         observeRealtimeSignals()
-        bootstrap()
     }
 
     fun bootstrap() {
@@ -60,6 +59,11 @@ class NotificationsViewModel @Inject constructor(
 
     fun clearMessages() {
         _uiState.update { it.copy(errorMessage = null, infoMessage = null) }
+    }
+
+    fun reset() {
+        hasBootstrapped = false
+        _uiState.value = NotificationsUiState()
     }
 
     fun setUnreadOnly(enabled: Boolean) {

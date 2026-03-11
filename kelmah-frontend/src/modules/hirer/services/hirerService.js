@@ -98,6 +98,7 @@ const buildNormalizedPagination = (payload, itemCount = 0) => {
     currentPage: rawPagination.currentPage ?? rawPagination.page ?? 1,
     totalPages: rawPagination.totalPages ?? 1,
     totalItems: rawPagination.totalItems ?? rawPagination.total ?? itemCount,
+    limit: rawPagination.limit ?? itemCount,
   };
 };
 
@@ -379,18 +380,39 @@ export const hirerService = {
         params.status = filters.status.trim();
       }
 
+      if (typeof filters.jobId === 'string' && filters.jobId.trim()) {
+        params.jobId = filters.jobId.trim();
+      }
+
+      if (typeof filters.page === 'number' && filters.page > 0) {
+        params.page = filters.page;
+      }
+
+      if (typeof filters.limit === 'number' && filters.limit > 0) {
+        params.limit = filters.limit;
+      }
+
+      if (typeof filters.sort === 'string' && filters.sort.trim()) {
+        params.sort = filters.sort.trim();
+      }
+
       const response = await api.get('/jobs/applications/received-summary', { params });
       const data = unwrapPayload(response?.data) || {};
+      const applications = Array.isArray(data?.applications) ? data.applications : [];
 
       return {
         jobs: Array.isArray(data?.jobs) ? data.jobs : [],
-        applicationsByJob: data?.applicationsByJob && typeof data.applicationsByJob === 'object'
-          ? data.applicationsByJob
-          : {},
+        applications,
+        pagination: buildNormalizedPagination(data, applications.length),
         summary: data?.summary || {
           totalJobs: 0,
           totalApplications: 0,
           countsByStatus: {},
+        },
+        filters: data?.filters || {
+          jobId: params.jobId || null,
+          status: params.status || null,
+          sort: params.sort || 'newest',
         },
       };
     } catch (error) {

@@ -14,6 +14,22 @@ struct RootTabView: View {
     @State private var pendingConversationId: String?
     @State private var pendingJobId: String?
 
+    private var sessionTaskKey: String {
+        let token = environment.sessionStore.accessToken ?? "guest"
+        let phase: String
+        switch environment.sessionStore.phase {
+        case .checking:
+            phase = "checking"
+        case .authenticated:
+            phase = "authenticated"
+        case .unauthenticated:
+            phase = "unauthenticated"
+        case let .recoverableFailure(message):
+            phase = "recoverable-\(message)"
+        }
+        return "\(token)-\(phase)"
+    }
+
     private var userRole: KelmahUserRole {
         environment.sessionStore.currentUser?.kelmahUserRole ?? .worker
     }
@@ -60,7 +76,14 @@ struct RootTabView: View {
                         viewModel: environment.jobsViewModel,
                         userRole: userRole,
                         pendingJobId: pendingJobId,
-                        onHandledPendingJob: { pendingJobId = nil }
+                        onHandledPendingJob: { pendingJobId = nil },
+                        onMessageHirer: { jobId, hirerId in
+                            guard let hirerId, hirerId.isEmpty == false else { return }
+                            if let conversationId = await environment.messagesViewModel.createConversation(participantId: hirerId, jobId: jobId) {
+                                pendingConversationId = conversationId
+                                selectedTab = .messages
+                            }
+                        }
                     )
                         .tag(RootTab.jobs)
                         .tabItem { Label(userRole == .hirer ? "Hiring" : "Jobs", systemImage: "briefcase") }
@@ -95,26 +118,78 @@ struct RootTabView: View {
                         .tabItem { Label("Profile", systemImage: "person") }
                 }
                 .tint(KelmahTheme.accent)
+            } else if case let .recoverableFailure(message) = environment.sessionStore.phase {
+                SessionRecoveryView(
+                    userName: environment.sessionStore.currentUser?.displayName,
+                    message: message,
+                    onRetry: {
+                        Task { await environment.sessionCoordinator.bootstrapSession(force: true) }
+                    },
+                    onSignInAgain: {
+                        Task { await environment.sessionCoordinator.logout() }
+                    }
+                )
             } else {
                 NavigationStack {
                     LoginView(authRepository: environment.authRepository)
                 }
             }
         }
-        .task(id: environment.sessionStore.accessToken ?? "guest") {
+        .task(id: sessionTaskKey) {
             await environment.sessionCoordinator.bootstrapSession(force: true)
-            if environment.sessionStore.accessToken != nil {
+            if environment.sessionStore.isSessionUsable {
                 await bootstrapShellDataIfNeeded()
             } else {
                 environment.realtimeSocketManager.stop()
+                environment.jobsViewModel.reset()
+                environment.messagesViewModel.reset()
+                environment.notificationsViewModel.reset()
             }
         }
     }
 
     private func bootstrapShellDataIfNeeded() async {
         guard environment.sessionStore.isSessionUsable else { return }
-        await environment.jobsViewModel.bootstrap()
+        await environment.jobsViewModel.bootstrap(for: userRole)
         await environment.messagesViewModel.bootstrap()
         await environment.notificationsViewModel.bootstrap()
+    }
+}
+
+private struct SessionRecoveryView: View {
+    let userName: String?
+    let message: String
+    let onRetry: () -> Void
+    let onSignInAgain: () -> Void
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            VStack(alignment: .leading, spacing: 14) {
+                Text("Session check needed")
+                    .font(.title2.bold())
+                if let userName, userName.isEmpty == false {
+                    Text("Saved account: \(userName)")
+                        .foregroundStyle(.secondary)
+                }
+                Text(message)
+                    .foregroundStyle(.secondary)
+                Text("Sign in again before opening jobs, chats, alerts, or profile actions.")
+                    .foregroundStyle(.primary)
+                Button("Retry session check", action: onRetry)
+                    .buttonStyle(.borderedProminent)
+                    .tint(KelmahTheme.accent)
+                Button("Sign in again", action: onSignInAgain)
+                    .buttonStyle(.bordered)
+            }
+            .padding(24)
+            .frame(maxWidth: 480, alignment: .leading)
+            .background(KelmahTheme.card)
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            Spacer()
+        }
+        .padding(24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(KelmahTheme.background.ignoresSafeArea())
     }
 }

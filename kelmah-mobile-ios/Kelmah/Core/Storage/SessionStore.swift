@@ -29,7 +29,7 @@ final class SessionStore: ObservableObject {
     }
 
     var isSessionUsable: Bool {
-        isAuthenticated && (phase == .authenticated || currentUser != nil)
+        isAuthenticated && phase == .authenticated && currentUser != nil
     }
 
     func save(accessToken: String, refreshToken: String?, user: SessionUser? = nil) {

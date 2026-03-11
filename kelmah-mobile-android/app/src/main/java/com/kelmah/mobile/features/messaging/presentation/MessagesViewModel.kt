@@ -22,6 +22,7 @@ data class MessagesUiState(
     val isLoadingConversations: Boolean = false,
     val isLoadingMessages: Boolean = false,
     val isSending: Boolean = false,
+    val isCreatingConversation: Boolean = false,
     val conversations: List<ConversationSummary> = emptyList(),
     val selectedConversation: ConversationSummary? = null,
     val messages: List<ThreadMessage> = emptyList(),
@@ -50,7 +51,6 @@ class MessagesViewModel @Inject constructor(
 
     init {
         observeRealtimeSignals()
-        bootstrap()
     }
 
     fun bootstrap() {
@@ -78,6 +78,11 @@ class MessagesViewModel @Inject constructor(
 
     fun clearMessages() {
         _uiState.update { it.copy(errorMessage = null, infoMessage = null) }
+    }
+
+    fun reset() {
+        hasBootstrapped = false
+        _uiState.value = MessagesUiState(currentUserId = messagingRepository.currentUserId())
     }
 
     fun openConversation(conversation: ConversationSummary) {
@@ -222,6 +227,24 @@ class MessagesViewModel @Inject constructor(
                 is ApiResult.Error -> {
                     _uiState.update { it.copy(isSending = false, errorMessage = result.message) }
                 }
+            }
+        }
+    }
+
+    suspend fun createConversation(
+        participantId: String,
+        jobId: String? = null,
+    ): String? {
+        _uiState.update { it.copy(isCreatingConversation = true, errorMessage = null, infoMessage = null) }
+        return when (val result = messagingRepository.createConversation(participantId, jobId)) {
+            is ApiResult.Success -> {
+                refreshConversations()
+                _uiState.update { it.copy(isCreatingConversation = false) }
+                result.data
+            }
+            is ApiResult.Error -> {
+                _uiState.update { it.copy(isCreatingConversation = false, errorMessage = result.message) }
+                null
             }
         }
     }

@@ -3433,10 +3433,38 @@ const getJobApplications = async (req, res, next) => {
  * @access Private (Hirer only)
  */
 const getHirerApplicationsSummary = async (req, res, next) => {
+  const requestId = req.id || req.headers?.['x-request-id'];
   try {
     const hirerId = req.user?.id;
     const statusFilter = typeof req.query.status === 'string' ? req.query.status.trim().toLowerCase() : '';
+    const requestedJobId = typeof req.query.jobId === 'string' ? req.query.jobId.trim() : '';
+    const requestedSort = typeof req.query.sort === 'string' ? req.query.sort.trim().toLowerCase() : 'newest';
+    const requestedPage = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(Math.max(1, parseInt(req.query.limit, 10) || 10), 50);
     const validStatuses = new Set(['pending', 'accepted', 'rejected', 'under_review', 'withdrawn']);
+    const normalizedSort = {
+      newest: 'newest',
+      latest: 'newest',
+      'highest-rated': 'highest-rated',
+      highest_rated: 'highest-rated',
+      rating: 'highest-rated',
+      'proposed-rate': 'proposed-rate',
+      proposed_rate: 'proposed-rate',
+      rate: 'proposed-rate',
+    }[requestedSort] || 'newest';
+    const sortStage = normalizedSort === 'highest-rated'
+      ? { workerRatingSort: -1, createdAt: -1, _id: -1 }
+      : normalizedSort === 'proposed-rate'
+        ? { proposedRateSort: -1, createdAt: -1, _id: -1 }
+        : { createdAt: -1, _id: -1 };
+    const createEmptyCounts = () => ({
+      pending: 0,
+      accepted: 0,
+      rejected: 0,
+      under_review: 0,
+      withdrawn: 0,
+      total: 0,
+    });
 
     const jobs = await Job.find({ hirer: hirerId })
       .select('title status budget budgetRange paymentType bidding createdAt')
@@ -3448,7 +3476,13 @@ const getHirerApplicationsSummary = async (req, res, next) => {
     if (standardJobs.length === 0) {
       return successResponse(res, 200, 'Hirer applications summary retrieved', {
         jobs: [],
-        applicationsByJob: {},
+        applications: [],
+        pagination: {
+          page: 1,
+          limit,
+          total: 0,
+          totalPages: 1,
+        },
         summary: {
           totalJobs: 0,
           totalApplications: 0,
@@ -3460,29 +3494,15 @@ const getHirerApplicationsSummary = async (req, res, next) => {
             withdrawn: 0,
           },
         },
+        filters: {
+          jobId: null,
+          status: validStatuses.has(statusFilter) ? statusFilter : null,
+          sort: normalizedSort,
+        },
       });
     }
 
     const jobIds = standardJobs.map((job) => job._id);
-    const applicationQuery = { job: { $in: jobIds } };
-    if (validStatuses.has(statusFilter)) {
-      applicationQuery.status = statusFilter;
-    }
-
-    const applications = await Application.find(applicationQuery)
-      .populate('worker', 'firstName lastName profileImage rating')
-      .sort({ createdAt: -1 })
-      .lean()
-      .maxTimeMS(8000);
-
-    const applicationsByJob = {};
-    const countsByStatus = {
-      pending: 0,
-      accepted: 0,
-      rejected: 0,
-      under_review: 0,
-      withdrawn: 0,
-    };
     const jobMap = new Map(
       standardJobs.map((job) => {
         const jobId = job._id?.toString?.() || String(job._id);
@@ -3490,64 +3510,168 @@ const getHirerApplicationsSummary = async (req, res, next) => {
       }),
     );
 
-    applications.forEach((application) => {
-      const jobId = application.job?.toString?.() || String(application.job);
-      const status = application.status || 'pending';
+    if (requestedJobId && !jobMap.has(requestedJobId)) {
+      return errorResponse(res, 404, 'Job not found');
+    }
 
-      if (!Array.isArray(applicationsByJob[jobId])) {
-        applicationsByJob[jobId] = [];
+    const countsByStatus = {
+      pending: 0,
+      accepted: 0,
+      rejected: 0,
+      under_review: 0,
+      withdrawn: 0,
+    };
+    const jobCountsMap = new Map();
+
+    const countsAggregation = await Application.aggregate([
+      {
+        $match: {
+          job: { $in: jobIds },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            job: '$job',
+            status: '$status',
+          },
+          count: { $sum: 1 },
+        },
+      },
+    ]).option({ maxTimeMS: 8000 });
+
+    countsAggregation.forEach((entry) => {
+      const jobId = entry?._id?.job?.toString?.() || String(entry?._id?.job);
+      const status = entry?._id?.status || 'pending';
+      const count = Number(entry?.count) || 0;
+
+      if (!jobCountsMap.has(jobId)) {
+        jobCountsMap.set(jobId, createEmptyCounts());
       }
 
-      applicationsByJob[jobId].push({
-        ...application,
-        id: application._id?.toString?.() || String(application._id),
-        jobId,
-        jobTitle: jobMap.get(jobId)?.title || 'Unknown Job',
-      });
+      const jobCounts = jobCountsMap.get(jobId);
+      if (jobCounts[status] === undefined) {
+        jobCounts[status] = 0;
+      }
+      jobCounts[status] += count;
+      jobCounts.total += count;
 
       if (countsByStatus[status] !== undefined) {
-        countsByStatus[status] += 1;
+        countsByStatus[status] += count;
       }
     });
 
     const jobsWithCounts = standardJobs.map((job) => {
       const jobId = job._id?.toString?.() || String(job._id);
-      const groupedApplications = applicationsByJob[jobId] || [];
-      const applicationCounts = groupedApplications.reduce((acc, application) => {
-        const status = application.status || 'pending';
-        if (acc[status] === undefined) {
-          acc[status] = 0;
-        }
-        acc[status] += 1;
-        acc.total += 1;
-        return acc;
-      }, {
-        pending: 0,
-        accepted: 0,
-        rejected: 0,
-        under_review: 0,
-        withdrawn: 0,
-        total: 0,
-      });
-
       return {
         ...job,
         _id: jobId,
         id: jobId,
-        applicationCounts,
+        applicationCounts: jobCountsMap.get(jobId) || createEmptyCounts(),
       };
     });
 
+    const applicationQuery = requestedJobId
+      ? { job: jobMap.get(requestedJobId)._id }
+      : { job: { $in: jobIds } };
+
+    if (validStatuses.has(statusFilter)) {
+      applicationQuery.status = statusFilter;
+    }
+
+    const total = await Application.countDocuments(applicationQuery).maxTimeMS(8000);
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const page = Math.min(requestedPage, totalPages);
+    const skip = (page - 1) * limit;
+
+    const applications = total > 0
+      ? await Application.aggregate([
+        {
+          $match: applicationQuery,
+        },
+        {
+          $lookup: {
+            from: User.collection.name,
+            localField: 'worker',
+            foreignField: '_id',
+            as: 'worker',
+          },
+        },
+        {
+          $unwind: {
+            path: '$worker',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $addFields: {
+            workerRatingSort: { $ifNull: ['$worker.rating', -1] },
+            proposedRateSort: { $ifNull: ['$proposedRate', -1] },
+          },
+        },
+        {
+          $sort: sortStage,
+        },
+        {
+          $skip: skip,
+        },
+        {
+          $limit: limit,
+        },
+        {
+          $project: {
+            workerRatingSort: 0,
+            proposedRateSort: 0,
+          },
+        },
+      ]).option({ maxTimeMS: 8000 })
+      : [];
+
+    const normalizedApplications = applications.map((application) => {
+      const jobId = application.job?.toString?.() || String(application.job);
+      return {
+        ...application,
+        id: application._id?.toString?.() || String(application._id),
+        jobId,
+        jobTitle: jobMap.get(jobId)?.title || 'Unknown Job',
+      };
+    });
+
+    const totalApplications = Object.values(countsByStatus).reduce((sum, value) => sum + value, 0);
+
     return successResponse(res, 200, 'Hirer applications summary retrieved', {
       jobs: jobsWithCounts,
-      applicationsByJob,
+      applications: normalizedApplications,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
       summary: {
         totalJobs: jobsWithCounts.length,
-        totalApplications: applications.length,
+        totalApplications,
         countsByStatus,
+      },
+      filters: {
+        jobId: requestedJobId || null,
+        status: validStatuses.has(statusFilter) ? statusFilter : null,
+        sort: normalizedSort,
       },
     });
   } catch (error) {
+    jobLogger.error('getHirerApplicationsSummary.error', {
+      requestId,
+      hirerId: req.user?.id,
+      jobId: req.query?.jobId,
+      status: req.query?.status,
+      sort: req.query?.sort,
+      page: req.query?.page,
+      limit: req.query?.limit,
+      error: error.message,
+      code: error.code,
+      name: error.name,
+    });
     next(error);
   }
 };

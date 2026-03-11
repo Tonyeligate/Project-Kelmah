@@ -27,13 +27,17 @@ final class JobsViewModel: ObservableObject {
 
     private let repository: JobsRepository
     private var hasBootstrapped = false
+    private var currentRole: KelmahUserRole = .worker
 
     init(repository: JobsRepository) {
         self.repository = repository
     }
 
     var displayedJobs: [JobSummary] {
-        activeFeed == .discover ? discoverJobs : savedJobs
+        if activeFeed == .saved {
+            return savedJobs
+        }
+        return currentRole == .hirer ? hirerJobs : discoverJobs
     }
 
     func jobDetail(for jobId: String) -> JobDetail? {
@@ -48,8 +52,10 @@ final class JobsViewModel: ObservableObject {
         jobSummary(for: jobId)?.title ?? "Kelmah Job"
     }
 
-    func bootstrap() async {
-        guard hasBootstrapped == false else { return }
+    func bootstrap(for role: KelmahUserRole) async {
+        let roleChanged = currentRole != role
+        currentRole = role
+        guard hasBootstrapped == false || roleChanged else { return }
         hasBootstrapped = true
         await loadCategories()
         await refreshJobs()
@@ -61,6 +67,8 @@ final class JobsViewModel: ObservableObject {
         infoMessage = nil
         if feed == .saved, savedJobs.isEmpty {
             await loadSavedJobs()
+        } else if feed == .discover {
+            await refreshJobs()
         }
     }
 
@@ -105,7 +113,7 @@ final class JobsViewModel: ObservableObject {
             recommendationState = .idle
             recommendationContextMessage = nil
             do {
-                hirerJobs = try await repository.getMyJobs(limit: 6)
+                hirerJobs = try await repository.getMyJobs(limit: 6).jobs
             } catch {
                 hirerJobs = []
                 homeErrorMessage = error.localizedDescription
@@ -114,20 +122,33 @@ final class JobsViewModel: ObservableObject {
     }
 
     func refreshJobs() async {
-        isLoading = discoverJobs.isEmpty
-        isRefreshing = discoverJobs.isEmpty == false
+        let sourceJobs = currentRole == .hirer ? hirerJobs : discoverJobs
+        isLoading = sourceJobs.isEmpty
+        isRefreshing = sourceJobs.isEmpty == false
         errorMessage = nil
         infoMessage = nil
         currentPage = 1
 
-        do {
-            let page = try await repository.getJobs(filters: filters, page: 1)
-            discoverJobs = page.jobs
-            currentPage = page.page
-            totalPages = page.totalPages
-            totalItems = page.totalItems
-        } catch {
-            errorMessage = error.localizedDescription
+        if currentRole == .hirer {
+            do {
+                let page = try await repository.getMyJobs(page: 1, limit: 12)
+                hirerJobs = page.jobs
+                currentPage = page.page
+                totalPages = page.totalPages
+                totalItems = page.totalItems
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        } else {
+            do {
+                let page = try await repository.getJobs(filters: filters, page: 1)
+                discoverJobs = page.jobs
+                currentPage = page.page
+                totalPages = page.totalPages
+                totalItems = page.totalItems
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
 
         isLoading = false
@@ -139,14 +160,26 @@ final class JobsViewModel: ObservableObject {
         isLoadingMore = true
         defer { isLoadingMore = false }
 
-        do {
-            let page = try await repository.getJobs(filters: filters, page: currentPage + 1)
-            discoverJobs = mergeJobsPreservingLatest(discoverJobs + page.jobs)
-            currentPage = page.page
-            totalPages = page.totalPages
-            totalItems = page.totalItems
-        } catch {
-            errorMessage = error.localizedDescription
+        if currentRole == .hirer {
+            do {
+                let page = try await repository.getMyJobs(page: currentPage + 1, limit: 12)
+                hirerJobs = mergeJobsPreservingLatest(hirerJobs + page.jobs)
+                currentPage = page.page
+                totalPages = page.totalPages
+                totalItems = page.totalItems
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        } else {
+            do {
+                let page = try await repository.getJobs(filters: filters, page: currentPage + 1)
+                discoverJobs = mergeJobsPreservingLatest(discoverJobs + page.jobs)
+                currentPage = page.page
+                totalPages = page.totalPages
+                totalItems = page.totalItems
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 
@@ -254,13 +287,20 @@ final class JobsViewModel: ObservableObject {
 
     func reset() {
         hasBootstrapped = false
+        currentRole = .worker
         discoverJobs = []
         savedJobs = []
         recommendedJobs = []
         hirerJobs = []
+        filters = JobFilters()
+        activeFeed = .discover
+        currentPage = 1
+        totalPages = 1
+        totalItems = 0
         jobDetailsById = [:]
         loadingDetailJobIds = []
         errorMessage = nil
+        infoMessage = nil
     }
 
     private func loadCategories() async {

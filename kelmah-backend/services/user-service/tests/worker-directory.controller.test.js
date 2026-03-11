@@ -155,6 +155,16 @@ describe('Worker directory controllers', () => {
     expect(JSON.stringify(addFieldsStage?.$addFields?.canonicalProfession || {})).toContain('$title');
     expect(JSON.stringify(addFieldsStage?.$addFields?.canonicalProfession || {})).toContain('$headline');
     expect(JSON.stringify(addFieldsStage?.$addFields?.canonicalProfession || {})).toContain('$user.profession');
+    expect(addFieldsStage?.$addFields?.canonicalSkills).toEqual(
+      expect.objectContaining({
+        $let: expect.any(Object),
+      }),
+    );
+    expect(addFieldsStage?.$addFields?.canonicalSpecializations).toEqual(
+      expect.objectContaining({
+        $let: expect.any(Object),
+      }),
+    );
 
     const directoryFilterStages = pipeline.filter((stage) => stage.$match?.$and);
     const directoryFilterStage = directoryFilterStages[directoryFilterStages.length - 1];
@@ -228,8 +238,12 @@ describe('Worker directory controllers', () => {
       query: {
         query: 'Kojo',
         location: 'Tema',
+        primaryTrade: 'plumbing',
+        workType: 'Full-time',
         skills: 'Leak Repair',
         availability: 'available',
+        minimumRating: '4.5',
+        verified: 'true',
         sortBy: 'rating',
       },
     }, res);
@@ -260,10 +274,18 @@ describe('Worker directory controllers', () => {
     const directoryFilterStage = directoryFilterStages[directoryFilterStages.length - 1];
     expect(JSON.stringify(directoryFilterStage)).toContain('canonicalFirstName');
     expect(JSON.stringify(directoryFilterStage)).toContain('canonicalSkills');
+    expect(JSON.stringify(directoryFilterStage)).toContain('canonicalProfession');
+    expect(JSON.stringify(directoryFilterStage)).toContain('canonicalVerified');
+    expect(JSON.stringify(directoryFilterStage)).toContain('canonicalPreferredJobTypes');
 
     expect(res.statusCode).toBe(200);
     expect(res.body?.success).toBe(true);
     expect(res.body?.data?.searchParams?.query).toBe('Kojo');
+    expect(res.body?.data?.searchParams?.location).toBe('Tema');
+    expect(res.body?.data?.searchParams?.primaryTrade).toBe('plumbing');
+    expect(res.body?.data?.searchParams?.workType).toBe('Full-time');
+    expect(res.body?.data?.searchParams?.minRating).toBe(4.5);
+    expect(res.body?.data?.searchParams?.verified).toBe(true);
     expect(res.body?.data?.workers).toEqual([
       expect.objectContaining({
         userId: 'worker-2',

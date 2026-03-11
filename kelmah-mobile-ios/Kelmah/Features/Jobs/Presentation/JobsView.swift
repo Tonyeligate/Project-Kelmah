@@ -5,6 +5,7 @@ struct JobsView: View {
     let userRole: KelmahUserRole
     var pendingJobId: String? = nil
     var onHandledPendingJob: (() -> Void)? = nil
+    var onMessageHirer: ((String, String?) async -> Void)? = nil
     @State private var path: [JobsRoute] = []
 
     private var isWorker: Bool {
@@ -38,14 +39,14 @@ struct JobsView: View {
                 } else {
                     Section {
                         MessageBannerView(
-                            message: "Use this tab to check pay, demand, and saved listings before you hire.",
+                            message: "Open your jobs. Review details. Save important ones.",
                             tint: KelmahTheme.accent.opacity(0.12)
                         )
                     }
                 }
 
-                if viewModel.activeFeed == .discover {
-                    Section(isWorker ? "Quick Search" : "Filters") {
+                if isWorker, viewModel.activeFeed == .discover {
+                    Section("Quick Search") {
                         TextField(isWorker ? "Type job name" : "Search jobs", text: $viewModel.filters.search)
                         TextField(isWorker ? "Town or area" : "Location", text: $viewModel.filters.location)
 
@@ -103,9 +104,9 @@ struct JobsView: View {
                             .frame(maxWidth: .infinity, alignment: .center)
                     } else if viewModel.displayedJobs.isEmpty {
                         ContentUnavailableView(
-                            viewModel.activeFeed == .saved ? (isWorker ? "No saved jobs" : "No saved market listings yet") : (isWorker ? "No jobs found" : "No market listings found"),
+                            viewModel.activeFeed == .saved ? (isWorker ? "No saved jobs" : "No saved jobs yet") : (isWorker ? "No jobs found" : "No jobs yet"),
                             systemImage: "briefcase",
-                            description: Text(viewModel.activeFeed == .saved ? (isWorker ? "Jobs you save will stay here." : "Saved listings stay here so you can compare pay, work, and demand later.") : (isWorker ? "Try fewer filters or tap refresh." : "Try fewer filters or tap refresh to see more live jobs."))
+                            description: Text(viewModel.activeFeed == .saved ? (isWorker ? "Jobs you save will stay here." : "Saved jobs stay here so you can reopen them fast.") : (isWorker ? "Try fewer filters or tap refresh." : "Your newest hiring posts will show here."))
                         )
                     } else {
                         ForEach(viewModel.displayedJobs) { job in
@@ -130,7 +131,7 @@ struct JobsView: View {
                                     ProgressView()
                                         .frame(maxWidth: .infinity)
                                 } else {
-                                    Text("Show More Jobs")
+                                    Text(isWorker ? "Show More Jobs" : "Show More")
                                         .frame(maxWidth: .infinity)
                                 }
                             }
@@ -142,7 +143,7 @@ struct JobsView: View {
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
             .background(KelmahTheme.background)
-            .navigationTitle(isWorker ? "Find Work" : "Hiring Market")
+            .navigationTitle(isWorker ? "Find Work" : "Your Jobs")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -166,8 +167,8 @@ struct JobsView: View {
                     await viewModel.refreshJobs()
                 }
             }
-            .task {
-                await viewModel.bootstrap()
+            .task(id: userRole) {
+                await viewModel.bootstrap(for: userRole)
             }
             .task(id: pendingJobId) {
                 if let pendingJobId, pendingJobId.isEmpty == false {
@@ -178,9 +179,9 @@ struct JobsView: View {
             .navigationDestination(for: JobsRoute.self) { route in
                 switch route {
                 case let .detail(jobId):
-                    JobDetailView(viewModel: viewModel, jobId: jobId, userRole: userRole) { selectedJobId in
+                    JobDetailView(viewModel: viewModel, jobId: jobId, userRole: userRole, onApply: { selectedJobId in
                         path.append(.apply(selectedJobId))
-                    }
+                    }, onMessageHirer: onMessageHirer)
                 case let .apply(jobId):
                     JobApplicationView(viewModel: viewModel, jobId: jobId, userRole: userRole) {
                         if path.isEmpty == false {
@@ -197,11 +198,11 @@ struct JobsView: View {
         case (.discover, .worker):
             return "Find"
         case (.discover, .hirer):
-            return "Market"
+            return "Jobs"
         case (.saved, .worker):
             return "Saved"
         case (.saved, .hirer):
-            return "Watchlist"
+            return "Saved"
         }
     }
 }

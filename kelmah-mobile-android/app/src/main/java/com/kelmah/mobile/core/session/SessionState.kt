@@ -7,7 +7,10 @@ sealed interface SessionState {
     data object Unauthenticated : SessionState
     data class Authenticated(
         val user: SessionUser?,
-        val recoveredFromCache: Boolean = false,
+    ) : SessionState
+    data class RecoveryRequired(
+        val user: SessionUser?,
+        val message: String,
     ) : SessionState
     data class Error(
         val message: String,

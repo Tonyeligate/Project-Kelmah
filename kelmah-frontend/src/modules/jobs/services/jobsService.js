@@ -605,6 +605,9 @@ const jobsApi = {
         params,
       });
       const payload = response.data?.data || response.data;
+      if (Array.isArray(payload?.jobs)) {
+        return payload.jobs.map(transformJobListItem);
+      }
       if (Array.isArray(payload?.recommendations)) {
         return payload.recommendations.map(transformJobListItem);
       }

@@ -1,967 +1,135 @@
----
+﻿---
 applyTo: "**"
 ---
-# Kelmah Platform - AI Coding Agent Instructions
+# Kelmah Platform — Project Guidelines
 
-**Last Updated**: November 11, 2025  
-**Architecture Status**: FULLY CONSOLIDATED ✅  
-**Critical Backend Fixes**: COMPLETED September 2025  
-**API Standards**: PROFESSIONAL REST PRACTICES MANDATORY ⚠️
+**Last Updated**: March 11, 2026
 
-## Architecture Overview
+## What Is Kelmah
 
-Kelmah is a **freelance marketplace** with a **fully consolidated microservices backend** and **modular React frontend**. The system uses an **API Gateway pattern** with service-specific microservices, all routing through a central gateway for the frontend.
+A vocational freelance marketplace connecting workers (carpenters, masons, plumbers, electricians) with hirers. Ghana-focused, accessibility-first — many users have limited formal education, so interfaces must be intuitive and simple.
 
-## Investigation-First Delivery Workflow ⚠️ NEW STANDARD
+## Architecture
 
-Every fix or enhancement must follow this professional flow before touching code:
+Microservices backend with modular React frontend, unified through an API Gateway.
 
-1. **Define Scope & Success Criteria**: Restate the user's ask in your own words, enumerate acceptance criteria, and log the task in the spec-kit status logs before any code edits.
-2. **Map Complete File Surface**: List every frontend, gateway, backend, and shared file involved in the feature or bug. Include component paths, services, controllers, models, validators, and config files. No guessing—open the files and confirm their roles.
-3. **Trace End-to-End Data Flow**: Document the UI → state layer → service call → gateway proxy → microservice route → controller → model flow using the mandatory Data Flow template in the spec-kit docs. Call out payload/response shapes, middleware, and auth requirements.
-4. **Audit Existing Behavior**: Run diagnostics yourself (curl via LocalTunnel, service health checks, automated scripts) to reproduce the issue. Capture evidence in the relevant spec-kit entry.
-5. **Design the Fix**: Describe planned changes, impacted files, and cleanup/removal decisions (never delete files without proving they are unused). Ensure naming, folder placement, and wiring stay professional and consistent with domain-driven structure.
-6. **Implement & Comment**: Make focused edits with succinct comments only where logic is non-obvious. Maintain REST contracts, shared model imports, and gateway trust patterns.
-7. **Verify & Document**: Re-run tests/diagnostics, record results, and update spec-kit (`STATUS_LOG.md` plus feature-specific docs) with what changed, why, and how it was validated. Only mark tasks complete after verification.
+| Layer | Stack | Key Directory |
+|-------|-------|---------------|
+| Frontend | React 18, Vite, Redux Toolkit, MUI v5 | `kelmah-frontend/src/modules/` |
+| Gateway | Express, JWT auth, proxy routing | `kelmah-backend/api-gateway/` |
+| Services | Express, Mongoose, Winston | `kelmah-backend/services/` |
+| Shared | Mongoose models, middleware, utils | `kelmah-backend/shared/` |
+| Database | MongoDB Atlas (`kelmah_platform`) | 100% Mongoose — zero SQL |
+| Real-time | Socket.IO via gateway proxy | `services/messaging-service/` |
 
-### Dry-Audit Mandate (STRICT)
+### Service Ports
 
-Before executing diagnostics or running any code, perform a **dry audit** of every file in the identified flow. This means:
+| Service | Port |
+|---------|------|
+| API Gateway | 5000 |
+| Auth | 5001 |
+| User | 5002 |
+| Job | 5003 |
+| Payment | 5004 |
+| Messaging | 5005 |
+| Review | 5006 |
 
-- Open and read each file end-to-end to understand existing logic (no assumptions or summaries from memory).
-- Catalogue controllers, services, models, middleware, configs, and frontend consumers touched by the feature, noting exact file paths.
-- Capture findings in spec-kit prior to edits so the knowledge trail is preserved.
-- Only after the dry audit is complete may diagnostics/tests be executed to confirm hypotheses.
+## Sacred Rules
 
-Failure to complete the dry audit before hands-on debugging is considered skipping required steps and is not permitted.
+1. **Models via index only**: `const { User, Job } = require('../models')` — never import individual model files directly
+2. **No cross-service imports**: shared code lives in `kelmah-backend/shared/`
+3. **MongoDB only**: zero SQL or Sequelize anywhere
+4. **Gateway handles auth**: services trust `verifyGatewayRequest` — never re-validate JWT in services
+5. **Route ordering**: literal paths before `:id` params — always
+6. **Frontend imports**: use `@/modules/[domain]/...` aliases
+7. **Response envelope**: `{ success, data, error }` on every endpoint
 
-This workflow applies to **every subsystem** (frontend modules, gateway, microservices, shared packages). Skipping steps is not allowed.
+## Development Commands
 
-### 🏆 Architectural Consolidation Status (September 2025)
-- ✅ **Database Standardization**: 100% MongoDB/Mongoose across ALL services
-- ✅ **Shared Models**: Centralized models in `kelmah-backend/shared/models/`
-- ✅ **Authentication**: API Gateway-based centralized authentication with service trust
-- ✅ **Service Boundaries**: Clean microservice separation with no cross-service dependencies
-- ✅ **Component Library**: Ghana-inspired design system with reusable UI components
-- ✅ **Legacy Cleanup**: All orphaned code and architectural remnants removed
-
-### Backend: Local Microservices Architecture ⚠️ FULLY CONSOLIDATED SEPTEMBER 2025
-- **API Gateway** (`kelmah-backend/api-gateway/`) - Central routing hub on **localhost** port 5000
-- **Services** (`kelmah-backend/services/`): auth, user, job, payment, messaging, review
-- **Tech Stack**: Express.js, **PURE MongoDB/Mongoose**, Socket.IO, JWT auth, Winston logging
-- **Key Pattern**: Each service has `server.js`, `routes/`, `controllers/`, `models/`, `services/`
-- **Shared Resources**: `kelmah-backend/shared/` contains models, middleware, and utilities
-- **Model Architecture**: All services use shared models via `require('../../../shared/models')`
-- **Authentication**: Centralized at API Gateway with service trust middleware
-- **⚠️ ARCHITECTURE UPDATE**: All microservices run on **localhost** during development
-- **External Access**: Via LocalTunnel (replaced ngrok) to localhost ports 5000-5006
-
-### Frontend: Domain-Driven Modules
-- **Modular Structure** (`kelmah-frontend/src/modules/`): auth, jobs, dashboard, worker, hirer, etc.
-- **Tech Stack**: React 18, Vite, Redux Toolkit, Material-UI, React Query, Socket.IO client
-- **Key Pattern**: Each module has `components/`, `pages/`, `services/`, `contexts/`, `hooks/`
-
-## Critical Architectural Patterns ⚠️ MANDATORY COMPLIANCE
-
-### Model Usage Patterns ✅ COMPLETED SEPTEMBER 2025
-- **ALWAYS USE**: `const { User, Job, Application } = require('../models')` for shared models
-- **NEVER USE**: `const User = require('../models/User')` (bypasses consolidation)
-- **Pattern**: All controllers must import from service's `models/index.js`
-- **Location**: Shared models centralized in `kelmah-backend/shared/models/`
-- **Verification**: All services use shared models via service model index
-
-### Database Patterns ✅ COMPLETED SEPTEMBER 2025
-- **ONLY MongoDB/Mongoose**: Zero SQL or Sequelize code permitted
-- **NEVER MIX**: No mixed database code in controllers
-- **Pattern**: Pure `Model.findById()`, `Model.create()`, etc.
-- **Configuration**: Database configs are MongoDB-only
-- **Verification**: 100% MongoDB standardization achieved
-
-### Service Boundary Patterns ✅ COMPLETED SEPTEMBER 2025
-- **Shared Resources**: Use `require('../../shared/middlewares/rateLimiter')`
-- **NEVER Cross-Service**: No `require('../../auth-service/middlewares/...')`
-- **Pattern**: All shared utilities in `kelmah-backend/shared/`
-- **Architecture**: Clean microservice boundaries with no violations
-- **Verification**: All cross-service imports eliminated
-
-### Import Path Conventions ✅ VERIFIED
-- **Frontend**: Use `@/modules/[domain]/...` for absolute imports
-- **Backend Models**: `const { Model } = require('../models')` (service index)
-- **Backend Shared**: `require('../../shared/[type]/[utility]')` pattern
-- **Verification**: Consistent import patterns across all services
-
-### API Routing & Design Best Practices ⚠️ MANDATORY PROFESSIONAL STANDARDS
-
-#### RESTful API Design Principles
-All API routing, path design, and flow implementations MUST adhere to professional REST standards:
-
-**1. Resource Naming Conventions**
-- ✅ **CORRECT**: `/api/jobs`, `/api/users/:id/profile`, `/api/applications/:id`
-- ❌ **INCORRECT**: `/api/getJobs`, `/api/user_profile`, `/api/application-detail`
-- **Rules**:
-  - Use plural nouns for collections: `/jobs`, `/users`, `/applications`
-  - Use hyphens for multi-word resources: `/worker-profiles`, `/job-categories`
-  - Never use verbs in URLs (verbs = HTTP methods)
-  - Use nested resources for relationships: `/jobs/:jobId/applications`
-
-**2. HTTP Method Usage**
-- **GET**: Retrieve resources (never modify data)
-  - Collection: `GET /api/jobs` → List all jobs
-  - Single: `GET /api/jobs/:id` → Get specific job
-  - Filtered: `GET /api/jobs?category=plumbing&location=Accra`
-- **POST**: Create new resources
-  - `POST /api/jobs` → Create new job posting
-  - `POST /api/jobs/:id/apply` → Create application (action endpoint)
-- **PUT/PATCH**: Update existing resources
-  - `PUT /api/jobs/:id` → Replace entire job
-  - `PATCH /api/jobs/:id` → Partial update
-- **DELETE**: Remove resources
-  - `DELETE /api/jobs/:id` → Delete job posting
-
-**3. Route Organization & Specificity Order**
-Routes MUST be ordered from most specific to least specific to prevent path shadowing:
-
-```javascript
-// ✅ CORRECT ORDER
-router.get('/my-jobs', authenticate, getMyJobs);           // Specific literal
-router.get('/featured', getFeaturedJobs);                  // Specific literal
-router.get('/search', searchJobs);                         // Specific literal
-router.get('/:id/applications', authenticate, getJobApps); // Param with path
-router.get('/:id', getJobById);                           // Param only (LAST)
-
-// ❌ INCORRECT ORDER (/:id shadows everything)
-router.get('/:id', getJobById);                           // ❌ This catches ALL routes
-router.get('/my-jobs', authenticate, getMyJobs);          // ❌ Never reached!
-router.get('/featured', getFeaturedJobs);                 // ❌ Never reached!
-```
-
-**4. Authentication & Authorization Middleware**
-- **Gateway-Authenticated Endpoints**: Always use `verifyGatewayRequest` middleware for service endpoints expecting `req.user`
-- **Public Endpoints**: Clearly mark public routes (no auth required)
-- **Role-Based Access**: Apply role checks after authentication
-  
-```javascript
-// ✅ CORRECT: Gateway trust for personal endpoints
-router.get('/me/credentials', verifyGatewayRequest, getUserCredentials);
-router.get('/me/availability', verifyGatewayRequest, getUserAvailability);
-
-// ✅ CORRECT: Role-specific endpoints
-router.post('/jobs', authenticate, requireRole('hirer'), createJob);
-router.patch('/jobs/:id', authenticate, requireRole('hirer'), updateJob);
-
-// ✅ CORRECT: Public endpoints (no middleware)
-router.get('/jobs', getPublicJobs); // Public job listings
-router.get('/jobs/:id', getJobDetails); // Public job details
-```
-
-**5. Response Structure Standards**
-All API responses MUST follow consistent structure:
-
-```javascript
-// ✅ SUCCESS Response (200, 201)
-{
-  "success": true,
-  "data": { /* resource or array */ },
-  "message": "Operation completed successfully", // Optional
-  "meta": { // Optional pagination/metadata
-    "total": 150,
-    "page": 1,
-    "limit": 20
-  }
-}
-
-// ✅ ERROR Response (4xx, 5xx)
-{
-  "success": false,
-  "error": {
-    "message": "Resource not found",
-    "code": "RESOURCE_NOT_FOUND",
-    "details": { /* additional context */ }
-  }
-}
-
-// ❌ INCORRECT: Inconsistent structure
-{ "jobs": [...] } // Missing success flag
-{ "error": "Something went wrong" } // String instead of object
-```
-
-**6. Status Code Usage**
-- **200 OK**: Successful GET, PUT, PATCH, DELETE
-- **201 Created**: Successful POST (resource created)
-- **204 No Content**: Successful DELETE (no body returned)
-- **400 Bad Request**: Invalid input/validation errors
-- **401 Unauthorized**: Missing or invalid authentication
-- **403 Forbidden**: Valid auth but insufficient permissions
-- **404 Not Found**: Resource doesn't exist
-- **409 Conflict**: Duplicate resource (e.g., email already exists)
-- **422 Unprocessable Entity**: Valid syntax but semantic errors
-- **500 Internal Server Error**: Server-side errors
-- **503 Service Unavailable**: Service temporarily down
-
-**7. API Gateway Routing Patterns**
-- **Consistent Prefix**: All external APIs use `/api/*` prefix
-- **Service Proxying**: Gateway routes to microservices transparently
-- **Error Handling**: Gateway catches service failures and returns 503/504
-- **Rate Limiting**: Applied at gateway level for all routes
-- **CORS**: Configured once at gateway, not per service
-
-```javascript
-// ✅ API Gateway service registry pattern
-const SERVICES = {
-  auth: 'http://localhost:5001',
-  user: 'http://localhost:5002',
-  job: 'http://localhost:5003',
-  messaging: 'http://localhost:5005'
-};
-
-// ✅ Proxy with error handling
-app.use('/api/jobs', createProxyMiddleware({
-  target: SERVICES.job,
-  changeOrigin: true,
-  pathRewrite: { '^/api/jobs': '' },
-  onError: (err, req, res) => {
-    res.status(503).json({
-      success: false,
-      error: { message: 'Job service unavailable', code: 'SERVICE_UNAVAILABLE' }
-    });
-  }
-}));
-```
-
-**8. Query Parameter Standards**
-- **Filtering**: `?category=plumbing&status=active`
-- **Pagination**: `?page=2&limit=20` or `?offset=40&limit=20`
-- **Sorting**: `?sort=createdAt&order=desc` or `?sort=-createdAt`
-- **Searching**: `?search=carpenter&location=Accra`
-- **Field Selection**: `?fields=title,description,budget` (if supported)
-
-**9. Versioning Strategy**
-- **Current**: No versioning (v1 implicit)
-- **Future**: Use `/api/v2/` prefix for breaking changes
-- **Never**: Mix versions in same codebase without clear separation
-
-**10. Error Investigation Protocol for API Issues**
-When debugging API routing problems, ALWAYS:
-
-1. **Check Route Order**: Verify specific routes come before parameterized routes
-2. **Verify Middleware Chain**: Confirm auth/validation middleware attached correctly
-3. **Test via Gateway**: All frontend calls go through `/api/*`, never directly to services
-4. **Check Service Health**: Ensure target microservice is running and healthy
-5. **Validate Request Format**: Confirm payload/params match expected schema
-6. **Inspect Logs**: Check both gateway and service logs for routing/proxy errors
-7. **Confirm Deployment**: Local fixes must be deployed before testing via tunnel/production
-
-**⚠️ MANDATORY CHECKLIST for API Routing Fixes:**
-- [ ] Routes ordered from specific to generic (literals before params)
-- [ ] Authentication middleware applied to protected endpoints
-- [ ] Gateway trust middleware used for endpoints expecting `req.user` from gateway
-- [ ] Response structure follows success/error standards
-- [ ] Appropriate HTTP status codes returned
-- [ ] Error handling covers validation, auth, and server errors
-- [ ] Public vs protected routes clearly distinguished
-- [ ] RESTful naming conventions followed (plural nouns, no verbs)
-- [ ] Gateway proxy configuration tested via `/api/*` routes
-- [ ] Changes verified in deployed environment (not just local)
-
-## Critical Development Workflows
-
-### Local Development Architecture ⚠️ UPDATED 2025-09-16
-```
-Local Development Machine:
-├── Frontend development (Vite dev server)
-├── Backend microservices (all localhost)
-│   ├── API Gateway (port 5000) ✅ Running
-│   ├── Auth Service (port 5001) ✅ Running  
-│   ├── User Service (port 5002) ✅ Running
-│   ├── Job Service (port 5003) ✅ Running
-│   ├── Payment Service (port 5004) ❌ Unhealthy (non-critical)
-│   ├── Messaging Service (port 5005) ✅ Running
-│   └── Review Service (port 5006) ✅ Running
-├── LocalTunnel management (replaced ngrok)
-└── Testing/debugging scripts
-```
-
-### Backend Development ⚠️ UPDATED
 ```bash
-# All services run LOCALLY now - start with provided scripts
-node start-api-gateway.js     # API Gateway on localhost:5000
-node start-auth-service.js    # Auth service on localhost:5001  
-node start-user-service.js    # User service on localhost:5002
-node start-job-service.js     # Job service on localhost:5003
-node start-messaging-service.js # Messaging service on localhost:5005
+# Frontend
+cd kelmah-frontend && npm run dev          # Vite on localhost:3000
+cd kelmah-frontend && npm run build        # Production build
 
-# Testing and debugging scripts
-node test-auth-and-notifications.js  # Comprehensive auth testing
-node create-gifty-user.js           # User setup for testing
+# Backend (individual services)
+node start-api-gateway.js                  # Gateway on localhost:5000
+node start-auth-service.js                 # Auth on localhost:5001
+node start-user-service.js                 # etc.
+
+# Tests
+npx jest --runTestsByPath services/[svc]/tests/[file].js --runInBand
+npm run test:backend                       # All backend tests
+npm run test:critical                      # Auth + payment + email only
+
+# Debugging
+node test-auth-and-notifications.js        # Full auth flow test
+node create-gifty-user.js                  # Provision test user
 ```
 
-### Frontend Development
-```bash
-# Development server (from kelmah-frontend/)
-npm run dev  # Vite dev server on :3000
+## Deployment
 
-# Build for production
-npm run build  # Creates build/ directory
-```
+- **Frontend**: Vercel — auto-deploys on push to main (~1-2 min)
+- **Backend**: Render — auto-deploys on push to main (~2-3 min)
+- **Tunnel**: LocalTunnel via `node start-localtunnel-fixed.js` (URL changes on restart, auto-updates configs)
+- Never ask users to deploy manually — pushes trigger auto-deployment
 
-### Service Communication ⚠️ UPDATED TO LOCALTUNNEL
-- **Frontend → API Gateway**: All API calls go through `/api/*` routes via LocalTunnel
-- **Gateway → Services**: Proxy routing with service registry pattern to localhost services
-- **Real-time**: Socket.IO client connects to messaging service via gateway proxy
-- **Current LocalTunnel**: `https://red-bobcat-90.loca.lt` (unified mode) - **CHANGES ON RESTART**
-- **Architecture**: Single tunnel for both HTTP and WebSocket traffic
-- **⚠️ URL Behavior**: LocalTunnel URL changes every time `start-localtunnel-fixed.js` is restarted - this is normal
+## Test Credentials
 
-### LocalTunnel URL Management Protocol ⚠️ CURRENT PRIMARY SYSTEM - CRITICAL
+| Account | Email | Password | Role |
+|---------|-------|----------|------|
+| Gifty | giftyafisa@gmail.com | `Vx7!Rk2#Lm9@Qa4` | hirer |
+| Others | \*@kelmah.test | `TestUser123!` | varies |
 
-### Current LocalTunnel Configuration (September 2025)
-The platform has transitioned to LocalTunnel as the primary development tunnel solution, offering improved reliability and unified mode operation.
+## Agent Operating Rules
 
-**⚠️ CURRENT SYSTEM**: LocalTunnel unified mode is now the default configuration for all development work.
+- **Investigate first**: read every file in the flow before editing — see `investigation.instructions.md`
+- **Run diagnostics yourself**: never ask the user to execute curl/test commands
+- **Test via gateway**: all API testing goes through `/api/*` routes
+- **Update spec-kit**: log work in `spec-kit/STATUS_LOG.md` before, during, and after
+- **No file deletion without proof**: search thoroughly to confirm a file is unused before removing
 
-- **Current Active URL**: `https://shaggy-snake-43.loca.lt` (changes on restart)
-- **URL Change Pattern**: `https://[random-words-numbers].loca.lt` assigned on each restart
-- **Mode**: Unified (HTTP + WebSocket on single domain)
-- **Automatic Update System**: `start-localtunnel-fixed.js` automatically detects URL changes and updates all configuration files
-- **Auto-Push Protocol**: System commits and pushes URL changes to trigger Vercel deployment automatically
-- **Unified Architecture**: 
-  - API Gateway tunnel (port 5000): `https://[subdomain].loca.lt` → All HTTP API requests
-  - WebSocket traffic: Same URL with `/socket.io` → Real-time Socket.IO connections (routed through API Gateway)
-- **Files Auto-Updated on URL Change**: 
-  - `kelmah-frontend/public/runtime-config.json` - Frontend runtime configuration
-  - Root `vercel.json` and `kelmah-frontend/vercel.json` rewrites configuration - Deployment routing
-  - `ngrok-config.json` - LocalTunnel state tracking (kept same filename for compatibility)
-  - `kelmah-frontend/src/config/securityConfig.js` - Security headers and CSP connect-src
-- **Zero Manual Intervention**: Never manually edit these files - let the protocol handle all updates
-- **Deployment Trigger**: URL changes auto-deploy to Vercel for immediate availability
-- **Usage**: Always run `node start-localtunnel-fixed.js` to start tunnels and auto-update all configs
-- **Advantages**: No browser warning pages, faster access, better development workflow, unified routing
-- **⚠️ Expected Behavior**: If APIs stop working after restart, check if URL changed and verify auto-update process completed
+## File-Specific Instructions
 
-### LocalTunnel vs Ngrok Comparison
-- **LocalTunnel Advantages**: No browser warnings, unified mode default, simpler setup
-- **Ngrok Legacy**: Still documented below for reference, but LocalTunnel is now preferred
-- **Compatibility**: Both systems use the same config file structure and update protocols
+Detailed patterns are in `.github/instructions/`:
 
-### Ngrok Protocol Documentation (LEGACY REFERENCE)
+| File | Loaded When |
+|------|-------------|
+| `backend.instructions.md` | Editing `kelmah-backend/**` |
+| `frontend.instructions.md` | Editing `kelmah-frontend/**` |
+| `api-design.instructions.md` | Designing or debugging REST endpoints |
+| `investigation.instructions.md` | Investigating bugs or auditing features |
+| `testing.instructions.md` | Writing or running `*.test.js` files |
 
-### Ngrok URL Management Protocol ⚠️ REPLACED BY LOCALTUNNEL - LEGACY REFERENCE
-**⚠️ LEGACY SYSTEM**: The information below is kept for reference. LocalTunnel is now the primary system.
+## Key Reference Docs
 
-- **Legacy URL Pattern**: `https://[random-id].ngrok-free.app` assigned on each restart
-- **Legacy Mode**: Dual tunnels (separate HTTP and WebSocket)
-- **Legacy Script**: `start-ngrok.js` (replaced by `start-localtunnel-fixed.js`)
+- Architecture: `spec-kit/REMOTE_SERVER_ARCHITECTURE.md`
+- Tunnel protocol: `spec-kit/LOCALTUNNEL_PROTOCOL_DOCUMENTATION.md`
+- Status log: `spec-kit/STATUS_LOG.md`
+- Messaging audit: `spec-kit/MESSAGING_SYSTEM_AUDIT_COMPLETE.md`
 
-## Key Configuration Patterns
+## Agent Operating Rules
 
-### Environment Management
-- **Frontend**: `src/config/environment.js` - Centralized config with service URL detection
-- **Backend**: Each service has its own `.env` with shared patterns
-- **Production**: Uses LocalTunnel tunneling for external API access (see `vercel.json` rewrites)
+- **Investigate first**: read every file in the flow before editing — see `investigation.instructions.md`
+- **Run diagnostics yourself**: never ask the user to execute curl/test commands
+- **Test via gateway**: all API testing goes through `/api/*` routes
+- **Update spec-kit**: log work in `spec-kit/STATUS_LOG.md` before, during, and after
+- **No file deletion without proof**: search thoroughly to confirm a file is unused before removing
 
-### Service Registry (API Gateway) ✅ CONSOLIDATED
-```javascript
-// From api-gateway/server.js - All services properly registered
-const SERVICES = {
-  auth: process.env.AUTH_SERVICE_URL || 'http://localhost:5001',
-  user: process.env.USER_SERVICE_URL || 'http://localhost:5002',
-  job: process.env.JOB_SERVICE_URL || 'http://localhost:5003',
-  messaging: process.env.MESSAGING_SERVICE_URL || 'http://localhost:5005',
-  payment: process.env.PAYMENT_SERVICE_URL || 'http://localhost:5004',
-  review: process.env.REVIEW_SERVICE_URL || 'http://localhost:5006'
-};
-```
+## File-Specific Instructions
 
-### Frontend API Configuration ✅ CONSOLIDATED
-```javascript
-// Centralized axios in src/modules/common/services/axios.js
-// Auto-detects environment and routes via gateway in production
-const baseURL = await getApiBaseUrl(); // '/api' in production, service URLs in dev
-```
+Detailed patterns are in `.github/instructions/`:
 
-## Domain-Specific Patterns
+| File | Loaded When |
+|------|-------------|
+| `backend.instructions.md` | Editing `kelmah-backend/**` |
+| `frontend.instructions.md` | Editing `kelmah-frontend/**` |
+| `api-design.instructions.md` | Designing or debugging REST endpoints |
+| `investigation.instructions.md` | Investigating bugs or auditing features |
+| `testing.instructions.md` | Writing or running `*.test.js` files |
 
-### Frontend Module Structure
-```
-src/modules/[domain]/
-├── components/        # Domain-specific React components
-│   └── common/       # Shared within module
-├── pages/            # Route-level components
-├── services/         # API calls, Redux slices
-├── contexts/         # React Context providers
-├── hooks/            # Custom React hooks
-└── utils/            # Domain utilities
-```
+## Key Reference Docs
 
-### Backend Service Structure ✅ CONSOLIDATED
-```
-services/[service-name]/
-├── server.js         # Express app entry point
-├── routes/           # Route definitions
-├── controllers/      # Request handlers  
-├── models/           # Service model index (imports shared models)
-│   └── index.js      # Imports from ../../../shared/models/
-├── services/         # Business logic
-├── middleware/       # Service-specific middleware
-└── utils/           # Utilities, logging, validation
-```
-
-### Shared Resources Structure ✅ CONSOLIDATED
-```
-shared/
-├── models/           # Centralized Mongoose schemas
-│   ├── User.js       # Shared User model
-│   ├── Job.js        # Shared Job model
-│   ├── Application.js# Shared Application model
-│   └── index.js      # Export all shared models
-├── middlewares/      # Shared middleware (rateLimiter, etc.)
-└── utils/           # Shared utilities and helpers
-```
-
-### Import Path Conventions ✅ UPDATED
-- **Frontend**: Use `@/modules/[domain]/...` for absolute imports
-- **Module imports**: `import { Component } from '@/modules/common/components/Component'`
-- **Backend Models**: `const { User } = require('../models')` (service index)
-- **Backend Shared**: `require('../../shared/[type]/[utility]')` pattern
-
-## State Management Patterns
-
-### Redux Store Structure (Frontend)
-- **Modular slices**: Each domain has its own slice in `modules/[domain]/services/`
-- **Global store**: `src/store/index.js` combines all domain slices
-- **Async actions**: Use Redux Toolkit's `createAsyncThunk` pattern
-
-### Authentication Flow ⚠️ UPDATED 2025-09-16
-1. **Login**: Frontend → Gateway `/api/auth/login` → Auth Service
-2. **JWT Storage**: Uses `secureStorage` utility (localStorage/sessionStorage)
-3. **Axios Interceptors**: Auto-attach tokens, handle refresh logic
-4. **Socket.IO Auth**: Token passed via connection auth
-
-### Authentication Debugging Protocol ⚠️ CRITICAL
-**Common Issues & Solutions:**
-
-#### Credential Management
-- **Test User**: `giftyafisa@gmail.com` with password `Vx7!Rk2#Lm9@Qa4` ⚠️ CORRECT PASSWORD
-- **Email Verification**: Must be set to `true` in database to avoid 403 errors
-- **Password Hashing**: Uses bcrypt with 12 salt rounds
-- **Setup Script**: Use `node create-gifty-user.js` to ensure test user exists
-- **Account Lockout**: 30-minute lockout after multiple failed attempts
-
-#### Authentication Testing
-- **Comprehensive Test**: Use `node test-auth-and-notifications.js` for full auth flow
-- **Health Checks**: Verify all services running before auth testing
-- **Token Validation**: Check JWT tokens work for protected endpoints
-- **Common Errors**:
-  - 401 "Incorrect email or password" → Check credentials and user existence
-  - 403 "Email not verified" → Set `isEmailVerified: true` in database
-  - 404 on protected endpoints → Check API Gateway routing
-  - 401 on protected endpoints → Check JWT token validity
-
-#### Service Dependencies
-- **Auth Service**: Must be running on localhost:5001
-- **User Service**: Required for profile data (localhost:5002)
-- **Messaging Service**: Required for notifications (localhost:5005)
-- **Database**: MongoDB connection required for user authentication
-
-## Deployment & Infrastructure
-
-### Production Setup
-- **Frontend**: Deployed on Vercel with API rewrites to backend
-- **Backend**: Services run on Render with internal load balancing
-- **Database**: MongoDB clusters per service
-- **Real-time**: Socket.IO with Redis adapter for scaling
-- **⚠️ AUTO-DEPLOYMENT**: All services are configured for automatic deployment on git push to main branch
-  - **Frontend (Vercel)**: Auto-deploys on push to main (~1-2 minutes)
-  - **Backend (Render)**: Auto-deploys on push to main (~2-3 minutes)
-  - **NEVER** tell user "wait for deployment" - fixes are automatically deployed
-  - **NEVER** ask user to manually deploy - system handles all deployments
-  - **ASSUME**: Any fix pushed to GitHub is automatically deploying/deployed
-
-### Key Files for Deployment
-- `kelmah-frontend/vercel.json` - Frontend deployment config with API rewrites
-- `kelmah-backend/api-gateway/server.js` - Service registry and routing
-- `.env` files - Service-specific environment variables
-
-### Development Debugging ⚠️ UPDATED 2025-09-16
-- **Health Checks**: All services expose `/health`, `/health/ready`, `/health/live` endpoints
-- **Logging**: Winston logger with structured JSON output
-- **Service Status**: Use `src/utils/serviceHealthCheck.js` for frontend service monitoring
-- **Testing**: Jest-based testing with coverage thresholds (90% critical, 70% non-critical)
-- **Debug Scripts**: Use dedicated scripts for service testing (`test-*.js` files in root)
-- **Authentication Testing**: Use `test-auth-and-notifications.js` for comprehensive auth flow testing
-- **User Management**: Use `create-gifty-user.js` for test user setup and credential management
-
-## Common Gotchas
-
-1. **Import Paths**: After refactoring, use new modular paths (`@/modules/[domain]/...`)
-2. **Service URLs**: Frontend detects environment and routes through gateway in production
-3. **CORS**: API Gateway handles CORS for all services
-4. **Socket.IO**: Connects through gateway proxy, not directly to messaging service
-5. **Rate Limiting**: Configured at API Gateway level, affects all services
-
-## Error Investigation & Fix Protocol
-
-### Systematic Error Investigation Process
-1. **Error Analysis**: List ALL files involved in test/error reports - no guesswork, read all files completely
-2. **Root Cause Location**: Read listed files thoroughly to locate exact error lines in code
-3. **Cross-Reference Scanning**: Scan related files to confirm actual error cause
-4. **Flow Validation**: Confirm complete file process flow and logic before proposing fixes
-5. **Solution Verification**: Validate fix accuracy by scanning ALL files in the process flow
-
-### Critical Investigation Rules
-- **Always read files**: For accuracy, read all files related to the subject matter
-- **No assumptions**: Base solutions on actual code analysis, not assumptions
-- **Complete flow understanding**: Trace entire process flow before implementing fixes
-- **Proactive Testing**: Execute diagnostic commands yourself using terminal tools - do not ask user to run tests
-- **Self-Verification**: Perform your own health checks, endpoint tests, and status verification
-
-### Database Schema vs Data Validation ⚠️ CRITICAL - ALWAYS CHECK FIRST
-
-**LESSON LEARNED**: Before debugging mongoose/database connection issues (buffering timeouts, operation failures), ALWAYS verify that existing data in the database matches the schema requirements.
-
-**Common Symptoms of Schema/Data Mismatch:**
-- `Operation buffering timed out` despite valid connection (readyState=1)
-- Mongoose operations hang indefinitely
-- Inserts/updates fail silently or with cryptic errors
-- Schema validation errors on existing documents
-
-**Mandatory Database Validation Checklist:**
-1. **Connect directly to MongoDB** and inspect actual documents:
-   ```javascript
-   // Use provided connection string to verify data structure
-   const { MongoClient } = require('mongodb');
-   const client = new MongoClient(MONGODB_URI);
-   const docs = await client.db('kelmah_platform').collection('jobs').find({}).limit(5).toArray();
-   console.log(JSON.stringify(docs, null, 2));
-   ```
-
-2. **Compare schema required fields vs existing data:**
-   - List ALL fields marked as `required: true` in the Mongoose schema
-   - Check if EVERY existing document has those fields
-   - Pay special attention to nested objects (e.g., `bidding.minBidAmount`, `locationDetails.region`)
-
-3. **Check enum value cases:**
-   - Schema enum: `['open', 'in-progress', 'completed']`
-   - Database value: `"Open"` ❌ MISMATCH - case sensitivity matters!
-   - Fix: Either update schema enum OR migrate existing data
-
-4. **Validate nested object requirements:**
-   - If schema has `locationDetails.region: { required: true }`
-   - Document must have `locationDetails: { region: "value" }`, not just `locationDetails: {}`
-
-**Schema Design Best Practices (Prevent Future Mismatches):**
-```javascript
-// ❌ BAD: Strict required without defaults
-minBidAmount: { type: Number, required: true }
-
-// ✅ GOOD: Smart defaults for graceful handling
-minBidAmount: { type: Number, default: 100 }
-
-// ✅ GOOD: Required with sensible default
-region: { type: String, enum: [...regions], default: "Greater Accra" }
-```
-
-**Fix Protocol When Mismatch Found:**
-1. Create migration script to fix existing documents
-2. Update schema to have smart defaults where appropriate
-3. Run migration script against production database
-4. Verify all documents now pass schema validation
-5. THEN test the original operation
-
-**⚠️ REMEMBER**: The database is the source of truth. If mongoose operations fail, CHECK THE ACTUAL DATA FIRST before assuming code/connection issues.
-
-## AI Agent Operational Rules (Augmented)
-
-### Strict Investigation Protocol (MANDATORY)
-1. List all files involved in the Test/Error report. No guesswork; read all of them fully.
-2. Read the listed files and identify the exact lines/areas causing the issue.
-3. Scan related files to confirm the true root cause and interactions.
-4. Confirm the end-to-end flow and logic before proposing or implementing a fix.
-5. Confirm the fix precisely addresses the root cause by re-scanning all involved files and re-running verification.
-
-### Agent Diagnostics Policy
-- Agents MUST perform diagnostics themselves (terminal/web requests) and must NOT ask the user to run commands.
-- Use the current LocalTunnel host to access remote services; servers may be hosted locally or remotely.
-- Always test via the API Gateway (`/api/*`) routes through the current tunnel URL.
-- For LocalTunnel: No special headers required (advantage over ngrok)
-- For Legacy Ngrok: Include `ngrok-skip-browser-warning: true` header when needed
-- Use provided credentials for auth flows:
-  - Gifty password: `Vx7!Rk2#Lm9@Qa4`
-  - All other users: `TestUser123!`
-- Database reference for investigations when needed:
-  - `MONGODB_URI=mongodb+srv://TonyGate:0553366244Aj@kelmah-messaging.xyqcurn.mongodb.net/kelmah_platform?retryWrites=true&w=majority&appName=Kelmah-messaging`
-
-### Deployment/Verification Checklist for Backend Route Issues
-- Ensure route specificity order is correct (e.g., `/:id` goes LAST so it doesn't shadow specific routes like `/my-jobs`).
-- After code changes, restart/redeploy the specific microservice that the API Gateway/ngrok targets.
-- Verify via curl:
-  - Login to get token at `/api/auth/login`
-  - Call protected endpoints (e.g., `/api/jobs/my-jobs`) with `Authorization: Bearer <token>`
-- If 404/503 persists through the Gateway, compare local routes vs deployed instance and inspect service logs for auth/role middleware and route mounting issues.
-
-### Backend Deployment Mismatch Diagnosis
-
-**503 Service Unavailable Pattern:**
-1. **Gateway Status**: Check if API Gateway is responding (usually is)
-2. **Service Mismatch**: Local code fixed, but deployed service behind ngrok/proxy still has old code
-3. **Route Existence**: Verify endpoint exists in deployed service vs local version
-4. **Deployment Status**: Check if service needs restart/redeploy with latest code
-
-**Diagnosis Steps:**
-```bash
-# 1. Check Gateway health (via current tunnel - LocalTunnel or ngrok)
-# LocalTunnel example:
-curl https://shaggy-snake-43.loca.lt/health
-
-# Legacy ngrok example:
-curl https://298fb9b8181e.ngrok-free.app/health -H "ngrok-skip-browser-warning: true"
-
-# 2. Check specific service health via gateway
-# LocalTunnel:
-curl https://shaggy-snake-43.loca.lt/api/health/aggregate
-
-# Legacy ngrok:
-curl https://298fb9b8181e.ngrok-free.app/api/health/aggregate -H "ngrok-skip-browser-warning: true"
-
-# 3. Test problematic endpoint via gateway
-# LocalTunnel:
-curl https://shaggy-snake-43.loca.lt/api/[endpoint-path]
-
-# Legacy ngrok:
-curl https://298fb9b8181e.ngrok-free.app/api/[endpoint-path] -H "ngrok-skip-browser-warning: true"
-
-# 4. Compare local vs deployed routes
-# Local: check kelmah-backend/services/[service]/routes/
-# Remote: test actual service behavior via current tunnel
-```
-
-**⚠️ DIAGNOSTIC TESTING PROTOCOL: AI agents should PERFORM diagnostic tests themselves using terminal commands, not ask the user to run them. Use run_in_terminal or terminal-tools to execute verification commands directly.**
-
-**Resolution Protocol:**
-1. **Identify Mismatch**: Compare local route definitions vs deployed service behavior
-2. **Code Verification**: Confirm local code has the fix  
-3. **Perform Tests**: Execute diagnostic commands yourself to verify service status
-4. **Deployment Request**: Request service restart/redeploy from project owner only if tests confirm mismatch
-5. **Wait for Deployment**: Do not attempt service operations - owner handles deployment
-5. **Verify Fix**: Test endpoint after redeployment
-
-## User Experience & Accessibility Guidelines
-
-### Target User Considerations
-- **Primary Users**: Vocational workers (carpenters, masons, plumbers, electricians, etc.)
-- **Accessibility**: Many users may be illiterate or have limited formal education
-- **Design Principle**: Make interfaces intuitive, simple, and easy to use
-
-### Professional UI/UX Standards
-- **Responsive Design**: Ensure all components work across devices
-- **Functional Components**: Every clickable element must be properly functional
-- **Professional Appearance**: Maintain clean, professional visual design
-- **Navigation Flow**: Verify smooth navigation between pages and sections
-
-### Development Quality Assurance
-- **Component Functionality**: Test all interactive elements work as intended
-- **Responsive Testing**: Verify responsiveness across different screen sizes
-- **Deep Scanning**: Thoroughly scan all files involved in each area of the codebase
-- **Flow Validation**: Check navigation and user flow patterns work correctly
-
-## Frontend Enhancement Protocol
-
-## Spec-Kit Documentation System ⚠️ MANDATORY REQUIREMENT
-
-### Continuous Spec-Kit Updates Required
-All AI agents MUST continuously update the `spec-kit/` directory with current work status and project state.
-
-**⚠️ CRITICAL**: Always update spec-kit documents when working on any system issues, fixes, or development work.
-
-### Required Spec-Kit Workflow for ALL Development Work
-1. **Before Starting Work**: Update relevant spec-kit documents with current task and status
-2. **During Development**: Document discoveries, issues found, and interim progress
-3. **After Completion**: Mark tasks as COMPLETED ✅ with verification details and current project state
-4. **System Changes**: Update architecture documents when system understanding changes
-5. **Status Tracking**: Always maintain current project status in `STATUS_LOG.md`
-
-### Spec-Kit Structure ✅ UPDATED SEPTEMBER 2025
-```
-spec-kit/
-├── STATUS_LOG.md              # Completed fixes and their status
-├── SEPTEMBER_2025_CRITICAL_FIXES_COMPLETE.md # Complete critical fixes documentation
-├── MESSAGING_SYSTEM_AUDIT.md  # Complete messaging architecture audit
-├── NGROK_ARCHITECTURE_ANALYSIS.md # Ngrok protocol and routing analysis  
-├── NGROK_FIXES_COMPLETE.md    # Summary of all ngrok-related fixes
-├── REMOTE_SERVER_ARCHITECTURE.md # Updated architecture documentation
-└── [issue-specific].md        # Individual problem analysis and fixes
-```
-
-### Required Spec-Kit Workflows
-1. **Status Logging**: Document all completed fixes in `STATUS_LOG.md`
-2. **Architecture Updates**: Create comprehensive analysis documents for major architectural discoveries
-3. **Fix Summaries**: Create complete fix documentation with before/after states
-4. **Issue Tracking**: Create dedicated documents for complex debugging sessions
-5. **Reference Material**: Use spec-kit documents as authoritative source for system understanding
-6. **Current State Tracking**: Always update spec-kit with current project status and ongoing work
-
-### Spec-Kit Documentation Standards
-- **Comprehensive Analysis**: Include complete problem analysis, root cause identification, and solution details
-- **Executable Examples**: Include working curl commands, code snippets, and configuration examples
-- **Status Tracking**: Mark items as COMPLETED ✅, IN-PROGRESS 🔄, or PENDING ❌
-- **Cross-References**: Link related spec-kit documents and reference external dependencies
-- **Validation Steps**: Include verification commands and expected outputs
-- **Current State Documentation**: Always document what you're working on and current project status
-- **Progress Updates**: Update relevant spec-kit documents with progress on ongoing tasks
-
-### Critical Spec-Kit Documents for Reference
-- **Remote Architecture**: `REMOTE_SERVER_ARCHITECTURE.md` - Authoritative source for deployment understanding
-- **LocalTunnel Protocol**: `LOCALTUNNEL_PROTOCOL_DOCUMENTATION.md` - Complete unified tunnel configuration and automated update system
-- **Legacy Ngrok Protocol**: `NGROK_PROTOCOL_DOCUMENTATION.md` - Complete tunnel configuration and automated update system (legacy reference)
-- **System Status**: `STATUS_LOG.md` - Track of all completed system improvements and current project state
-- **Messaging Audit**: `MESSAGING_SYSTEM_AUDIT_COMPLETE.md` - Complete frontend/backend communication analysis
-
-### Critical Spec-Kit Documents for Reference
-- **Remote Architecture**: `REMOTE_SERVER_ARCHITECTURE.md` - Authoritative source for deployment understanding
-- **LocalTunnel Protocol**: `LOCALTUNNEL_PROTOCOL_DOCUMENTATION.md` - Complete unified tunnel configuration and automated update system
-- **Legacy Ngrok Protocol**: `NGROK_PROTOCOL_DOCUMENTATION.md` - Complete tunnel configuration and automated update system (legacy reference)
-- **System Status**: `STATUS_LOG.md` - Track of all completed system improvements and current project state
-- **Messaging Audit**: `MESSAGING_SYSTEM_AUDIT_COMPLETE.md` - Complete frontend/backend communication analysis
-- **Critical Fixes**: `SEPTEMBER_2025_CRITICAL_FIXES_COMPLETE.md` - Comprehensive documentation of architectural consolidation completion
-
-### Continuous Spec-Kit Updates Required
-- **Before Starting Work**: Update STATUS_LOG.md with current task status and project state
-- **During Development**: Document discoveries, issues found, and interim findings in relevant spec-kit files
-- **After Completion**: Mark tasks as COMPLETED ✅ with verification details and current project state
-- **System Changes**: Update architecture documents when system understanding changes
-- **LocalTunnel Protocol**: Reference LOCALTUNNEL_PROTOCOL_DOCUMENTATION.md for URL management and automatic updates
-- **Legacy Ngrok Protocol**: Reference NGROK_PROTOCOL_DOCUMENTATION.md for legacy tunnel configuration (historical reference)
-
-**⚠️ MANDATORY: Always check and update relevant spec-kit documents when working on system issues and maintain current project status.**
-
-### Module Protection
-- **Preserve Structure**: Do NOT modify anything in `@/modules` directory
-- **Extension Focus**: Improve other frontend areas that need enhancement
-
-### Continuous Improvement Process
-1. **Professional Standards**: Make pages look professional and ensure functionality
-2. **Component Verification**: Scan and verify all page components work correctly
-3. **Knowledge-Based Decisions**: Reference project documentation for informed decisions
-4. **Visual Enhancement**: Improve visual display of pages and components
-5. **Navigation Testing**: Check flow between different pages works correctly
-
-### File Management Protocol
-- **Deep Search Required**: Before deleting files, perform thorough search to confirm they're unused
-- **Documentation Reference**: Use project knowledge from documentation for decision-making
-- **Professional Standards**: Apply professional judgment based on project purpose
-
-## UI Component Data Flow Tracing Protocol ⚠️ MANDATORY FOR ALL UI WORK
-
-### Objective
-For every UI component examined or fixed, trace the complete data flow from user interaction to the component's assigned frontend API. Report any breakages, mismatches, or unclear responsibilities and suggest fixes.
-
-### Component-to-API Mapping Requirements
-
-**For Each UI Component:**
-1. **Component Identification**
-   - Identify exact file/component code responsible for UI element
-   - Document component location: `kelmah-frontend/src/modules/[domain]/components/[component].jsx`
-   - Note component type: page, container, presentational, or utility
-
-2. **API Connection Mapping**
-   - Locate function, hook, service, or utility calling the API endpoint
-   - Document service file: `kelmah-frontend/src/modules/[domain]/services/[service].js`
-   - Map UI action → Redux action/hook → API function → Backend endpoint
-   - Specify: URL path, HTTP method, payload shape, response shape
-
-3. **Data Flow Documentation Template**
-   ```
-   UI Component: [ComponentName.jsx]
-   Location: kelmah-frontend/src/modules/[domain]/components/
-   
-   User Action: [click Apply, enter search, select filter, etc.]
-   ↓
-   Event Handler: [handleApply(), onSearch(), handleFilterChange()]
-   ↓
-   State Management: [Redux dispatch, useState update, Context change]
-   ↓
-   API Service: kelmah-frontend/src/modules/[domain]/services/[service].js
-   ↓
-   API Call: [POST /api/jobs/:id/apply, GET /api/jobs?search=term]
-   ↓
-   Backend Endpoint: kelmah-backend/services/[service]/routes/[route].js
-   ↓
-   Expected Response: { success: boolean, data: [...], message: string }
-   ↓
-   UI Update: [Show success message, update list, redirect user]
-   ```
-
-### Data and Action Flow Verification
-
-**Input Validation:**
-- ✅ Verify user input triggers expected state updates
-- ✅ Check Redux/Context/Store actions dispatch correctly
-- ✅ Confirm right frontend API functions called with correct params
-- ✅ Validate payload format matches backend expectations
-
-**Response Handling:**
-- ✅ Check data from backend passed down correctly (props/context/state)
-- ✅ Verify UI renders received data as intended (no stale/missing data)
-- ✅ Ensure dynamic updates reflect live backend state
-- ✅ Validate error responses trigger appropriate UI feedback
-
-**State Synchronization:**
-- ✅ Confirm no unnecessary middleman layers between UI and API
-- ✅ Check for redundant fetches or unclear state sync
-- ✅ Verify loading states work correctly
-- ✅ Ensure optimistic updates (if any) reconcile with server response
-
-### API Success, Error, and Loading States
-
-**Required UI States:**
-1. **Loading State**
-   - ✅ Spinner/skeleton screen during API call
-   - ✅ Disabled buttons to prevent duplicate requests
-   - ✅ Loading indicator placement and visibility
-
-2. **Success State**
-   - ✅ Success message/toast notification
-   - ✅ UI update reflects new data
-   - ✅ Redirect or navigation if required
-   - ✅ Clear any error states
-
-3. **Error State**
-   - ✅ Clear error message displayed to user
-   - ✅ Error boundary coverage for critical failures
-   - ✅ Retry mechanism available
-   - ✅ Fallback UI or graceful degradation
-
-### Actionable Output Format
-
-**For Each Feature Audited, Provide:**
-
-```markdown
-## [Feature Name] Data Flow Analysis
-
-### UI Component Chain
-- **Component File**: `kelmah-frontend/src/modules/jobs/components/JobCard.jsx`
-- **Service File**: `kelmah-frontend/src/modules/jobs/services/jobsService.js`
-- **Redux Slice**: `kelmah-frontend/src/modules/jobs/services/jobSlice.js`
-
-### Flow Map
-```
-User clicks "Apply Now" button
-  ↓
-JobCard.jsx: handleApply() @ line 245
-  ↓
-dispatch(applyToJob(jobId))
-  ↓
-jobSlice.js: applyToJob thunk @ line 180
-  ↓
-jobsService.js: applyToJob(jobId) @ line 320
-  ↓
-axios.post('/api/jobs/:id/apply', { coverLetter, resume })
-  ↓
-Backend: POST /api/jobs/:id/apply
-  ↓
-Response: { success: true, application: {...} }
-  ↓
-Redux state updated: applications array
-  ↓
-JobCard re-renders: "Applied" badge shown
-```
-
-### Issues Found
-❌ **Issue 1**: Loading state not implemented
-- **Location**: JobCard.jsx line 245
-- **Fix**: Add `isLoading` state check before showing button
-
-✅ **Issue 2**: Error handling exists but generic
-- **Location**: jobSlice.js line 195
-- **Recommendation**: Add specific error messages for 401, 403, 404
-
-⚠️ **Issue 3**: No optimistic update
-- **Location**: JobCard.jsx
-- **Enhancement**: Show "Applied" immediately, rollback if API fails
-
-### Recommendations
-1. Create reusable `useJobApplication` hook
-2. Standardize error messages across job features
-3. Add retry logic for failed applications
-```
-
-### Common Data Flow Anti-Patterns to Flag
-
-**❌ Red Flags:**
-1. UI directly calls backend URL (bypassing service layer)
-2. API response not validated before rendering
-3. Multiple components fetching same data independently
-4. State updates not synchronized across components
-5. Error states missing or poorly handled
-6. Loading states inconsistent or missing
-7. Stale data shown after updates
-8. No error boundaries around critical flows
-
-**✅ Best Practices:**
-1. Single service file per domain handles all API calls
-2. Redux/Context centralizes shared state
-3. Custom hooks encapsulate common patterns
-4. Consistent error/loading/success state handling
-5. Optimistic updates with rollback capability
-6. Clear separation: UI → State → Service → API
-7. Type checking on API responses (if using TypeScript)
-8. Comprehensive error boundaries
-
-### File & Code Reference Standards
-
-**Always Specify:**
-- ✅ Exact file paths from project root
-- ✅ Line numbers for functions/components mentioned
-- ✅ Import statements showing dependencies
-- ✅ Related files in the data flow chain
-- ✅ Backend endpoint corresponding to frontend call
-
-**Example Reference:**
-```
-Component: kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx (line 145)
-Handler: handleSearch (line 245-267)
-Service: kelmah-frontend/src/modules/jobs/services/jobsService.js (line 42)
-API Call: getJobs({ search, category, location })
-Backend: kelmah-backend/services/job-service/routes/jobRoutes.js (line 28)
-Controller: kelmah-backend/services/job-service/controllers/jobController.js (line 65)
-```
-
-### Data Flow Improvement Recommendations
-
-**When Suggesting Improvements:**
-1. **Reusable Hooks**: Propose custom hooks for repeated patterns
-   - Example: `useJobSearch`, `useJobApplication`, `useJobFilters`
-
-2. **Unified Patterns**: Identify inconsistencies across features
-   - Example: "Jobs use Redux, but Worker profiles use Context - consider standardizing"
-
-3. **Performance**: Flag unnecessary re-renders or redundant API calls
-   - Example: "Search triggers API call on every keystroke - debounce recommended"
-
-4. **Error Recovery**: Suggest retry mechanisms and fallbacks
-   - Example: "Add exponential backoff for failed job submissions"
-
-5. **Type Safety**: Recommend validation for API responses
-   - Example: "Add Zod schema validation for job API responses"
-
-**⚠️ MANDATORY: Document complete data flow for every UI component touched during development or debugging.**
-
-## Project Context & Purpose
-
-### Platform Mission
-Kelmah connects vocational job seekers (carpenters, masons, plumbers, electricians, etc.) with potential hirers through:
-- Efficient job matching and worker discovery
-- Seamless communication between parties
-- Modern, responsive design for easy access
-- Revolutionary approach to vocational job hiring
-
-### Core Features
-- User authentication (workers/hirers)
-- Job listing and application system  
-- Advanced worker search and filtering
-- Real-time messaging system
-- Review and rating system
-- Contract and payment management
-- Map-based navigation and location services
-
-Pay attention.
+- Architecture: `spec-kit/REMOTE_SERVER_ARCHITECTURE.md`
+- Tunnel protocol: `spec-kit/LOCALTUNNEL_PROTOCOL_DOCUMENTATION.md`
+- Status log: `spec-kit/STATUS_LOG.md`
+- Messaging audit: `spec-kit/MESSAGING_SYSTEM_AUDIT_COMPLETE.md`

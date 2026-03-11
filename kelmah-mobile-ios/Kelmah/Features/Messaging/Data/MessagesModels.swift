@@ -56,3 +56,15 @@ struct SendMessagePayload: Encodable {
         self.messageType = messageType
     }
 }
+
+struct CreateConversationPayload: Encodable {
+    let participantIds: [String]
+    let jobId: String?
+    let type: String
+
+    init(participantIds: [String], jobId: String? = nil, type: String = "direct") {
+        self.participantIds = participantIds
+        self.jobId = jobId
+        self.type = type
+    }
+}

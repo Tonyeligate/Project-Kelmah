@@ -5,6 +5,8 @@ struct JobDetailView: View {
     let jobId: String
     let userRole: KelmahUserRole
     let onApply: (String) -> Void
+    let onMessageHirer: ((String, String?) async -> Void)?
+    @State private var isStartingConversation = false
 
     var body: some View {
         Group {
@@ -90,8 +92,24 @@ struct JobDetailView: View {
                             }
                         }
 
+                        if userRole == .worker, job.hirerId?.isEmpty == false {
+                            Button {
+                                guard let onMessageHirer else { return }
+                                Task {
+                                    isStartingConversation = true
+                                    await onMessageHirer(job.summary.id, job.hirerId)
+                                    isStartingConversation = false
+                                }
+                            } label: {
+                                Label(isStartingConversation ? "Opening chat" : "Message Hirer", systemImage: "message.fill")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                            .disabled(isStartingConversation)
+                        }
+
                         if userRole == .worker {
-                            Text("Read the job. If it fits you, tap Apply Now.")
+                            Text("Read the job. Apply now or message the hirer.")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -99,7 +117,7 @@ struct JobDetailView: View {
                                 .background(KelmahTheme.card)
                                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                         } else {
-                            Text("Hirer mode is for market review. Workers are the ones who can apply.")
+                            Text("This is your job post view. Workers can apply from their side.")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)

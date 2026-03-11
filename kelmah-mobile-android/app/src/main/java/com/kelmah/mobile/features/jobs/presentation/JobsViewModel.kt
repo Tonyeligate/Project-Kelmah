@@ -55,13 +55,12 @@ class JobsViewModel @Inject constructor(
     val uiState: StateFlow<JobsUiState> = _uiState.asStateFlow()
 
     private var hasBootstrapped = false
+    private var currentRole: KelmahUserRole = KelmahUserRole.WORKER
 
-    init {
-        bootstrap()
-    }
-
-    fun bootstrap() {
-        if (hasBootstrapped) return
+    fun bootstrap(role: KelmahUserRole) {
+        val roleChanged = currentRole != role
+        currentRole = role
+        if (hasBootstrapped && !roleChanged) return
         hasBootstrapped = true
         loadCategories()
         refreshJobs()
@@ -129,7 +128,7 @@ class JobsViewModel @Inject constructor(
                             _uiState.update {
                                 it.copy(
                                     isLoadingHomeFeed = false,
-                                    hirerJobs = result.data,
+                                    hirerJobs = result.data.jobs,
                                     homeErrorMessage = null,
                                     recommendationState = RecommendationFeedState.IDLE,
                                     recommendationContextMessage = null,
@@ -180,10 +179,17 @@ class JobsViewModel @Inject constructor(
         _uiState.update { it.copy(activeFeed = feed, infoMessage = null, errorMessage = null) }
         if (feed == JobsFeed.SAVED && _uiState.value.savedJobs.isEmpty()) {
             loadSavedJobs()
+        } else if (feed == JobsFeed.DISCOVER) {
+            refreshJobs()
         }
     }
 
     fun refreshJobs() {
+        if (currentRole == KelmahUserRole.HIRER) {
+            refreshHirerJobs()
+            return
+        }
+
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
@@ -227,26 +233,48 @@ class JobsViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingMore = true, errorMessage = null) }
-            // Re-read state inside coroutine to avoid stale filters/page after user changes
             val currentState = _uiState.value
-            when (val result = jobsRepository.getJobs(currentState.filters, page = currentState.currentPage + 1)) {
-                is ApiResult.Success -> {
-                    val mergedJobs = LinkedHashMap<String, JobSummary>()
-                    (_uiState.value.discoverJobs + result.data.jobs).forEach { job ->
-                        mergedJobs[job.id] = job
+            if (currentRole == KelmahUserRole.HIRER) {
+                when (val result = jobsRepository.getMyJobs(page = currentState.currentPage + 1, limit = 12)) {
+                    is ApiResult.Success -> {
+                        val mergedJobs = LinkedHashMap<String, JobSummary>()
+                        (_uiState.value.hirerJobs + result.data.jobs).forEach { job ->
+                            mergedJobs[job.id] = job
+                        }
+                        _uiState.update {
+                            it.copy(
+                                isLoadingMore = false,
+                                hirerJobs = mergedJobs.values.toList(),
+                                currentPage = result.data.page,
+                                totalPages = result.data.totalPages,
+                                totalItems = result.data.totalItems,
+                            )
+                        }
                     }
-                    _uiState.update {
-                        it.copy(
-                            isLoadingMore = false,
-                            discoverJobs = mergedJobs.values.toList(),
-                            currentPage = result.data.page,
-                            totalPages = result.data.totalPages,
-                            totalItems = result.data.totalItems,
-                        )
+                    is ApiResult.Error -> {
+                        _uiState.update { it.copy(isLoadingMore = false, errorMessage = result.message) }
                     }
                 }
-                is ApiResult.Error -> {
-                    _uiState.update { it.copy(isLoadingMore = false, errorMessage = result.message) }
+            } else {
+                when (val result = jobsRepository.getJobs(currentState.filters, page = currentState.currentPage + 1)) {
+                    is ApiResult.Success -> {
+                        val mergedJobs = LinkedHashMap<String, JobSummary>()
+                        (_uiState.value.discoverJobs + result.data.jobs).forEach { job ->
+                            mergedJobs[job.id] = job
+                        }
+                        _uiState.update {
+                            it.copy(
+                                isLoadingMore = false,
+                                discoverJobs = mergedJobs.values.toList(),
+                                currentPage = result.data.page,
+                                totalPages = result.data.totalPages,
+                                totalItems = result.data.totalItems,
+                            )
+                        }
+                    }
+                    is ApiResult.Error -> {
+                        _uiState.update { it.copy(isLoadingMore = false, errorMessage = result.message) }
+                    }
                 }
             }
         }
@@ -395,6 +423,14 @@ class JobsViewModel @Inject constructor(
         _uiState.update { it.copy(errorMessage = null, infoMessage = null) }
     }
 
+    fun reset() {
+        hasBootstrapped = false
+        currentRole = KelmahUserRole.WORKER
+        _uiState.value = JobsUiState(
+            categories = listOf(JobCategory(id = "all", name = "All")),
+        )
+    }
+
     private fun loadCategories() {
         viewModelScope.launch {
             when (val result = jobsRepository.getCategories()) {
@@ -408,6 +444,45 @@ class JobsViewModel @Inject constructor(
                         _uiState.update {
                             it.copy(categories = listOf(JobCategory(id = "all", name = "All")))
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun refreshHirerJobs() {
+        viewModelScope.launch {
+            val existingJobs = _uiState.value.hirerJobs
+            _uiState.update {
+                it.copy(
+                    isLoading = existingJobs.isEmpty(),
+                    isRefreshing = existingJobs.isNotEmpty(),
+                    errorMessage = null,
+                    infoMessage = null,
+                    currentPage = 1,
+                )
+            }
+            when (val result = jobsRepository.getMyJobs(page = 1, limit = 12)) {
+                is ApiResult.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            isRefreshing = false,
+                            hirerJobs = result.data.jobs,
+                            currentPage = result.data.page,
+                            totalPages = result.data.totalPages,
+                            totalItems = result.data.totalItems,
+                            errorMessage = null,
+                        )
+                    }
+                }
+                is ApiResult.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            isRefreshing = false,
+                            errorMessage = result.message,
+                        )
                     }
                 }
             }

@@ -1,7 +1,7 @@
 import { api } from '../../../services/apiClient';
 
 const API_URL = '/search';
-const JOB_RECOMMENDATIONS_ENDPOINT = '/jobs/recommendations';
+const JOB_RECOMMENDATIONS_ENDPOINT = '/jobs/recommendations/personalized';
 const SAVED_SEARCHES_STORAGE_PREFIX = 'kelmah_saved_searches';
 
 const readSavedSearches = (userId) => {
@@ -39,12 +39,11 @@ const smartSearchService = {
    * @param {Object} options - Search options and filters
    * @returns {Promise<Object>} - Job recommendations with AI insights
    */
-  getSmartJobRecommendations: async (userId, options = {}) => {
+  getSmartJobRecommendations: async (_userId, options = {}) => {
     try {
       const { signal, ...queryOptions } = options || {};
       const response = await api.get(JOB_RECOMMENDATIONS_ENDPOINT, {
         params: {
-          userId,
           ...queryOptions,
         },
         signal,
@@ -59,6 +58,7 @@ const smartSearchService = {
         insights: payload?.insights || null,
         totalRecommendations: payload?.totalRecommendations,
         averageMatchScore: payload?.averageMatchScore,
+        recommendationSource: response?.data?.meta?.recommendationSource || null,
       };
     } catch (error) {
       if (error?.response?.status === 403) {

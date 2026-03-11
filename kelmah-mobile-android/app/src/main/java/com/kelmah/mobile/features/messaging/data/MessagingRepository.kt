@@ -51,6 +51,25 @@ class MessagingRepository @Inject constructor(
         ApiResult.Success(parseSentMessage(response, conversationId))
     }
 
+    suspend fun createConversation(
+        participantId: String,
+        jobId: String? = null,
+    ): ApiResult<String> = executeAuthorizedApiCall(sessionCoordinator) {
+        val response = messagingApiService.createConversation(
+            CreateConversationRequest(
+                participantIds = listOf(participantId),
+                jobId = jobId,
+            ),
+        )
+        val data = response.nestedObject("data") ?: response
+        val conversationId = data.nestedObject("conversation")?.string("id")
+            ?: data.nestedObject("conversation")?.string("_id")
+            ?: data.string("conversationId")
+            ?: data.string("id")
+            ?: throw IllegalStateException("Conversation payload was invalid")
+        ApiResult.Success(conversationId)
+    }
+
     private fun parseConversations(response: JsonObject): List<ConversationSummary> {
         val userId = currentUserId()
         val dataNode = response["data"]

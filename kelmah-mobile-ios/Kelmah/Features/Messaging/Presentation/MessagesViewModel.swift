@@ -6,6 +6,7 @@ final class MessagesViewModel: ObservableObject {
     @Published var isLoadingConversations = false
     @Published var isLoadingMessages = false
     @Published var isSending = false
+    @Published var isCreatingConversation = false
     @Published var conversations: [MessageConversation] = []
     @Published var selectedConversation: MessageConversation?
     @Published var messages: [MessageThreadItem] = []
@@ -182,6 +183,22 @@ final class MessagesViewModel: ObservableObject {
             draftMessage = ""
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    func createConversation(participantId: String, jobId: String? = nil) async -> String? {
+        isCreatingConversation = true
+        errorMessage = nil
+        infoMessage = nil
+        defer { isCreatingConversation = false }
+
+        do {
+            let conversationId = try await repository.createConversation(participantId: participantId, jobId: jobId)
+            await refreshConversations()
+            return conversationId
+        } catch {
+            errorMessage = error.localizedDescription
+            return nil
         }
     }
 

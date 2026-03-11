@@ -66,20 +66,28 @@ fun JobsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbars = remember { SnackbarHostState() }
-    val jobs = if (uiState.activeFeed == JobsFeed.DISCOVER) uiState.discoverJobs else uiState.savedJobs
     val isWorker = userRole == KelmahUserRole.WORKER
-    val screenTitle = if (isWorker) "Find Work" else "Hiring Market"
-    val discoverLabel = if (isWorker) "Find" else "Market"
-    val savedLabel = if (isWorker) "Saved" else "Watchlist"
+    val jobs = when {
+        uiState.activeFeed == JobsFeed.SAVED -> uiState.savedJobs
+        isWorker -> uiState.discoverJobs
+        else -> uiState.hirerJobs
+    }
+    val screenTitle = if (isWorker) "Find Work" else "Your Jobs"
+    val discoverLabel = if (isWorker) "Find" else "Jobs"
+    val savedLabel = if (isWorker) "Saved" else "Saved"
     val emptySavedDescription = if (isWorker) {
         "Jobs you save will stay here."
     } else {
-        "Saved listings stay here so you can compare pay, work, and demand later."
+        "Saved jobs stay here so you can reopen them fast."
     }
     val emptyDiscoverDescription = if (isWorker) {
         "Try fewer filters or tap refresh."
     } else {
-        "Try fewer filters or tap refresh to see more live jobs."
+        "Your newest hiring posts will show here."
+    }
+
+    LaunchedEffect(userRole) {
+        viewModel.bootstrap(userRole)
     }
 
     LaunchedEffect(uiState.errorMessage) {
@@ -141,14 +149,14 @@ fun JobsScreen(
             } else {
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
                     Text(
-                        text = "Use this tab to check pay, demand, and saved listings before you hire.",
+                        text = "Open your jobs. Review details. Save important ones.",
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
             }
 
-            if (uiState.activeFeed == JobsFeed.DISCOVER) {
+            if (isWorker && uiState.activeFeed == JobsFeed.DISCOVER) {
                 OutlinedTextField(
                     value = uiState.filters.search,
                     onValueChange = viewModel::updateSearch,
@@ -199,9 +207,9 @@ fun JobsScreen(
             } else if (jobs.isEmpty()) {
                 EmptyJobsState(
                     title = if (uiState.activeFeed == JobsFeed.SAVED) {
-                        if (isWorker) "No saved jobs" else "No saved market listings yet"
+                        if (isWorker) "No saved jobs" else "No saved jobs yet"
                     } else {
-                        if (isWorker) "No jobs found" else "No market listings found"
+                        if (isWorker) "No jobs found" else "No jobs yet"
                     },
                     description = if (uiState.activeFeed == JobsFeed.SAVED) {
                         emptySavedDescription
@@ -233,7 +241,7 @@ fun JobsScreen(
                                 if (uiState.isLoadingMore) {
                                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                                 } else {
-                                    Text(if (isWorker) "Show More Jobs" else "Show More Jobs")
+                                    Text(if (isWorker) "Show More Jobs" else "Show More")
                                 }
                             }
                         }

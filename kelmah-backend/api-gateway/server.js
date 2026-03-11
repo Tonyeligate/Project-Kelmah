@@ -1537,21 +1537,26 @@ const gracefulShutdown = (signal) => {
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-// Connect to MongoDB, then start server
-connectDB()
-  .then(() => {
-    logger.info('✅ API Gateway connected to MongoDB');
-    startServer();
-  })
-  .catch((err) => {
-    logger.error('❌ MongoDB connection error:', err);
-    if (process.env.ALLOW_START_WITHOUT_DB === 'true') {
-      logger.warn('⚠️ Starting API Gateway without database (authentication will fail)');
+const shouldAutoBootstrapGateway =
+  process.env.SKIP_GATEWAY_BOOTSTRAP !== 'true' && process.env.NODE_ENV !== 'test';
+
+if (shouldAutoBootstrapGateway) {
+  // Connect to MongoDB, then start server
+  connectDB()
+    .then(() => {
+      logger.info('✅ API Gateway connected to MongoDB');
       startServer();
-    } else {
-      logger.error('🚨 Cannot start API Gateway without database connection');
-      process.exit(1);
-    }
-  });
+    })
+    .catch((err) => {
+      logger.error('❌ MongoDB connection error:', err);
+      if (process.env.ALLOW_START_WITHOUT_DB === 'true') {
+        logger.warn('⚠️ Starting API Gateway without database (authentication will fail)');
+        startServer();
+      } else {
+        logger.error('🚨 Cannot start API Gateway without database connection');
+        process.exit(1);
+      }
+    });
+}
 
 module.exports = app;

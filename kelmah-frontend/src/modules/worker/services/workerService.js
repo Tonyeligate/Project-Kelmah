@@ -1,6 +1,7 @@
 import { api } from '../../../services/apiClient';
 
 const WORKERS_BASE = '/users/workers';
+const WORKER_SEARCH_ENDPOINT = `${WORKERS_BASE}/search`;
 
 const workerPath = (workerId, suffix = '') =>
   `/users/workers/${workerId}${suffix}`;
@@ -125,6 +126,63 @@ const extractWorkerPagination = (payload = {}, requestParams = {}) => {
   };
 };
 
+const pushUniqueSuggestion = (suggestions, seen, suggestion) => {
+  if (!suggestion?.text) {
+    return;
+  }
+
+  const key = `${suggestion.type || 'search'}:${String(suggestion.text).trim().toLowerCase()}`;
+  if (seen.has(key)) {
+    return;
+  }
+
+  seen.add(key);
+  suggestions.push(suggestion);
+};
+
+const buildWorkerSearchSuggestions = (workers = [], query = '') => {
+  const normalizedQuery = String(query || '').trim().toLowerCase();
+  const suggestions = [];
+  const seen = new Set();
+
+  workers.forEach((worker) => {
+    const normalizedWorker = normalizeWorkerSearchRecord(worker);
+    const locationText = extractLocationString(normalizedWorker.location) || normalizedWorker.city || '';
+    const professionText = normalizedWorker.profession || normalizedWorker.title || '';
+    const workerName = normalizedWorker.name || 'Skilled Worker';
+
+    if (professionText) {
+      pushUniqueSuggestion(suggestions, seen, {
+        type: 'search',
+        text: professionText,
+        subText: [workerName, locationText].filter(Boolean).join(' • '),
+      });
+    }
+
+    normalizeWorkerSkills(normalizedWorker)
+      .filter((skill) => !normalizedQuery || skill.toLowerCase().includes(normalizedQuery))
+      .slice(0, 2)
+      .forEach((skill) => {
+        pushUniqueSuggestion(suggestions, seen, {
+          type: 'skill',
+          text: skill,
+          subText: [professionText || workerName, locationText].filter(Boolean).join(' • '),
+        });
+      });
+
+    if (locationText && (!normalizedQuery || locationText.toLowerCase().includes(normalizedQuery))) {
+      pushUniqueSuggestion(suggestions, seen, {
+        type: 'location',
+        text: locationText,
+        subText: professionText || workerName,
+        data: locationText,
+      });
+    }
+  });
+
+  return suggestions.slice(0, 5);
+};
+
 const buildWorkerSearchQueryParams = (params = {}) => {
   const query = {
     page: params.page || 1,
@@ -138,14 +196,14 @@ const buildWorkerSearchQueryParams = (params = {}) => {
     params.workNeeded ||
     params.keywords;
   if (keyword) {
-    query.keywords = keyword;
+    query.query = keyword;
   }
 
   const locationValue = extractLocationString(params.location);
   if (locationValue) {
-    query.city = locationValue.split(',')[0].trim();
+    query.location = locationValue.split(',')[0].trim();
   } else if (params.city) {
-    query.city = params.city;
+    query.location = params.city;
   }
 
   const latitude =
@@ -183,7 +241,7 @@ const buildWorkerSearchQueryParams = (params = {}) => {
 
   const minRating = params.minRating || params.rating || params.minimumRating;
   if (minRating) {
-    query.rating = minRating;
+    query.minRating = minRating;
   }
 
   const maxRate = params.budgetMax || params.maxRate;
@@ -235,7 +293,7 @@ const workerService = {
 
   queryWorkerDirectory: async (searchParams = {}, requestOptions = {}) => {
     const queryParams = buildWorkerSearchQueryParams(searchParams);
-    const response = await api.get(WORKERS_BASE, {
+    const response = await api.get(WORKER_SEARCH_ENDPOINT, {
       params: queryParams,
       signal: requestOptions.signal,
     });
@@ -246,6 +304,25 @@ const workerService = {
       pagination: extractWorkerPagination(payload, queryParams),
       payload,
     };
+  },
+
+  getWorkerSearchSuggestions: async (query, requestOptions = {}) => {
+    const normalizedQuery = String(query || '').trim();
+    if (normalizedQuery.length < 2) {
+      return [];
+    }
+
+    const { workers } = await workerService.queryWorkerDirectory(
+      {
+        query: normalizedQuery,
+        limit: 5,
+        page: 1,
+        sortBy: 'relevance',
+      },
+      requestOptions,
+    );
+
+    return buildWorkerSearchSuggestions(workers, normalizedQuery);
   },
 
   /**

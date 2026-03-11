@@ -29,6 +29,10 @@ import {
   ListItemIcon,
   Badge,
   Tooltip,
+  Pagination,
+  FormControl,
+  Select,
+  MenuItem,
   alpha,
 } from '@mui/material';
 import {
@@ -89,6 +93,46 @@ const STATUS_COLORS = {
   pending: 'warning',
   accepted: 'success',
   rejected: 'error',
+};
+
+const DEFAULT_APPLICATION_COUNTS = {
+  pending: 0,
+  accepted: 0,
+  rejected: 0,
+  under_review: 0,
+  withdrawn: 0,
+  total: 0,
+};
+
+const APPLICATIONS_PAGE_SIZE = 10;
+const APPLICATIONS_PAGE_SIZE_OPTIONS = [10, 20, 50];
+const APPLICATION_SORT_OPTIONS = [
+  { value: 'newest', label: 'Newest first' },
+  { value: 'highest-rated', label: 'Highest rated applicant' },
+  { value: 'proposed-rate', label: 'Highest proposed rate' },
+];
+const APPLICATION_STATUS_TABS = ['pending', 'accepted', 'rejected'];
+
+const normalizeApplicationsTab = (value) =>
+  APPLICATION_STATUS_TABS.includes(value) ? value : 'pending';
+
+const normalizeApplicationsSort = (value) => {
+  const normalizedValue = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  return APPLICATION_SORT_OPTIONS.some((option) => option.value === normalizedValue)
+    ? normalizedValue
+    : 'newest';
+};
+
+const normalizeApplicationsPageSize = (value) => {
+  const parsedValue = Number.parseInt(value, 10);
+  return APPLICATIONS_PAGE_SIZE_OPTIONS.includes(parsedValue)
+    ? parsedValue
+    : APPLICATIONS_PAGE_SIZE;
+};
+
+const normalizeApplicationsPage = (value) => {
+  const parsedValue = Number.parseInt(value, 10);
+  return Number.isInteger(parsedValue) && parsedValue > 0 ? parsedValue : 1;
 };
 
 const isBiddingJob = (job) => Boolean(job?.bidding?.bidStatus);
@@ -242,6 +286,10 @@ function ApplicationManagementPage() {
   const { enqueueSnackbar } = useSnackbar();
   const [searchParams, setSearchParams] = useSearchParams();
   const urlJobId = searchParams.get('jobId');
+  const urlActiveTab = normalizeApplicationsTab(searchParams.get('tab'));
+  const urlCurrentPage = normalizeApplicationsPage(searchParams.get('page'));
+  const urlPageSize = normalizeApplicationsPageSize(searchParams.get('limit'));
+  const urlSortBy = normalizeApplicationsSort(searchParams.get('sort'));
 
   const [jobs, setJobs] = useState([]);
 
@@ -269,9 +317,24 @@ function ApplicationManagementPage() {
 
   // ── State ──────────────────────────────────────────────────────
   const [selectedJobId, setSelectedJobId] = useState(urlJobId || null);
-  const [activeTab, setActiveTab] = useState('pending');
-  const [applicationsByJob, setApplicationsByJob] = useState({});
+  const [activeTab, setActiveTab] = useState(urlActiveTab);
+  const [applications, setApplications] = useState([]);
+  const [summary, setSummary] = useState({
+    totalJobs: 0,
+    totalApplications: 0,
+    countsByStatus: DEFAULT_APPLICATION_COUNTS,
+  });
+  const [pageSize, setPageSize] = useState(urlPageSize);
+  const [sortBy, setSortBy] = useState(urlSortBy);
+  const [currentPage, setCurrentPage] = useState(urlCurrentPage);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    limit: APPLICATIONS_PAGE_SIZE,
+  });
   const [initialLoading, setInitialLoading] = useState(true);
+  const [applicationsLoading, setApplicationsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
@@ -280,71 +343,177 @@ function ApplicationManagementPage() {
   const [actionType, setActionType] = useState('');
   const [showJobList, setShowJobList] = useState(!isMobile);
 
-  // Sync URL param and redirect bid-based jobs to the bid review screen.
+  // Sync URL-derived pane state and redirect bid-based jobs to the bid review screen.
   useEffect(() => {
-    if (!urlJobId) return;
+    const nextJobId = urlJobId || null;
 
-    const matchingJob = dedupedJobs.find((job) => (job.id || job._id) === urlJobId);
+    const matchingJob = urlJobId
+      ? dedupedJobs.find((job) => (job.id || job._id) === urlJobId)
+      : null;
     if (matchingJob && isBiddingJob(matchingJob)) {
       navigate(`/hirer/jobs/${urlJobId}/bids`, { replace: true });
       return;
     }
 
-    if (urlJobId !== selectedJobId) {
-      setSelectedJobId(urlJobId);
+    if (nextJobId !== selectedJobId) {
+      setSelectedJobId(nextJobId);
     }
-  }, [dedupedJobs, navigate, selectedJobId, urlJobId]);
 
-  // ── Fetch jobs and their applications on mount ─────────────────
+    if (urlActiveTab !== activeTab) {
+      setActiveTab(urlActiveTab);
+    }
+
+    if (urlCurrentPage !== currentPage) {
+      setCurrentPage(urlCurrentPage);
+    }
+
+    if (urlPageSize !== pageSize) {
+      setPageSize(urlPageSize);
+    }
+
+    if (urlSortBy !== sortBy) {
+      setSortBy(urlSortBy);
+    }
+  }, [
+    activeTab,
+    currentPage,
+    dedupedJobs,
+    navigate,
+    pageSize,
+    selectedJobId,
+    sortBy,
+    urlActiveTab,
+    urlCurrentPage,
+    urlJobId,
+    urlPageSize,
+    urlSortBy,
+  ]);
+
   useEffect(() => {
-    let cancelled = false;
+    const nextParams = new URLSearchParams(searchParams);
 
-    const load = async () => {
-      setInitialLoading(true);
+    if (selectedJobId) {
+      nextParams.set('jobId', selectedJobId);
+    } else {
+      nextParams.delete('jobId');
+    }
+
+    if (activeTab !== 'pending') {
+      nextParams.set('tab', activeTab);
+    } else {
+      nextParams.delete('tab');
+    }
+
+    if (currentPage > 1) {
+      nextParams.set('page', String(currentPage));
+    } else {
+      nextParams.delete('page');
+    }
+
+    if (pageSize !== APPLICATIONS_PAGE_SIZE) {
+      nextParams.set('limit', String(pageSize));
+    } else {
+      nextParams.delete('limit');
+    }
+
+    if (sortBy !== 'newest') {
+      nextParams.set('sort', sortBy);
+    } else {
+      nextParams.delete('sort');
+    }
+
+    if (nextParams.toString() !== searchParams.toString()) {
+      setSearchParams(nextParams, { replace: true });
+    }
+  }, [activeTab, currentPage, pageSize, searchParams, selectedJobId, setSearchParams, sortBy]);
+
+  const loadApplicationsView = useCallback(async ({ isCancelled = () => false } = {}) => {
+      setApplicationsLoading(true);
       setError(null);
 
       try {
-        const summary = await hirerService.getApplicationsSummary();
-        if (cancelled) return;
+        const response = await hirerService.getApplicationsSummary({
+          jobId: selectedJobId || undefined,
+          status: activeTab,
+          page: currentPage,
+          limit: pageSize,
+          sort: sortBy,
+        });
+        if (isCancelled()) return;
 
-        const summaryJobs = Array.isArray(summary?.jobs) ? summary.jobs : [];
-        const normalizedMap = Object.entries(summary?.applicationsByJob || {}).reduce((acc, [jobId, rawApplications]) => {
-          const job = summaryJobs.find((entry) => (entry.id || entry._id) === jobId);
-          acc[jobId] = (Array.isArray(rawApplications) ? rawApplications : []).map((app) =>
-            normalizeApplication(app, jobId, job?.title),
-          );
-          return acc;
-        }, {});
+        const summaryJobs = Array.isArray(response?.jobs) ? response.jobs : [];
+        const currentApplications = (Array.isArray(response?.applications) ? response.applications : []).map((app) =>
+          normalizeApplication(app, app?.jobId, app?.jobTitle),
+        );
+        const nextPagination = {
+          currentPage: response?.pagination?.currentPage ?? 1,
+          totalPages: response?.pagination?.totalPages ?? 1,
+          totalItems: response?.pagination?.totalItems ?? 0,
+          limit: response?.pagination?.limit ?? pageSize,
+        };
 
         setJobs(summaryJobs);
-        setApplicationsByJob(normalizedMap);
+        setSummary(response?.summary || {
+          totalJobs: 0,
+          totalApplications: 0,
+          countsByStatus: DEFAULT_APPLICATION_COUNTS,
+        });
+        setApplications(currentApplications);
+        setPagination(nextPagination);
 
-        // Auto-select first job with applications if none specified in URL
-        if (!urlJobId) {
+        if (nextPagination.limit !== pageSize) {
+          setPageSize(nextPagination.limit);
+        }
+
+        if (response?.filters?.sort && response.filters.sort !== sortBy) {
+          setSortBy(response.filters.sort);
+        }
+
+        if (nextPagination.currentPage !== currentPage) {
+          setCurrentPage(nextPagination.currentPage);
+        }
+
+        if (!urlJobId && !selectedJobId) {
           const firstWithApps = summaryJobs.find((job) => {
-            const jobId = job.id || job._id;
-            return (normalizedMap[jobId] || []).length > 0;
+            return Number(job?.applicationCounts?.total) > 0;
           });
           if (firstWithApps) {
             const fid = firstWithApps.id || firstWithApps._id;
             setSelectedJobId(fid);
           }
         }
-
-        setInitialLoading(false);
       } catch (loadError) {
-        if (cancelled) return;
+        if (isCancelled()) return;
         setJobs([]);
-        setApplicationsByJob({});
+        setSummary({
+          totalJobs: 0,
+          totalApplications: 0,
+          countsByStatus: DEFAULT_APPLICATION_COUNTS,
+        });
+        setApplications([]);
+        setPagination({
+          currentPage: 1,
+          totalPages: 1,
+          totalItems: 0,
+          limit: pageSize,
+        });
         setError(loadError?.response?.data?.message || loadError.message || 'Failed to load applications');
-        setInitialLoading(false);
+      } finally {
+        if (!isCancelled()) {
+          setInitialLoading(false);
+          setApplicationsLoading(false);
+        }
       }
-    };
-    load();
+    }, [activeTab, currentPage, pageSize, selectedJobId, sortBy, urlJobId]);
+
+  // ── Fetch jobs and their applications ──────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    loadApplicationsView({ isCancelled: () => cancelled });
     return () => {
       cancelled = true;
     };
-  }, [urlJobId]);
+  }, [loadApplicationsView]);
 
   // ── Derived data ───────────────────────────────────────────────
   const selectedJob = useMemo(
@@ -352,48 +521,74 @@ function ApplicationManagementPage() {
     [allJobs, selectedJobId],
   );
 
-  const currentJobApps = useMemo(
-    () => (selectedJobId ? applicationsByJob[selectedJobId] || [] : []),
-    [applicationsByJob, selectedJobId],
-  );
-
-  // In "All Jobs" mode we show every app across all jobs
-  const allAppsFlat = useMemo(
-    () =>
-      !selectedJobId
-        ? Object.values(applicationsByJob).flat()
-        : [],
-    [applicationsByJob, selectedJobId],
-  );
-
-  const appsToFilter = selectedJobId ? currentJobApps : allAppsFlat;
-
-  const filteredApps = useMemo(
-    () => appsToFilter.filter((app) => app.status === activeTab),
-    [appsToFilter, activeTab],
-  );
+  const filteredApps = useMemo(() => applications, [applications]);
 
   const tabCounts = useMemo(
-    () => ({
-      pending: appsToFilter.filter((a) => a.status === 'pending').length,
-      accepted: appsToFilter.filter((a) => a.status === 'accepted').length,
-      rejected: appsToFilter.filter((a) => a.status === 'rejected').length,
-    }),
-    [appsToFilter],
+    () => {
+      const sourceCounts = selectedJobId
+        ? (selectedJob?.applicationCounts || DEFAULT_APPLICATION_COUNTS)
+        : (summary?.countsByStatus || DEFAULT_APPLICATION_COUNTS);
+
+      return {
+        pending: sourceCounts.pending || 0,
+        accepted: sourceCounts.accepted || 0,
+        rejected: sourceCounts.rejected || 0,
+      };
+    },
+    [selectedJob, selectedJobId, summary],
   );
 
   const totalAppCounts = useMemo(() => {
     const counts = {};
-    for (const [jobId, apps] of Object.entries(applicationsByJob)) {
-      counts[jobId] = apps.length;
-    }
+    allJobs.forEach((job) => {
+      const jobId = job.id || job._id;
+      counts[jobId] = job?.applicationCounts?.total || 0;
+    });
     return counts;
-  }, [applicationsByJob]);
+  }, [allJobs]);
+
+  const activeTabCountsByJob = useMemo(() => {
+    const counts = {};
+    allJobs.forEach((job) => {
+      const jobId = job.id || job._id;
+      counts[jobId] = job?.applicationCounts?.[activeTab] || 0;
+    });
+    return counts;
+  }, [activeTab, allJobs]);
+
+  const visibleRange = useMemo(() => {
+    if (!filteredApps.length) {
+      return { start: 0, end: 0 };
+    }
+
+    const start = ((pagination.currentPage || 1) - 1) * (pagination.limit || pageSize) + 1;
+    return {
+      start,
+      end: start + filteredApps.length - 1,
+    };
+  }, [filteredApps.length, pageSize, pagination.currentPage, pagination.limit]);
+
+  const selectedScopeTotal = selectedJobId
+    ? (selectedJob?.applicationCounts?.total || 0)
+    : (summary?.totalApplications || 0);
 
   // Auto-select first filtered app when job or tab changes
   useEffect(() => {
     if (!initialLoading) {
-      setSelectedApplication(filteredApps.length > 0 ? filteredApps[0] : null);
+      setSelectedApplication((current) => {
+        if (!filteredApps.length) {
+          return null;
+        }
+
+        if (current) {
+          const stillVisible = filteredApps.find((app) => app.id === current.id);
+          if (stillVisible) {
+            return stillVisible;
+          }
+        }
+
+        return filteredApps[0];
+      });
     }
   }, [filteredApps, initialLoading]);
 
@@ -401,16 +596,12 @@ function ApplicationManagementPage() {
   const handleSelectJob = (jobId) => {
     setSelectedJobId(jobId);
     setActiveTab('pending');
+    setCurrentPage(1);
     setSelectedApplication(null);
-    if (jobId) {
-      setSearchParams({ jobId });
-    } else {
-      setSearchParams({});
-    }
     if (isMobile) setShowJobList(false);
   };
 
-  const handleStatusUpdate = async () => {
+  const handleStatusUpdate = useCallback(async () => {
     if (!selectedApplication) return;
     setUpdating(true);
     try {
@@ -423,14 +614,7 @@ function ApplicationManagementPage() {
       setShowReviewDialog(false);
       setFeedback('');
 
-      // Move app to new status in local state
-      setApplicationsByJob((prev) => {
-        const jobId = selectedApplication.jobId;
-        const apps = (prev[jobId] || []).map((app) =>
-          app.id === selectedApplication.id ? { ...app, status: actionType } : app,
-        );
-        return { ...prev, [jobId]: apps };
-      });
+      await loadApplicationsView();
 
       setError(null);
       enqueueSnackbar(
@@ -443,7 +627,7 @@ function ApplicationManagementPage() {
     } finally {
       setUpdating(false);
     }
-  };
+  }, [actionType, enqueueSnackbar, feedback, loadApplicationsView, selectedApplication]);
 
   const handleOpenReviewDialog = (type) => {
     setActionType(type);
@@ -523,8 +707,8 @@ function ApplicationManagementPage() {
                 sx={{ maxWidth: 400, cursor: 'pointer' }}
               />
               <Typography variant="body2" color="text.secondary">
-                {currentJobApps.length} application
-                {currentJobApps.length !== 1 ? 's' : ''}
+                {selectedScopeTotal} application
+                {selectedScopeTotal !== 1 ? 's' : ''}
               </Typography>
             </Box>
           )}
@@ -608,10 +792,7 @@ function ApplicationManagementPage() {
               >
                 <ListItemIcon sx={{ minWidth: 36 }}>
                   <Badge
-                    badgeContent={Object.values(applicationsByJob).reduce(
-                      (s, a) => s + a.length,
-                      0,
-                    )}
+                    badgeContent={summary?.totalApplications || 0}
                     color="primary"
                     max={99}
                   >
@@ -661,6 +842,7 @@ function ApplicationManagementPage() {
           <Tabs
             value={activeTab}
             onChange={(e, v) => {
+              setCurrentPage(1);
               setActiveTab(v);
               setSelectedApplication(null);
             }}
@@ -724,6 +906,12 @@ function ApplicationManagementPage() {
               </Alert>
             )}
 
+            {applicationsLoading && !initialLoading && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 1.5 }}>
+                <CircularProgress size={20} />
+              </Box>
+            )}
+
             {!initialLoading &&
               (() => {
                 // Single job selected — flat list
@@ -732,7 +920,7 @@ function ApplicationManagementPage() {
                     return (
                       <EmptyAppsPanel
                         tab={activeTab}
-                        hasAnyApps={currentJobApps.length > 0}
+                        hasAnyApps={(selectedJob?.applicationCounts?.total || 0) > 0}
                         navigate={navigate}
                       />
                     );
@@ -753,7 +941,7 @@ function ApplicationManagementPage() {
                   return (
                     <EmptyAppsPanel
                       tab={activeTab}
-                      hasAnyApps={allAppsFlat.length > 0}
+                      hasAnyApps={(summary?.totalApplications || 0) > 0}
                       navigate={navigate}
                     />
                   );
@@ -797,7 +985,7 @@ function ApplicationManagementPage() {
                       </Typography>
                       <Chip
                         size="small"
-                        label={group.apps.length}
+                        label={activeTabCountsByJob[jobId] || group.apps.length}
                         sx={{ height: 18, fontSize: '0.65rem' }}
                       />
                     </Box>
@@ -813,6 +1001,90 @@ function ApplicationManagementPage() {
                   </Box>
                 ));
               })()}
+          </Box>
+
+          <Box
+            sx={{
+              px: 1.5,
+              py: 1.25,
+              borderTop: `1px solid ${theme.palette.divider}`,
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: { xs: 'stretch', sm: 'center' },
+                justifyContent: 'space-between',
+                gap: 1,
+                flexDirection: { xs: 'column', sm: 'row' },
+              }}
+            >
+              <Typography variant="caption" color="text.secondary" display="block">
+                {selectedScopeTotal > 0
+                  ? `Showing ${visibleRange.start}-${visibleRange.end} of ${pagination.totalItems || selectedScopeTotal} ${selectedJobId ? 'applications' : 'applications in this view'}`
+                  : 'No applications to show'}
+              </Typography>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <FormControl size="small" sx={{ minWidth: 150 }}>
+                  <Select
+                    value={sortBy}
+                    onChange={(event) => {
+                      setCurrentPage(1);
+                      setSelectedApplication(null);
+                      setSortBy(event.target.value);
+                    }}
+                    displayEmpty
+                    inputProps={{ 'aria-label': 'Sort applications' }}
+                  >
+                    {APPLICATION_SORT_OPTIONS.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl size="small" sx={{ minWidth: 92 }}>
+                  <Select
+                    value={pageSize}
+                    onChange={(event) => {
+                      setCurrentPage(1);
+                      setSelectedApplication(null);
+                      setPageSize(Number(event.target.value));
+                    }}
+                    inputProps={{ 'aria-label': 'Applications per page' }}
+                  >
+                    {APPLICATIONS_PAGE_SIZE_OPTIONS.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option} / page
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            </Box>
+            {pagination.totalPages > 1 && (
+              <Pagination
+                page={pagination.currentPage || currentPage}
+                count={pagination.totalPages}
+                size={isMobile ? 'small' : 'medium'}
+                siblingCount={isMobile ? 0 : 1}
+                boundaryCount={1}
+                onChange={(_, page) => {
+                  if (page !== currentPage) {
+                    setCurrentPage(page);
+                    setSelectedApplication(null);
+                  }
+                }}
+                sx={{ mt: 1, alignSelf: 'center' }}
+              />
+            )}
           </Box>
         </Box>
 

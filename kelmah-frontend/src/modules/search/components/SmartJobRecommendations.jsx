@@ -829,8 +829,7 @@ const SmartJobRecommendations = ({
           <Button
             variant="outlined"
             onClick={() => {
-              // Navigate to full search page with recommendations
-              navigate('/search/jobs?recommended=true');
+              navigate('/jobs');
             }}
           >
             View All Recommendations

@@ -2,7 +2,418 @@
 
 ---
 
-### Session: Hirer Applications Summary Endpoint Pass March 11 2026 🔄 IN PROGRESS
+### Session: Mobile Job Detail And Worker Profile UX Audit March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Audit the mobile job detail and worker profile pages shown in the screenshots for routing correctness, user data flow, backend communication, and UI/UX defects without making code changes.
+
+**Acceptance Criteria**
+- Read the active route config, page components, service calls, and backend endpoints involved in the two page flows.
+- Trace frontend state and API communication for job detail, worker profile, share/save/bid actions, and visible metadata chips.
+- Produce severity-ranked findings covering routing defects, data-contract bugs, and mobile UI/UX breakage grounded in the current code.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `kelmah-frontend/src/modules/jobs/services/jobsService.js`
+- `kelmah-frontend/src/modules/worker/pages/WorkerProfilePage.jsx`
+- `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+- `kelmah-frontend/src/modules/worker/services/workerService.js`
+- `kelmah-backend/services/job-service/routes/job.routes.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- The worker profile page is consuming multiple backend contracts with mismatched shapes, causing visible public defects such as `undefined` portfolio/certificate counts and fallback availability content.
+- The job detail mobile sticky footer has a concrete layout bug: it renders four controls into a three-column grid.
+- Both pages are public-entry routes, so routing inconsistencies and malformed payload handling directly affect deep links, sharing, and first-visit trust.
+
+**Audit completed**
+- Verified the public route surface for job detail and worker profile in `kelmah-frontend/src/routes/config.jsx`.
+- Traced job detail data flow from `JobDetailsPage` through `jobSlice` and `jobsService.getJobById()` to job-service `GET /jobs/:id`.
+- Traced worker profile data flow from `WorkerProfilePage` and `WorkerProfile` through `workerService` to `user.routes.js`, `worker-detail.routes.js`, and the worker controller methods serving profile, portfolio, certificates, availability, completeness, bookmarks, and earnings.
+- Logged the severity-ranked findings in `spec-kit/MOBILE_JOB_DETAIL_WORKER_PROFILE_AUDIT_MAR11_2026.md`.
+
+**Verified findings**
+- High: worker profile portfolio/certificate response-shape mismatch between frontend state handling and backend envelopes.
+- High: worker availability UI reads fields that the normalized availability service does not return.
+- High: owner performance and wallet cards read placeholder metrics from the profile-completeness endpoint.
+- Medium: job detail mobile sticky CTA grid is defined for three columns but renders four children.
+- Medium: worker profile over-fetches overlapping contracts, increasing latency and inconsistent section state.
+- Medium: the same public worker profile is exposed under two shareable route patterns.
+- Low: worker bookmark save/remove semantics are non-idempotent because the frontend never uses the explicit delete operation.
+
+**Validation**
+- Read-only audit only; no application code was changed.
+- Findings were confirmed by reading the active frontend routes, page components, service calls, backend routes, and controller payload shapes in the current workspace.
+
+### Session: Worker Profile Data Repair March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Audit and repair stored `User` ↔ `WorkerProfile` profession, skills, specializations, and bio mismatches, and tighten discovery so stale fallback fields stop reducing search precision.
+
+**Acceptance Criteria**
+- A dry-run/apply maintenance script reports and repairs worker summary mismatches.
+- Discovery prefers profile-owned skills and specializations when a WorkerProfile has authoritative values.
+- Tests cover the reconciliation and search fallback behavior.
+
+**Mapped execution surface**
+- `kelmah-backend/shared/utils/canonicalWorker.js`
+- `kelmah-backend/shared/models/User.js`
+- `kelmah-backend/shared/models/WorkerProfile.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/scripts/populate-worker-fields.js`
+- `kelmah-backend/services/user-service/tests/worker-directory.controller.test.js`
+- `kelmah-backend/services/user-service/tests/worker-profile.controller.test.js`
+- `spec-kit/WORKER_PROFILE_DATA_REPAIR_MAR11_2026.md`
+
+**Dry-audit findings so far**
+- The current worker profile update path intentionally writes mutable worker-summary fields to `WorkerProfile`, not `User`.
+- Worker discovery aggregation still unions `User.skills` and `User.specializations` back into canonical search fields, so stale legacy user data can still pollute live search.
+- The remaining precision issue is therefore a combination of historical data drift and a search-time fallback policy that is too permissive.
+
+**Implementation completed**
+- Added `kelmah-backend/shared/utils/workerProfileAlignment.js` to derive authoritative worker-summary values and calculate reconciliation deltas for `User` and `WorkerProfile` pairs.
+- Added `kelmah-backend/services/user-service/scripts/reconcile-worker-profile-alignment.js` with dry-run-by-default behavior plus `--apply`, `--limit`, and `--worker-id` controls for safe repair execution.
+- Updated `kelmah-backend/services/user-service/controllers/worker.controller.js` so worker discovery and trade-stat pipelines prefer profile-owned skills and specializations when present instead of always unioning stale `User` arrays.
+- Added `services/user-service/tests/worker-profile-alignment.test.js` and extended `services/user-service/tests/worker-directory.controller.test.js` to lock the new alignment and fallback rules.
+
+**Validation**
+- Backend Jest passed for:
+  - `services/user-service/tests/worker-profile-alignment.test.js`
+  - `services/user-service/tests/worker-directory.controller.test.js`
+  - `services/user-service/tests/worker-profile.controller.test.js`
+  - `services/job-service/tests/job-ranking.contract.test.js`
+  - Result: `4` suites passed, `16` tests passed, `0` failures.
+- Atlas SRV DNS resolution initially failed in this environment with `querySrv ECONNREFUSED _mongodb._tcp.kelmah-messaging.xyqcurn.mongodb.net`, but the audit continued successfully by reconstructing a direct replica-set `mongodb://` URI from PowerShell DNS results.
+- Full live dry-run via the direct URI reported:
+  - `totalWorkers=26`
+  - `inspectedProfiles=20`
+  - `missingProfiles=6`
+  - `workersNeedingChanges=26`
+  - `userUpdates=40`
+  - `profileUpdates=46`
+  - `profilesCreated=6`
+- Live apply run then completed for the same 26-worker dataset.
+- Follow-up full dry-run confirmed the repair was fully consumed:
+  - `inspectedProfiles=26`
+  - `missingProfiles=0`
+  - `workersNeedingChanges=0`
+  - `userUpdates=0`
+  - `profileUpdates=0`
+  - `profilesCreated=0`
+- Post-repair live production re-probe findings:
+  - gateway health remained `200` at `https://kelmah-api-gateway-gf3g.onrender.com/health`
+  - free-text worker search is materially better on the repaired data surface: `query=carpentry`, `query=electrical work`, and `query=plumbing` each returned `5/5` trade-relevant preview results in the sampled top-5 responses
+  - explicit trade filters remain stale in production: `primaryTrade`, `trade`, and `category` variants all returned the same near-default worker list, and the live response metadata omitted `searchParams.primaryTrade`, which the current controller should echo
+  - personalized recommendations remain stale in production: authenticated workers `kwaku.addai@kelmah.test`, `adjoa.oppong@kelmah.test`, `efua.mensah@kelmah.test`, and `yaa.adjei@kelmah.test` each received `200` responses with `0` jobs even though the current controller query resolved `6`, `6`, `5`, and `5` strict candidate jobs respectively against the same Atlas data
+- Conclusion: the stored worker summary drift is repaired, but production user-service and job-service behavior still shows runtime parity lag against the current workspace code for trade filtering and personalized recommendations.
+
+### Session: Hirer Applications URL State And Sort Alias Test March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Persist the applications pane sort and page-size selections in the URL so reloads and deep links preserve the pane state, and add a lightweight contract test for the applications summary sort aliases.
+
+**Acceptance Criteria**
+- The applications pane restores sort and page-size state from URL query parameters on reload.
+- State changes write the canonical query parameters back to the URL without breaking existing `jobId` behavior.
+- Job-service test coverage verifies that sort aliases normalize to the expected backend sort modes.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/job-service/tests/hirer-applications-summary.contract.test.js`
+- `spec-kit/HIRER_APPLICATIONS_PANE_PAGINATION_MAR11_2026.md`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- The page currently reads only `jobId` from the URL and writes only `jobId` back, so `sort`, `limit`, and the current pane state are lost on reload.
+- The current footer controls update local state only, so deep links cannot preserve the selected sort or page density.
+- There is no existing applications-summary contract test covering the new sort aliases, but the current job-service controller test harness can support one with mocked model chains.
+
+**Implementation completed**
+- Extended `ApplicationManagementPage.jsx` so `tab`, `page`, `limit`, and `sort` are restored from `useSearchParams` and written back to the URL in canonical form.
+- Kept the existing `jobId` deep-link behavior intact while moving pane state synchronization into a single query-param effect.
+- Added `services/job-service/tests/hirer-applications-summary.contract.test.js` to verify that the `latest`, `rating`, and `rate` aliases normalize to the expected backend sort modes.
+
+**Validation**
+- Focused Jest coverage passed for `services/job-service/tests/hirer-applications-summary.contract.test.js` with `3` tests passing.
+- Frontend production build succeeded via `npm run build` in `kelmah-frontend` after the URL-state changes.
+
+### Session: Mobile Native Fix Pass March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Implement the top mobile-native fixes from the March 11 audit across Android and iOS, starting with session trust hardening, native conversation creation, hirer jobs flow correction, and Android lint cleanup.
+
+**Acceptance Criteria**
+- Recoverable or cached session states do not unlock the full trusted mobile shell.
+- Native messaging supports starting a conversation from job detail.
+- Hirer jobs surfaces stop defaulting to public market review and instead prioritize hirer-owned jobs.
+- Android validation is rerun after the fix pass.
+
+**Mapped execution surface**
+- `kelmah-mobile-android/`
+- `kelmah-mobile-ios/`
+- `spec-kit/MOBILE_NATIVE_FIX_PASS_MAR11_2026.md`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- The most serious issue remains session-state trust, because cached or recoverable identity still unlocks more UI than it should.
+- Messaging can load and send but still cannot create a conversation from the native UI.
+- The hirer jobs tab still behaves like market research instead of a hirer-owned jobs view.
+
+**Implementation completed**
+- Reworked Android session recovery into a dedicated recovery gate, reset stale viewmodel state when session trust drops, and kept the trusted shell available only to verified authenticated sessions.
+- Reworked iOS shell gating so cached identity no longer unlocks the tab shell, added a recovery screen for retry/sign-in flows, and reset jobs, messages, and notifications state outside authenticated sessions.
+- Added native conversation creation support on Android and iOS and wired worker-facing "Message Hirer" actions from job detail into the existing messaging flow.
+- Corrected both native jobs tabs so hirers see their own paged jobs instead of market-review copy and behavior.
+- Cleaned the targeted Android lint issues by adding an app icon, simplifying deep-link manifest filters, removing obsolete theme/resource entries, and adding Android 13+ notification permission handling.
+
+**Validation**
+- Android Gradle validation passed for `testDebugUnitTest` and `lintDebug` after the fix pass.
+- iOS runtime validation remains pending a macOS/Xcode environment.
+
+### Session: Matching Discovery Remediation March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Implement the confirmed March 11 matching/discovery fixes for worker suggestions, recommendation contract wiring, dead recommendation navigation, and worker-search contract drift.
+
+**Acceptance Criteria**
+- Suggestions no longer depend on `/users/workers/suggest`.
+- Smart recommendations use the personalized worker endpoint.
+- Recommendation CTA lands on a real route.
+- Frontend and backend tests cover the updated contracts.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx`
+- `kelmah-frontend/src/modules/search/components/SmartJobRecommendations.jsx`
+- `kelmah-frontend/src/modules/search/services/smartSearchService.js`
+- `kelmah-frontend/src/modules/jobs/services/jobsService.js`
+- `kelmah-frontend/src/modules/worker/services/workerService.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/tests/worker-directory.controller.test.js`
+- `spec-kit/MATCHING_DISCOVERY_REMEDIATION_MAR11_2026.md`
+
+**Dry-audit findings so far**
+- The simplest safe repair is to derive worker suggestions from the existing public worker search path instead of introducing a new backend-only suggestions contract.
+- The active job recommendations UI can move to the personalized endpoint without changing the backend response envelope.
+- Worker discovery drift can be reduced immediately by making the frontend use one canonical search parameter vocabulary.
+
+**Implementation completed**
+- Replaced the broken frontend `/users/workers/suggest` dependency with suggestion derivation from the existing public worker directory search path.
+- Moved the smart recommendations widget onto the personalized worker recommendations endpoint and fixed the dead recommendations CTA route.
+- Patched the dormant personalized jobs parser bug in `jobsService.js`.
+- Normalized frontend worker directory requests onto the canonical worker-search contract and extended backend `searchWorkers()` alias handling so trade, work type, rating, and verified filters continue to work.
+- Added focused backend and frontend Jest coverage for the updated matching and discovery contracts.
+
+**Validation**
+- Backend Jest passed for:
+  - `services/job-service/tests/job-ranking.contract.test.js`
+  - `services/user-service/tests/worker-directory.controller.test.js`
+  - `services/user-service/tests/user-profile-activity.controller.test.js`
+  - `services/user-service/tests/worker-profile.controller.test.js`
+  - Result: `4` suites passed, `15` tests passed, `0` failures.
+- Frontend Jest passed for:
+  - `src/modules/worker/services/workerService.test.js`
+  - `src/modules/search/services/smartSearchService.test.js`
+  - `src/modules/jobs/services/jobsService.test.js`
+  - `src/modules/search/components/SmartJobRecommendations.test.jsx`
+  - Result: `4` suites passed, `6` tests passed, `0` failures.
+- Frontend production build passed from `kelmah-frontend` with `npm run build`.
+- Backend `--detectOpenHandles` pass did not confirm a remediation-specific teardown leak.
+- The remaining worker-profile precision issue is historical data cleanup, not a newly confirmed write-path regression.
+
+### Session: Hirer Applications Sort And Page Size Controls March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Extend the paged hirer applications pane with selectable page sizes and server-backed sorting so hirers can page by newest, highest rated applicant, or proposed rate.
+
+**Acceptance Criteria**
+- The backend applications summary endpoint accepts validated `limit` and `sort` parameters and applies sorting in the data query, not in the client.
+- The frontend applications pane exposes page-size and sort controls and resets pagination cleanly when either control changes.
+- Existing tab counts, job counts, and review actions continue working with the expanded response contract.
+
+**Mapped execution surface**
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-frontend/src/modules/hirer/services/hirerService.js`
+- `kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx`
+- `spec-kit/HIRER_APPLICATIONS_PANE_PAGINATION_MAR11_2026.md`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- The current backend contract clamps page size but does not expose sort selection or page-size control inputs to the page.
+- The current controller always sorts by newest application and cannot sort by worker rating without moving to an aggregation-based item query.
+- The current page footer only renders pagination navigation, so hirers cannot change page density or ranking from the UI.
+
+**Implementation completed**
+- Extended `getHirerApplicationsSummary` to accept `sort` aliases and apply server-side ordering for newest, highest rated applicant, and highest proposed rate using an aggregation-backed item query.
+- Extended `hirerService.getApplicationsSummary()` to forward `sort` and preserve normalized filter metadata from the backend response.
+- Added footer controls in `ApplicationManagementPage.jsx` for sort selection and page size, resetting the current page cleanly whenever either value changes.
+
+**Validation**
+- Backend module-load check succeeded after the sort/page-size refactor (`job-service sort pagination module load ok`).
+- Frontend production build succeeded via `npm run build` in `kelmah-frontend`.
+
+### Session: Matching Discovery Activity Audit March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Audit the live and current-code behavior of job matching, worker discovery, job recommendations, worker-profile precision, and profile activity without restarting or redeploying services.
+
+**Acceptance Criteria**
+- Matching and discovery files are read before conclusions are made.
+- Live gateway and frontend behavior is verified where practical.
+- Findings separate current defects from already-remediated March 2026 work.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/jobs/services/jobsService.js`
+- `kelmah-frontend/src/modules/search/services/smartSearchService.js`
+- `kelmah-frontend/src/modules/search/components/SmartJobRecommendations.jsx`
+- `kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx`
+- `kelmah-frontend/src/modules/worker/services/workerService.js`
+- `kelmah-backend/api-gateway/server.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/controllers/user.controller.js`
+- `kelmah-backend/services/user-service/models/ActivityEvent.js`
+- `kelmah-backend/shared/models/Job.js`
+- `kelmah-backend/shared/models/User.js`
+- `create-gifty-user.js`
+- `spec-kit/MATCHING_DISCOVERY_ACTIVITY_AUDIT_MAR11_2026.md`
+
+**Dry-audit findings so far**
+- Profile activity logic is materially healthier than older audits indicated because it now syncs authoritative ActivityEvent records.
+- Worker discovery and recommendations still show contract drift between frontend consumers and the backend routes actually in service.
+- Matching precision is now limited at least as much by worker-profile data quality drift as by scoring logic itself.
+
+**Implementation completed**
+- Performed a read-only deep audit of the matching, discovery, recommendations, and activity flow.
+- Verified the live Vercel frontend and Render gateway health plus targeted recommendation, activity, and worker-search contracts.
+- Logged the detailed findings and remediation order in `spec-kit/MATCHING_DISCOVERY_ACTIVITY_AUDIT_MAR11_2026.md`.
+
+**Validation**
+- Frontend reachability passed for `https://kelmah-frontend-cyan.vercel.app`.
+- Gateway health checks passed for `/health`, `/api/health`, and `/api/health/aggregate` on `https://kelmah-api-gateway-gf3g.onrender.com`.
+- Live `GET /api/jobs/recommendations/personalized?limit=3` returned the current `data.jobs` contract.
+- Live `GET /api/users/profile/activity?limit=3` returned real activity records.
+- Focused backend Jest validation passed for:
+  - `services/job-service/tests/job-ranking.contract.test.js`
+  - `services/user-service/tests/worker-directory.controller.test.js`
+  - `services/user-service/tests/user-profile-activity.controller.test.js`
+  - Result: `3` suites passed, `7` tests passed, `0` failures.
+
+### Session: Mobile Native Audit March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Audit only the Android and iOS native apps against Kelmah's worker-hirer marketplace goal, with focus on security, workflow completeness, low-literacy usability, and mobile production readiness.
+
+**Acceptance Criteria**
+- Native mobile code paths are read before conclusions are made.
+- Findings distinguish real defects from unfinished native scope.
+- Android is validated locally where possible and iOS validation limits are documented.
+- Results include severity-ranked findings and fix plans.
+
+**Mapped execution surface**
+- `kelmah-mobile-android/`
+- `kelmah-mobile-ios/`
+- `spec-kit/Kelmaholddocs/old-docs/Kelma.txt`
+- `spec-kit/Kelmaholddocs/old-docs/Kelma docs.txt`
+- `spec-kit/STATUS_LOG.md`
+- `spec-kit/MOBILE_NATIVE_AUDIT_MAR11_2026.md`
+
+**Dry-audit findings so far**
+- The native apps are not currently failing basic Android build validation; the larger risks are incomplete worker-hirer workflows and session-state trust behavior.
+- Both platforms expose only Home, Jobs, Messages, Alerts, and Profile, which leaves major product promises such as worker discovery, hiring operations, payments, and contracts unbuilt on mobile.
+- Cached user recovery currently behaves too close to a valid authenticated session, which is the most serious mobile risk found in this audit.
+
+**Implementation completed**
+- Performed a deep mobile-only audit across Android and iOS shell, session, auth, jobs, messaging, notifications, profile, config, and test surfaces.
+- Logged the detailed findings and fix sequence in `spec-kit/MOBILE_NATIVE_AUDIT_MAR11_2026.md`.
+
+**Validation**
+- Android unit tests passed locally with Gradle 8.7 via `testDebugUnitTest`.
+- Android lint passed locally with Gradle 8.7 via `lintDebug`.
+- iOS runtime validation remains pending a macOS/Xcode environment.
+
+### Session: Hirer Applications Pane Pagination March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Page the hirer applications pane so the UI only holds the current application window in memory while preserving per-job badges, tab counts, and the existing review flow.
+
+**Acceptance Criteria**
+- The hirer applications screen loads only the current application page for the active job or all-jobs view instead of keeping the full grouped application set in memory.
+- The backend endpoint returns lightweight job/application counts plus paginated application items using existing auth and response conventions.
+- The frontend preserves job selection, tab filtering, and review actions while using server-backed pagination metadata.
+
+**Mapped execution surface**
+- `kelmah-backend/services/job-service/routes/job.routes.js`
+- `kelmah-backend/services/job-service/controllers/job.controller.js`
+- `kelmah-frontend/src/modules/hirer/services/hirerService.js`
+- `kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx`
+- `spec-kit/HIRER_APPLICATIONS_PANE_PAGINATION_MAR11_2026.md`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- `getHirerApplicationsSummary` currently loads every matching application document and groups them in memory before responding.
+- `ApplicationManagementPage.jsx` still stores the entire grouped application map and derives tab counts from client-held arrays.
+- `getJobApplications` already proves the service supports paged application reads, but the application-management page is not using a paged response shape yet.
+
+**Implementation completed**
+- Reworked `getHirerApplicationsSummary` so it now aggregates per-job and global application counts first, then returns only the requested `jobId`/`status` application page plus pagination metadata.
+- Extended `hirerService.getApplicationsSummary()` to send `jobId`, `status`, `page`, and `limit`, and to normalize the paginated application response.
+- Refactored `ApplicationManagementPage.jsx` to keep only the current application slice in memory, derive sidebar/tab badges from server-provided counts, and render a paginated footer for the applications pane.
+
+**Validation**
+- Backend module-load check succeeded for `job.routes.js` and `job.controller.js` after the pagination refactor (`job-service pagination module load ok`).
+- Frontend production build succeeded via `npm run build` in `kelmah-frontend`.
+
+### Session: Mounted Gateway Integration And Provider Smoke Helper March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Add authenticated server-level gateway integration tests around the mounted `/api/jobs/search` and `/api/payments/transactions` paths, and extend the refund-provider helper so it can run real sandbox health and smoke checks only when the required environment variables are present.
+
+**Acceptance Criteria**
+- Jest can import the mounted API gateway app without auto-starting the gateway process or opening Mongo/listener side effects.
+- Server-level integration tests exercise the mounted `/api/jobs/search` and authenticated `/api/payments/transactions` paths through `server.js`, not just the isolated route modules.
+- The provider helper reports missing env prerequisites, runs health checks only when configured, and runs explicit smoke checks only when both env inputs and a safety flag are present.
+
+**Mapped execution surface**
+- `kelmah-backend/api-gateway/server.js`
+- `kelmah-backend/api-gateway/server.integration.test.js`
+- `kelmah-backend/services/payment-service/scripts/verify-refund-providers.js`
+- `spec-kit/MOUNTED_GATEWAY_INTEGRATION_PROVIDER_SMOKE_MAR11_2026.md`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- `server.js` exports the Express app but still auto-connects to MongoDB and starts listening on import, which blocks true mounted-app Jest coverage.
+- The route-module tests do not prove the mounted middleware chain in `server.js`, especially the gateway-level auth and rate/tier middleware around `/api/payments`.
+- The current provider helper only reports refund capability and optional health checks; it does not distinguish missing env from actual failures or support explicit smoke execution.
+
+**Implementation completed**
+- Added a gateway bootstrap guard in `server.js` so the mounted app can be imported safely in Jest when test bootstrap is disabled.
+- Added `api-gateway/server.integration.test.js` to cover mounted `GET /api/jobs/search` and authenticated `POST /api/payments/transactions` requests through the real gateway app instance.
+- Extended `verify-refund-providers.js` to report provider configuration state, env prerequisites, health-check status, and smoke-check status separately.
+- Added explicit `--smoke` support gated by `ENABLE_REFUND_SMOKE_CHECKS=true`, with provider-specific sandbox input requirements for Paystack, Vodafone Cash, MTN MoMo, and AirtelTigo.
+
+**Validation**
+- Gateway and payment Jest validation passed from `kelmah-backend`:
+  - `api-gateway/server.integration.test.js`
+  - `api-gateway/routes/job.routes.test.js`
+  - `api-gateway/routes/payment.routes.test.js`
+  - `services/payment-service/tests/transaction.controller.test.js`
+  - `services/payment-service/tests/payment.test.js`
+  - `services/payment-service/tests/health.test.js`
+  - `services/payment-service/tests/escrow.controller.test.js`
+  - `services/payment-service/tests/wallet.controller.test.js`
+- Result: `8` suites passed, `15` tests passed, `0` failures.
+- Provider helper validation passed with:
+  - `node services/payment-service/scripts/verify-refund-providers.js`
+  - `node services/payment-service/scripts/verify-refund-providers.js --health --smoke`
+- Environment note: live sandbox checks remain pending provider credentials and explicit smoke input env vars, but the helper now reports those prerequisites clearly instead of failing opaquely.
+
+### Session: Hirer Applications Summary Endpoint Pass March 11 2026 ✅ COMPLETED
 
 **Date**: March 11, 2026  
 **Scope**: Replace the remaining N+1 application-management loading pattern with a dedicated hirer applications summary endpoint backed by a single server-side fan-in query.
@@ -23,6 +434,19 @@
 - `ApplicationManagementPage.jsx` still loads the full hirer job list first and then fires one applications request per non-bidding job.
 - `job-service` already has the primitives needed: authenticated hirer job ownership checks, the shared `Application` model, and per-job application queries.
 - The page state shape already matches a grouped backend payload well, so a dedicated summary endpoint can remove the N+1 pattern with a minimal frontend refactor.
+
+**Implementation completed**
+- Added authenticated `GET /api/jobs/applications/received-summary` in `job-service` to return non-bidding hirer jobs, grouped applications by job, and aggregate counts in one response.
+- Kept the new route in the literal-route section so it cannot be shadowed by `/:id` job routes.
+- Added `hirerService.getApplicationsSummary()` to consume the new endpoint from the frontend service layer.
+- Refactored `ApplicationManagementPage.jsx` to hydrate its job list and grouped application state from the summary response instead of loading jobs and then firing one request per job.
+
+**Validation**
+- Direct backend module-load validation passed for:
+  - `kelmah-backend/services/job-service/routes/job.routes.js`
+  - `kelmah-backend/services/job-service/controllers/job.controller.js`
+  - Result: `job-service module load ok`
+- Frontend production build passed from `kelmah-frontend` with `npm run build`.
 
 ### Session: Gateway Search And Transaction Coverage March 11 2026 ✅ COMPLETED
 

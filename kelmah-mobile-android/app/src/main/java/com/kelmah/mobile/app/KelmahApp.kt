@@ -4,7 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -18,11 +21,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.kelmah.mobile.app.navigation.KelmahDestination
 import com.kelmah.mobile.app.navigation.KelmahNavHost
 import com.kelmah.mobile.app.navigation.mainDestinations
+import com.kelmah.mobile.core.session.KelmahUserRole
 import com.kelmah.mobile.core.session.kelmahUserRole
 import com.kelmah.mobile.core.design.theme.KelmahTheme
 import com.kelmah.mobile.core.session.SessionCoordinator
@@ -64,14 +69,22 @@ fun KelmahApp(
         LaunchedEffect(sessionState) {
             when (sessionState) {
                 is SessionState.Authenticated -> {
+                    val role = (sessionState as SessionState.Authenticated).user?.kelmahUserRole ?: KelmahUserRole.WORKER
+                    jobsViewModel.bootstrap(role)
+                    messagesViewModel.bootstrap()
+                    notificationsViewModel.bootstrap()
                     messagesViewModel.startRealtimeSync()
                     notificationsViewModel.startRealtimeSync()
                 }
                 SessionState.Loading -> Unit
+                is SessionState.RecoveryRequired,
                 is SessionState.Error,
                 SessionState.Unauthenticated -> {
                     messagesViewModel.stopRealtimeSync()
                     notificationsViewModel.stopRealtimeSync()
+                    jobsViewModel.reset()
+                    messagesViewModel.reset()
+                    notificationsViewModel.reset()
                 }
             }
         }
@@ -107,6 +120,20 @@ fun KelmahApp(
                         appScope.launch { sessionCoordinator.onLoginCompleted() }
                     },
                     sessionMessage = state.message,
+                )
+                return@KelmahTheme
+            }
+
+            is SessionState.RecoveryRequired -> {
+                SessionRecoveryScreen(
+                    userName = state.user?.displayName,
+                    message = state.message,
+                    onRetry = {
+                        appScope.launch { sessionCoordinator.bootstrapSession(force = true) }
+                    },
+                    onSignInAgain = {
+                        appScope.launch { sessionCoordinator.logout() }
+                    },
                 )
                 return@KelmahTheme
             }
@@ -180,6 +207,50 @@ fun KelmahApp(
                         }
                     },
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SessionRecoveryScreen(
+    userName: String?,
+    message: String,
+    onRetry: () -> Unit,
+    onSignInAgain: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Card {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                Text("Session check needed", style = androidx.compose.material3.MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                userName?.takeIf { it.isNotBlank() }?.let {
+                    Text("Saved account: $it", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+                }
+                Text(
+                    text = message,
+                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = "Sign in again before opening jobs, chats, alerts, or profile actions.",
+                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                )
+                Button(onClick = onRetry, modifier = Modifier.fillMaxWidth()) {
+                    Text("Retry session check")
+                }
+                Button(onClick = onSignInAgain, modifier = Modifier.fillMaxWidth()) {
+                    Text("Sign in again")
+                }
             }
         }
     }

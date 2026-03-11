@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -32,7 +33,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -40,6 +45,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kelmah.mobile.core.utils.RelativeTimeFormatter
 import com.kelmah.mobile.core.session.KelmahUserRole
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,10 +54,13 @@ fun JobDetailScreen(
     userRole: KelmahUserRole,
     onBack: () -> Unit,
     onApply: (String) -> Unit,
+    onMessageHirer: suspend (String, String?) -> Unit,
     viewModel: JobsViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val snackbars = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var isStartingConversation by remember { mutableStateOf(false) }
 
     LaunchedEffect(jobId) {
         viewModel.loadJobDetail(jobId)
@@ -162,15 +171,37 @@ fun JobDetailScreen(
                         }
                     }
                 }
+                if (userRole == KelmahUserRole.WORKER && !job.hirerId.isNullOrBlank()) {
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                isStartingConversation = true
+                                onMessageHirer(job.summary.id, job.hirerId)
+                                isStartingConversation = false
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isStartingConversation,
+                    ) {
+                        if (isStartingConversation) {
+                            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                        } else {
+                            Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                        Text(if (isStartingConversation) "Opening chat" else "Message Hirer")
+                    }
+                }
                 if (userRole == KelmahUserRole.WORKER) {
                     Text(
-                        text = "Read the job. If it fits you, tap Apply Now.",
+                        text = "Read the job. Apply now or message the hirer.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 } else {
                     Text(
-                        text = "Hirer mode is for market review. Workers are the ones who can apply.",
+                        text = "This is your job post view. Workers can apply from their side.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

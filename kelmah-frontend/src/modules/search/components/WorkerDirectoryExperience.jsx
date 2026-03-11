@@ -14,7 +14,6 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
-import { api } from '../../../services/apiClient';
 import { hasRole } from '../../../utils/userUtils';
 import workerService from '../../worker/services/workerService';
 import JobSearchForm from '../components/common/JobSearchForm';
@@ -236,18 +235,12 @@ const WorkerDirectoryExperience = ({
     }
 
     try {
-      const response = await api.get('/users/workers/suggest', {
-        params: { query },
+      const suggestions = await workerService.getWorkerSearchSuggestions(query, {
         signal,
       });
 
-      if (response.data?.success) {
-        setSearchSuggestions(response.data.data || []);
-        setShowSuggestions(true);
-      } else {
-        setSearchSuggestions([]);
-        setShowSuggestions(false);
-      }
+      setSearchSuggestions(suggestions);
+      setShowSuggestions(suggestions.length > 0);
     } catch (err) {
       if (err.name === 'AbortError' || err.name === 'CanceledError') return;
       setSearchSuggestions([]);

@@ -70,15 +70,18 @@ class JobsRepository @Inject constructor(
         }
     }
 
-    suspend fun getMyJobs(limit: Int = 6): ApiResult<List<JobSummary>> = executeAuthorizedApiCall(sessionCoordinator) {
+    suspend fun getMyJobs(
+        page: Int = 1,
+        limit: Int = 12,
+    ): ApiResult<JobsPage> = executeAuthorizedApiCall(sessionCoordinator) {
         val response = jobsApiService.getMyJobs(
             mapOf(
-                "page" to "1",
+                "page" to page.toString(),
                 "limit" to limit.toString(),
                 "sort" to "-updatedAt",
             ),
         )
-        ApiResult.Success(parseJobsPage(response).jobs)
+        ApiResult.Success(parseJobsPage(response))
     }
 
     suspend fun getSavedJobs(

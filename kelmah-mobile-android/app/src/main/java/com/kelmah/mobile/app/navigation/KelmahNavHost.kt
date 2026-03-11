@@ -90,6 +90,11 @@ fun KelmahNavHost(
                 userRole = currentRole,
                 onBack = { navController.popBackStack() },
                 onApply = { selectedJobId -> navController.navigate(KelmahDestination.jobApply(selectedJobId)) },
+                onMessageHirer = { selectedJobId, hirerId ->
+                    if (hirerId.isNullOrBlank()) return@JobDetailScreen
+                    val conversationId = messagesViewModel.createConversation(hirerId, selectedJobId) ?: return@JobDetailScreen
+                    navController.navigate(KelmahDestination.messages(conversationId))
+                },
             )
         }
         composable(

@@ -55,11 +55,11 @@ class SessionCoordinator @Inject constructor(
                             _sessionState.value = SessionState.Authenticated(retriedUserResult.data)
                         }
                         is ApiResult.Error -> {
-                            recoverOrClear()
+                            recoverOrClear(retriedUserResult.message)
                         }
                     }
                 } else {
-                    recoverOrClear()
+                    recoverOrClear(currentUserResult.message)
                 }
             }
         }
@@ -99,19 +99,19 @@ class SessionCoordinator @Inject constructor(
                     tokenManager.clearSession()
                     _sessionState.value = SessionState.Unauthenticated
                 } else {
-                    recoverOrClear()
+                    recoverOrClear(refreshResult.message)
                 }
                 false
             }
         }
     }
 
-    private fun recoverOrClear() {
+    private fun recoverOrClear(message: String = "We could not verify your session. Sign in again to keep your account safe.") {
         val cachedUser = tokenManager.getStoredSession()?.user
         if (cachedUser != null) {
-            _sessionState.value = SessionState.Authenticated(
+            _sessionState.value = SessionState.RecoveryRequired(
                 user = cachedUser,
-                recoveredFromCache = true,
+                message = message,
             )
         } else {
             tokenManager.clearSession()
