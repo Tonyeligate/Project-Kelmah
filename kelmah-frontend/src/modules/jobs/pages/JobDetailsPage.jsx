@@ -222,6 +222,7 @@ const normalizeSkillLabels = (skills) => {
 const JobDetailsPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isCompactMobile = useMediaQuery('(max-width:390px)');
   const location = useLocation();
   const { search } = location;
   const { id } = useParams();
@@ -585,6 +586,19 @@ const JobDetailsPage = () => {
       icon: Business,
     },
   ];
+  const mobilePrimaryActionLabel = isHirerUser
+    ? 'Find Talent'
+    : job?.bidding?.bidStatus === 'open'
+      ? (isCompactMobile ? 'Place Bid' : 'Place Your Bid')
+      : 'Apply Now';
+  const mobileCtaLabel = isHirerUser
+    ? 'Client action'
+    : job?.bidding?.bidStatus === 'open'
+      ? 'Bid range'
+      : 'Job budget';
+  const mobileCtaValue = isHirerUser
+    ? 'Use talent search for matching workers.'
+    : budgetDisplay;
 
   const handleOpenClientProfile = () => {
     if (!hasClientDetails) {
@@ -1260,34 +1274,32 @@ const JobDetailsPage = () => {
               ? alpha(theme.palette.background.paper, 0.97)
               : alpha(theme.palette.background.paper, 0.98),
             borderTop: `1px solid ${theme.palette.mode === 'dark' ? alpha(theme.palette.primary.main, 0.22) : alpha(theme.palette.divider, 0.85)}`,
-            px: 2,
-            py: 1.5,
-            pb: 'calc(12px + env(safe-area-inset-bottom, 0px))',
+            px: 1.5,
+            py: 1,
+            pb: 'calc(8px + env(safe-area-inset-bottom, 0px))',
             display: 'grid',
             gridTemplateColumns: 'minmax(0, 1fr) auto',
             alignItems: 'center',
-            gap: 1.25,
+            gap: 0.75,
             backdropFilter: 'blur(8px)',
             boxShadow: `0 -12px 30px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.35 : 0.12)}`,
           }}
         >
-          <Box sx={{ minWidth: 0, pr: 0.5 }}>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, display: 'block', mb: 0.35, letterSpacing: 0.3 }}>
-              {isHirerUser
-                ? 'Client action'
-                : job?.bidding?.bidStatus === 'open'
-                  ? 'Ready to bid'
-                  : 'Ready to apply'}
+          <Box sx={{ minWidth: 0, pr: 0.25 }}>
+            <Typography
+              variant="caption"
+              sx={{ color: 'text.secondary', fontWeight: 700, display: 'block', mb: 0.2, letterSpacing: 0.24, lineHeight: 1.2 }}
+            >
+              {mobileCtaLabel}
             </Typography>
-            <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 700, lineHeight: 1.3, pr: 1 }}>
-              {isHirerUser
-                ? 'Use the talent search instead of bidding on your own marketplace listing.'
-                : job?.bidding?.bidStatus === 'open'
-                  ? `Bid range ${budgetDisplay}`
-                  : budgetDisplay}
+            <Typography
+              variant="body2"
+              sx={{ color: 'text.primary', fontWeight: 800, lineHeight: 1.2, fontSize: '0.98rem', pr: 0.5 }}
+            >
+              {mobileCtaValue}
             </Typography>
           </Box>
-          <Stack direction="row" spacing={0.75} alignItems="center" sx={{ flexShrink: 0 }}>
+          <Stack direction="row" spacing={0.25} alignItems="center" sx={{ flexShrink: 0 }}>
             <Button
               variant="contained"
               onClick={handlePrimaryAction}
@@ -1295,34 +1307,30 @@ const JobDetailsPage = () => {
                 bgcolor: '#D4AF37',
                 color: '#000',
                 fontWeight: 'bold',
-                py: 1.1,
-                px: { xs: 2.25, sm: 3 },
-                fontSize: '0.95rem',
-                minHeight: 48,
+                py: 0.95,
+                px: { xs: 1.75, sm: 3 },
+                fontSize: { xs: '0.88rem', sm: '0.95rem' },
+                minHeight: 42,
                 borderRadius: 2,
-                minWidth: { xs: 108, sm: 156 },
+                minWidth: { xs: 96, sm: 156 },
                 whiteSpace: 'nowrap',
                 '&:hover': { bgcolor: '#B8941F' },
               }}
             >
-              {isHirerUser
-                ? 'Find Talent'
-                : job?.bidding?.bidStatus === 'open'
-                  ? 'Place Your Bid'
-                  : 'Apply Now'}
+              {mobilePrimaryActionLabel}
             </Button>
             <IconButton
               onClick={handleToggleSave}
               disabled={savingBookmark}
               aria-label={saved ? 'Remove from saved jobs' : 'Save job'}
-              sx={{ color: saved ? accentColor : 'text.primary', minWidth: 44, minHeight: 44 }}
+              sx={{ color: saved ? accentColor : 'text.primary', minWidth: 40, minHeight: 40 }}
             >
               {saved ? <Bookmark /> : <BookmarkBorder />}
             </IconButton>
             <IconButton
               onClick={handleShareJob}
               aria-label="Share job"
-              sx={{ color: 'text.primary', minWidth: 44, minHeight: 44 }}
+              sx={{ color: 'text.primary', minWidth: 40, minHeight: 40 }}
             >
               <Share />
             </IconButton>

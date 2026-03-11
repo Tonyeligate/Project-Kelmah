@@ -2,6 +2,32 @@
 
 ---
 
+### Session: Mobile Job Detail CTA Compactness Pass March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Refine the mobile job detail sticky CTA after the bottom-docking fix so the bar height, text hierarchy, and button balance are clean on narrow phones.
+
+**Acceptance Criteria**
+- Reduce the visual height of the mobile sticky CTA without breaking the safe-area spacing.
+- Reorganize the left CTA copy into a cleaner hierarchy that does not stack awkwardly on 360px screens.
+- Rebalance the primary button and icon actions so the footer feels structured instead of cramped.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- The CTA now docks correctly, but its internal content still wraps too aggressively because the left copy is verbose and the right action group is still width-heavy for very small screens.
+- Excess vertical space comes from the combination of generous CTA padding and a three-line text stack in the left column.
+
+**Implementation completed**
+- Simplified the mobile CTA copy into a cleaner label/value hierarchy so the left side no longer stacks "Ready to bid" and the bid-range text into an awkward tall block.
+- Reduced CTA padding, inter-column gap, icon button footprint, and primary button minimum width so the footer feels denser and more balanced on 360px screens.
+- Added a compact-screen primary label fallback so narrow phones use `Place Bid` while larger mobile widths keep `Place Your Bid`.
+
+**Validation**
+- Frontend production build passed via `npm run build` in `kelmah-frontend` after the mobile CTA compactness refinements.
+
 ### Session: Mobile Job Detail And Worker Profile Fix Pass March 11 2026 ✅ COMPLETED
 
 **Date**: March 11, 2026  
