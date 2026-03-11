@@ -293,7 +293,7 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
     const targetId = resolvedWorkerId;
 
     if (targetId) {
-      navigate(`/worker-profile/${targetId}`);
+      navigate(`/workers/${targetId}`);
     }
   }, [navigate, resolvedWorkerId]);
 
@@ -374,7 +374,7 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
   }, [handleMessage, isAuthenticated, isHirer, isViewingSelf]);
 
   const profileUrl = resolvedWorkerId
-    ? `/worker-profile/${resolvedWorkerId}`
+    ? `/workers/${resolvedWorkerId}`
     : null;
 
   return (

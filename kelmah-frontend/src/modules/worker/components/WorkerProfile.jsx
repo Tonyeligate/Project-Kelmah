@@ -178,9 +178,79 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
   },
 }));
 
+const getCanonicalWorkerProfilePath = (workerId) =>
+  workerId ? `/workers/${encodeURIComponent(String(workerId))}` : '/find-talents';
+
+const normalizeWorkerSkillList = (skills) =>
+  Array.isArray(skills)
+    ? skills
+      .map((skill) => ({
+        name: skill?.name || skill?.skillName || skill?.label || String(skill || '').trim(),
+      }))
+      .filter((skill) => skill.name)
+    : [];
+
+const normalizeAvailabilityHoursMap = (availableHours) => {
+  if (Array.isArray(availableHours)) {
+    return availableHours.reduce((accumulator, entry) => {
+      if (!entry?.day) {
+        return accumulator;
+      }
+
+      accumulator[String(entry.day).toLowerCase()] = {
+        available: entry.available !== false,
+        start: entry.start || '08:00',
+        end: entry.end || '17:00',
+      };
+
+      return accumulator;
+    }, {});
+  }
+
+  if (availableHours && typeof availableHours === 'object') {
+    return availableHours;
+  }
+
+  return {};
+};
+
+const buildAvailabilityHoursMap = (availability) => {
+  const directHours = normalizeAvailabilityHoursMap(availability?.availableHours);
+  if (Object.keys(directHours).length > 0) {
+    return directHours;
+  }
+
+  if (!Array.isArray(availability?.daySlots)) {
+    return {};
+  }
+
+  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  return availability.daySlots.reduce((accumulator, slot) => {
+    const dayName = typeof slot?.dayOfWeek === 'number' ? days[slot.dayOfWeek] : null;
+    const firstSlot = Array.isArray(slot?.slots) ? slot.slots[0] : null;
+
+    if (!dayName || !firstSlot?.start || !firstSlot?.end) {
+      return accumulator;
+    }
+
+    accumulator[dayName] = {
+      available: true,
+      start: firstSlot.start,
+      end: firstSlot.end,
+    };
+
+    return accumulator;
+  }, {});
+};
+
+const getPortfolioItems = (worker) =>
+  Array.isArray(worker?.portfolio?.items) ? worker.portfolio.items : [];
+
+const getCertificateItems = (worker) =>
+  Array.isArray(worker?.certifications?.items) ? worker.certifications.items : [];
+
 function WorkerProfile({ workerId: workerIdProp }) {
   const routeParams = useParams();
-  // Use ONLY Redux auth state to prevent dual state management conflicts
   const { user: authUser } = useSelector((state) => state.auth);
   const resolvedWorkerId =
     workerIdProp ?? routeParams?.workerId ?? authUser?.userId ?? null;
@@ -200,6 +270,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
   const [workHistory, setWorkHistory] = useState([]);
   const [availability, setAvailability] = useState(null);
   const [stats, setStats] = useState({});
+  const [profileCompletion, setProfileCompletion] = useState(null);
   const [earnings, setEarnings] = useState(null);
 
   const [loading, setLoading] = useState(true);
@@ -247,7 +318,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
       setLoading(false);
       return;
     }
-    // Reset all state immediately when starting to load new profile
+
     setProfile(null);
     setSkills([]);
     setPortfolio([]);
@@ -257,6 +328,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
     setWorkHistory([]);
     setAvailability(null);
     setStats({});
+    setProfileCompletion(null);
     setEarnings(null);
     setLoading(true);
     setError(null);
@@ -267,36 +339,44 @@ function WorkerProfile({ workerId: workerIdProp }) {
         profileRes?.data?.data?.worker ||
         profileRes?.data?.worker ||
         profileRes?.data;
+
+      const fallbackRatingSummary = {
+        averageRating: Number(worker?.stats?.rating ?? worker?.rating ?? 0),
+        totalReviews: Number(worker?.stats?.totalReviews ?? worker?.totalReviews ?? 0),
+      };
+
       const normalizedProfile = worker
         ? {
           ...worker,
           user: worker.user,
-          // UI expects these keys
           hourly_rate:
-            worker.hourlyRate?.min ??
+            worker.rate?.amount ??
             worker.hourlyRate ??
-            worker.hourlyRateMin ??
+            worker.rate?.min ??
+            worker.rate?.max ??
             0,
           is_verified:
             worker.verification?.isVerified ?? worker.isVerified ?? false,
           profile_picture: worker.profile?.picture ?? worker.profilePicture,
+          average_rating: fallbackRatingSummary.averageRating,
+          experience_years: Number(worker.experience?.years ?? worker.yearsOfExperience ?? 0),
           is_online: false,
         }
         : null;
-      setProfile(normalizedProfile);
 
-      // Only fetch earnings for profile owner (it's protected personal data)
+      setProfile(normalizedProfile);
+      setSkills(normalizeWorkerSkillList(worker?.skills));
+      setPortfolio(getPortfolioItems(worker));
+      setCertificates(getCertificateItems(worker));
+      setAvailability(worker?.availability || null);
+      setStats(worker?.stats || {});
+      setRatingSummary(fallbackRatingSummary);
+
       const viewingOwnProfile =
         authUser?.userId && authUser.userId === resolvedWorkerId;
 
-      // Use Promise.allSettled for graceful degradation - if ratings or other
-      // secondary endpoints fail (e.g., during service cold start), still show profile
       const results = await Promise.allSettled([
-        workerService.getWorkerSkills(resolvedWorkerId),
-        workerService.getWorkerPortfolio(resolvedWorkerId),
-        workerService.getWorkerCertificates(resolvedWorkerId),
         workerService.getWorkHistory(resolvedWorkerId),
-        workerService.getWorkerAvailability(resolvedWorkerId),
         workerService.getWorkerStats(resolvedWorkerId),
         reviewService.getWorkerRating(resolvedWorkerId),
         viewingOwnProfile
@@ -304,57 +384,38 @@ function WorkerProfile({ workerId: workerIdProp }) {
           : Promise.resolve(null),
       ]);
 
-      // Helper to safely extract value from settled promise
       const getValue = (result, fallback = null) =>
         result.status === 'fulfilled' ? result.value : fallback;
 
-      const [
-        skillsRes,
-        portfolioRes,
-        certsRes,
-        historyRes,
-        availabilityRes,
-        statsRes,
-        ratingRes,
-        earningsRes,
-      ] = results.map((r) => getValue(r));
+      const [historyRes, completionRes, ratingRes, earningsRes] = results.map((result) =>
+        getValue(result)
+      );
 
-      const rawSkills = skillsRes?.data?.data || skillsRes?.data || [];
-      const normalizedSkills = Array.isArray(rawSkills)
-        ? rawSkills.map((s) => ({
-          name: s.name || s.skillName || s?.skill?.name || '',
-        }))
-        : [];
-      setSkills(normalizedSkills);
+      const historyPayload = historyRes?.data?.data || historyRes?.data || [];
+      const normalizedHistory = Array.isArray(historyPayload)
+        ? historyPayload
+        : Array.isArray(historyPayload?.workHistory)
+          ? historyPayload.workHistory
+          : [];
 
-      setPortfolio(portfolioRes?.data?.data || portfolioRes?.data || []);
-      setCertificates(certsRes?.data?.data || certsRes?.data || []);
-      // Review list comes from ReviewSystem; keep count from rating summary
       setReviews([]);
-      setRatingSummary(ratingRes || null);
-      setWorkHistory(historyRes?.data?.data || historyRes?.data || []);
-      // getWorkerAvailability returns a pre-normalized object (not an axios response)
-      setAvailability(availabilityRes || null);
-      // getWorkerStats returns a pre-normalized object (not an axios response)
-      setStats(statsRes || {});
+      setRatingSummary(ratingRes || fallbackRatingSummary);
+      setWorkHistory(normalizedHistory);
+      setProfileCompletion(completionRes || null);
       setEarnings(earningsRes?.data?.data || earningsRes?.data || null);
     } catch (err) {
-      setError(
-        'Could not find this worker. Please try again.',
-      );
+      setError('Could not find this worker. Please try again.');
       if (import.meta.env.DEV) console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [resolvedWorkerId]);
+  }, [authUser?.userId, resolvedWorkerId]);
 
-  // Main effect to fetch data when workerId changes
   useEffect(() => {
     if (!resolvedWorkerId) {
       return;
     }
 
-    // Reset all state when navigating to a new worker profile
     setLoading(true);
     setError(null);
     setProfile(null);
@@ -362,12 +423,14 @@ function WorkerProfile({ workerId: workerIdProp }) {
     setPortfolio([]);
     setCertificates([]);
     setReviews([]);
+    setRatingSummary(null);
+    setWorkHistory([]);
     setAvailability(null);
     setStats({});
+    setProfileCompletion(null);
     setEarnings(null);
     setTabValue(0);
 
-    // Force refetch when workerId changes
     fetchAllData();
 
     if (!authUser) {
@@ -375,19 +438,18 @@ function WorkerProfile({ workerId: workerIdProp }) {
       return;
     }
 
-    // Fetch current user's bookmarks to set initial bookmark state
     workerService
       .getBookmarks()
       .then((res) => {
         const ids = res?.data?.data?.workerIds || [];
         setIsBookmarked(ids.includes(resolvedWorkerId));
       })
-      .catch((error) => {
-        if (error?.response?.status !== 401) {
-          if (import.meta.env.DEV) console.error('Failed to load bookmarks', error);
+      .catch((bookmarkError) => {
+        if (bookmarkError?.response?.status !== 401 && import.meta.env.DEV) {
+          console.error('Failed to load bookmarks', bookmarkError);
         }
       });
-  }, [workerIdProp, resolvedWorkerId, fetchAllData, authUser]);
+  }, [authUser, fetchAllData, resolvedWorkerId, workerIdProp]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -432,24 +494,31 @@ function WorkerProfile({ workerId: workerIdProp }) {
     const nextState = !isBookmarked;
     try {
       setIsBookmarked(nextState);
-      await workerService.bookmarkWorker(resolvedWorkerId);
+      if (nextState) {
+        await workerService.bookmarkWorker(resolvedWorkerId);
+      } else {
+        await workerService.removeBookmark(resolvedWorkerId);
+      }
       setFeedbackMessage(
         nextState ? 'Worker saved for later' : 'Worker removed from saved',
       );
     } catch (_) {
-      // revert on error
       setIsBookmarked(!nextState);
       setFeedbackMessage('Unable to update saved worker right now');
     }
   };
 
   const handleShare = async () => {
+    const canonicalUrl = resolvedWorkerId
+      ? `${window.location.origin}${getCanonicalWorkerProfilePath(resolvedWorkerId)}`
+      : window.location.href;
+
     if (navigator.share) {
       try {
         await navigator.share({
           title: `${profile?.user?.firstName} ${profile?.user?.lastName} - ${profile?.profession}`,
           text: `Check out this skilled ${profile?.profession} on Kelmah`,
-          url: window.location.href,
+          url: canonicalUrl,
         });
       } catch (err) {
         if (err?.name !== 'AbortError') {
@@ -457,9 +526,8 @@ function WorkerProfile({ workerId: workerIdProp }) {
         }
       }
     } else {
-      // Fallback: copy to clipboard
       try {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(canonicalUrl);
         setFeedbackMessage('Profile link copied');
       } catch {
         setFeedbackMessage('Unable to copy link on this device');
@@ -690,16 +758,16 @@ function WorkerProfile({ workerId: workerIdProp }) {
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Rating
-                  value={profile.average_rating || 0}
+                  value={ratingSummary?.averageRating ?? profile.average_rating ?? 0}
                   precision={0.1}
                   readOnly
                   size="large"
                 />
                 <Typography variant="h6" fontWeight={600}>
-                  {profile.average_rating?.toFixed(1) || '0.0'}
+                  {(ratingSummary?.averageRating ?? profile.average_rating ?? 0).toFixed(1)}
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  ({ratingSummary?.totalReviews ?? reviews.length} reviews)
+                  ({ratingSummary?.totalReviews ?? stats.totalReviews ?? reviews.length} reviews)
                 </Typography>
               </Box>
             </Stack>
@@ -771,18 +839,19 @@ function WorkerProfile({ workerId: workerIdProp }) {
 
   const renderMetrics = () => {
     const statsData = stats || {};
+    const completionData = profileCompletion || {};
     const totalAllTime =
       statsData.totalEarnings || earnings?.totals?.allTime || 0;
     const last30 = earnings?.totals?.last30Days || 0;
     const last7 = earnings?.totals?.last7Days || 0;
     const jobsCompleted =
       statsData.totalJobsCompleted || statsData.jobsCompleted || 0;
-    const jobsCancelled = statsData.jobsCancelled || 0;
     const completionRate =
+      completionData.completionPercentage ??
       statsData.completionRate ??
-      (jobsCompleted + jobsCancelled > 0
-        ? Math.round((jobsCompleted / (jobsCompleted + jobsCancelled)) * 100)
-        : 0);
+      0;
+    const averageRating = Number(statsData.rating ?? ratingSummary?.averageRating ?? 0);
+    const averageResponseTime = Number(statsData.averageResponseTime ?? 0);
 
     return (
       <motion.div
@@ -854,7 +923,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   <Typography
                     sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5 }}
                   >
-                    Upcoming Jobs
+                    Jobs Completed
                   </Typography>
                   <Typography
                     sx={{
@@ -863,7 +932,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       color: theme.palette.primary.main,
                     }}
                   >
-                    {stats.upcoming_jobs || 0}
+                    {jobsCompleted}
                   </Typography>
                   <Typography
                     sx={{
@@ -872,7 +941,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       fontWeight: 500,
                     }}
                   >
-                    upcoming
+                    total completed
                   </Typography>
                 </Paper>
               </Grid>
@@ -898,7 +967,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       color: theme.palette.primary.main,
                     }}
                   >
-                    {stats.average_rating || '0.0'}
+                    {averageRating.toFixed(1)}
                   </Typography>
                   <Typography
                     sx={{
@@ -907,7 +976,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       fontWeight: 500,
                     }}
                   >
-                    avg rating
+                    {statsData.totalReviews || 0} reviews
                   </Typography>
                 </Paper>
               </Grid>
@@ -915,7 +984,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
           </Box>
         )}
 
-        {/* Mobile Wallet Section for Owner */}
+        {/* Mobile Earnings Summary for Owner */}
         {isActualMobile && isOwner && (
           <Box sx={{ mb: 3 }}>
             <Typography
@@ -928,7 +997,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 mb: 2,
               }}
             >
-              Wallet & Payments
+              Earnings Summary
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12}>
@@ -950,7 +1019,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             mb: 0.5,
                           }}
                         >
-                          Wallet Balance
+                          All-Time Earnings
                         </Typography>
                         <Typography
                           sx={{
@@ -959,7 +1028,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             color: theme.palette.primary.main,
                           }}
                         >
-                          GH₵ {stats.wallet_balance || 0}
+                          GH₵ {totalAllTime}
                         </Typography>
                       </Box>
                     </Grid>
@@ -972,7 +1041,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             mb: 0.5,
                           }}
                         >
-                          Money Held
+                          Profile Completion
                         </Typography>
                         <Typography
                           sx={{
@@ -981,7 +1050,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             color: '#E65100',
                           }}
                         >
-                          GH₵ {stats.in_escrow || 0}
+                          {completionRate}%
                         </Typography>
                       </Box>
                     </Grid>
@@ -994,7 +1063,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             mb: 0.5,
                           }}
                         >
-                          Pending Payments
+                          Avg Response
                         </Typography>
                         <Typography
                           sx={{
@@ -1003,7 +1072,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                             color: '#1565C0',
                           }}
                         >
-                          GH₵ {stats.pending_payments || 0}
+                          {averageResponseTime > 0 ? `${averageResponseTime}h` : 'N/A'}
                         </Typography>
                       </Box>
                     </Grid>
@@ -1063,7 +1132,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             <MetricCard>
               <AssessmentIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
               <Typography variant="h4" fontWeight={700} color="primary">
-                {stats.jobs_completed || 0}
+                {jobsCompleted}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Jobs Completed
@@ -1087,18 +1156,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
             <MetricCard>
               <TrendingIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
               <Typography variant="h4" fontWeight={700} color="primary">
-                {(
-                  ((stats.jobs_completed || 0) /
-                    Math.max(
-                      (stats.jobs_completed || 0) + (stats.jobs_cancelled || 0),
-                      1,
-                    )) *
-                  100
-                ).toFixed(0)}
+                {completionRate}
                 %
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Success Rate
+                Profile Completion
               </Typography>
             </MetricCard>
           </Grid>
@@ -1311,106 +1373,110 @@ function WorkerProfile({ workerId: workerIdProp }) {
     </GlassCard>
   );
 
-  const renderAvailability = () => (
-    <GlassCard sx={{ mb: 4 }}>
-      <CardContent>
-        <Typography
-          variant="h5"
-          fontWeight={700}
-          gutterBottom
-          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-        >
-          <ScheduleIcon color="primary" />
-          Availability
-        </Typography>
+  const renderAvailability = () => {
+    const availabilityStatus = availability?.status || availability?.availabilityStatus || 'available';
+    const availabilityHours = buildAvailabilityHoursMap(availability);
+    const averageResponseLabel = stats?.averageResponseTime
+      ? `${stats.averageResponseTime}h average`
+      : 'Not specified';
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom>
-              Current Status
-            </Typography>
-            <Chip
-              label={(availability?.availabilityStatus || 'available')
-                .toString()
-                .replace(/\b\w/g, (c) => c.toUpperCase())}
-              color={
-                (availability?.availabilityStatus || 'available') ===
-                  'available'
-                  ? 'success'
-                  : 'warning'
-              }
-              size="large"
-              sx={{ mb: 2 }}
-            />
+    return (
+      <GlassCard sx={{ mb: 4 }}>
+        <CardContent>
+          <Typography
+            variant="h5"
+            fontWeight={700}
+            gutterBottom
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+          >
+            <ScheduleIcon color="primary" />
+            Availability
+          </Typography>
 
-            <Typography variant="body1" gutterBottom>
-              <strong>Response Time:</strong> {availability?.responseTime || 'Not specified'}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Next Available:</strong>{' '}
-              {availability?.pausedUntil
-                ? new Date(availability.pausedUntil).toLocaleString()
-                : 'Immediately'}
-            </Typography>
-            {isOwner && (
-              <Box sx={{ mt: 2 }}>
-                <Button
-                  size="medium"
-                  variant="outlined"
-                  startIcon={<EditIcon />}
-                  sx={{ minHeight: 44 }}
-                  onClick={() => {
-                    setEditingAvailability(true);
-                    setAvailabilityDraft({
-                      availabilityStatus:
-                        availability?.availabilityStatus || 'available',
-                      availableHours: availability?.availableHours || {},
-                      pausedUntil: availability?.pausedUntil || null,
-                    });
-                  }}
-                >
-                  Edit Availability
-                </Button>
-              </Box>
-            )}
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" gutterBottom>
+                Current Status
+              </Typography>
+              <Chip
+                label={availabilityStatus
+                  .toString()
+                  .replace(/\b\w/g, (c) => c.toUpperCase())}
+                color={availabilityStatus === 'available' ? 'success' : 'warning'}
+                size="large"
+                sx={{ mb: 2 }}
+              />
+
+              <Typography variant="body1" gutterBottom>
+                <strong>Response Time:</strong> {averageResponseLabel}
+              </Typography>
+              <Typography variant="body1">
+                <strong>Next Available:</strong>{' '}
+                {availability?.nextAvailable ||
+                  (availability?.pausedUntil
+                    ? new Date(availability.pausedUntil).toLocaleString()
+                    : 'Immediately')}
+              </Typography>
+              {isOwner && (
+                <Box sx={{ mt: 2 }}>
+                  <Button
+                    size="medium"
+                    variant="outlined"
+                    startIcon={<EditIcon />}
+                    sx={{ minHeight: 44 }}
+                    onClick={() => {
+                      setEditingAvailability(true);
+                      setAvailabilityDraft({
+                        availabilityStatus,
+                        availableHours: availabilityHours,
+                        pausedUntil: availability?.pausedUntil || null,
+                      });
+                    }}
+                  >
+                    Edit Availability
+                  </Button>
+                </Box>
+              )}
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" gutterBottom>
+                Working Hours
+              </Typography>
+              <List dense>
+                {(() => {
+                  const days = [
+                    'monday',
+                    'tuesday',
+                    'wednesday',
+                    'thursday',
+                    'friday',
+                    'saturday',
+                    'sunday',
+                  ];
+                  const lines = days.map((day) => {
+                    const slot = availabilityHours[day];
+                    if (!slot) {
+                      return `${day[0].toUpperCase()}${day.slice(1)}: Unspecified`;
+                    }
+                    if (!slot.available) {
+                      return `${day[0].toUpperCase()}${day.slice(1)}: Unavailable`;
+                    }
+                    return `${day[0].toUpperCase()}${day.slice(1)}: ${slot.start} - ${slot.end}`;
+                  });
+                  return lines.map((text, index) => (
+                    <ListItem key={`${text}-${index}`}>
+                      <ListItemText primary={text} />
+                    </ListItem>
+                  ));
+                })()}
+              </List>
+            </Grid>
           </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom>
-              Working Hours
-            </Typography>
-            <List dense>
-              {(() => {
-                const hours = availability?.availableHours || {};
-                const days = [
-                  'monday',
-                  'tuesday',
-                  'wednesday',
-                  'thursday',
-                  'friday',
-                  'saturday',
-                  'sunday',
-                ];
-                const lines = days.map((d) => {
-                  const h = hours[d];
-                  if (!h)
-                    return `${d[0].toUpperCase()}${d.slice(1)}: Unspecified`;
-                  if (!h.available)
-                    return `${d[0].toUpperCase()}${d.slice(1)}: Unavailable`;
-                  return `${d[0].toUpperCase()}${d.slice(1)}: ${h.start} - ${h.end}`;
-                });
-                return lines.map((text, idx) => (
-                  <ListItem key={`${text}-${idx}`}>
-                    <ListItemText primary={text} />
-                  </ListItem>
-                ));
-              })()}
-            </List>
-          </Grid>
-        </Grid>
-      </CardContent>
-    </GlassCard>
-  );
+        </CardContent>
+      </GlassCard>
+    );
+  };
 
   const renderAvailabilityEditor = () => {
     if (!editingAvailability || !isOwner) return null;
@@ -1447,6 +1513,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
       try {
         await workerService.updateWorkerAvailability(resolvedWorkerId, draft);
         setAvailability({
+          status: draft.availabilityStatus,
           availabilityStatus: draft.availabilityStatus,
           availableHours: draft.availableHours,
           pausedUntil: draft.pausedUntil || null,

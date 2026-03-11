@@ -3853,7 +3853,30 @@ class WorkerController {
         latitude,
         longitude,
         serviceRadius,
+        availabilityStatus,
+        availableHours,
+        pausedUntil,
       } = req.body;
+
+      const normalizedAvailabilityStatus =
+        typeof availabilityStatus === 'string' && availabilityStatus.trim()
+          ? sanitizeText(availabilityStatus).toLowerCase()
+          : null;
+
+      let parsedPausedUntil;
+      if (pausedUntil !== undefined) {
+        if (pausedUntil === null || pausedUntil === '') {
+          parsedPausedUntil = null;
+        } else {
+          parsedPausedUntil = new Date(pausedUntil);
+          if (Number.isNaN(parsedPausedUntil.getTime())) {
+            return res.status(400).json({
+              success: false,
+              message: 'pausedUntil must be a valid ISO date string',
+            });
+          }
+        }
+      }
 
       const hasLatitude = latitude !== undefined && latitude !== null && latitude !== '';
       const hasLongitude = longitude !== undefined && longitude !== null && longitude !== '';
@@ -3930,6 +3953,16 @@ class WorkerController {
       if (Array.isArray(education)) profile.education = education;
       if (Array.isArray(languages)) profile.languages = languages;
       if (Array.isArray(portfolio)) profile.portfolioItems = portfolio;
+      if (normalizedAvailabilityStatus) {
+        user.availabilityStatus = normalizedAvailabilityStatus;
+        profile.availabilityStatus = normalizedAvailabilityStatus;
+      }
+      if (availableHours && typeof availableHours === 'object' && !Array.isArray(availableHours)) {
+        profile.availableHours = availableHours;
+      }
+      if (pausedUntil !== undefined) {
+        profile.pausedUntil = parsedPausedUntil;
+      }
       if (typeof profilePicture === 'string' && profilePicture.trim()) {
         profile.profilePicture = profilePicture.trim();
       }
@@ -3974,6 +4007,9 @@ class WorkerController {
         serviceRadius: Number.isFinite(Number(profile.serviceRadius)) ? Number(profile.serviceRadius) : null,
         languages: profile.languages || [],
         education: profile.education || [],
+        availabilityStatus: profile.availabilityStatus || user.availabilityStatus || 'available',
+        availableHours: profile.availableHours || {},
+        pausedUntil: profile.pausedUntil || null,
       };
 
       return res.json({ 

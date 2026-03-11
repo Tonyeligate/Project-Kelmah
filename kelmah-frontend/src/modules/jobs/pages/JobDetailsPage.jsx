@@ -10,6 +10,7 @@ import {
   Chip,
   Avatar,
   IconButton,
+  Stack,
   CircularProgress,
   Alert,
   Skeleton,
@@ -1263,14 +1264,14 @@ const JobDetailsPage = () => {
             py: 1.5,
             pb: 'calc(12px + env(safe-area-inset-bottom, 0px))',
             display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1fr) auto auto',
+            gridTemplateColumns: 'minmax(0, 1fr) auto',
             alignItems: 'center',
-            gap: 1,
+            gap: 1.25,
             backdropFilter: 'blur(8px)',
             boxShadow: `0 -12px 30px ${alpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.35 : 0.12)}`,
           }}
         >
-          <Box sx={{ minWidth: 0 }}>
+          <Box sx={{ minWidth: 0, pr: 0.5 }}>
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, display: 'block', mb: 0.35, letterSpacing: 0.3 }}>
               {isHirerUser
                 ? 'Client action'
@@ -1286,42 +1287,46 @@ const JobDetailsPage = () => {
                   : budgetDisplay}
             </Typography>
           </Box>
-          <Button
-            variant="contained"
-            onClick={handlePrimaryAction}
-            sx={{
-              bgcolor: '#D4AF37',
-              color: '#000',
-              fontWeight: 'bold',
-              py: 1.2,
-              fontSize: '0.95rem',
-              minHeight: 48,
-              borderRadius: 2,
-              minWidth: 156,
-              '&:hover': { bgcolor: '#B8941F' },
-            }}
-          >
-            {isHirerUser
-              ? 'Find Talent'
-              : job?.bidding?.bidStatus === 'open'
-                ? 'Place Your Bid'
-                : 'Apply Now'}
-          </Button>
-          <IconButton
-            onClick={handleToggleSave}
-            disabled={savingBookmark}
-            aria-label={saved ? 'Remove from saved jobs' : 'Save job'}
-            sx={{ color: saved ? accentColor : 'text.primary', minWidth: 48, minHeight: 48 }}
-          >
-            {saved ? <Bookmark /> : <BookmarkBorder />}
-          </IconButton>
-          <IconButton
-            onClick={handleShareJob}
-            aria-label="Share job"
-            sx={{ color: 'text.primary', minWidth: 48, minHeight: 48 }}
-          >
-            <Share />
-          </IconButton>
+          <Stack direction="row" spacing={0.75} alignItems="center" sx={{ flexShrink: 0 }}>
+            <Button
+              variant="contained"
+              onClick={handlePrimaryAction}
+              sx={{
+                bgcolor: '#D4AF37',
+                color: '#000',
+                fontWeight: 'bold',
+                py: 1.1,
+                px: { xs: 2.25, sm: 3 },
+                fontSize: '0.95rem',
+                minHeight: 48,
+                borderRadius: 2,
+                minWidth: { xs: 132, sm: 156 },
+                whiteSpace: 'nowrap',
+                '&:hover': { bgcolor: '#B8941F' },
+              }}
+            >
+              {isHirerUser
+                ? 'Find Talent'
+                : job?.bidding?.bidStatus === 'open'
+                  ? 'Place Your Bid'
+                  : 'Apply Now'}
+            </Button>
+            <IconButton
+              onClick={handleToggleSave}
+              disabled={savingBookmark}
+              aria-label={saved ? 'Remove from saved jobs' : 'Save job'}
+              sx={{ color: saved ? accentColor : 'text.primary', minWidth: 44, minHeight: 44 }}
+            >
+              {saved ? <Bookmark /> : <BookmarkBorder />}
+            </IconButton>
+            <IconButton
+              onClick={handleShareJob}
+              aria-label="Share job"
+              sx={{ color: 'text.primary', minWidth: 44, minHeight: 44 }}
+            >
+              <Share />
+            </IconButton>
+          </Stack>
         </Box>
       )}
 

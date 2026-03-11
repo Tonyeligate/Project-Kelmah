@@ -761,7 +761,7 @@ const FeaturedWorkersSection = () => {
                       <Button
                         variant="outlined"
                         fullWidth
-                        onClick={() => navigate(`/worker-profile/${worker.id}`)}
+                        onClick={() => navigate(`/workers/${worker.id}`)}
                         sx={{ textTransform: 'none', fontWeight: 600 }}
                       >
                         View profile

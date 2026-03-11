@@ -2,6 +2,39 @@
 
 ---
 
+### Session: Mobile Job Detail And Worker Profile Fix Pass March 11 2026 ✅ COMPLETED
+
+**Date**: March 11, 2026  
+**Scope**: Implement the confirmed March 11 fixes for the public worker profile and job detail mobile CTA flows, with priority on the broken mobile bid footer shown in the screenshot.
+
+**Acceptance Criteria**
+- Worker profile stops reading wrapped backend payloads as arrays and renders real portfolio/certificate counts.
+- Worker profile uses one coherent contract for availability and owner metrics instead of mixing profile, completeness, and legacy placeholder fields.
+- Worker profile bookmark actions become explicit and idempotent end to end.
+- Public worker profile links and sharing converge on one canonical route.
+- Job detail mobile sticky CTA no longer leaves the share action hanging below the main row.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+- `kelmah-frontend/src/modules/worker/pages/WorkerProfilePage.jsx`
+- `kelmah-frontend/src/modules/worker/components/WorkerCard.jsx`
+- `kelmah-frontend/src/modules/home/pages/HomePage.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `kelmah-backend/services/user-service/controllers/user.controller.js`
+- `spec-kit/MOBILE_JOB_DETAIL_WORKER_PROFILE_FIX_PASS_MAR11_2026.md`
+- `spec-kit/STATUS_LOG.md`
+
+**Implementation completed**
+- Reworked `WorkerProfile.jsx` so the public profile payload is the authoritative source for skills, portfolio items, certificates, availability, and core stats, while secondary calls are limited to work history, profile completeness, rating, and owner earnings.
+- Replaced unsupported owner metric fields with backed values from the existing contracts and removed the placeholder wallet-style reads that were always rendering zeros.
+- Canonicalized worker profile navigation and sharing onto `/workers/:workerId`, while preserving the legacy `/worker-profile/:workerId` route as a redirect target.
+- Fixed the worker bookmark flow so the frontend explicitly calls save vs remove, and the backend now treats `POST` and `DELETE` as idempotent state-setting operations instead of toggles.
+- Reworked the mobile job-detail sticky CTA into two grouped regions so the bid/apply button, save, and share controls remain aligned without the hanging share icon shown in the screenshot.
+
+**Validation**
+- Frontend production build passed via `npm run build` in `kelmah-frontend` after the worker-profile and job-detail fixes.
+- Backend syntax validation passed for `services/user-service/controllers/user.controller.js` via a direct Node module-load check.
+
 ### Session: Mobile Job Detail And Worker Profile UX Audit March 11 2026 ✅ COMPLETED
 
 **Date**: March 11, 2026  

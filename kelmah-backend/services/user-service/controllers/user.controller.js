@@ -1087,14 +1087,30 @@ exports.toggleBookmark = async (req, res) => {
     if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
     if (!workerId) return res.status(400).json({ success: false, message: 'workerId required' });
 
-    // Check existing (Mongo)
     const existing = await Bookmark.findOne({ userId, workerId });
+
+    if (req.method === 'DELETE') {
+      if (existing) {
+        await Bookmark.deleteOne({ _id: existing._id });
+      }
+      return res.json({ success: true, data: { workerId, bookmarked: false } });
+    }
+
+    if (existing) {
+      return res.json({ success: true, data: { workerId, bookmarked: true } });
+    }
+
+    if (req.method === 'POST') {
+      await Bookmark.create({ userId, workerId });
+      return res.json({ success: true, data: { workerId, bookmarked: true } });
+    }
+
     if (existing) {
       await Bookmark.deleteOne({ _id: existing._id });
       return res.json({ success: true, data: { workerId, bookmarked: false } });
     }
-    await Bookmark.create({ userId, workerId });
-    return res.json({ success: true, data: { workerId, bookmarked: true } });
+
+    return res.status(405).json({ success: false, message: 'Method not allowed' });
   } catch (e) {
     logger.error('toggleBookmark error:', e);
     return res.status(500).json({ success: false, message: 'Failed to toggle bookmark' });

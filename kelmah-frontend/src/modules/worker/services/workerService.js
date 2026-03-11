@@ -630,41 +630,31 @@ const workerService = {
       throw new Error('workerId is required to update availability');
     }
 
-    let response;
-    try {
-      response = await api.put(
-        workerPath(workerId, '/availability'),
-        availabilityData,
-      );
-    } catch (error) {
-      const status = error?.response?.status;
-      if (status && status !== 404 && status !== 405) {
-        throw error;
-      }
+    const payload = {
+      availabilityStatus:
+        availabilityData?.availabilityStatus || availabilityData?.status || 'available',
+      availableHours:
+        availabilityData?.availableHours && typeof availabilityData.availableHours === 'object'
+          ? availabilityData.availableHours
+          : {},
+      pausedUntil: availabilityData?.pausedUntil ?? null,
+    };
 
-      // ⚠️ FIX: Use correct path /users/workers/{id}/availability, not /availability/{id}
-      response = await api.put(
-        `/users/workers/${workerId}/availability`,
-        availabilityData,
-      );
-    }
+    await api.put(workerPath(workerId), payload);
 
-    const payload = unwrapPayload(response);
-    const status = payload?.status;
+    const status = payload.availabilityStatus;
 
     const normalized = {
       status,
-      isAvailable:
-        typeof payload?.isAvailable === 'boolean'
-          ? payload.isAvailable
-          : status === 'available' || status === true,
-      timezone: payload?.timezone || 'Africa/Accra',
-      daySlots: Array.isArray(payload?.daySlots) ? payload.daySlots : [],
-      schedule: Array.isArray(payload?.schedule) ? payload.schedule : [],
-      nextAvailable: payload?.nextAvailable ?? null,
-      message: payload?.message || null,
-      pausedUntil: payload?.pausedUntil ?? null,
-      lastUpdated: payload?.lastUpdated ?? null,
+      isAvailable: status === 'available' || status === true,
+      timezone: 'Africa/Accra',
+      daySlots: Array.isArray(availabilityData?.daySlots) ? availabilityData.daySlots : [],
+      schedule: Array.isArray(availabilityData?.schedule) ? availabilityData.schedule : [],
+      nextAvailable: availabilityData?.nextAvailable ?? null,
+      message: availabilityData?.message || null,
+      pausedUntil: payload.pausedUntil,
+      lastUpdated: new Date().toISOString(),
+      availableHours: payload.availableHours,
     };
 
     return attachMetadata(normalized, payload);
