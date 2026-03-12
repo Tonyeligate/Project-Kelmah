@@ -12,6 +12,18 @@ const DEFAULT_PRODUCTION_ORIGINS = [
 ];
 
 const LOCALTUNNEL_PATTERN = /^https:\/\/.*\.loca\.lt$/i;
+const KNOWN_VERCEL_PREVIEW_PREFIXES = [
+  'project-kelmah',
+  'kelmah-frontend',
+  'kelmah',
+];
+
+const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const buildPreviewPattern = (prefix) =>
+  new RegExp(`^https://${escapeRegExp(prefix)}(?:-[a-z0-9-]+)?\\.vercel\\.app$`, 'i');
+
+const KNOWN_VERCEL_PREVIEW_PATTERNS = KNOWN_VERCEL_PREVIEW_PREFIXES.map(buildPreviewPattern);
 
 const parseOrigins = (value) =>
   String(value || '')
@@ -31,9 +43,9 @@ const buildAllowedOrigins = ({
 
   const origins = [
     ...LOCAL_DEVELOPMENT_ORIGINS,
+    ...DEFAULT_PRODUCTION_ORIGINS,
     frontendUrl,
     ...parseOrigins(envOrigins),
-    ...(isProduction ? DEFAULT_PRODUCTION_ORIGINS : []),
     ...(!isProduction ? parseOrigins(localTunnelUrl) : []),
   ];
 
@@ -52,6 +64,10 @@ const createOriginMatcher = (options = {}) => {
       }
 
       if (allowedOrigins.includes(origin)) {
+        return true;
+      }
+
+      if (KNOWN_VERCEL_PREVIEW_PATTERNS.some((pattern) => pattern.test(origin))) {
         return true;
       }
 

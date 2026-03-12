@@ -57,8 +57,16 @@
 	- `services/user-service/tests/dashboard-routes.auth.test.js`
 - Syntax checks passed for the touched user-service files via `node --check`.
 - Live dry-run validation of the refactored script against Atlas completed successfully with `--limit=2` and reported zero remaining drift in the sampled records.
+- Live post-redeploy verification on the active direct Render user-service host `https://kelmah-user-service-y4js.onrender.com` succeeded:
+	- Internal admin-style request to `GET /api/users/workers/alignment/audit?limit=5` returned `200` with a zero-drift summary.
+	- Returned summary: `totalWorkers: 5`, `inspectedProfiles: 5`, `missingProfiles: 0`, `workersNeedingChanges: 0`, `userUpdates: 0`, `profileUpdates: 0`, `profilesCreated: 0`.
+	- Health surfaces `/health`, `/api/health`, `/health/ready`, `/health/live`, and `/health/db` all returned `200`.
+	- `/health/db` confirmed the live service is running with `NODE_ENV=production` and a healthy MongoDB connection.
+	- Runtime scheduler state remains non-observable from HTTP because no endpoint exposes the maintenance timer or last run metadata.
 
 ## Current Status
 
 - Long-term worker summary drift guardrails are implemented.
-- Admins now have a read-only audit path, and production user-service can self-heal future drift on a schedule using the same reconciliation logic as the maintenance script.
+- The live admin audit path is deployed and returning the expected zero-drift summary.
+- Production user-service is running in `NODE_ENV=production`, so the maintenance scheduler should be enabled by default unless `WORKER_PROFILE_ALIGNMENT_MAINTENANCE_ENABLED=false` was explicitly set in the deployment environment.
+- Absolute confirmation of the live timer state is still unavailable until the service exposes maintenance status or logs are inspected.

@@ -205,7 +205,7 @@ const RecentActivityFeed = ({ jobs = [], applications = {}, activities = null })
       <Box sx={{ px: { xs: 2, sm: 3 }, py: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
         <Button
           size="small"
-          onClick={() => navigate('/hirer/dashboard')}
+          onClick={() => navigate('/notifications')}
           sx={{ textTransform: 'none', fontWeight: 600 }}
         >
           View All Activity

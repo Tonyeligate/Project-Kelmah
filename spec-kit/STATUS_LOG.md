@@ -1,4 +1,54 @@
+- Investigated the reported messaging CORS and payment dashboard failures from the live console dump through the deployed gateway and backend stack.
+- Live repro against `https://kelmah-api-gateway-gf3g.onrender.com` showed authenticated `GET /api/messages/conversations`, `GET /api/payments/wallet`, `GET /api/payments/escrows`, `GET /api/payments/transactions/history`, and `GET /api/users/workers/stats/trades` all return `200`, so the payment 500s are not reproducing on the current deployment.
+- Isolated the remaining live defect to the Socket.IO handshake path: `GET /socket.io/?EIO=4&transport=polling` returns `200` with origin `https://project-kelmah.vercel.app` but returns `500 INTERNAL_ERROR` with preview-style origins such as `https://project-kelmah-git-main-kelmah.vercel.app` and `https://random-preview-kelmah.vercel.app`.
+- Root cause: `kelmah-backend/shared/utils/corsPolicy.js` only allowed a fixed list of production Vercel domains even though the platform also serves preview deployments, so proxied messaging websocket handshakes from preview fronts were rejected by downstream service CORS checks.
+- Fixed the shared matcher to allow Kelmah-owned Vercel preview origins (`project-kelmah*`, `kelmah-frontend*`, `kelmah*`) across gateway and services, and added regression coverage in `kelmah-backend/shared/utils/corsPolicy.test.js`.
 # Kelmah Platform - Current Status & Development Log
+
+---
+
+### Session: Frontend Full UI UX And Functional Audit March 12 2026 ✅ COMPLETED
+
+**Date**: March 12, 2026  
+**Scope**: Audit the deployed frontend page graph, shared UI components, and connected backend flows for design defects, functional regressions, security gaps, and high-impact maintainability/performance issues without triggering unnecessary redeploys.
+
+**Acceptance Criteria**
+- Inventory the routed frontend pages and key shared cards/components that shape the current user experience.
+- Verify major interaction chains where possible: routing, protected navigation, data loading, mutations, uploads, messaging, payments, and profile/job discovery flows.
+- Produce a severity-ranked audit with exact file references, impact, and concrete fix guidance.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/App.jsx`
+- `kelmah-frontend/src/main.jsx`
+- `kelmah-frontend/src/modules/**/pages/*.jsx`
+- `kelmah-frontend/src/modules/**/components/*.jsx`
+- `kelmah-frontend/src/modules/**/services/*.js`
+- `kelmah-frontend/src/modules/common/services/axios.js`
+- `kelmah-backend/api-gateway/**`
+- `kelmah-backend/services/**/routes/*.js`
+- `kelmah-backend/services/**/controllers/*.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- The deployed Vercel frontend expects same-origin `/api` and `/socket.io` routing via runtime config, but both root and frontend `vercel.json` files only rewrite non-API SPA routes to `index.html` and do not forward backend or websocket traffic.
+- The landing page requests worker trade stats anonymously from `/api/users/workers/stats/trades`, but the API Gateway public allow-list does not include that path even though the downstream user-service route is intentionally optional-auth.
+- The shared header requests worker completion status without supplying the required `workerId`, so worker-only status chips can silently fail even when the backend route is healthy.
+- The generic dashboard data helper still calls admin-only `/users/dashboard/*` endpoints and silently falls back to zeros for non-admin roles, which hides authorization mismatches and risks misleading analytics if the hook is reused.
+
+**Implementation (March 12, 2026)**
+- Added Vercel rewrites in both `vercel.json` (root) and `kelmah-frontend/vercel.json` to proxy `/api/:path*` to the Render gateway origin.
+- Updated `runtime-config.json` to point `websocketUrl` and `WS_URL` directly to the gateway origin (Vercel rewrites cannot proxy WebSocket upgrades).
+- Added `/workers/stats/trades` to the gateway public allow-list in `api-gateway/server.js`.
+- Fixed `Header.jsx` to pass the worker `id` into `getWorkerStats(id)`.
+- Frontend production build passes after all changes.
+
+**Validation**
+- Frontend production build previously passed during the audit session.
+- Live direct gateway checks succeeded for representative authenticated flows including auth login, worker profile fetch, availability, completeness, work history, earnings, hirer jobs, messaging conversations, wallet, and notification preferences.
+- Live direct gateway checks confirmed the frontend-domain production break: `https://kelmah-frontend-cyan.vercel.app/api/health/aggregate`, `/api/jobs/stats`, and `/socket.io/?EIO=4&transport=polling` all returned `404`.
+- Live direct gateway checks confirmed the landing-page contract issue: anonymous `GET /api/users/workers/stats/trades` returned `401`, while authenticated worker requests to real profile endpoints returned `200`.
+- Frontend lint currently fails heavily with `19,744` problems (`19,689` errors, `55` warnings), dominated by Prettier formatting debt plus prop-types and a small number of rule violations, so maintainability automation is not presently trustworthy.
 
 ---
 
@@ -46,6 +96,12 @@
   - `services/user-service/routes/user.routes.js`
   - `services/user-service/server.js`
 - Live dry-run validation of the refactored script succeeded against Atlas with `--limit=2` and reported zero remaining drift in the sampled worker records.
+- Live post-redeploy verification against the active direct Render user-service host `https://kelmah-user-service-y4js.onrender.com` succeeded:
+  - Internal admin-style probe to `GET /api/users/workers/alignment/audit?limit=5` returned `200` with `success: true`.
+  - Live summary returned `totalWorkers: 5`, `inspectedProfiles: 5`, `missingProfiles: 0`, `workersNeedingChanges: 0`, `userUpdates: 0`, `profileUpdates: 0`, `profilesCreated: 0`.
+  - `GET /health`, `/api/health`, `/health/ready`, `/health/live`, and `/health/db` all returned `200`.
+  - `/health/db` confirmed `NODE_ENV: production`, MongoDB `readyState: connected`, and database `kelmah_platform`.
+  - Current externally visible limitation: the service exposes no maintenance-status endpoint or timer state, so the scheduler cannot be directly measured from HTTP alone. The strongest live evidence is that the deployed service is the updated production build and the scheduler defaults to enabled in production unless `WORKER_PROFILE_ALIGNMENT_MAINTENANCE_ENABLED=false` is explicitly set.
 
 ### Session: Mobile Native Device Smoke Test March 12 2026 🔄 IN PROGRESS
 

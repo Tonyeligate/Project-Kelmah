@@ -376,12 +376,13 @@ const createJob = async (req, res, next) => {
 
   try {
     // SECURITY: allowlist body fields to prevent prototype pollution during processing
+    // S-05 FIX: Removed 'status' — clients cannot set arbitrary status on creation
     const JOB_CREATE_FIELDS = [
       'title', 'description', 'category', 'budget', 'paymentType', 'currency',
       'duration', 'location', 'locationType', 'skills', 'requirements',
       'bidding', 'locationDetails', 'region', 'district', 'locationRegion',
       'locationDistrict', 'coordinates', 'experienceLevel', 'visibility',
-      'status', 'tags', 'attachments', 'urgency', 'deadline', 'coverImage',
+      'tags', 'attachments', 'urgency', 'deadline', 'coverImage',
       'coverImageMetadata'
     ];
     const body = {};
@@ -1353,8 +1354,9 @@ const getJobs = async (req, res, next) => {
     // Tolerant visibility filter: show jobs explicitly marked 'public' OR with no visibility
     // field at all (legacy jobs inserted before the visibility field was added should be
     // treated as public — no hirer deliberately set them to private).
+    // C-04 FIX: Tolerate legacy 'Open' status variant alongside canonical 'open'
     let query = {
-      status: "open",
+      status: { $in: ['open', 'Open'] },
       $and: [
         { $or: [
           { visibility: "public" },
@@ -2039,7 +2041,7 @@ const getDashboardJobs = async (req, res) => {
   let recentJobs = [];
 
   try {
-    recentJobs = await Job.find({ status: 'open', visibility: 'public' })
+    recentJobs = await Job.find({ status: { $in: ['open', 'Open'] }, visibility: 'public' })
       .sort({ createdAt: -1 })
       .limit(10)
       .populate('hirer', 'firstName lastName companyName')
@@ -2062,9 +2064,9 @@ const getDashboardJobs = async (req, res) => {
   }
 
   const [totalOpenResult, totalTodayResult] = await Promise.allSettled([
-    Job.countDocuments({ status: 'open', visibility: 'public' }),
+    Job.countDocuments({ status: { $in: ['open', 'Open'] }, visibility: 'public' }),
     Job.countDocuments({
-      status: 'open',
+      status: { $in: ['open', 'Open'] },
       visibility: 'public',
       createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) },
     }),
@@ -2216,9 +2218,10 @@ const getJobRecommendations = async (req, res, next) => {
     // Use worker skills in the initial query to get better candidates
     const workerSkillsList = collectWorkerSkills(worker);
 
-    // Add skill pre-filter if worker has skills — use case-insensitive regex
+    // C-02 FIX: Expand synonyms in DB pre-filter so "carpentry" also matches "woodwork"/"joinery"
     if (workerSkillsList.length > 0) {
-      const skillRegexes = workerSkillsList.map(s => new RegExp(`^${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'));
+      const expandedSkills = workerSkillsList.flatMap(s => expandSkillSynonyms(s));
+      const skillRegexes = buildCaseInsensitiveExactRegexes(expandedSkills);
       query.$and.push({
         $or: [
           { 'requirements.primarySkills': { $in: skillRegexes } },
@@ -2231,7 +2234,7 @@ const getJobRecommendations = async (req, res, next) => {
     const candidateJobs = await Job.find(query)
       .populate('hirer', 'firstName lastName profilePicture profileImage rating totalJobsPosted companyName businessName')
       .sort({ createdAt: -1 })
-      .limit(Math.max(numericLimit * 10, 60))
+      .limit(Math.max(numericLimit * 3, 30))
       .lean();
 
     const scoredJobs = candidateJobs
@@ -2425,15 +2428,18 @@ function calculateJobMatchScore(job, worker) {
     (workerSkills || []).some((workerSkill) => skillsSemanticallyMatch(jobSkill, workerSkill)),
   );
 
+  // C-01 FIX: Jobs with no skills defined get 0 skill credit (was 0.5 — inflated matches)
   const skillFit = jobSkills.length > 0
     ? (skillMatches.length / jobSkills.length)
-    : 0.5;
+    : 0;
   const skillScore = skillFit * WEIGHTS.skills;
   breakdown.skills = Math.round(skillScore * 10) / 10;
   totalScore += skillScore;
 
   if (skillMatches.length > 0) {
     reasons.push(`${skillMatches.length}/${jobSkills.length} skill matches`);
+  } else if (jobSkills.length === 0) {
+    reasons.push('Job has no skill requirements listed');
   }
 
   let locationScore = 0;
@@ -2944,7 +2950,8 @@ const advancedJobSearch = async (req, res, next) => {
     // FIX H3: Compute actual distance when user coordinates are provided
     const distanceField = (latitude && longitude)
       ? {
-          // Haversine approximation in km using $addFields operators
+          // C-03 FIX: Equirectangular approximation with cosine latitude correction
+          // (previous formula was Euclidean — ignored longitude convergence at latitude)
           $let: {
             vars: {
               jobLat: { $ifNull: ['$locationDetails.coordinates.lat', 0] },
@@ -2959,7 +2966,12 @@ const advancedJobSearch = async (req, res, next) => {
                   $sqrt: {
                     $add: [
                       { $pow: [{ $subtract: [{ $degreesToRadians: '$$jobLat' }, { $degreesToRadians: '$$userLat' }] }, 2] },
-                      { $pow: [{ $subtract: [{ $degreesToRadians: '$$jobLng' }, { $degreesToRadians: '$$userLng' }] }, 2] },
+                      { $pow: [
+                        { $multiply: [
+                          { $cos: { $degreesToRadians: { $divide: [{ $add: ['$$jobLat', '$$userLat'] }, 2] } } },
+                          { $subtract: [{ $degreesToRadians: '$$jobLng' }, { $degreesToRadians: '$$userLng' }] },
+                        ] }, 2,
+                      ] },
                     ],
                   },
                 },
@@ -4245,20 +4257,21 @@ const getPersonalizedJobRecommendations = async (req, res, next) => {
       const preferredRegion = userPerformance?.locationPreferences?.primaryRegion;
 
       if (preferredRegion && jobRegion && preferredRegion === jobRegion) {
-        score += 8;
-      } else if (workerRegion && jobRegion && workerRegion === String(jobRegion).trim().toLowerCase()) {
         score += 5;
+      } else if (workerRegion && jobRegion && workerRegion === String(jobRegion).trim().toLowerCase()) {
+        score += 3;
       }
 
       if (userPerformance?.performanceTier && userPerformance.performanceTier === job.performanceTier) {
-        score += 6;
+        score += 4;
       }
 
+      // C-05 FIX: Reduced bonus magnitudes to prevent score clamping at 100
       const daysSincePosted = Math.floor((Date.now() - new Date(job.createdAt).getTime()) / (1000 * 60 * 60 * 24));
-      if (daysSincePosted <= 3) score += 10;
-      else if (daysSincePosted <= 7) score += 5;
-      else if (daysSincePosted > 30) score -= 10;
-      else if (daysSincePosted > 14) score -= 5;
+      if (daysSincePosted <= 3) score += 5;
+      else if (daysSincePosted <= 7) score += 3;
+      else if (daysSincePosted > 30) score -= 8;
+      else if (daysSincePosted > 14) score -= 4;
 
       score = Math.max(0, Math.min(100, Math.round(score)));
 

@@ -176,7 +176,7 @@ const Header = ({
         if (id) {
           const [avail, comp] = await Promise.all([
             workerService.getWorkerAvailability(id).catch(() => null),
-            workerService.getWorkerStats().catch(() => null),
+            workerService.getWorkerStats(id).catch(() => null),
           ]);
           if (avail) setHeaderAvailability(avail);
           if (comp) setHeaderCompletion(comp);

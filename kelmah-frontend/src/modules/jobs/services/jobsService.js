@@ -116,14 +116,15 @@ const transformJobListItem = (job) => {
     if (import.meta.env.DEV) console.warn(
       `⚠️ Job ${job._id || job.id} missing employer data - flagged for admin review`,
     );
+    // U-06 FIX: Neutral fallback — “Anonymous Employer” is honest, not misleading
     return {
-      name: 'Employer Name Pending',
+      name: 'Anonymous Employer',
       logo: null,
       verified: false,
       rating: null,
       id: null,
-      _isFallback: true, // Flag for backend data improvement
-      _needsAdminReview: true, // Flag for admin attention
+      _isFallback: true,
+      _needsAdminReview: true,
       _jobId: job._id || job.id,
       _source: 'fallback',
     };
@@ -159,9 +160,10 @@ const transformJobListItem = (job) => {
     skills: normalizeSkills(job.skills),
     // Map API date fields to frontend expected fields
     postedDate: job.createdAt ? new Date(job.createdAt) : new Date(),
+    // U-05 FIX: Use actual bid deadline or null — never fabricate a deadline
     deadline: job.endDate
       ? new Date(job.endDate)
-      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      : (job.bidding?.bidDeadline ? new Date(job.bidding.bidDeadline) : null),
     startDate: job.startDate ? new Date(job.startDate) : new Date(),
     // Employer information
     employer,
@@ -172,8 +174,8 @@ const transformJobListItem = (job) => {
     // Additional fields for display
     proposalCount: job.proposalCount || 0,
     viewCount: job.viewCount || 0,
-    // LOW-14 FIX: Default to 0 instead of fake 4.5 rating
-    rating: job.rating || 0,
+    // U-03 FIX: Only show rating if it actually exists on the job — null hides the stars widget
+    rating: job.rating || null,
     // LOW-15 FIX: Only use server-side urgent flag (don't auto-fabricate urgency)
     urgent: !!job.urgent,
     verified: job.verified || employer.verified,

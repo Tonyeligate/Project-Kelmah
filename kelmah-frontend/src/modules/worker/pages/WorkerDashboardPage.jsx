@@ -47,6 +47,7 @@ import {
   clearWorkerErrors,
 } from '../services/workerSlice';
 import workerService from '../services/workerService';
+import jobsService from '../../jobs/services/jobsService';
 import ProfileCompletionCard from '../components/ProfileCompletionCard';
 import QuickActionsRow from '../components/QuickActionsRow';
 import { Helmet } from 'react-helmet-async';
@@ -117,8 +118,12 @@ const WorkerDashboardPage = () => {
   const isLoading = useSelector(selectLoadingApps);
   const error     = useSelector(selectErrorApps);
 
-  // Profile completion state (Phase 1)
-  const [profileCompletion, setProfileCompletion] = useState({ percentage: 100, missingFields: [] });
+  // U-04 FIX: Default to 0% so incomplete profiles always see the prompt
+  const [profileCompletion, setProfileCompletion] = useState({ percentage: 0, missingFields: ['Loading...'] });
+
+  // U-01: Job recommendations state
+  const [recommendations, setRecommendations] = useState([]);
+  const [recsLoading, setRecsLoading] = useState(false);
 
   // Enhanced state for error handling and loading feedback
   const [retryCount, setRetryCount] = useState(0);
@@ -266,6 +271,24 @@ const WorkerDashboardPage = () => {
     loadProfileCompletion();
     return () => { cancelled = true; };
   }, [user?.id, user?._id, user?.userId]);
+
+  // U-01: Fetch job recommendations for the worker
+  useEffect(() => {
+    let cancelled = false;
+    const loadRecs = async () => {
+      setRecsLoading(true);
+      try {
+        const jobs = await jobsService.getPersonalizedJobRecommendations({ limit: 6 });
+        if (!cancelled) setRecommendations(Array.isArray(jobs) ? jobs : []);
+      } catch (_) {
+        // Non-blocking — recommendations section will show empty state
+      } finally {
+        if (!cancelled) setRecsLoading(false);
+      }
+    };
+    loadRecs();
+    return () => { cancelled = true; };
+  }, []);
 
   // Get time-based greeting
   const getGreeting = () => {
@@ -727,6 +750,92 @@ const WorkerDashboardPage = () => {
             Quick Actions
           </Typography>
           <QuickActionsRow />
+        </Box>
+      )}
+
+      {/* U-01 FIX: Job Recommendations Section */}
+      {!isLoading && (
+        <Box sx={{ mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+            <Typography variant="body2" fontWeight={600} color="text.primary">
+              Recommended Jobs
+            </Typography>
+            <Button
+              size="small"
+              component={RouterLink}
+              to="/jobs"
+              sx={{ textTransform: 'none', fontWeight: 600 }}
+            >
+              Browse All
+            </Button>
+          </Box>
+          {recsLoading ? (
+            <Grid container spacing={1.5}>
+              {[1, 2, 3].map((i) => (
+                <Grid item xs={12} sm={6} md={4} key={i}>
+                  <Skeleton variant="rounded" height={120} />
+                </Grid>
+              ))}
+            </Grid>
+          ) : recommendations.length > 0 ? (
+            <Grid container spacing={1.5}>
+              {recommendations.slice(0, 6).map((job) => (
+                <Grid item xs={12} sm={6} md={4} key={job.id}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      cursor: 'pointer',
+                      transition: 'box-shadow 0.2s',
+                      '&:hover': { boxShadow: 2 },
+                    }}
+                    onClick={() => navigate(`/jobs/${job.id}`)}
+                  >
+                    <Typography variant="subtitle2" fontWeight={600} noWrap>
+                      {job.title}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" noWrap>
+                      {job.employer?.name || 'Employer'} • {job.location || 'Remote'}
+                    </Typography>
+                    <Box sx={{ mt: 1, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                      {(job.skills || []).slice(0, 3).map((skill) => (
+                        <Box
+                          key={skill}
+                          sx={{
+                            px: 1,
+                            py: 0.25,
+                            borderRadius: 1,
+                            bgcolor: 'action.hover',
+                            fontSize: '0.7rem',
+                          }}
+                        >
+                          {skill}
+                        </Box>
+                      ))}
+                    </Box>
+                    {job.budget && (
+                      <Typography variant="body2" fontWeight={600} color="primary" sx={{ mt: 1 }}>
+                        {job.currency || 'GHS'} {typeof job.budget === 'object' ? `${job.budget.min}-${job.budget.max}` : job.budget}
+                      </Typography>
+                    )}
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          ) : (
+            <Paper
+              elevation={0}
+              sx={{ p: 3, textAlign: 'center', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}
+            >
+              <SearchIcon sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }} />
+              <Typography variant="body2" color="text.secondary">
+                No recommendations yet. Complete your profile and add skills to get matched!
+              </Typography>
+            </Paper>
+          )}
         </Box>
       )}
 

@@ -100,7 +100,8 @@ const WORKER_RANK_WEIGHTS = {
 const clamp01 = (n) => Math.max(0, Math.min(1, Number.isFinite(n) ? n : 0));
 
 // ALGO IMPROVEMENT: Added recency decay so recently-active workers rank higher
-const scoreWorker = (worker = {}) => {
+// A-05 FIX: Added optional searchSkills param for skill-relevance boosting
+const scoreWorker = (worker = {}, searchSkills = []) => {
   const ratingNorm = clamp01(Number(worker.rating || 0) / 5);
   const jobsNorm = clamp01(
     Math.log10(1 + Number(worker.totalJobsCompleted || 0)) / 3,
@@ -113,6 +114,27 @@ const scoreWorker = (worker = {}) => {
   if (lastActive) {
     const daysSinceActive = (Date.now() - new Date(lastActive).getTime()) / (1000 * 60 * 60 * 24);
     recencyNorm = clamp01(1 - (daysSinceActive / 180));
+  }
+
+  // A-05: Skill relevance — fraction of searched skills the worker has
+  let skillRelevance = 0;
+  if (searchSkills.length > 0) {
+    const workerSkillsLower = (worker.skills || []).map(s => String(s).toLowerCase());
+    const matchCount = searchSkills.filter(s =>
+      workerSkillsLower.some(ws => ws.includes(s.toLowerCase()))
+    ).length;
+    skillRelevance = matchCount / searchSkills.length;
+  }
+
+  // When search skills present, allocate 20% weight to skill relevance from rating+recency
+  if (searchSkills.length > 0) {
+    return (
+      (WORKER_RANK_WEIGHTS.rating - 0.10) * ratingNorm +
+      WORKER_RANK_WEIGHTS.jobsCompleted * jobsNorm +
+      WORKER_RANK_WEIGHTS.verified * verifiedBonus +
+      (WORKER_RANK_WEIGHTS.recency - 0.10) * recencyNorm +
+      0.20 * skillRelevance
+    );
   }
 
   return (
@@ -477,7 +499,7 @@ const buildWorkerDirectoryConditions = ({
   return conditions;
 };
 
-const formatWorkerDirectoryWorkers = (workerDocs = [], geoSearch = null) =>
+const formatWorkerDirectoryWorkers = (workerDocs = [], geoSearch = null, searchSkills = []) =>
   workerDocs
     .map((workerDoc) => {
       const canonicalWorker = buildCanonicalWorkerSnapshot(workerDoc.user || {}, workerDoc);
@@ -524,7 +546,7 @@ const formatWorkerDirectoryWorkers = (workerDocs = [], geoSearch = null) =>
         profession: canonicalWorker.profession || 'General Worker',
         workType: canonicalWorker.workType || 'Full-time',
         skills: canonicalWorker.skills,
-        rankScore: scoreWorker(canonicalWorker),
+        rankScore: scoreWorker(canonicalWorker, searchSkills),
         latitude: hasCoordinates ? workerLat : null,
         longitude: hasCoordinates ? workerLng : null,
         distance,
@@ -727,7 +749,7 @@ const executeWorkerDirectoryQuery = async ({
     pipeline.push({ $sort: buildWorkerDirectorySortClause(sortBy) });
 
     const rawWorkers = await WorkerProfileModel.aggregate(pipeline);
-    const exactGeoMatches = formatWorkerDirectoryWorkers(rawWorkers, geoSearch);
+    const exactGeoMatches = formatWorkerDirectoryWorkers(rawWorkers, geoSearch, skillsList);
 
     if (sortBy === 'distance') {
       exactGeoMatches.sort((left, right) => {
@@ -769,7 +791,7 @@ const executeWorkerDirectoryQuery = async ({
   const [result] = await WorkerProfileModel.aggregate(pipeline);
   const rawWorkers = Array.isArray(result?.items) ? result.items : [];
   const totalCount = result?.total?.[0]?.count || 0;
-  const formattedWorkers = formatWorkerDirectoryWorkers(rawWorkers, null);
+  const formattedWorkers = formatWorkerDirectoryWorkers(rawWorkers, null, skillsList);
 
   return {
     workers: formattedWorkers,

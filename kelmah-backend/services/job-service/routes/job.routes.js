@@ -84,8 +84,8 @@ router.get('/applications/me', authorizeRoles('worker'), jobController.getMyAppl
 router.get('/applications/received-summary', authorizeRoles('hirer'), jobController.getHirerApplicationsSummary);
 router.get('/location', jobController.getJobsByLocation);
 router.get('/expired', authorizeRoles('admin'), jobController.getExpiredJobs);
-router.get('/recommendations/personalized', authorizeRoles('worker'), jobController.getPersonalizedJobRecommendations);
-router.get("/recommendations", authorizeRoles("worker"), jobController.getJobRecommendations);
+router.get('/recommendations/personalized', authorizeRoles('worker'), createLimiter('recommendations'), jobController.getPersonalizedJobRecommendations);
+router.get("/recommendations", authorizeRoles("worker"), createLimiter('recommendations'), jobController.getJobRecommendations);
 router.get('/skill/:skill', jobController.getJobsBySkill);
 router.get('/tier/:tier', jobController.getJobsByPerformanceTier);
 

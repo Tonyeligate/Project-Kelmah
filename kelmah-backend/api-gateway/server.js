@@ -678,6 +678,7 @@ app.use(
         /^\/workers$/,
         /^\/workers\/search$/,
         /^\/workers\/search\/location$/,
+        /^\/workers\/stats\/trades$/,
         /^\/workers\/[a-fA-F0-9]{24}$/,
         /^\/workers\/[a-fA-F0-9]{24}\/(availability|completeness)$/,
         /^\/workers\/[a-fA-F0-9]{24}\/(skills|work-history|portfolio|certificates)$/,
