@@ -3,9 +3,17 @@
   "buildCommand": "cd kelmah-frontend && npm run build",
   "outputDirectory": "kelmah-frontend/build",
   "installCommand": "cd kelmah-frontend && npm install --legacy-peer-deps",
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
+  ],
   "rewrites": [
     {
-      "source": "/((?!api|socket\\.io).*)",
+      "source": "/((?!api|assets|socket\\.io).*)",
       "destination": "/index.html"
     }
   ]
