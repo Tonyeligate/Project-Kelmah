@@ -120,7 +120,31 @@
 - `spec-kit/STATUS_LOG.md`
 
 **Dry-audit findings so far**
-- Pending device and emulator availability checks.
+- This Windows host has `adb` installed, but no connected Android device, no configured Android AVD, and no local `xcodebuild` runtime for iOS execution.
+- The Android SDK command-line tools are present and the `emulator` package can be installed locally, but the required Android 35 system-image download stalled during provisioning, so a bootable emulator could not be created in this session.
+- The repository has no Android instrumentation test suite for these three mobile flows, and the existing iOS UI coverage only covers the unauthenticated auth shell.
+
+**Implementation completed**
+- Re-read the Android and iOS session, jobs, and messaging flow surfaces for the three requested smoke-test paths before running diagnostics.
+- Confirmed the local runtime surface: `adb` present, but no attached Android device, no installed Android system image or AVD, and no local iOS runtime tooling on this Windows host.
+- Ran live gateway probes against the same contracts the native apps use:
+  - worker login and hirer login both succeeded;
+  - worker-side `POST /api/messages/conversations` succeeded using a live job-detail hirer target and the created conversation immediately appeared in the conversation list;
+  - hirer-side `GET /api/jobs/my-jobs` succeeded for multiple seeded hirer accounts using the native contract.
+- Verified the expired-session backend path by probing `GET /api/auth/me` with an invalid bearer token and the native refresh endpoint contract with `POST /api/auth/refresh-token`.
+
+**Validation**
+- Android or iOS true device-runtime smoke execution could not be completed from this workspace because:
+  - no Android device was connected;
+  - no usable Android emulator image or AVD was locally available;
+  - iOS runtime tooling is unavailable on Windows.
+- Live gateway fallback verification results:
+  - `POST /api/auth/login` succeeded for worker `kwame.asante1@kelmah.test` and hirer `giftyafisa@gmail.com`.
+  - `GET /api/auth/me` with an intentionally invalid bearer token returned `401`, matching the expired-session failure condition the native recovery UI is designed to catch.
+  - `POST /api/auth/refresh-token` using the live worker refresh token returned `401` in this probe, so the live gateway currently rejects that refresh path for the sampled session instead of demonstrating successful recovery.
+  - `GET /api/jobs` and `GET /api/jobs/:id` both returned `200` for the worker probe.
+  - `POST /api/messages/conversations` returned `200` and created or reused conversation `69aa04bbe0a41572beebe44d`, which was then present in `GET /api/messages/conversations`.
+  - `GET /api/jobs/my-jobs` returned `200` for all sampled hirer fixtures, but none of the current live hirer accounts has more than `9` jobs, so a second-page pagination transition could not be exercised against the present dataset.
 
 ### Session: Mobile CTA Budget Wording Refinement March 12 2026 ✅ COMPLETED
 

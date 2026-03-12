@@ -1,6 +1,28 @@
 require("dotenv").config();
 const Stripe = require("stripe");
-const stripeClient = Stripe(process.env.STRIPE_SECRET_KEY);
+
+// Lazily resolved so the server boots without a Stripe key —
+// payment operations that call stripeClient will throw a clear
+// "not configured" error at request time instead of crashing startup.
+let _stripeClient = null;
+const getStripeClient = () => {
+  if (_stripeClient) return _stripeClient;
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) {
+    throw new Error(
+      'Stripe is not configured — set the STRIPE_SECRET_KEY environment variable',
+    );
+  }
+  _stripeClient = Stripe(key);
+  return _stripeClient;
+};
+
+// Convenience proxy: existing call-sites use `stripeClient.*` unchanged
+const stripeClient = new Proxy({}, {
+  get(_, prop) {
+    return getStripeClient()[prop];
+  },
+});
 
 /**
  * Create a payment intent
