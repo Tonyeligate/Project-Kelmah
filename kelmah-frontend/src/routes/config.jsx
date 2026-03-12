@@ -312,6 +312,14 @@ const QuickJobRoleRedirect = ({
   return <Navigate to="/dashboard" replace />;
 };
 
+const LegacyWorkerProfileRedirect = () => {
+  const { workerId } = useParams();
+  const location = useLocation();
+  const search = location.search || '';
+
+  return <Navigate to={workerId ? `/workers/${workerId}${search}` : '/search'} replace />;
+};
+
 const routes = [
   {
     path: '/',
@@ -366,10 +374,10 @@ const routes = [
         path: 'workers/:workerId',
         element: <WorkerProfilePage />,
       },
-      // Alternative worker profile route (used by worker cards)
+      // Legacy public worker profile route kept as a redirect-only alias
       {
         path: 'worker-profile/:workerId',
-        element: <WorkerProfilePage />,
+        element: <LegacyWorkerProfileRedirect />,
       },
       // Public Find Workers / Find Talents route
       {

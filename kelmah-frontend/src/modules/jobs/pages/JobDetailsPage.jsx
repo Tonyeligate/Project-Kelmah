@@ -168,6 +168,76 @@ const maskEmail = (value) => {
   return `${visibleLocal}${maskedTail}@${domain}`;
 };
 
+const getCompactPaymentSuffix = (value) => {
+  const suffix = toDisplayText(value, 'fixed').toLowerCase();
+
+  switch (suffix) {
+    case 'hour':
+    case 'hourly':
+    case 'per hour':
+      return '/hr';
+    case 'day':
+    case 'daily':
+    case 'per day':
+      return '/day';
+    case 'week':
+    case 'weekly':
+    case 'per week':
+      return '/wk';
+    case 'month':
+    case 'monthly':
+    case 'per month':
+      return '/mo';
+    case 'project':
+      return 'proj';
+    case 'fixed':
+    default:
+      return 'fix';
+  }
+};
+
+const formatCompactMoney = (value) => {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return '';
+
+  const absoluteValue = Math.abs(numericValue);
+
+  if (absoluteValue >= 1000000) {
+    return `${(numericValue / 1000000).toFixed(absoluteValue >= 10000000 ? 0 : 1).replace(/\.0$/, '')}M`;
+  }
+
+  if (absoluteValue >= 1000) {
+    return `${(numericValue / 1000).toFixed(absoluteValue >= 100000 ? 0 : 1).replace(/\.0$/, '')}K`;
+  }
+
+  return numericValue.toLocaleString();
+};
+
+const getCompactBudgetDisplay = (job, currency = 'GH₵') => {
+  if (!job?.budget) return 'TBD';
+
+  const suffix = getCompactPaymentSuffix(job?.budget?.type || job?.paymentType || 'fixed');
+  const appendSuffix = (amountLabel) => `${amountLabel}${suffix.startsWith('/') ? suffix : ` ${suffix}`}`;
+
+  if (typeof job.budget === 'object') {
+    const { min, max, amount } = job.budget;
+
+    if (amount != null) {
+      return appendSuffix(`${currency}${formatCompactMoney(amount)}`);
+    }
+
+    if (min != null && max != null) {
+      if (Number(min) === Number(max)) {
+        return appendSuffix(`${currency}${formatCompactMoney(min)}`);
+      }
+
+      return appendSuffix(`${currency}${formatCompactMoney(min)}-${formatCompactMoney(max)}`);
+    }
+  }
+
+  return appendSuffix(`${currency}${formatCompactMoney(job.budget)}`);
+};
+
 const formatReadableDate = (value, options) => {
   if (!value) return null;
   const parsed = new Date(value);
@@ -547,6 +617,7 @@ const JobDetailsPage = () => {
   const hasClientDetails = Boolean(
     hirerId || hirerName || clientCompany || clientEmail || hirerLocation || hirerJoined || hirerJobsPosted !== null,
   );
+  const compactBudgetDisplay = getCompactBudgetDisplay(job, currency);
   const clientJobContext = [
     { label: 'Job budget', value: budgetDisplay },
     { label: 'Applications', value: `${job?.proposalCount || 0} received` },
@@ -592,13 +663,13 @@ const JobDetailsPage = () => {
       ? (isCompactMobile ? 'Place Bid' : 'Place Your Bid')
       : 'Apply Now';
   const mobileCtaLabel = isHirerUser
-    ? 'Client action'
+    ? (isCompactMobile ? 'Client' : 'Client action')
     : job?.bidding?.bidStatus === 'open'
-      ? 'Bid range'
-      : 'Job budget';
+      ? (isCompactMobile ? 'Budget' : 'Bid range')
+      : (isCompactMobile ? 'Budget' : 'Job budget');
   const mobileCtaValue = isHirerUser
-    ? 'Use talent search for matching workers.'
-    : budgetDisplay;
+    ? (isCompactMobile ? 'Use talent search.' : 'Use talent search for matching workers.')
+    : (isCompactMobile ? compactBudgetDisplay : budgetDisplay);
 
   const handleOpenClientProfile = () => {
     if (!hasClientDetails) {
@@ -615,7 +686,7 @@ const JobDetailsPage = () => {
         minHeight: '100vh',
         py: { xs: 2, sm: 4, md: 5 },
         px: { xs: 0, sm: 1 },
-        pb: isMobile ? `calc(${STICKY_CTA_HEIGHT + 16}px + env(safe-area-inset-bottom, 0px))` : undefined,
+        pb: isMobile ? 0 : undefined,
         bgcolor: 'background.default',
       }}
     >
@@ -1294,7 +1365,16 @@ const JobDetailsPage = () => {
             </Typography>
             <Typography
               variant="body2"
-              sx={{ color: 'text.primary', fontWeight: 800, lineHeight: 1.2, fontSize: '0.98rem', pr: 0.5 }}
+              sx={{
+                color: 'text.primary',
+                fontWeight: 800,
+                lineHeight: 1.2,
+                fontSize: { xs: '0.9rem', sm: '0.98rem' },
+                pr: 0.5,
+                whiteSpace: isCompactMobile ? 'nowrap' : 'normal',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
             >
               {mobileCtaValue}
             </Typography>

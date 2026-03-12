@@ -2,6 +2,87 @@
 
 ---
 
+### Session: Mobile CTA Budget Wording Refinement March 12 2026 ✅ COMPLETED
+
+**Date**: March 12, 2026  
+**Scope**: Do a final wording-only refinement for the compact job-detail mobile CTA so budget text stays concise on very narrow phones.
+
+**Acceptance Criteria**
+- Keep the existing mobile CTA layout unchanged.
+- Shorten the compact budget value further where possible without losing meaning.
+- Verify the frontend still builds cleanly.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- The compact CTA already uses shorter labels, but payment suffixes like `fixed` still consume more width than necessary on the narrowest phones.
+- This remaining refinement is a wording concern, not a layout-structure issue.
+
+**Implementation completed**
+- Refined the compact mobile budget formatter in `JobDetailsPage.jsx` so narrow-screen CTA values use shorter payment suffixes like `fix`, `/hr`, `/day`, `/wk`, and `/mo` instead of longer words.
+- Shortened the no-budget fallback in the compact CTA to `TBD`, keeping the narrow-phone footer value concise without altering the layout.
+
+**Validation**
+- Frontend production build passed via `npm run build` in `kelmah-frontend` after the compact budget wording refinement.
+
+### Session: Worker Route Redirect Cleanup And Final Mobile CTA Copy Pass March 12 2026 ✅ COMPLETED
+
+**Date**: March 12, 2026  
+**Scope**: Replace the legacy public worker-profile route with a redirect-only route element and do one final narrow-screen pass on the mobile job-detail CTA copy.
+
+**Acceptance Criteria**
+- Keep `/worker-profile/:workerId` backward compatible without routing it through the full worker profile page component.
+- Remove redirect-only logic from `WorkerProfilePage.jsx` so the canonical page just renders `/workers/:workerId`.
+- Tighten the mobile CTA copy on very narrow phones so the left text stays compact and balanced.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/worker/pages/WorkerProfilePage.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- The legacy worker-profile route can be made cleaner by redirecting at the route layer instead of mounting `WorkerProfilePage` and redirecting inside the page component.
+- The mobile CTA layout is materially improved, but the budget copy still stays verbose on very narrow phones because it uses the full `budgetDisplay` string even in the compact footer.
+
+**Implementation completed**
+- Added a dedicated redirect-only route element in `config.jsx` for `/worker-profile/:workerId`, preserving backward compatibility while keeping the canonical public page on `/workers/:workerId`.
+- Removed the page-level legacy redirect effect from `WorkerProfilePage.jsx`, so that component now only renders the canonical public worker profile route.
+- Tightened the compact mobile CTA copy in `JobDetailsPage.jsx` by using shorter narrow-screen labels and a condensed budget string for very small phones, while keeping the fuller copy on larger mobile widths.
+
+**Validation**
+- Frontend production build passed via `npm run build` in `kelmah-frontend` after the redirect cleanup and CTA copy refinements.
+
+### Session: Mobile Job Detail Bottom Spacing Audit March 12 2026 ✅ COMPLETED
+
+**Date**: March 12, 2026  
+**Scope**: Audit and tighten the remaining reserved-space behavior on the mobile job detail page after the sticky CTA docking and compactness fixes.
+
+**Acceptance Criteria**
+- Confirm whether the job-detail page still duplicates mobile bottom spacing already applied by the layout shell.
+- Remove any page-level mobile bottom reserve that is no longer needed after the CTA compaction pass.
+- Verify the frontend still builds cleanly.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/worker/pages/WorkerProfilePage.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- The remaining `worker-profile/:workerId` route entry is not dead duplication yet; it is the route match that allows `WorkerProfilePage` to redirect legacy URLs to `/workers/:workerId`.
+- `Layout.jsx` already applies mobile bottom padding globally, so `JobDetailsPage.jsx` no longer needs extra mobile-only bottom padding after the CTA was reduced and docked.
+
+**Implementation completed**
+- Removed the page-level mobile `pb` reserve from `JobDetailsPage.jsx` so the page now uses the layout shell's single global mobile bottom padding instead of layering another CTA-specific reserve on top.
+- Confirmed the legacy public worker profile route should stay in place until it is replaced with a dedicated redirect route element, because deleting it outright would stop old shared links from resolving.
+
+**Validation**
+- Frontend production build passed via `npm run build` in `kelmah-frontend` after the bottom spacing adjustment.
+
 ### Session: Mobile Job Detail CTA Compactness Pass March 11 2026 ✅ COMPLETED
 
 **Date**: March 11, 2026  

@@ -8,7 +8,7 @@ import WorkerProfile from '../components/WorkerProfile';
 /**
  * WorkerProfilePage - Public page for viewing worker profiles
  * Displays complete worker information including skills, reviews, portfolio, etc.
- * Accessible via /workers/:workerId, with legacy /worker-profile/:workerId redirects
+ * Accessible via /workers/:workerId. Legacy /worker-profile/:workerId redirects are handled in route config.
  * 
  * Uses key prop on WorkerProfile to force re-mount when navigating between different
  * worker profiles, ensuring the component fetches fresh data for each worker.
@@ -17,12 +17,6 @@ const WorkerProfilePage = () => {
   const { workerId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (workerId && location.pathname.startsWith('/worker-profile/')) {
-      navigate(`/workers/${workerId}`, { replace: true });
-    }
-  }, [location.pathname, navigate, workerId]);
 
   // Scroll to top when workerId changes (new profile navigation)
   useEffect(() => {
@@ -61,7 +55,7 @@ const WorkerProfilePage = () => {
 
       <Container maxWidth="xl" sx={{ py: { xs: 1, md: 4 }, px: { xs: 1, md: 3 } }}>
         <Box>
-          {/* Pass workerId as prop - component handles navigation changes via useEffect */}
+          {/* Pass workerId as prop so the profile remounts cleanly between public worker routes */}
           <WorkerProfile workerId={workerId} />
         </Box>
       </Container>
