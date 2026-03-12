@@ -42,6 +42,7 @@ const { ensureDbReadyMiddleware } = require('./middlewares/ensureDbReady');
 
 // Import centralized logger
 const { createLogger, createHttpLogger, createErrorLogger, setupGlobalErrorHandlers } = require('./utils/logger');
+const { startWorkerProfileAlignmentMaintenance } = require('./services/workerProfileAlignment.service');
 
 // Create service logger
 const logger = createLogger('user-service');
@@ -569,6 +570,7 @@ if (require.main === module) {
         logger.info(`📊 Environment: ${process.env.NODE_ENV}`);
         logger.info(`🗄️ Database: MongoDB (kelmah_platform)`);
         logger.info(`🎯 Server is ready to accept requests!`);
+        startWorkerProfileAlignmentMaintenance({ logger });
       });
     })
     .catch((err) => {

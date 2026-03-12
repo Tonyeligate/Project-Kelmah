@@ -2,6 +2,70 @@
 
 ---
 
+### Session: Worker Profile Drift Guardrails March 12 2026 ✅ COMPLETED
+
+**Date**: March 12, 2026  
+**Scope**: Add long-term worker summary drift guardrails by exposing an admin-only audit endpoint and scheduling automatic reconciliation inside user-service.
+
+**Acceptance Criteria**
+- Admins can request a non-mutating alignment audit with summary counts and sample mismatches.
+- User-service can periodically self-heal worker summary drift without manual script execution.
+- The reconciliation logic is shared across the script, endpoint, and scheduler.
+
+**Mapped execution surface**
+- `kelmah-backend/services/user-service/routes/user.routes.js`
+- `kelmah-backend/services/user-service/controllers/worker.controller.js`
+- `kelmah-backend/services/user-service/server.js`
+- `kelmah-backend/services/user-service/scripts/reconcile-worker-profile-alignment.js`
+- `kelmah-backend/shared/utils/workerProfileAlignment.js`
+- `spec-kit/WORKER_PROFILE_DRIFT_GUARDRAILS_MAR12_2026.md`
+
+**Dry-audit findings so far**
+- The current reconciliation logic exists only in the maintenance script, so the service cannot yet reuse it for background healing or admin inspection.
+- The user-service already has protected admin route patterns and startup lifecycle hooks that can host the new endpoint and scheduler without introducing a second auth model.
+
+**Implementation completed**
+- Added `kelmah-backend/services/user-service/services/workerProfileAlignment.service.js` as the shared reconciliation surface for dry-run audits, apply-mode repairs, and scheduled maintenance.
+- Refactored `services/user-service/scripts/reconcile-worker-profile-alignment.js` to reuse the shared service.
+- Added admin-only `GET /api/users/workers/alignment/audit` in `user.routes.js` and `worker.controller.js` for non-mutating drift inspection with summary counts and sample mismatches.
+- Started periodic worker-profile alignment maintenance from `services/user-service/server.js` with env-controlled cadence and in-process overlap protection.
+- Added `services/user-service/tests/worker-profile-alignment.service.test.js` and extended `services/user-service/tests/dashboard-routes.auth.test.js` for the new route and shared service behavior.
+
+**Validation**
+- Focused Jest passed for:
+  - `services/user-service/tests/worker-profile-alignment.service.test.js`
+  - `services/user-service/tests/worker-profile-alignment.test.js`
+  - `services/user-service/tests/dashboard-routes.auth.test.js`
+  - `services/user-service/tests/worker-directory.controller.test.js`
+  - Result: `4` suites passed, `17` tests passed, `0` failures.
+- `--detectOpenHandles` passed for the newly added guardrail suites, so the earlier generic Jest warning was not reproduced on the new code paths.
+- `node --check` passed for:
+  - `services/user-service/services/workerProfileAlignment.service.js`
+  - `services/user-service/scripts/reconcile-worker-profile-alignment.js`
+  - `services/user-service/controllers/worker.controller.js`
+  - `services/user-service/routes/user.routes.js`
+  - `services/user-service/server.js`
+- Live dry-run validation of the refactored script succeeded against Atlas with `--limit=2` and reported zero remaining drift in the sampled worker records.
+
+### Session: Mobile Native Device Smoke Test March 12 2026 🔄 IN PROGRESS
+
+**Date**: March 12, 2026  
+**Scope**: Smoke-test the patched native mobile flows on available devices, with focus on expired-session recovery, worker message-from-job-detail, and hirer jobs pagination.
+
+**Acceptance Criteria**
+- Validate the expired-session recovery flow on an available mobile device or emulator.
+- Validate worker-side message creation from native job detail on an available mobile device or emulator.
+- Validate hirer-side jobs pagination on an available mobile device or emulator.
+- Record any platform or environment limits that block true device execution.
+
+**Mapped execution surface**
+- `kelmah-mobile-android/`
+- `kelmah-mobile-ios/`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- Pending device and emulator availability checks.
+
 ### Session: Mobile CTA Budget Wording Refinement March 12 2026 ✅ COMPLETED
 
 **Date**: March 12, 2026  
@@ -250,6 +314,15 @@
   - explicit trade filters remain stale in production: `primaryTrade`, `trade`, and `category` variants all returned the same near-default worker list, and the live response metadata omitted `searchParams.primaryTrade`, which the current controller should echo
   - personalized recommendations remain stale in production: authenticated workers `kwaku.addai@kelmah.test`, `adjoa.oppong@kelmah.test`, `efua.mensah@kelmah.test`, and `yaa.adjei@kelmah.test` each received `200` responses with `0` jobs even though the current controller query resolved `6`, `6`, `5`, and `5` strict candidate jobs respectively against the same Atlas data
 - Conclusion: the stored worker summary drift is repaired, but production user-service and job-service behavior still shows runtime parity lag against the current workspace code for trade filtering and personalized recommendations.
+- March 12, 2026 post-redeploy verification confirms parity is now restored:
+  - gateway `/health` and `/api/health/aggregate` both returned `200`, with auth, user, job, payment, messaging, and review all healthy
+  - worker search now echoes normalized trade filters in `searchParams.primaryTrade` and returns trade-focused sets for `primaryTrade`, `trade`, and `category` variants
+  - personalized recommendations now return live results for repaired workers:
+    - `kwaku.addai@kelmah.test` -> `5` visible jobs, `6` total recommendations, average match `46.2`
+    - `adjoa.oppong@kelmah.test` -> `5` visible jobs, `6` total recommendations, average match `43.8`
+    - `efua.mensah@kelmah.test` -> `5` visible jobs, `5` total recommendations, average match `41`
+    - `yaa.adjei@kelmah.test` -> `5` visible jobs, `5` total recommendations, average match `57.8`
+  - this closes the prior runtime parity lag; live worker search and recommendation behavior now reflects the repaired Atlas dataset and current backend code.
 
 ### Session: Hirer Applications URL State And Sort Alias Test March 11 2026 ✅ COMPLETED
 

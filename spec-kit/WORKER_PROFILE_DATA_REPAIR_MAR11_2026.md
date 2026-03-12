@@ -98,3 +98,25 @@
 - The remaining production precision issues are runtime parity issues, not additional stored-data drift:
 	- user-service live runtime is still not honoring the current `primaryTrade`/`trade`/`category` search contract
 	- job-service live runtime is still returning empty personalized recommendations for workers whose current-code candidate query resolves live jobs against the same Atlas dataset
+
+## Post-Redeploy Verification March 12 2026
+
+- After backend redeploy, gateway aggregate health returned `200` and all core services reported healthy.
+- Explicit trade filtering is now live and honoring the current contract:
+	- `primaryTrade`, `trade`, and `category` all normalize into `searchParams.primaryTrade` in the response.
+	- `GET /api/users/workers/search?primaryTrade=carpentry&limit=5` now returns the same carpentry-focused set as the free-text query path.
+	- `GET /api/users/workers/search?primaryTrade=electrical work&limit=5` now returns the same electrical-focused set as the free-text query path.
+- Personalized recommendations are now live against the repaired dataset:
+	- `kwaku.addai@kelmah.test` -> `5` visible jobs, `6` total recommendations, average match score `46.2`
+	- `adjoa.oppong@kelmah.test` -> `5` visible jobs, `6` total recommendations, average match score `43.8`
+	- `efua.mensah@kelmah.test` -> `5` visible jobs, `5` total recommendations, average match score `41`
+	- `yaa.adjei@kelmah.test` -> `5` visible jobs, `5` total recommendations, average match score `57.8`
+- Example live recommendation alignment after redeploy:
+	- landscaping worker received `Garden Landscaping and Paving`
+	- painting/interior-design worker received painting and interior-fit-out jobs
+	- plumbing/carpentry-overlap worker received multiple plumbing jobs
+
+## Final Outcome
+
+- The worker summary repair is verified end to end.
+- Live worker search and live personalized recommendations are now both reflecting the repaired dataset and the current backend contract.

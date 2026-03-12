@@ -49,6 +49,8 @@ jest.mock('../controllers/user.controller', () => mockUserController);
 const mockWorkerController = {
   getRecentJobs: jest.fn((_req, res) => res.json({ success: true })),
   searchWorkers: jest.fn((_req, res) => res.json({ success: true })),
+  getTradeCategoryStats: jest.fn((_req, res) => res.json({ success: true })),
+  getWorkerProfileAlignmentAudit: jest.fn((_req, res) => res.json({ success: true })),
   getAllWorkers: jest.fn((_req, res) => res.json({ success: true })),
   getWorkerById: jest.fn((_req, res) => res.json({ success: true })),
   updateWorkerProfile: jest.fn((_req, res) => res.json({ success: true })),
@@ -89,12 +91,14 @@ describe('user-service dashboard route authorization', () => {
     app = express();
     app.use(router);
     Object.values(mockUserController).forEach((mockFn) => mockFn.mockClear());
+    Object.values(mockWorkerController).forEach((mockFn) => mockFn.mockClear());
   });
 
   test.each([
     ['/dashboard/metrics', mockUserController.getDashboardMetrics],
     ['/dashboard/workers', mockUserController.getDashboardWorkers],
     ['/dashboard/analytics', mockUserController.getDashboardAnalytics],
+    ['/workers/alignment/audit', mockWorkerController.getWorkerProfileAlignmentAudit],
   ])('blocks non-admin access to %s', async (path, controllerMock) => {
     const response = await request(app)
       .get(path)
@@ -108,6 +112,7 @@ describe('user-service dashboard route authorization', () => {
     ['/dashboard/metrics', mockUserController.getDashboardMetrics],
     ['/dashboard/workers', mockUserController.getDashboardWorkers],
     ['/dashboard/analytics', mockUserController.getDashboardAnalytics],
+    ['/workers/alignment/audit', mockWorkerController.getWorkerProfileAlignmentAudit],
   ])('allows admin access to %s', async (path, controllerMock) => {
     const response = await request(app)
       .get(path)

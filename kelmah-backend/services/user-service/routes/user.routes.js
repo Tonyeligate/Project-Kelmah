@@ -110,6 +110,16 @@ router.get('/workers/stats/trades', optionalGatewayVerification, (req, res, next
   next();
 }, WorkerController.getTradeCategoryStats);
 
+router.get('/workers/alignment/audit', verifyGatewayRequest, authorizeRoles('admin'), createLimiter('admin'), (req, res, next) => {
+  if (process.env.NODE_ENV === 'development') {
+    logger.debug('✅ [USER-ROUTES] /workers/alignment/audit route hit:', {
+      query: req.query,
+      fullPath: req.originalUrl,
+    });
+  }
+  next();
+}, WorkerController.getWorkerProfileAlignmentAudit);
+
 router.get('/workers', optionalGatewayVerification, (req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     logger.debug('✅ [USER-ROUTES] /workers route hit:', {

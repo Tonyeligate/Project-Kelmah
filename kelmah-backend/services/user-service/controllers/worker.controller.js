@@ -14,6 +14,7 @@ const auditLogger = require('../../../shared/utils/audit-logger');
 const { verifyAccessToken, decodeUserFromClaims } = require('../../../shared/utils/jwt');
 const { escapeRegex } = require('../../../shared/utils/sanitize');
 const { buildCanonicalWorkerSnapshot } = require('../../../shared/utils/canonicalWorker');
+const { runWorkerProfileAlignmentAudit } = require('../services/workerProfileAlignment.service');
 const { logger } = require('../utils/logger');
 
 const sanitizeText = (val) => {
@@ -1872,6 +1873,34 @@ const isDbUnavailableError = (error) => {
 };
 
 class WorkerController {
+  static async getWorkerProfileAlignmentAudit(req, res) {
+    try {
+      const { limit, sample, workerId } = req.query;
+      const result = await runWorkerProfileAlignmentAudit({
+        apply: false,
+        limit,
+        workerId,
+        sampleSize: sample,
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: 'Worker profile alignment audit retrieved successfully',
+        data: result,
+      });
+    } catch (error) {
+      logger.error('Worker profile alignment audit error:', error);
+      if (error?.message?.toLowerCase().includes('timed out waiting for mongodb connection')) {
+        return res.status(503).json({
+          success: false,
+          message: 'User Service database is reconnecting. Please try again shortly.',
+          code: 'USER_DB_NOT_READY',
+        });
+      }
+      return handleServiceError(res, error, 'Worker profile alignment audit failed');
+    }
+  }
+
   /**
    * Get all workers with filtering and pagination - FIXED to use MongoDB
    */
