@@ -44,7 +44,7 @@ import heroBg from '../assets/images/background.jpg';
 import carpentryImg from '../assets/images/carpentry.jpg';
 import constructionImg from '../assets/images/construction.jpg';
 import electricalImg from '../assets/images/electrical.jpg';
-import { API_BASE_URL } from '../config/environment';
+import homeService from '../modules/home/services/homeService';
 
 /* ─── animation variants ─────────────────────────────────
  * heroAnim  → fires immediately on mount (animate, not whileInView)
@@ -116,27 +116,41 @@ const HomeLanding = () => {
   // Live platform stats fetched from the backend — fall back to empty string while loading
   const [platformStats, setPlatformStats] = useState(null);
   const [tradeCategoryStats, setTradeCategoryStats] = useState({});
+
   useEffect(() => {
-    fetch(`${API_BASE_URL}/jobs/stats`)
-      .then((r) => r.ok ? r.json() : null)
-      .then((body) => {
-        if (body?.data) setPlatformStats(body.data);
+    const controller = new AbortController();
+    let isMounted = true;
+
+    homeService
+      .getPlatformStats({ signal: controller.signal })
+      .then((data) => {
+        if (isMounted && data) {
+          setPlatformStats(data);
+        }
       })
-      .catch(() => { /* silently keep null — hardcoded fallbacks will display */ });
+      .catch(() => {
+        /* silently keep null — hardcoded fallbacks will display */
+      });
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, []);
 
   useEffect(() => {
+    const controller = new AbortController();
     let isActive = true;
 
-    fetch(`${API_BASE_URL}/users/workers/stats/trades`)
-      .then((r) => r.ok ? r.json() : null)
-      .then((body) => {
-        if (!isActive || !Array.isArray(body?.data?.categories)) {
+    homeService
+      .getWorkerTradeStats({ signal: controller.signal })
+      .then((data) => {
+        if (!isActive || !Array.isArray(data?.categories)) {
           return;
         }
 
         setTradeCategoryStats(
-          body.data.categories.reduce((stats, category) => {
+          data.categories.reduce((stats, category) => {
             stats[category.query] = Number(category.count) || 0;
             return stats;
           }, {}),
@@ -146,6 +160,7 @@ const HomeLanding = () => {
 
     return () => {
       isActive = false;
+      controller.abort();
     };
   }, []);
 

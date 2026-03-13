@@ -64,13 +64,16 @@ import {
 } from '@mui/icons-material';
 // ✅ MOBILE-AUDIT P3: framer-motion import removed — AnimatePresence/motion.div wrappers already replaced
 import ErrorBoundary from '../../../components/common/ErrorBoundary';
-import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
 import { safeFormatDate } from '@/modules/common/utils/formatters';
 import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 // Removed AuthContext import to prevent dual state management conflicts
 // import { useAuth } from '../../auth/hooks/useAuth';
 import { useMessages } from '../contexts/MessageContext';
 import { messagingService } from '../services/messagingService';
+import {
+  formatMessageTime,
+  getMessagePreview,
+} from '../utils/conversationUtils';
 // ConversationList + Chatbox rendered inline — imports removed (dead code)
 import SEO from '../../common/components/common/SEO';
 import EmptyState from '../../../components/common/EmptyState';
@@ -196,6 +199,13 @@ const EnhancedMessagingPage = () => {
       blobUrlsRef.current = [];
       messageBlobUrlsSnapshot.forEach((url) => URL.revokeObjectURL(url));
     };
+  }, []);
+
+  useEffect(() => () => {
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
   }, []);
 
   // Deep-link and initial load (runs once per URL change, not on every conversations update)
@@ -494,49 +504,6 @@ const EnhancedMessagingPage = () => {
           ? 'online'
           : 'offline',
     };
-  };
-
-  const formatMessageTime = (timestamp) => {
-    if (!timestamp) return '';
-    try {
-      const date = new Date(timestamp);
-      if (isNaN(date.getTime())) return '';
-      if (isToday(date)) {
-        return format(date, 'HH:mm');
-      } else if (isYesterday(date)) {
-        return 'Yesterday';
-      } else {
-        return format(date, 'MMM dd');
-      }
-    } catch {
-      return '';
-    }
-  };
-
-  const getMessagePreview = (message) => {
-    if (!message) return 'No messages yet';
-    const text = message.text || message.content || '';
-    const mType = message.messageType || '';
-    
-    if (mType === 'image') return '🖼️ Photo';
-    if (mType === 'video') return '🎥 Video';
-    if (mType === 'audio') return '🎵 Audio';
-    if (mType === 'file' || mType === 'document') return '📎 File';
-    
-    // Check if it's a URL to an image or video
-    const isImageUrl = text.match(/\.(jpeg|jpg|gif|png|webp|bmp)($|\?)/i) || text.includes('/image/upload/') || text.includes('cloudinary.com/');
-    const isVideoUrl = text.match(/\.(mp4|webm|avi|mov)($|\?)/i) || text.includes('/video/upload/');
-    
-    if (isImageUrl) return '🖼️ Photo';
-    if (isVideoUrl) return '🎥 Video';
-    
-    if (message.hasAttachment || (Array.isArray(message.attachments) && message.attachments.length > 0)) {
-      if (!text.trim() || text.startsWith('http')) return '📎 Attachment';
-    }
-    
-    if (text.startsWith('http')) return '📎 Attachment';
-    
-    return text || 'No messages yet';
   };
 
   const getMessageStatus = (message) => {

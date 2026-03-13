@@ -145,6 +145,12 @@ export const API_ENDPOINTS = {
   },
 };
 
-// Debugging helper (development only — suppressed in production via main.jsx log gate)\nif (isDevelopment) {\n  console.log('🔧 Development Mode - API Endpoints:', {\n    AUTH_REGISTER: API_ENDPOINTS.AUTH.REGISTER,\n    JOBS_LIST: API_ENDPOINTS.JOB.LIST,\n  });\n}
+// Debugging helper (development only — suppressed in production via main.jsx log gate)
+if (isDevelopment) {
+  console.log('🔧 Development Mode - API Endpoints:', {
+    AUTH_REGISTER: API_ENDPOINTS.AUTH.REGISTER,
+    JOBS_LIST: API_ENDPOINTS.JOB.LIST,
+  });
+}
 
 export default SERVICES;

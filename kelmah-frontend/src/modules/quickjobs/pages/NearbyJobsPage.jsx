@@ -165,7 +165,13 @@ const NearbyJobsPage = () => {
       if (result.success) {
         setQuoteSuccess(true);
         // Remove job from list (they've already quoted)
-        setJobs(prev => prev.filter(j => j._id !== selectedJob._id));
+        const selectedJobId = selectedJob?._id || selectedJob?.id;
+        setJobs((prev) =>
+          prev.filter((jobItem) => {
+            const jobItemId = jobItem?._id || jobItem?.id;
+            return String(jobItemId) !== String(selectedJobId);
+          }),
+        );
         
         quoteTimerRef.current = setTimeout(() => {
           setQuoteDialogOpen(false);

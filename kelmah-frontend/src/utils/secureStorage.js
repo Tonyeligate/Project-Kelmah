@@ -448,7 +448,17 @@ class SecureStorage {
 
   // Auth-specific methods
   setAuthToken(token, options = {}) {
-    return this.setItem('auth_token', token, AUTH_TOKEN_TTL, options);
+    const hasSessionToken = this.hasItemInScope('auth_token', false);
+    const hasPersistentToken = this.hasItemInScope('auth_token', true);
+    const persistent =
+      typeof options.persistent === 'boolean'
+        ? options.persistent
+        : !hasSessionToken && hasPersistentToken;
+
+    return this.setItem('auth_token', token, AUTH_TOKEN_TTL, {
+      ...options,
+      persistent,
+    });
   }
 
   getAuthToken() {
@@ -456,7 +466,17 @@ class SecureStorage {
   }
 
   setRefreshToken(token, options = {}) {
-    return this.setItem('refresh_token', token, REFRESH_TOKEN_TTL, options);
+    const hasSessionToken = this.hasItemInScope('refresh_token', false);
+    const hasPersistentToken = this.hasItemInScope('refresh_token', true);
+    const persistent =
+      typeof options.persistent === 'boolean'
+        ? options.persistent
+        : !hasSessionToken && hasPersistentToken;
+
+    return this.setItem('refresh_token', token, REFRESH_TOKEN_TTL, {
+      ...options,
+      persistent,
+    });
   }
 
   getRefreshToken() {

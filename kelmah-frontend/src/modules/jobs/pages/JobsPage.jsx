@@ -73,6 +73,7 @@ import tradeCategoriesData from '../data/tradeCategories.json';
 import ghanaLocations from '../data/ghanaLocations.json';
 import { useJobsQuery } from '../hooks/useJobsQuery';
 import jobsApi from '../services/jobsService';
+import { getSortedUniqueJobs } from '../utils/jobListUtils';
 import {
   Container,
   Grid,
@@ -864,30 +865,7 @@ const JobsPage = () => {
   }, []); // Fetch once on mount, refresh via interval
 
   // Deduplicate jobs by ID (server handles filtering; no redundant client-side filter)
-  const uniqueJobs = useMemo(() => {
-    const deduped = Array.from(
-      new Map(jobs.map((job) => [job.id || job._id, job])).values(),
-    );
-
-    // Client-side sort when server doesn't support sort param yet
-    if (sortBy === 'budget_high') {
-      deduped.sort((a, b) => {
-        const bBudget = typeof b.budget === 'object' ? (b.budget.amount || b.budget.max || 0) : (b.budget || 0);
-        const aBudget = typeof a.budget === 'object' ? (a.budget.amount || a.budget.max || 0) : (a.budget || 0);
-        return bBudget - aBudget;
-      });
-    } else if (sortBy === 'budget_low') {
-      deduped.sort((a, b) => {
-        const aBudget = typeof a.budget === 'object' ? (a.budget.amount || a.budget.min || 0) : (a.budget || 0);
-        const bBudget = typeof b.budget === 'object' ? (b.budget.amount || b.budget.min || 0) : (b.budget || 0);
-        return aBudget - bBudget;
-      });
-    } else if (sortBy === 'newest') {
-      deduped.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
-    }
-    // 'relevance' = server default order (no client re-sort)
-    return deduped;
-  }, [jobs, sortBy]);
+  const uniqueJobs = useMemo(() => getSortedUniqueJobs(jobs, sortBy), [jobs, sortBy]);
 
   return (
     <ErrorBoundary>

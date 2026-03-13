@@ -368,7 +368,11 @@ const ProfessionalMapPage = () => {
   // Auto-refresh every 30s
   useEffect(() => {
     refreshTimer.current = setInterval(() => {
-      if (!locating) fetchData();
+      const canRefresh =
+        typeof document === 'undefined' || document.visibilityState === 'visible';
+      if (!locating && canRefresh) {
+        fetchData();
+      }
     }, 30_000);
     return () => clearInterval(refreshTimer.current);
   }, [fetchData, locating]);
@@ -397,7 +401,9 @@ const ProfessionalMapPage = () => {
     const isArray = Array.isArray(item.coordinates);
     const longitude = isArray ? item.coordinates[0] : item.coordinates.longitude;
     const latitude  = isArray ? item.coordinates[1] : item.coordinates.latitude;
-    if (!latitude || !longitude) return;
+    const hasValidLatitude = latitude !== undefined && latitude !== null;
+    const hasValidLongitude = longitude !== undefined && longitude !== null;
+    if (!hasValidLatitude || !hasValidLongitude) return;
     window.open(
       `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`,
       '_blank',

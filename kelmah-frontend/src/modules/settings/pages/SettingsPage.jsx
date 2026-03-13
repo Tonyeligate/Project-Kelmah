@@ -45,30 +45,6 @@ const SettingsPage = () => {
     updatePrivacySettings,
   } =
     useSettings();
-  // Persist tab state to URL hash for deep linking
-  const initialTab = (() => {
-    if (typeof window !== 'undefined' && window.location.hash) {
-      const hash = window.location.hash.replace('#', '');
-      const idx = settingsPanels.findIndex((p) => p.label.toLowerCase() === hash.toLowerCase());
-      return idx >= 0 ? idx : 0;
-    }
-    return 0;
-  })();
-  const [tabValue, setTabValue] = useState(initialTab);
-  const theme = useTheme();
-  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
-  const { user } = useSelector((state) => state.auth);
-
-  const userDisplayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.name || 'Kelmah User';
-  const userInitials = ((user?.firstName?.[0] || '') + (user?.lastName?.[0] || '')).toUpperCase() || user?.email?.[0]?.toUpperCase() || 'K';
-
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-    if (typeof window !== 'undefined') {
-      window.location.hash = settingsPanels[newValue].label.toLowerCase();
-    }
-  };
-
   const settingsPanels = [
     {
       component: (
@@ -108,6 +84,30 @@ const SettingsPage = () => {
       icon: <ShieldIcon />,
     },
   ];
+
+  // Persist tab state to URL hash for deep linking
+  const initialTab = (() => {
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const hash = window.location.hash.replace('#', '');
+      const idx = settingsPanels.findIndex((p) => p.label.toLowerCase() === hash.toLowerCase());
+      return idx >= 0 ? idx : 0;
+    }
+    return 0;
+  })();
+  const [tabValue, setTabValue] = useState(initialTab);
+  const theme = useTheme();
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const { user } = useSelector((state) => state.auth);
+
+  const userDisplayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.name || 'Kelmah User';
+  const userInitials = ((user?.firstName?.[0] || '') + (user?.lastName?.[0] || '')).toUpperCase() || user?.email?.[0]?.toUpperCase() || 'K';
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+    if (typeof window !== 'undefined') {
+      window.location.hash = settingsPanels[newValue].label.toLowerCase();
+    }
+  };
 
   // Mobile: drill-down state (-1 = show list, 0+ = show section)
   const [mobileSection, setMobileSection] = useState(-1);

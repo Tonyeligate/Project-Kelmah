@@ -73,6 +73,7 @@ const ResetPassword = () => {
 
   const content = (
     <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%', maxWidth: 420 }}>
+      <Helmet><title>Reset Password | Kelmah</title></Helmet>
       <Typography
         variant="h5"
         gutterBottom
@@ -197,10 +198,7 @@ const ResetPassword = () => {
   }
 
   return (
-    <>
-      <Helmet><title>Reset Password | Kelmah</title></Helmet>
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 6, px: 3 }}>{content}</Box>
-    </>
+    <Box sx={{ display: 'flex', justifyContent: 'center', py: 6, px: 3 }}>{content}</Box>
   );
 };
 
