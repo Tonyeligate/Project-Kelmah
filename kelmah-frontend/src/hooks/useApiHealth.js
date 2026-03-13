@@ -7,12 +7,17 @@ export const useApiHealth = () => {
   const isMountedRef = useRef(true);
 
   const retryCountRef = useRef(0);
+  const retryTimeoutRef = useRef(null);
 
   useEffect(() => {
     isMountedRef.current = true;
     retryCountRef.current = 0;
 
     const checkHealth = async (isRetry = false) => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        return;
+      }
+
       try {
         // Try multiple health endpoints for resilience
         // Note: API_BASE_URL includes /api suffix, and /api/health/aggregate is
@@ -51,11 +56,11 @@ export const useApiHealth = () => {
         if (import.meta.env.DEV) console.warn('Health check failed:', error.message);
         if (!isMountedRef.current) return;
 
-        // Retry logic - up to 3 retries with backoff
-        if (!isRetry && retryCountRef.current < 3) {
+        // Retry logic - single retry with backoff to reduce request churn
+        if (!isRetry && retryCountRef.current < 1) {
           retryCountRef.current += 1;
           const backoffMs = Math.min(1000 * Math.pow(2, retryCountRef.current), 5000);
-          setTimeout(() => checkHealth(true), backoffMs);
+          retryTimeoutRef.current = setTimeout(() => checkHealth(true), backoffMs);
           return;
         }
 
@@ -65,14 +70,15 @@ export const useApiHealth = () => {
     };
 
     // Initial check with delay to allow backend cold start
-    const initialDelay = setTimeout(() => checkHealth(), 1000);
+    const initialDelay = setTimeout(() => checkHealth(), 1500);
 
-    // Check every 5 minutes
-    const interval = setInterval(() => checkHealth(), 5 * 60 * 1000);
+    // Check every 10 minutes while visible
+    const interval = setInterval(() => checkHealth(), 10 * 60 * 1000);
 
     return () => {
       isMountedRef.current = false;
       clearTimeout(initialDelay);
+      clearTimeout(retryTimeoutRef.current);
       clearInterval(interval);
     };
   // LOW-22 FIX: API_BASE_URL is a module-level constant, not a React value.

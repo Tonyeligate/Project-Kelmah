@@ -27,6 +27,9 @@ import AdvancedFilters from '../components/AdvancedFilters';
 import LocationBasedSearch from '../components/LocationBasedSearch';
 import SEO from '../../common/components/common/SEO';
 
+const WORKER_DIRECTORY_MAP_ENABLED =
+  import.meta.env.VITE_ENABLE_WORKER_DIRECTORY_MAP === 'true';
+
 const PageWrapper = styled(Box)(({ theme }) => ({
   padding: theme.spacing(0, 0, 4),
   backgroundColor: theme.palette.background.default,
@@ -147,6 +150,31 @@ const scoreWorkerTextRelevance = (worker = {}, query = '') => {
   return score;
 };
 
+const resolveWorkerDistance = (worker = {}) => {
+  const candidates = [
+    worker.distanceKm,
+    worker.distance,
+    worker.proximityKm,
+    worker.proximity,
+    worker.location?.distanceKm,
+    worker.location?.distance,
+  ];
+
+  for (const value of candidates) {
+    const numericValue = Number(value);
+    if (Number.isFinite(numericValue) && numericValue >= 0) {
+      return numericValue;
+    }
+  }
+
+  return Number.POSITIVE_INFINITY;
+};
+
+const resolveWorkerRate = (worker = {}) => {
+  const rate = Number(worker.hourlyRate ?? worker.rate ?? worker.minRate);
+  return Number.isFinite(rate) && rate > 0 ? rate : Number.POSITIVE_INFINITY;
+};
+
 const sortWorkerResults = (workers = [], sortOption = 'relevance', query = '') => {
   const list = [...workers];
 
@@ -158,7 +186,14 @@ const sortWorkerResults = (workers = [], sortOption = 'relevance', query = '') =
           (b.reviewCount || 0) - (a.reviewCount || 0),
       );
     case 'price':
-      return list.sort((a, b) => (a.hourlyRate || 0) - (b.hourlyRate || 0));
+      return list.sort((a, b) => {
+        const rateDelta = resolveWorkerRate(a) - resolveWorkerRate(b);
+        if (rateDelta !== 0) {
+          return rateDelta;
+        }
+
+        return (b.rating || 0) - (a.rating || 0);
+      });
     case 'newest':
       return list.sort((a, b) => {
         const bTime = new Date(b.updatedAt || b.createdAt || 0).getTime();
@@ -166,7 +201,14 @@ const sortWorkerResults = (workers = [], sortOption = 'relevance', query = '') =
         return bTime - aTime;
       });
     case 'distance':
-      return list;
+      return list.sort((a, b) => {
+        const distanceDelta = resolveWorkerDistance(a) - resolveWorkerDistance(b);
+        if (distanceDelta !== 0) {
+          return distanceDelta;
+        }
+
+        return (b.rating || 0) - (a.rating || 0);
+      });
     case 'relevance':
     default:
       return list.sort((a, b) => {
@@ -221,10 +263,12 @@ const WorkerDirectoryExperience = ({
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const abortControllerRef = useRef(null);
   const suggestionsAbortRef = useRef(null);
+  const activeSearchControllerRef = useRef(null);
 
   useEffect(() => () => {
     abortControllerRef.current?.abort();
     suggestionsAbortRef.current?.abort();
+    activeSearchControllerRef.current?.abort();
   }, []);
 
   const fetchSearchSuggestions = async (query, signal) => {
@@ -266,16 +310,26 @@ const WorkerDirectoryExperience = ({
 
   const executeWorkerSearch = useCallback(
     async (params = {}, { sortOption } = {}) => {
-      abortControllerRef.current?.abort();
+      activeSearchControllerRef.current?.abort();
       const controller = new AbortController();
+      activeSearchControllerRef.current = controller;
       abortControllerRef.current = controller;
       setLoading(true);
       setError(null);
+
+      const canUpdateState = () =>
+        activeSearchControllerRef.current === controller &&
+        !controller.signal.aborted;
 
       try {
         const result = await workerService.queryWorkerDirectory(params, {
           signal: controller.signal,
         });
+
+        if (!canUpdateState()) {
+          return;
+        }
+
         const normalizedWorkers = result.workers.map((worker) =>
           normalizeWorkerRecord(worker),
         );
@@ -291,6 +345,10 @@ const WorkerDirectoryExperience = ({
         setSearchResults(sortedWorkers);
         setPagination(result.pagination);
       } catch (requestError) {
+        if (!canUpdateState()) {
+          return;
+        }
+
         if (
           requestError.name === 'AbortError' ||
           requestError.name === 'CanceledError'
@@ -300,11 +358,36 @@ const WorkerDirectoryExperience = ({
         setError('Search did not work. Please try again.');
         setSearchResults([]);
       } finally {
-        setLoading(false);
+        if (activeSearchControllerRef.current === controller) {
+          activeSearchControllerRef.current = null;
+          setLoading(false);
+        }
       }
     },
     [sortOrder],
   );
+
+  const handleMobileKeywordChange = useCallback((value) => {
+    setSearchParams((prev) => ({
+      ...prev,
+      keyword: value,
+      page: 1,
+    }));
+  }, []);
+
+  const handleMobileSearchSubmit = useCallback(() => {
+    const mergedParams = {
+      ...searchParams,
+      page: 1,
+    };
+
+    if (!mergedParams.keyword || !String(mergedParams.keyword).trim()) {
+      delete mergedParams.keyword;
+    }
+
+    setSearchParams(mergedParams);
+    updateSearchURL(mergedParams, mergedParams.sort || sortOrder);
+  }, [searchParams, sortOrder]);
 
   const performSearch = useCallback(
     async (params) => {
@@ -546,6 +629,10 @@ const WorkerDirectoryExperience = ({
   };
 
   const handleToggleView = () => {
+    if (!WORKER_DIRECTORY_MAP_ENABLED) {
+      return;
+    }
+
     setShowMap((prev) => !prev);
   };
 
@@ -581,8 +668,8 @@ const WorkerDirectoryExperience = ({
       onSortChange={handleSortChange}
       pagination={pagination}
       onPageChange={handlePageChange}
-      showMap={showMap}
-      onToggleView={handleToggleView}
+      showMap={WORKER_DIRECTORY_MAP_ENABLED && showMap}
+      onToggleView={WORKER_DIRECTORY_MAP_ENABLED ? handleToggleView : undefined}
       onSaveWorker={handleSaveWorker}
       isPublicView={isPublicView}
     />
@@ -596,7 +683,9 @@ const WorkerDirectoryExperience = ({
         {isMobile ? (
           <>
             <CompactSearchBar
-              onSearchClick={() => performSearch(searchParams)}
+              keyword={searchParams.keyword || ''}
+              onKeywordChange={handleMobileKeywordChange}
+              onSearchSubmit={handleMobileSearchSubmit}
               onFilterClick={() => setShowMobileFilters(true)}
               placeholder="Search skilled workers in Ghana..."
             />
@@ -660,8 +749,10 @@ const WorkerDirectoryExperience = ({
         {canUseHirerTools ? (
           <>
             {(() => {
+              const isMapViewActive =
+                WORKER_DIRECTORY_MAP_ENABLED && showMap;
               const hasSidebar =
-                !showMap && (showAdvancedFilters || showLocationSearch);
+                !isMapViewActive && (showAdvancedFilters || showLocationSearch);
               return (
                 <Grid container spacing={2}>
                   {hasSidebar && (
@@ -706,7 +797,7 @@ const WorkerDirectoryExperience = ({
                     </Grid>
                   )}
 
-                  {!showMap && (
+                  {!isMapViewActive && (
                     <Grid item xs={12} md={hasSidebar ? 9 : 12}>
                       {renderResults(false)}
                     </Grid>
@@ -715,7 +806,7 @@ const WorkerDirectoryExperience = ({
               );
             })()}
 
-            {showMap && (
+            {WORKER_DIRECTORY_MAP_ENABLED && showMap && (
               <JobMapView
                 jobs={searchResults}
                 centerLocation={searchParams.location?.coordinates || null}

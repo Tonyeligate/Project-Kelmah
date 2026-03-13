@@ -746,7 +746,7 @@ const SmartJobRecommendations = ({
             {infoMessage}
           </Typography>
           {!isWorker && (
-            <Button variant="contained" href="/profile">
+            <Button variant="contained" onClick={() => navigate('/profile')}>
               Update Profile
             </Button>
           )}
@@ -813,7 +813,7 @@ const SmartJobRecommendations = ({
             Complete your profile and set your preferences to get personalized
             job recommendations
           </Typography>
-          <Button variant="contained" href="/worker/profile/edit">
+          <Button variant="contained" onClick={() => navigate('/worker/profile/edit')}>
             Complete Profile
           </Button>
         </Paper>

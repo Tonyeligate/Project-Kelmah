@@ -6,155 +6,171 @@ import {
   Typography,
   Box,
   Tabs,
-  Tab,
-  CircularProgress,
-  Skeleton,
-  Alert,
-  Button,
-  TextField,
-  Chip,
-  List,
-  ListItem,
-  ListItemText,
-  IconButton,
-  Divider,
-  useMediaQuery,
-  useTheme,
-  Avatar,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-} from '@mui/material';
-import {
-  Edit as EditIcon,
-  Add as AddIcon,
-  Delete as DeleteIcon,
-  TrendingUp as TrendingUpIcon,
-  Star as StarIcon,
-  Work as WorkIcon,
-  MonetizationOn as EarningsIcon,
-} from '@mui/icons-material';
-import { useProfile } from '../hooks/useProfile';
-import ProfilePicture from '../components/ProfilePicture';
-import { useSelector } from 'react-redux';
-import {
-  selectProfile,
-  selectProfileLoading,
-  selectProfileError,
-} from '../../../store/slices/profileSlice.js';
-import ErrorBoundary from '../../../components/common/ErrorBoundary';
-import { Helmet } from 'react-helmet-async';
-import { useSnackbar } from 'notistack';
+  let content;
 
-const ProfilePage = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { enqueueSnackbar } = useSnackbar();
+  if (loading) {
+    content = (
+      <ErrorBoundary>
+        <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Paper sx={{ p: { xs: 2, md: 3 } }}>
+                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: { xs: 'center', md: 'flex-start' } }}>
+                  <Skeleton variant="circular" width={isMobile ? 64 : 150} height={isMobile ? 64 : 150} />
+                  <Box sx={{ flex: 1, width: '100%', textAlign: 'left' }}>
+                    <Skeleton width="40%" height={32} sx={{ mb: 1 }} />
+                    <Skeleton width="30%" height={24} sx={{ mb: 1 }} />
+                    <Skeleton width="50%" height={24} />
+                  </Box>
+                </Box>
+              </Paper>
+            </Grid>
+          </Grid>
+        </Container>
+      </ErrorBoundary>
+    );
+  } else if (!profile) {
+    content = (
+      <ErrorBoundary>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          )}
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h4" gutterBottom>
+              Profile Unavailable
+            </Typography>
+            <Typography color="text.secondary" sx={{ mb: 2 }}>
+              We couldn't load your profile information. Please check your
+              connection and try again.
+            </Typography>
+            <Button variant="contained" onClick={handleRetryLoad}>
+              Retry Loading Profile
+            </Button>
+          </Paper>
+        </Container>
+      </ErrorBoundary>
+    );
+  } else {
+    content = (
+      <ErrorBoundary>
+        <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+          <Grid container spacing={3}>
+            {/* Profile Header */}
+            <Grid item xs={12}>
+              <Paper sx={{ p: { xs: 2, md: 3 } }}>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: { xs: 'flex-start', md: 'flex-start' } }}>
+                  <ProfilePicture size={isMobile ? 64 : 150} />
+                  <Box sx={{ flex: 1, width: '100%', textAlign: { xs: 'left', md: 'left' } }}>
+                    {error && (
+                      <Alert severity="error" sx={{ mb: 2 }}>
+                        {error}
+                      </Alert>
+                    )}
 
-  const {
-    loadProfile,
-    updateProfile,
-    updateSkills,
-    updateEducation,
-    updateExperience,
-    updatePreferences,
-    statistics,
-    activity,
-  } = useProfile();
-  const hasAttemptedInitialLoad = useRef(false);
-
-  const profile = useSelector(selectProfile);
-  const loading = useSelector(selectProfileLoading);
-  const error = useSelector(selectProfileError);
-  const { user } = useSelector((state) => state.auth);
-
-  const [selectedTab, setSelectedTab] = useState(0);
-  const [editing, setEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    bio: '',
-    location: '',
-  });
-
-  // Inline add-item dialog state (replaces window.prompt)
-  const [addSkillOpen, setAddSkillOpen] = useState(false);
-  const [newSkill, setNewSkill] = useState('');
-  const [addEduOpen, setAddEduOpen] = useState(false);
-  const [newEdu, setNewEdu] = useState({ degree: '', institution: '', year: '' });
-  const [addExpOpen, setAddExpOpen] = useState(false);
-  const [newExp, setNewExp] = useState({ title: '', company: '', duration: '' });
-  const [addingItem, setAddingItem] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-
-  // H29 fix: local state + debounce for preferences to avoid API call on every keystroke
-  const [prefJobType, setPrefJobType] = useState('');
-  const [prefLocation, setPrefLocation] = useState('');
-  const prefTimerRef = useRef(null);
-
-  // Clear debounce timer on unmount to prevent post-unmount API call
-  useEffect(() => {
-    return () => {
-      if (prefTimerRef.current) clearTimeout(prefTimerRef.current);
-    };
-  }, []);
-
-  // Sync local state when profile loads
-  useEffect(() => {
-    if (profile?.preferences) {
-      setPrefJobType(profile.preferences.jobType || '');
-      setPrefLocation(profile.preferences.location || '');
-    }
-  }, [profile?.preferences]);
-
-  const debouncedUpdatePreferences = useCallback(
-    (newPrefs) => {
-      if (prefTimerRef.current) clearTimeout(prefTimerRef.current);
-      prefTimerRef.current = setTimeout(async () => {
-        try {
-          await updatePreferences(newPrefs);
-          enqueueSnackbar('Preferences saved', { variant: 'success' });
-        } catch (err) {
-          enqueueSnackbar('Failed to save preferences', { variant: 'error' });
-        }
-      }, 600);
-    },
-    [updatePreferences, enqueueSnackbar]
-  );
-
-  // Load profile on mount if not already loaded
-  useEffect(() => {
-    if (!hasAttemptedInitialLoad.current && !profile && !loading) {
-      hasAttemptedInitialLoad.current = true;
-      loadProfile();
-    }
-  }, [profile, loading, loadProfile]);
-
-  const handleTabChange = (event, newValue) => {
-    setSelectedTab(newValue);
-  };
-
-  const handleEdit = () => {
-    // ✅ FIXED: Add null-safety check to prevent crashes when profile is null
-    setFormData({
-      firstName: profile?.firstName || '',
-      lastName: profile?.lastName || '',
-      email: profile?.email || '',
-      phone: profile?.phone || '',
-      bio: profile?.bio || '',
-      location: profile?.location || '',
-    });
-    setEditing(true);
-  };
-
-  const handleSave = async () => {
-    if (isSaving) return;
-    setIsSaving(true);
-    try {
-      await updateProfile(formData);
+                    {editing ? (
+                      <Box
+                        sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+                      >
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              fullWidth
+                              label="First Name"
+                              name="firstName"
+                              value={formData.firstName}
+                              onChange={handleChange}
+                              placeholder="e.g. Kwame"
+                              error={!formData.firstName}
+                              helperText={!formData.firstName ? 'First name is required' : ''}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              fullWidth
+                              label="Last Name"
+                              name="lastName"
+                              value={formData.lastName}
+                              onChange={handleChange}
+                              placeholder="e.g. Asante"
+                              error={!formData.lastName}
+                              helperText={!formData.lastName ? 'Last name is required' : ''}
+                            />
+                          </Grid>
+                        </Grid>
+                        <TextField
+                          fullWidth
+                          label="Email"
+                          name="email"
+                          type="email"
+                          autoComplete="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          placeholder="e.g. kwame@email.com"
+                          error={!formData.email}
+                          helperText={!formData.email ? 'Email is required' : ''}
+                        />
+                        <TextField
+                          fullWidth
+                          label="Phone"
+                          name="phone"
+                          type="tel"
+                          autoComplete="tel"
+                          value={formData.phone}
+                          onChange={handleChange}
+                          inputProps={{ inputMode: 'tel' }}
+                          error={!formData.phone}
+                          helperText={!formData.phone ? 'Phone is required' : ''}
+                        />
+                        <TextField
+                          fullWidth
+                          label="Location"
+                          name="location"
+                          value={formData.location}
+                          onChange={handleChange}
+                          placeholder="e.g. Accra, Greater Accra"
+                          error={!formData.location}
+                          helperText={!formData.location ? 'Location is required' : ''}
+                        />
+                        <TextField
+                          fullWidth
+                          label="Bio"
+                          name="bio"
+                          multiline
+                          rows={4}
+                          value={formData.bio}
+                          onChange={handleChange}
+                          placeholder="Tell hirers about yourself and your skills..."
+                        />
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            gap: 2,
+                            justifyContent: { sm: 'flex-end' },
+                          }}
+                        >
+                          <Button onClick={handleCancel} sx={{ minHeight: 44 }}>Cancel</Button>
+                          <Button variant="contained" onClick={handleSave} disabled={isSaving} sx={{ minHeight: 44 }}>
+                            {isSaving ? 'Saving…' : 'Save'}
+                          </Button>
+                        </Box>
+                      </Box>
+                    ) : (
+                      // ...existing code...
+                    )}
+                  </Box>
+                </Box>
+              </Paper>
+            </Grid>
+            {/* ...existing code... */}
+          </Grid>
+        </Container>
+      </ErrorBoundary>
+    );
+  }
       setEditing(false);
       enqueueSnackbar('Profile updated successfully', { variant: 'success' });
     } catch (error) {

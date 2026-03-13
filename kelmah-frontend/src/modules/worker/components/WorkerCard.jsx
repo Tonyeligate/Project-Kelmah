@@ -430,7 +430,7 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
                 worker.photo ||
                 null
               }
-              alt={worker.name}
+              alt={worker.name || worker.fullName || worker.displayName || 'Worker profile photo'}
               sx={{ width: { xs: 48, md: 56 }, height: { xs: 48, md: 56 }, mr: 2 }}
             />
             <Box sx={{ flex: 1, minWidth: 0 }}>

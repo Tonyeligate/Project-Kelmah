@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import {
@@ -58,7 +58,9 @@ import TransactionsList from '../components/TransactionsList';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { format } from 'date-fns';
+import { useSelector } from 'react-redux';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
+import { hasRole } from '../../../utils/userUtils';
 
 const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
   <Paper
@@ -155,7 +157,7 @@ const TransactionHistory = ({ transactions }) => (
   </Paper>
 );
 
-const PaymentMethodsView = ({ methods, onEditMethod, onRequestDelete }) => {
+const PaymentMethodsView = ({ methods, onEditMethod, onRequestDelete, paymentMethodsPath }) => {
   // Empty state
   if (!methods || methods.length === 0) {
     return (
@@ -172,7 +174,7 @@ const PaymentMethodsView = ({ methods, onEditMethod, onRequestDelete }) => {
           color="secondary"
           startIcon={<AddIcon />}
           component={RouterLink}
-          to="/payment/methods"
+          to={paymentMethodsPath}
           sx={{ minHeight: 44 }}
         >
           Add Payment Method
@@ -201,7 +203,7 @@ const PaymentMethodsView = ({ methods, onEditMethod, onRequestDelete }) => {
             sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)', minHeight: 44 }}
             startIcon={<AddIcon />}
             component={RouterLink}
-            to="/payment/methods"
+            to={paymentMethodsPath}
           >
             Add
           </Button>
@@ -590,6 +592,7 @@ const PaymentCenterPage = () => {
     deletePaymentMethod,
     refresh,
   } = usePayments();
+  const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -599,6 +602,11 @@ const PaymentCenterPage = () => {
   const [amount, setAmount] = useState('');
   const [methodId, setMethodId] = useState('');
   const [dialogSubmitting, setDialogSubmitting] = useState(false);
+  const canManagePaymentMethods = hasRole(user, ['worker', 'admin']);
+  const paymentMethodsPath = canManagePaymentMethods ? '/payment/methods' : '/payments';
+  const escrowManagerPath = hasRole(user, ['worker', 'admin'])
+    ? '/worker/payment/escrows'
+    : '/payments';
 
   const [deleteMethodOpen, setDeleteMethodOpen] = useState(false);
   const [methodPendingDelete, setMethodPendingDelete] = useState(null);
@@ -639,6 +647,17 @@ const PaymentCenterPage = () => {
     ? transactions.slice((page - 1) * perPage, page * perPage)
     : [];
 
+  useEffect(() => {
+    if (pageCount === 0 && page !== 1) {
+      setPage(1);
+      return;
+    }
+
+    if (page > pageCount && pageCount > 0) {
+      setPage(pageCount);
+    }
+  }, [page, pageCount]);
+
   // Bills filters & pagination
   const [billStartDate, setBillStartDate] = useState('');
   const [billEndDate, setBillEndDate] = useState('');
@@ -678,6 +697,17 @@ const PaymentCenterPage = () => {
     billPage * billPerPage,
   );
 
+  useEffect(() => {
+    if (billPageCount === 0 && billPage !== 1) {
+      setBillPage(1);
+      return;
+    }
+
+    if (billPage > billPageCount && billPageCount > 0) {
+      setBillPage(billPageCount);
+    }
+  }, [billPage, billPageCount]);
+
   // Escrows filters & pagination
   const [escrowStatusFilter, setEscrowStatusFilter] = useState('all');
   const [appliedEscrowStatus, setAppliedEscrowStatus] = useState('all');
@@ -695,6 +725,17 @@ const PaymentCenterPage = () => {
     (escrowPage - 1) * escrowPerPage,
     escrowPage * escrowPerPage,
   );
+
+  useEffect(() => {
+    if (escrowPageCount === 0 && escrowPage !== 1) {
+      setEscrowPage(1);
+      return;
+    }
+
+    if (escrowPage > escrowPageCount && escrowPageCount > 0) {
+      setEscrowPage(escrowPageCount);
+    }
+  }, [escrowPage, escrowPageCount]);
 
   const openDepositDialog = () => {
     setAmount('');
@@ -787,7 +828,7 @@ const PaymentCenterPage = () => {
               <Box sx={{ mt: 1 }}>
                 <Button
                   component={RouterLink}
-                  to="/worker/payment/escrows"
+                  to={escrowManagerPath}
                   size="small"
                   variant="outlined"
                   sx={{ minHeight: 44 }}
@@ -907,7 +948,8 @@ const PaymentCenterPage = () => {
             <>
               <PaymentMethodsView
                 methods={paymentMethods}
-                onEditMethod={() => navigate('/payment/methods')}
+                paymentMethodsPath={paymentMethodsPath}
+                onEditMethod={() => navigate(paymentMethodsPath)}
                 onRequestDelete={requestDeleteMethod}
               />
 
@@ -1148,11 +1190,15 @@ const PaymentCenterPage = () => {
                     border: `1px solid ${theme.palette.secondary.main}`,
                   }}
                 >
-                  {(paymentMethods || []).map((m) => (
-                    <MenuItem key={m.id} value={m.id}>
-                      {m.name}
-                    </MenuItem>
-                  ))}
+                  {(paymentMethods || []).map((m) => {
+                    const resolvedId = m?.id || m?._id;
+                    if (!resolvedId) return null;
+                    return (
+                      <MenuItem key={resolvedId} value={resolvedId}>
+                        {m.name}
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </FormControl>
             </Tooltip>
@@ -1266,11 +1312,15 @@ const PaymentCenterPage = () => {
                     border: `1px solid ${theme.palette.secondary.main}`,
                   }}
                 >
-                  {(paymentMethods || []).map((m) => (
-                    <MenuItem key={m.id} value={m.id}>
-                      {m.name}
-                    </MenuItem>
-                  ))}
+                  {(paymentMethods || []).map((m) => {
+                    const resolvedId = m?.id || m?._id;
+                    if (!resolvedId) return null;
+                    return (
+                      <MenuItem key={resolvedId} value={resolvedId}>
+                        {m.name}
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </FormControl>
             </Tooltip>

@@ -330,11 +330,17 @@ export const useNotifications = () => {
     return {
       showToast: () => {},
       notifications: [],
+      loading: false,
+      error: null,
+      pagination: { page: 1, limit: 20, total: 0, pages: 0 },
       unreadCount: 0,
       markAsRead: () => {},
       markAllAsRead: () => {},
-      clearNotification: () => {},
+      deleteNotification: () => {},
       clearAllNotifications: () => {},
+      refresh: () => {},
+      getPreferences: async () => ({}),
+      updatePreferences: async () => ({ success: false, skipped: true }),
     };
   }
   return context;

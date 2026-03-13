@@ -310,6 +310,77 @@ export const calculateFees = (amount) => {
   return { platformFee, workerPayout };
 };
 
+const isUploadablePhotoFile = (value) => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  if (typeof Blob !== 'undefined' && value instanceof Blob) {
+    return true;
+  }
+
+  return (
+    typeof value.name === 'string' &&
+    typeof value.size === 'number' &&
+    typeof value.type === 'string'
+  );
+};
+
+/**
+ * Upload photos and normalize response into [{ url }]
+ * @param {Array<Blob|File>} photoFiles
+ * @returns {Promise<Array<{url: string}>>}
+ */
+export const uploadQuickJobPhotos = async (photoFiles = []) => {
+  const files = Array.isArray(photoFiles)
+    ? photoFiles.filter((file) => isUploadablePhotoFile(file))
+    : [];
+
+  if (files.length === 0) {
+    return [];
+  }
+
+  const formData = new FormData();
+  files.forEach((file, index) => {
+    const fileName =
+      typeof file.name === 'string' && file.name.trim()
+        ? file.name
+        : `quick-job-photo-${Date.now()}-${index}.jpg`;
+    formData.append('photos', file, fileName);
+  });
+
+  const uploadResponse = await api.post('/jobs/upload-photos', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+
+  const payload = uploadResponse?.data;
+  const uploadedItems = Array.isArray(payload?.data) ? payload.data : [];
+
+  if (!payload?.success || uploadedItems.length === 0) {
+    throw new Error('Photo upload failed. Please try again.');
+  }
+
+  const normalizedPhotos = uploadedItems
+    .map((item) => {
+      if (typeof item === 'string') {
+        return { url: item };
+      }
+
+      if (item?.url && typeof item.url === 'string') {
+        return { url: item.url };
+      }
+
+      return null;
+    })
+    .filter(Boolean);
+
+  if (normalizedPhotos.length !== files.length) {
+    throw new Error('Some photos failed to upload. Please retry the upload.');
+  }
+
+  return normalizedPhotos;
+};
+
 export default {
   SERVICE_CATEGORIES,
   URGENCY_LEVELS,
@@ -332,5 +403,6 @@ export default {
   cancelQuickJob,
   getCurrentLocation,
   formatCurrency,
-  calculateFees
+  calculateFees,
+  uploadQuickJobPhotos
 };

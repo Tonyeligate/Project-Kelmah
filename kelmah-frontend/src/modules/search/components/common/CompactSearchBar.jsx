@@ -5,6 +5,7 @@ import {
   Button,
   Paper,
   InputAdornment,
+  IconButton,
   useTheme,
 } from '@mui/material';
 import { Search as SearchIcon, Tune as FilterIcon } from '@mui/icons-material';
@@ -16,7 +17,9 @@ import PropTypes from 'prop-types';
  * Replaces 350-400px filter form on mobile
  */
 const CompactSearchBar = ({
-  onSearchClick,
+  keyword = '',
+  onKeywordChange,
+  onSearchSubmit,
   onFilterClick,
   placeholder = 'Search workers...',
 }) => {
@@ -31,11 +34,29 @@ const CompactSearchBar = ({
           placeholder={placeholder}
           variant="outlined"
           size="small"
-          onFocus={onSearchClick}
+          value={keyword}
+          onChange={(event) => onKeywordChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              onSearchSubmit();
+            }
+          }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
                 <SearchIcon sx={{ color: 'text.secondary' }} />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  size="small"
+                  onClick={onSearchSubmit}
+                  aria-label="Search workers"
+                >
+                  <SearchIcon fontSize="small" />
+                </IconButton>
               </InputAdornment>
             ),
             sx: {
@@ -74,7 +95,9 @@ const CompactSearchBar = ({
 };
 
 CompactSearchBar.propTypes = {
-  onSearchClick: PropTypes.func.isRequired,
+  keyword: PropTypes.string,
+  onKeywordChange: PropTypes.func.isRequired,
+  onSearchSubmit: PropTypes.func.isRequired,
   onFilterClick: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
 };

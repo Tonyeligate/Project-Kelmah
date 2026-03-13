@@ -42,7 +42,7 @@ const Footer = () => {
         { label: 'Find Work', href: '/jobs' },
         { label: 'Create Profile', href: '/register' },
         { label: 'How It Works', href: '/' },
-        { label: 'Payment Settings', href: '/settings/payments' },
+        { label: 'Payments', href: '/payments' },
         { label: 'Skills Assessment', href: '/worker/skills' },
       ],
     },

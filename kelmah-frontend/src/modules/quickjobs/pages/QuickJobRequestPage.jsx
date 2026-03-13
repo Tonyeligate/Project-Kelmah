@@ -1,11 +1,11 @@
-/**
+﻿/**
  * QuickJobRequestPage - 3-Step Quick Job Request Flow
  * Part of Kelmah's Protected Quick-Hire system
  * 
  * Flow:
  * Step 1: Describe your problem (voice/text/photo)
  * Step 2: Confirm location
- * Step 3: Select urgency → Submit
+ * Step 3: Select urgency ΓåÆ Submit
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -52,10 +52,10 @@ import {
   SERVICE_CATEGORIES, 
   URGENCY_LEVELS, 
   createQuickJob, 
-  getCurrentLocation 
+  getCurrentLocation,
+  uploadQuickJobPhotos,
 } from '../services/quickJobService';
 import { Helmet } from 'react-helmet-async';
-import { api } from '../../../services/apiClient';
 
 // Steps for the stepper
 const steps = ['Describe Problem', 'Confirm Location', 'When do you need it?'];
@@ -202,7 +202,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
         setRecordingDuration(0);
         recordingTimerRef.current = setInterval(() => {
           setRecordingDuration(prev => {
-            if (prev >= 60) { // 60-second max — stop recording directly via ref to avoid stale closure
+            if (prev >= 60) { // 60-second max ΓÇö stop recording directly via ref to avoid stale closure
               if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
                 mediaRecorderRef.current.stop();
               }
@@ -265,23 +265,16 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
     setError('');
 
     try {
-      // Upload photos via FormData if available, otherwise send preview URLs
+      // Upload photos first and submit only server-issued URLs.
       let photoUrls = [];
       if (photos.length > 0) {
+        const files = photos.map((photo) => photo?.file).filter(Boolean);
+
         try {
-          const formData = new FormData();
-          photos.forEach((p, i) => formData.append('photos', p.file || p, `photo-${i}`));
-          const uploadRes = await api.post('/jobs/upload-photos', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
-          if (uploadRes.data?.success && Array.isArray(uploadRes.data.data)) {
-            photoUrls = uploadRes.data.data.map(u => ({ url: u.url || u }));
-          } else {
-            photoUrls = photos.map(p => ({ url: p.preview }));
-          }
-        } catch {
-          // Upload endpoint not available — send preview blobs as fallback
-          photoUrls = photos.map(p => ({ url: p.preview }));
+          photoUrls = await uploadQuickJobPhotos(files);
+        } catch (uploadError) {
+          setError(uploadError.message || 'Photo upload failed. Please try again.');
+          return;
         }
       }
 
@@ -329,7 +322,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
               <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Avatar sx={{ bgcolor: theme.palette.primary.main, width: 56, height: 56 }}>
                   <Typography variant="h5">
-                    {SERVICE_CATEGORIES.find(c => c.id === categoryId)?.icon || '🔧'}
+                    {SERVICE_CATEGORIES.find(c => c.id === categoryId)?.icon || '≡ƒöº'}
                   </Typography>
                 </Avatar>
                 <Box>
@@ -415,7 +408,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
 
             {/* Voice note recorder */}
             <Typography variant="subtitle2" gutterBottom sx={{ mt: 1 }}>
-              Voice note (optional — describe your problem by speaking)
+              Voice note (optional ΓÇö describe your problem by speaking)
             </Typography>
             {voiceNote ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, p: 1.5, border: '1px solid', borderColor: 'success.main', borderRadius: 2, bgcolor: theme.palette.action.hover }}>
@@ -475,7 +468,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
             {location && (
               <Alert severity="success" sx={{ mb: 2 }}>
                 <Typography variant="body2">
-                  📍 Location captured: {location.coordinates[1].toFixed(4)}, {location.coordinates[0].toFixed(4)}
+                  ≡ƒôì Location captured: {location.coordinates[1].toFixed(4)}, {location.coordinates[0].toFixed(4)}
                 </Typography>
               </Alert>
             )}
@@ -596,7 +589,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
                   </Typography>
                 </Box>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                  📍 {address || 'No address'}, {city || 'No city'}
+                  ≡ƒôì {address || 'No address'}, {city || 'No city'}
                 </Typography>
                 <Typography variant="body2" sx={{ 
                   overflow: 'hidden', 
@@ -633,7 +626,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
           <CheckIcon sx={{ fontSize: 60 }} />
         </Avatar>
         <Typography variant="h4" gutterBottom fontWeight="bold">
-          Request Sent! 🎉
+          Request Sent! ≡ƒÄë
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
           Workers nearby will see your request and send quotes. You'll be notified when they respond.

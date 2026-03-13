@@ -41,8 +41,14 @@ import {
 import { useNotifications } from '../contexts/NotificationContext';
 import { Pagination, FormControlLabel, Switch, Tooltip } from '@mui/material';
 import { format, formatDistanceToNow } from 'date-fns';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import {
+  isSafeInternalPath,
+  isSafeExternalUrl,
+  openExternalUrl,
+  NOTIFICATION_ALLOWED_HOSTS,
+} from '../../../utils/externalNavigation';
 
 // --- Reusable Components ---
 
@@ -57,24 +63,40 @@ const notificationIcons = {
   default: <NotificationsIcon />,
 };
 
-const isExternalLink = (value) =>
-  typeof value === 'string' && /^https?:\/\//i.test(value);
-
 const PageNotificationItem = ({ notification, onMarkRead }) => {
   const navigate = useNavigate();
 
-  const handleClick = () => {
+  const handleClick = async () => {
     // Mark as read on click
     if (!notification.read && onMarkRead) {
-      onMarkRead(notification.id || notification._id);
+      await Promise.resolve(onMarkRead(notification.id || notification._id));
     }
     // Navigate to the linked page
-    if (notification.link) {
-      if (isExternalLink(notification.link)) {
-        window.open(notification.link, '_blank', 'noopener,noreferrer');
-      } else {
-        navigate(notification.link);
-      }
+    const nextLink = typeof notification.link === 'string' ? notification.link.trim() : '';
+    if (!nextLink) {
+      return;
+    }
+
+    if (isSafeInternalPath(nextLink)) {
+      navigate(nextLink);
+      return;
+    }
+
+    if (
+      isSafeExternalUrl(nextLink, {
+        allowedHosts: NOTIFICATION_ALLOWED_HOSTS,
+        requireHttps: true,
+      })
+    ) {
+      openExternalUrl(nextLink, {
+        allowedHosts: NOTIFICATION_ALLOWED_HOSTS,
+        requireHttps: true,
+      });
+      return;
+    }
+
+    if (import.meta.env.DEV) {
+      console.warn('Blocked unsafe notification link:', nextLink);
     }
   };
 
@@ -128,32 +150,13 @@ const PageNotificationItem = ({ notification, onMarkRead }) => {
             })()}
           </Typography>
           {notification.link ? (
-            isExternalLink(notification.link) ? (
-              <Typography
-                component="a"
-                href={notification.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                variant="body2"
-                color="primary.main"
-                sx={{ textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
-              >
-                View Details
-              </Typography>
-            ) : (
-              <Link
-                to={notification.link}
-                style={{ textDecoration: 'none', color: 'inherit' }}
-              >
-                <Typography
-                  variant="body2"
-                  color="primary.main"
-                  sx={{ '&:hover': { textDecoration: 'underline' } }}
-                >
-                  View Details
-                </Typography>
-              </Link>
-            )
+            <Typography
+              variant="body2"
+              color="primary.main"
+              sx={{ '&:hover': { textDecoration: 'underline' } }}
+            >
+              View Details
+            </Typography>
           ) : null}
         </Box>
       }
@@ -275,7 +278,7 @@ const NotificationsPage = () => {
               variant="outlined"
               size="small"
               startIcon={<SettingsIcon />}
-              component={Link}
+              component={RouterLink}
               to="/notifications/settings"
               sx={{ minHeight: 44 }}
             >
@@ -315,7 +318,7 @@ const NotificationsPage = () => {
             <Button
               variant="outlined"
               startIcon={<SettingsIcon />}
-              component={Link}
+              component={RouterLink}
               to="/notifications/settings"
             >
               Settings

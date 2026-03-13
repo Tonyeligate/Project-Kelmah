@@ -42,15 +42,21 @@ const WorkerSearchResults = ({
   showMap = false,
   onToggleView,
   onSaveWorker,
+  isPublicView = false,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { isAuthenticated } = useSelector((state) => state.auth);
+  const isPublicMode = isPublicView || !isAuthenticated;
   const navigate = useNavigate();
   const [renderedWorkerCount, setRenderedWorkerCount] = useState(INITIAL_RENDERED_WORKERS);
 
   useEffect(() => {
-    setRenderedWorkerCount(INITIAL_RENDERED_WORKERS);
+    // Debounce pagination/filter changes to prevent flicker
+    const timeout = setTimeout(() => {
+      setRenderedWorkerCount(INITIAL_RENDERED_WORKERS);
+    }, 120);
+    return () => clearTimeout(timeout);
   }, [workers.length, pagination?.page]);
 
   const visibleWorkers = useMemo(
@@ -341,7 +347,7 @@ const WorkerSearchResults = ({
           </Button>
         </Stack>
 
-        {!isAuthenticated && (
+        {isPublicMode && (
           <Typography
             variant="caption"
             sx={{ color: 'text.disabled', mt: 3, display: 'block' }}
@@ -362,7 +368,7 @@ const WorkerSearchResults = ({
           <WorkerCard
             worker={worker}
             onSave={onSaveWorker ? () => onSaveWorker(worker) : undefined}
-            isPublicView={!isAuthenticated}
+            isPublicView={isPublicMode}
           />
         </Grid>
       ))}
@@ -548,4 +554,5 @@ WorkerSearchResults.propTypes = {
   showMap: PropTypes.bool,
   onToggleView: PropTypes.func,
   onSaveWorker: PropTypes.func,
+  isPublicView: PropTypes.bool,
 };

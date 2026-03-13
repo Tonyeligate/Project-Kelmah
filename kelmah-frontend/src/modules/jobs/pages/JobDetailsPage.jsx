@@ -617,7 +617,7 @@ const JobDetailsPage = () => {
   const hasClientDetails = Boolean(
     hirerId || hirerName || clientCompany || clientEmail || hirerLocation || hirerJoined || hirerJobsPosted !== null,
   );
-  const compactBudgetDisplay = getCompactBudgetDisplay(job, currency);
+  const compactBudgetDisplay = getCompactBudgetDisplay(job);
   const clientJobContext = [
     { label: 'Job budget', value: budgetDisplay },
     { label: 'Applications', value: `${job?.proposalCount || 0} received` },

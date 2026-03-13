@@ -8,11 +8,31 @@
 import { getApiBaseUrl } from '../config/environment';
 
 const WARMUP_ENDPOINTS = [
-  '/health',
   '/health/aggregate'
 ];
 
 const WARMUP_TIMEOUT = 30000; // 30 seconds for cold starts
+const MAX_WARMUP_RETRIES = 1;
+const RETRY_DELAY_MS = 15000;
+const WARMUP_COOLDOWN_MS = 15 * 60 * 1000;
+const LAST_WARMUP_AT_KEY = 'kelmah:lastServiceWarmupAt';
+
+const getLastWarmupAt = () => {
+  if (typeof window === 'undefined') {
+    return 0;
+  }
+
+  const stored = Number(localStorage.getItem(LAST_WARMUP_AT_KEY) || 0);
+  return Number.isFinite(stored) ? stored : 0;
+};
+
+const setLastWarmupAt = (timestamp) => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  localStorage.setItem(LAST_WARMUP_AT_KEY, String(timestamp));
+};
 
 /**
  * Ping a single endpoint with timeout
@@ -50,7 +70,16 @@ const pingEndpoint = async (baseUrl, endpoint) => {
  * Wake up all backend services
  * Call this early in app initialization
  */
-export const warmUpServices = async () => {
+export const warmUpServices = async (options = {}) => {
+  const { force = false, maxRetries = MAX_WARMUP_RETRIES } = options;
+
+  if (!force) {
+    const elapsed = Date.now() - getLastWarmupAt();
+    if (elapsed > 0 && elapsed < WARMUP_COOLDOWN_MS) {
+      return { success: true, skipped: true, reason: 'cooldown' };
+    }
+  }
+
   try {
     const baseUrl = await getApiBaseUrl();
     
@@ -61,6 +90,7 @@ export const warmUpServices = async () => {
 
     if (import.meta.env.DEV) console.log('🔥 Warming up backend services...');
     const startTime = Date.now();
+    setLastWarmupAt(startTime);
 
     // Ping health endpoints in parallel
     const results = await Promise.allSettled(
@@ -73,13 +103,13 @@ export const warmUpServices = async () => {
 
     if (import.meta.env.DEV) console.log(`🔥 Service warm-up complete: ${successful}/${results.length} healthy, ${wakingUp} waking up (${elapsed}ms)`);
 
-    // If services are waking up, schedule a limited retry (max 5 times)
+    // If services are waking up, schedule a limited retry.
     if (wakingUp > 0) {
       const currentAttempt = warmUpServices._retryCount || 0;
-      if (currentAttempt < 5) {
+      if (currentAttempt < maxRetries) {
         warmUpServices._retryCount = currentAttempt + 1;
-        if (import.meta.env.DEV) console.log(`⏳ Services waking up, retry ${currentAttempt + 1}/5 in 10 seconds...`);
-        setTimeout(() => warmUpServices(), 10000);
+        if (import.meta.env.DEV) console.log(`⏳ Services waking up, retry ${currentAttempt + 1}/${maxRetries} in ${RETRY_DELAY_MS / 1000} seconds...`);
+        setTimeout(() => warmUpServices({ force: true, maxRetries }), RETRY_DELAY_MS);
       } else {
         if (import.meta.env.DEV) console.warn('⚠️ Max warm-up retries reached. Some services may still be waking up.');
         warmUpServices._retryCount = 0;

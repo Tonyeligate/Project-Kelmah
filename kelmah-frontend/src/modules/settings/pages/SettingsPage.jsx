@@ -45,7 +45,16 @@ const SettingsPage = () => {
     updatePrivacySettings,
   } =
     useSettings();
-  const [tabValue, setTabValue] = useState(0);
+  // Persist tab state to URL hash for deep linking
+  const initialTab = (() => {
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const hash = window.location.hash.replace('#', '');
+      const idx = settingsPanels.findIndex((p) => p.label.toLowerCase() === hash.toLowerCase());
+      return idx >= 0 ? idx : 0;
+    }
+    return 0;
+  })();
+  const [tabValue, setTabValue] = useState(initialTab);
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const { user } = useSelector((state) => state.auth);
@@ -55,6 +64,9 @@ const SettingsPage = () => {
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
+    if (typeof window !== 'undefined') {
+      window.location.hash = settingsPanels[newValue].label.toLowerCase();
+    }
   };
 
   const settingsPanels = [

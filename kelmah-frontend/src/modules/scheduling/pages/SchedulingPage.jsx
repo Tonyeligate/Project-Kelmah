@@ -62,6 +62,11 @@ import { EXTERNAL_SERVICES } from '../../../config/services';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Helmet } from 'react-helmet-async';
+import {
+  openExternalUrl,
+  MEETING_ALLOWED_HOSTS,
+  GOOGLE_MAPS_ALLOWED_HOSTS,
+} from '../../../utils/externalNavigation';
 
 const getStatusChip = (status) => {
   const statusConfig = {
@@ -246,7 +251,10 @@ const AppointmentCard = ({
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
-                  window.open(appointment.meetingLink, '_blank', 'noopener,noreferrer');
+                  openExternalUrl(appointment.meetingLink, {
+                    allowedHosts: MEETING_ALLOWED_HOSTS,
+                    requireHttps: true,
+                  });
                 }}
               >
                 Join Meeting
@@ -264,11 +272,11 @@ const AppointmentCard = ({
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
-                  window.open(
-                    `${EXTERNAL_SERVICES.GOOGLE_MAPS.SEARCH}?api=1&query=${encodeURIComponent(appointment.location)}`,
-                    '_blank',
-                    'noopener,noreferrer',
-                  );
+                  const mapUrl = `${EXTERNAL_SERVICES.GOOGLE_MAPS.SEARCH}?api=1&query=${encodeURIComponent(appointment.location)}`;
+                  openExternalUrl(mapUrl, {
+                    allowedHosts: GOOGLE_MAPS_ALLOWED_HOSTS,
+                    requireHttps: true,
+                  });
                 }}
               >
                 View on Map

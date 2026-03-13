@@ -25,6 +25,7 @@ import {
   PersonAddAlt1 as PersonAddAlt1Icon,
   WorkOutline as WorkOutlineIcon,
 } from '@mui/icons-material';
+import { Link as RouterLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Helmet } from 'react-helmet-async';
 import { useSnackbar } from 'notistack';
@@ -239,7 +240,7 @@ const HirerProfilePage = () => {
               >
                 Edit hirer profile
               </Button>
-              <Button href="/hirer/find-talent" variant="outlined" sx={{ minHeight: 44 }}>
+              <Button component={RouterLink} to="/hirer/find-talent" variant="outlined" sx={{ minHeight: 44 }}>
                 Find talent
               </Button>
             </Stack>
@@ -447,7 +448,8 @@ const HirerProfilePage = () => {
                   Keep your account aligned with your current jobs so workers see a trustworthy business profile before they respond.
                 </Typography>
                 <Button
-                  href="/hirer/quick-hire"
+                  component={RouterLink}
+                  to="/hirer/quick-hire"
                   variant="outlined"
                   startIcon={<WorkOutlineIcon />}
                   sx={{ minHeight: 44 }}

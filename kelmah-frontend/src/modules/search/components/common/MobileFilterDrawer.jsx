@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Drawer,
   Box,
@@ -32,6 +32,18 @@ const MobileFilterDrawer = ({
   const [location, setLocation] = useState(initialFilters.location || '');
   const [jobType, setJobType] = useState(initialFilters.jobType || '');
   const [category, setCategory] = useState(initialFilters.category || '');
+
+  useEffect(() => {
+    setKeyword(initialFilters.keyword || '');
+    setLocation(initialFilters.location || '');
+    setJobType(initialFilters.jobType || '');
+    setCategory(initialFilters.category || '');
+  }, [
+    initialFilters.keyword,
+    initialFilters.location,
+    initialFilters.jobType,
+    initialFilters.category,
+  ]);
 
   // Vocational job categories for Ghana's skilled trades
   const jobCategories = [

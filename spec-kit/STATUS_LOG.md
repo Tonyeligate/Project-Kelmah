@@ -7,6 +7,42 @@
 
 ---
 
+### Session: Frontend Deep Route UI UX And Data Flow Audit March 13 2026 ✅ COMPLETED
+
+**Date**: March 13, 2026  
+**Scope**: Deep static audit of frontend routes, pages, subpages, and shared flows for UI/UX defects, wiring inconsistencies, security risks, logic bugs, and high-impact performance issues.
+
+**Acceptance Criteria**
+- Inventory routed frontend pages and verify routing aliases/guards consistency.
+- Audit page-level async/data-flow patterns for regressions and edge-case failures.
+- Produce severity-ranked findings with concrete remediation plans.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/App.jsx`
+- `kelmah-frontend/src/main.jsx`
+- `kelmah-frontend/src/modules/**/pages/*.jsx`
+- `kelmah-frontend/src/modules/layout/components/*.jsx`
+- `kelmah-frontend/src/modules/**/services/*.js`
+- `kelmah-frontend/src/utils/serviceWarmUp.js`
+- `kelmah-frontend/src/hooks/useApiHealth.js`
+
+**Validation performed**
+- Frontend build status verified (latest local build already passing before this audit).
+- ESLint executed to surface static defects and maintainability regressions.
+- Route/path inventory reviewed from `config.jsx` and page navigation targets.
+- Live shell content sampled from `https://kelmah-frontend-cyan.vercel.app/`.
+
+**Confirmed high-impact findings captured for remediation plan**
+- Quick job photo/voice payload fallbacks still pass non-server URLs/blobs, risking request failure in production paths.
+- Admin Skills Management route still serves placeholder-only test creation UX.
+- Payment settings footer route links to a help page alias (`/settings/payments`) instead of a real payment settings workflow.
+- External URL handling is overly permissive in notification and scheduling meeting-link openings.
+- Service warm-up and health polling strategy introduces avoidable network churn/credit burn on app startup.
+- Legacy page surface exists but is not route-mounted (`HomePage`, `ProfilePage`, `ContractManagementPage`), increasing maintenance drift.
+
+---
+
 ### Session: Frontend Full UI UX And Functional Audit March 12 2026 ✅ COMPLETED
 
 **Date**: March 12, 2026  
@@ -14563,3 +14599,108 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 ### Verification
 - Frontend build passed: `npm run build` ✅ (`built in 1m 32s`)
 - Confirmed route alias exists for `/profile/:workerId` ✅
+
+### Session: Frontend Deep Audit Routing + Search/Recommendation Flow Hardening March 13 2026 ✅ COMPLETED
+
+**Date**: March 13, 2026  
+**Scope**: Deep frontend audit and direct fixes for UI/UX breakpoints, routing defects, async race conditions, and matching/recommendation/search flow precision issues.
+
+**Acceptance Criteria**
+- Fix broken or dead frontend route targets found during audit.
+- Fix mobile worker-search UX gaps that prevented reliable keyword search.
+- Harden worker-directory async request handling against stale-result races.
+- Improve worker matching sort precision for distance and price ordering.
+- Keep frontend production build green after each fix wave.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx`
+- `kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx`
+- `kelmah-frontend/src/modules/search/components/common/CompactSearchBar.jsx`
+- `kelmah-frontend/src/modules/search/components/common/MobileFilterDrawer.jsx`
+- `kelmah-frontend/src/modules/search/components/SmartJobRecommendations.jsx`
+- `kelmah-frontend/src/modules/search/components/SavedSearches.jsx`
+- `kelmah-frontend/src/modules/jobs/components/job-application/JobApplication.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/JobBidsPage.jsx`
+- `kelmah-frontend/src/modules/auth/components/AuthForm.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/HirerProfilePage.jsx`
+- `kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx`
+- `kelmah-frontend/src/modules/notifications/pages/NotificationsPage.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- Mobile compact worker search input was not wired to search state and only triggered search on focus, making keyword search ineffective on mobile.
+- Worker directory search flow could show stale loading/data states because aborted/outdated requests could still mutate state in race windows.
+- Worker search `distance` sort option did not sort at all, and price sorting treated missing rates as `0`, incorrectly surfacing incomplete profiles as cheapest.
+- Saved searches navigated to `/search/jobs`, which is not a valid route in the current router graph.
+- `JobApplication` redirected to `/dashboard/applications`, which is not a configured route.
+- `JobBidsPage` redirected wrong-role users to `/unauthorized`, which is not configured.
+- Auth and recommendation CTA links used hard browser `href` navigation in places where SPA routing is expected.
+- Notification context no-provider fallback omitted several context functions/fields expected by consumers.
+
+**Implementation completed**
+- Wired compact mobile search to controlled keyword state, explicit submit actions (Enter/button), and URL-driven search refresh.
+- Added filter drawer state synchronization from incoming `initialFilters` to prevent stale mobile filter values between opens.
+- Added active-controller guards in worker-directory search to prevent stale/aborted requests from overriding current state.
+- Wired `isPublicView` through worker results rendering so public-directory behavior is applied consistently even for authenticated sessions.
+- Implemented real worker distance sorting and safer price sorting that pushes missing/invalid rates to the end.
+- Fixed saved-search run navigation from `/search/jobs?...` to `/jobs?...`.
+- Fixed job-application success navigation from `/dashboard/applications` to `/worker/applications`.
+- Fixed wrong-role redirect in job bids from `/unauthorized` to `/dashboard`.
+- Replaced SPA-breaking `href` auth/recommendation links with router-based navigation handlers.
+- Replaced remaining SPA-breaking hirer profile CTA `href` links with router-link navigation.
+- Expanded `useNotifications` safe fallback object with consistent API surface (`loading`, `error`, `pagination`, `deleteNotification`, `refresh`, preference handlers).
+- Removed nested inline notification links inside already-clickable notification rows to prevent duplicate navigation/read-state races.
+
+**Validation**
+- Frontend production build passed after each fix wave via `npm run build` in `kelmah-frontend`.
+- Final build status: ✅ successful (`vite build` completed, no compile errors).
+
+**Current state**
+- Frontend route graph no longer contains the audited dead targets above.
+- Worker search UX on mobile is now actionable and URL-synced.
+- Worker search sorting behavior aligns with selected sort semantics for nearest and lowest-price views.
+- Recommendation/profile/auth CTA navigation now stays in SPA flow and preserves app context.
+
+### Session: Frontend Map Gate + Routed Smoke Regression Lock March 13 2026 COMPLETED
+
+**Date**: March 13, 2026  
+**Scope**: Complete the requested high-impact follow-up by gating the placeholder worker-directory map path, removing a dead legacy messaging component, and adding/running a routed smoke suite for public, worker, and hirer paths.
+
+**Acceptance Criteria**
+- Users cannot reach the worker-directory placeholder map UX unless explicitly feature-enabled.
+- Legacy `MessageSystem` is removed only after confirmed zero runtime references.
+- A smoke suite validates key routed paths and guards against previously broken legacy route targets.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx`
+- `kelmah-frontend/src/modules/messaging/components/common/MessageSystem.jsx` (deleted)
+- `kelmah-frontend/src/tests/smoke/routed-paths.smoke.test.jsx` (new)
+- `kelmah-frontend/src/tests/smoke/worker-directory-map-flag.smoke.test.jsx` (new)
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- Worker-directory map toggle routed users into `JobMapView`, which still shows a placeholder implementation message.
+- Legacy `MessageSystem` component used stale endpoint contracts and had zero inbound references in the current frontend runtime graph.
+- No existing smoke suite covered this exact cross-role route set (`/find-talents`, `/worker/applications`, `/hirer/quick-hire`) together with dead-path fallthrough.
+
+**Implementation completed**
+- Added `WORKER_DIRECTORY_MAP_ENABLED` feature gate (`VITE_ENABLE_WORKER_DIRECTORY_MAP === 'true'`) in `WorkerDirectoryExperience.jsx`.
+- Disabled map toggling and map rendering by default; map controls are now only passed when the feature flag is explicitly enabled.
+- Removed dead file `src/modules/messaging/components/common/MessageSystem.jsx` after confirming no runtime imports.
+- Added `src/tests/smoke/routed-paths.smoke.test.jsx` to verify:
+  - public route resolution (`/find-talents`),
+  - worker route resolution (`/worker/applications`),
+  - hirer route resolution (`/hirer/quick-hire`),
+  - invalid legacy route fallthrough (`/search/jobs` -> not found).
+- Added `src/tests/smoke/worker-directory-map-flag.smoke.test.jsx` to verify map path remains disabled by default and no map toggle callback is exposed to results UI.
+
+**Validation**
+- `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx src/tests/smoke/worker-directory-map-flag.smoke.test.jsx --runInBand`
+  - Result: 2 suites passed, 5 tests passed, 0 failures.
+- `npm run build` in `kelmah-frontend`
+  - Result: successful production build.
+
+**Current state**
+- Placeholder worker-directory map UX is no longer reachable in normal runtime by default.
+- Legacy `MessageSystem` implementation is removed from the active frontend surface.
+- Routed regression coverage now includes public + worker + hirer path smoke checks and dead-path fallthrough.

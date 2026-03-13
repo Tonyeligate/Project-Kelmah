@@ -111,7 +111,7 @@ const SavedSearches = ({
     if (user?.id) {
       loadSavedSearches();
     }
-  }, [loadSavedSearches, user]);
+  }, [loadSavedSearches, user?.id]);
 
   // Handle create/update saved search
   const handleSubmit = async () => {
@@ -179,7 +179,7 @@ const SavedSearches = ({
           ...search.filters,
         }).toString();
 
-        navigate(`/search/jobs?${queryString}`);
+        navigate(`/jobs?${queryString}`);
       }
 
       loadSavedSearches(); // Refresh to update last run time

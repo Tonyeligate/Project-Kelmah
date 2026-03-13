@@ -51,10 +51,10 @@ import {
   markComplete,
   cancelQuickJob,
   getCurrentLocation,
-  formatCurrency
+  formatCurrency,
+  uploadQuickJobPhotos,
 } from '../services/quickJobService';
 import { Helmet } from 'react-helmet-async';
-import { api } from '../../../services/apiClient';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
 
 // Job status steps for worker
@@ -184,7 +184,7 @@ const QuickJobTrackingPage = () => {
     const newPhotos = files.slice(0, 5 - completionPhotos.length).map(file => ({
       file,
       preview: URL.createObjectURL(file),
-      url: file.name // Temporary - would upload to storage
+      url: null,
     }));
     // Register blob URLs so the unmount cleanup can revoke them
     newPhotos.forEach(p => completionBlobUrlsRef.current.push(p.preview));
@@ -209,23 +209,14 @@ const QuickJobTrackingPage = () => {
     try {
       const pos = await getCurrentLocation();
 
-      // Upload completion photos to get real server URLs before submitting
-      let uploadedPhotos;
+      // Upload completion photos first and submit only trusted URL payloads.
+      const files = completionPhotos.map((photo) => photo?.file).filter(Boolean);
+      let uploadedPhotos = [];
       try {
-        const formData = new FormData();
-        completionPhotos.forEach((p, i) => formData.append('photos', p.file, `completion-${i}`));
-        const uploadRes = await api.post('/jobs/upload-photos', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        if (uploadRes.data?.success && Array.isArray(uploadRes.data.data)) {
-          uploadedPhotos = uploadRes.data.data.map(u => ({ url: u.url || u }));
-        } else {
-          // Fallback: still use preview — backend must have returned unexpected shape
-          uploadedPhotos = completionPhotos.map(p => ({ url: p.preview }));
-        }
-      } catch {
-        // Upload endpoint unavailable — fall back to previews and let backend reject if needed
-        uploadedPhotos = completionPhotos.map(p => ({ url: p.preview }));
+        uploadedPhotos = await uploadQuickJobPhotos(files);
+      } catch (uploadError) {
+        setError(uploadError.message || 'Photo upload failed. Please retry before completing this job.');
+        return;
       }
 
       const result = await markComplete(

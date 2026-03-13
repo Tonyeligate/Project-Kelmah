@@ -357,7 +357,7 @@ function JobApplication() {
 
       // Redirect after successful submission (with delay)
       setTimeout(() => {
-        navigate('/dashboard/applications');
+        navigate('/worker/applications');
       }, 2000);
     } catch (err) {
       setSubmissionError(err.message || 'Failed to submit application');
@@ -420,7 +420,7 @@ function JobApplication() {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => navigate('/dashboard/applications')}
+          onClick={() => navigate('/worker/applications')}
         >
           View My Applications
         </Button>

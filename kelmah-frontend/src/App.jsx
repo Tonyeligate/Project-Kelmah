@@ -45,10 +45,19 @@ const App = () => {
   useEffect(() => {
     let timerId;
     const wakeUpBackend = async () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        return;
+      }
+
       setServicesWakingUp(true);
       try {
-        const result = await warmUpServices();
-        if (result.wakingUp > 0) {
+        const result = await warmUpServices({ maxRetries: 1 });
+        if (result?.skipped) {
+          setServicesWakingUp(false);
+          return;
+        }
+
+        if (result?.wakingUp > 0) {
           // Services are waking up, keep indicator for a bit
           timerId = setTimeout(() => setServicesWakingUp(false), 15000);
         } else {

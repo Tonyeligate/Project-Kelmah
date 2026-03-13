@@ -398,7 +398,7 @@ const JobBidsPage = () => {
       return;
     }
     if (user?.role !== 'hirer' && user?.role !== 'admin') {
-      navigate('/unauthorized');
+      navigate('/dashboard', { replace: true });
     }
   }, [isAuthenticated, user?.role, navigate, location.pathname]);
 

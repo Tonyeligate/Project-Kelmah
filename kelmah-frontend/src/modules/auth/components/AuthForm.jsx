@@ -8,6 +8,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectAuthLoading, selectAuthError, login, register } from '../services/authSlice';
 
@@ -209,12 +210,12 @@ const AuthForm = ({ mode = 'login', onSuccess }) => {
           <>
             <Typography variant="body2">
               Don't have an account?{' '}
-              <Link href="/register" underline="hover">
+              <Link component={RouterLink} to="/register" underline="hover">
                 Register here
               </Link>
             </Typography>
             <Typography variant="body2" sx={{ mt: 1 }}>
-              <Link href="/forgot-password" underline="hover">
+              <Link component={RouterLink} to="/forgot-password" underline="hover">
                 Forgot password?
               </Link>
             </Typography>
@@ -222,7 +223,7 @@ const AuthForm = ({ mode = 'login', onSuccess }) => {
         ) : (
           <Typography variant="body2">
             Already have an account?{' '}
-            <Link href="/login" underline="hover">
+            <Link component={RouterLink} to="/login" underline="hover">
               Login here
             </Link>
           </Typography>
