@@ -1,3 +1,60 @@
+### Session: Messaging Send 404 Contract Fix March 13 2026 ✅ COMPLETED
+
+**Date**: March 13, 2026  
+**Scope**: Investigate and fix message sending failures caused by REST endpoint contract drift across frontend fallback, gateway forwarding, and messaging-service route definitions.
+
+**Incident evidence captured**
+- Frontend showed `POST /api/send-message 404` on same-origin bridge endpoint.
+- Frontend fallback then hit `POST /api/messages/conversations/:conversationId/messages 404` through gateway.
+- Live gateway error body confirmed upstream path miss: `/api/messages/conversation/:conversationId` with method `POST` returned endpoint-not-found.
+
+**Root cause**
+- Frontend REST fallback preferred conversation-scoped send URL.
+- Gateway forwarded that to `/api/messages/conversation/:conversationId`.
+- Messaging-service implemented `GET /api/messages/conversation/:conversationId` but not `POST` at that same path (canonical send endpoint is `POST /api/messages` with `conversationId` in body).
+
+**Implementation completed**
+- Frontend messaging service now sends REST fallback via canonical `POST /messages` path while including `conversationId` in payload.
+- Frontend bridge retry now marks bridge unavailable on `404/405/501` to prevent repeated noisy bridge attempts.
+- Gateway `POST /api/messages/conversations/:conversationId/messages` now forwards to `/api/messages` and injects `conversationId` in body.
+- Messaging-service added compatibility alias route `POST /api/messages/conversation/:conversationId` that hydrates `conversationId` into body then delegates to `createMessage`.
+
+**Validation**
+- `node --check` passed for updated backend route files.
+- Frontend production build passed via `npm run build` in `kelmah-frontend`.
+- Live gateway probe with authenticated user against canonical endpoint succeeded:
+  - `POST /api/messages` with a valid conversation returned `201` and persisted message response.
+
+- ### Session: Messaging Chunk Load 404 Incident March 13 2026 ✅ COMPLETED
+
+**Date**: March 13, 2026  
+**Scope**: Investigate and fix messaging route runtime failure caused by dynamic import chunk 404 and related PWA/service-worker cache behaviors.
+
+**Initial live symptoms captured**
+- `GET /assets/MessagingPage-*.js` returned `404` for an older chunk hash while navigating to `/messages`.
+- React route boundary rendered fallback error UI for the Messages section.
+- Console also contained extension/ad-blocker noise (`ERR_BLOCKED_BY_CLIENT`, `inject.js`) unrelated to application chunk loading.
+
+**Planned execution surface**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/utils/lazyWithRetry.js`
+- `kelmah-frontend/public/sw.js`
+- `kelmah-frontend/src/modules/common/components/RouteErrorBoundary.jsx`
+
+**Root cause confirmed**
+- The route graph used plain `React.lazy` imports, so when a user session held an older bundle manifest and the server no longer had that chunk hash (for example `MessagingPage-*.js` after a new deploy), navigation to `/messages` failed with `Failed to fetch dynamically imported module` and landed in route error fallback.
+
+**Implementation completed**
+- Switched route lazy loading to `lazyWithRetry` in `config.jsx` so stale chunk failures trigger one safe cache purge + reload instead of leaving the route broken.
+- Updated service worker message handling to support `KELMAH_CLEAR_RUNTIME_CACHES` and `SKIP_WAITING` commands used by update/retry flows.
+- Bumped service-worker cache name to force clean activation of the updated caching logic.
+- Reduced route-level HTML precache list to avoid storing multiple stale SPA entry documents.
+- Improved `RouteErrorBoundary` so chunk-load failures present a `Reload App` recovery action.
+- Corrected PWA update flow to message `registration.waiting` first for reliable activation.
+
+**Validation**
+- Frontend production build passed via `npm run build` in `kelmah-frontend` after all messaging/PWA recovery changes.
+
 - ### Session: Frontend Audit Fix Implementation Batch March 13 2026 ✅ COMPLETED
 
 **Date**: March 13, 2026  
@@ -39,6 +96,26 @@
 - Root cause: `kelmah-backend/shared/utils/corsPolicy.js` only allowed a fixed list of production Vercel domains even though the platform also serves preview deployments, so proxied messaging websocket handshakes from preview fronts were rejected by downstream service CORS checks.
 - Fixed the shared matcher to allow Kelmah-owned Vercel preview origins (`project-kelmah*`, `kelmah-frontend*`, `kelmah*`) across gateway and services, and added regression coverage in `kelmah-backend/shared/utils/corsPolicy.test.js`.
 # Kelmah Platform - Current Status & Development Log
+
+---
+
+### Session: Frontend Findings Remediation Sweep March 13 2026 🔄 IN PROGRESS
+
+**Date**: March 13, 2026  
+**Scope**: Apply and verify the latest full frontend findings list: routing/runtime crashes, quick-jobs stale state, messaging timer cleanup, HomeLanding service/data-flow normalization, map polling efficiency, archived page stabilization, route/config cleanup, and storage hardening adjustments.
+
+**Planned execution surface**
+- `kelmah-frontend/src/modules/settings/pages/SettingsPage.jsx`
+- `kelmah-frontend/src/modules/quickjobs/pages/NearbyJobsPage.jsx`
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- `kelmah-frontend/src/pages/HomeLanding.jsx`
+- `kelmah-frontend/src/modules/home/services/homeService.js`
+- `kelmah-frontend/src/modules/map/pages/ProfessionalMapPage.jsx`
+- `kelmah-frontend/src/modules/profile/pages/ProfilePage.jsx`
+- `kelmah-frontend/src/pages/ResetPassword.jsx`
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/config/services.js`
+- `kelmah-frontend/src/utils/secureStorage.js`
 
 ---
 

@@ -154,12 +154,16 @@ router.post('/conversations/:conversationId/messages', async (req, res) => {
   try {
     const upstream = getServiceUrl(req);
     const cid = req.params.conversationId;
-    const url = `${upstream}/api/messages/conversation/${cid}`;
+    const url = `${upstream}/api/messages`;
     // Build trust headers from req.user (NOT from client incoming headers)
     const headers = buildGatewayTrustHeaders(req);
+    const payload = {
+      ...(req.body || {}),
+      conversationId: cid,
+    };
 
     console.log(`[MESSAGING] POST message → ${url}`);
-    const r = await axios.post(url, req.body, { headers, timeout: 30000, validateStatus: () => true });
+    const r = await axios.post(url, payload, { headers, timeout: 30000, validateStatus: () => true });
     console.log(`[MESSAGING] POST message response: ${r.status}`);
     res.status(r.status).json(r.data);
   } catch (e) {

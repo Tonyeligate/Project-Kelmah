@@ -26,6 +26,8 @@ const shouldUseBridge = () =>
   typeof window !== 'undefined' &&
   !['localhost', '127.0.0.1'].includes(window.location?.hostname);
 
+let bridgeUnavailable = false;
+
 const getBridgeToken = async ({ forceRefresh = false } = {}) => {
   if (!forceRefresh) {
     const reduxToken = store.getState()?.auth?.token;
@@ -53,11 +55,20 @@ const postBridgeWithToken = (path, data, timeoutMs, token) =>
   });
 
 const bridgePost = async (path, data, timeoutMs = 45000) => {
+  if (bridgeUnavailable) {
+    throw new Error('Bridge unavailable');
+  }
+
   let token = await getBridgeToken();
 
   try {
     return await postBridgeWithToken(path, data, timeoutMs, token);
   } catch (error) {
+    const status = error?.response?.status;
+    if ([404, 405, 501].includes(status)) {
+      bridgeUnavailable = true;
+    }
+
     if (error.response?.status !== 401) {
       throw error;
     }
@@ -227,7 +238,7 @@ export const messagingService = {
     const payload = { applicationId };
 
     // 1. Try Vercel serverless bridge (bypasses gateway body-stream hang)
-    if (shouldUseBridge()) {
+    if (shouldUseBridge() && !bridgeUnavailable) {
       try {
         const response = await bridgePost('/api/create-conversation', payload);
         const data = response.data;
@@ -319,7 +330,7 @@ export const messagingService = {
     };
 
     // 1. Try Vercel serverless bridge for POST body
-    if (shouldUseBridge()) {
+    if (shouldUseBridge() && !bridgeUnavailable) {
       try {
         const response = await bridgePost('/api/send-message', payload, 30000);
         const msg = response.data?.data || response.data;
@@ -334,9 +345,7 @@ export const messagingService = {
 
     // 2. Fallback: gateway proxy POSTs via conversations/:id/messages
     try {
-      const postPath = conversationId
-        ? `/messages/conversations/${conversationId}/messages`
-        : '/messages';
+      const postPath = '/messages';
       const response = await api.post(postPath, payload);
       return normalizeMessage(response.data?.data || response.data);
     } catch (error) {
@@ -354,7 +363,7 @@ export const messagingService = {
     };
 
     // 1. Try Vercel serverless bridge (bypasses gateway proxy body-stream hang)
-    if (shouldUseBridge()) {
+    if (shouldUseBridge() && !bridgeUnavailable) {
       try {
         const response = await bridgePost('/api/create-conversation', payload);
         return normalizeConversation(response.data?.data?.conversation || response.data);

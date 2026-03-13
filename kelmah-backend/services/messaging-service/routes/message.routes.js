@@ -17,6 +17,18 @@ router.get(
   "/conversation/:conversationId",
   messageController.getConversationMessages,
 );
+router.post(
+  "/conversation/:conversationId",
+  createLimiter('messaging'),
+  (req, res) => {
+    req.body = {
+      ...(req.body || {}),
+      conversationId: req.params.conversationId,
+    };
+
+    return messageController.createMessage(req, res);
+  },
+);
 // Mark a single message as read (canonical: /api/messages/:messageId/read)
 router.post("/:messageId/read", async (req, res) => {
   try {
