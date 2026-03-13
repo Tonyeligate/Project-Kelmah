@@ -99,12 +99,12 @@
 
 ---
 
-### Session: Frontend Findings Remediation Sweep March 13 2026 🔄 IN PROGRESS
+### Session: Frontend Findings Remediation Sweep March 13 2026 ✅ COMPLETED
 
 **Date**: March 13, 2026  
 **Scope**: Apply and verify the latest full frontend findings list: routing/runtime crashes, quick-jobs stale state, messaging timer cleanup, HomeLanding service/data-flow normalization, map polling efficiency, archived page stabilization, route/config cleanup, and storage hardening adjustments.
 
-**Planned execution surface**
+**Execution surface**
 - `kelmah-frontend/src/modules/settings/pages/SettingsPage.jsx`
 - `kelmah-frontend/src/modules/quickjobs/pages/NearbyJobsPage.jsx`
 - `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
@@ -116,6 +116,28 @@
 - `kelmah-frontend/src/routes/config.jsx`
 - `kelmah-frontend/src/config/services.js`
 - `kelmah-frontend/src/utils/secureStorage.js`
+- `kelmah-frontend/src/services/apiClient.js`
+- `kelmah-frontend/src/modules/messaging/services/messagingService.js`
+- `kelmah-frontend/src/modules/jobs/utils/jobListUtils.js`
+- `kelmah-frontend/src/modules/messaging/utils/conversationUtils.js`
+
+**Implementation completed**
+- Fixed settings hash deep-link initialization order so `settingsPanels` is defined before initial hash resolution, removing the runtime TDZ crash risk.
+- Fixed quick-jobs quote success removal logic to normalize `id/_id` on both selected and listed jobs, eliminating stale-card reinteraction.
+- Added messaging typing-timeout unmount cleanup to prevent lingering timers and post-unmount side-effects.
+- Migrated landing-page stats calls to a shared home service backed by the centralized API client and added cancellation guards to both effects.
+- Updated map auto-refresh to skip polling while the tab is hidden and corrected coordinate guards to allow valid zero coordinates.
+- Replaced corrupted archived profile page implementation with a valid minimal archived placeholder component.
+- Moved reset-password title metadata into shared content rendering so both mobile and desktop branches include page title.
+- Removed unused `RoleProtectedRoute` dead wrapper from route config.
+- Normalized malformed escaped-newline debug block in `services.js`.
+- Applied practical storage hardening by defaulting auth-token/refresh-token writes to session scope unless explicit or pre-existing persistent scope is present.
+- Enabled credentialed API and messaging bridge requests (`withCredentials`) to support HttpOnly cookie migration paths.
+- Started maintainability decomposition by extracting jobs list dedupe/sort logic, messaging conversation preview/time formatting, and hirer application-management normalization/constants into dedicated utility modules.
+
+**Validation**
+- Frontend production build passed twice via `npm run build` in `kelmah-frontend` after all remediation edits.
+- Targeted ESLint run confirmed no new syntax/runtime breakages in modified files, while existing repository-wide Prettier/lint debt remains.
 
 ---
 

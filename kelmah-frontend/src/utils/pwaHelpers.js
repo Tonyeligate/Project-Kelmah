@@ -295,10 +295,21 @@ const showUpdateNotification = () => {
 
 // Update PWA
 const updatePWA = () => {
-  if (navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
-  }
-  window.location.reload();
+  navigator.serviceWorker
+    .getRegistration()
+    .then((registration) => {
+      if (registration?.waiting) {
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        return;
+      }
+
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+      }
+    })
+    .finally(() => {
+      window.location.reload();
+    });
 };
 
 // Check if app is installed

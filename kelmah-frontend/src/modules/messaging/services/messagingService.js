@@ -47,6 +47,7 @@ const getBridgeToken = async ({ forceRefresh = false } = {}) => {
 
 const postBridgeWithToken = (path, data, timeoutMs, token) =>
   axios.post(path, data, {
+    withCredentials: true,
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

@@ -27,7 +27,23 @@ class RouteErrorBoundary extends React.Component {
     }
   }
 
+  isChunkLoadFailure = () => {
+    const message = String(this.state?.error?.message || '');
+    const name = String(this.state?.error?.name || '');
+
+    return (
+      /Loading chunk [\d]+ failed/i.test(message) ||
+      /ChunkLoadError/i.test(name) ||
+      /Failed to fetch dynamically imported module/i.test(message)
+    );
+  };
+
   handleReset = () => {
+    if (this.isChunkLoadFailure()) {
+      window.location.reload();
+      return;
+    }
+
     this.setState({ hasError: false, error: null });
   };
 
@@ -64,7 +80,7 @@ class RouteErrorBoundary extends React.Component {
             </Typography>
             <Box display="flex" gap={2} justifyContent="center">
               <Button variant="contained" onClick={this.handleReset}>
-                Try Again
+                {this.isChunkLoadFailure() ? 'Reload App' : 'Try Again'}
               </Button>
               <Button
                 variant="outlined"

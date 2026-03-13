@@ -1,7 +1,7 @@
 // Kelmah Service Worker for Ghana Market
 // Optimized for poor network conditions and offline functionality
 
-const CACHE_NAME = 'kelmah-v1.0.6-api-prefix-fix';
+const CACHE_NAME = 'kelmah-v1.0.7-chunk-recovery';
 const OFFLINE_URL = '/offline.html';
 const HEALTHY_GATEWAY_DB = 'kelmah-gateway-db';
 const HEALTHY_GATEWAY_STORE = 'healthyGatewayStore';
@@ -85,14 +85,6 @@ const PRECACHE_URLS = [
   '/',
   '/offline.html',
   '/manifest.json',
-  // Core pages for offline access
-  '/login',
-  '/register',
-  '/worker/dashboard',
-  '/hirer/dashboard',
-  '/jobs',
-  '/messages',
-  '/payments',
 ];
 
 // API endpoints to cache for offline
@@ -173,6 +165,19 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+async function clearRuntimeCaches() {
+  try {
+    const cacheNames = await caches.keys();
+    await Promise.all(
+      cacheNames
+        .filter((name) => /kelmah|vite|workbox|assets|static/i.test(name))
+        .map((name) => caches.delete(name).catch(() => false)),
+    );
+  } catch (error) {
+    console.warn('[SW] Failed to clear runtime caches:', error);
+  }
+}
+
 self.addEventListener('message', (event) => {
   const { data } = event;
   if (!data || typeof data !== 'object') return;
@@ -189,6 +194,10 @@ self.addEventListener('message', (event) => {
     );
   } else if (data.type === 'CACHE_HEALTHY_GATEWAY' && data.payload) {
     event.waitUntil(saveHealthyGateway(data.payload));
+  } else if (data.type === 'KELMAH_CLEAR_RUNTIME_CACHES') {
+    event.waitUntil(clearRuntimeCaches());
+  } else if (data.type === 'SKIP_WAITING') {
+    event.waitUntil(self.skipWaiting());
   }
 });
 
@@ -609,4 +618,4 @@ async function getOfflinePayments() {
 }
 async function removeOfflinePayment(id) { }
 
-console.log('🇬🇭 Kelmah Service Worker loaded - Optimized for Ghana market');
+console.log('🇬🇭 Kelmah Service Worker loaded - Optimized for Ghana market (v1.0.7 chunk recovery)');

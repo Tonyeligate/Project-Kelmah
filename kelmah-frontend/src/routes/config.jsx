@@ -1,5 +1,5 @@
 import { Navigate, useLocation, useParams, useRoutes } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { useSelector } from 'react-redux';
 import Layout from '../modules/layout/components/Layout';
 import ProtectedRoute from '../modules/auth/components/common/ProtectedRoute';
@@ -8,6 +8,9 @@ import { PaymentProvider } from '../modules/payment/contexts/PaymentContext';
 import { ContractProvider } from '../modules/contracts/contexts/ContractContext';
 import RouteErrorBoundary from '../modules/common/components/RouteErrorBoundary';
 import { getRoleHomePath, hasRole } from '../utils/userUtils';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
+
+const lazy = (factory) => lazyWithRetry(factory);
 
 // Public Pages
 const LandingPage = lazy(() => import('../pages/HomeLanding'));
@@ -228,13 +231,6 @@ const SkillsAssessmentManagement = lazy(
 );
 const PayoutQueuePage = lazy(
   () => import('../modules/admin/pages/PayoutQueuePage'),
-);
-
-// Role-based route protection wrapper
-const RoleProtectedRoute = ({ children, allowedRoles }) => (
-  <ProtectedRoute roles={allowedRoles}>
-    {children}
-  </ProtectedRoute>
 );
 
 const RoleAliasRedirect = ({ workerPath, hirerPath, adminPath }) => {
