@@ -1,3 +1,4 @@
+// ARCHIVED PAGE: intentionally not route-mounted. Active profile flows are role-specific routes under /worker and /hirer.
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Container,

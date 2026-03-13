@@ -1,3 +1,4 @@
+// ARCHIVED PAGE: intentionally not route-mounted. Active home experience lives in src/pages/HomeLanding.
 import React, { useState, useEffect } from 'react';
 import {
   Box,

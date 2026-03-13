@@ -42,7 +42,6 @@ import {
 } from '@mui/material';
 import {
   Gavel as BidIcon,
-  AttachMoney as MoneyIcon,
   CheckCircle as AcceptIcon,
   Cancel as RejectIcon,
   HourglassEmpty as PendingIcon,
@@ -55,6 +54,11 @@ import {
 } from '@mui/icons-material';
 import bidApi from '../../jobs/services/bidService';
 import Toast from '../../common/components/common/Toast';
+
+const isAbortError = (error) =>
+  error?.name === 'AbortError' ||
+  error?.name === 'CanceledError' ||
+  error?.code === 'ERR_CANCELED';
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'warning', icon: <PendingIcon fontSize="small" /> },
@@ -293,12 +297,20 @@ const JobBidsPage = () => {
   const [rejectDialog, setRejectDialog] = useState({ open: false, bid: null });
   const [rejectReason, setRejectReason] = useState('');
 
-  const fetchBids = useCallback(async () => {
+  const fetchBids = useCallback(async (signal) => {
     if (!jobId) return;
+    if (signal?.aborted) return;
+
     setLoading(true);
     setError(null);
+
     try {
-      const result = await bidApi.getJobBids(jobId);
+      const result = await bidApi.getJobBids(jobId, {}, { signal });
+
+      if (signal?.aborted) {
+        return;
+      }
+
       const bidsData = Array.isArray(result) ? [...result] : [];
       // Sort: pending first, then by score desc, then by date desc
       bidsData.sort((a, b) => {
@@ -311,18 +323,24 @@ const JobBidsPage = () => {
       });
       setBids(bidsData);
     } catch (err) {
+      if (isAbortError(err) || signal?.aborted) {
+        return;
+      }
+
       setError('Failed to load bids. The job may not exist or you may not have permission.');
       if (import.meta.env.DEV) console.error('JobBidsPage fetch error:', err);
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   }, [jobId]);
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchBids();
+    fetchBids(controller.signal);
     return () => controller.abort();
-  }, [jobId]);
+  }, [fetchBids]);
 
   const handleAcceptConfirm = async () => {
     const bid = acceptDialog.bid;

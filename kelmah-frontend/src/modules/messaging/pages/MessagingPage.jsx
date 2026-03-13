@@ -178,15 +178,23 @@ const EnhancedMessagingPage = () => {
 
   // Revoke preview blob URLs when selectedFiles change or on unmount
   useEffect(() => {
+    const previewUrlsSnapshot = [...filePreviewUrls];
+
     return () => {
-      filePreviewUrls.forEach((url) => { if (url) URL.revokeObjectURL(url); });
+      previewUrlsSnapshot.forEach((url) => {
+        if (url) {
+          URL.revokeObjectURL(url);
+        }
+      });
     };
   }, [filePreviewUrls]);
 
   // Revoke message attachment blob URLs on unmount
   useEffect(() => {
     return () => {
-      blobUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      const messageBlobUrlsSnapshot = [...blobUrlsRef.current];
+      blobUrlsRef.current = [];
+      messageBlobUrlsSnapshot.forEach((url) => URL.revokeObjectURL(url));
     };
   }, []);
 
@@ -464,7 +472,7 @@ const EnhancedMessagingPage = () => {
     }
 
     setSelectedFiles((prev) => [...prev, ...validFiles]);
-  }, []);
+  }, [showFeedback]);
 
   // Utility functions
 

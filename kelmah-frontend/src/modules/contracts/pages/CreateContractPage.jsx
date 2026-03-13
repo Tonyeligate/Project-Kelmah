@@ -282,16 +282,18 @@ const CreateContractPage = () => {
           errors.value = 'Enter how much you will pay (must be more than 0)';
         }
         break;
-      case 3: // Milestones
+      case 3: { // Milestones
         const milestoneErrors = {};
         let totalAmount = 0;
 
         contract.milestones.forEach((milestone, index) => {
           const milestoneError = {};
-          if (!milestone.title.trim())
+          if (!milestone.title.trim()) {
             milestoneError.title = 'Title is required';
-          if (!milestone.dueDate)
+          }
+          if (!milestone.dueDate) {
             milestoneError.dueDate = 'Due date is required';
+          }
           if (!milestone.amount) {
             milestoneError.amount = 'Amount is required';
           } else if (
@@ -317,6 +319,7 @@ const CreateContractPage = () => {
           errors.totalAmount = 'The step payments must add up to the total pay';
         }
         break;
+      }
       default:
         break;
     }

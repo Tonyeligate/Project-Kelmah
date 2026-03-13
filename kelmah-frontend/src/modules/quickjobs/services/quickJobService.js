@@ -291,6 +291,48 @@ export const getCurrentLocation = () => {
 };
 
 /**
+ * Geocode a manually entered Ghana address to coordinates.
+ * @param {{address: string, city?: string, region?: string}} params
+ * @returns {Promise<{latitude: number, longitude: number} | null>}
+ */
+export const geocodeAddress = async ({ address, city = '', region = '' } = {}) => {
+  const normalizedAddress = String(address || '').trim();
+  if (!normalizedAddress) {
+    return null;
+  }
+
+  const query = [normalizedAddress, city, region, 'Ghana']
+    .map((part) => String(part || '').trim())
+    .filter(Boolean)
+    .join(', ');
+
+  const response = await fetch(
+    `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`,
+    {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+    },
+  );
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const results = await response.json();
+  const first = Array.isArray(results) ? results[0] : null;
+  const latitude = Number(first?.lat);
+  const longitude = Number(first?.lon);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  return { latitude, longitude };
+};
+
+/**
  * Format currency for Ghana Cedis
  * @param {number} amount - Amount in GH₵
  * @returns {string} Formatted currency string
@@ -402,6 +444,7 @@ export default {
   raiseDispute,
   cancelQuickJob,
   getCurrentLocation,
+  geocodeAddress,
   formatCurrency,
   calculateFees,
   uploadQuickJobPhotos

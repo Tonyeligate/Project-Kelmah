@@ -56,6 +56,11 @@
  *   2. hirer_name string
  *   3. company/companyName fields
  *   4. Fallback: "Employer Name Pending" with _isFallback + _needsAdminReview flags
+ *
+ * TODO(frontend-audit): split this page into focused modules:
+ * - filters/search state + URL sync
+ * - job-card list rendering
+ * - mobile drawer and quick actions
  */
 
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';

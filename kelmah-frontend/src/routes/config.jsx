@@ -327,6 +327,7 @@ const routes = [
     children: [
       // Public routes
       { index: true, element: <LandingPage /> },
+      { path: 'home', element: <Navigate to="/" replace /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'register', element: <RegisterPage /> },
       { path: 'forgot-password', element: <ForgotPasswordPage /> },
@@ -956,7 +957,7 @@ const routes = [
       },
       {
         path: 'settings/payments',
-        element: <HelpCenterPage />,
+        element: <Navigate to="/payments" replace />,
       },
       {
         path: 'profile',

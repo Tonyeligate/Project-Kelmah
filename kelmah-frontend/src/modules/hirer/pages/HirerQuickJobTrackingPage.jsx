@@ -51,6 +51,7 @@ import {
   verifyQuickJobPayment,
 } from '../../quickjobs/services/quickJobService';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
+import { sanitizeExternalUrl } from '../../../utils/externalNavigation';
 
 const requesterSteps = [
   { status: 'pending', label: 'Waiting for quotes' },
@@ -70,6 +71,13 @@ const paymentMethodOptions = [
   { value: 'vodafone_cash', label: 'Vodafone Cash' },
   { value: 'bank_transfer', label: 'Bank Transfer' },
 ];
+
+const PAYMENT_REDIRECT_ALLOWED_HOSTS = new Set([
+  'paystack.com',
+  'checkout.paystack.com',
+  'flutterwave.com',
+  'checkout.flutterwave.com',
+]);
 
 const getStatusIndex = (status) => {
   const index = requesterSteps.findIndex((step) => step.status === status);
@@ -268,18 +276,16 @@ const HirerQuickJobTrackingPage = () => {
             'Payment callback verification failed. Please refresh and check the payment status.',
         );
       } finally {
-        if (!isActive) {
-          return;
+        if (isActive) {
+          setVerifyingPayment(false);
+          navigate(
+            {
+              pathname: location.pathname,
+              search: '',
+            },
+            { replace: true },
+          );
         }
-
-        setVerifyingPayment(false);
-        navigate(
-          {
-            pathname: location.pathname,
-            search: '',
-          },
-          { replace: true },
-        );
       }
     };
 
@@ -338,7 +344,16 @@ const HirerQuickJobTrackingPage = () => {
         result?.data?.checkoutUrl;
 
       if (redirectUrl) {
-        window.location.assign(redirectUrl);
+        const safeRedirectUrl = sanitizeExternalUrl(redirectUrl, {
+          allowedHosts: PAYMENT_REDIRECT_ALLOWED_HOSTS,
+          requireHttps: true,
+        });
+
+        if (!safeRedirectUrl) {
+          throw new Error('Received an invalid payment redirect URL. Please try again.');
+        }
+
+        window.location.assign(safeRedirectUrl);
         return;
       }
 

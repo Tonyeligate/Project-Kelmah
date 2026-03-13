@@ -208,8 +208,11 @@ const bidApi = {
    * @param {string} jobId
    * @param {Object} params - { page, limit, sort }
    */
-  async getJobBids(jobId, params = {}) {
-    const response = await api.get(`/bids/job/${jobId}`, { params });
+  async getJobBids(jobId, params = {}, requestConfig = {}) {
+    const response = await api.get(`/bids/job/${jobId}`, {
+      ...requestConfig,
+      params,
+    });
     return normalizeBidCollection(response.data?.data || response.data);
   },
 
@@ -218,14 +221,17 @@ const bidApi = {
    * @param {string} workerId
    * @param {Object} params - { page, limit, status }
    */
-  async getWorkerBids(workerId, params = {}) {
+  async getWorkerBids(workerId, params = {}, requestConfig = {}) {
     const path = workerId ? `/bids/worker/${workerId}` : '/bids/me';
-    const response = await api.get(path, { params });
+    const response = await api.get(path, {
+      ...requestConfig,
+      params,
+    });
     return normalizeBidCollection(response.data?.data || response.data);
   },
 
-  async getMyBids(params = {}) {
-    return this.getWorkerBids(null, params);
+  async getMyBids(params = {}, requestConfig = {}) {
+    return this.getWorkerBids(null, params, requestConfig);
   },
 
   /**
@@ -282,14 +288,14 @@ const bidApi = {
    * @param {string} workerId
    * @returns {Object} { count, quota, remaining, tier }
    */
-  async getWorkerBidStats(workerId) {
+  async getWorkerBidStats(workerId, requestConfig = {}) {
     const path = workerId ? `/bids/stats/worker/${workerId}` : '/bids/stats/me';
-    const response = await api.get(path);
+    const response = await api.get(path, requestConfig);
     return normalizeBidStats(response.data?.data || response.data);
   },
 
-  async getMyBidStats() {
-    return this.getWorkerBidStats(null);
+  async getMyBidStats(requestConfig = {}) {
+    return this.getWorkerBidStats(null, requestConfig);
   },
 };
 

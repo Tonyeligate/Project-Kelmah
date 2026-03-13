@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
@@ -168,6 +168,15 @@ const PremiumPage = () => {
   const [selectedPlan, setSelectedPlan] = useState('');
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
   const [upgradeError, setUpgradeError] = useState('');
+  const loginRedirectTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (loginRedirectTimerRef.current) {
+        clearTimeout(loginRedirectTimerRef.current);
+      }
+    };
+  }, []);
 
   const plans = {
     monthly: {
@@ -190,7 +199,10 @@ const PremiumPage = () => {
     if (!isAuthenticated) {
       setUpgradeError('Please log in to upgrade your plan.');
       setOpenDialog(false);
-      setTimeout(() => navigate('/login', {
+      if (loginRedirectTimerRef.current) {
+        clearTimeout(loginRedirectTimerRef.current);
+      }
+      loginRedirectTimerRef.current = setTimeout(() => navigate('/login', {
         state: {
           from: '/pricing',
           message: 'Please sign in to upgrade your plan.',

@@ -1,3 +1,38 @@
+- ### Session: Frontend Audit Fix Implementation Batch March 13 2026 ✅ COMPLETED
+
+**Date**: March 13, 2026  
+**Scope**: Implement the severity-ranked frontend audit fixes for quick-hire validation/memory cleanup, payment flow hardening, abort-signal wiring, messaging cleanup, premium redirect timeout cleanup, route consistency, and switch-case safety.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/quickjobs/pages/QuickJobRequestPage.jsx`
+- `kelmah-frontend/src/modules/quickjobs/services/quickJobService.js`
+- `kelmah-frontend/src/modules/hirer/pages/HirerQuickJobTrackingPage.jsx`
+- `kelmah-frontend/src/modules/jobs/services/bidService.js`
+- `kelmah-frontend/src/modules/hirer/pages/JobBidsPage.jsx`
+- `kelmah-frontend/src/modules/worker/pages/MyBidsPage.jsx`
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- `kelmah-frontend/src/modules/premium/pages/PremiumPage.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx`
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/contracts/pages/CreateContractPage.jsx`
+
+**Implementation completed**
+- Fixed quick-hire manual address conversion blocking by allowing step completion with address+city/region and geocoding manual entries before submit when GPS coordinates are unavailable.
+- Removed stale photo-preview cleanup logic by tracking preview blob URLs in a ref set and revoking URLs on remove + unmount using current values.
+- Hardened quick-hire payment callback flow by removing return-based control flow in `finally` and preserving deterministic cleanup/navigation behavior.
+- Added allowlist-based payment redirect validation before `window.location.assign` in hirer quick-hire tracking payment initialization.
+- Added `AbortController` support to bids service methods and wired cancellation signals through `JobBidsPage` and `MyBidsPage` fetch flows to prevent post-unmount state updates.
+- Tightened messaging blob cleanup to snapshot URL lists before revocation and fixed `handleFileSelect` callback dependency to avoid stale callback behavior.
+- Added timeout cleanup for delayed login redirects in premium upgrade flow.
+- Added explicit modularization extraction targets in `JobsPage` and `ApplicationManagementPage` to kick off the large-page decomposition workstream.
+- Normalized route behavior by adding explicit `/home` alias redirect to `/`.
+- Fixed `no-case-declarations` risk in contract creation step validation switch logic.
+- Marked legacy `HomePage` and `ProfilePage` surfaces as archived/not route-mounted to reduce future routing ambiguity.
+
+**Validation**
+- Frontend production build passed via `npm run build` in `kelmah-frontend` after all fixes.
+
 - Investigated the reported messaging CORS and payment dashboard failures from the live console dump through the deployed gateway and backend stack.
 - Live repro against `https://kelmah-api-gateway-gf3g.onrender.com` showed authenticated `GET /api/messages/conversations`, `GET /api/payments/wallet`, `GET /api/payments/escrows`, `GET /api/payments/transactions/history`, and `GET /api/users/workers/stats/trades` all return `200`, so the payment 500s are not reproducing on the current deployment.
 - Isolated the remaining live defect to the Socket.IO handshake path: `GET /socket.io/?EIO=4&transport=polling` returns `200` with origin `https://project-kelmah.vercel.app` but returns `500 INTERNAL_ERROR` with preview-style origins such as `https://project-kelmah-git-main-kelmah.vercel.app` and `https://random-preview-kelmah.vercel.app`.
@@ -40,6 +75,42 @@
 - External URL handling is overly permissive in notification and scheduling meeting-link openings.
 - Service warm-up and health polling strategy introduces avoidable network churn/credit burn on app startup.
 - Legacy page surface exists but is not route-mounted (`HomePage`, `ProfilePage`, `ContractManagementPage`), increasing maintenance drift.
+
+---
+
+### Session: Frontend Audit Remediation Phase Execution March 13 2026 ✅ COMPLETED
+
+**Date**: March 13, 2026  
+**Scope**: Implement all previously prioritized frontend remediation phases from the March 13 deep audit without redeploy/restart churn.
+
+**Acceptance Criteria**
+- Remove unsafe quick-job media fallback payloads and enforce upload-first request contracts.
+- Harden notification/scheduling external navigation handling.
+- Correct payment-related routing inconsistencies and role-safe navigation paths.
+- Reduce startup health/warm-up request churn to lower credit usage.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/quickjobs/pages/QuickJobRequestPage.jsx`
+- `kelmah-frontend/src/modules/quickjobs/pages/QuickJobTrackingPage.jsx`
+- `kelmah-frontend/src/modules/quickjobs/services/quickJobService.js`
+- `kelmah-frontend/src/modules/scheduling/pages/SchedulingPage.jsx`
+- `kelmah-frontend/src/modules/notifications/pages/NotificationsPage.jsx`
+- `kelmah-frontend/src/modules/payment/pages/PaymentCenterPage.jsx`
+- `kelmah-frontend/src/modules/layout/components/Footer.jsx`
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/utils/serviceWarmUp.js`
+- `kelmah-frontend/src/hooks/useApiHealth.js`
+- `kelmah-frontend/src/App.jsx`
+- `kelmah-frontend/src/utils/externalNavigation.js`
+
+**Implementation completed**
+- Verified that strict quick-job media handling is active in request/complete flows (upload-first contract, no preview/blob payload fallback).
+- Verified that scheduling and notifications now use validated external-link opening helpers.
+- Applied the remaining routed-path correction by redirecting legacy `/settings/payments` to `/payments`.
+- Normalized corrupted display text in the quick-job request page to remove mojibake artifacts.
+
+**Validation**
+- Frontend production build passed via `npm run build` in `kelmah-frontend` after remediation changes.
 
 ---
 

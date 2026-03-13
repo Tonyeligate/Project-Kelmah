@@ -5,7 +5,7 @@
  * Flow:
  * Step 1: Describe your problem (voice/text/photo)
  * Step 2: Confirm location
- * Step 3: Select urgency ΓåÆ Submit
+ * Step 3: Select urgency -> Submit
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -52,6 +52,7 @@ import {
   SERVICE_CATEGORIES, 
   URGENCY_LEVELS, 
   createQuickJob, 
+  geocodeAddress,
   getCurrentLocation,
   uploadQuickJobPhotos,
 } from '../services/quickJobService';
@@ -73,6 +74,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   const [recordingDuration, setRecordingDuration] = useState(0);
   const recordingTimerRef = useRef(null);
   const redirectTimerRef = useRef(null);
+  const photoPreviewUrlsRef = useRef(new Set());
 
   // Get category from URL params
   const categoryId = categoryParam || searchParams.get('category') || 'general_repair';
@@ -107,9 +109,11 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   useEffect(() => {
     handleGetLocation();
     return () => {
-      // Revoke all photo blob URLs on unmount
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      photos.forEach(p => { if (p?.preview) URL.revokeObjectURL(p.preview); });
+      // Revoke all tracked preview blob URLs on unmount.
+      photoPreviewUrlsRef.current.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+      photoPreviewUrlsRef.current.clear();
       clearInterval(recordingTimerRef.current);
       clearTimeout(redirectTimerRef.current);
       // Stop any active media recording and release the microphone
@@ -119,8 +123,15 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
       streamRef.current?.getTracks().forEach(t => t.stop());
       streamRef.current = null;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (voiceNote?.url) {
+        URL.revokeObjectURL(voiceNote.url);
+      }
+    };
+  }, [voiceNote?.url]);
 
   // Handle get current location
   const handleGetLocation = async () => {
@@ -149,11 +160,15 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
     const files = Array.from(event.target.files);
     
     // Limit to 5 photos
-    const newPhotos = files.slice(0, 5 - photos.length).map(file => ({
-      file,
-      preview: URL.createObjectURL(file),
-      url: null // Will be set after upload
-    }));
+    const newPhotos = files.slice(0, 5 - photos.length).map((file) => {
+      const preview = URL.createObjectURL(file);
+      photoPreviewUrlsRef.current.add(preview);
+      return {
+        file,
+        preview,
+        url: null // Will be set after upload
+      };
+    });
     
     setPhotos(prev => [...prev, ...newPhotos].slice(0, 5));
   };
@@ -161,7 +176,10 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   // Remove photo (revoke blob URL to prevent memory leak)
   const handleRemovePhoto = (index) => {
     const photo = photos[index];
-    if (photo?.preview) URL.revokeObjectURL(photo.preview);
+    if (photo?.preview) {
+      URL.revokeObjectURL(photo.preview);
+      photoPreviewUrlsRef.current.delete(photo.preview);
+    }
     setPhotos(prev => prev.filter((_, i) => i !== index));
   };
 
@@ -202,7 +220,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
         setRecordingDuration(0);
         recordingTimerRef.current = setInterval(() => {
           setRecordingDuration(prev => {
-            if (prev >= 60) { // 60-second max ΓÇö stop recording directly via ref to avoid stale closure
+            if (prev >= 60) { // 60-second max - stop recording directly via ref to avoid stale closure
               if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
                 mediaRecorderRef.current.stop();
               }
@@ -225,12 +243,21 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   };
 
   // Check if step is complete
+  const hasValidCoordinates = (coordinates) =>
+    Array.isArray(coordinates) &&
+    coordinates.length === 2 &&
+    coordinates.every((value) => Number.isFinite(Number(value)));
+
   const isStepComplete = (step) => {
     switch (step) {
       case 0:
         return description.length >= 10 || photos.length > 0;
       case 1:
-        return location && address;
+        return (
+          String(address || '').trim().length > 0 &&
+          (hasValidCoordinates(location?.coordinates) ||
+            (String(city || '').trim().length > 0 && String(region || '').trim().length > 0))
+        );
       case 2:
         return urgency;
       default:
@@ -278,17 +305,49 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
         }
       }
 
+      let resolvedLocation =
+        hasValidCoordinates(location?.coordinates)
+          ? {
+              type: 'Point',
+              coordinates: [
+                Number(location.coordinates[0]),
+                Number(location.coordinates[1]),
+              ],
+            }
+          : null;
+
+      if (!resolvedLocation) {
+        const geocoded = await geocodeAddress({
+          address,
+          city,
+          region,
+        });
+
+        if (!geocoded) {
+          setError(
+            'We could not pinpoint this address. Please tap "Use My Current Location" or enter a more specific address.',
+          );
+          return;
+        }
+
+        resolvedLocation = {
+          type: 'Point',
+          coordinates: [geocoded.longitude, geocoded.latitude],
+        };
+        setLocation(resolvedLocation);
+      }
+
       const jobData = {
         category: categoryId,
         description,
         photos: photoUrls,
         voiceNote,
         location: {
-          ...location,
-          address,
+          ...resolvedLocation,
+          address: String(address || '').trim(),
           landmark,
-          city,
-          region
+          city: String(city || '').trim(),
+          region: String(region || '').trim()
         },
         urgency
       };
@@ -322,7 +381,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
               <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Avatar sx={{ bgcolor: theme.palette.primary.main, width: 56, height: 56 }}>
                   <Typography variant="h5">
-                    {SERVICE_CATEGORIES.find(c => c.id === categoryId)?.icon || '≡ƒöº'}
+                    {SERVICE_CATEGORIES.find(c => c.id === categoryId)?.icon || 'Tool'}
                   </Typography>
                 </Avatar>
                 <Box>
@@ -408,7 +467,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
 
             {/* Voice note recorder */}
             <Typography variant="subtitle2" gutterBottom sx={{ mt: 1 }}>
-              Voice note (optional ΓÇö describe your problem by speaking)
+              Voice note (optional - describe your problem by speaking)
             </Typography>
             {voiceNote ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, p: 1.5, border: '1px solid', borderColor: 'success.main', borderRadius: 2, bgcolor: theme.palette.action.hover }}>
@@ -465,10 +524,10 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
               </Alert>
             )}
 
-            {location && (
+            {hasValidCoordinates(location?.coordinates) && (
               <Alert severity="success" sx={{ mb: 2 }}>
                 <Typography variant="body2">
-                  ≡ƒôì Location captured: {location.coordinates[1].toFixed(4)}, {location.coordinates[0].toFixed(4)}
+                  Location captured: {location.coordinates[1].toFixed(4)}, {location.coordinates[0].toFixed(4)}
                 </Typography>
               </Alert>
             )}
@@ -589,7 +648,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
                   </Typography>
                 </Box>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                  ≡ƒôì {address || 'No address'}, {city || 'No city'}
+                  {address || 'No address'}, {city || 'No city'}
                 </Typography>
                 <Typography variant="body2" sx={{ 
                   overflow: 'hidden', 
@@ -626,7 +685,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
           <CheckIcon sx={{ fontSize: 60 }} />
         </Avatar>
         <Typography variant="h4" gutterBottom fontWeight="bold">
-          Request Sent! ≡ƒÄë
+          Request Sent!
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
           Workers nearby will see your request and send quotes. You'll be notified when they respond.

@@ -58,6 +58,9 @@ import { useSnackbar } from 'notistack';
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
 
+// TODO(frontend-audit): extract application list, decision dialogs, and pagination/filter controls
+// into dedicated subcomponents to reduce page-level coupling and improve testability.
+
 const normalizeApplication = (raw, jobIdFallback, jobTitleFallback) => {
   const worker = raw?.worker || {};
   const workerName =

@@ -25,7 +25,6 @@ import {
   Tabs,
   Tab,
   Divider,
-  Avatar,
   CircularProgress,
   Alert,
   Dialog,
@@ -58,6 +57,11 @@ import {
 } from '@mui/icons-material';
 import bidApi from '../../jobs/services/bidService';
 import Toast from '../../common/components/common/Toast';
+
+const isAbortError = (error) =>
+  error?.name === 'AbortError' ||
+  error?.name === 'CanceledError' ||
+  error?.code === 'ERR_CANCELED';
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'warning', icon: <PendingIcon fontSize="small" /> },
@@ -314,7 +318,11 @@ const MyBidsPage = () => {
 
   const TAB_STATUSES = ['all', 'pending', 'accepted', 'rejected', 'withdrawn', 'expired'];
 
-  const fetchBids = useCallback(async () => {
+  const fetchBids = useCallback(async (signal) => {
+    if (signal?.aborted) {
+      return;
+    }
+
     if (!user) {
       navigate('/login', { state: { from: '/worker/bids' } });
       return;
@@ -323,9 +331,14 @@ const MyBidsPage = () => {
     setError(null);
     try {
       const [bidsResult, statsResult] = await Promise.allSettled([
-        bidApi.getMyBids(),
-        bidApi.getMyBidStats(),
+        bidApi.getMyBids({}, { signal }),
+        bidApi.getMyBidStats({ signal }),
       ]);
+
+      if (signal?.aborted) {
+        return;
+      }
+
       const bidsData = bidsResult.status === 'fulfilled' ? bidsResult.value : [];
       setBids(bidsData);
       if (statsResult.status === 'fulfilled') {
@@ -335,16 +348,22 @@ const MyBidsPage = () => {
         setError('Failed to load your bids. Please try again.');
       }
     } catch (err) {
+      if (isAbortError(err) || signal?.aborted) {
+        return;
+      }
+
       setError('Failed to load your bids. Please try again.');
       if (import.meta.env.DEV) console.error('MyBidsPage fetch error:', err);
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
-  }, [user?.id || user?._id]);
+  }, [navigate, user]);
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchBids();
+    fetchBids(controller.signal);
     return () => controller.abort();
   }, [fetchBids]);
 
