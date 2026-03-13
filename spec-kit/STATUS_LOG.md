@@ -45,7 +45,8 @@
 **Implementation completed**
 - Hardened both send and create-conversation bridge functions to:
   - Normalize configured service URL to origin-only form.
-  - Retry once against the known messaging-service origin when upstream returns plain `404 Not Found`.
+  - Route bridge requests through API Gateway origin first (bearer-auth passthrough), then fallback to direct messaging-service origins.
+  - Retry on plain `404 Not Found` and transient `5xx` upstream failures.
   - Preserve pass-through status/data for non-retryable upstream responses.
 - Applied identical hardening in both deployment layouts:
   - root `api/*.js` functions

@@ -19,6 +19,8 @@ const HMAC_SECRET =
   process.env.JWT_SECRET ||
   'kelmah-internal-key-2024';
 
+const DEFAULT_GATEWAY_ORIGIN = 'https://kelmah-api-gateway-tvqj.onrender.com';
+
 const DEFAULT_MESSAGING_ORIGIN = 'https://kelmah-messaging-service-kpj5.onrender.com';
 
 function normalizeServiceOrigin(raw) {
@@ -32,23 +34,29 @@ function normalizeServiceOrigin(raw) {
 }
 
 function shouldRetryWithNextOrigin(result) {
-  if (!result || result.status !== 404) return false;
-  const rawBody = typeof result?.data?.raw === 'string' ? result.data.raw.trim() : '';
-  return rawBody === 'Not Found';
+  if (!result) return true;
+
+  if (result.status >= 500) return true;
+
+  if (result.status === 404) {
+    const rawBody = typeof result?.data?.raw === 'string' ? result.data.raw.trim() : '';
+    return rawBody === 'Not Found';
+  }
+
+  return false;
 }
 
-async function forwardWithOriginFallback(path, method, headers, body) {
-  const candidateOrigins = [
-    normalizeServiceOrigin(MESSAGING_URL),
-    normalizeServiceOrigin(DEFAULT_MESSAGING_ORIGIN),
-  ].filter(Boolean);
-
-  const uniqueOrigins = [...new Set(candidateOrigins)];
+async function forwardWithCandidates(candidates, method, body) {
   let lastResult = null;
 
-  for (const origin of uniqueOrigins) {
+  for (const candidate of candidates) {
+    const { origin, path, headers } = candidate;
+    if (!origin || !path) {
+      continue;
+    }
+
     const url = `${origin}${path}`;
-    const result = await forwardRequest(url, method, headers, body);
+    const result = await forwardRequest(url, method, headers || {}, body);
     lastResult = result;
     if (!shouldRetryWithNextOrigin(result)) {
       return result;
@@ -139,7 +147,7 @@ module.exports = async function handler(req, res) {
 
     const bodyStr = JSON.stringify(req.body || {});
 
-    const headers = {
+    const serviceHeaders = {
       'Content-Type': 'application/json',
       'Content-Length': String(Buffer.byteLength(bodyStr)),
       'x-authenticated-user': userPayload,
@@ -149,7 +157,37 @@ module.exports = async function handler(req, res) {
       'User-Agent': 'kelmah-vercel-bridge/1.0',
     };
 
-    const result = await forwardWithOriginFallback('/api/conversations', 'POST', headers, bodyStr);
+    const gatewayOrigin =
+      normalizeServiceOrigin(process.env.API_GATEWAY_URL) ||
+      normalizeServiceOrigin(process.env.VITE_API_GATEWAY_URL) ||
+      normalizeServiceOrigin(DEFAULT_GATEWAY_ORIGIN);
+
+    const gatewayHeaders = {
+      'Content-Type': 'application/json',
+      'Content-Length': String(Buffer.byteLength(bodyStr)),
+      Authorization: authHeader,
+      'User-Agent': 'kelmah-vercel-bridge/1.0',
+    };
+
+    const candidates = [
+      {
+        origin: gatewayOrigin,
+        path: '/api/messages/conversations',
+        headers: gatewayHeaders,
+      },
+      {
+        origin: normalizeServiceOrigin(MESSAGING_URL),
+        path: '/api/conversations',
+        headers: serviceHeaders,
+      },
+      {
+        origin: normalizeServiceOrigin(DEFAULT_MESSAGING_ORIGIN),
+        path: '/api/conversations',
+        headers: serviceHeaders,
+      },
+    ];
+
+    const result = await forwardWithCandidates(candidates, 'POST', bodyStr);
     return res.status(result.status).json(result.data);
   } catch (err) {
     console.error('[create-conversation] Handler error:', err.message, err.stack);
