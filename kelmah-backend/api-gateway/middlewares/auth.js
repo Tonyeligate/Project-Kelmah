@@ -9,6 +9,9 @@ const jwtUtils = require('../../shared/utils/jwt');
 const { User } = require('../../shared/models');
 const { AppError, AuthenticationError, AuthorizationError } = require('../../shared/utils/errorTypes');
 
+const ACCESS_COOKIE_NAME =
+  process.env.AUTH_ACCESS_COOKIE_NAME || 'kelmah_access_token';
+
 // User cache to reduce database lookups (bounded LRU)
 const MAX_CACHE_SIZE = 500;
 const userCache = new Map();
@@ -79,21 +82,88 @@ const buildUserFromDecodedToken = (decoded, fallbackId) => ({
   tokenVersion: decoded?.version || 0,
 });
 
+const parseCookieHeader = (cookieHeader) => {
+  if (!cookieHeader || typeof cookieHeader !== 'string') {
+    return {};
+  }
+
+  return cookieHeader
+    .split(';')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .reduce((accumulator, entry) => {
+      const separatorIndex = entry.indexOf('=');
+      if (separatorIndex === -1) {
+        return accumulator;
+      }
+
+      const key = entry.slice(0, separatorIndex).trim();
+      const value = entry.slice(separatorIndex + 1).trim();
+      if (!key) {
+        return accumulator;
+      }
+
+      try {
+        accumulator[key] = decodeURIComponent(value);
+      } catch (_) {
+        accumulator[key] = value;
+      }
+      return accumulator;
+    }, {});
+};
+
+const resolveAccessToken = (req) => {
+  const authHeader = req.headers.authorization;
+  let malformedAuthHeader = false;
+
+  if (typeof authHeader === 'string' && authHeader.length > 0) {
+    if (authHeader.startsWith('Bearer ')) {
+      const bearerToken = authHeader.substring(7).trim();
+      if (bearerToken) {
+        return {
+          token: bearerToken,
+          source: 'header',
+          malformedAuthHeader: false,
+        };
+      }
+    }
+
+    malformedAuthHeader = true;
+  }
+
+  const cookies = parseCookieHeader(req.headers.cookie);
+  const cookieToken = cookies[ACCESS_COOKIE_NAME];
+  if (typeof cookieToken === 'string' && cookieToken.trim().length > 0) {
+    return {
+      token: cookieToken,
+      source: 'cookie',
+      malformedAuthHeader,
+    };
+  }
+
+  return {
+    token: null,
+    source: null,
+    malformedAuthHeader,
+  };
+};
+
 /**
  * Main authentication middleware
  * Validates JWT tokens and populates req.user for downstream services
  */
 const authenticate = async (req, res, next) => {
   try {
-    // Get token from Authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const { token, source, malformedAuthHeader } = resolveAccessToken(req);
+    if (!token) {
+      if (malformedAuthHeader) {
+        return sendAuthError(res, 401, 'Invalid token format', 'INVALID_TOKEN_FORMAT');
+      }
       return sendAuthError(res, 401, 'No token provided', 'AUTH_REQUIRED');
     }
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    if (!token) {
-      return sendAuthError(res, 401, 'Invalid token format', 'INVALID_TOKEN_FORMAT');
+    if (source === 'cookie') {
+      req.headers.authorization = `Bearer ${token}`;
     }
 
     // Verify JWT token using shared utility
@@ -208,14 +278,13 @@ const authorizeRoles = (...allowedRoles) => {
  * Populates req.user if token is present but doesn't require it
  */
 const optionalAuth = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return next(); // No token provided, continue without authentication
-  }
-
-  const token = authHeader.substring(7);
+  const { token, source } = resolveAccessToken(req);
   if (!token) {
     return next();
+  }
+
+  if (source === 'cookie') {
+    req.headers.authorization = `Bearer ${token}`;
   }
 
   try {

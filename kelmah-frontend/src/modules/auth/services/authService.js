@@ -75,27 +75,31 @@ const authService = {
       };
       const normalizedUser = persistNormalizedUser(user, persistOptions);
 
-      if (!token || !user) {
+      if (!user) {
         throw new Error(
-          'Invalid response from server - missing token or user data',
+          'Invalid response from server - missing user data',
         );
       }
 
       // Store authentication data securely
-      secureStorage.setAuthToken(token, persistOptions);
+      if (token) {
+        secureStorage.setAuthToken(token, persistOptions);
+      }
       if (refreshToken) {
         secureStorage.setRefreshToken(refreshToken, persistOptions);
       }
 
       // Setup automatic token refresh
-      authService.setupTokenRefresh(token);
+      if (token) {
+        authService.setupTokenRefresh(token);
+      }
 
       devLog(
         'Login successful for user:',
         normalizedUser?.email || user.email,
       );
       return {
-        token,
+        token: token || null,
         refreshToken,
         user: normalizedUser || user,
         success: true,
@@ -215,9 +219,8 @@ const authService = {
 
   // Check if user is authenticated
   isAuthenticated: () => {
-    const token = secureStorage.getAuthToken();
     const user = authService.getCurrentUser();
-    return !!(token && user);
+    return !!user;
   },
 
   // Get auth token
@@ -238,18 +241,11 @@ const authService = {
     }
 
     const refreshToken = secureStorage.getRefreshToken();
-
-    if (!refreshToken) {
-      return {
-        success: false,
-        error: 'No refresh token available',
-        shouldReset: true,
-      };
-    }
+    const refreshPayload = refreshToken ? { refreshToken } : {};
 
     // Set the shared lock so the interceptor reuses our in-flight call
     apiClient._refreshPromise = (async () => {
-      const response = await api.post('/auth/refresh-token', { refreshToken });
+      const response = await api.post('/auth/refresh-token', refreshPayload);
       const responseData = response.data.data || response.data;
       const { token: newAccessToken } = responseData;
       if (!newAccessToken) throw new Error('Refresh response did not include a new token');

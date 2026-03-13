@@ -20,6 +20,45 @@ const HMAC_SECRET =
   process.env.JWT_SECRET ||
   'kelmah-internal-key-2024';
 
+const DEFAULT_MESSAGING_ORIGIN = 'https://kelmah-messaging-service-kpj5.onrender.com';
+
+function normalizeServiceOrigin(raw) {
+  if (!raw || typeof raw !== 'string') return null;
+  try {
+    const parsed = new URL(raw.trim());
+    return parsed.origin;
+  } catch {
+    return null;
+  }
+}
+
+function shouldRetryWithNextOrigin(result) {
+  if (!result || result.status !== 404) return false;
+  const rawBody = typeof result?.data?.raw === 'string' ? result.data.raw.trim() : '';
+  return rawBody === 'Not Found';
+}
+
+async function forwardWithOriginFallback(path, method, headers, body) {
+  const candidateOrigins = [
+    normalizeServiceOrigin(MESSAGING_URL),
+    normalizeServiceOrigin(DEFAULT_MESSAGING_ORIGIN),
+  ].filter(Boolean);
+
+  const uniqueOrigins = [...new Set(candidateOrigins)];
+  let lastResult = null;
+
+  for (const origin of uniqueOrigins) {
+    const url = `${origin}${path}`;
+    const result = await forwardRequest(url, method, headers, body);
+    lastResult = result;
+    if (!shouldRetryWithNextOrigin(result)) {
+      return result;
+    }
+  }
+
+  return lastResult || { status: 502, data: { success: false, message: 'Bridge upstream unavailable' } };
+}
+
 function decodeJwtPayload(token) {
   try {
     const raw = token.replace('Bearer ', '').trim();
@@ -100,7 +139,6 @@ export default async function handler(req, res) {
 
     // Messages are always POSTed to /api/messages (the controller reads
     // conversationId from the body, not the URL path).
-    const upstreamUrl = `${MESSAGING_URL}/api/messages`;
     const bodyStr = JSON.stringify(req.body || {});
 
     const headers = {
@@ -113,7 +151,7 @@ export default async function handler(req, res) {
       'User-Agent': 'kelmah-vercel-bridge/1.0',
     };
 
-    const result = await forwardRequest(upstreamUrl, 'POST', headers, bodyStr);
+    const result = await forwardWithOriginFallback('/api/messages', 'POST', headers, bodyStr);
     return res.status(result.status).json(result.data);
   } catch (err) {
     console.error('[send-message] Handler error:', err.message, err.stack);

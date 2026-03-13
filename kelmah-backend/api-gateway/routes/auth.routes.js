@@ -52,6 +52,10 @@ const buildForwardHeaders = (req, { includeGatewayHeaders = false } = {}) => {
     headers.Authorization = req.headers.authorization;
   }
 
+  if (req.headers.cookie) {
+    headers.Cookie = req.headers.cookie;
+  }
+
   if (includeGatewayHeaders) {
     if (req.headers['x-authenticated-user']) {
       headers['x-authenticated-user'] = req.headers['x-authenticated-user'];
@@ -177,16 +181,17 @@ const refreshTokenDirectHandler = async (req, res) => {
     const url = `${upstream}/api/auth${suffix}`;
     console.log(`[REFRESH-TOKEN] Forwarding to: ${url}`);
     const r = await axios.post(url, req.body, {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Request-ID': req.id || '',
-        'User-Agent': 'kelmah-api-gateway',
-      },
+      headers: buildForwardHeaders(req),
       timeout: 60000, // 60s to survive Render cold starts (default proxy was 30s → 504)
       validateStatus: () => true,
     });
     console.log(`[REFRESH-TOKEN] Response: ${r.status}`);
-    res.status(r.status).json(r.data);
+
+    const safeHeaders = {};
+    if (r.headers['set-cookie']) safeHeaders['set-cookie'] = r.headers['set-cookie'];
+    if (r.headers['content-type']) safeHeaders['content-type'] = r.headers['content-type'];
+
+    res.status(r.status).set(safeHeaders).json(r.data);
   } catch (e) {
     console.error(`[REFRESH-TOKEN] Error:`, e.message);
     res.status(504).json({

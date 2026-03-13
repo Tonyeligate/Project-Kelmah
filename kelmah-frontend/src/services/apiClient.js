@@ -48,7 +48,7 @@ const getRequestKey = (method, url, params) => {
 };
 
 const isRefreshRequest = (request) =>
-    typeof request?.url === 'string' && request.url.includes('/auth/refresh-token');
+    typeof request?.url === 'string' && /\/auth\/(refresh|refresh-token)/.test(request.url);
 
 const enqueueUnauthorizedRequest = (request) =>
     new Promise((resolve, reject) => {
@@ -68,7 +68,11 @@ const processUnauthorizedQueue = (error, token = null) => {
         }
 
         queued.request.headers = queued.request.headers || {};
-        queued.request.headers.Authorization = `Bearer ${token}`;
+        if (token) {
+            queued.request.headers.Authorization = `Bearer ${token}`;
+        } else {
+            delete queued.request.headers.Authorization;
+        }
         queued.resolve(apiClient(queued.request));
     }
 };
@@ -136,20 +140,29 @@ apiClient.interceptors.response.use(
             if (!apiClient._refreshPromise) {
                 apiClient._isRefreshing = true;
                 apiClient._refreshPromise = (async () => {
-                    const refreshToken = secureStorage.getItem('refresh_token');
-                    if (!refreshToken) throw new Error('No refresh token');
+                    const refreshToken = secureStorage.getRefreshToken();
+                    const refreshPayload = refreshToken ? { refreshToken } : {};
                     // Use a separate instance to avoid infinite loops
                     const response = await axios.post(
                         `${API_BASE_URL}/auth/refresh-token`,
-                        { refreshToken },
+                        refreshPayload,
+                        {
+                            withCredentials: true,
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        },
                     );
                     const token =
                         response.data?.data?.token ||
                         response.data?.token ||
                         response.data?.accessToken ||
                         null;
-                    if (!token) throw new Error('Refresh response missing token');
-                    secureStorage.setAuthToken(token);
+                    if (token) {
+                        secureStorage.setAuthToken(token);
+                    } else {
+                        secureStorage.removeItem('auth_token');
+                    }
 
                     // Save rotated refresh token if provided
                     const newRefresh =
@@ -157,7 +170,7 @@ apiClient.interceptors.response.use(
                         response.data?.refreshToken ||
                         null;
                     if (newRefresh) {
-                        secureStorage.setItem('refresh_token', newRefresh);
+                        secureStorage.setRefreshToken(newRefresh);
                     }
 
                     processUnauthorizedQueue(null, token);

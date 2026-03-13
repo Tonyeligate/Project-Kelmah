@@ -20,6 +20,11 @@ const deviceUtil = require("../utils/device");
 const sessionUtil = require("../utils/session");
 const { logger } = require("../utils/logger");
 const SecurityUtils = require("../utils/security");
+const {
+  setAuthCookies,
+  clearAuthCookies,
+  getRefreshTokenFromCookies,
+} = require('../utils/authCookies');
 // MFA dependencies
 let speakeasy, QRCode;
 try {
@@ -607,6 +612,11 @@ exports.login = async (req, res, next) => {
     // Log successful login for audit purposes
     logger.info('User logged in', { email: user.email, ip: req.ip });
 
+    setAuthCookies(res, {
+      accessToken,
+      refreshToken: refreshData.token,
+    });
+
     return res.status(200).json({
       success: true,
       data: {
@@ -663,6 +673,11 @@ exports.verifyEmail = async (req, res, next) => {
       expiresAt: refreshData.expiresAt,
       deviceInfo: refreshData.deviceInfo,
       createdByIp: req.ip,
+    });
+
+    setAuthCookies(res, {
+      accessToken,
+      refreshToken: refreshData.token,
     });
 
     // Return success response
@@ -943,7 +958,12 @@ exports.changePassword = async (req, res, next) => {
  */
 exports.refreshToken = async (req, res, next) => {
   try {
-    const { refreshToken } = req.body;
+    const bodyRefreshToken =
+      typeof req.body?.refreshToken === 'string'
+        ? req.body.refreshToken.trim()
+        : '';
+
+    const refreshToken = bodyRefreshToken || getRefreshTokenFromCookies(req);
 
     if (!refreshToken) {
       return next(new AppError("Refresh token is required", 400));
@@ -1012,6 +1032,11 @@ exports.refreshToken = async (req, res, next) => {
     // Log token refresh for audit purposes
     logger.info('Token refreshed', { email: user.email, ip: req.ip });
 
+    setAuthCookies(res, {
+      accessToken,
+      refreshToken: newRefreshData.token,
+    });
+
     // Return tokens in expected format
     return res.status(200).json({
       success: true,
@@ -1042,6 +1067,9 @@ exports.refreshToken = async (req, res, next) => {
 exports.logout = async (req, res, next) => {
   try {
     const { refreshToken, logoutAll = false } = req.body;
+    const resolvedRefreshToken =
+      (typeof refreshToken === 'string' && refreshToken.trim()) ||
+      getRefreshTokenFromCookies(req);
     const userId = req.user?.id; // Will be available if user is authenticated
 
     let revokedCount = 0;
@@ -1051,10 +1079,10 @@ exports.logout = async (req, res, next) => {
       const result = await RefreshToken.deleteMany({ userId });
       revokedCount = result?.deletedCount || 0;
       logger.info('User logged out from all devices', { userId, revokedCount });
-    } else if (refreshToken) {
+    } else if (resolvedRefreshToken) {
       // Revoke specific refresh token by tokenId (from composite)
       try {
-        const parts = refreshToken.split('.');
+        const parts = resolvedRefreshToken.split('.');
         const signed = parts.slice(0, 3).join('.');
         const parsed = jwtUtils.verifyRefreshToken(signed);
         const result = await RefreshToken.deleteMany({ tokenId: parsed.jti });
@@ -1064,6 +1092,8 @@ exports.logout = async (req, res, next) => {
         // ignore invalid token
       }
     }
+
+    clearAuthCookies(res);
 
     // Return consistent success response format
     return res.status(200).json({
@@ -1760,6 +1790,11 @@ exports.exchangeOAuthCode = async (req, res, next) => {
       createdByIp: req.ip,
       deviceInfo: refreshData.deviceInfo,
       createdAt: new Date(),
+    });
+
+    setAuthCookies(res, {
+      accessToken,
+      refreshToken: refreshData.token,
     });
 
     return res.status(200).json({

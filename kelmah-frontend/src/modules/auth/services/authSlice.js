@@ -112,39 +112,35 @@ export const verifyAuth = createAsyncThunk(
 
       // Development mock authentication disabled – always verify via API
 
-      // Production mode auth verification logic - check both storage locations
+      // Production mode auth verification logic - cookie and token aware
       let token = secureStorage.getAuthToken();
-      if (!token) {
-        const refreshToken = secureStorage.getRefreshToken();
-        if (refreshToken) {
-          devLog('No access token found, attempting refresh...');
-          const refreshResult = await authService.refreshToken();
-          if (refreshResult?.token) {
-            token = refreshResult.token;
-          } else {
-            const refreshError = new Error(
-              refreshResult?.error || 'Session expired. Please log in again.',
-            );
-            refreshError.shouldReset =
-              refreshResult?.shouldReset !== undefined
-                ? refreshResult.shouldReset
-                : true;
-            refreshError.isNetworkError = refreshResult?.isNetworkError;
-            throw refreshError;
-          }
-        } else {
-          if (import.meta.env.DEV) console.warn('No token found in secure storage');
-          throw new Error('Session expired. Please log in again.');
-        }
-      }
 
-      // Check if there's user data in localStorage
+      // Check if there's user data in secure storage
       const storedUserSnapshot = secureStorage.getUserData();
       devLog('Currently stored user:', storedUserSnapshot || 'none');
 
-      // Verify against backend
-      const verify = await authService.verifyAuth();
+      // Always attempt backend verification first to support cookie sessions.
+      let verify = await authService.verifyAuth();
       devLog('Auth verify response:', verify);
+
+      if (verify?.success === false && !verify?.user && !token) {
+        devLog('No local access token available, attempting refresh...');
+        const refreshResult = await authService.refreshToken();
+        if (refreshResult?.token) {
+          token = refreshResult.token;
+          verify = await authService.verifyAuth();
+        } else {
+          const refreshError = new Error(
+            refreshResult?.error || 'Session expired. Please log in again.',
+          );
+          refreshError.shouldReset =
+            refreshResult?.shouldReset !== undefined
+              ? refreshResult.shouldReset
+              : true;
+          refreshError.isNetworkError = refreshResult?.isNetworkError;
+          throw refreshError;
+        }
+      }
 
       if (verify?.success === false && !verify?.user) {
         throw new Error(
@@ -160,13 +156,26 @@ export const verifyAuth = createAsyncThunk(
         throw new Error('Unable to load your account details.');
       }
 
+      if (!token) {
+        try {
+          const refreshResult = await authService.refreshToken();
+          if (refreshResult?.token) {
+            token = refreshResult.token;
+          }
+        } catch (_) {
+          // Cookie-backed sessions may remain valid even when token hydration fails.
+        }
+      }
+
       // Update stored user data with fresh data from API
       secureStorage.setUserData(normalizedUser);
-      secureStorage.setAuthToken(token);
+      if (token) {
+        secureStorage.setAuthToken(token);
+      }
 
       return {
         user: normalizedUser,
-        token,
+        token: token || null,
         isAuthenticated: true,
       };
     } catch (error) {

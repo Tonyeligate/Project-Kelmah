@@ -14,6 +14,26 @@ const { logger } = require("../utils/logger");
 
 const router = express.Router();
 
+const refreshCookieName =
+  process.env.AUTH_REFRESH_COOKIE_NAME || 'kelmah_refresh_token';
+
+const hydrateRefreshTokenFromCookie = (req, _res, next) => {
+  if (!req.body || typeof req.body !== 'object') {
+    req.body = {};
+  }
+
+  if (req.body.refreshToken) {
+    return next();
+  }
+
+  const cookieToken = req.cookies?.[refreshCookieName];
+  if (typeof cookieToken === 'string' && cookieToken.trim().length > 0) {
+    req.body.refreshToken = cookieToken;
+  }
+
+  return next();
+};
+
 const buildStrictPasswordValidation = (fieldName) =>
   body(fieldName).custom((value) => {
     const passwordValidation = SecurityUtils.validatePassword(value);
@@ -109,6 +129,16 @@ router.post("/logout", verifyGatewayRequest, authController.logout);
 router.post(
   "/refresh-token",
   createLimiter("auth"),
+  hydrateRefreshTokenFromCookie,
+  [body("refreshToken").notEmpty().withMessage("Refresh token is required")],
+  validate,
+  authController.refreshToken,
+);
+
+router.post(
+  "/refresh",
+  createLimiter("auth"),
+  hydrateRefreshTokenFromCookie,
   [body("refreshToken").notEmpty().withMessage("Refresh token is required")],
   validate,
   authController.refreshToken,

@@ -1,3 +1,60 @@
+### Session: Cookie Auth End To End Migration March 13 2026 ✅ COMPLETED
+
+**Date**: March 13, 2026  
+**Scope**: Close the frontend+backend security migration by moving auth refresh/session continuity to HttpOnly cookies across auth-service, api-gateway, and frontend auth/bootstrap flows while preserving backward compatibility for existing bearer-token clients.
+
+**Execution surface**
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+- `kelmah-backend/services/auth-service/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/utils/authCookies.js` (new)
+- `kelmah-backend/api-gateway/middlewares/auth.js`
+- `kelmah-backend/api-gateway/routes/auth.routes.js`
+- `kelmah-frontend/src/services/apiClient.js`
+- `kelmah-frontend/src/modules/auth/services/authService.js`
+- `kelmah-frontend/src/modules/auth/services/authSlice.js`
+- `kelmah-frontend/src/App.jsx`
+
+**Implementation completed**
+- Added auth-service cookie utility (`authCookies.js`) to consistently set and clear HttpOnly auth cookies (`kelmah_access_token`, `kelmah_refresh_token`) with environment-driven security options.
+- Auth-service now sets auth cookies on login, refresh-token rotation, email verification token exchange, and OAuth code exchange.
+- Auth-service logout now clears auth cookies and supports refresh-token revocation using either request body or refresh cookie.
+- Auth-service refresh endpoint now accepts refresh-token via cookie fallback and now supports both `/api/auth/refresh-token` and `/api/auth/refresh` aliases.
+- Gateway auth middleware now authenticates from bearer header or access-token cookie, and hydrates `Authorization` when cookie auth is used so downstream behavior remains stable.
+- Gateway auth direct-forward handlers now forward inbound cookies to auth-service and preserve upstream `Set-Cookie` headers (including refresh route).
+- Frontend `apiClient` refresh interceptor now uses cookie-first refresh (`withCredentials`) and no longer hard-fails when no stored refresh-token exists.
+- Frontend auth verification/bootstrap now supports cookie sessions by always running `verifyAuth` on app init and refreshing token silently when needed for bearer-dependent features.
+
+**Validation**
+- `node --check` passed for all modified backend files.
+- API Gateway focused tests passed: `npx jest --runTestsByPath routes/auth.routes.test.js --runInBand`.
+- Auth-service focused tests passed: `npx jest --runTestsByPath tests/auth.controller.security.test.js tests/auth.routes.validation.test.js --runInBand`.
+- Frontend production build passed: `npm run build` in `kelmah-frontend`.
+
+### Session: Messaging Bridge Upstream Not Found Hardening March 13 2026 ✅ COMPLETED
+
+**Date**: March 13, 2026  
+**Scope**: Resolve production `POST /api/send-message 404` noise caused by Vercel bridge forwarding to a mis-targeted upstream origin/path combination.
+
+**Incident evidence captured**
+- Live frontend bundle call path still uses bridge-first send flow: `POST /api/send-message`.
+- Authenticated bridge probe returned `404` with body `{ "raw": "Not Found\n" }` from serverless function, proving upstream forwarding failure.
+
+**Root cause**
+- Bridge endpoint forwarding depended on `MESSAGING_SERVICE_URL` shape and could target a wrong upstream origin/path in production, yielding plain `Not Found` from upstream.
+
+**Implementation completed**
+- Hardened both send and create-conversation bridge functions to:
+  - Normalize configured service URL to origin-only form.
+  - Retry once against the known messaging-service origin when upstream returns plain `404 Not Found`.
+  - Preserve pass-through status/data for non-retryable upstream responses.
+- Applied identical hardening in both deployment layouts:
+  - root `api/*.js` functions
+  - `kelmah-frontend/api/*.js` functions
+
+**Validation**
+- Bridge failure mode was reproducible before fix via authenticated live probes.
+- Local syntax validation and deploy pending for live post-fix probe.
+
 ### Session: Messaging Send 404 Contract Fix March 13 2026 ✅ COMPLETED
 
 **Date**: March 13, 2026  

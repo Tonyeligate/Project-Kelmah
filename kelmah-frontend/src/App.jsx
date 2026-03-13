@@ -6,12 +6,11 @@
 import { useEffect, Suspense, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Box, CircularProgress, Alert, Snackbar, LinearProgress } from '@mui/material';
 import { KelmahThemeProvider, useThemeMode } from './theme/ThemeProvider';
 import { AppRoutes } from './routes/config';
 import { verifyAuth } from './modules/auth/services/authSlice';
-import { secureStorage } from './utils/secureStorage';
 import { initializePWA } from './utils/pwaHelpers';
 import GlobalErrorBoundary from './modules/common/components/GlobalErrorBoundary';
 import { useApiHealth } from './hooks/useApiHealth';
@@ -24,9 +23,6 @@ import { Z_INDEX } from './constants/layout';
 // Main App Component
 const App = () => {
   const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector(
-    (state) => state.auth,
-  );
   const { isHealthy } = useApiHealth();
   const location = useLocation();
   const initialized = useRef(false);
@@ -76,12 +72,6 @@ const App = () => {
   useEffect(() => {
     if (!initialized.current) {
       initialized.current = true;
-      const token = secureStorage.getAuthToken();
-      if (!token) {
-        setAuthBootstrapLoading(false);
-        return;
-      }
-
       Promise.resolve(dispatch(verifyAuth()))
         .catch(() => {
           // verifyAuth thunk already handles cleanup/state updates
