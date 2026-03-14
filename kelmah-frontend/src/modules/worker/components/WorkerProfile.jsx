@@ -251,7 +251,7 @@ const getCertificateItems = (worker) =>
 
 function WorkerProfile({ workerId: workerIdProp }) {
   const routeParams = useParams();
-  const { user: authUser } = useSelector((state) => state.auth);
+  const { user: authUser, isAuthenticated } = useSelector((state) => state.auth);
   const resolvedWorkerId =
     workerIdProp ?? routeParams?.workerId ?? authUser?.userId ?? null;
 
@@ -1734,11 +1734,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
   );
 
   const renderMobileProfileLayout = () => {
-    const panel = theme.palette.mode === 'dark' ? '#161920' : '#FFF7E1';
-    const panelMuted = theme.palette.mode === 'dark' ? '#101318' : '#F8EFD2';
-    const accent = '#F4C44F';
-    const textPrimary = theme.palette.mode === 'dark' ? '#F6F0DF' : '#1E1A12';
-    const textMuted = theme.palette.mode === 'dark' ? 'rgba(246, 240, 223, 0.72)' : 'rgba(30, 26, 18, 0.72)';
+    const isDark = theme.palette.mode === 'dark';
+    const panel = isDark ? '#121212' : '#FFF7E1';
+    const panelMuted = isDark ? '#1A1A1A' : '#F8EFD2';
+    const accent = '#F5B324';
+    const textPrimary = isDark ? '#FFFFFF' : '#1E1A12';
+    const textMuted = isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(30, 26, 18, 0.7)';
     const aboutText =
       profile.bio ||
       'I treat every project like a signature piece. Clean finishing, durable materials, and honest timelines.';
@@ -1750,10 +1751,13 @@ function WorkerProfile({ workerId: workerIdProp }) {
     const compactReviews = reviews.slice(0, 3);
     const primaryActionLabel = isOwner ? 'EDIT PROFILE' : 'HIRE NOW';
 
+    const effectiveBottomNavHeight = isAuthenticated ? BOTTOM_NAV_HEIGHT : 0;
+
     return (
       <Box
         sx={{
-          pb: { xs: BOTTOM_NAV_HEIGHT + 116, md: 4 },
+          pb: { xs: effectiveBottomNavHeight + 116, md: 4 },
+          fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
         }}
       >
         <Paper
@@ -1773,7 +1777,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 width: 66,
                 height: 66,
                 border: `2px solid ${accent}`,
-                boxShadow: `0 0 0 4px ${alpha(accent, 0.14)}`,
+                boxShadow: `0 0 12px 2px ${alpha(accent, 0.4)}`,
                 bgcolor: alpha(accent, 0.22),
               }}
             >
@@ -1865,6 +1869,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                     color: textPrimary,
                     border: `1px solid ${alpha(accent, 0.45)}`,
                     fontWeight: 600,
+                    borderRadius: 999,
                   }}
                 />
               ))}
@@ -1948,13 +1953,16 @@ function WorkerProfile({ workerId: workerIdProp }) {
                     setPortfolioDialogOpen(true);
                   }}
                   sx={{
-                    width: 98,
-                    minWidth: 98,
+                    width: 100,
+                    minWidth: 100,
+                    height: 100,
                     borderRadius: 2,
                     overflow: 'hidden',
                     cursor: item.title ? 'pointer' : 'default',
-                    border: `1px solid ${alpha(accent, 0.5)}`,
+                    border: `1px solid ${accent}`,
                     background: alpha('#000', 0.25),
+                    display: 'flex',
+                    flexDirection: 'column',
                   }}
                 >
                   {image ? (
@@ -2066,7 +2074,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             position: 'fixed',
             left: 12,
             right: 12,
-            bottom: BOTTOM_NAV_HEIGHT + 12,
+            bottom: effectiveBottomNavHeight + 12,
             zIndex: theme.zIndex.modal - 2,
             p: 1,
             borderRadius: 3,
@@ -2113,11 +2121,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 minHeight: 44,
                 fontWeight: 800,
                 letterSpacing: 0.5,
-                color: textPrimary,
-                border: `1px solid ${alpha(accent, 0.8)}`,
-                backgroundColor: alpha(accent, 0.13),
+                color: accent,
+                border: `1px solid ${accent}`,
+                backgroundColor: isDark ? '#000000' : 'background.paper',
                 '&:hover': {
-                  backgroundColor: alpha(accent, 0.2),
+                  backgroundColor: alpha(accent, 0.08),
                 },
               }}
             >

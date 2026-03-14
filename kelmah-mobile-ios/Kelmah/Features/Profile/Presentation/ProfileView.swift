@@ -497,7 +497,7 @@ private struct WorkerProfileSignalsView: View {
                     .stroke(KelmahTheme.primary.opacity(0.24), lineWidth: 1)
             )
 
-            HStack(spacing: 10) {
+            VStack(spacing: 10) {
                 Button(action: onHireNow) {
                     Text("HIRE NOW")
                         .font(.caption.bold())

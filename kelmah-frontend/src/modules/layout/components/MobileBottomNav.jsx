@@ -96,10 +96,12 @@ const MobileBottomNav = () => {
   
   // Get user role from Redux auth state (not path-based)
   const { user, isAuthenticated } = useSelector((state) => state.auth);
-  const userRole = user?.role || user?.userType || '';
-  
-  // Determine user role - use auth state primarily, path as fallback
-  const isHirer = userRole === 'hirer' || path.startsWith('/hirer');
+
+  // Return null if user is not authenticated (as requested, nav is for authenticated users only)
+  if (!isAuthenticated) {
+    return null;
+  }
+
   const isWorker = userRole === 'worker' || path.startsWith('/worker');
 
   // Determine current active tab based on path - comprehensive matching

@@ -28,6 +28,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -457,23 +460,33 @@ private fun WorkerProfileSignalsContent(
             }
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Button(
                 onClick = { onHireNow?.invoke() },
                 enabled = onHireNow != null,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.Black
+                ),
+                shape = RoundedCornerShape(24.dp)
             ) {
-                Text("HIRE NOW")
+                Text("HIRE NOW", fontWeight = FontWeight.Bold)
             }
-            Button(
+            OutlinedButton(
                 onClick = { onMessageWorker?.invoke() },
                 enabled = onMessageWorker != null,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.primary
+                ),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                shape = RoundedCornerShape(24.dp)
             ) {
-                Text("MESSAGE")
+                Text("MESSAGE", fontWeight = FontWeight.Bold)
             }
         }
 
