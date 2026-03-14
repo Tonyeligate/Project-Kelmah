@@ -282,6 +282,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
   const [editingAvailability, setEditingAvailability] = useState(false);
   const [availabilityDraft, setAvailabilityDraft] = useState(null);
   const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [showFullBio, setShowFullBio] = useState(false);
 
   const getPortfolioPreviewImage = useCallback((item) => {
     return (
@@ -379,6 +380,13 @@ function WorkerProfile({ workerId: workerIdProp }) {
         workerService.getWorkHistory(resolvedWorkerId),
         workerService.getWorkerStats(resolvedWorkerId),
         reviewService.getWorkerRating(resolvedWorkerId),
+        reviewService.getWorkerReviews(resolvedWorkerId, {
+          page: 1,
+          limit: 6,
+          status: 'approved',
+          sortBy: 'createdAt',
+          order: 'desc',
+        }),
         viewingOwnProfile
           ? workerService.getWorkerEarnings(resolvedWorkerId)
           : Promise.resolve(null),
@@ -387,7 +395,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
       const getValue = (result, fallback = null) =>
         result.status === 'fulfilled' ? result.value : fallback;
 
-      const [historyRes, completionRes, ratingRes, earningsRes] = results.map((result) =>
+      const [historyRes, completionRes, ratingRes, reviewListRes, earningsRes] = results.map((result) =>
         getValue(result)
       );
 
@@ -398,7 +406,15 @@ function WorkerProfile({ workerId: workerIdProp }) {
           ? historyPayload.workHistory
           : [];
 
-      setReviews([]);
+      const normalizedReviews = Array.isArray(reviewListRes?.reviews)
+        ? reviewListRes.reviews
+        : Array.isArray(reviewListRes?.data?.reviews)
+          ? reviewListRes.data.reviews
+          : Array.isArray(reviewListRes)
+            ? reviewListRes
+            : [];
+
+      setReviews(normalizedReviews);
       setRatingSummary(ratingRes || fallbackRatingSummary);
       setWorkHistory(normalizedHistory);
       setProfileCompletion(completionRes || null);
@@ -430,6 +446,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
     setProfileCompletion(null);
     setEarnings(null);
     setTabValue(0);
+    setShowFullBio(false);
 
     fetchAllData();
 
@@ -1716,6 +1733,402 @@ function WorkerProfile({ workerId: workerIdProp }) {
     </GlassCard>
   );
 
+  const renderMobileProfileLayout = () => {
+    const panel = theme.palette.mode === 'dark' ? '#161920' : '#FFF7E1';
+    const panelMuted = theme.palette.mode === 'dark' ? '#101318' : '#F8EFD2';
+    const accent = '#F4C44F';
+    const textPrimary = theme.palette.mode === 'dark' ? '#F6F0DF' : '#1E1A12';
+    const textMuted = theme.palette.mode === 'dark' ? 'rgba(246, 240, 223, 0.72)' : 'rgba(30, 26, 18, 0.72)';
+    const aboutText =
+      profile.bio ||
+      'I treat every project like a signature piece. Clean finishing, durable materials, and honest timelines.';
+    const canTruncate = aboutText.length > 160;
+    const aboutPreview =
+      canTruncate && !showFullBio
+        ? `${aboutText.slice(0, 160).trim()}...`
+        : aboutText;
+    const compactReviews = reviews.slice(0, 3);
+    const primaryActionLabel = isOwner ? 'EDIT PROFILE' : 'HIRE NOW';
+
+    return (
+      <Box
+        sx={{
+          pb: { xs: BOTTOM_NAV_HEIGHT + 116, md: 4 },
+        }}
+      >
+        <Paper
+          elevation={0}
+          sx={{
+            p: 1.5,
+            borderRadius: 5,
+            background: panel,
+            border: `1px solid ${alpha(accent, 0.28)}`,
+            boxShadow: `0 12px 32px ${alpha('#000', 0.34)}`,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+            <Avatar
+              src={profileAvatarUrl}
+              sx={{
+                width: 66,
+                height: 66,
+                border: `2px solid ${accent}`,
+                boxShadow: `0 0 0 4px ${alpha(accent, 0.14)}`,
+                bgcolor: alpha(accent, 0.22),
+              }}
+            >
+              {profile.user?.firstName?.charAt(0)}
+              {profile.user?.lastName?.charAt(0)}
+            </Avatar>
+
+            <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: accent,
+                  fontWeight: 700,
+                  lineHeight: 1.2,
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                {profile.user?.firstName} {profile.user?.lastName}
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: textMuted, fontWeight: 600, mb: 0.6 }}
+              >
+                {profile.profession || 'Professional Worker'}
+              </Typography>
+              <Stack direction="row" spacing={0.8} alignItems="center">
+                <Typography
+                  variant="body2"
+                  sx={{ color: accent, fontWeight: 700 }}
+                >
+                  {(Number(ratingSummary?.averageRating ?? profile.average_rating ?? 0) || 0).toFixed(1)}
+                </Typography>
+                <Rating
+                  size="small"
+                  value={Number(ratingSummary?.averageRating ?? profile.average_rating ?? 0) || 0}
+                  precision={0.1}
+                  readOnly
+                />
+                <Typography variant="caption" sx={{ color: textMuted }}>
+                  ({ratingSummary?.totalReviews ?? stats.totalReviews ?? reviews.length} reviews)
+                </Typography>
+              </Stack>
+            </Box>
+
+            <Stack direction="row" spacing={0.5}>
+              <IconButton
+                onClick={handleBookmarkToggle}
+                aria-label={isBookmarked ? 'Remove from saved' : 'Save worker'}
+                sx={{
+                  width: 34,
+                  height: 34,
+                  bgcolor: alpha(accent, 0.14),
+                  color: accent,
+                }}
+              >
+                {isBookmarked ? <BookmarkIcon sx={{ fontSize: 18 }} /> : <BookmarkBorderIcon sx={{ fontSize: 18 }} />}
+              </IconButton>
+              <IconButton
+                onClick={handleShare}
+                aria-label="Share this profile"
+                sx={{
+                  width: 34,
+                  height: 34,
+                  bgcolor: alpha(accent, 0.14),
+                  color: accent,
+                }}
+              >
+                <ShareIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Stack>
+          </Box>
+
+          <Stack
+            direction="row"
+            spacing={0.8}
+            useFlexGap
+            flexWrap="wrap"
+            sx={{ mt: 1.4 }}
+          >
+            {(skills.length > 0 ? skills : [{ name: 'Craftsman' }, { name: 'Furniture' }, { name: 'Finishing' }])
+              .slice(0, 3)
+              .map((skill, index) => (
+                <Chip
+                  key={`mobile-chip-${skill.name}-${index}`}
+                  label={skill.name}
+                  size="small"
+                  sx={{
+                    bgcolor: alpha(accent, 0.18),
+                    color: textPrimary,
+                    border: `1px solid ${alpha(accent, 0.45)}`,
+                    fontWeight: 600,
+                  }}
+                />
+              ))}
+          </Stack>
+        </Paper>
+
+        <Paper
+          elevation={0}
+          sx={{
+            mt: 1.8,
+            p: 1.5,
+            borderRadius: 4,
+            background: panelMuted,
+            border: `1px solid ${alpha(accent, 0.2)}`,
+          }}
+        >
+          <Typography sx={{ color: accent, fontWeight: 700, mb: 0.7 }}>
+            About Me
+          </Typography>
+          <Typography sx={{ color: textPrimary, fontSize: 14, lineHeight: 1.55 }}>
+            {aboutPreview}
+          </Typography>
+          {canTruncate && (
+            <Button
+              size="small"
+              onClick={() => setShowFullBio((prev) => !prev)}
+              sx={{
+                mt: 0.8,
+                px: 1.2,
+                minHeight: 32,
+                borderRadius: 999,
+                color: '#1A1408',
+                backgroundColor: accent,
+                '&:hover': {
+                  backgroundColor: '#e7b843',
+                },
+              }}
+            >
+              {showFullBio ? 'Show Less' : 'Read More'}
+            </Button>
+          )}
+        </Paper>
+
+        <Paper
+          elevation={0}
+          sx={{
+            mt: 1.8,
+            p: 1.5,
+            borderRadius: 4,
+            background: panelMuted,
+            border: `1px solid ${alpha(accent, 0.2)}`,
+          }}
+        >
+          <Typography sx={{ color: accent, fontWeight: 700, mb: 1.1 }}>
+            Portfolio
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1,
+              overflowX: 'auto',
+              pb: 0.6,
+              '&::-webkit-scrollbar': { height: 6 },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: alpha(accent, 0.45),
+                borderRadius: 99,
+              },
+            }}
+          >
+            {(portfolio.length > 0 ? portfolio : [{ title: 'Project work' }]).slice(0, 6).map((item, index) => {
+              const image = getPortfolioPreviewImage(item);
+
+              return (
+                <Card
+                  key={item.id || item._id || item.title || `mobile-portfolio-${index}`}
+                  onClick={() => {
+                    if (!item.title) {
+                      return;
+                    }
+                    setSelectedPortfolioItem(item);
+                    setPortfolioDialogOpen(true);
+                  }}
+                  sx={{
+                    width: 98,
+                    minWidth: 98,
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    cursor: item.title ? 'pointer' : 'default',
+                    border: `1px solid ${alpha(accent, 0.5)}`,
+                    background: alpha('#000', 0.25),
+                  }}
+                >
+                  {image ? (
+                    <CardMedia component="img" image={image} height="68" alt={item.title || 'Portfolio'} />
+                  ) : (
+                    <Box
+                      sx={{
+                        height: 68,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        bgcolor: alpha(accent, 0.12),
+                      }}
+                    >
+                      <WorkIcon sx={{ color: accent }} />
+                    </Box>
+                  )}
+                  <CardContent sx={{ p: 0.8 }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: textPrimary,
+                        fontWeight: 600,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {item.title || 'Coming soon'}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </Box>
+        </Paper>
+
+        <Paper
+          elevation={0}
+          sx={{
+            mt: 1.8,
+            p: 1.5,
+            borderRadius: 4,
+            background: panelMuted,
+            border: `1px solid ${alpha(accent, 0.2)}`,
+          }}
+        >
+          <Typography sx={{ color: accent, fontWeight: 700, mb: 1.1 }}>
+            Reviews
+          </Typography>
+
+          {compactReviews.length > 0 ? (
+            <Stack spacing={1}>
+              {compactReviews.map((review, index) => (
+                <Box
+                  key={review.id || review._id || `mobile-review-${index}`}
+                  sx={{
+                    p: 1,
+                    borderRadius: 2,
+                    border: `1px solid ${alpha(accent, 0.24)}`,
+                    background: alpha('#000', 0.2),
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.9, mb: 0.5 }}>
+                    <Avatar
+                      src={review?.reviewer?.avatar || review?.author?.avatar || null}
+                      sx={{ width: 28, height: 28 }}
+                    >
+                      {(review?.reviewer?.name || review?.author?.name || 'R').charAt(0)}
+                    </Avatar>
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography variant="caption" sx={{ color: textPrimary, fontWeight: 700 }}>
+                        {review?.reviewer?.name || review?.author?.name || 'Verified Client'}
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Rating size="small" readOnly value={Number(review.rating || 0)} precision={0.5} />
+                        <Typography variant="caption" sx={{ color: textMuted }}>
+                          {Number(review.rating || 0).toFixed(1)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: textMuted,
+                      lineHeight: 1.45,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {review.comment || 'Great workmanship and clear communication.'}
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
+          ) : (
+            <Typography variant="body2" sx={{ color: textMuted }}>
+              Reviews will appear here as soon as clients submit feedback.
+            </Typography>
+          )}
+        </Paper>
+
+        <Box
+          sx={{
+            position: 'fixed',
+            left: 12,
+            right: 12,
+            bottom: BOTTOM_NAV_HEIGHT + 12,
+            zIndex: theme.zIndex.modal - 2,
+            p: 1,
+            borderRadius: 3,
+            background: alpha('#0E1014', 0.96),
+            border: `1px solid ${alpha(accent, 0.38)}`,
+            boxShadow: `0 12px 28px ${alpha('#000', 0.45)}`,
+          }}
+        >
+          <Stack spacing={1}>
+            <Button
+              fullWidth
+              onClick={() => {
+                if (isOwner) {
+                  navigate('/worker/profile/edit');
+                  return;
+                }
+                navigate(`/contracts/create?workerId=${resolvedWorkerId}`);
+              }}
+              sx={{
+                borderRadius: 999,
+                minHeight: 44,
+                fontWeight: 800,
+                letterSpacing: 0.5,
+                color: '#1A1408',
+                background: `linear-gradient(180deg, ${accent} 0%, #E4B13D 100%)`,
+                '&:hover': {
+                  background: `linear-gradient(180deg, #F7CF69 0%, ${accent} 100%)`,
+                },
+              }}
+            >
+              {primaryActionLabel}
+            </Button>
+            <Button
+              fullWidth
+              onClick={() => {
+                if (isOwner) {
+                  navigate('/messages');
+                  return;
+                }
+                handleContactWorker();
+              }}
+              sx={{
+                borderRadius: 999,
+                minHeight: 44,
+                fontWeight: 800,
+                letterSpacing: 0.5,
+                color: textPrimary,
+                border: `1px solid ${alpha(accent, 0.8)}`,
+                backgroundColor: alpha(accent, 0.13),
+                '&:hover': {
+                  backgroundColor: alpha(accent, 0.2),
+                },
+              }}
+            >
+              MESSAGE
+            </Button>
+          </Stack>
+        </Box>
+      </Box>
+    );
+  };
+
   return (
     <>
       <Helmet>
@@ -1726,59 +2139,71 @@ function WorkerProfile({ workerId: workerIdProp }) {
         />
       </Helmet>
 
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Breadcrumbs sx={{ mb: 3 }}>
-          <Link color="inherit" component={RouterLink} to="/">
-            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
-            Home
-          </Link>
-          <Link
-            color="inherit"
-            component={RouterLink}
-            to="/find-talents"
-          >
-            Find Talents
-          </Link>
-          <Typography color="text.primary">
-            {profile.user?.firstName} {profile.user?.lastName}
-          </Typography>
-        </Breadcrumbs>
+      <Container
+        maxWidth={isActualMobile ? 'sm' : 'lg'}
+        sx={{
+          py: isActualMobile ? 1.5 : 4,
+          px: isActualMobile ? 1 : undefined,
+        }}
+      >
+        {isActualMobile ? (
+          renderMobileProfileLayout()
+        ) : (
+          <>
+            <Breadcrumbs sx={{ mb: 3 }}>
+              <Link color="inherit" component={RouterLink} to="/">
+                <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+                Home
+              </Link>
+              <Link
+                color="inherit"
+                component={RouterLink}
+                to="/find-talents"
+              >
+                Find Talents
+              </Link>
+              <Typography color="text.primary">
+                {profile.user?.firstName} {profile.user?.lastName}
+              </Typography>
+            </Breadcrumbs>
 
-        {renderProfileHeader()}
-        {renderMetrics()}
+            {renderProfileHeader()}
+            {renderMetrics()}
 
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-          <Tabs
-            value={tabValue}
-            onChange={handleTabChange}
-            variant={isMobile ? 'scrollable' : 'fullWidth'}
-            scrollButtons="auto"
-          >
-            <Tab icon={<PersonIcon />} iconPosition="start" label="Overview" />
-            <Tab icon={<ViewIcon />} iconPosition="start" label="Portfolio" />
-            <Tab icon={<StarIcon />} iconPosition="start" label="Reviews" />
-            <Tab icon={<ScheduleIcon />} iconPosition="start" label="Availability" />
-            <Tab icon={<SchoolIcon />} iconPosition="start" label="Certificates" />
-          </Tabs>
-        </Box>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+              <Tabs
+                value={tabValue}
+                onChange={handleTabChange}
+                variant={isMobile ? 'scrollable' : 'fullWidth'}
+                scrollButtons="auto"
+              >
+                <Tab icon={<PersonIcon />} iconPosition="start" label="Overview" />
+                <Tab icon={<ViewIcon />} iconPosition="start" label="Portfolio" />
+                <Tab icon={<StarIcon />} iconPosition="start" label="Reviews" />
+                <Tab icon={<ScheduleIcon />} iconPosition="start" label="Availability" />
+                <Tab icon={<SchoolIcon />} iconPosition="start" label="Certificates" />
+              </Tabs>
+            </Box>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={tabValue}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            {tabValue === 0 && renderSkillsAndExpertise()}
-            {tabValue === 1 && renderPortfolio()}
-            {tabValue === 2 && renderReviews()}
-            {tabValue === 3 && renderAvailability()}
-            {tabValue === 4 && renderCertifications()}
-          </motion.div>
-        </AnimatePresence>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={tabValue}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {tabValue === 0 && renderSkillsAndExpertise()}
+                {tabValue === 1 && renderPortfolio()}
+                {tabValue === 2 && renderReviews()}
+                {tabValue === 3 && renderAvailability()}
+                {tabValue === 4 && renderCertifications()}
+              </motion.div>
+            </AnimatePresence>
 
-        {renderAvailabilityEditor()}
+            {renderAvailabilityEditor()}
+          </>
+        )}
 
         {/* Portfolio Item Dialog */}
         <Dialog
@@ -1830,7 +2255,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
         </Dialog>
 
         {/* Floating Action Button for Quick Actions */}
-        {!isOwner && (
+        {!isOwner && !isActualMobile && (
           <SpeedDial
             ariaLabel="Worker Actions"
             sx={{ position: 'fixed', bottom: { xs: BOTTOM_NAV_HEIGHT + 16, md: 16 }, right: 16 }}

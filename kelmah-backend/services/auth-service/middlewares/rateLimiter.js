@@ -77,6 +77,7 @@ const LIMITS = {
   forgotPassword: { windowMs: 15 * 60 * 1000, max: 5 },
   resetPassword: { windowMs: 15 * 60 * 1000, max: 5, skipSuccessfulRequests: false },
   auth: { windowMs: 15 * 60 * 1000, max: 15 },       // refresh-token endpoint
+  refresh: { windowMs: 15 * 60 * 1000, max: 120 },
   validateToken: { windowMs: 15 * 60 * 1000, max: 60 }, // internal token validation
   reactivateAccount: { windowMs: 60 * 60 * 1000, max: 5 },
   mfaSetup: { windowMs: 15 * 60 * 1000, max: 5 },

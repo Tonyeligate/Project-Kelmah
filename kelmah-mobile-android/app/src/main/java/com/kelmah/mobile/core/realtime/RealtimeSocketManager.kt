@@ -99,6 +99,9 @@ class RealtimeSocketManager @Inject constructor(
 
         val options = IO.Options().apply {
             reconnection = true
+            reconnectionAttempts = 5
+            reconnectionDelay = 1_000
+            reconnectionDelayMax = 10_000
             forceNew = true
             path = "/socket.io"
             transports = arrayOf("websocket", "polling")

@@ -200,8 +200,8 @@ const refreshTokenDirectHandler = async (req, res) => {
     });
   }
 };
-router.post('/refresh', rateLimiters.auth, refreshTokenDirectHandler);
-router.post('/refresh-token', rateLimiters.auth, refreshTokenDirectHandler);
+router.post('/refresh', rateLimiters.refresh, refreshTokenDirectHandler);
+router.post('/refresh-token', rateLimiters.refresh, refreshTokenDirectHandler);
 router.post('/oauth/exchange', rateLimiters.auth, (req, res) => {
   return forwardPublicAuthDirect(req, res, '/oauth/exchange', { timeout: 60000 });
 });

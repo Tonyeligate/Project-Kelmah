@@ -14,13 +14,24 @@ private val LightColors = lightColorScheme(
 )
 
 private val DarkColors = darkColorScheme(
-    primary = KelmahGold,
-    secondary = KelmahNavy,
+    primary = KelmahGoldBright,
+    onPrimary = KelmahNavy,
+    primaryContainer = KelmahGoldMuted,
+    onPrimaryContainer = KelmahDarkOnSurface,
+    secondary = KelmahGold,
+    onSecondary = KelmahNavy,
+    background = KelmahDarkBackground,
+    onBackground = KelmahDarkOnSurface,
+    surface = KelmahDarkSurface,
+    onSurface = KelmahDarkOnSurface,
+    surfaceVariant = KelmahDarkSurfaceElevated,
+    onSurfaceVariant = KelmahDarkOnSurfaceMuted,
+    outline = KelmahDarkOutline,
 )
 
 @Composable
 fun KelmahTheme(
-    darkTheme: Boolean = false,
+    darkTheme: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     MaterialTheme(

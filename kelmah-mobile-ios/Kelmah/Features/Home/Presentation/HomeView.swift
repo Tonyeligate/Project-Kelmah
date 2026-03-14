@@ -46,15 +46,16 @@ struct HomeView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 12) {
+                    let summaryColumns = [GridItem(.adaptive(minimum: 110), spacing: 10)]
                     Text(userRole == .hirer ? "Hiring overview" : "Your work today")
                         .font(.headline)
                     Text(userRole == .hirer ? "Check jobs that need attention, keep chats moving, and open alerts faster." : "Check good jobs, saved jobs, and new alerts. Then open a job and apply.")
-                    HStack(spacing: 10) {
+                    LazyVGrid(columns: summaryColumns, spacing: 10) {
                         SummaryTile(label: userRole == .hirer ? "Active jobs" : "Good jobs", value: userRole == .hirer ? activeJobs : homeJobs.count)
                         SummaryTile(label: userRole == .hirer ? "New chats" : "Saved jobs", value: userRole == .hirer ? unreadMessages : jobsViewModel.savedJobs.count)
                         SummaryTile(label: "Alerts", value: notificationsViewModel.unreadCount)
                     }
-                    HStack(spacing: 10) {
+                    VStack(spacing: 10) {
                         Button(action: onBrowseJobs) {
                             Text(userRole == .hirer ? "Open Market" : "Find Work")
                                 .frame(maxWidth: .infinity)
@@ -62,17 +63,19 @@ struct HomeView: View {
                         .buttonStyle(.borderedProminent)
                         .tint(KelmahTheme.accent)
 
-                        Button(action: onOpenMessages) {
-                            Text("Messages")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.bordered)
+                        HStack(spacing: 10) {
+                            Button(action: onOpenMessages) {
+                                Text("Messages")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
 
-                        Button(action: onOpenNotifications) {
-                            Text("Alerts")
-                                .frame(maxWidth: .infinity)
+                            Button(action: onOpenNotifications) {
+                                Text("Alerts")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
                         }
-                        .buttonStyle(.bordered)
                     }
                 }
                 .padding()

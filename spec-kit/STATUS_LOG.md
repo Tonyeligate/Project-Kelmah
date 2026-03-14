@@ -1,3 +1,92 @@
+### Session: Mobile Native UX Reliability Audit March 14 2026 ✅ COMPLETED
+
+**Date**: March 14, 2026  
+**Scope**: Deep audit and targeted remediation for Android and iOS native apps only, focused on responsive layout behavior, click-flow reliability, job/message/notification navigation integrity, and Ghana-focused low-literacy usability improvements aligned with Kelmah product intent.
+
+**Execution surface (mobile only)**
+- `kelmah-mobile-android/app/src/main/**`
+- `kelmah-mobile-ios/Kelmah/**`
+
+**Planned verification**
+- Android static diagnostics + unit test execution
+- iOS static code validation on Windows (build execution deferred to macOS CI lane)
+
+**Implementation completed**
+- Hardened Android app shell navigation role resolution to prevent null-session crashes in bottom navigation destination setup.
+- Improved Android deep-link safety by rejecting unknown path-only deep links before URI normalization.
+- Added Android Socket.IO reconnection limits/backoff to reduce retry storms and battery/network churn.
+- Improved Android home CTA responsiveness by stacking primary action and grouping secondary actions for smaller screens.
+- Hardened Android job-to-chat launch flow with cancellation-safe error handling and guaranteed loading-state reset.
+- Improved Android job application input UX by switching rate entry to decimal keyboard and dynamic currency labels.
+- Tightened Android messaging UX with empty-send prevention and robust timestamp fallback rendering.
+- Applied iOS dark mode at app shell level for consistent black/gold visual language.
+- Improved iOS home responsiveness with adaptive summary tiles and stacked CTA layout for narrow screens.
+- Hardened iOS keychain storage using service scoping and `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`.
+
+**Validation**
+- Android workspace diagnostics: no errors in edited files.
+- Android unit tests: `gradle testDebugUnitTest --no-daemon` passed.
+- Android lint: `gradle lintDebug --no-daemon` passed (report generated, existing warnings remain).
+- iOS build execution is not available in this Windows environment; iOS changes were validated via workspace diagnostics and static checks only.
+
+### Session: Worker Profile Dark Mobile Convergence March 14 2026 ✅ COMPLETED
+
+**Date**: March 14, 2026  
+**Scope**: Rebuild the worker profile detail presentation to match the provided dark mobile reference across web mobile view and both native mobile apps, while preserving existing messaging/hire/navigation/session actions.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/design/theme/Color.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/design/theme/Theme.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/presentation/ProfileScreen.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/navigation/KelmahNavHost.kt`
+- `kelmah-mobile-ios/Kelmah/Core/Design/KelmahTheme.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Profile/Presentation/ProfileView.swift`
+- `kelmah-mobile-ios/Kelmah/App/RootTabView.swift`
+
+**Implementation completed**
+- Reworked web worker profile mobile view (`<768px`) into a dark, gold-accented single-card flow matching the supplied reference style: hero identity block, skills chips, About section with read-more toggle, horizontal portfolio strip, compact reviews, and persistent bottom action buttons.
+- Connected mobile web reviews to live backend review data (`reviewService.getWorkerReviews`) so the profile detail UI is populated and interactive instead of placeholder-only.
+- Preserved and verified mobile web actions: save/bookmark, share, open portfolio dialog, message worker, and hire-now/contract routing.
+- Upgraded Android app theme tokens and default dark mode to the requested dark-standard baseline, then redesigned worker profile detail content into dark section cards with the same structure (identity, about, portfolio, reviews, CTA row).
+- Wired Android CTA behavior from profile detail to existing app routes (`Jobs` and `Messages`) through nav host callbacks.
+- Upgraded iOS theme tokens to matching dark/gold values, redesigned worker profile detail content to the same section pattern, and wired iOS CTA behavior to existing tab routes (`Jobs` and `Messages`).
+
+**Validation**
+- Frontend production build passed: `npm run build` in `kelmah-frontend`.
+- No diagnostics in edited web file and all edited Android/iOS files via workspace diagnostics.
+- Native platform full builds were not executed in this Windows session (Android/iOS compile lanes remain environment-dependent).
+
+### Session: Gateway Refresh 429 And Logging Crash March 14 2026 ✅ COMPLETED
+
+**Date**: March 14, 2026  
+**Scope**: Stabilize auth refresh flow after cookie migration by fixing gateway logging crash on object responses and reducing refresh-token rate-limit/refresh retry storms causing repeated `429` and `401` auth churn.
+
+**Execution surface**
+- `kelmah-backend/api-gateway/middlewares/logging.js`
+- `kelmah-backend/api-gateway/middlewares/rate-limiter.js`
+- `kelmah-backend/api-gateway/routes/auth.routes.js`
+- `kelmah-backend/services/auth-service/middlewares/rateLimiter.js`
+- `kelmah-backend/services/auth-service/routes/auth.routes.js`
+- `kelmah-frontend/src/services/apiClient.js`
+
+**Root-cause snapshot from production logs**
+- Gateway process crash: logging middleware called `Buffer.byteLength` directly on non-string response payloads from rate limiter (`TypeError [ERR_INVALID_ARG_TYPE]`).
+- Refresh endpoint throttling: `/api/auth/refresh-token` was subject to strict auth/login-style limits, producing `429` during session recovery bursts.
+- Frontend retry churn: repeated `401` handling could continue refresh attempts after temporary `429` responses.
+
+**Implementation completed**
+- Hardened gateway response logging length calculation to safely handle string, buffer, object, and empty response bodies (prevents process crash on rate-limit object payloads).
+- Added dedicated `refresh` rate-limit profiles in both gateway and auth-service, then routed `/refresh` and `/refresh-token` endpoints to these less strict profiles.
+- Added frontend refresh backoff/cooldown behavior for `429`/`5xx` refresh failures and prevented forced logout on temporary refresh throttling.
+- Added frontend guard to skip interceptor-driven refresh loop on `/auth/verify` when there is no local session hint.
+
+**Validation**
+- `node --check` passed for all modified files in this remediation batch.
+- Gateway auth routes tests passed after limiter-profile update: `npx jest --runTestsByPath routes/auth.routes.test.js --runInBand`.
+- Auth-service route validation tests passed: `npx jest --runTestsByPath tests/auth.routes.validation.test.js --runInBand`.
+- Frontend production build passed: `npm run build` in `kelmah-frontend`.
+
 ### Session: Cookie Auth End To End Migration March 13 2026 ✅ COMPLETED
 
 **Date**: March 13, 2026  

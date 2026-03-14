@@ -112,7 +112,9 @@ struct RootTabView: View {
                         sessionCoordinator: environment.sessionCoordinator,
                         authRepository: environment.authRepository,
                         profileRepository: environment.profileRepository,
-                        sessionStore: environment.sessionStore
+                        sessionStore: environment.sessionStore,
+                        onHireNow: { selectedTab = .jobs },
+                        onMessageWorker: { selectedTab = .messages }
                     )
                         .tag(RootTab.profile)
                         .tabItem { Label("Profile", systemImage: "person") }

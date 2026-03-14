@@ -104,6 +104,17 @@ const rateLimiters = {
     }
   }),
 
+  // Refresh token endpoints require a more permissive limit than login attempts
+  refresh: createRateLimiter({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 60,
+    message: {
+      error: 'Too many session refresh attempts',
+      message: 'Session refresh is temporarily rate-limited. Please wait and try again.',
+      retryAfter: 900,
+    }
+  }),
+
   login: createRateLimiter({
     windowMs: 15 * 60 * 1000,
     max: 5,

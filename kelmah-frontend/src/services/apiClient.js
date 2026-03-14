@@ -28,6 +28,7 @@ const uuidv4 = () => {
 const inflightGets = new Map();
 const pendingUnauthorizedRequests = [];
 let hasTriggeredAuthRedirect = false;
+let refreshBlockedUntil = 0;
 
 // Create axios instance
 const apiClient = axios.create({
@@ -49,6 +50,9 @@ const getRequestKey = (method, url, params) => {
 
 const isRefreshRequest = (request) =>
     typeof request?.url === 'string' && /\/auth\/(refresh|refresh-token)/.test(request.url);
+
+const isAuthVerifyRequest = (request) =>
+    typeof request?.url === 'string' && /\/auth\/(verify|me)$/.test(request.url);
 
 const enqueueUnauthorizedRequest = (request) =>
     new Promise((resolve, reject) => {
@@ -133,6 +137,19 @@ apiClient.interceptors.response.use(
             !originalRequest._retry &&
             !isRefreshRequest(originalRequest)
         ) {
+            const now = Date.now();
+            if (now < refreshBlockedUntil) {
+                return Promise.reject(error);
+            }
+
+            const hasStoredSessionHint = Boolean(
+                secureStorage.getAuthToken() || secureStorage.getRefreshToken(),
+            );
+
+            if (!hasStoredSessionHint && isAuthVerifyRequest(originalRequest)) {
+                return Promise.reject(error);
+            }
+
             originalRequest._retry = true;
             const queuedRetry = enqueueUnauthorizedRequest(originalRequest);
 
@@ -177,6 +194,10 @@ apiClient.interceptors.response.use(
                     return token;
                 })()
                 .catch((refreshError) => {
+                    const refreshStatus = refreshError?.response?.status;
+                    if (refreshStatus === 429 || refreshStatus >= 500) {
+                        refreshBlockedUntil = Date.now() + 60_000;
+                    }
                     processUnauthorizedQueue(refreshError, null);
                     return Promise.reject(refreshError);
                 })
@@ -187,9 +208,14 @@ apiClient.interceptors.response.use(
             }
 
             return queuedRetry.catch((refreshError) => {
-                secureStorage.removeItem('auth_token');
-                secureStorage.removeItem('refresh_token');
-                redirectToLogin();
+                const refreshStatus = refreshError?.response?.status;
+                const shouldForceLogout = [400, 401, 403].includes(refreshStatus);
+
+                if (shouldForceLogout) {
+                    secureStorage.removeItem('auth_token');
+                    secureStorage.removeItem('refresh_token');
+                    redirectToLogin();
+                }
                 throw refreshError;
             });
         }

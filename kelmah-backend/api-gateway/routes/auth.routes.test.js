@@ -13,6 +13,10 @@ jest.mock('../middlewares/rate-limiter', () => ({
       res.set('x-gateway-rate-limit-profile', 'auth');
       next();
     },
+    refresh: (req, res, next) => {
+      res.set('x-gateway-rate-limit-profile', 'refresh');
+      next();
+    },
     general: (req, res, next) => next(),
     verificationToken: (req, res, next) => next(),
   },

@@ -128,7 +128,7 @@ router.post("/logout", verifyGatewayRequest, authController.logout);
 // Refresh token
 router.post(
   "/refresh-token",
-  createLimiter("auth"),
+  createLimiter("refresh"),
   hydrateRefreshTokenFromCookie,
   [body("refreshToken").notEmpty().withMessage("Refresh token is required")],
   validate,
@@ -137,7 +137,7 @@ router.post(
 
 router.post(
   "/refresh",
-  createLimiter("auth"),
+  createLimiter("refresh"),
   hydrateRefreshTokenFromCookie,
   [body("refreshToken").notEmpty().withMessage("Refresh token is required")],
   validate,

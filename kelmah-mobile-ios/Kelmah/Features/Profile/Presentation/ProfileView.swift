@@ -86,17 +86,28 @@ struct ProfileView: View {
     let authRepository: AuthRepository
     let profileRepository: ProfileRepository
     let sessionStore: SessionStore
+    let onHireNow: () -> Void
+    let onMessageWorker: () -> Void
 
     @StateObject private var viewModel: ProfileViewModel
     @State private var showSignOutAlert = false
     @State private var showSignOutAllAlert = false
     @State private var showPasswordChangedAlert = false
 
-    init(sessionCoordinator: SessionCoordinator, authRepository: AuthRepository, profileRepository: ProfileRepository, sessionStore: SessionStore) {
+    init(
+        sessionCoordinator: SessionCoordinator,
+        authRepository: AuthRepository,
+        profileRepository: ProfileRepository,
+        sessionStore: SessionStore,
+        onHireNow: @escaping () -> Void = {},
+        onMessageWorker: @escaping () -> Void = {}
+    ) {
         self.sessionCoordinator = sessionCoordinator
         self.authRepository = authRepository
         self.profileRepository = profileRepository
         self.sessionStore = sessionStore
+        self.onHireNow = onHireNow
+        self.onMessageWorker = onMessageWorker
         _viewModel = StateObject(wrappedValue: ProfileViewModel(authRepository: authRepository, profileRepository: profileRepository))
     }
 
@@ -105,13 +116,16 @@ struct ProfileView: View {
             VStack(alignment: .leading, spacing: 16) {
                 Text("Profile")
                     .font(.largeTitle.bold())
+                    .foregroundStyle(KelmahTheme.textPrimary)
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text(sessionStore.currentUser?.displayName ?? "Kelmah User")
                         .font(.title2.bold())
+                        .foregroundStyle(KelmahTheme.textPrimary)
                     Text(sessionStore.currentUser?.email ?? "No email added")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(KelmahTheme.textMuted)
                     Text("Role: \((sessionStore.currentUser?.role ?? "worker").capitalized)")
+                        .foregroundStyle(KelmahTheme.textPrimary)
                     Text(sessionStore.currentUser?.isEmailVerified == true ? "Email verified" : "Email not verified yet")
                         .foregroundStyle(sessionStore.currentUser?.isEmailVerified == true ? KelmahTheme.primary : .red)
                 }
@@ -119,13 +133,18 @@ struct ProfileView: View {
                 .padding()
                 .background(KelmahTheme.card)
                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .stroke(KelmahTheme.primary.opacity(0.24), lineWidth: 1)
+                )
 
                 if sessionStore.currentUser?.kelmahUserRole == .worker {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Your work details")
                             .font(.headline)
+                            .foregroundStyle(KelmahTheme.textPrimary)
                         Text("These details help Kelmah show you better jobs.")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(KelmahTheme.textMuted)
 
                         if viewModel.isLoadingProfileSignals {
                             HStack {
@@ -150,23 +169,32 @@ struct ProfileView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                             }
                         } else if let snapshot = viewModel.profileSnapshot {
-                            WorkerProfileSignalsView(snapshot: snapshot)
+                            WorkerProfileSignalsView(
+                                snapshot: snapshot,
+                                onHireNow: onHireNow,
+                                onMessageWorker: onMessageWorker
+                            )
                         } else {
                             Text("Your work details will show here.")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(KelmahTheme.textMuted)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
                     .background(KelmahTheme.card)
                     .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .stroke(KelmahTheme.primary.opacity(0.24), lineWidth: 1)
+                    )
                 }
 
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Password")
                         .font(.headline)
+                        .foregroundStyle(KelmahTheme.textPrimary)
                     Text("Change your password.")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(KelmahTheme.textMuted)
 
                     if let infoMessage = viewModel.infoMessage {
                         Text(infoMessage)
@@ -226,6 +254,10 @@ struct ProfileView: View {
                 .padding()
                 .background(KelmahTheme.card)
                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .stroke(KelmahTheme.primary.opacity(0.24), lineWidth: 1)
+                )
 
                 Button(role: .destructive) {
                     showSignOutAlert = true
@@ -237,6 +269,10 @@ struct ProfileView: View {
                 }
                 .background(KelmahTheme.card)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(KelmahTheme.primary.opacity(0.2), lineWidth: 1)
+                )
 
                 Button(role: .destructive) {
                     showSignOutAllAlert = true
@@ -248,6 +284,10 @@ struct ProfileView: View {
                 }
                 .background(KelmahTheme.card)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(KelmahTheme.primary.opacity(0.2), lineWidth: 1)
+                )
             }
             .padding(20)
         }
@@ -287,114 +327,223 @@ struct ProfileView: View {
 
 private struct WorkerProfileSignalsView: View {
     let snapshot: WorkerProfileSnapshot
+    let onHireNow: () -> Void
+    let onMessageWorker: () -> Void
+
+    @State private var showFullBio = false
+
+    private var reviewHighlights: [PortfolioProject] {
+        snapshot.portfolio.items.filter { $0.clientRating != nil }.prefix(2).map { $0 }
+    }
+
+    private var averageRatingText: String {
+        let ratings = reviewHighlights.compactMap(\.clientRating)
+        guard ratings.isEmpty == false else { return "No ratings yet" }
+        let average = ratings.reduce(0, +) / Double(ratings.count)
+        return String(format: "%.1f stars · %d highlights", average, reviewHighlights.count)
+    }
+
+    private var workerBio: String {
+        snapshot.profile.bio.nilIfEmpty ?? "I deliver clean finishing, dependable timelines, and quality craft for every project."
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .center, spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(KelmahTheme.primary.opacity(0.16))
+                            .frame(width: 64, height: 64)
+                        Circle()
+                            .stroke(KelmahTheme.primary, lineWidth: 2)
+                            .frame(width: 64, height: 64)
+                        Text(initials(for: snapshot.profile))
+                            .font(.headline.bold())
+                            .foregroundStyle(KelmahTheme.primary)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(snapshot.profile.displayName)
+                            .font(.headline.bold())
+                            .foregroundStyle(KelmahTheme.primary)
+                        Text(snapshot.profile.profession.nilIfEmpty ?? "Professional Worker")
+                            .font(.subheadline)
+                            .foregroundStyle(KelmahTheme.textMuted)
+                        Text(averageRatingText)
+                            .font(.caption)
+                            .foregroundStyle(KelmahTheme.textMuted)
+                    }
+
+                    Spacer()
+                }
+
+                if snapshot.visibleSkills.isEmpty == false {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(snapshot.visibleSkills.prefix(3), id: \.self) { skill in
+                                Text(skill)
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(KelmahTheme.textPrimary)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(KelmahTheme.primary.opacity(0.16))
+                                    .overlay(
+                                        Capsule().stroke(KelmahTheme.primary.opacity(0.5), lineWidth: 1)
+                                    )
+                                    .clipShape(Capsule())
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(14)
+            .background(KelmahTheme.card)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(KelmahTheme.primary.opacity(0.3), lineWidth: 1)
+            )
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("About Me")
+                    .font(.headline)
+                    .foregroundStyle(KelmahTheme.primary)
+                Text(visibleBio)
+                    .font(.subheadline)
+                    .foregroundStyle(KelmahTheme.textPrimary)
+                if workerBio.count > 160 {
+                    Button(showFullBio ? "Show less" : "Read more") {
+                        showFullBio.toggle()
+                    }
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(KelmahTheme.primary)
+                }
+            }
+            .padding(14)
+            .background(KelmahTheme.cardRaised)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(KelmahTheme.primary.opacity(0.24), lineWidth: 1)
+            )
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Portfolio")
+                    .font(.headline)
+                    .foregroundStyle(KelmahTheme.primary)
+
+                if snapshot.portfolio.items.isEmpty {
+                    Text("Portfolio samples will appear here once added.")
+                        .font(.footnote)
+                        .foregroundStyle(KelmahTheme.textMuted)
+                } else {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
+                            ForEach(snapshot.portfolio.items.prefix(5)) { item in
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text(item.title)
+                                        .font(.caption.weight(.semibold))
+                                        .lineLimit(2)
+                                        .foregroundStyle(KelmahTheme.textPrimary)
+                                    Text(item.skillsUsed.joined(separator: ", ").nilIfEmpty ?? item.projectType)
+                                        .font(.caption2)
+                                        .lineLimit(1)
+                                        .foregroundStyle(KelmahTheme.textMuted)
+                                }
+                                .frame(width: 148, alignment: .leading)
+                                .padding(10)
+                                .background(KelmahTheme.card)
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .stroke(KelmahTheme.primary.opacity(0.28), lineWidth: 1)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(14)
+            .background(KelmahTheme.cardRaised)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(KelmahTheme.primary.opacity(0.24), lineWidth: 1)
+            )
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Reviews")
+                    .font(.headline)
+                    .foregroundStyle(KelmahTheme.primary)
+
+                if reviewHighlights.isEmpty {
+                    Text("Client review highlights will appear here.")
+                        .font(.footnote)
+                        .foregroundStyle(KelmahTheme.textMuted)
+                } else {
+                    ForEach(reviewHighlights) { item in
+                        Text("• \(item.title): \(String(format: "%.1f", item.clientRating ?? 0)) stars")
+                            .font(.footnote)
+                            .foregroundStyle(KelmahTheme.textPrimary)
+                    }
+                }
+            }
+            .padding(14)
+            .background(KelmahTheme.cardRaised)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(KelmahTheme.primary.opacity(0.24), lineWidth: 1)
+            )
+
+            HStack(spacing: 10) {
+                Button(action: onHireNow) {
+                    Text("HIRE NOW")
+                        .font(.caption.bold())
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                }
+                .background(KelmahTheme.primary)
+                .foregroundStyle(Color.black)
+                .clipShape(Capsule())
+
+                Button(action: onMessageWorker) {
+                    Text("MESSAGE")
+                        .font(.caption.bold())
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                }
+                .background(KelmahTheme.primary.opacity(0.18))
+                .foregroundStyle(KelmahTheme.textPrimary)
+                .overlay(
+                    Capsule().stroke(KelmahTheme.primary.opacity(0.8), lineWidth: 1)
+                )
+                .clipShape(Capsule())
+            }
+
             if snapshot.partialWarnings.isEmpty == false {
                 Text(snapshot.partialWarnings.joined(separator: " "))
                     .font(.footnote)
                     .foregroundStyle(.red)
             }
 
-            Text(snapshot.profile.profession.nilIfEmpty ?? "Add your job title")
-                .font(.title3.bold())
-
-            if snapshot.profile.bio.isEmpty == false {
-                Text(snapshot.profile.bio)
-                    .foregroundStyle(.primary)
-            }
-
             ProfileFactView(label: "Location", value: snapshot.profile.location.nilIfEmpty ?? "Add your work area")
             ProfileFactView(label: "Rate", value: snapshot.profile.hourlyRate.map { "\(snapshot.profile.currency) \(formatRate($0))/hr" } ?? "Add your rate")
-            ProfileFactView(
-                label: "Experience",
-                value: experienceLabel(for: snapshot.profile)
-            )
-            ProfileFactView(
-                label: "Checks",
-                value: "Email \(snapshot.profile.isEmailVerified ? "verified" : "pending") • Phone \(snapshot.profile.isPhoneVerified ? "verified" : "pending")"
-            )
-
-            Divider()
-
-            Text("Skills people can see")
-                .font(.headline)
-            Text(snapshot.visibleSkills.isEmpty ? "Add skills so people can find your work." : snapshot.visibleSkills.joined(separator: " • "))
-
-            ProfileFactView(
-                label: "Certificates",
-                value: "\(snapshot.credentials.certifications.filter(\ .isVerified).count) verified certifications • \(snapshot.credentials.licenses.count) licenses"
-            )
-            ForEach(snapshot.credentials.certifications.prefix(3)) { certification in
-                Text("• \(certification.name)\(certification.issuingOrganization.nilIfEmpty.map { " · \($0)" } ?? "")")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
-
-            Divider()
-
-            Text("Availability and profile")
-                .font(.headline)
-            ProfileFactView(label: "Availability", value: availabilityLabel(snapshot.availability))
-            ForEach(snapshot.availability.schedule.prefix(3)) { day in
-                Text("• \(daySummary(day))")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
-            ProgressView(value: Double(snapshot.completeness.completionPercentage), total: 100)
-                .tint(KelmahTheme.primary)
-            Text("Profile done: \(snapshot.completeness.completionPercentage)% • needed \(snapshot.completeness.requiredCompletion)% • extra \(snapshot.completeness.optionalCompletion)%")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-            ForEach(snapshot.completeness.recommendations.prefix(3), id: \.self) { recommendation in
-                Text("• \(recommendation)")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
-
-            Divider()
-
-            Text("Past work")
-                .font(.headline)
-            Text("\(snapshot.portfolio.publishedCount) shown out of \(snapshot.portfolio.totalCount)")
-                .foregroundStyle(.secondary)
-            if snapshot.portfolio.items.isEmpty {
-                Text("Add past work so hirers can trust your profile.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            } else {
-                ForEach(snapshot.portfolio.items.prefix(3)) { item in
-                    Text("• \(item.title)\(item.skillsUsed.isEmpty ? "" : " · \(item.skillsUsed.joined(separator: ", "))")")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-            }
         }
     }
 
-    private func experienceLabel(for profile: WorkerRecommendationProfile) -> String {
-        let level = profile.experienceLevel?.capitalized ?? "Add your experience"
-        if let years = profile.yearsOfExperience, years > 0 {
-            return "\(level) • \(years)y"
+    private var visibleBio: String {
+        if workerBio.count > 160, showFullBio == false {
+            return String(workerBio.prefix(160)).trimmingCharacters(in: .whitespacesAndNewlines) + "..."
         }
-        return level
+        return workerBio
     }
 
-    private func availabilityLabel(_ availability: WorkerAvailability) -> String {
-        if availability.isAvailable {
-            return "Available\(availability.nextAvailable.map { " • next \($0)" } ?? "")"
-        }
-        if availability.status == "not_set" {
-            return availability.message ?? "Add when you can work"
-        }
-        return "Unavailable\(availability.nextAvailable.map { " • next \($0)" } ?? "")"
-    }
-
-    private func daySummary(_ day: AvailabilityDay) -> String {
-        let label = day.day.capitalized
-        guard day.available, day.slots.isEmpty == false else { return "\(label): unavailable" }
-        let slots = day.slots.map { "\($0.start)-\($0.end)" }.joined(separator: ", ")
-        return "\(label): \(slots)"
+    private func initials(for profile: WorkerRecommendationProfile) -> String {
+        let first = profile.firstName.first.map(String.init) ?? "W"
+        let last = profile.lastName.first.map(String.init) ?? "K"
+        return first + last
     }
 
     private func formatRate(_ value: Double) -> String {
@@ -412,7 +561,7 @@ private struct ProfileFactView: View {
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(KelmahTheme.primary)
             Text(value)
-                .foregroundStyle(.primary)
+                .foregroundStyle(KelmahTheme.textPrimary)
         }
     }
 }

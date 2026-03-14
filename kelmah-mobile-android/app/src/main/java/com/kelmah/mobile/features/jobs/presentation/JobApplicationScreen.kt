@@ -82,6 +82,7 @@ fun JobApplicationScreen(
         snackbarHost = { SnackbarHost(snackbars) },
     ) { padding ->
         val jobTitle = uiState.selectedJob?.summary?.takeIf { it.id == jobId }?.title ?: "Kelmah Job"
+        val currency = uiState.selectedJob?.summary?.takeIf { it.id == jobId }?.currency ?: "GHS"
 
         if (userRole == KelmahUserRole.HIRER) {
             Column(
@@ -129,8 +130,8 @@ fun JobApplicationScreen(
             OutlinedTextField(
                 value = proposedRate,
                 onValueChange = { proposedRate = it },
-                label = { Text("Your price (GHS)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                label = { Text("Your price ($currency)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )

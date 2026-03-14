@@ -138,6 +138,8 @@ fun KelmahNavHost(
             ProfileScreen(
                 onLogout = { onLogout(false) },
                 onLogoutAll = { onLogout(true) },
+                onHireNow = { navController.navigate(KelmahDestination.Jobs.route) },
+                onMessageWorker = { navController.navigate(KelmahDestination.Messages.route) },
             )
         }
     }

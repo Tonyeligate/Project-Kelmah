@@ -8,6 +8,7 @@ struct KelmahApp: App {
         WindowGroup {
             RootTabView()
                 .environmentObject(environment)
+                .preferredColorScheme(.dark)
         }
     }
 }

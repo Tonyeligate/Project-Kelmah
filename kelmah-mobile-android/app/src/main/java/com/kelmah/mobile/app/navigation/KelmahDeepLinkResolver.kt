@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets
 
 /** Only allow kelmah:// and https:// schemes for deep links */
 private val ALLOWED_SCHEMES = setOf("kelmah", "https")
+private val ALLOWED_PATH_PREFIXES = listOf("/messages/", "/jobs/", "/jobs/detail/")
 
 /** MongoDB ObjectId: exactly 24 hex characters */
 private val OBJECT_ID_REGEX = Regex("^[0-9a-fA-F]{24}$")
@@ -15,6 +16,10 @@ private fun isValidObjectId(value: String): Boolean = OBJECT_ID_REGEX.matches(va
 internal fun resolveKelmahDeepLink(rawUrl: String): String? {
     val trimmedUrl = rawUrl.trim()
     if (trimmedUrl.isEmpty()) return null
+
+    if (trimmedUrl.startsWith("/") && ALLOWED_PATH_PREFIXES.none { prefix -> trimmedUrl.startsWith(prefix) }) {
+        return null
+    }
 
     val normalizedUrl = if (trimmedUrl.startsWith("/")) {
         "https://placeholder.local$trimmedUrl"

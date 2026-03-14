@@ -3,17 +3,27 @@ package com.kelmah.mobile.features.profile.presentation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -28,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -38,6 +49,8 @@ import com.kelmah.mobile.features.profile.data.WorkerProfileSnapshot
 fun ProfileScreen(
     onLogout: () -> Unit,
     onLogoutAll: () -> Unit,
+    onHireNow: (() -> Unit)? = null,
+    onMessageWorker: (() -> Unit)? = null,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -88,7 +101,12 @@ fun ProfileScreen(
             Text("Profile", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         }
         item {
-            Card(modifier = Modifier.fillMaxWidth()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+            ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -105,7 +123,12 @@ fun ProfileScreen(
         }
         if (uiState.currentUser?.role.equals("worker", ignoreCase = true)) {
             item {
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.32f)),
+                ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -130,7 +153,11 @@ fun ProfileScreen(
                             }
                             uiState.profileSnapshot != null -> {
                                 uiState.profileSnapshot?.let { snapshot ->
-                                    WorkerProfileSignalsContent(snapshot = snapshot)
+                                    WorkerProfileSignalsContent(
+                                        snapshot = snapshot,
+                                        onHireNow = onHireNow,
+                                        onMessageWorker = onMessageWorker,
+                                    )
                                 }
                             }
                             else -> {
@@ -142,7 +169,12 @@ fun ProfileScreen(
             }
         }
         item {
-            Card(modifier = Modifier.fillMaxWidth()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.24f)),
+            ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -215,101 +247,248 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun WorkerProfileSignalsContent(snapshot: WorkerProfileSnapshot) {
+private fun WorkerProfileSignalsContent(
+    snapshot: WorkerProfileSnapshot,
+    onHireNow: (() -> Unit)? = null,
+    onMessageWorker: (() -> Unit)? = null,
+) {
     val profile = snapshot.profile
-    val visibleSkills = snapshot.visibleSkills
-    val completenessProgress = snapshot.completeness.completionPercentage.coerceIn(0, 100) / 100f
+    val visibleSkills = snapshot.visibleSkills.take(3)
+    val reviewHighlights = snapshot.portfolio.items.filter { it.clientRating != null }.take(2)
+    val averageRating = reviewHighlights.mapNotNull { it.clientRating }.takeIf { it.isNotEmpty() }?.average()
+    var showFullBio by remember { mutableStateOf(false) }
+
+    val bio = profile.bio.ifBlank {
+        "I deliver clean finishing, dependable timelines, and quality craft for every project."
+    }
+    val canTruncateBio = bio.length > 160
+    val visibleBio = if (canTruncateBio && !showFullBio) {
+        "${bio.take(160).trimEnd()}..."
+    } else {
+        bio
+    }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.45f)),
+        ) {
+            Column(
+                modifier = Modifier.padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                shape = RoundedCornerShape(32.dp),
+                            )
+                            .border(
+                                width = 2.dp,
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = RoundedCornerShape(32.dp),
+                            ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            "${profile.firstName.firstOrNull() ?: 'W'}${profile.lastName.firstOrNull() ?: 'K'}",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.size(12.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            profile.displayName,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            profile.profession.ifBlank { "Professional Worker" },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            if (averageRating != null) {
+                                String.format(
+                                    java.util.Locale.US,
+                                    "%.1f stars • %d highlights",
+                                    averageRating,
+                                    reviewHighlights.size,
+                                )
+                            } else {
+                                "No ratings yet"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                if (visibleSkills.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        visibleSkills.forEach { skill ->
+                            Text(
+                                text = skill,
+                                modifier = Modifier
+                                    .background(
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.14f),
+                                        shape = RoundedCornerShape(100.dp),
+                                    )
+                                    .border(
+                                        width = 1.dp,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
+                                        shape = RoundedCornerShape(100.dp),
+                                    )
+                                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.Medium,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+        ) {
+            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("About Me", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                Text(visibleBio, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                if (canTruncateBio) {
+                    TextButton(onClick = { showFullBio = !showFullBio }) {
+                        Text(if (showFullBio) "Show less" else "Read more")
+                    }
+                }
+            }
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+        ) {
+            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Portfolio", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                if (snapshot.portfolio.items.isEmpty()) {
+                    Text(
+                        "Portfolio samples will appear here once added.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        snapshot.portfolio.items.take(5).forEach { project ->
+                            Card(
+                                modifier = Modifier.size(width = 150.dp, height = 88.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)),
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(10.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                ) {
+                                    Text(
+                                        project.title,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis,
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        fontWeight = FontWeight.SemiBold,
+                                    )
+                                    Text(
+                                        project.skillsUsed.joinToString(", ").ifBlank { project.projectType },
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+        ) {
+            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Reviews", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                if (reviewHighlights.isEmpty()) {
+                    Text(
+                        "Client review highlights will appear here.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    reviewHighlights.forEach { project ->
+                        Text(
+                            "• ${project.title}: ${String.format(java.util.Locale.US, "%.1f", project.clientRating ?: 0.0)} stars",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Button(
+                onClick = { onHireNow?.invoke() },
+                enabled = onHireNow != null,
+                modifier = Modifier.weight(1f),
+            ) {
+                Text("HIRE NOW")
+            }
+            Button(
+                onClick = { onMessageWorker?.invoke() },
+                enabled = onMessageWorker != null,
+                modifier = Modifier.weight(1f),
+            ) {
+                Text("MESSAGE")
+            }
+        }
+
+        ProfileFact("Location", profile.location.ifBlank { "Add your work area" })
+        ProfileFact(
+            "Rate",
+            profile.hourlyRate?.let { "${profile.currency} ${formatRate(it)}/hr" } ?: "Add your rate",
+        )
+
         if (snapshot.partialWarnings.isNotEmpty()) {
             Text(
                 snapshot.partialWarnings.joinToString(" "),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
             )
-        }
-        Text(
-            profile.profession.ifBlank { "Add your job title" },
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-        )
-        if (profile.bio.isNotBlank()) {
-            Text(profile.bio, style = MaterialTheme.typography.bodyMedium)
-        }
-        ProfileFact("Location", profile.location.ifBlank { "Add your work area" })
-        ProfileFact("Rate", profile.hourlyRate?.let { "${profile.currency} ${formatRate(it)}/hr" } ?: "Add your rate")
-        ProfileFact(
-            "Experience",
-            buildString {
-                append(profile.experienceLevel?.replaceFirstChar { it.uppercase() } ?: "Add your experience")
-                profile.yearsOfExperience?.takeIf { it > 0 }?.let { append(" • ${it}y") }
-            },
-        )
-        ProfileFact(
-            "Checks",
-            listOfNotNull(
-                "Email ${if (profile.isEmailVerified) "verified" else "pending"}",
-                "Phone ${if (profile.isPhoneVerified) "verified" else "pending"}",
-            ).joinToString(" • "),
-        )
-
-        HorizontalDivider()
-
-        Text("Skills people can see", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
-        Text(
-            if (visibleSkills.isNotEmpty()) visibleSkills.joinToString(" • ") else "Add skills so people can find your work.",
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        ProfileFact(
-            "Certificates",
-            "${snapshot.credentials.certifications.count { it.isVerified }} verified certifications • ${snapshot.credentials.licenses.size} licenses",
-        )
-        snapshot.credentials.certifications.take(3).forEach { certification ->
-            Text(
-                "• ${certification.name}${certification.issuingOrganization.takeIf { it.isNotBlank() }?.let { " · $it" } ?: ""}",
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
-
-        HorizontalDivider()
-
-        Text("Availability and profile", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
-        ProfileFact(
-            "Availability",
-            when {
-                snapshot.availability.isAvailable -> "Available${snapshot.availability.nextAvailable?.let { " • next $it" } ?: ""}"
-                snapshot.availability.status == "not_set" -> snapshot.availability.message ?: "Add when you can work"
-                else -> "Unavailable${snapshot.availability.nextAvailable?.let { " • next $it" } ?: ""}"
-            },
-        )
-        snapshot.availability.schedule.take(3).forEach { day ->
-            Text("• ${formatDay(day)}", style = MaterialTheme.typography.bodySmall)
-        }
-        LinearProgressIndicator(progress = { completenessProgress }, modifier = Modifier.fillMaxWidth())
-        Text(
-            "Profile done: ${snapshot.completeness.completionPercentage}% • needed ${snapshot.completeness.requiredCompletion}% • extra ${snapshot.completeness.optionalCompletion}%",
-            style = MaterialTheme.typography.bodySmall,
-        )
-        snapshot.completeness.recommendations.take(3).forEach { recommendation ->
-            Text("• $recommendation", style = MaterialTheme.typography.bodySmall)
-        }
-
-        HorizontalDivider()
-
-        Text("Past work", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
-        Text(
-            "${snapshot.portfolio.publishedCount} shown out of ${snapshot.portfolio.totalCount}",
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        if (snapshot.portfolio.items.isEmpty()) {
-            Text("Add past work so hirers can trust your profile.", style = MaterialTheme.typography.bodySmall)
-        } else {
-            snapshot.portfolio.items.take(3).forEach { project ->
-                Text(
-                    "• ${project.title}${project.skillsUsed.takeIf { it.isNotEmpty() }?.let { " · ${it.joinToString(", ")}" } ?: ""}",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
         }
     }
 }

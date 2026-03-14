@@ -5,6 +5,30 @@
 
 const { v4: uuidv4 } = require('uuid');
 
+const getContentLength = (body) => {
+  if (body === undefined || body === null) {
+    return 0;
+  }
+
+  if (Buffer.isBuffer(body)) {
+    return body.length;
+  }
+
+  if (typeof body === 'string') {
+    return Buffer.byteLength(body);
+  }
+
+  if (typeof body === 'object') {
+    try {
+      return Buffer.byteLength(JSON.stringify(body));
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  return Buffer.byteLength(String(body));
+};
+
 /**
  * Create logging middleware
  */
@@ -41,7 +65,7 @@ const createLoggingMiddleware = (logger) => {
         url: req.originalUrl,
         statusCode: res.statusCode,
         responseTime: `${responseTime}ms`,
-        contentLength: Buffer.byteLength(body || ''),
+        contentLength: getContentLength(body),
         userId: req.user?.id
       });
       

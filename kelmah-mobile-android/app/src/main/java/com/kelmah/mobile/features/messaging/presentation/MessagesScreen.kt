@@ -372,7 +372,7 @@ private fun ThreadContent(
 
             Button(
                 onClick = onSend,
-                enabled = isSending.not(),
+                enabled = isSending.not() && draftMessage.trim().isNotEmpty(),
                 modifier = Modifier.height(52.dp),
             ) {
                 if (isSending) {
@@ -427,14 +427,12 @@ private fun MessageBubble(
                     },
                     style = MaterialTheme.typography.bodyLarge,
                 )
-                message.createdAt?.let {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = RelativeTimeFormatter.relativeOrFallback(it) ?: it,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = message.createdAt?.let { RelativeTimeFormatter.relativeOrFallback(it) ?: it } ?: "Just now",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }

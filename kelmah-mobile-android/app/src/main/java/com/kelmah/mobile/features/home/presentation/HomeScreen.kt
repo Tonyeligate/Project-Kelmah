@@ -129,15 +129,17 @@ fun HomeScreen(
                             value = unreadAlerts,
                         )
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Button(onClick = onBrowseJobs, modifier = Modifier.weight(1f)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Button(onClick = onBrowseJobs, modifier = Modifier.fillMaxWidth()) {
                             Text(if (role == KelmahUserRole.HIRER) "Open Market" else "Find Work")
                         }
-                        OutlinedButton(onClick = onOpenMessages, modifier = Modifier.weight(1f)) {
-                            Text("Messages")
-                        }
-                        OutlinedButton(onClick = onOpenNotifications, modifier = Modifier.weight(1f)) {
-                            Text("Alerts")
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            OutlinedButton(onClick = onOpenMessages, modifier = Modifier.weight(1f)) {
+                                Text("Messages")
+                            }
+                            OutlinedButton(onClick = onOpenNotifications, modifier = Modifier.weight(1f)) {
+                                Text("Alerts")
+                            }
                         }
                     }
                 }

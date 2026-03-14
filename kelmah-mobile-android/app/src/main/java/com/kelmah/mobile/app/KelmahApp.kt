@@ -142,7 +142,7 @@ fun KelmahApp(
         }
 
         val currentUser = (sessionState as? SessionState.Authenticated)?.user
-        val destinations = mainDestinations(currentUser.kelmahUserRole)
+        val destinations = mainDestinations(currentUser?.kelmahUserRole ?: KelmahUserRole.WORKER)
         val navController = rememberNavController()
         val backStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = backStackEntry?.destination?.route

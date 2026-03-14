@@ -45,6 +45,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kelmah.mobile.core.utils.RelativeTimeFormatter
 import com.kelmah.mobile.core.session.KelmahUserRole
+import java.util.concurrent.CancellationException
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -176,8 +177,15 @@ fun JobDetailScreen(
                         onClick = {
                             scope.launch {
                                 isStartingConversation = true
-                                onMessageHirer(job.summary.id, job.hirerId)
-                                isStartingConversation = false
+                                try {
+                                    onMessageHirer(job.summary.id, job.hirerId)
+                                } catch (cancelled: CancellationException) {
+                                    throw cancelled
+                                } catch (_: Exception) {
+                                    snackbars.showSnackbar("Unable to open chat right now. Please try again.")
+                                } finally {
+                                    isStartingConversation = false
+                                }
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
