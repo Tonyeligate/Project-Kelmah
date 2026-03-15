@@ -11,6 +11,7 @@ import { Box, CircularProgress, Alert, Snackbar, LinearProgress } from '@mui/mat
 import { KelmahThemeProvider, useThemeMode } from './theme/ThemeProvider';
 import { AppRoutes } from './routes/config';
 import { verifyAuth } from './modules/auth/services/authSlice';
+import { secureStorage } from './utils/secureStorage';
 import { initializePWA } from './utils/pwaHelpers';
 import GlobalErrorBoundary from './modules/common/components/GlobalErrorBoundary';
 import { useApiHealth } from './hooks/useApiHealth';
@@ -72,6 +73,18 @@ const App = () => {
   useEffect(() => {
     if (!initialized.current) {
       initialized.current = true;
+
+      const hasSessionHints = Boolean(
+        secureStorage.getAuthToken() ||
+        secureStorage.getRefreshToken() ||
+        secureStorage.getUserData(),
+      );
+
+      if (!hasSessionHints) {
+        setAuthBootstrapLoading(false);
+        return;
+      }
+
       Promise.resolve(dispatch(verifyAuth()))
         .catch(() => {
           // verifyAuth thunk already handles cleanup/state updates

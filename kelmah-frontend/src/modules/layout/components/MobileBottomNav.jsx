@@ -102,6 +102,9 @@ const MobileBottomNav = () => {
     return null;
   }
 
+  const userRole = user?.role || user?.userType || user?.userRole || null;
+  const isHirer = userRole === 'hirer' || path.startsWith('/hirer');
+
   const isWorker = userRole === 'worker' || path.startsWith('/worker');
 
   // Determine current active tab based on path - comprehensive matching

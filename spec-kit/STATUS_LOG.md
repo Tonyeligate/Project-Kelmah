@@ -1,3 +1,27 @@
+### Session: Frontend Runtime Crash And Auth Noise March 15 2026 ✅ COMPLETED
+
+**Date**: March 15, 2026  
+**Scope**: Resolve production frontend runtime crash (`ReferenceError: userRole is not defined`) and suppress unnecessary auth refresh noise (`/auth/verify 401` followed by `/auth/refresh-token 400`) for clearly logged-out sessions.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/layout/components/MobileBottomNav.jsx`
+- `kelmah-frontend/src/modules/auth/services/authSlice.js`
+- `kelmah-frontend/src/App.jsx`
+
+**Root-cause snapshot**
+- Crash: `MobileBottomNav` used `userRole` and `isHirer` without defining them, causing a runtime `ReferenceError` in production bundle.
+- Noise loop: auth bootstrap called `verifyAuth` on mount, then attempted refresh even when no local session hints existed, producing avoidable `refresh-token 400` calls.
+
+**Implementation completed**
+- Defined `userRole` and `isHirer` in mobile bottom navigation before role-gated rendering logic, removing the production runtime `ReferenceError` path.
+- Added no-session short-circuit logic in `verifyAuth` thunk to avoid refresh attempts when there are no local session hints (token/user/refresh marker absent).
+- Added silent rejection handling for no-session verification failures so logged-out bootstrap does not surface unnecessary auth errors.
+- Reintroduced app bootstrap gating so `verifyAuth` is skipped on initial mount when local session hints are absent.
+
+**Validation**
+- Workspace diagnostics reported no errors in modified frontend files.
+- Frontend production build passed after the final bootstrap guard patch: `npm run build` in `kelmah-frontend`.
+
 ### Session: Mobile Native UX Reliability Audit March 14 2026 ✅ COMPLETED
 
 **Date**: March 14, 2026  

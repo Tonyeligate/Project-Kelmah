@@ -117,13 +117,24 @@ export const verifyAuth = createAsyncThunk(
 
       // Check if there's user data in secure storage
       const storedUserSnapshot = secureStorage.getUserData();
+      const storedRefreshToken = secureStorage.getRefreshToken();
       devLog('Currently stored user:', storedUserSnapshot || 'none');
 
       // Always attempt backend verification first to support cookie sessions.
       let verify = await authService.verifyAuth();
       devLog('Auth verify response:', verify);
 
+      const hasSessionHint = Boolean(token || storedUserSnapshot || storedRefreshToken);
+
       if (verify?.success === false && !verify?.user && !token) {
+        if (!hasSessionHint) {
+          return rejectWithValue({
+            message: null,
+            shouldReset: true,
+            silent: true,
+          });
+        }
+
         devLog('No local access token available, attempting refresh...');
         const refreshResult = await authService.refreshToken();
         if (refreshResult?.token) {
@@ -326,7 +337,9 @@ const authSlice = createSlice({
       })
       .addCase(verifyAuth.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || action.payload;
+        state.error = action.payload?.silent
+          ? null
+          : action.payload?.message || action.payload;
         if (action.payload?.shouldReset !== false) {
           state.isAuthenticated = false;
           state.user = null;
