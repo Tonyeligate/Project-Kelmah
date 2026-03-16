@@ -243,7 +243,7 @@ const SmartNavigation = () => {
         {
           label: 'Find Workers',
           icon: <SearchIcon />,
-          path: '/hirer/find-talent',
+          path: '/hirer/find-talents',
           description: 'Search for skilled workers',
           color: '#00BCD4',
         },
@@ -542,3 +542,4 @@ const SmartNavigation = () => {
 };
 
 export default SmartNavigation;
+

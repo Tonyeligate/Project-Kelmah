@@ -1,3 +1,302 @@
+### Session: Frontend Route + Mobile Remediation Execution March 16 2026 ✅ COMPLETED
+
+**Date**: March 16, 2026  
+**Scope**: Execute the top 3 routing/layout fixes from the continuation audit, run focused mobile screenshot evidence capture at 320/360/390/768, and start decomposition planning for the largest route pages.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+- `kelmah-frontend/src/modules/support/pages/HelpCenterPage.jsx`
+- `kelmah-frontend/src/modules/quickjobs/pages/NearbyJobsPage.jsx`
+- `kelmah-frontend/scripts/capture_route_mobile_audit_mar16.mjs`
+- `kelmah-frontend/qa-artifacts/screenshots/route-mobile-audit-mar16/**`
+- `spec-kit/FRONTEND_ROUTE_MOBILE_SCREENSHOT_EVIDENCE_MAR16_2026.md`
+- `spec-kit/FRONTEND_PAGE_DECOMPOSITION_PLAN_MAR16_2026.md`
+
+**Implementation completed**
+- Reworked layout route classification to remove broad substring matching that misclassified public profile/support routes as dashboard-shell routes.
+- Removed unsupported support-page query deep links (`/messages?tab=support`, `/docs?category=support`) and replaced with supported routes.
+- Replaced hardcoded NearbyJobs floating refresh button bottom offset with safe-area aware shared bottom-nav spacing.
+- Added and ran an automated Playwright screenshot capture script for widths 320/360/390/768 across the fixed route surfaces.
+- Created a decomposition plan for the largest route pages with phased extraction and test guardrails.
+
+**Validation**
+- `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand` ✅ (15/15)
+- `npm run build` in `kelmah-frontend` ✅
+- Screenshot evidence generated:
+  - `kelmah-frontend/qa-artifacts/screenshots/route-mobile-audit-mar16/evidence.json`
+  - `spec-kit/FRONTEND_ROUTE_MOBILE_SCREENSHOT_EVIDENCE_MAR16_2026.md`
+
+### Session: Frontend Route + Mobile UI/UX Continuation Audit March 16 2026 ✅ COMPLETED
+
+**Date**: March 16, 2026  
+**Scope**: Continue the web frontend design audit across all routed pages with emphasis on mobile-view behavior, routing consistency, and layout-shell correctness; record findings in a dedicated spec-kit report.
+
+**Execution surface**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+- `kelmah-frontend/src/modules/layout/components/MobileBottomNav.jsx`
+- `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
+- `kelmah-frontend/src/modules/support/pages/HelpCenterPage.jsx`
+- `kelmah-frontend/src/modules/support/pages/InfoPage.jsx`
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- `kelmah-frontend/src/modules/quickjobs/pages/NearbyJobsPage.jsx`
+- `spec-kit/FRONTEND_UI_UX_ROUTE_MOBILE_CONTINUATION_AUDIT_MAR16_2026.md`
+
+**Implementation completed**
+- Completed a static continuation audit of route-mounted page surfaces plus shared mobile/layout components.
+- Verified coverage metrics for route-mounted vs module page files and confirmed currently unmounted page surfaces.
+- Documented severity-ranked findings in a new report with concrete file evidence and remediation guidance.
+
+**Key findings captured**
+- Public worker profile alias route is currently susceptible to dashboard-shell misclassification due to broad `/profile` matching in layout route detection.
+- Public support routes are currently treated as dashboard-shell routes by layout prefix matching, causing shell inconsistency risk.
+- Support quick-action query links use parameters not currently consumed by target page logic (`tab`, `category`).
+- Nearby jobs floating action button uses hardcoded bottom offset instead of shared bottom-nav + safe-area spacing.
+- Three module page files remain unmounted from route config, increasing structural drift risk.
+- Multiple route-mounted pages remain very large (1000-2800 lines), increasing UI/mobile regression probability.
+
+**Validation**
+- Read-only audit pass; no feature codepaths were modified.
+- Findings report created: `spec-kit/FRONTEND_UI_UX_ROUTE_MOBILE_CONTINUATION_AUDIT_MAR16_2026.md`.
+
+### Session: Mobile Bottom Nav 5-Button Redesign March 16 2026 ✅ COMPLETED
+
+**Date**: March 16, 2026  
+**Scope**: Apply role-specific 5-button mobile bottom navigation for authenticated hirers and workers, aligned to productivity-first task loops.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/layout/components/MobileBottomNav.jsx`
+- `kelmah-frontend/src/tests/smoke/routed-paths.smoke.test.jsx`
+
+**Implementation completed**
+- Updated authenticated mobile bottom nav to 5 productivity-first actions per role.
+- Hirer tabs: Home, Post Job, Find Talent, Applications, Messages.
+- Worker tabs: Home, Find Work, Applications, Messages, Profile.
+- Added role-aware path matching so tab highlighting follows the new tab model.
+- Preserved no-selection behavior on unmatched routes (e.g., `/wallet`, `/contracts`) to avoid incorrect Home highlighting.
+
+**Validation**
+- `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand` ✅
+- Extended smoke suite now passes with 13/13 tests, including role tab-set assertions.
+- Added explicit Home-tab click assertions for both roles; rerun now passes with 15/15 tests.
+
+### Session: Frontend Redirect + Bottom-Nav Smoke Coverage March 16 2026 ✅ COMPLETED
+
+**Date**: March 16, 2026  
+**Scope**: Add targeted smoke coverage for role-root redirects, profile alias role resolution, and mobile bottom-nav active-state regressions for shared routes.
+
+**Execution surface**
+- `kelmah-frontend/src/tests/smoke/routed-paths.smoke.test.jsx`
+
+**Implementation completed**
+- Added redirect smoke checks for `/hirer` -> hirer dashboard and `/worker` -> worker dashboard.
+- Added profile alias smoke checks for `/profile` role resolution:
+  - hirer -> hirer profile
+  - worker -> worker profile
+  - admin -> settings
+- Added mobile bottom-nav smoke checks to ensure no incorrect `Home` selection on unmatched shared routes `/wallet` and `/contracts`.
+
+**Validation**
+- `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand` ✅
+
+### Session: Visible Frontend Bug Simulation Gate Verification March 16 2026 ✅ COMPLETED
+
+**Date**: March 16, 2026  
+**Scope**: Run one live visible-frontend-bug simulation end-to-end and verify the new quantum closure gates are actually enforced in workflow output.
+
+**Simulated user-visible bug**
+- Legacy URL `/search/jobs` renders as not found in live route tree (visible broken page if user opens old bookmark/link).
+
+**Execution surface**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/tests/smoke/routed-paths.smoke.test.jsx`
+- `kelmah-frontend/src/modules/search/components/SmartJobRecommendations.jsx`
+
+**Dry-audit and evidence summary**
+- Verified active recommendations CTA now routes to `/jobs` (no current CTA reference to `/search/jobs`).
+- Verified `/search/jobs` had no compatibility route and fell through as invalid path.
+- Verified smoke suite explicitly asserted not-found behavior for `/search/jobs`.
+
+**Implemented fix**
+- Added backward-compatible route alias in router config:
+  - `/search/jobs` → `Navigate('/jobs', replace)`
+- Updated smoke test to assert legacy route resolves to `JOBS_PAGE` instead of `NOT_FOUND_PAGE`.
+
+**Validation**
+- `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand` ✅ passed (4/4)
+- `npm run build` in `kelmah-frontend` ✅ passed (`BUILD_EXIT_CODE=0`)
+
+**Closure-gate verification (simulation)**
+- UFL-4 DEP (delegation evidence packets):
+  - Ψ-Frontend: route-surface and CTA path audit completed with file evidence.
+  - Σ-Debugger: contradiction check completed; no remaining live `/search/jobs` consumer beyond legacy-path scenario.
+- UFL-5 VBCT (visible bug closure theorem):
+  1) Frontend audit evidence captured ✅
+  2) Debugger cross-check verdict captured ✅
+  3) Re-audit after fix completed (route + smoke + build) ✅
+  4) Explicit closure list documented in this session ✅
+- UFL-6 Completion Oracle: PASS ✅
+
+---
+
+### Session: Frontend Navigation + Mobile UX Remediation March 16 2026 ✅ COMPLETED
+
+**Date**: March 16, 2026  
+**Scope**: Remediate newly audited frontend issues across route redirects, profile routing, mobile bottom navigation semantics, dashboard card semantics, duplicate offline banners, session-expired visibility on mobile, and hirer profile edit-cancel safeguards.
+
+**Execution surface**
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/support/pages/InfoPage.jsx`
+- `kelmah-frontend/src/modules/layout/components/MobileBottomNav.jsx`
+- `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
+- `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/HirerProfilePage.jsx`
+- `kelmah-frontend/src/App.jsx`
+- `kelmah-frontend/index.html`
+- `kelmah-frontend/src/pages/HomeLanding.jsx`
+
+**Implementation completed**
+- Added index redirects for role roots (`/hirer` and `/worker`) to prevent naked-root 404s.
+- Corrected global profile alias so admin users opening `/profile` route to `/settings` instead of skills management.
+- Added dedicated static page variants for `/about`, `/contact`, `/privacy`, and `/terms` via new `InfoPage` variants instead of routing all four to `HelpCenterPage`.
+- Fixed mobile bottom navigation role flows: fourth tab now routes to role profile pages (`/hirer/profile`, `/worker/profile`) and is labeled `Profile`.
+- Fixed bottom-nav active-state behavior so unmatched routes no longer default-highlight `Home`.
+- Added accessible unread badge labeling for bottom-nav messages (`aria-label` includes unread count).
+- Replaced incorrect `Home` icon for `Help & Support` in mobile drawer with a support icon.
+- Corrected hirer dashboard `Total Spent` card semantics: updated aria label, replaced misleading help icon with payment icon, and removed danger-red card styling.
+- Updated hirer dashboard `SpeedDial` bottom offset to use `BOTTOM_NAV_HEIGHT` plus `env(safe-area-inset-bottom, 0px)`.
+- Added session-expired banner rendering to mobile dashboard layout (parity with desktop).
+- Added unsaved-change confirmation on hirer profile edit cancel action.
+- Removed legacy DOM-based network status banner injection from `index.html` so only React `OfflineBanner` handles connectivity notifications.
+- Added wake-up banner layout spacer in `App.jsx` so fixed service wake-up alerts no longer cover page content.
+- Removed `framer-motion` usage from `HomeLanding.jsx` by replacing motion wrappers with static containers to reduce landing payload and avoid invisible-first hero behavior.
+
+**Validation**
+- Frontend production build passed: `npm run build` in `kelmah-frontend` ✅
+
+### Session: Cross-Platform UX Fix Implementation March 16 2026 ✅ COMPLETED
+
+**Date**: March 16, 2026  
+**Scope**: Implement the prioritized follow-up fixes from the continuation audit (native theme adaptivity, worker profile CTA semantics, and web route naming normalization).
+
+**Execution surface**
+- `kelmah-mobile-ios/Kelmah/KelmahApp.swift`
+- `kelmah-mobile-ios/Kelmah/Features/Profile/Presentation/ProfileView.swift`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/core/design/theme/Theme.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/app/KelmahApp.kt`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/features/profile/presentation/ProfileScreen.kt`
+- `kelmah-frontend/src/routes/config.jsx`
+
+**Implementation completed**
+- Removed iOS global dark lock by dropping forced `.preferredColorScheme(.dark)`.
+- Switched Android theme default to `isSystemInDarkTheme()` and passed system theme state at app root.
+- Replaced worker self-profile CTA labels on native from hiring semantics to worker-appropriate actions (`FIND JOBS`, `OPEN MESSAGES`).
+- Normalized web talent-search naming with canonical plural paths and backward-compatible redirects for singular aliases.
+- Updated linked frontend navigation and page references to canonical `/hirer/find-talents` across config/layout/jobs/hirer modules.
+- Corrected a transient alias typo during normalization (`/hirer/find-talentss` -> `/hirer/find-talents`).
+
+**Validation**
+- Frontend production build succeeded after routing changes: `npm run build` in `kelmah-frontend`.
+- Source checks confirm updated CTA strings and theme wiring in native files.
+
+### Session: Cross-Platform UI UX Continuation Audit March 16 2026 ✅ COMPLETED
+
+**Date**: March 16, 2026  
+**Scope**: Continue the UI/UX audit across web frontend, Android Compose app, and iOS SwiftUI app; append verified findings with severity and evidence.
+
+**Execution surface**
+- `UI_UX_AUDIT_REPORT.md`
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/App.jsx`
+- `kelmah-frontend/src/theme/index.js`
+- `kelmah-mobile-android/app/src/main/AndroidManifest.xml`
+- `kelmah-mobile-android/app/src/main/java/com/kelmah/mobile/**`
+- `kelmah-mobile-ios/Kelmah/**/*.swift`
+
+**Implementation completed**
+- Appended a new continuation section in `UI_UX_AUDIT_REPORT.md` with measured evidence and priority-ranked findings.
+- Validated web routing/a11y/mobile signals via source metrics (safe-area, lazy routes, protected routes, hover gates).
+- Corrected prior native surface assumption by auditing actual Compose/SwiftUI feature screens.
+- Identified two cross-platform native UX deltas (dark-lock and worker self-profile CTA semantics) and one web route naming consistency item.
+
+### Session: Frontend Timestamped QA Filenames March 16 2026 ✅ COMPLETED
+
+**Date**: March 16, 2026  
+**Scope**: Add a second filename convention with timestamp placeholders for repeated screenshot QA runs.
+
+**Execution surface**
+- `spec-kit/FRONTEND_VIEWPORT_SCREENSHOT_CHECKLIST_PREFILLED_MAR16_2026.md`
+
+**Implementation completed**
+- Added an alternate naming section using `{run_ts_utc}_{width}_{check}.png`.
+- Added placeholder guidance and concrete examples for consistent repeated-run artifacts.
+
+### Session: Frontend Prefilled Screenshot Filenames March 16 2026 ✅ COMPLETED
+
+**Date**: March 16, 2026  
+**Scope**: Produce a prefilled screenshot checklist variant with suggested artifact filenames for all 4 viewport widths and 4 interaction checks.
+
+**Execution surface**
+- `spec-kit/FRONTEND_VIEWPORT_SCREENSHOT_CHECKLIST_PREFILLED_MAR16_2026.md`
+
+**Implementation completed**
+- Added suggested screenshot paths for each of the 16 checklist rows.
+- Kept pass/fail, notes, acceptance criteria, and sign-off sections unchanged for consistency.
+
+### Session: Frontend Manual Screenshot Checklist March 16 2026 ✅ COMPLETED
+
+**Date**: March 16, 2026  
+**Scope**: Produce a reusable manual screenshot QA checklist for viewport validation at 320/360/390/768 with the same four interaction checks used in the final UX polish pass.
+
+**Execution surface**
+- `spec-kit/FRONTEND_VIEWPORT_SCREENSHOT_CHECKLIST_MAR16_2026.md`
+
+**Implementation completed**
+- Added a standardized capture template with environment metadata fields.
+- Included a 16-row interaction matrix (4 widths x 4 checks) with pass/fail and screenshot-path columns.
+- Added acceptance criteria and sign-off section for repeatable QA evidence collection.
+
+### Session: UX Design Audit Remediation March 16 2026 ✅ COMPLETED
+
+**Date**: March 16, 2026  
+**Scope**: Implement all UX audit fixes across application shell, auth, jobs, messaging, navigation, and theme files in the frontend workspace.
+
+**Execution surface**
+- `kelmah-frontend/index.html`
+- `kelmah-frontend/public/manifest.json`
+- `kelmah-frontend/public/kelmah-icon.svg`
+- `kelmah-frontend/public/kelmah-og.png`
+- `kelmah-frontend/public/kelmah-apple-touch-icon.png`
+- `kelmah-frontend/src/App.jsx`
+- `kelmah-frontend/src/theme/index.js`
+- `kelmah-frontend/src/theme/ThemeProvider.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `kelmah-frontend/src/modules/auth/pages/LoginPage.jsx`
+- `kelmah-frontend/src/modules/auth/pages/RegisterPage.jsx`
+- `kelmah-frontend/src/modules/auth/components/login/Login.jsx`
+- `kelmah-frontend/src/modules/auth/components/register/Register.jsx`
+- `kelmah-frontend/src/modules/auth/components/common/AuthWrapper.jsx`
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- `kelmah-frontend/src/components/common/SmartNavigation.jsx`
+- `kelmah-frontend/src/utils/pwaHelpers.js`
+
+**Implementation completed**
+- Activated PWA manifest in shell and removed remaining offline status `innerHTML` write.
+- Kept pinch-zoom enabled viewport settings and retained branded OG/Twitter image references.
+- Added branded static assets (`kelmah-icon.svg`, `kelmah-og.png`, `kelmah-apple-touch-icon.png`) and updated manifest icons away from generic Vite placeholders.
+- Regenerated `kelmah-og.png` as a true 1200x630 social preview image and `kelmah-apple-touch-icon.png` as a true 180x180 icon; also added `favicon.ico` for browser-tab compatibility.
+- Added accessible in-app install prompt UI in `App.jsx` using `Snackbar` + dismiss affordance (`aria-label`), wired to `pwa:installAvailable`/`pwa:installComplete` events, and added 7-day dismissal TTL handling.
+- Added explicit `<main id="main-content">` landmark target to match skip-link behavior.
+- Replaced imperative PWA helper DOM banner/update/welcome injections with event dispatch hooks to keep install/update UX in React-managed accessible surfaces.
+- Consolidated theme border-radius usage by removing `10/12` values in favor of the defined `8/14/999` system pattern in core component overrides.
+- Applied deep-dive follow-up polish: safe-area clamped bottom snackbar spacing, touch-device hover suppression for Job Details image zoom, and HomeLanding category grid reflow tweak (`xs=6, sm=4`) for better landscape readability.
+
+**Validation**
+- Workspace diagnostics: no errors in edited files.
+- Frontend production build passed after all UX remediation edits: `npm run build` in `kelmah-frontend`.
+
 ### Session: Frontend Runtime Crash And Auth Noise March 15 2026 ✅ COMPLETED
 
 **Date**: March 15, 2026  

@@ -80,7 +80,7 @@ const baseTheme = {
     },
   },
   shape: {
-    borderRadius: 12,
+    borderRadius: 14,
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
@@ -125,12 +125,12 @@ const baseTheme = {
     body1: {
       fontSize: '1rem',
       lineHeight: 1.6,
-      fontWeight: 500, // bolder default body text
+      fontWeight: 400,
     },
     body2: {
       fontSize: '0.875rem',
       lineHeight: 1.6,
-      fontWeight: 500, // bolder secondary text
+      fontWeight: 400,
     },
     button: {
       fontWeight: 600,
@@ -313,7 +313,7 @@ const darkTheme = createTheme({
           // Mobile: minimal shadows — flat + border (Binance pattern)
           '@media (max-width: 599.95px)': {
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)',
-            borderRadius: 10,
+            borderRadius: 14,
             '&:hover': {
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)',
               transform: 'none',
@@ -343,7 +343,7 @@ const darkTheme = createTheme({
         root: {
           backgroundColor: SURFACE_TOKENS.dark.raised,
           border: '1px solid rgba(255, 255, 255, 0.07)',
-          borderRadius: 18,
+          borderRadius: 14,
           transition: 'transform 0.3s ease, border-color 0.3s ease',
           '@media (hover: hover)': {
             '&:hover': {
@@ -354,7 +354,7 @@ const darkTheme = createTheme({
           },
           // Mobile: flat cards, no hover lift
           '@media (max-width: 599.95px)': {
-            borderRadius: 12,
+            borderRadius: 14,
             boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
             '&:hover': {
               transform: 'none',
@@ -534,7 +534,7 @@ const darkTheme = createTheme({
         paper: {
           backgroundColor: SURFACE_TOKENS.dark.raised,
           border: `1px solid rgba(255, 215, 0, 0.4)`,
-          borderRadius: 18,
+          borderRadius: 14,
           boxShadow: '0 40px 85px rgba(0, 0, 0, 0.7)',
           // Mobile: near-fullscreen dialogs (Binance pattern)
           '@media (max-width: 599.95px)': {
@@ -542,7 +542,7 @@ const darkTheme = createTheme({
             width: 'calc(100% - 32px)',
             maxWidth: 'calc(100% - 32px)',
             maxHeight: 'calc(100% - 32px)',
-            borderRadius: 12,
+            borderRadius: 14,
           },
         },
       },
@@ -604,7 +604,7 @@ const darkTheme = createTheme({
     MuiListItemButton: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 8,
           margin: '0 4px',
           color: SURFACE_TOKENS.dark.textSecondary,
           '&.Mui-selected': {
@@ -659,7 +659,7 @@ const darkTheme = createTheme({
     MuiAlert: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 14,
           backdropFilter: 'blur(6px)',
           '@media (max-width: 599.95px)': {
             backdropFilter: 'none',
@@ -844,7 +844,7 @@ const lightTheme = createTheme({
           },
           '@media (max-width: 599.95px)': {
             boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-            borderRadius: 10,
+            borderRadius: 14,
             '&:hover': {
               boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
               transform: 'none',
@@ -874,7 +874,7 @@ const lightTheme = createTheme({
         root: {
           backgroundColor: SURFACE_TOKENS.light.raised,
           border: '1px solid rgba(0, 0, 0, 0.08)',
-          borderRadius: 18,
+          borderRadius: 14,
           transition: 'transform 0.3s ease, border-color 0.3s ease',
           '&:hover': {
             borderColor: 'rgba(0, 0, 0, 0.18)',
@@ -882,7 +882,7 @@ const lightTheme = createTheme({
             transform: 'translateY(-4px)',
           },
           '@media (max-width: 599.95px)': {
-            borderRadius: 12,
+            borderRadius: 14,
             boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
             '&:hover': {
               transform: 'none',
@@ -1001,7 +1001,7 @@ const lightTheme = createTheme({
         paper: {
           backgroundColor: SURFACE_TOKENS.light.surface,
           border: '1px solid rgba(0, 0, 0, 0.08)',
-          borderRadius: 12,
+          borderRadius: 14,
           boxShadow: '0 24px 55px rgba(15, 15, 23, 0.12)',
         },
       },
@@ -1052,7 +1052,7 @@ const lightTheme = createTheme({
         paper: {
           backgroundColor: SURFACE_TOKENS.light.surface,
           border: '1px solid rgba(0, 0, 0, 0.08)',
-          borderRadius: 18,
+          borderRadius: 14,
           boxShadow: '0 35px 80px rgba(15, 15, 23, 0.15)',
           // Mobile: near-fullscreen dialogs (Binance pattern)
           '@media (max-width: 599.95px)': {
@@ -1060,7 +1060,7 @@ const lightTheme = createTheme({
             width: 'calc(100% - 32px)',
             maxWidth: 'calc(100% - 32px)',
             maxHeight: 'calc(100% - 32px)',
-            borderRadius: 12,
+            borderRadius: 14,
           },
         },
       },
@@ -1092,7 +1092,7 @@ const lightTheme = createTheme({
     MuiListItemButton: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 8,
           margin: '0 4px',
           color: SURFACE_TOKENS.light.textSecondary,
           '&.Mui-selected': {
@@ -1147,7 +1147,7 @@ const lightTheme = createTheme({
     MuiAlert: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 14,
           border: '1px solid rgba(0, 0, 0, 0.08)',
           backgroundColor: 'rgba(255, 255, 255, 0.85)',
         },

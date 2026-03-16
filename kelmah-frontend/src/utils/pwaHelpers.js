@@ -220,77 +220,7 @@ const dismissUpdateNotification = () => {
 // Show update notification to user
 const showUpdateNotification = () => {
   if (!isBrowserEnvironment()) return;
-
-  // Ensure only one instance exists
-  dismissUpdateNotification();
-
-  // Create custom update notification
-  const notification = document.createElement('div');
-  notification.id = 'pwa-update-notification';
-
-  const card = applyInlineStyles(
-    document.createElement('div'),
-    [
-      'position: fixed',
-      'bottom: 20px',
-      'left: 50%',
-      'transform: translateX(-50%)',
-      'background: linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
-      'color: #000',
-      'padding: 16px 24px',
-      'border-radius: 12px',
-      'box-shadow: 0 8px 32px rgba(255,215,0,0.3)',
-      'z-index: 10000',
-      'font-weight: 600',
-      'max-width: 90vw',
-      'text-align: center',
-      "font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    ].join('; '),
-  );
-
-  const title = applyInlineStyles(
-    document.createElement('div'),
-    'margin-bottom: 8px',
-  );
-  title.textContent = '🚀 New Kelmah Update Available!';
-
-  const subtitle = applyInlineStyles(
-    document.createElement('div'),
-    'font-size: 12px; opacity: 0.8; margin-bottom: 12px',
-  );
-  subtitle.textContent = 'Enhanced performance and new features';
-
-  const actions = applyInlineStyles(
-    document.createElement('div'),
-    'display: flex; justify-content: center; gap: 8px',
-  );
-
-  const updateButton = applyInlineStyles(
-    document.createElement('button'),
-    'background: #000; color: #FFD700; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer',
-  );
-  updateButton.type = 'button';
-  updateButton.textContent = 'Update Now';
-  updateButton.addEventListener('click', updatePWA);
-
-  const laterButton = applyInlineStyles(
-    document.createElement('button'),
-    'background: transparent; color: #000; border: 1px solid #000; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer',
-  );
-  laterButton.type = 'button';
-  laterButton.textContent = 'Later';
-  laterButton.addEventListener('click', dismissUpdateNotification);
-
-  actions.append(updateButton, laterButton);
-  card.append(title, subtitle, actions);
-  notification.append(card);
-
-  document.body.appendChild(notification);
-
-  // Auto-dismiss after 10 seconds
-  setTimeout(() => {
-    dismissUpdateNotification();
-  }, 10000);
+  window.dispatchEvent(new CustomEvent('sw:updateAvailable'));
 };
 
 // Update PWA
@@ -331,98 +261,16 @@ if (typeof window !== 'undefined') {
     e.preventDefault();
     deferredPrompt = e;
 
-    // Show custom install banner for Ghana users
-    showInstallBanner();
+    if (shouldShowInstallBanner()) {
+      window.dispatchEvent(new CustomEvent('pwa:installAvailable'));
+    }
   });
 }
 
 // Show custom install banner
 const showInstallBanner = () => {
-  if (isAppInstalled()) return;
-
-  // Ensure only one instance exists
-  dismissInstallBanner();
-
-  const banner = document.createElement('div');
-  banner.id = 'pwa-install-banner';
-
-  const bar = applyInlineStyles(
-    document.createElement('div'),
-    [
-      'position: fixed',
-      'top: 0',
-      'left: 0',
-      'right: 0',
-      'background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
-      'color: #FFD700',
-      'padding: 12px 16px',
-      'z-index: 10000',
-      'border-bottom: 2px solid #FFD700',
-      "font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    ].join('; '),
-  );
-
-  const inner = applyInlineStyles(
-    document.createElement('div'),
-    'display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto',
-  );
-
-  const left = applyInlineStyles(
-    document.createElement('div'),
-    'display: flex; align-items: center; gap: 12px',
-  );
-
-  const icon = applyInlineStyles(document.createElement('span'), 'font-size: 20px');
-  icon.textContent = '📱';
-
-  const textWrap = document.createElement('div');
-  const heading = applyInlineStyles(
-    document.createElement('div'),
-    'font-weight: 700; font-size: 14px',
-  );
-  heading.textContent = 'Install Kelmah App';
-  const subheading = applyInlineStyles(
-    document.createElement('div'),
-    'font-size: 11px; opacity: 0.8',
-  );
-  subheading.textContent = 'Works offline • Fast loading • Save data';
-  textWrap.append(heading, subheading);
-  left.append(icon, textWrap);
-
-  const right = applyInlineStyles(
-    document.createElement('div'),
-    'display: flex; gap: 8px',
-  );
-
-  const installButton = applyInlineStyles(
-    document.createElement('button'),
-    'background: #FFD700; color: #000; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer',
-  );
-  installButton.type = 'button';
-  installButton.textContent = 'Install';
-  installButton.addEventListener('click', () => {
-    installPWA();
-  });
-
-  const dismissButton = applyInlineStyles(
-    document.createElement('button'),
-    'background: transparent; color: #FFD700; border: 1px solid #FFD700; padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer',
-  );
-  dismissButton.type = 'button';
-  dismissButton.textContent = '×';
-  dismissButton.addEventListener('click', dismissInstallBanner);
-
-  right.append(installButton, dismissButton);
-  inner.append(left, right);
-  bar.append(inner);
-  banner.append(bar);
-
-  document.body.appendChild(banner);
-
-  // Auto-dismiss after 15 seconds
-  setTimeout(() => {
-    dismissInstallBanner();
-  }, 15000);
+  if (isAppInstalled() || !isBrowserEnvironment()) return;
+  window.dispatchEvent(new CustomEvent('pwa:installAvailable'));
 };
 
 // Install PWA
@@ -448,11 +296,6 @@ const installPWA = async () => {
 
 // Dismiss install banner
 const dismissInstallBanner = () => {
-  const banner = document.getElementById('pwa-install-banner');
-  if (banner) {
-    banner.remove();
-  }
-
   // Remember user dismissed banner (don't show again for 7 days)
   localStorage.setItem('pwa_banner_dismissed', Date.now().toString());
 };
@@ -654,67 +497,8 @@ export const handleAppLifecycle = () => {
 
 // Show welcome message after install
 const showWelcomeMessage = () => {
-  const welcome = document.createElement('div');
-
-  const modal = applyInlineStyles(
-    document.createElement('div'),
-    [
-      'position: fixed',
-      'top: 50%',
-      'left: 50%',
-      'transform: translate(-50%, -50%)',
-      'background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
-      'color: #FFD700',
-      'padding: 32px',
-      'border-radius: 16px',
-      'border: 2px solid #FFD700',
-      'text-align: center',
-      'z-index: 10000',
-      'max-width: 90vw',
-      'box-shadow: 0 20px 40px rgba(0,0,0,0.5)',
-    ].join('; '),
-  );
-
-  const emoji = applyInlineStyles(
-    document.createElement('div'),
-    'font-size: 48px; margin-bottom: 16px',
-  );
-  emoji.textContent = '🎉';
-
-  const headline = applyInlineStyles(
-    document.createElement('div'),
-    'font-size: 20px; font-weight: 700; margin-bottom: 8px',
-  );
-  headline.textContent = 'Welcome to Kelmah!';
-
-  const message = applyInlineStyles(
-    document.createElement('div'),
-    'font-size: 14px; opacity: 0.8; margin-bottom: 20px',
-  );
-  message.textContent =
-    'App installed successfully. Now you can access Kelmah even when offline!';
-
-  const closeButton = applyInlineStyles(
-    document.createElement('button'),
-    'background: #FFD700; color: #000; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer',
-  );
-  closeButton.type = 'button';
-  closeButton.textContent = 'Get Started';
-  closeButton.addEventListener('click', () => {
-    welcome.remove();
-  });
-
-  modal.append(emoji, headline, message, closeButton);
-  welcome.append(modal);
-
-  document.body.appendChild(welcome);
-
-  // Auto-remove after 5 seconds
-  setTimeout(() => {
-    if (welcome.parentElement) {
-      welcome.remove();
-    }
-  }, 5000);
+  if (!isBrowserEnvironment()) return;
+  window.dispatchEvent(new CustomEvent('pwa:installed'));
 };
 
 // Check for app updates

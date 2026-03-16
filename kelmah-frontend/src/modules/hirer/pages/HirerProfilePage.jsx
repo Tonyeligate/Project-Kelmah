@@ -37,6 +37,16 @@ import {
   selectProfileLoading,
 } from '../../../store/slices/profileSlice.js';
 
+const buildEditFormData = (profile, user) => ({
+  firstName: profile?.firstName || user?.firstName || '',
+  lastName: profile?.lastName || user?.lastName || '',
+  email: profile?.email || user?.email || '',
+  phone: profile?.phone || profile?.phoneNumber || user?.phone || '',
+  companyName: getCompanyName(profile, user),
+  location: profile?.location || user?.location || '',
+  bio: profile?.bio || '',
+});
+
 const getDisplayName = (profile, user) => {
   const firstName = profile?.firstName || user?.firstName || '';
   const lastName = profile?.lastName || user?.lastName || '';
@@ -115,16 +125,30 @@ const HirerProfilePage = () => {
   }, [loadActivity, loadProfile, loadStatistics]);
 
   const handleStartEdit = () => {
-    setFormData({
-      firstName: profile?.firstName || user?.firstName || '',
-      lastName: profile?.lastName || user?.lastName || '',
-      email: profile?.email || user?.email || '',
-      phone: profile?.phone || profile?.phoneNumber || user?.phone || '',
-      companyName: getCompanyName(profile, user),
-      location: profile?.location || user?.location || '',
-      bio: profile?.bio || '',
-    });
+    setFormData(buildEditFormData(profile, user));
     setEditing(true);
+  };
+
+  const hasUnsavedChanges = useMemo(() => {
+    if (!editing) {
+      return false;
+    }
+
+    const initialData = buildEditFormData(profile, user);
+    return Object.keys(initialData).some(
+      (key) => (formData[key] || '') !== (initialData[key] || ''),
+    );
+  }, [editing, formData, profile, user]);
+
+  const handleCancelEdit = () => {
+    if (
+      hasUnsavedChanges &&
+      !window.confirm('Discard unsaved profile changes?')
+    ) {
+      return;
+    }
+
+    setEditing(false);
   };
 
   const handleSave = async () => {
@@ -240,7 +264,7 @@ const HirerProfilePage = () => {
               >
                 Edit hirer profile
               </Button>
-              <Button component={RouterLink} to="/hirer/find-talent" variant="outlined" sx={{ minHeight: 44 }}>
+              <Button component={RouterLink} to="/hirer/find-talents" variant="outlined" sx={{ minHeight: 44 }}>
                 Find talent
               </Button>
             </Stack>
@@ -334,7 +358,7 @@ const HirerProfilePage = () => {
                     }
                   />
                   <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="flex-end">
-                    <Button onClick={() => setEditing(false)} sx={{ minHeight: 44 }}>
+                    <Button onClick={handleCancelEdit} sx={{ minHeight: 44 }}>
                       Cancel
                     </Button>
                     <Button
@@ -466,3 +490,4 @@ const HirerProfilePage = () => {
 };
 
 export default HirerProfilePage;
+

@@ -25,28 +25,54 @@ const DASHBOARD_PATH_PREFIXES = [
   '/messages',
   '/notifications',
   '/settings',
-  '/support',
+  '/admin',
 ];
 
-const DASHBOARD_PATH_MATCHERS = [
-  '/profile/edit',
-  '/applications',
+const DASHBOARD_EXACT_PATHS = [
+  '/profile',
   '/contracts',
   '/payments',
   '/wallet',
   '/schedule',
   '/reviews',
-  '/profile',
 ];
 
 const isDashboardRoute = (path = '') => {
-  if (!path || path.startsWith('/worker-profile')) {
+  if (!path || path.startsWith('/worker-profile') || path.startsWith('/workers/')) {
     return false;
   }
 
-  return DASHBOARD_PATH_PREFIXES.some(
+  // Worker upload-cv alias is an authenticated workflow and should keep dashboard shell.
+  if (path === '/profile/upload-cv') {
+    return true;
+  }
+
+  // Keep public profile alias outside dashboard shell.
+  if (path.startsWith('/profile/')) {
+    return false;
+  }
+
+  if (DASHBOARD_PATH_PREFIXES.some(
     (prefix) => path === prefix || path.startsWith(`${prefix}/`),
-  ) || DASHBOARD_PATH_MATCHERS.some((segment) => path.includes(segment));
+  )) {
+    return true;
+  }
+
+  if (DASHBOARD_EXACT_PATHS.includes(path)) {
+    return true;
+  }
+
+  // Contract sub-routes are protected and should render with dashboard shell.
+  if (path.startsWith('/contracts/')) {
+    return true;
+  }
+
+  // Payment sub-routes are protected and should render with dashboard shell.
+  if (path.startsWith('/payment/')) {
+    return true;
+  }
+
+  return false;
 };
 
 /**
@@ -112,6 +138,27 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
     return () => window.removeEventListener('auth:tokenExpired', handler);
   }, []);
 
+  const sessionExpiredBanner = (
+    <Box
+      sx={{
+        mb: 2,
+        p: 2,
+        borderRadius: 1,
+        bgcolor: 'warning.light',
+        color: 'black',
+        border: '1px solid',
+        borderColor: 'warning.main',
+      }}
+    >
+      <Typography variant="body2" fontWeight="bold">
+        Session expired
+      </Typography>
+      <Typography variant="caption">
+        Please log in again to continue.
+      </Typography>
+    </Box>
+  );
+
   // Dashboard layout
   if (isDashboardPage) {
     // ✅ MOBILE-AUDIT FIX: Two-state layout — mobile (<md) and desktop (>=md)
@@ -153,6 +200,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
               WebkitOverflowScrolling: 'touch',
             }}
           >
+            {sessionExpired && sessionExpiredBanner}
             {content}
           </Box>
           <MobileBottomNav />
@@ -184,26 +232,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             pb: { md: 3 },
           }}
         >
-          {sessionExpired && (
-            <Box
-              sx={{
-                mb: 2,
-                p: 2,
-                borderRadius: 1,
-                bgcolor: 'warning.light',
-                color: 'black',
-                border: '1px solid',
-                borderColor: 'warning.main',
-              }}
-            >
-              <Typography variant="body2" fontWeight="bold">
-                Session expired
-              </Typography>
-              <Typography variant="caption">
-                Please log in again to continue.
-              </Typography>
-            </Box>
-          )}
+          {sessionExpired && sessionExpiredBanner}
           {content}
         </Box>
         <SmartNavigation />

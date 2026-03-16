@@ -119,7 +119,7 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
       { text: 'Post a Job', icon: <PostAddIcon />, path: '/hirer/jobs/post', tooltip: 'Create a new job posting' },
       { text: 'My Jobs', icon: <WorkIcon />, path: '/hirer/jobs', tooltip: 'Manage your job postings' },
       { text: 'Applications', icon: <AssignmentIcon />, path: '/hirer/applications', tooltip: 'Review worker applications' },
-      { text: 'Find Talent', icon: <PeopleIcon />, path: '/hirer/find-talent', tooltip: 'Search for skilled workers' },
+      { text: 'Find Talent', icon: <PeopleIcon />, path: '/hirer/find-talents', tooltip: 'Search for skilled workers' },
       { text: 'Tools', icon: <MiscellaneousServicesIcon />, path: '/hirer/tools', tooltip: 'Hirer tools and utilities' },
       { text: 'Support', icon: <SupportAgentIcon />, path: '/support', tooltip: 'Get help and support' },
     ]
@@ -448,3 +448,4 @@ const Sidebar = ({ variant = 'permanent', open = false, onClose, collapsed = fal
 };
 
 export default Sidebar;
+

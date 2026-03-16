@@ -1,10 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   BottomNavigation,
   BottomNavigationAction,
   Paper,
   Badge,
-  useTheme,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import {
@@ -12,8 +11,9 @@ import {
   WorkOutline as JobsIcon,
   ChatBubbleOutline as MessagesIcon,
   PersonOutline as ProfileIcon,
-  BusinessCenter as ManageIcon,
+  PostAdd as PostJobIcon,
   Search as SearchIcon,
+  AssignmentTurnedIn as ApplicationsIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -50,10 +50,10 @@ const StyledBottomNavigation = styled(BottomNavigation)(({ theme }) => ({
 const StyledBottomNavigationAction = styled(BottomNavigationAction)(
   ({ theme }) => ({
     color: theme.palette.mode === 'dark' ? '#888' : '#666',
-    minWidth: 64,
+    minWidth: 0,
     maxWidth: 120,
     minHeight: 48,
-    padding: '6px 12px 8px',
+    padding: '6px 6px 8px',
     transition: 'all 0.2s ease',
     '&.Mui-selected': {
       color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
@@ -67,7 +67,7 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
       },
     },
     '& .MuiBottomNavigationAction-label': {
-      fontSize: '0.7rem',
+      fontSize: '0.65rem',
       fontWeight: 500,
       marginTop: 2,
       opacity: 0.9,
@@ -89,7 +89,6 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
 const MobileBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const theme = useTheme();
   const path = location.pathname;
   const { unreadCount = 0 } = useNotifications();
   const { isKeyboardVisible } = useKeyboardVisible();
@@ -113,33 +112,51 @@ const MobileBottomNav = () => {
     if (path.includes('/dashboard') || path === '/' || path === '/home') {
       return 'home';
     }
-    // Jobs/Work management (hirer: my jobs, worker: search jobs)
-    if (
-      path.includes('/jobs') || 
-      path.includes('/find-work') ||
-      path.includes('/applications') ||
-      path.includes('/job-search')
-    ) {
-      return 'jobs';
+
+    // Role-specific tab matching
+    if (isHirer) {
+      if (path.startsWith('/hirer/jobs')) {
+        return 'postJob';
+      }
+      if (path.startsWith('/hirer/find')) {
+        return 'findTalent';
+      }
+      if (path.startsWith('/hirer/applications')) {
+        return 'applications';
+      }
     }
-    // Talent/Worker search (hirer specific)
-    if (
-      path.includes('/find-talent') || 
-      path.includes('/search') ||
-      path.includes('/workers')
-    ) {
-      return 'search';
+
+    if (isWorker) {
+      if (
+        path.startsWith('/worker/find-work') ||
+        path.startsWith('/worker/job-search') ||
+        path.startsWith('/jobs')
+      ) {
+        return 'findWork';
+      }
+      if (path.startsWith('/worker/applications')) {
+        return 'applications';
+      }
+      if (path.startsWith('/worker/profile') || path.startsWith('/settings')) {
+        return 'profile';
+      }
     }
+
     // Messages
     if (path.includes('/messages') || path.includes('/chat')) {
       return 'messages';
     }
-    // Profile
-    if (path.includes('/profile') || path.includes('/settings')) {
-      return 'profile';
+
+    // Keep no tab selected on unrelated pages (wallet/contracts/etc.)
+    return null;
+  }, [path, isHirer, isWorker]);
+
+  const getActionAriaLabel = useCallback((item) => {
+    if (item.value === 'messages' && item.badge) {
+      return `${item.label}, ${item.badge} unread messages`;
     }
-    return 'home';
-  }, [path]);
+    return item.label;
+  }, []);
 
   // Navigation items based on user role - simplified to 4 items max for clean UX
   const navigationItems = useMemo(() => {
@@ -152,10 +169,22 @@ const MobileBottomNav = () => {
           path: '/hirer/dashboard',
         },
         {
-          label: 'Jobs',
-          value: 'jobs',
-          icon: <ManageIcon />,
-          path: '/hirer/jobs',
+          label: 'Post Job',
+          value: 'postJob',
+          icon: <PostJobIcon />,
+          path: '/hirer/jobs/post',
+        },
+        {
+          label: 'Find Talent',
+          value: 'findTalent',
+          icon: <SearchIcon />,
+          path: '/hirer/find-talents',
+        },
+        {
+          label: 'Applications',
+          value: 'applications',
+          icon: <ApplicationsIcon />,
+          path: '/hirer/applications',
         },
         {
           label: 'Messages',
@@ -164,15 +193,9 @@ const MobileBottomNav = () => {
           path: '/messages',
           badge: unreadCount > 0 ? unreadCount : null,
         },
-        {
-          label: 'Settings',
-          value: 'profile',
-          icon: <ProfileIcon />,
-          path: '/settings',
-        },
       ];
     }
-    // Worker navigation - 4 items for clean mobile UX
+    // Worker navigation
     return [
       {
         label: 'Home',
@@ -181,10 +204,16 @@ const MobileBottomNav = () => {
         path: '/worker/dashboard',
       },
       {
-        label: 'Jobs',
-        value: 'jobs',
+        label: 'Find Work',
+        value: 'findWork',
         icon: <JobsIcon />,
         path: '/worker/find-work',
+      },
+      {
+        label: 'Applications',
+        value: 'applications',
+        icon: <ApplicationsIcon />,
+        path: '/worker/applications',
       },
       {
         label: 'Messages',
@@ -194,10 +223,10 @@ const MobileBottomNav = () => {
         badge: unreadCount > 0 ? unreadCount : null,
       },
       {
-        label: 'Settings',
+        label: 'Profile',
         value: 'profile',
         icon: <ProfileIcon />,
-        path: '/settings',
+        path: '/worker/profile',
       },
     ];
   }, [isHirer, unreadCount]);
@@ -224,11 +253,13 @@ const MobileBottomNav = () => {
             key={item.value}
             label={item.label}
             value={item.value}
+            aria-label={getActionAriaLabel(item)}
             icon={
               item.badge ? (
                 <Badge 
                   badgeContent={item.badge} 
                   color="error"
+                  aria-label={`${item.badge} unread messages`}
                   sx={{ 
                     '& .MuiBadge-badge': { 
                       fontSize: '0.65rem',

@@ -1490,7 +1490,7 @@ function EmptyAppsPanel({ tab, hasAnyApps, navigate }) {
           <Button
             variant="text"
             size="small"
-            onClick={() => navigate('/hirer/find-talent')}
+            onClick={() => navigate('/hirer/find-talents')}
             sx={{ minHeight: 36, textTransform: 'none' }}
           >
             Or browse available talent
@@ -1502,3 +1502,4 @@ function EmptyAppsPanel({ tab, hasAnyApps, navigate }) {
 }
 
 export default ApplicationManagementPage;
+

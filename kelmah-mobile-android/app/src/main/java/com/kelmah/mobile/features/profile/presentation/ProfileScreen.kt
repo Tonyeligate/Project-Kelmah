@@ -474,7 +474,7 @@ private fun WorkerProfileSignalsContent(
                 ),
                 shape = RoundedCornerShape(24.dp)
             ) {
-                Text("HIRE NOW", fontWeight = FontWeight.Bold)
+                Text("FIND JOBS", fontWeight = FontWeight.Bold)
             }
             OutlinedButton(
                 onClick = { onMessageWorker?.invoke() },
@@ -486,7 +486,7 @@ private fun WorkerProfileSignalsContent(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(24.dp)
             ) {
-                Text("MESSAGE", fontWeight = FontWeight.Bold)
+                Text("OPEN MESSAGES", fontWeight = FontWeight.Bold)
             }
         }
 

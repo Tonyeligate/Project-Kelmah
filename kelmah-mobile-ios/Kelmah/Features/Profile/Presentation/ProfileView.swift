@@ -499,7 +499,7 @@ private struct WorkerProfileSignalsView: View {
 
             VStack(spacing: 10) {
                 Button(action: onHireNow) {
-                    Text("HIRE NOW")
+                    Text("FIND JOBS")
                         .font(.caption.bold())
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
@@ -509,7 +509,7 @@ private struct WorkerProfileSignalsView: View {
                 .clipShape(Capsule())
 
                 Button(action: onMessageWorker) {
-                    Text("MESSAGE")
+                    Text("OPEN MESSAGES")
                         .font(.caption.bold())
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)

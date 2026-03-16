@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -49,7 +50,7 @@ fun KelmahApp(
     pendingDeepLinkUrl: String?,
     onDeepLinkConsumed: (String) -> Unit,
 ) {
-    KelmahTheme {
+    KelmahTheme(darkTheme = isSystemInDarkTheme()) {
         val sessionState by sessionCoordinator.sessionState.collectAsStateWithLifecycle()
         val appScope = rememberCoroutineScope()
         val jobsViewModel: JobsViewModel = hiltViewModel()

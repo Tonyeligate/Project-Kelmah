@@ -434,11 +434,11 @@ const AuthWrapper = ({ children }) => {
                         }}
                       />
 
-                      {cartoonScenes.map(({ image }, idx) => (
+                      {cartoonScenes.map(({ image, description }, idx) => (
                         <motion.img
                           key={image}
                           src={image}
-                          alt="Professional worker"
+                          alt={description || `Scene ${idx + 1}`}
                           initial={{ opacity: 0 }}
                           animate={{ opacity: currentImage === idx ? 1 : 0 }}
                           transition={{ duration: 1 }}

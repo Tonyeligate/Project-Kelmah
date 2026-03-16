@@ -10,9 +10,10 @@ export function getNavLinks(isAuthenticated, user) {
       label: 'Find Talents',
       to:
         isAuthenticated && hasRole(user, 'hirer')
-          ? '/hirer/find-talent'
+          ? '/hirer/find-talents'
           : '/find-talents',
     },
     { label: 'Pricing', to: '/pricing' },
   ];
 }
+

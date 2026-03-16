@@ -1,0 +1,11 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kelmah icon">
+  <defs>
+    <linearGradient id="kelmahBg" x1="64" y1="64" x2="448" y2="448" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFD700"/>
+      <stop offset="1" stop-color="#B8860B"/>
+    </linearGradient>
+  </defs>
+  <rect x="32" y="32" width="448" height="448" rx="112" fill="#0E0F14"/>
+  <rect x="56" y="56" width="400" height="400" rx="96" fill="url(#kelmahBg)"/>
+  <path d="M184 144H232V244L322 144H384L288 248L392 368H328L256 282L232 308V368H184V144Z" fill="#0B0B0D"/>
+</svg>

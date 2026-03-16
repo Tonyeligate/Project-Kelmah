@@ -367,7 +367,7 @@ const JobDetailsPage = () => {
     }
 
     if (isHirerUser) {
-      navigate('/hirer/find-talent');
+      navigate('/hirer/find-talents');
       return;
     }
 
@@ -495,9 +495,19 @@ const JobDetailsPage = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
+          flexDirection: 'column',
+          gap: 2,
         }}
       >
-        <Alert severity="error">{import.meta.env.DEV ? error : 'Failed to load job details. Please try again.'}</Alert>
+        <Alert severity="error" role="alert">
+          {import.meta.env.DEV ? error : 'Failed to load job details. Please try again.'}
+        </Alert>
+        <Button
+          variant="outlined"
+          onClick={() => dispatch(fetchJobById(id))}
+        >
+          Try Again
+        </Button>
       </Box>
     );
   }
@@ -910,7 +920,10 @@ const JobDetailsPage = () => {
                             width: '100%', height: index === 0 ? 220 : 180, objectFit: 'cover',
                             borderRadius: 2, cursor: 'pointer',
                             transition: 'transform 0.3s ease',
-                            '&:hover': { transform: 'scale(1.03)' },
+                            '&:hover': {
+                              transform: 'scale(1.03)',
+                              '@media (hover: none)': { transform: 'none' },
+                            },
                           }}
                         />
                       </Grid>
@@ -1431,3 +1444,4 @@ const JobDetailsPage = () => {
 };
 
 export default JobDetailsPage;
+

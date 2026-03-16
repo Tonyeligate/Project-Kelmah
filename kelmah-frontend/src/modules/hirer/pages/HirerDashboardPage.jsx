@@ -36,7 +36,6 @@ import {
   People as PeopleIcon,
   Message as MessageIcon,
   PostAdd as PostAddIcon,
-  HelpOutline as HelpOutlineIcon,
   Assignment as ProposalIcon,
 } from '@mui/icons-material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
@@ -67,6 +66,7 @@ import {
 import RecentActivityFeed from '../components/RecentActivityFeed';
 import dashboardService from '../../dashboard/services/dashboardService';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
+import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 
 /* ---------- Extracted sub-component (stable reference) ---------- */
 const LoadingOverviewSkeleton = () => (
@@ -620,7 +620,7 @@ const HirerDashboardPage = () => {
           <Grid item xs={6} sm={6} md={3}>
             <ButtonBase
               onClick={() => navigate('/hirer/payments')}
-              aria-label={`Needs Attention: ${summaryData.pendingPayments}. Click to view payments.`}
+              aria-label={`Total Spent: ${summaryData.totalSpent}. Click to view payments.`}
               sx={{
                 display: 'block',
                 width: '100%',
@@ -641,7 +641,7 @@ const HirerDashboardPage = () => {
                 backgroundColor: 'background.paper',
                 color: 'text.primary',
                 border: '1px solid',
-                borderColor: alpha('#E74C3C', 0.45),
+                borderColor: alpha(theme.palette.info.main, 0.45),
                 height: { xs: 72, sm: 130 },
                 display: 'flex',
                 flexDirection: 'column',
@@ -651,7 +651,7 @@ const HirerDashboardPage = () => {
                   transition: 'transform 0.2s, box-shadow 0.2s',
                   '&:hover': {
                     transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 25px rgba(231, 76, 60, 0.3)',
+                    boxShadow: `0 8px 25px ${alpha(theme.palette.info.main, 0.3)}`,
                   },
                 },
               }}
@@ -668,7 +668,7 @@ const HirerDashboardPage = () => {
                 </Typography>
               </Box>
               <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
-                <HelpOutlineIcon sx={{ fontSize: { xs: 28, sm: 40 }, color: alpha('#E74C3C', 0.28) }} />
+                <PaymentIcon sx={{ fontSize: { xs: 28, sm: 40 }, color: alpha(theme.palette.info.main, 0.28) }} />
               </Box>
             </Paper>
             </ButtonBase>
@@ -975,7 +975,10 @@ const HirerDashboardPage = () => {
           ariaLabel="Quick Actions"
           sx={{
             position: 'fixed',
-            bottom: { xs: 80, md: 32 },
+            bottom: {
+              xs: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 12px)`,
+              md: 32,
+            },
             right: { xs: 16, md: 32 },
             zIndex: 1100,
           }}
@@ -989,7 +992,7 @@ const HirerDashboardPage = () => {
           <SpeedDialAction
             icon={<PeopleIcon />}
             tooltipTitle="Find Talent"
-            onClick={() => navigate('/hirer/find-talent')}
+            onClick={() => navigate('/hirer/find-talents')}
           />
           <SpeedDialAction
             icon={<MessageIcon />}
@@ -1009,3 +1012,4 @@ const HirerDashboardPage = () => {
 };
 
 export default HirerDashboardPage;
+

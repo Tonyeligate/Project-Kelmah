@@ -14,7 +14,6 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowForward as ArrowForwardIcon,
@@ -45,25 +44,6 @@ import carpentryImg from '../assets/images/carpentry.jpg';
 import constructionImg from '../assets/images/construction.jpg';
 import electricalImg from '../assets/images/electrical.jpg';
 import homeService from '../modules/home/services/homeService';
-
-/* ─── animation variants ─────────────────────────────────
- * heroAnim  → fires immediately on mount (animate, not whileInView)
- * scrollIn  → fires when scrolled into view (below-fold sections)
- * Both start visible (opacity:1) so content is NEVER invisible
- * even if IntersectionObserver doesn't fire on mobile.
- * ──────────────────────────────────────────────────────── */
-const heroAnim = {
-  initial: { opacity: 0, y: 24 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, ease: 'easeOut' },
-};
-
-const scrollIn = {
-  initial: { opacity: 0.15, y: 18 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.05 },
-  transition: { duration: 0.45, ease: 'easeOut' },
-};
 
 /* ─── Category data ─── */
 const TRADE_CATEGORIES = [
@@ -210,7 +190,7 @@ const HomeLanding = () => {
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, py: { xs: 2.5, md: 7 } }}>
           <Grid container spacing={{ xs: 3, md: 4 }} alignItems="center">
             <Grid item xs={12} md={7}>
-              <motion.div {...heroAnim}>
+              <Box>
                 <Chip
                   label="Ghana's #1 trades marketplace"
                   size="small"
@@ -356,12 +336,12 @@ const HomeLanding = () => {
                     </Stack>
                   ))}
                 </Stack>
-              </motion.div>
+              </Box>
             </Grid>
 
             {/* ── right card — what Kelmah does ── */}
             <Grid item xs={12} md={5}>
-              <motion.div {...heroAnim} transition={{ duration: 0.6, delay: 0.15 }}>
+              <Box>
                 <Card
                   role="region"
                   aria-label="Kelmah key benefits"
@@ -395,7 +375,7 @@ const HomeLanding = () => {
                     ))}
                   </Stack>
                 </Card>
-              </motion.div>
+              </Box>
             </Grid>
           </Grid>
         </Container>
@@ -404,7 +384,7 @@ const HomeLanding = () => {
       {/* ═══ QUICK CATEGORY ICONS — large icon tiles for easy browsing (accessibility-first) ═══ */}
       <Box component="section" sx={{ py: { xs: 3.5, md: 6 } }}>
         <Container maxWidth="lg">
-          <motion.div {...scrollIn}>
+          <Box>
             <Typography
               variant="h4"
               component="h2"
@@ -415,12 +395,12 @@ const HomeLanding = () => {
             <Typography variant="body1" color="text.secondary" sx={{ mb: 4, textAlign: 'center', maxWidth: 420, mx: 'auto' }}>
               Tap a trade to find workers near you.
             </Typography>
-          </motion.div>
+          </Box>
 
           <Grid container spacing={2} justifyContent="center">
             {TRADE_CATEGORIES.map((cat, i) => (
-              <Grid item xs={4} sm={4} md={2} key={cat.label}>
-                <motion.div {...scrollIn} transition={{ duration: 0.35, delay: i * 0.05 }}>
+              <Grid item xs={6} sm={4} md={2} key={cat.label}>
+                <Box>
                   <Card
                     component="button"
                     type="button"
@@ -478,7 +458,7 @@ const HomeLanding = () => {
                       {formatTradeCount(cat.query)}
                     </Typography>
                   </Card>
-                </motion.div>
+                </Box>
               </Grid>
             ))}
           </Grid>
@@ -488,7 +468,7 @@ const HomeLanding = () => {
       {/* ═══ CATEGORY PHOTO SHOWCASE ═══ */}
       <Box component="section" sx={{ py: { xs: 3, md: 6 }, bgcolor: altBg }}>
         <Container maxWidth="lg">
-          <motion.div {...scrollIn}>
+          <Box>
             <Typography
               variant="h4"
               component="h2"
@@ -499,7 +479,7 @@ const HomeLanding = () => {
             <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 480 }}>
               Browse professionals across Ghana's most in-demand skill categories.
             </Typography>
-          </motion.div>
+          </Box>
 
           <Grid container spacing={2.5} alignItems="stretch">
             {[
@@ -508,7 +488,7 @@ const HomeLanding = () => {
               { title: 'Electrical Installs & Repair', img: electricalImg, tag: '500+ electricians', query: 'electrical' },
             ].map((item, i) => (
               <Grid item xs={12} sm={6} md={4} key={item.title}>
-                <motion.div {...scrollIn} transition={{ duration: 0.45, delay: i * 0.08 }}>
+                <Box>
                   <Card
                     component="button"
                     type="button"
@@ -556,7 +536,7 @@ const HomeLanding = () => {
                       </Stack>
                     </Box>
                   </Card>
-                </motion.div>
+                </Box>
               </Grid>
             ))}
           </Grid>
@@ -601,7 +581,7 @@ const HomeLanding = () => {
       {/* ═══ FOR WORKERS / FOR HIRERS — dual value cards ═══ */}
       <Box component="section" sx={{ py: { xs: 3.5, md: 7 } }}>
         <Container maxWidth="lg">
-          <motion.div {...scrollIn}>
+          <Box>
             <Typography
               variant="h4"
               component="h2"
@@ -616,12 +596,12 @@ const HomeLanding = () => {
             >
               Whether you&apos;re looking for work or looking to hire — Kelmah has you covered.
             </Typography>
-          </motion.div>
+          </Box>
 
           <Grid container spacing={3}>
             {/* For Workers */}
             <Grid item xs={12} md={6}>
-              <motion.div {...scrollIn} transition={{ duration: 0.45, delay: 0 }}>
+              <Box>
                 <Card
                   sx={{
                     p: { xs: 3, md: 4 },
@@ -678,12 +658,12 @@ const HomeLanding = () => {
                     Start getting jobs
                   </Button>
                 </Card>
-              </motion.div>
+              </Box>
             </Grid>
 
             {/* For Hirers */}
             <Grid item xs={12} md={6}>
-              <motion.div {...scrollIn} transition={{ duration: 0.45, delay: 0.1 }}>
+              <Box>
                 <Card
                   sx={{
                     p: { xs: 3, md: 4 },
@@ -740,7 +720,7 @@ const HomeLanding = () => {
                     Find a worker now
                   </Button>
                 </Card>
-              </motion.div>
+              </Box>
             </Grid>
           </Grid>
         </Container>
@@ -749,7 +729,7 @@ const HomeLanding = () => {
       {/* ═══ HOW IT WORKS ═══ */}
       <Box component="section" sx={{ py: { xs: 3.5, md: 7 }, bgcolor: altBg }}>
         <Container maxWidth="lg">
-          <motion.div {...scrollIn}>
+          <Box>
             <Typography
               variant="h4"
               component="h2"
@@ -760,7 +740,7 @@ const HomeLanding = () => {
             <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', mb: 5, maxWidth: 420, mx: 'auto' }}>
               Three simple steps from posting to paying.
             </Typography>
-          </motion.div>
+          </Box>
 
           <Grid container spacing={3}>
             {[
@@ -769,7 +749,7 @@ const HomeLanding = () => {
               { num: '3', icon: <PaymentsIcon sx={{ fontSize: 28 }} />, title: 'Pay securely', text: 'Release payment only when the work is done.' },
             ].map((item, i) => (
               <Grid item xs={12} md={4} key={item.title}>
-                <motion.div {...scrollIn} transition={{ duration: 0.45, delay: i * 0.08 }}>
+                <Box>
                   <Card
                     sx={{
                       p: { xs: 3, md: 4 },
@@ -820,7 +800,7 @@ const HomeLanding = () => {
                       {item.text}
                     </Typography>
                   </Card>
-                </motion.div>
+                </Box>
               </Grid>
             ))}
           </Grid>
@@ -845,7 +825,7 @@ const HomeLanding = () => {
               { key: 'support', val: '24/7', label: 'Support available', icon: <SupportIcon /> },
             ].map((stat, i) => (
               <Grid item xs={6} sm={3} key={stat.key}>
-                <motion.div {...scrollIn} transition={{ duration: 0.35, delay: i * 0.06 }}>
+                <Box>
                   <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                     {React.cloneElement(stat.icon, { sx: { color: '#FFD700', fontSize: 32 } })}
                     <Typography variant="h4" fontWeight={800} sx={{ color: '#FFD700' }}>
@@ -855,7 +835,7 @@ const HomeLanding = () => {
                       {stat.label}
                     </Typography>
                   </Box>
-                </motion.div>
+                </Box>
               </Grid>
             ))}
           </Grid>
@@ -865,7 +845,7 @@ const HomeLanding = () => {
       {/* ═══ TESTIMONIALS ═══ */}
       <Box component="section" sx={{ py: { xs: 3.5, md: 7 } }}>
         <Container maxWidth="lg">
-          <motion.div {...scrollIn}>
+          <Box>
             <Typography
               variant="h4"
               component="h2"
@@ -880,12 +860,12 @@ const HomeLanding = () => {
             >
               Real stories from workers and hirers across Ghana.
             </Typography>
-          </motion.div>
+          </Box>
 
           <Grid container spacing={3}>
             {TESTIMONIALS.map((t, i) => (
               <Grid item xs={12} md={4} key={t.name}>
-                <motion.div {...scrollIn} transition={{ duration: 0.45, delay: i * 0.08 }}>
+                <Box>
                   <Card
                     sx={{
                       p: 3,
@@ -930,7 +910,7 @@ const HomeLanding = () => {
                       <Rating value={t.rating} size="small" readOnly sx={{ '& .MuiRating-iconFilled': { color: '#FFD700' } }} />
                     </Stack>
                   </Card>
-                </motion.div>
+                </Box>
               </Grid>
             ))}
           </Grid>
@@ -946,7 +926,7 @@ const HomeLanding = () => {
         }}
       >
         <Container maxWidth="md">
-          <motion.div {...scrollIn}>
+          <Box>
             <Card
               sx={{
                 p: { xs: 3, md: 5 },
@@ -1029,7 +1009,7 @@ const HomeLanding = () => {
                 </Button>
               </Stack>
             </Card>
-          </motion.div>
+          </Box>
         </Container>
       </Box>
 
@@ -1053,7 +1033,7 @@ const HomeLanding = () => {
         }}
       >
         <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
-          <motion.div {...scrollIn}>
+          <Box>
             <Typography
               variant="h4"
               component="h2"
@@ -1108,7 +1088,7 @@ const HomeLanding = () => {
             <Typography variant="body2" sx={{ opacity: 0.55, mt: 2, fontSize: '0.8rem' }}>
               No credit card required &middot; Free for workers
             </Typography>
-          </motion.div>
+          </Box>
         </Container>
       </Box>
 
@@ -1119,3 +1099,4 @@ const HomeLanding = () => {
 };
 
 export default HomeLanding;
+

@@ -6,7 +6,7 @@ const WorkerSearchPage = () => {
   return (
     <WorkerDirectoryExperience
       variant="hirer"
-      basePath="/hirer/find-talent"
+      basePath="/hirer/find-talents"
       seoTitle="Find Talent | Kelmah"
       seoDescription="Search, compare, and shortlist skilled workers for your next job on Kelmah."
       showHero={false}
@@ -15,3 +15,4 @@ const WorkerSearchPage = () => {
 };
 
 export default WorkerSearchPage;
+

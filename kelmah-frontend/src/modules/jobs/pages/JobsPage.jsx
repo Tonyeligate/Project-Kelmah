@@ -594,7 +594,7 @@ const JobsPage = () => {
     if (!authState.isAuthenticated) {
       navigate('/login', {
         state: {
-          from: isHirerUser ? '/hirer/find-talent' : `/jobs/${jobId}/apply`,
+          from: isHirerUser ? '/hirer/find-talents' : `/jobs/${jobId}/apply`,
           message: isHirerUser
             ? 'Sign in to find talent'
             : 'Please sign in to apply for this job',
@@ -604,7 +604,7 @@ const JobsPage = () => {
     }
 
     if (isHirerUser) {
-      navigate('/hirer/find-talent');
+      navigate('/hirer/find-talents');
       return;
     }
 
@@ -2753,7 +2753,7 @@ const JobsPage = () => {
                     if (!authState.isAuthenticated) {
                       navigate('/login', {
                         state: {
-                          from: isHirerUser ? '/hirer/find-talent' : '/profile/upload-cv',
+                          from: isHirerUser ? '/hirer/find-talents' : '/profile/upload-cv',
                           message: isHirerUser
                             ? 'Sign in to find talent'
                             : 'Sign in to upload your CV',
@@ -2761,7 +2761,7 @@ const JobsPage = () => {
                       });
                       return;
                     }
-                    navigate(isHirerUser ? '/hirer/find-talent' : '/profile/upload-cv');
+                    navigate(isHirerUser ? '/hirer/find-talents' : '/profile/upload-cv');
                   }}
                   sx={{
                     borderColor: 'var(--k-gold)',
@@ -2798,3 +2798,4 @@ const JobsPage = () => {
 };
 
 export default JobsPage;
+

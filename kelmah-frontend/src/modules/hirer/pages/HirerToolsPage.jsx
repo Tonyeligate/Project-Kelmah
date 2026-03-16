@@ -55,7 +55,7 @@ const HirerToolsPage = () => {
               <Button
                 variant="outlined"
                 startIcon={<SearchIcon />}
-                onClick={() => navigate('/hirer/find-talent')}
+                onClick={() => navigate('/hirer/find-talents')}
                 size="large"
                 sx={{ minHeight: 48 }}
               >
@@ -76,3 +76,4 @@ const HirerToolsPage = () => {
 };
 
 export default HirerToolsPage;
+

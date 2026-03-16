@@ -1,0 +1,264 @@
+{
+  "baseUrl": "http://127.0.0.1:4173",
+  "generatedAt": "2026-03-16T21:09:52.777Z",
+  "results": [
+    {
+      "type": "route-capture",
+      "width": 320,
+      "routeId": "support",
+      "requestedPath": "/support",
+      "finalUrl": "http://127.0.0.1:4173/support",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w320/support.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 320,
+      "routeId": "support-help-center",
+      "requestedPath": "/support/help-center",
+      "finalUrl": "http://127.0.0.1:4173/support/help-center",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w320/support-help-center.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 320,
+      "routeId": "help-alias",
+      "requestedPath": "/help",
+      "finalUrl": "http://127.0.0.1:4173/help",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w320/help-alias.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 320,
+      "routeId": "docs",
+      "requestedPath": "/docs",
+      "finalUrl": "http://127.0.0.1:4173/docs",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w320/docs.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 320,
+      "routeId": "community",
+      "requestedPath": "/community",
+      "finalUrl": "http://127.0.0.1:4173/community",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w320/community.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 320,
+      "routeId": "profile-alias-public",
+      "requestedPath": "/profile/000000000000000000000000",
+      "finalUrl": "http://127.0.0.1:4173/profile/000000000000000000000000",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w320/profile-alias-public.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 360,
+      "routeId": "support",
+      "requestedPath": "/support",
+      "finalUrl": "http://127.0.0.1:4173/support",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w360/support.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 360,
+      "routeId": "support-help-center",
+      "requestedPath": "/support/help-center",
+      "finalUrl": "http://127.0.0.1:4173/support/help-center",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w360/support-help-center.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 360,
+      "routeId": "help-alias",
+      "requestedPath": "/help",
+      "finalUrl": "http://127.0.0.1:4173/help",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w360/help-alias.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 360,
+      "routeId": "docs",
+      "requestedPath": "/docs",
+      "finalUrl": "http://127.0.0.1:4173/docs",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w360/docs.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 360,
+      "routeId": "community",
+      "requestedPath": "/community",
+      "finalUrl": "http://127.0.0.1:4173/community",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w360/community.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 360,
+      "routeId": "profile-alias-public",
+      "requestedPath": "/profile/000000000000000000000000",
+      "finalUrl": "http://127.0.0.1:4173/profile/000000000000000000000000",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w360/profile-alias-public.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 390,
+      "routeId": "support",
+      "requestedPath": "/support",
+      "finalUrl": "http://127.0.0.1:4173/support",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w390/support.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 390,
+      "routeId": "support-help-center",
+      "requestedPath": "/support/help-center",
+      "finalUrl": "http://127.0.0.1:4173/support/help-center",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w390/support-help-center.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 390,
+      "routeId": "help-alias",
+      "requestedPath": "/help",
+      "finalUrl": "http://127.0.0.1:4173/help",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w390/help-alias.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 390,
+      "routeId": "docs",
+      "requestedPath": "/docs",
+      "finalUrl": "http://127.0.0.1:4173/docs",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w390/docs.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 390,
+      "routeId": "community",
+      "requestedPath": "/community",
+      "finalUrl": "http://127.0.0.1:4173/community",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w390/community.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 390,
+      "routeId": "profile-alias-public",
+      "requestedPath": "/profile/000000000000000000000000",
+      "finalUrl": "http://127.0.0.1:4173/profile/000000000000000000000000",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w390/profile-alias-public.png",
+      "error": null
+    },
+    {
+      "type": "interaction-check",
+      "width": 390,
+      "check": "support-contact-cta",
+      "finalUrl": "http://127.0.0.1:4173/login",
+      "hasQueryTab": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w390/support-contact-cta.png",
+      "error": null
+    },
+    {
+      "type": "interaction-check",
+      "width": 390,
+      "check": "support-docs-cta",
+      "finalUrl": "http://127.0.0.1:4173/docs",
+      "hasQueryCategory": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w390/support-docs-cta.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 768,
+      "routeId": "support",
+      "requestedPath": "/support",
+      "finalUrl": "http://127.0.0.1:4173/support",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w768/support.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 768,
+      "routeId": "support-help-center",
+      "requestedPath": "/support/help-center",
+      "finalUrl": "http://127.0.0.1:4173/support/help-center",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w768/support-help-center.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 768,
+      "routeId": "help-alias",
+      "requestedPath": "/help",
+      "finalUrl": "http://127.0.0.1:4173/help",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w768/help-alias.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 768,
+      "routeId": "docs",
+      "requestedPath": "/docs",
+      "finalUrl": "http://127.0.0.1:4173/docs",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w768/docs.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 768,
+      "routeId": "community",
+      "requestedPath": "/community",
+      "finalUrl": "http://127.0.0.1:4173/community",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w768/community.png",
+      "error": null
+    },
+    {
+      "type": "route-capture",
+      "width": 768,
+      "routeId": "profile-alias-public",
+      "requestedPath": "/profile/000000000000000000000000",
+      "finalUrl": "http://127.0.0.1:4173/profile/000000000000000000000000",
+      "bottomNavPresent": false,
+      "screenshotPath": "qa-artifacts/screenshots/route-mobile-audit-mar16/w768/profile-alias-public.png",
+      "error": null
+    }
+  ]
+}

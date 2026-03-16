@@ -66,7 +66,7 @@ const quickActions = (navigate, mode) =>
     title: 'Open Support Ticket',
     description: 'Submit detailed requests and track responses in one place.',
     icon: SupportAgentIcon,
-    onClick: () => navigate('/messages?tab=support'),
+    onClick: () => navigate('/messages'),
     chip: 'SLA 8h',
   },
   {
@@ -74,7 +74,7 @@ const quickActions = (navigate, mode) =>
     title: 'Live Knowledge Base',
     description: 'Browse deployment, payments, and verification guides.',
     icon: LiveHelpIcon,
-    onClick: () => navigate('/docs?category=support'),
+    onClick: () => navigate('/docs'),
     chip: 'Updated hourly',
   },
   {
@@ -143,7 +143,7 @@ const HelpCenterPage = () => {
         primaryLabel: 'Open Help Center',
         primaryAction: () => navigate('/support/help-center'),
         secondaryLabel: 'View Documentation',
-        secondaryAction: () => navigate('/docs?category=support'),
+        secondaryAction: () => navigate('/docs'),
       };
     }
 
@@ -152,9 +152,9 @@ const HelpCenterPage = () => {
       subtitle:
         'Reach the Kelmah support pod, open priority tickets, and review live service status without leaving the marketplace.',
       primaryLabel: 'Contact Support',
-      primaryAction: () => navigate('/messages?tab=support'),
+      primaryAction: () => navigate('/messages'),
       secondaryLabel: 'View Documentation',
-      secondaryAction: () => navigate('/docs?category=support'),
+      secondaryAction: () => navigate('/docs'),
     };
   }, [navigate, supportMode]);
 

@@ -163,6 +163,7 @@ const SettingsPage = lazy(
 const HelpCenterPage = lazy(
   () => import('../modules/support/pages/HelpCenterPage'),
 );
+const InfoPage = lazy(() => import('../modules/support/pages/InfoPage'));
 
 // Jobs
 const SavedJobs = lazy(
@@ -381,6 +382,16 @@ const routes = [
         path: 'find-talents',
         element: <FindWorkersPage />,
       },
+      // Backward-compatible alias
+      {
+        path: 'find-talent',
+        element: <Navigate to="/find-talents" replace />,
+      },
+      // Legacy jobs discovery alias from older recommendation CTAs
+      {
+        path: 'search/jobs',
+        element: <Navigate to="/jobs" replace />,
+      },
       // Alias: /search → same SearchPage (HomeLanding CTAs navigate here)
       {
         path: 'search',
@@ -422,6 +433,10 @@ const routes = [
       {
         path: 'hirer',
         children: [
+          {
+            index: true,
+            element: <Navigate to="dashboard" replace />,
+          },
           {
             path: 'dashboard',
             element: (
@@ -480,12 +495,16 @@ const routes = [
             ),
           },
           {
-            path: 'find-talent',
+            path: 'find-talents',
             element: (
               <ProtectedRoute roles={['hirer', 'admin']}>
                 <WorkerSearchPage />
               </ProtectedRoute>
             ),
+          },
+          {
+            path: 'find-talent',
+            element: <Navigate to="/hirer/find-talents" replace />,
           },
           {
             path: 'profile',
@@ -571,6 +590,10 @@ const routes = [
       {
         path: 'worker',
         children: [
+          {
+            index: true,
+            element: <Navigate to="dashboard" replace />,
+          },
           {
             path: 'dashboard',
             element: (
@@ -933,19 +956,19 @@ const routes = [
       },
       {
         path: 'about',
-        element: <HelpCenterPage />,
+        element: <InfoPage variant="about" />,
       },
       {
         path: 'contact',
-        element: <HelpCenterPage />,
+        element: <InfoPage variant="contact" />,
       },
       {
         path: 'privacy',
-        element: <HelpCenterPage />,
+        element: <InfoPage variant="privacy" />,
       },
       {
         path: 'terms',
-        element: <HelpCenterPage />,
+        element: <InfoPage variant="terms" />,
       },
       {
         path: 'pricing',
@@ -962,7 +985,7 @@ const routes = [
             <RoleAliasRedirect
               workerPath="/worker/profile"
               hirerPath="/hirer/profile"
-              adminPath="/admin/skills-management"
+              adminPath="/settings"
             />
           </ProtectedRoute>
         ),
@@ -1210,3 +1233,4 @@ export const AppRoutes = () => {
   const element = useRoutes(routes);
   return <Suspense fallback={<LoadingScreen />}>{element}</Suspense>;
 };
+

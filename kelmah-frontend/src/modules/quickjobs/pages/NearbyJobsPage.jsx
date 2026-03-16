@@ -55,6 +55,7 @@ import {
   calculateFees
 } from '../services/quickJobService';
 import { Helmet } from 'react-helmet-async';
+import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 
 const NearbyJobsPage = () => {
   const theme = useTheme();
@@ -450,7 +451,11 @@ const NearbyJobsPage = () => {
       {location && (
         <Fab
           color="primary"
-          sx={{ position: 'fixed', bottom: 80, right: 16 }}
+          sx={{
+            position: 'fixed',
+            bottom: `calc(${BOTTOM_NAV_HEIGHT + 16}px + env(safe-area-inset-bottom, 0px))`,
+            right: 16,
+          }}
           onClick={() => fetchJobs()}
           disabled={loading}
         >

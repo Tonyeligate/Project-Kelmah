@@ -96,11 +96,7 @@ const Login = () => {
       setApiError('Cannot connect to the server');
     });
 
-    // Hide welcome message after animation
-    const timer = setTimeout(() => {
-      setShowWelcomeMessage(false);
-    }, 3000);
-    return () => clearTimeout(timer);
+    // Keep welcome message visible permanently (no auto-hide per WCAG 2.2.1)
   }, []);
 
   const navigate = useNavigate();
@@ -410,6 +406,7 @@ const Login = () => {
                   {errorMessages.map((message) => (
                     <Alert
                       key={message}
+                      role="alert"
                       severity="error"
                       sx={{
                         borderRadius: 1.5,
@@ -490,7 +487,7 @@ const Login = () => {
                     InputLabelProps={{
                       sx: {
                         color: panelSoft,
-                        fontWeight: 700,
+                        fontWeight: 600,
                         fontSize: { xs: '0.9rem', sm: '0.9rem' },
                         '&.Mui-focused': {
                           color: accentColor,
@@ -588,7 +585,7 @@ const Login = () => {
                     InputLabelProps={{
                       sx: {
                         color: panelSoft,
-                        fontWeight: 700,
+                        fontWeight: 600,
                         fontSize: { xs: '0.9rem', sm: '0.9rem' },
                         '&.Mui-focused': {
                           color: accentColor,
@@ -681,7 +678,7 @@ const Login = () => {
                       variant="contained"
                       disabled={submitting || authLoading}
                       sx={{
-                        fontWeight: 700,
+                        fontWeight: 600,
                         fontSize: { xs: '1rem', sm: '1.1rem' },
                         py: { xs: 1.8, sm: 1.5 },
                         minHeight: { xs: '56px', sm: '48px' },

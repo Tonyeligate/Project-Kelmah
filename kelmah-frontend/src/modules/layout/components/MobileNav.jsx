@@ -23,6 +23,7 @@ import PropTypes from 'prop-types';
 import {
   Close as CloseIcon,
   Home as HomeIcon,
+  SupportAgent as SupportIcon,
   Work as WorkIcon,
   Search as SearchIcon,
   Message as MessageIcon,
@@ -240,7 +241,7 @@ const MobileNav = ({ open, onClose }) => {
         baseItems.push(
           { label: 'My Job Posts', icon: <AssignmentIcon />, path: '/hirer/jobs' },
           { label: 'Applications', icon: <AssignmentIcon />, path: '/hirer/applications' },
-          { label: 'Find Talent', icon: <SearchIcon />, path: '/hirer/find-talent' },
+          { label: 'Find Talent', icon: <SearchIcon />, path: '/hirer/find-talents' },
           { label: 'Profile', icon: <PersonIcon />, path: '/profile' },
         );
       } else if (isWorker) {
@@ -258,7 +259,7 @@ const MobileNav = ({ open, onClose }) => {
       }
 
       baseItems.push(
-        { label: 'Help & Support', icon: <HomeIcon />, path: '/support' },
+        { label: 'Help & Support', icon: <SupportIcon />, path: '/support' },
       );
     } else {
       // Guest navigation
@@ -413,7 +414,7 @@ const MobileNav = ({ open, onClose }) => {
                 onClick={() => handleNavigate('/support')}
               >
                 <ListItemIcon>
-                  <HomeIcon />
+                  <SupportIcon />
                 </ListItemIcon>
                 <ListItemText primary="Help & Support" />
               </StyledListItemButton>
@@ -491,3 +492,4 @@ MobileNav.propTypes = {
 };
 
 export default MobileNav;
+

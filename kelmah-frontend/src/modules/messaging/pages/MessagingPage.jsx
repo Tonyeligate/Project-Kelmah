@@ -132,8 +132,19 @@ const EnhancedMessagingPage = () => {
   });
 
   // Menu and dialog state
-  const [moreMenuAnchor, setMoreMenuAnchor] = useState(null); // Fix: Added missing menu anchor state
-  const [newChatDialog, setNewChatDialog] = useState(false); // Fix: Added missing dialog state
+  const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
+  const [newChatDialog, setNewChatDialog] = useState(false);
+
+  // Confirmation dialog state for destructive actions (archive, block, delete)
+  const [destructiveConfirm, setDestructiveConfirm] = useState({ open: false, action: null, label: '' });
+  const handleDestructiveAction = useCallback((action, label) => {
+    setMoreMenuAnchor(null);
+    setDestructiveConfirm({ open: true, action, label });
+  }, []);
+  const handleConfirmDestructive = useCallback(async () => {
+    if (destructiveConfirm.action) await destructiveConfirm.action();
+    setDestructiveConfirm({ open: false, action: null, label: '' });
+  }, [destructiveConfirm]);
 
   // Refs
   const messagesEndRef = useRef(null);
@@ -2345,6 +2356,39 @@ const EnhancedMessagingPage = () => {
             <Typography variant="caption" sx={{ ml: 1, color: 'text.disabled' }}>Soon</Typography>
           </MenuItem>
         </Menu>
+
+        {/* Confirmation dialog for destructive actions (delete, block, archive) */}
+        <Dialog
+          open={destructiveConfirm.open}
+          onClose={() => setDestructiveConfirm({ open: false, action: null, label: '' })}
+          maxWidth="xs"
+          fullWidth
+          aria-labelledby="destructive-confirm-title"
+        >
+          <DialogTitle id="destructive-confirm-title">
+            {destructiveConfirm.label}?
+          </DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" color="text.secondary">
+              This action cannot be undone.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setDestructiveConfirm({ open: false, action: null, label: '' })}
+              variant="outlined"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmDestructive}
+              variant="contained"
+              color="error"
+            >
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {/* New Chat Dialog */}
         <Dialog
