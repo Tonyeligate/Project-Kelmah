@@ -37,7 +37,7 @@ import {
 } from '@mui/icons-material';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
 import { useDispatch } from 'react-redux';
-import { logoutUser } from '../../auth/services/authSlice';
+import { logout, logoutUser } from '../../auth/services/authSlice';
 import { BRAND_COLORS } from '../../../theme';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 import { secureStorage } from '../../../utils/secureStorage';
@@ -196,18 +196,15 @@ const MobileNav = ({ open, onClose }) => {
 
   const handleLogout = () => {
     // Store the logout action; it runs after the drawer fully closes.
-    pendingActionRef.current = async () => {
+    pendingActionRef.current = () => {
       try {
         secureStorage.clear();
         sessionStorage.clear();
       } catch (_) { /* best-effort */ }
 
-      try {
-        await dispatch(logoutUser());
-      } catch (_) { /* thunk handles cleanup */ }
-      finally {
-        navigate('/', { replace: true });
-      }
+      dispatch(logout());
+      navigate('/', { replace: true });
+      Promise.resolve(dispatch(logoutUser())).catch(() => {});
     };
     requestClose();
   };

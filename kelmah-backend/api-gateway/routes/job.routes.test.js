@@ -108,4 +108,29 @@ describe('job gateway routes', () => {
       }),
     );
   });
+
+  test('forwards applications received summary endpoint and keeps query string', async () => {
+    axios.mockResolvedValue({
+      status: 200,
+      data: {
+        success: true,
+        data: {
+          summary: {
+            totalApplications: 0,
+          },
+        },
+      },
+    });
+
+    const response = await request(app)
+      .get('/api/jobs/applications/received-summary?status=pending&page=2&limit=15');
+
+    expect(response.status).toBe(200);
+    expect(axios).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'GET',
+        url: 'http://job-service.test/api/jobs/applications/received-summary?status=pending&page=2&limit=15',
+      }),
+    );
+  });
 });

@@ -68,6 +68,11 @@ jest.mock('../../modules/worker/pages/WorkerDashboardPage', () => ({
   default: () => <div>WORKER_DASHBOARD_PAGE</div>,
 }));
 
+jest.mock('../../modules/messaging/pages/MessagingPage', () => ({
+  __esModule: true,
+  default: () => <div>MESSAGES_PAGE</div>,
+}));
+
 jest.mock('../../modules/hirer/pages/HirerProfilePage', () => ({
   __esModule: true,
   default: () => <div>HIRER_PROFILE_PAGE</div>,
@@ -163,6 +168,16 @@ describe('routed path smoke suite', () => {
   test('legacy route redirects to jobs page: /search/jobs', async () => {
     renderAtPath('/search/jobs');
     expect(await screen.findByText('JOBS_PAGE')).toBeInTheDocument();
+  });
+
+  test('legacy chat alias resolves to messages page: /chat', async () => {
+    renderAtPath('/chat', 'worker');
+    expect(await screen.findByText('MESSAGES_PAGE')).toBeInTheDocument();
+  });
+
+  test('legacy message thread alias resolves to messages page: /messages/:conversationId', async () => {
+    renderAtPath('/messages/convo-123', 'worker');
+    expect(await screen.findByText('MESSAGES_PAGE')).toBeInTheDocument();
   });
 
   test('role root redirects: /hirer resolves to hirer dashboard', async () => {

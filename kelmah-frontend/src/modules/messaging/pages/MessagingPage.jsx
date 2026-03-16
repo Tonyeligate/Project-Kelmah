@@ -175,6 +175,11 @@ const EnhancedMessagingPage = () => {
     return participant.id || participant._id || participant.userId || null;
   }, []);
 
+  const getConversationId = useCallback(
+    (conversation) => conversation?.id || conversation?._id || null,
+    [],
+  );
+
   // Utility: show snackbar feedback (must be declared before hooks that depend on it)
   const showFeedback = useCallback((message, severity = 'info') => {
     setFeedback({ open: true, message, severity });
@@ -240,6 +245,10 @@ const EnhancedMessagingPage = () => {
     if (!conversationId && !recipientId) return;
 
     const runDeepLink = async () => {
+      setDeepLinkError(null);
+      setDeepLinkLoading(true);
+
+      try {
       // Use ref for conversations to avoid retriggering
       const currentConversations = conversationsRef.current || [];
 
@@ -301,17 +310,23 @@ const EnhancedMessagingPage = () => {
             null,
         });
 
-        setDeepLinkLoading(false);
-        setDeepLinkError(null);
         if (temporaryConversation?.id) {
           selectConversation(temporaryConversation);
         }
         return;
       }
+      } finally {
+        setDeepLinkLoading(false);
+      }
     };
 
     runDeepLink();
   }, [user, search, navigate, selectConversation, createConversation, loadingConversations, resolveParticipantId, showFeedback, openTemporaryConversation, locationState]);
+  const handleBackToConversationList = useCallback(() => {
+    clearConversation();
+    navigate('/messages', { replace: true });
+  }, [clearConversation, navigate]);
+
 
   // Manual retry handler for deep-link failures
   const handleRetryDeepLink = useCallback(() => {
@@ -418,13 +433,18 @@ const EnhancedMessagingPage = () => {
   // Handle conversation selection
   const handleConversationSelect = useCallback(
     (conversation) => {
+      const convoId = getConversationId(conversation);
+      if (!convoId) {
+        showFeedback('Unable to open this conversation right now.', 'warning');
+        return;
+      }
+
       selectConversation(conversation);
 
       // Update URL
-      const convoId = conversation.id ?? conversation._id;
-      navigate(`/messages?conversation=${convoId}`, { replace: true });
+      navigate(`/messages?conversation=${encodeURIComponent(String(convoId))}`, { replace: true });
     },
-    [navigate, selectConversation],
+    [getConversationId, navigate, selectConversation, showFeedback],
   );
 
   // Handle sending messages
@@ -690,13 +710,17 @@ const EnhancedMessagingPage = () => {
 
       {/* Conversations List — ✅ MOBILE-AUDIT P3: removed motion.div/AnimatePresence */}
       <Box sx={{ flex: 1, overflow: 'auto' }}>
-          {filteredConversations.map((conversation) => {
+          {filteredConversations.map((conversation, index) => {
             const otherParticipant = getOtherParticipant(conversation);
-            const isSelected = selectedConversation?.id === conversation.id;
+            const conversationId = getConversationId(conversation);
+            const isSelected =
+              getConversationId(selectedConversation) === conversationId;
+            const lastMessageSenderId =
+              conversation.lastMessage?.sender || conversation.lastMessage?.senderId;
 
             return (
                 <Box
-                  key={conversation.id}
+                  key={conversationId || `conversation-${index}`}
                   component="button"
                   type="button"
                   onClick={() => handleConversationSelect(conversation)}
@@ -836,7 +860,7 @@ const EnhancedMessagingPage = () => {
                             flex: 1,
                           }}
                         >
-                          {String(conversation.lastMessage?.sender) === String(currentUserId) &&
+                          {String(lastMessageSenderId) === String(currentUserId) &&
                             'You: '}
                             {getMessagePreview(conversation.lastMessage)}
                         </Typography>
@@ -845,7 +869,7 @@ const EnhancedMessagingPage = () => {
                           alignItems="center"
                           spacing={0.5}
                         >
-                          {String(conversation.lastMessage?.sender) === String(currentUserId) &&
+                          {String(lastMessageSenderId) === String(currentUserId) &&
                             getMessageStatus(conversation.lastMessage)}
                           {conversation.unreadCount > 0 && (
                             <Badge
@@ -1058,7 +1082,7 @@ const EnhancedMessagingPage = () => {
                 edge="start"
                 color="inherit"
                 aria-label="Go back"
-                onClick={() => clearConversation()}
+                onClick={handleBackToConversationList}
                 sx={{ mr: 2, color: 'primary.main' }}
               >
                 <ArrowBackIcon />
@@ -1229,7 +1253,7 @@ const EnhancedMessagingPage = () => {
 
               return (
                   <Box
-                    key={message.id}
+                    key={message.id || message._id || `${message.timestamp || 'message'}-${index}`}
                     sx={{
                       display: 'flex',
                       justifyContent: isOwn ? 'flex-end' : 'flex-start',
@@ -1831,13 +1855,16 @@ const EnhancedMessagingPage = () => {
                 </Box>
               )}
 
-              {filteredConversations.map((conversation) => {
+              {filteredConversations.map((conversation, index) => {
                 const otherParticipant = getOtherParticipant(conversation);
+                const conversationId = getConversationId(conversation);
+                const lastMessageSenderId =
+                  conversation.lastMessage?.sender || conversation.lastMessage?.senderId;
                 return (
                 <Paper
                   component="button"
                   type="button"
-                  key={conversation.id}
+                  key={conversationId || `mobile-conversation-${index}`}
                   sx={{
                     bgcolor: 'background.paper',
                     borderRadius: '12px',
@@ -1946,7 +1973,7 @@ const EnhancedMessagingPage = () => {
                             flex: 1,
                           }}
                         >
-                          {String(conversation.lastMessage?.sender) === String(currentUserId) && 'You: '}
+                          {String(lastMessageSenderId) === String(currentUserId) && 'You: '}
                           {getMessagePreview(conversation.lastMessage)}
                         </Typography>
                         {conversation.unreadCount > 0 && (
@@ -2005,7 +2032,7 @@ const EnhancedMessagingPage = () => {
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <IconButton
-                    onClick={() => clearConversation()}
+                    onClick={handleBackToConversationList}
                     aria-label="Back to conversations"
                     sx={{
                       backgroundColor: alpha(theme.palette.primary.main, 0.1),
@@ -2103,7 +2130,7 @@ const EnhancedMessagingPage = () => {
                   </Typography>
                 </Box>
               )}
-              {messages.map((message) => {
+              {messages.map((message, index) => {
                 const senderId = message.sender || message.senderId;
                 const isOwn =
                   senderId && currentUserId
@@ -2111,7 +2138,7 @@ const EnhancedMessagingPage = () => {
                     : false;
                 return (
                 <Box
-                  key={message.id}
+                  key={message.id || message._id || `${message.timestamp || 'message'}-${index}`}
                   sx={{
                     display: 'flex',
                     justifyContent: isOwn ? 'flex-end' : 'flex-start',

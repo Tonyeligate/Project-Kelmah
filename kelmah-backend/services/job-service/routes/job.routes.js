@@ -82,6 +82,7 @@ router.get("/analytics", authorizeRoles("admin"), jobController.getJobAnalytics)
 router.get('/assigned', authorizeRoles('worker'), jobController.getMyAssignedJobs);
 router.get('/applications/me', authorizeRoles('worker'), jobController.getMyApplications);
 router.get('/applications/received-summary', authorizeRoles('hirer'), jobController.getHirerApplicationsSummary);
+router.get('/applications/summary/received', authorizeRoles('hirer'), jobController.getHirerApplicationsSummary);
 router.get('/location', jobController.getJobsByLocation);
 router.get('/expired', authorizeRoles('admin'), jobController.getExpiredJobs);
 router.get('/recommendations/personalized', authorizeRoles('worker'), createLimiter('recommendations'), jobController.getPersonalizedJobRecommendations);

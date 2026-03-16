@@ -14,6 +14,7 @@ import {
   Tooltip,
   Chip,
   LinearProgress,
+  Stack,
   useTheme,
   useMediaQuery,
   Fade,
@@ -383,7 +384,17 @@ const HirerDashboardPage = () => {
   // LC Portal-inspired Dashboard Overview - IMPROVED with empty state CTAs
   const renderDashboardOverview = () => (
     <Fade in timeout={500}>
-      <Box sx={{ bgcolor: 'background.default', minHeight: '100dvh', p: { xs: 1.5, sm: 2, md: 3 }, overflowX: 'hidden' }}>
+      <Box
+        sx={{
+          background:
+            theme.palette.mode === 'dark'
+              ? 'radial-gradient(circle at 14% 0%, rgba(255,215,0,0.14), transparent 42%), radial-gradient(circle at 86% 12%, rgba(56,189,248,0.12), transparent 40%), #05070B'
+              : 'linear-gradient(180deg, #f7f9fd 0%, #eef3f9 100%)',
+          minHeight: '100dvh',
+          p: { xs: 1.5, sm: 2, md: 3 },
+          overflowX: 'hidden',
+        }}
+      >
         {/* Breadcrumb - LC Portal Style */}
         <Breadcrumbs sx={{ mb: 3, display: { xs: 'none', md: 'flex' } }} aria-label="breadcrumb">
           <MUILink
@@ -397,18 +408,66 @@ const HirerDashboardPage = () => {
           <Typography color="text.primary">Dashboard</Typography>
         </Breadcrumbs>
 
-        {/* SIMPLE GREETING - LC Portal Style */}
-        <Typography
-          variant="h4"
+        {/* Command Center Header */}
+        <Paper
+          elevation={0}
           sx={{
             mb: 4,
-            color: 'text.primary',
-            fontWeight: 400,
-            fontSize: { xs: '1.5rem', md: '2rem' },
+            p: { xs: 2, sm: 2.5, md: 3 },
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: theme.palette.mode === 'dark'
+              ? 'rgba(255,215,0,0.22)'
+              : 'rgba(20,24,35,0.12)',
+            background:
+              theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, rgba(9,12,18,0.96) 0%, rgba(14,20,32,0.96) 100%)'
+                : 'linear-gradient(135deg, #ffffff 0%, #f4f7fc 100%)',
+            boxShadow: theme.palette.mode === 'dark'
+              ? '0 12px 30px rgba(0,0,0,0.35)'
+              : '0 10px 24px rgba(15,23,42,0.10)',
           }}
         >
-          {getGreeting()}, {hirerProfile?.firstName || user?.firstName || 'there'}
-        </Typography>
+          <Stack spacing={2}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 1.5, flexWrap: 'wrap' }}>
+              <Box>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    color: 'text.primary',
+                    fontWeight: 700,
+                    fontSize: { xs: '1.5rem', md: '2rem' },
+                  }}
+                >
+                  {getGreeting()}, {hirerProfile?.firstName || user?.firstName || 'there'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  Hiring command center: launch jobs, review applicants, and coordinate work delivery.
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Chip label={`Active ${summaryData.activeJobs}`} size="small" sx={{ fontWeight: 600 }} />
+                <Chip label={`Applications ${summaryData.pendingProposals}`} size="small" sx={{ fontWeight: 600 }} />
+                <Chip label={`Spent GH₵${summaryData.totalSpent.toLocaleString()}`} size="small" sx={{ fontWeight: 600 }} />
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Button variant="contained" startIcon={<PostAddIcon />} onClick={() => navigate('/hirer/jobs/post')}>
+                Post Job
+              </Button>
+              <Button variant="outlined" startIcon={<PeopleIcon />} onClick={() => navigate('/hirer/find-talents')}>
+                Find Talent
+              </Button>
+              <Button variant="outlined" startIcon={<ProposalIcon />} onClick={() => navigate('/hirer/applications')}>
+                Applications
+              </Button>
+              <Button variant="outlined" startIcon={<MessageIcon />} onClick={() => navigate('/messages')}>
+                Messages
+              </Button>
+            </Box>
+          </Stack>
+        </Paper>
 
         {/* New Hirer Welcome Banner - Shows when no activity */}
         {isNewHirer && (

@@ -19,6 +19,7 @@ import {
   useMediaQuery,
   Alert,
   AlertTitle,
+  Chip,
   LinearProgress,
   Stack,
   Snackbar,
@@ -34,6 +35,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import StarIcon from '@mui/icons-material/Star';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
+import MessageIcon from '@mui/icons-material/Message';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip } from 'recharts';
@@ -510,7 +512,10 @@ const WorkerDashboardPage = () => {
     <PullToRefresh onRefresh={fetchDashboardData}>
     <Box
       sx={{
-        bgcolor: 'background.default',
+        background:
+          theme.palette.mode === 'dark'
+            ? 'radial-gradient(circle at 12% 0%, rgba(255,215,0,0.14), transparent 45%), radial-gradient(circle at 88% 8%, rgba(14,165,233,0.14), transparent 42%), #05070B'
+            : 'linear-gradient(180deg, #f6f8fc 0%, #eef2f8 100%)',
         minHeight: '100dvh',
         p: { xs: 1.5, sm: 2, md: 3 },
         pb: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
@@ -574,41 +579,66 @@ const WorkerDashboardPage = () => {
         </Typography>
       </Breadcrumbs>
 
-      {/* Header with Greeting and Actions */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-        <Typography
-          variant={isMobile ? 'h6' : 'h5'}
-          sx={{
-            color: 'text.primary',
-            fontWeight: 600,
-          }}
-        >
-          {getGreeting()}, {user?.firstName || 'Worker'}
-        </Typography>
+      {/* Command Center Header */}
+      <Paper
+        elevation={0}
+        sx={{
+          mb: 3,
+          p: { xs: 2, sm: 2.5, md: 3 },
+          borderRadius: 3,
+          border: '1px solid',
+          borderColor: theme.palette.mode === 'dark'
+            ? 'rgba(255,215,0,0.22)'
+            : 'rgba(20,24,35,0.12)',
+          background:
+            theme.palette.mode === 'dark'
+              ? 'linear-gradient(135deg, rgba(9,12,18,0.96) 0%, rgba(15,20,32,0.96) 100%)'
+              : 'linear-gradient(135deg, #ffffff 0%, #f4f7fc 100%)',
+          boxShadow: theme.palette.mode === 'dark'
+            ? '0 12px 30px rgba(0,0,0,0.35)'
+            : '0 10px 24px rgba(15,23,42,0.10)',
+        }}
+      >
+        <Stack spacing={2}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 1.5, flexWrap: 'wrap' }}>
+            <Box>
+              <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ color: 'text.primary', fontWeight: 700 }}>
+                {getGreeting()}, {user?.firstName || 'Worker'}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                Talent command center: track applications, earnings, and your next best opportunity.
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Chip label={`Applications ${stats.applications}`} size="small" sx={{ fontWeight: 600 }} />
+              <Chip label={`Completed ${stats.completedJobs}`} size="small" sx={{ fontWeight: 600 }} />
+              <Chip label={`GH₵${(Number.isFinite(stats.earnings) ? stats.earnings : 0).toLocaleString()}`} size="small" sx={{ fontWeight: 600 }} />
+            </Box>
+          </Box>
 
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Tooltip title="Find new jobs to apply for" arrow>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<SearchIcon />}
-              onClick={() => navigate('/worker/find-work')}
-            >
-              {isMobile ? 'Find Work' : 'Find New Jobs'}
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Button variant="contained" startIcon={<SearchIcon />} onClick={() => navigate('/worker/find-work')}>
+              Find Work
             </Button>
-          </Tooltip>
-          <Tooltip title="Refresh dashboard data" arrow>
-            <IconButton
-              onClick={handleRefresh}
-              disabled={isLoading}
-              sx={{ color: 'text.secondary' }}
-              aria-label="Refresh dashboard"
-            >
-              <RefreshIcon sx={{ animation: isLoading ? 'spin 1s linear infinite' : 'none', ...spinKeyframes }} />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      </Box>
+            <Button variant="outlined" startIcon={<AssignmentTurnedInIcon />} onClick={() => navigate('/worker/applications')}>
+              Applications
+            </Button>
+            <Button variant="outlined" startIcon={<MessageIcon />} onClick={() => navigate('/messages')}>
+              Messages
+            </Button>
+            <Tooltip title="Refresh dashboard data" arrow>
+              <IconButton
+                onClick={handleRefresh}
+                disabled={isLoading}
+                sx={{ color: 'text.secondary' }}
+                aria-label="Refresh dashboard"
+              >
+                <RefreshIcon sx={{ animation: isLoading ? 'spin 1s linear infinite' : 'none', ...spinKeyframes }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Stack>
+      </Paper>
 
       {/* Error Display - Shows inline instead of blocking */}
       {error && renderErrorDisplay()}

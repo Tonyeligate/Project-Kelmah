@@ -1,3 +1,36 @@
+### Session: Runtime Error Triage + Messaging Routing/UX Hardening March 16 2026 ✅ COMPLETED
+
+**Date**: March 16, 2026  
+**Scope**: Fix reported runtime issues (manifest icon warning + applications summary 404) and resolve additional messaging-page routing/mobile UX inconsistencies.
+
+**Execution surface**
+- `kelmah-frontend/public/manifest.json`
+- `kelmah-frontend/src/modules/hirer/services/hirerService.js`
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+- `kelmah-frontend/src/modules/layout/components/header/pageDetection.js`
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- `kelmah-frontend/src/tests/smoke/routed-paths.smoke.test.jsx`
+- `kelmah-backend/api-gateway/routes/job.routes.test.js`
+
+**Implementation completed**
+- Removed invalid placeholder PNG reference from PWA manifest and retained only valid icon assets.
+- Hardened hirer applications summary fetch flow with multi-path compatibility (`received-summary` and legacy alias), endpoint-availability caching, and graceful empty-state fallback to prevent repeated user-visible 404 failures.
+- Added legacy messaging route compatibility aliases:
+  - `/messages/:conversationId` → `/messages?conversation=...`
+  - `/chat` and `/chat/:conversationId` → `/messages`
+- Updated layout/page detection so legacy `/chat` URLs render with the correct dashboard/messages shell behavior.
+- Improved messaging page UX/routing robustness:
+  - Stable conversation/message ID handling
+  - URL cleanup when returning from chat thread to conversation list
+  - Deep-link loading state lifecycle hardening
+  - Sender-ID normalization for “You:” preview labels
+
+**Validation**
+- `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand` in `kelmah-frontend` ✅ (17/17)
+- `npx jest --runTestsByPath routes/job.routes.test.js --runInBand` in `kelmah-backend/api-gateway` ✅ (3/3)
+- `npm run build` in `kelmah-frontend` ✅
+
 ### Session: Frontend Route + Mobile Remediation Execution March 16 2026 ✅ COMPLETED
 
 **Date**: March 16, 2026  
@@ -58,6 +91,28 @@
 **Validation**
 - Read-only audit pass; no feature codepaths were modified.
 - Findings report created: `spec-kit/FRONTEND_UI_UX_ROUTE_MOBILE_CONTINUATION_AUDIT_MAR16_2026.md`.
+
+### Session: Mobile Logout Hardening + Dashboard Command-Center Refresh March 16 2026 ✅ COMPLETED
+
+**Date**: March 16, 2026  
+**Scope**: Fix mobile logout effectiveness/visibility and upgrade worker/hirer dashboard layout hierarchy to a modern command-center structure.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/layout/components/Header.jsx`
+- `kelmah-frontend/src/modules/layout/components/MobileNav.jsx`
+- `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx`
+
+**Implementation completed**
+- Added mobile quick-signout control in header action cluster for authenticated users (always visible without opening drawer).
+- Hardened logout flow for mobile to clear local session + Redux auth state immediately, navigate to `/`, and perform server logout as fire-and-forget.
+- Kept drawer logout as secondary path, upgraded to same immediate local signout behavior.
+- Refreshed Worker Dashboard with a command-center hero panel, KPI chips, and productivity-first CTA row (`Find Work`, `Applications`, `Messages`, `Refresh`) plus upgraded shell visual hierarchy.
+- Refreshed Hirer Dashboard with a command-center hero panel, KPI chips, and action row (`Post Job`, `Find Talent`, `Applications`, `Messages`) plus upgraded shell visual hierarchy.
+
+**Validation**
+- `npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand` ✅ (15/15)
+- `npm run build` in `kelmah-frontend` ✅
 
 ### Session: Mobile Bottom Nav 5-Button Redesign March 16 2026 ✅ COMPLETED
 

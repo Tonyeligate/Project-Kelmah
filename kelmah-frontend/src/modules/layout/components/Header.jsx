@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { useDispatch } from 'react-redux';
-import { logoutUser } from '../../auth/services/authSlice';
+import { logout, logoutUser } from '../../auth/services/authSlice';
 import {
   Toolbar,
   Typography,
@@ -13,6 +13,7 @@ import {
   Chip,
   Stack,
   CircularProgress,
+  alpha,
 } from '@mui/material';
 import {
   Brightness4 as Brightness4Icon,
@@ -20,6 +21,7 @@ import {
   ColorLens as ColorLensIcon,
   Menu as MenuIcon,
   ArrowBack as ArrowBackIcon,
+  ExitToApp as LogoutIcon,
 } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import DesktopNav from './DesktopNav';
@@ -52,9 +54,8 @@ const Header = ({
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  // Use Redux logout action instead of AuthContext
+  // Use Redux auth actions directly
   const dispatch = useDispatch();
-  const logout = () => dispatch(logoutUser());
   const authState = useAuthCheck();
 
   // ✅ FIXED: Enable proper mobile responsiveness based on screen size
@@ -245,32 +246,17 @@ const Header = ({
 
   const handleLogout = async () => {
     handleMenuClose();
+    // Always clear local auth state first so sign-out feels instant on mobile.
     try {
-      // Clear all Kelmah storage (scoped removal - never wipe entire localStorage)
-      try {
-        secureStorage.clear();
-        sessionStorage.clear();
-      } catch (storageError) {
-        // Storage cleanup is non-critical — continue with logout
-      }
+      secureStorage.clear();
+      sessionStorage.clear();
+    } catch (_) { /* best-effort */ }
 
-      // Dispatch logout action
-      await logout();
+    dispatch(logout());
+    navigate('/', { replace: true });
 
-      // Force navigation to home
-      navigate('/', { replace: true });
-    } catch (error) {
-      // Force clear Kelmah data and navigate (scoped removal)
-      try {
-        secureStorage.clear();
-        sessionStorage.clear();
-      } catch (clearError) {
-        // Ignore — best-effort cleanup
-      }
-
-      // Force navigation even if logout fails
-      navigate('/', { replace: true });
-    }
+    // Fire-and-forget server-side logout/revocation.
+    Promise.resolve(dispatch(logoutUser())).catch(() => {});
   };
 
   const getUserInitials = () => {
@@ -530,6 +516,26 @@ const Header = ({
           ) : null}
 
           {/* Mobile Menu Button — right-aligned */}
+          {isMobile && showUserFeatures && (
+            <Tooltip title="Sign out" arrow>
+              <ActionButton
+                aria-label="Sign out"
+                onClick={handleLogout}
+                sx={{
+                  ml: { xs: 0.25, sm: 0.5 },
+                  p: { xs: 0.9, sm: 1.1 },
+                  color: 'error.main',
+                  borderColor: alpha(theme.palette.error.main, 0.5),
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.error.main, 0.16),
+                  },
+                }}
+              >
+                <LogoutIcon sx={{ fontSize: { xs: '1.15rem', sm: '1.25rem' } }} />
+              </ActionButton>
+            </Tooltip>
+          )}
+
           {isMobile && (
             <ActionButton
               ref={mobileMenuButtonRef}

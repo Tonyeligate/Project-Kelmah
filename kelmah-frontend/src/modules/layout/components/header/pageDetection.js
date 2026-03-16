@@ -19,6 +19,7 @@ const PAGE_MAP = [
   { match: '/jobs', name: 'Jobs', icon: WorkIcon, back: true },
   { match: '/contracts', name: 'Contracts', icon: BusinessIcon, back: true },
   { match: '/messages', name: 'Messages', icon: MessageIcon, back: true },
+  { match: '/chat', name: 'Messages', icon: MessageIcon, back: true },
   { match: '/notifications', name: 'Notifications', icon: NotificationsIcon, back: true },
   { match: '/profile', name: 'Profile', icon: PersonIcon, back: true },
   { match: '/wallet', name: 'Wallet', icon: WalletIcon, back: true },

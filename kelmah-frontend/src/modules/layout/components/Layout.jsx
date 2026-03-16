@@ -23,6 +23,7 @@ const DASHBOARD_PATH_PREFIXES = [
   '/worker',
   '/hirer',
   '/messages',
+  '/chat',
   '/notifications',
   '/settings',
   '/admin',
@@ -114,7 +115,10 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
   // 🎯 ENHANCED: Comprehensive dashboard page detection
   // FIX: Added missing paths that should render with dashboard sidebar layout
   const isMessagesPage =
-    currentPath === '/messages' || currentPath.startsWith('/messages');
+    currentPath === '/messages' ||
+    currentPath.startsWith('/messages') ||
+    currentPath === '/chat' ||
+    currentPath.startsWith('/chat');
   const isDashboardPage = isDashboardRoute(currentPath);
 
   // Session expired banner state - moved outside conditional blocks

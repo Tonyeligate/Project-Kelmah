@@ -171,6 +171,20 @@ router.get('/applications/me', authenticate, async (req, res) => {
   await forwardToJobService(req, res, path, 'GET');
 });
 
+// GET /api/jobs/applications/received-summary - Get hirer's applications summary (protected)
+router.get('/applications/received-summary', authenticate, async (req, res) => {
+  const queryString = new URLSearchParams(req.query).toString();
+  const path = `/api/jobs/applications/received-summary${queryString ? '?' + queryString : ''}`;
+  await forwardToJobService(req, res, path, 'GET');
+});
+
+// Backward-compatible alias used by older clients
+router.get('/applications/summary/received', authenticate, async (req, res) => {
+  const queryString = new URLSearchParams(req.query).toString();
+  const path = `/api/jobs/applications/received-summary${queryString ? '?' + queryString : ''}`;
+  await forwardToJobService(req, res, path, 'GET');
+});
+
 // GET /api/jobs/proposals - Get hirer's proposals (protected)
 router.get('/proposals', authenticate, async (req, res) => {
   await forwardToJobService(req, res, '/api/jobs/proposals', 'GET');

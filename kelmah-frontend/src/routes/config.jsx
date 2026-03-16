@@ -317,6 +317,19 @@ const LegacyWorkerProfileRedirect = () => {
   return <Navigate to={workerId ? `/workers/${workerId}${search}` : '/search'} replace />;
 };
 
+const LegacyMessageThreadRedirect = () => {
+  const { conversationId } = useParams();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search || '');
+
+  if (conversationId && !params.get('conversation')) {
+    params.set('conversation', conversationId);
+  }
+
+  const query = params.toString();
+  return <Navigate to={`/messages${query ? `?${query}` : ''}`} replace />;
+};
+
 const routes = [
   {
     path: '/',
@@ -409,6 +422,30 @@ const routes = [
             <RouteErrorBoundary label="Messages">
               <MessagesPage />
             </RouteErrorBoundary>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'messages/:conversationId',
+        element: (
+          <ProtectedRoute>
+            <LegacyMessageThreadRedirect />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'chat',
+        element: (
+          <ProtectedRoute>
+            <Navigate to="/messages" replace />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'chat/:conversationId',
+        element: (
+          <ProtectedRoute>
+            <LegacyMessageThreadRedirect />
           </ProtectedRoute>
         ),
       },

@@ -15,6 +15,12 @@ const dashboardDataCache = {
   expiresAt: 0,
   promise: null,
 };
+const APPLICATIONS_SUMMARY_PATHS = [
+  '/jobs/applications/received-summary',
+  '/jobs/applications/summary/received',
+];
+let preferredApplicationsSummaryPath = APPLICATIONS_SUMMARY_PATHS[0];
+let applicationsSummaryEndpointUnavailable = false;
 
 const JOB_STATUS_MAP = {
   active: 'open',
@@ -99,6 +105,127 @@ const buildNormalizedPagination = (payload, itemCount = 0) => {
     totalPages: rawPagination.totalPages ?? 1,
     totalItems: rawPagination.totalItems ?? rawPagination.total ?? itemCount,
     limit: rawPagination.limit ?? itemCount,
+  };
+};
+
+const buildSummaryFromProposalsFallback = (payload, params = {}) => {
+  const data = unwrapPayload(payload) || {};
+  const proposalItems = Array.isArray(data?.items)
+    ? data.items
+    : extractCollectionItems(payload);
+
+  const jobsById = new Map();
+  proposalItems.forEach((proposal) => {
+    const rawJob = proposal?.job;
+    const jobId = rawJob?.id || rawJob?._id || proposal?.jobId;
+    if (!jobId || jobsById.has(String(jobId))) {
+      return;
+    }
+
+    jobsById.set(String(jobId), {
+      id: jobId,
+      title: rawJob?.title || proposal?.jobTitle || 'Job',
+      status: rawJob?.status || 'open',
+      applicationCounts: {
+        pending: 0,
+        accepted: 0,
+        rejected: 0,
+        under_review: 0,
+        withdrawn: 0,
+        total: 0,
+      },
+    });
+  });
+
+  proposalItems.forEach((proposal) => {
+    const rawJob = proposal?.job;
+    const jobId = rawJob?.id || rawJob?._id || proposal?.jobId;
+    if (!jobId) {
+      return;
+    }
+
+    const targetJob = jobsById.get(String(jobId));
+    if (!targetJob) {
+      return;
+    }
+
+    const normalizedStatus = String(proposal?.status || '').toLowerCase();
+    targetJob.applicationCounts.total += 1;
+    if (Object.prototype.hasOwnProperty.call(targetJob.applicationCounts, normalizedStatus)) {
+      targetJob.applicationCounts[normalizedStatus] += 1;
+    }
+  });
+
+  const aggregates = payload?.meta?.aggregates || {};
+  const statusCounts = {
+    pending: Number(aggregates?.statusCounts?.pending || 0),
+    accepted: Number(aggregates?.statusCounts?.accepted || 0),
+    rejected: Number(aggregates?.statusCounts?.rejected || 0),
+    under_review: Number(aggregates?.statusCounts?.under_review || 0),
+    withdrawn: Number(aggregates?.statusCounts?.withdrawn || 0),
+  };
+
+  const totalApplications = Number(
+    aggregates?.total ?? proposalItems.length,
+  );
+  statusCounts.total = totalApplications;
+
+  return {
+    jobs: Array.from(jobsById.values()),
+    applications: proposalItems,
+    pagination: buildNormalizedPagination(payload, proposalItems.length),
+    summary: {
+      totalJobs: Number(aggregates?.jobCount ?? jobsById.size),
+      totalApplications,
+      countsByStatus: statusCounts,
+    },
+    filters: {
+      jobId: params.jobId || null,
+      status: params.status || null,
+      sort: params.sort || 'newest',
+    },
+  };
+};
+
+const buildEmptyApplicationsSummary = (params = {}) => ({
+  jobs: [],
+  applications: [],
+  pagination: {
+    currentPage: params.page || 1,
+    totalPages: 1,
+    totalItems: 0,
+    limit: params.limit || 0,
+  },
+  summary: {
+    totalJobs: 0,
+    totalApplications: 0,
+    countsByStatus: {},
+  },
+  filters: {
+    jobId: params.jobId || null,
+    status: params.status || null,
+    sort: params.sort || 'newest',
+  },
+});
+
+const normalizeApplicationsSummaryPayload = (payload, params = {}) => {
+  const data = unwrapPayload(payload) || {};
+  const applications = Array.isArray(data?.applications) ? data.applications : [];
+
+  return {
+    jobs: Array.isArray(data?.jobs) ? data.jobs : [],
+    applications,
+    pagination: buildNormalizedPagination(data, applications.length),
+    summary: data?.summary || {
+      totalJobs: 0,
+      totalApplications: 0,
+      countsByStatus: {},
+    },
+    filters: data?.filters || {
+      jobId: params.jobId || null,
+      status: params.status || null,
+      sort: params.sort || 'newest',
+    },
   };
 };
 
@@ -396,26 +523,64 @@ export const hirerService = {
         params.sort = filters.sort.trim();
       }
 
-      const response = await api.get('/jobs/applications/received-summary', { params });
-      const data = unwrapPayload(response?.data) || {};
-      const applications = Array.isArray(data?.applications) ? data.applications : [];
+      const orderedSummaryPaths = applicationsSummaryEndpointUnavailable
+        ? []
+        : [
+          preferredApplicationsSummaryPath,
+          ...APPLICATIONS_SUMMARY_PATHS.filter((path) => path !== preferredApplicationsSummaryPath),
+        ];
 
-      return {
-        jobs: Array.isArray(data?.jobs) ? data.jobs : [],
-        applications,
-        pagination: buildNormalizedPagination(data, applications.length),
-        summary: data?.summary || {
-          totalJobs: 0,
-          totalApplications: 0,
-          countsByStatus: {},
-        },
-        filters: data?.filters || {
-          jobId: params.jobId || null,
-          status: params.status || null,
-          sort: params.sort || 'newest',
-        },
-      };
+      let lastSummaryError = null;
+      for (const summaryPath of orderedSummaryPaths) {
+        try {
+          const response = await api.get(summaryPath, { params });
+          preferredApplicationsSummaryPath = summaryPath;
+          applicationsSummaryEndpointUnavailable = false;
+          return normalizeApplicationsSummaryPayload(response?.data, params);
+        } catch (summaryError) {
+          lastSummaryError = summaryError;
+          if (summaryError?.response?.status !== 404) {
+            throw summaryError;
+          }
+        }
+      }
+
+      if (orderedSummaryPaths.length > 0) {
+        applicationsSummaryEndpointUnavailable = true;
+      }
+
+      if (orderedSummaryPaths.length === 0) {
+        const unavailableError = new Error('Applications summary endpoint unavailable');
+        unavailableError.response = { status: 404 };
+        throw unavailableError;
+      }
+
+      if (lastSummaryError && lastSummaryError?.response?.status && lastSummaryError.response.status !== 404) {
+        throw lastSummaryError;
+      }
     } catch (error) {
+      if (error?.response?.status === 404 || applicationsSummaryEndpointUnavailable) {
+        try {
+          const fallbackParams = {
+            ...params,
+            status: params.status || 'all',
+          };
+
+          const fallbackResponse = await api.get('/jobs/proposals', {
+            params: fallbackParams,
+          });
+
+          return buildSummaryFromProposalsFallback(fallbackResponse?.data, params);
+        } catch (fallbackError) {
+          if (import.meta.env.DEV) {
+            console.warn('Applications summary fallback unavailable:', fallbackError.message);
+          }
+          if (fallbackError?.response?.status === 404 || applicationsSummaryEndpointUnavailable) {
+            return buildEmptyApplicationsSummary(params);
+          }
+        }
+      }
+
       if (import.meta.env.DEV) console.warn('Applications summary unavailable:', error.message);
       throw error;
     }
