@@ -1,3 +1,27 @@
+### Session: Password Change 400 Investigation + UX Fix March 17 2026 ✅ COMPLETED
+
+**Date**: March 17, 2026  
+**Scope**: Investigate reported password change failure (`POST /api/auth/change-password` returns 400) and implement a user-facing fix.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/settings/components/common/SecuritySettings.jsx`
+
+**Root cause verified**
+- Backend auth-service enforces strict password policy via `SecurityUtils.validatePassword` and route validator:
+  - minimum 12 characters
+  - uppercase + lowercase + number + special character
+- Settings UI text incorrectly said "at least 8 characters" and catch block always replaced backend errors with a generic message.
+- Result: valid transport, but users see opaque failure on policy violations (HTTP 400).
+
+**Implementation completed**
+- Updated settings password guidance text to match backend policy (`12+` with full complexity).
+- Added client-side pre-validation for the same core password requirements before API call.
+- Added required-fields and "new password must differ from current" checks.
+- Replaced generic catch message with backend-aware error extraction (`errors[]`, `error.message`, `message`) so users get actionable feedback.
+
+**Validation**
+- `npm run build` in `kelmah-frontend` ✅
+
 ### Session: Runtime Error Triage + Messaging Routing/UX Hardening March 16 2026 ✅ COMPLETED
 
 **Date**: March 16, 2026  

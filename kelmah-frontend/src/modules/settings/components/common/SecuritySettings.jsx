@@ -18,6 +18,55 @@ import { Link as RouterLink } from 'react-router-dom';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import SettingsSection from '../SettingsSection';
 
+const PASSWORD_REQUIREMENTS = [
+  {
+    test: (value) => value.length >= 12,
+    message: 'Password must be at least 12 characters long.',
+  },
+  {
+    test: (value) => /[A-Z]/.test(value),
+    message: 'Password must contain at least one uppercase letter.',
+  },
+  {
+    test: (value) => /[a-z]/.test(value),
+    message: 'Password must contain at least one lowercase letter.',
+  },
+  {
+    test: (value) => /\d/.test(value),
+    message: 'Password must contain at least one number.',
+  },
+  {
+    test: (value) => /[!@#$%^&*(),.?":{}|<>]/.test(value),
+    message: 'Password must contain at least one special character.',
+  },
+];
+
+const getPasswordValidationErrors = (password = '') =>
+  PASSWORD_REQUIREMENTS
+    .filter((rule) => !rule.test(password))
+    .map((rule) => rule.message);
+
+const extractApiErrorMessage = (error) => {
+  const fallbackMessage = 'Failed to update security settings. Please try again.';
+  const responseData = error?.response?.data;
+
+  if (Array.isArray(responseData?.errors) && responseData.errors.length > 0) {
+    const message = responseData.errors
+      .map((issue) => issue?.message || issue?.msg)
+      .filter(Boolean)
+      .join(' ')
+      .trim();
+    if (message) return message;
+  }
+
+  return (
+    responseData?.error?.message ||
+    responseData?.message ||
+    error?.message ||
+    fallbackMessage
+  );
+};
+
 const SecuritySettings = () => {
   // FIXED: Use standardized user normalization for consistent user data access
   const { user: rawUser } = useSelector((state) => state.auth);
@@ -79,6 +128,15 @@ const SecuritySettings = () => {
     setDisableSnackbar((prev) => ({ ...prev, open: false }));
 
   const handleSubmit = async () => {
+    if (!form.currentPassword || !form.newPassword || !form.confirmPassword) {
+      setSnackbar({
+        open: true,
+        message: 'Please complete all password fields.',
+        severity: 'error',
+      });
+      return;
+    }
+
     if (form.newPassword !== form.confirmPassword) {
       setSnackbar({
         open: true,
@@ -87,6 +145,26 @@ const SecuritySettings = () => {
       });
       return;
     }
+
+    const passwordErrors = getPasswordValidationErrors(form.newPassword);
+    if (passwordErrors.length > 0) {
+      setSnackbar({
+        open: true,
+        message: passwordErrors[0],
+        severity: 'error',
+      });
+      return;
+    }
+
+    if (form.currentPassword === form.newPassword) {
+      setSnackbar({
+        open: true,
+        message: 'New password must be different from your current password.',
+        severity: 'error',
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       await authService.changePassword({
@@ -100,8 +178,11 @@ const SecuritySettings = () => {
       });
       setForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {
-      const msg = 'Failed to update security settings. Please try again.';
-      setSnackbar({ open: true, message: msg, severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: extractApiErrorMessage(error),
+        severity: 'error',
+      });
     } finally {
       setLoading(false);
     }
@@ -130,7 +211,7 @@ const SecuritySettings = () => {
         description="Choose a strong password that is different from the one you use on other apps."
       >
       <Stack spacing={2}>
-        <Alert severity="info">Use at least 8 characters with a mix of letters, numbers, and symbols.</Alert>
+        <Alert severity="info">Use at least 12 characters with uppercase, lowercase, number, and symbol.</Alert>
       <TextField
         label="Current Password"
         name="currentPassword"
