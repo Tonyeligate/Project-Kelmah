@@ -24,6 +24,7 @@ import {
   Stack,
   Snackbar,
   Fade,
+  Grow,
   alpha,
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
@@ -616,10 +617,10 @@ const WorkerDashboardPage = () => {
           },
         }}
       >
-        <Stack spacing={2.25} sx={{ position: 'relative', zIndex: 1 }}>
+        <Stack spacing={{ xs: 1.5, md: 2.25 }} sx={{ position: 'relative', zIndex: 1 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 1.5, flexWrap: 'wrap' }}>
             <Box>
-              <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ color: 'text.primary', fontWeight: 800, letterSpacing: -0.4 }}>
+              <Typography variant={false ? 'h5' : 'h4'} sx={{ color: 'text.primary', fontWeight: 800, letterSpacing: -0.4 }}>
                 {getGreeting()}, {user?.firstName || 'Worker'}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, maxWidth: 620, fontSize: { xs: '0.94rem', md: '1rem' } }}>
@@ -692,28 +693,30 @@ const WorkerDashboardPage = () => {
           </Box>
 
           <Grid container spacing={1.25}>
-            {insightCards.map((item) => (
-              <Grid item xs={12} sm={4} key={`hero-${item.title}`}>
-                <Box
-                  sx={{
-                    p: 1.5,
-                    borderRadius: 2,
-                    border: '1px solid',
-                    borderColor: alpha(item.tone, 0.36),
-                    backgroundColor: alpha(item.tone, theme.palette.mode === 'dark' ? 0.1 : 0.08),
-                  }}
-                >
-                  <Typography variant="caption" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, color: 'text.secondary' }}>
-                    {item.title}
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 800, mt: 0.25 }}>
-                    {item.value}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {item.helper}
-                  </Typography>
-                </Box>
-              </Grid>
+            {insightCards.map((item, index) => (
+              <Fade in timeout={420} style={{ transitionDelay: `${120 + index * 90}ms` }} key={`hero-fade-${item.title}`}>
+                <Grid item xs={12} sm={4} key={`hero-${item.title}`}>
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2,
+                      border: '1px solid',
+                      borderColor: alpha(item.tone, 0.36),
+                      backgroundColor: alpha(item.tone, theme.palette.mode === 'dark' ? 0.1 : 0.08),
+                    }}
+                  >
+                    <Typography variant="caption" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, color: 'text.secondary' }}>
+                      {item.title}
+                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 800, mt: 0.25 }}>
+                      {item.value}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {item.helper}
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Fade>
             ))}
           </Grid>
         </Stack>
@@ -776,80 +779,82 @@ const WorkerDashboardPage = () => {
           {/* Metric Cards - 4 colored cards LC Portal style */}
           <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }} sx={{ mb: 4 }}>
             {metricCards.map((card, index) => (
-              <Grid item xs={6} sm={6} md={3} key={card.title}>
-                <Tooltip title={card.tooltip} arrow placement="top">
-                  <ButtonBase
-                    onClick={card.onClick}
-                    aria-label={`${card.title}: ${card.value}. Click to view details.`}
-                    sx={{
-                      display: 'block',
-                      width: '100%',
-                      textAlign: 'left',
-                      borderRadius: 2,
-                      overflow: 'hidden',
-                      '&:focus-visible': {
-                        outline: `2px solid ${theme.palette.primary.main}`,
-                        outlineOffset: 2,
-                      },
-                    }}
-                  >
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: { xs: 1.5, sm: 2.5 },
-                      borderRadius: 2.5,
-                      background: `linear-gradient(155deg, ${alpha(card.tone, theme.palette.mode === 'dark' ? 0.2 : 0.14)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
-                      border: '1px solid',
-                      borderColor: alpha(card.tone, 0.44),
-                      color: 'text.primary',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      minHeight: { xs: 96, sm: 132 },
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      // ✅ MOBILE-AUDIT P7: hover only on pointer devices
-                      '@media (hover: hover)': {
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        '&:hover': {
-                          transform: 'translateY(-4px)',
-                          boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-                        },
-                      },
-                    }}
-                  >
-                    {/* Icon positioned on the right */}
-                    <Box
+              <Fade in timeout={420} style={{ transitionDelay: `${200 + index * 80}ms` }} key={`metric-fade-${card.title}`}>
+                <Grid item xs={6} sm={6} md={3} key={card.title}>
+                  <Tooltip title={card.tooltip} arrow placement="top">
+                    <ButtonBase
+                      onClick={card.onClick}
+                      aria-label={`${card.title}: ${card.value}. Click to view details.`}
                       sx={{
-                        position: 'absolute',
-                        right: 16,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
+                        display: 'block',
+                        width: '100%',
+                        textAlign: 'left',
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                        '&:focus-visible': {
+                          outline: `2px solid ${theme.palette.primary.main}`,
+                          outlineOffset: 2,
+                        },
                       }}
                     >
-                      {card.icon}
-                    </Box>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: { xs: 1.5, sm: 2.5 },
+                        borderRadius: 2.5,
+                        background: `linear-gradient(155deg, ${alpha(card.tone, theme.palette.mode === 'dark' ? 0.2 : 0.14)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
+                        border: '1px solid',
+                        borderColor: alpha(card.tone, 0.44),
+                        color: 'text.primary',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        minHeight: { xs: 96, sm: 132 },
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        // ✅ MOBILE-AUDIT P7: hover only on pointer devices
+                        '@media (hover: hover)': {
+                          transition: 'transform 0.2s, box-shadow 0.2s',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                          },
+                        },
+                      }}
+                    >
+                      {/* Icon positioned on the right */}
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          right: 16,
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                        }}
+                      >
+                        {card.icon}
+                      </Box>
 
-                    {/* Text content */}
-                    <Typography
-                      variant="body2"
-                      sx={{ fontWeight: 600, color: 'text.secondary', mb: 1 }}
-                    >
-                      {card.title}
-                    </Typography>
-                    <Typography
-                      variant="h4"
-                      sx={{ fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' } }}
-                    >
-                      {card.value}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                      Tap to open details
-                    </Typography>
-                  </Paper>
-                  </ButtonBase>
-                </Tooltip>
-              </Grid>
+                      {/* Text content */}
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 600, color: 'text.secondary', mb: 1 }}
+                      >
+                        {card.title}
+                      </Typography>
+                      <Typography
+                        variant="h4"
+                        sx={{ fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' } }}
+                      >
+                        {card.value}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                        Tap to open details
+                      </Typography>
+                    </Paper>
+                    </ButtonBase>
+                  </Tooltip>
+                </Grid>
+              </Fade>
             ))}
           </Grid>
         </>
@@ -911,8 +916,8 @@ const WorkerDashboardPage = () => {
             </Grid>
           ) : recommendations.length > 0 ? (
             <Grid container spacing={1.5}>
-              {recommendations.slice(0, 6).map((job) => (
-                <Grid item xs={12} sm={6} md={4} key={job.id}>
+              {recommendations.slice(0, 8).map((job, index) => (
+                <Grid item xs={12} sm={6} md={3} key={job.id}>
                   <Paper
                     elevation={0}
                     sx={{
@@ -923,6 +928,12 @@ const WorkerDashboardPage = () => {
                       cursor: 'pointer',
                       transition: 'box-shadow 0.2s',
                       '&:hover': { boxShadow: 2 },
+                      animation: 'workerCardRise 420ms ease-out both',
+                      animationDelay: `${index * 55}ms`,
+                      '@keyframes workerCardRise': {
+                        from: { opacity: 0, transform: 'translateY(12px)' },
+                        to: { opacity: 1, transform: 'translateY(0)' },
+                      },
                     }}
                     onClick={() => navigate(`/jobs/${job.id}`)}
                   >
@@ -971,7 +982,7 @@ const WorkerDashboardPage = () => {
         </Box>
       )}
 
-      {isMobile ? (
+      {false ? (
         <Grid container spacing={1.5}>
           <Grid item xs={12}>
             <Paper
@@ -1062,10 +1073,11 @@ const WorkerDashboardPage = () => {
           </Grid>
         </Grid>
       ) : (
-      /* Charts Section - 2 charts side by side */
+      /* Charts Section - denser desktop analytics row */
       <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
         {/* Earnings Overview Chart */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={4}>
+          <Grow in timeout={460}>
           <Paper
             elevation={0}
             sx={{
@@ -1090,8 +1102,8 @@ const WorkerDashboardPage = () => {
                     data={earningsData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={isMobile ? 40 : 60}
-                    outerRadius={isMobile ? 70 : 100}
+                    innerRadius={false ? 40 : 60}
+                    outerRadius={false ? 70 : 100}
                     paddingAngle={2}
                     dataKey="value"
                   >
@@ -1125,10 +1137,12 @@ const WorkerDashboardPage = () => {
               )}
             </Box>
           </Paper>
+          </Grow>
         </Grid>
 
         {/* Applications Overview Chart */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={4}>
+          <Grow in timeout={540}>
           <Paper
             elevation={0}
             sx={{
@@ -1153,8 +1167,8 @@ const WorkerDashboardPage = () => {
                     data={applicationsData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={isMobile ? 40 : 60}
-                    outerRadius={isMobile ? 70 : 100}
+                    innerRadius={false ? 40 : 60}
+                    outerRadius={false ? 70 : 100}
                     paddingAngle={2}
                     dataKey="value"
                   >
@@ -1187,6 +1201,78 @@ const WorkerDashboardPage = () => {
               )}
             </Box>
           </Paper>
+          </Grow>
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <Grow in timeout={620}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 1.5, sm: 2, md: 3 },
+              borderRadius: 2.5,
+              backgroundColor: alpha(theme.palette.background.paper, 0.92),
+              border: '1px solid',
+              borderColor: alpha(theme.palette.warning.main, 0.24),
+              height: '100%',
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{ color: 'text.primary', fontWeight: 600, mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}
+            >
+              Pipeline Health
+            </Typography>
+            <Stack spacing={1.4}>
+              {applicationsData.map((item) => (
+                <Box key={`desktop-${item.name}`}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                    <Typography variant="body2" fontWeight={600}>
+                      {item.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {item.value}
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={stats.applications > 0 ? (item.value / Math.max(stats.applications, 1)) * 100 : 0}
+                    sx={{
+                      height: 8,
+                      borderRadius: 999,
+                      backgroundColor: alpha(item.color, 0.12),
+                      '& .MuiLinearProgress-bar': {
+                        backgroundColor: item.color,
+                        borderRadius: 999,
+                      },
+                    }}
+                  />
+                </Box>
+              ))}
+              <Paper
+                elevation={0}
+                sx={{
+                  mt: 0.5,
+                  p: 1.5,
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: alpha(theme.palette.primary.main, 0.25),
+                  backgroundColor: alpha(theme.palette.primary.main, 0.06),
+                }}
+              >
+                <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                  Conversion snapshot
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.25 }}>
+                  {stats.applications > 0 ? `${Math.round((acceptedApplications.length / Math.max(stats.applications, 1)) * 100)}%` : '0%'}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Application acceptance ratio
+                </Typography>
+              </Paper>
+            </Stack>
+          </Paper>
+          </Grow>
         </Grid>
       </Grid>
       )}
@@ -1197,3 +1283,5 @@ const WorkerDashboardPage = () => {
 };
 
 export default WorkerDashboardPage;
+
+

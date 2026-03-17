@@ -446,7 +446,7 @@ const HirerDashboardPage = () => {
             },
           }}
         >
-          <Stack spacing={2.25} sx={{ position: 'relative', zIndex: 1 }}>
+          <Stack spacing={{ xs: 1.5, md: 2.25 }} sx={{ position: 'relative', zIndex: 1 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 1.5, flexWrap: 'wrap' }}>
               <Box>
                 <Typography
@@ -540,28 +540,30 @@ const HirerDashboardPage = () => {
                   helper: 'Contracts delivered successfully',
                   tone: theme.palette.success.main,
                 },
-              ].map((item) => (
-                <Grid item xs={12} sm={4} key={`overview-${item.title}`}>
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      border: '1px solid',
-                      borderColor: alpha(item.tone, 0.36),
-                      backgroundColor: alpha(item.tone, theme.palette.mode === 'dark' ? 0.1 : 0.08),
-                    }}
-                  >
-                    <Typography variant="caption" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, color: 'text.secondary' }}>
-                      {item.title}
-                    </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 800, mt: 0.25 }}>
-                      {item.value}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {item.helper}
-                    </Typography>
-                  </Box>
-                </Grid>
+              ].map((item, index) => (
+                <Fade in timeout={420} style={{ transitionDelay: `${120 + index * 90}ms` }} key={`overview-fade-${item.title}`}>
+                  <Grid item xs={12} sm={4} key={`overview-${item.title}`}>
+                    <Box
+                      sx={{
+                        p: 1.5,
+                        borderRadius: 2,
+                        border: '1px solid',
+                        borderColor: alpha(item.tone, 0.36),
+                        backgroundColor: alpha(item.tone, theme.palette.mode === 'dark' ? 0.1 : 0.08),
+                      }}
+                    >
+                      <Typography variant="caption" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, color: 'text.secondary' }}>
+                        {item.title}
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 800, mt: 0.25 }}>
+                        {item.value}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {item.helper}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Fade>
               ))}
             </Grid>
           </Stack>
@@ -597,253 +599,136 @@ const HirerDashboardPage = () => {
           </Paper>
         )}
 
-        {/* 4 METRIC CARDS IN ONE ROW - LC Portal Style with Click Actions */}
-        <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }} sx={{ mb: 4 }}>
-          {/* Card 1 - Orange/Yellow - Active Jobs */}
-          <Grid item xs={6} sm={6} md={3}>
-            <ButtonBase
-              onClick={() => navigate('/hirer/jobs')}
-              aria-label={`Active Jobs: ${summaryData.activeJobs}. Click to view jobs.`}
-              sx={{
-                display: 'block',
-                width: '100%',
-                textAlign: 'left',
-                borderRadius: 2,
-                overflow: 'hidden',
-                '&:focus-visible': {
-                  outline: `2px solid ${theme.palette.primary.main}`,
-                  outlineOffset: 2,
-                },
-              }}
-            >
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 1.5, sm: 2.5 },
-                borderRadius: 2.5,
-                background: `linear-gradient(155deg, ${alpha('#F39C12', theme.palette.mode === 'dark' ? 0.2 : 0.12)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.92)} 100%)`,
-                color: 'text.primary',
-                border: '1px solid',
-                borderColor: alpha('#F39C12', 0.5),
-                minHeight: { xs: 96, sm: 132 },
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                position: 'relative',
-                '@media (hover: hover)': {
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 25px rgba(243, 156, 18, 0.3)',
-                  },
-                },
-              }}
-            >
-              <Box>
-                <Typography variant="body2" fontWeight={600} sx={{ color: 'text.secondary', mb: 0.5 }}>
-                  Active Jobs
-                </Typography>
-                <Typography variant="h3" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
-                  {summaryData.activeJobs}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
-                  {summaryData.activeJobs === 0 ? 'Post a job to get started' : 'Click to manage'}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'block', sm: 'none' } }}>
-                  Tap to manage
-                </Typography>
+        {/* Metric Cards - Futuristic & Mobile-Optimized */}
+        <Box
+          sx={{
+            display: { xs: 'flex', sm: 'grid' },
+            gridTemplateColumns: { sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+            gap: { xs: 1.5, sm: 3, md: 2.5, lg: 2 },
+            overflowX: { xs: 'auto', sm: 'visible' },
+            scrollSnapType: { xs: 'x mandatory', sm: 'none' },
+            WebkitOverflowScrolling: 'touch',
+            '&::-webkit-scrollbar': { display: 'none' },
+            msOverflowStyle: 'none',
+            scrollbarWidth: 'none',
+            mb: 4,
+            pb: { xs: 1, sm: 0 },
+            mx: { xs: -1.5, sm: 0 },
+            px: { xs: 1.5, sm: 0 },
+          }}
+        >
+          {[
+            {
+              title: 'Active Jobs',
+              value: summaryData.activeJobs,
+              tone: '#F39C12',
+              icon: <WorkIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha('#F39C12', 0.28) }} />,
+              onClick: () => navigate('/hirer/jobs'),
+              tooltip: "Active Jobs: " + summaryData.activeJobs,
+            },
+            {
+              title: 'Completed Jobs',
+              value: summaryData.completedJobs,
+              tone: '#1ABC9C',
+              icon: <CheckCircleIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha('#1ABC9C', 0.28) }} />,
+              onClick: () => navigate('/hirer/jobs?status=completed'),
+              tooltip: "Completed Jobs: " + summaryData.completedJobs,
+            },
+            {
+              title: 'Applications',
+              value: summaryData.pendingProposals,
+              tone: '#3498DB',
+              icon: <ProposalIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha('#3498DB', 0.28) }} />,
+              onClick: () => navigate('/hirer/applications'),
+              tooltip: "Applications: " + summaryData.pendingProposals,
+            },
+            {
+              title: 'Total Spent',
+              value: 'GH?' + summaryData.totalSpent.toLocaleString(),
+              tone: theme.palette.info.main,
+              icon: <PaymentIcon sx={{ fontSize: { xs: 32, sm: 42 }, color: alpha(theme.palette.info.main, 0.28) }} />,
+              onClick: () => navigate('/hirer/payments'),
+              tooltip: "Total Spent: " + summaryData.totalSpent,
+            }
+          ].map((card, index) => (
+            <Fade in timeout={420} style={{ transitionDelay: `${80 + index * 70}ms` }} key={`hirer-metric-${card.title}`}>
+              <Box sx={{ minWidth: { xs: '75vw', sm: 'auto' }, scrollSnapAlign: 'start' }}>
+                <Tooltip title={card.tooltip} arrow placement="top">
+                  <ButtonBase
+                    onClick={card.onClick}
+                    aria-label={card.tooltip}
+                    sx={{
+                      display: 'block',
+                      width: '100%',
+                      textAlign: 'left',
+                      borderRadius: { xs: 4, sm: 2.5 },
+                      overflow: 'hidden',
+                      '&:focus-visible': {
+                        outline: `2px solid ${theme.palette.primary.main}`,
+                        outlineOffset: 2,
+                      },
+                    }}
+                  >
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: { xs: 2.5, sm: 2.5 },
+                      borderRadius: { xs: 4, sm: 2.5 },
+                      background: theme.palette.mode === 'dark'
+                        ? `linear-gradient(155deg, ${alpha(card.tone, 0.2)} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`
+                        : `linear-gradient(155deg, ${alpha(card.tone, 0.14)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
+                      backdropFilter: theme.palette.mode === 'dark' ? 'blur(16px)' : 'none',
+                      border: '1px solid',
+                      borderColor: alpha(card.tone, theme.palette.mode === 'dark' ? 0.3 : 0.44),
+                      color: 'text.primary',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      minHeight: { xs: 130, sm: 132 },
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      boxShadow: theme.palette.mode === 'dark' ? `inset 0 1px 1px ${alpha('#fff', 0.1)}` : 'none',
+                      '@media (hover: hover)': {
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: theme.palette.mode === 'dark' ? `0 8px 25px ${alpha(card.tone, 0.25)}` : '0 8px 25px rgba(0,0,0,0.15)',
+                        },
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        right: { xs: 12, sm: 16 },
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                      }}
+                    >
+                      {card.icon}
+                    </Box>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 600, color: theme.palette.mode === 'dark' ? alpha('#fff', 0.8) : 'text.secondary', mb: 1, textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.75rem' }}
+                    >
+                      {card.title}
+                    </Typography>
+                    <Typography
+                      variant="h4"
+                      sx={{ fontWeight: 800, letterSpacing: -0.5, fontSize: { xs: '1.75rem', sm: '1.5rem', md: '2rem' } }}
+                    >
+                      {card.value}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: theme.palette.mode === 'dark' ? alpha('#fff', 0.5) : 'text.secondary', mt: 0.5 }}>
+                      Tap to open details
+                    </Typography>
+                  </Paper>
+                  </ButtonBase>
+                </Tooltip>
               </Box>
-              <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
-                <WorkIcon sx={{ fontSize: { xs: 28, sm: 40 }, color: alpha('#F39C12', 0.28) }} />
-              </Box>
-            </Paper>
-            </ButtonBase>
-          </Grid>
-
-          {/* Card 2 - Teal/Green - Completed Jobs */}
-          <Grid item xs={6} sm={6} md={3}>
-            <ButtonBase
-              onClick={() => navigate('/hirer/jobs?status=completed')}
-              aria-label={`Completed Jobs: ${summaryData.completedJobs}. Click to view progress.`}
-              sx={{
-                display: 'block',
-                width: '100%',
-                textAlign: 'left',
-                borderRadius: 2,
-                overflow: 'hidden',
-                '&:focus-visible': {
-                  outline: `2px solid ${theme.palette.primary.main}`,
-                  outlineOffset: 2,
-                },
-              }}
-            >
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 1.5, sm: 2.5 },
-                borderRadius: 2.5,
-                background: `linear-gradient(155deg, ${alpha('#1ABC9C', theme.palette.mode === 'dark' ? 0.2 : 0.12)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.92)} 100%)`,
-                color: 'text.primary',
-                border: '1px solid',
-                borderColor: alpha('#1ABC9C', 0.5),
-                minHeight: { xs: 96, sm: 132 },
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                position: 'relative',
-                '@media (hover: hover)': {
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 25px rgba(26, 188, 156, 0.3)',
-                  },
-                },
-              }}
-            >
-              <Box>
-                <Typography variant="body2" fontWeight={600} sx={{ color: 'text.secondary', mb: 0.5 }}>
-                  Completed Jobs
-                </Typography>
-                <Typography variant="h3" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
-                  {summaryData.completedJobs}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
-                  Click to view progress
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'block', sm: 'none' } }}>
-                  Tap to open
-                </Typography>
-              </Box>
-              <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
-                <CheckCircleIcon sx={{ fontSize: { xs: 28, sm: 40 }, color: alpha('#1ABC9C', 0.28) }} />
-              </Box>
-            </Paper>
-            </ButtonBase>
-          </Grid>
-
-          {/* Card 3 - Blue - Applications */}
-          <Grid item xs={6} sm={6} md={3}>
-            <ButtonBase
-              onClick={() => navigate('/hirer/applications')}
-              aria-label={`Applications: ${summaryData.pendingProposals}. Click to review applications.`}
-              sx={{
-                display: 'block',
-                width: '100%',
-                textAlign: 'left',
-                borderRadius: 2,
-                overflow: 'hidden',
-                '&:focus-visible': {
-                  outline: `2px solid ${theme.palette.primary.main}`,
-                  outlineOffset: 2,
-                },
-              }}
-            >
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 1.5, sm: 2.5 },
-                borderRadius: 2.5,
-                background: `linear-gradient(155deg, ${alpha('#3498DB', theme.palette.mode === 'dark' ? 0.2 : 0.12)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.92)} 100%)`,
-                color: 'text.primary',
-                border: '1px solid',
-                borderColor: alpha('#3498DB', 0.5),
-                minHeight: { xs: 96, sm: 132 },
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                position: 'relative',
-                '@media (hover: hover)': {
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 25px rgba(52, 152, 219, 0.3)',
-                  },
-                },
-              }}
-            >
-              <Box>
-                <Typography variant="body2" fontWeight={600} sx={{ color: 'text.secondary', mb: 0.5 }}>
-                  Applications
-                </Typography>
-                <Typography variant="h3" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
-                  {summaryData.pendingProposals}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
-                  {summaryData.pendingProposals === 0 ? 'No pending reviews' : 'Click to review'}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'block', sm: 'none' } }}>
-                  Tap to review
-                </Typography>
-              </Box>
-              <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
-                <ProposalIcon sx={{ fontSize: { xs: 28, sm: 40 }, color: alpha('#3498DB', 0.28) }} />
-              </Box>
-            </Paper>
-            </ButtonBase>
-          </Grid>
-
-          {/* Card 4 - Red - Needs Attention */}
-          <Grid item xs={6} sm={6} md={3}>
-            <ButtonBase
-              onClick={() => navigate('/hirer/payments')}
-              aria-label={`Total Spent: ${summaryData.totalSpent}. Click to view payments.`}
-              sx={{
-                display: 'block',
-                width: '100%',
-                textAlign: 'left',
-                borderRadius: 2,
-                overflow: 'hidden',
-                '&:focus-visible': {
-                  outline: `2px solid ${theme.palette.primary.main}`,
-                  outlineOffset: 2,
-                },
-              }}
-            >
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 1.5, sm: 2.5 },
-                borderRadius: 2.5,
-                background: `linear-gradient(155deg, ${alpha(theme.palette.info.main, theme.palette.mode === 'dark' ? 0.2 : 0.12)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.92)} 100%)`,
-                color: 'text.primary',
-                border: '1px solid',
-                borderColor: alpha(theme.palette.info.main, 0.5),
-                minHeight: { xs: 96, sm: 132 },
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                position: 'relative',
-                '@media (hover: hover)': {
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: `0 8px 25px ${alpha(theme.palette.info.main, 0.3)}`,
-                  },
-                },
-              }}
-            >
-              <Box>
-                <Typography variant="body2" fontWeight={600} sx={{ color: 'text.secondary', mb: 0.5 }}>
-                  Total Spent
-                </Typography>
-                <Typography variant="h3" fontWeight={700} sx={{ fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } }}>
-                  GH₵{summaryData.totalSpent.toLocaleString()}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
-                  {summaryData.completedJobs === 0 ? 'No jobs completed yet' : 'Across completed jobs'}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'block', sm: 'none' } }}>
-                  Tap to view spend
-                </Typography>
-              </Box>
-              <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
-                <PaymentIcon sx={{ fontSize: { xs: 28, sm: 40 }, color: alpha(theme.palette.info.main, 0.28) }} />
-              </Box>
-            </Paper>
-            </ButtonBase>
-          </Grid>
-        </Grid>
-
+            </Fade>
+          ))}
+        </Box>
         {/* TWO CHART SECTIONS - LC Portal Style */}
         <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }}>
           {/* Bills Chart / Spending Chart */}
@@ -1184,4 +1069,7 @@ const HirerDashboardPage = () => {
 };
 
 export default HirerDashboardPage;
+
+
+
 
