@@ -159,6 +159,27 @@ const didEmailSendSkip = (result) => Boolean(result && typeof result === 'object
 
 const hashEphemeralToken = (token) => crypto.createHash('sha256').update(String(token)).digest('hex');
 
+const sendPasswordChangedEmailInBackground = ({ name, email, context = '' }) => {
+  if (!email) {
+    return;
+  }
+
+  Promise.resolve()
+    .then(() =>
+      emailService.sendPasswordChangedEmail({
+        name,
+        email,
+      }),
+    )
+    .catch((mailErr) => {
+      const suffix = context ? ` ${context}` : '';
+      logger.warn(`Password changed confirmation email failed${suffix}`, {
+        email,
+        error: mailErr.message,
+      });
+    });
+};
+
 const pruneAuthChallenges = async (type) => {
   const now = new Date();
 
@@ -870,15 +891,12 @@ exports.resetPassword = async (req, res, next) => {
 
     await user.save();
 
-    // Send password changed confirmation email
-    try {
-      await emailService.sendPasswordChangedEmail({
-        name: user.fullName,
-        email: user.email,
-      });
-    } catch (mailErr) {
-      logger.warn('Password changed confirmation email failed after reset', { email: user.email, error: mailErr.message });
-    }
+    // Send confirmation in background so SMTP latency never blocks password reset response.
+    sendPasswordChangedEmailInBackground({
+      name: user.fullName,
+      email: user.email,
+      context: 'after reset',
+    });
 
     // Return success response
     return res.status(200).json({
@@ -933,15 +951,11 @@ exports.changePassword = async (req, res, next) => {
       userId: user._id,
     });
 
-    // Send password changed confirmation email
-    try {
-      await emailService.sendPasswordChangedEmail({
-        name: user.fullName,
-        email: user.email,
-      });
-    } catch (mailErr) {
-      logger.warn('Password changed confirmation email failed', { email: user.email, error: mailErr.message });
-    }
+    // Send confirmation in background so SMTP latency never blocks password change response.
+    sendPasswordChangedEmailInBackground({
+      name: user.fullName,
+      email: user.email,
+    });
 
     // Return success response
     return res.status(200).json({

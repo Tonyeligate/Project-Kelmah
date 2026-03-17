@@ -1,3 +1,23 @@
+### Session: Password Change Latency Fix (SMTP Decoupling) March 17 2026 ✅ COMPLETED
+
+**Date**: March 17, 2026  
+**Scope**: Investigate slow password-change response times in production and remove email-delivery latency from the critical response path.
+
+**Execution surface**
+- `kelmah-backend/services/auth-service/controllers/auth.controller.js`
+
+**Root cause verified**
+- `POST /api/auth/change-password` returned success only after awaiting `sendPasswordChangedEmail`.
+- In production, SMTP timeout (~26s) delayed the API response despite password update already succeeding.
+
+**Implementation completed**
+- Added a non-blocking helper to dispatch password-changed confirmation emails asynchronously.
+- Updated both `changePassword` and `resetPassword` flows to send confirmation email in background (fire-and-catch) instead of awaiting SMTP.
+- Preserved warning logs for failed email delivery without impacting API latency.
+
+**Validation**
+- `npx jest --runTestsByPath tests/auth.controller.security.test.js --runInBand` in `kelmah-backend/services/auth-service` ✅ (14/14)
+
 ### Session: Password Change 400 Investigation + UX Fix March 17 2026 ✅ COMPLETED
 
 **Date**: March 17, 2026  
