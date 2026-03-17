@@ -88,6 +88,7 @@ const HirerDashboardPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const dashboardFontFamily = '"Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif';
 
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -388,10 +389,12 @@ const HirerDashboardPage = () => {
         sx={{
           background:
             theme.palette.mode === 'dark'
-              ? 'radial-gradient(circle at 14% 0%, rgba(255,215,0,0.14), transparent 42%), radial-gradient(circle at 86% 12%, rgba(56,189,248,0.12), transparent 40%), #05070B'
-              : 'linear-gradient(180deg, #f7f9fd 0%, #eef3f9 100%)',
+              ? 'radial-gradient(circle at 10% 4%, rgba(255,215,0,0.16), transparent 45%), radial-gradient(circle at 88% 8%, rgba(56,189,248,0.14), transparent 40%), radial-gradient(circle at 54% 86%, rgba(34,197,94,0.13), transparent 38%), #04060C'
+              : 'linear-gradient(180deg, #f7f9fd 0%, #eef3fa 58%, #edf3fb 100%)',
           minHeight: '100dvh',
+          fontFamily: dashboardFontFamily,
           p: { xs: 1.5, sm: 2, md: 3 },
+          pb: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 18px)`,
           overflowX: 'hidden',
         }}
       >
@@ -413,59 +416,154 @@ const HirerDashboardPage = () => {
           elevation={0}
           sx={{
             mb: 4,
-            p: { xs: 2, sm: 2.5, md: 3 },
-            borderRadius: 3,
+            p: { xs: 2, sm: 2.75, md: 3.25 },
+            borderRadius: { xs: 3, md: 4 },
             border: '1px solid',
             borderColor: theme.palette.mode === 'dark'
-              ? 'rgba(255,215,0,0.22)'
+              ? 'rgba(255,215,0,0.28)'
               : 'rgba(20,24,35,0.12)',
             background:
               theme.palette.mode === 'dark'
-                ? 'linear-gradient(135deg, rgba(9,12,18,0.96) 0%, rgba(14,20,32,0.96) 100%)'
-                : 'linear-gradient(135deg, #ffffff 0%, #f4f7fc 100%)',
+                ? 'linear-gradient(150deg, rgba(6,10,18,0.97) 0%, rgba(10,19,34,0.96) 52%, rgba(7,16,28,0.95) 100%)'
+                : 'linear-gradient(145deg, #ffffff 0%, #f2f7ff 52%, #edf4ff 100%)',
             boxShadow: theme.palette.mode === 'dark'
-              ? '0 12px 30px rgba(0,0,0,0.35)'
-              : '0 10px 24px rgba(15,23,42,0.10)',
+              ? '0 18px 34px rgba(0,0,0,0.42)'
+              : '0 14px 28px rgba(15,23,42,0.10)',
+            position: 'relative',
+            overflow: 'hidden',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              width: { xs: 160, md: 250 },
+              height: { xs: 160, md: 250 },
+              borderRadius: '50%',
+              top: -82,
+              right: -80,
+              background: theme.palette.mode === 'dark'
+                ? 'radial-gradient(circle, rgba(250,204,21,0.24) 0%, rgba(250,204,21,0) 72%)'
+                : 'radial-gradient(circle, rgba(14,165,233,0.15) 0%, rgba(14,165,233,0) 72%)',
+              pointerEvents: 'none',
+            },
           }}
         >
-          <Stack spacing={2}>
+          <Stack spacing={2.25} sx={{ position: 'relative', zIndex: 1 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 1.5, flexWrap: 'wrap' }}>
               <Box>
                 <Typography
                   variant="h4"
                   sx={{
                     color: 'text.primary',
-                    fontWeight: 700,
+                    fontWeight: 800,
+                    letterSpacing: -0.4,
                     fontSize: { xs: '1.5rem', md: '2rem' },
                   }}
                 >
                   {getGreeting()}, {hirerProfile?.firstName || user?.firstName || 'there'}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                  Hiring command center: launch jobs, review applicants, and coordinate work delivery.
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, maxWidth: 620, fontSize: { xs: '0.94rem', md: '1rem' } }}>
+                  Hiring cockpit: launch opportunities, shortlist top talent, and keep every live role moving.
                 </Typography>
               </Box>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                <Chip label={`Active ${summaryData.activeJobs}`} size="small" sx={{ fontWeight: 600 }} />
-                <Chip label={`Applications ${summaryData.pendingProposals}`} size="small" sx={{ fontWeight: 600 }} />
-                <Chip label={`Spent GH₵${summaryData.totalSpent.toLocaleString()}`} size="small" sx={{ fontWeight: 600 }} />
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+                <Chip label={`Active ${summaryData.activeJobs}`} size="small" sx={{ fontWeight: 700 }} />
+                <Chip label={`Applications ${summaryData.pendingProposals}`} size="small" sx={{ fontWeight: 700 }} />
+                <Chip label={`Spent GH₵${summaryData.totalSpent.toLocaleString()}`} size="small" sx={{ fontWeight: 700 }} />
+                <Chip
+                  size="small"
+                  label={autoRefreshEnabled ? `Live • ${timeSinceRefresh}` : 'Live updates paused'}
+                  color={autoRefreshEnabled ? 'success' : 'default'}
+                  variant="outlined"
+                  onClick={() => setAutoRefreshEnabled((prev) => !prev)}
+                  sx={{ fontWeight: 700, cursor: 'pointer' }}
+                />
               </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <Button variant="contained" startIcon={<PostAddIcon />} onClick={() => navigate('/hirer/jobs/post')}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(4, minmax(0, 1fr))' },
+                gap: 1,
+              }}
+            >
+              <Button
+                variant="contained"
+                startIcon={<PostAddIcon />}
+                onClick={() => navigate('/hirer/jobs/post')}
+                sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
+              >
                 Post Job
               </Button>
-              <Button variant="outlined" startIcon={<PeopleIcon />} onClick={() => navigate('/hirer/find-talents')}>
+              <Button
+                variant="outlined"
+                startIcon={<PeopleIcon />}
+                onClick={() => navigate('/hirer/find-talents')}
+                sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
+              >
                 Find Talent
               </Button>
-              <Button variant="outlined" startIcon={<ProposalIcon />} onClick={() => navigate('/hirer/applications')}>
+              <Button
+                variant="outlined"
+                startIcon={<ProposalIcon />}
+                onClick={() => navigate('/hirer/applications')}
+                sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
+              >
                 Applications
               </Button>
-              <Button variant="outlined" startIcon={<MessageIcon />} onClick={() => navigate('/messages')}>
+              <Button
+                variant="outlined"
+                startIcon={<MessageIcon />}
+                onClick={() => navigate('/messages')}
+                sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
+              >
                 Messages
               </Button>
             </Box>
+
+            <Grid container spacing={1.25}>
+              {[
+                {
+                  title: 'Pipeline',
+                  value: summaryData.pendingProposals,
+                  helper: 'Applications waiting for review',
+                  tone: theme.palette.warning.main,
+                },
+                {
+                  title: 'Active jobs',
+                  value: summaryData.activeJobs,
+                  helper: 'Open listings currently running',
+                  tone: theme.palette.info.main,
+                },
+                {
+                  title: 'Completed jobs',
+                  value: summaryData.completedJobs,
+                  helper: 'Contracts delivered successfully',
+                  tone: theme.palette.success.main,
+                },
+              ].map((item) => (
+                <Grid item xs={12} sm={4} key={`overview-${item.title}`}>
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2,
+                      border: '1px solid',
+                      borderColor: alpha(item.tone, 0.36),
+                      backgroundColor: alpha(item.tone, theme.palette.mode === 'dark' ? 0.1 : 0.08),
+                    }}
+                  >
+                    <Typography variant="caption" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, color: 'text.secondary' }}>
+                      {item.title}
+                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 800, mt: 0.25 }}>
+                      {item.value}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {item.helper}
+                    </Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
           </Stack>
         </Paper>
 
@@ -522,12 +620,12 @@ const HirerDashboardPage = () => {
               elevation={0}
               sx={{
                 p: { xs: 1.5, sm: 2.5 },
-                borderRadius: 2,
-                backgroundColor: 'background.paper',
+                borderRadius: 2.5,
+                background: `linear-gradient(155deg, ${alpha('#F39C12', theme.palette.mode === 'dark' ? 0.2 : 0.12)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.92)} 100%)`,
                 color: 'text.primary',
                 border: '1px solid',
-                borderColor: alpha('#F39C12', 0.45),
-                height: { xs: 72, sm: 130 },
+                borderColor: alpha('#F39C12', 0.5),
+                minHeight: { xs: 96, sm: 132 },
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -550,6 +648,9 @@ const HirerDashboardPage = () => {
                 </Typography>
                 <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
                   {summaryData.activeJobs === 0 ? 'Post a job to get started' : 'Click to manage'}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'block', sm: 'none' } }}>
+                  Tap to manage
                 </Typography>
               </Box>
               <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
@@ -580,12 +681,12 @@ const HirerDashboardPage = () => {
               elevation={0}
               sx={{
                 p: { xs: 1.5, sm: 2.5 },
-                borderRadius: 2,
-                backgroundColor: 'background.paper',
+                borderRadius: 2.5,
+                background: `linear-gradient(155deg, ${alpha('#1ABC9C', theme.palette.mode === 'dark' ? 0.2 : 0.12)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.92)} 100%)`,
                 color: 'text.primary',
                 border: '1px solid',
-                borderColor: alpha('#1ABC9C', 0.45),
-                height: { xs: 72, sm: 130 },
+                borderColor: alpha('#1ABC9C', 0.5),
+                minHeight: { xs: 96, sm: 132 },
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -608,6 +709,9 @@ const HirerDashboardPage = () => {
                 </Typography>
                 <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
                   Click to view progress
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'block', sm: 'none' } }}>
+                  Tap to open
                 </Typography>
               </Box>
               <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
@@ -638,12 +742,12 @@ const HirerDashboardPage = () => {
               elevation={0}
               sx={{
                 p: { xs: 1.5, sm: 2.5 },
-                borderRadius: 2,
-                backgroundColor: 'background.paper',
+                borderRadius: 2.5,
+                background: `linear-gradient(155deg, ${alpha('#3498DB', theme.palette.mode === 'dark' ? 0.2 : 0.12)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.92)} 100%)`,
                 color: 'text.primary',
                 border: '1px solid',
-                borderColor: alpha('#3498DB', 0.45),
-                height: { xs: 72, sm: 130 },
+                borderColor: alpha('#3498DB', 0.5),
+                minHeight: { xs: 96, sm: 132 },
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -666,6 +770,9 @@ const HirerDashboardPage = () => {
                 </Typography>
                 <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
                   {summaryData.pendingProposals === 0 ? 'No pending reviews' : 'Click to review'}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'block', sm: 'none' } }}>
+                  Tap to review
                 </Typography>
               </Box>
               <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
@@ -696,12 +803,12 @@ const HirerDashboardPage = () => {
               elevation={0}
               sx={{
                 p: { xs: 1.5, sm: 2.5 },
-                borderRadius: 2,
-                backgroundColor: 'background.paper',
+                borderRadius: 2.5,
+                background: `linear-gradient(155deg, ${alpha(theme.palette.info.main, theme.palette.mode === 'dark' ? 0.2 : 0.12)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.92)} 100%)`,
                 color: 'text.primary',
                 border: '1px solid',
-                borderColor: alpha(theme.palette.info.main, 0.45),
-                height: { xs: 72, sm: 130 },
+                borderColor: alpha(theme.palette.info.main, 0.5),
+                minHeight: { xs: 96, sm: 132 },
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -725,6 +832,9 @@ const HirerDashboardPage = () => {
                 <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
                   {summaryData.completedJobs === 0 ? 'No jobs completed yet' : 'Across completed jobs'}
                 </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'block', sm: 'none' } }}>
+                  Tap to view spend
+                </Typography>
               </Box>
               <Box sx={{ position: 'absolute', right: { xs: 8, sm: 16 }, top: '50%', transform: 'translateY(-50%)' }}>
                 <PaymentIcon sx={{ fontSize: { xs: 28, sm: 40 }, color: alpha(theme.palette.info.main, 0.28) }} />
@@ -742,8 +852,10 @@ const HirerDashboardPage = () => {
               elevation={0}
               sx={{
                 p: { xs: 1.5, sm: 2, md: 3 },
-                borderRadius: 2,
-                bgcolor: 'background.paper',
+                borderRadius: 2.5,
+                bgcolor: alpha(theme.palette.background.paper, 0.9),
+                border: '1px solid',
+                borderColor: alpha(theme.palette.success.main, 0.24),
                 height: { xs: 280, sm: 350 },
               }}
             >
@@ -806,8 +918,10 @@ const HirerDashboardPage = () => {
               elevation={0}
               sx={{
                 p: { xs: 1.5, sm: 2, md: 3 },
-                borderRadius: 2,
-                bgcolor: 'background.paper',
+                borderRadius: 2.5,
+                bgcolor: alpha(theme.palette.background.paper, 0.9),
+                border: '1px solid',
+                borderColor: alpha(theme.palette.info.main, 0.24),
                 height: { xs: 280, sm: 350 },
               }}
             >
@@ -1014,7 +1128,6 @@ const HirerDashboardPage = () => {
           sx={{
             py: 4,
             px: { xs: 2, sm: 3, md: 4 },
-            bgcolor: 'background.default',
             color: 'text.primary',
           }}
         >

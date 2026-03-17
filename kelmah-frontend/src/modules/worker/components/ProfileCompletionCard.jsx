@@ -67,10 +67,11 @@ const ProfileCompletionCard = ({ percentage = 0, missingFields = [], onStepClick
         sx={{
           p: { xs: 2, sm: 2.5 },
           mb: 3,
-          borderRadius: 2,
+          borderRadius: 2.5,
           bgcolor: 'background.paper',
           border: '1px solid',
           borderColor: alpha(theme.palette.primary.main, 0.25),
+          background: `linear-gradient(155deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 55%, ${alpha(theme.palette.background.paper, 0.92)} 100%)`,
         }}
       >
         {/* Header row */}

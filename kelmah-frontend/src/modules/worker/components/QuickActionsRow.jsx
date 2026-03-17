@@ -40,20 +40,21 @@ const QuickActionsRow = () => {
             flexDirection: 'column',
             alignItems: 'flex-start',
             justifyContent: 'center',
-            minHeight: { xs: 96, sm: 108 },
+            minHeight: { xs: 112, sm: 116 },
             width: '100%',
-            py: 1.75,
-            px: 1.5,
-            borderRadius: 2,
+            py: 1.9,
+            px: 1.6,
+            borderRadius: 2.5,
             bgcolor: 'background.paper',
             border: '1px solid',
-            borderColor: 'divider',
-            transition: 'transform 0.15s, box-shadow 0.15s',
+            borderColor: alpha(theme.palette.primary.main, 0.24),
+            background: `linear-gradient(155deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.92)} 100%)`,
+            transition: 'transform 0.15s, box-shadow 0.15s, border-color 0.15s',
             '@media (hover: hover)': {
               '&:hover': {
                 transform: 'translateY(-3px)',
-                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
-                borderColor: alpha(theme.palette.primary.main, 0.4),
+                boxShadow: `0 10px 20px ${alpha(theme.palette.primary.main, 0.22)}`,
+                borderColor: alpha(theme.palette.primary.main, 0.55),
               },
             },
           }}
@@ -63,6 +64,9 @@ const QuickActionsRow = () => {
               fontSize: 28,
               mb: 1,
               color: theme.palette.primary.main,
+              p: 0.75,
+              borderRadius: 1.5,
+              bgcolor: alpha(theme.palette.primary.main, 0.12),
             }}
           />
           <Typography

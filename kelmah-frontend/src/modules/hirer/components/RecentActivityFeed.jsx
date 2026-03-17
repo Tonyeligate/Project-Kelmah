@@ -152,10 +152,11 @@ const RecentActivityFeed = ({ jobs = [], applications = {}, activities = null })
     <Paper
       elevation={0}
       sx={{
-        borderRadius: 2,
+        borderRadius: 2.5,
         bgcolor: 'background.paper',
         border: '1px solid',
-        borderColor: 'divider',
+        borderColor: alpha(theme.palette.primary.main, 0.22),
+        background: `linear-gradient(160deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 56%, ${alpha(theme.palette.background.paper, 0.94)} 100%)`,
         overflow: 'hidden',
       }}
     >

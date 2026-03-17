@@ -99,6 +99,7 @@ const WorkerDashboardPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const dashboardFontFamily = '"Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif';
 
   const { user: rawUser } = useSelector((state) => state.auth);
   const user = normalizeUser(rawUser);
@@ -409,7 +410,7 @@ const WorkerDashboardPage = () => {
     { name: 'Rejected', value: rejectedApplications.length || 0, color: theme.palette.error.main },
   ], [acceptedApplications, pendingApplications, rejectedApplications]);
 
-  const mobileHighlights = useMemo(() => ([
+  const insightCards = useMemo(() => ([
     {
       title: 'This month',
       value: `GH₵${(earningsSummary.thisMonth || 0).toLocaleString()}`,
@@ -514,9 +515,10 @@ const WorkerDashboardPage = () => {
       sx={{
         background:
           theme.palette.mode === 'dark'
-            ? 'radial-gradient(circle at 12% 0%, rgba(255,215,0,0.14), transparent 45%), radial-gradient(circle at 88% 8%, rgba(14,165,233,0.14), transparent 42%), #05070B'
-            : 'linear-gradient(180deg, #f6f8fc 0%, #eef2f8 100%)',
+            ? 'radial-gradient(circle at 10% 4%, rgba(255,215,0,0.16), transparent 44%), radial-gradient(circle at 88% 8%, rgba(34,197,94,0.13), transparent 36%), radial-gradient(circle at 52% 88%, rgba(59,130,246,0.14), transparent 38%), #04060C'
+            : 'linear-gradient(180deg, #f7f9fd 0%, #eef3fa 55%, #edf2fb 100%)',
         minHeight: '100dvh',
+        fontFamily: dashboardFontFamily,
         p: { xs: 1.5, sm: 2, md: 3 },
         pb: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
       }}
@@ -584,59 +586,136 @@ const WorkerDashboardPage = () => {
         elevation={0}
         sx={{
           mb: 3,
-          p: { xs: 2, sm: 2.5, md: 3 },
-          borderRadius: 3,
+          p: { xs: 2, sm: 2.75, md: 3.25 },
+          borderRadius: { xs: 3, md: 4 },
           border: '1px solid',
           borderColor: theme.palette.mode === 'dark'
-            ? 'rgba(255,215,0,0.22)'
+            ? 'rgba(255,215,0,0.28)'
             : 'rgba(20,24,35,0.12)',
           background:
             theme.palette.mode === 'dark'
-              ? 'linear-gradient(135deg, rgba(9,12,18,0.96) 0%, rgba(15,20,32,0.96) 100%)'
-              : 'linear-gradient(135deg, #ffffff 0%, #f4f7fc 100%)',
+              ? 'linear-gradient(150deg, rgba(6,10,18,0.97) 0%, rgba(9,19,36,0.96) 55%, rgba(7,17,28,0.96) 100%)'
+              : 'linear-gradient(145deg, #ffffff 0%, #f2f7ff 54%, #edf4ff 100%)',
           boxShadow: theme.palette.mode === 'dark'
-            ? '0 12px 30px rgba(0,0,0,0.35)'
-            : '0 10px 24px rgba(15,23,42,0.10)',
+            ? '0 18px 34px rgba(0,0,0,0.42)'
+            : '0 14px 28px rgba(15,23,42,0.10)',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            width: { xs: 140, md: 220 },
+            height: { xs: 140, md: 220 },
+            borderRadius: '50%',
+            top: -70,
+            right: -55,
+            background: theme.palette.mode === 'dark'
+              ? 'radial-gradient(circle, rgba(250,204,21,0.24) 0%, rgba(250,204,21,0) 70%)'
+              : 'radial-gradient(circle, rgba(14,165,233,0.16) 0%, rgba(14,165,233,0) 70%)',
+            pointerEvents: 'none',
+          },
         }}
       >
-        <Stack spacing={2}>
+        <Stack spacing={2.25} sx={{ position: 'relative', zIndex: 1 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 1.5, flexWrap: 'wrap' }}>
             <Box>
-              <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ color: 'text.primary', fontWeight: 700 }}>
+              <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ color: 'text.primary', fontWeight: 800, letterSpacing: -0.4 }}>
                 {getGreeting()}, {user?.firstName || 'Worker'}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                Talent command center: track applications, earnings, and your next best opportunity.
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, maxWidth: 620, fontSize: { xs: '0.94rem', md: '1rem' } }}>
+                Your talent cockpit: watch your pipeline, earnings momentum, and the next best jobs to apply for.
               </Typography>
             </Box>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <Chip label={`Applications ${stats.applications}`} size="small" sx={{ fontWeight: 600 }} />
-              <Chip label={`Completed ${stats.completedJobs}`} size="small" sx={{ fontWeight: 600 }} />
-              <Chip label={`GH₵${(Number.isFinite(stats.earnings) ? stats.earnings : 0).toLocaleString()}`} size="small" sx={{ fontWeight: 600 }} />
-            </Box>
-          </Box>
-
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            <Button variant="contained" startIcon={<SearchIcon />} onClick={() => navigate('/worker/find-work')}>
-              Find Work
-            </Button>
-            <Button variant="outlined" startIcon={<AssignmentTurnedInIcon />} onClick={() => navigate('/worker/applications')}>
-              Applications
-            </Button>
-            <Button variant="outlined" startIcon={<MessageIcon />} onClick={() => navigate('/messages')}>
-              Messages
-            </Button>
             <Tooltip title="Refresh dashboard data" arrow>
               <IconButton
                 onClick={handleRefresh}
                 disabled={isLoading}
-                sx={{ color: 'text.secondary' }}
+                sx={{
+                  color: 'text.secondary',
+                  border: '1px solid',
+                  borderColor: alpha(theme.palette.warning.main, 0.4),
+                  backgroundColor: alpha(theme.palette.warning.main, 0.08),
+                }}
                 aria-label="Refresh dashboard"
               >
                 <RefreshIcon sx={{ animation: isLoading ? 'spin 1s linear infinite' : 'none', ...spinKeyframes }} />
               </IconButton>
             </Tooltip>
           </Box>
+
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Chip label={`Applications ${stats.applications}`} size="small" sx={{ fontWeight: 700 }} />
+            <Chip label={`Completed ${stats.completedJobs}`} size="small" sx={{ fontWeight: 700 }} />
+            <Chip label={`GH₵${(Number.isFinite(stats.earnings) ? stats.earnings : 0).toLocaleString()}`} size="small" sx={{ fontWeight: 700 }} />
+          </Box>
+
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(4, minmax(0, 1fr))' },
+              gap: 1,
+            }}
+          >
+            <Button
+              variant="contained"
+              startIcon={<SearchIcon />}
+              onClick={() => navigate('/worker/find-work')}
+              sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
+            >
+              Find Work
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<AssignmentTurnedInIcon />}
+              onClick={() => navigate('/worker/applications')}
+              sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
+            >
+              Applications
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<MessageIcon />}
+              onClick={() => navigate('/messages')}
+              sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
+            >
+              Messages
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<RefreshIcon sx={{ animation: isLoading ? 'spin 1s linear infinite' : 'none', ...spinKeyframes }} />}
+              onClick={handleRefresh}
+              disabled={isLoading}
+              sx={{ borderRadius: 2.5, minHeight: 44, fontWeight: 700, textTransform: 'none' }}
+            >
+              Refresh
+            </Button>
+          </Box>
+
+          <Grid container spacing={1.25}>
+            {insightCards.map((item) => (
+              <Grid item xs={12} sm={4} key={`hero-${item.title}`}>
+                <Box
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 2,
+                    border: '1px solid',
+                    borderColor: alpha(item.tone, 0.36),
+                    backgroundColor: alpha(item.tone, theme.palette.mode === 'dark' ? 0.1 : 0.08),
+                  }}
+                >
+                  <Typography variant="caption" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, color: 'text.secondary' }}>
+                    {item.title}
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 800, mt: 0.25 }}>
+                    {item.value}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {item.helper}
+                  </Typography>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
         </Stack>
       </Paper>
 
@@ -718,14 +797,14 @@ const WorkerDashboardPage = () => {
                     elevation={0}
                     sx={{
                       p: { xs: 1.5, sm: 2.5 },
-                      borderRadius: 2,
-                      backgroundColor: 'background.paper',
+                      borderRadius: 2.5,
+                      background: `linear-gradient(155deg, ${alpha(card.tone, theme.palette.mode === 'dark' ? 0.2 : 0.14)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 62%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
                       border: '1px solid',
-                      borderColor: alpha(card.tone, 0.35),
+                      borderColor: alpha(card.tone, 0.44),
                       color: 'text.primary',
                       position: 'relative',
                       overflow: 'hidden',
-                      minHeight: { xs: 72, sm: 120 },
+                      minHeight: { xs: 96, sm: 132 },
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
@@ -764,6 +843,9 @@ const WorkerDashboardPage = () => {
                     >
                       {card.value}
                     </Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                      Tap to open details
+                    </Typography>
                   </Paper>
                   </ButtonBase>
                 </Tooltip>
@@ -775,7 +857,17 @@ const WorkerDashboardPage = () => {
 
       {/* Quick Actions Row (Phase 2) */}
       {!isLoading && (
-        <Box sx={{ mb: 3 }}>
+        <Box
+          sx={{
+            mb: 3,
+            p: { xs: 1.5, sm: 2 },
+            borderRadius: 2.5,
+            border: '1px solid',
+            borderColor: 'divider',
+            backgroundColor: alpha(theme.palette.background.paper, 0.86),
+            backdropFilter: 'blur(4px)',
+          }}
+        >
           <Typography variant="body2" fontWeight={600} sx={{ mb: 1.5, color: 'text.primary' }}>
             Quick Actions
           </Typography>
@@ -785,7 +877,17 @@ const WorkerDashboardPage = () => {
 
       {/* U-01 FIX: Job Recommendations Section */}
       {!isLoading && (
-        <Box sx={{ mb: 3 }}>
+        <Box
+          sx={{
+            mb: 3,
+            p: { xs: 1.5, sm: 2 },
+            borderRadius: 2.5,
+            border: '1px solid',
+            borderColor: 'divider',
+            backgroundColor: alpha(theme.palette.background.paper, 0.88),
+            backdropFilter: 'blur(4px)',
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
             <Typography variant="body2" fontWeight={600} color="text.primary">
               Recommended Jobs
@@ -889,7 +991,7 @@ const WorkerDashboardPage = () => {
                 Focus on the next action that keeps your Kelmah profile active and visible.
               </Typography>
               <Grid container spacing={1.5}>
-                {mobileHighlights.map((item) => (
+                {insightCards.map((item) => (
                   <Grid item xs={12} key={item.title}>
                     <Box
                       sx={{
@@ -968,10 +1070,10 @@ const WorkerDashboardPage = () => {
             elevation={0}
             sx={{
               p: { xs: 1.5, sm: 2, md: 3 },
-              borderRadius: 2,
-              backgroundColor: 'background.paper',
+              borderRadius: 2.5,
+              backgroundColor: alpha(theme.palette.background.paper, 0.92),
               border: '1px solid',
-              borderColor: 'divider',
+              borderColor: alpha(theme.palette.success.main, 0.24),
             }}
           >
             <Typography
@@ -1031,10 +1133,10 @@ const WorkerDashboardPage = () => {
             elevation={0}
             sx={{
               p: { xs: 1.5, sm: 2, md: 3 },
-              borderRadius: 2,
-              backgroundColor: 'background.paper',
+              borderRadius: 2.5,
+              backgroundColor: alpha(theme.palette.background.paper, 0.92),
               border: '1px solid',
-              borderColor: 'divider',
+              borderColor: alpha(theme.palette.info.main, 0.24),
             }}
           >
             <Typography

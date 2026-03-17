@@ -15443,3 +15443,46 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 - Placeholder worker-directory map UX is no longer reachable in normal runtime by default.
 - Legacy `MessageSystem` implementation is removed from the active frontend surface.
 - Routed regression coverage now includes public + worker + hirer path smoke checks and dead-path fallthrough.
+
+### Session: Worker + Hirer Dashboard Visual Redesign March 17 2026 COMPLETED
+
+**Date**: March 17, 2026  
+**Scope**: Redesign worker/talent and hirer dashboard layouts for stronger mobile and desktop visual hierarchy, modern card composition, and improved action discoverability using mobile freelancer dashboard inspiration patterns.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/worker/pages/WorkerDashboardPage.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/HirerDashboardPage.jsx`
+- `kelmah-frontend/src/modules/worker/components/QuickActionsRow.jsx`
+- `kelmah-frontend/src/modules/hirer/components/RecentActivityFeed.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Dry-audit findings so far**
+- Mobile hero sections are visually heavy and consume too much first-screen real estate before key KPI cards.
+- Desktop composition is mostly stacked, reducing information density and weakening dashboard scanability.
+- CTA groups and chart containers use mixed visual treatments, making the pages feel less cohesive than modern dashboard references.
+
+**Implementation completed**
+- Refreshed both dashboard shells with a shared premium visual language: layered atmospheric backgrounds, stronger card depth, improved border contrast, and consistent typography stack.
+- Reworked both command-center hero sections to improve first-screen hierarchy on mobile and desktop:
+  - compact but information-dense greeting area,
+  - prominent CTA action grid,
+  - integrated KPI chips and quick insight tiles.
+- Upgraded worker dashboard sections:
+  - gradient-tinted KPI metric cards with improved tap affordance text,
+  - elevated quick-actions container treatment,
+  - recommendation and chart surfaces aligned to the new design system.
+- Upgraded hirer dashboard sections:
+  - stronger dashboard hero with live-state chip integration,
+  - refreshed KPI card styling for readability and consistency,
+  - chart containers and activity panel restyled for cohesive visual rhythm.
+- Refined supporting components used within dashboard flows:
+  - `QuickActionsRow` card visuals and icon treatments,
+  - `ProfileCompletionCard` surface styling,
+  - `RecentActivityFeed` visual polish.
+
+**Validation**
+- `npm run build` in `kelmah-frontend` ✅ successful (`vite build` completed, no compile errors).
+
+**Current state**
+- Worker and hirer dashboards now present a unified modern command-center look across mobile and desktop breakpoints.
+- Above-the-fold layout balance and action discoverability are improved without changing core business logic or routing behavior.
