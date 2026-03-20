@@ -16,6 +16,26 @@ const BREAKPOINTS = {
   xl: 1536, // Extra large devices (large desktops)
 };
 
+export const useBreakpointDown = (breakpoint = 'md') => {
+  const theme = useTheme();
+  return useMediaQuery(theme.breakpoints.down(breakpoint));
+};
+
+export const useBreakpointUp = (breakpoint = 'md') => {
+  const theme = useTheme();
+  return useMediaQuery(theme.breakpoints.up(breakpoint));
+};
+
+export const useBreakpointBetween = (start = 'sm', end = 'md') => {
+  const theme = useTheme();
+  return useMediaQuery(theme.breakpoints.between(start, end));
+};
+
+export const useMaxWidth = (px) => {
+  const normalizedPx = typeof px === 'number' ? `${px}px` : px;
+  return useMediaQuery(`(max-width: ${normalizedPx})`);
+};
+
 /**
  * Main responsive hook with standardized breakpoints
  */

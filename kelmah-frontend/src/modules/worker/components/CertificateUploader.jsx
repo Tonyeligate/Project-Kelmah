@@ -587,7 +587,7 @@ const CertificateUploader = ({ onCertificatesChange }) => {
       {loading ? (
         <Grid container spacing={3}>
           {[...Array(3)].map((_, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
+            <Grid item xs={12} sm={6} md={4} key={`certificate-skeleton-${index}`}>
               <Card>
                 <CardContent>
                   <Box display="flex" alignItems="center" gap={1} mb={2}>

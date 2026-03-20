@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Container, Typography, useTheme, useMediaQuery, CircularProgress, Alert, Button } from '@mui/material';
+import { Box, Container, Typography, useTheme, CircularProgress, Alert, Button } from '@mui/material';
 import { CollectionsOutlined as CollectionsOutlinedIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import PortfolioGallery from '../components/PortfolioGallery';
 import ProjectShowcase from '../components/ProjectShowcase';
 import portfolioService from '../services/portfolioService';
 import { Helmet } from 'react-helmet-async';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const PortfolioPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const [items, setItems] = useState([]);
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);

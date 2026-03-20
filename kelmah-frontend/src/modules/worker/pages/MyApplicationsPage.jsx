@@ -1,36 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Container,
-  Typography,
-  Paper,
-  Alert,
-  Tabs,
-  Tab,
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip,
-  Button,
-  IconButton,
-  CircularProgress,
-  Card,
-  CardActions,
-  CardContent,
-  Avatar,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Grid,
-  Stack,
-  useMediaQuery,
-  Divider,
-} from '@mui/material';
+import { Container, Typography, Paper, Alert, Tabs, Tab, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Button, IconButton, CircularProgress, Card, CardActions, CardContent, Avatar, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Grid, Stack, Divider } from '@mui/material';
 import {
   Visibility as VisibilityIcon,
   Delete as DeleteIcon,
@@ -49,6 +18,7 @@ import applicationsService from '../services/applicationsService';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const MyApplicationsPage = () => {
   const navigate = useNavigate();
@@ -233,7 +203,7 @@ const MyApplicationsPage = () => {
   };
 
   // Mobile detection
-  const isActualMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isActualMobile = useBreakpointDown('md');
 
   // Mobile applications view — uses MUI theme for consistency with desktop
   if (isActualMobile) {

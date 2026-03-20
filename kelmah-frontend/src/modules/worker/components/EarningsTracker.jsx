@@ -1,47 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Grid,
-  Button,
-  IconButton,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Chip,
-  LinearProgress,
-  CircularProgress,
-  Alert,
-  Tooltip,
-  Avatar,
-  Divider,
-  useTheme,
-  useMediaQuery,
-  alpha,
-  Stack,
-  Tabs,
-  Tab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  ListItemSecondaryAction,
-} from '@mui/material';
+import { Box, Card, CardContent, Typography, Grid, Button, IconButton, Select, MenuItem, FormControl, InputLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, LinearProgress, CircularProgress, Alert, Tooltip, Avatar, Divider, useTheme, alpha, Stack, Tabs, Tab, Dialog, DialogTitle, DialogContent, DialogActions, TextField, List, ListItem, ListItemText, ListItemIcon, ListItemSecondaryAction } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
   AttachMoney as MoneyIcon,
@@ -101,6 +59,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import workerService from '../services/workerService';
 import { useSelector } from 'react-redux';
 import { normalizeUser } from '../../../utils/userUtils';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 // Styled components
 const GlassCard = styled(Card)(({ theme }) => ({
@@ -137,12 +96,28 @@ const AnimatedButton = styled(Button)(({ theme }) => ({
 // Custom colors for charts
 const CHART_COLORS = ['#FFD700', '#1a1a1a', '#666666', '#999999', '#cccccc'];
 
+const EMPTY_EARNINGS_DATA = {
+  summary: {
+    totalEarnings: 0,
+    monthlyEarnings: 0,
+    averageHourlyRate: 0,
+    totalHours: 0,
+    completedJobs: 0,
+    pendingPayments: 0,
+    growth: 0,
+  },
+  monthlyTrend: [],
+  categoryBreakdown: [],
+  recentTransactions: [],
+  unavailable: true,
+};
+
 const EarningsTracker = () => {
   const theme = useTheme();
   // FIXED: Use standardized user normalization for consistent user data access
   const { user: rawUser } = useSelector((state) => state.auth);
   const user = normalizeUser(rawUser);
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   // State management
   const [loading, setLoading] = useState(true);
@@ -154,65 +129,7 @@ const EarningsTracker = () => {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [detailsDialog, setDetailsDialog] = useState(false);
   const [error, setError] = useState(null);
-
-  // Mock data for demonstration
-  const mockEarningsData = {
-    summary: {
-      totalEarnings: 15250.75,
-      monthlyEarnings: 3420.5,
-      averageHourlyRate: 45.25,
-      totalHours: 156,
-      completedJobs: 23,
-      pendingPayments: 850.0,
-      growth: 12.5,
-    },
-    monthlyTrend: [
-      { month: 'Jan', earnings: 2850, hours: 120, jobs: 18 },
-      { month: 'Feb', earnings: 3200, hours: 140, jobs: 22 },
-      { month: 'Mar', earnings: 2950, hours: 125, jobs: 19 },
-      { month: 'Apr', earnings: 3420, hours: 156, jobs: 23 },
-      { month: 'May', earnings: 3680, hours: 162, jobs: 25 },
-      { month: 'Jun', earnings: 3150, hours: 145, jobs: 21 },
-    ],
-    categoryBreakdown: [
-      { category: 'Electrical', earnings: 5200, percentage: 34 },
-      { category: 'Plumbing', earnings: 4100, percentage: 27 },
-      { category: 'HVAC', earnings: 3500, percentage: 23 },
-      { category: 'General', earnings: 2450, percentage: 16 },
-    ],
-    recentTransactions: [
-      {
-        id: 1,
-        date: '2024-01-15',
-        description: 'Kitchen Wiring Installation',
-        client: 'John Smith',
-        amount: 450.0,
-        status: 'completed',
-        paymentMethod: 'bank_transfer',
-        jobId: 'JOB-001',
-      },
-      {
-        id: 2,
-        date: '2024-01-14',
-        description: 'Bathroom Plumbing Repair',
-        client: 'Sarah Johnson',
-        amount: 320.0,
-        status: 'pending',
-        paymentMethod: 'escrow',
-        jobId: 'JOB-002',
-      },
-      {
-        id: 3,
-        date: '2024-01-12',
-        description: 'AC Unit Installation',
-        client: 'Mike Wilson',
-        amount: 750.0,
-        status: 'completed',
-        paymentMethod: 'credit_card',
-        jobId: 'JOB-003',
-      },
-    ],
-  };
+  const [serviceNotice, setServiceNotice] = useState('');
 
   // Load earnings data
   useEffect(() => {
@@ -222,45 +139,59 @@ const EarningsTracker = () => {
   const loadEarningsData = async () => {
     setLoading(true);
     setError(null);
+    setServiceNotice('');
     try {
       const dateRange = getDateRange(timeRange);
       const workerId = user?.id || user?._id || user?.userId;
 
-      if (workerId) {
-        try {
-          const response = await workerService.getWorkerEarnings(workerId, {
-            start: dateRange.start?.toISOString(),
-            end: dateRange.end?.toISOString(),
-          });
-          const payload = response?.data?.data || response?.data || response;
-          if (payload && (payload.summary || payload.totalEarnings != null)) {
-            const normalized = {
-              summary: payload.summary || {
-                totalEarnings: payload.totalEarnings || 0,
-                monthlyEarnings: payload.monthlyEarnings || 0,
-                averageHourlyRate: payload.averageHourlyRate || 0,
-                totalHours: payload.totalHours || 0,
-                completedJobs: payload.completedJobs || 0,
-                pendingPayments: payload.pendingPayments || 0,
-                growth: payload.growth || 0,
-              },
-              monthlyTrend: payload.monthlyTrend || mockEarningsData.monthlyTrend,
-              categoryBreakdown: payload.categoryBreakdown || mockEarningsData.categoryBreakdown,
-              recentTransactions: payload.recentTransactions || [],
-            };
-            setEarningsData(normalized);
-            setTransactions(normalized.recentTransactions);
-            setLoading(false);
-            return;
-          }
-        } catch (apiErr) {
-          if (import.meta.env.DEV) console.warn('Earnings API unavailable, using sample data:', apiErr.message);
-        }
+      if (!workerId) {
+        setEarningsData(EMPTY_EARNINGS_DATA);
+        setTransactions([]);
+        setServiceNotice('Sign in to view your live earnings analytics.');
+        setLoading(false);
+        return;
       }
 
-      // Fallback to sample data when API unavailable or no user
-      setEarningsData(mockEarningsData);
-      setTransactions(mockEarningsData.recentTransactions);
+      try {
+        const response = await workerService.getWorkerEarnings(workerId, {
+          start: dateRange.start?.toISOString(),
+          end: dateRange.end?.toISOString(),
+        });
+        const payload = response?.data?.data || response?.data || response;
+        if (payload && (payload.summary || payload.totalEarnings != null)) {
+          const normalized = {
+            summary: payload.summary || {
+              totalEarnings: payload.totalEarnings || 0,
+              monthlyEarnings: payload.monthlyEarnings || 0,
+              averageHourlyRate: payload.averageHourlyRate || 0,
+              totalHours: payload.totalHours || 0,
+              completedJobs: payload.completedJobs || 0,
+              pendingPayments: payload.pendingPayments || 0,
+              growth: payload.growth || 0,
+            },
+            monthlyTrend: Array.isArray(payload.monthlyTrend) ? payload.monthlyTrend : [],
+            categoryBreakdown: Array.isArray(payload.categoryBreakdown)
+              ? payload.categoryBreakdown
+              : [],
+            recentTransactions: Array.isArray(payload.recentTransactions)
+              ? payload.recentTransactions
+              : [],
+            unavailable: false,
+          };
+          setEarningsData(normalized);
+          setTransactions(normalized.recentTransactions);
+          setLoading(false);
+          return;
+        }
+      } catch (apiErr) {
+        if (import.meta.env.DEV) console.warn('Earnings API unavailable:', apiErr.message);
+      }
+
+      setEarningsData(EMPTY_EARNINGS_DATA);
+      setTransactions([]);
+      setServiceNotice(
+        'Live earnings analytics are currently unavailable. Sample values are hidden until the service recovers.',
+      );
       setLoading(false);
     } catch (err) {
       setError('Failed to load earnings data. Please try again.');
@@ -316,6 +247,11 @@ const EarningsTracker = () => {
   };
 
   const handleExportData = () => {
+    if (!Array.isArray(transactions) || transactions.length === 0) {
+      setServiceNotice('No transactions are available to export for this time range.');
+      return;
+    }
+
     // Generate CSV export
     const csvData = transactions.map((t) => ({
       Date: format(parseISO(t.date), 'yyyy-MM-dd'),
@@ -378,7 +314,7 @@ const EarningsTracker = () => {
     return (
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {metrics.map((metric, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
+          <Grid item xs={12} sm={6} md={3} key={metric.title || `metric-${index}`}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -620,7 +556,7 @@ const EarningsTracker = () => {
             <Grid item xs={12} md={6}>
               <List>
                 {earningsData.categoryBreakdown.map((category, index) => (
-                  <ListItem key={index}>
+                  <ListItem key={category.category || `category-${index}`}>
                     <ListItemIcon>
                       <Box
                         sx={{
@@ -681,7 +617,11 @@ const EarningsTracker = () => {
           </Box>
         </Box>
 
-        {isMobile ? (
+        {transactions.length === 0 ? (
+          <Alert severity="info" sx={{ borderRadius: 2 }}>
+            No transaction data is available for the selected period.
+          </Alert>
+        ) : isMobile ? (
           <Stack spacing={1.5}>
             {transactions.map((transaction) => (
               <Paper key={transaction.id} sx={{ p: 2, borderRadius: 2 }}>
@@ -881,6 +821,15 @@ const EarningsTracker = () => {
           </Select>
         </FormControl>
       </Box>
+
+      {serviceNotice ? (
+        <Alert
+          severity={earningsData?.unavailable ? 'warning' : 'info'}
+          sx={{ mb: 3, borderRadius: 2 }}
+        >
+          {serviceNotice}
+        </Alert>
+      ) : null}
 
       {/* Summary Cards */}
       {renderSummaryCards()}

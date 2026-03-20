@@ -6,6 +6,20 @@ const OFFLINE_URL = '/offline.html';
 const HEALTHY_GATEWAY_DB = 'kelmah-gateway-db';
 const HEALTHY_GATEWAY_STORE = 'healthyGatewayStore';
 const HEALTHY_GATEWAY_KEY = 'lastHealthyGateway';
+const SW_DEBUG =
+  self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1';
+
+const swLog = (...args) => {
+  if (SW_DEBUG) console.log(...args);
+};
+
+const swWarn = (...args) => {
+  if (SW_DEBUG) console.warn(...args);
+};
+
+const swError = (...args) => {
+  if (SW_DEBUG) console.error(...args);
+};
 
 async function openGatewayDb() {
   return new Promise((resolve, reject) => {
@@ -34,7 +48,7 @@ async function saveHealthyGateway(origin) {
     );
     return tx.complete;
   } catch (error) {
-    console.warn('[SW] Failed to persist healthy gateway:', error);
+    swWarn('[SW] Failed to persist healthy gateway:', error);
     return null;
   }
 }
@@ -51,7 +65,7 @@ async function readHealthyGateway() {
       request.onerror = () => reject(request.error);
     });
   } catch (error) {
-    console.warn('[SW] Failed to read healthy gateway cache:', error);
+    swWarn('[SW] Failed to read healthy gateway cache:', error);
     return null;
   }
 }
@@ -77,7 +91,7 @@ async function fetchAndCacheGatewayStatus() {
       await cache.put('/api/health/aggregate', healthResponse);
     }
   } catch (error) {
-    console.warn('[SW] Gateway status fetch failed:', error);
+    swWarn('[SW] Gateway status fetch failed:', error);
   }
 }
 // Critical resources to cache immediately (avoid CRA-specific paths)
@@ -106,36 +120,36 @@ const NETWORK_FIRST_PATTERNS = [
 
 // Install event - cache critical resources
 self.addEventListener('install', (event) => {
-  console.log('🔧 Service Worker installing...');
+  swLog('🔧 Service Worker installing...');
 
   event.waitUntil(
     caches
       .open(CACHE_NAME)
       .then(async (cache) => {
-        console.log('📦 Caching core resources for offline access');
+        swLog('📦 Caching core resources for offline access');
         // Cache each resource individually — SPA routes may fail and that's OK
         const results = await Promise.allSettled(
           PRECACHE_URLS.map((url) => cache.add(url).catch(() => null))
         );
         const failed = results.filter((r) => r.status === 'rejected');
         if (failed.length > 0) {
-          console.warn(`⚠️ ${failed.length}/${PRECACHE_URLS.length} precache URLs skipped (SPA routes)`);
+          swWarn(`⚠️ ${failed.length}/${PRECACHE_URLS.length} precache URLs skipped (SPA routes)`);
         }
       })
       .then(() => fetchAndCacheGatewayStatus())
       .then(() => {
-        console.log('✅ Service Worker installation complete');
+        swLog('✅ Service Worker installation complete');
         return self.skipWaiting();
       })
       .catch((error) => {
-        console.error('❌ Service Worker installation failed:', error);
+        swError('❌ Service Worker installation failed:', error);
       }),
   );
 });
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('🚀 Service Worker activating...');
+  swLog('🚀 Service Worker activating...');
 
   event.waitUntil(
     caches
@@ -144,14 +158,14 @@ self.addEventListener('activate', (event) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
             if (cacheName !== CACHE_NAME) {
-              console.log('🗑️ Deleting old cache:', cacheName);
+              swLog('🗑️ Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
           }),
         );
       })
       .then(() => {
-        console.log('✅ Service Worker activated');
+        swLog('✅ Service Worker activated');
         return self.clients.claim();
       })
       .then(() => fetchAndCacheGatewayStatus())
@@ -174,7 +188,7 @@ async function clearRuntimeCaches() {
         .map((name) => caches.delete(name).catch(() => false)),
     );
   } catch (error) {
-    console.warn('[SW] Failed to clear runtime caches:', error);
+    swWarn('[SW] Failed to clear runtime caches:', error);
   }
 }
 
@@ -261,7 +275,7 @@ async function handleDocumentRequest(request) {
 
     return response;
   } catch (error) {
-    console.log('📱 Network failed, serving from cache:', request.url);
+    swLog('📱 Network failed, serving from cache:', request.url);
 
     // Fallback to cache
     const cachedResponse = await caches.match(request);
@@ -313,7 +327,7 @@ async function handleStaticAssetRequest(request) {
 
     return response;
   } catch (error) {
-    console.error('Failed to fetch static asset:', request.url);
+    swError('Failed to fetch static asset:', request.url);
     throw error;
   }
 }
@@ -450,7 +464,7 @@ function isStaticAsset(url) {
 
 // Background sync for offline actions
 self.addEventListener('sync', (event) => {
-  console.log('🔄 Background sync event:', event.tag);
+  swLog('🔄 Background sync event:', event.tag);
 
   if (event.tag === 'sync-job-applications') {
     event.waitUntil(syncJobApplications());
@@ -472,7 +486,7 @@ async function syncJobApplications() {
         // Job application endpoint requires jobId in path: POST /api/jobs/:jobId/apply
         const jobId = application.data?.jobId || application.data?.job;
         if (!jobId) {
-          console.error('Missing jobId for offline application:', application.id);
+          swError('Missing jobId for offline application:', application.id);
           continue;
         }
         const response = await fetch(`/api/jobs/${jobId}/apply`, {
@@ -486,14 +500,14 @@ async function syncJobApplications() {
 
         if (response.ok) {
           await removeOfflineJobApplication(application.id);
-          console.log('✅ Synced job application:', application.id);
+          swLog('✅ Synced job application:', application.id);
         }
       } catch (error) {
-        console.error('Failed to sync job application:', error);
+        swError('Failed to sync job application:', error);
       }
     }
   } catch (error) {
-    console.error('Job applications sync failed:', error);
+    swError('Job applications sync failed:', error);
   }
 }
 
@@ -515,14 +529,14 @@ async function syncMessages() {
 
         if (response.ok) {
           await removeOfflineMessage(message.id);
-          console.log('✅ Synced message:', message.id);
+          swLog('✅ Synced message:', message.id);
         }
       } catch (error) {
-        console.error('Failed to sync message:', error);
+        swError('Failed to sync message:', error);
       }
     }
   } catch (error) {
-    console.error('Messages sync failed:', error);
+    swError('Messages sync failed:', error);
   }
 }
 
@@ -544,20 +558,20 @@ async function syncPayments() {
 
         if (response.ok) {
           await removeOfflinePayment(payment.id);
-          console.log('✅ Synced payment:', payment.id);
+          swLog('✅ Synced payment:', payment.id);
         }
       } catch (error) {
-        console.error('Failed to sync payment:', error);
+        swError('Failed to sync payment:', error);
       }
     }
   } catch (error) {
-    console.error('Payments sync failed:', error);
+    swError('Payments sync failed:', error);
   }
 }
 
 // Push notification handling
 self.addEventListener('push', (event) => {
-  console.log('📲 Push notification received:', event);
+  swLog('📲 Push notification received:', event);
 
   const options = {
     body: 'You have new updates on Kelmah',
@@ -592,7 +606,7 @@ self.addEventListener('push', (event) => {
 
 // Notification click handling
 self.addEventListener('notificationclick', (event) => {
-  console.log('🔔 Notification clicked:', event);
+  swLog('🔔 Notification clicked:', event);
 
   event.notification.close();
 
@@ -618,4 +632,4 @@ async function getOfflinePayments() {
 }
 async function removeOfflinePayment(id) { }
 
-console.log('🇬🇭 Kelmah Service Worker loaded - Optimized for Ghana market (v1.0.7 chunk recovery)');
+swLog('🇬🇭 Kelmah Service Worker loaded - Optimized for Ghana market (v1.0.7 chunk recovery)');

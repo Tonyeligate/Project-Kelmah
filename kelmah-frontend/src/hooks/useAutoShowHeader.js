@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { useMediaQuery, useTheme } from '@mui/material';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 export const useAutoShowHeader = (options = {}) => {
   const {
@@ -15,8 +15,7 @@ export const useAutoShowHeader = (options = {}) => {
     disabled = false, // Disable auto-show functionality
   } = options;
 
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   const [isVisible, setIsVisible] = useState(false);
   const [isLocked, setIsLocked] = useState(false); // Prevents auto-hide when user is interacting
@@ -34,9 +33,6 @@ export const useAutoShowHeader = (options = {}) => {
   // Show header and manage auto-hide
   const showHeader = useCallback(
     (lock = false) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('✨ Showing header:', { lock, isMobile, isLocked });
-      }
       setIsVisible(true);
       if (lock) {
         setIsLocked(true);
@@ -46,9 +42,6 @@ export const useAutoShowHeader = (options = {}) => {
         clearHideTimeout();
         const timeout = setTimeout(() => {
           if (!isLocked) {
-            if (process.env.NODE_ENV === 'development') {
-              console.log('⏰ Auto-hiding header after delay');
-            }
             setIsVisible(false);
           }
         }, hideDelay);
@@ -89,17 +82,8 @@ export const useAutoShowHeader = (options = {}) => {
       setMouseY(y);
 
       if (y <= triggerDistance && !isVisible) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🖱️ Mouse at top, showing header:', {
-            y,
-            triggerDistance,
-          });
-        }
         showHeader();
       } else if (y > triggerDistance * 2 && isVisible && !isLocked) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🖱️ Mouse moved away, hiding header:', { y, isLocked });
-        }
         hideHeader();
       }
     },
@@ -148,17 +132,9 @@ export const useAutoShowHeader = (options = {}) => {
   // Setup event listeners
   useEffect(() => {
     if (disabled) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log(
-          '🚫 useAutoShowHeader disabled, not setting up event listeners',
-        );
-      }
       return;
     }
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🎯 Setting up auto-show header event listeners');
-    }
     const options = { passive: true };
 
     document.addEventListener('mousemove', handleMouseMove, options);
@@ -167,9 +143,6 @@ export const useAutoShowHeader = (options = {}) => {
     document.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🧹 Cleaning up auto-show header event listeners');
-      }
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('mouseleave', handleMouseLeave);

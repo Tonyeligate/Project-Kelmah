@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import {
-  Box,
-  Fade,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
+import { Box, Fade, Typography, useTheme } from '@mui/material';
 import { useLocation, Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
@@ -16,6 +10,7 @@ import MobileBottomNav from './MobileBottomNav';
 import SmartNavigation from '../../../components/common/SmartNavigation';
 import { useThemeMode } from '../../../theme/ThemeProvider';
 import { BOTTOM_NAV_HEIGHT, HEADER_HEIGHT_MOBILE } from '../../../constants/layout';
+import { useBreakpointUp } from '@/hooks/useResponsive';
 // Header functionality integrated into Header component
 
 const DASHBOARD_PATH_PREFIXES = [
@@ -100,7 +95,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
 
   // Only show footer on homepage
   const isHomePage = location.pathname === '/' || location.pathname === '/home';
-  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const isMdUp = useBreakpointUp('md');
   // ✅ MOBILE-AUDIT FIX: Use MUI breakpoint instead of custom query to avoid 769-899px dead zone
   const isMobile = !isMdUp;
   const currentPath = location.pathname || '';
@@ -163,6 +158,31 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
     </Box>
   );
 
+  const skipToContentLink = (
+    <Box
+      component="a"
+      href="#main-content"
+      sx={{
+        position: 'absolute',
+        left: 16,
+        top: -48,
+        zIndex: 1500,
+        px: 2,
+        py: 1,
+        borderRadius: 1,
+        bgcolor: 'primary.main',
+        color: 'primary.contrastText',
+        textDecoration: 'none',
+        fontWeight: 600,
+        '&:focus': {
+          top: 12,
+        },
+      }}
+    >
+      Skip to main content
+    </Box>
+  );
+
   // Dashboard layout
   if (isDashboardPage) {
     // ✅ MOBILE-AUDIT FIX: Two-state layout — mobile (<md) and desktop (>=md)
@@ -180,6 +200,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
             overflowX: 'hidden',
           }}
         >
+          {skipToContentLink}
           {!isMessagesPage && (
             <Header
               toggleTheme={resolvedToggleTheme}
@@ -190,6 +211,8 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
           {/* Main content area — flex-based height, safe-area aware */}
           <Box
             component="main"
+            id="main-content"
+            tabIndex={-1}
             sx={{
               flex: 1,
               width: '100%',
@@ -215,6 +238,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
     // Desktop (>=md): permanent sidebar + auto-show header
     return (
       <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
+          {skipToContentLink}
         <Header
           toggleTheme={resolvedToggleTheme}
           mode={resolvedMode}
@@ -224,6 +248,8 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
         <Sidebar variant="permanent" collapsed={sidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
         <Box
           component="main"
+          id="main-content"
+          tabIndex={-1}
           sx={{
             flexGrow: 1,
             width: '100%',
@@ -253,6 +279,7 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
         overflowY: 'visible', // Let body handle vertical scrolling
       }}
     >
+      {skipToContentLink}
       {!isAuthPage && (
         <Header
           toggleTheme={resolvedToggleTheme}
@@ -263,6 +290,8 @@ const Layout = ({ children, toggleTheme, mode, setThemeMode }) => {
       <Fade in timeout={500}>
         <Box
           component="main"
+          id="main-content"
+          tabIndex={-1}
           sx={{
             width: '100%',
             minWidth: 0,

@@ -58,11 +58,36 @@ const JobMapView = ({
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
+            flexDirection: 'column',
+            gap: 1,
+            textAlign: 'center',
+            px: 2,
           }}
         >
-          <Typography variant="body1" color="text.secondary">
-            Map view implementation requires Google Maps API integration
+          <Typography variant="h6" color="text.primary">
+            Map preview is temporarily unavailable
           </Typography>
+          <Typography variant="body2" color="text.secondary">
+            You can continue with list view and location filters to review {jobs.length} worker matches
+            {radius ? ` within ${radius} km.` : '.'}
+          </Typography>
+          {centerLocation ? (
+            <Typography variant="caption" color="text.secondary">
+              A location center is already selected for this search.
+            </Typography>
+          ) : (
+            <Typography variant="caption" color="text.secondary">
+              Set a location in filters to narrow nearby workers.
+            </Typography>
+          )}
+          <Button
+            variant="outlined"
+            startIcon={<ListIcon />}
+            onClick={onToggleView}
+            sx={{ mt: 1 }}
+          >
+            Back to List
+          </Button>
         </Box>
       )}
     </Box>

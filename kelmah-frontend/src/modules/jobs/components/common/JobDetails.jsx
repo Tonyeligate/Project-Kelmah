@@ -199,7 +199,7 @@ function JobDetails() {
                   : job.skills || []
                 ).map((skill, index) => (
                   <Chip
-                    key={index}
+                    key={`${(typeof skill === 'string' ? skill.trim() : skill) || 'skill'}-${index}`}
                     label={typeof skill === 'string' ? skill.trim() : skill}
                     variant="outlined"
                     size="small"

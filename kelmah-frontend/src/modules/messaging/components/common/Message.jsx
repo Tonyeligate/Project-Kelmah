@@ -1,21 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Avatar,
-  Box,
-  Typography,
-  IconButton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Tooltip,
-  Paper,
-  Fade,
-  Chip,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
+  Avatar, Box, Typography, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Tooltip, Paper, Fade, Chip, useTheme } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import { format } from 'date-fns';
 import useLongPress from '../../../../hooks/useLongPress';
@@ -33,6 +19,7 @@ import {
 } from '@mui/icons-material';
 import { useInView } from 'react-intersection-observer';
 import MessageAttachments from './MessageAttachments';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 // Styled components
 const MessageBubble = styled(Paper)(({ theme, isOwn }) => ({
@@ -87,7 +74,7 @@ const Message = ({
   const [isHovered, setIsHovered] = useState(false);
   const messageRef = useRef(null);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   // Long-press handler for mobile: opens context menu at touch coordinates
   const handleLongPress = useCallback((e) => {
@@ -566,7 +553,5 @@ Message.propTypes = {
   onVisibilityChange: PropTypes.func,
   onResend: PropTypes.func,
 };
-
-
 
 export default Message;

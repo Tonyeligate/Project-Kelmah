@@ -5,7 +5,6 @@ import {
   Toolbar,
   Typography,
   Box,
-  useMediaQuery,
   useTheme,
   MenuItem,
   Tooltip,
@@ -24,6 +23,7 @@ import {
   ExitToApp as LogoutIcon,
 } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 import DesktopNav from './DesktopNav';
 import MobileNav from './MobileNav';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
@@ -59,7 +59,7 @@ const Header = ({
   const authState = useAuthCheck();
 
   // ✅ FIXED: Enable proper mobile responsiveness based on screen size
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
@@ -198,7 +198,9 @@ const Header = ({
   // H39 fix: Wire to messaging context for real unread message count
   const messageCtx = useContext(MessageContext);
   const unreadMessages = showUserFeatures ? messageCtx?.unreadCount || 0 : 0;
-  const isUserOnline = showUserFeatures ? true : false;
+  const isUserOnline = showUserFeatures
+    ? messageCtx?.isUserOnline?.(user?.id || user?._id || user?.userId) || false
+    : false;
 
   const handleProfileMenuOpen = (event) => {
     if (!showUserFeatures) return;
@@ -247,9 +249,9 @@ const Header = ({
   const handleLogout = async () => {
     handleMenuClose();
     // Always clear local auth state first so sign-out feels instant on mobile.
+    // Avoid wiping unrelated sessionStorage keys (e.g. UI preferences).
     try {
       secureStorage.clear();
-      sessionStorage.clear();
     } catch (_) { /* best-effort */ }
 
     dispatch(logout());

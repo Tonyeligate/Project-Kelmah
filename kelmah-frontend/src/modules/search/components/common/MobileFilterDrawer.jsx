@@ -50,15 +50,23 @@ const MobileFilterDrawer = ({
     'Carpentry',
     'Masonry',
     'Plumbing',
+    'Emergency Plumbing',
     'Electrical Work',
+    'Rewiring & Switchboard',
     'Painting',
+    'Exterior Painting',
     'Welding',
+    'Certified Welding',
     'Roofing',
+    'Roof Repair',
     'Flooring',
     'HVAC',
+    'AC & Refrigeration',
+    'Cabinet Making',
     'Landscaping',
     'General Construction',
     'Maintenance',
+    'Maintenance Callout',
   ];
 
   // Job types relevant to skilled trades
@@ -154,11 +162,11 @@ const MobileFilterDrawer = ({
           {/* Location */}
           <TextField
             fullWidth
-            label="Where?"
+            label="Where in Ghana?"
             variant="outlined"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="e.g., Accra, Kumasi, Tema"
+            placeholder="e.g., Accra, Kumasi, Takoradi, Tamale"
             InputProps={{
               sx: { minHeight: '48px' }, // Touch-friendly
             }}

@@ -81,15 +81,23 @@ const JobSearchForm = ({
     'Carpentry',
     'Masonry',
     'Plumbing',
+    'Emergency Plumbing',
     'Electrical Work',
+    'Rewiring & Switchboard',
     'Painting',
+    'Exterior Painting',
     'Welding',
+    'Certified Welding',
     'Roofing',
+    'Roof Repair',
     'Flooring',
     'HVAC',
+    'AC & Refrigeration',
+    'Cabinet Making',
     'Landscaping',
     'General Construction',
     'Maintenance',
+    'Maintenance Callout',
   ];
 
   // Job types relevant to skilled trades
@@ -157,7 +165,7 @@ const JobSearchForm = ({
                 const nextKeyword = e.target.value.slice(0, SEARCH_QUERY_MAX_LENGTH);
                 setKeyword(nextKeyword);
               }}
-              placeholder="e.g., Carpenter, Plumber"
+              placeholder="e.g., emergency plumber, electrician, tiler"
               inputProps={{ maxLength: SEARCH_QUERY_MAX_LENGTH }}
             />
           </Grid>
@@ -165,7 +173,7 @@ const JobSearchForm = ({
           <Grid item xs={12} sm={6} md={2}>
             <TextField
               fullWidth
-              label="Where?"
+              label="Where in Ghana?"
               variant="outlined"
               size="small"
               value={location}
@@ -173,7 +181,7 @@ const JobSearchForm = ({
                 const nextLocation = e.target.value.slice(0, SEARCH_LOCATION_MAX_LENGTH);
                 setLocation(nextLocation);
               }}
-              placeholder="e.g., Accra, Kumasi"
+              placeholder="e.g., Accra, Kumasi, Tamale"
               inputProps={{ maxLength: SEARCH_LOCATION_MAX_LENGTH }}
             />
           </Grid>

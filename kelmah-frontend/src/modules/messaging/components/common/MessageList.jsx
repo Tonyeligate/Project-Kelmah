@@ -319,7 +319,7 @@ const MessageList = ({
       <AttachmentContainer>
         {message.attachments.map((attachment, index) => (
           <AttachmentItem
-            key={index}
+            key={attachment.id || attachment.url || attachment.name || `attachment-${index}`}
             component="a"
             href={attachment.url}
             target="_blank"
@@ -542,16 +542,16 @@ const MessageList = ({
         open={Boolean(menuAnchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={handleCopyMessage}>
+        <MenuItem onClick={handleCopyMessage} aria-label="Copy message">
           <ListItemIcon>
-            <CopyIcon fontSize="small" />
+            <CopyIcon fontSize="small" aria-hidden="true" />
           </ListItemIcon>
           <ListItemText>Copy message</ListItemText>
         </MenuItem>
         {typeof deleteMessage === 'function' && (
-          <MenuItem onClick={handleDeleteMessage}>
+          <MenuItem onClick={handleDeleteMessage} aria-label="Delete message">
             <ListItemIcon>
-              <DeleteIcon fontSize="small" />
+              <DeleteIcon fontSize="small" aria-hidden="true" />
             </ListItemIcon>
             <ListItemText>Delete message</ListItemText>
           </MenuItem>

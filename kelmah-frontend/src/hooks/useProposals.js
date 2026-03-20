@@ -9,6 +9,21 @@ const PROPOSAL_ENDPOINT = '/jobs/proposals';
 
 const buildCacheKey = (status, page, limit) => `${status}:${page}:${limit}`;
 
+const buildRequestId = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `proposals_${crypto.randomUUID()}`;
+  }
+
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const bytes = new Uint8Array(8);
+    crypto.getRandomValues(bytes);
+    const randomPart = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+    return `proposals_${Date.now()}_${randomPart}`;
+  }
+
+  return `proposals_${Date.now()}`;
+};
+
 const normalizeItems = (payload) => {
   if (Array.isArray(payload)) {
     return payload;
@@ -84,9 +99,7 @@ export const useProposals = ({
       setError(null);
 
       let finalError = null;
-      const requestId = `proposals_${Date.now()}_${Math.random()
-        .toString(36)
-        .slice(2, 8)}`;
+      const requestId = buildRequestId();
 
       for (let attempt = 0; attempt <= MAX_RETRY_ATTEMPTS; attempt += 1) {
         clearInFlightRequest();

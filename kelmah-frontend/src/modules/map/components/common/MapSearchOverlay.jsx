@@ -14,7 +14,6 @@ import {
   Avatar,
   Rating,
   Drawer,
-  useMediaQuery,
   useTheme,
   InputAdornment,
   Divider,
@@ -124,6 +123,7 @@ import {
   OpenInNew as OpenIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 import LocationSelector from './LocationSelector';
 import mapService from '../../services/mapService';
 
@@ -531,7 +531,7 @@ const PremiumFilterPanel = ({
   onSortChange,
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const [activeTab, setActiveTab] = useState(0);
 
   const tabs = [
@@ -1484,7 +1484,7 @@ const MapSearchOverlay = ({
   onClose = () => {},
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState('');
@@ -2137,7 +2137,7 @@ const MapSearchOverlay = ({
               <Stack spacing={2}>
                 {[1, 2, 3].map((i) => (
                   <Skeleton
-                    key={i}
+                    key={`live-result-skeleton-${i}`}
                     variant="rectangular"
                     height={80}
                     sx={{ borderRadius: 2 }}

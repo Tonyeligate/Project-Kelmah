@@ -96,8 +96,11 @@ const App = () => {
   }, []);
 
   // Warm up backend services on app load (prevents Render free tier sleep)
+  // Defer work until after first render/idle to avoid delaying first paint.
   useEffect(() => {
     let timerId;
+    let idleId;
+
     const wakeUpBackend = async () => {
       if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
         return;
@@ -113,7 +116,7 @@ const App = () => {
 
         if (result?.wakingUp > 0) {
           // Services are waking up, keep indicator for a bit
-          timerId = setTimeout(() => setServicesWakingUp(false), 15000);
+          timerId = window.setTimeout(() => setServicesWakingUp(false), 15000);
         } else {
           setServicesWakingUp(false);
         }
@@ -122,8 +125,23 @@ const App = () => {
         setServicesWakingUp(false);
       }
     };
-    wakeUpBackend();
-    return () => { if (timerId) clearTimeout(timerId); };
+
+    const scheduleWakeUp = () => {
+      if (typeof requestIdleCallback === 'function') {
+        idleId = requestIdleCallback(wakeUpBackend, { timeout: 5000 });
+      } else {
+        timerId = window.setTimeout(wakeUpBackend, 2500);
+      }
+    };
+
+    scheduleWakeUp();
+
+    return () => {
+      if (timerId) clearTimeout(timerId);
+      if (typeof cancelIdleCallback === 'function' && idleId) {
+        cancelIdleCallback(idleId);
+      }
+    };
   }, []);
 
   // Verify authentication on mount
@@ -257,13 +275,22 @@ const App = () => {
           }}
           message="A new version of Kelmah is available"
           action={
-            <Button
-              color="primary"
-              size="small"
-              onClick={() => window.location.reload()}
-            >
-              Update Now
-            </Button>
+            <>
+              <Button
+                color="primary"
+                size="small"
+                onClick={() => window.location.reload()}
+              >
+                Update Now
+              </Button>
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => setSwUpdateAvailable(false)}
+              >
+                Later
+              </Button>
+            </>
           }
         />
         <Snackbar

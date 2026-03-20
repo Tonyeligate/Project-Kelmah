@@ -374,7 +374,7 @@ const PaymentMethodsPage = () => {
       {loading ? (
         <Box sx={{ py: 2 }}>
           {[1,2,3].map(i => (
-            <Skeleton key={i} variant="rounded" height={80} sx={{ borderRadius: 2, mb: 2 }} />
+            <Skeleton key={`payment-methods-skeleton-${i}`} variant="rounded" height={80} sx={{ borderRadius: 2, mb: 2 }} />
           ))}
         </Box>
       ) : paymentMethods.length === 0 ? (

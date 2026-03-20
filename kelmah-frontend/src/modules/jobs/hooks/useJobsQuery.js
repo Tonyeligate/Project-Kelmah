@@ -36,8 +36,34 @@ const sanitizeParams = (rawParams = EMPTY_QUERY_PARAMS, defaults = EMPTY_QUERY_P
 const sanitizeFilters = (rawFilters = EMPTY_QUERY_PARAMS) =>
     sanitizeParams(rawFilters, { status: 'open' });
 
+const stableSerialize = (value) => {
+    if (Array.isArray(value)) {
+        return value.map((item) => stableSerialize(item));
+    }
+
+    if (value && typeof value === 'object') {
+        return Object.keys(value)
+            .sort()
+            .reduce((acc, key) => {
+                acc[key] = stableSerialize(value[key]);
+                return acc;
+            }, {});
+    }
+
+    return value;
+};
+
 const buildStableParamsKey = (params = EMPTY_QUERY_PARAMS) =>
-    JSON.stringify(params ?? EMPTY_QUERY_PARAMS);
+    JSON.stringify(stableSerialize(params ?? EMPTY_QUERY_PARAMS));
+
+const parseStableParamsKey = (stableKey, fallback = EMPTY_QUERY_PARAMS) => {
+    try {
+        const parsed = JSON.parse(stableKey);
+        return parsed && typeof parsed === 'object' ? parsed : fallback;
+    } catch {
+        return fallback;
+    }
+};
 
 export const jobKeys = {
     all: () => ['jobs'],
@@ -93,8 +119,7 @@ const updateSavedJobsCache = (current, job, mode = 'add') => {
 export const useJobsQuery = (filters = EMPTY_QUERY_PARAMS, options = {}) => {
     const filtersKey = buildStableParamsKey(filters);
     const normalizedFilters = useMemo(
-        () => sanitizeFilters(filters),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        () => sanitizeFilters(parseStableParamsKey(filtersKey, EMPTY_QUERY_PARAMS)),
         [filtersKey],
     );
 
@@ -121,8 +146,7 @@ export const useJobQuery = (jobId, options = {}) =>
 export const useSavedJobsQuery = (params = EMPTY_QUERY_PARAMS, options = {}) => {
     const paramsKey = buildStableParamsKey(params);
     const normalizedParams = useMemo(
-        () => sanitizeParams(params),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        () => sanitizeParams(parseStableParamsKey(paramsKey, EMPTY_QUERY_PARAMS)),
         [paramsKey],
     );
 

@@ -6,7 +6,6 @@ import {
   ToggleButtonGroup,
   Snackbar,
   Alert,
-  useMediaQuery,
   useTheme,
   Chip,
   Button,
@@ -54,6 +53,7 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 import InteractiveMap from '../components/common/InteractiveMap';
 import mapService from '../services/mapService';
 import { Helmet } from 'react-helmet-async';
@@ -63,7 +63,7 @@ import { Helmet } from 'react-helmet-async';
 // ────────────────────────────────────────────────────────────
 const BottomSheet = ({ open, onToggle, children, title, count, loading }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   if (!isMobile) return null;
 
   return (
@@ -290,7 +290,7 @@ const ProfessionalMapPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const refreshTimer = useRef(null);
 
   // State
@@ -692,7 +692,7 @@ const ProfessionalMapPage = () => {
             <Box sx={{ flex: 1, overflow: 'auto', py: 1 }}>
               {loading && filtered.length === 0 ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <Box key={i} sx={{ px: 2, mb: 1.5 }}>
+                  <Box key={`map-desktop-skeleton-${i}`} sx={{ px: 2, mb: 1.5 }}>
                     <Skeleton variant="rounded" height={80} />
                   </Box>
                 ))
@@ -782,7 +782,7 @@ const ProfessionalMapPage = () => {
           <Box sx={{ flex: 1, overflow: 'auto', py: 1 }}>
             {loading && filtered.length === 0 ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <Box key={i} sx={{ px: 2, mb: 1.5 }}>
+                <Box key={`map-mobile-skeleton-${i}`} sx={{ px: 2, mb: 1.5 }}>
                   <Skeleton variant="rounded" height={80} />
                 </Box>
               ))

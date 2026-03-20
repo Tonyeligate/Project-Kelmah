@@ -425,7 +425,7 @@ const SavedSearches = ({
   const renderLoadingSkeleton = () => (
     <Grid container spacing={3}>
       {[...Array(4)].map((_, index) => (
-        <Grid item xs={12} sm={6} md={4} key={index}>
+        <Grid item xs={12} sm={6} md={4} key={`saved-search-skeleton-${index}`}>
           <Card>
             <CardContent>
               <Box mb={2}>

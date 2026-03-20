@@ -33,7 +33,10 @@ const forwardToBidService = async (req, res, path, method = 'GET') => {
     };
 
     if (req.user) {
-      config.headers['x-authenticated-user'] = JSON.stringify(req.user);
+      // Preserve the exact signed payload produced by authenticate middleware.
+      // Re-serializing req.user can break downstream HMAC validation.
+      config.headers['x-authenticated-user'] =
+        req.headers['x-authenticated-user'] || JSON.stringify(req.user);
       config.headers['x-auth-source'] = 'api-gateway';
       // Forward HMAC signature computed by authenticate middleware
       if (req.headers['x-gateway-signature']) {

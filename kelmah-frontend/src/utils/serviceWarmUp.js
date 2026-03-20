@@ -16,6 +16,7 @@ const MAX_WARMUP_RETRIES = 1;
 const RETRY_DELAY_MS = 15000;
 const WARMUP_COOLDOWN_MS = 15 * 60 * 1000;
 const LAST_WARMUP_AT_KEY = 'kelmah:lastServiceWarmupAt';
+let warmUpRetryCount = 0;
 
 const getLastWarmupAt = () => {
   if (typeof window === 'undefined') {
@@ -74,6 +75,7 @@ export const warmUpServices = async (options = {}) => {
   const { force = false, maxRetries = MAX_WARMUP_RETRIES } = options;
 
   if (!force) {
+    warmUpRetryCount = 0;
     const elapsed = Date.now() - getLastWarmupAt();
     if (elapsed > 0 && elapsed < WARMUP_COOLDOWN_MS) {
       return { success: true, skipped: true, reason: 'cooldown' };
@@ -105,17 +107,16 @@ export const warmUpServices = async (options = {}) => {
 
     // If services are waking up, schedule a limited retry.
     if (wakingUp > 0) {
-      const currentAttempt = warmUpServices._retryCount || 0;
-      if (currentAttempt < maxRetries) {
-        warmUpServices._retryCount = currentAttempt + 1;
-        if (import.meta.env.DEV) console.log(`⏳ Services waking up, retry ${currentAttempt + 1}/${maxRetries} in ${RETRY_DELAY_MS / 1000} seconds...`);
+      if (warmUpRetryCount < maxRetries) {
+        warmUpRetryCount += 1;
+        if (import.meta.env.DEV) console.log(`⏳ Services waking up, retry ${warmUpRetryCount}/${maxRetries} in ${RETRY_DELAY_MS / 1000} seconds...`);
         setTimeout(() => warmUpServices({ force: true, maxRetries }), RETRY_DELAY_MS);
       } else {
         if (import.meta.env.DEV) console.warn('⚠️ Max warm-up retries reached. Some services may still be waking up.');
-        warmUpServices._retryCount = 0;
+        warmUpRetryCount = 0;
       }
     } else {
-      warmUpServices._retryCount = 0;
+      warmUpRetryCount = 0;
     }
 
     return {
@@ -127,6 +128,7 @@ export const warmUpServices = async (options = {}) => {
       results: results.map(r => r.status === 'fulfilled' ? r.value : { error: r.reason })
     };
   } catch (error) {
+    warmUpRetryCount = 0;
     if (import.meta.env.DEV) console.error('🔥 Service warm-up failed:', error);
     return { success: false, error: error.message };
   }

@@ -80,7 +80,7 @@ const NotificationSettingsPage = () => {
           <Box>
             <Skeleton variant="text" width={80} height={28} />
             {Array.from(new Array(7)).map((_, i) => (
-              <Skeleton key={i} variant="rectangular" height={44} sx={{ mt: 1, borderRadius: 1 }} />
+              <Skeleton key={`notification-settings-skeleton-${i}`} variant="rectangular" height={44} sx={{ mt: 1, borderRadius: 1 }} />
             ))}
           </Box>
         </Paper>

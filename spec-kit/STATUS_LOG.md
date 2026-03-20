@@ -1,3 +1,1398 @@
+### Generated Findings Remediation Batch 29 March 20 2026 ✅ COMPLETED
+
+**Date**: March 20, 2026  
+**Scope**: Addendum section 2 Search Discovery Clarity, focused on 2.9 location hint clarity and 2.10 search bar tap target size with minimal UX-only hardening for narrow screens.
+
+**Files touched**
+- kelmah-frontend/src/modules/search/components/LocationBasedSearch.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Preserved location selection and search flows, including current location detection, autocomplete selection, manual query submit, and onLocationSelect callbacks.
+- Improved location search guidance with clear helper text that explains what to type and where to continue when live search is unavailable.
+- Increased search icon button tap target to a mobile-comfortable 44x44 size without changing search behavior.
+- Improved narrow-screen metadata scanability by enabling wrap-safe flex layouts and spacing for location rows and region summary rows so text and chips do not collide on 320/360 widths.
+- Hardened list item key stability for popular, recent, and nearby lists using available stable identifiers first, then normalized location metadata fallbacks.
+
+**Validation outcomes**
+- Diagnostics (touched files): get_errors for LocationBasedSearch.jsx and STATUS_LOG.md
+  - Result: No errors found.
+- Frontend production build (kelmah-frontend): npm run build
+  - Result line: built in 54.39s
+
+### Generated Findings Remediation Batch 28 March 20 2026 ✅ COMPLETED
+
+**Date**: March 20, 2026  
+**Scope**: Thin-surface remediation for worker portfolio manager scanability and overflow handling across 320/360/390/768/desktop with minimal, local UX polish and unchanged create/edit/delete/upload flows.
+
+**Files touched**
+- kelmah-frontend/src/modules/worker/components/PortfolioManager.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Preserved existing data flow and actions: portfolio fetch, create, update, delete, and image upload behavior remain unchanged.
+- Improved portfolio card scanability on small viewports by tightening card content spacing, using mobile-friendly title sizing, and improving metadata row alignment.
+- Improved overflow resilience for narrow screens by enforcing safe wrapping for long category/location/budget/date text and by making skill chips truncate safely.
+- Kept image presentation behavior intact while improving mobile card media height consistency and no-photo messaging clarity.
+- Improved empty-state helper copy with concise, truthful guidance on what to add first and clear ownership expectations.
+
+**Validation outcomes**
+- Diagnostics (touched frontend file): npx eslint src/modules/worker/components/PortfolioManager.jsx
+  - Result: ESLINT_STATUS=FAILED CODE=1 (261 existing formatting/lint errors, primarily prettier/prettier baseline in file).
+- Diagnostics (touched status log file): Select-String -Path spec-kit/STATUS_LOG.md -Pattern "Generated Findings Remediation Batch 28 March 20 2026 ✅ COMPLETED"
+  - Result: STATUS_LOG_ENTRY_PRESENT=YES
+- Frontend production build (kelmah-frontend): npm run build
+  - Result line: BUILD_STATUS=SUCCESS BUILD_DURATION=82.66s
+
+### Generated Findings Remediation Batch 27 March 20 2026 ✅ COMPLETED
+
+**Date**: March 20, 2026  
+**Scope**: Thin-surface remediation for proposal review surface readability and decision clarity across 320/360/390/768 with minimal-risk local changes and unchanged behavior/data flow.
+
+**Files touched**
+- kelmah-frontend/src/modules/hirer/components/ProposalReview.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Preserved existing proposal fetching, pagination, status filtering, and action flows; no API/service contract or payload handling changes.
+- Reduced aggressive truncation on mobile proposal rows by allowing controlled two-line worker and job text with safe word wrapping.
+- Kept row layout stable on narrow screens by aligning content to top, keeping a stable action column width, and allowing status/rate metadata wrapping.
+- Improved control-area responsiveness for 320-768 by stacking last-updated/refresh controls on small widths and enabling pagination wrap.
+- Added concise decision guidance copy based on existing proposal data fields (scope fit, proposed rate, start date, location, and details view).
+
+**Validation outcomes**
+- Diagnostics (touched frontend file): npx eslint src/modules/hirer/components/ProposalReview.jsx
+  - Result: ESLINT_STATUS=FAILED CODE=1 (existing file-level prettier baseline; no API/data-flow regressions introduced).
+- Diagnostics (status log update check): Select-String -Path spec-kit/STATUS_LOG.md -Pattern "Generated Findings Remediation Batch 27 March 20 2026 ✅ COMPLETED"
+  - Result: STATUS_LOG_ENTRY_PRESENT=YES
+- Frontend production build (kelmah-frontend): npm run build
+  - Result line: BUILD_STATUS=SUCCESS BUILD_DURATION=39.97s
+
+### Generated Findings Remediation Batch 26 March 20 2026 ✅ COMPLETED
+
+**Date**: March 20, 2026  
+**Scope**: Thin-surface remediation for worker comparison surface decision clarity and scanability across 320/360/390/768/desktop with production-safe, local changes only.
+
+**Files touched**
+- kelmah-frontend/src/modules/hirer/components/WorkerComparisonTable.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Preserved current comparison behavior and data compatibility (existing rating, completed jobs, and average rate rendering remains intact).
+- Added concise explainability copy describing what is being compared and that trust cues only appear when profile fields are provided.
+- Improved stacked mobile card scanability for long values by enabling safe word wrapping and truncation behavior for worker names and chips.
+- Added lightweight trust/suitability cues only when data exists: location, availability, response time, and verification status.
+- Improved narrow desktop usability by enabling horizontal overflow handling in the table container and setting a table minimum width while keeping table semantics unchanged.
+
+**Validation outcomes**
+- Diagnostics (touched frontend file): npx eslint src/modules/hirer/components/WorkerComparisonTable.jsx
+  - Result: ESLINT_STATUS=SUCCESS
+- Frontend production build (kelmah-frontend): npm run build
+  - Result line: BUILD_STATUS=SUCCESS BUILD_DURATION=56.24s
+
+### Generated Findings Remediation Batch 25 March 20 2026 ✅ COMPLETED
+
+**Date**: March 20, 2026  
+**Scope**: Thin-surface remediation for nearby workers widget UX clarity and resilience across mobile and desktop breakpoints (320/360/390/768/desktop) without redesign.
+
+**Files touched**
+- `kelmah-frontend/src/modules/worker/components/NearbyWorkersWidget.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Implementation summary**
+- Preserved existing functionality: nearby worker loading still uses device geolocation with central Accra fallback and refresh support.
+- Added clear user-facing loading and status messaging (`aria-live`) so location checks and fetch outcomes are understandable.
+- Added truthful explainability copy about location behavior and fixed search radius (`25 km`) with explicit fallback disclosure.
+- Improved empty-state clarity with actionable retry guidance.
+- Improved row scannability for narrow screens by emphasizing worker name and concise location/distance metadata when available.
+- Hardened key stability for list rendering by prioritizing stable identifiers (`id`, `userId`, `_id`) and safe fallback keys.
+- Added resilience for missing `navigator/geolocation` support and geolocation failure modes (permission denied, unavailable, timeout) without noisy failure behavior.
+
+**Validation outcomes**
+- Diagnostics (touched file): `npx eslint src/modules/worker/components/NearbyWorkersWidget.jsx`
+  - Result: `ESLINT_STATUS=SUCCESS`
+- Frontend production build: `npm run build` in `kelmah-frontend`
+  - Result line: `BUILD_STATUS=SUCCESS BUILD_DURATION=43.55s`
+
+### Session: Generated Findings Remediation Batch 24 March 20 2026 ✅ COMPLETED
+
+**Date**: March 20, 2026  
+**Scope**: Focused mobile viewport pass (320/360/390/768) for Batch 21-23 surfaces with narrow-screen ergonomics hardening.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/layout/components/MobileBottomNav.jsx`
+- `kelmah-frontend/src/modules/notifications/pages/NotificationsPage.jsx`
+- `kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Findings and implementation**
+- `MobileBottomNav`: Long `Applications` labels were most likely to crowd on narrow devices when five tabs are present.
+  - Added mobile-only compact label (`Apps`) for both worker and hirer application tabs using existing responsive breakpoint detection.
+- `NotificationsPage`: Existing Batch 22 responsive protections already covered key 320-768 risks (header action stacking, summary-row wrap, chip wrapping/read-state clarity), no additional code change required in this pass.
+- `WorkerSearchResults`: Existing Batch 23 control-level responsive protections already covered key 320-768 risks (filter control wrapping, compact filter label, sort/help text wrapping, map/list compact labels), no additional code change required in this pass.
+
+**Validation**
+- Focused diagnostics on touched surfaces reported no errors:
+  - `kelmah-frontend/src/modules/layout/components/MobileBottomNav.jsx`
+  - `kelmah-frontend/src/modules/notifications/pages/NotificationsPage.jsx`
+  - `kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx`
+- Frontend production build passed in `kelmah-frontend` via `npm run build`.
+  - Result: Vite build successful (`built in 47.32s`).
+
+### Session: Generated Findings Remediation Batch 23 March 20 2026 ✅ COMPLETED
+
+**Date**: March 20, 2026  
+**Scope**: Search trust tranche for worker discovery controls with truthful explainability copy and location-broadening guidance.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Implementation completed**
+- Added concise sort explainability helper copy in result controls.
+- Clarified relevance behavior in plain language: workers are ranked by trade, skill, and location match.
+- Added non-relevance sort intent messaging for rating, price, distance, and newest options.
+- Added location-focused hint text when location filters are active, guiding users to broaden location/distance for wider results.
+- Preserved existing control layout, filtering, and interactions.
+
+**Validation**
+- Frontend diagnostics run on touched files: `npx eslint src/modules/layout/components/MobileBottomNav.jsx src/modules/notifications/pages/NotificationsPage.jsx src/modules/search/components/results/WorkerSearchResults.jsx`.
+  - Result: failed due to existing baseline lint/format issues (`152` errors total; dominant categories: `prettier/prettier`, `react/prop-types`, and pre-existing hook-order lint in mobile nav).
+- Frontend production build passed: `npm run build` in `kelmah-frontend`.
+  - Result: Vite build successful (`built in 41.64s`).
+  - Duration: `BUILD_DURATION: 42.93s`.
+
+### Session: Generated Findings Remediation Batch 22 March 20 2026 ✅ COMPLETED
+
+**Date**: March 20, 2026  
+**Scope**: Focused notification UX tranche for clearer read-state signaling, type/status context, and action-required prioritization.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/notifications/pages/NotificationsPage.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Implementation completed**
+- Kept existing `New` unread chip and added a subtle `Read` chip indicator for read notifications.
+- Added concise type context chips (Message, Job, Job Offer, Contract, Payment, System, Review, Update).
+- Added `Action required` chip for high-priority action-required types.
+- Prioritized action-required notification types (`contract_update`, `payment_received`, `system_alert`) ahead of lower-urgency notifications while preserving recency inside each priority group.
+- Preserved tab filtering and unread-only behavior.
+
+**Validation**
+- Frontend diagnostics run on touched files: `npx eslint src/modules/layout/components/MobileBottomNav.jsx src/modules/notifications/pages/NotificationsPage.jsx src/modules/search/components/results/WorkerSearchResults.jsx`.
+  - Result: failed due to existing baseline lint/format issues (`152` errors total; dominant categories: `prettier/prettier`, `react/prop-types`, and pre-existing hook-order lint in mobile nav).
+- Frontend production build passed: `npm run build` in `kelmah-frontend`.
+  - Result: Vite build successful (`built in 41.64s`).
+  - Duration: `BUILD_DURATION: 42.93s`.
+
+### Session: Generated Findings Remediation Batch 21 March 20 2026 ✅ COMPLETED
+
+**Date**: March 20, 2026  
+**Scope**: Mobile bottom-nav behavior coherence for worker discovery routes.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/layout/components/MobileBottomNav.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Implementation completed**
+- Extended worker `Find Work` active-tab route matching to include `/worker/job-alerts` and `/worker/saved-jobs`.
+- Ensured these newly surfaced discovery routes no longer result in null tab selection.
+- Preserved existing role-based navigation behavior and nav item structure.
+
+**Validation**
+- Frontend diagnostics run on touched files: `npx eslint src/modules/layout/components/MobileBottomNav.jsx src/modules/notifications/pages/NotificationsPage.jsx src/modules/search/components/results/WorkerSearchResults.jsx`.
+  - Result: failed due to existing baseline lint/format issues (`152` errors total; dominant categories: `prettier/prettier`, `react/prop-types`, and pre-existing hook-order lint in mobile nav).
+- Frontend production build passed: `npm run build` in `kelmah-frontend`.
+  - Result: Vite build successful (`built in 41.64s`).
+  - Duration: `BUILD_DURATION: 42.93s`.
+
+### Session: Generated Findings Remediation Batch 20 March 20 2026 ✅ COMPLETED
+
+**Date**: March 20, 2026  
+**Scope**: Expose an advanced-filter discovery surface for authenticated non-hirer worker-directory flows while reusing the existing advanced filters component.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Implementation completed**
+- Added a new authenticated quick action button labeled `Advanced Filters` with `FilterList` icon in the existing quick-actions row.
+- Scoped visibility to authenticated users when `canUseHirerTools` is false, preventing duplication with hirer sidebar filter controls.
+- Added dedicated dialog state and an `Advanced Filters` dialog with close icon control.
+- Wired dialog content to the existing `AdvancedFilters` component with:
+  - `onFiltersChange={handleSearch}`
+  - `initialFilters={searchParams}`
+  - `showHeader={false}`
+  - `compact={isMobile}`
+- Preserved existing `Saved Searches` and `Job Alerts` quick-action behavior unchanged.
+
+**Validation**
+- Frontend diagnostics run on touched component: `npx eslint src/modules/search/components/WorkerDirectoryExperience.jsx`.
+  - Result: failed due to existing baseline formatting/lint noise in the file (`960 problems`, mostly `prettier/prettier` line-ending/formatting issues).
+- Frontend production build passed: `npm run build` in `kelmah-frontend`.
+  - Result: `BUILD_STATUS: SUCCESS`
+  - Duration: `BUILD_DURATION: 50.42s`
+
+### Session: Generated Findings Remediation Batch 19 March 20 2026 ✅ COMPLETED
+
+**Date**: March 20, 2026  
+**Scope**: Improve notification inbox filtering discoverability by exposing explicit payment and system category tabs.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/notifications/pages/NotificationsPage.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Implementation completed**
+- Extended notification tab type mapping to include `payments -> payment_received`.
+- Extended notification tab grouping to include `system -> system_alert` and `review_received`.
+- Added `Payments` and `System` tabs to the notifications scrollable tabs area.
+- Preserved existing behavior for `all`, `messages`, `jobs`, `contracts`, pagination, and unread-only toggle.
+
+**Validation**
+- Frontend diagnostics run on touched file: `npx eslint src/modules/notifications/pages/NotificationsPage.jsx`.
+  - Result: failed due to existing baseline lint issues in the file (`86 problems`, largely pre-existing `prettier/prettier`, `react/prop-types`, and unused-import rules).
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful, built in `48.97s`).
+
+### Session: Generated Findings Remediation Batch 18 March 20 2026 ✅ COMPLETED
+
+**Date**: March 20, 2026  
+**Scope**: Thin feature surface #14.5 remediation for worker-directory job-alert discovery across viewports.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Implementation completed**
+- Added visible `Job Alerts` quick action beside the existing `Saved Searches` action in worker directory discovery controls.
+- Restricted `Job Alerts` visibility to authenticated users with `worker` or `admin` role only.
+- Wired the action to navigate to the existing worker alerts route: `/worker/job-alerts`.
+- Preserved existing spacing/styling conventions and mobile-safe touch target sizing (`minHeight: 44`) to match adjacent quick actions.
+
+**Validation**
+- Frontend diagnostics run on touched component: `npx eslint src/modules/search/components/WorkerDirectoryExperience.jsx`.
+  - Result: failed due to pre-existing Prettier/line-ending baseline issues in the file (`920 problems`, mostly `prettier/prettier` CRLF/LF formatting), with no additional runtime/build regressions introduced by this tranche.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful, built in `45.27s`).
+
+### Session: Generated Findings Remediation Batch 17 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Mobile/Desktop shell coherence improvement for long worker search result flows.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx`
+
+**Implementation completed**
+- Added scroll-depth detection in worker search results to surface a floating `Top` control after users scroll deep into results.
+- Added smooth scroll recovery action with explicit accessibility labeling (`Scroll back to top`).
+- Positioned control responsively so it stays reachable above mobile navigation and desktop page chrome.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful, built in 54.76s).
+
+### Session: Generated Findings Remediation Batch 16 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Search discovery clarity and thin feature visibility for map/list switching on small screens.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx`
+
+**Implementation completed**
+- Exposed map/list toggle button on mobile instead of hiding it at `xs` breakpoints.
+- Added compact mobile labels (`Map`/`List`) while preserving full desktop labels.
+- Added explicit accessibility label to clarify view-switch intent for assistive technologies.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful, built in 1m 11s).
+
+### Session: Generated Findings Remediation Batch 15 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Search discovery clarity follow-up focused on filter chip discoverability and direct filter-entry affordance.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx`
+- `kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx`
+
+**Implementation completed**
+- Added a visible filter-entry action in results controls that now shows either `Add filters` or active filter count (for example, `3 active filters`).
+- Refactored active-filter derivation into memoized state so the count and chip list stay in sync across sort/filter updates.
+- Wired the new action to open the correct filter surface by context:
+  - mobile -> open mobile filter drawer
+  - hirer desktop -> open advanced filters panel
+  - public desktop -> scroll to top search form for quick refinement
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful, built in 55.45s).
+
+### Session: Generated Findings Remediation Batch 14 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Thin feature surface follow-up for map placeholder handling in worker search.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/search/components/map/JobMapView.jsx`
+
+**Implementation completed**
+- Replaced internal technical placeholder copy with user-facing actionable guidance when map preview is unavailable.
+- Added contextual helper messaging tied to selected radius/location state so users understand list-view fallback context.
+- Added explicit `Back to List` action in the placeholder body to keep map fallback recoverable.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful, built in 54.84s).
+
+### Session: Generated Findings Remediation Batch 13 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Thin feature surface visibility by adding an in-flow saved-search entry point to worker search.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx`
+
+**Implementation completed**
+- Added visible `Saved Searches` quick action in worker directory when a user is authenticated.
+- Added in-context saved-search management dialog backed by existing `SavedSearches` component.
+- Wired saved-search selection back into active directory filters so running a saved search immediately applies criteria in the same surface.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful, built in 54.84s).
+
+### Session: Generated Findings Remediation Batch 12 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Trade coverage expansion and regional search discoverability improvements across worker-search entry and filter surfaces.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx`
+- `kelmah-frontend/src/modules/search/components/common/JobSearchForm.jsx`
+- `kelmah-frontend/src/modules/search/components/common/MobileFilterDrawer.jsx`
+- `kelmah-frontend/src/modules/search/components/AdvancedFilters.jsx`
+
+**Implementation completed**
+- Added high-intent regional popular search terms for worker discovery (for example emergency plumbing, roof repair, rewiring, AC servicing, cabinet making, certified welding with city context).
+- Fixed popular-term constant scoping in worker directory so suggestion panel data is correctly available at runtime.
+- Improved suggestion fallback behavior for short queries so users still get actionable popular-term paths when direct matches are sparse.
+- Expanded trade category options consistently across desktop form, mobile drawer, and advanced filters to include broader vocational demand coverage (emergency plumbing, roof repair, rewiring/switchboard, AC/refrigeration, cabinet making, maintenance callout, certified welding, exterior painting).
+- Improved mobile location hint text for broader regional discoverability.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful, built in 1m 3s).
+
+### Session: Generated Findings Remediation Batch 11 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Search discovery clarity sweep focused on popular-search labeling, empty-suggestion guidance, and clearer keyword/location hints.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/search/components/WorkerDirectoryExperience.jsx`
+- `kelmah-frontend/src/modules/search/components/suggestions/SearchSuggestions.jsx`
+- `kelmah-frontend/src/modules/search/components/common/JobSearchForm.jsx`
+- `kelmah-frontend/src/modules/search/components/common/CompactSearchBar.jsx`
+- `kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx`
+
+**Implementation completed**
+- Updated worker directory suggestion behavior so search suggestions panel can show guidance and popular terms even when direct matches are empty.
+- Enhanced suggestion dropdown with explicit suggestion-type labels (`Location match`, `Skill match`, `Trade title`) and fallback popular-search chips.
+- Improved search input hint copy for desktop and mobile with clearer keyword-plus-location examples.
+- Strengthened empty-results guidance with concrete retry examples (`electrician Accra`, `welder Tema`) to improve recoverability.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful, built in 1m 3s).
+
+### Session: Generated Findings Remediation Batch 10 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Recommendation explainability and source transparency cleanup for smart search recommendations.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/search/components/SmartJobRecommendations.jsx`
+
+**Implementation completed**
+- Added explicit recommendation transparency metadata handling in UI state (source, average confidence, total recommendations, refresh timestamp).
+- Added recommendation context disclosure block in both populated and empty recommendation states.
+- Improved confidence badge wording from ambiguous match copy to explicit confidence labeling.
+- Preserved existing account-gating behavior (worker-only recommendations) and existing retry/navigation actions.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful, built in 1m 15s).
+
+### Session: Generated Findings Remediation Batch 9 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Focused fallback-honesty cleanup across search and analytics surfaces so API outages do not appear as live data.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/search/services/locationService.js`
+- `kelmah-frontend/src/modules/search/components/LocationBasedSearch.jsx`
+- `kelmah-frontend/src/modules/worker/components/EarningsTracker.jsx`
+- `kelmah-frontend/src/modules/worker/components/UserPerformanceDashboard.jsx`
+
+**Implementation completed**
+- Reworked `locationService` response contracts to include explicit `meta` honesty flags (`unavailable`, `fallback`, `message`) for degraded paths.
+- Removed silent popular-location fallback to static seeded job-count data when location analytics API is down.
+- Added UI disclosure in location search to explain degraded location analytics and static-suggestion mode.
+- Removed sample/mock earnings dataset fallback from `EarningsTracker` and replaced it with an explicit unavailable state and empty-data-safe rendering.
+- Added explicit notice in `UserPerformanceDashboard` when baseline defaults are shown due to analytics unavailability.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful, built in 58.18s).
+
+### Session: Generated Findings Remediation Batch 8 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Continue the remaining logging-hygiene tranche by removing residual noisy bootstrap output and validating that remaining direct console calls are dev-gated diagnostics.
+
+**Execution surface**
+- `kelmah-frontend/src/config/environment.js`
+- `kelmah-frontend/src/modules/common/utils/apiUtils.js`
+
+**Implementation completed**
+- Removed environment bootstrap console group dump that printed full runtime config on startup.
+- Reduced API health retry diagnostics to emit only on terminal failure, avoiding repetitive attempt-level noise.
+- Audited remaining direct `console.*` lines in high-traffic frontend modules (`search`, `messaging`, `worker`, `hirer`, shared boundaries) and confirmed they are already gated by development checks.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Generated Findings Remediation Batch 7 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Continue frontend logging hygiene cleanup by removing high-noise environment bootstrap output and reducing repetitive health-check retry logs.
+
+**Execution surface**
+- `kelmah-frontend/src/config/environment.js`
+- `kelmah-frontend/src/modules/common/utils/apiUtils.js`
+
+**Implementation completed**
+- Removed the development environment bootstrap console dump (`console.group` + multi-line config logging) from `environment.js`.
+- Reduced `checkApiHealth` retry noise in `apiUtils` by logging only on final failed attempt instead of every retry.
+- Preserved behavior and return semantics for health checks and environment exports.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Generated Findings Remediation Batch 6 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Continue placeholder-blocker cleanup for admin and messaging residual affordances.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/admin/pages/SkillsAssessmentManagement.jsx`
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+
+**Implementation completed**
+- Replaced admin skills test-creation placeholder flow with actionable route-level operations:
+  - Renamed CTA from `Create New Test` to `Request New Test` to reflect real behavior.
+  - Added concrete dialog actions to review live assessments (`/worker/skills`) or open support request (`/support`) with admin context payload.
+  - Removed placeholder wording that implied a dead shell route.
+- Tightened messaging residual affordances in the `More` menu:
+  - Added explicit “Select a conversation first” guidance when no conversation is selected.
+  - Disabled conversation-specific actions until a conversation is selected.
+  - Preserved active archive/block/delete/info actions when context is valid.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Generated Findings Remediation Batch 5 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Continue `spec-kit/generated` placeholder-blocker remediation in messaging by replacing disabled “Soon/currently unavailable” UI with actionable flows.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+
+**Implementation completed**
+- Removed disabled voice/video call placeholders from chat header to eliminate dead controls.
+- Replaced disabled `More` menu items and “Soon” labels with actionable behaviors:
+  - Conversation Info now shows concrete conversation context feedback.
+  - Archive/Delete now run confirmation-backed local actions with service-call support when available.
+  - Block User now attempts service block when available and otherwise routes to `/support` with context.
+- Replaced “feature currently unavailable” copy in New Conversation dialog with actionable guidance.
+- Updated dialog CTA actions to route users directly to `/search` or `/jobs` to start real conversation paths.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Generated Findings Remediation Batch 4 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Continue `spec-kit/generated` remediation by reducing noisy frontend bootstrap logging and replacing remaining placeholder trust copy in job details flows.
+
+**Execution surface**
+- `kelmah-frontend/src/main.jsx`
+- `kelmah-frontend/src/config/services.js`
+- `kelmah-frontend/src/polyfills.js`
+- `kelmah-frontend/src/hooks/useAutoShowHeader.js`
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+
+**Implementation completed**
+- Removed non-essential startup debug logging from app bootstrap and polyfills modules.
+- Removed development endpoint bootstrap logging from service config to keep console output clean and purposeful.
+- Removed verbose interaction tracing logs in `useAutoShowHeader` and cleaned unused MUI imports there.
+- Replaced remaining “not available yet” messaging in `JobDetailsPage` with actionable, user-guiding copy.
+- Removed high-volume dev object logging in `JobDetailsPage` (`job` object/budget trace) to reduce console noise.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Generated Findings Remediation Batch 3 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Continue fixing older `spec-kit/generated` UX/information-architecture findings by removing duplicated/misleading footer destinations.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/layout/components/Footer.jsx`
+
+**Implementation completed**
+- Remapped duplicated Resources links to distinct, valid routes:
+  - `Community` now routes to `/community`
+  - `Blog` now routes to `/docs`
+  - `Safety Centre` now routes to `/support/help-center`
+- Remapped `Careers` in Company section from duplicate `/about` to `/contact` until a dedicated careers route exists.
+- Preserved existing footer structure and styling while improving destination accuracy.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Generated Findings Remediation Batch 2 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Continue fixing older `spec-kit/generated` data-fetching and client-resilience findings.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/jobs/hooks/useJobsQuery.js`
+- `kelmah-frontend/src/hooks/useApi.js`
+- `kelmah-frontend/src/services/apiClient.js`
+
+**Implementation completed**
+- Reworked jobs query param key serialization with deterministic key ordering and key parsing, removing hook dependency suppressions.
+- Hardened shared `useApi` retry behavior with unmount-safe timeout cleanup and stale-closure-safe retry attempts.
+- Removed remaining exhaustive-deps suppression in `useMultipleApi` execution effect.
+- Improved API client GET deduplication key stability by sorting request params before key generation.
+- Updated API retry policy to allow controlled backoff retries for `429` responses while still blocking other non-retryable `4xx` failures.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Generated Findings Remediation Batch 1 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Continue remediation of issues reported in `spec-kit/generated` findings (new and old), focusing on trust UX, auth redirect resilience, placeholder actions, and production log hygiene.
+
+**Execution surface**
+- `kelmah-frontend/src/services/apiClient.js`
+- `kelmah-frontend/public/sw.js`
+- `kelmah-frontend/src/modules/reviews/pages/ReviewsPage.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/common/utils/apiUtils.js`
+- `kelmah-frontend/src/modules/premium/pages/PremiumPage.jsx`
+
+**Implementation completed**
+- Replaced direct hard redirect behavior with SPA-first history navigation fallback in `apiClient` login redirect flow.
+- Added debug-gated service-worker logger wrappers and replaced direct `console.log/warn/error` calls to reduce production console noise.
+- Enabled review reporting path by routing to support with report context instead of disabled “currently unavailable” menu action.
+- Reworded jobs alert CTA snackbar to actionable guidance without “not auto-saved yet” placeholder wording.
+- Reduced noisy API utility logs to debug-scoped messaging.
+- Updated premium checkout 501 fallback message to actionable temporary-unavailable guidance.
+
+**Validation**
+- Frontend diagnostics reported no errors for all touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Jobs Page Decomposition Step 7 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Close remaining `JobsPage` decomposition TODO by synchronizing filter/search/pagination state with URL query parameters.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/jobs/hooks/useJobsFiltersState.js`
+
+**Implementation completed**
+- Extended `useJobsFiltersState` to support initial state hydration for query-driven page bootstrap.
+- Added URL query-param initialization in `JobsPage` (`q`, `category`, `location`, `sort`, `page`, budget range, and quick filters).
+- Added state-to-URL synchronization effect so filter/search/page changes are persisted in the browser URL.
+- Removed the now-resolved in-file decomposition TODO note after URL sync orchestration completion.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Jobs Page Decomposition Step 6 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Complete the pending query/filter orchestration extraction by moving JobsPage filter state logic into a dedicated hook.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/jobs/hooks/useJobsFiltersState.js` (new)
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+
+**Implementation completed**
+- Added `useJobsFiltersState` hook to own filter/search/pagination state, debounced derivations, filter helper callbacks, and computed `jobsQueryFilters` params.
+- Rewired `JobsPage` to consume hook outputs, removing duplicated in-page orchestration blocks for filter/query state.
+- Performed follow-up cleanup of now-unused imports and updated the in-file decomposition TODO to mark hook extraction complete.
+
+**Validation**
+- Frontend diagnostics reported no errors for touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Jobs Page Decomposition Step 5 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Continue `JobsPage.jsx` decomposition by extracting the trade-category browse grid into a dedicated subcomponent.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+
+**Implementation completed**
+- Added `JobsCategoryBrowseGrid` to isolate category-card rendering and interaction behavior.
+- Added `handleBrowseCategorySelect` callback in page scope and wired category click/keyboard behavior through it.
+- Preserved category selection semantics (toggle active category and reset page to 1).
+
+**Validation**
+- Frontend diagnostics reported no errors for the touched page file.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Jobs Page Decomposition Step 4 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Extract hero filter orchestration (mobile drawer + desktop advanced filters) from `JobsPage.jsx` into a dedicated subcomponent.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+
+**Implementation completed**
+- Added `JobsFiltersPanel` subcomponent to encapsulate both mobile and desktop filter UI surfaces.
+- Added focused orchestration callbacks in page scope (`handleOpenMobileFilters`, `handleCloseMobileFilters`, `handleApplyMobileFilters`, `handleToggleFilters`, `handleBudgetFilterToggle`, `handleBudgetRangeChange`) and derived `activeFilterCount`.
+- Replaced the inline right-column filter block in the hero section with the new subcomponent while preserving behavior.
+
+**Validation**
+- Frontend diagnostics reported no errors for the touched page file.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Jobs Page Decomposition Step 3 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Continue `JobsPage.jsx` monolith split by extracting state-panels for loading/error/empty results.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+
+**Implementation completed**
+- Extracted loading skeleton grid, error panel, and empty-results panel into `JobsGridStatePanels`.
+- Preserved retry behavior (`retryJobsFetch`) and clear-filter paths used when no jobs match active filters.
+- Reduced page body complexity so results section now composes header + state panels + cards grid + pagination controls as separate units.
+
+**Validation**
+- Frontend diagnostics reported no errors for the touched page file.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Jobs Page Decomposition Step 2 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Continue `JobsPage.jsx` decomposition by extracting the results-header/filter-chip cluster into a dedicated subcomponent.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+
+**Implementation completed**
+- Extracted the inline results header into `JobsResultsHeader` (section title, active-filter chips, and result-count chip).
+- Preserved all filter-clear actions by wiring explicit callbacks for search/category/location/budget/quick-filter and clear-all paths.
+- Reduced parent JSX complexity while keeping page-level state ownership unchanged.
+
+**Validation**
+- Frontend diagnostics reported no errors for the touched page file.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Jobs Page Decomposition Step 1 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Start `JobsPage.jsx` monolith split by extracting job-card rendering and pagination controls into dedicated subcomponents.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+
+**Implementation completed**
+- Moved inline `uniqueJobs.map(...)` card rendering into `JobsCardsGrid`.
+- Moved mobile load-more + desktop pagination block into `JobsPaginationControls`.
+- Promoted category-icon helper to file scope so extracted subcomponents share the same category icon mapping behavior.
+- Kept all existing handlers and state orchestration in page scope to preserve runtime behavior.
+
+**Validation**
+- Frontend diagnostics reported no errors for the touched page file.
+- Frontend production build passed after each extraction cut: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Application Management Decomposition TODO Closure March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Close the in-file frontend audit TODO after completing all named extraction targets.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx`
+
+**Implementation completed**
+- Removed the resolved `TODO(frontend-audit)` note for extraction of application list, decision dialogs, and pagination/filter controls.
+- Confirmed those concerns now live in dedicated subcomponents: `ApplicationsListContent`, `ApplicationReviewDialog`, and `ApplicationsListFooter`.
+
+**Validation**
+- Frontend diagnostics reported no errors for the touched page file.
+
+### Session: Application Management Decomposition Step 3 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Continue decomposition by extracting the job selection sidebar column from page-level JSX into a reusable subcomponent.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx`
+
+**Implementation completed**
+- Extracted the full job-sidebar column (mobile visibility gate, all-jobs selector, per-job list, count badges) into `JobSidebar`.
+- Preserved selected-job state behavior and mobile panel toggling semantics by keeping the same `onSelectJob` flow.
+- Reduced page component size and local JSX branching by moving sidebar rendering concerns behind a dedicated boundary.
+
+**Validation**
+- Frontend diagnostics reported no errors for the touched page file.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Application Management Decomposition Step 2 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Continue the Application Management monolith split by extracting applications list rendering/grouping concerns into a dedicated subcomponent.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx`
+
+**Implementation completed**
+- Extracted the full applications list surface (loading skeletons, error alert, active loading spinner, selected-job flat list, all-jobs grouped list) into `ApplicationsListContent`.
+- Preserved job-group click behavior, selected-application state behavior, and empty-state handling for both selected-job and all-jobs scopes.
+- Kept `ApplicationManagementPage` focused on orchestration while moving list rendering complexity to composable subcomponent boundaries.
+
+**Validation**
+- Frontend diagnostics reported no errors for the touched page file.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Application Management Decomposition Step 1 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Start the monolith decomposition of Application Management by extracting decision dialog and pagination/filter footer controls into dedicated subcomponents.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx`
+
+**Implementation completed**
+- Extracted inline review confirm dialog into `ApplicationReviewDialog` while preserving existing status-update behavior and mobile full-screen behavior.
+- Extracted applications list footer (summary text + sort + page-size + pagination) into `ApplicationsListFooter`.
+- Added focused parent handlers (`handleSortChange`, `handlePageSizeChange`, `handlePageChange`) so state-reset behavior remains identical while reducing JSX coupling in the page component.
+
+**Validation**
+- Frontend diagnostics reported no errors for the touched page file.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Responsive Standardization Completion Sweep March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Close remaining direct `useMediaQuery` residuals outside the shared responsive hook implementation.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/auth/pages/RegisterPage.test.jsx`
+
+**Implementation completed**
+- Updated `RegisterPage` tests to mock `useBreakpointDown` from `@/hooks/useResponsive` instead of mocking MUI `useMediaQuery` directly.
+- Verified no remaining direct `useMediaQuery(...)` usage exists in frontend application files outside `src/hooks/useResponsive.js`.
+
+**Validation**
+- Frontend diagnostics reported no errors for the touched test file.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Responsive Standardization Batch 4 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Continue breakpoint standardization on high-traffic map/jobs/search/reviews/notifications screens using shared responsive hooks.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/map/pages/ProfessionalMapPage.jsx`
+- `kelmah-frontend/src/modules/map/components/common/MapSearchOverlay.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobDetailsPage.jsx`
+- `kelmah-frontend/src/modules/worker/pages/JobSearchPage.jsx`
+- `kelmah-frontend/src/modules/reviews/pages/ReviewsPage.jsx`
+- `kelmah-frontend/src/modules/notifications/pages/NotificationsPage.jsx`
+- `kelmah-frontend/src/modules/search/components/results/SearchResults.jsx`
+- `kelmah-frontend/src/modules/search/components/results/WorkerSearchResults.jsx`
+
+**Implementation completed**
+- Replaced direct `useMediaQuery(theme.breakpoints...)` declarations with shared responsive hooks from `@/hooks/useResponsive` while preserving exact breakpoint semantics.
+- Replaced one raw `max-width: 390px` query with `useMaxWidth(390)` to standardize query handling.
+- Removed now-unused direct `useMediaQuery` imports and cleaned redundant `useTheme` usage where no longer required.
+
+**Validation**
+- Frontend diagnostics reported no errors for all touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Responsive Standardization Batch 3 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Migrate auth/onboarding surfaces from direct `useMediaQuery(theme.breakpoints...)` usage to shared `@/hooks/useResponsive` hooks while preserving exact behavior.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/auth/pages/VerifyEmailPage.jsx`
+- `kelmah-frontend/src/modules/auth/pages/RoleSelectionPage.jsx`
+- `kelmah-frontend/src/modules/auth/pages/RegisterPage.jsx`
+- `kelmah-frontend/src/modules/auth/pages/MfaSetupPage.jsx`
+- `kelmah-frontend/src/modules/auth/pages/LoginPage.jsx`
+- `kelmah-frontend/src/modules/auth/pages/ForgotPasswordPage.jsx`
+- `kelmah-frontend/src/modules/auth/components/login/Login.jsx`
+- `kelmah-frontend/src/modules/auth/components/common/AuthWrapper.jsx`
+- `kelmah-frontend/src/modules/auth/components/register/Register.jsx`
+
+**Implementation completed**
+- Replaced all direct `useMediaQuery(theme.breakpoints...)` calls in the target auth/onboarding files with shared responsive hooks from `@/hooks/useResponsive`.
+- Used `useBreakpointDown('md')`, `useBreakpointDown('sm')`, and `useBreakpointBetween('sm', 'md')` to preserve the original breakpoint logic exactly.
+- Removed now-unused direct `useMediaQuery` imports across all nine files.
+- Removed `useTheme` imports where they became unnecessary after migration; retained `useTheme` only in components that still use theme palette/style values.
+
+**Validation**
+- Ran touched-file diagnostics with ESLint. Existing baseline lint issues remain in these files; no new migration-specific issues surfaced.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Responsive Standardization Batch 2 March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Migrate core shell/navigation components from direct breakpoint media queries to shared responsive hooks while preserving behavior.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/layout/components/Header.jsx`
+- `kelmah-frontend/src/modules/layout/components/Footer.jsx`
+- `kelmah-frontend/src/components/common/SmartNavigation.jsx`
+- `kelmah-frontend/src/components/common/OfflineBanner.jsx`
+- `kelmah-frontend/src/components/common/MobileFilterSheet.jsx`
+- `kelmah-frontend/src/components/common/PullToRefresh.jsx`
+
+**Implementation completed**
+- Replaced direct `useMediaQuery(theme.breakpoints.down(...))` calls with shared `useBreakpointDown(...)` from `@/hooks/useResponsive` in all six target files.
+- Preserved existing breakpoint semantics exactly (`down('md')` and `down('sm')` mappings unchanged).
+- Removed now-unused direct `useMediaQuery` imports and dropped now-unused `useTheme` usage in components where it was only used for media queries.
+
+**Validation**
+- Ran diagnostics on all touched files via ESLint. Existing repo lint/prettier baseline issues are still present in these files; no functional regressions observed from this migration.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Responsive Hook Standardization Wave March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Standardize breakpoint usage on high-traffic pages/components with shared responsive hooks while preserving existing behavior.
+
+**Execution surface**
+- `kelmah-frontend/src/hooks/useResponsive.js`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+- `kelmah-frontend/src/modules/payment/pages/PaymentCenterPage.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx`
+
+**Implementation completed**
+- Added reusable responsive hooks: `useBreakpointDown`, `useBreakpointUp`, `useBreakpointBetween`, and `useMaxWidth`.
+- Replaced direct `useMediaQuery(...)` declarations in the target files with shared hook calls, preserving exact breakpoint semantics.
+- Removed now-unused direct `useMediaQuery` imports in migrated files.
+
+**Validation**
+- Frontend diagnostics reported no errors for all touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: P0 Workflow Reliability Hardening Wave March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Close remaining P0 reliability gaps in job application submission and payment wallet dialog continuity.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/jobs/pages/JobApplicationPage.jsx`
+- `kelmah-frontend/src/modules/jobs/components/job-application/JobApplication.jsx`
+- `kelmah-frontend/src/modules/payment/contexts/PaymentContext.jsx`
+- `kelmah-frontend/src/modules/payment/pages/PaymentCenterPage.jsx`
+
+**Implementation completed**
+- Added duplicate-submit guards to both job application flows to block re-entry while requests are in-flight or already succeeded.
+- Hardened attachment handling in both job application flows with deterministic deduplication (`name + size + lastModified`) and file input reset to support reselecting the same file cleanly.
+- Updated payment context actions (`addFunds`, `withdrawFunds`) to return explicit success/failure booleans.
+- Updated deposit/withdraw dialogs to close only on successful operations, keeping dialogs open on failure so users can correct input or method selection.
+
+**Validation**
+- Frontend diagnostics reported no errors for all touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Client Identifier Hardening Wave March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Reduce fragile/random client-generated IDs by preferring Web Crypto-based identifiers in runtime hooks and storage utilities.
+
+**Execution surface**
+- `kelmah-frontend/src/hooks/useProposals.js`
+- `kelmah-frontend/src/modules/jobs/hooks/useBidNotifications.js`
+- `kelmah-frontend/src/utils/secureStorage.js`
+- `kelmah-frontend/src/services/apiClient.js`
+
+**Implementation completed**
+- Added crypto-preferred request ID generation (`crypto.randomUUID` / `crypto.getRandomValues`) for proposal fetch traces.
+- Added crypto-preferred notification ID generation for bid events.
+- Replaced `Math.random` session suffix generation in secure storage with crypto-backed entropy and deterministic fallback.
+- Removed direct `Math.random` UUID fallback usage in the API client by adding a deterministic timestamp/counter fallback when Web Crypto is unavailable.
+
+**Validation**
+- Frontend diagnostics reported no errors for all touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Frontend Trust Copy and Certificate Delivery Wave March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Remove remaining non-actionable placeholder messaging and deliver executable certificate downloads in worker assessment flows.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/worker/pages/SkillsAssessmentPage.jsx`
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- `kelmah-frontend/src/modules/reviews/pages/ReviewsPage.jsx`
+- `kelmah-frontend/src/modules/worker/components/WorkerProfile.jsx`
+- `kelmah-frontend/src/modules/premium/pages/PremiumPage.jsx`
+
+**Implementation completed**
+- Implemented certificate download generation in Skills Assessment (downloadable artifact from passed certified assessments) for both history cards and results dialog flows.
+- Replaced remaining active-screen "coming soon" wording with explicit availability states (currently unavailable / untitled item) to avoid roadmap-promissory UX.
+- Kept voice/video call controls disabled while improving accessible labels and tooltip copy to reflect actual state.
+
+**Validation**
+- Frontend diagnostics reported no errors for all touched files.
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Contract Download Fallback Execution Wave March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Remove a visible "coming soon" dead-end from contract details and run backend route-order safety verification.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/contracts/pages/ContractDetailsPage.jsx`
+- `kelmah-frontend/src/modules/worker/pages/SkillsAssessmentPage.jsx`
+- `kelmah-backend/services/**/routes/*.js` (audit only)
+- `kelmah-backend/api-gateway/routes/*.js` (audit only)
+
+**Implementation completed**
+- Replaced toast-only contract download behavior with a real browser print fallback (`window.print()`), so users can immediately save contracts as PDF via the browser dialog.
+- Added success/error user feedback around print-dialog invocation.
+- Replaced two toast-only certificate "coming soon" actions with a real downloadable certificate artifact in Skills Assessment (generated text certificate with deterministic file naming).
+- Completed backend route-order audit for literal-vs-`/:id` precedence in real runtime route files; no actionable shadowing violations found.
+
+**Validation**
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+- Frontend diagnostics for changed files reported no errors.
+
+### Session: Frontend List Key Stability Refactor March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Replace unstable dynamic list keys in targeted frontend modules with stable domain identifiers or deterministic composite keys.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/worker/**`
+- `kelmah-frontend/src/modules/hirer/**`
+- `kelmah-frontend/src/modules/search/**`
+- `kelmah-frontend/src/modules/jobs/**`
+- `kelmah-frontend/src/modules/payment/**`
+- `kelmah-frontend/src/modules/contracts/**`
+- `kelmah-frontend/src/modules/notifications/**`
+- `kelmah-frontend/src/components/common/**`
+- `kelmah-frontend/src/components/reviews/**`
+
+**Implementation completed**
+- Replaced bare `key={index}`, `key={i}`, and `key={idx}` patterns in the target scopes with either stable domain keys (`id`, `_id`, `title`, `name`, `path`, `category`, etc.) or deterministic composite fallbacks.
+- Converted static loading/skeleton placeholder loops to literal-prefixed keys (for example `*-skeleton-${i}`) to remove unstable bare index identity in reusable UI lists.
+- Kept behavior unchanged outside of React key identity updates.
+
+**Validation**
+- Frontend production build passed: `npm run build` in `kelmah-frontend` (Vite build successful).
+
+### Session: Frontend Trust and Auth Hardening March 19 2026 - COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Resolve high-impact trust/security UX issues from the investigation pass, with staged cookie-auth and CSP hardening.
+
+**Execution surface**
+- `kelmah-frontend/src/config/environment.js`
+- `kelmah-frontend/src/services/apiClient.js`
+- `kelmah-frontend/src/modules/auth/services/authService.js`
+- `kelmah-frontend/src/modules/auth/services/authSlice.js`
+- `kelmah-frontend/src/modules/layout/components/Footer.jsx`
+- `kelmah-frontend/src/main.jsx`
+- `vercel.json`
+
+**Implementation completed**
+- Added auth migration feature flags for cookie-backed sessions (`VITE_AUTH_HTTPONLY_COOKIES`, `VITE_SEND_AUTH_HEADER`, `VITE_STORE_TOKENS_CLIENT_SIDE`).
+- Updated auth bootstrap/login/refresh paths to support session cookies without requiring local token persistence.
+- Removed dead social controls by rendering only valid configured social URLs.
+- Relaxed production logging suppression so warnings remain visible while verbose logs stay muted.
+- Added baseline security headers and CSP report-only policy for safe staged rollout.
+
+**Validation**
+- Workspace diagnostics report no errors in all touched files.
+
+### Session: Frontend Purpose-Driven Retry Addendum March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Narrow the frontend purpose audit retry to concrete code-derived issues instead of another broad expansion.
+
+**Execution surface**
+- `spec-kit/generated/FRONTEND_PURPOSE_DRIVEN_RETRY_ADDENDUM_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_PURPOSE_DRIVEN_INDEX_MAR19_2026.md`
+
+**Implementation completed**
+- Captured the code-backed issues from the retry scan: dead footer links, noisy service worker logs, mock analytics fallback, raw login redirects, weak random IDs, and visible "coming soon" surfaces.
+- Added a short fix-theme section focused on trust cleanup, auth/session hygiene, analytics honesty, placeholder removal, and search-demand unification.
+- Linked the retry addendum into the purpose index so it sits beside the broader backlog artifacts.
+
+**Validation**
+- New generated file created successfully and linked from the purpose index.
+
+### Session: Frontend Purpose-Driven Addendum March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Extend the Kelmah frontend purpose audit with another structured pass focused on visuals, trust, mobile/desktop coherence, and honest fallback states.
+
+**Execution surface**
+- `spec-kit/generated/FRONTEND_PURPOSE_DRIVEN_ADDENDUM_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_PURPOSE_DRIVEN_INDEX_MAR19_2026.md`
+
+**Implementation completed**
+- Added a new purpose-driven addendum covering 140 additional atomic checks across home, search, recommendations, profiles, assessments, applications, messaging, payments, support, analytics honesty, and trade coverage.
+- Added the addendum to the purpose index so the backlog family stays navigable.
+- Kept the 5-viewport counting rule consistent with the prior backlog files.
+
+**Validation**
+- New generated file created successfully and linked from the purpose index.
+
+### Session: Frontend Purpose-Driven Audit Backlog March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Run a purpose-based frontend scan focused on Kelmah marketplace goals and convert the findings into a 1000-check backlog layer.
+
+**Execution surface**
+- `spec-kit/generated/FRONTEND_PURPOSE_AUDIT_FINDINGS_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_PURPOSE_DRIVEN_BACKLOG_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_PURPOSE_DRIVEN_INDEX_MAR19_2026.md`
+
+**Implementation completed**
+- Captured the highest-value purpose gaps from the frontend scan: saved searches, advanced filters, demand explainability, worker growth paths, hirer decision support, low-literacy payment/help flows, and stronger trust scaffolding.
+- Added a dedicated purpose-driven backlog with 20 marketplace-focused sections and the 5-viewport counting rule.
+- Added an index so this purpose layer can sit beside the demand and vocational backlog families.
+
+**Validation**
+- New generated files created successfully and tracked in spec-kit.
+
+### Session: Frontend Demand Intelligence Backlog March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Add a dedicated backlog layer for popular searches, active skills, location demand, and recommendation signals so Kelmah can listen to real user demand.
+
+**Execution surface**
+- `spec-kit/generated/FRONTEND_DEMAND_INTELLIGENCE_BACKLOG_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_DEMAND_INTELLIGENCE_INDEX_MAR19_2026.md`
+
+**Implementation completed**
+- Added a focused demand-intelligence backlog covering popular search terms, trending skills, active jobs, location demand, and analytics-driven recommendations.
+- Linked the new layer back to the existing jobs, worker profile, and vocational coverage files so the demand work sits inside the broader roadmap.
+- Captured the current frontend signal surfaces that already exist in search, recommendation, and analytics code paths.
+
+**Validation**
+- New generated files created successfully and tracked in spec-kit.
+
+### Session: Primary Ticket-Level Vocational Expansion March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Convert the primary microtrade areas into individual ticket files with explicit job and skill tags.
+
+**Execution surface**
+- `spec-kit/generated/FRONTEND_TICKET_INDEX_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TICKET_PLUMBING_LEAK_REPAIR_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TICKET_PLUMBING_DRAIN_CLEANING_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TICKET_PLUMBING_PUMP_INSTALLATION_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TICKET_PLUMBING_EMERGENCY_RESPONSE_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TICKET_ELECTRICAL_REWIRING_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TICKET_ELECTRICAL_SWITCHBOARD_UPGRADE_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TICKET_CARPENTRY_CABINET_MAKING_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TICKET_CONSTRUCTION_ROOF_REPAIR_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TICKET_CONSTRUCTION_FLOORING_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TICKET_HVAC_AC_SERVICING_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TICKET_HVAC_REFRIGERATION_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TICKET_PAINTING_EXTERIOR_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TICKET_MAINTENANCE_EMERGENCY_CALLOUT_MAR19_2026.md`
+
+**Implementation completed**
+- Created ticket files for the most important primary vocational jobs, including plumbing, electrical, carpentry, roofing/flooring, HVAC, painting, and maintenance callouts.
+- Tagged each ticket with relevant platform job surfaces and trade skills so they can be used in search, posting, and matching workflows.
+- Added a ticket index to connect these items back to the broader microtrade, subtrade, trade-family, and vocational backlog layers.
+
+**Validation**
+- New generated files created successfully and tracked in spec-kit.
+
+### Session: Microtrade-Level Vocational Expansion March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Split the remaining primary vocational families into even smaller microtrade files for direct implementation use.
+
+**Execution surface**
+- `spec-kit/generated/FRONTEND_MICROTRADE_INDEX_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_MICROTRADE_PLUMBING_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_MICROTRADE_ELECTRICAL_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_MICROTRADE_CARPENTRY_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_MICROTRADE_CONSTRUCTION_MASONRY_ROOFING_FLOORING_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_MICROTRADE_WELDING_METAL_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_MICROTRADE_HVAC_SOLAR_ENERGY_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_MICROTRADE_PAINTING_FINISHES_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_MICROTRADE_MAINTENANCE_REPAIR_MAR19_2026.md`
+
+**Implementation completed**
+- Added microtrade files for the highest-priority handy trades, including plumbing, electrical, carpentry, construction/roofing/masonry/flooring, welding, HVAC/solar, painting, and maintenance/repair.
+- Focused the missing-gap notes on fields that improve matching, trust, and job specificity.
+- Added a microtrade index to connect the smallest executable work units back to the broader vocational backlog structure.
+
+**Validation**
+- New generated files created successfully and tracked in spec-kit.
+
+### Session: Subtrade-Level Vocational Expansion March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Split the primary vocational families into dedicated subtrade files for direct execution.
+
+**Execution surface**
+- `spec-kit/generated/FRONTEND_SUBTRADE_INDEX_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_SUBTRADE_PLUMBING_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_SUBTRADE_ELECTRICAL_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_SUBTRADE_CARPENTRY_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_SUBTRADE_CONSTRUCTION_ROOFING_MASONRY_FLOORING_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_SUBTRADE_WELDING_METAL_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_SUBTRADE_HVAC_SOLAR_ENERGY_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_SUBTRADE_PAINTING_FINISHES_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_SUBTRADE_MAINTENANCE_REPAIR_MAR19_2026.md`
+
+**Implementation completed**
+- Created one file per primary trade family with subtrade-level priorities and missing-gap notes.
+- Focused on the most important handy/vocational work patterns: plumbing, electrical, carpentry, building trades, welding, HVAC, painting, and maintenance repair.
+- Added a subtrade index to connect the new files to the broader trade-family and vocational backlog layers.
+
+**Validation**
+- New generated files created successfully and tracked in spec-kit.
+
+### Session: Trade Family Deep Dive March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Break the vocational backlog into one file per major trade family and add a dedicated index.
+
+**Execution surface**
+- `spec-kit/generated/FRONTEND_TRADE_FAMILY_INDEX_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TRADE_FAMILY_PLUMBING_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TRADE_FAMILY_ELECTRICAL_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TRADE_FAMILY_CARPENTRY_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TRADE_FAMILY_MASONRY_CONSTRUCTION_ROOFING_FLOORING_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TRADE_FAMILY_WELDING_METAL_FABRICATION_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TRADE_FAMILY_HVAC_ENERGY_SOLAR_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TRADE_FAMILY_PAINTING_FINISHES_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TRADE_FAMILY_LANDSCAPING_MAINTENANCE_CLEANING_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TRADE_FAMILY_AUTOMOTIVE_TRANSPORT_SECURITY_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TRADE_FAMILY_TAILORING_BEAUTY_HOSPITALITY_AGRICULTURE_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TRADE_FAMILY_DIGITAL_TECHNICAL_SERVICES_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_TRADE_FAMILY_SUPPORT_MATCHING_ONBOARDING_MAR19_2026.md`
+
+**Implementation completed**
+- Split the vocational backlog into deeper trade-family files for the main field-skilled categories.
+- Included explicit expansion notes for missing services such as solar, refrigeration, transport support, elder care, and digital technical services.
+- Added a trade-family index to unify the new files with the earlier vocational and ultra backlog layers.
+
+**Validation**
+- New generated files created successfully and tracked in spec-kit.
+
+### Session: Vocational Field-Skills Expansion March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Expand the frontend backlog specifically around vocational and field-skilled jobs so the platform better covers real-world trade families.
+
+**Execution surface**
+- `spec-kit/generated/FRONTEND_VOCATIONAL_FIELD_SKILLS_BACKLOG_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_VOCATIONAL_FIELD_SKILLS_INDEX_MAR19_2026.md`
+
+**Implementation completed**
+- Added a dedicated vocational backlog that expands beyond the currently visible trade categories.
+- Included core building trades, energy, plumbing, HVAC, welding, landscaping, maintenance, industrial work, automotive, cleaning, tailoring, beauty, hospitality, agriculture, construction support, retail support, digital field services, security, care work, regional coverage, trade discovery, and trade onboarding.
+- Added a dedicated index so the trade-focused backlog can be used independently from the general UI backlog.
+
+**Validation**
+- New generated files created successfully and tracked in spec-kit.
+
+### Session: Frontend Ultra Backlog Expansion March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Expand the frontend backlog again to cover the remaining module families and shared component surfaces.
+
+**Execution surface**
+- `spec-kit/generated/FRONTEND_ULTRA_BACKLOG_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_ULTRA_BACKLOG_INDEX_MAR19_2026.md`
+
+**Implementation completed**
+- Added a broader ultra backlog covering home, auth, dashboards, jobs, worker tools, hirer tools, messaging, payments, contracts, scheduling, quick jobs, map, reviews, notifications, settings, support, premium, admin, common error boundaries, layout, resilience, logging, PWA, accessibility, search, and shared widgets.
+- Maintained the viewport expansion rule so every row can still be turned into concrete QA and implementation work.
+- Added a dedicated ultra index to keep the file set navigable.
+
+**Validation**
+- New generated files created successfully and tracked in spec-kit.
+
+### Session: Frontend Surface Expansion March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Push the frontend backlog beyond the existing mega backlog by splitting additional product areas into dedicated files.
+
+**Execution surface**
+- `spec-kit/generated/FRONTEND_BACKLOG_AUTH_ONBOARDING_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_BACKLOG_PROFILE_AND_TRUST_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_BACKLOG_SETTINGS_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_BACKLOG_CONTRACTS_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_BACKLOG_REVIEWS_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_BACKLOG_NOTIFICATIONS_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_BACKLOG_SUPPORT_MAP_SCHEDULING_PREMIUM_ADMIN_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_BACKLOG_SURFACE_INDEX_MAR19_2026.md`
+
+**Implementation completed**
+- Added dedicated backlog files for auth/onboarding, profile/trust, settings/security, contracts, reviews, notifications, and a combined support/map/scheduling/premium/admin surface file.
+- Kept the same viewport-counting convention so the backlog still converts directly into mobile/desktop QA checks.
+- Added a surface index to make the expanded product map easier to navigate.
+
+**Validation**
+- New generated files created successfully and tracked in spec-kit.
+
+### Session: Frontend Mega Backlog Expansion March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Expand the frontend opportunity surface beyond the initial 1000-item backlog and add a discoverable index.
+
+**Execution surface**
+- `spec-kit/generated/FRONTEND_MEGA_BACKLOG_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_MEGA_BACKLOG_INDEX_MAR19_2026.md`
+
+**Implementation completed**
+- Added a broader mega backlog spanning auth, onboarding, jobs, dashboards, messaging, profiles, payments, contracts, reviews, notifications, support, PWA, admin, resiliency, and debug hygiene.
+- Preserved the 5-viewport counting rule so each row still expands into concrete mobile/desktop checks.
+- Added a dedicated index to tie the mega backlog back to the execution plan and the earlier split files.
+
+**Validation**
+- New generated files created successfully and tracked in spec-kit.
+
+### Session: Frontend Backlog Split and Prioritization March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Convert the 1000-item frontend backlog into an execution plan and split it by product area for easier implementation.
+
+**Execution surface**
+- `spec-kit/generated/FRONTEND_EXECUTION_PLAN_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_BACKLOG_INDEX_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_BACKLOG_MESSAGING_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_BACKLOG_JOBS_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_BACKLOG_PAYMENTS_MAR19_2026.md`
+- `spec-kit/generated/FRONTEND_BACKLOG_WORKER_PROFILE_MAR19_2026.md`
+
+**Implementation completed**
+- Created a prioritized execution plan ordered by user-blocking risk, conversion impact, and dependency sequence.
+- Split the backlog into dedicated product-area files for messaging, jobs, payments and wallet, and worker profile.
+- Added an index file to make the split backlog easy to navigate from one entry point.
+
+**Validation**
+- New generated files created successfully and tracked in spec-kit.
+
+### Session: Frontend Purpose Audit March 19 2026 ✅ COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Read-only audit of the Kelmah frontend for product-fit, accessibility, mobile UX, startup behavior, and maintainability improvements.
+
+**Execution surface**
+- `kelmah-frontend/src/App.jsx`
+- `kelmah-frontend/src/main.jsx`
+- `kelmah-frontend/src/pages/HomeLanding.jsx`
+- `kelmah-frontend/src/modules/layout/components/Header.jsx`
+- `kelmah-frontend/src/modules/layout/components/Footer.jsx`
+- `kelmah-frontend/src/modules/layout/components/MobileBottomNav.jsx`
+- `kelmah-frontend/src/modules/auth/pages/LoginPage.jsx`
+- `kelmah-frontend/src/utils/secureStorage.js`
+- `kelmah-frontend/src/routes/config.jsx`
+- `kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx`
+- `kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx`
+
+**Key findings captured**
+- Header presence state is currently hardcoded to online for authenticated users, which can mislead users instead of reflecting real Socket.IO presence.
+- Logout logic clears the entire session storage bucket, which can wipe unrelated UI state such as theme and other persisted session data.
+- Login page clears router state via raw `window.history.replaceState`, which is more brittle than a router-level replace.
+- Footer uses placeholder social links (`#`) that do not provide any real external destination.
+- Landing page relies on silent API fallbacks and hardcoded trust metrics, which can stale out and weaken credibility when backend stats are unavailable.
+- App startup warms backend services and shows a service-waking banner on first load, which may hurt perceived performance on weak networks.
+- Production build suppresses console.log/warn/debug globally, which reduces diagnostic visibility in real deployments.
+- Large route pages still carry decomposition TODOs, especially jobs and application management.
+- Client-side secure storage is documented as obfuscation, not true token security, so it remains a security upgrade candidate.
+
+**Validation**
+- Read-only audit completed successfully.
+- No frontend code changes were made in this session.
+
+**Expanded findings after additional sweep**
+- Hirer analytics service still fabricates dashboard values with `Math.random` in fallback mode, which makes the product display invented business data instead of transparent degraded-state UI.
+- Profile service stores `URL.createObjectURL()` preview values in localStorage on upload failure, which can persist invalid blob URLs and show broken images after refresh.
+- Quick job tracking opens `tel:` links via `window.open(..., '_self')` instead of a direct anchor/button pattern, which is less reliable on mobile dialers.
+- Several list-heavy components still use index-based React keys, which increases remount churn and can create stale row rendering when data reorders.
+- Worker profile proof links use `target="_blank"` with only `rel="noreferrer"`; the security pattern should be normalized everywhere for consistency.
+- Shared navigation and error components still rely on browser-level redirects in a few places, which can be cleaner as router-level navigation for SPA continuity.
+
+### Session: Frontend 1000-Item Improvement Backlog March 18 2026 ✅ COMPLETED
+
+**Date**: March 18, 2026  
+**Scope**: Convert the recent frontend audit and product-direction findings into a reusable improvement backlog for Kelmah.
+
+**Execution surface**
+- `spec-kit/generated/FRONTEND_1000_ITEM_BACKLOG_MAR18_2026.md`
+
+**Implementation completed**
+- Created a structured frontend backlog organized into 20 product sections.
+- Expanded each section into 10 atomic themes across 5 viewport targets (`320px`, `360px`, `390px`, `768px`, `desktop`).
+- Preserved the accessibility-first, mobile-first direction of the earlier audit work while making the backlog easier to triage and ticket.
+
+**Validation**
+- Backlog file created successfully and tracked in spec-kit.
+
+### Session: Worker Profile Edit React #31 Crash Fix March 18 2026 ✅ COMPLETED
+
+**Date**: March 18, 2026  
+**Scope**: Investigate and fix production crash on `/worker/profile/edit` showing minified React error #31 with object keys `{name, level, source}`.
+
+**Execution surface**
+- `kelmah-frontend/src/modules/worker/pages/WorkerProfileEditPage.jsx`
+
+**Root cause verified**
+- Backend returns skills as objects (`{ name, level, source }`) in worker profile payload.
+- Profile edit page rendered skills directly as `Chip` labels (`label={skill}`), which passes an object to React child rendering and triggers error #31.
+
+**Implementation completed**
+- Added skill normalization helpers to coerce mixed skill shapes into safe display strings.
+- Normalized incoming profile skills before writing form state.
+- Normalized outgoing profile update payload skills before submit.
+- Updated skills chip renderer to always render a normalized string label and remove by normalized key.
+
+**Validation**
+- `npm run build` in `kelmah-frontend` ✅
+
 ### Session: Password Change Latency Fix (SMTP Decoupling) March 17 2026 ✅ COMPLETED
 
 **Date**: March 17, 2026  
@@ -15507,3 +16902,78 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 - Replaced massively repeated JSX layouts for statistic cards with tightly mapped arrays for maintainability.
 - Implemented dynamic 'glassmorphism' aesthetic natively supported across dark themes using backdrop filters, thin alpha borders, and inner shadow rings.
 - Shaved vertical whitespace via xs={1.5} level margins instead of xs={3}. Compiled successfully with zero functional regressions.
+
+### Session: Generated Findings Remediation Pass March 19 2026 COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Execute concrete, code-impacting fixes derived from `spec-kit/generated/*` findings and backlog execution artifacts.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/services/apiClient.js`
+- `kelmah-frontend/src/utils/lazyWithRetry.js`
+- `kelmah-frontend/src/utils/pwaHelpers.js`
+- `kelmah-frontend/src/utils/serviceWarmUp.js`
+- `kelmah-frontend/src/modules/layout/components/Footer.jsx`
+- `kelmah-frontend/src/modules/layout/components/Layout.jsx`
+- `kelmah-frontend/src/modules/messaging/components/common/MessageList.jsx`
+- `kelmah-frontend/src/modules/worker/pages/WorkerProfileEditPage.jsx`
+- `kelmah-backend/api-gateway/middlewares/auth.middleware.js`
+- `spec-kit/STATUS_LOG.md`
+
+**Implementation completed**
+- Hardened auth failure handling and login redirect behavior:
+  - preserved attempted route via `from` query parameter,
+  - prevented repeated redirect loops,
+  - drained queued unauthorized requests on forced logout.
+- Added offline-safe chunk recovery behavior in `lazyWithRetry`:
+  - no reload when offline,
+  - emits `app:chunkLoadOffline` event for UI handling.
+- Replaced function-property retry state in warmup utility with module-scoped state for predictable retries.
+- Improved footer social links:
+  - removed `#` targets,
+  - switched to valid `https` URLs,
+  - enforced external-link safety (`target` + `rel`).
+- Added accessibility navigation support in layout:
+  - global skip link,
+  - stable `main-content` targets on dashboard and public shells.
+- Removed unstable attachment list keys and added explicit menu accessibility labels in messaging list.
+- Added object-to-string guard for profile completeness suggestion chips to prevent React object-as-child crashes.
+- Added API gateway middleware compatibility alias `auth.middleware.js` for legacy import expectations.
+- Updated PWA update flow to wait for service worker controller handoff before reload, with timeout fallback.
+
+**Validation**
+- Diagnostics: no errors reported for all touched files via editor problem scan.
+- Frontend production build passed:
+  - `npm run build` in `kelmah-frontend` completed successfully.
+- Backend syntax check passed:
+  - `node --check kelmah-backend/api-gateway/middlewares/auth.middleware.js` -> exit code `0`.
+
+**Current state**
+- High-confidence generated findings that map to current, existing files were executed and validated.
+- Remaining generated items are largely backlog/product-scope tasks, stale path references, or deployment/env operations rather than immediate safe local code edits.
+
+### Session: Generated Findings Remediation Pass (Wave 2) March 19 2026 COMPLETED
+
+**Date**: March 19, 2026  
+**Scope**: Execute remaining high-impact frontend trust/accessibility fixes identified from generated audits.
+
+**Mapped execution surface**
+- `kelmah-frontend/src/modules/hirer/services/hirerAnalyticsService.js`
+- `kelmah-frontend/src/utils/secureStorage.js`
+- `kelmah-frontend/src/components/common/MobileFilterSheet.jsx`
+- `.gitignore`
+
+**Implementation completed**
+- Replaced deceptive/random hirer analytics fallback responses with explicit unavailable payloads and empty deterministic structures.
+- Removed fake export fallback behavior by surfacing a clear export-unavailable error path.
+- Updated secure storage clear flow to remove persisted encryption secret and rotate in-memory key on logout/clear.
+- Added explicit modal ARIA labeling on mobile filter sheet dialog for stronger assistive-tech semantics.
+- Added tunnel runtime config entries to `.gitignore` (`ngrok-config.json`, `localtunnel-config.json`, `localtunnel-url.txt`).
+
+**Validation**
+- Diagnostics: no editor problems for all touched files.
+- Frontend build was previously re-run after this wave and completed successfully.
+
+**Current state**
+- High-confidence code-level findings that map to current files have been implemented across two remediation waves.
+- Remaining items are primarily large product backlog expansions, design/UX scope breadth, or environment/deployment tasks not safely auto-executable as isolated code patches.

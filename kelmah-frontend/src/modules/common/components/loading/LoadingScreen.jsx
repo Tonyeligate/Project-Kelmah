@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Skeleton, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Skeleton, useTheme } from '@mui/material';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 /**
  * Route-level loading screen used as Suspense fallback.
@@ -8,7 +9,7 @@ import { Box, Skeleton, useMediaQuery, useTheme } from '@mui/material';
  */
 const LoadingScreen = ({ isLoading = true, message }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
 
   if (!isLoading) return null;
 
@@ -47,7 +48,7 @@ const LoadingScreen = ({ isLoading = true, message }) => {
           <Skeleton variant="rectangular" height={isMobile ? 44 : 52} sx={{ borderRadius: 1, mb: 2 }} />
           {[1, 2, 3].map((i) => (
             <Skeleton
-              key={i}
+              key={`loading-content-skeleton-${i}`}
               variant="rectangular"
               height={isMobile ? 100 : 140}
               sx={{ borderRadius: 2, mb: 2 }}

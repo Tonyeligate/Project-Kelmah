@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import RegisterPage from './RegisterPage';
 
-const mockUseMediaQuery = jest.fn();
+const mockUseBreakpointDown = jest.fn();
 
 jest.mock('../components/register/Register', () => () => (
   <div data-testid="desktop-register">Desktop Register</div>
@@ -17,13 +17,9 @@ jest.mock('react-helmet-async', () => ({
   Helmet: ({ children }) => <>{children}</>,
 }));
 
-jest.mock('@mui/material', () => {
-  const actual = jest.requireActual('@mui/material');
-  return {
-    ...actual,
-    useMediaQuery: (...args) => mockUseMediaQuery(...args),
-  };
-});
+jest.mock('@/hooks/useResponsive', () => ({
+  useBreakpointDown: (...args) => mockUseBreakpointDown(...args),
+}));
 
 const renderPage = () =>
   render(
@@ -34,11 +30,11 @@ const renderPage = () =>
 
 describe('RegisterPage', () => {
   beforeEach(() => {
-    mockUseMediaQuery.mockReset();
+    mockUseBreakpointDown.mockReset();
   });
 
   test('renders the mobile register flow on small screens', () => {
-    mockUseMediaQuery.mockReturnValue(true);
+    mockUseBreakpointDown.mockReturnValue(true);
 
     renderPage();
 
@@ -47,7 +43,7 @@ describe('RegisterPage', () => {
   });
 
   test('renders the desktop register flow on larger screens', () => {
-    mockUseMediaQuery.mockReturnValue(false);
+    mockUseBreakpointDown.mockReturnValue(false);
 
     renderPage();
 

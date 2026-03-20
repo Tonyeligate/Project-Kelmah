@@ -37,7 +37,6 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
-  useMediaQuery,
   useTheme,
   alpha,
   Badge,
@@ -78,6 +77,7 @@ import { Helmet } from 'react-helmet-async';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 import {
   useJobsQuery,
   useSavedJobsQuery,
@@ -358,7 +358,7 @@ const FilterPanel = ({
 const FindWorkJobCard = ({ job, isSaved, onSave, onUnsave }) => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
   const jobId = job?.id || job?._id;
 
   const handleClick = () => {
@@ -666,7 +666,7 @@ const EmptyState = ({ hasFilters, onReset }) => (
 // ═══════════════════════════════════════════════════════════
 const JobSearchPage = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -1005,7 +1005,7 @@ const JobSearchPage = () => {
                       item
                       xs={12}
                       sm={viewMode === 'grid' ? 6 : 12}
-                      key={i}
+                      key={`job-search-skeleton-${i}`}
                     >
                       <JobCardSkeleton />
                     </Grid>

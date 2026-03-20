@@ -1,6 +1,7 @@
 import React from 'react';
-import { Slide, Snackbar, Alert, useMediaQuery, useTheme } from '@mui/material';
+import { Slide, Snackbar, Alert, useTheme } from '@mui/material';
 import { WifiOff as WifiOffIcon, Wifi as WifiIcon } from '@mui/icons-material';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 import useOnlineStatus from '../../hooks/useOnlineStatus';
 
 /**
@@ -11,7 +12,7 @@ import useOnlineStatus from '../../hooks/useOnlineStatus';
 export default function OfflineBanner() {
   const { isOnline, wasOffline } = useOnlineStatus();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
 
   const [showReconnected, setShowReconnected] = React.useState(false);
 

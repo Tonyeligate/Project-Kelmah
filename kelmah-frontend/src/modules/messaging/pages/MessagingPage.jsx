@@ -24,7 +24,6 @@ import {
   Fade,
   Collapse,
   useTheme,
-  useMediaQuery,
   alpha,
   Button,
   Dialog,
@@ -41,8 +40,6 @@ import {
   Search as SearchIcon,
   MoreVert as MoreVertIcon,
   Add as AddIcon,
-  Phone as PhoneIcon,
-  VideoCall as VideoCallIcon,
   Info as InfoIcon,
   Archive as ArchiveIcon,
   Delete as DeleteIcon,
@@ -74,6 +71,7 @@ import {
   formatMessageTime,
   getMessagePreview,
 } from '../utils/conversationUtils';
+import { useBreakpointDown } from '../../../hooks/useResponsive';
 // ConversationList + Chatbox rendered inline — imports removed (dead code)
 import SEO from '../../common/components/common/SEO';
 import EmptyState from '../../../components/common/EmptyState';
@@ -85,8 +83,8 @@ const EnhancedMessagingPage = () => {
   const { search, state: locationState } = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
+  const isMobile = useBreakpointDown('md');
+  const isTablet = useBreakpointDown('lg');
 
   // Defense-in-depth: redirect if user is null (ProtectedRoute should catch this, but just in case)
   useEffect(() => {
@@ -174,6 +172,17 @@ const EnhancedMessagingPage = () => {
     if (typeof participant === 'string') return participant;
     return participant.id || participant._id || participant.userId || null;
   }, []);
+
+  const selectedConversationOtherParticipant = useMemo(() => {
+    const participants = Array.isArray(selectedConversation?.participants)
+      ? selectedConversation.participants
+      : [];
+    return participants.find((participant) => {
+      const participantId = resolveParticipantId(participant);
+      return participantId && String(participantId) !== String(currentUserId);
+    }) || null;
+  }, [selectedConversation, resolveParticipantId, currentUserId]);
+  const hasSelectedConversation = Boolean(selectedConversation);
 
   const getConversationId = useCallback(
     (conversation) => conversation?.id || conversation?._id || null,
@@ -446,6 +455,160 @@ const EnhancedMessagingPage = () => {
     },
     [getConversationId, navigate, selectConversation, showFeedback],
   );
+
+  const hideConversationLocally = useCallback(
+    (conversationId) => {
+      setFilteredConversations((prev) =>
+        prev.filter((conversation) =>
+          String(getConversationId(conversation)) !== String(conversationId)));
+    },
+    [getConversationId],
+  );
+
+  const restoreConversationLocally = useCallback(
+    (conversation) => {
+      if (!conversation) return;
+
+      setFilteredConversations((prev) => {
+        const targetId = getConversationId(conversation);
+        if (!targetId) return prev;
+
+        const exists = prev.some(
+          (item) => String(getConversationId(item)) === String(targetId),
+        );
+
+        return exists ? prev : [conversation, ...prev];
+      });
+    },
+    [getConversationId],
+  );
+
+  const handleOpenConversationInfo = useCallback(() => {
+    setMoreMenuAnchor(null);
+
+    if (!selectedConversation) {
+      showFeedback('Select a conversation first to see details.', 'info');
+      return;
+    }
+
+    const participantName = selectedConversationOtherParticipant?.name || 'participant';
+    const linkedJobTitle = selectedConversation?.jobRelated?.title;
+    const detailsMessage = linkedJobTitle
+      ? `Conversation with ${participantName}. Linked job: ${linkedJobTitle}.`
+      : `Conversation with ${participantName}.`;
+
+    showFeedback(detailsMessage, 'info');
+  }, [selectedConversation, selectedConversationOtherParticipant, showFeedback]);
+
+  const handleArchiveConversation = useCallback(async () => {
+    if (!selectedConversation) {
+      showFeedback('Select a conversation first to archive it.', 'info');
+      return;
+    }
+
+    const targetConversation = selectedConversation;
+    const conversationId = getConversationId(targetConversation);
+
+    if (!conversationId) {
+      showFeedback('Unable to archive this conversation right now.', 'error');
+      return;
+    }
+
+    hideConversationLocally(conversationId);
+    clearConversation?.();
+    navigate('/messages', { replace: true });
+
+    try {
+      if (typeof messagingService?.archiveConversation === 'function') {
+        await messagingService.archiveConversation(conversationId);
+      }
+      showFeedback('Conversation archived.', 'success');
+    } catch {
+      restoreConversationLocally(targetConversation);
+      showFeedback('Could not archive conversation. Please try again.', 'error');
+    }
+  }, [
+    selectedConversation,
+    getConversationId,
+    hideConversationLocally,
+    clearConversation,
+    navigate,
+    showFeedback,
+    restoreConversationLocally,
+  ]);
+
+  const handleDeleteConversation = useCallback(async () => {
+    if (!selectedConversation) {
+      showFeedback('Select a conversation first to delete it.', 'info');
+      return;
+    }
+
+    const targetConversation = selectedConversation;
+    const conversationId = getConversationId(targetConversation);
+
+    if (!conversationId) {
+      showFeedback('Unable to delete this conversation right now.', 'error');
+      return;
+    }
+
+    hideConversationLocally(conversationId);
+    clearConversation?.();
+    navigate('/messages', { replace: true });
+
+    try {
+      if (typeof messagingService?.deleteConversation === 'function') {
+        await messagingService.deleteConversation(conversationId);
+      }
+      showFeedback('Conversation deleted.', 'success');
+    } catch {
+      restoreConversationLocally(targetConversation);
+      showFeedback('Could not delete conversation. Please try again.', 'error');
+    }
+  }, [
+    selectedConversation,
+    getConversationId,
+    hideConversationLocally,
+    clearConversation,
+    navigate,
+    showFeedback,
+    restoreConversationLocally,
+  ]);
+
+  const handleBlockConversationParticipant = useCallback(async () => {
+    setMoreMenuAnchor(null);
+
+    if (!selectedConversation) {
+      showFeedback('Select a conversation first to block a participant.', 'info');
+      return;
+    }
+
+    const participantId = resolveParticipantId(selectedConversationOtherParticipant);
+
+    if (participantId && typeof messagingService?.blockUser === 'function') {
+      try {
+        await messagingService.blockUser(participantId);
+        showFeedback('User blocked for this conversation.', 'success');
+        return;
+      } catch {
+        showFeedback('Could not block this user right now. Support can help.', 'warning');
+      }
+    }
+
+    navigate('/support', {
+      state: {
+        reason: 'messaging-block-user',
+        conversationId: getConversationId(selectedConversation),
+        participantId: participantId || null,
+      },
+    });
+  }, [
+    selectedConversation,
+    resolveParticipantId,
+    selectedConversationOtherParticipant,
+    showFeedback,
+    navigate,
+    getConversationId,
+  ]);
 
   // Handle sending messages
   const handleSendMessage = useCallback(async () => {
@@ -1158,38 +1321,6 @@ const EnhancedMessagingPage = () => {
             </Box>
 
             <Stack direction="row" spacing={1}>
-              <Tooltip title="Voice call — Coming Soon">
-                <span>
-                <IconButton
-                  aria-label="Voice call — Coming Soon"
-                  disabled
-                  sx={{
-                    color: 'text.disabled',
-                    minWidth: 44,
-                    minHeight: 44,
-                    opacity: 0.5,
-                  }}
-                >
-                  <PhoneIcon />
-                </IconButton>
-                </span>
-              </Tooltip>
-              <Tooltip title="Video call — Coming Soon">
-                <span>
-                <IconButton
-                  aria-label="Video call — Coming Soon"
-                  disabled
-                  sx={{
-                    color: 'text.disabled',
-                    minWidth: 44,
-                    minHeight: 44,
-                    opacity: 0.5,
-                  }}
-                >
-                  <VideoCallIcon />
-                </IconButton>
-                </span>
-              </Tooltip>
               <Tooltip title="More options">
                 <IconButton
                   aria-label="More options"
@@ -1680,7 +1811,7 @@ const EnhancedMessagingPage = () => {
         <Box sx={{ width: { xs: '100%', md: 360 }, borderRight: 1, borderColor: 'divider', p: 2 }}>
           <Skeleton variant="text" width={120} height={32} sx={{ mb: 2 }} />
           {[1,2,3,4,5].map(i => (
-            <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Box key={`conversation-skeleton-${i}`} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
               <Skeleton variant="circular" width={48} height={48} />
               <Box sx={{ flex: 1 }}>
                 <Skeleton variant="text" width="60%" />
@@ -2350,37 +2481,42 @@ const EnhancedMessagingPage = () => {
           open={Boolean(moreMenuAnchor)}
           onClose={() => setMoreMenuAnchor(null)}
         >
-          <MenuItem disabled sx={{ opacity: 0.6 }}>
+          {!hasSelectedConversation && (
+            <MenuItem disabled>
+              <ListItemText>Select a conversation first</ListItemText>
+            </MenuItem>
+          )}
+          <MenuItem onClick={handleOpenConversationInfo} disabled={!hasSelectedConversation}>
             <ListItemIcon>
               <InfoIcon />
             </ListItemIcon>
             <ListItemText>Conversation Info</ListItemText>
-            <Typography variant="caption" sx={{ ml: 1, color: 'text.disabled' }}>Soon</Typography>
           </MenuItem>
-          <MenuItem disabled sx={{ opacity: 0.6 }}>
+          <MenuItem
+            onClick={() => handleDestructiveAction(handleArchiveConversation, 'Archive conversation')}
+            disabled={!hasSelectedConversation}
+          >
             <ListItemIcon>
               <ArchiveIcon />
             </ListItemIcon>
             <ListItemText>Archive</ListItemText>
-            <Typography variant="caption" sx={{ ml: 1, color: 'text.disabled' }}>Soon</Typography>
           </MenuItem>
-          <MenuItem disabled sx={{ opacity: 0.6 }}>
+          <MenuItem onClick={handleBlockConversationParticipant} disabled={!hasSelectedConversation}>
             <ListItemIcon>
               <BlockIcon />
             </ListItemIcon>
             <ListItemText>Block User</ListItemText>
-            <Typography variant="caption" sx={{ ml: 1, color: 'text.disabled' }}>Soon</Typography>
           </MenuItem>
           <Divider />
           <MenuItem
-            disabled
-            sx={{ opacity: 0.6 }}
+            onClick={() => handleDestructiveAction(handleDeleteConversation, 'Delete conversation')}
+            disabled={!hasSelectedConversation}
+            sx={{ color: 'error.main' }}
           >
             <ListItemIcon>
-              <DeleteIcon sx={{ color: 'text.disabled' }} />
+              <DeleteIcon sx={{ color: 'error.main' }} />
             </ListItemIcon>
             <ListItemText>Delete</ListItemText>
-            <Typography variant="caption" sx={{ ml: 1, color: 'text.disabled' }}>Soon</Typography>
           </MenuItem>
         </Menu>
 
@@ -2437,16 +2573,28 @@ const EnhancedMessagingPage = () => {
           </DialogTitle>
           <DialogContent>
             <Alert severity="info" sx={{ mt: 1 }}>
-              This feature is coming soon. For now, you can message workers directly from their profile or a job listing.
+              Start from a worker profile or job listing to create a new conversation with context.
             </Alert>
           </DialogContent>
           <DialogActions>
             <Button
-              onClick={() => setNewChatDialog(false)}
+              onClick={() => {
+                setNewChatDialog(false);
+                navigate('/search', { state: { from: '/messages', intent: 'start-conversation' } });
+              }}
+              variant="outlined"
+            >
+              Find Workers
+            </Button>
+            <Button
+              onClick={() => {
+                setNewChatDialog(false);
+                navigate('/jobs', { state: { from: '/messages', intent: 'start-conversation' } });
+              }}
               variant="contained"
               sx={{ bgcolor: '#D4AF37', color: '#000', '&:hover': { bgcolor: '#C5A028' } }}
             >
-              OK
+              Browse Jobs
             </Button>
           </DialogActions>
         </Dialog>

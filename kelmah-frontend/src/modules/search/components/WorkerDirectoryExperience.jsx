@@ -1,15 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  Container,
-  Box,
-  Grid,
-  Button,
-  useMediaQuery,
+  Container, Box, Grid, Button, Dialog, DialogTitle, DialogContent, IconButton,
 } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import {
   FilterList as FilterListIcon,
   Map as MapIcon,
+  BookmarkBorder as SavedSearchIcon,
+  NotificationsActiveOutlined as JobAlertsIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -25,7 +24,9 @@ import JobMapView from '../components/map/JobMapView';
 import SearchSuggestions from '../components/suggestions/SearchSuggestions';
 import AdvancedFilters from '../components/AdvancedFilters';
 import LocationBasedSearch from '../components/LocationBasedSearch';
+import SavedSearches from '../components/SavedSearches';
 import SEO from '../../common/components/common/SEO';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const WORKER_DIRECTORY_MAP_ENABLED =
   import.meta.env.VITE_ENABLE_WORKER_DIRECTORY_MAP === 'true';
@@ -36,6 +37,15 @@ const PageWrapper = styled(Box)(({ theme }) => ({
   color: theme.palette.text.primary,
   minHeight: 'calc(100dvh - 64px)',
 }));
+
+const POPULAR_SEARCH_TERMS = [
+  'Emergency Plumber Accra',
+  'Roof Repair Kumasi',
+  'Rewiring Tema',
+  'AC Servicing Takoradi',
+  'Cabinet Maker Cape Coast',
+  'Certified Welder Tamale',
+];
 
 const normalizeWorkerRecord = (worker = {}) => {
   const id =
@@ -227,7 +237,6 @@ const sortWorkerResults = (workers = [], sortOption = 'relevance', query = '') =
   }
 };
 
-
 const WorkerDirectoryExperience = ({
   variant = 'public',
   basePath = '/find-talents',
@@ -238,11 +247,13 @@ const WorkerDirectoryExperience = ({
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const { enqueueSnackbar } = useSnackbar();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const canUseHirerTools =
     variant === 'hirer' && isAuthenticated && hasRole(user, ['hirer', 'admin']);
+  const canUseWorkerAlertTools =
+    isAuthenticated && hasRole(user, ['worker', 'admin']);
 
   const [searchParams, setSearchParams] = useState({});
   const [searchResults, setSearchResults] = useState([]);
@@ -261,6 +272,9 @@ const WorkerDirectoryExperience = ({
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [showSavedSearches, setShowSavedSearches] = useState(false);
+  const [showAdvancedFiltersDialog, setShowAdvancedFiltersDialog] =
+    useState(false);
   const abortControllerRef = useRef(null);
   const suggestionsAbortRef = useRef(null);
   const activeSearchControllerRef = useRef(null);
@@ -274,7 +288,7 @@ const WorkerDirectoryExperience = ({
   const fetchSearchSuggestions = async (query, signal) => {
     if (!query || query.length < 2) {
       setSearchSuggestions([]);
-      setShowSuggestions(false);
+      setShowSuggestions(Boolean(String(query || '').trim()));
       return;
     }
 
@@ -284,11 +298,11 @@ const WorkerDirectoryExperience = ({
       });
 
       setSearchSuggestions(suggestions);
-      setShowSuggestions(suggestions.length > 0);
+      setShowSuggestions(true);
     } catch (err) {
       if (err.name === 'AbortError' || err.name === 'CanceledError') return;
       setSearchSuggestions([]);
-      setShowSuggestions(false);
+      setShowSuggestions(true);
     }
   };
 
@@ -658,6 +672,22 @@ const WorkerDirectoryExperience = ({
     }
   };
 
+  const handleOpenFilterControls = useCallback(() => {
+    if (isMobile) {
+      setShowMobileFilters(true);
+      return;
+    }
+
+    if (canUseHirerTools) {
+      setShowAdvancedFilters(true);
+      return;
+    }
+
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [canUseHirerTools, isMobile]);
+
   const renderResults = (isPublicView = false) => (
     <WorkerSearchResults
       workers={searchResults}
@@ -670,6 +700,7 @@ const WorkerDirectoryExperience = ({
       onPageChange={handlePageChange}
       showMap={WORKER_DIRECTORY_MAP_ENABLED && showMap}
       onToggleView={WORKER_DIRECTORY_MAP_ENABLED ? handleToggleView : undefined}
+      onOpenFilters={handleOpenFilterControls}
       onSaveWorker={handleSaveWorker}
       isPublicView={isPublicView}
     />
@@ -687,7 +718,7 @@ const WorkerDirectoryExperience = ({
               onKeywordChange={handleMobileKeywordChange}
               onSearchSubmit={handleMobileSearchSubmit}
               onFilterClick={() => setShowMobileFilters(true)}
-              placeholder="Search skilled workers in Ghana..."
+              placeholder={'Try "plumber in Kumasi" or "carpenter"'}
             />
             <MobileFilterDrawer
               open={showMobileFilters}
@@ -725,9 +756,47 @@ const WorkerDirectoryExperience = ({
           </Box>
         )}
 
-        {showSuggestions && searchSuggestions.length > 0 && (
+        {isAuthenticated && (
+          <Box display="flex" gap={1} mb={2} flexWrap="wrap">
+            {!canUseHirerTools && (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<FilterListIcon />}
+                onClick={() => setShowAdvancedFiltersDialog(true)}
+                sx={{ minHeight: 44 }}
+              >
+                Advanced Filters
+              </Button>
+            )}
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<SavedSearchIcon />}
+              onClick={() => setShowSavedSearches(true)}
+              sx={{ minHeight: 44 }}
+            >
+              Saved Searches
+            </Button>
+            {canUseWorkerAlertTools && (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<JobAlertsIcon />}
+                onClick={() => navigate('/worker/job-alerts')}
+                sx={{ minHeight: 44 }}
+              >
+                Job Alerts
+              </Button>
+            )}
+          </Box>
+        )}
+
+        {showSuggestions && (
           <SearchSuggestions
             suggestions={searchSuggestions}
+            query={searchParams.keyword || ''}
+            popularTerms={POPULAR_SEARCH_TERMS}
             onSuggestionSelected={(suggestion) => {
               setShowSuggestions(false);
               if (suggestion.type === 'location' && suggestion.data) {
@@ -825,6 +894,59 @@ const WorkerDirectoryExperience = ({
           </Grid>
         )}
       </Container>
+
+      <Dialog
+        open={showAdvancedFiltersDialog}
+        onClose={() => setShowAdvancedFiltersDialog(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle
+          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+        >
+          Advanced Filters
+          <IconButton
+            onClick={() => setShowAdvancedFiltersDialog(false)}
+            aria-label="Close advanced filters dialog"
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <AdvancedFilters
+            onFiltersChange={handleSearch}
+            initialFilters={searchParams}
+            showHeader={false}
+            compact={isMobile}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={showSavedSearches}
+        onClose={() => setShowSavedSearches(false)}
+        fullWidth
+        maxWidth="lg"
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          Saved Searches
+          <IconButton onClick={() => setShowSavedSearches(false)} aria-label="Close saved searches dialog">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <SavedSearches
+            showHeader={false}
+            onSearchSelect={(search) => {
+              setShowSavedSearches(false);
+              handleSearch({
+                ...(search?.filters || {}),
+                keyword: search?.query || search?.filters?.keyword || '',
+              });
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </PageWrapper>
   );
 };

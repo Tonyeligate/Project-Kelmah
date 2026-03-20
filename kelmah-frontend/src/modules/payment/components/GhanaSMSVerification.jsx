@@ -342,7 +342,7 @@ const GhanaSMSVerification = ({
           {/* Code Input Fields */}
           <Grid container spacing={1} justifyContent="center" mb={3}>
             {verificationCode.map((digit, index) => (
-              <Grid item key={index}>
+              <Grid item key={`verification-digit-${index}`}>
                 <TextField
                   inputRef={(el) => (inputRefs.current[index] = el)}
                   value={digit}
@@ -586,7 +586,7 @@ const GhanaSMSVerification = ({
                 return acc;
               }, [])
               .map((network, index) => (
-                <ListItem key={index}>
+                <ListItem key={network.name || `network-${index}`}>
                   <ListItemIcon>
                     <PhoneIcon sx={{ color: network.color }} />
                   </ListItemIcon>

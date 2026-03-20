@@ -6,6 +6,7 @@
  */
 
 import apiClient, { api } from '../../../services/apiClient';
+import { AUTH_CONFIG } from '../../../config/environment';
 import { secureStorage } from '../../../utils/secureStorage';
 import { normalizeUser } from '../../../utils/userUtils';
 
@@ -82,15 +83,19 @@ const authService = {
       }
 
       // Store authentication data securely
-      if (token) {
+      if (token && AUTH_CONFIG.storeTokensClientSide) {
         secureStorage.setAuthToken(token, persistOptions);
+      } else if (!AUTH_CONFIG.storeTokensClientSide) {
+        secureStorage.removeItem('auth_token');
       }
-      if (refreshToken) {
+      if (refreshToken && AUTH_CONFIG.storeTokensClientSide) {
         secureStorage.setRefreshToken(refreshToken, persistOptions);
+      } else if (!AUTH_CONFIG.storeTokensClientSide) {
+        secureStorage.removeItem('refresh_token');
       }
 
       // Setup automatic token refresh
-      if (token) {
+      if (token && AUTH_CONFIG.storeTokensClientSide) {
         authService.setupTokenRefresh(token);
       }
 
@@ -247,16 +252,27 @@ const authService = {
     apiClient._refreshPromise = (async () => {
       const response = await api.post('/auth/refresh-token', refreshPayload);
       const responseData = response.data.data || response.data;
-      const { token: newAccessToken } = responseData;
-      if (!newAccessToken) throw new Error('Refresh response did not include a new token');
+      const newAccessToken =
+        responseData?.token ||
+        responseData?.accessToken ||
+        null;
+      if (!newAccessToken && !AUTH_CONFIG.httpOnlyCookieAuth) {
+        throw new Error('Refresh response did not include a new token');
+      }
       return newAccessToken;
     })().finally(() => { apiClient._refreshPromise = null; });
 
     try {
       const newAccessToken = await apiClient._refreshPromise;
 
-      secureStorage.setAuthToken(newAccessToken);
-      authService.setupTokenRefresh(newAccessToken);
+      if (newAccessToken && AUTH_CONFIG.storeTokensClientSide) {
+        secureStorage.setAuthToken(newAccessToken);
+      } else if (!AUTH_CONFIG.storeTokensClientSide) {
+        secureStorage.removeItem('auth_token');
+      }
+      if (newAccessToken) {
+        authService.setupTokenRefresh(newAccessToken);
+      }
 
       // Re-read refreshToken from response to handle rotation
       // (the shared promise only returns accessToken, re-fetch full data from the api response)
@@ -264,7 +280,7 @@ const authService = {
 
       devLog('Token refreshed successfully');
       return {
-        token: newAccessToken,
+        token: newAccessToken || null,
         refreshToken: storedRefresh,
         success: true,
       };

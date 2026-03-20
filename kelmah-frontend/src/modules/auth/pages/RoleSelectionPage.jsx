@@ -1,12 +1,12 @@
 import React from 'react';
-import { Box, Button, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import AuthWrapper from '../components/common/AuthWrapper';
 import { Helmet } from 'react-helmet-async';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const RoleSelectionPage = () => {
-  const theme = useTheme();
-  const isActualMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isActualMobile = useBreakpointDown('md');
   const navigate = useNavigate();
 
   const handleRoleSelection = (role) => {

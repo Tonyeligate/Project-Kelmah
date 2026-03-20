@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
-import { Box, IconButton, useMediaQuery, useTheme } from '@mui/material';
+import { Box, IconButton, useTheme } from '@mui/material';
 import { DeleteOutline as DeleteIcon } from '@mui/icons-material';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const SWIPE_THRESHOLD = 80; // px to commit action
 
@@ -19,7 +20,7 @@ const SWIPE_THRESHOLD = 80; // px to commit action
  */
 export default function SwipeToAction({ onDelete, children, disabled = false, deleteLabel = 'Delete' }) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const [offset, setOffset] = useState(0);
   const startX = useRef(0);
   const swiping = useRef(false);

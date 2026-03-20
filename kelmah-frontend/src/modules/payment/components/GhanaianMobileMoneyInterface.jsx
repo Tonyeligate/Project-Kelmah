@@ -1,41 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Paper,
-  Typography,
-  Grid,
-  Button,
-  TextField,
-  Card,
-  CardContent,
-  CardActions,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  Alert,
-  CircularProgress,
-  Stepper,
-  Step,
-  StepLabel,
-  StepContent,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  InputAdornment,
-  Chip,
-  Avatar,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  Divider,
-  useTheme,
-  alpha,
-  useMediaQuery,
-} from '@mui/material';
+import { Box, Paper, Typography, Grid, Button, TextField, Card, CardContent, CardActions, RadioGroup, FormControlLabel, Radio, Alert, CircularProgress, Stepper, Step, StepLabel, StepContent, Dialog, DialogTitle, DialogContent, DialogActions, InputAdornment, Chip, Avatar, List, ListItem, ListItemAvatar, ListItemText, ListItemSecondaryAction, IconButton, Divider, useTheme, alpha } from '@mui/material';
 import {
   Phone as PhoneIcon,
   Security as SecurityIcon,
@@ -54,6 +18,7 @@ import {
 import { useSnackbar } from 'notistack';
 import { formatCurrency, formatPhoneNumber } from '../../../utils/formatters';
 import paymentService from '../services/paymentService';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const GhanaianMobileMoneyInterface = ({
   amount,
@@ -64,7 +29,7 @@ const GhanaianMobileMoneyInterface = ({
   description = 'Payment for services',
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
   const { enqueueSnackbar } = useSnackbar();
 
   // State management
@@ -392,7 +357,7 @@ const GhanaianMobileMoneyInterface = ({
 
         <List dense>
           {provider.features.map((feature, index) => (
-            <ListItem key={index} sx={{ px: 0 }}>
+            <ListItem key={`${feature || 'feature'}-${index}`} sx={{ px: 0 }}>
               <ListItemAvatar>
                 <CheckIcon color="success" fontSize="small" />
               </ListItemAvatar>
@@ -631,7 +596,7 @@ const GhanaianMobileMoneyInterface = ({
                   );
                   return (
                     <ListItem
-                      key={index}
+                      key={savedNumber.id || savedNumber._id || `${savedNumber.provider || 'provider'}-${savedNumber.phoneNumber || 'number'}-${index}`}
                       button
                       onClick={() => handleSavedNumberSelect(savedNumber)}
                     >

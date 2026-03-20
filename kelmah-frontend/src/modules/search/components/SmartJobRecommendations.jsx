@@ -53,6 +53,12 @@ import { formatCurrency, formatRelativeTime, formatJobLocation } from '../../../
 
 // FIX C2: Stable default object to prevent infinite render loops from {} !== {}
 const EMPTY_FILTER = {};
+const EMPTY_RECOMMENDATION_META = {
+  source: null,
+  averageMatchScore: null,
+  totalRecommendations: 0,
+  refreshedAt: null,
+};
 
 const isRequestAbort = (error) =>
   error?.name === 'AbortError' ||
@@ -102,6 +108,7 @@ const SmartJobRecommendations = ({
   const [refreshing, setRefreshing] = useState(false);
   const [aiInsights, setAiInsights] = useState(null);
   const [infoMessage, setInfoMessage] = useState(null);
+  const [recommendationMeta, setRecommendationMeta] = useState(EMPTY_RECOMMENDATION_META);
   const activeRequestRef = useRef(null);
   const isMountedRef = useRef(false);
 
@@ -150,6 +157,7 @@ const SmartJobRecommendations = ({
           applyState(() => {
             setRecommendations([]);
             setAiInsights(null);
+            setRecommendationMeta(EMPTY_RECOMMENDATION_META);
             setError(null);
             setInfoMessage('Sign in to see personalized job recommendations.');
           });
@@ -160,6 +168,7 @@ const SmartJobRecommendations = ({
           applyState(() => {
             setRecommendations([]);
             setAiInsights(null);
+            setRecommendationMeta(EMPTY_RECOMMENDATION_META);
             setError(null);
             setInfoMessage(
               'Smart job recommendations are available for worker accounts. Switch to a worker profile to discover tailored opportunities.',
@@ -190,6 +199,7 @@ const SmartJobRecommendations = ({
           applyState(() => {
             setRecommendations([]);
             setAiInsights(null);
+            setRecommendationMeta(EMPTY_RECOMMENDATION_META);
             setInfoMessage(
               'We could not verify a worker profile for this account. Update your profile type to receive smart recommendations.',
             );
@@ -202,6 +212,12 @@ const SmartJobRecommendations = ({
           applyState(() => {
             setRecommendations([]);
             setAiInsights(null);
+            setRecommendationMeta({
+              source: payload.recommendationSource || null,
+              averageMatchScore: payload.averageMatchScore ?? null,
+              totalRecommendations: payload.totalRecommendations ?? 0,
+              refreshedAt: new Date().toISOString(),
+            });
             setInfoMessage(
               'No recommendations are available yet. Keep your profile up to date and check back soon.',
             );
@@ -211,8 +227,15 @@ const SmartJobRecommendations = ({
         }
 
         applyState(() => {
-          setRecommendations(Array.isArray(payload.jobs) ? payload.jobs : []);
+          const jobs = Array.isArray(payload.jobs) ? payload.jobs : [];
+          setRecommendations(jobs);
           setAiInsights(payload.insights || null);
+          setRecommendationMeta({
+            source: payload.recommendationSource || null,
+            averageMatchScore: payload.averageMatchScore ?? null,
+            totalRecommendations: payload.totalRecommendations ?? jobs.length,
+            refreshedAt: new Date().toISOString(),
+          });
           setInfoMessage(
             Array.isArray(payload.jobs) && payload.jobs.length === 0
               ? 'Complete your worker profile to unlock AI-powered job matches tailored to your skills.'
@@ -233,6 +256,7 @@ const SmartJobRecommendations = ({
 
         if (status === 403) {
           applyState(() => {
+            setRecommendationMeta(EMPTY_RECOMMENDATION_META);
             setInfoMessage(
               'We could not verify a worker profile for this account. Update your profile type to receive smart recommendations.',
             );
@@ -240,6 +264,10 @@ const SmartJobRecommendations = ({
           });
         } else if (status === 404 || status === 204) {
           applyState(() => {
+            setRecommendationMeta({
+              ...EMPTY_RECOMMENDATION_META,
+              refreshedAt: new Date().toISOString(),
+            });
             setInfoMessage(
               'No recommendations are available yet. Keep your profile up to date and check back soon.',
             );
@@ -247,6 +275,7 @@ const SmartJobRecommendations = ({
           });
         } else {
           applyState(() => {
+            setRecommendationMeta(EMPTY_RECOMMENDATION_META);
             setError('Failed to load job recommendations');
             setInfoMessage(null);
           });
@@ -341,6 +370,39 @@ const SmartJobRecommendations = ({
     return 'error';
   };
 
+  const getConfidenceLabel = (score) => {
+    if (score >= 90) return 'Very strong';
+    if (score >= 75) return 'Strong';
+    if (score >= 60) return 'Moderate';
+    return 'Low';
+  };
+
+  const getRecommendationSourceLabel = (source) => {
+    const sourceLabels = {
+      'worker-profile': 'Worker profile and skill history',
+      'activity-history': 'Recent job interactions and activity',
+      'saved-searches': 'Saved searches and preference signals',
+      'hybrid-ranking': 'Combined profile and market ranking',
+    };
+
+    return sourceLabels[source] || 'Personalized recommendation engine';
+  };
+
+  const recommendationSummary = useMemo(() => {
+    const hasConfidence = recommendationMeta.averageMatchScore != null
+      && !isNaN(recommendationMeta.averageMatchScore);
+    return {
+      hasConfidence,
+      sourceText: getRecommendationSourceLabel(recommendationMeta.source),
+      refreshedText: recommendationMeta.refreshedAt
+        ? new Date(recommendationMeta.refreshedAt).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+        : null,
+    };
+  }, [recommendationMeta]);
+
   // Get urgency indicator
   const getUrgencyIndicator = (urgency) => {
     const indicators = {
@@ -393,7 +455,7 @@ const SmartJobRecommendations = ({
         <Stack direction="row" spacing={1} flexWrap="wrap">
           {(Array.isArray(aiInsights?.tags) ? aiInsights.tags : []).map((tag, index) => (
             <Chip
-              key={index}
+              key={`${tag || 'tag'}-${index}`}
               label={tag}
               size="small"
               icon={<AIIcon />}
@@ -453,7 +515,7 @@ const SmartJobRecommendations = ({
         {/* Match score badge */}
         {hasMatchScore && (
           <Chip
-            label={`${job.matchScore}% Match`}
+            label={`Confidence ${job.matchScore}%`}
             color={matchColor}
             size="small"
             sx={{
@@ -540,7 +602,7 @@ const SmartJobRecommendations = ({
               <Stack direction="row" spacing={0.5} flexWrap="wrap">
                 {job.skillsRequired.slice(0, 3).map((skill, index) => (
                   <Chip
-                    key={index}
+                    key={`${skill || 'skill'}-${index}`}
                     label={skill}
                     size="small"
                     variant="outlined"
@@ -589,7 +651,7 @@ const SmartJobRecommendations = ({
             <Stack spacing={0.5}>
               {job.matchBreakdown.map((item, index) => (
                 <Box
-                  key={index}
+                  key={`${item.factor || 'factor'}-${item.score ?? 0}-${index}`}
                   display="flex"
                   alignItems="center"
                   justifyContent="space-between"
@@ -682,7 +744,7 @@ const SmartJobRecommendations = ({
   const renderLoadingSkeleton = () => (
     <Grid container spacing={3}>
       {[...Array(maxRecommendations)].map((_, index) => (
-        <Grid item xs={12} sm={6} md={4} key={index}>
+        <Grid item xs={12} sm={6} md={4} key={`smart-recommendation-skeleton-${index}`}>
           <Card>
             <CardContent>
               <Skeleton variant="text" height={32} width="80%" />
@@ -735,6 +797,24 @@ const SmartJobRecommendations = ({
               <Badge badgeContent={0} color="primary" />
             </Typography>
           </Box>
+        )}
+
+        {(recommendationMeta.source || recommendationSummary.hasConfidence) && (
+          <Alert severity="info" sx={{ mb: 2, textAlign: 'left' }}>
+            <Typography variant="body2">
+              <strong>Recommendation source:</strong> {recommendationSummary.sourceText}
+            </Typography>
+            {recommendationSummary.hasConfidence && (
+              <Typography variant="body2">
+                <strong>Average confidence:</strong> {Math.round(recommendationMeta.averageMatchScore)}% ({getConfidenceLabel(recommendationMeta.averageMatchScore)})
+              </Typography>
+            )}
+            {recommendationSummary.refreshedText && (
+              <Typography variant="caption" color="text.secondary">
+                Last refreshed at {recommendationSummary.refreshedText}
+              </Typography>
+            )}
+          </Alert>
         )}
 
         <Paper sx={{ p: 4, textAlign: 'center' }}>
@@ -797,6 +877,24 @@ const SmartJobRecommendations = ({
             {refreshing ? 'Refreshing...' : 'Refresh'}
           </Button>
         </Box>
+      )}
+
+      {(recommendationMeta.source || recommendationSummary.hasConfidence) && recommendations.length > 0 && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          <Typography variant="body2">
+            <strong>Recommendation source:</strong> {recommendationSummary.sourceText}
+          </Typography>
+          {recommendationSummary.hasConfidence && (
+            <Typography variant="body2">
+              <strong>Average confidence:</strong> {Math.round(recommendationMeta.averageMatchScore)}% ({getConfidenceLabel(recommendationMeta.averageMatchScore)})
+            </Typography>
+          )}
+          {recommendationSummary.refreshedText && (
+            <Typography variant="caption" color="text.secondary">
+              Last refreshed at {recommendationSummary.refreshedText}
+            </Typography>
+          )}
+        </Alert>
       )}
 
       {/* AI Insights */}

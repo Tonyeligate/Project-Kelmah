@@ -11,30 +11,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
-  Box,
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Stepper,
-  Step,
-  StepLabel,
-  Card,
-  CardContent,
-  Grid,
-  IconButton,
-  Avatar,
-  Alert,
-  CircularProgress,
-  useTheme,
-  useMediaQuery,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  Paper,
-  Chip,
-  LinearProgress
-} from '@mui/material';
+  Box, Container, Typography, TextField, Button, Stepper, Step, StepLabel, Card, CardContent, Grid, IconButton, Avatar, Alert, CircularProgress, useTheme, Radio, RadioGroup, FormControlLabel, Paper, Chip, LinearProgress } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   ArrowForward as ArrowForwardIcon,
@@ -57,6 +34,7 @@ import {
   uploadQuickJobPhotos,
 } from '../services/quickJobService';
 import { Helmet } from 'react-helmet-async';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 // Steps for the stepper
 const steps = ['Describe Problem', 'Confirm Location', 'When do you need it?'];
@@ -66,7 +44,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   const navigate = useNavigate();
   const { category: categoryParam } = useParams();
   const [searchParams] = useSearchParams();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
   const fileInputRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);

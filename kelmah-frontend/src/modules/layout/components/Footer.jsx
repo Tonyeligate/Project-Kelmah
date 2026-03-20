@@ -7,7 +7,6 @@ import {
   Link,
   IconButton,
   useTheme,
-  useMediaQuery,
   Stack,
   Divider,
 } from '@mui/material';
@@ -22,6 +21,7 @@ import {
 } from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
 import { alpha } from '@mui/material/styles';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 // Centralised contact info — update here when details change
 const CONTACT = {
@@ -30,9 +30,26 @@ const CONTACT = {
   location: 'Accra, Ghana',
 };
 
+const sanitizeSocialUrl = (value) => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === '#') {
+    return null;
+  }
+
+  if (!/^https?:\/\//i.test(trimmed)) {
+    return null;
+  }
+
+  return trimmed;
+};
+
 const Footer = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const currentYear = new Date().getFullYear();
 
   const footerSections = [
@@ -60,9 +77,9 @@ const Footer = () => {
       title: 'Resources',
       links: [
         { label: 'Help & Support', href: '/support' },
-        { label: 'Safety Centre', href: '/terms' },
-        { label: 'Community', href: '/about' },
-        { label: 'Blog', href: '/about' },
+        { label: 'Safety Centre', href: '/support/help-center' },
+        { label: 'Community', href: '/community' },
+        { label: 'Blog', href: '/docs' },
       ],
     },
     {
@@ -72,17 +89,37 @@ const Footer = () => {
         { label: 'Contact', href: '/contact' },
         { label: 'Privacy Policy', href: '/privacy' },
         { label: 'Terms of Service', href: '/terms' },
-        { label: 'Careers', href: '/about' },
+        { label: 'Careers', href: '/contact' },
       ],
     },
   ];
 
   const socialLinks = [
-    { icon: FacebookIcon, label: 'Facebook', href: '#' },
-    { icon: TwitterIcon, label: 'Twitter', href: '#' },
-    { icon: LinkedInIcon, label: 'LinkedIn', href: '#' },
-    { icon: InstagramIcon, label: 'Instagram', href: '#' },
-  ];
+    {
+      icon: FacebookIcon,
+      label: 'Facebook',
+      href: sanitizeSocialUrl(
+        import.meta.env.VITE_SOCIAL_FACEBOOK_URL || 'https://www.facebook.com/kelmah',
+      ),
+    },
+    {
+      icon: InstagramIcon,
+      label: 'Instagram',
+      href: sanitizeSocialUrl(
+        import.meta.env.VITE_SOCIAL_INSTAGRAM_URL || 'https://www.instagram.com/kelmah',
+      ),
+    },
+    {
+      icon: TwitterIcon,
+      label: 'X',
+      href: sanitizeSocialUrl(import.meta.env.VITE_SOCIAL_X_URL || ''),
+    },
+    {
+      icon: LinkedInIcon,
+      label: 'LinkedIn',
+      href: sanitizeSocialUrl(import.meta.env.VITE_SOCIAL_LINKEDIN_URL || ''),
+    },
+  ].filter((social) => Boolean(social.href));
 
   return (
     <Box
@@ -122,6 +159,8 @@ const Footer = () => {
                     <IconButton
                       key={social.label}
                       href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       aria-label={social.label}
                       sx={{
                         width: 36,
@@ -200,6 +239,8 @@ const Footer = () => {
                       <IconButton
                         key={social.label}
                         href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         aria-label={social.label}
                         size="small"
                         sx={{

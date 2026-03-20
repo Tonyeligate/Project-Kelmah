@@ -19,31 +19,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
-  Container,
-  Paper,
-  Typography,
-  Box,
-  TextField,
-  Button,
-  Grid,
-  Card,
-  CardContent,
-  Divider,
-  Chip,
-  Avatar,
-  Stack,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Alert,
-  CircularProgress,
-  Breadcrumbs,
-  Link,
-  useTheme,
-  useMediaQuery,
-  InputAdornment,
-} from '@mui/material';
+  Container, Paper, Typography, Box, TextField, Button, Grid, Card, CardContent, Divider, Chip, Avatar, Stack, FormControl, InputLabel, Select, MenuItem, Alert, CircularProgress, Breadcrumbs, Link, useTheme, InputAdornment } from '@mui/material';
 import {
   Work as WorkIcon,
   LocationOn as LocationIcon,
@@ -58,6 +34,7 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { api } from '../../../services/apiClient';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 // Simple location formatter
 const formatLocation = (loc) => {
@@ -102,7 +79,7 @@ const formatBudget = (job) => {
 
 const JobApplicationForm = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
   const { id: jobId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -481,7 +458,7 @@ const JobApplicationForm = () => {
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                       {skills.map((skill, i) => (
                         <Chip
-                          key={i}
+                          key={`${typeof skill === 'string' ? skill : skill?.name || 'skill'}-${i}`}
                           label={
                             typeof skill === 'string'
                               ? skill

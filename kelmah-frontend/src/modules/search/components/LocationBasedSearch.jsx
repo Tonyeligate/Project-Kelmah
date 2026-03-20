@@ -56,6 +56,7 @@ const LocationBasedSearch = ({
   const [recentSearches, setRecentSearches] = useState([]);
   const [loading, setLoading] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [locationDataNotice, setLocationDataNotice] = useState('');
 
   // Ghana regions and major cities
   const ghanaRegions = [
@@ -257,6 +258,7 @@ const LocationBasedSearch = ({
     try {
       const response = await locationService.getPopularLocations();
       setPopularLocations(response.data || []);
+      setLocationDataNotice(response?.meta?.unavailable ? response.meta.message : '');
     } catch (error) {
       if (import.meta.env.DEV) console.error('Failed to load popular locations:', error);
     }
@@ -411,12 +413,20 @@ const LocationBasedSearch = ({
     try {
       setLoading(true);
       const response = await locationService.searchLocations(query);
+      if (response?.meta?.fallback && response?.meta?.message) {
+        enqueueSnackbar(response.meta.message, { variant: 'info' });
+      }
       // Handle search results
       if (response.data && response.data.length > 0) {
         handleLocationSelect(response.data[0]);
         setSearchQuery('');
       } else {
-        enqueueSnackbar('No matching locations found', { variant: 'info' });
+        enqueueSnackbar(
+          response?.meta?.unavailable
+            ? 'Live location search is unavailable. Try browsing by region or selecting a known city.'
+            : 'No matching locations found',
+          { variant: 'info' },
+        );
       }
     } catch (error) {
       if (import.meta.env.DEV) console.error('Location search failed:', error);
@@ -440,20 +450,60 @@ const LocationBasedSearch = ({
     }
   };
 
+  const buildLocationKey = (location, source, index) => {
+    const stableIdentifier =
+      location?._id || location?.id || location?.locationId || location?.value;
+
+    if (stableIdentifier) {
+      return `${source}-${stableIdentifier}`;
+    }
+
+    const coordinatesKey = Array.isArray(location?.coordinates)
+      ? location.coordinates.join(',')
+      : '';
+
+    const normalizedBaseKey = [
+      source,
+      location?.name || 'unknown',
+      location?.region || location?.city || '',
+      coordinatesKey,
+    ]
+      .filter(Boolean)
+      .join('-')
+      .replace(/\s+/g, '-')
+      .toLowerCase();
+
+    return normalizedBaseKey || `${source}-index-${index}`;
+  };
+
   // Render location list item
-  const renderLocationItem = (location, showJobCount = true) => (
-    <ListItem key={location.name} disablePadding>
+  const renderLocationItem = (
+    location,
+    showJobCount = true,
+    itemKey = location.name,
+  ) => (
+    <ListItem key={itemKey} disablePadding>
       <ListItemButton onClick={() => handleLocationSelect(location)}>
         <ListItemIcon>{getLocationIcon(location.type)}</ListItemIcon>
         <ListItemText
           primary={location.name}
           secondary={
             <Box
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                justifyContent: { xs: 'flex-start', sm: 'space-between' },
+                columnGap: 1,
+                rowGap: 0.75,
+                width: '100%',
+              }}
             >
-              <Typography variant="body2" color="text.secondary">
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ overflowWrap: 'anywhere' }}
+              >
                 {location.region || location.city}
               </Typography>
               {showJobCount && location.jobs && (
@@ -462,6 +512,7 @@ const LocationBasedSearch = ({
                   size="small"
                   variant="outlined"
                   color="primary"
+                  sx={{ flexShrink: 0 }}
                 />
               )}
             </Box>
@@ -471,9 +522,7 @@ const LocationBasedSearch = ({
     </ListItem>
   );
 
-  const popularLocationsToDisplay = (
-    popularLocations.length > 0 ? popularLocations : allCities
-  )
+  const popularLocationsToDisplay = popularLocations
     .slice()
     .sort((a, b) => (b.jobs || 0) - (a.jobs || 0))
     .slice(0, 6);
@@ -588,6 +637,7 @@ const LocationBasedSearch = ({
               {...params}
               label="Search Locations"
               placeholder="e.g., Accra, Kumasi, East Legon"
+              helperText="Type a city, town, or area name. If live search is unavailable, use Popular Locations or Browse by Region below."
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
                   event.preventDefault();
@@ -605,9 +655,11 @@ const LocationBasedSearch = ({
                   <>
                     {params.InputProps.endAdornment}
                     <IconButton
+                      aria-label="Search location"
                       size="small"
                       onClick={() => handleSearch(searchQuery)}
                       disabled={!searchQuery.trim() || loading}
+                      sx={{ width: 44, height: 44, ml: 0.5 }}
                     >
                       <SearchIcon fontSize="small" />
                     </IconButton>
@@ -648,6 +700,11 @@ const LocationBasedSearch = ({
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
+              {locationDataNotice ? (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                  {locationDataNotice} Region and city cards remain available for manual selection.
+                </Alert>
+              ) : null}
               <Typography
                 variant="subtitle1"
                 gutterBottom
@@ -658,11 +715,21 @@ const LocationBasedSearch = ({
                 <TravelIcon color="primary" />
                 Popular Locations
               </Typography>
-              <List dense>
-                {popularLocationsToDisplay.map((location) =>
-                  renderLocationItem(location),
-                )}
-              </List>
+              {popularLocationsToDisplay.length > 0 ? (
+                <List dense>
+                  {popularLocationsToDisplay.map((location, index) =>
+                    renderLocationItem(
+                      location,
+                      true,
+                      buildLocationKey(location, 'popular', index),
+                    ),
+                  )}
+                </List>
+              ) : (
+                <Alert severity="info">
+                  Popular location analytics are unavailable right now. Use search or region browsing to choose a location.
+                </Alert>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -697,13 +764,23 @@ const LocationBasedSearch = ({
                           primary={region.name}
                           secondary={
                             <Box
-                              display="flex"
-                              alignItems="center"
-                              justifyContent="space-between"
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                flexWrap: 'wrap',
+                                justifyContent: {
+                                  xs: 'flex-start',
+                                  sm: 'space-between',
+                                },
+                                columnGap: 1,
+                                rowGap: 0.75,
+                                width: '100%',
+                              }}
                             >
                               <Typography
                                 variant="body2"
                                 color="text.secondary"
+                                sx={{ overflowWrap: 'anywhere' }}
                               >
                                 {region.cities.length} cities
                               </Typography>
@@ -712,6 +789,7 @@ const LocationBasedSearch = ({
                                 size="small"
                                 variant="outlined"
                                 color="primary"
+                                sx={{ flexShrink: 0 }}
                               />
                             </Box>
                           }
@@ -743,7 +821,13 @@ const LocationBasedSearch = ({
                 <List dense>
                   {recentSearches
                     .slice(0, 5)
-                    .map((location) => renderLocationItem(location, false))}
+                    .map((location, index) =>
+                      renderLocationItem(
+                        location,
+                        false,
+                        buildLocationKey(location, 'recent', index),
+                      ),
+                    )}
                 </List>
               </CardContent>
             </Card>
@@ -766,8 +850,12 @@ const LocationBasedSearch = ({
                   Nearby Locations
                 </Typography>
                 <List dense>
-                  {nearbyLocations.map((location) =>
-                    renderLocationItem(location),
+                  {nearbyLocations.map((location, index) =>
+                    renderLocationItem(
+                      location,
+                      true,
+                      buildLocationKey(location, 'nearby', index),
+                    ),
                   )}
                 </List>
               </CardContent>

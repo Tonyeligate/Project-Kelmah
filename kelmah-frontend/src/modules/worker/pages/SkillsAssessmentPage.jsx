@@ -1,41 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import {
-  Box,
-  Container,
-  Grid,
-  Typography,
-  Tabs,
-  Tab,
-  Paper,
-  CircularProgress,
-  Alert,
-  Button,
-  CardContent,
-  CardActions,
-  Chip,
-  LinearProgress,
-  useTheme,
-  useMediaQuery,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Avatar,
-  Tooltip,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  Rating,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Breadcrumbs,
-  Link,
-  Snackbar,
-  Skeleton,
-} from '@mui/material';
+  Box, Container, Grid, Typography, Tabs, Tab, Paper, CircularProgress, Alert, Button, CardContent, CardActions, Chip, LinearProgress, useTheme, Dialog, DialogTitle, DialogContent, DialogActions, Avatar, Tooltip, RadioGroup, FormControlLabel, Radio, Rating, List, ListItem, ListItemIcon, ListItemText, Breadcrumbs, Link, Snackbar, Skeleton } from '@mui/material';
 import {
   EmojiEvents as EmojiEventsIcon,
   TrendingUp as TrendingUpIcon,
@@ -102,6 +68,7 @@ import {
   ProgressRing,
   TimerDisplay,
 } from '@/modules/worker/components/skillsAssessment/styled';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -130,7 +97,7 @@ const SkillsAssessmentPage = () => {
   const navigate = useNavigate();
   const { testId } = useParams();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   // State management
   const [tabValue, setTabValue] = useState(0);
@@ -461,6 +428,63 @@ const SkillsAssessmentPage = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const triggerCertificateDownload = (assessment) => {
+    if (!assessment?.certificate) {
+      setSnackbar({
+        open: true,
+        message: 'Certificate is only available for passed certified assessments.',
+        severity: 'info',
+      });
+      return;
+    }
+
+    try {
+      const workerName =
+        [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
+        user?.name ||
+        'Kelmah Worker';
+      const issuedAt = assessment.completedAt || new Date().toISOString();
+      const score = assessment.score ?? testResults?.score ?? 0;
+      const title = assessment.title || currentTest?.title || 'Skills Assessment';
+      const certificateId = `${assessment.id || assessment._id || 'assessment'}-${Date.parse(issuedAt) || Date.now()}`;
+
+      const certificateText = [
+        'KELMAH SKILLS ASSESSMENT CERTIFICATE',
+        '',
+        `Certificate ID: ${certificateId}`,
+        `Issued To: ${workerName}`,
+        `Assessment: ${title}`,
+        `Score: ${score}%`,
+        `Issued On: ${new Date(issuedAt).toLocaleString()}`,
+        '',
+        'This certificate confirms the holder passed the listed Kelmah skills assessment.',
+      ].join('\n');
+
+      const safeTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      const blob = new Blob([certificateText], { type: 'text/plain;charset=utf-8' });
+      const downloadUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = downloadUrl;
+      anchor.download = `kelmah-certificate-${safeTitle || 'assessment'}.txt`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(downloadUrl);
+
+      setSnackbar({
+        open: true,
+        message: 'Certificate downloaded successfully.',
+        severity: 'success',
+      });
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: 'Unable to download certificate on this device.',
+        severity: 'error',
+      });
+    }
+  };
+
   const renderAvailableTests = () => (
     <Grid container spacing={3}>
       {availableTests.map((test) => {
@@ -757,9 +781,7 @@ const SkillsAssessmentPage = () => {
                 <Button
                   size="small"
                   startIcon={<DownloadIcon />}
-                  onClick={() =>
-                    setSnackbar({ open: true, message: 'Certificate download coming soon.', severity: 'info' })
-                  }
+                  onClick={() => triggerCertificateDownload(test)}
                   disabled={!test.certificate}
                 >
                   Certificate
@@ -1169,7 +1191,7 @@ const SkillsAssessmentPage = () => {
         <Skeleton variant="text" width={280} height={40} sx={{ mb: 3 }} />
         <Grid container spacing={2}>
           {[1,2,3,4,5,6].map(i => (
-            <Grid item xs={12} sm={6} md={4} key={i}>
+            <Grid item xs={12} sm={6} md={4} key={`assessment-skeleton-${i}`}>
               <Skeleton variant="rounded" height={200} sx={{ borderRadius: 2 }} />
             </Grid>
           ))}
@@ -1452,7 +1474,12 @@ const SkillsAssessmentPage = () => {
                 variant="outlined"
                 sx={{ minHeight: 44 }}
                 onClick={() => {
-                  setSnackbar({ open: true, message: 'Certificate download will be available soon.', severity: 'info' });
+                  triggerCertificateDownload({
+                    ...currentTest,
+                    ...testResults,
+                    completedAt: new Date().toISOString(),
+                    certificate: true,
+                  });
                   setResultsDialog(false);
                 }}
               >

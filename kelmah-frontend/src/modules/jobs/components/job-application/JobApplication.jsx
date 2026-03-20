@@ -2,34 +2,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
-  Box,
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  Grid,
-  CircularProgress,
-  Alert,
-  Divider,
-  Card,
-  CardContent,
-  Chip,
-  IconButton,
-  InputAdornment,
-  MenuItem,
-  Stepper,
-  Step,
-  StepLabel,
-  useTheme,
-  useMediaQuery,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  List,
-  ListItem,
-  ListItemText,
-  FormHelperText,
-} from '@mui/material';
+  Box, Paper, Typography, TextField, Button, Grid, CircularProgress, Alert, Divider, Card, CardContent, Chip, IconButton, InputAdornment, MenuItem, Stepper, Step, StepLabel, useTheme, Accordion, AccordionSummary, AccordionDetails, List, ListItem, ListItemText, FormHelperText } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import {
   Send as SendIcon,
@@ -51,6 +24,7 @@ import {
   useJobQuery,
 } from '../../hooks/useJobsQuery';
 import fileUploadService from '../../../common/services/fileUploadService';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 // Styled components
 const ApplicationPaper = styled(Paper)(({ theme }) => ({
@@ -86,7 +60,7 @@ function JobApplication() {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
   const {
     data: job,
     isLoading: isJobLoading,
@@ -128,6 +102,17 @@ function JobApplication() {
 
   // Form validation
   const [formErrors, setFormErrors] = useState({});
+
+  const getAttachmentSignature = (attachment) => {
+    const file = attachment?.file;
+    const lastModified = typeof file?.lastModified === 'number'
+      ? file.lastModified
+      : typeof attachment?.lastModified === 'number'
+        ? attachment.lastModified
+        : 'na';
+
+    return `${attachment?.name}-${attachment?.size}-${lastModified}`;
+  };
 
   // Sync defaults from job payload when it loads
   useEffect(() => {
@@ -203,18 +188,34 @@ function JobApplication() {
 
   // Handle file upload
   const handleFileUpload = (e) => {
-    const files = Array.from(e.target.files);
+    const files = Array.from(e.target.files || []);
     const fileObjects = files.map((file) => ({
       file,
       name: file.name,
       size: file.size,
       type: file.type,
+      lastModified: file.lastModified,
     }));
 
-    setApplicationData((prev) => ({
-      ...prev,
-      attachments: [...prev.attachments, ...fileObjects],
-    }));
+    setApplicationData((prev) => {
+      const seen = new Set(prev.attachments.map((attachment) => getAttachmentSignature(attachment)));
+      const nextAttachments = [...prev.attachments];
+
+      fileObjects.forEach((attachment) => {
+        const signature = getAttachmentSignature(attachment);
+        if (!seen.has(signature)) {
+          seen.add(signature);
+          nextAttachments.push(attachment);
+        }
+      });
+
+      return {
+        ...prev,
+        attachments: nextAttachments,
+      };
+    });
+
+    e.target.value = '';
   };
 
   // Remove an attachment
@@ -281,6 +282,10 @@ function JobApplication() {
 
   // Submit application
   const handleSubmit = async () => {
+    if (submitting || success) {
+      return;
+    }
+
     // Final validation
     let combinedErrors = {};
     for (let i = 0; i < steps.length; i++) {
@@ -300,13 +305,13 @@ function JobApplication() {
       return;
     }
 
+    setSubmitting(true);
+
     try {
       // Process attachments properly
       let processedAttachments = [];
 
       if (applicationData.attachments.length > 0) {
-        setSubmitting(true);
-
         try {
           const uploads = await fileUploadService.uploadFiles(
             applicationData.attachments.map((attachment) => attachment.file),
@@ -561,7 +566,7 @@ function JobApplication() {
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                         {job.skills.map((skill, index) => (
                           <Chip
-                            key={index}
+                            key={`${skill || 'skill'}-${index}`}
                             label={skill}
                             size="small"
                             color="primary"
@@ -668,7 +673,7 @@ function JobApplication() {
                       <List>
                         {applicationData.attachments.map((file, index) => (
                           <ListItem
-                            key={index}
+                            key={`${file.name || 'attachment'}-${file.size || 0}-${file.lastModified || index}`}
                             secondaryAction={
                               <IconButton
                                 edge="end"
@@ -798,7 +803,7 @@ function JobApplication() {
                   )}
 
                   {applicationData.milestoneProposal.map((milestone, index) => (
-                    <MilestoneCard key={index} sx={{ mb: 2 }}>
+                    <MilestoneCard key={milestone.id || milestone._id || `${milestone.title || 'milestone'}-${milestone.amount || 0}-${index}`} sx={{ mb: 2 }}>
                       <CardContent sx={{ py: 2 }}>
                         <Box
                           sx={{
@@ -934,7 +939,7 @@ function JobApplication() {
                       {applicationData.milestoneProposal.map(
                         (milestone, index) => (
                           <ListItem
-                            key={index}
+                            key={milestone.id || milestone._id || `${milestone.title || 'milestone'}-${milestone.amount || 0}-${index}`}
                             divider={
                               index <
                               applicationData.milestoneProposal.length - 1
@@ -967,7 +972,7 @@ function JobApplication() {
                     <List>
                       {applicationData.attachments.map((file, index) => (
                         <ListItem
-                          key={index}
+                          key={`${file.name || 'attachment'}-${file.size || 0}-${file.lastModified || index}`}
                           divider={
                             index < applicationData.attachments.length - 1
                           }

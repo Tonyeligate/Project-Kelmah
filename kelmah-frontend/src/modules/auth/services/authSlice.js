@@ -24,12 +24,22 @@ const normalizeAuthUser = (user) => {
 const resolveInitialAuthState = () => {
   try {
     const token = secureStorage.getAuthToken();
+    const storedUser = secureStorage.getUserData();
+    const normalizedStoredUser = normalizeAuthUser(storedUser);
+
+    if (AUTH_CONFIG.httpOnlyCookieAuth) {
+      return {
+        token: token || null,
+        user: normalizedStoredUser,
+        isAuthenticated: Boolean(token || normalizedStoredUser),
+      };
+    }
+
     if (!token) {
       return { token: null, user: null, isAuthenticated: false };
     }
 
-    const storedUser = secureStorage.getUserData();
-    const user = normalizeAuthUser(storedUser);
+    const user = normalizedStoredUser;
     if (!user) {
       return { token: null, user: null, isAuthenticated: false };
     }
@@ -80,12 +90,14 @@ export const login = createAsyncThunk(
       const refreshToken = responseData.refreshToken;
       const normalizedUser = normalizeAuthUser(user);
 
-      if (token) {
+      const canUseCookieSessionWithoutToken = AUTH_CONFIG.httpOnlyCookieAuth;
+
+      if (token || canUseCookieSessionWithoutToken) {
         // Return structured data for the reducer — storage is handled by authService.login()
         return {
-          token,
+          token: token || null,
           user: normalizedUser,
-          refreshToken,
+          refreshToken: refreshToken || null,
         };
       } else {
         if (import.meta.env.DEV) console.warn(
@@ -125,9 +137,10 @@ export const verifyAuth = createAsyncThunk(
       devLog('Auth verify response:', verify);
 
       const hasSessionHint = Boolean(token || storedUserSnapshot || storedRefreshToken);
+      const shouldAttemptCookieRefresh = AUTH_CONFIG.httpOnlyCookieAuth;
 
       if (verify?.success === false && !verify?.user && !token) {
-        if (!hasSessionHint) {
+        if (!hasSessionHint && !shouldAttemptCookieRefresh) {
           return rejectWithValue({
             message: null,
             shouldReset: true,
@@ -137,8 +150,11 @@ export const verifyAuth = createAsyncThunk(
 
         devLog('No local access token available, attempting refresh...');
         const refreshResult = await authService.refreshToken();
-        if (refreshResult?.token) {
-          token = refreshResult.token;
+        const canContinueWithCookieSession =
+          AUTH_CONFIG.httpOnlyCookieAuth && refreshResult?.success;
+
+        if (refreshResult?.token || canContinueWithCookieSession) {
+          token = refreshResult?.token || null;
           verify = await authService.verifyAuth();
         } else {
           const refreshError = new Error(
@@ -269,7 +285,11 @@ const authSlice = createSlice({
       state.error = null;
 
       // Save securely
-      secureStorage.setAuthToken(token);
+      if (AUTH_CONFIG.storeTokensClientSide) {
+        secureStorage.setAuthToken(token);
+      } else {
+        secureStorage.removeItem('auth_token');
+      }
       if (normalizedUser) {
         secureStorage.setUserData(normalizedUser);
       }

@@ -9,7 +9,6 @@ import {
   Chip,
   Stack,
   useTheme,
-  useMediaQuery,
   Fade,
   Slide,
   Tooltip,
@@ -29,6 +28,7 @@ import {
   PushPinOutlined as PushPinOutlinedIcon,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 import secureStorage from '../../utils/secureStorage';
 
 const QUICK_NAV_STORAGE_KEY = 'quick_nav_preferences';
@@ -55,7 +55,7 @@ const SmartNavigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isPinned, setIsPinned] = useState(false);

@@ -2,34 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Grid,
-  LinearProgress,
-  Chip,
-  Avatar,
-  Button,
-  IconButton,
-  Divider,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  ListItemSecondaryAction,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Rating,
-  Skeleton,
-  Alert,
-  Snackbar,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
+  Box, Card, CardContent, Typography, Grid, LinearProgress, Chip, Avatar, Button, IconButton, Divider, List, ListItem, ListItemAvatar, ListItemText, ListItemSecondaryAction, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Rating, Skeleton, Alert, Snackbar, useTheme } from '@mui/material';
 import {
   PlayArrow as StartIcon,
   Pause as PauseIcon,
@@ -46,10 +19,11 @@ import {
   selectHirerLoading,
 } from '../services/hirerSlice';
 import { hirerService } from '../services/hirerService';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const JobProgressTracker = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -244,7 +218,7 @@ const JobProgressTracker = () => {
     return (
       <Box>
         {[...Array(2)].map((_, i) => (
-          <Card key={i} sx={{ mb: 3 }}>
+          <Card key={`job-progress-skeleton-${i}`} sx={{ mb: 3 }}>
             <CardContent>
               <Skeleton variant="text" height={40} width="60%" sx={{ mb: 2 }} />
               <Skeleton variant="rectangular" height={120} sx={{ mb: 2 }} />

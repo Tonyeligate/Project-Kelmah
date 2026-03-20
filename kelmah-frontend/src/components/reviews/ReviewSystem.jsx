@@ -529,7 +529,7 @@ const ReviewSystem = ({
                   </Typography>
                   {review.pros.map((pro, i) => (
                     <Typography
-                      key={i}
+                      key={`${pro || 'pro'}-${i}`}
                       variant="body2"
                       sx={{ color: 'rgba(255,255,255,0.8)', mb: 0.5 }}
                     >
@@ -548,7 +548,7 @@ const ReviewSystem = ({
                   </Typography>
                   {review.cons.map((con, i) => (
                     <Typography
-                      key={i}
+                      key={`${con || 'con'}-${i}`}
                       variant="body2"
                       sx={{ color: 'rgba(255,255,255,0.8)', mb: 0.5 }}
                     >
@@ -825,7 +825,7 @@ const ReviewSystem = ({
         />
         {[...Array(3)].map((_, index) => (
           <Skeleton
-            key={index}
+            key={`review-card-skeleton-${index}`}
             variant="rectangular"
             height={120}
             sx={{ borderRadius: 2, mb: 2 }}

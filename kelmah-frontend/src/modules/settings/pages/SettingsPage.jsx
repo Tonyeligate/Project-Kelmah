@@ -1,24 +1,6 @@
 import { useState } from 'react';
 import {
-  Container,
-  Box,
-  Typography,
-  Paper,
-  Tabs,
-  Tab,
-  Grid,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  IconButton,
-  alpha,
-  useTheme,
-  useMediaQuery,
-  Avatar,
-  Stack,
-  Chip,
-} from '@mui/material';
+  Container, Box, Typography, Paper, Tabs, Tab, Grid, List, ListItemButton, ListItemIcon, ListItemText, IconButton, alpha, useTheme, Avatar, Stack, Chip } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
   AccountCircle as AccountCircleIcon,
@@ -35,6 +17,7 @@ import SecuritySettings from '../components/common/SecuritySettings';
 import PrivacySettings from '../components/common/PrivacySettings';
 import { useSettings } from '../hooks/useSettings';
 import { Helmet } from 'react-helmet-async';
+import { useBreakpointUp } from '@/hooks/useResponsive';
 
 const SettingsPage = () => {
   const {
@@ -96,7 +79,7 @@ const SettingsPage = () => {
   })();
   const [tabValue, setTabValue] = useState(initialTab);
   const theme = useTheme();
-  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const isMdUp = useBreakpointUp('md');
   const { user } = useSelector((state) => state.auth);
 
   const userDisplayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.name || 'Kelmah User';

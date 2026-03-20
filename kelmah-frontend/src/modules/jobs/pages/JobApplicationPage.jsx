@@ -44,6 +44,8 @@ const JobApplicationPage = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
+  const getFileSignature = (file) => `${file.name}-${file.size}-${typeof file.lastModified === 'number' ? file.lastModified : 'na'}`;
+
   const isBiddingJob = currentJob?.bidding?.bidStatus === 'open';
 
   // Load job details
@@ -68,7 +70,22 @@ const JobApplicationPage = () => {
       setError('Some files were too large. Maximum size is 10MB per file.');
     }
 
-    setAttachments((prev) => [...prev, ...validFiles]);
+    setAttachments((prev) => {
+      const seen = new Set(prev.map((file) => getFileSignature(file)));
+      const next = [...prev];
+
+      validFiles.forEach((file) => {
+        const signature = getFileSignature(file);
+        if (!seen.has(signature)) {
+          seen.add(signature);
+          next.push(file);
+        }
+      });
+
+      return next;
+    });
+
+    event.target.value = '';
   };
 
   const handleRemoveAttachment = (name) => {
@@ -77,6 +94,11 @@ const JobApplicationPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (submitting || success) {
+      return;
+    }
+
     setError(null);
 
     if (!coverLetter.trim()) {

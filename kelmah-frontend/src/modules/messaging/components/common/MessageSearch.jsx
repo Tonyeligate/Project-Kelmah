@@ -145,11 +145,11 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
         <>
           {parts.map((part, i) =>
             part.toLowerCase() === q.toLowerCase() ? (
-              <span key={i} className="highlight">
+              <span key={`highlight-part-${i}-${part}`} className="highlight">
                 {part}
               </span>
             ) : (
-              <React.Fragment key={i}>{part}</React.Fragment>
+              <React.Fragment key={`plain-part-${i}-${part}`}>{part}</React.Fragment>
             ),
           )}
         </>

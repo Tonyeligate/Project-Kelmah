@@ -1,6 +1,8 @@
 import axios from 'axios';
-import { API_BASE_URL } from '../config/environment';
+import { API_BASE_URL, AUTH_CONFIG } from '../config/environment';
 import { secureStorage } from '../utils/secureStorage';
+
+let uuidFallbackCounter = 0;
 
 // Lightweight UUID v4 generator (browser-compatible)
 const uuidv4 = () => {
@@ -17,11 +19,16 @@ const uuidv4 = () => {
         return `${hex.slice(0, 4).join('')}-${hex.slice(4, 6).join('')}-${hex.slice(6, 8).join('')}-${hex.slice(8, 10).join('')}-${hex.slice(10, 16).join('')}`;
     }
 
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
+    uuidFallbackCounter = (uuidFallbackCounter + 1) & 0xffff;
+    const nowHex = Date.now().toString(16).padStart(12, '0');
+    const perfHex = Math.floor((typeof performance !== 'undefined' ? performance.now() : 0) * 1000)
+        .toString(16)
+        .padStart(8, '0');
+    const counterHex = uuidFallbackCounter.toString(16).padStart(4, '0');
+    const raw = `${nowHex}${perfHex}${counterHex}`.padEnd(32, '0').slice(0, 32);
+    const variantNibble = ['8', '9', 'a', 'b'][uuidFallbackCounter % 4];
+
+    return `${raw.slice(0, 8)}-${raw.slice(8, 12)}-4${raw.slice(13, 16)}-${variantNibble}${raw.slice(17, 20)}-${raw.slice(20, 32)}`;
 };
 
 // GET request deduplication — concurrent identical GETs share one in-flight promise
@@ -45,7 +52,24 @@ apiClient._isRefreshing = false;
 
 // Helper to generate request key for deduplication
 const getRequestKey = (method, url, params) => {
-    return `${method}:${url}:${JSON.stringify(params || '')}`;
+    const stableSerialize = (value) => {
+        if (Array.isArray(value)) {
+            return value.map((entry) => stableSerialize(entry));
+        }
+
+        if (value && typeof value === 'object') {
+            return Object.keys(value)
+                .sort()
+                .reduce((acc, key) => {
+                    acc[key] = stableSerialize(value[key]);
+                    return acc;
+                }, {});
+        }
+
+        return value;
+    };
+
+    return `${method}:${url}:${JSON.stringify(stableSerialize(params || ''))}`;
 };
 
 const isRefreshRequest = (request) =>
@@ -81,13 +105,66 @@ const processUnauthorizedQueue = (error, token = null) => {
     }
 };
 
+const buildLoginRedirectUrl = () => {
+    if (typeof window === 'undefined') {
+        return '/login';
+    }
+
+    const { pathname = '/', search = '', hash = '' } = window.location;
+    if (pathname === '/login') {
+        return '/login';
+    }
+
+    const intendedPath = `${pathname}${search}${hash}`;
+    return `/login?from=${encodeURIComponent(intendedPath)}`;
+};
+
+const navigateInApp = (targetPath) => {
+    if (typeof window === 'undefined' || !targetPath) {
+        return false;
+    }
+
+    try {
+        const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        if (currentPath === targetPath) {
+            return true;
+        }
+
+        if (window.history && typeof window.history.pushState === 'function') {
+            window.history.pushState({}, '', targetPath);
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            return true;
+        }
+    } catch {
+        return false;
+    }
+
+    return false;
+};
+
 const redirectToLogin = () => {
     if (hasTriggeredAuthRedirect || typeof window === 'undefined') {
         return;
     }
 
+    if (window.location.pathname === '/login') {
+        hasTriggeredAuthRedirect = true;
+        return;
+    }
+
     hasTriggeredAuthRedirect = true;
-    window.location.replace('/login');
+    const loginUrl = buildLoginRedirectUrl();
+    if (!navigateInApp(loginUrl)) {
+        window.location.assign(loginUrl);
+    }
+};
+
+const forceLogoutAndRedirect = (error) => {
+    secureStorage.removeItem('auth_token');
+    secureStorage.removeItem('refresh_token');
+    secureStorage.removeItem('user_data');
+    processUnauthorizedQueue(error || new Error('Unauthorized'), null);
+    redirectToLogin();
 };
 
 // Request interceptor
@@ -97,7 +174,9 @@ apiClient.interceptors.request.use(
         config.headers['X-Request-ID'] = uuidv4();
 
         // Add Auth Token
-        const token = secureStorage.getAuthToken();
+        const token = AUTH_CONFIG.sendAuthHeader
+            ? secureStorage.getAuthToken()
+            : null;
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -143,10 +222,16 @@ apiClient.interceptors.response.use(
             }
 
             const hasStoredSessionHint = Boolean(
-                secureStorage.getAuthToken() || secureStorage.getRefreshToken(),
+                secureStorage.getAuthToken() ||
+                secureStorage.getRefreshToken() ||
+                (AUTH_CONFIG.httpOnlyCookieAuth && secureStorage.getUserData()),
             );
 
-            if (!hasStoredSessionHint && isAuthVerifyRequest(originalRequest)) {
+            if (
+                !hasStoredSessionHint &&
+                isAuthVerifyRequest(originalRequest) &&
+                !AUTH_CONFIG.httpOnlyCookieAuth
+            ) {
                 return Promise.reject(error);
             }
 
@@ -175,8 +260,10 @@ apiClient.interceptors.response.use(
                         response.data?.token ||
                         response.data?.accessToken ||
                         null;
-                    if (token) {
+                    if (token && AUTH_CONFIG.storeTokensClientSide) {
                         secureStorage.setAuthToken(token);
+                    } else if (!AUTH_CONFIG.storeTokensClientSide) {
+                        secureStorage.removeItem('auth_token');
                     } else {
                         secureStorage.removeItem('auth_token');
                     }
@@ -186,8 +273,10 @@ apiClient.interceptors.response.use(
                         response.data?.data?.refreshToken ||
                         response.data?.refreshToken ||
                         null;
-                    if (newRefresh) {
+                    if (newRefresh && AUTH_CONFIG.storeTokensClientSide) {
                         secureStorage.setRefreshToken(newRefresh);
+                    } else if (!AUTH_CONFIG.storeTokensClientSide) {
+                        secureStorage.removeItem('refresh_token');
                     }
 
                     processUnauthorizedQueue(null, token);
@@ -212,9 +301,7 @@ apiClient.interceptors.response.use(
                 const shouldForceLogout = [400, 401, 403].includes(refreshStatus);
 
                 if (shouldForceLogout) {
-                    secureStorage.removeItem('auth_token');
-                    secureStorage.removeItem('refresh_token');
-                    redirectToLogin();
+                    forceLogoutAndRedirect(refreshError);
                 }
                 throw refreshError;
             });
@@ -229,13 +316,13 @@ const retryRequest = async (fn, retries = 3, delay = 1000) => {
     try {
         return await fn();
     } catch (error) {
-        // Don't retry 4xx errors (client errors) or sleeping backend (502/503/504)
+        // Don't retry most 4xx client errors; allow 429 throttling to back off and retry.
+        const status = error?.response?.status;
+        const shouldRetryClientError = status === 429;
         if (
             retries === 0 ||
             error.isBackendSleeping ||
-            (error.response &&
-                error.response.status >= 400 &&
-                error.response.status < 500)
+            (status >= 400 && status < 500 && !shouldRetryClientError)
         ) {
             throw error;
         }

@@ -120,6 +120,18 @@ export const lazyWithRetry = (factory, options = {}) => {
         throw error;
       }
 
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        window.dispatchEvent(
+          new CustomEvent('app:chunkLoadOffline', {
+            detail: {
+              message: error?.message,
+              name: error?.name,
+            },
+          }),
+        );
+        throw error;
+      }
+
       let attempts = 0;
 
       try {

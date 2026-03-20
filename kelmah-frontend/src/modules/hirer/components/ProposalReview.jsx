@@ -1,37 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Alert,
-  Avatar,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  Grid,
-  IconButton,
-  LinearProgress,
-  Menu,
-  MenuItem,
-  Pagination,
-  Skeleton,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
+import { Alert, Avatar, Box, Button, Card, CardContent, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, LinearProgress, Menu, MenuItem, Pagination, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, useTheme } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
@@ -47,6 +15,7 @@ import {
   useProposals,
 } from '../../../hooks/useProposals';
 import { hirerService } from '../services/hirerService';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const STATUS_FILTERS = [
   { label: 'All', value: 'all' },
@@ -142,7 +111,7 @@ const toArray = (value) => (Array.isArray(value) ? value : []);
 
 const ProposalReview = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedProposal, setSelectedProposal] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -530,7 +499,7 @@ const ProposalReview = () => {
     <Box>
       <Grid container spacing={{ xs: 1.5, sm: 3 }} sx={{ mb: 4 }}>
         {Array.from({ length: 4 }).map((_, index) => (
-          <Grid item xs={6} sm={6} md={3} key={index}>
+          <Grid item xs={6} sm={6} md={3} key={`proposal-card-skeleton-${index}`}>
             <Skeleton variant="rounded" height={120} animation="wave" />
           </Grid>
         ))}
@@ -539,7 +508,7 @@ const ProposalReview = () => {
         <CardContent>
           <Skeleton variant="text" height={40} width="40%" sx={{ mb: 2 }} />
           {Array.from({ length: 3 }).map((_, index) => (
-            <Skeleton key={index} variant="text" height={60} sx={{ mb: 1 }} />
+            <Skeleton key={`proposal-row-skeleton-${index}`} variant="text" height={60} sx={{ mb: 1 }} />
           ))}
         </CardContent>
       </Card>
@@ -626,7 +595,7 @@ const ProposalReview = () => {
           <Box>
             {loading
               ? Array.from({ length: skeletonRowCount }).map((_, i) => (
-                  <Box key={i} sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+                  <Box key={`proposal-mobile-skeleton-${i}`} sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
                     <Skeleton height={48} />
                   </Box>
                 ))
@@ -644,18 +613,46 @@ const ProposalReview = () => {
                         borderBottom: '1px solid',
                         borderColor: 'divider',
                         display: 'flex',
-                        alignItems: 'center',
+                        alignItems: 'flex-start',
                         gap: 1,
                       }}
                     >
                       <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography variant="subtitle2" fontWeight={600} noWrap>
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight={600}
+                          sx={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            overflowWrap: 'anywhere',
+                          }}
+                        >
                           {workerName}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            overflowWrap: 'anywhere',
+                          }}
+                        >
                           {jobTitle}
                         </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            mt: 0.5,
+                            flexWrap: 'wrap',
+                          }}
+                        >
                           <Chip
                             label={formatStatusLabel(statusLabel)}
                             color={getStatusColor(statusLabel)}
@@ -668,8 +665,17 @@ const ProposalReview = () => {
                           </Typography>
                         </Box>
                       </Box>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5, flexShrink: 0 }}>
-                        <Typography variant="caption" color="text.disabled">
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'flex-end',
+                          gap: 0.5,
+                          flexShrink: 0,
+                          minWidth: 92,
+                        }}
+                      >
+                        <Typography variant="caption" color="text.disabled" noWrap>
                           {formatDate(proposal.submittedAt ?? proposal.createdAt)}
                         </Typography>
                         <IconButton
@@ -704,6 +710,7 @@ const ProposalReview = () => {
               color="primary"
               shape="rounded"
               size="small"
+              sx={{ '& .MuiPagination-ul': { flexWrap: 'wrap', rowGap: 0.5 } }}
             />
           </Box>
         </Card>
@@ -934,7 +941,12 @@ const ProposalReview = () => {
           ))}
         </Stack>
 
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={1}
+          alignItems={{ xs: 'flex-start', sm: 'center' }}
+          sx={{ width: { xs: '100%', md: 'auto' } }}
+        >
           <Typography variant="caption" color="text.secondary">
             Last updated: {formattedLastUpdated}
           </Typography>
@@ -952,6 +964,10 @@ const ProposalReview = () => {
           </Button>
         </Stack>
       </Stack>
+
+      <Alert severity="info" sx={{ mb: 2 }}>
+        Review tip: Compare scope fit, proposed rate, start date, and location before deciding. Use View details to check cover letter, timeline, and attachments.
+      </Alert>
 
       {isRefreshing && <LinearProgress sx={{ mb: 2 }} />}
 

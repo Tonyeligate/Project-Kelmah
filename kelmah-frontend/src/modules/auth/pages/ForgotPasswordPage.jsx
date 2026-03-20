@@ -7,18 +7,16 @@ import {
   Typography,
   Alert,
   CircularProgress,
-  useMediaQuery,
   IconButton,
-  useTheme,
 } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import authService from '../services/authService';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const ForgotPasswordPage = () => {
-  const theme = useTheme();
-  const isActualMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isActualMobile = useBreakpointDown('md');
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('');

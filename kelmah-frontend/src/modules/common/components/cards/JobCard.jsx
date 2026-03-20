@@ -1,21 +1,7 @@
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Card,
-  CardMedia,
-  CardContent,
-  CardActions,
-  Typography,
-  Button,
-  Chip,
-  Box,
-  Avatar,
-  Divider,
-  Stack,
-  IconButton,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
+  Card, CardMedia, CardContent, CardActions, Typography, Button, Chip, Box, Avatar, Divider, Stack, IconButton, useTheme } from '@mui/material';
 import {
   LocationOn,
   AttachMoney,
@@ -29,6 +15,7 @@ import {
   resolveJobVisualUrl,
   resolveProfileImageUrl,
 } from '../../../common/utils/mediaAssets';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 /**
  * Unified JobCard Component
@@ -61,7 +48,7 @@ const JobCard = ({
   onToggleSave,
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
   const navigate = useNavigate();
 
   const derivedIsSaved = useMemo(() => {
@@ -270,7 +257,7 @@ const JobCard = ({
           <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
             {skills.slice(0, 3).map((skill, index) => (
               <Chip
-                key={index}
+                key={`${String(skill)}-${index}`}
                 label={skill}
                 size="small"
                 variant="outlined"
@@ -427,5 +414,4 @@ JobCard.propTypes = {
   isSaveLoading: PropTypes.bool,
   onToggleSave: PropTypes.func,
 };
-
 

@@ -2,35 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
-  Box,
-  Button,
-  Container,
-  Grid,
-  Paper,
-  Typography,
-  Divider,
-  Chip,
-  CircularProgress,
-  Alert,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  TextField,
-  Stepper,
-  Step,
-  StepLabel,
-  Card,
-  CardContent,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  Stack,
-  Skeleton,
-} from '@mui/material';
+  Box, Button, Container, Grid, Paper, Typography, Divider, Chip, CircularProgress, Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Stepper, Step, StepLabel, Card, CardContent, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Stack, Skeleton } from '@mui/material';
 import {
   Edit as EditIcon,
   Cancel as CancelIcon,
@@ -44,7 +16,6 @@ import {
   ArrowBack as BackIcon,
 } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import { Helmet } from 'react-helmet-async';
 
 // Import contract slice actions and selectors
@@ -65,6 +36,7 @@ import {
 } from '../services/contractSlice';
 
 import Toast from '../../common/components/common/Toast';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 // Status colors for contract chips
 const statusColors = {
@@ -83,7 +55,7 @@ const ContractDetailsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   const contract = useSelector(selectCurrentContract);
   const milestones = useSelector((state) =>
@@ -287,14 +259,23 @@ const ContractDetailsPage = () => {
       .finally(() => setActionLoading(false));
   };
 
-  // Handle download contract — uses browser print to PDF as no export API exists yet
+  // Handle download contract via browser print until dedicated PDF export API ships
   const handleDownloadContract = () => {
     if (!resolvedContractId) return;
-    setToast({
-      open: true,
-      message: 'Contract PDF export is coming soon. You can use your browser\'s Print → Save as PDF option for now.',
-      severity: 'info',
-    });
+    try {
+      window.print();
+      setToast({
+        open: true,
+        message: 'Print dialog opened. Choose "Save as PDF" in your browser to download the contract.',
+        severity: 'success',
+      });
+    } catch (printError) {
+      setToast({
+        open: true,
+        message: 'Unable to open the print dialog on this device. Please try again from a desktop browser.',
+        severity: 'error',
+      });
+    }
   };
 
   // Calculate contract progress based on milestones

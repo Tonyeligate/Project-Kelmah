@@ -15,17 +15,18 @@ import {
   Skeleton,
   Alert,
   Stack,
-  useMediaQuery,
-  useTheme,
 } from '@mui/material';
 import {
   MapOutlined as MapIcon,
+  FilterList as FilterListIcon,
+  KeyboardArrowUp as KeyboardArrowUpIcon,
   SearchOff as SearchOffIcon,
   Lightbulb as LightbulbIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 import WorkerCard from '../../../worker/components/WorkerCard';
 
 const INITIAL_RENDERED_WORKERS = 12;
@@ -41,15 +42,16 @@ const WorkerSearchResults = ({
   onPageChange,
   showMap = false,
   onToggleView,
+  onOpenFilters,
   onSaveWorker,
   isPublicView = false,
 }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const { isAuthenticated } = useSelector((state) => state.auth);
   const isPublicMode = isPublicView || !isAuthenticated;
   const navigate = useNavigate();
   const [renderedWorkerCount, setRenderedWorkerCount] = useState(INITIAL_RENDERED_WORKERS);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
     // Debounce pagination/filter changes to prevent flicker
@@ -59,11 +61,123 @@ const WorkerSearchResults = ({
     return () => clearTimeout(timeout);
   }, [workers.length, pagination?.page]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const handleWindowScroll = () => {
+      setShowScrollTop(window.scrollY > 520);
+    };
+
+    window.addEventListener('scroll', handleWindowScroll, { passive: true });
+    handleWindowScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleWindowScroll);
+    };
+  }, []);
+
   const visibleWorkers = useMemo(
     () => workers.slice(0, renderedWorkerCount),
     [workers, renderedWorkerCount],
   );
   const hasHiddenWorkers = workers.length > visibleWorkers.length;
+
+  const activeFilters = useMemo(() => {
+    const entries = [];
+
+    if (filters.keyword) {
+      entries.push({ key: 'keyword', value: filters.keyword });
+    }
+
+    const locationLabel =
+      typeof filters.location === 'string'
+        ? filters.location
+        : filters.location?.address;
+    if (locationLabel) {
+      entries.push({ key: 'location', value: locationLabel });
+    }
+
+    if (filters.jobType || filters.workType) {
+      entries.push({
+        key: 'jobType',
+        value: filters.jobType || filters.workType,
+      });
+    }
+
+    const tradeLabel =
+      filters.trade || filters.category || filters.primaryTrade || '';
+    if (tradeLabel) {
+      entries.push({ key: 'trade', value: tradeLabel });
+    }
+
+    if (filters.minRating || filters.rating) {
+      const ratingValue = filters.minRating || filters.rating;
+      entries.push({
+        key: 'rating',
+        value: `${ratingValue}+ Stars`,
+      });
+    }
+
+    if (filters.availability) {
+      entries.push({
+        key: 'availability',
+        value: filters.availability,
+      });
+    }
+
+    if (filters.budgetMin || filters.budgetMax || filters.maxRate) {
+      entries.push({
+        key: 'budget',
+        value: `GH₵${filters.budgetMin || 0} - GH₵${
+          filters.budgetMax || filters.maxRate || 'Any'
+        }`,
+      });
+    }
+
+    if (filters.categories && filters.categories.length > 0) {
+      filters.categories.forEach((category) => {
+        entries.push({ key: 'categories', value: category });
+      });
+    }
+
+    if (filters.skills && filters.skills.length > 0) {
+      filters.skills.forEach((skill) => {
+        entries.push({ key: 'skills', value: skill });
+      });
+    }
+
+    return entries;
+  }, [filters]);
+
+  const selectedSort = filters.sort || 'relevance';
+
+  const sortHelpText = useMemo(() => {
+    const sortDescriptions = {
+      relevance:
+        'Relevance ranks workers by how closely their trade, skills, and location match your current search.',
+      rating: 'Sorted by highest rated to show top-reviewed workers first.',
+      price: 'Sorted by lowest price to surface budget-friendly rates first.',
+      distance:
+        'Sorted by nearest to show workers closest to your selected location first.',
+      newest: 'Sorted by newest profiles first.',
+    };
+    return sortDescriptions[selectedSort] || sortDescriptions.relevance;
+  }, [selectedSort]);
+
+  const hasLocationFilter = Boolean(
+    filters.location || filters.distance || filters.radius || filters.maxDistance,
+  );
+
+  const filterButtonLabel =
+    activeFilters.length > 0
+      ? isMobile
+        ? `${activeFilters.length} active`
+        : `${activeFilters.length} active filter${activeFilters.length === 1 ? '' : 's'}`
+      : isMobile
+        ? 'Filters'
+        : 'Add filters';
 
   // Handle page change in pagination
   const handlePageChange = (event, value) => {
@@ -85,69 +199,6 @@ const WorkerSearchResults = ({
 
   // Renders active filters
   const renderActiveFilters = () => {
-    const activeFilters = [];
-
-    if (filters.keyword) {
-      activeFilters.push({ key: 'keyword', value: filters.keyword });
-    }
-
-    const locationLabel =
-      typeof filters.location === 'string'
-        ? filters.location
-        : filters.location?.address;
-    if (locationLabel) {
-      activeFilters.push({ key: 'location', value: locationLabel });
-    }
-
-    if (filters.jobType || filters.workType) {
-      activeFilters.push({
-        key: 'jobType',
-        value: filters.jobType || filters.workType,
-      });
-    }
-
-    const tradeLabel =
-      filters.trade || filters.category || filters.primaryTrade || '';
-    if (tradeLabel) {
-      activeFilters.push({ key: 'trade', value: tradeLabel });
-    }
-
-    if (filters.minRating || filters.rating) {
-      const ratingValue = filters.minRating || filters.rating;
-      activeFilters.push({
-        key: 'rating',
-        value: `${ratingValue}+ Stars`,
-      });
-    }
-
-    if (filters.availability) {
-      activeFilters.push({
-        key: 'availability',
-        value: filters.availability,
-      });
-    }
-
-    if (filters.budgetMin || filters.budgetMax || filters.maxRate) {
-      activeFilters.push({
-        key: 'budget',
-        value: `GH₵${filters.budgetMin || 0} - GH₵${
-          filters.budgetMax || filters.maxRate || 'Any'
-        }`,
-      });
-    }
-
-    if (filters.categories && filters.categories.length > 0) {
-      filters.categories.forEach((category) => {
-        activeFilters.push({ key: 'categories', value: category });
-      });
-    }
-
-    if (filters.skills && filters.skills.length > 0) {
-      filters.skills.forEach((skill) => {
-        activeFilters.push({ key: 'skills', value: skill });
-      });
-    }
-
     if (activeFilters.length === 0) {
       return null;
     }
@@ -196,7 +247,7 @@ const WorkerSearchResults = ({
   const renderLoadingSkeleton = () => (
     <Grid container spacing={3}>
       {Array.from({ length: 6 }).map((_, index) => (
-        <Grid item xs={12} sm={6} md={4} key={index}>
+        <Grid item xs={12} sm={6} md={4} key={`worker-result-skeleton-${index}`}>
           <Paper sx={{ p: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <Skeleton
@@ -236,6 +287,7 @@ const WorkerSearchResults = ({
 
     const tips = [
       'Broaden your location search or remove distance filters',
+      'Try keyword plus area, for example "electrician Accra" or "welder Tema"',
       'Try adding related skills or trades instead of exact matches',
       'Toggle between job types (Full-time, Contract, Gig)',
     ];
@@ -411,77 +463,119 @@ const WorkerSearchResults = ({
 
   // Renders sort controls
   const renderSortControls = () => (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        mb: 2,
-        flexWrap: 'wrap',
-        gap: { xs: 1, sm: 2 },
-        py: 1,
-      }}
-    >
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
-      >
-        {(() => {
-          const totalCount =
-            pagination.total ??
-            pagination.totalItems ??
-            pagination.totalWorkers ??
-            0;
-          if (totalCount > 0) {
-            return `${totalCount} worker${totalCount !== 1 ? 's' : ''} found`;
-          }
-          return loading ? 'Searching...' : 'No workers found';
-        })()}
-      </Typography>
-
+    <Box sx={{ mb: 2 }}>
       <Box
-        sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: { xs: 1, sm: 2 },
+          py: 1,
+        }}
       >
-        <FormControl
-          size="small"
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
+        >
+          {(() => {
+            const totalCount =
+              pagination.total ??
+              pagination.totalItems ??
+              pagination.totalWorkers ??
+              0;
+            if (totalCount > 0) {
+              return `${totalCount} worker${totalCount !== 1 ? 's' : ''} found`;
+            }
+            return loading ? 'Searching...' : 'No workers found';
+          })()}
+        </Typography>
+
+        <Box
           sx={{
-            minWidth: { xs: 100, sm: 140 },
-            '& .MuiInputBase-root': {
-              fontSize: { xs: '0.85rem', sm: '0.875rem' },
-            },
+            display: 'flex',
+            alignItems: 'center',
+            gap: { xs: 1, sm: 2 },
+            flexWrap: { xs: 'wrap', sm: 'nowrap' },
+            width: { xs: '100%', sm: 'auto' },
+            justifyContent: { xs: 'flex-start', sm: 'flex-end' },
           }}
         >
-          <InputLabel sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}>
-            Sort by
-          </InputLabel>
-          <Select
-            value={filters.sort || 'relevance'}
-            onChange={handleSortChange}
-            label="Sort by"
-            disabled={loading}
-          >
-            <MenuItem value="relevance">Relevance</MenuItem>
-            <MenuItem value="rating">Highest Rated</MenuItem>
-            <MenuItem value="price">Lowest Price</MenuItem>
-            <MenuItem value="distance">Nearest</MenuItem>
-            <MenuItem value="newest">Newest</MenuItem>
-          </Select>
-        </FormControl>
+          {onOpenFilters && (
+            <Button
+              variant={activeFilters.length > 0 ? 'contained' : 'outlined'}
+              startIcon={<FilterListIcon />}
+              size="small"
+              onClick={onOpenFilters}
+              sx={{
+                textTransform: 'none',
+                whiteSpace: 'nowrap',
+                minHeight: { xs: 40, sm: 32 },
+              }}
+            >
+              {filterButtonLabel}
+            </Button>
+          )}
 
-        {onToggleView && (
-          <Button
-            variant="outlined"
-            startIcon={<MapIcon />}
-            onClick={onToggleView}
-            disabled={loading}
+          <FormControl
             size="small"
-            sx={{ display: { xs: 'none', sm: 'flex' } }}
+            sx={{
+              minWidth: { xs: 100, sm: 140 },
+              '& .MuiInputBase-root': {
+                fontSize: { xs: '0.85rem', sm: '0.875rem' },
+              },
+            }}
           >
-            {showMap ? 'List view' : 'Map view'}
-          </Button>
-        )}
+            <InputLabel sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}>
+              Sort by
+            </InputLabel>
+            <Select
+              value={selectedSort}
+              onChange={handleSortChange}
+              label="Sort by"
+              disabled={loading}
+            >
+              <MenuItem value="relevance">Relevance</MenuItem>
+              <MenuItem value="rating">Highest Rated</MenuItem>
+              <MenuItem value="price">Lowest Price</MenuItem>
+              <MenuItem value="distance">Nearest</MenuItem>
+              <MenuItem value="newest">Newest</MenuItem>
+            </Select>
+          </FormControl>
+
+          {onToggleView && (
+            <Button
+              variant="outlined"
+              startIcon={<MapIcon />}
+              onClick={onToggleView}
+              disabled={loading}
+              size="small"
+              aria-label={showMap ? 'Switch to list view' : 'Switch to map view'}
+              sx={{
+                display: 'flex',
+                minWidth: { xs: 44, sm: 'auto' },
+                minHeight: { xs: 40, sm: 32 },
+                px: { xs: 1.25, sm: 1.5 },
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {isMobile ? (showMap ? 'List' : 'Map') : showMap ? 'List view' : 'Map view'}
+            </Button>
+          )}
+        </Box>
       </Box>
+
+      <Stack spacing={0.5} sx={{ pt: 0.5 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-word' }}>
+          {sortHelpText}
+        </Typography>
+        {hasLocationFilter && (
+          <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-word' }}>
+            Location is currently narrowed. Broaden your location or increase distance to discover more workers.
+          </Typography>
+        )}
+      </Stack>
     </Box>
   );
 
@@ -517,6 +611,24 @@ const WorkerSearchResults = ({
       {renderActiveFilters()}
       {renderWorkerCards()}
       {renderPagination()}
+      {showScrollTop && (
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={<KeyboardArrowUpIcon />}
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Scroll back to top"
+          sx={{
+            position: 'fixed',
+            right: { xs: 12, sm: 16 },
+            bottom: { xs: 76, sm: 24 },
+            zIndex: 1200,
+            textTransform: 'none',
+          }}
+        >
+          Top
+        </Button>
+      )}
     </Box>
   );
 };
@@ -553,6 +665,7 @@ WorkerSearchResults.propTypes = {
   onPageChange: PropTypes.func,
   showMap: PropTypes.bool,
   onToggleView: PropTypes.func,
+  onOpenFilters: PropTypes.func,
   onSaveWorker: PropTypes.func,
   isPublicView: PropTypes.bool,
 };

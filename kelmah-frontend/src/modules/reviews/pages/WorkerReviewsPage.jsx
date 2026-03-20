@@ -108,7 +108,7 @@ const WorkerReviewsPage = () => {
           <Grid item xs={12} md={8}>
             {Array.from(new Array(3)).map((_, idx) => (
               <Skeleton
-                key={idx}
+                key={`worker-review-skeleton-${idx}`}
                 variant="rectangular"
                 height={150}
                 sx={{ mb: 2, borderRadius: 2 }}

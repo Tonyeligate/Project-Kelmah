@@ -9,21 +9,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  CardActionArea,
-  Button,
-  TextField,
-  InputAdornment,
-  useTheme,
-  useMediaQuery,
-  Chip,
-  Avatar
-} from '@mui/material';
+  Box, Container, Typography, Grid, Card, CardContent, CardActionArea, Button, TextField, InputAdornment, useTheme, Chip, Avatar } from '@mui/material';
 import {
   Search as SearchIcon,
   LocationOn as LocationIcon,
@@ -32,6 +18,7 @@ import {
 import { useSelector } from 'react-redux';
 import { SERVICE_CATEGORIES } from '../services/quickJobService';
 import { hasRole } from '../../../utils/userUtils';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 // Category icons (emoji-based for universal recognition)
 const categoryIcons = {
@@ -53,7 +40,7 @@ const categoryIcons = {
 const ServiceCategorySelector = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
   const [searchTerm, setSearchTerm] = useState('');
   const user = useSelector((state) => state.auth.user);
 

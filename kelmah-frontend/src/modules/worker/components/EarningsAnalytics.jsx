@@ -149,7 +149,7 @@ const EarningsAnalytics = () => {
     return (
       <Grid container spacing={3} mb={3}>
         {cards.map((card, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
+          <Grid item xs={12} sm={6} md={3} key={card.title || `card-${index}`}>
             <Card>
               <CardContent>
                 <Box

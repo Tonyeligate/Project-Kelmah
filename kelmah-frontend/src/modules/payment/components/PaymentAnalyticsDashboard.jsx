@@ -252,7 +252,7 @@ const PaymentAnalyticsDashboard = ({
     return (
       <Grid container spacing={3} mb={3}>
         {cards.map((card, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
+          <Grid item xs={12} sm={6} md={3} key={card.title || `analytics-card-${index}`}>
             <Card>
               <CardContent>
                 <Box
@@ -512,7 +512,7 @@ const PaymentAnalyticsDashboard = ({
 
           <List>
             {analyticsData.insights.map((insight, index) => (
-              <ListItem key={index}>
+              <ListItem key={insight.id || insight.code || insight.title || `insight-${index}`}>
                 <ListItemIcon>
                   {insight.type === 'positive' && (
                     <TrendingUpIcon color="success" />

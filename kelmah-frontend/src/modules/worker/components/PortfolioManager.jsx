@@ -5,37 +5,7 @@ import { useSelector } from 'react-redux';
 import portfolioService from '../services/portfolioService';
 import fileUploadService from '../../common/services/fileUploadService';
 import {
-  Box,
-  Paper,
-  Typography,
-  Button,
-  Grid,
-  Card,
-  CardContent,
-  CardMedia,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Chip,
-  Alert,
-  CircularProgress,
-  ImageList,
-  ImageListItem,
-  ImageListItemBar,
-  Fab,
-  Menu,
-  MenuItem,
-  Skeleton,
-  Stack,
-  Divider,
-  Tooltip,
-  useMediaQuery,
-  useTheme,
-  alpha,
-} from '@mui/material';
+  Box, Paper, Typography, Button, Grid, Card, CardContent, CardMedia, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Chip, Alert, CircularProgress, ImageList, ImageListItem, ImageListItemBar, Fab, Menu, MenuItem, Skeleton, Stack, Divider, Tooltip, useTheme, alpha } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -58,6 +28,7 @@ import {
   resolveMediaAssetUrl,
   resolveMediaAssetUrls,
 } from '../../common/utils/mediaAssets';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const getPortfolioItemImages = (item = {}) =>
   resolveMediaAssetUrls(
@@ -85,7 +56,7 @@ const PortfolioManager = () => {
   const { user } = useSelector((state) => state.auth);
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   // State management
   const [portfolioItems, setPortfolioItems] = useState([]);
@@ -313,16 +284,28 @@ const PortfolioManager = () => {
   };
 
   // Render portfolio item card
-  const renderPortfolioItem = (item) => (
+  const renderPortfolioItem = (item) => {
+    const normalizedSkills = (Array.isArray(item.skills)
+      ? item.skills
+      : typeof item.skills === 'string'
+        ? item.skills.split(',')
+        : []
+    )
+      .map((skill) => skill.trim())
+      .filter(Boolean);
+
+    return (
     <Card
       key={item.id}
       sx={{
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
+        minWidth: 0,
+        overflow: 'hidden',
         transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
         '&:hover': {
-          transform: 'translateY(-4px)',
+          transform: { xs: 'none', md: 'translateY(-4px)' },
           boxShadow: theme.shadows[8],
         },
         position: 'relative',
@@ -362,10 +345,10 @@ const PortfolioManager = () => {
       {item.imageCount > 0 ? (
         <CardMedia
           component="img"
-          height="200"
+          height={isMobile ? 176 : 200}
           image={item.heroImage}
           alt={item.title}
-          sx={{ objectFit: 'cover' }}
+          sx={{ objectFit: 'cover', cursor: 'pointer' }}
           onClick={() => handleOpenGallery(item)}
           onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.style.display = 'none'; }}
         />
@@ -379,8 +362,8 @@ const PortfolioManager = () => {
             justifyContent: 'center',
           }}
         >
-          <Typography variant="body2" color="text.secondary">
-            No Images
+          <Typography variant="body2" color="text.secondary" sx={{ px: 2, textAlign: 'center' }}>
+            No project photos yet
           </Typography>
         </Box>
       )}
@@ -401,23 +384,62 @@ const PortfolioManager = () => {
         />
       )}
 
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Typography variant="h6" component="h3" gutterBottom noWrap sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <CardContent
+        sx={{
+          flexGrow: 1,
+          minWidth: 0,
+          p: { xs: 1.5, sm: 2 },
+          '&:last-child': { pb: { xs: 1.5, sm: 2 } },
+        }}
+      >
+        <Typography
+          variant="h6"
+          component="h3"
+          gutterBottom
+          sx={{
+            fontSize: { xs: '1rem', sm: '1.125rem' },
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            overflowWrap: 'anywhere',
+            lineHeight: 1.3,
+            mb: 0.75,
+          }}
+        >
           {item.title}
         </Typography>
 
-        <Typography variant="body2" color="text.secondary" paragraph>
-          {item.description?.length > 100
-            ? `${item.description.substring(0, 100)}...`
-            : item.description}
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          paragraph
+          sx={{
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            overflowWrap: 'anywhere',
+            lineHeight: 1.45,
+            mb: 0,
+          }}
+        >
+          {item.description}
         </Typography>
+
+        {item.imageCount === 0 && (
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
+            Add at least one clear photo so hirers can quickly verify your work.
+          </Typography>
+        )}
 
         {item.imageCount > 0 && (
           <Box mt={2} mb={2}>
             <Typography variant="caption" color="text.secondary" gutterBottom>
               Visual proof
             </Typography>
-            <Stack direction="row" spacing={1} sx={{ mt: 0.75 }}>
+            <Stack direction="row" spacing={1} sx={{ mt: 0.75, flexWrap: 'wrap', rowGap: 1 }}>
               {item.previewImages.slice(0, 3).map((imageUrl, index) => (
                 <Box
                   key={`${item.id}-preview-${index}`}
@@ -445,55 +467,57 @@ const PortfolioManager = () => {
           </Box>
         )}
 
-        <Stack spacing={1}>
-          <Box display="flex" alignItems="center" gap={1}>
-            <CategoryIcon fontSize="small" color="action" />
-            <Typography variant="body2">{item.category}</Typography>
+        <Stack spacing={{ xs: 0.75, sm: 1 }} sx={{ minWidth: 0, mt: 1 }}>
+          <Box display="flex" alignItems="flex-start" gap={1} sx={{ minWidth: 0 }}>
+            <CategoryIcon fontSize="small" color="action" sx={{ flexShrink: 0, mt: '2px' }} />
+            <Typography variant="body2" sx={{ overflowWrap: 'anywhere', lineHeight: 1.35 }}>
+              {item.category}
+            </Typography>
           </Box>
 
           {item.budget && (
-            <Box display="flex" alignItems="center" gap={1}>
-              <BudgetIcon fontSize="small" color="action" />
-              <Typography variant="body2">
+            <Box display="flex" alignItems="flex-start" gap={1} sx={{ minWidth: 0 }}>
+              <BudgetIcon fontSize="small" color="action" sx={{ flexShrink: 0, mt: '2px' }} />
+              <Typography variant="body2" sx={{ overflowWrap: 'anywhere', lineHeight: 1.35 }}>
                 {formatCurrency(item.budget, 'GHS')}
               </Typography>
             </Box>
           )}
 
           {item.location && (
-            <Box display="flex" alignItems="center" gap={1}>
-              <LocationIcon fontSize="small" color="action" />
-              <Typography variant="body2">{item.location}</Typography>
+            <Box display="flex" alignItems="flex-start" gap={1} sx={{ minWidth: 0 }}>
+              <LocationIcon fontSize="small" color="action" sx={{ flexShrink: 0, mt: '2px' }} />
+              <Typography variant="body2" sx={{ overflowWrap: 'anywhere', lineHeight: 1.35 }}>
+                {item.location}
+              </Typography>
             </Box>
           )}
 
           {item.completedAt && (
-            <Box display="flex" alignItems="center" gap={1}>
-              <DateIcon fontSize="small" color="action" />
-              <Typography variant="body2">
+            <Box display="flex" alignItems="flex-start" gap={1} sx={{ minWidth: 0 }}>
+              <DateIcon fontSize="small" color="action" sx={{ flexShrink: 0, mt: '2px' }} />
+              <Typography variant="body2" sx={{ overflowWrap: 'anywhere', lineHeight: 1.35 }}>
                 {formatDate(item.completedAt)}
               </Typography>
             </Box>
           )}
         </Stack>
 
-        {item.skills && (
+        {normalizedSkills.length > 0 && (
           <Box mt={2}>
-            <Stack direction="row" spacing={1} flexWrap="wrap">
-              {item.skills
-                .split(',')
-                .slice(0, 3)
-                .map((skill, index) => (
+            <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+              {normalizedSkills.slice(0, 3).map((skill, index) => (
                   <Chip
-                    key={`${skill.trim()}-${index}`}
-                    label={skill.trim()}
+                    key={`${skill}-${index}`}
+                    label={skill}
                     size="small"
                     variant="outlined"
+                    sx={{ maxWidth: '100%', '& .MuiChip-label': { overflow: 'hidden', textOverflow: 'ellipsis' } }}
                   />
                 ))}
-              {item.skills.split(',').length > 3 && (
+              {normalizedSkills.length > 3 && (
                 <Chip
-                  label={`+${item.skills.split(',').length - 3} more`}
+                  label={`+${normalizedSkills.length - 3} more`}
                   size="small"
                   variant="outlined"
                   color="primary"
@@ -504,14 +528,15 @@ const PortfolioManager = () => {
         )}
       </CardContent>
     </Card>
-  );
+    );
+  };
 
   if (loading) {
     return (
       <Box p={3}>
         <Grid container spacing={3}>
           {[...Array(6)].map((_, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
+            <Grid item xs={12} sm={6} md={4} key={`portfolio-skeleton-${index}`}>
               <Card>
                 <Skeleton variant="rectangular" height={200} />
                 <CardContent>
@@ -534,7 +559,9 @@ const PortfolioManager = () => {
         mb={3}
         display="flex"
         justifyContent="space-between"
-        alignItems="center"
+        alignItems={{ xs: 'stretch', sm: 'center' }}
+        flexDirection={{ xs: 'column', sm: 'row' }}
+        gap={1.5}
       >
         <Typography variant="h4" component="h1">
           Portfolio Manager
@@ -544,10 +571,16 @@ const PortfolioManager = () => {
           startIcon={<AddIcon />}
           onClick={() => handleOpenDialog()}
           size={isMobile ? 'small' : 'medium'}
+          fullWidth={isMobile}
+          sx={{ minHeight: { xs: 44, sm: 'auto' } }}
         >
           Add Project
         </Button>
       </Box>
+
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Clear project details and real photos help hirers trust your experience faster.
+      </Typography>
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
@@ -557,17 +590,22 @@ const PortfolioManager = () => {
 
       {/* Portfolio Items Grid */}
       {portfolioItems.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
+        <Paper sx={{ p: { xs: 2.5, sm: 4 }, textAlign: 'center' }}>
           <Typography variant="h6" color="text.secondary" gutterBottom>
-            No Portfolio Items Yet
+            No portfolio projects yet
           </Typography>
           <Typography variant="body2" color="text.secondary" paragraph>
-            Start building your portfolio by adding your completed projects
+            Add completed projects so hirers can quickly understand your work.
+          </Typography>
+          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
+            Best first entry: title, category, short description, location, and clear photos. Only include work you completed yourself.
           </Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => handleOpenDialog()}
+            fullWidth={isMobile}
+            sx={{ minHeight: { xs: 44, sm: 'auto' } }}
           >
             Add Your First Project
           </Button>
@@ -767,6 +805,9 @@ const PortfolioManager = () => {
                   Upload Images
                 </Button>
               </label>
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                Uploaded images appear on your portfolio cards. Use clear photos of finished work.
+              </Typography>
             </Grid>
 
             {formData.images.length > 0 && (

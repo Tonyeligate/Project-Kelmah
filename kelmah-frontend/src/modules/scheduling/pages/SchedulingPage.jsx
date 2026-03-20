@@ -875,7 +875,7 @@ const SchedulingPage = ({
             </Typography>
             {loading ? (
               Array.from(new Array(3)).map((_, idx) => (
-                <AppointmentSkeleton key={idx} />
+                <AppointmentSkeleton key={`daily-appointment-skeleton-${idx}`} />
               ))
             ) : dailyAppointments.length > 0 ? (
               dailyAppointments.map((app) => (
@@ -919,7 +919,7 @@ const SchedulingPage = ({
         <Box sx={{ mb: 4 }}>
           {loading ? (
             Array.from(new Array(3)).map((_, idx) => (
-              <AppointmentSkeleton key={idx} />
+              <AppointmentSkeleton key={`agenda-appointment-skeleton-${idx}`} />
             ))
           ) : Object.keys(appointmentsByDate).length > 0 ? (
             Object.keys(appointmentsByDate)
@@ -973,7 +973,7 @@ const SchedulingPage = ({
           </Typography>
           {loading ? (
             Array.from(new Array(3)).map((_, idx) => (
-              <AppointmentSkeleton key={idx} />
+              <AppointmentSkeleton key={`upcoming-appointment-skeleton-${idx}`} />
             ))
           ) : upcomingAppointments.length > 0 ? (
             upcomingAppointments.map((app) => (

@@ -1,24 +1,8 @@
 import React from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Typography,
-  Chip,
-  Box,
-  IconButton,
-  Card,
-  CardContent,
-  Stack,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Chip, Box, IconButton, Card, CardContent, Stack, useTheme } from '@mui/material';
 import { Download as DownloadIcon } from '@mui/icons-material';
 import { safeFormatDate } from '@/modules/common/utils/formatters';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const getStatusChip = (status) => {
   const color = {
@@ -32,7 +16,7 @@ const getStatusChip = (status) => {
 
 const TransactionHistory = ({ transactions }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
 
   if (isMobile) {
     return (

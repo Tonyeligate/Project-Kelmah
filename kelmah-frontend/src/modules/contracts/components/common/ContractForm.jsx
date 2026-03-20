@@ -217,7 +217,7 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
         </Grid>
 
         {milestones.map((ms, i) => (
-          <Grid item xs={12} key={i}>
+          <Grid item xs={12} key={ms.id || ms._id || `${ms.title || 'milestone'}-${ms.dueDate || 'due'}-${i}`}>
             <Paper variant="outlined" sx={{ p: 2, position: 'relative' }}>
               <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
                 Milestone {i + 1}

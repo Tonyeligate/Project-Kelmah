@@ -11,29 +11,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  AppBar,
-  Toolbar,
-  Button,
-  TextField,
-  Box,
-  Typography,
-  Slider,
-  Alert,
-  CircularProgress,
-  Chip,
-  InputAdornment,
-  IconButton,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
+  Dialog, DialogTitle, DialogContent, DialogActions, AppBar, Toolbar, Button, TextField, Box, Typography, Slider, Alert, CircularProgress, Chip, InputAdornment, IconButton, FormControl, InputLabel, Select, MenuItem, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import {
   Gavel as GavelIcon,
@@ -43,10 +21,11 @@ import {
   Info,
 } from '@mui/icons-material';
 import bidApi from '../services/bidService';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const BidSubmissionForm = ({ open, onClose, job }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
   const navigate = useNavigate();
   const minBid = job?.bidding?.minBidAmount || job?.budget?.min || 100;
   const maxBid = job?.bidding?.maxBidAmount || job?.budget?.max || 50000;

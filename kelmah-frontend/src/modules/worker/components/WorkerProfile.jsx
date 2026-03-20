@@ -35,7 +35,6 @@ import {
   Skeleton,
   CircularProgress,
   Container,
-  useMediaQuery,
   alpha,
   Accordion,
   AccordionSummary,
@@ -97,6 +96,10 @@ import TextField from '@mui/material/TextField';
 import ReviewSystem from '../../../components/reviews/ReviewSystem';
 import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import reviewService from '../../reviews/services/reviewService';
+import {
+  useBreakpointDown,
+  useMaxWidth,
+} from '../../../hooks/useResponsive';
 import {
   resolveMediaAssetUrl,
   resolveProfileImageUrl,
@@ -257,9 +260,9 @@ function WorkerProfile({ workerId: workerIdProp }) {
 
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
-  const isActualMobile = useMediaQuery('(max-width: 768px)');
+  const isMobile = useBreakpointDown('md');
+  const isTablet = useBreakpointDown('lg');
+  const isActualMobile = useMaxWidth(768);
 
   const [profile, setProfile] = useState(null);
   const [skills, setSkills] = useState([]);
@@ -579,7 +582,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
           >
             {[...Array(3)].map((_, i) => (
               <Skeleton
-                key={i}
+                key={`profile-chip-skeleton-${i}`}
                 variant="rectangular"
                 width={100}
                 height={32}
@@ -590,7 +593,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
         </Box>
         <Grid container spacing={3}>
           {[...Array(6)].map((_, i) => (
-            <Grid item xs={12} md={4} key={i}>
+            <Grid item xs={12} md={4} key={`profile-card-skeleton-${i}`}>
               <Skeleton
                 variant="rectangular"
                 height={200}
@@ -1209,7 +1212,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                     );
                     return (
                       <Box
-                        key={idx}
+                        key={`${m?.year || 'year'}-${m?.month || 'month'}-${idx}`}
                         sx={{
                           width: 10,
                           height: h,
@@ -1992,7 +1995,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                         overflow: 'hidden',
                       }}
                     >
-                      {item.title || 'Coming soon'}
+                      {item.title || 'Untitled portfolio item'}
                     </Typography>
                   </CardContent>
                 </Card>

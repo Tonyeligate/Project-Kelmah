@@ -93,14 +93,22 @@ const AdvancedFilters = ({
   // Filter options
   const categories = [
     'Plumbing',
+    'Emergency Plumbing',
     'Electrical',
+    'Rewiring & Switchboard',
     'Carpentry',
+    'Cabinet Making',
     'Masonry',
     'Painting',
+    'Exterior Painting',
     'Roofing',
+    'Roof Repair',
     'Tiling',
     'Landscaping',
     'HVAC',
+    'AC & Refrigeration',
+    'Certified Welding',
+    'Maintenance Callout',
     'Solar Installation',
     'General Maintenance',
     'Other',
@@ -160,6 +168,8 @@ const AdvancedFilters = ({
     'Drain Cleaning',
     'Water Heater Installation',
     'Electrical Wiring',
+    'Rewiring',
+    'Switchboard Upgrade',
     'Circuit Installation',
     'Lighting',
     'Safety Inspection',
@@ -188,9 +198,11 @@ const AdvancedFilters = ({
     'Tree Trimming',
     'Irrigation Systems',
     'Air Conditioning',
+    'Refrigeration Repair',
     'Heating Systems',
     'Ventilation',
     'Maintenance',
+    'Emergency Callout',
   ];
 
   const durationOptions = [

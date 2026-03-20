@@ -1,22 +1,6 @@
 // ARCHIVED PAGE: intentionally not route-mounted. Active home experience lives in src/pages/HomeLanding.
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Container,
-  Typography,
-  Button,
-  Grid,
-  Card,
-  Stack,
-  useTheme,
-  useMediaQuery,
-  Avatar,
-  Rating,
-  Chip,
-  Skeleton,
-  TextField,
-  InputAdornment,
-} from '@mui/material';
+import { Box, Container, Typography, Button, Grid, Card, Stack, useTheme, Avatar, Rating, Chip, Skeleton, TextField, InputAdornment } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -44,6 +28,7 @@ import {
   resolveJobVisualUrl,
   resolveProfileImageUrl,
 } from '../../common/utils/mediaAssets';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 /* =================================================================
  * DESIGN-SYSTEM PRIMITIVES
@@ -220,7 +205,7 @@ const extractFeaturedWorkers = (response) => {
 const HeroSection = () => {
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
 
   // AUD2-L01 FIX: Fetch live platform stats; fall back to hardcoded values while loading
   // or if the job service is unavailable.

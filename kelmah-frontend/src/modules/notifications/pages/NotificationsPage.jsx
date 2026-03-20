@@ -17,7 +17,6 @@ import {
   Avatar,
   alpha,
   useTheme,
-  useMediaQuery,
   IconButton,
   Menu,
   MenuItem,
@@ -43,6 +42,7 @@ import { Pagination, FormControlLabel, Switch, Tooltip } from '@mui/material';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 import {
   isSafeInternalPath,
   isSafeExternalUrl,
@@ -63,8 +63,37 @@ const notificationIcons = {
   default: <NotificationsIcon />,
 };
 
+const ACTION_REQUIRED_TYPES = new Set([
+  'contract_update',
+  'payment_received',
+  'system_alert',
+]);
+
+const NOTIFICATION_TYPE_CHIPS = {
+  message_received: { label: 'Message', color: 'info' },
+  job_application: { label: 'Job', color: 'primary' },
+  job_offer: { label: 'Job Offer', color: 'primary' },
+  contract_update: { label: 'Contract', color: 'warning' },
+  payment_received: { label: 'Payment', color: 'success' },
+  system_alert: { label: 'System', color: 'warning' },
+  review_received: { label: 'Review', color: 'secondary' },
+  default: { label: 'Update', color: 'default' },
+};
+
+const getNotificationTimestamp = (notification) => {
+  const value = notification?.createdAt || notification?.date;
+  const parsed = new Date(value).getTime();
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+
+const getNotificationPriority = (notification) =>
+  ACTION_REQUIRED_TYPES.has(notification?.type) ? 0 : 1;
+
 const PageNotificationItem = ({ notification, onMarkRead }) => {
   const navigate = useNavigate();
+  const typeChip =
+    NOTIFICATION_TYPE_CHIPS[notification.type] || NOTIFICATION_TYPE_CHIPS.default;
+  const requiresAction = ACTION_REQUIRED_TYPES.has(notification.type);
 
   const handleClick = async () => {
     // Mark as read on click
@@ -109,6 +138,9 @@ const PageNotificationItem = ({ notification, onMarkRead }) => {
       sx={(theme) => ({
         backgroundColor: theme.palette.background.paper,
         mb: 1.5,
+        alignItems: 'flex-start',
+        flexWrap: { xs: 'wrap', sm: 'nowrap' },
+        rowGap: 1,
         borderRadius: 2,
         borderLeft: notification.read ? 'none' : `4px solid ${theme.palette.secondary.main}`,
         border: `1px solid ${theme.palette.divider}`,
@@ -119,7 +151,7 @@ const PageNotificationItem = ({ notification, onMarkRead }) => {
         },
       })}
     >
-    <ListItemIcon>
+    <ListItemIcon sx={{ minWidth: { xs: 44, sm: 56 }, mt: 0.25 }}>
       <Avatar
         sx={{
           bgcolor: notification.read ? 'action.disabled' : 'primary.main',
@@ -130,43 +162,69 @@ const PageNotificationItem = ({ notification, onMarkRead }) => {
       </Avatar>
     </ListItemIcon>
     <ListItemText
+      sx={{ minWidth: 0, flex: '1 1 0%' }}
       primary={notification.message}
       secondary={
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 0.5, mt: 0.5, alignItems: { xs: 'flex-start', sm: 'center' } }}>
-          <Typography variant="caption" color="text.secondary">
-            {(() => {
-              try {
-                return formatDistanceToNow(
-                  new Date(
-                    notification.createdAt ||
-                      notification.date ||
-                      new Date().toISOString(),
-                  ),
-                  { addSuffix: true },
-                );
-              } catch {
-                return '';
-              }
-            })()}
-          </Typography>
-          {notification.link ? (
-            <Typography
-              variant="body2"
-              color="primary.main"
-              sx={{ '&:hover': { textDecoration: 'underline' } }}
-            >
-              View Details
+        <Box sx={{ mt: 0.5 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 0.5, alignItems: { xs: 'flex-start', sm: 'center' } }}>
+            <Typography variant="caption" color="text.secondary">
+              {(() => {
+                try {
+                  return formatDistanceToNow(
+                    new Date(
+                      notification.createdAt ||
+                        notification.date ||
+                        new Date().toISOString(),
+                    ),
+                    { addSuffix: true },
+                  );
+                } catch {
+                  return '';
+                }
+              })()}
             </Typography>
-          ) : null}
+            {notification.link ? (
+              <Typography
+                variant="body2"
+                color="primary.main"
+                sx={{ '&:hover': { textDecoration: 'underline' } }}
+              >
+                View Details
+              </Typography>
+            ) : null}
+          </Box>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 0.75 }}>
+            <Chip
+              label={typeChip.label}
+              size="small"
+              color={typeChip.color}
+              variant="outlined"
+            />
+            {requiresAction && (
+              <Chip
+                label="Action required"
+                size="small"
+                color="warning"
+                variant="outlined"
+              />
+            )}
+          </Box>
         </Box>
       }
     />
-    {!notification.read && (
+    {notification.read ? (
+      <Chip
+        label="Read"
+        variant="outlined"
+        size="small"
+        sx={{ ml: { xs: 0, sm: 2 }, color: 'text.secondary' }}
+      />
+    ) : (
       <Chip
         label="New"
         color="success"
         size="small"
-        sx={{ ml: 2, fontWeight: 'bold' }}
+        sx={{ ml: { xs: 0, sm: 2 }, fontWeight: 'bold' }}
       />
     )}
   </ListItem>
@@ -181,6 +239,8 @@ const TAB_TYPE_MAP = {
   messages: 'message_received',
   jobs: 'job_application', // also covers job_offer
   contracts: 'contract_update',
+  payments: 'payment_received',
+  system: 'system_alert', // also covers review_received
 };
 
 // Types that belong to each tab group (for client-side filtering)
@@ -189,6 +249,8 @@ const TAB_TYPE_GROUPS = {
   messages: ['message_received'],
   jobs: ['job_application', 'job_offer'],
   contracts: ['contract_update'],
+  payments: ['payment_received'],
+  system: ['system_alert', 'review_received'],
 };
 
 const NotificationsPage = () => {
@@ -203,7 +265,7 @@ const NotificationsPage = () => {
     refresh,
   } = useNotifications();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
   const [filter, setFilter] = useState('all');
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [actionsAnchor, setActionsAnchor] = useState(null);
@@ -244,10 +306,13 @@ const NotificationsPage = () => {
       if (!group) return true; // 'all' tab
       return group.includes(n.type);
     })
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date),
-    );
+    .sort((a, b) => {
+      const priorityDelta = getNotificationPriority(a) - getNotificationPriority(b);
+      if (priorityDelta !== 0) {
+        return priorityDelta;
+      }
+      return getNotificationTimestamp(b) - getNotificationTimestamp(a);
+    });
 
   return (
     <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 }, pb: { xs: 'calc(72px + env(safe-area-inset-bottom, 0px))', md: 4 } }}>
@@ -347,8 +412,10 @@ const NotificationsPage = () => {
         sx={{
           mb: 3,
           display: 'flex',
-          alignItems: 'center',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'flex-start', sm: 'center' },
           justifyContent: 'space-between',
+          gap: 1,
         }}
       >
         <Typography variant="body2" color="text.secondary">
@@ -361,6 +428,12 @@ const NotificationsPage = () => {
               <Switch checked={unreadOnly} onChange={handleToggleUnread} inputProps={{ 'aria-label': 'Show unread notifications only' }} />
             }
             label="Unread only"
+            sx={{
+              mr: 0,
+              '& .MuiFormControlLabel-label': {
+                fontSize: { xs: '0.85rem', sm: '0.875rem' },
+              },
+            }}
           />
         </Tooltip>
       </Box>
@@ -388,13 +461,15 @@ const NotificationsPage = () => {
           <Tab label="Messages" value="messages" />
           <Tab label="Jobs" value="jobs" />
           <Tab label="Contracts" value="contracts" />
+          <Tab label="Payments" value="payments" />
+          <Tab label="System" value="system" />
         </Tabs>
 
         {loading ? (
           <Box sx={{ p: 2 }}>
             {Array.from(new Array(4)).map((_, idx) => (
               <Skeleton
-                key={idx}
+                key={`notifications-skeleton-${idx}`}
                 variant="rectangular"
                 height={72}
                 sx={{ mb: 2, borderRadius: 2 }}

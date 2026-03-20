@@ -12,6 +12,20 @@ const REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60 * 1000;
 const SHOULD_START_CLEANUP_INTERVAL =
   typeof process === 'undefined' || process.env.NODE_ENV !== 'test';
 
+const generateSessionSuffix = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const bytes = new Uint8Array(12);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  }
+
+  return `${Date.now()}`;
+};
+
 class SecureStorage {
   constructor() {
     this.storageKey = 'kelmah_secure_data';
@@ -119,8 +133,7 @@ class SecureStorage {
    * Generate unique session ID
    */
   generateSessionId() {
-    const sessionId =
-      'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const sessionId = `sess_${Date.now()}_${generateSessionSuffix()}`;
     sessionStorage.setItem('session_id', sessionId);
     return sessionId;
   }
@@ -385,17 +398,18 @@ class SecureStorage {
 
   /**
    * Clear all secure data.
-   * CRIT-09 FIX: Only clear stored data, NOT the encryption key.
-   * Removing the key breaks other tabs that still have data encrypted with it.
-   * Use BroadcastChannel to notify other tabs of the logout.
+   * Also clears persisted encryption secret so post-logout sessions get a fresh key.
+   * BroadcastChannel notifies sibling tabs to clear their own in-memory auth state.
    */
   clear() {
     try {
       localStorage.removeItem(this.storageKey);
       sessionStorage.removeItem(this.sessionStorageKey);
-      // CRIT-09: Do NOT remove encryption key — other tabs may still need it
-      // localStorage.removeItem('kelmah_encryption_secret');  // REMOVED
+      localStorage.removeItem('kelmah_encryption_secret');
       sessionStorage.removeItem('session_id');
+
+      // Rotate in-memory key immediately so any stale ciphertext is unreadable in this tab.
+      this.encryptionKey = this.generateEncryptionKey();
 
       // Notify other tabs about the logout via BroadcastChannel
       try {

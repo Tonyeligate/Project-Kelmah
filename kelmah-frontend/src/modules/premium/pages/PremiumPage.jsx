@@ -230,7 +230,7 @@ const PremiumPage = () => {
       const status = err?.response?.status;
       const message =
         status === 501
-          ? 'Premium subscriptions are coming soon! We\u2019re finalising the payment integration. Stay tuned.'
+          ? 'Premium checkout is temporarily unavailable. Please contact support@kelmah.com for assisted upgrade.'
           : err?.response?.data?.message || err?.message || 'Failed to process upgrade. Please try again.';
       setUpgradeError(message);
       setOpenDialog(false);

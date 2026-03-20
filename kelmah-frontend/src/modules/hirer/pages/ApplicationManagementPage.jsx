@@ -22,7 +22,6 @@ import {
   Rating,
   Divider,
   useTheme,
-  useMediaQuery,
   Skeleton,
   ListItemButton,
   ListItemText,
@@ -69,11 +68,9 @@ import {
   normalizeApplicationsSort,
   normalizeApplicationsTab,
 } from '../utils/applicationManagementUtils';
+import { useBreakpointDown } from '../../../hooks/useResponsive';
 
 /* ─── helpers ─────────────────────────────────────────────────────── */
-
-// TODO(frontend-audit): extract application list, decision dialogs, and pagination/filter controls
-// into dedicated subcomponents to reduce page-level coupling and improve testability.
 
 /* ─── ApplicationCard ─────────────────────────────────────────────── */
 
@@ -218,8 +215,8 @@ const JobListItem = ({ job, isSelected, onClick, appCount }) => {
 
 function ApplicationManagementPage() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
+  const isMobile = useBreakpointDown('md');
+  const isTablet = useBreakpointDown('lg');
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -572,6 +569,25 @@ function ApplicationManagementPage() {
     setShowReviewDialog(true);
   };
 
+  const handleSortChange = (nextSort) => {
+    setCurrentPage(1);
+    setSelectedApplication(null);
+    setSortBy(nextSort);
+  };
+
+  const handlePageSizeChange = (nextPageSize) => {
+    setCurrentPage(1);
+    setSelectedApplication(null);
+    setPageSize(nextPageSize);
+  };
+
+  const handlePageChange = (page) => {
+    if (page !== currentPage) {
+      setCurrentPage(page);
+      setSelectedApplication(null);
+    }
+  };
+
   const handleMessage = async () => {
     if (!selectedApplication?.workerId) {
       setError('Worker contact information is unavailable.');
@@ -682,87 +698,16 @@ function ApplicationManagementPage() {
           </Alert>
         )}
 
-        {/* ── Col 1: Job list sidebar ─────────────────────────── */}
-        {(!isMobile || showJobList) && (
-          <Box
-            sx={{
-              width: isMobile ? '100%' : isTablet ? 220 : 260,
-              minWidth: isMobile ? 'auto' : isTablet ? 220 : 260,
-              borderRight: isMobile
-                ? 'none'
-                : `1px solid ${theme.palette.divider}`,
-              borderBottom: isMobile
-                ? `1px solid ${theme.palette.divider}`
-                : 'none',
-              display: 'flex',
-              flexDirection: 'column',
-              bgcolor: alpha(theme.palette.background.default, 0.5),
-            }}
-          >
-            <Box
-              sx={{
-                px: 1.5,
-                py: 1.5,
-                borderBottom: `1px solid ${theme.palette.divider}`,
-              }}
-            >
-              <Typography variant="overline" color="text.secondary" fontWeight={700}>
-                Your Jobs ({allJobs.length})
-              </Typography>
-            </Box>
-            <Box sx={{ flex: 1, overflowY: 'auto', p: 1 }}>
-              {/* "All Jobs" option */}
-              <ListItemButton
-                selected={!selectedJobId}
-                onClick={() => handleSelectJob(null)}
-                sx={{
-                  borderRadius: 1.5,
-                  mb: 0.5,
-                  py: 1,
-                  px: 1.5,
-                  borderLeft: !selectedJobId
-                    ? `3px solid ${theme.palette.primary.main}`
-                    : '3px solid transparent',
-                  '&.Mui-selected': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                  },
-                }}
-              >
-                <ListItemIcon sx={{ minWidth: 36 }}>
-                  <Badge
-                    badgeContent={summary?.totalApplications || 0}
-                    color="primary"
-                    max={99}
-                  >
-                    <FilterList fontSize="small" />
-                  </Badge>
-                </ListItemIcon>
-                <ListItemText
-                  primary="All Jobs"
-                  primaryTypographyProps={{
-                    variant: 'body2',
-                    fontWeight: !selectedJobId ? 700 : 400,
-                  }}
-                />
-              </ListItemButton>
-
-              <Divider sx={{ my: 0.5 }} />
-
-              {allJobs.map((job) => {
-                const jid = job.id || job._id;
-                return (
-                  <JobListItem
-                    key={jid}
-                    job={job}
-                    isSelected={selectedJobId === jid}
-                    onClick={() => handleSelectJob(jid)}
-                    appCount={totalAppCounts[jid] || 0}
-                  />
-                );
-              })}
-            </Box>
-          </Box>
-        )}
+        <JobSidebar
+          isMobile={isMobile}
+          showJobList={showJobList}
+          isTablet={isTablet}
+          allJobs={allJobs}
+          selectedJobId={selectedJobId}
+          totalApplications={summary?.totalApplications || 0}
+          totalAppCounts={totalAppCounts}
+          onSelectJob={handleSelectJob}
+        />
 
         {/* ── Col 2: Applications list ────────────────────────── */}
         <Box
@@ -822,208 +767,36 @@ function ApplicationManagementPage() {
             />
           </Tabs>
 
-          {/* Application cards */}
-          <Box sx={{ flex: 1, overflowY: 'auto', p: 1.5 }}>
-            {initialLoading &&
-              Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton
-                  key={i}
-                  variant="rectangular"
-                  height={72}
-                  sx={{ mb: 1.5, borderRadius: 2 }}
-                />
-              ))}
+          <ApplicationsListContent
+            initialLoading={initialLoading}
+            error={error}
+            applicationsLoading={applicationsLoading}
+            selectedJobId={selectedJobId}
+            filteredApps={filteredApps}
+            activeTab={activeTab}
+            selectedJob={selectedJob}
+            summary={summary}
+            navigate={navigate}
+            selectedApplicationId={selectedApplication?.id}
+            activeTabCountsByJob={activeTabCountsByJob}
+            onClearError={() => setError(null)}
+            onSelectApplication={setSelectedApplication}
+            onSelectJob={handleSelectJob}
+          />
 
-            {error && (
-              <Alert
-                severity="error"
-                sx={{ mb: 1.5 }}
-                onClose={() => setError(null)}
-              >
-                {error}
-              </Alert>
-            )}
-
-            {applicationsLoading && !initialLoading && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 1.5 }}>
-                <CircularProgress size={20} />
-              </Box>
-            )}
-
-            {!initialLoading &&
-              (() => {
-                // Single job selected — flat list
-                if (selectedJobId) {
-                  if (filteredApps.length === 0) {
-                    return (
-                      <EmptyAppsPanel
-                        tab={activeTab}
-                        hasAnyApps={(selectedJob?.applicationCounts?.total || 0) > 0}
-                        navigate={navigate}
-                      />
-                    );
-                  }
-                  return filteredApps.map((app) => (
-                    <ApplicationCard
-                      key={app.id}
-                      application={app}
-                      isSelected={selectedApplication?.id === app.id}
-                      onSelect={setSelectedApplication}
-                      showJobTitle={false}
-                    />
-                  ));
-                }
-
-                // "All Jobs" mode — group applications by job
-                if (filteredApps.length === 0) {
-                  return (
-                    <EmptyAppsPanel
-                      tab={activeTab}
-                      hasAnyApps={(summary?.totalApplications || 0) > 0}
-                      navigate={navigate}
-                    />
-                  );
-                }
-
-                const grouped = {};
-                filteredApps.forEach((app) => {
-                  const key = app.jobId || 'unknown';
-                  if (!grouped[key])
-                    grouped[key] = { title: app.jobTitle, apps: [] };
-                  grouped[key].apps.push(app);
-                });
-
-                return Object.entries(grouped).map(([jobId, group]) => (
-                  <Box key={jobId} sx={{ mb: 2 }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        mb: 1,
-                        px: 0.5,
-                        cursor: 'pointer',
-                        borderRadius: 1,
-                        py: 0.5,
-                        '&:hover': {
-                          bgcolor: alpha(theme.palette.primary.main, 0.06),
-                        },
-                      }}
-                      onClick={() => handleSelectJob(jobId)}
-                    >
-                      <Work sx={{ fontSize: 16, color: 'primary.main' }} />
-                      <Typography
-                        variant="caption"
-                        fontWeight={700}
-                        color="primary.main"
-                        noWrap
-                        sx={{ flex: 1 }}
-                      >
-                        {group.title}
-                      </Typography>
-                      <Chip
-                        size="small"
-                        label={activeTabCountsByJob[jobId] || group.apps.length}
-                        sx={{ height: 18, fontSize: '0.65rem' }}
-                      />
-                    </Box>
-                    {group.apps.map((app) => (
-                      <ApplicationCard
-                        key={app.id}
-                        application={app}
-                        isSelected={selectedApplication?.id === app.id}
-                        onSelect={setSelectedApplication}
-                        showJobTitle={false}
-                      />
-                    ))}
-                  </Box>
-                ));
-              })()}
-          </Box>
-
-          <Box
-            sx={{
-              px: 1.5,
-              py: 1.25,
-              borderTop: `1px solid ${theme.palette.divider}`,
-            }}
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: { xs: 'stretch', sm: 'center' },
-                justifyContent: 'space-between',
-                gap: 1,
-                flexDirection: { xs: 'column', sm: 'row' },
-              }}
-            >
-              <Typography variant="caption" color="text.secondary" display="block">
-                {selectedScopeTotal > 0
-                  ? `Showing ${visibleRange.start}-${visibleRange.end} of ${pagination.totalItems || selectedScopeTotal} ${selectedJobId ? 'applications' : 'applications in this view'}`
-                  : 'No applications to show'}
-              </Typography>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  flexWrap: 'wrap',
-                }}
-              >
-                <FormControl size="small" sx={{ minWidth: 150 }}>
-                  <Select
-                    value={sortBy}
-                    onChange={(event) => {
-                      setCurrentPage(1);
-                      setSelectedApplication(null);
-                      setSortBy(event.target.value);
-                    }}
-                    displayEmpty
-                    inputProps={{ 'aria-label': 'Sort applications' }}
-                  >
-                    {APPLICATION_SORT_OPTIONS.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControl size="small" sx={{ minWidth: 92 }}>
-                  <Select
-                    value={pageSize}
-                    onChange={(event) => {
-                      setCurrentPage(1);
-                      setSelectedApplication(null);
-                      setPageSize(Number(event.target.value));
-                    }}
-                    inputProps={{ 'aria-label': 'Applications per page' }}
-                  >
-                    {APPLICATIONS_PAGE_SIZE_OPTIONS.map((option) => (
-                      <MenuItem key={option} value={option}>
-                        {option} / page
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-            </Box>
-            {pagination.totalPages > 1 && (
-              <Pagination
-                page={pagination.currentPage || currentPage}
-                count={pagination.totalPages}
-                size={isMobile ? 'small' : 'medium'}
-                siblingCount={isMobile ? 0 : 1}
-                boundaryCount={1}
-                onChange={(_, page) => {
-                  if (page !== currentPage) {
-                    setCurrentPage(page);
-                    setSelectedApplication(null);
-                  }
-                }}
-                sx={{ mt: 1, alignSelf: 'center' }}
-              />
-            )}
-          </Box>
+          <ApplicationsListFooter
+            selectedScopeTotal={selectedScopeTotal}
+            visibleRange={visibleRange}
+            pagination={pagination}
+            selectedJobId={selectedJobId}
+            sortBy={sortBy}
+            pageSize={pageSize}
+            currentPage={currentPage}
+            isMobile={isMobile}
+            onSortChange={handleSortChange}
+            onPageSizeChange={handlePageSizeChange}
+            onPageChange={handlePageChange}
+          />
         </Box>
 
         {/* ── Col 3: Application detail ───────────────────────── */}
@@ -1087,61 +860,17 @@ function ApplicationManagementPage() {
         </Box>
       </Paper>
 
-      {/* ── Confirm Dialog ────────────────────────────────────── */}
-      <Dialog
+      <ApplicationReviewDialog
         open={showReviewDialog}
-        onClose={() => !updating && setShowReviewDialog(false)}
-        fullWidth
-        maxWidth="sm"
-        fullScreen={isMobile}
-        aria-labelledby="confirm-action-dialog-title"
-      >
-        <DialogTitle id="confirm-action-dialog-title">
-          Confirm {actionType === 'accepted' ? 'Accept' : 'Reject'}
-        </DialogTitle>
-        <DialogContent>
-          <Typography>
-            You are about to{' '}
-            <strong>
-              {actionType === 'accepted' ? 'accept' : 'reject'}
-            </strong>{' '}
-            the application from{' '}
-            <strong>{selectedApplication?.workerName}</strong>.
-          </Typography>
-          {actionType === 'rejected' && (
-            <TextField
-              label="Feedback (Optional)"
-              multiline
-              rows={4}
-              fullWidth
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              sx={{ mt: 2 }}
-            />
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setShowReviewDialog(false)}
-            sx={{ minHeight: 44 }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleStatusUpdate}
-            color={actionType === 'accepted' ? 'success' : 'error'}
-            variant="contained"
-            disabled={updating}
-            sx={{ minHeight: 44 }}
-          >
-            {updating ? (
-              <CircularProgress size={24} />
-            ) : (
-              `Confirm ${actionType === 'accepted' ? 'Accept' : 'Reject'}`
-            )}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        updating={updating}
+        isMobile={isMobile}
+        actionType={actionType}
+        workerName={selectedApplication?.workerName}
+        feedback={feedback}
+        onClose={() => setShowReviewDialog(false)}
+        onFeedbackChange={setFeedback}
+        onConfirm={handleStatusUpdate}
+      />
     </Container>
   );
 }
@@ -1149,6 +878,384 @@ function ApplicationManagementPage() {
 /* ═════════════════════════════════════════════════════════════════════
    Sub-components
    ═════════════════════════════════════════════════════════════════════ */
+
+function ApplicationsListFooter({
+  selectedScopeTotal,
+  visibleRange,
+  pagination,
+  selectedJobId,
+  sortBy,
+  pageSize,
+  currentPage,
+  isMobile,
+  onSortChange,
+  onPageSizeChange,
+  onPageChange,
+}) {
+  const theme = useTheme();
+
+  return (
+    <Box
+      sx={{
+        px: 1.5,
+        py: 1.25,
+        borderTop: `1px solid ${theme.palette.divider}`,
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: { xs: 'stretch', sm: 'center' },
+          justifyContent: 'space-between',
+          gap: 1,
+          flexDirection: { xs: 'column', sm: 'row' },
+        }}
+      >
+        <Typography variant="caption" color="text.secondary" display="block">
+          {selectedScopeTotal > 0
+            ? `Showing ${visibleRange.start}-${visibleRange.end} of ${pagination.totalItems || selectedScopeTotal} ${selectedJobId ? 'applications' : 'applications in this view'}`
+            : 'No applications to show'}
+        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            flexWrap: 'wrap',
+          }}
+        >
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <Select
+              value={sortBy}
+              onChange={(event) => onSortChange(event.target.value)}
+              displayEmpty
+              inputProps={{ 'aria-label': 'Sort applications' }}
+            >
+              {APPLICATION_SORT_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl size="small" sx={{ minWidth: 92 }}>
+            <Select
+              value={pageSize}
+              onChange={(event) => onPageSizeChange(Number(event.target.value))}
+              inputProps={{ 'aria-label': 'Applications per page' }}
+            >
+              {APPLICATIONS_PAGE_SIZE_OPTIONS.map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option} / page
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      </Box>
+      {pagination.totalPages > 1 && (
+        <Pagination
+          page={pagination.currentPage || currentPage}
+          count={pagination.totalPages}
+          size={isMobile ? 'small' : 'medium'}
+          siblingCount={isMobile ? 0 : 1}
+          boundaryCount={1}
+          onChange={(_, page) => onPageChange(page)}
+          sx={{ mt: 1, alignSelf: 'center' }}
+        />
+      )}
+    </Box>
+  );
+}
+
+function JobSidebar({
+  isMobile,
+  showJobList,
+  isTablet,
+  allJobs,
+  selectedJobId,
+  totalApplications,
+  totalAppCounts,
+  onSelectJob,
+}) {
+  const theme = useTheme();
+
+  if (isMobile && !showJobList) {
+    return null;
+  }
+
+  return (
+    <Box
+      sx={{
+        width: isMobile ? '100%' : isTablet ? 220 : 260,
+        minWidth: isMobile ? 'auto' : isTablet ? 220 : 260,
+        borderRight: isMobile ? 'none' : `1px solid ${theme.palette.divider}`,
+        borderBottom: isMobile ? `1px solid ${theme.palette.divider}` : 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        bgcolor: alpha(theme.palette.background.default, 0.5),
+      }}
+    >
+      <Box
+        sx={{
+          px: 1.5,
+          py: 1.5,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <Typography variant="overline" color="text.secondary" fontWeight={700}>
+          Your Jobs ({allJobs.length})
+        </Typography>
+      </Box>
+      <Box sx={{ flex: 1, overflowY: 'auto', p: 1 }}>
+        {/* "All Jobs" option */}
+        <ListItemButton
+          selected={!selectedJobId}
+          onClick={() => onSelectJob(null)}
+          sx={{
+            borderRadius: 1.5,
+            mb: 0.5,
+            py: 1,
+            px: 1.5,
+            borderLeft: !selectedJobId
+              ? `3px solid ${theme.palette.primary.main}`
+              : '3px solid transparent',
+            '&.Mui-selected': {
+              backgroundColor: alpha(theme.palette.primary.main, 0.1),
+            },
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 36 }}>
+            <Badge badgeContent={totalApplications} color="primary" max={99}>
+              <FilterList fontSize="small" />
+            </Badge>
+          </ListItemIcon>
+          <ListItemText
+            primary="All Jobs"
+            primaryTypographyProps={{
+              variant: 'body2',
+              fontWeight: !selectedJobId ? 700 : 400,
+            }}
+          />
+        </ListItemButton>
+
+        <Divider sx={{ my: 0.5 }} />
+
+        {allJobs.map((job) => {
+          const jid = job.id || job._id;
+          return (
+            <JobListItem
+              key={jid}
+              job={job}
+              isSelected={selectedJobId === jid}
+              onClick={() => onSelectJob(jid)}
+              appCount={totalAppCounts[jid] || 0}
+            />
+          );
+        })}
+      </Box>
+    </Box>
+  );
+}
+
+function ApplicationsListContent({
+  initialLoading,
+  error,
+  applicationsLoading,
+  selectedJobId,
+  filteredApps,
+  activeTab,
+  selectedJob,
+  summary,
+  navigate,
+  selectedApplicationId,
+  activeTabCountsByJob,
+  onClearError,
+  onSelectApplication,
+  onSelectJob,
+}) {
+  const theme = useTheme();
+
+  return (
+    <Box sx={{ flex: 1, overflowY: 'auto', p: 1.5 }}>
+      {initialLoading &&
+        Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton
+            key={`application-skeleton-${i}`}
+            variant="rectangular"
+            height={72}
+            sx={{ mb: 1.5, borderRadius: 2 }}
+          />
+        ))}
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 1.5 }} onClose={onClearError}>
+          {error}
+        </Alert>
+      )}
+
+      {applicationsLoading && !initialLoading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 1.5 }}>
+          <CircularProgress size={20} />
+        </Box>
+      )}
+
+      {!initialLoading &&
+        (() => {
+          // Single job selected — flat list
+          if (selectedJobId) {
+            if (filteredApps.length === 0) {
+              return (
+                <EmptyAppsPanel
+                  tab={activeTab}
+                  hasAnyApps={(selectedJob?.applicationCounts?.total || 0) > 0}
+                  navigate={navigate}
+                />
+              );
+            }
+            return filteredApps.map((app) => (
+              <ApplicationCard
+                key={app.id}
+                application={app}
+                isSelected={selectedApplicationId === app.id}
+                onSelect={onSelectApplication}
+                showJobTitle={false}
+              />
+            ));
+          }
+
+          // "All Jobs" mode — group applications by job
+          if (filteredApps.length === 0) {
+            return (
+              <EmptyAppsPanel
+                tab={activeTab}
+                hasAnyApps={(summary?.totalApplications || 0) > 0}
+                navigate={navigate}
+              />
+            );
+          }
+
+          const grouped = {};
+          filteredApps.forEach((app) => {
+            const key = app.jobId || 'unknown';
+            if (!grouped[key]) grouped[key] = { title: app.jobTitle, apps: [] };
+            grouped[key].apps.push(app);
+          });
+
+          return Object.entries(grouped).map(([jobId, group]) => (
+            <Box key={jobId} sx={{ mb: 2 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  mb: 1,
+                  px: 0.5,
+                  cursor: 'pointer',
+                  borderRadius: 1,
+                  py: 0.5,
+                  '&:hover': {
+                    bgcolor: alpha(theme.palette.primary.main, 0.06),
+                  },
+                }}
+                onClick={() => onSelectJob(jobId)}
+              >
+                <Work sx={{ fontSize: 16, color: 'primary.main' }} />
+                <Typography
+                  variant="caption"
+                  fontWeight={700}
+                  color="primary.main"
+                  noWrap
+                  sx={{ flex: 1 }}
+                >
+                  {group.title}
+                </Typography>
+                <Chip
+                  size="small"
+                  label={activeTabCountsByJob[jobId] || group.apps.length}
+                  sx={{ height: 18, fontSize: '0.65rem' }}
+                />
+              </Box>
+              {group.apps.map((app) => (
+                <ApplicationCard
+                  key={app.id}
+                  application={app}
+                  isSelected={selectedApplicationId === app.id}
+                  onSelect={onSelectApplication}
+                  showJobTitle={false}
+                />
+              ))}
+            </Box>
+          ));
+        })()}
+    </Box>
+  );
+}
+
+function ApplicationReviewDialog({
+  open,
+  updating,
+  isMobile,
+  actionType,
+  workerName,
+  feedback,
+  onClose,
+  onFeedbackChange,
+  onConfirm,
+}) {
+  return (
+    <Dialog
+      open={open}
+      onClose={() => !updating && onClose()}
+      fullWidth
+      maxWidth="sm"
+      fullScreen={isMobile}
+      aria-labelledby="confirm-action-dialog-title"
+    >
+      <DialogTitle id="confirm-action-dialog-title">
+        Confirm {actionType === 'accepted' ? 'Accept' : 'Reject'}
+      </DialogTitle>
+      <DialogContent>
+        <Typography>
+          You are about to{' '}
+          <strong>
+            {actionType === 'accepted' ? 'accept' : 'reject'}
+          </strong>{' '}
+          the application from <strong>{workerName}</strong>.
+        </Typography>
+        {actionType === 'rejected' && (
+          <TextField
+            label="Feedback (Optional)"
+            multiline
+            rows={4}
+            fullWidth
+            value={feedback}
+            onChange={(e) => onFeedbackChange(e.target.value)}
+            sx={{ mt: 2 }}
+          />
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} sx={{ minHeight: 44 }}>
+          Cancel
+        </Button>
+        <Button
+          onClick={onConfirm}
+          color={actionType === 'accepted' ? 'success' : 'error'}
+          variant="contained"
+          disabled={updating}
+          sx={{ minHeight: 44 }}
+        >
+          {updating ? (
+            <CircularProgress size={24} />
+          ) : (
+            `Confirm ${actionType === 'accepted' ? 'Accept' : 'Reject'}`
+          )}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
 
 function ApplicationDetailPanel({
   app,

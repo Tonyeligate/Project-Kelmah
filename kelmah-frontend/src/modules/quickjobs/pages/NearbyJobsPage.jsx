@@ -302,7 +302,7 @@ const NearbyJobsPage = () => {
       {loading && (
         <Grid container spacing={2}>
           {[1, 2, 3].map(i => (
-            <Grid item xs={12} key={i}>
+            <Grid item xs={12} key={`nearby-jobs-skeleton-${i}`}>
               <Card>
                 <CardContent>
                   <Skeleton variant="text" width="60%" height={32} />

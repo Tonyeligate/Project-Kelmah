@@ -4,8 +4,6 @@ import {
   Paper,
   Typography,
   IconButton,
-  useTheme,
-  useMediaQuery,
   Chip,
   Stack,
 } from '@mui/material';
@@ -23,7 +21,8 @@ import {
   PauseCircleOutline as PauseIcon,
   PlayCircleOutline as PlayIcon,
 } from '@mui/icons-material';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+import { useBreakpointBetween, useBreakpointDown } from '@/hooks/useResponsive';
 
 const cartoonScenes = [
   {
@@ -40,8 +39,8 @@ const cartoonScenes = [
 
 const AuthWrapper = ({ children }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  const isMobile = useBreakpointDown('sm');
+  const isTablet = useBreakpointBetween('sm', 'md');
   const [currentImage, setCurrentImage] = useState(0);
   const [isCarouselAutoPlay, setIsCarouselAutoPlay] = useState(true);
   const isDarkMode = theme.palette.mode === 'dark';

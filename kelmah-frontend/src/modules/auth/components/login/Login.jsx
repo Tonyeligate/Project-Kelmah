@@ -18,8 +18,6 @@ import {
   CircularProgress,
   Fade,
   Stack,
-  useTheme,
-  useMediaQuery,
 } from '@mui/material';
 import {
   Visibility,
@@ -37,7 +35,8 @@ import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 // Removed AuthContext import to use Redux auth system
 // import { useAuth } from '../../contexts/AuthContext';
 import { checkApiHealth } from '../../../common/utils/apiUtils';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const normalizeErrorMessage = (value) => {
   if (typeof value === 'string') {
@@ -59,7 +58,7 @@ const normalizeErrorMessage = (value) => {
 
 const Login = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
   const isDarkMode = theme.palette.mode === 'dark';
   const accentColor = theme.palette.primary.main || '#FFD700';
   const accentStrong = theme.palette.primary.dark || '#D39D00';

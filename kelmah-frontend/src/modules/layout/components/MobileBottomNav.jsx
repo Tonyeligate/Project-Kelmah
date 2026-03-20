@@ -21,6 +21,7 @@ import { BRAND_COLORS } from '../../../theme';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
 import { Z_INDEX, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import useKeyboardVisible from '../../../hooks/useKeyboardVisible';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 // Styled Components - Clean mobile-first design
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -50,10 +51,11 @@ const StyledBottomNavigation = styled(BottomNavigation)(({ theme }) => ({
 const StyledBottomNavigationAction = styled(BottomNavigationAction)(
   ({ theme }) => ({
     color: theme.palette.mode === 'dark' ? '#888' : '#666',
+    flex: 1,
     minWidth: 0,
     maxWidth: 120,
     minHeight: 48,
-    padding: '6px 6px 8px',
+    padding: '6px 4px 8px',
     transition: 'all 0.2s ease',
     '&.Mui-selected': {
       color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
@@ -71,6 +73,10 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
       fontWeight: 500,
       marginTop: 2,
       opacity: 0.9,
+      maxWidth: '100%',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
       transition: 'all 0.2s ease',
     },
     '& .MuiSvgIcon-root': {
@@ -83,6 +89,15 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
         ? 'rgba(255, 215, 0, 0.1)' 
         : 'rgba(0, 0, 0, 0.05)',
     },
+    '@media (max-width:360px)': {
+      padding: '6px 2px 8px',
+      '& .MuiBottomNavigationAction-label': {
+        fontSize: '0.6rem',
+      },
+      '&.Mui-selected .MuiBottomNavigationAction-label': {
+        fontSize: '0.68rem',
+      },
+    },
   }),
 );
 
@@ -90,6 +105,7 @@ const MobileBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
+  const isMobile = useBreakpointDown('sm');
   const { unreadCount = 0 } = useNotifications();
   const { isKeyboardVisible } = useKeyboardVisible();
   
@@ -130,6 +146,8 @@ const MobileBottomNav = () => {
       if (
         path.startsWith('/worker/find-work') ||
         path.startsWith('/worker/job-search') ||
+        path.startsWith('/worker/job-alerts') ||
+        path.startsWith('/worker/saved-jobs') ||
         path.startsWith('/jobs')
       ) {
         return 'findWork';
@@ -181,7 +199,7 @@ const MobileBottomNav = () => {
           path: '/hirer/find-talents',
         },
         {
-          label: 'Applications',
+          label: isMobile ? 'Apps' : 'Applications',
           value: 'applications',
           icon: <ApplicationsIcon />,
           path: '/hirer/applications',
@@ -210,7 +228,7 @@ const MobileBottomNav = () => {
         path: '/worker/find-work',
       },
       {
-        label: 'Applications',
+        label: isMobile ? 'Apps' : 'Applications',
         value: 'applications',
         icon: <ApplicationsIcon />,
         path: '/worker/applications',
@@ -229,7 +247,7 @@ const MobileBottomNav = () => {
         path: '/worker/profile',
       },
     ];
-  }, [isHirer, unreadCount]);
+  }, [isHirer, isMobile, unreadCount]);
 
   const handleNavigation = (event, newValue) => {
     const item = navigationItems.find(i => i.value === newValue);

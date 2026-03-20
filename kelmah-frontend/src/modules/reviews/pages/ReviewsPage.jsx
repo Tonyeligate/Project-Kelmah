@@ -27,7 +27,6 @@ import {
   Tooltip,
   Badge,
   useTheme,
-  useMediaQuery,
   alpha,
   Tabs,
   Tab,
@@ -68,7 +67,9 @@ import {
   resolveMediaAssetUrl,
   resolveProfileImageUrl,
 } from '@/modules/common/utils/mediaAssets';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import reviewService from '../services/reviewService';
 import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
 import { Helmet } from 'react-helmet-async';
@@ -76,8 +77,9 @@ import { Helmet } from 'react-helmet-async';
 // Enhanced Reviews Page with comprehensive review management
 const EnhancedReviewsPage = () => {
   const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   // State management
   const [reviews, setReviews] = useState([]);
@@ -872,7 +874,7 @@ const EnhancedReviewsPage = () => {
         <Stack spacing={3}>
           {[...Array(3)].map((_, index) => (
             <Skeleton
-              key={index}
+              key={`reviews-page-skeleton-${index}`}
               variant="rectangular"
               height={300}
               sx={{ borderRadius: 3 }}
@@ -1239,16 +1241,21 @@ const EnhancedReviewsPage = () => {
         <Divider />
         <MenuItem
           onClick={() => {
-            // Close menu — full report flow not yet implemented
+            const reviewId = selectedReview?._id || selectedReview?.id;
             setMoreMenuAnchor(null);
+            navigate('/support', {
+              state: {
+                reportContext: 'review',
+                reportReviewId: reviewId || null,
+                reportedUserId: selectedReview?.reviewer?.id || null,
+              },
+            });
           }}
-          disabled
-          sx={{ color: 'text.disabled' }}
         >
           <ListItemIcon>
-            <ReportIcon sx={{ color: 'text.disabled' }} />
+            <ReportIcon />
           </ListItemIcon>
-          <ListItemText>Report (coming soon)</ListItemText>
+          <ListItemText>Report Review</ListItemText>
         </MenuItem>
       </Menu>
 

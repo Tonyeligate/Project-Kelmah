@@ -1,12 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  Breadcrumbs,
-  Link,
-  Typography,
-  Box,
-  useMediaQuery,
-} from '@mui/material';
+  Breadcrumbs, Link, Typography, Box } from '@mui/material';
 import {
   Home as HomeIcon,
   Work as WorkIcon,
@@ -14,11 +9,12 @@ import {
   Person as PersonIcon,
   Business as BusinessIcon,
 } from '@mui/icons-material';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const BreadcrumbNavigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery((muiTheme) => muiTheme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
 
   // Define breadcrumb mappings
   const getBreadcrumbItems = () => {
@@ -144,7 +140,7 @@ const BreadcrumbNavigation = () => {
           if (isLast) {
             return (
               <Box
-                key={index}
+                key={path || label || `breadcrumb-current-${index}`}
                 aria-current="page"
                 sx={{
                   display: 'flex',
@@ -170,7 +166,7 @@ const BreadcrumbNavigation = () => {
 
           return (
             <Link
-              key={index}
+              key={path || label || `breadcrumb-link-${index}`}
               component="button"
               variant="body2"
               onClick={() => navigate(path)}

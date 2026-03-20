@@ -1,4 +1,5 @@
-import { Box, Card, CardContent, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Stack, Typography, useTheme } from '@mui/material';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 /**
  * ResponsiveDataView — renders children (Table) on desktop.
@@ -16,7 +17,7 @@ import { Box, Card, CardContent, Stack, Typography, useMediaQuery, useTheme } fr
  */
 export default function ResponsiveDataView({ children, rows = [], renderCard, emptyMessage = 'No data found.', listLabel = 'Data list' }) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   if (!isMobile) return children;
 

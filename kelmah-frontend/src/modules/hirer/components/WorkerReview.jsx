@@ -1,36 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Grid,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip,
-  Avatar,
-  IconButton,
-  Menu,
-  MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Rating,
-  Divider,
-  Alert,
-  Skeleton,
-  Snackbar,
-  LinearProgress,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
+import { Box, Card, CardContent, Typography, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Avatar, IconButton, Menu, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Rating, Divider, Alert, Skeleton, Snackbar, LinearProgress, useTheme } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
   Edit as EditIcon,
@@ -42,10 +11,11 @@ import {
   AttachMoney as MoneyIcon,
 } from '@mui/icons-material';
 import { hirerService } from '../services/hirerService';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const WorkerReview = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -239,7 +209,7 @@ const WorkerReview = () => {
       <Box>
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {[...Array(4)].map((_, i) => (
-            <Grid item xs={12} sm={6} md={3} key={i}>
+            <Grid item xs={12} sm={6} md={3} key={`worker-review-card-skeleton-${i}`}>
               <Skeleton variant="rounded" height={120} animation="wave" />
             </Grid>
           ))}
@@ -248,7 +218,7 @@ const WorkerReview = () => {
           <CardContent>
             <Skeleton variant="text" height={40} width="40%" sx={{ mb: 2 }} />
             {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} variant="text" height={60} sx={{ mb: 1 }} />
+              <Skeleton key={`worker-review-row-skeleton-${i}`} variant="text" height={60} sx={{ mb: 1 }} />
             ))}
           </CardContent>
         </Card>

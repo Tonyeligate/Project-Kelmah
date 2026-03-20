@@ -20,24 +20,17 @@ import BidNotificationListener from './modules/notifications/components/BidNotif
 import { checkStorageQuota } from './utils/storageQuota';
 
 // ─── Production log suppressor ───
-// Silence console.log and console.warn in production to prevent data leakage
-// and reduce noise. console.error is preserved for actionable diagnostics.
-if (import.meta.env.PROD) {
+// Keep warnings/errors visible in production while suppressing verbose logs by default.
+const enableVerboseProdLogs = import.meta.env.VITE_ENABLE_PROD_DEBUG_LOGS === 'true';
+if (import.meta.env.PROD && !enableVerboseProdLogs) {
   const noop = () => {};
   console.log = noop;
-  console.warn = noop;
   console.debug = noop;
   console.info = noop;
   console.group = noop;
+  console.groupCollapsed = noop;
   console.groupEnd = noop;
   console.table = noop;
-}
-
-// Version 1.0.5 - Force fresh bundle generation
-if (import.meta.env.DEV) {
-  console.log('🔧 Main.jsx v1.0.5 - Kelmah PWA with storage monitoring');
-  console.log('🔧 Store initialized:', !!store);
-  console.log('🔧 All imports successful');
 }
 
 // LOW-19 FIX: Defer storage quota check to avoid blocking module initialization

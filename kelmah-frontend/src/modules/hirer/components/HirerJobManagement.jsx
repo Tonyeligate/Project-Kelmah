@@ -2,38 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Tabs,
-  Tab,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TablePagination,
-  IconButton,
-  Menu,
-  MenuItem,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Chip,
-  Avatar,
-  Grid,
-  Paper,
-  LinearProgress,
-  Skeleton,
-  Alert,
-  Snackbar,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
+  Box, Card, CardContent, Typography, Tabs, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, IconButton, Menu, MenuItem, Button, Dialog, DialogTitle, DialogContent, DialogActions, Chip, Avatar, Grid, Paper, LinearProgress, Skeleton, Alert, Snackbar, useTheme } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
   Edit as EditIcon,
@@ -53,12 +22,11 @@ import {
   selectHirerLoading,
   selectHirerError,
 } from '../services/hirerSlice';
-
-
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const HirerJobManagement = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -407,7 +375,7 @@ const HirerJobManagement = () => {
     <Box>
       <Grid container spacing={{ xs: 1.5, sm: 3 }} sx={{ mb: 3 }}>
         {[...Array(4)].map((_, i) => (
-          <Grid item xs={6} sm={6} md={3} key={i}>
+          <Grid item xs={6} sm={6} md={3} key={`hirer-job-card-skeleton-${i}`}>
             <Skeleton variant="rounded" height={120} animation="wave" />
           </Grid>
         ))}
@@ -416,7 +384,7 @@ const HirerJobManagement = () => {
         <CardContent>
           <Skeleton variant="text" height={40} width="40%" sx={{ mb: 2 }} />
           {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} variant="text" height={60} sx={{ mb: 1 }} />
+            <Skeleton key={`hirer-job-row-skeleton-${i}`} variant="text" height={60} sx={{ mb: 1 }} />
           ))}
         </CardContent>
       </Card>

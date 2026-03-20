@@ -1,24 +1,7 @@
 import React from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Typography,
-  Chip,
-  Box,
-  LinearProgress,
-  Link as MuiLink,
-  Card,
-  CardContent,
-  Stack,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Chip, Box, LinearProgress, Link as MuiLink, Card, CardContent, Stack, useTheme } from '@mui/material';
 import { Link } from 'react-router-dom';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const getStatusChip = (status) => {
   const color = {
@@ -32,7 +15,7 @@ const getStatusChip = (status) => {
 
 const EscrowDetails = ({ escrows }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
 
   if (isMobile) {
     return (

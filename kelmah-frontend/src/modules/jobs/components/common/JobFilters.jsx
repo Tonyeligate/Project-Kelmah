@@ -1,24 +1,7 @@
 import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Grid,
-  IconButton,
-  Box,
-  SwipeableDrawer,
-  Typography,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControl, InputLabel, Select, MenuItem, Grid, IconButton, Box, SwipeableDrawer, Typography, useTheme } from '@mui/material';
 import { Close } from '@mui/icons-material';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const JOB_CATEGORIES = [
   'Plumbing',
@@ -39,7 +22,7 @@ const JOB_TYPES = ['full_time', 'part_time', 'contract', 'one_time'];
 
 function JobFilters({ open, onClose, filters, onApply }) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
   const [localFilters, setLocalFilters] = useState(filters);
 
   const handleChange = (field) => (event) => {

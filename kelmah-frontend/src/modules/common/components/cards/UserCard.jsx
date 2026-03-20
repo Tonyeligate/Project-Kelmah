@@ -167,7 +167,7 @@ const UserCard = ({
         <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', mb: 1 }}>
           {displayTags.slice(0, maxTags).map((tag, index) => (
             <Chip
-              key={index}
+              key={`${String(tag)}-${index}`}
               label={tag}
               size="small"
               variant="outlined"

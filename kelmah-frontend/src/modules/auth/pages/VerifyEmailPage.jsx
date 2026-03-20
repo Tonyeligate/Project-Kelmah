@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import AuthWrapper from '../components/common/AuthWrapper';
-import { Box, Typography, Button, TextField, Alert, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Typography, Button, TextField, Alert, CircularProgress } from '@mui/material';
 import { CheckCircleOutline, ErrorOutline, MailOutline } from '@mui/icons-material';
 import authService from '../services/authService';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const VerifyEmailPage = () => {
   const { token } = useParams();
@@ -15,8 +16,7 @@ const VerifyEmailPage = () => {
   const [resendSent, setResendSent] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendError, setResendError] = useState('');
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   useEffect(() => {
     if (!token) {

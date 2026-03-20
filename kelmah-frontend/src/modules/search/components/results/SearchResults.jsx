@@ -15,10 +15,9 @@ import {
   CircularProgress,
   Skeleton,
   Alert,
-  useMediaQuery,
-  useTheme,
 } from '@mui/material';
 import { MapOutlined as MapIcon } from '@mui/icons-material';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 import { InteractiveJobCard as JobCard } from '../../../common/components/cards';
 
 const SearchResults = ({
@@ -33,9 +32,8 @@ const SearchResults = ({
   onToggleView,
   onSaveJob,
 }) => {
-  const theme = useTheme();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   // Handle page change in pagination
   const handlePageChange = (event, value) => {
@@ -172,7 +170,7 @@ const SearchResults = ({
       {loading && (
         <Grid container spacing={3} sx={{ my: 2 }}>
           {Array.from(new Array(6)).map((_, idx) => (
-            <Grid item xs={12} key={idx}>
+            <Grid item xs={12} key={`search-results-skeleton-${idx}`}>
               <Skeleton
                 variant="rectangular"
                 height={150}

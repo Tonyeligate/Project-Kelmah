@@ -485,7 +485,7 @@ const MyBidsPage = () => {
       {loading && (
         <Box>
           {[1, 2, 3].map((i) => (
-            <BidCardSkeleton key={i} />
+            <BidCardSkeleton key={`bid-skeleton-${i}`} />
           ))}
         </Box>
       )}

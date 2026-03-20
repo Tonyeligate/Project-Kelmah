@@ -1,21 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import {
-  Box,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  ImageList,
-  ImageListItem,
-  ImageListItemBar,
-  Typography,
-  Chip,
-  Stack,
-  useMediaQuery,
-  useTheme,
-  Fade,
-  Backdrop,
-} from '@mui/material';
+import { Box, Dialog, DialogContent, DialogTitle, IconButton, ImageList, ImageListItem, ImageListItemBar, Typography, Chip, Stack, useTheme, Fade, Backdrop } from '@mui/material';
 import {
   Close as CloseIcon,
   ZoomIn as ZoomInIcon,
@@ -25,6 +9,7 @@ import {
   NavigateBefore as PrevIcon,
 } from '@mui/icons-material';
 import { resolveMediaAssetUrls } from '../../common/utils/mediaAssets';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const ProjectGallery = ({
   images = [],
@@ -34,7 +19,7 @@ const ProjectGallery = ({
   initialIndex = 0,
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [imageLoaded, setImageLoaded] = useState(false);
   const galleryImages = useMemo(() => resolveMediaAssetUrls(images), [images]);
@@ -324,7 +309,7 @@ const ProjectGallery = ({
             >
               {galleryImages.map((image, index) => (
                 <ImageListItem
-                  key={index}
+                  key={`${image || 'thumbnail'}-${index}`}
                   sx={{
                     width: 60,
                     height: 40,
@@ -373,9 +358,9 @@ const ProjectGallery = ({
               gap: 1,
             }}
           >
-            {galleryImages.map((_, index) => (
+            {galleryImages.map((image, index) => (
               <Box
-                key={index}
+                key={`${image || 'dot'}-${index}`}
                 onClick={() => {
                   setCurrentIndex(index);
                   setImageLoaded(false);

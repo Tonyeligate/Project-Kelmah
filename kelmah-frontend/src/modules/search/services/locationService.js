@@ -19,7 +19,23 @@ const unwrap = (response) => {
   return payload;
 };
 
-const toResponseShape = (data) => ({ data });
+const toResponseShape = (data, meta = {}) => ({
+  data,
+  meta: {
+    unavailable: false,
+    fallback: false,
+    message: null,
+    ...meta,
+  },
+});
+
+const toStaticLocationSuggestions = (query) =>
+  DEFAULT_POPULAR_LOCATIONS.filter((location) =>
+    location.name.toLowerCase().includes(String(query || '').toLowerCase()),
+  ).map(({ jobs, ...location }) => ({
+    ...location,
+    jobs: null,
+  }));
 
 /**
  * Service for location-based search and geolocation features
@@ -35,7 +51,10 @@ const locationService = {
       const payload = unwrap(response);
       return toResponseShape(Array.isArray(payload) ? payload : payload?.locations || []);
     } catch (error) {
-      return toResponseShape(DEFAULT_POPULAR_LOCATIONS);
+      return toResponseShape([], {
+        unavailable: true,
+        message: 'Live popular location analytics are currently unavailable.',
+      });
     }
   },
 
@@ -54,7 +73,10 @@ const locationService = {
       const payload = unwrap(response);
       return toResponseShape(Array.isArray(payload) ? payload : payload?.locations || []);
     } catch (error) {
-      return toResponseShape([]);
+      return toResponseShape([], {
+        unavailable: true,
+        message: 'Nearby location results are currently unavailable.',
+      });
     }
   },
 
@@ -71,10 +93,13 @@ const locationService = {
       const payload = unwrap(response);
       return toResponseShape(Array.isArray(payload) ? payload : payload?.results || []);
     } catch (error) {
-      const fallback = DEFAULT_POPULAR_LOCATIONS.filter((location) =>
-        location.name.toLowerCase().includes(String(query || '').toLowerCase()),
-      );
-      return toResponseShape(fallback);
+      const fallback = toStaticLocationSuggestions(query);
+      return toResponseShape(fallback, {
+        unavailable: true,
+        fallback: true,
+        message:
+          'Live location search is unavailable. Showing static city suggestions only.',
+      });
     }
   },
 
@@ -108,7 +133,10 @@ const locationService = {
     } catch (error) {
       try {
         const cached = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
-        return toResponseShape(Array.isArray(cached) ? cached : []);
+        return toResponseShape(Array.isArray(cached) ? cached : [], {
+          fallback: true,
+          message: 'Showing locally cached recent searches.',
+        });
       } catch {
         return toResponseShape([]);
       }
@@ -132,7 +160,10 @@ const locationService = {
       } catch {
         // noop
       }
-      return toResponseShape(location);
+      return toResponseShape(location, {
+        fallback: true,
+        message: 'Saved search locally while the recent-search service is unavailable.',
+      });
     }
   },
 
@@ -146,7 +177,10 @@ const locationService = {
       const response = await api.get(`${API_URL}/stats/${locationName}`);
       return toResponseShape(unwrap(response) || {});
     } catch (error) {
-      return toResponseShape({ jobs: 0, workers: 0, demand: 'unknown' });
+      return toResponseShape({ jobs: 0, workers: 0, demand: 'unknown' }, {
+        unavailable: true,
+        message: 'Location statistics are currently unavailable.',
+      });
     }
   },
 
@@ -168,6 +202,9 @@ const locationService = {
         distanceKm: null,
         durationMinutes: null,
         mode: 'unknown',
+      }, {
+        unavailable: true,
+        message: 'Travel estimates are currently unavailable.',
       });
     }
   },
@@ -185,10 +222,13 @@ const locationService = {
       const payload = unwrap(response);
       return toResponseShape(Array.isArray(payload) ? payload : payload?.suggestions || []);
     } catch (error) {
-      const fallback = DEFAULT_POPULAR_LOCATIONS.filter((location) =>
-        location.name.toLowerCase().includes(String(query || '').toLowerCase()),
-      );
-      return toResponseShape(fallback);
+      const fallback = toStaticLocationSuggestions(query);
+      return toResponseShape(fallback, {
+        unavailable: true,
+        fallback: true,
+        message:
+          'Live location suggestions are unavailable. Showing static city suggestions only.',
+      });
     }
   },
 };

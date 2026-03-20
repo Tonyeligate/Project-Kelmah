@@ -3,42 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Helmet } from 'react-helmet-async';
 import {
-  Box,
-  Typography,
-  Tabs,
-  Tab,
-  Paper,
-  Button,
-  Card,
-  CardContent,
-  CardMedia,
-  IconButton,
-  Chip,
-  TextField,
-  InputAdornment,
-  Menu,
-  MenuItem,
-  Divider,
-  Badge,
-  CircularProgress,
-  Alert,
-  Snackbar,
-  Tooltip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  useTheme,
-  useMediaQuery,
-  TableContainer,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  TablePagination,
-} from '@mui/material';
+  Box, Typography, Tabs, Tab, Paper, Button, Card, CardContent, CardMedia, IconButton, Chip, TextField, InputAdornment, Menu, MenuItem, Divider, Badge, CircularProgress, Alert, Snackbar, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, useTheme, TableContainer, Table, TableHead, TableBody, TableRow, TableCell, TablePagination } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -65,6 +30,7 @@ import {
 } from '../services/hirerSlice';
 import { formatJobLocation } from '../../../utils/formatters';
 import { api } from '../../../services/apiClient';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 // Visibility chip — tells the hirer whether the job appears on the public Jobs page
 const VisibilityChip = ({ visibility }) => {
@@ -148,7 +114,7 @@ const JobManagementPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   const emptyStatusCounts = useMemo(() => ({
     open: 0,
@@ -475,7 +441,6 @@ const JobManagementPage = () => {
         );
       })()}
 
-      
       {/* Mobile-optimized header */}
       <Box sx={{ mb: { xs: 2, md: 4 }, px: { xs: 0.5, md: 0 } }}>
         <Box

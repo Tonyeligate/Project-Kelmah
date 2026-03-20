@@ -478,7 +478,7 @@ const JobBidsPage = () => {
       {/* Loading */}
       {loading && (
         <Box>
-          {[1, 2, 3].map((i) => (<BidCardSkeleton key={i} />))}
+          {[1, 2, 3].map((i) => (<BidCardSkeleton key={`job-bid-skeleton-${i}`} />))}
         </Box>
       )}
 

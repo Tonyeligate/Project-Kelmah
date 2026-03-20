@@ -21,7 +21,7 @@ const CompactSearchBar = ({
   onKeywordChange,
   onSearchSubmit,
   onFilterClick,
-  placeholder = 'Search workers...',
+  placeholder = 'Try "electrician in Accra" or "welder"',
 }) => {
   const theme = useTheme();
 

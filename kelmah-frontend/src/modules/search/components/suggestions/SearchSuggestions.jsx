@@ -8,6 +8,8 @@ import {
   ClickAwayListener,
   Typography,
   Box,
+  Chip,
+  Stack,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -18,6 +20,8 @@ import {
 
 const SearchSuggestions = ({
   suggestions = [],
+  query = '',
+  popularTerms = [],
   onSuggestionSelected,
   onClose,
 }) => {
@@ -35,6 +39,21 @@ const SearchSuggestions = ({
     }
   };
 
+  const getSuggestionTypeLabel = (type) => {
+    switch (type) {
+      case 'location':
+        return 'Location match';
+      case 'job':
+        return 'Trade title';
+      case 'skill':
+        return 'Skill match';
+      default:
+        return 'Suggested search';
+    }
+  };
+
+  const normalizedQuery = String(query || '').trim();
+
   return (
     <ClickAwayListener onClickAway={onClose}>
       <Paper
@@ -49,10 +68,26 @@ const SearchSuggestions = ({
         }}
       >
         {suggestions.length === 0 ? (
-          <Box sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
-              No suggestions found
+          <Box sx={{ p: 2 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              {normalizedQuery
+                ? `No direct suggestions for "${normalizedQuery}" yet.`
+                : 'Start typing to see search suggestions.'}
             </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+              Try one of the popular searches:
+            </Typography>
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              {popularTerms.slice(0, 6).map((term) => (
+                <Chip
+                  key={term}
+                  label={term}
+                  size="small"
+                  variant="outlined"
+                  onClick={() => onSuggestionSelected({ type: 'search', text: term })}
+                />
+              ))}
+            </Stack>
           </Box>
         ) : (
           <List sx={{ py: 0 }}>
@@ -68,7 +103,12 @@ const SearchSuggestions = ({
                 </ListItemIcon>
                 <ListItemText
                   primary={suggestion.text}
-                  secondary={suggestion.subText}
+                  secondary={suggestion.subText || getSuggestionTypeLabel(suggestion.type)}
+                />
+                <Chip
+                  size="small"
+                  label={getSuggestionTypeLabel(suggestion.type)}
+                  variant="outlined"
                 />
               </ListItem>
             ))}

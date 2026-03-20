@@ -1,32 +1,11 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  AppBar,
-  Toolbar,
-  IconButton,
-  TextField,
-  Button,
-  Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Box,
-  Alert,
-  InputAdornment,
-  FormHelperText,
-  Chip,
-  Typography,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
+  Dialog, DialogTitle, DialogContent, DialogActions, AppBar, Toolbar, IconButton, TextField, Button, Grid, FormControl, InputLabel, Select, MenuItem, Box, Alert, InputAdornment, FormHelperText, Chip, Typography, useTheme } from '@mui/material';
 import { AttachMoney, Close as CloseIcon } from '@mui/icons-material';
 import { createJob } from '../../../jobs/services/jobSlice';
 import PropTypes from 'prop-types';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const JOB_TYPES = [
   { value: 'full_time', label: 'Full Time' },
@@ -64,7 +43,7 @@ function CreateJobDialog({
 }) {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [skills, setSkills] = useState([]);

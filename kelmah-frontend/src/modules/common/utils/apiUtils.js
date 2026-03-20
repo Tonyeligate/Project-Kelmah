@@ -8,7 +8,7 @@ import { api as gatewayClient } from '../../../services/apiClient';
 export const checkApiHealth = async (showLoading = true) => {
   // In development, allow proceeding without API connectivity
   if (import.meta.env.DEV) {
-    console.log('Development mode: Assuming API is available');
+    console.debug('[apiUtils] Development mode: assuming API is available');
     return true;
   }
 
@@ -26,10 +26,12 @@ export const checkApiHealth = async (showLoading = true) => {
       return response.status === 200;
     } catch (error) {
       const isLast = attempt === maxAttempts;
-      if (import.meta.env.DEV) console.log(
-        `API health check attempt ${attempt}/${maxAttempts} failed:`,
-        error?.message || 'unknown error',
-      );
+      if (import.meta.env.DEV && isLast) {
+        console.debug(
+          `API health check failed after ${maxAttempts} attempts:`,
+          error?.message || 'unknown error',
+        );
+      }
       if (isLast) {
         return false;
       }

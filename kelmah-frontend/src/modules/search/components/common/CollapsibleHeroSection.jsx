@@ -5,24 +5,17 @@
  */
 
 import React, { useState } from 'react';
-import {
-  Box,
-  Typography,
-  Button,
-  Collapse,
-  useMediaQuery,
-  useTheme,
-  IconButton,
-} from '@mui/material';
+import { Box, Typography, Button, Collapse, useTheme, IconButton } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const CollapsibleHeroSection = ({ isAuthenticated = false }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const [expanded, setExpanded] = useState(false);
 
   // On desktop, always show full content

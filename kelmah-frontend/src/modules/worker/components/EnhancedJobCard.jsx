@@ -408,7 +408,7 @@ const EnhancedJobCard = ({
               <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
                 {job.skills?.slice(0, 3).map((skill, index) => (
                   <Chip
-                    key={index}
+                    key={`${skill || 'skill'}-${index}`}
                     label={skill}
                     size="small"
                     variant="outlined"

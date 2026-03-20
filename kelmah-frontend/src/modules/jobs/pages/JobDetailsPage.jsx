@@ -46,7 +46,7 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { styled, useTheme, alpha } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
+import { useBreakpointDown, useMaxWidth } from '@/hooks/useResponsive';
 import BidSubmissionForm from '../components/BidSubmissionForm';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -291,8 +291,8 @@ const normalizeSkillLabels = (skills) => {
 
 const JobDetailsPage = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isCompactMobile = useMediaQuery('(max-width:390px)');
+  const isMobile = useBreakpointDown('md');
+  const isCompactMobile = useMaxWidth(390);
   const location = useLocation();
   const { search } = location;
   const { id } = useParams();
@@ -331,15 +331,6 @@ const JobDetailsPage = () => {
   useEffect(() => {
     if (!job) return;
     setSaved(Boolean(job?.isSaved || job?.saved || job?.isBookmarked));
-  }, [job]);
-
-  // Debug logging (dev only)
-  useEffect(() => {
-    if (import.meta.env.DEV && job) {
-      console.log('🔍 Job object in JobDetailsPage:', job);
-      console.log('🔍 Job budget:', job.budget);
-      console.log('🔍 Job budget type:', typeof job.budget);
-    }
   }, [job]);
 
   // Auto-redirect to application form if ?apply=true
@@ -392,7 +383,7 @@ const JobDetailsPage = () => {
     }
     const recipientId = job?.hirer?._id || job?.hirer?.id || job?.client?._id || job?.client?.id || job?.hirerId || job?.clientId;
     if (!recipientId) {
-      setShareSnackbar('Hirer contact is not available yet');
+      setShareSnackbar('Client messaging is available after the client profile loads. Please try again in a moment.');
       return;
     }
     navigate(`/messages?recipient=${recipientId}`, {
@@ -683,7 +674,7 @@ const JobDetailsPage = () => {
 
   const handleOpenClientProfile = () => {
     if (!hasClientDetails) {
-      setShareSnackbar('Client details are not available yet');
+      setShareSnackbar('Client details are still loading. You can continue reviewing the job and check back shortly.');
       return;
     }
 

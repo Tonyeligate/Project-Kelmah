@@ -3,35 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { normalizeUser } from '../../../utils/userUtils';
 import {
-  Box,
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Grid,
-  Paper,
-  Divider,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Select,
-  Chip,
-  OutlinedInput,
-  Avatar,
-  IconButton,
-  Alert,
-  Snackbar,
-  Card,
-  CardContent,
-  InputAdornment,
-  useTheme,
-  useMediaQuery,
-  Autocomplete,
-  Switch,
-  FormControlLabel,
-  Skeleton,
-  Tooltip,
-} from '@mui/material';
+  Box, Container, Typography, TextField, Button, Grid, Paper, Divider, MenuItem, FormControl, InputLabel, Select, Chip, OutlinedInput, Avatar, IconButton, Alert, Snackbar, Card, CardContent, InputAdornment, useTheme, Autocomplete, Switch, FormControlLabel, Skeleton, Tooltip } from '@mui/material';
 import {
   Save as SaveIcon,
   Cancel as CancelIcon,
@@ -56,6 +28,7 @@ import {
 import { api } from '../../../services/apiClient';
 import { Helmet } from 'react-helmet-async';
 import fileUploadService from '../../common/services/fileUploadService';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const Input = styled('input')({
   display: 'none',
@@ -105,12 +78,62 @@ const mapAvailabilityApiToForm = (data) => {
   };
 };
 
+const normalizeSkillName = (skill) => {
+  if (typeof skill === 'string') {
+    return skill.trim();
+  }
+
+  if (skill && typeof skill === 'object') {
+    return String(skill.name || skill.skillName || skill.title || '').trim();
+  }
+
+  return String(skill || '').trim();
+};
+
+const normalizeSkillsForForm = (skills) => {
+  if (!Array.isArray(skills)) {
+    return [];
+  }
+
+  const seen = new Set();
+
+  return skills
+    .map((skill) => normalizeSkillName(skill))
+    .filter((name) => {
+      if (!name) {
+        return false;
+      }
+
+      const key = name.toLowerCase();
+      if (seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    });
+};
+
+const normalizeSuggestionText = (suggestion) => {
+  if (typeof suggestion === 'string') {
+    return suggestion.trim();
+  }
+
+  if (suggestion && typeof suggestion === 'object') {
+    return String(
+      suggestion.message || suggestion.text || suggestion.label || '',
+    ).trim();
+  }
+
+  return String(suggestion || '').trim();
+};
+
 const WorkerProfileEditPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   // FIXED: Use standardized user normalization for consistent user data access
   const { user: rawUser } = useSelector((state) => state.auth);
@@ -210,7 +233,7 @@ const WorkerProfileEditPage = () => {
           bio: profile.bio || '',
           hourlyRate: profile.hourlyRate || '',
           experience: profile.experience || '',
-          skills: Array.isArray(profile.skills) ? profile.skills : [],
+          skills: normalizeSkillsForForm(profile.skills),
           education: Array.isArray(profile.education) ? profile.education : [],
           languages: Array.isArray(profile.languages) ? profile.languages : [],
           location: profile.location || '',
@@ -450,7 +473,7 @@ const WorkerProfileEditPage = () => {
       bio: formData.bio,
       hourlyRate: formData.hourlyRate,
       experience: formData.experience,
-      skills: Array.isArray(formData.skills) ? formData.skills : [],
+      skills: normalizeSkillsForForm(formData.skills),
       education: Array.isArray(formData.education) ? formData.education : [],
       languages: Array.isArray(formData.languages) ? formData.languages : [],
       location: formData.location,
@@ -796,9 +819,15 @@ const WorkerProfileEditPage = () => {
           {suggestions?.length > 0 && (
             <Box sx={{ mt: 2 }}>
               {Array.isArray(suggestions) &&
-                suggestions.map((s, i) => (
-                  <Chip key={s} label={s} sx={{ mr: 1, mb: 1 }} />
-                ))}
+                suggestions
+                  .map((suggestion, index) => ({
+                    key: suggestion?.id || suggestion?.code || `suggestion-${index}`,
+                    label: normalizeSuggestionText(suggestion),
+                  }))
+                  .filter((item) => item.label)
+                  .map((item) => (
+                    <Chip key={item.key} label={item.label} sx={{ mr: 1, mb: 1 }} />
+                  ))}
             </Box>
           )}
         </Paper>
@@ -1042,15 +1071,22 @@ const WorkerProfileEditPage = () => {
 
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               {Array.isArray(formData.skills) &&
-                formData.skills.map((skill, index) => (
+                formData.skills.map((skill, index) => {
+                  const skillName = normalizeSkillName(skill);
+                  if (!skillName) {
+                    return null;
+                  }
+
+                  return (
                   <Chip
-                    key={skill.name || skill || index}
-                    label={skill}
-                    onDelete={() => handleRemoveSkill(skill)}
+                    key={`${skillName}-${index}`}
+                    label={skillName}
+                    onDelete={() => handleRemoveSkill(skillName)}
                     color="primary"
                     variant="outlined"
                   />
-                ))}
+                  );
+                })}
             </Box>
           </Box>
         </Paper>

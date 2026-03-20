@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
-import { useMediaQuery, useTheme } from '@mui/material';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const THRESHOLD = 80; // px to pull before triggering
 const MAX_PULL = 120; // max visual pull distance
@@ -13,8 +13,7 @@ const MAX_PULL = 120; // max visual pull distance
  * @param {boolean}   [disabled]  – disable the gesture
  */
 export default function PullToRefresh({ onRefresh, children, disabled = false }) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const [pullDistance, setPullDistance] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const startY = useRef(0);

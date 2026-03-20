@@ -136,9 +136,11 @@ export const PaymentProvider = ({ children }) => {
         showToast(`GH₵${amount.toFixed(2)} deposited successfully.`, 'success');
         // Refresh wallet data
         await fetchData();
+        return true;
       } catch (err) {
         if (import.meta.env.DEV) console.error('Deposit failed:', err);
         showToast('Failed to deposit funds.', 'error');
+        return false;
       } finally {
         setLoading(false);
       }
@@ -150,7 +152,7 @@ export const PaymentProvider = ({ children }) => {
     async (amount, paymentMethodId) => {
       if (amount > walletBalance) {
         showToast('Insufficient funds for withdrawal.', 'error');
-        return;
+        return false;
       }
       setLoading(true);
       try {
@@ -164,9 +166,11 @@ export const PaymentProvider = ({ children }) => {
         showToast('Withdrawal request submitted.', 'info');
         // Refresh wallet data
         await fetchData();
+        return true;
       } catch (err) {
         if (import.meta.env.DEV) console.error('Withdrawal failed:', err);
         showToast('Failed to process withdrawal.', 'error');
+        return false;
       } finally {
         setLoading(false);
       }

@@ -8,9 +8,4 @@ if (typeof window !== 'undefined' && window.React) {
   }
 }
 
-// Debug module loading order
-if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
-  console.log('🔧 Polyfills loaded');
-}
-
 export { useSyncExternalStore };

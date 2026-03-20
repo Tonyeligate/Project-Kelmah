@@ -240,7 +240,7 @@ const MessageInput = ({
           )}
           <List>
             {attachments.map((file, index) => (
-              <ListItem key={index}>
+              <ListItem key={`${file.name}-${file.size}-${index}`}>
                 <ListItemText
                   primary={file.name}
                   secondary={`${formatFileSize(file.size)} • ${file.type}`}

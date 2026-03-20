@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import {
   Container,
   Grid,
@@ -61,6 +60,7 @@ import { format } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
 import { hasRole } from '../../../utils/userUtils';
+import { useBreakpointDown } from '../../../hooks/useResponsive';
 
 const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
   <Paper
@@ -595,7 +595,7 @@ const PaymentCenterPage = () => {
   const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const [tabIndex, setTabIndex] = useState(0);
   const [depositOpen, setDepositOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
@@ -1217,10 +1217,12 @@ const PaymentCenterPage = () => {
             onClick={async () => {
               setDialogSubmitting(true);
               try {
-                await addFunds(Number(amount), methodId);
+                const operationSucceeded = await addFunds(Number(amount), methodId);
+                if (operationSucceeded) {
+                  closeDepositDialog();
+                }
               } finally {
                 setDialogSubmitting(false);
-                closeDepositDialog();
               }
             }}
             variant="contained"
@@ -1339,10 +1341,12 @@ const PaymentCenterPage = () => {
             onClick={async () => {
               setDialogSubmitting(true);
               try {
-                await withdrawFunds(Number(amount), methodId);
+                const operationSucceeded = await withdrawFunds(Number(amount), methodId);
+                if (operationSucceeded) {
+                  closeWithdrawDialog();
+                }
               } finally {
                 setDialogSubmitting(false);
-                closeWithdrawDialog();
               }
             }}
             variant="contained"

@@ -1,38 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Grid,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip,
-  Avatar,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Divider,
-  Alert,
-  LinearProgress,
-  IconButton,
-  Tooltip,
-  Paper,
-  Skeleton,
-  Snackbar,
-  useTheme,
-  useMediaQuery,
-  Stack,
-  CircularProgress,
-} from '@mui/material';
+  Box, Card, CardContent, Typography, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Avatar, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Divider, Alert, LinearProgress, IconButton, Tooltip, Paper, Skeleton, Snackbar, useTheme, Stack, CircularProgress } from '@mui/material';
 import {
   AttachMoney as MoneyIcon,
   Schedule as ScheduleIcon,
@@ -52,6 +21,7 @@ import {
   fetchPaymentSummary,
 } from '../services/hirerSlice';
 import paymentService from '../../payment/services/paymentService';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 // No mock data - using real API data only
 
@@ -64,7 +34,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const PaymentRelease = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const dispatch = useDispatch();
 
   const [selectedPayment, setSelectedPayment] = useState(null);
@@ -393,7 +363,7 @@ const PaymentRelease = () => {
       <Box>
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {[...Array(4)].map((_, i) => (
-            <Grid item xs={12} sm={6} md={3} key={i}>
+            <Grid item xs={12} sm={6} md={3} key={`payment-release-card-skeleton-${i}`}>
               <Skeleton variant="rounded" height={120} animation="wave" />
             </Grid>
           ))}
@@ -402,7 +372,7 @@ const PaymentRelease = () => {
           <CardContent>
             <Skeleton variant="text" height={40} width="40%" sx={{ mb: 2 }} />
             {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} variant="text" height={60} sx={{ mb: 1 }} />
+              <Skeleton key={`payment-release-row-skeleton-${i}`} variant="text" height={60} sx={{ mb: 1 }} />
             ))}
           </CardContent>
         </Card>

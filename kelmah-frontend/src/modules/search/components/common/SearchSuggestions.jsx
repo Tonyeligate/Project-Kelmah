@@ -37,7 +37,7 @@ const SearchSuggestions = ({ recentSearches = [], onSuggestionClick }) => {
           </Typography>
           <List dense disablePadding>
             {recentSearches.slice(0, 5).map((term, idx) => (
-              <ListItemButton key={idx} onClick={() => handleClick(term)} sx={{ borderRadius: 1 }}>
+              <ListItemButton key={`${term || 'recent-search'}-${idx}`} onClick={() => handleClick(term)} sx={{ borderRadius: 1 }}>
                 <ListItemIcon sx={{ minWidth: 32 }}>
                   <SearchIcon fontSize="small" />
                 </ListItemIcon>

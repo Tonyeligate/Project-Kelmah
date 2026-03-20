@@ -124,6 +124,9 @@ temp/
 /data/
 .vercel/
 backup/root_cleanup_20260201/cli/
+ngrok-config.json
+localtunnel-config.json
+localtunnel-url.txt
 
 # Allow runtime configuration files
 !kelmah-frontend/public/runtime-config.json

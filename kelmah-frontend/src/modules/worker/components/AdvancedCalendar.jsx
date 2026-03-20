@@ -178,7 +178,7 @@ const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
             const isCurrentDay = isToday(day);
 
             return (
-              <Grid item xs={12 / 7} key={idx}>
+              <Grid item xs={12 / 7} key={format(day, 'yyyy-MM-dd')}>
                 <Box
                   onClick={() => !isPast && isCurrentMonth && toggleDate(day)}
                   sx={{

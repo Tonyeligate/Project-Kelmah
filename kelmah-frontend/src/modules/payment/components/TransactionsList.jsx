@@ -25,7 +25,7 @@ const TransactionsList = ({ transactions = [], loading = false, limit }) => {
       <Box>
         {[...Array(limit || 3)].map((_, idx) => (
           <Skeleton
-            key={idx}
+            key={`transactions-skeleton-${idx}`}
             variant="rectangular"
             height={60}
             sx={{ mb: 2, borderRadius: 2 }}

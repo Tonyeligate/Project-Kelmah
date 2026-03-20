@@ -30,8 +30,23 @@ const BID_EVENTS = [
   'bid:expired',
 ];
 
+const createNotificationId = (event) => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `${event}-${crypto.randomUUID()}`;
+  }
+
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const bytes = new Uint8Array(6);
+    crypto.getRandomValues(bytes);
+    const randomPart = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+    return `${event}-${Date.now()}-${randomPart}`;
+  }
+
+  return `${event}-${Date.now()}`;
+};
+
 const createNotification = (event, data) => {
-  const id = `${event}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  const id = createNotificationId(event);
   const timestamp = new Date();
 
   switch (event) {

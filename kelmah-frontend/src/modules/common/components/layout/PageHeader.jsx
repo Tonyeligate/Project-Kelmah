@@ -1,23 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {
-    Box,
-    Typography,
-    Breadcrumbs,
-    Link,
-    Button,
-    IconButton,
-    Tooltip,
-    Skeleton,
-    useMediaQuery,
-    useTheme,
-} from '@mui/material';
+import { Box, Typography, Breadcrumbs, Link, Button, IconButton, Tooltip, Skeleton, useTheme } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import {
     Home as HomeIcon,
     NavigateNext as NavigateNextIcon,
     Refresh as RefreshIcon,
 } from '@mui/icons-material';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 /**
  * Reusable PageHeader component for consistent page layouts
@@ -35,7 +25,7 @@ const PageHeader = ({
     children, // Additional content to render in header
 }) => {
     const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const isMobile = useBreakpointDown('sm');
 
     if (loading) {
         return (

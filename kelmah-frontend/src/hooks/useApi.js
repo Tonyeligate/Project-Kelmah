@@ -3,7 +3,7 @@
  * Handles all API calls with proper error handling, loading states, and no mock fallbacks
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
 
 /**
@@ -29,65 +29,99 @@ export const useApi = (apiFunction, options = {}) => {
   const [loading, setLoading] = useState(immediate);
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
+  const isMountedRef = useRef(true);
+  const retryTimeoutRef = useRef(null);
+
+  const clearRetryTimeout = useCallback(() => {
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+  }, []);
 
   const executeApi = useCallback(
     async (...args) => {
+      clearRetryTimeout();
+
       try {
-        setLoading(true);
-        setError(null);
-
-        const result = await apiFunction(...args);
-
-        setData(result);
-        setRetryCount(0);
-
-        if (onSuccess) {
-          onSuccess(result);
+        if (isMountedRef.current) {
+          setLoading(true);
+          setError(null);
         }
 
-        if (showSuccessToast && result) {
-          toast.success('Operation completed successfully');
-        }
+        const executeWithRetry = async (attempt = 0) => {
+          try {
+            const result = await apiFunction(...args);
 
-        return result;
-      } catch (err) {
-        if (import.meta.env.DEV) console.error('API Error:', err);
-        setError(err);
+            if (isMountedRef.current) {
+              setData(result);
+              setRetryCount(0);
 
-        // Retry logic
-        if (retryCount < retryAttempts) {
-          setTimeout(
-            () => {
-              setRetryCount((prev) => prev + 1);
-              executeApi(...args);
-            },
-            retryDelay * (retryCount + 1),
-          ); // Exponential backoff
-          return;
-        }
+              if (onSuccess) {
+                onSuccess(result);
+              }
 
-        if (onError) {
-          onError(err);
-        }
+              if (showSuccessToast && result) {
+                toast.success('Operation completed successfully');
+              }
+            }
 
-        if (showErrorToast) {
-          const errorMessage =
-            err.response?.data?.message || err.message || 'An error occurred';
-          toast.error(`Service Error: ${errorMessage}`);
-        }
+            return result;
+          } catch (err) {
+            if (import.meta.env.DEV) console.error('API Error:', err);
 
-        throw err;
+            if (attempt < retryAttempts) {
+              if (isMountedRef.current) {
+                setRetryCount(attempt + 1);
+              }
+
+              await new Promise((resolve) => {
+                retryTimeoutRef.current = setTimeout(
+                  resolve,
+                  retryDelay * (attempt + 1),
+                );
+              });
+
+              if (!isMountedRef.current) {
+                return null;
+              }
+
+              return executeWithRetry(attempt + 1);
+            }
+
+            if (isMountedRef.current) {
+              setError(err);
+
+              if (onError) {
+                onError(err);
+              }
+
+              if (showErrorToast) {
+                const errorMessage =
+                  err.response?.data?.message || err.message || 'An error occurred';
+                toast.error(`Service Error: ${errorMessage}`);
+              }
+            }
+
+            throw err;
+          }
+        };
+
+        return await executeWithRetry(0);
       } finally {
-        setLoading(false);
+        clearRetryTimeout();
+        if (isMountedRef.current) {
+          setLoading(false);
+        }
       }
     },
     [
+      clearRetryTimeout,
       apiFunction,
       onSuccess,
       onError,
       showErrorToast,
       showSuccessToast,
-      retryCount,
       retryAttempts,
       retryDelay,
     ],
@@ -105,17 +139,26 @@ export const useApi = (apiFunction, options = {}) => {
   );
 
   const reset = useCallback(() => {
+    clearRetryTimeout();
     setData(initialData);
     setError(null);
     setLoading(false);
     setRetryCount(0);
-  }, [initialData]);
+  }, [clearRetryTimeout, initialData]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      clearRetryTimeout();
+    };
+  }, [clearRetryTimeout]);
 
   useEffect(() => {
     if (immediate) {
       executeApi();
     }
-  }, [immediate, ...dependencies]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [immediate, executeApi, ...dependencies]);
 
   return {
     data,
@@ -260,7 +303,7 @@ export const useMultipleApi = (apiCalls, options = {}) => {
     if (immediate) {
       executeAll();
     }
-  }, [immediate, ...dependencies]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [immediate, executeAll, ...dependencies]);
 
   return {
     results,

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
   Alert,
   Box,
@@ -35,6 +36,7 @@ const TabPanel = ({ children, value, index }) => (
 );
 
 const SkillsAssessmentManagement = () => {
+  const navigate = useNavigate();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [tabValue, setTabValue] = useState(0);
   const [tests] = useState([]);
@@ -42,6 +44,25 @@ const SkillsAssessmentManagement = () => {
   const [error, setError] = useState('');
   const [stats, setStats] = useState(null);
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
+
+  const handleOpenSupportRequest = () => {
+    setOpenCreateDialog(false);
+    navigate('/support', {
+      state: {
+        reason: 'admin-skills-test-request',
+        source: '/admin/skills-management',
+        context: {
+          totalUsers: stats?.totalUsers ?? 0,
+          totalWorkers: stats?.totalWorkers ?? 0,
+        },
+      },
+    });
+  };
+
+  const handleReviewLiveAssessments = () => {
+    setOpenCreateDialog(false);
+    navigate('/worker/skills');
+  };
 
   useEffect(() => {
     const loadStats = async () => {
@@ -140,9 +161,9 @@ const SkillsAssessmentManagement = () => {
 
         <TabPanel value={tabValue} index={1}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h6">Manage Assessment Tests</Typography>
+            <Typography variant="h6">Assessment Test Operations</Typography>
             <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreateDialog(true)}>
-              Create New Test
+              Request New Test
             </Button>
           </Box>
 
@@ -204,13 +225,21 @@ const SkillsAssessmentManagement = () => {
       </Paper>
 
       <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Create New Test</DialogTitle>
+        <DialogTitle>Request Skills Test Setup</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary">
-            Test creation UI has not yet been restored into the consolidated frontend. This placeholder keeps the admin route live without breaking the app shell.
+            Direct test authoring is being migrated. You can still take action now:
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
+            1. Review the live worker skills experience to validate existing assessments.
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75 }}>
+            2. Open Support to request a new assessment template or rollout.
           </Typography>
         </DialogContent>
         <DialogActions>
+          <Button onClick={handleReviewLiveAssessments} variant="outlined">Review Live Assessments</Button>
+          <Button onClick={handleOpenSupportRequest} variant="contained">Open Support Request</Button>
           <Button onClick={() => setOpenCreateDialog(false)}>Close</Button>
         </DialogActions>
       </Dialog>

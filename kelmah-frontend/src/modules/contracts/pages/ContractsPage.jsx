@@ -1,24 +1,5 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
-import {
-  Box,
-  Button,
-  Card,
-  CardActions,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Skeleton,
-  Divider,
-  Grid,
-  IconButton,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-  Alert,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
+import { Box, Button, Card, CardActions, CardContent, Chip, CircularProgress, Skeleton, Divider, Grid, IconButton, Paper, Stack, TextField, Typography, Alert, useTheme } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
 
@@ -37,6 +18,7 @@ import { useAuth } from '@/modules/auth/hooks/useAuth';
 import { contractService } from '../services/contractService';
 import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
 import EmptyState from '../../../components/common/EmptyState';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All contracts' },
@@ -79,7 +61,7 @@ const ContractsPage = () => {
   const canCreateContract = ['hirer', 'admin'].includes(user?.role);
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortOption, setSortOption] = useState('newest');
@@ -289,7 +271,7 @@ const ContractsPage = () => {
       {loading && (
         <Box sx={{ py: 2 }}>
           {[1,2,3].map(i => (
-            <Skeleton key={i} variant="rounded" height={100} sx={{ borderRadius: 2, mb: 2 }} />
+            <Skeleton key={`contracts-skeleton-${i}`} variant="rounded" height={100} sx={{ borderRadius: 2, mb: 2 }} />
           ))}
         </Box>
       )}

@@ -2,61 +2,16 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Container,
-  Box,
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  Grid,
-  Chip,
-  Stepper,
-  Step,
-  StepLabel,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  InputAdornment,
-  RadioGroup,
-  Radio,
-  FormControlLabel,
-  FormHelperText,
-  Autocomplete,
-  IconButton,
-  CircularProgress,
-  Alert,
-  LinearProgress,
-  Switch,
-  Divider,
-  Slider,
-} from '@mui/material';
-import {
-  Work,
-  Category,
-  Description,
-  AttachMoney,
-  LocationOn,
-  Publish,
-  ArrowBack,
-  ArrowForward,
-  CheckCircle,
-  Add,
-  Save,
-  AddPhotoAlternate,
-  Close,
-} from '@mui/icons-material';
+  Container, Box, Paper, Typography, TextField, Button, Grid, Chip, Stepper, Step, StepLabel, FormControl, InputLabel, Select, MenuItem, InputAdornment, RadioGroup, Radio, FormControlLabel, FormHelperText, Autocomplete, IconButton, CircularProgress, Alert, LinearProgress, Switch, Divider, Slider } from '@mui/material';
+import { Work, Category, Description, AttachMoney, LocationOn, Publish, ArrowBack, ArrowForward, CheckCircle, Add, Save, AddPhotoAlternate, Close, } from '@mui/icons-material';
 import { Helmet } from 'react-helmet-async';
 import {
-  createHirerJob,
-  updateHirerJob,
-  selectHirerLoading,
-  selectHirerError,
-} from '../services/hirerSlice';
+  createHirerJob, updateHirerJob, selectHirerLoading, selectHirerError, } from '../services/hirerSlice';
 import fileUploadService from '../../common/services/fileUploadService';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
 import { Z_INDEX, STICKY_CTA_HEIGHT, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const steps = [
   { label: 'Job Details', icon: <Work /> },
@@ -213,7 +168,7 @@ const JobPostingPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const { jobId } = useParams();
   const isEditMode = Boolean(jobId);
   const hirerJobsByStatus = useSelector((state) => state.hirer?.jobs);

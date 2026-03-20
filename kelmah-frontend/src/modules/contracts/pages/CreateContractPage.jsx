@@ -2,33 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  Box,
-  Button,
-  Container,
-  Grid,
-  Paper,
-  Typography,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormHelperText,
-  Divider,
-  CircularProgress,
-  Alert,
-  Stepper,
-  Step,
-  StepLabel,
-  IconButton,
-  InputAdornment,
-  Autocomplete,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-} from '@mui/material';
+  Box, Button, Container, Grid, Paper, Typography, TextField, FormControl, InputLabel, Select, MenuItem, FormHelperText, Divider, CircularProgress, Alert, Stepper, Step, StepLabel, IconButton, InputAdornment, Autocomplete, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -40,7 +14,6 @@ import {
   Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import { Helmet } from 'react-helmet-async';
 import { Z_INDEX, STICKY_CTA_HEIGHT, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import Toast from '../../common/components/common/Toast';
@@ -54,6 +27,7 @@ import {
   selectContractsLoading,
   selectContractsError,
 } from '../services/contractSlice';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const initialContractState = {
   title: '',
@@ -97,7 +71,7 @@ const CreateContractPage = () => {
   const [isDirty, setIsDirty] = useState(false);
   const [workerLoading, setWorkerLoading] = useState(false);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
 
   // Load contract templates on mount
   useEffect(() => {
@@ -581,7 +555,7 @@ const CreateContractPage = () => {
                 </Alert>
               )}
               {contract.milestones.map((milestone, index) => (
-                <Paper key={index} sx={{ p: 2, mb: 2 }}>
+                <Paper key={milestone.id || milestone._id || `${milestone.title || 'milestone'}-${milestone.dueDate || 'due'}-${index}`} sx={{ p: 2, mb: 2 }}>
                   <Box
                     sx={{
                       display: 'flex',
@@ -771,7 +745,7 @@ const CreateContractPage = () => {
                 <Divider sx={{ mb: 2 }} />
                 {contract.milestones.map((milestone, index) => (
                   <Box
-                    key={index}
+                    key={milestone.id || milestone._id || `${milestone.title || 'milestone'}-${milestone.dueDate || 'due'}-${index}`}
                     sx={{
                       mb: 2,
                       pb: 2,

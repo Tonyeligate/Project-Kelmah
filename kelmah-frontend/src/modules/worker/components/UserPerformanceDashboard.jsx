@@ -9,6 +9,7 @@ import {
   CardContent,
   Typography,
   Box,
+  Alert,
   LinearProgress,
   Chip,
   Grid,
@@ -47,6 +48,7 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
   const [performance, setPerformance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [serviceNotice, setServiceNotice] = useState('');
 
   useEffect(() => {
     loadPerformanceData();
@@ -55,6 +57,7 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
   const loadPerformanceData = async () => {
     if (!userId) {
       setPerformance(DEFAULT_PERFORMANCE);
+      setServiceNotice('Sign in to view live performance analytics.');
       setLoading(false);
       return;
     }
@@ -82,10 +85,14 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
         rating,
         ...data,
       });
+      setServiceNotice('');
       setError(null);
     } catch (err) {
-      if (import.meta.env.DEV) console.warn('Performance API unavailable, using defaults:', err.message);
+      if (import.meta.env.DEV) console.warn('Performance API unavailable:', err.message);
       setPerformance(DEFAULT_PERFORMANCE);
+      setServiceNotice(
+        'Live performance analytics are unavailable. Showing baseline access values only.',
+      );
       setError(null);
     } finally {
       setLoading(false);
@@ -160,6 +167,12 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
 
   return (
     <Box sx={{ p: 2 }}>
+      {serviceNotice ? (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          {serviceNotice}
+        </Alert>
+      ) : null}
+
       {/* Performance Tier Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -204,7 +217,7 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
                   {getTierBenefits(performance.performanceTier).map(
                     (benefit, index) => (
                       <Box
-                        key={index}
+                        key={`${benefit}-${index}`}
                         sx={{ display: 'flex', alignItems: 'center' }}
                       >
                         <CheckCircleIcon
@@ -380,7 +393,7 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
                       {performance.skillVerification.primarySkills.map(
                         (skill, index) => (
                           <Chip
-                            key={index}
+                            key={skill.id || skill._id || skill.skill || `primary-skill-${index}`}
                             label={skill.skill}
                             size="small"
                             color={skill.verified ? 'success' : 'default'}
@@ -409,7 +422,7 @@ const UserPerformanceDashboard = ({ userId, onRefresh }) => {
                       {performance.skillVerification.secondarySkills.map(
                         (skill, index) => (
                           <Chip
-                            key={index}
+                            key={skill.id || skill._id || skill.skill || `secondary-skill-${index}`}
                             label={skill.skill}
                             size="small"
                             color={skill.verified ? 'success' : 'default'}

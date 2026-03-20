@@ -3,30 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { normalizeUser } from '../../../utils/userUtils';
 import PullToRefresh from '../../../components/common/PullToRefresh';
 import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Paper,
-  ButtonBase,
-  Breadcrumbs,
-  Link,
-  Tooltip,
-  IconButton,
-  Skeleton,
-  Button,
-  useTheme,
-  useMediaQuery,
-  Alert,
-  AlertTitle,
-  Chip,
-  LinearProgress,
-  Stack,
-  Snackbar,
-  Fade,
-  Grow,
-  alpha,
-} from '@mui/material';
+  Box, Container, Typography, Grid, Paper, ButtonBase, Breadcrumbs, Link, Tooltip, IconButton, Skeleton, Button, useTheme, Alert, AlertTitle, Chip, LinearProgress, Stack, Snackbar, Fade, Grow, alpha } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -57,6 +34,7 @@ import { Helmet } from 'react-helmet-async';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import InboxOutlinedIcon from '@mui/icons-material/InboxOutlined';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 /* ---------- Keyframes for spin animation ---------- */
 const spinKeyframes = {
@@ -99,7 +77,7 @@ const WorkerDashboardPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const dashboardFontFamily = '"Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif';
 
   const { user: rawUser } = useSelector((state) => state.auth);
@@ -909,7 +887,7 @@ const WorkerDashboardPage = () => {
           {recsLoading ? (
             <Grid container spacing={1.5}>
               {[1, 2, 3].map((i) => (
-                <Grid item xs={12} sm={6} md={4} key={i}>
+                <Grid item xs={12} sm={6} md={4} key={`recommendation-skeleton-${i}`}>
                   <Skeleton variant="rounded" height={120} />
                 </Grid>
               ))}
@@ -1283,5 +1261,4 @@ const WorkerDashboardPage = () => {
 };
 
 export default WorkerDashboardPage;
-
 

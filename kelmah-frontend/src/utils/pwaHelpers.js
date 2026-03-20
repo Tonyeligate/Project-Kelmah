@@ -225,20 +225,47 @@ const showUpdateNotification = () => {
 
 // Update PWA
 const updatePWA = () => {
+  if (typeof navigator === 'undefined' || !navigator.serviceWorker) {
+    window.location.reload();
+    return;
+  }
+
+  let fallbackTimer = null;
+  const safeReload = () => {
+    if (fallbackTimer) {
+      clearTimeout(fallbackTimer);
+      fallbackTimer = null;
+    }
+    window.location.reload();
+  };
+
+  const handleControllerChange = () => {
+    safeReload();
+  };
+
+  navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange, {
+    once: true,
+  });
+
   navigator.serviceWorker
     .getRegistration()
     .then((registration) => {
       if (registration?.waiting) {
         registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      } else if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+      } else {
+        safeReload();
         return;
       }
 
-      if (navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
-      }
+      // Fallback in case controllerchange is not emitted on this browser.
+      fallbackTimer = setTimeout(() => {
+        safeReload();
+      }, 3000);
     })
-    .finally(() => {
-      window.location.reload();
+    .catch(() => {
+      safeReload();
     });
 };
 

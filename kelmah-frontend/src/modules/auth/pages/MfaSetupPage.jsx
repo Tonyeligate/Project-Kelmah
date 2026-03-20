@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import AuthWrapper from '../components/common/AuthWrapper';
-import { Box, Typography, Button, TextField, Alert, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Typography, Button, TextField, Alert, CircularProgress } from '@mui/material';
 import { useAuth } from '../hooks/useAuth';
 import { Helmet } from 'react-helmet-async';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const MfaSetupPage = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const [qrCode, setQrCode] = useState('');
   const [token, setToken] = useState('');
   const [status, setStatus] = useState('');

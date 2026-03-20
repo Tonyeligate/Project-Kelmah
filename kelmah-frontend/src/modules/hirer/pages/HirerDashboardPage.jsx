@@ -1,32 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import PullToRefresh from '../../../components/common/PullToRefresh';
-import {
-  Box,
-  Container,
-  Grid,
-  Paper,
-  ButtonBase,
-  Typography,
-  Button,
-  CircularProgress,
-  Alert,
-  IconButton,
-  Tooltip,
-  Chip,
-  LinearProgress,
-  Stack,
-  useTheme,
-  useMediaQuery,
-  Fade,
-  Grow,
-  SpeedDial,
-  SpeedDialAction,
-  SpeedDialIcon,
-  Breadcrumbs,
-  Link as MUILink,
-  Skeleton,
-  alpha,
-} from '@mui/material';
+import { Box, Container, Grid, Paper, ButtonBase, Typography, Button, CircularProgress, Alert, IconButton, Tooltip, Chip, LinearProgress, Stack, useTheme, Fade, Grow, SpeedDial, SpeedDialAction, SpeedDialIcon, Breadcrumbs, Link as MUILink, Skeleton, alpha } from '@mui/material';
 import {
   Work as WorkIcon,
   Payment as PaymentIcon,
@@ -68,12 +42,13 @@ import RecentActivityFeed from '../components/RecentActivityFeed';
 import dashboardService from '../../dashboard/services/dashboardService';
 import { useVisibilityPolling } from '../../../hooks/useVisibilityPolling';
 import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 /* ---------- Extracted sub-component (stable reference) ---------- */
 const LoadingOverviewSkeleton = () => (
   <Grid container spacing={{ xs: 1.5, sm: 3, md: 2.5, lg: 2 }}>
     {[...Array(4)].map((_, i) => (
-      <Grid item xs={6} sm={6} md={3} key={i}>
+      <Grid item xs={6} sm={6} md={3} key={`overview-skeleton-${i}`}>
         <Skeleton variant="rounded" height={180} animation="wave" />
       </Grid>
     ))}
@@ -117,7 +92,7 @@ const HirerDashboardPage = () => {
   const payments = useSelector((state) => state.hirer.payments);
   const storeError = useSelector(selectHirerError('profile'));
   const jobsError = useSelector(selectHirerError('jobs'));
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   // Fetch hirer data on component mount
   const clearLoadingTimeout = useCallback(() => {
@@ -917,7 +892,7 @@ const HirerDashboardPage = () => {
         <Skeleton variant="text" width={250} height={40} sx={{ mb: 3 }} />
         <Grid container spacing={2} sx={{ mb: 3 }}>
           {[1,2,3,4].map(i => (
-            <Grid item xs={6} md={3} key={i}>
+            <Grid item xs={6} md={3} key={`dashboard-skeleton-${i}`}>
               <Skeleton variant="rounded" height={120} sx={{ borderRadius: 2 }} />
             </Grid>
           ))}
@@ -1069,7 +1044,4 @@ const HirerDashboardPage = () => {
 };
 
 export default HirerDashboardPage;
-
-
-
 

@@ -11,8 +11,6 @@
  * No need for hardcoded service URLs in frontend!
  */
 
-const isDevelopment = import.meta.env.MODE === 'development';
-
 // ✅ ALL ENVIRONMENTS: Use API Gateway routing
 // In development: /api → localhost:5000 (API Gateway) → localhost:500X (services)
 // In production: /api → Vercel rewrite → LocalTunnel → localhost:5000 (API Gateway) → Render services
@@ -144,13 +142,5 @@ export const API_ENDPOINTS = {
     WEBHOOKS: getServicePath('PAYMENT_SERVICE', '/payments/webhooks'),
   },
 };
-
-// Debugging helper (development only — suppressed in production via main.jsx log gate)
-if (isDevelopment) {
-  console.log('🔧 Development Mode - API Endpoints:', {
-    AUTH_REGISTER: API_ENDPOINTS.AUTH.REGISTER,
-    JOBS_LIST: API_ENDPOINTS.JOB.LIST,
-  });
-}
 
 export default SERVICES;

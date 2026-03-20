@@ -20,7 +20,6 @@ import {
   Stack,
   TextField,
   Typography,
-  useMediaQuery,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import {
@@ -58,6 +57,7 @@ import {
   selectAuthError,
   selectAuthLoading,
 } from '@/modules/auth/services/authSlice';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 import logoIcon from '../../../../assets/images/logo.png';
 
 const STEP_META = [
@@ -149,7 +149,7 @@ const Register = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
-  const isCompactViewport = useMediaQuery(theme.breakpoints.down('md'));
+  const isCompactViewport = useBreakpointDown('md');
 
   const {
     control,

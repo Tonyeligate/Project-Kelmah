@@ -1,19 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Stack,
-  Button,
-  Card,
-  Chip,
-  Avatar,
-  Rating,
-  Divider,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
+import { Box, Container, Typography, Grid, Stack, Button, Card, Chip, Avatar, Rating, Divider, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowForward as ArrowForwardIcon,
@@ -44,6 +30,7 @@ import carpentryImg from '../assets/images/carpentry.jpg';
 import constructionImg from '../assets/images/construction.jpg';
 import electricalImg from '../assets/images/electrical.jpg';
 import homeService from '../modules/home/services/homeService';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 /* ─── Category data ─── */
 const TRADE_CATEGORIES = [
@@ -84,7 +71,7 @@ const HomeLanding = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useBreakpointDown('sm');
 
   /* theme-aware surface colours */
   const altBg = isDark ? 'rgba(255,255,255,0.03)' : '#F5F2E8';
@@ -96,6 +83,7 @@ const HomeLanding = () => {
   // Live platform stats fetched from the backend — fall back to empty string while loading
   const [platformStats, setPlatformStats] = useState(null);
   const [tradeCategoryStats, setTradeCategoryStats] = useState({});
+  const [statsError, setStatsError] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -108,8 +96,11 @@ const HomeLanding = () => {
           setPlatformStats(data);
         }
       })
-      .catch(() => {
-        /* silently keep null — hardcoded fallbacks will display */
+      .catch((error) => {
+        if (isMounted) {
+          setStatsError('Unable to load live platform metrics. Showing estimated values.');
+        }
+        if (import.meta.env.DEV) console.warn('HomeLanding platform stats fetch failed:', error);
       });
 
     return () => {
@@ -136,7 +127,14 @@ const HomeLanding = () => {
           }, {}),
         );
       })
-      .catch(() => { /* silently keep fallback copy */ });
+      .catch((error) => {
+        if (isActive) {
+          setStatsError((prev) =>
+            prev || 'Some platform statistics are currently unavailable.',
+          );
+        }
+        if (import.meta.env.DEV) console.warn('HomeLanding trade stats fetch failed:', error);
+      });
 
     return () => {
       isActive = false;
@@ -161,6 +159,13 @@ const HomeLanding = () => {
 
   return (
     <Box sx={{ bgcolor: 'background.default', color: 'text.primary' }}>
+      {statsError && (
+        <Box sx={{ px: { xs: 2, md: 0 }, pt: 2 }}>
+          <Alert severity="warning" sx={{ mx: 'auto', maxWidth: 960 }}>
+            {statsError}
+          </Alert>
+        </Box>
+      )}
 
       {/* ═══ HERO — full-viewport, background image, immediate animation ═══ */}
       <Box
@@ -324,9 +329,21 @@ const HomeLanding = () => {
                 {/* Trust badges */}
                 <Stack direction="row" spacing={{ xs: 1.5, sm: 2.5 }} flexWrap="wrap" useFlexGap>
                   {[
-                    { key: 'workers', icon: <VerifiedIcon />, text: platformStats ? `${fmtNum(platformStats.skilledWorkers, '0')} verified workers` : '5,000+ verified workers' },
+                    {
+                      key: 'workers',
+                      icon: <VerifiedIcon />,
+                      text: platformStats
+                        ? `${fmtNum(platformStats.skilledWorkers, '0')} verified workers`
+                        : 'Thousands of verified workers (estimated)',
+                    },
                     { key: 'payments', icon: <SecurityIcon />, text: 'Secure payments' },
-                    { key: 'satisfaction', icon: <StarIcon />, text: platformStats && platformStats.successRate > 0 ? `${platformStats.successRate}% satisfaction` : '98% satisfaction' },
+                    {
+                      key: 'satisfaction',
+                      icon: <StarIcon />,
+                      text: platformStats && platformStats.successRate > 0
+                        ? `${platformStats.successRate}% satisfaction`
+                        : '98% satisfaction (estimated)',
+                    },
                   ].map((badge) => (
                     <Stack key={badge.key} direction="row" spacing={0.75} alignItems="center">
                       {React.cloneElement(badge.icon, { sx: { color: '#FFD700', fontSize: 18 } })}

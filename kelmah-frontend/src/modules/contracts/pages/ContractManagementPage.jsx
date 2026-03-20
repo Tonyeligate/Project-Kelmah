@@ -152,7 +152,7 @@ const ContractManagementPage = () => {
       {loading ? (
         <Grid container spacing={3}>
           {Array.from({ length: 8 }).map((_, idx) => (
-            <Grid item key={idx} xs={12} sm={6} md={4} lg={3}>
+            <Grid item key={`contract-management-skeleton-${idx}`} xs={12} sm={6} md={4} lg={3}>
               <Skeleton
                 variant="rectangular"
                 height={200}

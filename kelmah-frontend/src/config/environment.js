@@ -263,6 +263,17 @@ export const FEATURES = {
   mockDelay: parseInt(import.meta.env.VITE_MOCK_DELAY || '1000'),
 };
 
+const AUTH_HTTPONLY_COOKIES =
+  import.meta.env.VITE_AUTH_HTTPONLY_COOKIES === 'true';
+const AUTH_SEND_AUTH_HEADER =
+  import.meta.env.VITE_SEND_AUTH_HEADER === undefined
+    ? !AUTH_HTTPONLY_COOKIES
+    : import.meta.env.VITE_SEND_AUTH_HEADER === 'true';
+const AUTH_STORE_TOKENS_CLIENT_SIDE =
+  import.meta.env.VITE_STORE_TOKENS_CLIENT_SIDE === undefined
+    ? !AUTH_HTTPONLY_COOKIES
+    : import.meta.env.VITE_STORE_TOKENS_CLIENT_SIDE === 'true';
+
 // ===============================================
 // SECURITY CONFIGURATION
 // ===============================================
@@ -279,6 +290,9 @@ export const AUTH_CONFIG = {
     import.meta.env.VITE_TOKEN_REFRESH_INTERVAL || '1800000',
   ), // 30 min
   sessionTimeout: parseInt(import.meta.env.VITE_SESSION_TIMEOUT || '3600000'), // 1 hour
+  httpOnlyCookieAuth: AUTH_HTTPONLY_COOKIES,
+  sendAuthHeader: AUTH_SEND_AUTH_HEADER,
+  storeTokensClientSide: AUTH_STORE_TOKENS_CLIENT_SIDE,
 
   // OAuth
   googleClientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
@@ -535,16 +549,6 @@ export const ENV_INFO = {
   services: SERVICES,
   apiEndpoints: API_ENDPOINTS,
 };
-
-// Development logging
-if (isDevelopment && LOG_CONFIG.enableConsole) {
-  console.group('🔧 Kelmah Environment Configuration');
-  console.log('Environment:', ENV_INFO.mode);
-  console.log('Services:', SERVICES);
-  console.log('Features:', FEATURES);
-  console.log('API Base URL:', API_BASE_URL);
-  console.groupEnd();
-}
 
 // Default export with all configuration
 export default {

@@ -1,23 +1,14 @@
 import React, { useMemo, useState } from 'react';
-import {
-  Alert,
-  Box,
-  Button,
-  IconButton,
-  InputAdornment,
-  TextField,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
+import { Alert, Box, Button, IconButton, InputAdornment, TextField, Typography, useTheme } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import authService from '../modules/auth/services/authService';
 import { Helmet } from 'react-helmet-async';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const ResetPassword = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const navigate = useNavigate();
 
   const { token: paramToken } = useParams();

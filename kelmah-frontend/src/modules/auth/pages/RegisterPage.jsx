@@ -1,12 +1,11 @@
 import React from 'react';
 import Register from '../components/register/Register';
 import MobileRegister from '../components/mobile/MobileRegister';
-import { useMediaQuery, useTheme } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const RegisterPage = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
 
   const pageTitle = <Helmet><title>Sign Up | Kelmah</title></Helmet>;
 

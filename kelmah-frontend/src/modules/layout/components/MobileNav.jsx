@@ -199,7 +199,6 @@ const MobileNav = ({ open, onClose }) => {
     pendingActionRef.current = () => {
       try {
         secureStorage.clear();
-        sessionStorage.clear();
       } catch (_) { /* best-effort */ }
 
       dispatch(logout());

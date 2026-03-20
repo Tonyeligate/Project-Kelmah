@@ -6,10 +6,9 @@ import {
   IconButton,
   Button,
   Divider,
-  useMediaQuery,
-  useTheme,
 } from '@mui/material';
 import { Close as CloseIcon, FilterList as FilterIcon } from '@mui/icons-material';
+import { useBreakpointDown } from '@/hooks/useResponsive';
 
 /**
  * MobileFilterSheet — renders a FAB / text-button trigger on mobile that opens a
@@ -31,8 +30,7 @@ export default function MobileFilterSheet({
   activeCount = 0,
   renderInline = false,
 }) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useBreakpointDown('md');
   const [open, setOpen] = useState(false);
 
   const handleOpen = useCallback(() => setOpen(true), []);
@@ -77,6 +75,10 @@ export default function MobileFilterSheet({
         onClose={handleClose}
         onOpen={handleOpen}
         disableSwipeToOpen
+        ModalProps={{
+          'aria-labelledby': 'filter-sheet-title',
+          'aria-modal': true,
+        }}
         PaperProps={{
           sx: {
             borderTopLeftRadius: 16,
