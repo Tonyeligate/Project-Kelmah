@@ -1,3 +1,180 @@
+### Frontend Track E Item 50 Gateway Contract Smoke Extension March 21 2026 ✅ COMPLETED
+
+**Date**: March 21, 2026  
+**Scope**: Deepen item 50 critical-path smoke coverage from route-only rendering checks to service-level gateway contract assertions for core flows.
+
+**Files touched**
+- kelmah-frontend/src/tests/smoke/critical-path-gateway-contract.smoke.test.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Added a new critical-path gateway contract smoke suite that validates canonical gateway-relative endpoint usage for:
+  - auth login (`/auth/login`)
+  - auth verify (`/auth/verify`)
+  - search (`/search`)
+  - quick-hire creation (`/quick-jobs`)
+  - contracts listing (`/jobs/contracts`)
+  - wallet fetch (`/payments/wallet`)
+  - contract milestone approval (`/jobs/contracts/:contractId/milestones/:milestoneId/approve`)
+- Kept verification at frontend service-boundary level so the suite remains fast, deterministic, and suitable for CI smoke execution.
+
+**Validation outcomes**
+- PASS: `npx jest --runInBand --testPathPattern="critical-path-gateway-contract|critical-path-happy-flow"` (2 suites, 12 tests passed).
+- PASS: `npm run build` (Vite production build succeeded; 13,968 modules transformed).
+
+### Frontend Track C Depth + Track E Items 45-50 March 21 2026 ✅ COMPLETED
+
+**Date**: March 21, 2026  
+**Scope**: Extend realtime integration test depth (notification subscription + auth-transition socket behavior) and execute Track E service/API contract test expansion plus critical-path smoke coverage.
+
+**Files touched**
+- kelmah-frontend/src/modules/notifications/services/notificationService.test.js
+- kelmah-frontend/src/hooks/__tests__/useWebSocketConnect.test.js
+- kelmah-frontend/src/modules/calendar/services/eventsService.test.js
+- kelmah-frontend/src/modules/payment/services/paymentService.test.js
+- kelmah-frontend/src/modules/contracts/services/contractService.test.js
+- kelmah-frontend/src/services/apiClient.integration.test.js
+- kelmah-frontend/src/modules/search/services/searchService.test.js
+- kelmah-frontend/src/tests/smoke/critical-path-happy-flow.smoke.test.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Track C depth (realtime integration):
+  - Added notification subscription integration coverage for shared websocket ownership:
+    - verifies listener registration to app-level socket channels
+    - verifies event forwarding via `onNotification`
+    - verifies clean listener detachment on disconnect
+  - Added auth-transition socket behavior coverage for `useWebSocketConnect`:
+    - connect on authenticated session
+    - disconnect on logout transition
+    - reconnect on authenticated user identity change.
+
+- Track E item 45 (calendar service contract tests):
+  - Added `eventsService` coverage for:
+    - route fallback `/events` -> `/calendar/events`
+    - envelope failure handling (`success:false`) with normalized errors.
+
+- Track E item 46 (payment service contract tests):
+  - Added `paymentService` coverage for:
+    - payment-method normalization
+    - transaction-history envelope mapping
+    - escrow and methods fallback behavior with recoverable telemetry capture.
+
+- Track E item 47 (search contract/fallback expansion):
+  - Expanded `searchService` tests to cover explicit endpoint fallback:
+    - `/search` -> `/jobs/search`
+    - `/search/popular` -> `/jobs/popular-searches`.
+
+- Track E item 48 (contract service tests):
+  - Added `contractService` coverage for:
+    - canonical `/jobs/contracts` path usage
+    - milestone approval endpoint correctness
+    - fallback to generic milestone update when direct endpoint fails
+    - route-id validation guard behavior.
+
+- Track E item 49 (apiClient integration tests):
+  - Added `apiClient` integration coverage for:
+    - auth/request-id interceptor behavior
+    - deduplicated concurrent GET behavior
+    - `success:false` envelope rejection
+    - timeout error retryability normalization.
+
+- Track E item 50 (critical-path smoke coverage):
+  - Added route-level critical-path smoke suite covering:
+    - auth entry (`/login`)
+    - search (`/search`)
+    - quick-hire request (`/hirer/quick-hire/request`)
+    - contracts (`/contracts`)
+    - wallet/payment (`/wallet`).
+
+**Validation outcomes**
+- PASS: `npx jest --runInBand --testPathPattern="apiClient\.integration\.test|notificationService\.test|useWebSocketConnect\.test|eventsService\.test|paymentService\.test|contractService\.test|critical-path-happy-flow|searchService\.test"` (9 suites, 33 tests passed).
+- PASS: `npm run build` (Vite production build succeeded; 13,968 modules transformed).
+
+### Frontend Track D Items 37-44 March 21 2026 ✅ COMPLETED
+
+**Date**: March 21, 2026  
+**Scope**: Execute Top 50 Track D mobile/desktop UX and accessibility pass with focus on touch targets, focus visibility, readability, error clarity, and action-group spacing.
+
+**Files touched**
+- kelmah-frontend/src/theme/index.js
+- kelmah-frontend/src/modules/common/components/cards/JobCard.jsx
+- kelmah-frontend/src/modules/layout/components/Footer.jsx
+- kelmah-frontend/src/modules/jobs/pages/JobsPage.jsx
+- kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx
+- kelmah-frontend/src/tests/MessageInput.test.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Item 37 (touch-target pass):
+  - Reinforced 44x44 minimum interactive sizing in shared/high-use surfaces:
+    - `JobCard` save action icon
+    - footer social icon buttons (mobile + desktop)
+    - jobs card action row now wraps safely on small screens to avoid cramped taps.
+- Item 38 (form readability pass):
+  - Improved global text-field readability via theme overrides:
+    - stronger input-label contrast in dark and light themes
+    - helper-text contrast and line-height tuned for easier scanning.
+- Item 39 (keyboard navigation pass):
+  - Strengthened visible keyboard focus support with explicit focus-visible outlines on core button and icon-button controls.
+- Item 40 (focus visibility pass):
+  - Added global `*:focus-visible` fallback ring in theme baseline for both dark and light modes.
+- Item 41 (information hierarchy pass):
+  - Improved jobs card action region hierarchy and spacing across breakpoints so primary action remains prominent and readable.
+- Item 42 (error clarity pass):
+  - Rewrote ambiguous jobs and messaging error copy to plain language with explicit next actions.
+- Item 43 (mobile layout stress readiness):
+  - Updated jobs card action layout to wrap on extra-small screens and prevent overlap/cramping under high zoom/narrow widths.
+- Item 44 (desktop density pass):
+  - Increased spacing consistency in high-density action clusters (jobs cards and footer action surfaces) to improve click separation.
+
+**Validation outcomes**
+- PASS: `npx jest --runInBand --passWithNoTests --testPathPattern="MessageInput|searchService|workerService|socketEvents|realtimeMessageDeduper"` (6 suites, 17 tests passed).
+- PASS: `npm run build` (Vite production build succeeded; 13,968 modules transformed).
+
+### Frontend Track C Items 31-36 March 21 2026 ✅ COMPLETED
+
+**Date**: March 21, 2026  
+**Scope**: Implement Top 50 Track C realtime cohesion items covering socket ownership, event registry standardization, listener dedupe, lifecycle coherence, reconnect hardening, and realtime contract tests.
+
+**Files touched**
+- kelmah-frontend/src/services/socketEvents.js
+- kelmah-frontend/src/services/websocketService.js
+- kelmah-frontend/src/hooks/useWebSocketConnect.js
+- kelmah-frontend/src/modules/notifications/services/notificationService.js
+- kelmah-frontend/src/modules/notifications/contexts/NotificationContext.jsx
+- kelmah-frontend/src/modules/messaging/contexts/MessageContext.jsx
+- kelmah-frontend/src/modules/messaging/utils/realtimeMessageDeduper.js
+- kelmah-frontend/src/modules/messaging/utils/realtimeMessageDeduper.test.js
+- kelmah-frontend/src/services/socketEvents.test.js
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Item 31 (socket ownership model):
+  - Unified notification realtime path onto shared `websocketService` instead of creating a second direct Socket.IO connection in `notificationService`.
+  - Notification connect/disconnect now attach/detach listeners only; they no longer tear down the shared socket.
+- Item 32 (event name registry):
+  - Added centralized event registry in `socketEvents.js` with canonical raw socket events and app-level event channels.
+  - Updated `websocketService` and messaging context listener wiring to use registry constants.
+- Item 33 (duplicate listener cleanup):
+  - Standardized listener cleanup arrays via shared message delivery aliases.
+  - Added message dedupe utility (`realtimeMessageDeduper`) and integrated it into `MessageContext` to prevent duplicate processing across aliased events.
+- Item 34 (lifecycle coherence):
+  - Hardened `useWebSocketConnect` session handling to reconnect cleanly when authenticated user identity changes and disconnect on logout.
+- Item 35 (reconnect backoff hardening):
+  - Updated websocket reconnect policy to use bounded exponential-style growth with cap and jitter:
+    - attempts from `WS_CONFIG`
+    - base delay from `WS_CONFIG`
+    - max delay capped at `min(base * 8, 30000)`
+    - `randomizationFactor: 0.5`
+- Item 36 (realtime contract tests):
+  - Added event registry contract tests for canonical message/job/payment event names.
+  - Added realtime dedupe tests for payload shape compatibility (`id`, `_id`, `messageId`) and duplicate-delivery prevention behavior.
+
+**Validation outcomes**
+- PASS: `npx jest --runInBand --passWithNoTests --testPathPattern="socketEvents|realtimeMessageDeduper|searchService|workerService|contractService|apiClient"` (5 suites, 15 tests passed).
+- PASS: `npm run build` (Vite production build succeeded; 13,968 modules transformed).
+
 ### Frontend Track B Items 26-30 March 21 2026 ✅ COMPLETED
 
 **Date**: March 21, 2026  
@@ -21298,6 +21475,13 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 - Aligned worker profile mobile surface tokens with current dashboard language: shared premium font family, theme-linked accent token usage, and unified panel opacity handling.
 - Standardized section rhythm by introducing consistent radius/gap/motion-ease token usage across hero/about/portfolio/reviews blocks.
 - Preserved existing premium interactions (parallax, tactile press states, trust metrics, portfolio carousel) while improving cross-page visual coherence.
+- Validation: PASS 
+  - npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand (17/17)
+  - npm run build (vite build success).
+
+### [MAR 21, 2026] WORKER PROFILE NON-GOLD DARK THEME PASS (COMPLETED)
+- Replaced gold-heavy dark-mode accent styling on worker profile mobile experience with premium blue accent tokens while preserving layout and motion language.
+- Updated CTA gradient, chip accents, hero glow, and portfolio caption contrast to remove gold bias and improve dark-mode readability.
 - Validation: PASS 
   - npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand (17/17)
   - npm run build (vite build success).
