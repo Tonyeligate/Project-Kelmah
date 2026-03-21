@@ -4,10 +4,9 @@
  */
 
 import { api } from '../../../services/apiClient';
-import { io } from 'socket.io-client';
 import { getServiceStatusMessage } from '../../../utils/serviceHealthCheck';
-import { WS_CONFIG } from '../../../config/environment';
-import { getWebSocketUrl } from '../../../services/socketUrl';
+import websocketService from '../../../services/websocketService';
+import { APP_SOCKET_EVENTS } from '../../../services/socketEvents';
 
 const __DEV__ = import.meta.env.DEV;
 const devLog = (...args) => { if (__DEV__) console.log(...args); };
@@ -94,59 +93,64 @@ class NotificationService {
   constructor() {
     // Use messaging service for notifications (now that CORS is fixed)
     this.client = api;
-    this.socket = null;
     this.isConnected = false;
     this.onNotification = null;
+    this._listeners = null;
   }
 
-  // Connect to notification socket
-  async connect(token) {
-    if (this.isConnected) return;
+  // Attach to shared websocketService notification channels
+  async connect(token, userId, userRole = 'worker') {
+    if (this.isConnected && this._listeners) return;
     try {
       if (!token) {
         if (import.meta.env.DEV) console.warn('Notifications: connect skipped - missing auth token');
         return;
       }
 
-      // Disconnect any stale socket before reconnecting
-      if (this.socket) {
-        this.socket.disconnect();
-        this.socket = null;
+      if (!websocketService.isConnected && userId) {
+        await websocketService.connect(userId, userRole, token);
       }
 
-      const wsUrl = await getWebSocketUrl();
-      devLog('📡 Notifications WebSocket connecting to:', wsUrl);
+      if (!websocketService.socket) {
+        if (import.meta.env.DEV) {
+          console.warn('Notifications: shared websocket unavailable; realtime notifications paused');
+        }
+        return;
+      }
 
-      // Connect to backend messaging service via API Gateway
-      this.socket = io(wsUrl, {
-        auth: { token },
-        transports: ['websocket', 'polling'],
-        reconnection: true,
-        reconnectionAttempts: 10,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        path: '/socket.io',
+      this._listeners = {
+        [APP_SOCKET_EVENTS.GENERIC_NOTIFICATION]: (payload) => {
+          this.onNotification && this.onNotification(payload);
+        },
+        [APP_SOCKET_EVENTS.SYSTEM_NOTIFICATION]: (payload) => {
+          this.onNotification && this.onNotification(payload);
+        },
+        [APP_SOCKET_EVENTS.PAYMENT_NOTIFICATION]: (payload) => {
+          this.onNotification && this.onNotification(payload);
+        },
+        [APP_SOCKET_EVENTS.JOB_NOTIFICATION]: (payload) => {
+          this.onNotification && this.onNotification(payload);
+        },
+      };
+
+      Object.entries(this._listeners).forEach(([event, handler]) => {
+        websocketService.addEventListener(event, handler);
       });
-      this.socket.on('connect', () => {
-        this.isConnected = true;
-      });
-      this.socket.on('disconnect', () => {
-        this.isConnected = false;
-      });
-      this.socket.on('notification', (payload) => {
-        // Bubble up via callback if set
-        this.onNotification && this.onNotification(payload);
-      });
+
+      this.isConnected = true;
+      devLog('📡 Notifications subscribed to shared websocket events');
     } catch (error) {
       if (import.meta.env.DEV) console.error('Failed to connect to notification socket:', error);
     }
   }
 
-  // Disconnect from notification socket
+  // Detach notification listeners from shared websocketService
   disconnect() {
-    if (this.socket) {
-      this.socket.disconnect();
-      this.socket = null;
+    if (this._listeners) {
+      Object.entries(this._listeners).forEach(([event, handler]) => {
+        websocketService.removeEventListener(event, handler);
+      });
+      this._listeners = null;
     }
     this.isConnected = false;
   }

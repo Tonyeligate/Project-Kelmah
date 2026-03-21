@@ -907,7 +907,15 @@ function JobsCardsGrid({
                     }}>
                     {isHirerUser ? 'Find Talent' : 'Apply Now'}
                   </Button>
-                  <Box sx={{ display: 'flex', gap: 1, justifyContent: 'space-between' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: { xs: 1.5, md: 1 },
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      flexWrap: { xs: 'wrap', md: 'nowrap' },
+                    }}
+                  >
                     <Button
                       variant="outlined"
                       onClick={(e) => {
@@ -916,7 +924,7 @@ function JobsCardsGrid({
                       }}
                       startIcon={<Visibility />}
                       aria-label={`View details for ${job.title || 'job'}`}
-                      sx={{ flex: 1, minHeight: 44 }}
+                      sx={{ flex: 1, minHeight: 44, minWidth: { xs: '100%', md: 0 } }}
                     >
                       Details
                     </Button>
@@ -1306,10 +1314,10 @@ function JobsGridStatePanels({
               variant="h6"
               sx={{ color: 'var(--k-danger-text)', mb: 2, fontWeight: 'bold' }}
             >
-              Unable to Load Jobs
+              We Could Not Load Jobs Yet
             </Typography>
             <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3 }}>
-              {error}
+              {error || 'Your internet may be slow, or the service may still be starting. Please try again in a few seconds.'}
             </Typography>
             <Button
               variant="contained"
@@ -1321,7 +1329,7 @@ function JobsGridStatePanels({
                 '&:hover': { bgcolor: 'var(--k-gold-dark)' },
               }}
             >
-              Retry
+              Try Again
             </Button>
           </Paper>
         </Box>

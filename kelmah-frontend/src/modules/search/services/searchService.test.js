@@ -97,6 +97,30 @@ describe('searchService normalization contracts', () => {
     api.get.mockReset();
   });
 
+  test('search falls back from /search to /jobs/search on contract mismatch', async () => {
+    api.get
+      .mockRejectedValueOnce({ response: { status: 404 } })
+      .mockResolvedValueOnce({
+        data: {
+          success: true,
+          data: {
+            results: [{ id: 'job-1', title: 'Plumber Needed' }],
+          },
+        },
+      });
+
+    await expect(searchService.search('plumber')).resolves.toEqual([
+      { id: 'job-1', title: 'Plumber Needed' },
+    ]);
+
+    expect(api.get).toHaveBeenNthCalledWith(1, '/search', {
+      params: { q: 'plumber' },
+    });
+    expect(api.get).toHaveBeenNthCalledWith(2, '/jobs/search', {
+      params: { q: 'plumber' },
+    });
+  });
+
   test('search returns an empty array when the payload is an object without array results', async () => {
     api.get.mockResolvedValue({
       data: {
@@ -122,5 +146,30 @@ describe('searchService normalization contracts', () => {
     });
 
     await expect(searchService.getPopularTerms(5)).resolves.toEqual([]);
+  });
+
+  test('popular terms falls back to /jobs/popular-searches when /search/popular fails', async () => {
+    api.get
+      .mockRejectedValueOnce({ response: { status: 405 } })
+      .mockResolvedValueOnce({
+        data: {
+          success: true,
+          data: {
+            terms: ['plumbing', 'electrical'],
+          },
+        },
+      });
+
+    await expect(searchService.getPopularTerms(2)).resolves.toEqual([
+      'plumbing',
+      'electrical',
+    ]);
+
+    expect(api.get).toHaveBeenNthCalledWith(1, '/search/popular', {
+      params: { limit: 2 },
+    });
+    expect(api.get).toHaveBeenNthCalledWith(2, '/jobs/popular-searches', {
+      params: { limit: 2 },
+    });
   });
 });

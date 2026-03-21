@@ -184,7 +184,11 @@ export const NotificationProvider = ({ children }) => {
               return [normalizedPayload, ...prev];
             });
           };
-          notificationService.connect(token);
+          notificationService.connect(
+            token,
+            userId,
+            user?.role || rawUser?.role || 'worker',
+          );
         }
       } catch (socketError) {
         if (import.meta.env.DEV) console.error(

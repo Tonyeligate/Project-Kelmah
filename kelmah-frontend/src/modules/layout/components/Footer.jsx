@@ -163,11 +163,11 @@ const Footer = () => {
                       rel="noopener noreferrer"
                       aria-label={social.label}
                       sx={{
-                        width: 36,
-                        height: 36,
+                        width: 44,
+                        height: 44,
                         bgcolor: 'rgba(255,255,255,0.06)',
                         color: 'rgba(255,255,255,0.6)',
-                        p: 0.75,
+                        p: 1,
                       }}
                     >
                       <social.icon sx={{ fontSize: 16 }} />
@@ -242,10 +242,9 @@ const Footer = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={social.label}
-                        size="small"
                         sx={{
-                          width: 34,
-                          height: 34,
+                          width: 44,
+                          height: 44,
                           bgcolor: 'rgba(255,255,255,0.05)',
                           border: '1px solid rgba(255,255,255,0.08)',
                           color: 'rgba(255,255,255,0.6)',

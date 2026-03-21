@@ -216,7 +216,14 @@ const JobCard = ({
                 disabled={isSaveLoading}
                 aria-label={derivedIsSaved ? `Unsave job ${title}` : `Save job ${title}`}
                 color={derivedIsSaved ? 'primary' : 'default'}
-                sx={{ p: 0.5 }}
+                sx={{
+                  minWidth: 44,
+                  minHeight: 44,
+                  '&.Mui-focusVisible': {
+                    outline: (themeObj) => `3px solid ${themeObj.palette.primary.main}`,
+                    outlineOffset: 2,
+                  },
+                }}
               >
                 {derivedIsSaved ? <Bookmark /> : <BookmarkBorder />}
               </IconButton>

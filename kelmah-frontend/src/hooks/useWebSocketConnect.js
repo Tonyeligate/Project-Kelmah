@@ -14,18 +14,34 @@ import { secureStorage } from '../utils/secureStorage';
 const useWebSocketConnect = () => {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const connectedRef = useRef(false);
+  const sessionKeyRef = useRef(null);
 
   useEffect(() => {
-    if (isAuthenticated && user?.id && !connectedRef.current) {
+    const userId = user?.id;
+    const userRole = user?.role || 'worker';
+    const nextSessionKey = userId ? `${userId}:${userRole}` : null;
+
+    if (isAuthenticated && userId) {
       const token = secureStorage.getAuthToken();
       if (token) {
-        connectedRef.current = true;
-        websocketService.connect(user.id, user.role || 'worker', token);
+        const shouldReconnect = sessionKeyRef.current && sessionKeyRef.current !== nextSessionKey;
+
+        if (shouldReconnect) {
+          websocketService.disconnect();
+          connectedRef.current = false;
+        }
+
+        if (!connectedRef.current || shouldReconnect) {
+          connectedRef.current = true;
+          sessionKeyRef.current = nextSessionKey;
+          websocketService.connect(userId, userRole, token);
+        }
       }
     }
 
     if (!isAuthenticated && connectedRef.current) {
       connectedRef.current = false;
+      sessionKeyRef.current = null;
       websocketService.disconnect();
     }
 
@@ -33,6 +49,7 @@ const useWebSocketConnect = () => {
       // Cleanup on unmount (app teardown)
       if (connectedRef.current) {
         connectedRef.current = false;
+        sessionKeyRef.current = null;
         websocketService.disconnect();
       }
     };

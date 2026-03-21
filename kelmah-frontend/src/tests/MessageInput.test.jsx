@@ -12,7 +12,7 @@ describe('MessageInput', () => {
         loading={false}
       />,
     );
-    const input = screen.getByPlaceholderText(/Type a message.../i);
+    const input = screen.getByPlaceholderText(/Type your message\./i);
     fireEvent.change(input, { target: { value: ' Hello world ' } });
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter', charCode: 13 });
     expect(onSendMessage).toHaveBeenCalledWith('Hello world', []);
@@ -27,7 +27,7 @@ describe('MessageInput', () => {
         loading={false}
       />,
     );
-    const input = screen.getByPlaceholderText(/Type a message.../i);
+    const input = screen.getByPlaceholderText(/Type your message\./i);
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter', charCode: 13 });
     expect(onSendMessage).not.toHaveBeenCalled();
   });

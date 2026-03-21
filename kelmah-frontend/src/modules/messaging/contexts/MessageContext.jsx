@@ -14,6 +14,8 @@ import { useAuth } from '../../auth/hooks/useAuth';
 import websocketService from '../../../services/websocketService';
 import fileUploadService from '../../common/services/fileUploadService';
 import { normalizeAttachmentListVirusScan } from '../utils/virusScanUtils';
+import { MESSAGE_DELIVERY_ALIASES, SOCKET_EVENTS } from '../../../services/socketEvents';
+import { createRealtimeMessageDeduper } from '../utils/realtimeMessageDeduper';
 
 const MessageContext = createContext(null);
 
@@ -244,6 +246,7 @@ export const MessageProvider = ({ children }) => {
   const conversationLoadTimeoutRef = useRef(null);
   // Stores named handler references so we can remove ONLY our listeners on cleanup
   const msgListenersRef = useRef({});
+  const realtimeMessageDeduperRef = useRef(createRealtimeMessageDeduper());
 
   // Real-time WebSocket state
   const [socket, setSocket] = useState(null);
@@ -335,10 +338,19 @@ export const MessageProvider = ({ children }) => {
       // Remove ONLY the listeners WE registered (named references), not all listeners
       const msgListeners = msgListenersRef.current;
       const messagingEvents = [
-        'receive_message', 'message_delivered', 'message_read', 'user_online', 'user_offline',
-        'new_message', 'user_typing', 'messages_read',
-        'user_status_changed', 'connected',
-        'connect', 'disconnect', 'connect_error', 'error'
+        ...MESSAGE_DELIVERY_ALIASES,
+        SOCKET_EVENTS.MESSAGE.MESSAGE_DELIVERED,
+        SOCKET_EVENTS.MESSAGE.MESSAGE_READ,
+        'user_online',
+        'user_offline',
+        'user_typing',
+        'messages_read',
+        'user_status_changed',
+        'connected',
+        SOCKET_EVENTS.CORE.CONNECT,
+        SOCKET_EVENTS.CORE.DISCONNECT,
+        SOCKET_EVENTS.CORE.CONNECT_ERROR,
+        SOCKET_EVENTS.CORE.ERROR,
       ];
       messagingEvents.forEach(evt => {
         if (msgListeners[evt]) sharedSocket.off(evt, msgListeners[evt]);
@@ -386,6 +398,9 @@ export const MessageProvider = ({ children }) => {
       const onNewMessage = (messageData) => {
         if (import.meta.env.DEV) console.log('📨 New message received:', messageData);
         const hydratedMessage = normalizeMessageAttachments(messageData);
+        if (realtimeMessageDeduperRef.current.mark(hydratedMessage)) {
+          return;
+        }
         const hydratedConversationId = hydratedMessage.conversationId;
         const activeConversation = selectedConversationRef.current;
 
@@ -512,20 +527,21 @@ export const MessageProvider = ({ children }) => {
 
       // Register all named handlers and store references for cleanup
       msgListenersRef.current = {
-        connect: onConnect,
-        disconnect: onDisconnect,
-        connect_error: onConnectError,
+        [SOCKET_EVENTS.CORE.CONNECT]: onConnect,
+        [SOCKET_EVENTS.CORE.DISCONNECT]: onDisconnect,
+        [SOCKET_EVENTS.CORE.CONNECT_ERROR]: onConnectError,
         connected: onConnected,
-        new_message: onNewMessage,
-        receive_message: onNewMessage,
+        [SOCKET_EVENTS.MESSAGE.NEW_MESSAGE]: onNewMessage,
+        [SOCKET_EVENTS.MESSAGE.RECEIVE_MESSAGE]: onNewMessage,
+        [SOCKET_EVENTS.MESSAGE.NEW_MESSAGE_ALT]: onNewMessage,
         user_typing: onUserTyping,
         messages_read: onMessagesRead,
-        message_read: onMessagesRead,
-        message_delivered: onMessageDelivered,
+        [SOCKET_EVENTS.MESSAGE.MESSAGE_READ]: onMessagesRead,
+        [SOCKET_EVENTS.MESSAGE.MESSAGE_DELIVERED]: onMessageDelivered,
         user_status_changed: onUserStatusChanged,
         user_online: onUserOnline,
         user_offline: onUserOffline,
-        error: onError,
+        [SOCKET_EVENTS.CORE.ERROR]: onError,
       };
       Object.entries(msgListenersRef.current).forEach(([evt, handler]) => {
         sharedSocket.on(evt, handler);
@@ -560,10 +576,19 @@ export const MessageProvider = ({ children }) => {
       const msgListeners = msgListenersRef.current;
       try {
         const messagingEvents = [
-          'receive_message', 'message_delivered', 'message_read', 'user_online', 'user_offline',
-          'new_message', 'user_typing', 'messages_read',
-          'user_status_changed', 'connected',
-          'connect', 'disconnect', 'connect_error', 'error'
+          ...MESSAGE_DELIVERY_ALIASES,
+          SOCKET_EVENTS.MESSAGE.MESSAGE_DELIVERED,
+          SOCKET_EVENTS.MESSAGE.MESSAGE_READ,
+          'user_online',
+          'user_offline',
+          'user_typing',
+          'messages_read',
+          'user_status_changed',
+          'connected',
+          SOCKET_EVENTS.CORE.CONNECT,
+          SOCKET_EVENTS.CORE.DISCONNECT,
+          SOCKET_EVENTS.CORE.CONNECT_ERROR,
+          SOCKET_EVENTS.CORE.ERROR,
         ];
         messagingEvents.forEach(evt => {
           if (msgListeners[evt]) activeSocket.off(evt, msgListeners[evt]);
@@ -583,6 +608,7 @@ export const MessageProvider = ({ children }) => {
     }
     socketRef.current = null;
     connectingRef.current = false;
+    realtimeMessageDeduperRef.current.clear();
   }, []);
 
   useEffect(() => {

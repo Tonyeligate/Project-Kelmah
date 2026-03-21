@@ -3,14 +3,25 @@ import store from '../store';
 import {
   addNotification,
 } from '../modules/notifications/services/notificationSlice';
-import { WS_CONFIG, API_ENDPOINTS } from '../config/environment';
+import { WS_CONFIG } from '../config/environment';
 import { getWebSocketUrl } from './socketUrl';
 import { isTokenValid } from '../modules/auth/utils/tokenUtils';
+import { APP_SOCKET_EVENTS, SOCKET_EVENTS } from './socketEvents';
 
 /** Only log in development builds — prevents leaking metadata in production */
 const __DEV__ = import.meta.env.DEV;
 const devLog = (...args) => { if (__DEV__) console.log(...args); };
 const devWarn = (...args) => { if (__DEV__) console.warn(...args); };
+
+const RECONNECT_ATTEMPTS = Math.max(
+  3,
+  Number(WS_CONFIG?.reconnectionAttempts) || 5,
+);
+const RECONNECT_DELAY = Math.max(
+  500,
+  Number(WS_CONFIG?.reconnectionDelay) || 1000,
+);
+const RECONNECT_DELAY_MAX = Math.min(RECONNECT_DELAY * 8, 30000);
 
 /**
  * WebSocket service for real-time communication
@@ -75,9 +86,10 @@ class WebSocketService {
         upgrade: true,
         timeout: 20000,
         reconnection: true,
-        reconnectionAttempts: 3, // Reduced to prevent spam
-        reconnectionDelay: 2000, // Increased delay
-        reconnectionDelayMax: 5000,
+        reconnectionAttempts: RECONNECT_ATTEMPTS,
+        reconnectionDelay: RECONNECT_DELAY,
+        reconnectionDelayMax: RECONNECT_DELAY_MAX,
+        randomizationFactor: 0.5,
       });
 
       this.setupEventListeners(userId, userRole);
@@ -95,7 +107,7 @@ class WebSocketService {
    */
   setupEventListeners(userId, userRole) {
     // Connection events
-    this.socket.on('connect', () => {
+    this.socket.on(SOCKET_EVENTS.CORE.CONNECT, () => {
       devLog('✅ WebSocket connected:', this.socket.id);
       const wasConnectedBefore = this._hasConnectedOnce;
       this.isConnected = true;
@@ -131,7 +143,7 @@ class WebSocketService {
       }
     });
 
-    this.socket.on('disconnect', (reason) => {
+    this.socket.on(SOCKET_EVENTS.CORE.DISCONNECT, (reason) => {
       devLog('❌ WebSocket disconnected:', reason);
       this.isConnected = false;
       this._connecting = false;
@@ -152,18 +164,18 @@ class WebSocketService {
       }
     });
 
-    this.socket.on('connect_error', (error) => {
+    this.socket.on(SOCKET_EVENTS.CORE.CONNECT_ERROR, (error) => {
       if (import.meta.env.DEV) console.error('WebSocket connection error:', error);
       this._connecting = false;
       this.handleConnectionError(error);
     });
 
-    this.socket.on('reconnect', (attemptNumber) => {
+    this.socket.on(SOCKET_EVENTS.CORE.RECONNECT, (attemptNumber) => {
       devLog('🔄 WebSocket reconnected after', attemptNumber, 'attempts');
       // Silent reconnect — no toast to avoid spam; devLog is sufficient
     });
 
-    this.socket.on('reconnect_failed', () => {
+    this.socket.on(SOCKET_EVENTS.CORE.RECONNECT_FAILED, () => {
       if (import.meta.env.DEV) console.error('❌ WebSocket reconnection failed');
       store.dispatch(
         addNotification({
@@ -178,92 +190,97 @@ class WebSocketService {
     });
 
     // Real-time message events
-    this.socket.on('new-message', (data) => {
+    this.socket.on(SOCKET_EVENTS.MESSAGE.NEW_MESSAGE_ALT, (data) => {
       this.handleNewMessage(data);
     });
-    this.socket.on('new_message', (data) => {
+    this.socket.on(SOCKET_EVENTS.MESSAGE.NEW_MESSAGE, (data) => {
       this.handleNewMessage(data);
     });
-    this.socket.on('receive_message', (data) => {
+    this.socket.on(SOCKET_EVENTS.MESSAGE.RECEIVE_MESSAGE, (data) => {
       this.handleNewMessage(data);
     });
 
-    this.socket.on('message-status', (data) => {
+    this.socket.on(SOCKET_EVENTS.MESSAGE.MESSAGE_STATUS, (data) => {
       this.handleMessageStatus(data);
     });
-    this.socket.on('message_delivered', (data) => {
+    this.socket.on(SOCKET_EVENTS.MESSAGE.MESSAGE_DELIVERED, (data) => {
       this.handleMessageStatus({ ...data, status: 'delivered' });
     });
-    this.socket.on('message_read', (data) => {
+    this.socket.on(SOCKET_EVENTS.MESSAGE.MESSAGE_READ, (data) => {
       this.handleMessageStatus({ ...data, status: 'read' });
     });
 
-    this.socket.on('typing-indicator', (data) => {
+    this.socket.on(SOCKET_EVENTS.MESSAGE.TYPING_INDICATOR, (data) => {
       this.handleTypingIndicator(data);
     });
 
     // Job notification events
-    this.socket.on('job-notification', (data) => {
+    this.socket.on(SOCKET_EVENTS.JOB.JOB_NOTIFICATION, (data) => {
       this.handleJobNotification(data);
     });
 
-    this.socket.on('job-application', (data) => {
+    this.socket.on(SOCKET_EVENTS.JOB.JOB_APPLICATION, (data) => {
       this.handleJobApplication(data);
     });
 
-    this.socket.on('job-status-update', (data) => {
+    this.socket.on(SOCKET_EVENTS.JOB.JOB_STATUS_UPDATE, (data) => {
       this.handleJobStatusUpdate(data);
     });
 
     // Bid notification events (real-time)
-    this.socket.on('bid:received', (data) => {
-      this.triggerEvent('bid:received', data);
+    this.socket.on(SOCKET_EVENTS.BID.RECEIVED, (data) => {
+      this.triggerEvent(APP_SOCKET_EVENTS.BID_RECEIVED, data);
     });
 
-    this.socket.on('bid:accepted', (data) => {
-      this.triggerEvent('bid:accepted', data);
+    this.socket.on(SOCKET_EVENTS.BID.ACCEPTED, (data) => {
+      this.triggerEvent(APP_SOCKET_EVENTS.BID_ACCEPTED, data);
     });
 
-    this.socket.on('bid:rejected', (data) => {
-      this.triggerEvent('bid:rejected', data);
+    this.socket.on(SOCKET_EVENTS.BID.REJECTED, (data) => {
+      this.triggerEvent(APP_SOCKET_EVENTS.BID_REJECTED, data);
     });
 
-    this.socket.on('bid:withdrawn', (data) => {
-      this.triggerEvent('bid:withdrawn', data);
+    this.socket.on(SOCKET_EVENTS.BID.WITHDRAWN, (data) => {
+      this.triggerEvent(APP_SOCKET_EVENTS.BID_WITHDRAWN, data);
     });
 
-    this.socket.on('bid:expired', (data) => {
-      this.triggerEvent('bid:expired', data);
+    this.socket.on(SOCKET_EVENTS.BID.EXPIRED, (data) => {
+      this.triggerEvent(APP_SOCKET_EVENTS.BID_EXPIRED, data);
     });
 
     // Payment notification events
-    this.socket.on('payment-notification', (data) => {
+    this.socket.on(SOCKET_EVENTS.PAYMENT.PAYMENT_NOTIFICATION, (data) => {
       this.handlePaymentNotification(data);
     });
 
-    this.socket.on('payment-status-update', (data) => {
+    this.socket.on(SOCKET_EVENTS.PAYMENT.PAYMENT_STATUS_UPDATE, (data) => {
       this.handlePaymentStatusUpdate(data);
     });
 
     // User presence events (handled by MessageContext socket — no-op here)
-    this.socket.on('user-online', (data) => {
-      this.triggerEvent('user:online', data);
+    this.socket.on(SOCKET_EVENTS.PRESENCE.USER_ONLINE, (data) => {
+      this.triggerEvent(APP_SOCKET_EVENTS.USER_ONLINE, data);
     });
 
-    this.socket.on('user-offline', (data) => {
-      this.triggerEvent('user:offline', data);
+    this.socket.on(SOCKET_EVENTS.PRESENCE.USER_OFFLINE, (data) => {
+      this.triggerEvent(APP_SOCKET_EVENTS.USER_OFFLINE, data);
     });
 
-    this.socket.on('online-users', (data) => {
-      this.triggerEvent('users:online-list', data);
+    this.socket.on(SOCKET_EVENTS.PRESENCE.ONLINE_USERS, (data) => {
+      this.triggerEvent(APP_SOCKET_EVENTS.USERS_ONLINE_LIST, data);
     });
 
     // System events
-    this.socket.on('system-notification', (data) => {
+    this.socket.on(SOCKET_EVENTS.SYSTEM.NOTIFICATION, (data) => {
+      this.handleSystemNotification(data);
+      this.triggerEvent(APP_SOCKET_EVENTS.GENERIC_NOTIFICATION, data);
+    });
+
+    this.socket.on(SOCKET_EVENTS.SYSTEM.SYSTEM_NOTIFICATION, (data) => {
       this.handleSystemNotification(data);
     });
 
-    this.socket.on('maintenance-notice', (data) => {
+    this.socket.on(SOCKET_EVENTS.SYSTEM.MAINTENANCE_NOTICE, (data) => {
       store.dispatch(
         addNotification({
           id: uniqueNotifId(),
@@ -304,7 +321,7 @@ class WebSocketService {
     );
 
     // Trigger custom event listeners
-    this.triggerEvent('message:new', data);
+    this.triggerEvent(APP_SOCKET_EVENTS.MESSAGE_NEW, data);
 
     // Browser notification if permission granted
     this.showBrowserNotification('New Message', data.content, {
@@ -319,14 +336,14 @@ class WebSocketService {
    */
   handleMessageStatus(data) {
     devLog('📱 Message status update:', data);
-    this.triggerEvent('message:status', data);
+    this.triggerEvent(APP_SOCKET_EVENTS.MESSAGE_STATUS, data);
   }
 
   /**
    * Handle typing indicator
    */
   handleTypingIndicator(data) {
-    this.triggerEvent('typing:indicator', data);
+    this.triggerEvent(APP_SOCKET_EVENTS.TYPING_INDICATOR, data);
   }
 
   /**
@@ -381,7 +398,7 @@ class WebSocketService {
       data: { jobId: data.jobId },
     });
 
-    this.triggerEvent('job:notification', data);
+    this.triggerEvent(APP_SOCKET_EVENTS.JOB_NOTIFICATION, data);
   }
 
   /**
@@ -409,7 +426,7 @@ class WebSocketService {
       }),
     );
 
-    this.triggerEvent('job:application', data);
+    this.triggerEvent(APP_SOCKET_EVENTS.JOB_APPLICATION, data);
   }
 
   /**
@@ -446,7 +463,7 @@ class WebSocketService {
       }),
     );
 
-    this.triggerEvent('job:status', data);
+    this.triggerEvent(APP_SOCKET_EVENTS.JOB_STATUS, data);
   }
 
   /**
@@ -501,7 +518,7 @@ class WebSocketService {
       data: { transactionId: data.transactionId },
     });
 
-    this.triggerEvent('payment:notification', data);
+    this.triggerEvent(APP_SOCKET_EVENTS.PAYMENT_NOTIFICATION, data);
   }
 
   /**
@@ -509,7 +526,7 @@ class WebSocketService {
    */
   handlePaymentStatusUpdate(data) {
     devLog('💳 Payment status update:', data);
-    this.triggerEvent('payment:status', data);
+    this.triggerEvent(APP_SOCKET_EVENTS.PAYMENT_STATUS, data);
   }
 
   /**
@@ -534,7 +551,7 @@ class WebSocketService {
       this.showBrowserNotification(data.title, data.message);
     }
 
-    this.triggerEvent('system:notification', data);
+    this.triggerEvent(APP_SOCKET_EVENTS.SYSTEM_NOTIFICATION, data);
   }
 
   /**

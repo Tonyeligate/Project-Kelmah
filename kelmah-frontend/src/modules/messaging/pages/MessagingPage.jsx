@@ -643,7 +643,7 @@ const EnhancedMessagingPage = () => {
       }
     } catch (error) {
       if (import.meta.env.DEV) console.error('Failed to send message:', error);
-      showFeedback('Failed to send message', 'error');
+      showFeedback('Message was not sent. Check your connection and try again.', 'error');
     }
   }, [messageText, selectedFiles, selectedConversation, contextSendMessage, showFeedback]);
 
@@ -1063,12 +1063,12 @@ const EnhancedMessagingPage = () => {
               variant="h6"
               sx={{ color: 'text.disabled', mb: 1 }}
             >
-              {searchQuery ? 'No results' : 'No messages yet'}
+              {searchQuery ? 'No matching conversations' : 'No conversations yet'}
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.disabled' }}>
               {searchQuery
-                ? 'Try a different name or keyword'
-                : 'Your conversations will appear here'}
+                ? 'Try another name, phone number, or keyword.'
+                : 'Start a chat to ask about availability, budget, or timeline.'}
             </Typography>
           </Box>
         )}
@@ -1136,10 +1136,10 @@ const EnhancedMessagingPage = () => {
                 <RefreshIcon sx={{ fontSize: 40, color: 'error.main' }} />
               </Box>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                Connection failed
+                Could not open this chat yet
               </Typography>
               <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
-                {deepLinkError}
+                {deepLinkError || 'The chat service may still be starting. Please retry in a few seconds.'}
               </Typography>
               <Button
                 variant="contained"
@@ -1147,7 +1147,7 @@ const EnhancedMessagingPage = () => {
                 startIcon={<RefreshIcon />}
                 sx={{ minHeight: 44, mb: 1 }}
               >
-                Retry
+                Try Again
               </Button>
               <br />
               <Button

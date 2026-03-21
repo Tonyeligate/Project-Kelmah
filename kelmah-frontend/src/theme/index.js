@@ -258,6 +258,11 @@ const darkTheme = createTheme({
             '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
           WebkitFontSmoothing: 'antialiased',
           MozOsxFontSmoothing: 'grayscale',
+          '& *:focus-visible': {
+            outline: `3px solid ${BRAND_COLORS.gold}`,
+            outlineOffset: 2,
+            borderRadius: 6,
+          },
           backgroundImage:
             'radial-gradient(circle at top, rgba(255,215,0,0.08), transparent 40%)',
         },
@@ -375,6 +380,10 @@ const darkTheme = createTheme({
           transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
           minHeight: '44px', // Better touch target
           letterSpacing: '0.02em',
+          '&.Mui-focusVisible': {
+            outline: `3px solid ${BRAND_COLORS.gold}`,
+            outlineOffset: 2,
+          },
         },
         contained: {
           background: `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`,
@@ -428,6 +437,10 @@ const darkTheme = createTheme({
           transition: 'all 0.2s ease-in-out',
           minWidth: 44, // ✅ MOBILE-AUDIT: 44px touch target for all IconButtons
           minHeight: 44,
+          '&.Mui-focusVisible': {
+            outline: `3px solid ${BRAND_COLORS.gold}`,
+            outlineOffset: 2,
+          },
           '&:hover': {
             backgroundColor: 'rgba(255, 215, 0, 0.15)',
             transform: 'scale(1.05)',
@@ -470,10 +483,15 @@ const darkTheme = createTheme({
             },
           },
           '& .MuiInputLabel-root': {
-            color: 'rgba(255, 255, 255, 0.7)',
+            color: 'rgba(255, 255, 255, 0.82)',
             '&.Mui-focused': {
               color: BRAND_COLORS.gold,
             },
+          },
+          '& .MuiFormHelperText-root': {
+            color: 'rgba(255, 255, 255, 0.76)',
+            fontSize: '0.8rem',
+            lineHeight: 1.5,
           },
         },
       },
@@ -793,6 +811,11 @@ const lightTheme = createTheme({
             '"Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
           WebkitFontSmoothing: 'antialiased',
           MozOsxFontSmoothing: 'grayscale',
+          '& *:focus-visible': {
+            outline: `3px solid ${BRAND_COLORS.black}`,
+            outlineOffset: 2,
+            borderRadius: 6,
+          },
           backgroundImage:
             'radial-gradient(circle at top, rgba(255,215,0,0.15), transparent 45%)',
         },
@@ -903,6 +926,10 @@ const lightTheme = createTheme({
           transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
           minHeight: '44px',
           letterSpacing: '0.02em',
+          '&.Mui-focusVisible': {
+            outline: `3px solid ${BRAND_COLORS.black}`,
+            outlineOffset: 2,
+          },
         },
         contained: {
           background: `linear-gradient(135deg, ${BRAND_COLORS.gold} 0%, ${BRAND_COLORS.goldLight} 100%)`,
@@ -946,6 +973,10 @@ const lightTheme = createTheme({
           transition: 'all 0.2s ease-in-out',
           minWidth: 44, // ✅ MOBILE-AUDIT: 44px touch target for all IconButtons
           minHeight: 44,
+          '&.Mui-focusVisible': {
+            outline: `3px solid ${BRAND_COLORS.black}`,
+            outlineOffset: 2,
+          },
           '&:hover': {
             backgroundColor: 'rgba(0, 0, 0, 0.08)',
             transform: 'scale(1.05)',
@@ -988,10 +1019,15 @@ const lightTheme = createTheme({
             },
           },
           '& .MuiInputLabel-root': {
-            color: 'rgba(0, 0, 0, 0.6)',
+            color: 'rgba(0, 0, 0, 0.78)',
             '&.Mui-focused': {
               color: BRAND_COLORS.black,
             },
+          },
+          '& .MuiFormHelperText-root': {
+            color: 'rgba(0, 0, 0, 0.7)',
+            fontSize: '0.8rem',
+            lineHeight: 1.5,
           },
         },
       },

@@ -21485,3 +21485,10 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 - Validation: PASS 
   - npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand (17/17)
   - npm run build (vite build success).
+
+### [MAR 21, 2026] GOLD BRAND CONSISTENCY RESTORE (COMPLETED)
+- Restored gold-forward accent token usage on worker profile mobile detail page after temporary non-gold experiment.
+- Applied matching gold-accent visual treatment to hirer profile detail header/actions/chips for profile-page parity.
+- Validation: PASS 
+  - npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand (17/17)
+  - npm run build (vite build success).
