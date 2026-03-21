@@ -21492,3 +21492,11 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 - Validation: PASS 
   - npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand (17/17)
   - npm run build (vite build success).
+
+### [MAR 21, 2026] GLOBAL BRAND PALETTE ALIGNMENT + DARK CONTRAST TUNE (COMPLETED)
+- Updated shared MUI theme mapping to match brand rules: secondary=gold in both modes, primary=dark foundation in dark mode, primary=white foundation in light mode.
+- Improved dark-mode readability by increasing secondary/muted text alpha and divider contrast for WCAG-friendly visibility while preserving existing style language.
+- Updated light-mode action hover/selected/focus to gold-tinted interaction feedback for consistent gold brand presence across pages.
+- Validation: PASS 
+  - npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand (17/17)
+  - npm run build (vite build success).

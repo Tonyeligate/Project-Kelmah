@@ -18,7 +18,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
 import {
   Apartment as ApartmentIcon,
   Edit as EditIcon,
@@ -87,11 +86,6 @@ const toActivityLines = (activity = []) => {
 };
 
 const HirerProfilePage = () => {
-  const theme = useTheme();
-  const accent = theme.palette.secondary.main || '#F5B324';
-  const accentSoft = alpha(accent, theme.palette.mode === 'dark' ? 0.22 : 0.16);
-  const accentBorder = alpha(accent, 0.38);
-
   const { enqueueSnackbar } = useSnackbar();
   const { user } = useSelector((state) => state.auth);
   const profile = useSelector(selectProfile);
@@ -231,49 +225,25 @@ const HirerProfilePage = () => {
         </Alert>
       )}
 
-      <Paper
-        sx={{
-          p: { xs: 2, md: 3 },
-          mb: 3,
-          borderRadius: 3,
-          border: '1px solid',
-          borderColor: accentBorder,
-          background: `linear-gradient(160deg, ${alpha(theme.palette.background.paper, 0.96)} 0%, ${accentSoft} 100%)`,
-        }}
-      >
+      <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3, borderRadius: 3 }}>
         <Grid container spacing={3} alignItems="center">
           <Grid item xs={12} md={8}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5} alignItems={{ xs: 'flex-start', sm: 'center' }}>
               <ProfilePicture size={96} />
               <Box sx={{ flex: 1 }}>
-                <Typography variant="h4" fontWeight={700} gutterBottom sx={{ color: accent }}>
+                <Typography variant="h4" fontWeight={700} gutterBottom>
                   {getDisplayName(profile, user)}
                 </Typography>
                 <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 1.5 }}>
-                  <Chip
-                    icon={<ApartmentIcon />}
-                    label={getCompanyName(profile, user)}
-                    sx={{
-                      bgcolor: accentSoft,
-                      border: '1px solid',
-                      borderColor: accentBorder,
-                      '& .MuiChip-icon': { color: accent },
-                    }}
-                  />
+                  <Chip icon={<ApartmentIcon />} label={getCompanyName(profile, user)} />
                   {(profile?.location || user?.location) && (
                     <Chip
                       icon={<LocationOnIcon />}
                       label={profile?.location || user?.location}
                       variant="outlined"
-                      sx={{ borderColor: accentBorder, '& .MuiChip-icon': { color: accent } }}
                     />
                   )}
-                  <Chip
-                    icon={<PersonAddAlt1Icon />}
-                    label="Hirer account"
-                    variant="outlined"
-                    sx={{ borderColor: accentBorder, '& .MuiChip-icon': { color: accent } }}
-                  />
+                  <Chip icon={<PersonAddAlt1Icon />} label="Hirer account" variant="outlined" />
                 </Stack>
                 <Typography color="text.secondary" sx={{ mb: 1 }}>
                   {profile?.email || user?.email || 'No email on file'}
@@ -288,19 +258,13 @@ const HirerProfilePage = () => {
             <Stack direction={{ xs: 'column', sm: 'row', md: 'column' }} spacing={1.5}>
               <Button
                 variant="contained"
-                color="secondary"
                 startIcon={<EditIcon />}
                 onClick={handleStartEdit}
                 sx={{ minHeight: 44 }}
               >
                 Edit hirer profile
               </Button>
-              <Button
-                component={RouterLink}
-                to="/hirer/find-talents"
-                variant="outlined"
-                sx={{ minHeight: 44, borderColor: accentBorder, color: accent }}
-              >
+              <Button component={RouterLink} to="/hirer/find-talents" variant="outlined" sx={{ minHeight: 44 }}>
                 Find talent
               </Button>
             </Stack>
@@ -401,7 +365,8 @@ const HirerProfilePage = () => {
                       variant="contained"
                       onClick={handleSave}
                       disabled={saving}
-                      sx={{ minHeight: 44 }}>
+                      sx={{ minHeight: 44 }}
+                    >
                       {saving ? 'Saving…' : 'Save profile'}
                     </Button>
                   </Stack>

@@ -1817,8 +1817,6 @@ function WorkerProfile({ workerId: workerIdProp }) {
     const isDark = theme.palette.mode === 'dark';
     const dashboardFontFamily = '"Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif';
     const accent = theme.palette.secondary.main || '#F5B324';
-    const accentStrong = theme.palette.secondary.light || '#F7CF69';
-    const accentSoft = alpha(accent, 0.22);
     const panel = alpha(theme.palette.background.paper, isDark ? 0.94 : 0.97);
     const panelMuted = alpha(theme.palette.background.paper, isDark ? 0.86 : 0.92);
     const textPrimary = theme.palette.text.primary;
@@ -1914,7 +1912,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
           sx={{
             p: 1.5,
             borderRadius: sectionRadius,
-            background: `linear-gradient(145deg, ${panel} 0%, ${alpha(accent, 0.12)} 100%)`,
+            background: `linear-gradient(145deg, ${panel} 0%, ${alpha(accent, 0.08)} 100%)`,
             border: `1px solid ${alpha(accent, 0.28)}`,
             boxShadow: `0 12px 32px ${alpha('#000', 0.34)}`,
             position: 'relative',
@@ -1942,7 +1940,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 height: 66,
                 border: `2px solid ${accent}`,
                 boxShadow: `0 0 12px 2px ${alpha(accent, 0.4)}`,
-                bgcolor: accentSoft,
+                bgcolor: alpha(accent, 0.22),
               }}
             >
               {profile.user?.firstName?.charAt(0)}
@@ -2109,7 +2107,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                     sx={{
                       borderRadius: 2.4,
                       border: `1px solid ${alpha(accent, 0.28)}`,
-                      background: `linear-gradient(170deg, ${alpha(accent, 0.17)} 0%, ${alpha('#000', isDark ? 0.2 : 0.03)} 100%)`,
+                      background: `linear-gradient(170deg, ${alpha(accent, 0.17)} 0%, ${alpha('#000', isDark ? 0.18 : 0.03)} 100%)`,
                       px: 1.1,
                       py: 0.95,
                       minHeight: 75,
@@ -2169,7 +2167,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 color: '#1A1408',
                 backgroundColor: accent,
                 '&:hover': {
-                  backgroundColor: accentStrong,
+                  backgroundColor: '#e7b843',
                 },
               }}>
               {showFullBio ? 'Show Less' : 'Read More'}
@@ -2281,7 +2279,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                       <Typography
                         variant="caption"
                         sx={{
-                          color: '#EAF4FF',
+                          color: '#FFF6D8',
                           fontWeight: 700,
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
@@ -2420,10 +2418,10 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 minHeight: 44,
                 fontWeight: 800,
                 letterSpacing: 0.5,
-                color: '#071423',
-                background: `linear-gradient(180deg, ${accentStrong} 0%, ${accent} 100%)`,
+                color: '#1A1408',
+                background: `linear-gradient(180deg, ${accent} 0%, #E4B13D 100%)`,
                 '&:hover': {
-                  background: `linear-gradient(180deg, ${accent} 0%, ${accentStrong} 100%)`,
+                  background: `linear-gradient(180deg, #F7CF69 0%, ${accent} 100%)`,
                 },
                 '&:active': {
                   transform: 'translateY(1px) scale(0.995)',
@@ -2447,11 +2445,11 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 minHeight: 44,
                 fontWeight: 800,
                 letterSpacing: 0.5,
-                color: accentStrong,
+                color: accent,
                 border: `1px solid ${accent}`,
                 backgroundColor: isDark ? '#000000' : 'background.paper',
                 '&:hover': {
-                  backgroundColor: alpha(accent, 0.12),
+                  backgroundColor: alpha(accent, 0.08),
                 },
                 '&:active': {
                   transform: 'translateY(1px) scale(0.995)',

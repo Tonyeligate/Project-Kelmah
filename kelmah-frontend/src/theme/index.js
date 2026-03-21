@@ -51,8 +51,8 @@ const SURFACE_TOKENS = {
     stroke: 'rgba(255, 255, 255, 0.08)',
     glow: 'rgba(255, 215, 0, 0.14)',
     textPrimary: '#F7F3E3',
-    textSecondary: 'rgba(247, 243, 227, 0.7)',
-    textMuted: 'rgba(247, 243, 227, 0.55)',
+    textSecondary: 'rgba(247, 243, 227, 0.78)',
+    textMuted: 'rgba(247, 243, 227, 0.64)',
   },
   light: {
     body: '#F9F7ED',
@@ -175,16 +175,18 @@ const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
+      // Brand rule: dark mode primary = dark/neutral foundation
+      main: SURFACE_TOKENS.dark.surface,
+      light: SURFACE_TOKENS.dark.overlay,
+      dark: SURFACE_TOKENS.dark.body,
+      contrastText: SURFACE_TOKENS.dark.textPrimary,
+    },
+    secondary: {
+      // Brand rule: dark mode secondary = gold accent
       main: BRAND_COLORS.gold,
       light: BRAND_COLORS.goldLight,
       dark: BRAND_COLORS.goldDark,
       contrastText: BRAND_COLORS.black,
-    },
-    secondary: {
-      main: BRAND_COLORS.slate,
-      light: BRAND_COLORS.warmConcrete,
-      dark: BRAND_COLORS.ink,
-      contrastText: BRAND_COLORS.gold,
     },
     background: {
       default: SURFACE_TOKENS.dark.body,
@@ -196,7 +198,7 @@ const darkTheme = createTheme({
       secondary: SURFACE_TOKENS.dark.textSecondary,
       disabled: SURFACE_TOKENS.dark.textMuted,
     },
-    divider: 'rgba(255, 255, 255, 0.12)',
+    divider: 'rgba(255, 255, 255, 0.16)',
     neutral: {
       main: 'rgba(255, 255, 255, 0.4)',
       contrastText: SURFACE_TOKENS.dark.textPrimary,
@@ -734,16 +736,18 @@ const lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
+      // Brand rule: light mode primary = visible white foundation
+      main: SURFACE_TOKENS.light.surface,
+      light: '#FFFFFF',
+      dark: SURFACE_TOKENS.light.raised,
+      contrastText: SURFACE_TOKENS.light.textPrimary,
+    },
+    secondary: {
+      // Brand rule: light mode secondary = gold accent
       main: BRAND_COLORS.gold,
       light: BRAND_COLORS.goldLight,
       dark: BRAND_COLORS.goldDark,
       contrastText: BRAND_COLORS.black,
-    },
-    secondary: {
-      main: '#2B2C34',
-      light: '#3C3E47',
-      dark: '#1F1F25',
-      contrastText: BRAND_COLORS.white,
     },
     background: {
       default: SURFACE_TOKENS.light.body,
@@ -757,10 +761,10 @@ const lightTheme = createTheme({
     },
     divider: 'rgba(0, 0, 0, 0.15)',
     action: {
-      hover: 'rgba(0, 0, 0, 0.08)',
-      selected: 'rgba(0, 0, 0, 0.12)',
+      hover: 'rgba(255, 215, 0, 0.12)',
+      selected: 'rgba(255, 215, 0, 0.18)',
       disabled: 'rgba(0, 0, 0, 0.3)',
-      focus: 'rgba(0, 0, 0, 0.15)',
+      focus: 'rgba(255, 215, 0, 0.22)',
     },
     error: {
       main: '#d32f2f',
