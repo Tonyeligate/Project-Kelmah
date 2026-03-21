@@ -2037,6 +2037,10 @@ const JobsPage = () => {
     ? { initial: false, animate: false, transition: { duration: 0 } }
     : {};
 
+  // Category browse grid expects objects with { name, icon, color }.
+  // Keep a stable reference to avoid unnecessary rerenders.
+  const categoryData = useMemo(() => ghanaTradeCategories, []);
+
   const initialFilterState = useMemo(() => {
     const parseNumber = (value, fallback) => {
       const parsed = Number(value);

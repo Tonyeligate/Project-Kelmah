@@ -21500,3 +21500,11 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 - Validation: PASS 
   - npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand (17/17)
   - npm run build (vite build success).
+
+### [MAR 21, 2026] JOBS PAGE RUNTIME CRASH FIX (COMPLETED)
+- Investigated production crash on /jobs: ReferenceError categoryData is not defined in JobsPage render path.
+- Root cause: JobsCategoryBrowseGrid received categoryData prop from undefined variable in JobsPage scope.
+- Fix: added stable categoryData binding via useMemo using ghanaTradeCategories (expected shape {name, icon, color}).
+- Validation: PASS 
+  - npm run build (vite build success)
+  - npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand (17/17).
