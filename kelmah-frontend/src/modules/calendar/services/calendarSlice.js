@@ -12,12 +12,20 @@ export const fetchEvents = createAsyncThunk(
   'calendar/fetchEvents',
   async (_, { rejectWithValue }) => {
     try {
-      const events = await eventsService.getEvents();
+      const payload = await eventsService.getEvents();
+      const events = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.events)
+          ? payload.events
+          : [];
       if (import.meta.env?.DEV) console.log('Fetched events:', events);
       return events;
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error in fetchEvents thunk:', error);
-      return rejectWithValue(error.message || 'Failed to fetch events');
+      return rejectWithValue({
+        message: error?.message || 'Failed to fetch events',
+        code: error?.code || error?.response?.data?.error?.code,
+      });
     }
   },
 );
@@ -29,7 +37,10 @@ export const addEvent = createAsyncThunk(
       const event = await eventsService.createEvent(eventData);
       return event;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue({
+        message: error?.message || 'Failed to create event',
+        code: error?.code || error?.response?.data?.error?.code,
+      });
     }
   },
 );
@@ -58,7 +69,7 @@ const calendarSlice = createSlice({
       })
       .addCase(fetchEvents.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload?.message || action.error?.message || 'Failed to fetch events';
       })
       // Add event
       .addCase(addEvent.pending, (state) => {
@@ -71,7 +82,7 @@ const calendarSlice = createSlice({
       })
       .addCase(addEvent.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload?.message || action.error?.message || 'Failed to create event';
       });
   },
 });

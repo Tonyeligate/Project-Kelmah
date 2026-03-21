@@ -1,0 +1,13 @@
+{
+  "taskId": "demo-task",
+  "risks": [
+    {
+      "id": "R1",
+      "description": "Legacy users may still have stale bookmarked paths",
+      "likelihood": "medium",
+      "impact": "medium",
+      "mitigation": "Maintain redirect alias and smoke test coverage",
+      "status": "mitigated"
+    }
+  ]
+}

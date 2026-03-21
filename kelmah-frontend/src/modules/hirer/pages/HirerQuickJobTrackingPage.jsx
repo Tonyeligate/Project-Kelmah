@@ -160,8 +160,7 @@ const QuoteCard = ({ quote, onAccept, actionLoading, acceptedQuoteId }) => {
             variant={isAccepted ? 'outlined' : 'contained'}
             disabled={actionLoading || isAccepted || quote?.status !== 'pending'}
             onClick={() => onAccept(quote)}
-            sx={{ minHeight: 44 }}
-          >
+            sx={{ minHeight: 44 }}>
             {isAccepted ? 'Accepted' : 'Accept quote'}
           </Button>
           {quote?.worker?._id && (

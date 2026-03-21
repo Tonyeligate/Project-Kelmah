@@ -587,3 +587,17 @@ Task closes only if:
   - residual risk stated
 Else: INCOMPLETE
 ```
+
+### SFL-5: Autonomous Red-Team Matrix v5
+```
+Mandatory outputs:
+  - attack_replay_matrix.json
+  - mitigation_effectiveness.json
+  - residual_risk_quantification.json
+
+Advanced tools to activate:
+  - AttackReplayHarness
+  - ThreatSurfaceDeltaScanner
+  - MitigationProofGenerator
+  - ResidualRiskQuantifier
+```

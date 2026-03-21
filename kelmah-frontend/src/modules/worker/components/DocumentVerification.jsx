@@ -417,6 +417,7 @@ const DocumentVerification = () => {
                         <IconButton
                           edge="end"
                           onClick={() => handleDownload(doc.id)}
+                          aria-label={`Download ${doc.title}`}
                         >
                           <DescriptionIcon />
                         </IconButton>
@@ -442,6 +443,7 @@ const DocumentVerification = () => {
                         <IconButton
                           edge="end"
                           onClick={() => handleDownload(doc.id)}
+                          aria-label={`Download ${doc.title}`}
                         >
                           <DescriptionIcon />
                         </IconButton>
@@ -520,6 +522,7 @@ const DocumentVerification = () => {
                   <input
                     type="file"
                     hidden
+                    aria-label="Upload verification document"
                     onChange={handleFileChange}
                     accept=".pdf,.jpg,.jpeg,.png"
                   />
@@ -578,3 +581,4 @@ const DocumentVerification = () => {
 };
 
 export default DocumentVerification;
+

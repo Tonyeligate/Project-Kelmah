@@ -199,8 +199,11 @@ app.post('/health/reconcile', (req, res) => {
 app.use((err, req, res, next) => {
   logger.error(err.stack);
   res.status(500).json({
-    message: "Internal Server Error",
-    error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    success: false,
+    error: {
+      message: process.env.NODE_ENV === "development" ? err.message : 'Internal Server Error',
+      code: 'INTERNAL_SERVER_ERROR',
+    },
   });
 });
 

@@ -1,8 +1,13 @@
 import { api } from '../../../services/apiClient';
 import workerService from '../../worker/services/workerService';
+import { unwrapApiData } from '../../../services/responseNormalizer';
+import { captureRecoverableApiError } from '../../../services/errorTelemetry';
 
 const SUGGESTION_DEBOUNCE_MS = 250;
 const STATIC_LOOKUP_TTL_MS = 5 * 60 * 1000;
+const SEARCH_ENDPOINTS = ['/search', '/jobs/search'];
+const SUGGESTION_ENDPOINTS = ['/search/suggestions', '/jobs/suggestions'];
+const POPULAR_ENDPOINTS = ['/search/popular', '/jobs/popular-searches'];
 
 let scheduledSuggestionTimer = null;
 let scheduledSuggestionQuery = null;
@@ -52,12 +57,28 @@ const bindExternalAbort = (signal, controller) => {
   return () => signal.removeEventListener('abort', handleAbort);
 };
 
-const unwrapPayload = (response) => {
-  const payload = response?.data;
-  if (payload?.success && payload?.data !== undefined) {
-    return payload.data;
+const shouldTryFallback = (error) => {
+  const status = error?.response?.status;
+  return status === 404 || status === 405 || status === 501 || status === 503;
+};
+
+const requestWithFallback = async (endpoints, requestFactory) => {
+  let lastError;
+
+  for (let index = 0; index < endpoints.length; index += 1) {
+    const endpoint = endpoints[index];
+    try {
+      return await requestFactory(endpoint);
+    } catch (error) {
+      lastError = error;
+      const canRetryWithFallback = index < endpoints.length - 1 && shouldTryFallback(error);
+      if (!canRetryWithFallback) {
+        break;
+      }
+    }
   }
-  return payload;
+
+  throw lastError;
 };
 
 const normalizeArrayPayload = (payload, keys = []) => {
@@ -88,7 +109,7 @@ const getCachedLookup = async (cacheKey, requestFactory, responseKeys = []) => {
 
   cacheEntry.promise = requestFactory()
     .then((response) => {
-      const payload = unwrapPayload(response);
+      const payload = unwrapApiData(response);
       const normalized = normalizeArrayPayload(payload, responseKeys);
       cacheEntry.data = normalized;
       cacheEntry.expiresAt = Date.now() + STATIC_LOOKUP_TTL_MS;
@@ -119,13 +140,15 @@ const searchService = {
    */
   search: async (query, filters = {}) => {
     try {
-      const response = await api.get('/search', {
-        params: {
-          q: query,
-          ...filters,
-        },
-      });
-      const payload = unwrapPayload(response);
+      const response = await requestWithFallback(SEARCH_ENDPOINTS, (endpoint) =>
+        api.get(endpoint, {
+          params: {
+            q: query,
+            ...filters,
+          },
+        }),
+      );
+      const payload = unwrapApiData(response);
       return normalizeArrayPayload(payload, ['results', 'items']);
     } catch (error) {
       if (import.meta.env.DEV) console.error('Search error:', error);
@@ -154,8 +177,10 @@ const searchService = {
    */
   searchJobs: async (params) => {
     try {
-      const response = await api.get('/jobs/search', { params });
-      return unwrapPayload(response) || [];
+      const response = await requestWithFallback(SEARCH_ENDPOINTS, (endpoint) =>
+        api.get(endpoint, { params }),
+      );
+      return unwrapApiData(response, { defaultValue: [] }) || [];
     } catch (error) {
       if (import.meta.env.DEV) console.error('Job search error:', error);
       throw error;
@@ -208,13 +233,36 @@ const searchService = {
             },
             signal: controller.signal,
           })
+          .catch((error) => {
+            if (!shouldTryFallback(error)) {
+              throw error;
+            }
+
+            return requestWithFallback(
+              SUGGESTION_ENDPOINTS.slice(1),
+              (endpoint) =>
+                api.get(endpoint, {
+                  params: {
+                    q: normalizedQuery,
+                    keyword: normalizedQuery,
+                  },
+                  signal: controller.signal,
+                }),
+            );
+          })
           .then((response) => {
-            const payload = unwrapPayload(response);
+            const payload = unwrapApiData(response);
             return normalizeArrayPayload(payload, ['suggestions']);
           })
           .catch((error) => {
             if (!isSuggestionAbort(error) && import.meta.env.DEV) {
               console.error('Suggestions error:', error);
+            }
+            if (!isSuggestionAbort(error)) {
+              captureRecoverableApiError(error, {
+                operation: 'search.getSuggestions',
+                fallbackUsed: true,
+              });
             }
             return [];
           })
@@ -248,13 +296,19 @@ const searchService = {
    */
   getPopularTerms: async (limit = 5) => {
     try {
-      const response = await api.get('/search/popular', {
-        params: { limit },
-      });
-      const payload = unwrapPayload(response);
+      const response = await requestWithFallback(POPULAR_ENDPOINTS, (endpoint) =>
+        api.get(endpoint, {
+          params: { limit },
+        }),
+      );
+      const payload = unwrapApiData(response);
       return normalizeArrayPayload(payload, ['terms']);
     } catch (error) {
       if (import.meta.env.DEV) console.error('Popular terms error:', error);
+      captureRecoverableApiError(error, {
+        operation: 'search.getPopularTerms',
+        fallbackUsed: true,
+      });
       // FIX M6: Return [] consistently on error instead of { error: true } object
       return [];
     }
@@ -297,9 +351,13 @@ const searchService = {
       const response = await api.get('/jobs/suggestions', {
         params: { keyword },
       });
-      return unwrapPayload(response) || [];
+      return unwrapApiData(response, { defaultValue: [] }) || [];
     } catch (error) {
       if (import.meta.env.DEV) console.error('Job suggestions error:', error);
+      captureRecoverableApiError(error, {
+        operation: 'search.getSearchSuggestions',
+        fallbackUsed: true,
+      });
       // FIX M6: Return [] consistently on error
       return [];
     }
@@ -312,9 +370,13 @@ const searchService = {
   getPopularSearches: async () => {
     try {
       const response = await api.get('/jobs/popular-searches');
-      return unwrapPayload(response) || [];
+      return unwrapApiData(response, { defaultValue: [] }) || [];
     } catch (error) {
       if (import.meta.env.DEV) console.error('Popular searches error:', error);
+      captureRecoverableApiError(error, {
+        operation: 'search.getPopularSearches',
+        fallbackUsed: true,
+      });
       // FIX M6: Return [] consistently on error
       return [];
     }

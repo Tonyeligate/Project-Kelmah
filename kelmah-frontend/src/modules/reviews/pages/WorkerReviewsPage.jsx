@@ -5,7 +5,6 @@ import {
   Box,
   Paper,
   Grid,
-  Avatar,
   Rating,
   LinearProgress,
   Divider,
@@ -19,7 +18,6 @@ import useAuth from '../../auth/hooks/useAuth';
 import reviewService from '../services/reviewService';
 import Pagination from '@mui/material/Pagination';
 import { alpha } from '@mui/material/styles';
-import { formatDistanceToNow } from 'date-fns';
 import { Helmet } from 'react-helmet-async';
 
 const RatingDistribution = ({ distribution, totalReviews }) => (
@@ -146,6 +144,9 @@ const WorkerReviewsPage = () => {
           <Typography variant="subtitle1" color="text.secondary">
             Average rating: {averageRating.toFixed(1)} ({totalReviews} reviews)
           </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Reviews from completed jobs appear here.
+          </Typography>
         </Box>
       </Stack>
 
@@ -190,26 +191,37 @@ const WorkerReviewsPage = () => {
 
         {/* Right column for reviews list */}
         <Grid item xs={12} md={8}>
-          <Grid container spacing={2}>
-            {reviews.map((r) => (
-              <Grid item xs={12} key={r._id}>
-                <ReviewCard
-                  review={{
-                    id: r._id,
-                    author: {
-                      name: `${r.reviewer?.firstName || 'Anonymous'} ${r.reviewer?.lastName || ''}`.trim(),
-                      avatar: r.reviewer?.profilePicture,
-                    },
-                    rating: r.rating,
-                    content: r.comment,
-                    date: r.createdAt,
-                    jobTitle: r.job?.title || `Job ${r.job}`,
-                    jobImage: r.job?.image,
-                  }}
-                />
-              </Grid>
-            ))}
-          </Grid>
+          {reviews.length > 0 ? (
+            <Grid container spacing={2}>
+              {reviews.map((r) => (
+                <Grid item xs={12} key={r._id}>
+                  <ReviewCard
+                    review={{
+                      id: r._id,
+                      author: {
+                        name: `${r.reviewer?.firstName || 'Anonymous'} ${r.reviewer?.lastName || ''}`.trim(),
+                        avatar: r.reviewer?.profilePicture,
+                      },
+                      rating: r.rating,
+                      content: r.comment,
+                      date: r.createdAt,
+                      jobTitle: r.job?.title || `Job ${r.job}`,
+                      jobImage: r.job?.image,
+                    }}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          ) : (
+            <Paper sx={{ p: 3, borderRadius: 2, border: '1px dashed', borderColor: 'divider' }}>
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                No reviews yet
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Keep completing jobs and asking clients for feedback. New reviews will show here automatically.
+              </Typography>
+            </Paper>
+          )}
         </Grid>
       </Grid>
       <Box display="flex" justifyContent="center" mt={4}>

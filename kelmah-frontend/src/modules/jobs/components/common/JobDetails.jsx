@@ -290,8 +290,7 @@ function JobDetails() {
             onClick={handleApply}
             variant="contained"
             color="secondary"
-            disabled={submitting}
-          >
+            disabled={submitting}>
             {submitting ? 'Submitting...' : 'Submit Application'}
           </Button>
         </DialogActions>

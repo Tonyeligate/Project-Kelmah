@@ -603,3 +603,17 @@ Task closes only if:
   - five-world verification passes
 Else: INCOMPLETE
 ```
+
+### OFL-5: Deployment Twin Assurance v5
+```
+Mandatory outputs:
+  - deployment_twin_state.json
+  - env_drift_delta.json
+  - world_verification_report.json
+
+Advanced tools to activate:
+  - DeploymentTwinComparator
+  - EnvironmentParityChecker
+  - MultiWorldGateVerifier
+  - InfraEntropyMonitor
+```

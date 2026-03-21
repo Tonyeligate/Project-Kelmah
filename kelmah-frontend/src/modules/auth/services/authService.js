@@ -212,7 +212,7 @@ const authService = {
       }
 
       // Always clean up secure storage
-      secureStorage.clear();
+      secureStorage.clearAuthData();
       devLog('Logout completed - all auth data cleared');
     }
   },
@@ -302,7 +302,7 @@ const authService = {
         !isNetworkError && (status === 400 || status === 401 || status === 403);
 
       if (shouldReset) {
-        secureStorage.clear();
+        secureStorage.clearAuthData();
         if (typeof window !== 'undefined') {
           try {
             window.dispatchEvent(new CustomEvent('auth:tokenExpired'));

@@ -248,6 +248,7 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                     e.stopPropagation();
                     onNavigate(item);
                   }}
+                  aria-label="Get directions"
                   sx={{
                     bgcolor: theme.palette.primary.main + '15',
                     color: theme.palette.primary.main,
@@ -265,6 +266,7 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                     e.stopPropagation();
                     onMessage(item);
                   }}
+                  aria-label="Send message"
                   sx={{
                     bgcolor: theme.palette.secondary.main + '15',
                     color: theme.palette.secondary.main,
@@ -503,7 +505,7 @@ const ProfessionalMapPage = () => {
             ),
             endAdornment: searchQuery && (
               <InputAdornment position="end">
-                <IconButton size="small" onClick={() => setSearchQuery('')} aria-label="Clear search">
+                <IconButton size="small" onClick={() => setSearchQuery('')} aria-label="Clear search text">
                   <ClearIcon fontSize="small" />
                 </IconButton>
               </InputAdornment>
@@ -530,6 +532,7 @@ const ProfessionalMapPage = () => {
           <IconButton
             onClick={() => setShowFilters(!showFilters)}
             color={showFilters ? 'primary' : 'default'}
+            aria-label={showFilters ? 'Hide filters' : 'Show filters'}
             size="small"
           >
             <FilterIcon />
@@ -537,7 +540,7 @@ const ProfessionalMapPage = () => {
         </Tooltip>
 
         <Tooltip title="Refresh">
-          <IconButton onClick={fetchData} disabled={loading} size="small">
+          <IconButton onClick={fetchData} disabled={loading} aria-label="Refresh map results" size="small">
             {loading ? <CircularProgress size={18} /> : <RefreshIcon />}
           </IconButton>
         </Tooltip>
@@ -547,6 +550,7 @@ const ProfessionalMapPage = () => {
             <IconButton
               size="small"
               onClick={() => setListMode(!listMode)}
+              aria-label={listMode ? 'Switch to map view' : 'Switch to list view'}
               color="primary"
             >
               {listMode ? <MapViewIcon /> : <ListViewIcon />}
@@ -922,7 +926,7 @@ const ProfessionalMapPage = () => {
                   <IconButton
                     size="small"
                     onClick={() => setSelectedItem(null)}
-                    aria-label="Close"
+                    aria-label="Close map details panel"
                   >
                     <CloseIcon fontSize="small" />
                   </IconButton>
@@ -984,8 +988,7 @@ const ProfessionalMapPage = () => {
                     size="small"
                     fullWidth
                     onClick={() => handleViewDetails(selectedItem)}
-                    sx={{ textTransform: 'none', borderRadius: 2 }}
-                  >
+                    sx={{ textTransform: 'none', borderRadius: 2 }}>
                     {selectedItem.type === 'job'
                       ? 'View Job'
                       : 'View Profile'}
@@ -995,7 +998,7 @@ const ProfessionalMapPage = () => {
                     size="small"
                     onClick={() => handleNavigate(selectedItem)}
                     sx={{ borderRadius: 2, minWidth: 44 }}
-                  >
+                   aria-label="Get directions">
                     <NavigationIcon />
                   </Button>
                   <Button
@@ -1003,7 +1006,7 @@ const ProfessionalMapPage = () => {
                     size="small"
                     onClick={() => handleMessage(selectedItem)}
                     sx={{ borderRadius: 2, minWidth: 44 }}
-                  >
+                   aria-label="Send message">
                     <ChatIcon />
                   </Button>
                 </Stack>
@@ -1034,3 +1037,4 @@ const ProfessionalMapPage = () => {
 };
 
 export default ProfessionalMapPage;
+

@@ -1,0 +1,42 @@
+{
+  "taskId": "<task-id>",
+  "worlds": [
+    {
+      "id": "W1",
+      "description": "proposed fix",
+      "utility": {
+        "userImpact": 0,
+        "reliability": 0,
+        "maintainability": 0,
+        "security": 0,
+        "deployability": 0,
+        "total": 0
+      }
+    },
+    {
+      "id": "W2",
+      "description": "minimal alternative",
+      "utility": {
+        "userImpact": 0,
+        "reliability": 0,
+        "maintainability": 0,
+        "security": 0,
+        "deployability": 0,
+        "total": 0
+      }
+    },
+    {
+      "id": "W3",
+      "description": "do nothing",
+      "utility": {
+        "userImpact": 0,
+        "reliability": 0,
+        "maintainability": 0,
+        "security": 0,
+        "deployability": 0,
+        "total": 0
+      }
+    }
+  ],
+  "selectedWorld": "W1"
+}

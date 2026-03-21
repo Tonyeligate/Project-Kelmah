@@ -69,6 +69,9 @@ const NotificationSettingsPage = () => {
       <Typography variant="h5" gutterBottom>
         Notification Preferences
       </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Choose where you receive updates and which alerts matter most to you.
+      </Typography>
       {loading ? (
         <Paper sx={{ p: { xs: 1.5, sm: 2 } }}>
           <Box sx={{ mb: 2 }}>
@@ -101,6 +104,7 @@ const NotificationSettingsPage = () => {
                         channels: { ...prev.channels, inApp: e.target.checked },
                       }))
                     }
+                    inputProps={{ 'aria-label': 'Toggle in-app notifications' }}
                   />
                 }
                 label="In-app"
@@ -115,6 +119,7 @@ const NotificationSettingsPage = () => {
                         channels: { ...prev.channels, email: e.target.checked },
                       }))
                     }
+                    inputProps={{ 'aria-label': 'Toggle email notifications' }}
                   />
                 }
                 label="Email"
@@ -129,6 +134,7 @@ const NotificationSettingsPage = () => {
                         channels: { ...prev.channels, sms: e.target.checked },
                       }))
                     }
+                    inputProps={{ 'aria-label': 'Toggle SMS notifications' }}
                   />
                 }
                 label="SMS"
@@ -151,6 +157,7 @@ const NotificationSettingsPage = () => {
                           types: { ...prev.types, [key]: e.target.checked },
                         }))
                       }
+                      inputProps={{ 'aria-label': `Toggle ${key.replace(/_/g, ' ')} notifications` }}
                     />
                   }
                   label={key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
@@ -160,12 +167,13 @@ const NotificationSettingsPage = () => {
           </Grid>
         </Grid>
         <Button
-          sx={{ mt: 2 }}
+          sx={{ mt: 2, minHeight: 44 }}
           variant="contained"
           disabled={saving}
           onClick={save}
+          aria-label="Save notification preferences"
         >
-          {saving ? 'Saving...' : 'Save'}
+          {saving ? 'Saving...' : 'Save Preferences'}
         </Button>
       </Paper>
       )}

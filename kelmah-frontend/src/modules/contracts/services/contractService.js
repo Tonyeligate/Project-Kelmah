@@ -5,9 +5,25 @@
  */
 
 import { api } from '../../../services/apiClient';
+import { unwrapApiData } from '../../../services/responseNormalizer';
+import { captureRecoverableApiError } from '../../../services/errorTelemetry';
+
+const CONTRACTS_BASE = '/jobs/contracts';
+
+const isValidRouteId = (value) => {
+  if (value === null || value === undefined) return false;
+  const normalized = String(value).trim();
+  return normalized.length > 0 && normalized !== 'undefined' && normalized !== 'null';
+};
+
+const assertMilestoneRouteIds = (contractId, milestoneId) => {
+  if (!isValidRouteId(contractId) || !isValidRouteId(milestoneId)) {
+    throw new Error('Valid contractId and milestoneId are required');
+  }
+};
 
 const unwrapPayload = (response) =>
-  response?.data?.data ?? response?.data ?? {};
+  unwrapApiData(response, { defaultValue: {} });
 
 const normalizeMilestone = (milestone = {}, index = 0) => ({
   id: milestone.id || milestone._id || `milestone-${index}`,
@@ -70,7 +86,7 @@ export const contractService = {
   // Get contracts with filters
   async getContracts(filters = {}) {
     try {
-      const response = await api.get('/jobs/contracts', {
+      const response = await api.get(CONTRACTS_BASE, {
         params: filters,
       });
       const payload = unwrapPayload(response);
@@ -98,7 +114,7 @@ export const contractService = {
         return contracts.find((c) => c._id === id || c.id === id) || null;
       }
 
-      const response = await api.get(`/jobs/contracts/${id}`);
+      const response = await api.get(`${CONTRACTS_BASE}/${id}`);
       const payload = unwrapPayload(response);
       return normalizeContract(payload, 0);
     } catch (error) {
@@ -114,7 +130,7 @@ export const contractService = {
   // Update contract
   async updateContract(id, updateData) {
     try {
-      const response = await api.put(`/jobs/contracts/${id}`, updateData);
+      const response = await api.put(`${CONTRACTS_BASE}/${id}`, updateData);
       const payload = unwrapPayload(response);
       return normalizeContract(payload, 0);
     } catch (error) {
@@ -124,7 +140,7 @@ export const contractService = {
 
   async createContract(contractData) {
     try {
-      const response = await api.post('/jobs/contracts', contractData);
+      const response = await api.post(CONTRACTS_BASE, contractData);
       const payload = unwrapPayload(response);
       return normalizeContract(payload, 0);
     } catch (error) {
@@ -134,7 +150,7 @@ export const contractService = {
 
   async signContract(contractId, signatureData = {}) {
     try {
-      const response = await api.put(`/jobs/contracts/${contractId}`, {
+      const response = await api.put(`${CONTRACTS_BASE}/${contractId}`, {
         ...signatureData,
         status: 'active',
       });
@@ -147,7 +163,7 @@ export const contractService = {
 
   async sendContractForSignature(contractId) {
     try {
-      const response = await api.put(`/jobs/contracts/${contractId}`, {
+      const response = await api.put(`${CONTRACTS_BASE}/${contractId}`, {
         status: 'pending',
       });
       const payload = unwrapPayload(response);
@@ -162,6 +178,11 @@ export const contractService = {
       const contract = await this.getContractById(contractId);
       return Array.isArray(contract?.milestones) ? contract.milestones : [];
     } catch (error) {
+      captureRecoverableApiError(error, {
+        operation: 'contracts.getContractMilestones',
+        fallbackUsed: true,
+        suppressUi: true,
+      });
       return [];
     }
   },
@@ -184,13 +205,20 @@ export const contractService = {
   },
 
   async completeMilestone(contractId, milestoneId, completionData = {}) {
+    assertMilestoneRouteIds(contractId, milestoneId);
+
     try {
       const response = await api.put(
-        `/jobs/contracts/${contractId}/milestones/${milestoneId}/approve`,
+        `${CONTRACTS_BASE}/${contractId}/milestones/${milestoneId}/approve`,
         completionData,
       );
       return unwrapPayload(response);
     } catch (error) {
+      captureRecoverableApiError(error, {
+        operation: 'contracts.completeMilestone',
+        fallbackUsed: true,
+        suppressUi: true,
+      });
       const contract = await this.getContractById(contractId);
       if (!contract) throw error;
 
@@ -210,7 +238,7 @@ export const contractService = {
   },
 
   async cancelContract(contractId, reason) {
-    const response = await api.put(`/jobs/contracts/${contractId}`, {
+    const response = await api.put(`${CONTRACTS_BASE}/${contractId}`, {
       status: 'cancelled',
       cancellationReason: reason,
     });
@@ -219,7 +247,7 @@ export const contractService = {
   },
 
   async completeContract(contractId) {
-    const response = await api.put(`/jobs/contracts/${contractId}`, {
+    const response = await api.put(`${CONTRACTS_BASE}/${contractId}`, {
       status: 'completed',
     });
     const payload = unwrapPayload(response);
@@ -228,7 +256,7 @@ export const contractService = {
 
   async createDispute(contractId, disputeData) {
     const response = await api.post(
-      `/jobs/contracts/${contractId}/disputes`,
+      `${CONTRACTS_BASE}/${contractId}/disputes`,
       disputeData,
     );
     return unwrapPayload(response);
@@ -263,24 +291,36 @@ export const contractService = {
 
   // Approve milestone within a contract
   async approveMilestone(contractId, milestoneId) {
+    assertMilestoneRouteIds(contractId, milestoneId);
+
     try {
       const response = await api.put(
-        `/jobs/contracts/${contractId}/milestones/${milestoneId}/approve`,
+        `${CONTRACTS_BASE}/${contractId}/milestones/${milestoneId}/approve`,
         { status: 'approved' },
       );
       return unwrapPayload(response) || { success: true };
     } catch (error) {
+      captureRecoverableApiError(error, {
+        operation: 'contracts.approveMilestone.direct',
+        fallbackUsed: true,
+        suppressUi: true,
+      });
       // If dedicated approve endpoint doesn't exist, try generic milestone update
       try {
         const response = await api.put(
-          `/jobs/contracts/${contractId}`,
+          `${CONTRACTS_BASE}/${contractId}`,
           {
             milestoneId,
             milestoneStatus: 'approved',
           },
         );
         return unwrapPayload(response) || { success: true };
-      } catch {
+      } catch (fallbackError) {
+        captureRecoverableApiError(fallbackError, {
+          operation: 'contracts.approveMilestone.fallback',
+          fallbackUsed: true,
+          suppressUi: true,
+        });
         throw error; // throw original error
       }
     }

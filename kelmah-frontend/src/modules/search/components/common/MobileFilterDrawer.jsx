@@ -122,9 +122,14 @@ const MobileFilterDrawer = ({
         }}
       >
         <Typography variant="h6" fontWeight="bold">
-          Filter & Sort Workers
+          Find workers faster
         </Typography>
-        <IconButton onClick={onClose} size="small">
+        <IconButton
+          onClick={onClose}
+          size="small"
+          aria-label="Close mobile filters"
+          sx={{ width: 44, height: 44 }}
+        >
           <CloseIcon />
         </IconButton>
       </Box>
@@ -145,6 +150,13 @@ const MobileFilterDrawer = ({
 
       {/* Filter Form */}
       <Box sx={{ p: 2 }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: 'block', mb: 1.5, lineHeight: 1.4 }}
+        >
+          Start with trade and location, then narrow by work type if needed.
+        </Typography>
         <Stack spacing={2}>
           {/* Search Keyword */}
           <TextField
@@ -154,6 +166,7 @@ const MobileFilterDrawer = ({
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             placeholder="e.g., Carpenter, Plumber, Electrician"
+            inputProps={{ 'aria-label': 'Filter by trade or job keyword' }}
             InputProps={{
               sx: { minHeight: '48px' }, // Touch-friendly
             }}
@@ -167,6 +180,7 @@ const MobileFilterDrawer = ({
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             placeholder="e.g., Accra, Kumasi, Takoradi, Tamale"
+            inputProps={{ 'aria-label': 'Filter by location in Ghana' }}
             InputProps={{
               sx: { minHeight: '48px' }, // Touch-friendly
             }}
@@ -179,6 +193,7 @@ const MobileFilterDrawer = ({
               value={jobType}
               onChange={(e) => setJobType(e.target.value)}
               label="Work Type"
+              inputProps={{ 'aria-label': 'Filter by work type' }}
               sx={{ minHeight: '48px' }} // Touch-friendly
             >
               <MenuItem value="">Any Type</MenuItem>
@@ -197,6 +212,7 @@ const MobileFilterDrawer = ({
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               label="Trade/Skill"
+              inputProps={{ 'aria-label': 'Filter by trade or skill category' }}
               sx={{ minHeight: '48px' }} // Touch-friendly
             >
               <MenuItem value="">All Trades</MenuItem>
@@ -216,7 +232,7 @@ const MobileFilterDrawer = ({
               fullWidth
               sx={{ minHeight: '48px' }}
             >
-              Clear All
+              Clear Filters
             </Button>
             <Button
               variant="contained"
@@ -233,7 +249,7 @@ const MobileFilterDrawer = ({
                 },
               }}
             >
-              Apply Filters
+              Show Results
             </Button>
           </Stack>
         </Stack>

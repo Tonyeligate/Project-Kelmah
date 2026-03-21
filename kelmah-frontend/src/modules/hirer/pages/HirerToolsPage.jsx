@@ -20,6 +20,9 @@ const HirerToolsPage = () => {
       <Typography variant="h4" fontWeight={700} sx={{ mb: 3 }}>
         Hirer Tools
       </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        Use these tools to post jobs faster, estimate budgets, and find trusted workers.
+      </Typography>
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
@@ -28,7 +31,7 @@ const HirerToolsPage = () => {
               Post a New Job
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Create a detailed job posting to find skilled workers.
+              Share clear job details so qualified workers can respond quickly.
             </Typography>
             <Box>
               <Button
@@ -49,7 +52,7 @@ const HirerToolsPage = () => {
               Find Skilled Workers
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Search and connect with verified professionals.
+              Search and contact verified workers for your project.
             </Typography>
             <Box>
               <Button

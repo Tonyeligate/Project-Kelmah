@@ -7,13 +7,13 @@ import { useEffect, Suspense, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { Box, CircularProgress, Alert, Snackbar, LinearProgress, Button, IconButton } from '@mui/material';
+import { Box, Alert, Snackbar, LinearProgress, Button, IconButton, Skeleton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { KelmahThemeProvider, useThemeMode } from './theme/ThemeProvider';
 import { AppRoutes } from './routes/config';
 import { verifyAuth } from './modules/auth/services/authSlice';
 import { secureStorage } from './utils/secureStorage';
-import { initializePWA } from './utils/pwaHelpers';
+import { initializePWA, applyPwaUpdate } from './utils/pwaHelpers';
 import GlobalErrorBoundary from './modules/common/components/GlobalErrorBoundary';
 import { useApiHealth } from './hooks/useApiHealth';
 import { warmUpServices } from './utils/serviceWarmUp';
@@ -21,6 +21,7 @@ import useWebSocketConnect from './hooks/useWebSocketConnect';
 import OfflineBanner from './components/common/OfflineBanner';
 import ScrollToTop from './components/common/ScrollToTop';
 import { BOTTOM_NAV_HEIGHT, Z_INDEX } from './constants/layout';
+import { telemetryEvents } from './services/errorTelemetry';
 
 const PWA_BANNER_DISMISS_KEY = 'pwa_banner_dismissed';
 const PWA_BANNER_DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -38,6 +39,15 @@ const shouldShowInstallPrompt = () => {
   return Date.now() - dismissedAt > PWA_BANNER_DISMISS_TTL_MS;
 };
 
+const formatRetryDelay = (retryAfterMs) => {
+  if (!Number.isFinite(retryAfterMs) || retryAfterMs <= 0) {
+    return null;
+  }
+
+  const seconds = Math.max(1, Math.round(retryAfterMs / 1000));
+  return `Try again in about ${seconds}s.`;
+};
+
 // Main App Component
 const App = () => {
   const dispatch = useDispatch();
@@ -48,6 +58,7 @@ const App = () => {
   const [authBootstrapLoading, setAuthBootstrapLoading] = useState(true);
   const [swUpdateAvailable, setSwUpdateAvailable] = useState(false);
   const [pwaInstallAvailable, setPwaInstallAvailable] = useState(false);
+  const [apiRecoveryNotice, setApiRecoveryNotice] = useState(null);
 
   // Auto-connect/disconnect the global websocket singleton based on auth state
   useWebSocketConnect();
@@ -89,6 +100,65 @@ const App = () => {
       setPwaInstallAvailable(false);
     }
   };
+
+  const handleApplySwUpdate = async () => {
+    setSwUpdateAvailable(false);
+    await applyPwaUpdate();
+  };
+
+  useEffect(() => {
+    const handleRecoverableApiError = (event) => {
+      const detail = event?.detail || {};
+      if (detail.suppressUi) {
+        return;
+      }
+
+      setApiRecoveryNotice({
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        message:
+          detail.userMessage ||
+          'We had trouble completing that request. You can try again.',
+        retryable: Boolean(detail.retryable),
+        isTimeout: Boolean(detail.isTimeout),
+        retryAfterMs: Number.isFinite(detail.retryAfterMs) ? detail.retryAfterMs : null,
+        retryHint: detail.retryHint || null,
+      });
+    };
+
+    const handleContractMismatch = (event) => {
+      const detail = event?.detail || {};
+      setApiRecoveryNotice({
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        message:
+          detail.userMessage ||
+          'A temporary service mismatch was detected. Please retry in a moment.',
+        retryable: true,
+        isTimeout: false,
+        retryAfterMs: Number.isFinite(detail.retryAfterMs) ? detail.retryAfterMs : 3000,
+        retryHint: detail.retryHint || null,
+      });
+    };
+
+    window.addEventListener(
+      telemetryEvents.RECOVERABLE_EVENT_NAME,
+      handleRecoverableApiError,
+    );
+    window.addEventListener(
+      telemetryEvents.CONTRACT_EVENT_NAME,
+      handleContractMismatch,
+    );
+
+    return () => {
+      window.removeEventListener(
+        telemetryEvents.RECOVERABLE_EVENT_NAME,
+        handleRecoverableApiError,
+      );
+      window.removeEventListener(
+        telemetryEvents.CONTRACT_EVENT_NAME,
+        handleContractMismatch,
+      );
+    };
+  }, []);
 
   // Initialize PWA
   useEffect(() => {
@@ -175,14 +245,21 @@ const App = () => {
       <KelmahThemeProvider>
         <Box
           sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100vh',
+            minHeight: '100vh',
             bgcolor: 'background.default',
+            px: { xs: 2, sm: 3 },
+            py: { xs: 3, sm: 4 },
           }}
         >
-          <CircularProgress color="primary" />
+          <Box sx={{ width: '100%', maxWidth: 1120, mx: 'auto' }}>
+            <Skeleton variant="rounded" height={56} sx={{ mb: 2 }} />
+            <Skeleton variant="rounded" height={72} sx={{ mb: 2 }} />
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
+              <Skeleton variant="rounded" height={160} />
+              <Skeleton variant="rounded" height={160} />
+              <Skeleton variant="rounded" height={160} />
+            </Box>
+          </Box>
         </Box>
       </KelmahThemeProvider>
     );
@@ -279,7 +356,7 @@ const App = () => {
               <Button
                 color="primary"
                 size="small"
-                onClick={() => window.location.reload()}
+                onClick={handleApplySwUpdate}
               >
                 Update Now
               </Button>
@@ -326,6 +403,53 @@ const App = () => {
             sx={{ width: '100%' }}
           >
             Install Kelmah for faster access and better offline support.
+          </Alert>
+        </Snackbar>
+        <Snackbar
+          open={Boolean(apiRecoveryNotice)}
+          autoHideDuration={7000}
+          onClose={() => setApiRecoveryNotice(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          sx={{
+            bottom: {
+              xs: `calc(${BOTTOM_NAV_HEIGHT + 12}px + env(safe-area-inset-bottom, 0px)) !important`,
+              md: '24px !important',
+            },
+            zIndex: Z_INDEX.snackbar,
+          }}
+        >
+          <Alert
+            severity={apiRecoveryNotice?.isTimeout ? 'warning' : 'info'}
+            onClose={() => setApiRecoveryNotice(null)}
+            action={
+              apiRecoveryNotice?.retryable
+                ? (
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => {
+                      setApiRecoveryNotice(null);
+                      window.location.reload();
+                    }}
+                  >
+                    Retry
+                  </Button>
+                )
+                : null
+            }
+            sx={{ width: '100%' }}
+          >
+            {apiRecoveryNotice?.message}
+            {apiRecoveryNotice?.isTimeout && (
+              <Box component="span" sx={{ display: 'block', mt: 0.5 }}>
+                Timeout detected. Slow connections can take longer on first request.
+              </Box>
+            )}
+            {formatRetryDelay(apiRecoveryNotice?.retryAfterMs) && (
+              <Box component="span" sx={{ display: 'block', mt: 0.5 }}>
+                {formatRetryDelay(apiRecoveryNotice?.retryAfterMs)}
+              </Box>
+            )}
           </Alert>
         </Snackbar>
       </GlobalErrorBoundary>

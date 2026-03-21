@@ -512,8 +512,7 @@ const HowItWorksSection = () => {
                 ...(tab === t.key
                   ? { bgcolor: '#D4AF37', color: '#000', '&:hover': { bgcolor: '#B8941F' } }
                   : { borderColor: 'divider', color: 'text.secondary' }),
-              }}
-            >
+              }}>
               {t.icon}{t.label}
             </Button>
           ))}

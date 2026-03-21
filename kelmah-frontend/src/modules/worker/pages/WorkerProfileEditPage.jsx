@@ -632,7 +632,7 @@ const WorkerProfileEditPage = () => {
           Edit Your Profile
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Complete your profile to attract more job opportunities
+          Complete your profile details, then save to help hirers trust your experience.
         </Typography>
       </Box>
 
@@ -794,6 +794,7 @@ const WorkerProfileEditPage = () => {
               variant="contained"
               onClick={handleSaveAvailability}
               disabled={!!loading?.availability}
+              aria-label="Save availability settings"
             >
               {loading?.availability ? 'Saving...' : 'Save Availability'}
             </Button>
@@ -859,6 +860,7 @@ const WorkerProfileEditPage = () => {
                 accept="image/*"
                 id="profile-image"
                 type="file"
+                inputProps={{ 'aria-label': 'Upload profile picture' }}
                 onChange={handleImageChange}
               />
               <Button
@@ -917,6 +919,7 @@ const WorkerProfileEditPage = () => {
                 onChange={handleInputChange}
                 required
                 placeholder="e.g. Senior Plumber, Experienced Electrician"
+                helperText="Use the trade title hirers will search for."
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -952,6 +955,7 @@ const WorkerProfileEditPage = () => {
                 onChange={handleInputChange}
                 placeholder="e.g. 024 123 4567"
                 inputProps={{ inputMode: 'tel' }}
+                helperText="Add a number hirers can call quickly after shortlisting you."
               />
             </Grid>
           </Grid>
@@ -1016,7 +1020,7 @@ const WorkerProfileEditPage = () => {
                 rows={4}
                 placeholder="Tell potential clients about yourself, your experience, and why they should hire you."
                 inputProps={{ maxLength: 600 }}
-                helperText={`${formData.bio.length}/600 characters`}
+                helperText={`${formData.bio.length}/600 characters. Tell hirers what you do best.`}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment
@@ -1065,7 +1069,7 @@ const WorkerProfileEditPage = () => {
                 sx={{ ml: 1 }}
                 startIcon={<AddIcon />}
               >
-                Add
+                Add skill
               </Button>
             </Box>
 
@@ -1308,7 +1312,7 @@ const WorkerProfileEditPage = () => {
           </Typography>
 
           <Typography variant="body2" color="text.secondary" gutterBottom>
-            Add examples of your previous work to showcase your skills
+            Add photos or samples of past work so hirers can trust your experience.
           </Typography>
 
           <Button
@@ -1317,7 +1321,7 @@ const WorkerProfileEditPage = () => {
             startIcon={<AddIcon />}
             sx={{ mb: 3 }}
           >
-            Add Portfolio Item
+            Add portfolio item
           </Button>
 
           <Grid container spacing={3}>
@@ -1398,7 +1402,7 @@ const WorkerProfileEditPage = () => {
                             }}
                           >
                             <Typography variant="body2" color="text.secondary">
-                              No image selected
+                              No image added yet
                             </Typography>
                           </Box>
                         )}
@@ -1408,6 +1412,7 @@ const WorkerProfileEditPage = () => {
                             accept="image/*"
                             id={`portfolio-image-${index}`}
                             type="file"
+                            inputProps={{ 'aria-label': `Upload image for portfolio item ${index + 1}` }}
                             onChange={(e) =>
                               handlePortfolioImageChange(e, index)
                             }
@@ -1416,11 +1421,10 @@ const WorkerProfileEditPage = () => {
                             component="span"
                             variant="outlined"
                             size="small"
-                            startIcon={<CameraIcon />}
-                          >
+                            startIcon={<CameraIcon />}>
                             {item.imagePreview || item.image
-                              ? 'Change Image'
-                              : 'Add Image'}
+                              ? 'Change image'
+                              : 'Add image'}
                           </Button>
                         </label>
                       </Box>
@@ -1451,9 +1455,10 @@ const WorkerProfileEditPage = () => {
             startIcon={<SaveIcon />}
             size="large"
             disabled={!!loading?.profile}
+            aria-label="Save worker profile changes"
             sx={{ minHeight: 44 }}
           >
-            {loading?.profile ? 'Saving...' : 'Save Profile'}
+            {loading?.profile ? 'Saving...' : 'Save changes'}
           </Button>
         </Box>
       </form>
@@ -1464,3 +1469,4 @@ const WorkerProfileEditPage = () => {
 };
 
 export default WorkerProfileEditPage;
+

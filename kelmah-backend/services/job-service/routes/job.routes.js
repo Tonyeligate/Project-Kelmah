@@ -38,6 +38,8 @@ router.get("/", jobController.getJobs);
 router.get("/search", jobController.advancedJobSearch);
 router.get("/dashboard", verifyGatewayRequest, jobController.getDashboardJobs); // Protected dashboard route
 router.get("/categories", jobController.getJobCategories);
+router.get('/skills', jobController.getJobSkills);
+router.get('/popular-searches', jobController.getPopularSearches);
 router.get('/suggestions', jobController.getSearchSuggestions);
 router.get("/stats", jobController.getPlatformStats); // ✅ PUBLIC: Platform statistics
 router.post("/contracts/:id/disputes", verifyGatewayRequest, jobController.createContractDispute);
@@ -54,6 +56,7 @@ router.get("/milestones/:milestoneId", jobController.getMilestoneById);
 
 // Contract routes (protected - require authentication)
 router.get("/contracts", jobController.getContracts);
+router.post('/contracts', jobController.createContract);
 router.get("/contracts/:id", jobController.getContractById);
 router.put("/contracts/:id", jobController.updateContract);
 router.put("/contracts/:contractId/milestones/:milestoneId/approve", jobController.approveMilestone);

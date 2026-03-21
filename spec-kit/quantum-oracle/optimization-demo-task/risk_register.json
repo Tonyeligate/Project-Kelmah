@@ -1,0 +1,13 @@
+{
+  "taskId": "optimization-demo-task",
+  "risks": [
+    {
+      "id": "R1",
+      "description": "Over-personalization may reduce user predictability",
+      "likelihood": "medium",
+      "impact": "medium",
+      "mitigation": "Use deterministic fallback and policy constraints",
+      "status": "mitigated"
+    }
+  ]
+}

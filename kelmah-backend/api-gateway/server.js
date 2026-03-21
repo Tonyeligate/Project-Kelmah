@@ -1001,6 +1001,47 @@ app.use('/api/quick-jobs', authenticate, (req, res, next) => {
   }
 }));
 
+// Calendar/events routes - proxy to job-service
+app.use('/api/events', authenticate, (req, res, next) => {
+  if (req.user) {
+    req.headers['x-authenticated-user'] = JSON.stringify(req.user);
+    req.headers['x-auth-source'] = 'api-gateway';
+  }
+  next();
+}, createDynamicProxy('job', {
+  pathRewrite: (path) => `/api/events${path}`,
+  onError: (err, req, res) => {
+    console.error('[API Gateway] Events service error:', err.message);
+    res.status(503).json({
+      success: false,
+      error: {
+        message: 'Events service temporarily unavailable',
+        code: 'EVENTS_SERVICE_UNAVAILABLE'
+      }
+    });
+  }
+}));
+
+app.use('/api/calendar/events', authenticate, (req, res, next) => {
+  if (req.user) {
+    req.headers['x-authenticated-user'] = JSON.stringify(req.user);
+    req.headers['x-auth-source'] = 'api-gateway';
+  }
+  next();
+}, createDynamicProxy('job', {
+  pathRewrite: (path) => `/api/calendar/events${path}`,
+  onError: (err, req, res) => {
+    console.error('[API Gateway] Calendar events service error:', err.message);
+    res.status(503).json({
+      success: false,
+      error: {
+        message: 'Calendar service temporarily unavailable',
+        code: 'CALENDAR_SERVICE_UNAVAILABLE'
+      }
+    });
+  }
+}));
+
 // Payment routes (protected with validation) — use dedicated router to expose granular endpoints and aliases
 const paymentRouter = require('./routes/payment.routes');
 // HIGH-21 FIX: Removed `requestValidator.validatePayment` from global middleware.

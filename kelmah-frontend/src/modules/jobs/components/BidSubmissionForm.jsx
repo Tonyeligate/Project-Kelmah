@@ -167,7 +167,7 @@ const BidSubmissionForm = ({ open, onClose, job }) => {
             <GavelIcon />
             Place Your Bid
           </Box>
-          <IconButton onClick={onClose} sx={{ color: 'text.secondary' }}>
+          <IconButton onClick={onClose} sx={{ color: 'text.secondary' }} aria-label="Close bid dialog">
             <CloseIcon />
           </IconButton>
         </DialogTitle>

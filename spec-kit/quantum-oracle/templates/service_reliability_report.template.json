@@ -1,0 +1,21 @@
+{
+  "taskId": "<task-id>",
+  "metrics": {
+    "errorRateBefore": 0.018,
+    "errorRateAfter": 0.009,
+    "timeoutRateBefore": 0.013,
+    "timeoutRateAfter": 0.006
+  },
+  "chaosScenarios": [
+    {
+      "id": "C1",
+      "name": "dependent service timeout",
+      "result": "pass"
+    }
+  ],
+  "rollbackPlan": {
+    "strategy": "feature-flag rollback",
+    "trigger": "error-rate regression"
+  },
+  "closureVerdict": "PASS"
+}

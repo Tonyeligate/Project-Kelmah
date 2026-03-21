@@ -4,6 +4,8 @@
  */
 
 import { api } from '../../../services/apiClient';
+import { unwrapApiData } from '../../../services/responseNormalizer';
+import { captureRecoverableApiError } from '../../../services/errorTelemetry';
 
 const normalizePaymentMethod = (raw) => {
   if (!raw || typeof raw !== 'object') return null;
@@ -60,50 +62,58 @@ const normalizePaymentMethodsResponse = (payload) => {
   return list.map(normalizePaymentMethod).filter(Boolean);
 };
 
+const unwrapPaymentPayload = (response, defaultValue = null) =>
+  unwrapApiData(response, { defaultValue });
+
 const paymentService = {
   // Wallet operations
   getWallet: async () => {
-    const { data } = await api.get('/payments/wallet');
-    return data?.success ? (data.data ?? data) : data;
+    const response = await api.get('/payments/wallet');
+    return unwrapPaymentPayload(response, {});
   },
 
   // Payment methods
   getPaymentMethods: async () => {
     try {
-      const { data } = await api.get('/payments/methods');
-      return normalizePaymentMethodsResponse(data);
+      const response = await api.get('/payments/methods');
+      return normalizePaymentMethodsResponse(unwrapPaymentPayload(response, []));
     } catch (err) {
       if (import.meta.env.DEV) console.error('getPaymentMethods failed:', err);
+      captureRecoverableApiError(err, {
+        operation: 'payments.getPaymentMethods',
+        fallbackUsed: true,
+      });
       return [];
     }
   },
 
   addPaymentMethod: async (methodData) => {
-    const { data } = await api.post('/payments/methods', methodData);
-    const created = data?.data || data;
+    const response = await api.post('/payments/methods', methodData);
+    const created = unwrapPaymentPayload(response, {});
     return normalizePaymentMethod(created);
   },
 
   setDefaultPaymentMethod: async (methodId) => {
-    const { data } = await api.put(`/payments/methods/${methodId}/default`);
-    return data?.data ? normalizePaymentMethod(data.data) : data;
+    const response = await api.put(`/payments/methods/${methodId}/default`);
+    const payload = unwrapPaymentPayload(response, {});
+    return payload ? normalizePaymentMethod(payload) : payload;
   },
 
   deletePaymentMethod: async (methodId) => {
-    const { data } = await api.delete(`/payments/methods/${methodId}`);
-    return data;
+    const response = await api.delete(`/payments/methods/${methodId}`);
+    return unwrapPaymentPayload(response, {});
   },
 
   // Payment analytics
   getPaymentAnalytics: async (params = {}) => {
-    const { data } = await api.get('/payments/analytics', { params });
-    return data;
+    const response = await api.get('/payments/analytics', { params });
+    return unwrapPaymentPayload(response, {});
   },
 
   // Transaction operations
   getTransactionHistory: async (params = {}) => {
     const response = await api.get('/payments/transactions/history', { params });
-    const rd = response.data;
+    const rd = unwrapPaymentPayload(response, []);
     // New format: { success: true, data: [...], meta: { total, totalPages, currentPage } }
     if (rd?.success && Array.isArray(rd?.data)) {
       return {
@@ -133,47 +143,52 @@ const paymentService = {
       paymentMethod:
         transactionData.paymentMethod || transactionData.paymentMethodId,
     };
-    const { data } = await api.post('/payments/transactions', normalized);
-    return data;
+    const response = await api.post('/payments/transactions', normalized);
+    return unwrapPaymentPayload(response, {});
   },
 
   // Escrow operations
   getEscrows: async () => {
     try {
       // Backend returns { success: true, data: [...] } — normalise to array
-      const { data } = await api.get('/payments/escrows');
-      if (data?.success) {
-        return Array.isArray(data.data) ? data.data : data.data?.escrows || [];
+      const response = await api.get('/payments/escrows');
+      const payload = unwrapPaymentPayload(response, []);
+      if (Array.isArray(payload)) {
+        return payload;
       }
-      return Array.isArray(data) ? data : data?.escrows || [];
+      return payload?.escrows || [];
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Escrow service unavailable:', error.message);
+      captureRecoverableApiError(error, {
+        operation: 'payments.getEscrows',
+        fallbackUsed: true,
+      });
       // Return empty array — do NOT show fake escrow data
       return [];
     }
   },
 
   fundEscrow: async (payload) => {
-    const { data } = await api.post('/payments/escrows/fund', payload);
-    return data;
+    const response = await api.post('/payments/escrows/fund', payload);
+    return unwrapPaymentPayload(response, {});
   },
 
   refundEscrow: async (escrowId) => {
-    const { data } = await api.post(`/payments/escrows/${escrowId}/refund`);
-    return data;
+    const response = await api.post(`/payments/escrows/${escrowId}/refund`);
+    return unwrapPaymentPayload(response, {});
   },
 
   getEscrowDetails: async (escrowId) => {
-    const { data } = await api.get(`/payments/escrows/${escrowId}`);
-    return data;
+    const response = await api.get(`/payments/escrows/${escrowId}`);
+    return unwrapPaymentPayload(response, {});
   },
 
   releaseEscrow: async (escrowId, releaseData) => {
-    const { data } = await api.post(
+    const response = await api.post(
       `/payments/escrows/${escrowId}/release`,
       releaseData,
     );
-    return data;
+    return unwrapPaymentPayload(response, {});
   },
 
   // Bills operations

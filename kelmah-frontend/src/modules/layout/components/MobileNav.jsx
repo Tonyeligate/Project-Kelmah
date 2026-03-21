@@ -41,6 +41,7 @@ import { logout, logoutUser } from '../../auth/services/authSlice';
 import { BRAND_COLORS } from '../../../theme';
 import { useAuthCheck } from '../../../hooks/useAuthCheck';
 import { secureStorage } from '../../../utils/secureStorage';
+import { captureRecoverableApiError } from '@/services/errorTelemetry';
 
 // Styled Components
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
@@ -198,12 +199,25 @@ const MobileNav = ({ open, onClose }) => {
     // Store the logout action; it runs after the drawer fully closes.
     pendingActionRef.current = () => {
       try {
-        secureStorage.clear();
-      } catch (_) { /* best-effort */ }
+        secureStorage.clearAuthData();
+      } catch (error) {
+        captureRecoverableApiError(error, {
+          phase: 'logout-local-clear',
+          feature: 'mobile-nav-logout',
+          suppressUi: true,
+        });
+      }
 
       dispatch(logout());
       navigate('/', { replace: true });
-      Promise.resolve(dispatch(logoutUser())).catch(() => {});
+      Promise.resolve(dispatch(logoutUser())).catch((error) => {
+        captureRecoverableApiError(error, {
+          phase: 'logout-server',
+          endpoint: '/auth/logout',
+          method: 'post',
+          feature: 'mobile-nav-logout',
+        });
+      });
     };
     requestClose();
   };
@@ -278,9 +292,6 @@ const MobileNav = ({ open, onClose }) => {
       SlideProps={{ onExited: handleDrawerExited }}
       ModalProps={{
         keepMounted: true,
-        disableAutoFocus: true,
-        disableEnforceFocus: true,
-        disableRestoreFocus: true,
       }}
     >
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -314,7 +325,7 @@ const MobileNav = ({ open, onClose }) => {
           </Typography>
           <IconButton
             onClick={requestClose}
-            aria-label="Close menu"
+            aria-label="Close navigation menu"
             sx={{
               color:
                 theme.palette.mode === 'dark'

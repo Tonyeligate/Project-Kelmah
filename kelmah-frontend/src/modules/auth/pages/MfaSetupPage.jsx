@@ -60,6 +60,9 @@ const MfaSetupPage = () => {
         <Typography variant="h5" gutterBottom sx={isMobile ? { color: 'text.primary', fontWeight: 700 } : {}}>
           Setup Two-Factor Authentication
         </Typography>
+        <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+          Scan the QR code in your authenticator app, then enter the 6-digit code to finish setup.
+        </Typography>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
@@ -79,8 +82,7 @@ const MfaSetupPage = () => {
               sx={{ mb: 2, maxWidth: '100%' }}
             />
             <Typography variant="body2" gutterBottom sx={isMobile ? { color: 'text.secondary' } : {}}>
-              Scan this QR code with your authenticator app, then enter the code
-              below to verify.
+              Open Google Authenticator or Authy, scan this code, then enter the changing code below.
             </Typography>
             <Box component="form" onSubmit={handleVerify} sx={{ mt: 2 }}>
               <TextField
@@ -88,20 +90,21 @@ const MfaSetupPage = () => {
                 fullWidth
                 required
                 placeholder="Enter 6-digit code"
+                helperText="Use the latest 6-digit code from your authenticator app."
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
-                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 6, style: { letterSpacing: '0.3em', textAlign: 'center' } }}
+                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 6, style: { letterSpacing: '0.3em', textAlign: 'center' }, 'aria-label': 'Two-factor authentication code' }}
                 sx={isMobile ? { mb: 2, '& .MuiOutlinedInput-root': { backgroundColor: 'action.hover', color: 'text.primary' }, '& .MuiInputLabel-root': { color: 'text.secondary' } } : { mb: 2 }}
               />
-              <Button type="submit" variant="contained" fullWidth disabled={verifying} sx={{ minHeight: 48, borderRadius: isMobile ? '24px' : 1 }}>
-                {verifying ? <CircularProgress size={24} color="inherit" /> : 'Enable 2FA'}
+              <Button type="submit" variant="contained" fullWidth disabled={verifying} aria-label="Turn on two-step login" sx={{ minHeight: 48, borderRadius: isMobile ? '24px' : 1 }}>
+                {verifying ? <CircularProgress size={24} color="inherit" /> : 'Turn On 2-Step Login'}
               </Button>
             </Box>
           </>
         ) : (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, justifyContent: 'center' }}>
             <CircularProgress size={24} sx={{ color: '#D4AF37' }} />
-            <Typography sx={isMobile ? { color: 'text.secondary' } : {}}>Setting up two-factor authentication...</Typography>
+            <Typography sx={isMobile ? { color: 'text.secondary' } : {}}>Preparing your QR code...</Typography>
           </Box>
         )}
       </Box>

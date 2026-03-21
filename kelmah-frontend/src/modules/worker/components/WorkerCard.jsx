@@ -688,7 +688,7 @@ const WorkerCard = ({ worker, onSave, isPublicView }) => {
                   color: 'text.disabled',
                 },
               }}
-            >
+             aria-label="Send message">
               {messageCta.label}
             </Button>
           </span>

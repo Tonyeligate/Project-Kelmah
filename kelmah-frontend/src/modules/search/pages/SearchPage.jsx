@@ -4,7 +4,7 @@ const SearchPage = () => (
     variant="public"
     basePath="/find-talents"
     seoTitle="Find Skilled Workers in Ghana | Kelmah"
-    seoDescription="Search for skilled workers by location, skills, experience level, and more. Find carpenters, plumbers, electricians, and other professionals in Ghana."
+    seoDescription="Search for skilled workers by trade, location, experience, and availability. Find carpenters, plumbers, electricians, and more across Ghana."
     showHero
   />
 );

@@ -1,0 +1,21 @@
+{
+  "taskId": "backend-demo-task",
+  "packets": [
+    {
+      "agent": "backend",
+      "triggerRule": "backend-optimization",
+      "filesMeasured": ["kelmah-backend/services/job-service/routes/jobs.routes.js"],
+      "findings": ["reordered literals before :id and reduced middleware depth"],
+      "confidence": 0.95,
+      "verification": { "testsRun": ["gateway route sweep"], "status": "pass" }
+    },
+    {
+      "agent": "debugger",
+      "triggerRule": "backend-optimization-challenge",
+      "filesMeasured": ["kelmah-backend/services/job-service/controllers/jobs.controller.js"],
+      "findings": ["contract compatibility and reliability claims validated"],
+      "confidence": 0.91,
+      "verification": { "testsRun": ["counterfactual contract checks"], "status": "pass" }
+    }
+  ]
+}

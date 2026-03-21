@@ -51,8 +51,13 @@ const MobileLogin = ({ registrationSuccess = false }) => {
     return '/dashboard';
   };
 
+  const getRequestedPath = () => {
+    const queryFrom = new URLSearchParams(location.search).get('from');
+    return location.state?.from || location.state?.redirectTo || queryFrom;
+  };
+
   const resolveLoginRedirect = (user) => {
-    const requestedPath = location.state?.from || location.state?.redirectTo;
+    const requestedPath = getRequestedPath();
     if (
       typeof requestedPath === 'string' &&
       requestedPath.startsWith('/') &&
@@ -206,6 +211,7 @@ const MobileLogin = ({ registrationSuccess = false }) => {
             border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
             boxShadow: `0 12px 32px ${alpha(theme.palette.common.black, isDark ? 0.28 : 0.08)}`,
           }}
+          aria-label="Mobile login form"
         >
           {/* Back button & Title */}
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -481,3 +487,4 @@ const MobileLogin = ({ registrationSuccess = false }) => {
 };
 
 export default MobileLogin;
+

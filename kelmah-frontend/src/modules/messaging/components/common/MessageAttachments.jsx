@@ -250,7 +250,7 @@ const MessageAttachments = ({
                       >
                         {canInteract ? (
                           <Tooltip title="View image">
-                            <IconButton size="small" color="primary">
+                            <IconButton size="small" color="primary" aria-label="View image attachment">
                               <Visibility />
                             </IconButton>
                           </Tooltip>
@@ -278,6 +278,7 @@ const MessageAttachments = ({
                         <IconButton
                           size="small"
                           onClick={() => onRemove && onRemove(index)}
+                          aria-label="Remove attachment"
                           sx={{ color: 'text.secondary' }}
                         >
                           <Close fontSize="small" />
@@ -295,6 +296,7 @@ const MessageAttachments = ({
                             rel={
                               allowDownload ? 'noopener noreferrer' : undefined
                             }
+                            aria-label="Download attachment"
                             sx={{ color: 'primary.main' }}
                             disabled={!allowDownload}
                           >
@@ -325,6 +327,7 @@ const MessageAttachments = ({
             },
           }}
           onClick={handleClosePreview}
+          aria-label="Close attachment preview"
         >
           <Close />
         </IconButton>
@@ -367,3 +370,4 @@ MessageAttachments.propTypes = {
 };
 
 export default MessageAttachments;
+

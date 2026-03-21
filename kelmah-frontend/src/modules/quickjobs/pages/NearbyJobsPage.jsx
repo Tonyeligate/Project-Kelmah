@@ -233,9 +233,9 @@ const NearbyJobsPage = () => {
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h5" fontWeight="bold">
-          Jobs Near You
+          Nearby Quick Jobs
         </Typography>
-        <IconButton aria-label="Refresh jobs" onClick={() => fetchJobs()} disabled={loading || !location}>
+        <IconButton aria-label="Refresh jobs" onClick={() => fetchJobs()} disabled={loading || !location} sx={{ minWidth: 44, minHeight: 44 }}>
           <RefreshIcon />
         </IconButton>
       </Box>
@@ -258,7 +258,7 @@ const NearbyJobsPage = () => {
       {location && (
         <Chip
           icon={<MyLocationIcon />}
-          label="Using your current location"
+          label="Searching near your current location"
           variant="outlined"
           size="small"
           sx={{ mb: 2 }}
@@ -334,10 +334,10 @@ const NearbyJobsPage = () => {
             No jobs nearby right now
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Check back later or expand your search radius
+            Try again soon or increase the search distance to see more jobs.
           </Typography>
-          <Button variant="outlined" onClick={() => setMaxDistance(20)}>
-            Search within 20km
+          <Button variant="outlined" onClick={() => setMaxDistance(20)} sx={{ minHeight: 44 }}>
+            Search within 20 km
           </Button>
         </Box>
       )}
@@ -437,6 +437,7 @@ const NearbyJobsPage = () => {
                     startIcon={<SendIcon />}
                     onClick={() => openQuoteDialog(job)}
                     fullWidth
+                    sx={{ minHeight: 44 }}
                   >
                     Send Quote
                   </Button>
@@ -474,7 +475,7 @@ const NearbyJobsPage = () => {
         <DialogTitle id="send-quote-dialog-title">
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             Send Quote
-            <IconButton aria-label="Close dialog" onClick={() => setQuoteDialogOpen(false)} disabled={quoteSubmitting}>
+            <IconButton aria-label="Close quote dialog" onClick={() => setQuoteDialogOpen(false)} disabled={quoteSubmitting}>
               <CloseIcon />
             </IconButton>
           </Box>
@@ -486,7 +487,7 @@ const NearbyJobsPage = () => {
               <Typography variant="h1" sx={{ mb: 2 }}>✅</Typography>
               <Typography variant="h6">Quote Sent!</Typography>
               <Typography variant="body2" color="text.secondary">
-                You'll be notified if the client accepts your quote
+                We will notify you if the client accepts your quote.
               </Typography>
             </Box>
           ) : (
@@ -524,7 +525,7 @@ const NearbyJobsPage = () => {
                 }}
                 helperText={quoteAmount && parseFloat(quoteAmount) >= 25 
                   ? `You'll receive: ${formatCurrency(calculateFees(parseFloat(quoteAmount)).workerPayout)} (after 15% platform fee)`
-                  : 'Minimum: GH₵25'
+                  : 'Minimum quote amount is GH₵25'
                 }
                 error={quoteAmount && parseFloat(quoteAmount) < 25}
                 sx={{ mb: 2 }}
@@ -569,7 +570,7 @@ const NearbyJobsPage = () => {
                 multiline
                 rows={3}
                 label="Message to client (optional)"
-                placeholder="E.g., 'I have 10 years experience with this type of work...'"
+                placeholder="Example: I can start today and I have handled similar work before."
                 value={quoteMessage}
                 onChange={(e) => setQuoteMessage(e.target.value)}
                 inputProps={{ maxLength: 500 }}
@@ -580,7 +581,7 @@ const NearbyJobsPage = () => {
 
         {!quoteSuccess && (
           <DialogActions sx={{ px: 3, pb: 3 }}>
-            <Button onClick={() => setQuoteDialogOpen(false)} disabled={quoteSubmitting}>
+            <Button onClick={() => setQuoteDialogOpen(false)} disabled={quoteSubmitting} sx={{ minHeight: 44 }}>
               Cancel
             </Button>
             <Button
@@ -588,7 +589,7 @@ const NearbyJobsPage = () => {
               onClick={handleSubmitQuote}
               disabled={quoteSubmitting || !quoteAmount || parseFloat(quoteAmount) < 25}
               startIcon={quoteSubmitting ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
-            >
+              sx={{ minHeight: 44 }}>
               {quoteSubmitting ? 'Sending...' : 'Send Quote'}
             </Button>
           </DialogActions>

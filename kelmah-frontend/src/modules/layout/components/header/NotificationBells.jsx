@@ -49,7 +49,10 @@ const NotificationBells = ({
     <>
       {/* Messages */}
       <Tooltip title="Messages" arrow>
-        <ActionButton onClick={onMessagesClick}>
+        <ActionButton
+          onClick={onMessagesClick}
+          aria-label={`Open messages${unreadMessages > 0 ? `, ${unreadMessages} unread` : ''}`}
+        >
           <StyledBadge badgeContent={unreadMessages} color="primary">
             <MessageIcon />
           </StyledBadge>
@@ -58,7 +61,10 @@ const NotificationBells = ({
 
       {/* Notifications */}
       <Tooltip title="Notifications" arrow>
-        <ActionButton onClick={onNotificationsClick}>
+        <ActionButton
+          onClick={onNotificationsClick}
+          aria-label={`Open notifications${unreadNotifications > 0 ? `, ${unreadNotifications} unread` : ''}`}
+        >
           <StyledBadge badgeContent={unreadNotifications} color="primary">
             <NotificationsIcon />
           </StyledBadge>

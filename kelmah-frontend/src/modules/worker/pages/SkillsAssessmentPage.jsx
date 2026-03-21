@@ -1018,7 +1018,7 @@ const SkillsAssessmentPage = () => {
                 onClick={testPaused ? resumeTest : pauseTest}
                 startIcon={testPaused ? <PlayIcon /> : <PauseIcon />}
                 sx={{ minHeight: 44 }}
-              >
+               aria-label="Play">
                 {testPaused ? 'Resume' : 'Pause'}
               </Button>
 

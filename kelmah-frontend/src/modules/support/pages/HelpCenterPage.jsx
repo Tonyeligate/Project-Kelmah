@@ -151,7 +151,7 @@ const HelpCenterPage = () => {
       title: 'Help Center & Status Desk',
       subtitle:
         'Reach the Kelmah support pod, open priority tickets, and review live service status without leaving the marketplace.',
-      primaryLabel: 'Contact Support',
+      primaryLabel: 'Chat with Support',
       primaryAction: () => navigate('/messages'),
       secondaryLabel: 'View Documentation',
       secondaryAction: () => navigate('/docs'),
@@ -286,13 +286,22 @@ const HelpCenterPage = () => {
               <Typography variant="h6" maxWidth="720px">
                 {pageCopy.subtitle}
               </Typography>
+              <Typography
+                variant="body2"
+                sx={{ mt: 1.5, opacity: 0.9, maxWidth: '720px' }}
+              >
+                Quick steps: choose a channel, share your job or account
+                details, then watch for the reply time shown in-app.
+              </Typography>
             </Box>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <Button
                 variant="contained"
                 size="large"
                 onClick={pageCopy.primaryAction}
+                aria-label={pageCopy.primaryLabel}
                 endIcon={<ArrowForwardIcon />}
+                sx={{ minHeight: 44 }}
               >
                 {pageCopy.primaryLabel}
               </Button>
@@ -300,12 +309,17 @@ const HelpCenterPage = () => {
                 variant="outlined"
                 size="large"
                 onClick={pageCopy.secondaryAction}
+                aria-label={pageCopy.secondaryLabel}
+                sx={{ minHeight: 44 }}
               >
                 {pageCopy.secondaryLabel}
               </Button>
             </Stack>
             <Typography variant="body2">
               {healthStatus.message} · {healthStatus.action}
+            </Typography>
+            <Typography variant="caption" sx={{ opacity: 0.9 }}>
+              For urgent fraud or account safety issues, use Trust and Safety for priority handling.
             </Typography>
           </Stack>
         </Box>
@@ -351,6 +365,7 @@ const HelpCenterPage = () => {
                   <Button
                     onClick={action.onClick}
                     endIcon={<ArrowForwardIcon />}
+                    sx={{ minHeight: 44 }}
                   >
                     Open
                   </Button>
@@ -414,7 +429,8 @@ const HelpCenterPage = () => {
                       <Button
                         variant="outlined"
                         onClick={channel.action}
-                        sx={{ alignSelf: 'flex-start' }}
+                        aria-label={`Open ${channel.title}`}
+                        sx={{ alignSelf: 'flex-start', minHeight: 44 }}
                       >
                         {channel.ctaLabel}
                       </Button>

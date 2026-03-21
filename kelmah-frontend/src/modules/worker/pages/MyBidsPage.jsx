@@ -563,8 +563,7 @@ const MyBidsPage = () => {
             color="warning"
             onClick={handleWithdrawConfirm}
             disabled={withdrawing}
-            startIcon={withdrawing ? <CircularProgress size={16} /> : <WithdrawIcon />}
-          >
+            startIcon={withdrawing ? <CircularProgress size={16} /> : <WithdrawIcon />}>
             {withdrawing ? 'Withdrawing...' : 'Withdraw Bid'}
           </Button>
         </DialogActions>

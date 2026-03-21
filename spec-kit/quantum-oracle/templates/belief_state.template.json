@@ -1,0 +1,16 @@
+{
+  "taskId": "<task-id>",
+  "timestampUtc": "<iso-8601>",
+  "hypotheses": [
+    {
+      "id": "H1",
+      "probability": 0.4,
+      "evidenceFor": [],
+      "evidenceAgainst": []
+    }
+  ],
+  "normalizationCheck": {
+    "sumProbability": 1.0,
+    "status": "pass"
+  }
+}

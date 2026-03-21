@@ -9,6 +9,7 @@ import CryptoJS from 'crypto-js';
 
 const AUTH_TOKEN_TTL = 2 * 60 * 60 * 1000;
 const REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60 * 1000;
+const AUTH_STORAGE_KEYS = ['auth_token', 'refresh_token', 'user_data'];
 const SHOULD_START_CLEANUP_INTERVAL =
   typeof process === 'undefined' || process.env.NODE_ENV !== 'test';
 
@@ -271,7 +272,7 @@ class SecureStorage {
       return decryptedData;
     } catch (error) {
       if (import.meta.env.DEV) console.error('Failed to get secure data:', error);
-      this.clear();
+      this.clearAuthData({ broadcast: false });
       return {};
     }
   }
@@ -396,6 +397,46 @@ class SecureStorage {
     return true;
   }
 
+  notifyLogoutAcrossTabs() {
+    try {
+      const channel = new BroadcastChannel('kelmah_auth');
+      channel.postMessage({ type: 'LOGOUT' });
+      channel.close();
+    } catch (_) {
+      // BroadcastChannel not supported in older browsers.
+    }
+  }
+
+  /**
+   * Clear auth-scoped data only, preserving unrelated persisted UI data.
+   */
+  clearAuthData(options = {}) {
+    const { broadcast = true } = options;
+
+    try {
+      AUTH_STORAGE_KEYS.forEach((key) => {
+        this.removeItem(key);
+      });
+
+      // Legacy keys cleanup.
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user_data');
+      sessionStorage.removeItem('auth_token');
+      sessionStorage.removeItem('refresh_token');
+      sessionStorage.removeItem('user_data');
+
+      if (broadcast) {
+        this.notifyLogoutAcrossTabs();
+      }
+
+      return true;
+    } catch (error) {
+      if (import.meta.env.DEV) console.error('Failed to clear auth-scoped storage:', error);
+      return false;
+    }
+  }
+
   /**
    * Clear all secure data.
    * Also clears persisted encryption secret so post-logout sessions get a fresh key.
@@ -411,12 +452,7 @@ class SecureStorage {
       // Rotate in-memory key immediately so any stale ciphertext is unreadable in this tab.
       this.encryptionKey = this.generateEncryptionKey();
 
-      // Notify other tabs about the logout via BroadcastChannel
-      try {
-        const channel = new BroadcastChannel('kelmah_auth');
-        channel.postMessage({ type: 'LOGOUT' });
-        channel.close();
-      } catch (_) { /* BroadcastChannel not supported in older browsers */ }
+      this.notifyLogoutAcrossTabs();
 
       return true;
     } catch (error) {

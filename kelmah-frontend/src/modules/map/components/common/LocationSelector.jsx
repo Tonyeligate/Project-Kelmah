@@ -248,7 +248,7 @@ const LocationSelector = ({
             <InputAdornment position="end">
               {isLoading && <CircularProgress size={20} />}
               {inputValue && !isLoading && (
-                <IconButton size="small" onClick={handleClear}>
+                <IconButton size="small" onClick={handleClear} aria-label="Clear location search">
                   <ClearIcon />
                 </IconButton>
               )}

@@ -195,6 +195,7 @@ const JobSearch = () => {
                       <IconButton
                         size="small"
                         onClick={() => handleFilterChange('searchTerm', '')}
+                        aria-label="Clear job search"
                       >
                         <Clear />
                       </IconButton>
@@ -322,3 +323,4 @@ const JobSearch = () => {
 };
 
 export default JobSearch;
+

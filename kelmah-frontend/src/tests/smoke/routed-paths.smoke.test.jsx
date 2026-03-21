@@ -224,27 +224,27 @@ describe('routed path smoke suite', () => {
   test('mobile bottom-nav shows productivity-first 5 tabs for hirer', () => {
     renderBottomNavAtPath('/hirer/dashboard', 'hirer');
 
-    expect(screen.getByLabelText('Home')).toBeInTheDocument();
-    expect(screen.getByLabelText('Post Job')).toBeInTheDocument();
-    expect(screen.getByLabelText('Find Talent')).toBeInTheDocument();
-    expect(screen.getByLabelText('Applications')).toBeInTheDocument();
-    expect(screen.getByLabelText('Messages')).toBeInTheDocument();
+    expect(screen.getByLabelText('Go to Home')).toBeInTheDocument();
+    expect(screen.getByLabelText('Go to Post Job')).toBeInTheDocument();
+    expect(screen.getByLabelText('Go to Find Talent')).toBeInTheDocument();
+    expect(screen.getByLabelText('Go to Applications')).toBeInTheDocument();
+    expect(screen.getByLabelText('Go to Messages')).toBeInTheDocument();
   });
 
   test('mobile bottom-nav shows productivity-first 5 tabs for worker', () => {
     renderBottomNavAtPath('/worker/dashboard', 'worker');
 
-    expect(screen.getByLabelText('Home')).toBeInTheDocument();
-    expect(screen.getByLabelText('Find Work')).toBeInTheDocument();
-    expect(screen.getByLabelText('Applications')).toBeInTheDocument();
-    expect(screen.getByLabelText('Messages')).toBeInTheDocument();
-    expect(screen.getByLabelText('Profile')).toBeInTheDocument();
+    expect(screen.getByLabelText('Go to Home')).toBeInTheDocument();
+    expect(screen.getByLabelText('Go to Find Work')).toBeInTheDocument();
+    expect(screen.getByLabelText('Go to Applications')).toBeInTheDocument();
+    expect(screen.getByLabelText('Go to Messages')).toBeInTheDocument();
+    expect(screen.getByLabelText('Go to Profile')).toBeInTheDocument();
   });
 
   test('mobile bottom-nav Home click routes hirer to /hirer/dashboard', async () => {
     renderBottomNavAtPath('/messages', 'hirer');
 
-    fireEvent.click(screen.getByLabelText('Home'));
+    fireEvent.click(screen.getByLabelText('Go to Home'));
 
     await waitFor(() => {
       expect(screen.getByTestId('current-path')).toHaveTextContent('/hirer/dashboard');
@@ -254,7 +254,7 @@ describe('routed path smoke suite', () => {
   test('mobile bottom-nav Home click routes worker to /worker/dashboard', async () => {
     renderBottomNavAtPath('/messages', 'worker');
 
-    fireEvent.click(screen.getByLabelText('Home'));
+    fireEvent.click(screen.getByLabelText('Go to Home'));
 
     await waitFor(() => {
       expect(screen.getByTestId('current-path')).toHaveTextContent('/worker/dashboard');

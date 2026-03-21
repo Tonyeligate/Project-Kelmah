@@ -15,6 +15,7 @@ const Category = require('./Category');
 const Contract = require('./Contract');
 const ContractDispute = require('./ContractDispute');
 const ContractTemplate = require('./ContractTemplate');
+const CalendarEvent = require('./CalendarEvent');
 
 // Cross-service model used for availability-aware recommendation scoring
 const Availability = require('../../user-service/models/Availability');
@@ -36,6 +37,7 @@ module.exports = {
   Contract,
   ContractDispute,
   ContractTemplate,
+  CalendarEvent,
 
   // Cross-service
   Availability,

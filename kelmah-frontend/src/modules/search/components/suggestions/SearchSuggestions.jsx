@@ -71,11 +71,15 @@ const SearchSuggestions = ({
           <Box sx={{ p: 2 }}>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               {normalizedQuery
-                ? `No direct suggestions for "${normalizedQuery}" yet.`
-                : 'Start typing to see search suggestions.'}
+                ? `No close suggestions for "${normalizedQuery}" yet. Try a trade and location, like "plumber Kumasi".`
+                : 'Type a trade and location to find workers faster, like "electrician Accra".'}
             </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-              Try one of the popular searches:
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: 'block', mb: 1 }}
+            >
+              Common searches people use:
             </Typography>
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
               {popularTerms.slice(0, 6).map((term) => (
@@ -84,35 +88,71 @@ const SearchSuggestions = ({
                   label={term}
                   size="small"
                   variant="outlined"
-                  onClick={() => onSuggestionSelected({ type: 'search', text: term })}
+                  aria-label={`Use suggested search ${term}`}
+                  onClick={() =>
+                    onSuggestionSelected({ type: 'search', text: term })
+                  }
+                  sx={{
+                    minHeight: 36,
+                    maxWidth: '100%',
+                    '& .MuiChip-label': { overflowWrap: 'anywhere' },
+                  }}
                 />
               ))}
             </Stack>
           </Box>
         ) : (
-          <List sx={{ py: 0 }}>
-            {suggestions.map((suggestion, index) => (
-              <ListItem
-                key={`${suggestion.type}-${index}`}
-                button
-                onClick={() => onSuggestionSelected(suggestion)}
-                divider={index < suggestions.length - 1}
+          <>
+            <Box sx={{ px: 2, pt: 1.25, pb: 0.5 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: 'block', lineHeight: 1.4 }}
               >
-                <ListItemIcon sx={{ minWidth: 40 }}>
-                  {getIcon(suggestion.type)}
-                </ListItemIcon>
-                <ListItemText
-                  primary={suggestion.text}
-                  secondary={suggestion.subText || getSuggestionTypeLabel(suggestion.type)}
-                />
-                <Chip
-                  size="small"
-                  label={getSuggestionTypeLabel(suggestion.type)}
-                  variant="outlined"
-                />
-              </ListItem>
-            ))}
-          </List>
+                Suggestions are ordered by closest keyword and location match.
+              </Typography>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: 'block', lineHeight: 1.4, mt: 0.25 }}
+              >
+                Tap any suggestion to run it immediately.
+              </Typography>
+            </Box>
+            <List sx={{ py: 0 }}>
+              {suggestions.map((suggestion, index) => (
+                <ListItem
+                  key={`${suggestion.type}-${index}`}
+                  button
+                  onClick={() => onSuggestionSelected(suggestion)}
+                  aria-label={`Use suggestion ${suggestion.text}`}
+                  divider={index < suggestions.length - 1}
+                  sx={{ minHeight: 52, alignItems: 'flex-start' }}
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    {getIcon(suggestion.type)}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={suggestion.text}
+                    primaryTypographyProps={{ sx: { wordBreak: 'break-word' } }}
+                    secondary={
+                      suggestion.subText ||
+                      getSuggestionTypeLabel(suggestion.type)
+                    }
+                    secondaryTypographyProps={{
+                      sx: { wordBreak: 'break-word' },
+                    }}
+                  />
+                  <Chip
+                    size="small"
+                    label={getSuggestionTypeLabel(suggestion.type)}
+                    variant="outlined"
+                    sx={{ ml: 1, flexShrink: 0, minHeight: 30 }}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </>
         )}
       </Paper>
     </ClickAwayListener>

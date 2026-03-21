@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
-import { Box, Button, Card, CardActions, CardContent, Chip, CircularProgress, Skeleton, Divider, Grid, IconButton, Paper, Stack, TextField, Typography, Alert, useTheme } from '@mui/material';
+import { Box, Button, Card, CardActions, CardContent, Chip, Skeleton, Divider, Grid, IconButton, Paper, Stack, TextField, Typography, Alert } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
 
@@ -8,7 +8,6 @@ import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import BlockIcon from '@mui/icons-material/Block';
 import DraftsIcon from '@mui/icons-material/Drafts';
-import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { formatDistanceToNow, isValid } from 'date-fns';
 import { alpha } from '@mui/material/styles';
@@ -19,6 +18,7 @@ import { contractService } from '../services/contractService';
 import MobileFilterSheet from '../../../components/common/MobileFilterSheet';
 import EmptyState from '../../../components/common/EmptyState';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { toUserMessage } from '@/services/responseNormalizer';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All contracts' },
@@ -60,7 +60,6 @@ const ContractsPage = () => {
   const { user } = useAuth();
   const canCreateContract = ['hirer', 'admin'].includes(user?.role);
   const navigate = useNavigate();
-  const theme = useTheme();
   const isMobile = useBreakpointDown('md');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -69,6 +68,7 @@ const ContractsPage = () => {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showLoadingHint, setShowLoadingHint] = useState(false);
 
   const fetchContracts = useCallback(async () => {
     try {
@@ -79,7 +79,7 @@ const ContractsPage = () => {
       setContracts(data);
     } catch (err) {
       if (import.meta.env.DEV) console.error('Failed to load contracts:', err);
-      setError('Unable to load contracts. Please try again.');
+      setError(toUserMessage(err, { fallback: 'Unable to load contracts. Please try again.' }));
       setContracts([]);
     } finally {
       setLoading(false);
@@ -87,9 +87,20 @@ const ContractsPage = () => {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    if (!loading) {
+      setShowLoadingHint(false);
+      return undefined;
+    }
+
+    const timer = setTimeout(() => {
+      setShowLoadingHint(true);
+    }, 12000);
+
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  useEffect(() => {
     fetchContracts();
-    return () => { cancelled = true; };
   }, [fetchContracts]);
 
   const filteredContracts = useMemo(() => {
@@ -192,6 +203,7 @@ const ContractsPage = () => {
             startIcon={<RefreshIcon />}
             onClick={refreshContracts}
             disabled={isRefreshing}
+            aria-label="Refresh contracts list"
             fullWidth={isMobile}
           >
             {isRefreshing ? 'Refreshing…' : 'Refresh'}
@@ -211,6 +223,9 @@ const ContractsPage = () => {
       </Stack>
 
       <Paper sx={{ p: 2, mb: 3 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.25 }}>
+          Use search, status, and sort to quickly find the right contract.
+        </Typography>
         <Stack direction="row" spacing={1} alignItems="center">
           <TextField
             value={searchQuery}
@@ -240,6 +255,7 @@ const ContractsPage = () => {
                 fullWidth
                 size="small"
                 label="Status"
+                inputProps={{ 'aria-label': 'Filter contracts by status' }}
                 SelectProps={{ native: true }}
               >
                 {STATUS_OPTIONS.map((option) => (
@@ -255,6 +271,7 @@ const ContractsPage = () => {
                 fullWidth
                 size="small"
                 label="Sort"
+                inputProps={{ 'aria-label': 'Sort contracts list' }}
                 SelectProps={{ native: true }}
               >
                 {SORT_OPTIONS.map((option) => (
@@ -270,6 +287,11 @@ const ContractsPage = () => {
 
       {loading && (
         <Box sx={{ py: 2 }}>
+          {showLoadingHint && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              This is taking longer than usual. If your network is slow, wait a few seconds or retry.
+            </Alert>
+          )}
           {[1,2,3].map(i => (
             <Skeleton key={`contracts-skeleton-${i}`} variant="rounded" height={100} sx={{ borderRadius: 2, mb: 2 }} />
           ))}
@@ -277,7 +299,16 @@ const ContractsPage = () => {
       )}
 
       {error && !loading && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+        <Alert
+          severity="error"
+          sx={{ mb: 3 }}
+          onClose={() => setError(null)}
+          action={(
+            <Button color="inherit" size="small" onClick={refreshContracts}>
+              Retry
+            </Button>
+          )}
+        >
           {error}
         </Alert>
       )}
@@ -346,6 +377,7 @@ const ContractsPage = () => {
                   startIcon={<VisibilityIcon />}
                   size="small"
                   variant="outlined"
+                  aria-label={`Open contract ${contract.title || 'details'}`}
                   component={RouterLink}
                   to={`/contracts/${contract.id || contract._id}`}
                 >
@@ -353,9 +385,10 @@ const ContractsPage = () => {
                 </Button>
                 <IconButton
                   size="small"
-                  aria-label="Open contract details"
+                  aria-label={`Open ${contract.title || 'contract'} details`}
                   component={RouterLink}
                   to={`/contracts/${contract.id || contract._id}`}
+                  sx={{ minWidth: 44, minHeight: 44 }}
                 >
                   <VisibilityIcon fontSize="small" />
                 </IconButton>

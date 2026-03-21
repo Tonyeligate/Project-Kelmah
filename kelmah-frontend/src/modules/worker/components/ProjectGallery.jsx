@@ -179,6 +179,7 @@ const ProjectGallery = ({
                 `${projectTitle}_${currentIndex + 1}`,
               )
             }
+            aria-label="Download current image"
             sx={{ color: 'white' }}
           >
             <DownloadIcon />
@@ -186,11 +187,12 @@ const ProjectGallery = ({
           <IconButton
             color="inherit"
             onClick={() => handleShare(galleryImages[currentIndex])}
+            aria-label="Share current image"
             sx={{ color: 'white' }}
           >
             <ShareIcon />
           </IconButton>
-          <IconButton color="inherit" onClick={onClose} sx={{ color: 'white' }}>
+          <IconButton color="inherit" onClick={onClose} aria-label="Close gallery" sx={{ color: 'white' }}>
             <CloseIcon />
           </IconButton>
         </Stack>
@@ -214,6 +216,7 @@ const ProjectGallery = ({
           <>
             <IconButton
               onClick={handlePrevious}
+              aria-label="Previous image"
               sx={{
                 position: 'absolute',
                 left: 16,
@@ -231,6 +234,7 @@ const ProjectGallery = ({
             </IconButton>
             <IconButton
               onClick={handleNext}
+              aria-label="Next image"
               sx={{
                 position: 'absolute',
                 right: 16,
@@ -386,3 +390,4 @@ const ProjectGallery = ({
 };
 
 export default ProjectGallery;
+

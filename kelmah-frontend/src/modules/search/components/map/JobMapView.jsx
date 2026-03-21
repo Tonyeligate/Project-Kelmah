@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Paper,
-  Typography,
-  Button,
-  CircularProgress,
-} from '@mui/material';
+import { Box, Paper, Typography, Button, Skeleton } from '@mui/material';
 import { ViewList as ListIcon } from '@mui/icons-material';
 
 const JobMapView = ({
@@ -17,6 +11,7 @@ const JobMapView = ({
 }) => {
   return (
     <Box
+      aria-label="Worker search map panel"
       sx={{
         position: 'relative',
         height: '70vh',
@@ -31,6 +26,7 @@ const JobMapView = ({
           variant="outlined"
           startIcon={<ListIcon />}
           onClick={onToggleView}
+          sx={{ minHeight: 44 }}
         >
           List View
         </Button>
@@ -45,9 +41,14 @@ const JobMapView = ({
             height: '100%',
             width: '100%',
             backgroundColor: 'rgba(0,0,0,0.05)',
+            px: 2,
           }}
         >
-          <CircularProgress />
+          <Box sx={{ width: '100%', maxWidth: 460 }}>
+            <Skeleton variant="text" height={36} width="65%" />
+            <Skeleton variant="text" height={24} width="100%" />
+            <Skeleton variant="text" height={24} width="84%" />
+          </Box>
         </Box>
       ) : (
         <Box
@@ -68,8 +69,13 @@ const JobMapView = ({
             Map preview is temporarily unavailable
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            You can continue with list view and location filters to review {jobs.length} worker matches
+            You can continue with list view and location filters to review{' '}
+            {jobs.length} worker matches
             {radius ? ` within ${radius} km.` : '.'}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Your search is still active and no results are lost while map
+            preview is unavailable.
           </Typography>
           {centerLocation ? (
             <Typography variant="caption" color="text.secondary">
@@ -84,7 +90,7 @@ const JobMapView = ({
             variant="outlined"
             startIcon={<ListIcon />}
             onClick={onToggleView}
-            sx={{ mt: 1 }}
+            sx={{ mt: 1, minHeight: 44 }}
           >
             Back to List
           </Button>

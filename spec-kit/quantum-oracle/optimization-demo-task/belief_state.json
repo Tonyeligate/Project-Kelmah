@@ -1,0 +1,10 @@
+{
+  "taskId": "optimization-demo-task",
+  "timestampUtc": "2026-03-21T00:00:00Z",
+  "hypotheses": [
+    { "id": "H1", "probability": 0.45, "evidenceFor": ["high cognitive load"], "evidenceAgainst": [] },
+    { "id": "H2", "probability": 0.35, "evidenceFor": ["low CTA discoverability"], "evidenceAgainst": [] },
+    { "id": "H3", "probability": 0.20, "evidenceFor": ["layout crowding on XS"], "evidenceAgainst": [] }
+  ],
+  "normalizationCheck": { "sumProbability": 1.0, "status": "pass" }
+}

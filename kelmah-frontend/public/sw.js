@@ -6,8 +6,10 @@ const OFFLINE_URL = '/offline.html';
 const HEALTHY_GATEWAY_DB = 'kelmah-gateway-db';
 const HEALTHY_GATEWAY_STORE = 'healthyGatewayStore';
 const HEALTHY_GATEWAY_KEY = 'lastHealthyGateway';
+const SW_DEBUG_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
 const SW_DEBUG =
-  self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1';
+  SW_DEBUG_HOSTS.has(self.location.hostname) ||
+  self.location.search.includes('sw_debug=1');
 
 const swLog = (...args) => {
   if (SW_DEBUG) console.log(...args);
@@ -595,13 +597,25 @@ self.addEventListener('push', (event) => {
     ],
   };
 
+  let notificationTitle = 'Kelmah';
+
   if (event.data) {
-    const payload = event.data.json();
-    options.body = payload.body || options.body;
-    options.data = { ...options.data, ...payload.data };
+    try {
+      const payload = event.data.json();
+      notificationTitle = payload?.title || notificationTitle;
+      options.body = payload?.body || options.body;
+      options.data = { ...options.data, ...(payload?.data || {}) };
+    } catch (error) {
+      // Some providers send plain-text push payloads.
+      const fallbackBody = event.data.text();
+      if (fallbackBody) {
+        options.body = fallbackBody;
+      }
+      swWarn('[SW] Push payload was not valid JSON:', error);
+    }
   }
 
-  event.waitUntil(self.registration.showNotification('Kelmah', options));
+  event.waitUntil(self.registration.showNotification(notificationTitle, options));
 });
 
 // Notification click handling

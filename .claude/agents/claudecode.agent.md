@@ -202,12 +202,14 @@ SECURITY-ENTANGLED:
 | `kelmah-frontend/src/store/**`, `*Slice.js`, `*Thunk.js` | **Ψ-Frontend** | — | None |
 | `kelmah-backend/services/**/*.js` | **Φ-Backend** | — | None |
 | `kelmah-backend/api-gateway/**` | **Φ-Backend** | **Γ-Security** | Security always co-invoked for gateway |
+| Backend optimization, API design optimization, or reliability hardening task | **Φ-Backend** | **Σ-Debugger** | Debugger MUST challenge performance, contract, and reliability claims |
 | `kelmah-backend/shared/models/**`, `*.model.js` | **Ω-Database** | — | None |
 | Any migration, aggregation, or index task | **Ω-Database** | — | None |
 | `**/middleware/auth*`, `**/security*`, JWT/CORS/RBAC tasks | **Γ-Security** | — | None |
 | `services/messaging-service/**`, Socket.IO tasks | **Δ-Realtime** | — | None |
 | `vercel.json`, `render.yaml`, LocalTunnel, deploy/health tasks | **Λ-DevOps** | — | None |
 | User reports a visible/obvious UI bug | **Ψ-Frontend** | **Σ-Debugger** | Debugger MUST challenge frontend findings (see contradiction-resolve protocol) |
+| UI optimization, adaptive interface, or design-flow optimization task | **Ψ-Frontend** | **Σ-Debugger** | Debugger MUST challenge optimization scoring and personalization safety |
 | Task spans 3+ services or root cause is unknown | **Σ-Debugger** | (routes to specialists) | Debugger runs dry audit first |
 
 ```
@@ -221,7 +223,11 @@ DELEGATION ENFORCEMENT RULES:
      Security agent runs in parallel with primary agent, not after.
   5. VISIBLE BUG RULE: When a user reports an obvious visible bug, frontend findings
      are NOT final until Σ-Debugger has cross-verified. See contradiction-resolve loop.
-  6. AUDIT TRAIL: Every delegation must log: agent invoked, file pattern matched,
+    6. OPTIMIZATION RULE: UI optimization and adaptive-interface findings are PROVISIONAL
+      until Σ-Debugger validates scoring assumptions, safety constraints, and rollback path.
+      7. BACKEND OPTIMIZATION RULE: Backend optimization and reliability-hardening findings are PROVISIONAL
+        until Σ-Debugger validates latency, contract compatibility, and resilience evidence.
+      8. AUDIT TRAIL: Every delegation must log: agent invoked, file pattern matched,
      co-invoked agents, and verification result in spec-kit.
 ```
 
@@ -1504,4 +1510,66 @@ Task can close only if oracle_state == PASS:
   - Evidence logged
 
 Else: reopen superposition and continue.
+```
+
+### UFL-7: Evidence Artifact Contract (EAC)
+```
+Every non-trivial task MUST emit a machine-readable artifact bundle:
+
+spec-kit/quantum-oracle/<task-id>/
+  belief_state.json
+  delegation_packets.json
+  closure_oracle.json
+  risk_register.json
+  counterfactual_worlds.json
+
+No artifact bundle => automatic FAIL state.
+```
+
+### UFL-8: Quantum Elite Toolchain v5
+```
+Activate the following elite tools per task:
+  - EvidenceArtifactCompiler
+  - CompletionOracleChecker
+  - CounterfactualWorldScorer
+  - DelegationPacketBuilder
+  - VisualOracleRunner
+  - AdversarialSelfPlayOrchestrator
+  - QuantumScoreboardUpdater
+
+Tool activation must be listed in closure_oracle.json.
+```
+
+### UFL-9: Autonomous Adversarial Self-Play
+```
+For critical fixes run 3-role self-play:
+  Attacker role -> breaks candidate fix
+  Defender role -> hardens fix
+  Judge role -> validates robustness and regressions
+
+Task cannot close unless judge verdict is PASS.
+```
+
+### UFL-10: Quantum Quality Scoreboard
+```
+Track and update per task:
+  - false_clear_rate
+  - regression_escape_rate
+  - mean_time_to_root_cause
+  - closure_depth_score
+  - blast_radius_prediction_accuracy
+
+If any metric worsens for 3 consecutive tasks, trigger protocol recalibration.
+```
+
+### UFL-11: Automatic Closure Verification Command
+```
+Before final completion, run:
+  npm run quantum:check-closure -- --task-id <task-id> --strict
+
+Behavior:
+  - Exit code 0 => closure eligibility confirmed
+  - Exit code 1 => closure blocked; task remains open
+
+No manual override is allowed when checker returns non-zero.
 ```

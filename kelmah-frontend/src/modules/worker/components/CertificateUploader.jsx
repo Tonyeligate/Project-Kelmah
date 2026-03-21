@@ -476,6 +476,7 @@ const CertificateUploader = ({ onCertificatesChange }) => {
             <IconButton
               size="small"
               onClick={() => window.open(certificate.fileUrl, '_blank')}
+              aria-label={`View certificate file for ${certificate.name}`}
               title="View Document"
             >
               <ViewIcon />
@@ -490,6 +491,7 @@ const CertificateUploader = ({ onCertificatesChange }) => {
                 link.download = certificate.fileName;
                 link.click();
               }}
+              aria-label={`Download certificate file for ${certificate.name}`}
               title="Download"
             >
               <DownloadIcon />
@@ -498,6 +500,7 @@ const CertificateUploader = ({ onCertificatesChange }) => {
           <IconButton
             size="small"
             onClick={() => handleOpenDialog(certificate)}
+            aria-label={`Edit certificate ${certificate.name}`}
             title="Edit"
           >
             <EditIcon />
@@ -505,6 +508,7 @@ const CertificateUploader = ({ onCertificatesChange }) => {
           <IconButton
             size="small"
             onClick={() => handleDelete(certificate.id || certificate._id)}
+            aria-label={`Delete certificate ${certificate.name}`}
             title="Delete"
             sx={{ color: 'error.main' }}
           >
@@ -832,3 +836,4 @@ const CertificateUploader = ({ onCertificatesChange }) => {
 };
 
 export default CertificateUploader;
+

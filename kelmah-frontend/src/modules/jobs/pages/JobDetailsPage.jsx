@@ -958,6 +958,10 @@ const JobDetailsPage = () => {
                   </Box>
                 ) : null}
 
+                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.25 }}>
+                  Review the budget, location, and required skills before you respond.
+                </Typography>
+
                 <ActionButton
                   variant="contained"
                   fullWidth
@@ -969,7 +973,7 @@ const JobDetailsPage = () => {
                   {isHirerUser
                     ? 'Find Talent Instead'
                     : job?.bidding?.bidStatus === 'open'
-                      ? 'Place Your Bid'
+                      ? 'Send Your Bid'
                       : 'Apply Now'}
                 </ActionButton>
 
@@ -981,8 +985,8 @@ const JobDetailsPage = () => {
                     onClick={handleToggleSave}
                     disabled={savingBookmark}
                     sx={{ color: saved ? accentColor : 'text.primary', borderColor: 'divider', fontWeight: 600 }}
-                  >
-                    {saved ? 'Saved' : 'Save'}
+                   aria-label="Save">
+                      {saved ? 'Saved Job' : 'Save Job'}
                   </Button>
                   <IconButton
                     onClick={handleShareJob}
@@ -1399,8 +1403,7 @@ const JobDetailsPage = () => {
                 minWidth: { xs: 96, sm: 156 },
                 whiteSpace: 'nowrap',
                 '&:hover': { bgcolor: '#B8941F' },
-              }}
-            >
+              }}>
               {mobilePrimaryActionLabel}
             </Button>
             <IconButton

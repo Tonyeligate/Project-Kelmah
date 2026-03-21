@@ -775,7 +775,7 @@ const EnhancedMessagingPage = () => {
             </Badge>
             <IconButton
               size="small"
-              aria-label="More options"
+              aria-label="Open messaging options"
               onClick={(e) => setMoreMenuAnchor(e.currentTarget)}
               sx={{
                 color: 'text.secondary',
@@ -794,9 +794,10 @@ const EnhancedMessagingPage = () => {
         <TextField
           fullWidth
           size="small"
-          placeholder="Search conversations..."
+          placeholder="Search chats by name or recent message"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          inputProps={{ 'aria-label': 'Search conversations' }}
           sx={{
             '& .MuiOutlinedInput-root': {
               backgroundColor: alpha(theme.palette.background.default, 0.5),
@@ -1323,7 +1324,7 @@ const EnhancedMessagingPage = () => {
             <Stack direction="row" spacing={1}>
               <Tooltip title="More options">
                 <IconButton
-                  aria-label="More options"
+                  aria-label="Open messaging options"
                   onClick={(e) => setMoreMenuAnchor(e.currentTarget)}
                   sx={{
                     color: 'text.secondary',
@@ -1645,7 +1646,7 @@ const EnhancedMessagingPage = () => {
                   >
                     <IconButton
                       size="small"
-                      aria-label="Remove attachment"
+                      aria-label={`Remove attachment ${index + 1}: ${file.name}`}
                       onClick={() =>
                         setSelectedFiles((prev) =>
                           prev.filter((_, i) => i !== index),
@@ -1720,12 +1721,14 @@ const EnhancedMessagingPage = () => {
               multiple
               accept="image/*,video/*,.pdf,.doc,.docx,.txt"
               style={{ display: 'none' }}
+              aria-label="Attach files to message. Supported types: images, videos, PDF, Word, and text files"
               onChange={handleFileSelect}
             />
 
             <Tooltip title="Attach files">
               <IconButton
                 onClick={() => fileInputRef.current?.click()}
+                aria-label={`Attach files${selectedFiles.length > 0 ? `, ${selectedFiles.length} selected` : ''}`}
                 sx={{
                   color: 'text.secondary',
                   '&:hover': {
@@ -1744,6 +1747,7 @@ const EnhancedMessagingPage = () => {
               maxRows={4}
               placeholder="Type a message..."
               value={messageText}
+              inputProps={{ 'aria-label': 'Type a new chat message' }}
               onChange={(e) => {
                 setMessageText(e.target.value);
                 handleTyping();
@@ -1781,6 +1785,11 @@ const EnhancedMessagingPage = () => {
               <IconButton
                 onClick={handleSendMessage}
                 disabled={!messageText.trim() && selectedFiles.length === 0}
+                aria-label={
+                  messageText.trim() || selectedFiles.length > 0
+                    ? 'Send message'
+                    : 'Send message unavailable until you type text or add an attachment'
+                }
                 sx={{
                   background:
                     `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark || '#FFC000'} 100%)`,
@@ -1904,9 +1913,10 @@ const EnhancedMessagingPage = () => {
               <TextField
                 id="mobile-search-input"
                 fullWidth
-                placeholder="Search conversations..."
+                placeholder="Search chats by name or recent message"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                inputProps={{ 'aria-label': 'Search conversations on mobile' }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     bgcolor: 'background.paper',
@@ -2212,7 +2222,7 @@ const EnhancedMessagingPage = () => {
                   </Box>
                 </Box>
                 <IconButton
-                  aria-label="More options"
+                  aria-label="Open messaging options"
                   onClick={(e) => setMoreMenuAnchor(e.currentTarget)}
                   sx={{
                     backgroundColor: alpha(theme.palette.primary.main, 0.1),
@@ -2371,12 +2381,14 @@ const EnhancedMessagingPage = () => {
                   multiple
                   accept="image/*,video/*,.pdf,.doc,.docx,.txt"
                   hidden
+                  aria-label="Attach files to message"
                   onChange={handleFileSelect}
                 />
                 <TextField
                   fullWidth
-                  placeholder="Type a message..."
+                  placeholder="Type your message. Add location, budget, or timing if helpful."
                   value={messageText}
+                  inputProps={{ 'aria-label': 'Type your message' }}
                   onChange={(e) => {
                     setMessageText(e.target.value);
                     handleTyping();
@@ -2569,7 +2581,7 @@ const EnhancedMessagingPage = () => {
           }}
         >
           <DialogTitle id="new-chat-dialog-title" sx={{ color: '#D4AF37' }}>
-            New Conversation
+            Start a New Conversation
           </DialogTitle>
           <DialogContent>
             <Alert severity="info" sx={{ mt: 1 }}>
@@ -2620,4 +2632,5 @@ const EnhancedMessagingPage = () => {
 };
 
 export default EnhancedMessagingPage;
+
 

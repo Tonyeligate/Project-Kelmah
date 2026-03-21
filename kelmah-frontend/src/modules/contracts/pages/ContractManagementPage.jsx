@@ -73,9 +73,14 @@ const ContractManagementPage = () => {
           <ReceiptIcon
             sx={{ fontSize: 36, mr: 1.5, color: 'secondary.main' }}
           />
-          <Typography variant="h4" fontWeight="bold">
-            {canCreateContract ? 'Contract Management' : 'My Contracts'}
-          </Typography>
+          <Box>
+            <Typography variant="h4" fontWeight="bold">
+              {canCreateContract ? 'Contract Management' : 'My Contracts'}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Track contract progress, review status, and follow up quickly.
+            </Typography>
+          </Box>
         </Box>
         {canCreateContract && (
           <Button
@@ -84,9 +89,9 @@ const ContractManagementPage = () => {
             startIcon={<AddIcon />}
             variant="contained"
             color="secondary"
-            sx={{ fontWeight: 'bold' }}
+            sx={{ fontWeight: 'bold', minHeight: 44 }}
           >
-            New Contract
+            Create Contract
           </Button>
         )}
       </Box>
@@ -94,7 +99,7 @@ const ContractManagementPage = () => {
       {/* Summary line for contract counts */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="body2" color="text.secondary">
-          Showing {filteredContracts.length} of {(contracts || []).length} contracts
+          Showing {filteredContracts.length} of {(contracts || []).length} contracts in this view
         </Typography>
       </Box>
 
@@ -123,7 +128,7 @@ const ContractManagementPage = () => {
           textColor="secondary"
           variant="scrollable"
           scrollButtons="auto"
-          aria-label="contract status tabs"
+          aria-label="Filter contracts by status"
           sx={{
             '& .MuiTab-root': {
               fontWeight: '600',
@@ -188,7 +193,7 @@ const ContractManagementPage = () => {
               >
                 <DescriptionOutlinedIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
                 <Typography variant="h6" color="text.secondary" gutterBottom>
-                  No contracts found in this category
+                  No contracts in this view
                 </Typography>
                 <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
                   {canCreateContract

@@ -328,10 +328,10 @@ const MyApplicationsPage = () => {
             <Box sx={{ textAlign: 'center', py: 6 }}>
               <WorkOutlineIcon sx={{ fontSize: 60, color: 'text.disabled', mb: 2 }} />
               <Typography color="text.secondary" sx={{ fontSize: '1rem', mb: 1 }}>
-                No applications found
+                No applications yet
               </Typography>
               <Typography color="text.disabled" sx={{ fontSize: '0.875rem', mb: 2 }}>
-                Start applying to jobs to see them here
+                Apply to jobs to see them here
               </Typography>
               <Button
                 variant="contained"
@@ -422,7 +422,7 @@ const MyApplicationsPage = () => {
                         }}
                         onClick={(event) => handleOpenDetails(application, event)}
                       >
-                        Open Application
+                        View details
                       </Button>
                       <Button
                         variant="outlined"
@@ -457,6 +457,9 @@ const MyApplicationsPage = () => {
       <Helmet><title>My Applications | Kelmah</title></Helmet>
       <Typography variant="h4" gutterBottom>
         My Applications
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Track each application status and open messages with hirers from one place.
       </Typography>
 
       <Paper sx={{ width: '100%', mb: 4 }}>
@@ -499,10 +502,10 @@ const MyApplicationsPage = () => {
               sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }}
             />
             <Typography variant="h6" gutterBottom>
-              No applications found
+              No applications yet
             </Typography>
             <Typography color="textSecondary" paragraph>
-              You haven't applied to any jobs in this category yet
+              Apply to jobs to see them here
             </Typography>
             <Button variant="contained" color="primary" onClick={() => navigate('/worker/find-work')}>
               Browse Jobs
@@ -944,7 +947,7 @@ const MyApplicationsPage = () => {
               <TextField
                 autoFocus
                 margin="dense"
-                label="Message"
+                label="Message Draft"
                 fullWidth
                 variant="outlined"
                 multiline
@@ -973,3 +976,4 @@ const MyApplicationsPage = () => {
 };
 
 export default MyApplicationsPage;
+

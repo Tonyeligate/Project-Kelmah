@@ -6,7 +6,10 @@ const ghanaPayments = require("../controllers/ghana.controller");
 const router = express.Router();
 const payoutAdminController = require('../controllers/payoutAdmin.controller');
 const PaystackService = require("../integrations/paystack");
+const paymentController = require('../controllers/payment.controller');
+const { Wallet, Payment, Transaction } = require('../models');
 const paystack = new PaystackService();
+const smsVerificationStore = new Map();
 
 // Protect all payment endpoints
 router.use(verifyGatewayRequest);
@@ -166,5 +169,200 @@ const requireAdmin = (req, res, next) => {
 router.post('/admin/payouts/queue', requireAdmin, payoutAdminController.enqueuePayout);
 router.post('/admin/payouts/process', requireAdmin, payoutAdminController.processBatch);
 router.get('/admin/payouts', requireAdmin, payoutAdminController.listPayouts);
+
+// Frontend compatibility aliases
+router.get('/analytics', async (req, res) => {
+  try {
+    const userId = req.user?.id || req.user?._id;
+    const [payments, transactions] = await Promise.all([
+      Payment.find({ userId }).lean(),
+      Transaction.find({ $or: [{ sender: userId }, { recipient: userId }] }).lean(),
+    ]);
+
+    const totalPaid = payments
+      .filter((p) => p.type !== 'PAYOUT' && p.status === 'COMPLETED')
+      .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+
+    const totalPayouts = payments
+      .filter((p) => p.type === 'PAYOUT' && ['PROCESSING', 'COMPLETED'].includes(p.status))
+      .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+
+    return res.json({
+      success: true,
+      data: {
+        totalPaid,
+        totalPayouts,
+        paymentCount: payments.length,
+        transactionCount: transactions.length,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: { message: 'Failed to load payment analytics', code: 'ANALYTICS_FETCH_FAILED' },
+    });
+  }
+});
+
+router.get('/settings', async (req, res) => {
+  try {
+    const userId = req.user?.id || req.user?._id;
+    const wallet = await Wallet.findOne({ user: userId }).lean();
+    const settings = wallet?.metadata?.paymentSettings || {
+      autoReleaseEscrow: false,
+      smsNotifications: true,
+      defaultCurrency: wallet?.currency || 'GHS',
+    };
+    return res.json({ success: true, data: settings });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: { message: 'Failed to fetch payment settings', code: 'SETTINGS_FETCH_FAILED' },
+    });
+  }
+});
+
+router.put('/settings', async (req, res) => {
+  try {
+    const userId = req.user?.id || req.user?._id;
+    const settings = req.body || {};
+    const wallet = await Wallet.findOneAndUpdate(
+      { user: userId },
+      {
+        $setOnInsert: { user: userId, balance: 0, currency: 'GHS' },
+        $set: { 'metadata.paymentSettings': settings },
+      },
+      { new: true, upsert: true },
+    ).lean();
+
+    return res.json({ success: true, data: wallet?.metadata?.paymentSettings || settings });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: { message: 'Failed to update payment settings', code: 'SETTINGS_UPDATE_FAILED' },
+    });
+  }
+});
+
+router.post('/payout/worker', createLimiter('payments'), (req, res) => {
+  const { provider, method, phoneNumber, amount, description, bankCode, accountNumber, accountName } = req.body || {};
+  const normalizedMethod = method
+    || (provider === 'mtn' ? 'mtn_momo'
+      : provider === 'vodafone' ? 'vodafone_cash'
+        : provider === 'airteltigo' ? 'airtel_tigo'
+          : provider === 'bank' ? 'paystack_bank'
+            : 'mtn_momo');
+
+  req.body = {
+    ...req.body,
+    method: normalizedMethod,
+    phoneNumber,
+    amount,
+    description,
+    bankCode,
+    accountNumber,
+    accountName,
+  };
+
+  return paymentController.processPayout(req, res);
+});
+
+router.get('/payout/status/:payoutId', async (req, res) => {
+  try {
+    const userId = req.user?.id || req.user?._id;
+    const { payoutId } = req.params;
+    const payout = await Payment.findOne({
+      userId,
+      $or: [
+        { _id: payoutId },
+        { providerTransactionId: payoutId },
+      ],
+    }).lean();
+
+    if (!payout) {
+      return res.status(404).json({
+        success: false,
+        error: { message: 'Payout not found', code: 'PAYOUT_NOT_FOUND' },
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        payoutId: payout._id,
+        status: payout.status,
+        amount: payout.amount,
+        method: payout.method,
+        providerTransactionId: payout.providerTransactionId,
+        updatedAt: payout.updatedAt,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: { message: 'Failed to fetch payout status', code: 'PAYOUT_STATUS_FAILED' },
+    });
+  }
+});
+
+router.post('/sms-verification/send', createLimiter('payments'), async (req, res) => {
+  const { phoneNumber, purpose = 'payment', amount } = req.body || {};
+  if (!phoneNumber) {
+    return res.status(400).json({
+      success: false,
+      error: { message: 'phoneNumber is required', code: 'PHONE_REQUIRED' },
+    });
+  }
+
+  const verificationId = `sms_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  smsVerificationStore.set(verificationId, {
+    code,
+    phoneNumber,
+    purpose,
+    amount,
+    expiresAt: Date.now() + 5 * 60 * 1000,
+  });
+
+  return res.status(201).json({
+    success: true,
+    data: {
+      verificationId,
+      expiresInSeconds: 300,
+      // Exposed in non-production for local QA; production should use real SMS delivery.
+      code: process.env.NODE_ENV === 'production' ? undefined : code,
+    },
+  });
+});
+
+router.post('/sms-verification/verify', createLimiter('payments'), async (req, res) => {
+  const { verificationId, code } = req.body || {};
+  const record = smsVerificationStore.get(verificationId);
+
+  if (!record) {
+    return res.status(404).json({
+      success: false,
+      error: { message: 'Verification not found', code: 'VERIFICATION_NOT_FOUND' },
+    });
+  }
+
+  if (Date.now() > record.expiresAt) {
+    smsVerificationStore.delete(verificationId);
+    return res.status(410).json({
+      success: false,
+      error: { message: 'Verification expired', code: 'VERIFICATION_EXPIRED' },
+    });
+  }
+
+  if (String(record.code) !== String(code || '')) {
+    return res.status(400).json({
+      success: false,
+      error: { message: 'Invalid verification code', code: 'INVALID_VERIFICATION_CODE' },
+    });
+  }
+
+  smsVerificationStore.delete(verificationId);
+  return res.json({ success: true, data: { verified: true } });
+});
 
 module.exports = router;

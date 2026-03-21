@@ -672,8 +672,7 @@ function ApplicationManagementPage() {
             size="small"
             variant="outlined"
             startIcon={<Work />}
-            onClick={() => setShowJobList(!showJobList)}
-          >
+            onClick={() => setShowJobList(!showJobList)}>
             {showJobList ? 'Hide Jobs' : 'Select Job'}
           </Button>
         )}
@@ -1487,8 +1486,7 @@ function ApplicationDetailPanel({
           startIcon={<CheckCircle />}
           onClick={onAccept}
           sx={{ minHeight: 44 }}
-          disabled={app.status === 'accepted'}
-        >
+          disabled={app.status === 'accepted'}>
           {app.status === 'accepted' ? 'Accepted' : 'Accept'}
         </Button>
         <Button
@@ -1497,8 +1495,7 @@ function ApplicationDetailPanel({
           startIcon={<Cancel />}
           onClick={onReject}
           sx={{ minHeight: 44 }}
-          disabled={app.status === 'rejected'}
-        >
+          disabled={app.status === 'rejected'}>
           {app.status === 'rejected' ? 'Rejected' : 'Reject'}
         </Button>
       </Box>

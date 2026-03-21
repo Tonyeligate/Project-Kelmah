@@ -95,6 +95,7 @@ const WorkerFilter = ({ onFilterChange }) => {
             placeholder="Search worker name, skill, or title"
             value={filters.searchTerm}
             onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
+            inputProps={{ 'aria-label': 'Search workers by name, skill, or title' }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -103,6 +104,7 @@ const WorkerFilter = ({ onFilterChange }) => {
               ),
             }}
             size="small"
+            sx={{ '& .MuiInputBase-root': { minHeight: 44 } }}
           />
 
           <TextField
@@ -110,6 +112,7 @@ const WorkerFilter = ({ onFilterChange }) => {
             placeholder="Location"
             value={filters.location}
             onChange={(e) => handleFilterChange('location', e.target.value)}
+            inputProps={{ 'aria-label': 'Filter workers by location' }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -118,9 +121,10 @@ const WorkerFilter = ({ onFilterChange }) => {
               ),
             }}
             size="small"
+            sx={{ '& .MuiInputBase-root': { minHeight: 44 } }}
           />
 
-          <FormControl fullWidth size="small">
+          <FormControl fullWidth size="small" sx={{ '& .MuiInputBase-root': { minHeight: 44 } }}>
             <InputLabel id="category-select-label">Category</InputLabel>
             <Select
               labelId="category-select-label"
@@ -128,6 +132,7 @@ const WorkerFilter = ({ onFilterChange }) => {
               value={filters.category}
               label="Category"
               onChange={(e) => handleFilterChange('category', e.target.value)}
+              inputProps={{ 'aria-label': 'Filter workers by category' }}
               startAdornment={
                 <InputAdornment position="start">
                   <CategoryIcon />
@@ -142,6 +147,10 @@ const WorkerFilter = ({ onFilterChange }) => {
             </Select>
           </FormControl>
         </Box>
+        <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.4 }}>
+          Start with role and location. Open advanced filters only if you need
+          to narrow the list further.
+        </Typography>
 
         {/* Advanced Filter Toggle */}
         <Box
@@ -154,6 +163,7 @@ const WorkerFilter = ({ onFilterChange }) => {
           <Button
             onClick={toggleAdvanced}
             startIcon={showAdvanced ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            aria-label={showAdvanced ? 'Hide advanced worker filters' : 'Show advanced worker filters'}
             sx={{ color: theme.palette.secondary.main }}
           >
             {showAdvanced ? 'Hide Advanced Filters' : 'Show Advanced Filters'}
@@ -243,7 +253,7 @@ const WorkerFilter = ({ onFilterChange }) => {
                     }}
                   />
                 }
-                label="Verified Only"
+                label="Verified workers only"
               />
             </Box>
 

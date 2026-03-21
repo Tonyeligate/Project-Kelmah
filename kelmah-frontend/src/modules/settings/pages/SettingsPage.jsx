@@ -39,19 +39,19 @@ const SettingsPage = () => {
         />
       ),
       label: 'Notifications',
-      description: 'Control email, push, SMS, and in-app alerts.',
+      description: 'Choose how you receive app, SMS, push, and email alerts.',
       icon: <NotificationsIcon />,
     },
     {
       component: <AccountSettings />,
       label: 'Account',
-      description: 'Update your personal details and contact information.',
+      description: 'Update your name, contact details, and profile information.',
       icon: <AccountCircleIcon />,
     },
     {
       component: <SecuritySettings />,
       label: 'Security & Password',
-      description: 'Protect your account with stronger sign-in settings.',
+      description: 'Change password and strengthen sign-in protection.',
       icon: <SecurityIcon />,
     },
     {
@@ -63,7 +63,7 @@ const SettingsPage = () => {
         />
       ),
       label: 'Privacy',
-      description: 'Choose who can discover your profile and data.',
+      description: 'Control who can find your profile and see your activity.',
       icon: <ShieldIcon />,
     },
   ];
@@ -137,6 +137,9 @@ const SettingsPage = () => {
             Settings
           </Typography>
         </Box>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Open one section at a time to update your account quickly.
+        </Typography>
         <Paper
           elevation={1}
           sx={{
@@ -160,7 +163,7 @@ const SettingsPage = () => {
               <Typography variant="body2" color="text.secondary" noWrap>
                 {user?.email || 'Account settings'}
               </Typography>
-              <Chip label="Manage your account" size="small" sx={{ mt: 1, fontWeight: 600 }} />
+              <Chip label="Update profile, alerts, privacy, and security" size="small" sx={{ mt: 1, fontWeight: 600 }} />
             </Box>
           </Stack>
         </Paper>
@@ -293,3 +296,4 @@ const SettingsPage = () => {
 };
 
 export default SettingsPage;
+

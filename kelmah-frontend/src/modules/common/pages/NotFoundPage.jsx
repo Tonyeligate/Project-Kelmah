@@ -26,15 +26,15 @@ const NotFoundPage = () => {
                 Page not found
             </Typography>
             <Typography variant="body1" color="text.secondary" maxWidth={420}>
-                The page you are looking for might have been moved or no longer exists. Try heading back
-                to the homepage or explore available jobs instead.
+                This page may have moved or no longer exists. Use the buttons below
+                to return home or continue finding work.
             </Typography>
             <Box sx={{ display: 'flex', gap: 2 }}>
-                <Button variant="contained" color="primary" onClick={() => navigate('/')}>
-                    Go to Homepage
+                <Button variant="contained" color="primary" onClick={() => navigate('/')} sx={{ minHeight: 44 }}>
+                    Go Home
                 </Button>
-                <Button variant="outlined" color="primary" onClick={() => navigate('/jobs')}>
-                    Browse Jobs
+                <Button variant="outlined" color="primary" onClick={() => navigate('/jobs')} sx={{ minHeight: 44 }}>
+                    Find Jobs
                 </Button>
             </Box>
         </Box>

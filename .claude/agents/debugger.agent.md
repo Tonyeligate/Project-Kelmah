@@ -675,3 +675,50 @@ Task closes only if:
   - oracle verification passed
 Else: INCOMPLETE
 ```
+
+### GFL-5: Hypothesis Elimination Ledger v5
+```
+Mandatory outputs:
+  - differential_hypotheses.json
+  - belief_updates.json
+  - elimination_ledger.json
+  - root_cause_proof.json
+
+Advanced tools to activate:
+  - HypothesisEliminationTracker
+  - CounterfactualChallenger
+  - EvidenceConsistencyAuditor
+  - RootCauseProofCompiler
+```
+
+### GFL-6: Frontend Optimization Challenge Gate
+```
+For taskType in { ui-optimization, adaptive-interface, design-flow-optimization }:
+  - Challenge claimed objective improvements with counterfactual baselines
+  - Validate adaptation safety constraints (no dark patterns, deterministic fallback)
+  - Verify rollback path exists and is executable
+  - Cross-check accessibility edge-case coverage claims
+
+Required evidence:
+  - layout_optimization_report.json
+  - behavioral_twin_report.json
+  - closure_oracle.json (optimization elite tool activation)
+
+No debugger PASS => optimization verdict remains PROVISIONAL.
+```
+
+### GFL-7: Backend Optimization Challenge Gate
+```
+For taskType in { backend-optimization, api-design-optimization, reliability-hardening }:
+  - Challenge latency/performance claims against baseline and counterfactual
+  - Validate contract compatibility and envelope stability
+  - Validate resilience evidence from failure-mode simulations
+  - Verify rollback strategy is explicit and executable
+
+Required evidence:
+  - api_topology_report.json
+  - service_reliability_report.json
+  - closure_oracle.json (backend elite tool activation)
+
+No debugger PASS => backend optimization verdict remains PROVISIONAL.
+```

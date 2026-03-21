@@ -20,7 +20,8 @@ const SEARCH_LOCATION_MAX_LENGTH = 80;
 const SEARCH_SKILL_MAX_LENGTH = 40;
 
 const areSkillsEqual = (left = EMPTY_SKILLS, right = EMPTY_SKILLS) =>
-  left.length === right.length && left.every((skillName, index) => skillName === right[index]);
+  left.length === right.length &&
+  left.every((skillName, index) => skillName === right[index]);
 
 const JobSearchForm = ({
   onSubmit,
@@ -36,10 +37,15 @@ const JobSearchForm = ({
     category: initialCategory = '',
   } = resolvedInitials;
   const initialSkillsKey = JSON.stringify(
-    Array.isArray(resolvedInitials.skills) ? resolvedInitials.skills : EMPTY_SKILLS,
+    Array.isArray(resolvedInitials.skills)
+      ? resolvedInitials.skills
+      : EMPTY_SKILLS,
   );
   const normalizedInitialSkills = useMemo(
-    () => (Array.isArray(resolvedInitials.skills) ? resolvedInitials.skills : EMPTY_SKILLS),
+    () =>
+      Array.isArray(resolvedInitials.skills)
+        ? resolvedInitials.skills
+        : EMPTY_SKILLS,
     [initialSkillsKey],
   );
 
@@ -67,11 +73,11 @@ const JobSearchForm = ({
   }, [initialCategory]);
 
   useEffect(() => {
-    setSkills((currentSkills) => (
+    setSkills((currentSkills) =>
       areSkillsEqual(currentSkills, normalizedInitialSkills)
         ? currentSkills
-        : normalizedInitialSkills
-    ));
+        : normalizedInitialSkills,
+    );
   }, [normalizedInitialSkills]);
 
   const submitHandler = onSearch || onSubmit;
@@ -130,7 +136,8 @@ const JobSearchForm = ({
     if (submitHandler) {
       emitSearch();
     } else {
-      if (import.meta.env.DEV) console.warn('JobSearchForm submitted without handler');
+      if (import.meta.env.DEV)
+        console.warn('JobSearchForm submitted without handler');
     }
   };
 
@@ -162,11 +169,15 @@ const JobSearchForm = ({
               size="small"
               value={keyword}
               onChange={(e) => {
-                const nextKeyword = e.target.value.slice(0, SEARCH_QUERY_MAX_LENGTH);
+                const nextKeyword = e.target.value.slice(
+                  0,
+                  SEARCH_QUERY_MAX_LENGTH,
+                );
                 setKeyword(nextKeyword);
               }}
               placeholder="e.g., emergency plumber, electrician, tiler"
-              inputProps={{ maxLength: SEARCH_QUERY_MAX_LENGTH }}
+              inputProps={{ maxLength: SEARCH_QUERY_MAX_LENGTH, 'aria-label': 'Search by work keyword' }}
+              helperText="Start with trade first, then include area if known."
             />
           </Grid>
 
@@ -178,11 +189,15 @@ const JobSearchForm = ({
               size="small"
               value={location}
               onChange={(e) => {
-                const nextLocation = e.target.value.slice(0, SEARCH_LOCATION_MAX_LENGTH);
+                const nextLocation = e.target.value.slice(
+                  0,
+                  SEARCH_LOCATION_MAX_LENGTH,
+                );
                 setLocation(nextLocation);
               }}
               placeholder="e.g., Accra, Kumasi, Tamale"
-              inputProps={{ maxLength: SEARCH_LOCATION_MAX_LENGTH }}
+              inputProps={{ maxLength: SEARCH_LOCATION_MAX_LENGTH, 'aria-label': 'Search by location' }}
+              helperText="City, town, or neighborhood helps rank nearby matches first."
             />
           </Grid>
 
@@ -197,6 +212,7 @@ const JobSearchForm = ({
                   emitSearch({ jobType: nextJobType });
                 }}
                 label="Type"
+                inputProps={{ 'aria-label': 'Filter by job type' }}
               >
                 <MenuItem value="">Any</MenuItem>
                 {jobTypes.map((type) => (
@@ -219,6 +235,7 @@ const JobSearchForm = ({
                   emitSearch({ category: nextCategory });
                 }}
                 label="Trade"
+                inputProps={{ 'aria-label': 'Filter by trade category' }}
               >
                 <MenuItem value="">Any</MenuItem>
                 {jobCategories.map((cat) => (
@@ -237,7 +254,7 @@ const JobSearchForm = ({
               color="primary"
               startIcon={<SearchIcon />}
               fullWidth
-              sx={{ height: '40px' }}
+              sx={{ minHeight: 44 }}
             >
               Find Work
             </Button>
@@ -245,13 +262,23 @@ const JobSearchForm = ({
         </Grid>
 
         {/* FIX H5: Skills Section - Add input field + existing chips */}
-        <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+        <Box
+          sx={{
+            mt: 1,
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 1,
+            alignItems: 'center',
+          }}
+        >
           <TextField
             size="small"
             label="Add skill"
             variant="outlined"
             value={skill}
-            onChange={(e) => setSkill(e.target.value.slice(0, SEARCH_SKILL_MAX_LENGTH))}
+            onChange={(e) =>
+              setSkill(e.target.value.slice(0, SEARCH_SKILL_MAX_LENGTH))
+            }
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
@@ -267,7 +294,7 @@ const JobSearchForm = ({
             size="small"
             onClick={handleAddSkill}
             disabled={!skill.trim()}
-            sx={{ height: '40px' }}
+            sx={{ minHeight: 44 }}
           >
             Add
           </Button>

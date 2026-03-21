@@ -3,6 +3,46 @@ import { api } from '../../../services/apiClient';
 import { EXTERNAL_SERVICES } from '../../../config/services';
 import workerService from '../../worker/services/workerService';
 
+const JOB_LOCATION_ENDPOINTS = ['/jobs/location', '/jobs/search/location'];
+
+const shouldTryFallback = (error) => {
+  const status = error?.response?.status;
+  return status === 404 || status === 405 || status === 501 || status === 503;
+};
+
+const requestWithFallback = async (endpoints, requestFactory) => {
+  let lastError;
+
+  for (let index = 0; index < endpoints.length; index += 1) {
+    const endpoint = endpoints[index];
+    try {
+      return await requestFactory(endpoint);
+    } catch (error) {
+      lastError = error;
+      const canRetryWithFallback = index < endpoints.length - 1 && shouldTryFallback(error);
+      if (!canRetryWithFallback) {
+        break;
+      }
+    }
+  }
+
+  throw lastError;
+};
+
+const extractPayload = (response) => {
+  const payload = response?.data;
+
+  if (payload?.success === false) {
+    const message = payload?.error?.message || payload?.message || 'Location search failed';
+    const normalized = new Error(message);
+    normalized.response = response;
+    normalized.code = payload?.error?.code;
+    throw normalized;
+  }
+
+  return payload?.data ?? payload ?? [];
+};
+
 /**
  * Professional Map Service for Vocational Job Platform
  * Integrates with Kelmah backend APIs for real job and worker data
@@ -116,10 +156,15 @@ class MapService {
         searchParams.maxBudget = budget[1];
       }
 
-      const response = await api.get('/jobs/search/location', {
-        params: searchParams,
-      });
-      return this.transformJobsForMap(response.data.data || []);
+      const response = await requestWithFallback(
+        JOB_LOCATION_ENDPOINTS,
+        (endpoint) =>
+          api.get(endpoint, {
+            params: searchParams,
+          }),
+      );
+      const jobs = extractPayload(response);
+      return this.transformJobsForMap(Array.isArray(jobs) ? jobs : []);
     } catch (error) {
       if (import.meta.env.DEV) console.error('Jobs API unavailable:', error);
       throw error;

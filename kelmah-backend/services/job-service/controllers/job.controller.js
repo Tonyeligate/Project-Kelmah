@@ -1044,6 +1044,112 @@ const payMilestone = async (req, res, next) => {
 };
 
 /**
+ * Create a contract
+ * @route POST /api/jobs/contracts
+ * @access Private (hirer)
+ */
+const createContract = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return errorResponse(res, 401, 'Authentication required');
+    }
+
+    const {
+      job: rawJobId,
+      jobId,
+      worker: rawWorkerId,
+      workerId,
+      application: rawApplicationId,
+      applicationId,
+      title,
+      description,
+      startDate,
+      endDate,
+      value,
+      paymentTerms,
+      milestones,
+      deliverables,
+      termsAndConditions,
+    } = req.body || {};
+
+    const resolvedJobId = rawJobId || jobId;
+    const resolvedWorkerId = rawWorkerId || workerId;
+    const resolvedApplicationId = rawApplicationId || applicationId;
+
+    if (!resolvedJobId || !resolvedWorkerId) {
+      return errorResponse(res, 400, 'jobId and workerId are required');
+    }
+
+    const job = await Job.findById(resolvedJobId).lean();
+    if (!job) {
+      return errorResponse(res, 404, 'Job not found');
+    }
+
+    if (String(job.hirer) !== String(userId) && req.user?.role !== 'admin') {
+      return errorResponse(res, 403, 'Only the hirer can create contracts for this job');
+    }
+
+    const worker = await User.findById(resolvedWorkerId).select('firstName lastName').lean();
+    if (!worker) {
+      return errorResponse(res, 404, 'Worker not found');
+    }
+
+    let application = null;
+    if (resolvedApplicationId) {
+      application = await Application.findById(resolvedApplicationId).lean();
+    } else {
+      application = await Application.findOne({
+        job: resolvedJobId,
+        worker: resolvedWorkerId,
+      })
+        .sort({ createdAt: -1 })
+        .lean();
+    }
+
+    if (!application?._id) {
+      return errorResponse(res, 400, 'A valid applicationId for this worker/job is required');
+    }
+
+    const contractPayload = {
+      job: resolvedJobId,
+      hirer: job.hirer,
+      worker: resolvedWorkerId,
+      application: application._id,
+      title: title || `Contract for ${job.title || 'job'}`,
+      description: description || `Service contract for ${job.title || 'job'}`,
+      startDate: startDate ? new Date(startDate) : new Date(),
+      endDate: endDate ? new Date(endDate) : undefined,
+      clientName: `${req.user?.firstName || ''} ${req.user?.lastName || ''}`.trim() || 'Client',
+      workerName: `${worker.firstName || ''} ${worker.lastName || ''}`.trim() || 'Worker',
+      value: Number.isFinite(Number(value)) ? Number(value) : Number(job.budget || 0),
+      paymentTerms: paymentTerms || {
+        type: (job.paymentType === 'hourly' ? 'hourly' : 'fixed'),
+        rate: Number.isFinite(Number(value)) ? Number(value) : Number(job.budget || 0),
+        currency: job.currency || 'GHS',
+      },
+      milestones: Array.isArray(milestones) ? milestones : [],
+      deliverables: Array.isArray(deliverables) ? deliverables : [],
+      termsAndConditions: termsAndConditions || { content: '', acceptedByHirer: false, acceptedByWorker: false },
+      status: 'draft',
+    };
+
+    const created = await Contract.create(contractPayload);
+    const populated = await Contract.findById(created._id)
+      .populate('job', 'title category')
+      .populate('hirer', 'firstName lastName')
+      .populate('worker', 'firstName lastName');
+
+    return successResponse(res, 201, 'Contract created', populated);
+  } catch (error) {
+    if (error?.code === 11000) {
+      return errorResponse(res, 409, 'A contract already exists for this job and worker');
+    }
+    next(error);
+  }
+};
+
+/**
  * Get search suggestions for job queries
  * @route GET /api/jobs/suggestions
  * @access Public
@@ -1283,6 +1389,85 @@ const getSearchSuggestions = async (req, res, next) => {
     return successResponse(res, 200, 'Search suggestions retrieved', suggestions);
   } catch (error) {
     jobLogger.error('Search suggestions error', { error: error.message });
+    next(error);
+  }
+};
+
+/**
+ * Get distinct job skills for search filters
+ * @route GET /api/jobs/skills
+ * @access Public
+ */
+const getJobSkills = async (req, res, next) => {
+  try {
+    await ensureConnection();
+
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 50));
+
+    const jobs = await Job.find(
+      { status: { $in: ['open', 'Open'] } },
+      { skills: 1, 'requirements.primarySkills': 1, 'requirements.secondarySkills': 1 },
+    )
+      .sort({ createdAt: -1 })
+      .limit(300)
+      .lean();
+
+    const skillSet = new Set();
+    jobs.forEach((job) => {
+      const directSkills = Array.isArray(job.skills) ? job.skills : [];
+      const primary = Array.isArray(job.requirements?.primarySkills) ? job.requirements.primarySkills : [];
+      const secondary = Array.isArray(job.requirements?.secondarySkills) ? job.requirements.secondarySkills : [];
+      [...directSkills, ...primary, ...secondary].forEach((skill) => {
+        const normalized = String(skill || '').trim();
+        if (normalized) skillSet.add(normalized);
+      });
+    });
+
+    return successResponse(res, 200, 'Job skills retrieved', Array.from(skillSet).sort().slice(0, limit));
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get popular job search terms
+ * @route GET /api/jobs/popular-searches
+ * @access Public
+ */
+const getPopularSearches = async (req, res, next) => {
+  try {
+    await ensureConnection();
+
+    const limit = Math.min(20, Math.max(1, parseInt(req.query.limit, 10) || 8));
+    const jobs = await Job.find(
+      { status: { $in: ['open', 'Open'] } },
+      { title: 1, category: 1, skills: 1, 'requirements.primarySkills': 1 },
+    )
+      .sort({ createdAt: -1 })
+      .limit(300)
+      .lean();
+
+    const counts = new Map();
+    const bump = (value) => {
+      const normalized = String(value || '').trim().toLowerCase();
+      if (!normalized || normalized.length < 2) return;
+      counts.set(normalized, (counts.get(normalized) || 0) + 1);
+    };
+
+    jobs.forEach((job) => {
+      bump(job.title);
+      bump(job.category);
+      (Array.isArray(job.skills) ? job.skills : []).forEach(bump);
+      (Array.isArray(job.requirements?.primarySkills) ? job.requirements.primarySkills : []).forEach(bump);
+    });
+
+    const terms = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, limit)
+      .map(([term]) => term);
+
+    return successResponse(res, 200, 'Popular searches retrieved', terms);
+  } catch (error) {
     next(error);
   }
 };
@@ -4548,6 +4733,7 @@ module.exports = {
   changeJobStatus,
   getDashboardJobs,
   getContracts,
+  createContract,
   getContractById,
   createContractDispute,
   updateContract,
@@ -4586,6 +4772,8 @@ module.exports = {
   getExpiredJobs,
   getPlatformStats,
   getSearchSuggestions,
+  getJobSkills,
+  getPopularSearches,
   __testables: {
     calculateJobMatchScore,
     calculateWorkerMatchScore,

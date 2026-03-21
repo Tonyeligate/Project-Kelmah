@@ -34,10 +34,10 @@ const DashboardPage = () => {
       <Box sx={{ p: 3, textAlign: 'center', minHeight: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <LockIcon sx={{ fontSize: 56, color: '#D4AF37', mb: 2 }} />
         <Typography variant="h6" gutterBottom>
-          Please sign in
+          Please sign in to continue
         </Typography>
         <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-          Sign in to see your dashboard.
+          Sign in to open your dashboard, jobs, and messages.
         </Typography>
         <Button
           variant="contained"
@@ -64,8 +64,8 @@ const DashboardPage = () => {
       dashboard = (
         <Box sx={{ p: 3, textAlign: 'center' }}>
           <Typography variant="h5" gutterBottom>Admin Dashboard</Typography>
-          <Typography variant="body1">Admin dashboard is available in the admin section.</Typography>
-          <Button variant="outlined" onClick={() => navigate(getRoleHomePath(user))} sx={{ mt: 2, borderColor: '#D4AF37', color: '#D4AF37' }}>
+          <Typography variant="body1">Admin tools are available in the admin section.</Typography>
+          <Button variant="outlined" onClick={() => navigate(getRoleHomePath(user))} sx={{ mt: 2, borderColor: '#D4AF37', color: '#D4AF37', minHeight: 44 }}>
             Go to Admin Panel
           </Button>
         </Box>

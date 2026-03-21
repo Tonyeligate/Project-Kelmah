@@ -257,8 +257,12 @@ const SavedSearches = ({
     if (filters.location) parts.push(`📍 ${filters.location}`);
     if (filters.category) parts.push(`🔧 ${filters.category}`);
     if (filters.minBudget || filters.maxBudget) {
-      const min = filters.minBudget ? formatCurrency(filters.minBudget) : 'GH₵0';
-      const max = filters.maxBudget ? formatCurrency(filters.maxBudget) : 'GH₵∞';
+      const min = filters.minBudget
+        ? formatCurrency(filters.minBudget)
+        : 'GH₵0';
+      const max = filters.maxBudget
+        ? formatCurrency(filters.maxBudget)
+        : 'GH₵∞';
       parts.push(`💰 ${min} - ${max}`);
     }
     if (filters.urgency) parts.push(`⏰ ${filters.urgency}`);
@@ -311,6 +315,7 @@ const SavedSearches = ({
           right: 8,
           zIndex: 1,
         }}
+        aria-label={`Open actions for saved search ${search.name || 'item'}`}
         onClick={(e) => {
           setAnchorEl(e.currentTarget);
           setSelectedSearch(search);
@@ -320,18 +325,42 @@ const SavedSearches = ({
       </IconButton>
 
       <CardContent sx={{ flexGrow: 1, pt: search.alertsEnabled ? 5 : 3 }}>
-        <Typography variant="h6" component="h3" gutterBottom>
+        <Typography
+          variant="h6"
+          component="h3"
+          gutterBottom
+          sx={{ wordBreak: 'break-word' }}
+        >
           {search.name}
         </Typography>
 
         {search.query && (
-          <Typography variant="body2" color="text.secondary" paragraph>
-            <strong>Query:</strong> "{search.query}"
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            paragraph
+            sx={{ wordBreak: 'break-word' }}
+          >
+            <strong>Query:</strong> &quot;{search.query}&quot;
           </Typography>
         )}
 
-        <Typography variant="body2" color="text.secondary" paragraph>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          paragraph
+          sx={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
+        >
           <strong>Filters:</strong> {getFilterSummary(search.filters)}
+        </Typography>
+
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: 'block', mb: 1.25, lineHeight: 1.35 }}
+        >
+          Run search reopens the same filters so you can compare results
+          quickly.
         </Typography>
 
         <Stack spacing={1}>
@@ -385,7 +414,13 @@ const SavedSearches = ({
               onClick={() =>
                 handleToggleAlerts(search.id, search.alertsEnabled)
               }
+              aria-label={
+                search.alertsEnabled
+                  ? 'Disable alerts for this search'
+                  : 'Enable alerts for this search'
+              }
               color={search.alertsEnabled ? 'primary' : 'default'}
+              sx={{ width: 44, height: 44 }}
             >
               {search.alertsEnabled ? (
                 <NotificationsIcon />
@@ -396,7 +431,12 @@ const SavedSearches = ({
           </Tooltip>
 
           <Tooltip title="Edit search">
-            <IconButton size="small" onClick={() => handleOpenDialog(search)}>
+            <IconButton
+              size="small"
+              aria-label="Edit saved search"
+              onClick={() => handleOpenDialog(search)}
+              sx={{ width: 44, height: 44 }}
+            >
               <EditIcon />
             </IconButton>
           </Tooltip>
@@ -413,9 +453,11 @@ const SavedSearches = ({
             )
           }
           onClick={() => handleRunSearch(search)}
+          aria-label={`Run saved search ${search.name}`}
           disabled={runningSearchId === search.id}
+          sx={{ minHeight: 44 }}
         >
-          {runningSearchId === search.id ? 'Running...' : 'Run Search'}
+          {runningSearchId === search.id ? 'Running...' : 'Run now'}
         </Button>
       </CardActions>
     </Card>
@@ -508,10 +550,27 @@ const SavedSearches = ({
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => handleOpenDialog()}
+            sx={{ minHeight: 44 }}
           >
             Save New Search
           </Button>
         </Box>
+      )}
+
+      {showHeader && (
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{
+            display: 'block',
+            mb: 2,
+            lineHeight: 1.4,
+            wordBreak: 'break-word',
+          }}
+        >
+          Saved searches keep your trusted filters in one place so you can rerun
+          and compare opportunities quickly.
+        </Typography>
       )}
 
       {/* Saved Searches Grid */}
@@ -519,18 +578,19 @@ const SavedSearches = ({
         <Paper sx={{ p: 4, textAlign: 'center' }}>
           <BookmarkIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
-            No Saved Searches Yet
+            No saved searches yet
           </Typography>
           <Typography variant="body2" color="text.secondary" paragraph>
-            Save your frequently used search criteria to quickly find relevant
-            jobs
+            Save a common trade, location, or budget search so you can rerun it
+            in one tap and turn alerts on when needed.
           </Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => handleOpenDialog()}
+            sx={{ minHeight: 44 }}
           >
-            Save Your First Search
+            Save a search
           </Button>
         </Paper>
       ) : (
@@ -629,13 +689,13 @@ const SavedSearches = ({
               placeholder="e.g., emergency plumbing repair"
               value={formData.query}
               onChange={(e) => handleInputChange('query', e.target.value)}
-              helperText="Enter keywords to search for"
+              helperText="Use a few clear words like plumbing repair or Accra carpenter."
             />
 
             <Alert severity="info">
               <Typography variant="body2">
-                Filter criteria will be captured from your current search
-                filters when saving
+                Your current filters will be saved with this name so you can run
+                the same search again without typing everything again.
               </Typography>
             </Alert>
 
@@ -650,9 +710,9 @@ const SavedSearches = ({
               }
               label={
                 <Box>
-                  <Typography variant="body2">Enable job alerts</Typography>
+                  <Typography variant="body2">Turn on alerts</Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Get notified when new jobs match this search
+                    Hear when new jobs match this search
                   </Typography>
                 </Box>
               }
@@ -662,7 +722,7 @@ const SavedSearches = ({
               <TextField
                 select
                 fullWidth
-                label="Alert Frequency"
+                label="Alert timing"
                 value={formData.frequency}
                 onChange={(e) => handleInputChange('frequency', e.target.value)}
               >
@@ -674,11 +734,14 @@ const SavedSearches = ({
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleCloseDialog} sx={{ minHeight: 44 }}>
+            Cancel
+          </Button>
           <Button
             onClick={handleSubmit}
             variant="contained"
             disabled={!formData.name.trim()}
+            sx={{ minHeight: 44 }}
           >
             {isEditing ? 'Update' : 'Save'} Search
           </Button>

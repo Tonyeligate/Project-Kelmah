@@ -328,8 +328,7 @@ const AccountSettings = () => {
           color="error"
           onClick={handleLogout}
           startIcon={<LogoutIcon />}
-          disabled={isLoggingOut}
-        >
+          disabled={isLoggingOut}>
           {isLoggingOut ? 'Signing out…' : 'Logout of Kelmah'}
         </Button>
       </Paper>

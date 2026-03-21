@@ -26,6 +26,7 @@ const jobRoutes = require("./routes/job.routes");
 const bidRoutes = require("./routes/bid.routes");
 const userPerformanceRoutes = require("./routes/userPerformance.routes");
 const quickJobRoutes = require("./routes/quickJobRoutes");
+const eventsRoutes = require('./routes/events.routes');
 
 // Initialize express app
 
@@ -234,6 +235,10 @@ const mountApiRoutes = () => {
   // QuickJob routes - Protected Quick-Hire System
   app.use("/quick-jobs", quickJobRoutes);
   app.use("/api/quick-jobs", quickJobRoutes);
+  app.use('/events', eventsRoutes);
+  app.use('/api/events', eventsRoutes);
+  app.use('/calendar/events', eventsRoutes);
+  app.use('/api/calendar/events', eventsRoutes);
   
   apiRoutesMounted = true;
   logger.info('✅ API routes mounted after DB connection');

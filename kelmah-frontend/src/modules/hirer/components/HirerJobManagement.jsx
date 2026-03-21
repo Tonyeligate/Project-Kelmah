@@ -606,6 +606,7 @@ const HirerJobManagement = () => {
                           <IconButton
                             size="small"
                             onClick={(e) => handleMenuOpen(e, job)}
+                            aria-label={`Open actions for ${job.title || 'job'}`}
                           >
                             <MoreVertIcon />
                           </IconButton>
@@ -615,7 +616,7 @@ const HirerJobManagement = () => {
                   </TableBody>
                 </Table>
               </TableContainer>
-              )
+              )}
 
               <TablePagination
                 component="div"
@@ -685,7 +686,7 @@ const HirerJobManagement = () => {
             }
             color={dialogType === 'delete' ? 'error' : 'primary'}
             variant="contained"
-          >
+           aria-label="Delete item">
             {dialogType === 'delete' ? 'Delete' : 'Publish'}
           </Button>
         </DialogActions>
@@ -712,3 +713,4 @@ const HirerJobManagement = () => {
 };
 
 export default HirerJobManagement;
+

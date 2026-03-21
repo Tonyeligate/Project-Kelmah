@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
@@ -88,6 +88,9 @@ import {
   GroupWork as CollabIcon,
   Home as HomeIcon,
   Person as PersonIcon,
+  Info as InfoIcon,
+  AutoAwesome as AutoAwesomeIcon,
+  Reviews as ReviewsIcon,
 } from '@mui/icons-material';
 import { styled, useTheme } from '@mui/material/styles';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -96,6 +99,7 @@ import TextField from '@mui/material/TextField';
 import ReviewSystem from '../../../components/reviews/ReviewSystem';
 import { BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import reviewService from '../../reviews/services/reviewService';
+import { hasRole } from '../../../utils/userUtils';
 import {
   useBreakpointDown,
   useMaxWidth,
@@ -148,6 +152,13 @@ const SkillChip = styled(Chip)(({ theme }) => ({
   background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
   color: theme.palette.primary.contrastText,
   fontWeight: 600,
+  maxWidth: '100%',
+  '& .MuiChip-label': {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    maxWidth: 180,
+  },
   '&:hover': {
     transform: 'scale(1.05)',
     boxShadow: theme.shadows[8],
@@ -171,6 +182,7 @@ const MetricCard = styled(Card)(({ theme }) => ({
 const AnimatedButton = styled(Button)(({ theme }) => ({
   borderRadius: 25,
   padding: '12px 24px',
+  minHeight: 44,
   fontWeight: 600,
   textTransform: 'none',
   transition: 'all 0.3s ease-in-out',
@@ -286,6 +298,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
   const [availabilityDraft, setAvailabilityDraft] = useState(null);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [showFullBio, setShowFullBio] = useState(false);
+  const [activePortfolioIndex, setActivePortfolioIndex] = useState(0);
+  const [mobileHeroParallaxOffset, setMobileHeroParallaxOffset] = useState(0);
+
+  const aboutSectionRef = useRef(null);
+  const portfolioSectionRef = useRef(null);
+  const reviewsSectionRef = useRef(null);
 
   const getPortfolioPreviewImage = useCallback((item) => {
     return (
@@ -315,6 +333,32 @@ function WorkerProfile({ workerId: workerIdProp }) {
     authUser?.userId && resolvedWorkerId
       ? authUser.userId === resolvedWorkerId
       : false;
+  const canHireWorker = hasRole(authUser, ['hirer', 'admin']);
+
+  const scrollToSection = useCallback((sectionRef) => {
+    if (sectionRef?.current) {
+      sectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
+
+  const handleHireAction = useCallback(() => {
+    if (!authUser) {
+      navigate('/login', {
+        state: {
+          from: `${window.location.pathname}${window.location.search}`,
+          message: 'Please sign in as a hirer to hire this worker.',
+        },
+      });
+      return;
+    }
+
+    if (!canHireWorker) {
+      setFeedbackMessage('Only hirer accounts can create contracts.');
+      return;
+    }
+
+    navigate(`/contracts/create?workerId=${resolvedWorkerId}`);
+  }, [authUser, canHireWorker, navigate, resolvedWorkerId]);
 
   const fetchAllData = useCallback(async () => {
     if (!resolvedWorkerId) {
@@ -470,6 +514,36 @@ function WorkerProfile({ workerId: workerIdProp }) {
         }
       });
   }, [authUser, fetchAllData, resolvedWorkerId, workerIdProp]);
+
+  useEffect(() => {
+    if (!isActualMobile) {
+      setMobileHeroParallaxOffset(0);
+      return;
+    }
+
+    let rafId = null;
+    const onScroll = () => {
+      if (rafId) {
+        return;
+      }
+
+      rafId = requestAnimationFrame(() => {
+        const nextOffset = Math.min(window.scrollY * 0.12, 16);
+        setMobileHeroParallaxOffset(nextOffset);
+        rafId = null;
+      });
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+    };
+  }, [isActualMobile]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -820,6 +894,14 @@ function WorkerProfile({ workerId: workerIdProp }) {
               {profileHeroImage ? <Chip label="Visual profile ready" color="success" variant="outlined" /> : null}
             </Stack>
 
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mb: 3, maxWidth: 680, mx: 'auto' }}
+            >
+              Trust tip: review verified badges, ratings, and recent portfolio examples before confirming a hire.
+            </Typography>
+
             <Stack
               direction={{ xs: 'column', sm: 'row' }}
               spacing={2}
@@ -841,11 +923,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   variant="outlined"
                   size="large"
                   startIcon={<BusinessCenterIcon />}
-                  onClick={() =>
-                    navigate(
-                      `/contracts/create?workerId=${resolvedWorkerId}`
-                    )
-                  }
+                  onClick={handleHireAction}
                 >
                   Hire Now
                 </AnimatedButton>
@@ -1598,8 +1676,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                         size="small"
                         variant={d.available ? 'contained' : 'outlined'}
                         sx={{ minHeight: 44 }}
-                        onClick={() => setDay(day, { available: !d.available })}
-                      >
+                        onClick={() => setDay(day, { available: !d.available })}>
                         {d.available ? 'Available' : 'Unavailable'}
                       </Button>
                       <TextField
@@ -1738,11 +1815,15 @@ function WorkerProfile({ workerId: workerIdProp }) {
 
   const renderMobileProfileLayout = () => {
     const isDark = theme.palette.mode === 'dark';
-    const panel = isDark ? '#121212' : '#FFF7E1';
-    const panelMuted = isDark ? '#1A1A1A' : '#F8EFD2';
-    const accent = '#F5B324';
-    const textPrimary = isDark ? '#FFFFFF' : '#1E1A12';
-    const textMuted = isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(30, 26, 18, 0.7)';
+    const dashboardFontFamily = '"Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif';
+    const accent = theme.palette.secondary.main || '#F5B324';
+    const panel = alpha(theme.palette.background.paper, isDark ? 0.94 : 0.97);
+    const panelMuted = alpha(theme.palette.background.paper, isDark ? 0.86 : 0.92);
+    const textPrimary = theme.palette.text.primary;
+    const textMuted = alpha(theme.palette.text.primary, isDark ? 0.72 : 0.66);
+    const sectionRadius = 18;
+    const compactGap = 1.6;
+    const motionEase = 'easeOut';
     const aboutText =
       profile.bio ||
       'I treat every project like a signature piece. Clean finishing, durable materials, and honest timelines.';
@@ -1753,24 +1834,102 @@ function WorkerProfile({ workerId: workerIdProp }) {
         : aboutText;
     const compactReviews = reviews.slice(0, 3);
     const primaryActionLabel = isOwner ? 'EDIT PROFILE' : 'HIRE NOW';
+    const averageRatingValue = Number(
+      ratingSummary?.averageRating ?? profile.average_rating ?? 0,
+    );
+    const totalReviewsValue = Number(
+      ratingSummary?.totalReviews ?? stats.totalReviews ?? reviews.length,
+    );
+    const completionValue = Number(
+      profileCompletion?.completionPercentage ?? stats?.completionRate ?? 0,
+    );
+    const jobsCompletedValue = Number(
+      stats?.totalJobsCompleted ?? stats?.jobsCompleted ?? 0,
+    );
+    const responseTimeValue = Number(stats?.averageResponseTime ?? 0);
+    const availabilityLabel =
+      availability?.status || availability?.availabilityStatus || 'available';
+    const mobilePortfolioItems = (portfolio.length > 0 ? portfolio : [{ title: 'Project work' }]).slice(0, 6);
+
+    const trustMetricItems = [
+      {
+        label: 'Rating',
+        value: `${averageRatingValue.toFixed(1)} / 5`,
+        subLabel: `${totalReviewsValue} reviews`,
+        icon: <StarIcon sx={{ fontSize: 18 }} />,
+      },
+      {
+        label: 'Completed',
+        value: `${jobsCompletedValue}`,
+        subLabel: 'jobs delivered',
+        icon: <AssessmentIcon sx={{ fontSize: 18 }} />,
+      },
+      {
+        label: 'Profile',
+        value: `${completionValue}%`,
+        subLabel: 'completion',
+        icon: <CheckIcon sx={{ fontSize: 18 }} />,
+      },
+      {
+        label: 'Response',
+        value: responseTimeValue > 0 ? `${responseTimeValue}h` : 'Fast',
+        subLabel: 'avg reply time',
+        icon: <ScheduleIcon sx={{ fontSize: 18 }} />,
+      },
+    ];
 
     const effectiveBottomNavHeight = isAuthenticated ? BOTTOM_NAV_HEIGHT : 0;
+
+    const handleMobilePortfolioScroll = (event) => {
+      const target = event.currentTarget;
+      const cardSpan = 172;
+      const nextIndex = Math.max(
+        0,
+        Math.min(
+          mobilePortfolioItems.length - 1,
+          Math.round(target.scrollLeft / cardSpan),
+        ),
+      );
+      if (nextIndex !== activePortfolioIndex) {
+        setActivePortfolioIndex(nextIndex);
+      }
+    };
 
     return (
       <Box
         sx={{
           pb: { xs: effectiveBottomNavHeight + 116, md: 4 },
-          fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+          fontFamily: dashboardFontFamily,
         }}
       >
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, ease: motionEase }}
+        >
         <Paper
           elevation={0}
           sx={{
             p: 1.5,
-            borderRadius: 5,
-            background: panel,
+            borderRadius: sectionRadius,
+            background: `linear-gradient(145deg, ${panel} 0%, ${alpha(accent, 0.08)} 100%)`,
             border: `1px solid ${alpha(accent, 0.28)}`,
             boxShadow: `0 12px 32px ${alpha('#000', 0.34)}`,
+            position: 'relative',
+            overflow: 'hidden',
+            transform: `translateY(-${mobileHeroParallaxOffset}px)`,
+            transition: 'transform 120ms linear',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              top: -50,
+              right: -50,
+              width: 140,
+              height: 140,
+              borderRadius: '50%',
+              background: `radial-gradient(circle, ${alpha(accent, 0.22)} 0%, transparent 70%)`,
+              pointerEvents: 'none',
+            },
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
@@ -1806,21 +1965,47 @@ function WorkerProfile({ workerId: workerIdProp }) {
               >
                 {profile.profession || 'Professional Worker'}
               </Typography>
+
+              <Stack direction="row" spacing={0.8} useFlexGap flexWrap="wrap" sx={{ mb: 0.8 }}>
+                <Chip
+                  size="small"
+                  icon={<VerifiedIcon sx={{ fontSize: 14 }} />}
+                  label={profile.is_verified ? 'Verified' : 'Pending verification'}
+                  sx={{
+                    bgcolor: alpha(accent, 0.14),
+                    color: textPrimary,
+                    border: `1px solid ${alpha(accent, 0.34)}`,
+                    '& .MuiChip-icon': { color: accent },
+                  }}
+                />
+                <Chip
+                  size="small"
+                  icon={<ScheduleIcon sx={{ fontSize: 14 }} />}
+                  label={String(availabilityLabel).replace(/\b\w/g, (char) => char.toUpperCase())}
+                  sx={{
+                    bgcolor: alpha('#25B56B', 0.13),
+                    color: textPrimary,
+                    border: `1px solid ${alpha('#25B56B', 0.35)}`,
+                    '& .MuiChip-icon': { color: '#25B56B' },
+                  }}
+                />
+              </Stack>
+
               <Stack direction="row" spacing={0.8} alignItems="center">
                 <Typography
                   variant="body2"
                   sx={{ color: accent, fontWeight: 700 }}
                 >
-                  {(Number(ratingSummary?.averageRating ?? profile.average_rating ?? 0) || 0).toFixed(1)}
+                  {averageRatingValue.toFixed(1)}
                 </Typography>
                 <Rating
                   size="small"
-                  value={Number(ratingSummary?.averageRating ?? profile.average_rating ?? 0) || 0}
+                  value={averageRatingValue || 0}
                   precision={0.1}
                   readOnly
                 />
                 <Typography variant="caption" sx={{ color: textMuted }}>
-                  ({ratingSummary?.totalReviews ?? stats.totalReviews ?? reviews.length} reviews)
+                  ({totalReviewsValue} reviews)
                 </Typography>
               </Stack>
             </Box>
@@ -1877,14 +2062,89 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 />
               ))}
           </Stack>
-        </Paper>
 
+          <Stack
+            direction="row"
+            spacing={0.8}
+            useFlexGap
+            flexWrap="wrap"
+            sx={{ mt: 1.2 }}
+          >
+            {[
+              { label: 'About', icon: <InfoIcon sx={{ fontSize: 15 }} />, ref: aboutSectionRef },
+              { label: 'Portfolio', icon: <AutoAwesomeIcon sx={{ fontSize: 15 }} />, ref: portfolioSectionRef },
+              { label: 'Reviews', icon: <ReviewsIcon sx={{ fontSize: 15 }} />, ref: reviewsSectionRef },
+            ].map((jumpItem) => (
+              <Chip
+                key={jumpItem.label}
+                icon={jumpItem.icon}
+                label={jumpItem.label}
+                onClick={() => scrollToSection(jumpItem.ref)}
+                sx={{
+                  bgcolor: alpha(accent, 0.1),
+                  color: accent,
+                  border: `1px solid ${alpha(accent, 0.35)}`,
+                  '& .MuiChip-icon': { color: accent },
+                  '&:hover': { bgcolor: alpha(accent, 0.2) },
+                  '&:active': {
+                    transform: 'scale(0.98)',
+                  },
+                  transition: 'transform 120ms ease, background-color 180ms ease',
+                }}
+              />
+            ))}
+          </Stack>
+
+          <Grid container spacing={1.1} sx={{ mt: 0.45 }}>
+            {trustMetricItems.map((metric, index) => (
+              <Grid item xs={6} key={`mobile-trust-${metric.label}`}>
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.22, delay: 0.04 + index * 0.035, ease: 'easeOut' }}
+                >
+                  <Box
+                    sx={{
+                      borderRadius: 2.4,
+                      border: `1px solid ${alpha(accent, 0.28)}`,
+                      background: `linear-gradient(170deg, ${alpha(accent, 0.17)} 0%, ${alpha('#000', isDark ? 0.18 : 0.03)} 100%)`,
+                      px: 1.1,
+                      py: 0.95,
+                      minHeight: 75,
+                    }}
+                  >
+                    <Stack direction="row" spacing={0.8} alignItems="center" sx={{ mb: 0.45 }}>
+                      <Box sx={{ color: accent, display: 'flex', alignItems: 'center' }}>{metric.icon}</Box>
+                      <Typography variant="caption" sx={{ color: textMuted, fontWeight: 700 }}>
+                        {metric.label}
+                      </Typography>
+                    </Stack>
+                    <Typography variant="body2" sx={{ color: textPrimary, fontWeight: 800, lineHeight: 1.1 }}>
+                      {metric.value}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: textMuted }}>
+                      {metric.subLabel}
+                    </Typography>
+                  </Box>
+                </motion.div>
+              </Grid>
+            ))}
+          </Grid>
+        </Paper>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.24, delay: 0.03, ease: motionEase }}
+        >
         <Paper
+          ref={aboutSectionRef}
           elevation={0}
           sx={{
-            mt: 1.8,
+            mt: compactGap,
             p: 1.5,
-            borderRadius: 4,
+            borderRadius: sectionRadius,
             background: panelMuted,
             border: `1px solid ${alpha(accent, 0.2)}`,
           }}
@@ -1909,19 +2169,25 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 '&:hover': {
                   backgroundColor: '#e7b843',
                 },
-              }}
-            >
+              }}>
               {showFullBio ? 'Show Less' : 'Read More'}
             </Button>
           )}
         </Paper>
+        </motion.div>
 
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.24, delay: 0.06, ease: motionEase }}
+        >
         <Paper
+          ref={portfolioSectionRef}
           elevation={0}
           sx={{
-            mt: 1.8,
+            mt: compactGap,
             p: 1.5,
-            borderRadius: 4,
+            borderRadius: sectionRadius,
             background: panelMuted,
             border: `1px solid ${alpha(accent, 0.2)}`,
           }}
@@ -1932,84 +2198,134 @@ function WorkerProfile({ workerId: workerIdProp }) {
           <Box
             sx={{
               display: 'flex',
-              gap: 1,
+              gap: 1.2,
               overflowX: 'auto',
-              pb: 0.6,
+              pb: 0.9,
+              scrollSnapType: 'x mandatory',
+              scrollPaddingLeft: '4px',
               '&::-webkit-scrollbar': { height: 6 },
               '&::-webkit-scrollbar-thumb': {
                 backgroundColor: alpha(accent, 0.45),
                 borderRadius: 99,
               },
             }}
+            onScroll={handleMobilePortfolioScroll}
           >
-            {(portfolio.length > 0 ? portfolio : [{ title: 'Project work' }]).slice(0, 6).map((item, index) => {
+            {mobilePortfolioItems.map((item, index) => {
               const image = getPortfolioPreviewImage(item);
+              const isRealPortfolioItem = Boolean(item?.id || item?._id || item?.description || image);
 
               return (
-                <Card
+                <motion.div
                   key={item.id || item._id || item.title || `mobile-portfolio-${index}`}
-                  onClick={() => {
-                    if (!item.title) {
-                      return;
-                    }
-                    setSelectedPortfolioItem(item);
-                    setPortfolioDialogOpen(true);
-                  }}
-                  sx={{
-                    width: 100,
-                    minWidth: 100,
-                    height: 100,
-                    borderRadius: 2,
-                    overflow: 'hidden',
-                    cursor: item.title ? 'pointer' : 'default',
-                    border: `1px solid ${accent}`,
-                    background: alpha('#000', 0.25),
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
+                  whileTap={isRealPortfolioItem ? { scale: 0.98 } : undefined}
                 >
-                  {image ? (
-                    <CardMedia component="img" image={image} height="68" alt={item.title || 'Portfolio'} />
-                  ) : (
+                  <Card
+                    onClick={() => {
+                      if (!isRealPortfolioItem) {
+                        return;
+                      }
+                      setSelectedPortfolioItem(item);
+                      setPortfolioDialogOpen(true);
+                    }}
+                    sx={{
+                      width: 160,
+                      minWidth: 160,
+                      height: 144,
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                      cursor: isRealPortfolioItem ? 'pointer' : 'default',
+                      border: `1px solid ${alpha(accent, index === activePortfolioIndex ? 0.9 : 0.45)}`,
+                      background: alpha('#000', 0.28),
+                      display: 'flex',
+                      flexDirection: 'column',
+                      position: 'relative',
+                      scrollSnapAlign: 'start',
+                      boxShadow: index === activePortfolioIndex
+                        ? `0 8px 20px ${alpha(accent, 0.24)}`
+                        : 'none',
+                      '&:active': {
+                        transform: isRealPortfolioItem ? 'scale(0.985)' : 'none',
+                      },
+                      transition: 'transform 120ms ease, box-shadow 200ms ease, border-color 200ms ease',
+                    }}
+                  >
+                    {image ? (
+                      <CardMedia component="img" image={image} height="98" alt={item.title || 'Portfolio'} />
+                    ) : (
+                      <Box
+                        sx={{
+                          height: 98,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          bgcolor: alpha(accent, 0.14),
+                        }}
+                      >
+                        <WorkIcon sx={{ color: accent }} />
+                      </Box>
+                    )}
                     <Box
                       sx={{
-                        height: 68,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        bgcolor: alpha(accent, 0.12),
+                        position: 'absolute',
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        height: 56,
+                        background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.82) 100%)',
                       }}
-                    >
-                      <WorkIcon sx={{ color: accent }} />
-                    </Box>
-                  )}
-                  <CardContent sx={{ p: 0.8 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: textPrimary,
-                        fontWeight: 600,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {item.title || 'Untitled portfolio item'}
-                    </Typography>
-                  </CardContent>
-                </Card>
+                    />
+                    <CardContent sx={{ p: 0.9, mt: 'auto', zIndex: 1 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: '#FFF6D8',
+                          fontWeight: 700,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {item.title || 'Untitled portfolio item'}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               );
             })}
           </Box>
+          {mobilePortfolioItems.length > 1 && (
+            <Stack direction="row" spacing={0.7} justifyContent="center" sx={{ mt: 0.3 }}>
+              {mobilePortfolioItems.map((item, index) => (
+                <Box
+                  key={`portfolio-dot-${item.id || item._id || item.title || index}`}
+                  sx={{
+                    width: index === activePortfolioIndex ? 18 : 7,
+                    height: 7,
+                    borderRadius: 99,
+                    bgcolor: index === activePortfolioIndex ? accent : alpha(accent, 0.35),
+                    transition: 'all 0.24s ease',
+                  }}
+                />
+              ))}
+            </Stack>
+          )}
         </Paper>
+        </motion.div>
 
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.24, delay: 0.09, ease: motionEase }}
+        >
         <Paper
+          ref={reviewsSectionRef}
           elevation={0}
           sx={{
-            mt: 1.8,
+            mt: compactGap,
             p: 1.5,
-            borderRadius: 4,
+            borderRadius: sectionRadius,
             background: panelMuted,
             border: `1px solid ${alpha(accent, 0.2)}`,
           }}
@@ -2071,6 +2387,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             </Typography>
           )}
         </Paper>
+        </motion.div>
 
         <Box
           sx={{
@@ -2094,7 +2411,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   navigate('/worker/profile/edit');
                   return;
                 }
-                navigate(`/contracts/create?workerId=${resolvedWorkerId}`);
+                handleHireAction();
               }}
               sx={{
                 borderRadius: 999,
@@ -2106,8 +2423,12 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 '&:hover': {
                   background: `linear-gradient(180deg, #F7CF69 0%, ${accent} 100%)`,
                 },
+                '&:active': {
+                  transform: 'translateY(1px) scale(0.995)',
+                },
+                transition: 'transform 120ms ease, background 180ms ease',
               }}
-            >
+              aria-label={isOwner ? 'Edit profile' : 'Hire this worker'}>
               {primaryActionLabel}
             </Button>
             <Button
@@ -2130,6 +2451,10 @@ function WorkerProfile({ workerId: workerIdProp }) {
                 '&:hover': {
                   backgroundColor: alpha(accent, 0.08),
                 },
+                '&:active': {
+                  transform: 'translateY(1px) scale(0.995)',
+                },
+                transition: 'transform 120ms ease, background-color 180ms ease',
               }}
             >
               MESSAGE
@@ -2237,7 +2562,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
                   <Typography variant="h5" fontWeight={600}>
                     {selectedPortfolioItem.title}
                   </Typography>
-                  <IconButton onClick={() => setPortfolioDialogOpen(false)} aria-label="Close">
+                  <IconButton onClick={() => setPortfolioDialogOpen(false)} aria-label="Close portfolio preview dialog">
                     <CloseIcon />
                   </IconButton>
                 </Box>
@@ -2280,7 +2605,7 @@ function WorkerProfile({ workerId: workerIdProp }) {
             <SpeedDialAction
               icon={<BusinessCenterIcon />}
               tooltipTitle="Hire Now"
-              onClick={() => navigate(`/contracts/create?workerId=${resolvedWorkerId}`)}
+              onClick={handleHireAction}
             />
             <SpeedDialAction
               icon={<ShareIcon />}
@@ -2303,4 +2628,5 @@ function WorkerProfile({ workerId: workerIdProp }) {
 }
 
 export default WorkerProfile;
+
 

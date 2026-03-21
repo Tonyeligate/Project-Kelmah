@@ -33,8 +33,8 @@ const LoginPage = () => {
       <Helmet><title>Log In | Kelmah</title></Helmet>
       {registered && (
         <Alert severity="success" sx={{ mb: 2 }}>
-          Registration successful! Please check your email to verify your
-          account.
+          Registration complete. Check your email for a verification link, then
+          sign in.
         </Alert>
       )}
       {!registered && infoMessage && (

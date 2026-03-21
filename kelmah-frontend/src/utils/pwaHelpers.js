@@ -199,24 +199,6 @@ const fetchRuntimeHints = async () => {
 
 const isBrowserEnvironment = () => typeof window !== 'undefined';
 
-const applyInlineStyles = (element, cssText) => {
-  if (!element) {
-    return element;
-  }
-  element.style.cssText = cssText;
-  return element;
-};
-
-// Dismiss update notification (local helper)
-const dismissUpdateNotification = () => {
-  if (!isBrowserEnvironment()) return;
-
-  const notification = document.getElementById('pwa-update-notification');
-  if (notification) {
-    notification.remove();
-  }
-};
-
 // Show update notification to user
 const showUpdateNotification = () => {
   if (!isBrowserEnvironment()) return;
@@ -227,7 +209,7 @@ const showUpdateNotification = () => {
 const updatePWA = () => {
   if (typeof navigator === 'undefined' || !navigator.serviceWorker) {
     window.location.reload();
-    return;
+    return Promise.resolve(false);
   }
 
   let fallbackTimer = null;
@@ -247,7 +229,7 @@ const updatePWA = () => {
     once: true,
   });
 
-  navigator.serviceWorker
+  return navigator.serviceWorker
     .getRegistration()
     .then((registration) => {
       if (registration?.waiting) {
@@ -256,17 +238,33 @@ const updatePWA = () => {
         navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
       } else {
         safeReload();
-        return;
+        return false;
       }
 
       // Fallback in case controllerchange is not emitted on this browser.
       fallbackTimer = setTimeout(() => {
         safeReload();
       }, 3000);
+
+      return true;
     })
     .catch(() => {
       safeReload();
+      return false;
     });
+};
+
+export const applyPwaUpdate = async () => {
+  if (!isBrowserEnvironment()) {
+    return false;
+  }
+
+  try {
+    return await updatePWA();
+  } catch (error) {
+    if (import.meta.env.DEV) console.warn('PWA update failed:', error);
+    return false;
+  }
 };
 
 // Check if app is installed
@@ -294,15 +292,11 @@ if (typeof window !== 'undefined') {
   });
 }
 
-// Show custom install banner
-const showInstallBanner = () => {
-  if (isAppInstalled() || !isBrowserEnvironment()) return;
-  window.dispatchEvent(new CustomEvent('pwa:installAvailable'));
-};
-
-// Install PWA
-const installPWA = async () => {
+// Trigger the browser's native install prompt when available.
+export const requestPwaInstall = async () => {
+  let prompted = false;
   if (deferredPrompt) {
+    prompted = true;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
 
@@ -319,6 +313,7 @@ const installPWA = async () => {
   }
 
   dismissInstallBanner();
+  return prompted;
 };
 
 // Dismiss install banner

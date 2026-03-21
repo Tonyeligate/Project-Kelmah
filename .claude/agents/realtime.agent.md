@@ -640,3 +640,17 @@ Task closes only if:
   - reconnect determinism passes
 Else: INCOMPLETE
 ```
+
+### RFL-5: Event Causality Ledger v5
+```
+Mandatory outputs:
+  - event_causality_ledger.json
+  - listener_cardinality_report.json
+  - reconnect_consistency_report.json
+
+Advanced tools to activate:
+  - EventCausalityTracer
+  - ListenerCardinalityGuard
+  - ReconnectConvergenceAnalyzer
+  - DeliveryFidelityScorer
+```

@@ -141,6 +141,7 @@ const AttachmentPreview = ({
                   <IconButton
                     size="small"
                     onClick={togglePreview}
+                    aria-label="Preview attachment"
                     sx={{ mr: 0.5 }}
                   >
                     <VisibilityIcon fontSize="small" />
@@ -153,6 +154,7 @@ const AttachmentPreview = ({
                   <IconButton
                     size="small"
                     onClick={handleDownload}
+                    aria-label="Download attachment"
                     sx={{ mr: 0.5 }}
                   >
                     <CloudDownloadIcon fontSize="small" />
@@ -168,6 +170,7 @@ const AttachmentPreview = ({
                       e.stopPropagation();
                       onRemove && onRemove(attachment);
                     }}
+                    aria-label="Remove attachment"
                   >
                     <CloseIcon fontSize="small" />
                   </IconButton>
@@ -206,6 +209,7 @@ const AttachmentPreview = ({
               '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.7)' },
             }}
             onClick={() => setShowPreview(false)}
+            aria-label="Close attachment preview"
           >
             <CloseIcon />
           </IconButton>
@@ -254,3 +258,4 @@ AttachmentPreview.propTypes = {
 };
 
 export default AttachmentPreview;
+

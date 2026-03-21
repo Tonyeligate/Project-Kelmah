@@ -370,9 +370,48 @@ const Register = () => {
     [],
   );
 
+  const getRequestedPath = useCallback(() => {
+    const queryFrom = new URLSearchParams(location.search).get('from');
+    return location.state?.from || location.state?.redirectTo || queryFrom;
+  }, [location.search, location.state]);
+
+  const resolveRequestedPath = useCallback(() => {
+    const requestedPath = getRequestedPath();
+    if (
+      typeof requestedPath === 'string' &&
+      requestedPath.startsWith('/') &&
+      !requestedPath.startsWith('//') &&
+      !requestedPath.startsWith('/login') &&
+      !requestedPath.startsWith('/register')
+    ) {
+      return requestedPath;
+    }
+
+    return '/dashboard';
+  }, [getRequestedPath]);
+
+  const buildSocialAuthUrl = useCallback(
+    (authPath) => {
+      const baseUrl = `${getApiBaseUrl()}${authPath}`;
+      const requestedPath = resolveRequestedPath();
+
+      if (
+        typeof requestedPath !== 'string' ||
+        !requestedPath.startsWith('/') ||
+        requestedPath.startsWith('//')
+      ) {
+        return baseUrl;
+      }
+
+      const separator = baseUrl.includes('?') ? '&' : '?';
+      return `${baseUrl}${separator}from=${encodeURIComponent(requestedPath)}`;
+    },
+    [resolveRequestedPath],
+  );
+
   const handleSocialLogin = useCallback((authPath) => {
-    window.location.assign(`${getApiBaseUrl()}${authPath}`);
-  }, []);
+    window.location.assign(buildSocialAuthUrl(authPath));
+  }, [buildSocialAuthUrl]);
 
   const handleManualDraftSave = useCallback(() => {
     const payload = { ...getValues(), step: activeStep };
@@ -410,8 +449,7 @@ const Register = () => {
           state: {
             registered: true,
             message: 'Registration successful! Please verify your email.',
-            redirectTo:
-              location.state?.from || location.state?.redirectTo || '/dashboard',
+            redirectTo: resolveRequestedPath(),
           },
         });
       }, 1200);
@@ -769,6 +807,7 @@ const Register = () => {
               <IconButton
                 onClick={() => setShowPassword((prev) => !prev)}
                 edge="end"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
                 sx={{ color: formPanelSoft }}
               >
                 {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -820,6 +859,7 @@ const Register = () => {
               <IconButton
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
                 edge="end"
+                aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
                 sx={{ color: formPanelSoft }}
               >
                 {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
@@ -1419,8 +1459,7 @@ const Register = () => {
                         fontWeight: 800,
                         borderColor: isDarkMode ? alpha('#FFFFFF', 0.16) : alpha('#171A1F', 0.16),
                         color: formPanelText,
-                      }}
-                    >
+                      }}>
                       {activeStep === 0 ? 'Back home' : 'Back'}
                     </Button>
                     <Button
@@ -1490,8 +1529,7 @@ const Register = () => {
                                 borderColor: alpha(brandColor, 0.45),
                                 backgroundColor: !isDarkMode ? alpha('#FFFFFF', 0.74) : alpha('#FFFFFF', 0.04),
                               },
-                            }}
-                          >
+                            }}>
                             {provider.label}
                           </Button>
                         );

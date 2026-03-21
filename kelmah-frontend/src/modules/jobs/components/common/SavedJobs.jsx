@@ -33,7 +33,7 @@ function SavedJobs() {
             : [];
         setJobs(list);
       } catch (e) {
-        setError('Unable to load saved jobs');
+        setError('Unable to load saved jobs right now');
       } finally {
         setLoading(false);
       }
@@ -49,8 +49,11 @@ function SavedJobs() {
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Keep promising jobs here so you can return when you are ready to apply.
         </Typography>
-        {loading && <Typography>Loading...</Typography>}
-        {error && <Typography color="error">{error}</Typography>}
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Tip: Save jobs you trust first, then compare location, budget, and required skills before applying.
+        </Typography>
+        {loading && <Typography color="text.secondary">Loading your saved jobs...</Typography>}
+        {error && <Typography color="error">{error}. Please check your connection, then try again.</Typography>}
         {!loading && !error && jobs.length === 0 && (
           <Box
             sx={{
@@ -67,9 +70,9 @@ function SavedJobs() {
               No saved jobs yet
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Tap the save icon on jobs you want to revisit later.
+              Tap the save icon on jobs you want to revisit later. Saved jobs help you compare options before choosing.
             </Typography>
-            <Button component={Link} to="/jobs" variant="contained">
+            <Button component={Link} to="/jobs" variant="contained" sx={{ minHeight: 44 }}>
               Browse Jobs
             </Button>
           </Box>
@@ -98,13 +101,13 @@ function SavedJobs() {
                       <WorkOutlineIcon fontSize="small" />
                     </Box>
                     <Box sx={{ minWidth: 0 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700, wordBreak: 'break-word' }}>
                         {job.title}
                       </Typography>
                       <Typography
                         variant="body2"
                         color="text.secondary"
-                        sx={{ mb: 1 }}
+                        sx={{ mb: 1, wordBreak: 'break-word' }}
                       >
                         {job.employer?.name || (job.hirer?.firstName ? `${job.hirer?.firstName} ${job.hirer?.lastName || ''}`.trim() : job.companyName || 'Employer')}
                       </Typography>
@@ -113,7 +116,7 @@ function SavedJobs() {
                   <Typography
                     variant="body2"
                     color="text.secondary"
-                    sx={{ mb: 1.5 }}
+                    sx={{ mb: 1.5, wordBreak: 'break-word' }}
                   >
                     {job.location?.city || job.location || 'Location flexible'}
                   </Typography>
@@ -125,14 +128,23 @@ function SavedJobs() {
                           key={s}
                           label={s}
                           size="small"
-                          sx={{ mr: 0.5, mb: 0.5 }}
+                          sx={{
+                            mr: 0.5,
+                            mb: 0.5,
+                            maxWidth: '100%',
+                            '& .MuiChip-label': {
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            },
+                          }}
                         />
                       ))}
-                  <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
-                    <Button component={Link} to={`/jobs/${jobId}`} variant="contained">
+                  <Stack direction="row" spacing={1} sx={{ mt: 1.5, flexWrap: 'wrap', rowGap: 1 }}>
+                    <Button component={Link} to={`/jobs/${jobId}`} variant="contained" aria-label={`View saved job ${job.title}`} sx={{ minHeight: 44 }}>
                       View Job
                     </Button>
-                    <Button component={Link} to={`/jobs/${jobId}/apply`} variant="outlined">
+                    <Button component={Link} to={`/jobs/${jobId}/apply`} variant="outlined" aria-label={`Apply to saved job ${job.title}`} sx={{ minHeight: 44 }}>
                       Apply
                     </Button>
                   </Stack>

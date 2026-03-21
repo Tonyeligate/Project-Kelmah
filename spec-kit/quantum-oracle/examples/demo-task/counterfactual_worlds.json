@@ -1,0 +1,21 @@
+{
+  "taskId": "demo-task",
+  "worlds": [
+    {
+      "id": "W1",
+      "description": "add legacy redirect",
+      "utility": { "userImpact": 9, "reliability": 9, "maintainability": 8, "security": 9, "deployability": 10, "total": 45 }
+    },
+    {
+      "id": "W2",
+      "description": "leave as not-found",
+      "utility": { "userImpact": 2, "reliability": 7, "maintainability": 8, "security": 9, "deployability": 10, "total": 36 }
+    },
+    {
+      "id": "W3",
+      "description": "reintroduce /search/jobs page",
+      "utility": { "userImpact": 7, "reliability": 6, "maintainability": 4, "security": 8, "deployability": 5, "total": 30 }
+    }
+  ],
+  "selectedWorld": "W1"
+}

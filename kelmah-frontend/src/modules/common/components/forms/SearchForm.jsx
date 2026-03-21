@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   TextField,
@@ -16,13 +16,7 @@ import {
   Typography,
   Grid,
 } from '@mui/material';
-import {
-  Search,
-  FilterList,
-  Clear,
-  LocationOn,
-  TuneRounded,
-} from '@mui/icons-material';
+import { Search, Clear, LocationOn, TuneRounded } from '@mui/icons-material';
 
 /**
  * Universal SearchForm Component
@@ -56,7 +50,10 @@ const SearchForm = ({
   // Default configurations for different search types
   const defaultConfigs = {
     jobs: {
-      placeholder: 'Search for jobs...',
+      placeholder: 'Search jobs e.g. plumber in Accra',
+      searchHelperText: "Tip: combine trade + location, like 'plumber Accra'.",
+      advancedFiltersHint:
+        'Use Advanced Filters to narrow results by budget, urgency, or experience.',
       categories: [
         'plumbing',
         'electrical',
@@ -85,7 +82,11 @@ const SearchForm = ({
       availableTags: ['Urgent', 'Remote', 'Part-time', 'Full-time', 'Weekend'],
     },
     workers: {
-      placeholder: 'Search for workers...',
+      placeholder: 'Search workers e.g. electrician in Kumasi',
+      searchHelperText:
+        "Tip: combine skill + location, like 'electrician Kumasi'.",
+      advancedFiltersHint:
+        'Use Advanced Filters to narrow results by rating, availability, or experience.',
       categories: [
         'plumber',
         'electrician',
@@ -124,7 +125,11 @@ const SearchForm = ({
       ],
     },
     general: {
-      placeholder: 'Search...',
+      placeholder: 'Search e.g. carpenter in Tamale',
+      searchHelperText:
+        "Tip: combine what you need + location, like 'carpenter Tamale'.",
+      advancedFiltersHint:
+        'Use Advanced Filters to narrow results with extra details.',
       categories: [],
       filterFields: [],
       availableTags: [],
@@ -276,10 +281,16 @@ const SearchForm = ({
           placeholder={currentConfig.placeholder}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          inputProps={{ 'aria-label': `${searchType} search query` }}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton type="submit" edge="end">
+                <IconButton
+                  type="submit"
+                  edge="end"
+                  aria-label="Run search query"
+                  sx={{ width: 44, height: 44 }}
+                >
                   <Search />
                 </IconButton>
               </InputAdornment>
@@ -299,25 +310,36 @@ const SearchForm = ({
           spacing={2}
           sx={{ mb: 2 }}
         >
-          <TextField
-            fullWidth
-            placeholder={currentConfig.placeholder}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }}
-          />
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <TextField
+              fullWidth
+              placeholder={currentConfig.placeholder}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              inputProps={{ 'aria-label': `${searchType} search query` }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: 'block', mt: 0.75 }}
+            >
+              {currentConfig.searchHelperText}
+            </Typography>
+          </Box>
 
           <TextField
             fullWidth
-            placeholder="Location"
+            placeholder="City, town, or area (e.g. East Legon)"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
+            inputProps={{ 'aria-label': 'Search location' }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -346,7 +368,11 @@ const SearchForm = ({
             </FormControl>
           )}
 
-          <Button type="submit" variant="contained" sx={{ minWidth: 120 }}>
+          <Button
+            type="submit"
+            variant="contained"
+            sx={{ minWidth: 120, minHeight: 44 }}
+          >
             Search
           </Button>
         </Stack>
@@ -373,19 +399,28 @@ const SearchForm = ({
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center',
+              alignItems: 'flex-start',
+              gap: 1,
+              flexWrap: 'wrap',
             }}
           >
-            <Button
-              startIcon={<TuneRounded />}
-              onClick={() => setShowFilters(!showFilters)}
-              variant="text"
-            >
-              Advanced Filters
-            </Button>
+            <Box>
+              <Button
+                startIcon={<TuneRounded />}
+                onClick={() => setShowFilters(!showFilters)}
+                variant="text"
+                aria-label={showFilters ? 'Hide advanced filters' : 'Show advanced filters'}
+                sx={{ minHeight: 40 }}
+              >
+                Advanced Filters
+              </Button>
+              <Typography variant="caption" color="text.secondary">
+                {currentConfig.advancedFiltersHint}
+              </Typography>
+            </Box>
 
-            {Object.keys(filters).some((key) => filters[key]) ||
-              (selectedTags.length > 0 && (
+            {(Object.keys(filters).some((key) => filters[key]) ||
+              selectedTags.length > 0) && (
                 <Button
                   startIcon={<Clear />}
                   onClick={handleClearFilters}
@@ -394,7 +429,7 @@ const SearchForm = ({
                 >
                   Clear All
                 </Button>
-              ))}
+              )}
           </Box>
         )}
 

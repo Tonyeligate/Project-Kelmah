@@ -69,9 +69,14 @@ const EscrowDetailsPage = () => {
       <Helmet><title>Escrow Details | Kelmah</title></Helmet>
       {/* Page Heading */}
       <Box sx={{ mb: { xs: 2, sm: 4 }, display: 'flex', justifyContent: 'flex-start' }}>
-        <Typography variant="h4" sx={{ color: 'secondary.main' }}>
-          Escrow Details
-        </Typography>
+        <Box>
+          <Typography variant="h4" sx={{ color: 'secondary.main' }}>
+            Escrow Details
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Check escrow status and release funds when work is complete.
+          </Typography>
+        </Box>
       </Box>
       <Paper
         elevation={3}
@@ -117,7 +122,7 @@ const EscrowDetailsPage = () => {
           <Button
             variant="contained"
             color="secondary"
-            sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
+            sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)', minHeight: 44 }}
             onClick={() => setOpenRelease(true)}
           >
             Release Funds
@@ -129,6 +134,7 @@ const EscrowDetailsPage = () => {
               borderWidth: 2,
               borderColor: 'secondary.main',
               boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
+              minHeight: 44,
             }}
             component={RouterLink}
             to={backPath}
@@ -176,6 +182,9 @@ const EscrowDetailsPage = () => {
           <Typography gutterBottom>
             Amount: {currencyFormatter.format(escrow.amount)}
           </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            Select where the released amount should be sent.
+          </Typography>
           <FormControl fullWidth margin="dense">
             <InputLabel sx={{ color: 'secondary.main' }}>
               Payment Method
@@ -185,6 +194,7 @@ const EscrowDetailsPage = () => {
               value={selectedMethod}
               onChange={(e) => setSelectedMethod(e.target.value)}
               inputProps={{ disableUnderline: true }}
+              SelectDisplayProps={{ 'aria-label': 'Choose payment method for release' }}
               sx={{
                 bgcolor: 'action.hover',
                 borderRadius: 1,
@@ -215,6 +225,7 @@ const EscrowDetailsPage = () => {
               borderWidth: 2,
               borderColor: 'secondary.main',
               boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
+              minHeight: 44,
             }}
           >
             Cancel
@@ -240,9 +251,10 @@ const EscrowDetailsPage = () => {
             variant="contained"
             color="secondary"
             disabled={releasing}
-            sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
+            sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)', minHeight: 44 }}
+            aria-label="Confirm release of escrow funds"
           >
-            {releasing ? 'Releasing…' : 'Confirm Release'}
+            {releasing ? 'Releasing...' : 'Release Now'}
           </Button>
         </DialogActions>
       </Dialog>

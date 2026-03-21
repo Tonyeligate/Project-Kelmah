@@ -452,7 +452,7 @@ const JobBidsPage = () => {
           </Typography>
         </Box>
         <Tooltip title="Refresh">
-          <IconButton onClick={fetchBids} disabled={loading}>
+          <IconButton onClick={fetchBids} disabled={loading} aria-label="Refresh bids">
             <RefreshIcon />
           </IconButton>
         </Tooltip>
@@ -548,8 +548,7 @@ const JobBidsPage = () => {
             color="success"
             onClick={handleAcceptConfirm}
             disabled={processing}
-            startIcon={processing ? <CircularProgress size={16} /> : <AcceptIcon />}
-          >
+            startIcon={processing ? <CircularProgress size={16} /> : <AcceptIcon />}>
             {processing ? 'Accepting...' : 'Accept Bid'}
           </Button>
         </DialogActions>
@@ -587,8 +586,7 @@ const JobBidsPage = () => {
             color="error"
             onClick={handleRejectConfirm}
             disabled={processing}
-            startIcon={processing ? <CircularProgress size={16} /> : <RejectIcon />}
-          >
+            startIcon={processing ? <CircularProgress size={16} /> : <RejectIcon />}>
             {processing ? 'Rejecting...' : 'Reject Bid'}
           </Button>
         </DialogActions>
@@ -606,3 +604,4 @@ const JobBidsPage = () => {
 };
 
 export default JobBidsPage;
+

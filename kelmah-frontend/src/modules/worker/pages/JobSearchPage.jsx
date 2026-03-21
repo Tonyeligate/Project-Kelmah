@@ -170,7 +170,7 @@ const SearchHeader = ({ search, setSearch, onSearch, resultCount, isLoading }) =
                 <InputAdornment position="end">
                   <IconButton
                     size="small"
-                    aria-label="Clear search"
+                    aria-label="Clear search text"
                     onClick={() => {
                       setSearch('');
                       onSearch('');
@@ -959,7 +959,7 @@ const JobSearchPage = () => {
               exclusive
               onChange={(_, v) => v && setViewMode(v)}
               size="small"
-            >
+             aria-label="Select view mode">
               <ToggleButton value="grid" aria-label="Grid view" sx={{ px: 1.5 }}>
                 <GridViewIcon fontSize="small" />
               </ToggleButton>
@@ -1046,7 +1046,7 @@ const JobSearchPage = () => {
                         if (!jobId) return null;
                         return (
                         <Grid
-                          item
+                        aria-label="View job details"
                           xs={12}
                           sm={viewMode === 'grid' ? 6 : 12}
                           lg={viewMode === 'grid' ? 6 : 12}
@@ -1150,3 +1150,4 @@ const JobSearchPage = () => {
 };
 
 export default JobSearchPage;
+

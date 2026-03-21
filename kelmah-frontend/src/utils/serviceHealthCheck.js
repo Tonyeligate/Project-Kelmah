@@ -357,4 +357,27 @@ export const debugServiceHealth = () => {
   );
 };
 
-// Initialize on module load in production (non-localhost)\n// Store cleanup handle so callers can tear down if needed\nlet _healthCleanup = null;\nif (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {\n  _healthCleanup = initializeServiceHealth();\n}\nexport const stopServiceHealth = () => { if (_healthCleanup) { _healthCleanup(); _healthCleanup = null; } };
+const isLocalHostname = (hostname = '') => {
+  const normalized = String(hostname).toLowerCase();
+  return (
+    normalized === 'localhost' ||
+    normalized === '127.0.0.1' ||
+    normalized === '::1' ||
+    normalized === '[::1]' ||
+    normalized.endsWith('.local')
+  );
+};
+
+// Initialize on module load only in non-local environments.
+// Store cleanup handle so callers can tear down if needed.
+let _healthCleanup = null;
+if (typeof window !== 'undefined' && !isLocalHostname(window.location.hostname)) {
+  _healthCleanup = initializeServiceHealth();
+}
+
+export const stopServiceHealth = () => {
+  if (_healthCleanup) {
+    _healthCleanup();
+    _healthCleanup = null;
+  }
+};

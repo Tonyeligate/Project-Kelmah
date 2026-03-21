@@ -223,7 +223,7 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
                 Milestone {i + 1}
               </Typography>
               {milestones.length > 1 && (
-                <IconButton size="small" onClick={() => removeMilestone(i)} sx={{ position: 'absolute', top: 8, right: 8 }}>
+                <IconButton size="small" onClick={() => removeMilestone(i)} aria-label={`Remove milestone ${i + 1}`} sx={{ position: 'absolute', top: 8, right: 8 }}>
                   <DeleteIcon fontSize="small" />
                 </IconButton>
               )}
@@ -288,8 +288,7 @@ const ContractForm = ({ jobId, workerId, onSubmit, onCancel }) => {
           variant="contained"
           onClick={handleSubmit}
           disabled={submitting || !isFormValid()}
-          startIcon={submitting ? <CircularProgress size={18} /> : <CheckIcon />}
-        >
+          startIcon={submitting ? <CircularProgress size={18} /> : <CheckIcon />}>
           {submitting ? 'Creating...' : 'Create Contract'}
         </Button>
       </Box>
@@ -313,3 +312,4 @@ ContractForm.propTypes = {
 };
 
 export default ContractForm;
+

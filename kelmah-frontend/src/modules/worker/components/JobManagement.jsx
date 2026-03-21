@@ -271,7 +271,7 @@ const JobManagement = () => {
             Submit Milestone
           </Button>
         )}
-        <IconButton size="small" onClick={(e) => handleMenuOpen(e, job)}>
+        <IconButton size="small" onClick={(e) => handleMenuOpen(e, job)} aria-label={`Open actions for ${job.title || 'job'}`}>
           <MoreVertIcon />
         </IconButton>
       </CardActions>
@@ -411,3 +411,4 @@ const JobManagement = () => {
 };
 
 export default JobManagement;
+

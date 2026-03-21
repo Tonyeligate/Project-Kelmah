@@ -1,6 +1,8 @@
 import React from 'react';
 import {
+  Alert,
   Box,
+  Button,
   Container,
   Typography,
   Breadcrumbs,
@@ -17,9 +19,15 @@ const EditContractPage = () => {
     return (
       <Container>
         <Box sx={{ py: 5, textAlign: 'center' }}>
-          <Typography variant="h5" color="error">
-            Contract ID is missing. Unable to edit contract.
+          <Alert severity="error" sx={{ mb: 2 }}>
+            We could not find the contract ID for this page.
+          </Alert>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+            Open the contract from the contracts list and try again.
           </Typography>
+          <Button component={RouterLink} to="/contracts" variant="contained" color="secondary">
+            Go to Contracts
+          </Button>
         </Box>
       </Container>
     );
@@ -43,6 +51,10 @@ const EditContractPage = () => {
           </Link>
           <Typography color="text.primary">Edit Contract</Typography>
         </Breadcrumbs>
+
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Update only what changed, then review the contract details before saving.
+        </Typography>
 
         <ContractForm contractId={id} />
       </Box>

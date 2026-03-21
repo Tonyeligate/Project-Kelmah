@@ -424,8 +424,7 @@ const QuickJobTrackingPage = () => {
                         variant="contained"
                         onClick={handleMarkOnWay}
                         disabled={actionLoading}
-                        startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : <NavigationIcon />}
-                      >
+                        startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : <NavigationIcon />}>
                         {actionLoading ? 'Updating...' : 'I\'m On My Way'}
                       </Button>
                     )}
@@ -435,8 +434,7 @@ const QuickJobTrackingPage = () => {
                         variant="contained"
                         onClick={handleMarkArrived}
                         disabled={actionLoading}
-                        startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : <LocationIcon />}
-                      >
+                        startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : <LocationIcon />}>
                         {actionLoading ? 'Verifying...' : 'I\'ve Arrived'}
                       </Button>
                     )}
@@ -446,8 +444,7 @@ const QuickJobTrackingPage = () => {
                         variant="contained"
                         onClick={handleStartWork}
                         disabled={actionLoading}
-                        color="success"
-                      >
+                        color="success">
                         {actionLoading ? 'Starting...' : 'Start Work'}
                       </Button>
                     )}
@@ -509,7 +506,7 @@ const QuickJobTrackingPage = () => {
         <DialogTitle id="mark-complete-dialog-title">
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             Mark Work Complete
-            <IconButton aria-label="Close dialog" onClick={() => setCompletionDialogOpen(false)}>
+            <IconButton aria-label="Close completion dialog" onClick={() => setCompletionDialogOpen(false)}>
               <CloseIcon />
             </IconButton>
           </Box>
@@ -555,13 +552,14 @@ const QuickJobTrackingPage = () => {
                 variant="outlined"
                 component="label"
                 sx={{ width: 80, height: 80, borderStyle: 'dashed' }}
-              >
+               aria-label="Attach a file">
                 <PhotoCameraIcon />
                 <input
                   type="file"
                   accept="image/*"
                   multiple
                   hidden
+                  aria-label="Add completion photos"
                   onChange={handlePhotoUpload}
                 />
               </Button>
@@ -592,8 +590,7 @@ const QuickJobTrackingPage = () => {
             color="success"
             onClick={handleMarkComplete}
             disabled={actionLoading || completionPhotos.length === 0}
-            startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : <CheckIcon />}
-          >
+            startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : <CheckIcon />}>
             {actionLoading ? 'Submitting...' : 'Submit & Complete'}
           </Button>
         </DialogActions>
@@ -626,8 +623,7 @@ const QuickJobTrackingPage = () => {
             variant="contained"
             color="error"
             onClick={handleCancel}
-            disabled={actionLoading}
-          >
+            disabled={actionLoading}>
             {actionLoading ? 'Cancelling...' : 'Cancel Job'}
           </Button>
         </DialogActions>

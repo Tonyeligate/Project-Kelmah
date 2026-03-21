@@ -75,27 +75,34 @@ const WalletSummary = ({
             <Typography variant="h3" color="black" fontWeight="bold">
               GH₵{walletBalance.toFixed(2)}
             </Typography>
+            <Typography variant="body2" color="black" sx={{ mt: 0.5, textAlign: 'center' }}>
+              Available now. Funds in escrow are released after milestone confirmation.
+            </Typography>
             <Box
               sx={{
                 mt: 2,
                 display: 'flex',
                 justifyContent: 'space-between',
                 width: '100%',
+                gap: 1,
+                flexWrap: 'wrap',
               }}
             >
               <Button
                 variant="contained"
                 color="inherit"
                 onClick={onWithdrawClick}
+                sx={{ minHeight: 44, flex: 1 }}
               >
-                Withdraw
+                Withdraw Funds
               </Button>
               <Button
                 variant="contained"
                 color="inherit"
                 onClick={onDepositClick}
+                sx={{ minHeight: 44, flex: 1 }}
               >
-                Add Funds
+                Add Money
               </Button>
             </Box>
           </Box>
@@ -127,6 +134,13 @@ const WalletSummary = ({
               />
             </Grid>
           </Grid>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: 'block', mt: 1.5 }}
+          >
+            Totals update from completed transactions and active escrow balances.
+          </Typography>
         </Grid>
       </Grid>
     </Paper>

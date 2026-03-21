@@ -50,7 +50,7 @@ const JobAlertsPage = () => {
         }
       } catch (e) {
         if (cancelled) return;
-        setError('Failed to load notification preferences');
+        setError('Could not load alert settings. You can update and save again.');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -64,7 +64,7 @@ const JobAlertsPage = () => {
       setError('');
       setSuccess('');
       await notificationService.updatePreferences(prefs);
-      setSuccess('Preferences saved');
+      setSuccess('Job alert settings saved.');
     } catch (e) {
       setError('Failed to save preferences. Please try again.');
     } finally {
@@ -81,6 +81,9 @@ const JobAlertsPage = () => {
         sx={{ mb: { xs: 2, sm: 3 }, color: 'secondary.main' }}
       >
         Job Alerts
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Choose how you want to hear about new jobs.
       </Typography>
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -120,9 +123,10 @@ const JobAlertsPage = () => {
                       }))
                     }
                     color="secondary"
+                    inputProps={{ 'aria-label': 'Turn job alerts on or off' }}
                   />
                 }
-                label="Enable Job Alerts"
+                label="Turn on job alerts"
               />
               <FormControlLabel
                 control={
@@ -141,9 +145,10 @@ const JobAlertsPage = () => {
                       }))
                     }
                     color="secondary"
+                    inputProps={{ 'aria-label': 'Show job alerts inside the app' }}
                   />
                 }
-                label="In-app Notifications"
+                label="Show alerts in app"
               />
               <FormControlLabel
                 control={
@@ -162,9 +167,10 @@ const JobAlertsPage = () => {
                       }))
                     }
                     color="secondary"
+                    inputProps={{ 'aria-label': 'Send job alerts by email' }}
                   />
                 }
-                label="Email Notifications"
+                label="Send email alerts"
               />
             </FormGroup>
           )}
@@ -175,11 +181,12 @@ const JobAlertsPage = () => {
               color="secondary"
               disabled={saving}
               onClick={savePreferences}
+              aria-label="Save job alert settings"
             >
               {saving ? (
                 <CircularProgress size={18} sx={{ color: '#000' }} />
               ) : (
-                'Save Preferences'
+                'Save alert settings'
               )}
             </Button>
           </Box>

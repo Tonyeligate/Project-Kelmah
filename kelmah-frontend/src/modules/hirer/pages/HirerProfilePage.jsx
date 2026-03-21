@@ -365,8 +365,7 @@ const HirerProfilePage = () => {
                       variant="contained"
                       onClick={handleSave}
                       disabled={saving}
-                      sx={{ minHeight: 44 }}
-                    >
+                      sx={{ minHeight: 44 }}>
                       {saving ? 'Saving…' : 'Save profile'}
                     </Button>
                   </Stack>

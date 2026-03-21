@@ -178,7 +178,7 @@ const NearbyWorkersWidget = () => {
     <Card>
       <CardContent>
         <Typography variant="h6">Nearby Workers</Typography>
-        <Button size="small" onClick={load} disabled={loading}>
+        <Button size="small" onClick={load} disabled={loading} aria-label="Refresh nearby workers list">
           {loading ? 'Loading...' : 'Refresh'}
         </Button>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>

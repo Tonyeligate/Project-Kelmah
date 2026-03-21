@@ -214,6 +214,7 @@ const JobCard = ({
                 size="small"
                 onClick={handleSaveToggle}
                 disabled={isSaveLoading}
+                aria-label={derivedIsSaved ? `Unsave job ${title}` : `Save job ${title}`}
                 color={derivedIsSaved ? 'primary' : 'default'}
                 sx={{ p: 0.5 }}
               >

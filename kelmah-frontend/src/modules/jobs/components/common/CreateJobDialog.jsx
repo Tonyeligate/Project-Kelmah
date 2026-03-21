@@ -150,7 +150,7 @@ function CreateJobDialog({
       {isMobile ? (
         <AppBar sx={{ position: 'relative', bgcolor: 'background.paper', color: 'text.primary', boxShadow: 1 }}>
           <Toolbar>
-            <IconButton edge="start" onClick={onClose} aria-label="Close" disabled={loading}>
+            <IconButton edge="start" onClick={onClose} aria-label="Close create job dialog" disabled={loading}>
               <CloseIcon />
             </IconButton>
             <Typography sx={{ ml: 1, flex: 1, fontWeight: 600 }} variant="subtitle1">
@@ -161,8 +161,7 @@ function CreateJobDialog({
               variant="contained"
               size="small"
               onClick={handleSubmit}
-              disabled={loading}
-            >
+              disabled={loading}>
               {loading ? 'Creating…' : 'Post Job'}
             </Button>
           </Toolbar>
@@ -390,8 +389,7 @@ function CreateJobDialog({
             variant="contained"
             onClick={handleSubmit}
             disabled={loading}
-            color="primary"
-          >
+            color="primary">
             {loading ? 'Creating...' : 'Create Job'}
           </Button>
         </DialogActions>

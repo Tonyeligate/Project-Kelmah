@@ -30,14 +30,14 @@ const WorkerProfilePage = () => {
         <PersonSearchIcon sx={{ fontSize: 64, color: 'secondary.dark', mb: 2 }} />
         <Typography variant="h6" gutterBottom>Worker profile not found</Typography>
         <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
-          The worker you&apos;re looking for may have moved.
+          The worker you&apos;re looking for may have moved, or the link may be incomplete.
         </Typography>
         <Button
           variant="contained"
           onClick={() => navigate('/search')}
           sx={{ bgcolor: 'secondary.dark', color: 'secondary.contrastText', '&:hover': { bgcolor: 'secondary.dark' } }}
         >
-          Find Workers
+          Browse Workers
         </Button>
       </Box>
     );
@@ -46,10 +46,10 @@ const WorkerProfilePage = () => {
   return (
     <>
       <Helmet>
-        <title>Worker Profile - Kelmah Platform</title>
+        <title>Worker Profile | Kelmah</title>
         <meta
           name="description"
-          content="View detailed worker profile including skills, experience, reviews, and portfolio"
+          content="View worker skills, experience, reviews, and portfolio details in one place."
         />
       </Helmet>
 

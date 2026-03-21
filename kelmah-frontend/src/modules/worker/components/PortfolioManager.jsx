@@ -334,6 +334,7 @@ const PortfolioManager = () => {
           backgroundColor: alpha(theme.palette.background.paper, 0.8),
           zIndex: 1,
         }}
+        aria-label={`Open actions for ${item.title}`}
         onClick={(e) => {
           setAnchorEl(e.currentTarget);
           setSelectedItem(item);
@@ -793,6 +794,7 @@ const PortfolioManager = () => {
                 type="file"
                 multiple
                 id="image-upload"
+                aria-label="Upload portfolio images"
                 onChange={(e) => handleImageUpload(e.target.files)}
               />
               <label htmlFor="image-upload">
@@ -831,6 +833,7 @@ const PortfolioManager = () => {
                         actionIcon={
                           <IconButton
                             sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                            aria-label={`Remove uploaded image ${index + 1}`}
                             onClick={() => {
                               const newImages = [...formData.images];
                               newImages.splice(index, 1);
@@ -861,7 +864,7 @@ const PortfolioManager = () => {
       {isMobile && (
         <Fab
           color="primary"
-          aria-label="add project"
+          aria-label="Add project"
           sx={{
             position: 'fixed',
             bottom: 16,

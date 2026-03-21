@@ -1,0 +1,24 @@
+{
+  "taskId": "optimization-demo-task",
+  "profiles": [
+    { "id": "TWIN-A", "label": "low-literacy-first-time-user" },
+    { "id": "TWIN-B", "label": "repeat-power-user" },
+    { "id": "TWIN-C", "label": "low-end-device-low-bandwidth" },
+    { "id": "TWIN-D", "label": "accessibility-first-user" }
+  ],
+  "adaptationRules": [
+    "high hesitation => simplify labels and reduce branching",
+    "repeated validation errors => guided inline assistance",
+    "high intent => shorter path to primary action"
+  ],
+  "safetyConstraints": {
+    "noDarkPatterns": true,
+    "preserveCriticalDisclosures": true,
+    "deterministicFallback": true
+  },
+  "rollbackPlan": {
+    "strategy": "feature-flag rollback",
+    "trigger": "drop in completion or accessibility score"
+  },
+  "closureVerdict": "PASS"
+}

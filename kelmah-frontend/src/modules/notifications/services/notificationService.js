@@ -42,6 +42,16 @@ export const normalizeNotificationLink = (notification = {}) => {
       return `/messages?conversation=${messageMatch[1]}`;
     }
 
+    const quickJobsMatch = rawLink.match(/^\/quick-jobs\/([^/?#]+)$/);
+    if (quickJobsMatch) {
+      return `/quick-job/${quickJobsMatch[1]}`;
+    }
+
+    const quickJobMatch = rawLink.match(/^\/quick-job\/([^/?#]+)$/);
+    if (quickJobMatch) {
+      return `/quick-job/${quickJobMatch[1]}`;
+    }
+
     return rawLink;
   }
 
@@ -55,6 +65,10 @@ export const normalizeNotificationLink = (notification = {}) => {
 
   if (entityType === 'escrow' && entityId) {
     return `/payment/escrow/${entityId}`;
+  }
+
+  if (entityType === 'quick_job' && entityId) {
+    return `/quick-job/${entityId}`;
   }
 
   if (entityType === 'payment') {

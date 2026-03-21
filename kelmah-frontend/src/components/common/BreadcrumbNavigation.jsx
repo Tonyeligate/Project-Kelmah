@@ -126,7 +126,7 @@ const BreadcrumbNavigation = () => {
     >
       <Breadcrumbs
         separator="›"
-        aria-label="Breadcrumb"
+        aria-label="Breadcrumb navigation"
         sx={{
           '& .MuiBreadcrumbs-separator': {
             color: 'var(--k-text-muted)',

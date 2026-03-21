@@ -496,7 +496,7 @@ const ReviewSystem = ({
                   setMenuAnchor(e.currentTarget);
                 }}
                 sx={{ color: 'rgba(255,255,255,0.5)' }}
-              >
+               aria-label="Open review actions menu">
                 <MoreVertIcon />
               </IconButton>
             </Stack>
@@ -870,8 +870,7 @@ const ReviewSystem = ({
                     'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
                   color: '#000',
                   fontWeight: 700,
-                }}
-              >
+                }}>
                 {checkingEligibility ? 'Checking…' : 'Write Review'}
               </Button>
             </span>

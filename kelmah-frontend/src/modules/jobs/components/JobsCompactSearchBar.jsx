@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Paper, TextField, Button, Box, InputAdornment } from '@mui/material';
+import { Paper, TextField, Button, Box, InputAdornment, Typography } from '@mui/material';
 import {
   Search as SearchIcon,
   FilterList as FilterListIcon,
@@ -17,10 +17,11 @@ const JobsCompactSearchBar = ({
   onSearchChange,
   onSearchSubmit,
   onFilterClick,
-  placeholder = 'Search jobs...',
+  placeholder = 'Search trade or role, for example plumber in Kumasi',
 }) => {
   const handleSearchKeyPress = (e) => {
     if (e.key === 'Enter' && onSearchSubmit) {
+      e.preventDefault();
       onSearchSubmit();
     }
   };
@@ -28,8 +29,9 @@ const JobsCompactSearchBar = ({
   return (
     <Paper
       elevation={2}
+      aria-label="Compact job search"
       sx={{
-        p: 1,
+        p: 1.25,
         mb: 2,
         bgcolor: 'var(--k-bg-surface)',
         backdropFilter: 'blur(10px)',
@@ -45,6 +47,7 @@ const JobsCompactSearchBar = ({
           onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
           onKeyDown={handleSearchKeyPress}
           placeholder={placeholder}
+          inputProps={{ 'aria-label': 'Search jobs by trade, skill, or location' }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -80,6 +83,8 @@ const JobsCompactSearchBar = ({
         <Button
           variant="contained"
           onClick={onFilterClick}
+          aria-label="Open job filters panel"
+          title="Open job filters"
           sx={{
             minWidth: '44px',
             width: '44px',
@@ -94,6 +99,20 @@ const JobsCompactSearchBar = ({
         >
           <FilterListIcon />
         </Button>
+      </Box>
+      <Box sx={{ mt: 1 }}>
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'var(--k-text-muted)',
+            display: 'block',
+            lineHeight: 1.4,
+            overflowWrap: 'anywhere',
+          }}
+        >
+          Tip: Type the main trade first, then tap Filters to narrow by place,
+          pay, or timing.
+        </Typography>
       </Box>
     </Paper>
   );

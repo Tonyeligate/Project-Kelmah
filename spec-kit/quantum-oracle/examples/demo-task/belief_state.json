@@ -1,0 +1,10 @@
+{
+  "taskId": "demo-task",
+  "timestampUtc": "2026-03-21T00:00:00Z",
+  "hypotheses": [
+    { "id": "H1", "probability": 0.5, "evidenceFor": ["route missing"], "evidenceAgainst": [] },
+    { "id": "H2", "probability": 0.3, "evidenceFor": ["legacy URL"], "evidenceAgainst": ["no active CTA"] },
+    { "id": "H3", "probability": 0.2, "evidenceFor": [], "evidenceAgainst": ["tests pass after redirect"] }
+  ],
+  "normalizationCheck": { "sumProbability": 1.0, "status": "pass" }
+}

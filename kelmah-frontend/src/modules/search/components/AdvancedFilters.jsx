@@ -254,16 +254,19 @@ const AdvancedFilters = ({
 
   // Debounced query change to avoid firing API on every keystroke
   const queryTimerRef = useRef(null);
-  const handleQueryChange = useCallback((value) => {
-    const normalizedValue = value.slice(0, SEARCH_QUERY_MAX_LENGTH);
-    setFilters((prev) => ({ ...prev, query: normalizedValue }));
-    clearTimeout(queryTimerRef.current);
-    queryTimerRef.current = setTimeout(() => {
-      if (onFiltersChange) {
-        onFiltersChange({ ...filters, query: normalizedValue });
-      }
-    }, 400);
-  }, [filters, onFiltersChange]);
+  const handleQueryChange = useCallback(
+    (value) => {
+      const normalizedValue = value.slice(0, SEARCH_QUERY_MAX_LENGTH);
+      setFilters((prev) => ({ ...prev, query: normalizedValue }));
+      clearTimeout(queryTimerRef.current);
+      queryTimerRef.current = setTimeout(() => {
+        if (onFiltersChange) {
+          onFiltersChange({ ...filters, query: normalizedValue });
+        }
+      }, 400);
+    },
+    [filters, onFiltersChange],
+  );
 
   // Handle skills selection
   const handleSkillsChange = (event, newSkills) => {
@@ -400,6 +403,8 @@ const AdvancedFilters = ({
           display="flex"
           justifyContent="space-between"
           alignItems="center"
+          flexWrap="wrap"
+          gap={1}
         >
           <Typography variant="h6" display="flex" alignItems="center" gap={1}>
             <FilterIcon />
@@ -418,10 +423,20 @@ const AdvancedFilters = ({
               size="small"
               startIcon={<ClearIcon />}
               onClick={handleClearFilters}
+              sx={{ minHeight: 44 }}
             >
               Clear All
             </Button>
           )}
+
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ width: '100%', lineHeight: 1.4, wordBreak: 'break-word' }}
+          >
+            Start with trade and location, then refine by budget and urgency to
+            avoid missing suitable jobs.
+          </Typography>
         </Box>
       )}
 
@@ -434,10 +449,11 @@ const AdvancedFilters = ({
             <TextField
               fullWidth
               label="Search Keywords"
-              placeholder="e.g., kitchen renovation, emergency plumbing"
+              placeholder="e.g., emergency plumbing in Adenta, AC servicing in Kumasi"
               value={filters.query}
               onChange={(e) => handleQueryChange(e.target.value)}
-              inputProps={{ maxLength: SEARCH_QUERY_MAX_LENGTH }}
+              inputProps={{ maxLength: SEARCH_QUERY_MAX_LENGTH, 'aria-label': 'Search keywords for jobs' }}
+              helperText="Use trade + area for better matches. Example: roof repair in Tema."
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -468,10 +484,12 @@ const AdvancedFilters = ({
                 <TextField
                   {...params}
                   label="Location"
-                  placeholder="Select location"
+                  placeholder="City, town, or area"
+                  helperText="Pick the nearest work area so jobs nearby show first."
                   inputProps={{
                     ...params.inputProps,
                     maxLength: SEARCH_LOCATION_MAX_LENGTH,
+                    'aria-label': 'Filter jobs by location',
                   }}
                 />
               )}
@@ -514,6 +532,7 @@ const AdvancedFilters = ({
             value={[filters.budgetMin, filters.budgetMax]}
             onChange={handleBudgetChange}
             onChangeCommitted={handleBudgetCommit}
+            aria-label="Set budget range"
             valueLabelDisplay="auto"
             valueLabelFormat={formatCurrency}
             min={0}
@@ -679,7 +698,7 @@ const AdvancedFilters = ({
                 <TextField
                   {...params}
                   label="Required Skills"
-                  placeholder="Select skills"
+                  placeholder="Select skills (e.g., rewiring, roof repair, cabinet making)"
                   inputProps={{
                     ...params.inputProps,
                     maxLength: SEARCH_SKILL_MAX_LENGTH,
@@ -791,7 +810,7 @@ const AdvancedFilters = ({
           <Alert severity="info" icon={<FilterIcon />}>
             <Typography variant="body2">
               {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''}{' '}
-              active
+              active. Clear one or two filters if your results feel too narrow.
             </Typography>
           </Alert>
         </Box>

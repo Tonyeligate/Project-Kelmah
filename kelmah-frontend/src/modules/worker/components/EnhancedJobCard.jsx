@@ -499,8 +499,7 @@ const EnhancedJobCard = ({
                 '&:hover': {
                   background: `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
                 },
-              }}
-            >
+              }}>
               {!bidStats ? 'Loading...' : canBid() ? 'Bid Now' : 'Bidding Closed'}
             </Button>
           </CardActions>
@@ -627,8 +626,7 @@ const EnhancedJobCard = ({
           <Button
             onClick={handleBidSubmit}
             variant="contained"
-            disabled={bidLoading || !bidData.bidAmount || !bidData.coverLetter}
-          >
+            disabled={bidLoading || !bidData.bidAmount || !bidData.coverLetter}>
             {bidLoading ? 'Submitting...' : 'Submit Bid'}
           </Button>
         </DialogActions>
@@ -638,3 +636,4 @@ const EnhancedJobCard = ({
 };
 
 export default EnhancedJobCard;
+

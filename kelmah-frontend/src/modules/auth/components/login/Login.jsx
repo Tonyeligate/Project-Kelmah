@@ -37,6 +37,7 @@ import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 import { checkApiHealth } from '../../../common/utils/apiUtils';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { toUserMessage } from '@/services/responseNormalizer';
 
 const normalizeErrorMessage = (value) => {
   if (typeof value === 'string') {
@@ -132,9 +133,28 @@ const Login = () => {
     [],
   );
 
+  const buildSocialAuthUrl = useCallback(
+    (authPath) => {
+      const baseUrl = `${getTrustedApiBaseUrl()}${authPath}`;
+      const requestedPath = getRequestedPath();
+
+      if (
+        typeof requestedPath !== 'string' ||
+        !requestedPath.startsWith('/') ||
+        requestedPath.startsWith('//')
+      ) {
+        return baseUrl;
+      }
+
+      const separator = baseUrl.includes('?') ? '&' : '?';
+      return `${baseUrl}${separator}from=${encodeURIComponent(requestedPath)}`;
+    },
+    [location.search, location.state],
+  );
+
   const handleSocialLogin = useCallback((authPath) => {
-    window.location.assign(`${getTrustedApiBaseUrl()}${authPath}`);
-  }, []);
+    window.location.assign(buildSocialAuthUrl(authPath));
+  }, [buildSocialAuthUrl]);
 
   const getDefaultRouteByRole = (role) => {
     if (role === 'worker') return '/worker/dashboard';
@@ -143,8 +163,13 @@ const Login = () => {
     return '/dashboard';
   };
 
+  const getRequestedPath = () => {
+    const queryFrom = new URLSearchParams(location.search).get('from');
+    return location.state?.from || location.state?.redirectTo || queryFrom;
+  };
+
   const resolveLoginRedirect = (user) => {
-    const requestedPath = location.state?.from || location.state?.redirectTo;
+    const requestedPath = getRequestedPath();
     if (
       typeof requestedPath === 'string' &&
       requestedPath.startsWith('/') &&
@@ -205,8 +230,9 @@ const Login = () => {
       navigate(destination, { replace: true });
     } catch (err) {
       if (import.meta.env.DEV) console.error('Login error:', err);
-      const errorMessage =
-        err.message || 'Login failed. Please check your credentials.';
+      const errorMessage = toUserMessage(err, {
+        fallback: 'Login failed. Please check your credentials.',
+      });
       setLoginError(errorMessage);
     } finally {
       setSubmitting(false);
@@ -815,8 +841,7 @@ const Login = () => {
                                   borderColor: alpha(accentColor, 0.42),
                                   background: isDarkMode ? alpha('#FFFFFF', 0.12) : alpha('#FFFFFF', 0.9),
                                 },
-                              }}
-                            >
+                              }}>
                               {provider.label}
                             </Button>
                           </Grid>
@@ -835,3 +860,4 @@ const Login = () => {
 };
 
 export default Login;
+

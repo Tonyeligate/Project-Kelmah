@@ -1,0 +1,10 @@
+{
+  "taskId": "backend-demo-task",
+  "timestampUtc": "2026-03-21T00:00:00Z",
+  "hypotheses": [
+    { "id": "H1", "probability": 0.5, "evidenceFor": ["route shadow risk"], "evidenceAgainst": [] },
+    { "id": "H2", "probability": 0.3, "evidenceFor": ["high p95 latency"], "evidenceAgainst": [] },
+    { "id": "H3", "probability": 0.2, "evidenceFor": ["timeout cascade risk"], "evidenceAgainst": [] }
+  ],
+  "normalizationCheck": { "sumProbability": 1.0, "status": "pass" }
+}

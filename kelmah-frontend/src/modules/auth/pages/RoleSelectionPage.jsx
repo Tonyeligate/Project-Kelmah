@@ -96,7 +96,7 @@ const RoleSelectionPage = () => {
               mb: 3,
             }}
           >
-            Are you a worker or a hirer?
+            How do you want to use Kelmah?
           </Typography>
 
           <Typography
@@ -107,7 +107,7 @@ const RoleSelectionPage = () => {
               mb: 3,
             }}
           >
-            Choose your role to get started.
+            Choose one option. You can update this later in your profile.
           </Typography>
 
           <Box
@@ -137,7 +137,7 @@ const RoleSelectionPage = () => {
                 },
               }}
             >
-              Worker
+              I want to find work
             </Button>
 
             {/* Hirer Button */}
@@ -157,7 +157,7 @@ const RoleSelectionPage = () => {
                 },
               }}
             >
-              Hirer
+              I want to hire workers
             </Button>
           </Box>
         </Box>
@@ -177,7 +177,7 @@ const RoleSelectionPage = () => {
           Choose Your Role
         </Typography>
         <Typography variant="body1" sx={{ mb: 4 }}>
-          Are you looking for work or hiring skilled professionals?
+          Pick one to continue. You can change this in account settings later.
         </Typography>
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
           <Button
@@ -186,7 +186,7 @@ const RoleSelectionPage = () => {
             onClick={() => handleRoleSelection('worker')}
             sx={{ minWidth: 120, minHeight: 44 }}
           >
-            Worker
+            I want to find work
           </Button>
           <Button
             variant="outlined"
@@ -194,7 +194,7 @@ const RoleSelectionPage = () => {
             onClick={() => handleRoleSelection('hirer')}
             sx={{ minWidth: 120, minHeight: 44 }}
           >
-            Hirer
+            I want to hire workers
           </Button>
         </Box>
       </Box>

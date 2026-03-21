@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  Box, Button, Container, Grid, Paper, Typography, TextField, FormControl, InputLabel, Select, MenuItem, FormHelperText, Divider, CircularProgress, Alert, Stepper, Step, StepLabel, IconButton, InputAdornment, Autocomplete, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+  Box, Button, Container, Grid, Paper, Typography, TextField, FormControl, InputLabel, Select, MenuItem, FormHelperText, Divider, CircularProgress, Alert, Stepper, Step, StepLabel, IconButton, InputAdornment, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -13,7 +13,7 @@ import {
   Add as AddIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
-import { alpha, useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import { Helmet } from 'react-helmet-async';
 import { Z_INDEX, STICKY_CTA_HEIGHT, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import Toast from '../../common/components/common/Toast';
@@ -70,7 +70,6 @@ const CreateContractPage = () => {
   });
   const [isDirty, setIsDirty] = useState(false);
   const [workerLoading, setWorkerLoading] = useState(false);
-  const theme = useTheme();
   const isMobile = useBreakpointDown('sm');
 
   // Load contract templates on mount
@@ -815,6 +814,9 @@ const CreateContractPage = () => {
           Create New Contract
         </Typography>
       </Box>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Fill each step with clear job details so both sides agree before work starts.
+      </Typography>
 
       {/* Stepper */}
       <Paper
@@ -890,6 +892,7 @@ const CreateContractPage = () => {
           color="secondary"
           endIcon={activeStep === steps.length - 1 ? <CheckCircleIcon /> : <ForwardIcon />}
           sx={{ minHeight: 44 }}
+          aria-label={activeStep === steps.length - 1 ? 'Create contract now' : 'Go to next contract step'}
           onClick={() => {
             if (activeStep === steps.length - 1) {
               if (validateStep()) setConfirmDialogOpen(true);
@@ -996,6 +999,7 @@ const CreateContractPage = () => {
               }
             }}
             disabled={loading || workerLoading}
+            aria-label={activeStep === steps.length - 1 ? 'Create contract now' : 'Go to next contract step'}
             sx={{ minHeight: 44, flex: 1 }}
           >
             {loading ? <CircularProgress size={18} color="inherit" /> : activeStep === steps.length - 1 ? 'Create Contract' : 'Next'}
@@ -1016,3 +1020,4 @@ const CreateContractPage = () => {
 };
 
 export default CreateContractPage;
+

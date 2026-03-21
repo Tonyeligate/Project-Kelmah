@@ -1,0 +1,18 @@
+{
+  "taskId": "backend-demo-task",
+  "metrics": {
+    "errorRateBefore": 0.02,
+    "errorRateAfter": 0.009,
+    "timeoutRateBefore": 0.015,
+    "timeoutRateAfter": 0.007
+  },
+  "chaosScenarios": [
+    { "id": "C1", "name": "upstream timeout", "result": "pass" },
+    { "id": "C2", "name": "partial dependency outage", "result": "pass" }
+  ],
+  "rollbackPlan": {
+    "strategy": "feature-flag rollback",
+    "trigger": "error-rate or timeout regression"
+  },
+  "closureVerdict": "PASS"
+}

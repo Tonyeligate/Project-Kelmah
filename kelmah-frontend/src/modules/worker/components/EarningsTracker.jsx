@@ -611,7 +611,7 @@ const EarningsTracker = () => {
             >
               Export
             </AnimatedButton>
-            <IconButton onClick={loadEarningsData} disabled={loading}>
+            <IconButton onClick={loadEarningsData} disabled={loading} aria-label="Refresh earnings data">
               <RefreshIcon />
             </IconButton>
           </Box>
@@ -656,6 +656,7 @@ const EarningsTracker = () => {
                     <Tooltip title="View Details">
                       <IconButton
                         size="small"
+                        aria-label="View transaction details"
                         sx={{ minWidth: 44, minHeight: 44 }}
                         onClick={() => {
                           setSelectedTransaction(transaction);
@@ -744,6 +745,7 @@ const EarningsTracker = () => {
                       <Tooltip title="View Details">
                         <IconButton
                           size="small"
+                          aria-label="View transaction details"
                           onClick={() => {
                             setSelectedTransaction(transaction);
                             setDetailsDialog(true);

@@ -1,0 +1,18 @@
+{
+  "taskId": "backend-demo-task",
+  "endpointsTested": ["GET /api/jobs", "GET /api/jobs/:id", "POST /api/jobs"],
+  "routeShadowScan": {
+    "status": "pass",
+    "issuesFound": 0
+  },
+  "contractCompatibility": {
+    "before": 0.91,
+    "after": 0.98
+  },
+  "objectiveScores": {
+    "p95LatencyBeforeMs": 275,
+    "p95LatencyAfterMs": 188,
+    "compatibilityDelta": 0.07
+  },
+  "closureVerdict": "PASS"
+}

@@ -1,7 +1,14 @@
 import { api } from '../../../services/apiClient';
+import { unwrapApiData } from '../../../services/responseNormalizer';
+import { captureRecoverableApiError } from '../../../services/errorTelemetry';
 
 const WORKERS_BASE = '/users/workers';
 const WORKER_SEARCH_ENDPOINT = `${WORKERS_BASE}/search`;
+const WORKER_SEARCH_ENDPOINTS = [
+  WORKER_SEARCH_ENDPOINT,
+  '/workers/search',
+  '/search/workers',
+];
 
 const workerPath = (workerId, suffix = '') =>
   `/users/workers/${workerId}${suffix}`;
@@ -265,7 +272,31 @@ const buildWorkerSearchQueryParams = (params = {}) => {
 };
 
 const unwrapPayload = (response) =>
-  response?.data?.data ?? response?.data ?? {};
+  unwrapApiData(response, { defaultValue: {} });
+
+const shouldTryFallback = (error) => {
+  const status = error?.response?.status;
+  return status === 404 || status === 405 || status === 501 || status === 503;
+};
+
+const requestWithFallback = async (endpoints, requestFactory) => {
+  let lastError;
+
+  for (let index = 0; index < endpoints.length; index += 1) {
+    const endpoint = endpoints[index];
+    try {
+      return await requestFactory(endpoint);
+    } catch (error) {
+      lastError = error;
+      const canRetryWithFallback = index < endpoints.length - 1 && shouldTryFallback(error);
+      if (!canRetryWithFallback) {
+        break;
+      }
+    }
+  }
+
+  throw lastError;
+};
 
 const buildMetadata = (payload = {}) => ({
   fallback: Boolean(payload?.fallback),
@@ -293,10 +324,14 @@ const workerService = {
 
   queryWorkerDirectory: async (searchParams = {}, requestOptions = {}) => {
     const queryParams = buildWorkerSearchQueryParams(searchParams);
-    const response = await api.get(WORKER_SEARCH_ENDPOINT, {
-      params: queryParams,
-      signal: requestOptions.signal,
-    });
+    const response = await requestWithFallback(
+      WORKER_SEARCH_ENDPOINTS,
+      (endpoint) =>
+        api.get(endpoint, {
+          params: queryParams,
+          signal: requestOptions.signal,
+        }),
+    );
     const payload = unwrapPayload(response);
 
     return {
@@ -410,11 +445,21 @@ const workerService = {
       payload = response?.data?.data ?? response?.data ?? {};
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Credentials endpoint unavailable:', error.message);
+      captureRecoverableApiError(error, {
+        operation: 'workers.getMyCredentials.primary',
+        fallbackUsed: true,
+        suppressUi: true,
+      });
       // Fallback: try /users/profile
       try {
         const fallback = await api.get('/users/profile');
         payload = fallback?.data?.data ?? fallback?.data ?? {};
-      } catch (_) {
+      } catch (fallbackError) {
+        captureRecoverableApiError(fallbackError, {
+          operation: 'workers.getMyCredentials.fallback',
+          fallbackUsed: true,
+          suppressUi: true,
+        });
         // Return empty credentials
       }
     }
@@ -582,6 +627,12 @@ const workerService = {
       if (status && status !== 404 && status !== 405) {
         throw error;
       }
+
+      captureRecoverableApiError(error, {
+        operation: 'workers.getWorkerAvailability',
+        fallbackUsed: true,
+        suppressUi: true,
+      });
 
       return attachMetadata({
         status: 'not_set',

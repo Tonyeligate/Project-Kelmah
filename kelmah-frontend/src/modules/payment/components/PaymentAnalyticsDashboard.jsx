@@ -465,7 +465,7 @@ const PaymentAnalyticsDashboard = ({
                       </TableCell>
                       <TableCell>
                         <Tooltip title="View Details">
-                          <IconButton size="small">
+                          <IconButton size="small" aria-label="View transaction details">
                             <ViewIcon />
                           </IconButton>
                         </Tooltip>

@@ -142,7 +142,6 @@ export default function MobileFilterSheet({
             <Button
               variant="text"
               onClick={onReset}
-              aria-label="Reset all filters"
               sx={{
                 flex: 1,
                 minHeight: 54,
@@ -159,7 +158,6 @@ export default function MobileFilterSheet({
           <Button
             variant="contained"
             onClick={handleApply}
-            aria-label="Apply selected filters"
             sx={{
               flex: 2,
               minHeight: 54,

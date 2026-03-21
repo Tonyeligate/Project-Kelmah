@@ -396,7 +396,7 @@ const JobManagementPage = () => {
             <IconButton
               size="small"
               onClick={(e) => { e.stopPropagation(); handleMenuOpen(e, job); }}
-              aria-label="More options"
+              aria-label="Open job actions menu"
               sx={{ bgcolor: 'action.hover', minWidth: 44, minHeight: 44 }}
             >
               <MoreIcon fontSize="small" />
@@ -469,8 +469,7 @@ const JobManagementPage = () => {
             sx={{ 
               minWidth: isMobile ? 'auto' : undefined,
               px: isMobile ? 2 : 3,
-            }}
-          >
+            }}>
             {isMobile ? '+ New Job' : 'Post a New Job'}
           </Button>
         </Box>
@@ -715,8 +714,7 @@ const JobManagementPage = () => {
                 size={isMobile ? 'small' : 'medium'}
                 startIcon={<AddIcon />}
                 onClick={handleCreateJob}
-                sx={{ mt: 2 }}
-              >
+                sx={{ mt: 2 }}>
                 {isMobile ? 'Post Job' : 'Post a New Job'}
               </Button>
             </Box>
@@ -851,7 +849,7 @@ const JobManagementPage = () => {
                               <Tooltip title="More Options">
                                 <IconButton
                                   size="small"
-                                  aria-label="More options"
+                                  aria-label="Open job actions menu"
                                   onClick={(e) => handleMenuOpen(e, job)}
                                 >
                                   <MoreIcon />
@@ -965,7 +963,7 @@ const JobManagementPage = () => {
             variant="contained"
             sx={{ minHeight: 44 }}
             disabled={isDeleting}
-          >
+           aria-label="Delete item">
             {isDeleting ? 'Deleting…' : 'Delete'}
           </Button>
         </DialogActions>
@@ -993,3 +991,4 @@ const JobManagementPage = () => {
 };
 
 export default JobManagementPage;
+

@@ -123,7 +123,7 @@ const PaymentsPage = () => {
           startIcon={<MoreVertIcon />}
           variant="outlined"
           color="secondary"
-          sx={{ borderWidth: 2, boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
+          sx={{ borderWidth: 2, boxShadow: '0 2px 8px rgba(255,215,0,0.4)', minHeight: 44 }}
           onClick={handleMenuOpen}
         >
           Actions
@@ -158,6 +158,9 @@ const PaymentsPage = () => {
           </MenuItem>
         </Menu>
       </Box>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Review wallet activity, filter transactions, and manage billing options.
+      </Typography>
 
       <Grid container spacing={3}>
         {/* Wallet Balance */}
@@ -219,6 +222,7 @@ const PaymentsPage = () => {
               onChange={handleTabChange}
               indicatorColor="secondary"
               textColor="inherit"
+              aria-label="Payment page sections"
               sx={{
                 '& .MuiTab-root': { color: 'text.secondary' },
                 '& .Mui-selected': { color: 'secondary.main' },
@@ -244,20 +248,22 @@ const PaymentsPage = () => {
                   >
                     <TextField
                       variant="filled"
-                      label="Start Date"
+                      label="From Date"
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
+                      inputProps={{ 'aria-label': 'Filter transactions from date' }}
                       sx={{ backgroundColor: 'action.hover', borderRadius: 1, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
                     />
                     <TextField
                       variant="filled"
-                      label="End Date"
+                      label="To Date"
                       type="date"
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
                       InputLabelProps={{ shrink: true }}
+                      inputProps={{ 'aria-label': 'Filter transactions to date' }}
                       sx={{ backgroundColor: 'action.hover', borderRadius: 1, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
                     />
                     <FormControl sx={{ minWidth: { xs: 0, sm: 140 }, flex: { xs: '1 1 100%', sm: '0 1 auto' } }}>
@@ -266,6 +272,7 @@ const PaymentsPage = () => {
                         value={filterType}
                         label="Type"
                         onChange={(e) => setFilterType(e.target.value)}
+                        inputProps={{ 'aria-label': 'Filter transactions by type' }}
                       >
                         <MenuItem value="all">All</MenuItem>
                         <MenuItem value="deposit">Deposit</MenuItem>
@@ -278,6 +285,7 @@ const PaymentsPage = () => {
                       sx={{
                         borderWidth: 2,
                         boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
+                        minHeight: 44,
                         flex: { xs: '1 1 100%', sm: '0 1 auto' },
                       }}
                       onClick={applyFilters}

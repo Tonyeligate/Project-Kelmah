@@ -44,7 +44,7 @@ const PageHeader = ({
                 <Breadcrumbs
                     separator={<NavigateNextIcon fontSize="small" sx={{ color: 'text.disabled' }} />}
                     sx={{ mb: 1.5 }}
-                    aria-label="breadcrumb navigation"
+                    aria-label="Breadcrumb navigation"
                 >
                     <Link
                         component={RouterLink}
@@ -154,7 +154,7 @@ const PageHeader = ({
                                     color: 'text.secondary',
                                     '&:hover': { color: 'primary.main' },
                                 }}
-                                aria-label="Refresh data"
+                                aria-label="Refresh data panel"
                             >
                                 <RefreshIcon
                                     sx={{
@@ -176,6 +176,7 @@ const PageHeader = ({
                             color="inherit"
                             onClick={secondaryAction.onClick}
                             startIcon={secondaryAction.icon}
+                            aria-label={secondaryAction.label}
                             size={isMobile ? 'small' : 'medium'}
                             sx={{
                                 borderRadius: 2,
@@ -194,6 +195,7 @@ const PageHeader = ({
                             color="primary"
                             onClick={primaryAction.onClick}
                             startIcon={primaryAction.icon}
+                            aria-label={primaryAction.label}
                             size={isMobile ? 'small' : 'medium'}
                             sx={{
                                 borderRadius: 2,

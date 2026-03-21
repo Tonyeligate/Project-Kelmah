@@ -474,8 +474,11 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
           <Tooltip title="Filter conversations">
             <IconButton
               size="small"
+              aria-label="Filter conversation list"
               sx={(theme) => ({
                 color: alpha(theme.palette.secondary.main, 0.7),
+                width: 44,
+                height: 44,
               })}
               onClick={handleFilterMenuOpen}
             >
@@ -485,9 +488,12 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
           <Tooltip title="New conversation">
             <IconButton
               size="small"
+              aria-label="Start a new conversation"
               sx={(theme) => ({
                 color: alpha(theme.palette.secondary.main, 0.7),
                 ml: 1,
+                width: 44,
+                height: 44,
               })}
               onClick={handleNewConversationClick}
             >
@@ -498,7 +504,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
       </Box>
 
       <SearchField
-        placeholder="Search conversations..."
+        placeholder="Search by name or recent message"
         value={searchQuery}
         onChange={handleSearch}
         fullWidth
@@ -512,13 +518,16 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
               />
             </InputAdornment>
           ),
+          inputProps: {
+            'aria-label': 'Search conversations by person or recent message',
+          },
           endAdornment: searchQuery && (
             <InputAdornment position="end">
               <IconButton
                 size="small"
                 onClick={clearSearch}
                 edge="end"
-                aria-label="clear search"
+                aria-label="Clear conversation search"
               >
                 <Clear />
               </IconButton>
@@ -527,10 +536,19 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
         }}
       />
 
+      <Typography
+        variant="caption"
+        sx={{ px: 2, pb: 1, color: 'text.secondary', lineHeight: 1.35 }}
+      >
+        Tip: Search a person&apos;s name or a keyword like budget, location, or
+        timeline.
+      </Typography>
+
       <Tabs
         value={tabValue}
         onChange={handleTabChange}
         variant="fullWidth"
+        aria-label="Conversation categories"
         sx={(theme) => ({
           borderBottom: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
           '& .MuiTabs-indicator': {
@@ -558,6 +576,7 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                   <StyledListItem
                     active={isSelected ? 1 : 0}
                     onClick={() => handleSelectConversation(conversation)}
+                    aria-label={`Open conversation with ${conversation.name || 'Unknown user'}`}
                   >
                     <ListItemAvatar>
                       <Box sx={{ position: 'relative' }}>
@@ -639,8 +658,9 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                           sx={{
                             display: 'flex',
                             justifyContent: 'space-between',
-                            alignItems: 'center',
+                            alignItems: 'flex-start',
                             width: '100%',
+                            gap: 1,
                           }}
                         >
                           <Typography
@@ -651,10 +671,13 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
                                 : 'text.secondary',
                               fontWeight: hasUnread ? 500 : 400,
                               fontSize: '0.8rem',
-                              maxWidth: '180px',
-                              textOverflow: 'ellipsis',
+                              maxWidth: { xs: '170px', sm: '220px' },
+                              wordBreak: 'break-word',
+                              overflowWrap: 'anywhere',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
                               overflow: 'hidden',
-                              whiteSpace: 'nowrap',
                             }}
                           >
                             {conversation.latestMessage?.sender &&
@@ -717,15 +740,17 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
               variant="body1"
               sx={{ color: 'text.primary', opacity: 0.5, mb: 2 }}
             >
-              No conversations found
+              No conversations found. Start a chat to confirm scope, budget,
+              and timeline.
             </Typography>
             <ActionButton
               variant="outlined"
               startIcon={<PersonAdd />}
               size="small"
               onClick={handleNewConversationClick}
+              sx={{ minHeight: 44 }}
             >
-              Start a new conversation
+              Start new chat
             </ActionButton>
           </Box>
         )}
@@ -845,6 +870,9 @@ const ConversationList = ({ onSelectConversation, selectedConversationId }) => {
       >
         <DialogTitle id="new-conversation-dialog-title" sx={{ color: 'primary.main' }}>New Conversation</DialogTitle>
         <DialogContent>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+              Pick one person for a direct chat, or select at least two members for a group.
+            </Typography>
           <Box sx={{ mt: 1, mb: 2 }}>
             <Typography
               variant="subtitle2"

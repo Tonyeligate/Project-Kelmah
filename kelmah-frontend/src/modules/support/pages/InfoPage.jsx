@@ -68,8 +68,20 @@ const PAGE_CONTENT = {
   },
 };
 
+const PAGE_GUIDANCE = {
+  about:
+    'Kelmah keeps job and worker details simple so both workers and hirers can make confident decisions quickly.',
+  contact:
+    'For urgent payment, safety, or account issues, include your phone number, job title, and a short problem summary so our support team can assist faster.',
+  privacy:
+    'We only use your information to run matching, communication, and payments. You can contact support if anything looks unfamiliar.',
+  terms:
+    'These rules protect both workers and hirers. Clear communication and honest job details help avoid disputes.',
+};
+
 const InfoPage = ({ variant }) => {
-  const content = PAGE_CONTENT[variant] || PAGE_CONTENT.about;
+  const activeVariant = PAGE_CONTENT[variant] ? variant : 'about';
+  const content = PAGE_CONTENT[activeVariant];
 
   return (
     <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
@@ -77,10 +89,28 @@ const InfoPage = ({ variant }) => {
         <title>{`${content.title} | Kelmah`}</title>
       </Helmet>
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" fontWeight={700} sx={{ mb: 1 }}>
+        <Typography variant="h4" fontWeight={700} sx={{ mb: 1, wordBreak: 'break-word' }}>
           {content.title}
         </Typography>
-        <Typography color="text.secondary">{content.subtitle}</Typography>
+        <Typography color="text.secondary" sx={{ maxWidth: '72ch' }}>
+          {content.subtitle}
+        </Typography>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
+            mt: 1.25,
+            px: 1.5,
+            py: 1,
+            borderRadius: 1.5,
+            bgcolor: 'action.hover',
+            border: '1px solid',
+            borderColor: 'divider',
+            wordBreak: 'break-word',
+          }}
+        >
+          {PAGE_GUIDANCE[activeVariant]}
+        </Typography>
       </Box>
       <Stack spacing={2.5}>
         {content.sections.map((section) => (
@@ -88,7 +118,9 @@ const InfoPage = ({ variant }) => {
             <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
               {section.heading}
             </Typography>
-            <Typography color="text.secondary">{section.body}</Typography>
+            <Typography color="text.secondary" sx={{ wordBreak: 'break-word' }}>
+              {section.body}
+            </Typography>
           </Box>
         ))}
       </Stack>

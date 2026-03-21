@@ -189,8 +189,7 @@ const EmptyState = ({
                                 borderRadius: 2,
                                 textTransform: 'none',
                                 fontWeight: 600,
-                            }}
-                        >
+                            }}>
                             {actionText}
                         </Button>
                     )}
@@ -202,8 +201,7 @@ const EmptyState = ({
                             sx={{
                                 borderRadius: 2,
                                 textTransform: 'none',
-                            }}
-                        >
+                            }}>
                             {secondaryActionText}
                         </Button>
                     )}

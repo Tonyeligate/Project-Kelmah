@@ -1,0 +1,16 @@
+{
+  "taskId": "<task-id>",
+  "packets": [
+    {
+      "agent": "frontend|backend|database|security|realtime|devops|debugger",
+      "triggerRule": "<rule-id-or-pattern>",
+      "filesMeasured": [],
+      "findings": [],
+      "confidence": 0.0,
+      "verification": {
+        "testsRun": [],
+        "status": "pass|fail"
+      }
+    }
+  ]
+}

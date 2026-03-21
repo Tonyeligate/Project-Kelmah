@@ -21,7 +21,7 @@ import { BRAND_COLORS } from '../../../theme';
 import { useNotifications } from '../../notifications/contexts/NotificationContext';
 import { Z_INDEX, BOTTOM_NAV_HEIGHT } from '../../../constants/layout';
 import useKeyboardVisible from '../../../hooks/useKeyboardVisible';
-import { useBreakpointDown } from '@/hooks/useResponsive';
+import { useBreakpointDown } from '../../../hooks/useResponsive';
 
 // Styled Components - Clean mobile-first design
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -52,15 +52,15 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
   ({ theme }) => ({
     color: theme.palette.mode === 'dark' ? '#888' : '#666',
     flex: 1,
-    minWidth: 0,
     maxWidth: 120,
-    minHeight: 48,
+    minHeight: 56,
+    minWidth: 44,
     padding: '6px 4px 8px',
     transition: 'all 0.2s ease',
     '&.Mui-selected': {
       color: theme.palette.mode === 'dark' ? BRAND_COLORS.gold : BRAND_COLORS.black,
       '& .MuiBottomNavigationAction-label': {
-        fontSize: '0.75rem',
+        fontSize: '0.78rem',
         fontWeight: 700,
         opacity: 1,
       },
@@ -69,7 +69,7 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
       },
     },
     '& .MuiBottomNavigationAction-label': {
-      fontSize: '0.65rem',
+      fontSize: '0.68rem',
       fontWeight: 500,
       marginTop: 2,
       opacity: 0.9,
@@ -92,10 +92,10 @@ const StyledBottomNavigationAction = styled(BottomNavigationAction)(
     '@media (max-width:360px)': {
       padding: '6px 2px 8px',
       '& .MuiBottomNavigationAction-label': {
-        fontSize: '0.6rem',
+        fontSize: '0.64rem',
       },
       '&.Mui-selected .MuiBottomNavigationAction-label': {
-        fontSize: '0.68rem',
+        fontSize: '0.72rem',
       },
     },
   }),
@@ -171,12 +171,13 @@ const MobileBottomNav = () => {
 
   const getActionAriaLabel = useCallback((item) => {
     if (item.value === 'messages' && item.badge) {
-      return `${item.label}, ${item.badge} unread messages`;
+      const messageLabel = item.badge === 1 ? 'message' : 'messages';
+      return `Go to ${item.label}, ${item.badge} unread ${messageLabel}`;
     }
-    return item.label;
+    return `Go to ${item.label}`;
   }, []);
 
-  // Navigation items based on user role - simplified to 4 items max for clean UX
+  // Navigation items based on user role - capped at 5 primary actions for clean UX.
   const navigationItems = useMemo(() => {
     if (isHirer) {
       return [
@@ -199,7 +200,7 @@ const MobileBottomNav = () => {
           path: '/hirer/find-talents',
         },
         {
-          label: isMobile ? 'Apps' : 'Applications',
+          label: isMobile ? 'My Jobs' : 'Applications',
           value: 'applications',
           icon: <ApplicationsIcon />,
           path: '/hirer/applications',
@@ -228,7 +229,7 @@ const MobileBottomNav = () => {
         path: '/worker/find-work',
       },
       {
-        label: isMobile ? 'Apps' : 'Applications',
+        label: isMobile ? 'My Jobs' : 'Applications',
         value: 'applications',
         icon: <ApplicationsIcon />,
         path: '/worker/applications',
@@ -264,6 +265,7 @@ const MobileBottomNav = () => {
       <StyledBottomNavigation 
         value={currentValue} 
         onChange={handleNavigation} 
+        aria-label="Primary mobile navigation"
         showLabels
       >
         {navigationItems.map((item) => (
@@ -277,12 +279,12 @@ const MobileBottomNav = () => {
                 <Badge 
                   badgeContent={item.badge} 
                   color="error"
-                  aria-label={`${item.badge} unread messages`}
+                  aria-label={`${item.badge} unread ${item.badge === 1 ? 'message' : 'messages'}`}
                   sx={{ 
                     '& .MuiBadge-badge': { 
-                      fontSize: '0.65rem',
-                      minWidth: 16,
-                      height: 16,
+                      fontSize: '0.72rem',
+                      minWidth: 18,
+                      height: 18,
                     }
                   }}
                 >

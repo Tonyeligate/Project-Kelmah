@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Chip, Box, LinearProgress, Link as MuiLink, Card, CardContent, Stack, useTheme } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Chip, Box, LinearProgress, Link as MuiLink, Card, CardContent, Stack } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 
@@ -14,12 +14,36 @@ const getStatusChip = (status) => {
 };
 
 const EscrowDetails = ({ escrows }) => {
-  const theme = useTheme();
   const isMobile = useBreakpointDown('sm');
+
+  if (!Array.isArray(escrows) || escrows.length === 0) {
+    return (
+      <Box
+        sx={{
+          border: '1px dashed',
+          borderColor: 'divider',
+          borderRadius: 2,
+          p: 2.5,
+          textAlign: 'center',
+          bgcolor: 'background.paper',
+        }}
+      >
+        <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 0.75 }}>
+          No escrow records yet
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Escrow jobs appear here after a funded milestone is created by a hirer.
+        </Typography>
+      </Box>
+    );
+  }
 
   if (isMobile) {
     return (
       <Stack spacing={1.5}>
+        <Typography variant="body2" color="text.secondary">
+          Funds are released as milestones are approved. Use each card to track progress clearly.
+        </Typography>
         {escrows.map((row) => {
           const progress = row.totalAmount > 0
             ? (row.releasedAmount / row.totalAmount) * 100
@@ -29,7 +53,13 @@ const EscrowDetails = ({ escrows }) => {
               <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
                 <Stack spacing={1}>
                   <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
-                    <MuiLink component={Link} to={`/jobs/${row.jobId}`} underline="hover" sx={{ fontWeight: 600 }}>
+                    <MuiLink
+                      component={Link}
+                      to={`/jobs/${row.jobId}`}
+                      underline="hover"
+                      aria-label={`Open escrow job ${row.jobTitle}`}
+                      sx={{ fontWeight: 600, minWidth: 0, wordBreak: 'break-word' }}
+                    >
                       {row.jobTitle}
                     </MuiLink>
                     {getStatusChip(row.status)}
@@ -56,11 +86,15 @@ const EscrowDetails = ({ escrows }) => {
   }
 
   return (
-    <TableContainer
-      component={Paper}
-      sx={{ boxShadow: 'none', borderRadius: 0 }}
-    >
-      <Table sx={{ minWidth: { xs: 0, md: 650 } }} aria-label="escrow details table">
+    <Box>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+        Escrow progress shows how much of each funded job has already been released.
+      </Typography>
+      <TableContainer
+        component={Paper}
+        sx={{ boxShadow: 'none', borderRadius: 0 }}
+      >
+      <Table sx={{ minWidth: { xs: 0, md: 650 } }} aria-label="Escrow details table">
         <TableHead>
           <TableRow>
             <TableCell>Job</TableCell>
@@ -71,18 +105,25 @@ const EscrowDetails = ({ escrows }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {escrows.map((row) => (
+          {escrows.map((row) => {
+            const progress = row.totalAmount > 0
+              ? (row.releasedAmount / row.totalAmount) * 100
+              : 0;
+
+            return (
             <TableRow key={row.id}>
               <TableCell>
                 <MuiLink
                   component={Link}
                   to={`/jobs/${row.jobId}`}
                   underline="hover"
+                  aria-label={`Open escrow job ${row.jobTitle}`}
+                  sx={{ wordBreak: 'break-word' }}
                 >
                   {row.jobTitle}
                 </MuiLink>
               </TableCell>
-              <TableCell>{row.hirer.name}</TableCell>
+              <TableCell sx={{ wordBreak: 'break-word' }}>{row.hirer?.name || 'Unknown'}</TableCell>
               <TableCell>{getStatusChip(row.status)}</TableCell>
               <TableCell align="right">
                 <Typography fontWeight="bold">
@@ -94,7 +135,7 @@ const EscrowDetails = ({ escrows }) => {
                   <Box sx={{ width: '100%', mr: 1 }}>
                     <LinearProgress
                       variant="determinate"
-                      value={(row.releasedAmount / row.totalAmount) * 100}
+                      value={progress}
                     />
                   </Box>
                   <Box sx={{ minWidth: 110 }}>
@@ -105,10 +146,12 @@ const EscrowDetails = ({ escrows }) => {
                 </Box>
               </TableCell>
             </TableRow>
-          ))}
+            );
+          })}
         </TableBody>
       </Table>
     </TableContainer>
+    </Box>
   );
 };
 

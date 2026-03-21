@@ -662,3 +662,77 @@ Task closes only if:
   - diagnostics/tests executed and reported
 Else: INCOMPLETE
 ```
+
+### BFL-5: API Contract Proof Pack v5
+```
+Emit mandatory proof artifacts:
+  - endpoint_contracts.json
+  - route_reachability_report.json
+  - auth_chain_verification.json
+  - response_envelope_validation.json
+
+Advanced tools to activate:
+  - ContractProofEngine
+  - RouteShadowScanner
+  - AuthChainIntegrityAnalyzer
+  - ConsumerImpactForecaster
+```
+
+### BFL-6: Backend Optimization Engine
+```
+For high-impact backend work (latency, throughput, contract evolution), run:
+  - route topology optimization (remove shadow and ambiguity)
+  - query-path optimization (index and projection-aware)
+  - middleware depth optimization (remove redundant gates)
+
+Optimization objectives must be reported:
+  - p95 latency
+  - error-rate stability
+  - contract compatibility score
+```
+
+### BFL-7: Reliability and Chaos Guardrails
+```
+Before backend optimization closure, verify:
+  - retries/fallback paths for dependent services
+  - timeout and circuit-breaker behavior
+  - idempotency for mutation endpoints
+  - graceful degradation when one service is unavailable
+
+No "performance win" is valid if reliability posture regresses.
+```
+
+### BFL-8: Adaptive Service Policy
+```
+Adaptive behavior is policy-constrained:
+  - autoscale and throttling decisions remain auditable
+  - no silent auth-path relaxation under load
+  - no bypass of verifyGatewayRequest trust chain
+  - deterministic fallback when optimization signals are noisy
+```
+
+### BFL-9: Backend Self-Healing Loop
+```
+When anomaly score exceeds threshold:
+  1) detect degraded route/service path
+  2) apply pre-approved mitigation candidate
+  3) measure p95, error-rate, and contract fidelity
+  4) keep change only if all gates improve or stay neutral
+  5) retain rollback token and proof trail
+```
+
+### BFL-10: Backend Optimization Artifact Contract
+```
+For taskType in { backend-optimization, api-design-optimization, reliability-hardening } emit:
+  - api_topology_report.json
+  - service_reliability_report.json
+
+Minimum acceptance:
+  - objective scores before/after
+  - services/endpoints tested
+  - failure-mode simulations and mitigations
+  - selected strategy + rollback plan
+  - closureVerdict = PASS
+
+Without both artifacts, backend optimization closure is blocked.
+```

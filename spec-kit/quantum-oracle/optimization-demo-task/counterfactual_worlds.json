@@ -1,0 +1,21 @@
+{
+  "taskId": "optimization-demo-task",
+  "worlds": [
+    {
+      "id": "W1",
+      "description": "apply quantum-inspired layout optimization",
+      "utility": { "userImpact": 9, "reliability": 9, "maintainability": 8, "security": 9, "deployability": 8, "total": 43 }
+    },
+    {
+      "id": "W2",
+      "description": "minimal CSS tweaks only",
+      "utility": { "userImpact": 6, "reliability": 8, "maintainability": 8, "security": 9, "deployability": 9, "total": 40 }
+    },
+    {
+      "id": "W3",
+      "description": "do nothing",
+      "utility": { "userImpact": 2, "reliability": 7, "maintainability": 9, "security": 9, "deployability": 10, "total": 37 }
+    }
+  ],
+  "selectedWorld": "W1"
+}

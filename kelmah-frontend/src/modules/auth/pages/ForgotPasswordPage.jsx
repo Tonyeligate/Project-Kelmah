@@ -31,13 +31,13 @@ const ForgotPasswordPage = () => {
     try {
       const res = await authService.forgotPassword(email);
       setStatus(
-        'If that email exists, a reset link has been sent.',
+        'If we find this email, we will send a reset link in a few minutes.',
       );
     } catch (err) {
       // AUD2-M07 FIX: Use generic error message to prevent email enumeration attacks.
       // Server-specific messages (e.g. "User not found") would let attackers confirm
       // which email addresses exist in the system.
-      setError('Unable to process your request. Please try again later.');
+      setError('We could not send reset instructions now. Please try again shortly.');
     } finally {
       setLoading(false);
     }
@@ -112,8 +112,8 @@ const ForgotPasswordPage = () => {
               lineHeight: 1.5,
             }}
           >
-            Enter the email address associated with your
-            account, and we’ll send you instructions to reset your password.
+            Enter the email you used to sign up. If it matches an account, we
+            will send password reset steps.
           </Typography>
 
           {/* Status Alert */}
@@ -156,10 +156,13 @@ const ForgotPasswordPage = () => {
               <TextField
                 fullWidth
                 type="email"
-                placeholder="Email address"
+                placeholder="Email used for your Kelmah account"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                inputProps={{
+                  'aria-label': 'Email used for your Kelmah account',
+                }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     bgcolor: 'background.paper',
@@ -188,6 +191,7 @@ const ForgotPasswordPage = () => {
               type="submit"
               fullWidth
               disabled={loading}
+              aria-label="Send reset link to email"
               sx={{
                 bgcolor: 'primary.main',
                 color: 'primary.contrastText',
@@ -202,7 +206,7 @@ const ForgotPasswordPage = () => {
                 },
               }}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : 'Request Reset'}
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Send Reset Link'}
             </Button>
           </Box>
         </Box>
@@ -253,7 +257,7 @@ const ForgotPasswordPage = () => {
           </Alert>
         )}
         <TextField
-          label="Email"
+          label="Email address"
           type="email"
           fullWidth
           required
@@ -261,6 +265,7 @@ const ForgotPasswordPage = () => {
           placeholder="Enter your email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          helperText="Use the email you used when creating your account"
         />
         <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ mt: 2, minHeight: 44 }}>
           {loading ? <CircularProgress size={24} color="inherit" /> : 'Send Reset Link'}
@@ -276,3 +281,4 @@ const ForgotPasswordPage = () => {
 };
 
 export default ForgotPasswordPage;
+

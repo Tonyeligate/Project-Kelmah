@@ -48,7 +48,7 @@ const resolveInitialAuthState = () => {
     return { token, user, isAuthenticated: true };
   } catch (error) {
     if (import.meta.env.DEV) console.warn('Failed to resolve initial auth state:', error);
-    secureStorage.clear();
+    secureStorage.clearAuthData();
     return { token: null, user: null, isAuthenticated: false };
   }
 };
@@ -218,7 +218,7 @@ export const verifyAuth = createAsyncThunk(
           : !isNetworkError;
 
       if (shouldReset) {
-        secureStorage.clear();
+        secureStorage.clearAuthData();
       }
 
       return rejectWithValue({
@@ -235,11 +235,11 @@ export const logoutUser = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       await authService.logout();
-      secureStorage.clear();
+      secureStorage.clearAuthData();
       return { success: true };
     } catch (error) {
       // Regardless of API call success/failure, we remove local data
-      secureStorage.clear();
+      secureStorage.clearAuthData();
       localStorage.removeItem(AUTH_CONFIG.tokenKey);
       localStorage.removeItem('user');
       // Clear cached personal/payment data on logout (shared device safety)
@@ -263,7 +263,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
-      secureStorage.clear();
+      secureStorage.clearAuthData();
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;

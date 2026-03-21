@@ -104,7 +104,7 @@ const WalletPage = () => {
         </Typography>
         {walletMissing && (
           <Alert severity="info" sx={{ mt: 2 }}>
-            Your wallet has not been funded yet. It will be created automatically the first time you add funds or receive a payment.
+              Your wallet will be created automatically the first time you add funds or receive a payment.
           </Alert>
         )}
       </Paper>
@@ -116,6 +116,7 @@ const WalletPage = () => {
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
           InputLabelProps={{ shrink: true }}
+          inputProps={{ 'aria-label': 'Filter transactions from this date' }}
           sx={{ flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
         />
         <TextField
@@ -124,6 +125,7 @@ const WalletPage = () => {
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
           InputLabelProps={{ shrink: true }}
+          inputProps={{ 'aria-label': 'Filter transactions up to this date' }}
           sx={{ flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
         />
         <FormControl sx={{ minWidth: { xs: 0, sm: 140 }, flex: { xs: '1 1 100%', sm: '0 1 auto' } }}>
@@ -132,6 +134,7 @@ const WalletPage = () => {
             value={filterType}
             label="Type"
             onChange={(e) => setFilterType(e.target.value)}
+            inputProps={{ 'aria-label': 'Filter wallet transactions by type' }}
           >
             <MenuItem value="all">All</MenuItem>
             <MenuItem value="deposit">Deposit</MenuItem>
@@ -141,20 +144,23 @@ const WalletPage = () => {
         <Button
           variant="outlined"
           color="secondary"
-          sx={{ borderWidth: 2, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
+          sx={{ borderWidth: 2, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' }, minHeight: 44 }}
           onClick={applyFilters}
         >
-          Filter
+          Apply filters
         </Button>
         <Button
           variant="outlined"
           color="secondary"
-          sx={{ borderWidth: 2, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
+          sx={{ borderWidth: 2, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' }, minHeight: 44 }}
           onClick={clearFilters}
         >
-          Clear
+          Reset filters
         </Button>
       </Box>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Filter by date or type to narrow the transactions list.
+      </Typography>
       {/* Summary above transactions list */}
       {(Array.isArray(transactions) ? transactions.length : 0) > 0 && (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -175,6 +181,9 @@ const WalletPage = () => {
             count={pageCount}
             page={page}
             onChange={(e, val) => setPage(val)}
+            getItemAriaLabel={(type, pageNumber) =>
+              type === 'page' ? `Go to wallet transactions page ${pageNumber}` : `Go to ${type} page`
+            }
             color="secondary"
           />
         </Box>

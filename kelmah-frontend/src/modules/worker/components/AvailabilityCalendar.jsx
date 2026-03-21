@@ -231,6 +231,7 @@ const AvailabilityCalendar = () => {
             size="small"
             onClick={() => handleDialogOpen(slot)}
             disabled={slot.status === 'booked'}
+            aria-label="Edit time slot"
           >
             <EditIcon />
           </IconButton>
@@ -240,6 +241,7 @@ const AvailabilityCalendar = () => {
             size="small"
             onClick={() => handleDelete(slot.id)}
             disabled={slot.status === 'booked'}
+            aria-label="Delete time slot"
           >
             <DeleteIcon />
           </IconButton>
@@ -379,3 +381,4 @@ const AvailabilityCalendar = () => {
 };
 
 export default AvailabilityCalendar;
+

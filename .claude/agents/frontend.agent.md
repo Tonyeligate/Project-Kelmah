@@ -943,3 +943,211 @@ Frontend task can close only if all are true:
   - Issue list resolved or explicitly deferred
 Else: status = INCOMPLETE
 ```
+
+### VIS-6: Quantum Visual Oracle Pack v5
+```
+Mandatory outputs for visible UI tasks:
+  - before_screenshots/*
+  - after_screenshots/*
+  - visual_diff_report.json
+  - interaction_checklist.json
+
+Required checks:
+  - layout drift
+  - contrast regressions
+  - touch-target regressions
+  - overflow/clipping regressions
+```
+
+### VIS-7: Frontend Skill Escalation
+```
+Activate advanced capabilities when risk is high:
+  - PerceptualDiffScorer
+  - TouchTargetLinter
+  - InteractionFlowSimulator
+  - AccessibilityBasisValidator
+
+No elite-skill activation record => closure rejected.
+```
+
+### VIS-8: Quantum Display Field Diagnostics
+```
+For every visual defect, classify against the display field before fixing:
+  - Contrast field defect (text/background insufficient)
+  - Density defect (overcrowded cards, low scanability)
+  - Rhythm defect (inconsistent spacing/typography cadence)
+  - Alignment defect (misaligned baselines, visual drift)
+  - Safe-area defect (notch/home-indicator clipping)
+  - Motion defect (animation harms readability or causes disorientation)
+
+Each defect must map to a deterministic corrective operator, not ad-hoc CSS edits.
+```
+
+### VIS-9: Quantum UI/UX Repair Operators
+```
+Allowed repair operators for production-safe fixes:
+  - ContrastRebalancer: enforce accessible foreground/background pairings
+  - TypeScaleNormalizer: restore heading/body hierarchy consistency
+  - SpacingLatticeStabilizer: snap spacing to design-scale lattice
+  - GridPhaseAligner: fix breakpoint-specific layout phase shifts
+  - TouchTargetExpander: enforce minimum touch target constraints
+  - SafeAreaCompensator: preserve visibility near device cutouts/insets
+  - MotionDampener: reduce non-essential movement for readability
+
+Operator sequence must be listed in audit output for reproducibility.
+```
+
+### VIS-10: Literacy-First Visual Semantics (Kelmah Critical)
+```
+Because many users have limited formal education, enforce:
+  - Single dominant primary action per screen region
+  - Plain-language labels (avoid abstract jargon)
+  - Icon + text pairing for critical actions
+  - Error text that states action, cause, and next step
+  - Empty states with explicit next action
+
+Reject UI changes that increase reading complexity or cognitive branching.
+```
+
+### VIS-11: Display Coherence Oracle Artifact
+```
+For visible UI bug tasks, emit:
+  frontend_visual_oracle.json
+
+Minimum schema:
+  - taskType
+  - breakpoints[] with 320, 390, 768, 1024, 1280, 1440
+  - displayDefects[] with category + severity + operatorApplied
+  - readabilityScore (0-100)
+  - contrastChecks[]
+  - touchTargetChecks[]
+  - safeAreaChecks[]
+  - motionChecks[]
+  - closureVerdict (PASS|FAIL)
+
+If closureVerdict != PASS, closure must remain blocked.
+```
+
+### VIS-12: Frontend Quantum Elite Toolchain v6
+```
+Mandatory activation set for high-risk UI/display fixes:
+  - PerceptualContrastOracle
+  - TypographyRhythmSolver
+  - LayoutConstraintAnnealer
+  - ColorVisionSimulator
+  - SafeAreaInsetVerifier
+  - MotionSafetyAnalyzer
+  - ReadabilityScorer
+
+If any mandatory tool is omitted, verdict is PROVISIONAL, not final.
+```
+
+### VIS-13: Quantum Layout Optimization Engine
+```
+For layout-heavy surfaces (search, dashboard, job cards, checkout-like flows), run:
+  - QAOA-style layout optimization for global arrangement quality
+  - Grover-style friction search across rare user-path permutations
+  - Annealing pass for responsive packing under breakpoint constraints
+
+Required optimization objectives:
+  - Minimize interaction travel distance
+  - Minimize cognitive load per screen
+  - Maximize primary-action discoverability
+  - Preserve accessibility constraints as hard constraints
+
+No optimization claim is valid without explicit objective scores.
+```
+
+### VIS-14: Behavioral Twin Personalization Guardrails
+```
+Use behavioral twins to evaluate adaptation safely:
+  - Twin A: low-literacy, first-time user
+  - Twin B: repeat power user
+  - Twin C: low-end Android + constrained network
+  - Twin D: accessibility-first user (vision/motor/cognitive support)
+
+Rules:
+  - Personalization may change emphasis/order, not core trust semantics
+  - Never hide critical legal, payment, or safety information
+  - Always provide deterministic fallback UI
+```
+
+### VIS-15: Adaptive Interface Policy
+```
+Adaptive behavior is allowed only through policy-driven triggers:
+  - High hesitation score => simplify labels and reduce branching
+  - Repeated validation failures => progressive inline assistance
+  - Fast intent signals => shorten path to primary action
+
+Prohibited:
+  - Dark patterns
+  - Emotional manipulation
+  - Irreversible adaptation without user recoverability
+```
+
+### VIS-16: Accessibility Cloud Simulation
+```
+For significant UI changes, simulate accessibility at scale across:
+  - Font scaling + zoom variants
+  - Contrast sensitivity variants
+  - Keyboard-only navigation paths
+  - Pointer precision and motor variance
+  - Low bandwidth + delayed response states
+
+Output must include edge-case failures and mitigation mapping.
+```
+
+### VIS-17: Frontend Self-Healing Loop
+```
+When UX noise exceeds threshold (drop-off risk, repeated confusion actions):
+  1. Detect anomaly (interaction telemetry)
+  2. Spawn constrained variant candidates
+  3. Score variants in sandbox using safety + accessibility + task success
+  4. Collapse to best candidate for eligible cohort
+  5. Record rollback token and confidence bounds
+
+Self-healing can tune presentation and flow guidance only.
+It must not silently alter business rules or authorization logic.
+```
+
+### VIS-18: Probabilistic UX Communication
+```
+When UI outcomes are probabilistic (recommendations, predictions), enforce:
+  - Confidence interval displayed in plain language
+  - Why-this-result explanation
+  - Manual override path
+  - Trust-preserving fallback if confidence drops below threshold
+```
+
+### VIS-19: Quantum-Inspired Implementation Roadmap
+```
+Phase 1 (Now):
+  - Weighted user-intent state modeling in frontend logic
+  - Deterministic adaptation policy and audit logs
+
+Phase 2 (1-2 years):
+  - ML-assisted layout variable tuning (spacing/type/color constraints)
+  - Accessibility cloud simulation integrated in CI
+
+Phase 3 (3-5 years, hybrid quantum):
+  - External optimization service for heavy combinatorial layout tasks
+  - Behavioral twin simulation at session granularity with strict guardrails
+
+NISQ constraint: keep mission-critical decisions deterministic and explainable.
+```
+
+### VIS-20: Optimization Artifact Contract
+```
+For taskType in { ui-optimization, adaptive-interface, design-flow-optimization } emit:
+  - layout_optimization_report.json
+  - behavioral_twin_report.json
+
+Minimum acceptance:
+  - objective scores before/after
+  - tested breakpoints and profiles
+  - accessibility edge cases and mitigations
+  - selected strategy + rollback plan
+  - closureVerdict = PASS
+
+Without both artifacts, optimization task closure is blocked.
+```

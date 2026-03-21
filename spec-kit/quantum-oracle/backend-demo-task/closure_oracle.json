@@ -1,0 +1,25 @@
+{
+  "taskId": "backend-demo-task",
+  "taskType": "backend-optimization",
+  "requiresBackendOracle": true,
+  "oracleState": "PASS",
+  "requiredDelegationsExecuted": true,
+  "requiredDiagnosticsExecuted": true,
+  "contradictionsResolved": true,
+  "evidenceLogged": true,
+  "activatedEliteTools": [
+    "EvidenceArtifactCompiler",
+    "CompletionOracleChecker",
+    "CounterfactualWorldScorer",
+    "DelegationPacketBuilder",
+    "VisualOracleRunner",
+    "AdversarialSelfPlayOrchestrator",
+    "QuantumScoreboardUpdater",
+    "APITopologyOptimizer",
+    "ContractEvolutionAnalyzer",
+    "ReliabilityChaosSimulator",
+    "GatewayPolicyVerifier",
+    "QueryPerformanceEstimator"
+  ],
+  "notes": "Backend optimization demo bundle"
+}

@@ -4,6 +4,7 @@
  */
 
 import { api } from '../../../services/apiClient';
+import fileUploadService from '../../common/services/fileUploadService';
 
 const API_BASE = '/quick-jobs';
 
@@ -368,6 +369,11 @@ const isUploadablePhotoFile = (value) => {
   );
 };
 
+const shouldTryUploadFallback = (error) => {
+  const status = error?.response?.status;
+  return status === 404 || status === 405 || status === 501 || status === 503;
+};
+
 /**
  * Upload photos and normalize response into [{ url }]
  * @param {Array<Blob|File>} photoFiles
@@ -391,30 +397,49 @@ export const uploadQuickJobPhotos = async (photoFiles = []) => {
     formData.append('photos', file, fileName);
   });
 
-  const uploadResponse = await api.post('/jobs/upload-photos', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  let normalizedPhotos = [];
 
-  const payload = uploadResponse?.data;
-  const uploadedItems = Array.isArray(payload?.data) ? payload.data : [];
+  try {
+    const uploadResponse = await api.post('/jobs/upload-photos', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
 
-  if (!payload?.success || uploadedItems.length === 0) {
-    throw new Error('Photo upload failed. Please try again.');
+    const payload = uploadResponse?.data;
+    const uploadedItems = Array.isArray(payload?.data) ? payload.data : [];
+
+    if (!payload?.success || uploadedItems.length === 0) {
+      throw new Error('Photo upload failed. Please try again.');
+    }
+
+    normalizedPhotos = uploadedItems
+      .map((item) => {
+        if (typeof item === 'string') {
+          return { url: item };
+        }
+
+        if (item?.url && typeof item.url === 'string') {
+          return { url: item.url };
+        }
+
+        return null;
+      })
+      .filter(Boolean);
+  } catch (error) {
+    if (!shouldTryUploadFallback(error)) {
+      throw error;
+    }
+
+    const fallbackUploads = await Promise.all(
+      files.map((file) => fileUploadService.uploadFile(file, 'quickjobs', 'user')),
+    );
+
+    normalizedPhotos = fallbackUploads
+      .map((item) => {
+        const url = item?.fileUrl || item?.url || item?.secureUrl || null;
+        return typeof url === 'string' && url.length > 0 ? { url } : null;
+      })
+      .filter(Boolean);
   }
-
-  const normalizedPhotos = uploadedItems
-    .map((item) => {
-      if (typeof item === 'string') {
-        return { url: item };
-      }
-
-      if (item?.url && typeof item.url === 'string') {
-        return { url: item.url };
-      }
-
-      return null;
-    })
-    .filter(Boolean);
 
   if (normalizedPhotos.length !== files.length) {
     throw new Error('Some photos failed to upload. Please retry the upload.');

@@ -345,6 +345,9 @@ const ContractDetailsPage = () => {
           Contract Details
         </Typography>
       </Box>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Review this contract, complete milestones on time, and use actions below to sign, finish, or report issues.
+      </Typography>
 
       <Grid container spacing={3}>
         {/* Contract summary */}
@@ -432,7 +435,7 @@ const ContractDetailsPage = () => {
 
             <Divider sx={{ my: 2 }} />
 
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', '& .MuiButton-root': { minHeight: 44 } }}>
               {contract.status === 'draft' && (
                 <>
                   <Button
@@ -441,7 +444,7 @@ const ContractDetailsPage = () => {
                     onClick={handleEditContract}
                     disabled={actionLoading}
                   >
-                    Edit
+                    Edit Draft
                   </Button>
                   <Button
                     variant="outlined"
@@ -450,7 +453,7 @@ const ContractDetailsPage = () => {
                     disabled={actionLoading}
                   >
                     {actionLoading ? <CircularProgress size={18} sx={{ mr: 1 }} /> : null}
-                    Send for Signature
+                    Request Signatures
                   </Button>
                   <Button
                     variant="outlined"
@@ -459,7 +462,7 @@ const ContractDetailsPage = () => {
                     onClick={() => setCancelDialogOpen(true)}
                     disabled={actionLoading}
                   >
-                    Delete
+                    Delete Draft
                   </Button>
                 </>
               )}
@@ -481,7 +484,7 @@ const ContractDetailsPage = () => {
                     onClick={() => setCancelDialogOpen(true)}
                     disabled={actionLoading}
                   >
-                    Decline
+                    Decline Contract
                   </Button>
                 </>
               )}
@@ -495,7 +498,7 @@ const ContractDetailsPage = () => {
                     onClick={() => setCompleteContractDialogOpen(true)}
                     disabled={actionLoading}
                   >
-                    Mark as Complete
+                    Mark Job Complete
                   </Button>
                   <Button
                     variant="outlined"
@@ -504,14 +507,14 @@ const ContractDetailsPage = () => {
                     onClick={() => setDisputeDialogOpen(true)}
                     disabled={actionLoading}
                   >
-                    Raise Dispute
+                    Report Issue
                   </Button>
                   <Button
                     variant="outlined"
                     startIcon={<PrintIcon />}
                     onClick={handleDownloadContract}
                   >
-                    Download
+                    Print or Save PDF
                   </Button>
                 </>
               )}
@@ -524,7 +527,7 @@ const ContractDetailsPage = () => {
                   startIcon={<PrintIcon />}
                   onClick={handleDownloadContract}
                 >
-                  Download
+                  Print or Save PDF
                 </Button>
               )}
             </Box>
@@ -682,6 +685,7 @@ const ContractDetailsPage = () => {
                                 size="small"
                                 startIcon={<CompletedIcon />}
                                 disabled={actionLoading}
+                                aria-label={`Mark ${milestone.title || 'this milestone'} as complete`}
                                 onClick={() =>
                                   handleCompleteMilestone(milestone.id || milestone._id)
                                 }

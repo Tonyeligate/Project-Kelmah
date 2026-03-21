@@ -300,6 +300,7 @@ const AppointmentCard = ({
         <IconButton
           size="small"
           aria-label="Edit appointment"
+          sx={{ minWidth: 44, minHeight: 44 }}
           onClick={(e) => {
             e.stopPropagation();
             onEdit(appointment);
@@ -310,6 +311,7 @@ const AppointmentCard = ({
         <IconButton
           size="small"
           aria-label="Delete appointment"
+          sx={{ minWidth: 44, minHeight: 44 }}
           onClick={(e) => {
             e.stopPropagation();
             onDelete(appointment.id || appointment._id);
@@ -361,13 +363,13 @@ const SchedulingPage = ({
   const resolvedPageSubtitle =
     pageSubtitle ||
     (viewerRole === 'hirer'
-      ? 'Coordinate interviews, site visits, and kickoff calls with workers.'
-      : 'Track appointments, meetings, and site visits in one place.');
+      ? 'Plan interviews, site visits, and kickoff calls with workers.'
+      : 'Track appointments, calls, and site visits in one place.');
   const resolvedSearchHelperText =
     searchHelperText ||
-    `Search by job or ${resolvedCounterpartyLabel.toLowerCase()}, then switch between calendar, agenda, upcoming, or map views.`;
+    `Search by job or ${resolvedCounterpartyLabel.toLowerCase()}, then switch between calendar, agenda, upcoming, or map view.`;
   const resolvedSearchPlaceholder =
-    searchPlaceholder || `Search appointments by job or ${resolvedCounterpartyLabel.toLowerCase()}...`;
+    searchPlaceholder || `Search by job or ${resolvedCounterpartyLabel.toLowerCase()} name`;
 
   // Appointments state and loading
   const [appointments, setAppointments] = useState([]);
@@ -790,7 +792,7 @@ const SchedulingPage = ({
             width: { xs: '100%', md: 'auto' },
           }}
         >
-          New Appointment
+          Add Appointment
         </Button>
       </Box>
 
@@ -813,6 +815,9 @@ const SchedulingPage = ({
               placeholder={resolvedSearchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              inputProps={{
+                'aria-label': `Search appointments by job or ${resolvedCounterpartyLabel.toLowerCase()} name`,
+              }}
               InputProps={{
                 startAdornment: <SearchIcon color="action" sx={{ mr: 1 }} />,
               }}
@@ -904,10 +909,10 @@ const SchedulingPage = ({
                   No appointments for this date
                 </Typography>
                 <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
-                  Pick another date or create a new appointment to keep work moving.
+                  Choose another date or add a new appointment to keep work moving.
                 </Typography>
                 <Button variant="contained" color="secondary" onClick={handleOpenCreateDialog} sx={{ minHeight: 44 }}>
-                  Schedule Appointment
+                  Add Appointment
                 </Button>
               </Paper>
             )}
@@ -957,10 +962,10 @@ const SchedulingPage = ({
                 No appointments found
               </Typography>
               <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
-                Try adjusting your search or filter criteria.
+                Try changing your search words or status filter.
               </Typography>
               <Button variant="contained" color="secondary" onClick={handleOpenCreateDialog} sx={{ minHeight: 44 }}>
-                Schedule Appointment
+                Add Appointment
               </Button>
             </Paper>
           )}
@@ -1002,10 +1007,10 @@ const SchedulingPage = ({
                 No upcoming appointments
               </Typography>
               <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
-                You have nothing scheduled in the next 7 days. Create one now so you do not miss a site visit or call.
+                You have nothing scheduled in the next 7 days. Add one now so you do not miss a call or site visit.
               </Typography>
               <Button variant="contained" color="secondary" onClick={handleOpenCreateDialog} sx={{ minHeight: 44 }}>
-                Schedule Appointment
+                Add Appointment
               </Button>
             </Paper>
           )}
@@ -1051,7 +1056,7 @@ const SchedulingPage = ({
       >
         <DialogTitle id="appointment-dialog-title">
           {dialogMode === 'create'
-            ? `New Appointment with ${resolvedCounterpartyLabel}`
+            ? `Add Appointment with ${resolvedCounterpartyLabel}`
             : `Edit Appointment with ${resolvedCounterpartyLabel}`}
         </DialogTitle>
         <DialogContent>
@@ -1079,7 +1084,7 @@ const SchedulingPage = ({
         <DialogTitle id="delete-appointment-dialog-title">Delete Appointment?</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete this appointment? This cannot be undone.
+            Delete this appointment? This action cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions>

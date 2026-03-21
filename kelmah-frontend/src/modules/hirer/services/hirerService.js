@@ -713,11 +713,12 @@ export const hirerService = {
   // Payment Management
   async releaseMilestonePayment(jobId, milestoneId, amount) {
     try {
-      const response = await api.post('/payments/escrow/release', {
-        jobId,
-        milestoneId,
+      const response = await api.post(
+        `/payments/jobs/${jobId}/milestones/${milestoneId}/release`,
+        {
         amount,
-      });
+        },
+      );
       return unwrapPayload(response?.data) ?? response?.data ?? {};
     } catch (error) {
       if (import.meta.env.DEV) console.warn('Service unavailable:', error.message);

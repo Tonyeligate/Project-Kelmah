@@ -467,8 +467,7 @@ const GhanaianMobileMoneyInterface = ({
             disabled={processing}
             startIcon={
               processing ? <CircularProgress size={20} /> : <SendIcon />
-            }
-          >
+            }>
             {processing ? 'Initiating...' : 'Initiate Payment'}
           </Button>
         </Box>
@@ -732,8 +731,7 @@ const GhanaianMobileMoneyInterface = ({
             disabled={pin.length !== 4 || processing}
             startIcon={
               processing ? <CircularProgress size={20} /> : <SecurityIcon />
-            }
-          >
+            }>
             {processing ? 'Confirming...' : 'Confirm Payment'}
           </Button>
         </DialogActions>

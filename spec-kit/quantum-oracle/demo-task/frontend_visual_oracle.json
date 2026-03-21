@@ -1,0 +1,37 @@
+{
+  "taskId": "demo-task",
+  "taskType": "visible-ui-bug",
+  "breakpoints": [320, 390, 768, 1024, 1280, 1440],
+  "displayDefects": [
+    {
+      "id": "D1",
+      "category": "contrast",
+      "severity": "high",
+      "description": "Legacy search-to-jobs redirect banner text lacked contrast at XS",
+      "operatorApplied": "ContrastRebalancer",
+      "status": "resolved"
+    },
+    {
+      "id": "D2",
+      "category": "safe-area",
+      "severity": "medium",
+      "description": "Mobile bottom padding required inset compensation",
+      "operatorApplied": "SafeAreaCompensator",
+      "status": "resolved"
+    }
+  ],
+  "readabilityScore": 91,
+  "contrastChecks": [
+    { "surface": "legacy-notice-text", "result": "pass", "ratio": 5.3 }
+  ],
+  "touchTargetChecks": [
+    { "surface": "jobs-primary-cta", "result": "pass", "minSizePx": 44 }
+  ],
+  "safeAreaChecks": [
+    { "surface": "mobile-bottom-nav", "result": "pass" }
+  ],
+  "motionChecks": [
+    { "surface": "jobs-list-entry-animation", "result": "pass", "reducedMotionCompatible": true }
+  ],
+  "closureVerdict": "PASS"
+}

@@ -1,0 +1,44 @@
+{
+  "taskId": "<task-id>",
+  "taskType": "visible-ui-bug",
+  "breakpoints": [320, 390, 768, 1024, 1280, 1440],
+  "displayDefects": [
+    {
+      "id": "D1",
+      "category": "contrast",
+      "severity": "high",
+      "description": "Primary CTA label has low contrast on image overlay",
+      "operatorApplied": "ContrastRebalancer",
+      "status": "resolved"
+    }
+  ],
+  "readabilityScore": 92,
+  "contrastChecks": [
+    {
+      "surface": "jobs-card-primary-cta",
+      "result": "pass",
+      "ratio": 5.1
+    }
+  ],
+  "touchTargetChecks": [
+    {
+      "surface": "jobs-card-primary-cta",
+      "result": "pass",
+      "minSizePx": 44
+    }
+  ],
+  "safeAreaChecks": [
+    {
+      "surface": "mobile-bottom-nav",
+      "result": "pass"
+    }
+  ],
+  "motionChecks": [
+    {
+      "surface": "jobs-list-entry-animation",
+      "result": "pass",
+      "reducedMotionCompatible": true
+    }
+  ],
+  "closureVerdict": "PASS"
+}

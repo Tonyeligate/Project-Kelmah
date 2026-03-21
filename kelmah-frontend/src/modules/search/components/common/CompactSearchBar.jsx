@@ -4,6 +4,7 @@ import {
   TextField,
   Button,
   Paper,
+  Typography,
   InputAdornment,
   IconButton,
   useTheme,
@@ -21,7 +22,7 @@ const CompactSearchBar = ({
   onKeywordChange,
   onSearchSubmit,
   onFilterClick,
-  placeholder = 'Try "electrician in Accra" or "welder"',
+  placeholder = 'Try "plumber Accra" or "welder Tema"',
 }) => {
   const theme = useTheme();
 
@@ -53,7 +54,8 @@ const CompactSearchBar = ({
                 <IconButton
                   size="small"
                   onClick={onSearchSubmit}
-                  aria-label="Search workers"
+                  aria-label="Run worker search"
+                  sx={{ width: 44, height: 44 }}
                 >
                   <SearchIcon fontSize="small" />
                 </IconButton>
@@ -63,6 +65,10 @@ const CompactSearchBar = ({
               height: '44px', // Touch-friendly
               borderRadius: 2,
             },
+          }}
+          inputProps={{
+            'aria-label': 'Search workers by trade and location',
+            maxLength: 120,
           }}
           sx={{
             '& .MuiOutlinedInput-root': {
@@ -75,10 +81,11 @@ const CompactSearchBar = ({
         <Button
           variant="contained"
           onClick={onFilterClick}
+          aria-label="Open advanced worker filters"
           sx={{
-            minWidth: '44px',
-            width: '44px',
-            height: '44px',
+            minWidth: '48px',
+            width: '48px',
+            height: '48px',
             p: 0,
             bgcolor: theme.palette.mode === 'dark' ? '#FFD700' : '#000000',
             color: theme.palette.mode === 'dark' ? '#000000' : '#FFD700',
@@ -90,6 +97,14 @@ const CompactSearchBar = ({
           <FilterIcon />
         </Button>
       </Box>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ display: 'block', mt: 0.75, px: 0.5 }}
+      >
+        Tip: combine trade and area first, then use filters to narrow by rate,
+        availability, or work type.
+      </Typography>
     </Paper>
   );
 };

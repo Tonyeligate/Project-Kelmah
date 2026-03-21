@@ -232,7 +232,6 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
       <Box
         sx={{
           position: 'absolute',
-          top: 0,
           left: '-100%',
           width: '100%',
           height: '100%',
@@ -320,7 +319,6 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
             variant="caption"
             sx={{
               color: '#4ade80',
-              fontSize: '0.7rem',
               fontWeight: 'medium',
             }}
           >
@@ -333,7 +331,7 @@ const AnimatedStatCard = ({ value, suffix = '', label, isLive = false }) => {
 };
 
 // Ghana vocational trade categories — matches backend Job.requirements.primarySkills enum
-const categoryData = [
+const ghanaTradeCategories = [
   {
     name: 'Plumbing',
     icon: <PlumbingIcon />,
@@ -906,8 +904,7 @@ function JobsCardsGrid({
                       '&:active': {
                         transform: 'scale(0.98)',
                       },
-                    }}
-                  >
+                    }}>
                     {isHirerUser ? 'Find Talent' : 'Apply Now'}
                   </Button>
                   <Box sx={{ display: 'flex', gap: 1, justifyContent: 'space-between' }}>
@@ -918,6 +915,7 @@ function JobsCardsGrid({
                         navigate(`/jobs/${jobId}`);
                       }}
                       startIcon={<Visibility />}
+                      aria-label={`View details for ${job.title || 'job'}`}
                       sx={{ flex: 1, minHeight: 44 }}
                     >
                       Details
@@ -1096,6 +1094,9 @@ function JobsResultsHeader({
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               Active filters:
             </Typography>
+            <Typography variant="caption" sx={{ color: 'text.secondary', width: '100%', lineHeight: 1.4 }}>
+              Remove a chip to widen results, or clear everything if the list feels too narrow.
+            </Typography>
             {effectiveSearch && (
               <Chip
                 label={`Search: "${effectiveSearch}"`}
@@ -1162,14 +1163,14 @@ function JobsResultsHeader({
               onClick={onClearAllFilters}
               sx={{ color: '#ff6b6b', fontSize: '0.75rem', textTransform: 'none', minWidth: 'auto' }}
             >
-              Clear all
+              Clear filters
             </Button>
           </Box>
         )}
       </Box>
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
         <Chip
-          label={`${totalJobs || uniqueJobsLength} Job${(totalJobs || uniqueJobsLength) !== 1 ? 's' : ''} Found`}
+          label={`${totalJobs || uniqueJobsLength} jobs found`}
           icon={<WorkIcon sx={{ fontSize: 18 }} />}
           sx={{
             bgcolor: 'var(--k-accent-soft-strong)',
@@ -1340,12 +1341,12 @@ function JobsGridStatePanels({
           >
             <SearchIcon sx={{ fontSize: 80, color: 'var(--k-gold)', mb: 2, opacity: 0.5 }} />
             <Typography variant="h5" sx={{ color: 'var(--k-gold)', mb: 2, fontWeight: 'bold' }}>
-              No Jobs Found
+              No jobs found
             </Typography>
             <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3 }}>
               {effectiveSearch || selectedCategory || selectedLocation
-                ? "We couldn't find any jobs matching your filters. Clear a filter or widen your search to see more work."
-                : 'No jobs are currently available. Check back soon for new opportunities!'}
+                ? 'Try removing one filter or changing your search words.'
+                : 'No jobs are available right now. Check back soon for new work.'}
             </Typography>
             <Box
               sx={{
@@ -1366,7 +1367,7 @@ function JobsGridStatePanels({
                     '&:hover': { bgcolor: 'var(--k-gold-dark)' },
                   }}
                 >
-                  Clear All Filters
+                  Clear filters
                 </Button>
               )}
               <Button
@@ -1870,7 +1871,7 @@ function JobsFiltersPanel({
                     '&:hover': { bgcolor: 'rgba(255,107,107,0.1)' },
                   }}
                 >
-                  ✕ Clear All Filters
+                  ✕ Clear filters
                 </Button>
               )}
             </Grid>
@@ -2827,8 +2828,7 @@ const JobsPage = () => {
                     '&:active': {
                       transform: 'scale(0.98)', // ✅ Touch feedback
                     },
-                  }}
-                >
+                  }}>
                   {isHirerUser ? 'Post a Job' : 'Manage Job Alerts'}
                 </Button>
                 <Button
@@ -2861,8 +2861,7 @@ const JobsPage = () => {
                     '&:active': {
                       transform: 'scale(0.98)', // ✅ Touch feedback
                     },
-                  }}
-                >
+                  }}>
                   {isHirerUser ? 'Find Talent' : 'Upload CV'}
                 </Button>
               </Box>
@@ -2883,4 +2882,5 @@ const JobsPage = () => {
 };
 
 export default JobsPage;
+
 

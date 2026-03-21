@@ -1,0 +1,21 @@
+{
+  "taskId": "backend-demo-task",
+  "worlds": [
+    {
+      "id": "W1",
+      "description": "route + middleware optimization with reliability guardrails",
+      "utility": { "userImpact": 8, "reliability": 9, "maintainability": 8, "security": 9, "deployability": 8, "total": 42 }
+    },
+    {
+      "id": "W2",
+      "description": "route-only optimization",
+      "utility": { "userImpact": 6, "reliability": 7, "maintainability": 8, "security": 9, "deployability": 9, "total": 39 }
+    },
+    {
+      "id": "W3",
+      "description": "no change",
+      "utility": { "userImpact": 2, "reliability": 7, "maintainability": 9, "security": 9, "deployability": 10, "total": 37 }
+    }
+  ],
+  "selectedWorld": "W1"
+}

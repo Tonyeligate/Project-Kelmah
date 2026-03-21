@@ -5,7 +5,7 @@
  */
 
 import React, { useState } from 'react';
-import { Box, Typography, Button, Collapse, useTheme, IconButton } from '@mui/material';
+import { Box, Typography, Button, Collapse } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
@@ -14,7 +14,6 @@ import PropTypes from 'prop-types';
 import { useBreakpointDown } from '@/hooks/useResponsive';
 
 const CollapsibleHeroSection = ({ isAuthenticated = false }) => {
-  const theme = useTheme();
   const isMobile = useBreakpointDown('md');
   const [expanded, setExpanded] = useState(false);
 
@@ -22,6 +21,7 @@ const CollapsibleHeroSection = ({ isAuthenticated = false }) => {
   if (!isMobile) {
     return (
       <Box
+        aria-label="Worker search hero"
         sx={{
           mb: 3,
           textAlign: 'center',
@@ -53,12 +53,12 @@ const CollapsibleHeroSection = ({ isAuthenticated = false }) => {
           color="text.secondary"
           sx={{ mb: 2, maxWidth: '800px', mx: 'auto' }}
         >
-          Browse available carpenters, plumbers, electricians, masons, and other
-          skilled professionals ready to help with your projects
+          Browse carpenters, plumbers, electricians, masons, and other skilled
+          professionals ready to help with your project.
         </Typography>
         {!isAuthenticated && (
           <Typography variant="body2" color="text.secondary">
-            Sign up to contact workers and post your own jobs
+            Sign up to contact workers and post jobs in one place.
           </Typography>
         )}
       </Box>
@@ -68,6 +68,7 @@ const CollapsibleHeroSection = ({ isAuthenticated = false }) => {
   // Mobile: Collapsible version
   return (
     <Box
+      aria-label="Worker search quick hero"
       sx={{
         mb: 2,
         textAlign: 'center',
@@ -105,12 +106,16 @@ const CollapsibleHeroSection = ({ isAuthenticated = false }) => {
           size="small"
           onClick={() => setExpanded(!expanded)}
           endIcon={expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          aria-label={
+            expanded ? 'Show less search guidance' : 'Show more search guidance'
+          }
           sx={{
             color: '#D4AF37',
             fontSize: '0.75rem',
             minWidth: 'auto',
             px: 1.5,
-            py: 0.5,
+            py: 0.75,
+            minHeight: 44,
             textTransform: 'none',
           }}
         >
@@ -127,7 +132,7 @@ const CollapsibleHeroSection = ({ isAuthenticated = false }) => {
             sx={{ mb: 1.5, lineHeight: 1.6 }}
           >
             Browse available carpenters, plumbers, electricians, masons, and
-            other skilled professionals ready to help with your projects
+            other skilled professionals ready to help with your project.
           </Typography>
           {!isAuthenticated && (
             <Typography
@@ -135,7 +140,7 @@ const CollapsibleHeroSection = ({ isAuthenticated = false }) => {
               color="text.secondary"
               sx={{ display: 'block', fontStyle: 'italic' }}
             >
-              💡 Sign up to contact workers and post your own jobs
+              💡 Sign up to contact workers and post jobs when you are ready.
             </Typography>
           )}
         </Box>

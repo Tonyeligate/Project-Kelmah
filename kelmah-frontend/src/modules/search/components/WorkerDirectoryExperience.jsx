@@ -1,6 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  Container, Box, Grid, Button, Dialog, DialogTitle, DialogContent, IconButton,
+  Container,
+  Box,
+  Grid,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton,
+  Typography,
 } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import {
@@ -55,7 +63,13 @@ const normalizeWorkerRecord = (worker = {}) => {
   const deterministicFallbackId =
     worker.email ||
     worker.phone ||
-    [worker.name, worker.firstName, worker.lastName, worker.profession, worker.city]
+    [
+      worker.name,
+      worker.firstName,
+      worker.lastName,
+      worker.profession,
+      worker.city,
+    ]
       .filter(Boolean)
       .join('-')
       .toLowerCase()
@@ -83,7 +97,9 @@ const normalizeWorkerRecord = (worker = {}) => {
     title:
       worker.title ||
       worker.profession ||
-      (Array.isArray(worker.specializations) ? worker.specializations[0] : '') ||
+      (Array.isArray(worker.specializations)
+        ? worker.specializations[0]
+        : '') ||
       'Professional Worker',
     location: worker.location || worker.city || 'Ghana',
     rating: Number(worker.rating ?? worker.averageRating ?? 0),
@@ -185,7 +201,11 @@ const resolveWorkerRate = (worker = {}) => {
   return Number.isFinite(rate) && rate > 0 ? rate : Number.POSITIVE_INFINITY;
 };
 
-const sortWorkerResults = (workers = [], sortOption = 'relevance', query = '') => {
+const sortWorkerResults = (
+  workers = [],
+  sortOption = 'relevance',
+  query = '',
+) => {
   const list = [...workers];
 
   switch (sortOption) {
@@ -212,7 +232,8 @@ const sortWorkerResults = (workers = [], sortOption = 'relevance', query = '') =
       });
     case 'distance':
       return list.sort((a, b) => {
-        const distanceDelta = resolveWorkerDistance(a) - resolveWorkerDistance(b);
+        const distanceDelta =
+          resolveWorkerDistance(a) - resolveWorkerDistance(b);
         if (distanceDelta !== 0) {
           return distanceDelta;
         }
@@ -223,7 +244,8 @@ const sortWorkerResults = (workers = [], sortOption = 'relevance', query = '') =
     default:
       return list.sort((a, b) => {
         const textDelta =
-          scoreWorkerTextRelevance(b, query) - scoreWorkerTextRelevance(a, query);
+          scoreWorkerTextRelevance(b, query) -
+          scoreWorkerTextRelevance(a, query);
         if (textDelta !== 0) {
           return textDelta;
         }
@@ -279,11 +301,14 @@ const WorkerDirectoryExperience = ({
   const suggestionsAbortRef = useRef(null);
   const activeSearchControllerRef = useRef(null);
 
-  useEffect(() => () => {
-    abortControllerRef.current?.abort();
-    suggestionsAbortRef.current?.abort();
-    activeSearchControllerRef.current?.abort();
-  }, []);
+  useEffect(
+    () => () => {
+      abortControllerRef.current?.abort();
+      suggestionsAbortRef.current?.abort();
+      activeSearchControllerRef.current?.abort();
+    },
+    [],
+  );
 
   const fetchSearchSuggestions = async (query, signal) => {
     if (!query || query.length < 2) {
@@ -293,9 +318,12 @@ const WorkerDirectoryExperience = ({
     }
 
     try {
-      const suggestions = await workerService.getWorkerSearchSuggestions(query, {
-        signal,
-      });
+      const suggestions = await workerService.getWorkerSearchSuggestions(
+        query,
+        {
+          signal,
+        },
+      );
 
       setSearchSuggestions(suggestions);
       setShowSuggestions(true);
@@ -347,9 +375,14 @@ const WorkerDirectoryExperience = ({
         const normalizedWorkers = result.workers.map((worker) =>
           normalizeWorkerRecord(worker),
         );
-        const activeSort = sortOption || params.sort || sortOrder || 'relevance';
+        const activeSort =
+          sortOption || params.sort || sortOrder || 'relevance';
         const activeQuery =
-          params.keyword || params.query || params.search || params.keywords || '';
+          params.keyword ||
+          params.query ||
+          params.search ||
+          params.keywords ||
+          '';
         const sortedWorkers = sortWorkerResults(
           normalizedWorkers,
           activeSort,
@@ -718,7 +751,7 @@ const WorkerDirectoryExperience = ({
               onKeywordChange={handleMobileKeywordChange}
               onSearchSubmit={handleMobileSearchSubmit}
               onFilterClick={() => setShowMobileFilters(true)}
-              placeholder={'Try "plumber in Kumasi" or "carpenter"'}
+              placeholder={'Try "plumber Kumasi" or "carpenter Accra"'}
             />
             <MobileFilterDrawer
               open={showMobileFilters}
@@ -726,9 +759,25 @@ const WorkerDirectoryExperience = ({
               onSearch={handleSearch}
               initialFilters={searchParams}
             />
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                display: 'block',
+                mb: 1.5,
+                lineHeight: 1.4,
+                wordBreak: 'break-word',
+              }}
+            >
+              Tip: Start with a trade and town first, then open filters only if
+              you need to narrow results.
+            </Typography>
           </>
         ) : (
-          <JobSearchForm onSearch={handleSearch} initialFilters={searchParams} />
+          <JobSearchForm
+            onSearch={handleSearch}
+            initialFilters={searchParams}
+          />
         )}
 
         {canUseHirerTools && (
@@ -738,7 +787,6 @@ const WorkerDirectoryExperience = ({
               size="small"
               startIcon={<FilterListIcon />}
               onClick={() => setShowAdvancedFilters((prev) => !prev)}
-              aria-label="Show or hide filters"
               sx={{ minWidth: 'auto', px: 2, minHeight: 44 }}
             >
               Filters
@@ -748,47 +796,69 @@ const WorkerDirectoryExperience = ({
               size="small"
               startIcon={<MapIcon />}
               onClick={() => setShowLocationSearch((prev) => !prev)}
-              aria-label="Show or hide map view"
               sx={{ minWidth: 'auto', px: 2, minHeight: 44 }}
             >
-              Nearby
+              Nearby Search
             </Button>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: 'block', flexBasis: '100%', lineHeight: 1.4 }}
+            >
+              Use Filters for skills and rates, and Nearby Search to prioritize
+              workers close to your selected area.
+            </Typography>
           </Box>
         )}
 
         {isAuthenticated && (
-          <Box display="flex" gap={1} mb={2} flexWrap="wrap">
-            {!canUseHirerTools && (
+          <Box mb={2}>
+            <Box display="flex" gap={1} flexWrap="wrap">
+              {!canUseHirerTools && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<FilterListIcon />}
+                  onClick={() => setShowAdvancedFiltersDialog(true)}
+                  sx={{ minHeight: 44 }}
+                >
+                  Advanced Filters
+                </Button>
+              )}
               <Button
                 variant="outlined"
                 size="small"
-                startIcon={<FilterListIcon />}
-                onClick={() => setShowAdvancedFiltersDialog(true)}
+                startIcon={<SavedSearchIcon />}
+                onClick={() => setShowSavedSearches(true)}
                 sx={{ minHeight: 44 }}
               >
-                Advanced Filters
+                Saved Searches
               </Button>
-            )}
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<SavedSearchIcon />}
-              onClick={() => setShowSavedSearches(true)}
-              sx={{ minHeight: 44 }}
+              {canUseWorkerAlertTools && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<JobAlertsIcon />}
+                  onClick={() => navigate('/worker/job-alerts')}
+                  sx={{ minHeight: 44 }}
+                >
+                  Job Alerts
+                </Button>
+              )}
+            </Box>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                display: 'block',
+                mt: 0.75,
+                lineHeight: 1.4,
+                wordBreak: 'break-word',
+              }}
             >
-              Saved Searches
-            </Button>
-            {canUseWorkerAlertTools && (
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<JobAlertsIcon />}
-                onClick={() => navigate('/worker/job-alerts')}
-                sx={{ minHeight: 44 }}
-              >
-                Job Alerts
-              </Button>
-            )}
+              Save common searches so your team can rerun trusted filters in one
+              tap.
+            </Typography>
           </Box>
         )}
 
@@ -818,8 +888,7 @@ const WorkerDirectoryExperience = ({
         {canUseHirerTools ? (
           <>
             {(() => {
-              const isMapViewActive =
-                WORKER_DIRECTORY_MAP_ENABLED && showMap;
+              const isMapViewActive = WORKER_DIRECTORY_MAP_ENABLED && showMap;
               const hasSidebar =
                 !isMapViewActive && (showAdvancedFilters || showLocationSearch);
               return (
@@ -845,7 +914,8 @@ const WorkerDirectoryExperience = ({
                                 ...searchParams,
                                 location: {
                                   address: selectedLocation?.name || '',
-                                  ...(Array.isArray(coords) && coords.length >= 2
+                                  ...(Array.isArray(coords) &&
+                                  coords.length >= 2
                                     ? {
                                         coordinates: {
                                           latitude: coords[0],
@@ -888,7 +958,9 @@ const WorkerDirectoryExperience = ({
         ) : (
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              {showHero && <CollapsibleHeroSection isAuthenticated={isAuthenticated} />}
+              {showHero && (
+                <CollapsibleHeroSection isAuthenticated={isAuthenticated} />
+              )}
               {renderResults(true)}
             </Grid>
           </Grid>
@@ -902,12 +974,17 @@ const WorkerDirectoryExperience = ({
         maxWidth="sm"
       >
         <DialogTitle
-          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
         >
           Advanced Filters
           <IconButton
             onClick={() => setShowAdvancedFiltersDialog(false)}
             aria-label="Close advanced filters dialog"
+            sx={{ width: 44, height: 44 }}
           >
             <CloseIcon />
           </IconButton>
@@ -928,9 +1005,19 @@ const WorkerDirectoryExperience = ({
         fullWidth
         maxWidth="lg"
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           Saved Searches
-          <IconButton onClick={() => setShowSavedSearches(false)} aria-label="Close saved searches dialog">
+          <IconButton
+            onClick={() => setShowSavedSearches(false)}
+            aria-label="Close saved searches dialog"
+            sx={{ width: 44, height: 44 }}
+          >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
@@ -952,3 +1039,4 @@ const WorkerDirectoryExperience = ({
 };
 
 export default WorkerDirectoryExperience;
+

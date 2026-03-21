@@ -31,6 +31,7 @@ import { useNotifications } from '../../notifications/contexts/NotificationConte
 import MessageContext from '../../messaging/contexts/MessageContext';
 import workerService from '../../worker/services/workerService';
 import { secureStorage } from '../../../utils/secureStorage';
+import { captureRecoverableApiError } from '@/services/errorTelemetry';
 
 // Extracted sub-components & utilities
 import {
@@ -251,14 +252,27 @@ const Header = ({
     // Always clear local auth state first so sign-out feels instant on mobile.
     // Avoid wiping unrelated sessionStorage keys (e.g. UI preferences).
     try {
-      secureStorage.clear();
-    } catch (_) { /* best-effort */ }
+      secureStorage.clearAuthData();
+    } catch (error) {
+      captureRecoverableApiError(error, {
+        phase: 'logout-local-clear',
+        feature: 'header-logout',
+        suppressUi: true,
+      });
+    }
 
     dispatch(logout());
     navigate('/', { replace: true });
 
     // Fire-and-forget server-side logout/revocation.
-    Promise.resolve(dispatch(logoutUser())).catch(() => {});
+    Promise.resolve(dispatch(logoutUser())).catch((error) => {
+      captureRecoverableApiError(error, {
+        phase: 'logout-server',
+        endpoint: '/auth/logout',
+        method: 'post',
+        feature: 'header-logout',
+      });
+    });
   };
 
   const getUserInitials = () => {
@@ -541,7 +555,7 @@ const Header = ({
           {isMobile && (
             <ActionButton
               ref={mobileMenuButtonRef}
-              aria-label="Open menu"
+              aria-label="Open navigation menu"
               aria-expanded={mobileMenuOpen}
               onClick={(event) => {
                 blurInteractiveTarget(event);

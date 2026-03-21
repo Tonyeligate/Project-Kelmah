@@ -1,4 +1,4 @@
-﻿/**
+/**
  * QuickJobRequestPage - 3-Step Quick Job Request Flow
  * Part of Kelmah's Protected Quick-Hire system
  * 
@@ -35,6 +35,7 @@ import {
 } from '../services/quickJobService';
 import { Helmet } from 'react-helmet-async';
 import { useBreakpointDown } from '@/hooks/useResponsive';
+import { toUserMessage } from '@/services/responseNormalizer';
 
 // Steps for the stepper
 const steps = ['Describe Problem', 'Confirm Location', 'When do you need it?'];
@@ -75,6 +76,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [showSubmittingHint, setShowSubmittingHint] = useState(false);
 
   // Ghana regions
   const ghanaRegions = [
@@ -110,6 +112,19 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
       }
     };
   }, [voiceNote?.url]);
+
+  useEffect(() => {
+    if (!submitting) {
+      setShowSubmittingHint(false);
+      return undefined;
+    }
+
+    const timer = setTimeout(() => {
+      setShowSubmittingHint(true);
+    }, 12000);
+
+    return () => clearTimeout(timer);
+  }, [submitting]);
 
   // Handle get current location
   const handleGetLocation = async () => {
@@ -342,9 +357,26 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
         setError(result.error?.message || 'Failed to create job request');
       }
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Something went wrong. Please try again.');
+      setError(
+        toUserMessage(err, {
+          fallback: 'Something went wrong. Please try again.',
+        }),
+      );
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleRetryFromError = async () => {
+    setError('');
+
+    if (activeStep === 1) {
+      await handleGetLocation();
+      return;
+    }
+
+    if (activeStep === steps.length - 1 && isStepComplete(activeStep) && !submitting) {
+      await handleSubmit();
     }
   };
 
@@ -437,6 +469,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
                     accept="image/*"
                     multiple
                     hidden
+                    aria-label="Add job request photos"
                     onChange={handlePhotoUpload}
                   />
                 </Button>
@@ -491,8 +524,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
               onClick={handleGetLocation}
               disabled={locationLoading}
               sx={{ mb: 3 }}
-              fullWidth
-            >
+              fullWidth>
               {locationLoading ? 'Getting Location...' : 'Use My Current Location'}
             </Button>
 
@@ -704,8 +736,28 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
 
       {/* Error alert */}
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>
+        <Alert
+          severity="error"
+          sx={{ mb: 3 }}
+          onClose={() => setError('')}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={handleRetryFromError}
+              disabled={submitting}
+            >
+              Retry
+            </Button>
+          }
+        >
           {error}
+        </Alert>
+      )}
+
+      {showSubmittingHint && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          Submission is taking longer than usual. Please keep this page open while we finish sending your request.
         </Alert>
       )}
 
@@ -741,8 +793,7 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
             disabled={submitting || !isStepComplete(activeStep)}
             startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
             color="success"
-            sx={{ flex: 2 }}
-          >
+            sx={{ flex: 2 }}>
             {submitting ? 'Sending...' : 'Send Request'}
           </Button>
         )}
@@ -752,3 +803,4 @@ const QuickJobRequestPage = ({ successBasePath = '/hirer/quick-hire' }) => {
 };
 
 export default QuickJobRequestPage;
+

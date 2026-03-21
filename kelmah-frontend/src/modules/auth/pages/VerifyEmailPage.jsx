@@ -21,7 +21,7 @@ const VerifyEmailPage = () => {
   useEffect(() => {
     if (!token) {
       setLoading(false);
-      setError('No verification token provided. Please check your email link.');
+      setError('Verification link is missing. Open the latest email from Kelmah and try again.');
       return;
     }
     let cancelled = false;
@@ -30,12 +30,12 @@ const VerifyEmailPage = () => {
         const res = await authService.verifyEmail(token);
         if (!cancelled) {
           setStatus(
-            res.message || 'Email verified successfully. You can now login.',
+            res.message || 'Your email is confirmed. You can now sign in.',
           );
         }
       } catch (err) {
         if (!cancelled) {
-          setError('Email verification failed. The link may have expired. Please request a new one.');
+          setError('This link is no longer valid. Request a new verification email below.');
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -94,7 +94,7 @@ const VerifyEmailPage = () => {
           <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
             <MailOutline sx={{ color: isMobile ? 'primary.main' : 'text.secondary', fontSize: 20 }} />
             <Typography variant="body1" sx={{ color: isMobile ? 'text.secondary' : 'text.primary' }}>
-              Enter your email to resend verification link:
+              Enter your account email. We will send a new verification link.
             </Typography>
           </Box>
             {resendError && (
@@ -107,15 +107,15 @@ const VerifyEmailPage = () => {
             )}
             <Box component="form" onSubmit={handleResend} sx={{ mt: 1 }}>
             <TextField
-              label="Email"
+              label="Account Email"
               type="email"
               fullWidth
               required
               margin="normal"
-              placeholder="Enter your registered email"
+              placeholder="Enter the email you used to sign up"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              inputProps={{ inputMode: 'email', autoComplete: 'email' }}
+              inputProps={{ inputMode: 'email', autoComplete: 'email', 'aria-label': 'Account email for verification resend' }}
               sx={isMobile ? {
                 '& .MuiOutlinedInput-root': {
                   bgcolor: 'action.hover',
@@ -134,6 +134,7 @@ const VerifyEmailPage = () => {
               variant="contained"
               fullWidth
               disabled={resendLoading}
+              aria-label="Send new verification link"
               sx={{
                 mt: 2,
                 minHeight: 48,
@@ -145,7 +146,7 @@ const VerifyEmailPage = () => {
                 '&:hover': { bgcolor: 'primary.dark' },
               }}
             >
-              {resendLoading ? <CircularProgress size={24} color="inherit" /> : 'Resend Link'}
+              {resendLoading ? <CircularProgress size={24} color="inherit" /> : 'Send New Link'}
             </Button>
           </Box>
           {resendSent && (
@@ -154,14 +155,14 @@ const VerifyEmailPage = () => {
               borderRadius: 2,
               ...(isMobile && { bgcolor: (t) => `${t.palette.success.main}1F`, color: 'text.primary' }),
             }}>
-              Link sent! Check your email.
+              Verification link sent. Check your inbox and spam folder.
             </Alert>
           )}
         </>
       )}
       <Box sx={{ mt: 3 }}>
         <Typography variant="body2" sx={{ color: isMobile ? 'text.disabled' : 'text.secondary' }}>
-          Go to{' '}
+          Back to{' '}
           <Link to="/login" style={{ color: 'inherit', fontWeight: 600, textDecoration: 'none' }}>
             Login
           </Link>

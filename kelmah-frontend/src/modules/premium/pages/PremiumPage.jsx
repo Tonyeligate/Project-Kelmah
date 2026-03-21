@@ -119,8 +119,9 @@ const PricingTier = ({ plan, price, isYearly, onUpgrade }) => (
       variant={plan.isPopular ? 'contained' : 'outlined'}
       color="primary"
       size="large"
-      sx={{ mt: 3, py: 1.5, fontWeight: 'bold' }}
+      sx={{ mt: 3, py: 1.5, fontWeight: 'bold', minHeight: 44 }}
       onClick={() => onUpgrade(plan.name)}
+      aria-label={`Upgrade to ${plan.name} plan`}
     >
       Upgrade to {plan.name}
     </Button>
@@ -309,8 +310,8 @@ const PremiumPage = () => {
             maxWidth="md"
             mx="auto"
           >
-            Upgrade to Kelmah Premium to get exclusive features that help you
-            find work faster and manage your business more efficiently.
+            Upgrade to Kelmah Premium for tools that help you get hired faster
+            and run your work with less stress.
           </Typography>
         </Box>
 
@@ -339,7 +340,7 @@ const PremiumPage = () => {
               }
             label={
               <Typography component="span">
-                Bill Annually{' '}
+                Pay Yearly{' '}
                 <Chip
                   component="span"
                   label="Save ~17%"
@@ -392,7 +393,7 @@ const PremiumPage = () => {
             Confirm Upgrade
           </Typography>
           <IconButton
-            aria-label="Close dialog"
+            aria-label="Close upgrade dialog"
             onClick={() => setOpenDialog(false)}
             disabled={isUpgrading}
           >
@@ -429,6 +430,7 @@ const PremiumPage = () => {
             variant="contained"
             color="primary"
             disabled={isUpgrading}
+            aria-label="Confirm premium plan payment"
           >
             {isUpgrading ? <CircularProgress size={24} /> : 'Confirm & Pay'}
           </Button>
@@ -442,7 +444,7 @@ const PremiumPage = () => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert severity="success" variant="filled" onClose={() => setUpgradeSuccess(false)}>
-          {selectedPlan} plan upgrade request submitted! You'll receive a confirmation shortly.
+          {selectedPlan} plan upgrade request submitted. You will receive a confirmation shortly.
         </Alert>
       </Snackbar>
       <Snackbar

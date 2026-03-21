@@ -579,6 +579,7 @@ const SpectacularMarkerPopup = ({
                 </Button>
                 <IconButton
                   onClick={() => onNavigate(marker)}
+                  aria-label="Navigate to job location"
                   sx={{
                     bgcolor: theme.palette.primary.main + '22',
                     color: theme.palette.primary.main,
@@ -892,6 +893,7 @@ const SpectacularMarkerPopup = ({
               </Button>
               <IconButton
                 onClick={() => onNavigate(marker)}
+                aria-label="Navigate to worker location"
                 sx={{
                   bgcolor: theme.palette.secondary.main + '22',
                   color: theme.palette.secondary.main,
@@ -1237,6 +1239,7 @@ const InteractiveMap = ({
                     <Tooltip title="Zoom In">
                       <IconButton
                         onClick={handleZoomIn}
+                        aria-label="Zoom in"
                         size="medium"
                         sx={{
                           color: theme.palette.secondary.main,
@@ -1255,6 +1258,7 @@ const InteractiveMap = ({
                     <Tooltip title="Zoom Out">
                       <IconButton
                         onClick={handleZoomOut}
+                        aria-label="Zoom out"
                         size="medium"
                         sx={{
                           color: theme.palette.secondary.main,
@@ -1297,7 +1301,7 @@ const InteractiveMap = ({
                         boxShadow: `0 6px 24px ${theme.palette.primary.main}44`,
                       },
                     }}
-                  >
+                   aria-label="Switch map style">
                     {tileLayer === 'satellite' ? (
                       <SatelliteIcon />
                     ) : tileLayer === 'terrain' ? (
@@ -1335,7 +1339,7 @@ const InteractiveMap = ({
                         boxShadow: `0 6px 24px rgba(0,0,0,0.3)`,
                       },
                     }}
-                  >
+                   aria-label="Toggle fullscreen map">
                     {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
                   </Fab>
                 </Tooltip>
@@ -1534,3 +1538,4 @@ const InteractiveMap = ({
 };
 
 export default InteractiveMap;
+

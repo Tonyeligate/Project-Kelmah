@@ -1,0 +1,27 @@
+{
+  "taskId": "demo-task",
+  "taskType": "visible-ui-bug",
+  "requiresFrontendVisualOracle": true,
+  "oracleState": "PASS",
+  "requiredDelegationsExecuted": true,
+  "requiredDiagnosticsExecuted": true,
+  "contradictionsResolved": true,
+  "evidenceLogged": true,
+  "activatedEliteTools": [
+    "EvidenceArtifactCompiler",
+    "CompletionOracleChecker",
+    "CounterfactualWorldScorer",
+    "DelegationPacketBuilder",
+    "VisualOracleRunner",
+    "AdversarialSelfPlayOrchestrator",
+    "QuantumScoreboardUpdater",
+    "PerceptualContrastOracle",
+    "TypographyRhythmSolver",
+    "LayoutConstraintAnnealer",
+    "ColorVisionSimulator",
+    "SafeAreaInsetVerifier",
+    "MotionSafetyAnalyzer",
+    "ReadabilityScorer"
+  ],
+  "notes": "Demo artifact bundle for checker validation"
+}

@@ -459,7 +459,7 @@ const WorkerDashboardPage = () => {
             onClick={handleRefresh}
             disabled={isLoading}
             startIcon={isLoading ? <RefreshIcon sx={{ animation: 'spin 1s linear infinite', ...spinKeyframes }} /> : <RefreshIcon />}
-          >
+           aria-label="Refresh dashboard data">
             {isLoading ? 'Retrying...' : 'Try Again'}
           </Button>
         }
@@ -539,7 +539,7 @@ const WorkerDashboardPage = () => {
       <Breadcrumbs
         separator={<NavigateNextIcon fontSize="small" />}
         sx={{ mb: 2, display: { xs: 'none', md: 'flex' } }}
-        aria-label="breadcrumb navigation"
+        aria-label="Breadcrumb navigation"
       >
         <Link
           component={RouterLink}

@@ -1,0 +1,21 @@
+{
+  "taskId": "optimization-demo-task",
+  "packets": [
+    {
+      "agent": "frontend",
+      "triggerRule": "ui-optimization",
+      "filesMeasured": ["kelmah-frontend/src/modules/search/pages/SearchPage.jsx"],
+      "findings": ["high action distance and clutter at small breakpoints"],
+      "confidence": 0.94,
+      "verification": { "testsRun": ["visual matrix dry audit"], "status": "pass" }
+    },
+    {
+      "agent": "debugger",
+      "triggerRule": "cross-verify-optimization",
+      "filesMeasured": ["kelmah-frontend/src/modules/search/components/results/SearchResults.jsx"],
+      "findings": ["optimization target confirmed without backend contract drift"],
+      "confidence": 0.9,
+      "verification": { "testsRun": ["counterfactual comparison"], "status": "pass" }
+    }
+  ]
+}

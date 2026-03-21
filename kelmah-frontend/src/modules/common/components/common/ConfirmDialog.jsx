@@ -52,8 +52,7 @@ const ConfirmDialog = ({
         onClick={onConfirm}
         color={confirmColor}
         variant="contained"
-        autoFocus
-      >
+        autoFocus>
         {confirmLabel}
       </Button>
     </DialogActions>

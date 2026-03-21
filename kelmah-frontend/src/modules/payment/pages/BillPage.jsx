@@ -103,7 +103,7 @@ const BillPage = () => {
       await payBill(selectedBill.id || selectedBill._id);
       setDialogStep(2);
       timerRef.current = setTimeout(handleCloseConfirm, 1000);
-    } catch (err) {
+    } catch {
       setDialogStep(0);
     }
   };
@@ -165,25 +165,30 @@ const BillPage = () => {
         >
           Your Bills
         </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Review upcoming bills, filter by date or status, and pay pending bills.
+        </Typography>
         {/* Filters */}
         <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 2, md: 2, lg: 1.5 }, alignItems: 'center' }}>
           <Tooltip title="Filter bills due on or after this date">
             <TextField
-              label="From"
+              label="Due From"
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               InputLabelProps={{ shrink: true }}
+              inputProps={{ 'aria-label': 'Filter bills due from date' }}
               sx={{ flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
             />
           </Tooltip>
           <Tooltip title="Filter bills due on or before this date">
             <TextField
-              label="To"
+              label="Due To"
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               InputLabelProps={{ shrink: true }}
+              inputProps={{ 'aria-label': 'Filter bills due to date' }}
               sx={{ flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
             />
           </Tooltip>
@@ -194,6 +199,7 @@ const BillPage = () => {
                 value={statusFilter}
                 label="Status"
                 onChange={(e) => setStatusFilter(e.target.value)}
+                inputProps={{ 'aria-label': 'Filter bills by status' }}
               >
                 <MenuItem value="all">All</MenuItem>
                 <MenuItem value="paid">Paid</MenuItem>
@@ -206,20 +212,20 @@ const BillPage = () => {
             <Button
               variant="outlined"
               color="secondary"
-              sx={{ borderWidth: 2, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
+              sx={{ borderWidth: 2, minHeight: 44, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
               onClick={applyFilters}
             >
-              Filter
+              Apply
             </Button>
           </Tooltip>
           <Tooltip title="Clear filters">
             <Button
               variant="outlined"
               color="secondary"
-              sx={{ borderWidth: 2, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
+              sx={{ borderWidth: 2, minHeight: 44, flex: { xs: '1 1 calc(50% - 4px)', sm: '0 1 auto' } }}
               onClick={clearFilters}
             >
-              Clear
+              Clear Filters
             </Button>
           </Tooltip>
         </Box>
@@ -240,7 +246,7 @@ const BillPage = () => {
               No bills match your filters
             </Typography>
             <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
-              Adjust the date range or status filter to see your bills.
+              Change your date or status filters to find the bills you need.
             </Typography>
             <Button variant="contained" color="secondary" onClick={clearFilters} sx={{ minHeight: 44 }}>
               Clear Filters
@@ -280,7 +286,7 @@ const BillPage = () => {
                             variant="contained"
                             color="secondary"
                             size="small"
-                            sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
+                            sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)', minHeight: 44 }}
                             startIcon={
                               <PaymentIcon sx={{ color: 'common.white' }} />
                             }
@@ -346,7 +352,7 @@ const BillPage = () => {
             {selectedBill && (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Typography>
-                  You're about to pay{' '}
+                  You are about to pay{' '}
                   <strong>
                     {currencyFormatter.format(selectedBill.amount)}
                   </strong>{' '}
@@ -363,7 +369,7 @@ const BillPage = () => {
               onClick={handleCloseConfirm}
               variant="outlined"
               color="secondary"
-              sx={{ borderWidth: 2 }}
+              sx={{ borderWidth: 2, minHeight: 44 }}
               disabled={dialogStep === 1}
             >
               Cancel
@@ -380,9 +386,8 @@ const BillPage = () => {
                   <PaymentIcon sx={{ color: 'common.white' }} />
                 )
               }
-              sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
-            >
-              {dialogStep === 1 ? 'Processing...' : 'Confirm'}
+              sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)', minHeight: 44 }}>
+              {dialogStep === 1 ? 'Processing...' : 'Pay Bill'}
             </Button>
           </DialogActions>
         </Dialog>

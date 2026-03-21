@@ -311,8 +311,7 @@ const GhanaSMSVerification = ({
               disabled={isSending}
               startIcon={
                 isSending ? <CircularProgress size={20} /> : <SendIcon />
-              }
-            >
+              }>
               {isSending ? 'Sending...' : 'Send Verification Code'}
             </Button>
           </Box>
@@ -421,8 +420,7 @@ const GhanaSMSVerification = ({
               disabled={isLoading || verificationCode.join('').length !== 6}
               startIcon={
                 isLoading ? <CircularProgress size={20} /> : <CheckIcon />
-              }
-            >
+              }>
               {isLoading ? 'Verifying...' : 'Verify Code'}
             </Button>
           </Box>

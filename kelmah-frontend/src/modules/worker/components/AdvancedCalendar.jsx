@@ -117,13 +117,13 @@ const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
       {/* Month navigation */}
       <Paper sx={{ p: 2, mb: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <IconButton onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}>
+          <IconButton onClick={() => setCurrentMonth(prev => subMonths(prev, 1))} aria-label="Previous month">
             <PrevIcon />
           </IconButton>
           <Typography variant="h6" fontWeight="bold">
             {format(currentMonth, 'MMMM yyyy')}
           </Typography>
-          <IconButton onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}>
+          <IconButton onClick={() => setCurrentMonth(prev => addMonths(prev, 1))} aria-label="Next month">
             <NextIcon />
           </IconButton>
         </Box>
@@ -237,3 +237,4 @@ const AdvancedCalendar = ({ schedule = [], onScheduleChange }) => {
 };
 
 export default AdvancedCalendar;
+

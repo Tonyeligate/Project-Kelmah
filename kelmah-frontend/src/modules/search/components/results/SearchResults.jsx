@@ -12,7 +12,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  CircularProgress,
   Skeleton,
   Alert,
 } from '@mui/material';
@@ -90,8 +89,16 @@ const SearchResults = ({
 
     return (
       <Box sx={{ mb: 3 }}>
-        <Typography variant="subtitle2" sx={{ mb: 1 }}>
-          Active Filters:
+        <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+          Filters in use:
+        </Typography>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: 'block', mb: 1.25, wordBreak: 'break-word' }}
+        >
+          Remove one filter chip at a time, or clear all to broaden your results
+          quickly.
         </Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {activeFilters.map((filter, index) => (
@@ -102,6 +109,17 @@ const SearchResults = ({
               size="small"
               color="primary"
               variant="outlined"
+              sx={{
+                maxWidth: '100%',
+                height: 'auto',
+                '& .MuiChip-label': {
+                  display: 'block',
+                  overflowWrap: 'anywhere',
+                  whiteSpace: 'normal',
+                  lineHeight: 1.3,
+                  py: 0.5,
+                },
+              }}
             />
           ))}
           {activeFilters.length > 1 && (
@@ -110,6 +128,7 @@ const SearchResults = ({
               onClick={() => onRemoveFilter('all')}
               size="small"
               color="secondary"
+              sx={{ minHeight: 36 }}
             />
           )}
         </Box>
@@ -130,12 +149,30 @@ const SearchResults = ({
             gap: 2,
           }}
         >
-          <Typography variant="h6">
-            {loading ? 'Searching...' : `${pagination.totalItems || 0} Results`}
-          </Typography>
+          <Box>
+            <Typography variant="h6">
+              {loading
+                ? 'Searching...'
+                : `${pagination.totalItems || 0} Results`}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              Results are sorted by your selected option. Use filters to narrow
+              by location, budget, or skill.
+            </Typography>
+          </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              flexWrap: 'wrap',
+            }}
+          >
+            <FormControl
+              size="small"
+              sx={{ minWidth: 140, width: { xs: '100%', sm: 'auto' } }}
+            >
               <InputLabel id="sort-select-label">Sort By</InputLabel>
               <Select
                 labelId="sort-select-label"
@@ -143,6 +180,7 @@ const SearchResults = ({
                 label="Sort By"
                 onChange={handleSortChange}
                 disabled={loading}
+                inputProps={{ 'aria-label': 'Sort search results' }}
               >
                 <MenuItem value="relevance">Relevance</MenuItem>
                 <MenuItem value="date">Newest</MenuItem>
@@ -156,6 +194,8 @@ const SearchResults = ({
               startIcon={<MapIcon />}
               onClick={onToggleView}
               size={isMobile ? 'small' : 'medium'}
+              aria-label={showMap ? 'Switch to list view' : 'Switch to map view'}
+              sx={{ minHeight: 44, whiteSpace: 'nowrap' }}
             >
               {showMap ? 'List View' : 'Map View'}
             </Button>
@@ -183,9 +223,23 @@ const SearchResults = ({
 
       {/* Error State */}
       {!loading && jobs.length === 0 && (
-        <Alert severity="info" sx={{ mb: 3 }}>
-          No jobs found matching your search criteria. Try adjusting your
-          filters.
+        <Alert
+          severity="info"
+          sx={{ mb: 3 }}
+          action={
+            onRemoveFilter ? (
+              <Button
+                size="small"
+                onClick={() => onRemoveFilter('all')}
+                sx={{ minHeight: 44 }}
+              >
+                Reset filters
+              </Button>
+            ) : null
+          }
+        >
+          No jobs matched your current search. Try a simpler trade word, broaden
+          location, or reset filters.
         </Alert>
       )}
 
@@ -214,6 +268,9 @@ const SearchResults = ({
             count={pagination.totalPages}
             page={pagination.page}
             onChange={handlePageChange}
+            getItemAriaLabel={(type, pageNumber) =>
+              type === 'page' ? `Go to search results page ${pageNumber}` : `Go to ${type} page`
+            }
             color="primary"
             disabled={loading}
           />

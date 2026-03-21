@@ -366,7 +366,7 @@ const NotificationsPage = () => {
                 disabled={unreadCount === 0}
               >
                 <MarkChatReadIcon sx={{ mr: 1 }} fontSize="small" />
-                Mark All as Read
+                Mark all as read
               </MenuItem>
               <MenuItem
                 onClick={() => { clearAllNotifications(); setActionsAnchor(null); }}
@@ -374,7 +374,7 @@ const NotificationsPage = () => {
                 sx={{ color: 'error.main' }}
               >
                 <ClearAllIcon sx={{ mr: 1 }} fontSize="small" />
-                Clear All
+                Clear all
               </MenuItem>
             </Menu>
           </Box>
@@ -393,7 +393,7 @@ const NotificationsPage = () => {
               onClick={markAllAsRead}
               disabled={unreadCount === 0}
             >
-              Mark All as Read
+              Mark all as read
             </Button>
             <Button
               onClick={clearAllNotifications}
@@ -401,7 +401,7 @@ const NotificationsPage = () => {
               variant="outlined"
               disabled={notifications.length === 0}
             >
-              Clear All
+              Clear all
             </Button>
           </Box>
         )}
@@ -419,10 +419,10 @@ const NotificationsPage = () => {
         }}
       >
         <Typography variant="body2" color="text.secondary">
-          Showing {filteredNotifications.length} of {notifications.length}{' '}
-          notifications
+          Showing {filteredNotifications.length} notifications on this page out
+          of {notifications.length} total
         </Typography>
-        <Tooltip title="Show unread notifications only">
+        <Tooltip title="Show only unread notifications">
           <FormControlLabel
             control={
               <Switch checked={unreadOnly} onChange={handleToggleUnread} inputProps={{ 'aria-label': 'Show unread notifications only' }} />
@@ -504,7 +504,10 @@ const NotificationsPage = () => {
             }}
           >
             <Typography variant="h6" color="text.secondary">
-              You're all caught up!
+              No new notifications right now
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              New messages, job updates, and payment alerts will appear here.
             </Typography>
           </Box>
         )}
@@ -514,3 +517,4 @@ const NotificationsPage = () => {
 };
 
 export default NotificationsPage;
+

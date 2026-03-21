@@ -503,6 +503,11 @@ const JobApplicationForm = () => {
                 and this application.
               </Typography>
 
+              <Alert severity="info" sx={{ mb: 3 }}>
+                Keep your message short and clear: mention your relevant experience,
+                your expected price, and when you can start.
+              </Alert>
+
               {error && (
                 <Alert severity="error" sx={{ mb: 3 }}>
                   {error}
@@ -522,7 +527,8 @@ const JobApplicationForm = () => {
                       value={applicationData.coverLetter}
                       onChange={handleInputChange('coverLetter')}
                       required
-                      helperText="Describe your experience and skills. Be specific."
+                      inputProps={{ 'aria-label': 'Application cover letter' }}
+                      helperText="Use simple, specific details from similar jobs you have completed."
                       InputProps={{
                         startAdornment: (
                           <InputAdornment
@@ -546,7 +552,8 @@ const JobApplicationForm = () => {
                       value={applicationData.proposedRate}
                       onChange={handleInputChange('proposedRate')}
                       required
-                      helperText={`Job budget: ${budgetLabel}`}
+                      inputProps={{ min: 0, inputMode: 'decimal', 'aria-label': 'Proposed rate in Ghana cedis' }}
+                      helperText={`Job budget: ${budgetLabel}. Enter your realistic expected price.`}
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
@@ -555,7 +562,7 @@ const JobApplicationForm = () => {
                           </InputAdornment>
                         ),
                       }}
-                      inputProps={{ min: 0, inputMode: 'decimal' }}
+                      
                     />
                   </Grid>
 
@@ -617,6 +624,7 @@ const JobApplicationForm = () => {
                       placeholder="Any other information the employer should know..."
                       value={applicationData.additionalInfo}
                       onChange={handleInputChange('additionalInfo')}
+                      helperText="Optional: mention transport readiness, team size, or equipment availability."
                     />
                   </Grid>
 
@@ -649,6 +657,7 @@ const JobApplicationForm = () => {
                             <SendIcon />
                           )
                         }
+                        aria-label="Send job application"
                         disabled={submitting}
                         sx={{
                           minHeight: 52,

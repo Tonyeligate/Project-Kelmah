@@ -1,6 +1,15 @@
 import axios from 'axios';
 import { API_BASE_URL, AUTH_CONFIG } from '../config/environment';
 import { secureStorage } from '../utils/secureStorage';
+import {
+    createApiEnvelopeError,
+    isEnvelopeFailure,
+    normalizeApiError,
+    isTimeoutError,
+    isRetryableError,
+    toUserMessage,
+} from './responseNormalizer';
+import { captureContractMismatch, captureRecoverableApiError } from './errorTelemetry';
 
 let uuidFallbackCounter = 0;
 
@@ -36,6 +45,7 @@ const inflightGets = new Map();
 const pendingUnauthorizedRequests = [];
 let hasTriggeredAuthRedirect = false;
 let refreshBlockedUntil = 0;
+let isForceLogoutInProgress = false;
 
 // Create axios instance
 const apiClient = axios.create({
@@ -160,9 +170,12 @@ const redirectToLogin = () => {
 };
 
 const forceLogoutAndRedirect = (error) => {
-    secureStorage.removeItem('auth_token');
-    secureStorage.removeItem('refresh_token');
-    secureStorage.removeItem('user_data');
+    if (isForceLogoutInProgress) {
+        return;
+    }
+
+    isForceLogoutInProgress = true;
+    secureStorage.clearAuthData();
     processUnauthorizedQueue(error || new Error('Unauthorized'), null);
     redirectToLogin();
 };
@@ -191,18 +204,67 @@ apiClient.interceptors.request.use(
 // Response interceptor
 apiClient.interceptors.response.use(
     (response) => {
+        if (isEnvelopeFailure(response?.data)) {
+            const envelopeError = createApiEnvelopeError(response, {
+                defaultMessage: 'Server returned an unsuccessful response envelope',
+            });
+            captureRecoverableApiError(envelopeError, {
+                phase: 'response-envelope',
+                endpoint: response?.config?.url,
+                method: response?.config?.method,
+            });
+            throw envelopeError;
+        }
         return response;
     },
     async (error) => {
         const originalRequest = error.config;
+        const status = error.response?.status;
+
+        if (isTimeoutError(error)) {
+            const normalized = normalizeApiError(error, {
+                phase: 'timeout',
+                endpoint: originalRequest?.url,
+                method: originalRequest?.method,
+            });
+            error.isTimeout = true;
+            error.retryable = normalized.retryable;
+            error.retryAfterMs = normalized.retryAfterMs;
+            error.friendlyMessage = normalized.userMessage;
+            captureRecoverableApiError(error, {
+                phase: 'timeout',
+                endpoint: originalRequest?.url,
+                method: originalRequest?.method,
+            });
+            return Promise.reject(error);
+        }
+
+        if (status === 404 || status === 405 || status === 501) {
+            captureContractMismatch(error, {
+                phase: 'http-error',
+                endpoint: originalRequest?.url,
+                method: originalRequest?.method,
+            });
+        }
 
         // Graceful degradation for sleeping Render backend (free tier)
-        const status = error.response?.status;
         if (status === 502 || status === 503 || status === 504) {
+            const normalized = normalizeApiError(error, {
+                phase: 'backend-sleep',
+                endpoint: originalRequest?.url,
+                method: originalRequest?.method,
+            });
             // Attach a user-friendly message so consumers can display it
             error.isBackendSleeping = true;
+            error.retryable = normalized.retryable;
+            error.retryAfterMs = normalized.retryAfterMs;
             error.friendlyMessage =
                 'The server is waking up — this usually takes 15-30 seconds. Please try again shortly.';
+            captureRecoverableApiError(error, {
+                phase: 'backend-sleep',
+                endpoint: originalRequest?.url,
+                method: originalRequest?.method,
+            });
             if (import.meta.env.DEV) console.warn(
                 `⏳ Backend returned ${status} — likely waking from sleep`,
             );
@@ -232,6 +294,13 @@ apiClient.interceptors.response.use(
                 isAuthVerifyRequest(originalRequest) &&
                 !AUTH_CONFIG.httpOnlyCookieAuth
             ) {
+                return Promise.reject(error);
+            }
+
+            const hasRefreshCapability =
+                AUTH_CONFIG.httpOnlyCookieAuth || Boolean(secureStorage.getRefreshToken());
+            if (!hasRefreshCapability) {
+                forceLogoutAndRedirect(error);
                 return Promise.reject(error);
             }
 
@@ -307,6 +376,22 @@ apiClient.interceptors.response.use(
             });
         }
 
+        if (isRetryableError(error)) {
+            const normalized = normalizeApiError(error, {
+                phase: 'retryable',
+                endpoint: originalRequest?.url,
+                method: originalRequest?.method,
+            });
+            error.retryable = normalized.retryable;
+            error.retryAfterMs = normalized.retryAfterMs;
+            error.friendlyMessage = normalized.userMessage || toUserMessage(error);
+            captureRecoverableApiError(error, {
+                phase: 'retryable',
+                endpoint: originalRequest?.url,
+                method: originalRequest?.method,
+            });
+        }
+
         return Promise.reject(error);
     },
 );
@@ -319,16 +404,21 @@ const retryRequest = async (fn, retries = 3, delay = 1000) => {
         // Don't retry most 4xx client errors; allow 429 throttling to back off and retry.
         const status = error?.response?.status;
         const shouldRetryClientError = status === 429;
+        const isRecoverable = isRetryableError(error) || shouldRetryClientError;
+        const computedDelay = Number.isFinite(error?.retryAfterMs)
+            ? error.retryAfterMs
+            : delay;
         if (
             retries === 0 ||
             error.isBackendSleeping ||
+            !isRecoverable ||
             (status >= 400 && status < 500 && !shouldRetryClientError)
         ) {
             throw error;
         }
 
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        return retryRequest(fn, retries - 1, delay * 2);
+        await new Promise((resolve) => setTimeout(resolve, computedDelay));
+        return retryRequest(fn, retries - 1, Math.min(computedDelay * 2, 10_000));
     }
 };
 

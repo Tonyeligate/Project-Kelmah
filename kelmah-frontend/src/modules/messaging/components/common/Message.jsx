@@ -427,6 +427,7 @@ const Message = ({
             <IconButton
               size="small"
               onClick={handleMenuOpen}
+              aria-label="Open message options"
               sx={{
                 position: 'absolute',
                 top: 0,
@@ -466,6 +467,7 @@ const Message = ({
                   <IconButton
                     size="small"
                     onClick={() => onResend && onResend(message)}
+                    aria-label="Resend message"
                   >
                     <ErrorIcon color="error" sx={{ fontSize: '1rem' }} />
                   </IconButton>
@@ -555,3 +557,4 @@ Message.propTypes = {
 };
 
 export default Message;
+

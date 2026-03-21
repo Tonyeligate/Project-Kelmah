@@ -1,0 +1,22 @@
+{
+  "taskId": "<task-id>",
+  "endpointsTested": [
+    "GET /api/jobs",
+    "POST /api/jobs",
+    "GET /api/jobs/:id"
+  ],
+  "routeShadowScan": {
+    "status": "pass",
+    "issuesFound": 0
+  },
+  "contractCompatibility": {
+    "before": 0.92,
+    "after": 0.98
+  },
+  "objectiveScores": {
+    "p95LatencyBeforeMs": 280,
+    "p95LatencyAfterMs": 190,
+    "compatibilityDelta": 0.06
+  },
+  "closureVerdict": "PASS"
+}

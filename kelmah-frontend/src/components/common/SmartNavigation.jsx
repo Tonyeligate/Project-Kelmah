@@ -410,8 +410,8 @@ const SmartNavigation = () => {
                 aria-label={isPinned ? 'Unpin shortcuts' : 'Pin shortcuts'}
                 aria-pressed={isPinned}
                 sx={{
-                  minWidth: 36,
-                  minHeight: 36,
+                  minWidth: 44,
+                  minHeight: 44,
                   '&:focus-visible': {
                     outline: '3px solid #D4AF37',
                     outlineOffset: '2px',
@@ -432,8 +432,8 @@ const SmartNavigation = () => {
                 aria-label="What is this panel?"
                 aria-expanded={showInfo}
                 sx={{
-                  minWidth: 36,
-                  minHeight: 36,
+                  minWidth: 44,
+                  minHeight: 44,
                   '&:focus-visible': {
                     outline: '3px solid #D4AF37',
                     outlineOffset: '2px',

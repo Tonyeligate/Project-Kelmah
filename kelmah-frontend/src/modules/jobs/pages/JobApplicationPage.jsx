@@ -279,8 +279,7 @@ const JobApplicationPage = () => {
                   variant="contained"
                   color="secondary"
                   onClick={() => navigate(isBiddingJob ? '/worker/bids' : '/worker/applications')}
-                  startIcon={isBiddingJob ? <BidIcon /> : <WorkIcon />}
-                >
+                  startIcon={isBiddingJob ? <BidIcon /> : <WorkIcon />}>
                   {isBiddingJob ? 'Go to My Bids' : 'View My Applications'}
                 </Button>
               </Stack>
@@ -297,9 +296,9 @@ const JobApplicationPage = () => {
                 required
                 value={coverLetter}
                 onChange={(e) => setCoverLetter(e.target.value)}
-                placeholder="Tell the hirer about your experience, why you are a good fit, and how you will approach this work…"
+                placeholder="Share your experience, why you are a good fit, and when you can start."
                 inputProps={{ maxLength: 1000 }}
-                helperText={`${coverLetter.length}/1000 characters`}
+                helperText={`${coverLetter.length}/1000 characters. Keep it clear and short.`}
                 disabled={submitting || success}
                 sx={{ mb: 3 }}
               />
@@ -320,7 +319,7 @@ const JobApplicationPage = () => {
                   disabled={submitting || success}
                   helperText={
                     currentJob?.bidding?.minBidAmount
-                      ? `Minimum bid: GH₵${Number(currentJob.bidding.minBidAmount).toLocaleString()}`
+                      ? `Minimum bid: GH₵${Number(currentJob.bidding.minBidAmount).toLocaleString()}.`
                       : undefined
                   }
                   sx={{ mb: 3 }}
@@ -340,7 +339,7 @@ const JobApplicationPage = () => {
                   }}
                   inputProps={{ min: 0, step: 0.01 }}
                   disabled={submitting || success}
-                  helperText="Leave blank to accept the posted rate"
+                  helperText="Leave blank to accept the posted rate."
                   sx={{ mb: 3 }}
                 />
               )}
@@ -349,8 +348,11 @@ const JobApplicationPage = () => {
                 <Box sx={{ mb: 3 }}>
                   <Button component="label" variant="outlined" startIcon={<AttachFileIcon />}>
                     Attach work samples or proof
-                    <input hidden multiple type="file" accept="image/*,video/*,.pdf,.doc,.docx,.txt" onChange={handleAttachmentChange} />
+                    <input hidden multiple type="file" aria-label="Attach work samples or proof" accept="image/*,video/*,.pdf,.doc,.docx,.txt" onChange={handleAttachmentChange} />
                   </Button>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.75 }}>
+                    Optional: add photos, certificates, or past work that help the hirer trust your application.
+                  </Typography>
                   {attachments.length > 0 && (
                     <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1.5 }}>
                       {attachments.map((file, index) => (
@@ -380,15 +382,14 @@ const JobApplicationPage = () => {
                   color="secondary"
                   startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <SendIcon />}
                   disabled={submitting || success}
-                  sx={{ minWidth: 180 }}
-                >
+                  sx={{ minWidth: 180 }}>
                   {submitting
                     ? isBiddingJob
-                      ? 'Submitting Bid…'
-                      : 'Submitting Application…'
+                      ? 'Sending Bid…'
+                      : 'Sending Application…'
                     : isBiddingJob
-                      ? 'Place Bid'
-                      : 'Submit Application'}
+                      ? 'Send Bid'
+                      : 'Send Application'}
                 </Button>
               </Box>
             </>

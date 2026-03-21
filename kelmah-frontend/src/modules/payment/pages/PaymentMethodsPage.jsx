@@ -14,7 +14,6 @@ import {
   IconButton,
   CircularProgress,
   Alert,
-  Divider,
   Card,
   CardContent,
   Tooltip,
@@ -25,7 +24,6 @@ import {
   Add as AddIcon,
   CreditCard as CreditCardIcon,
   Delete as DeleteIcon,
-  Edit as EditIcon,
   CheckCircle as CheckCircleIcon,
   MobileFriendly as MobileIcon,
   AccountBalance as BankIcon,
@@ -34,12 +32,14 @@ import paymentService from '../services/paymentService';
 import { useTheme } from '@mui/material/styles';
 import { Helmet } from 'react-helmet-async';
 import { useSnackbar } from 'notistack';
+import { toUserMessage } from '@/services/responseNormalizer';
 
 // Demo payment methods for initial display
 const PaymentMethodsPage = () => {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showLoadingHint, setShowLoadingHint] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
 
   // Dialog control states
@@ -81,11 +81,28 @@ const PaymentMethodsPage = () => {
       const methods = await paymentService.getPaymentMethods();
       setPaymentMethods(methods);
     } catch (err) {
-      setError('Failed to load payment methods. Please try again.');
+      setError(
+        toUserMessage(err, {
+          fallback: 'Failed to load payment methods. Please try again.',
+        }),
+      );
     } finally {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      setShowLoadingHint(false);
+      return undefined;
+    }
+
+    const timer = setTimeout(() => {
+      setShowLoadingHint(true);
+    }, 12000);
+
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   // Initialize with loading effect
   useEffect(() => {
@@ -119,8 +136,9 @@ const PaymentMethodsPage = () => {
       });
       enqueueSnackbar('Card added successfully', { variant: 'success' });
     } catch (err) {
-      setError('Failed to add card. Please try again.');
-      enqueueSnackbar('Failed to add card', { variant: 'error' });
+      const message = toUserMessage(err, { fallback: 'Failed to add card. Please try again.' });
+      setError(message);
+      enqueueSnackbar(message, { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -145,8 +163,9 @@ const PaymentMethodsPage = () => {
       setNewMobile({ provider: 'MTN', phoneNumber: '', name: '' });
       enqueueSnackbar('Mobile money added successfully', { variant: 'success' });
     } catch (err) {
-      setError('Failed to add mobile money. Please try again.');
-      enqueueSnackbar('Failed to add mobile money', { variant: 'error' });
+      const message = toUserMessage(err, { fallback: 'Failed to add mobile money. Please try again.' });
+      setError(message);
+      enqueueSnackbar(message, { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -177,8 +196,9 @@ const PaymentMethodsPage = () => {
       });
       enqueueSnackbar('Bank account added successfully', { variant: 'success' });
     } catch (err) {
-      setError('Failed to add bank account. Please try again.');
-      enqueueSnackbar('Failed to add bank account', { variant: 'error' });
+      const message = toUserMessage(err, { fallback: 'Failed to add bank account. Please try again.' });
+      setError(message);
+      enqueueSnackbar(message, { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -192,8 +212,9 @@ const PaymentMethodsPage = () => {
       await fetchMethods();
       enqueueSnackbar('Default payment method updated', { variant: 'success' });
     } catch (err) {
-      setError('Failed to set default payment method. Please try again.');
-      enqueueSnackbar('Failed to set default payment method', { variant: 'error' });
+      const message = toUserMessage(err, { fallback: 'Failed to set default payment method. Please try again.' });
+      setError(message);
+      enqueueSnackbar(message, { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -215,8 +236,9 @@ const PaymentMethodsPage = () => {
       await fetchMethods();
       enqueueSnackbar('Payment method removed', { variant: 'success' });
     } catch (err) {
-      setError('Failed to delete payment method. Please try again.');
-      enqueueSnackbar('Failed to delete payment method', { variant: 'error' });
+      const message = toUserMessage(err, { fallback: 'Failed to delete payment method. Please try again.' });
+      setError(message);
+      enqueueSnackbar(message, { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -271,7 +293,7 @@ const PaymentMethodsPage = () => {
             <IconButton
               color="secondary"
               aria-label="Add credit card"
-              sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
+              sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)', minWidth: 44, minHeight: 44 }}
               onClick={() => setOpenAddCard(true)}
             >
               <AddIcon />
@@ -281,7 +303,7 @@ const PaymentMethodsPage = () => {
             <IconButton
               color="secondary"
               aria-label="Add mobile money"
-              sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
+              sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)', minWidth: 44, minHeight: 44 }}
               onClick={() => setOpenAddMobile(true)}
             >
               <MobileIcon />
@@ -291,7 +313,7 @@ const PaymentMethodsPage = () => {
             <IconButton
               color="secondary"
               aria-label="Add bank account"
-              sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
+              sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)', minWidth: 44, minHeight: 44 }}
               onClick={() => setOpenAddBank(true)}
             >
               <BankIcon />
@@ -299,6 +321,15 @@ const PaymentMethodsPage = () => {
           </Tooltip>
         </Box>
       </Box>
+
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ mb: 2, px: { xs: 0.5, sm: 0 } }}
+      >
+        Use an add button to save a card, mobile money number, or bank account.
+        Set one method as default to make checkout faster.
+      </Typography>
 
       <Card
         sx={{
@@ -366,13 +397,27 @@ const PaymentMethodsPage = () => {
       </Card>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+        <Alert
+          severity="error"
+          sx={{ mb: 3 }}
+          onClose={() => setError(null)}
+          action={(
+            <Button color="inherit" size="small" onClick={fetchMethods}>
+              Retry
+            </Button>
+          )}
+        >
           {error}
         </Alert>
       )}
 
       {loading ? (
         <Box sx={{ py: 2 }}>
+          {showLoadingHint && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Fetching payment methods is taking longer than usual. Please wait a bit or retry.
+            </Alert>
+          )}
           {[1,2,3].map(i => (
             <Skeleton key={`payment-methods-skeleton-${i}`} variant="rounded" height={80} sx={{ borderRadius: 2, mb: 2 }} />
           ))}
@@ -393,10 +438,11 @@ const PaymentMethodsPage = () => {
             sx={{ fontSize: 60, color: 'secondary.main', mb: 2 }}
           />
           <Typography variant="h6" color="secondary.main" gutterBottom>
-            No Payment Methods Added
+            No payment methods yet
           </Typography>
           <Typography variant="body2" color="text.secondary" paragraph>
-            Add a payment method to get started with transactions
+            Add a card, mobile money number, or bank account to fund your wallet,
+            pay workers, or receive payouts.
           </Typography>
           <Button
             variant="contained"
@@ -405,7 +451,7 @@ const PaymentMethodsPage = () => {
             startIcon={<AddIcon />}
             onClick={() => setOpenAddCard(true)}
           >
-            Add Payment Method
+            Add a payment method
           </Button>
         </Paper>
       ) : (
@@ -464,7 +510,9 @@ const PaymentMethodsPage = () => {
                       <Tooltip title="Set as default">
                         <IconButton
                           size="small"
+                          aria-label={`Set ${method.name || 'payment method'} as default`}
                           onClick={() => handleSetDefault(method.id || method._id)}
+                          sx={{ minWidth: 44, minHeight: 44 }}
                         >
                           <CheckCircleIcon color="action" />
                         </IconButton>
@@ -474,7 +522,9 @@ const PaymentMethodsPage = () => {
                       <IconButton
                         size="small"
                         color="error"
+                        aria-label={`Remove ${method.name || 'payment method'}`}
                         onClick={() => handleDeleteRequest(method.id || method._id)}
+                        sx={{ minWidth: 44, minHeight: 44 }}
                       >
                         <DeleteIcon />
                       </IconButton>
@@ -503,34 +553,35 @@ const PaymentMethodsPage = () => {
         }}
       >
         <DialogTitle id="add-card-dialog-title" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <CreditCardIcon sx={{ color: 'secondary.main', fontSize: 28 }} /> Card
+          <CreditCardIcon sx={{ color: 'secondary.main', fontSize: 28 }} /> Add card
         </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             <Tooltip title="16-digit card number">
               <TextField
                 fullWidth
-                label="Number"
+                label="Card number"
                 value={newCard.cardNumber}
                 onChange={(e) =>
                   setNewCard({ ...newCard, cardNumber: e.target.value })
                 }
                 sx={{ mb: 2 }}
                 placeholder="1234 5678 9012 3456"
-                inputProps={{ inputMode: 'numeric' }}
+                inputProps={{ inputMode: 'numeric', 'aria-label': 'Card number' }}
               />
             </Tooltip>
 
             <Tooltip title="Name on card">
               <TextField
                 fullWidth
-                label="Name"
+                label="Name on card"
                 value={newCard.cardholderName}
                 onChange={(e) =>
                   setNewCard({ ...newCard, cardholderName: e.target.value })
                 }
                 sx={{ mb: 2 }}
                 placeholder="e.g. Kwame Asante"
+                inputProps={{ 'aria-label': 'Name on card' }}
               />
             </Tooltip>
 
@@ -545,7 +596,7 @@ const PaymentMethodsPage = () => {
                       setNewCard({ ...newCard, expiryMonth: e.target.value })
                     }
                     placeholder="MM"
-                    inputProps={{ inputMode: 'numeric' }}
+                    inputProps={{ inputMode: 'numeric', 'aria-label': 'Card expiry month' }}
                   />
                 </Tooltip>
               </Grid>
@@ -559,7 +610,7 @@ const PaymentMethodsPage = () => {
                       setNewCard({ ...newCard, expiryYear: e.target.value })
                     }
                     placeholder="YYYY"
-                    inputProps={{ inputMode: 'numeric' }}
+                    inputProps={{ inputMode: 'numeric', 'aria-label': 'Card expiry year' }}
                   />
                 </Tooltip>
               </Grid>
@@ -575,7 +626,7 @@ const PaymentMethodsPage = () => {
                 }
                 type="password"
                 placeholder="123"
-                inputProps={{ inputMode: 'numeric' }}
+                inputProps={{ inputMode: 'numeric', 'aria-label': 'Card CVV code' }}
               />
             </Tooltip>
           </Box>

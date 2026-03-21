@@ -187,6 +187,26 @@ const MobileRegister = () => {
     else setStep((s) => Math.max(s - 1, 1));
   };
 
+  const getRequestedPath = () => {
+    const queryFrom = new URLSearchParams(location.search).get('from');
+    return location.state?.from || location.state?.redirectTo || queryFrom;
+  };
+
+  const resolveRequestedPath = () => {
+    const requestedPath = getRequestedPath();
+    if (
+      typeof requestedPath === 'string' &&
+      requestedPath.startsWith('/') &&
+      !requestedPath.startsWith('//') &&
+      !requestedPath.startsWith('/login') &&
+      !requestedPath.startsWith('/register')
+    ) {
+      return requestedPath;
+    }
+
+    return '/dashboard';
+  };
+
   // Submit
   const handleSubmit = async () => {
     if (!validateStep()) return;
@@ -214,8 +234,7 @@ const MobileRegister = () => {
           state: {
             registered: true,
             message: 'Registration successful! Please verify your email.',
-            redirectTo:
-              location.state?.from || location.state?.redirectTo || '/dashboard',
+            redirectTo: resolveRequestedPath(),
           },
         });
       }, 1500);
@@ -684,3 +703,4 @@ const MobileRegister = () => {
 };
 
 export default MobileRegister;
+

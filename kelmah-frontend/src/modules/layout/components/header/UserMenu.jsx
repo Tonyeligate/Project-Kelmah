@@ -70,9 +70,6 @@ const UserMenu = ({
       anchorEl={anchorEl}
       open={Boolean(anchorEl)}
       onClose={(event) => requestClose(event)}
-      disableAutoFocus
-      disableEnforceFocus
-      disableRestoreFocus
       PaperProps={{
         elevation: 12,
         sx: {

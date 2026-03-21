@@ -84,7 +84,6 @@ class ErrorBoundary extends React.Component {
             variant="contained"
             startIcon={<RefreshIcon />}
             onClick={this.handleRetry}
-            aria-label="Try loading the page again"
             sx={{
               mb: 2,
               minHeight: 54,
@@ -107,7 +106,6 @@ class ErrorBoundary extends React.Component {
             variant="outlined"
             startIcon={<RefreshIcon />}
             onClick={() => window.location.reload()}
-            aria-label="Refresh the entire page"
             sx={{
               mb: 2,
               minHeight: 54,
@@ -130,7 +128,6 @@ class ErrorBoundary extends React.Component {
             variant="text"
             startIcon={<HomeIcon />}
             onClick={() => { window.location.href = '/'; }}
-            aria-label="Go back to the home page"
             sx={{
               minHeight: 48,
               fontSize: '0.95rem',

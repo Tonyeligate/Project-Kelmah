@@ -24,6 +24,7 @@ const QuickActionsRow = () => {
 
   return (
     <Box
+      aria-label="Worker quick actions"
       sx={{
         display: 'grid',
         gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', sm: 'repeat(5, minmax(0, 1fr))' },
@@ -34,7 +35,8 @@ const QuickActionsRow = () => {
         <ButtonBase
           key={label}
           onClick={() => navigate(path)}
-          aria-label={label}
+          aria-label={`${label}. ${caption}`}
+          title={`${label}: ${caption}`}
           sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -75,6 +77,7 @@ const QuickActionsRow = () => {
               fontWeight: 700,
               color: 'text.primary',
               lineHeight: 1.2,
+              overflowWrap: 'anywhere',
             }}
           >
             {label}
@@ -86,6 +89,7 @@ const QuickActionsRow = () => {
               color: 'text.secondary',
               lineHeight: 1.35,
               textAlign: 'left',
+              overflowWrap: 'anywhere',
             }}
           >
             {caption}

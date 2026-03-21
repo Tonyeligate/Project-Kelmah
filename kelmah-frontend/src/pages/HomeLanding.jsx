@@ -659,7 +659,6 @@ const HomeLanding = () => {
                     size="large"
                     fullWidth
                     startIcon={<WorkIcon />}
-                    aria-label="Sign up as a worker"
                     onClick={() => navigate('/register')}
                     sx={{
                       bgcolor: '#FFD700',
@@ -721,7 +720,6 @@ const HomeLanding = () => {
                     size="large"
                     fullWidth
                     startIcon={<SearchIcon />}
-                    aria-label="Find a worker to hire"
                     onClick={() => navigate('/search')}
                     sx={{
                       bgcolor: '#1A8A4A',
@@ -991,7 +989,6 @@ const HomeLanding = () => {
                   variant="contained"
                   size="large"
                   startIcon={<BoltIcon />}
-                  aria-label="Find workers quickly"
                   onClick={() => navigate('/search')}
                   sx={{
                     bgcolor: '#FFD700',
@@ -1010,7 +1007,6 @@ const HomeLanding = () => {
                   variant="outlined"
                   size="large"
                   startIcon={<MapIcon />}
-                  aria-label="View workers on map"
                   onClick={() => navigate('/map')}
                   sx={{
                     fontWeight: 600,
@@ -1065,7 +1061,6 @@ const HomeLanding = () => {
               <Button
                 variant="contained"
                 size="large"
-                aria-label="Sign up for Kelmah"
                 onClick={() => navigate('/register')}
                 sx={{
                   bgcolor: '#FFD700',
@@ -1085,7 +1080,6 @@ const HomeLanding = () => {
               <Button
                 variant="outlined"
                 size="large"
-                aria-label="Log in to Kelmah"
                 onClick={() => navigate('/login')}
                 sx={{
                   borderColor: 'rgba(255,255,255,0.45)',

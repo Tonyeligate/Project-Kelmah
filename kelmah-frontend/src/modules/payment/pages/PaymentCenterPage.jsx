@@ -83,6 +83,9 @@ const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
         Wallet Balance
       </Typography>
     </Box>
+      <Typography variant="body2" sx={{ opacity: 0.85, mb: 1.5 }}>
+        Available funds can be added or withdrawn. Escrow amounts are released after work is confirmed.
+      </Typography>
     <Typography variant="h3" fontWeight="bold" sx={{ my: 1, fontSize: { xs: '1.75rem', md: '3rem' } }}>
       {currencyFormatter.format(balance)}
     </Typography>
@@ -94,7 +97,7 @@ const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
         onClick={onDepositClick}
         sx={{ minHeight: 44 }}
       >
-        Deposit
+        Add Money
       </Button>
       <Button
         variant="contained"
@@ -103,7 +106,7 @@ const WalletSummary = ({ balance, onDepositClick, onWithdrawClick }) => (
         onClick={onWithdrawClick}
         sx={{ minHeight: 44 }}
       >
-        Withdraw
+        Withdraw Funds
       </Button>
     </Box>
   </Paper>
@@ -114,6 +117,9 @@ const TransactionHistory = ({ transactions }) => (
     <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
       Recent Transactions
     </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Transaction history helps you track deposits, payouts, and escrow releases in one place.
+      </Typography>
     <List>
       {(transactions || []).slice(0, 5).map((tx, idx) => (
         <React.Fragment key={tx.id || tx._id}>
@@ -194,7 +200,7 @@ const PaymentMethodsView = ({ methods, onEditMethod, onRequestDelete, paymentMet
         }}
       >
         <Typography variant="h6" fontWeight="bold">
-          Methods
+          Payment Methods
         </Typography>
         <Tooltip title="Add method">
           <Button
@@ -850,7 +856,7 @@ const PaymentCenterPage = () => {
             <Tabs
               value={tabIndex}
               onChange={handleTabChange}
-              aria-label="payment center tabs"
+              aria-label="Payment center tabs"
               variant={isMobile ? 'scrollable' : 'standard'}
               scrollButtons="auto"
               allowScrollButtonsMobile

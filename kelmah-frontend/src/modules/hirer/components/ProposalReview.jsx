@@ -1153,7 +1153,7 @@ const ProposalReview = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogClose} disabled={actionInProgress}>
+          <Button onClick={handleDialogClose} disabled={actionInProgress} aria-label="Close proposal dialog">
             {dialogType === 'view' ? 'Close' : 'Cancel'}
           </Button>
           {dialogType === 'accept' && (
@@ -1161,8 +1161,7 @@ const ProposalReview = () => {
               onClick={() => handleProposalAction('accepted')}
               variant="contained"
               color="primary"
-              disabled={actionInProgress}
-            >
+              disabled={actionInProgress}>
               {actionInProgress ? 'Processing...' : 'Accept proposal'}
             </Button>
           )}
@@ -1175,8 +1174,7 @@ const ProposalReview = () => {
               }
               variant="contained"
               color="error"
-              disabled={actionInProgress}
-            >
+              disabled={actionInProgress}>
               {actionInProgress ? 'Processing...' : 'Reject proposal'}
             </Button>
           )}
@@ -1187,3 +1185,4 @@ const ProposalReview = () => {
 };
 
 export default ProposalReview;
+

@@ -143,7 +143,7 @@ const MessageInput = ({
   onSendMessage,
   disabled = false,
   loading = false,
-  placeholder = 'Type a message...',
+  placeholder = 'Type your message. Include key details like location or timing.',
 }) => {
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState([]);
@@ -179,27 +179,26 @@ const MessageInput = ({
     const validFiles = [];
     const errors = [];
 
-    files.forEach((file) => {
-      // Check file size (10MB limit)
-      if (file.size > 10 * 1024 * 1024) {
-        errors.push(`${file.name} is too large. Maximum size is 10MB.`);
+    const availableAttachmentSlots = Math.max(
+      MAX_ATTACHMENTS - attachments.length,
+      0,
+    );
+
+    if (files.length > availableAttachmentSlots) {
+      errors.push(
+        `You can attach up to ${MAX_ATTACHMENTS} files per message.`,
+      );
+    }
+
+    files.slice(0, availableAttachmentSlots).forEach((file) => {
+      if (file.size > MAX_FILE_SIZE) {
+        errors.push(
+          `${file.name} is too large. Maximum size is ${Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB.`,
+        );
         return;
       }
 
-      // Check file type
-      const allowedTypes = [
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.ms-excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'text/plain',
-      ];
-
-      if (!allowedTypes.includes(file.type)) {
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
         errors.push(`${file.name} has an unsupported file type.`);
         return;
       }
@@ -250,6 +249,7 @@ const MessageInput = ({
                     edge="end"
                     onClick={() => removeAttachment(index)}
                     size="small"
+                    aria-label={`Remove attachment ${file.name}`}
                   >
                     <CloseIcon />
                   </IconButton>
@@ -259,7 +259,7 @@ const MessageInput = ({
           </List>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowAttachmentDialog(false)}>Close</Button>
+            <Button onClick={() => setShowAttachmentDialog(false)}>Close</Button>
         </DialogActions>
       </Dialog>
 
@@ -283,6 +283,8 @@ const MessageInput = ({
             setShowAttachmentDialog(true);
           }}
           disabled={disabled || loading}
+          aria-label="Add attachment"
+          sx={{ width: 44, height: 44 }}
         >
           <AttachFileIcon />
         </IconButton>
@@ -293,7 +295,8 @@ const MessageInput = ({
           ref={fileInputRef}
           onChange={handleFileSelect}
           multiple
-          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+          accept={ALLOWED_FILE_TYPES.join(',')}
+          aria-label="Choose files to attach"
           style={{ display: 'none' }}
         />
 
@@ -308,6 +311,7 @@ const MessageInput = ({
           placeholder={placeholder}
           disabled={disabled || loading}
           sx={{ mx: 1 }}
+          inputProps={{ 'aria-label': 'Message input' }}
         />
 
         {/* Send Button */}
@@ -317,16 +321,36 @@ const MessageInput = ({
           disabled={
             disabled || loading || (!message.trim() && attachments.length === 0)
           }
+          aria-label="Send message"
+          sx={{ width: 44, height: 44 }}
         >
           {loading ? <CircularProgress size={24} /> : <SendIcon />}
         </IconButton>
       </Paper>
 
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.75 }}>
+        Tip: include the job title or request details for faster replies.
+      </Typography>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ display: 'block', mt: 0.25 }}
+      >
+        Press Enter to send. Press Shift+Enter to add a new line.
+      </Typography>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ display: 'block', mt: 0.25 }}
+      >
+        Up to {MAX_ATTACHMENTS} files per message, {Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB each.
+      </Typography>
+
       {/* Attachment Preview */}
       {attachments.length > 0 && (
         <Box sx={{ mt: 1 }}>
           <Typography variant="caption" color="text.secondary">
-            {attachments.length} attachment{attachments.length !== 1 ? 's' : ''}
+            {attachments.length} attachment{attachments.length !== 1 ? 's' : ''} selected
           </Typography>
         </Box>
       )}
@@ -335,3 +359,4 @@ const MessageInput = ({
 };
 
 export default MessageInput;
+

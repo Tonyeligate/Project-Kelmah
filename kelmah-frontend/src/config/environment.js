@@ -427,7 +427,7 @@ export const API_ENDPOINTS = {
     WORKERS: buildEndpoint(SERVICES.USER_SERVICE, '/users/workers'),
     WORKERS_SEARCH: buildEndpoint(
       SERVICES.USER_SERVICE,
-      '/workers/search',
+      '/users/workers/search',
     ),
     WORKER_DETAIL: (workerId) =>
       buildEndpoint(SERVICES.USER_SERVICE, `/users/workers/${workerId}`),
@@ -517,7 +517,7 @@ export const API_ENDPOINTS = {
     BASE: buildEndpoint(SERVICES.PAYMENT_SERVICE, ''),
     METHODS: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/methods'),
     PROCESS: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/transactions'),
-    HISTORY: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/history'),
+    HISTORY: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/transactions/history'),
     WALLET: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/wallet'),
     ESCROW: buildEndpoint(SERVICES.PAYMENT_SERVICE, '/payments/escrows'),
   },

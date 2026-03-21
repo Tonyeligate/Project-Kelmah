@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Typography,
@@ -6,17 +6,15 @@ import {
   Box,
   TextField,
   Button,
-  CircularProgress,
   Skeleton,
   Alert,
   Grid,
   InputAdornment,
-  useMediaQuery,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 import { Helmet } from 'react-helmet-async';
 import paymentService from '../services/paymentService';
 import { currencyFormatter } from '@/modules/common/utils/formatters';
+import { toUserMessage } from '@/services/responseNormalizer';
 
 const PaymentSettingsPage = () => {
   const [settings, setSettings] = useState({});
@@ -24,24 +22,42 @@ const PaymentSettingsPage = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [showLoadingHint, setShowLoadingHint] = useState(false);
+
+  const fetchSettings = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await paymentService.getPaymentSettings();
+      setSettings(res.data || res);
+    } catch (err) {
+      setError(
+        toUserMessage(err, {
+          fallback: 'Failed to load settings. Please try again.',
+        }),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    const fetchSettings = async () => {
-      try {
-        const res = await paymentService.getPaymentSettings();
-        if (cancelled) return;
-        setSettings(res.data || res);
-      } catch (err) {
-        if (cancelled) return;
-        setError('Failed to load settings. Please try again.');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
     fetchSettings();
-    return () => { cancelled = true; };
-  }, []);
+  }, [fetchSettings]);
+
+  useEffect(() => {
+    if (!loading) {
+      setShowLoadingHint(false);
+      return undefined;
+    }
+
+    const timer = setTimeout(() => {
+      setShowLoadingHint(true);
+    }, 12000);
+
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   useEffect(() => {
     if (success) {
@@ -62,15 +78,26 @@ const PaymentSettingsPage = () => {
       await paymentService.updatePaymentSettings(settings);
       setSuccess(true);
     } catch (err) {
-      setError('Failed to save settings. Please try again.');
+      setError(
+        toUserMessage(err, {
+          fallback: 'Failed to save settings. Please try again.',
+        }),
+      );
     } finally {
       setSaving(false);
     }
   };
 
+  const minDepositNumber = Number(settings.minDepositAmount || 0);
+
   if (loading) {
     return (
       <Container maxWidth="md" sx={{ py: 3 }}>
+        {showLoadingHint && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Loading payment settings is taking longer than usual. Please wait or retry.
+          </Alert>
+        )}
         <Skeleton variant="text" width={200} height={36} sx={{ mb: 3 }} />
         {[1,2,3].map(i => (
           <Skeleton key={`payment-settings-skeleton-${i}`} variant="rounded" height={80} sx={{ borderRadius: 2, mb: 2 }} />
@@ -84,7 +111,7 @@ const PaymentSettingsPage = () => {
         <Alert
           severity="error"
           action={
-            <Button color="inherit" size="small" onClick={() => { setError(null); setLoading(true); paymentService.getPaymentSettings().then(res => { setSettings(res.data || res); }).catch(() => setError('Failed to load settings. Please try again.')).finally(() => setLoading(false)); }}>
+            <Button color="inherit" size="small" onClick={fetchSettings}>
               Retry
             </Button>
           }
@@ -116,6 +143,9 @@ const PaymentSettingsPage = () => {
         >
           Payment Settings
         </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Choose the default currency and minimum deposit so payment forms stay clear and consistent.
+        </Typography>
         <Grid container spacing={2}>
           {/* Example setting field: replace with actual settings keys */}
           <Grid item xs={12}>
@@ -125,6 +155,8 @@ const PaymentSettingsPage = () => {
               value={settings.defaultCurrency || ''}
               onChange={handleChange('defaultCurrency')}
               placeholder="e.g. GH₵"
+              helperText="Use the currency your users see most often."
+              inputProps={{ 'aria-label': 'Default currency symbol' }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -135,26 +167,31 @@ const PaymentSettingsPage = () => {
               value={settings.minDepositAmount || ''}
               onChange={handleChange('minDepositAmount')}
               placeholder="e.g. 100"
+              helperText="This helps keep deposits above your lowest supported amount."
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     {settings.defaultCurrency || ''}
                   </InputAdornment>
                 ),
-                inputProps: { min: 0, step: 0.01 },
+                inputProps: { min: 0, step: 0.01, 'aria-label': 'Minimum deposit amount' },
               }}
             />
           </Grid>
         </Grid>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1.5 }}>
+          Current minimum deposit preview: {currencyFormatter.format(Number.isFinite(minDepositNumber) ? minDepositNumber : 0)}
+        </Typography>
         <Box sx={{ mt: 3 }}>
           <Button
             variant="contained"
             color="secondary"
             sx={{ boxShadow: '0 2px 8px rgba(255,215,0,0.4)' }}
             onClick={handleSave}
+            aria-label="Save payment settings"
             disabled={saving}
           >
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? 'Saving...' : 'Save Settings'}
           </Button>
         </Box>
         {success && (

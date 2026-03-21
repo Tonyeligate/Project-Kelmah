@@ -1,0 +1,13 @@
+{
+  "taskId": "backend-demo-task",
+  "risks": [
+    {
+      "id": "R1",
+      "description": "Contract drift risk for legacy clients",
+      "likelihood": "medium",
+      "impact": "high",
+      "mitigation": "Contract compatibility validation + rollback plan",
+      "status": "mitigated"
+    }
+  ]
+}

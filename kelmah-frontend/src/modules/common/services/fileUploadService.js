@@ -4,10 +4,23 @@ const SERVICE_TARGETS = {
   user: {
     upload: '/profile/media/upload',
   },
-  messaging: {
-    upload: (folder = 'messages') =>
-      `/messages/${folder.replace(/^attachments\//, '')}/attachments`,
-  },
+};
+
+const resolveMessagingConversationId = (folder) => {
+  const normalizedFolder = String(folder || '')
+    .trim()
+    .replace(/^attachments\//, '')
+    .replace(/^\/+|\/+$/g, '');
+
+  if (!normalizedFolder) {
+    return null;
+  }
+
+  if (!normalizedFolder.includes('/')) {
+    return normalizedFolder;
+  }
+
+  return null;
 };
 
 const MAX_FILE_SIZE =
@@ -68,17 +81,22 @@ const validateFile = (file) => {
 
 const fileUploadService = {
   // Upload a single file via backend media endpoints
-  uploadFile: async (file, folder = 'messages', service = 'messaging') => {
+  uploadFile: async (file, folder = '', service = 'messaging') => {
     const validation = validateFile(file);
     if (!validation.valid) {
       throw new Error(validation.error);
     }
     try {
-      const targets = SERVICE_TARGETS[service] || SERVICE_TARGETS.messaging;
-      const uploadPath =
-        typeof targets.upload === 'function'
-          ? targets.upload(folder)
-          : targets.upload;
+      let uploadPath = SERVICE_TARGETS.user.upload;
+
+      if (service === 'messaging') {
+        const conversationId = resolveMessagingConversationId(folder);
+        if (!conversationId) {
+          throw new Error('A valid conversation ID is required for messaging uploads');
+        }
+        uploadPath = `/messages/${conversationId}/attachments`;
+      }
+
       const form = new FormData();
       form.append('files', file);
       if (service === 'user' && folder) {

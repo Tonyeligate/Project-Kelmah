@@ -51,14 +51,18 @@ const PaymentMethodCard = ({ method, onEdit }) => {
     return `**** **** **** ${number.slice(-4)}`;
   };
 
+  const maskedCardNumber = maskCardNumber(method.cardNumber);
+
   return (
     <Card
       sx={{
         mb: 2,
+        overflowWrap: 'anywhere',
         '&:hover': {
           boxShadow: 3,
         },
       }}
+      aria-label={`${method.type} ending ${String(method.cardNumber || '').slice(-4)}`}
     >
       <CardContent>
         <Box
@@ -75,17 +79,20 @@ const PaymentMethodCard = ({ method, onEdit }) => {
             <Typography variant="h6">{method.type}</Typography>
           </Box>
           <Box>
-            <IconButton size="small" onClick={handleEdit} sx={{ mr: 1 }}>
+            <IconButton size="small" onClick={handleEdit} sx={{ mr: 1, width: 44, height: 44 }} aria-label={`Edit ${method.type} card ending ${String(method.cardNumber || '').slice(-4)}`}>
               <EditIcon />
             </IconButton>
-            <IconButton size="small" onClick={handleDelete} color="error">
+            <IconButton size="small" onClick={handleDelete} color="error" sx={{ width: 44, height: 44 }} aria-label={`Remove ${method.type} card ending ${String(method.cardNumber || '').slice(-4)}`}>
               <DeleteIcon />
             </IconButton>
           </Box>
         </Box>
 
-        <Typography variant="body1" sx={{ mt: 2 }}>
-          {maskCardNumber(method.cardNumber)}
+        <Typography variant="body1" sx={{ mt: 2, wordBreak: 'break-word' }}>
+          {maskedCardNumber}
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+          For your security, only the last 4 digits are shown.
         </Typography>
 
         <Box sx={{ mt: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -97,7 +104,7 @@ const PaymentMethodCard = ({ method, onEdit }) => {
           )}
         </Box>
 
-        <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+        <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="body2" color="text.secondary">
             Cardholder: {method.cardholderName}
           </Typography>
@@ -106,7 +113,7 @@ const PaymentMethodCard = ({ method, onEdit }) => {
       <ConfirmDialog
         open={confirmOpen}
         title="Remove Payment Method"
-        message="Are you sure you want to remove this payment method?"
+        message="Are you sure you want to remove this payment method? You can add it again later if needed."
         confirmLabel="Remove"
         onConfirm={confirmDelete}
         onCancel={() => setConfirmOpen(false)}

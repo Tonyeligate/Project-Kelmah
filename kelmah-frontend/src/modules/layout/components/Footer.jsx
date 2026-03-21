@@ -70,7 +70,7 @@ const Footer = () => {
         { label: 'Post a Job', href: '/hirer/jobs/post' },
         { label: 'How It Works', href: '/' },
         { label: 'Pricing', href: '/pricing' },
-        { label: 'Enterprise', href: '/contact' },
+        { label: 'Enterprise', href: '/support' },
       ],
     },
     {
@@ -89,7 +89,7 @@ const Footer = () => {
         { label: 'Contact', href: '/contact' },
         { label: 'Privacy Policy', href: '/privacy' },
         { label: 'Terms of Service', href: '/terms' },
-        { label: 'Careers', href: '/contact' },
+        { label: 'Careers', href: '/community' },
       ],
     },
   ];

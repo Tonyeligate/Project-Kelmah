@@ -1,0 +1,24 @@
+{
+  "taskId": "optimization-demo-task",
+  "layoutCombinationsAnalyzed": 1250000,
+  "algorithmsUsed": ["QAOA", "QuantumAnnealing", "GroverSearch"],
+  "objectiveScores": {
+    "before": {
+      "interactionTravelDistance": 66,
+      "cognitiveLoadIndex": 74,
+      "primaryActionDiscoverability": 48
+    },
+    "after": {
+      "interactionTravelDistance": 38,
+      "cognitiveLoadIndex": 43,
+      "primaryActionDiscoverability": 84
+    }
+  },
+  "breakpointsTested": [320, 390, 768, 1024, 1280, 1440],
+  "accessibilityEdgeCasesTested": 52,
+  "selectedLayout": {
+    "id": "L-OPT-13",
+    "reason": "best weighted objective score under accessibility hard constraints"
+  },
+  "closureVerdict": "PASS"
+}

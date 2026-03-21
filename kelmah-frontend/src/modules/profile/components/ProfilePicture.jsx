@@ -105,11 +105,13 @@ const ProfilePicture = ({ size = 120, editable = true }) => {
             style={{ display: 'none' }}
             id="profile-picture-input"
             onChange={handleFileSelect}
+            aria-label="Upload profile image"
           />
           <label htmlFor="profile-picture-input">
             <Tooltip title="Change profile picture">
               <IconButton
                 component="span"
+                aria-label="Change profile picture"
                 sx={{
                   position: 'absolute',
                   bottom: 0,

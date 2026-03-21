@@ -164,15 +164,16 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
       anchor="right"
       open={open}
       onClose={onClose}
+      aria-label="Message search panel"
       PaperProps={{
         sx: {
-          width: { xs: '100%', sm: 400 },
+          width: { xs: '100%', sm: 420 },
           bgcolor: 'background.paper',
         },
       }}
     >
       <SearchHeader>
-        <IconButton edge="start" onClick={onClose}>
+        <IconButton edge="start" onClick={onClose} aria-label="Close message search" sx={{ width: 44, height: 44 }}>
           <ArrowBack />
         </IconButton>
         <Typography variant="h6">Message Search</Typography>
@@ -182,9 +183,11 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Search for messages..."
+          placeholder="Search names, words, or shared details"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          helperText="Start with one word, then narrow by date or attachments."
+          inputProps={{ 'aria-label': 'Search messages' }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -193,7 +196,12 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
             ),
             endAdornment: query && (
               <InputAdornment position="end">
-                <IconButton edge="end" onClick={() => setQuery('')}>
+                <IconButton
+                  edge="end"
+                  onClick={() => setQuery('')}
+                  aria-label="Clear search text"
+                  sx={{ width: 44, height: 44 }}
+                >
                   <Close />
                 </IconButton>
               </InputAdornment>
@@ -208,6 +216,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
             variant={filters.attachments ? 'filled' : 'outlined'}
             selected={filters.attachments}
             onClick={() => toggleFilter('attachments')}
+            aria-label="Filter messages with attachments"
           />
 
           <FilterChip
@@ -216,6 +225,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
             variant={filters.period === 'today' ? 'filled' : 'outlined'}
             selected={filters.period === 'today'}
             onClick={() => toggleFilter('period', 'today')}
+            aria-label="Filter messages from today"
           />
 
           <FilterChip
@@ -224,6 +234,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
             variant={filters.period === 'week' ? 'filled' : 'outlined'}
             selected={filters.period === 'week'}
             onClick={() => toggleFilter('period', 'week')}
+            aria-label="Filter messages from this week"
           />
 
           <FilterChip
@@ -232,6 +243,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
             variant={filters.period === 'month' ? 'filled' : 'outlined'}
             selected={filters.period === 'month'}
             onClick={() => toggleFilter('period', 'month')}
+            aria-label="Filter messages from this month"
           />
         </Box>
       </Box>
@@ -246,13 +258,16 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
         <List sx={{ overflow: 'auto', flexGrow: 1 }}>
           {results.map((message) => (
             <React.Fragment key={message.id}>
-              <SearchResult onClick={() => handleSelectResult(message)}>
+              <SearchResult
+                onClick={() => handleSelectResult(message)}
+                aria-label={`Open matched message in ${message.conversation.title}`}
+              >
                 <ListItemText
                   primary={
                     <Box
-                      sx={{ display: 'flex', justifyContent: 'space-between' }}
+                      sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, alignItems: 'flex-start' }}
                     >
-                      <Typography variant="body1">
+                      <Typography variant="body1" sx={{ minWidth: 0, wordBreak: 'break-word' }}>
                         {message.conversation.title}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -315,7 +330,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            No messages found matching "{query}"
+            No messages matched "{query}". Try a shorter word such as payment, job, or name.
           </Typography>
         </Box>
       ) : (
@@ -328,7 +343,7 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            Enter a search term to find messages
+            Type one word to find messages. Use date or attachments to narrow the list.
           </Typography>
         </Box>
       )}
@@ -337,3 +352,4 @@ const MessageSearch = ({ open, onClose, onSelectMessage }) => {
 };
 
 export default MessageSearch;
+

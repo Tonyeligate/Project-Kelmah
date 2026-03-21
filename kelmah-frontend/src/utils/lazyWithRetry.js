@@ -17,6 +17,38 @@ const isChunkLoadError = (error) => {
   );
 };
 
+const RELOAD_GUARD_KEY = 'lazy-retry-reload-at';
+const RELOAD_GUARD_WINDOW_MS = 30_000;
+
+const canTriggerReload = () => {
+  if (!isBrowser()) {
+    return false;
+  }
+
+  try {
+    const last = Number(sessionStorage.getItem(RELOAD_GUARD_KEY) || 0);
+    if (last && Date.now() - last < RELOAD_GUARD_WINDOW_MS) {
+      return false;
+    }
+  } catch {
+    // Fall through; if storage is unavailable we still allow one reload attempt.
+  }
+
+  return true;
+};
+
+const markReloadTriggered = () => {
+  if (!isBrowser()) {
+    return;
+  }
+
+  try {
+    sessionStorage.setItem(RELOAD_GUARD_KEY, String(Date.now()));
+  } catch {
+    // Ignore storage write issues in restrictive browser modes.
+  }
+};
+
 const purgeCachesAndReload = (() => {
   let purgeInFlight = false;
 
@@ -71,10 +103,11 @@ const purgeCachesAndReload = (() => {
       return;
     }
 
+    if (!canTriggerReload()) {
+      return;
+    }
+
     if (purgeInFlight) {
-      requestAnimationFrame(() => {
-        window.location.reload();
-      });
       return;
     }
 
@@ -85,6 +118,7 @@ const purgeCachesAndReload = (() => {
         if (import.meta.env.DEV) console.warn('lazyWithRetry cache purge failed:', error);
       })
       .finally(() => {
+        markReloadTriggered();
         requestAnimationFrame(() => {
           window.location.reload();
         });

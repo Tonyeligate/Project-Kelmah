@@ -369,6 +369,7 @@ const PremiumSearchBar = ({
               <InputAdornment position="end">
                 <IconButton
                   onClick={onClear}
+                  aria-label="Clear map search"
                   sx={{
                     color: '#FFD700',
                     '&:hover': {
@@ -580,6 +581,7 @@ const PremiumFilterPanel = ({
           </Typography>
           <IconButton
             onClick={onClose}
+            aria-label="Close advanced filters"
             sx={{
               color: '#000',
               '&:hover': {
@@ -2321,6 +2323,7 @@ const MapSearchOverlay = ({
                   <Tooltip title="Share Search">
                     <IconButton
                       size="small"
+                      aria-label="Share search results"
                       sx={{
                         color: '#FFD700',
                         '&:hover': {
@@ -2335,6 +2338,7 @@ const MapSearchOverlay = ({
                   <Tooltip title="Save Search">
                     <IconButton
                       size="small"
+                      aria-label="Save search"
                       sx={{
                         color: '#FFD700',
                         '&:hover': {
@@ -2349,6 +2353,7 @@ const MapSearchOverlay = ({
                   <Tooltip title="Export Results">
                     <IconButton
                       size="small"
+                      aria-label="Export search results"
                       sx={{
                         color: '#FFD700',
                         '&:hover': {

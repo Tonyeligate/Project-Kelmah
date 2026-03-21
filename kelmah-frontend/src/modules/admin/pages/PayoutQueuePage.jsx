@@ -88,8 +88,8 @@ const EnqueueForm = ({ onSubmitted }) => {
           <TextField fullWidth size="small" label="Payment Method ID" value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value)} placeholder="ObjectId" />
         </Grid>
         <Grid item xs={12} sm={4} md={2}>
-          <Button type="submit" variant="contained" fullWidth disabled={submitting} startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : <SendIcon />}>
-            Enqueue
+          <Button type="submit" variant="contained" fullWidth disabled={submitting} startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : <SendIcon />} sx={{ minHeight: 44 }}>
+            Add to Queue
           </Button>
         </Grid>
       </Grid>
@@ -154,10 +154,13 @@ const PayoutQueuePage = () => {
       <Typography variant="h4" fontWeight="bold" gutterBottom>
         Payout Queue
       </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Queue payouts, run a payout batch, and review payout progress in one place.
+      </Typography>
 
       <Accordion sx={{ mb: 3, borderRadius: 2, '&:before': { display: 'none' } }} disableGutters>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography fontWeight={600}>Enqueue Payout (Admin)</Typography>
+          <Typography fontWeight={600}>Queue a Payout (Admin)</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <EnqueueForm onSubmitted={load} />
@@ -167,7 +170,7 @@ const PayoutQueuePage = () => {
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3, alignItems: 'center' }}>
         <FormControl size="small" sx={{ minWidth: 140 }}>
           <InputLabel>Status</InputLabel>
-          <Select value={status} label="Status" onChange={(event) => setStatus(event.target.value)}>
+          <Select value={status} label="Status" onChange={(event) => setStatus(event.target.value)} inputProps={{ 'aria-label': 'Filter payouts by status' }}>
             <MenuItem value="">All</MenuItem>
             <MenuItem value="queued">Queued</MenuItem>
             <MenuItem value="processing">Processing</MenuItem>
@@ -175,12 +178,12 @@ const PayoutQueuePage = () => {
             <MenuItem value="failed">Failed</MenuItem>
           </Select>
         </FormControl>
-        <TextField size="small" label="Page" type="number" value={page} onChange={(event) => { const next = parseInt(event.target.value, 10); if (!Number.isNaN(next) && next >= 1) setPage(next); }} inputProps={{ min: 1 }} sx={{ width: 100 }} />
-        <TextField size="small" label="Limit" type="number" value={limit} onChange={(event) => { const next = parseInt(event.target.value, 10); if (!Number.isNaN(next) && next >= 1 && next <= 100) setLimit(next); }} inputProps={{ min: 1, max: 100 }} sx={{ width: 100 }} />
-        <Button variant="contained" startIcon={processing ? <CircularProgress size={16} color="inherit" /> : <PlayArrowIcon />} onClick={onProcessBatch} disabled={processing}>
-          {processing ? 'Processing...' : 'Process Batch'}
+        <TextField size="small" label="Page" type="number" value={page} onChange={(event) => { const next = parseInt(event.target.value, 10); if (!Number.isNaN(next) && next >= 1) setPage(next); }} inputProps={{ min: 1, 'aria-label': 'Payout page number' }} sx={{ width: 100 }} />
+        <TextField size="small" label="Limit" type="number" value={limit} onChange={(event) => { const next = parseInt(event.target.value, 10); if (!Number.isNaN(next) && next >= 1 && next <= 100) setLimit(next); }} inputProps={{ min: 1, max: 100, 'aria-label': 'Payouts per page' }} sx={{ width: 100 }} />
+        <Button variant="contained" startIcon={processing ? <CircularProgress size={16} color="inherit" /> : <PlayArrowIcon />} onClick={onProcessBatch} disabled={processing} sx={{ minHeight: 44 }}>
+          {processing ? 'Processing...' : 'Run Batch'}
         </Button>
-        <Button variant="outlined" startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />} onClick={load} disabled={loading}>
+        <Button variant="outlined" startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />} onClick={load} disabled={loading} sx={{ minHeight: 44 }}>
           Refresh
         </Button>
       </Box>
@@ -193,7 +196,10 @@ const PayoutQueuePage = () => {
         </Box>
       ) : items.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 6 }}>
-          <Typography color="text.secondary">No payout items found.</Typography>
+          <Typography color="text.secondary">No payout items match your current filters.</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Try another status or refresh to check for new payouts.
+          </Typography>
         </Box>
       ) : isMobile ? (
         <Grid container spacing={2}>

@@ -258,9 +258,12 @@ const LocationBasedSearch = ({
     try {
       const response = await locationService.getPopularLocations();
       setPopularLocations(response.data || []);
-      setLocationDataNotice(response?.meta?.unavailable ? response.meta.message : '');
+      setLocationDataNotice(
+        response?.meta?.unavailable ? response.meta.message : '',
+      );
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to load popular locations:', error);
+      if (import.meta.env.DEV)
+        console.error('Failed to load popular locations:', error);
     }
   };
 
@@ -270,7 +273,8 @@ const LocationBasedSearch = ({
       const response = await locationService.getRecentSearches();
       setRecentSearches(response.data || []);
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to load recent searches:', error);
+      if (import.meta.env.DEV)
+        console.error('Failed to load recent searches:', error);
     }
   };
 
@@ -286,7 +290,8 @@ const LocationBasedSearch = ({
         );
         setNearbyLocations(response.data || []);
       } catch (error) {
-        if (import.meta.env.DEV) console.error('Failed to load nearby locations:', error);
+        if (import.meta.env.DEV)
+          console.error('Failed to load nearby locations:', error);
       } finally {
         setLoading(false);
       }
@@ -338,7 +343,8 @@ const LocationBasedSearch = ({
             variant: 'success',
           });
         } catch (error) {
-          if (import.meta.env.DEV) console.error('Failed to process detected location:', error);
+          if (import.meta.env.DEV)
+            console.error('Failed to process detected location:', error);
           enqueueSnackbar('Failed to get location details', {
             variant: 'error',
           });
@@ -381,7 +387,8 @@ const LocationBasedSearch = ({
       await locationService.saveRecentSearch(location);
       loadRecentSearches();
     } catch (error) {
-      if (import.meta.env.DEV) console.error('Failed to save recent search:', error);
+      if (import.meta.env.DEV)
+        console.error('Failed to save recent search:', error);
     }
 
     if (onLocationSelect) {
@@ -483,7 +490,11 @@ const LocationBasedSearch = ({
     itemKey = location.name,
   ) => (
     <ListItem key={itemKey} disablePadding>
-      <ListItemButton onClick={() => handleLocationSelect(location)}>
+      <ListItemButton
+        onClick={() => handleLocationSelect(location)}
+        aria-label={`Choose ${location.name}${location.region ? ` in ${location.region}` : ''}`}
+        sx={{ minHeight: 44 }}
+      >
         <ListItemIcon>{getLocationIcon(location.type)}</ListItemIcon>
         <ListItemText
           primary={location.name}
@@ -508,7 +519,7 @@ const LocationBasedSearch = ({
               </Typography>
               {showJobCount && location.jobs && (
                 <Chip
-                  label={`${location.jobs} jobs`}
+                  label={`${location.jobs} jobs nearby`}
                   size="small"
                   variant="outlined"
                   color="primary"
@@ -550,10 +561,13 @@ const LocationBasedSearch = ({
           justifyContent="space-between"
           mb={2}
         >
-          <Typography variant="subtitle1">Current Location</Typography>
+          <Typography variant="subtitle1" sx={{ wordBreak: 'break-word' }}>
+            Current location for nearby jobs
+          </Typography>
           <Button
             variant="outlined"
             size="small"
+            aria-label="Detect my current location for nearby jobs"
             startIcon={
               gettingLocation ? (
                 <CircularProgress size={16} />
@@ -563,17 +577,39 @@ const LocationBasedSearch = ({
             }
             onClick={getCurrentLocation}
             disabled={gettingLocation}
+            sx={{ minHeight: 44 }}
           >
-            {gettingLocation ? 'Getting Location...' : 'Use My Location'}
+            {gettingLocation
+              ? 'Getting Location...'
+              : 'Use My Current Location'}
           </Button>
         </Box>
+
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{
+            display: 'block',
+            mb: 1.5,
+            lineHeight: 1.4,
+            wordBreak: 'break-word',
+          }}
+        >
+          Your location helps rank nearby work first. You can still choose any
+          city manually below.
+        </Typography>
 
         {currentLocation ? (
           <Alert
             severity="success"
             icon={<LocationIcon />}
             action={
-              <IconButton size="small" onClick={() => setCurrentLocation(null)}>
+              <IconButton
+                size="small"
+                aria-label="Clear selected location"
+                onClick={() => setCurrentLocation(null)}
+                sx={{ width: 44, height: 44 }}
+              >
                 <ClearIcon />
               </IconButton>
             }
@@ -586,7 +622,8 @@ const LocationBasedSearch = ({
         ) : (
           <Alert severity="info" icon={<ExploreIcon />}>
             <Typography variant="body2">
-              Select a location to find jobs nearby
+              Select a location to find nearby jobs. This only improves search
+              relevance.
             </Typography>
           </Alert>
         )}
@@ -597,9 +634,17 @@ const LocationBasedSearch = ({
             <Typography variant="body2" gutterBottom>
               Search Radius: {searchRadius} km
             </Typography>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: 'block', mb: 0.75, lineHeight: 1.4 }}
+            >
+              Increase distance to see more areas when local results are few.
+            </Typography>
             <Slider
               value={searchRadius}
               onChange={handleRadiusChange}
+              aria-label="Set location search radius"
               min={1}
               max={50}
               step={1}
@@ -612,6 +657,12 @@ const LocationBasedSearch = ({
               valueLabelDisplay="auto"
               valueLabelFormat={(value) => `${value}km`}
             />
+            {!loading && nearbyLocations.length === 0 && (
+              <Alert severity="info" sx={{ mt: 1.5 }}>
+                No nearby areas found yet. Increase the radius or choose a city
+                manually to continue.
+              </Alert>
+            )}
           </Box>
         )}
       </Paper>
@@ -635,8 +686,12 @@ const LocationBasedSearch = ({
           renderInput={(params) => (
             <TextField
               {...params}
-              label="Search Locations"
+              label="Search locations"
               placeholder="e.g., Accra, Kumasi, East Legon"
+              inputProps={{
+                ...params.inputProps,
+                'aria-label': 'Search location by city, town, or area',
+              }}
               helperText="Type a city, town, or area name. If live search is unavailable, use Popular Locations or Browse by Region below."
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
@@ -702,7 +757,8 @@ const LocationBasedSearch = ({
             <CardContent>
               {locationDataNotice ? (
                 <Alert severity="warning" sx={{ mb: 2 }}>
-                  {locationDataNotice} Region and city cards remain available for manual selection.
+                  {locationDataNotice} Region and city cards remain available
+                  for manual selection.
                 </Alert>
               ) : null}
               <Typography
@@ -727,7 +783,8 @@ const LocationBasedSearch = ({
                 </List>
               ) : (
                 <Alert severity="info">
-                  Popular location analytics are unavailable right now. Use search or region browsing to choose a location.
+                  Popular location analytics are unavailable right now. Use
+                  search or region browsing to choose a location.
                 </Alert>
               )}
             </CardContent>
@@ -748,6 +805,13 @@ const LocationBasedSearch = ({
                 <MapIcon color="primary" />
                 Browse by Region
               </Typography>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: 'block', mb: 1 }}
+              >
+                Pick a region first, then choose a city with the best job count.
+              </Typography>
               <List dense>
                 {ghanaRegions.map((region) => {
                   const totalJobs = region.cities.reduce(
@@ -756,7 +820,7 @@ const LocationBasedSearch = ({
                   );
                   return (
                     <ListItem key={region.name} disablePadding>
-                      <ListItemButton>
+                      <ListItemButton aria-label={`Choose region ${region.name}`}>
                         <ListItemIcon>
                           <CityIcon color="action" />
                         </ListItemIcon>

@@ -712,7 +712,7 @@ const JobPostingPage = () => {
             <TextField
               name="title"
               label="Job Title"
-              placeholder="e.g. Experienced Plumber Needed"
+              placeholder="e.g. Plumber needed for kitchen leak repair"
               value={formData.title}
               onChange={handleChange}
               fullWidth
@@ -723,7 +723,7 @@ const JobPostingPage = () => {
               error={Boolean(touchedFields.title && fieldErrors.title)}
               helperText={
                 (touchedFields.title && fieldErrors.title) ||
-                'Example: Senior Carpenter for custom kitchen cabinets'
+                'Keep it short and specific so workers understand the task quickly'
               }
             />
             <FormControl
@@ -777,7 +777,7 @@ const JobPostingPage = () => {
               </Select>
               <FormHelperText>
                 {(touchedFields.category && fieldErrors.category) ||
-                  'Choose the trade that best matches this project'}
+                  'Choose the main trade for this work'}
               </FormHelperText>
             </FormControl>
 
@@ -787,7 +787,7 @@ const JobPostingPage = () => {
                 Cover Image (optional)
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                Add a photo of the job site or project to attract more workers
+                Add a clear site or project photo so workers understand the task faster
               </Typography>
               {coverImagePreview ? (
                 <Box sx={{ position: 'relative', maxWidth: 400 }}>
@@ -831,6 +831,7 @@ const JobPostingPage = () => {
                     type="file"
                     accept="image/*"
                     hidden
+                    aria-label="Upload job cover image"
                     onChange={handleCoverImageChange}
                   />
                 </Button>
@@ -844,7 +845,7 @@ const JobPostingPage = () => {
             <TextField
               name="description"
               label="Job Description"
-              placeholder="Describe the work needed, tools required, and what you expect..."
+              placeholder="Describe the work, tools, timeline, and result you expect"
               value={formData.description}
               onChange={handleChange}
               multiline
@@ -935,7 +936,7 @@ const JobPostingPage = () => {
                   {...params}
                   label="Skills"
                   placeholder="Add skill"
-                  helperText="Add up to five skills to help the right workers find this job"
+                  helperText="Add up to five key skills so qualified workers can find this job"
                 />
               )}
               sx={{ mt: 2 }}
@@ -958,12 +959,12 @@ const JobPostingPage = () => {
                 <FormControlLabel
                   value="hourly"
                   control={<Radio />}
-                  label="Hourly Rate"
+                  label="Pay per hour"
                 />
                 <FormControlLabel
                   value="fixed"
                   control={<Radio />}
-                  label="Fixed Price"
+                  label="Fixed total amount"
                 />
               </RadioGroup>
             </FormControl>
@@ -1089,7 +1090,7 @@ const JobPostingPage = () => {
                   color="primary"
                 />
               }
-              label="Enable bidding — let workers compete with price proposals"
+              label="Enable bidding so workers can send price offers"
             />
             {formData.biddingEnabled && (
               <Box sx={{ mt: 2 }}>
@@ -1231,8 +1232,8 @@ const JobPostingPage = () => {
         </Typography>
         {!isMobile && (
           <Typography variant="body1" color="text.secondary">
-            Create a detailed job posting to find the perfect talent for your
-            project
+            Share clear details, budget, and location so the right workers can
+            apply quickly.
           </Typography>
         )}
       </Box>

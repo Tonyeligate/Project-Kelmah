@@ -374,7 +374,7 @@ const HirerDashboardPage = () => {
         }}
       >
         {/* Breadcrumb - LC Portal Style */}
-        <Breadcrumbs sx={{ mb: 3, display: { xs: 'none', md: 'flex' } }} aria-label="breadcrumb">
+        <Breadcrumbs sx={{ mb: 3, display: { xs: 'none', md: 'flex' } }} aria-label="Breadcrumb navigation">
           <MUILink
             component={RouterLink}
             to="/"

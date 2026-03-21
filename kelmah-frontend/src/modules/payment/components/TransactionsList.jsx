@@ -16,7 +16,6 @@ import {
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
 } from '@mui/icons-material';
-import { format } from 'date-fns';
 import { currencyFormatter, safeFormatDate } from '@/modules/common/utils/formatters';
 
 const TransactionsList = ({ transactions = [], loading = false, limit }) => {
@@ -43,13 +42,18 @@ const TransactionsList = ({ transactions = [], loading = false, limit }) => {
         <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
           Recent Transactions
         </Typography>
-        <Typography color="text.secondary">No transactions found.</Typography>
+        <Typography color="text.secondary" sx={{ mb: 1 }}>
+          No transactions found.
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Deposits, withdrawals, and escrow releases will appear here when available.
+        </Typography>
       </Paper>
     );
   }
 
   return (
-    <Paper sx={{ p: 3, borderRadius: 2 }}>
+    <Paper sx={{ p: 3, borderRadius: 2 }} aria-label="Recent transactions list">
       <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
         Recent Transactions
       </Typography>
@@ -80,6 +84,8 @@ const TransactionsList = ({ transactions = [], loading = false, limit }) => {
               <ListItemText
                 primary={tx.title || tx.description}
                 secondary={safeFormatDate(tx.date, 'd MMMM yyyy, hh:mm a')}
+                primaryTypographyProps={{ sx: { wordBreak: 'break-word', overflowWrap: 'anywhere' } }}
+                secondaryTypographyProps={{ sx: { whiteSpace: 'normal' } }}
               />
               <Tooltip
                 title={
@@ -89,6 +95,7 @@ const TransactionsList = ({ transactions = [], loading = false, limit }) => {
                 <Typography
                   color={tx.type === 'deposit' ? 'success.main' : 'error.main'}
                   fontWeight="bold"
+                  sx={{ minWidth: 90, textAlign: 'right' }}
                 >
                   {(tx.type === 'deposit' ? '+' : '-') +
                     currencyFormatter.format(tx.amount)}

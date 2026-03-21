@@ -33,6 +33,7 @@ import jobsApi from '../services/jobsService';
 import { format, formatDistanceToNow, isValid } from 'date-fns';
 import CountUp from 'react-countup';
 import { useInView } from 'react-intersection-observer';
+import { captureRecoverableApiError } from '@/services/errorTelemetry';
 import {
   ElectricalServices as ElectricalIcon,
   Plumbing as PlumbingIcon,
@@ -190,15 +191,15 @@ const JobResultsSection = ({
           variant="h5"
           sx={{ color: '#D4AF37', mb: 2, fontWeight: 'bold' }}
         >
-          No Jobs Found
+          No jobs found
         </Typography>
         <Typography
           variant="body1"
           sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}
         >
           {hasFilters
-            ? "We couldn't find any jobs matching your search criteria. Try adjusting your filters or search terms."
-            : 'No jobs are currently available. Check back soon for new opportunities!'}
+            ? 'Try removing one filter or changing your search words.'
+            : 'No jobs are available right now. Check back soon for new work.'}
         </Typography>
         <Box
           sx={{
@@ -219,7 +220,7 @@ const JobResultsSection = ({
                 '&:hover': { bgcolor: '#B8941F' },
               }}
             >
-              Clear All Filters
+              Clear filters
             </Button>
           )}
           <Button
@@ -257,6 +258,11 @@ const JobResultsSection = ({
       await jobsApi.saveJob(jobId);
     } catch (err) {
       if (import.meta.env.DEV) console.warn('Failed to bookmark job:', err.message);
+      captureRecoverableApiError(err, {
+        phase: 'save-job',
+        feature: 'job-results',
+        endpoint: `/jobs/${jobId}/save`,
+      });
     }
   };
 
@@ -268,12 +274,28 @@ const JobResultsSection = ({
           text: `Check out this job opportunity: ${job.title} at ${job.employer?.name || 'Kelmah'}`,
           url: `${window.location.origin}/jobs/${job._id || job.id}`,
         })
-        .catch(() => {});
+        .catch((error) => {
+          if (error?.name === 'AbortError') {
+            return;
+          }
+
+          captureRecoverableApiError(error, {
+            phase: 'share-job',
+            feature: 'job-results',
+            suppressUi: true,
+          });
+        });
       return;
     }
-    navigator?.clipboard?.writeText(
-      `${window.location.origin}/jobs/${job._id || job.id}`,
-    );
+    navigator?.clipboard
+      ?.writeText(`${window.location.origin}/jobs/${job._id || job.id}`)
+      .catch((error) => {
+        captureRecoverableApiError(error, {
+          phase: 'share-copy-link',
+          feature: 'job-results',
+          suppressUi: true,
+        });
+      });
   };
 
   return (
@@ -307,6 +329,12 @@ const JobResultsSection = ({
               >
                 Active filters:
               </Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: 'rgba(255,255,255,0.65)' }}
+              >
+                Remove any chip below to widen your results.
+              </Typography>
               {searchQuery && (
                 <Chip
                   label={`Search: "${searchQuery}"`}
@@ -316,6 +344,12 @@ const JobResultsSection = ({
                     bgcolor: 'rgba(212,175,55,0.2)',
                     color: '#D4AF37',
                     '& .MuiChip-deleteIcon': { color: '#D4AF37' },
+                    height: 'auto',
+                    '& .MuiChip-label': {
+                      whiteSpace: 'normal',
+                      display: 'block',
+                      overflowWrap: 'anywhere',
+                    },
                   }}
                 />
               )}
@@ -328,6 +362,12 @@ const JobResultsSection = ({
                     bgcolor: 'rgba(212,175,55,0.2)',
                     color: '#D4AF37',
                     '& .MuiChip-deleteIcon': { color: '#D4AF37' },
+                    height: 'auto',
+                    '& .MuiChip-label': {
+                      whiteSpace: 'normal',
+                      display: 'block',
+                      overflowWrap: 'anywhere',
+                    },
                   }}
                 />
               )}
@@ -340,6 +380,12 @@ const JobResultsSection = ({
                     bgcolor: 'rgba(212,175,55,0.2)',
                     color: '#D4AF37',
                     '& .MuiChip-deleteIcon': { color: '#D4AF37' },
+                    height: 'auto',
+                    '& .MuiChip-label': {
+                      whiteSpace: 'normal',
+                      display: 'block',
+                      overflowWrap: 'anywhere',
+                    },
                   }}
                 />
               )}
@@ -347,7 +393,7 @@ const JobResultsSection = ({
           )}
         </Box>
         <Chip
-          label={`${safeJobs.length} Job${safeJobs.length === 1 ? '' : 's'} Found`}
+          label={`${safeJobs.length} jobs found`}
           icon={<WorkIcon sx={{ fontSize: 18 }} />}
           sx={{
             bgcolor: 'rgba(212,175,55,0.2)',
@@ -802,6 +848,7 @@ const JobResultsSection = ({
                           }
                           navigate(`/jobs/${jobId}/apply`);
                         }}
+                        aria-label={`Apply to ${job.title}`}
                         sx={{
                           bgcolor: '#D4AF37',
                           color: 'black',
@@ -820,6 +867,7 @@ const JobResultsSection = ({
                           event.stopPropagation();
                           navigate(`/jobs/${job._id || job.id}`);
                         }}
+                        aria-label={`Open job details for ${job.title}`}
                         sx={{
                           color: '#D4AF37',
                           minWidth: { xs: '44px', sm: '40px' },
@@ -835,6 +883,7 @@ const JobResultsSection = ({
                           event.stopPropagation();
                           handleBookmark(job);
                         }}
+                        aria-label={`Save ${job.title} for later`}
                         sx={{
                           color: '#D4AF37',
                           minWidth: { xs: '44px', sm: '40px' },
@@ -850,8 +899,11 @@ const JobResultsSection = ({
                           event.stopPropagation();
                           handleShare(job);
                         }}
+                        aria-label={`Share ${job.title}`}
                         sx={{
                           color: '#D4AF37',
+                          minWidth: { xs: '44px', sm: '40px' },
+                          minHeight: { xs: '44px', sm: '40px' },
                           '&:hover': { bgcolor: 'rgba(212,175,55,0.1)' },
                         }}
                       >
@@ -1122,3 +1174,4 @@ JobResultsSection.propTypes = {
 };
 
 export default JobResultsSection;
+

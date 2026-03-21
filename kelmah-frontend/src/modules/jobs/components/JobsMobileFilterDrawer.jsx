@@ -18,7 +18,6 @@ import {
   Button,
   Stack,
   Slider,
-  useTheme,
 } from '@mui/material';
 import { Close as CloseIcon, Search as SearchIcon } from '@mui/icons-material';
 import PropTypes from 'prop-types';
@@ -31,7 +30,6 @@ const JobsMobileFilterDrawer = ({
   tradeCategories = [],
   locations = [],
 }) => {
-  const theme = useTheme();
   const [filters, setFilters] = useState({
     search: '',
     category: '',
@@ -79,11 +77,6 @@ const JobsMobileFilterDrawer = ({
       anchor="bottom"
       open={open}
       onClose={onClose}
-      ModalProps={{
-        disableAutoFocus: true,
-        disableEnforceFocus: true,
-        disableRestoreFocus: true,
-      }}
       PaperProps={{
         sx: {
           borderTopLeftRadius: 16,
@@ -104,10 +97,15 @@ const JobsMobileFilterDrawer = ({
           borderColor: 'divider',
         }}
       >
-        <Typography variant="h6" fontWeight="bold">
-          Filter & Sort Jobs
-        </Typography>
-        <IconButton onClick={onClose} size="small">
+        <Box sx={{ minWidth: 0, pr: 1 }}>
+          <Typography variant="h6" fontWeight="bold" sx={{ wordBreak: 'break-word' }}>
+            Filter & Sort Jobs
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Choose simple filters to find suitable jobs faster.
+          </Typography>
+        </Box>
+        <IconButton onClick={onClose} size="small" aria-label="Close filters" sx={{ width: 44, height: 44 }}>
           <CloseIcon />
         </IconButton>
       </Box>
@@ -135,15 +133,19 @@ const JobsMobileFilterDrawer = ({
         <Stack spacing={3}>
           {/* Search Input */}
           <TextField
-            label="Search jobs, skills, companies..."
+            label="Search jobs, skills, or company"
             variant="outlined"
             fullWidth
             value={filters.search}
             onChange={(e) => handleFieldChange('search', e.target.value)}
+            inputProps={{ 'aria-label': 'Filter jobs by keyword' }}
             InputProps={{
               sx: { minHeight: '48px' },
             }}
           />
+          <Typography variant="caption" color="text.secondary" sx={{ mt: -1 }}>
+            Example: electrician, roof repair, or painter in Accra.
+          </Typography>
 
           {/* Category Filter */}
           <FormControl fullWidth>
@@ -152,13 +154,14 @@ const JobsMobileFilterDrawer = ({
               value={filters.category}
               label="Trade Category"
               onChange={(e) => handleFieldChange('category', e.target.value)}
+              inputProps={{ 'aria-label': 'Filter jobs by trade category' }}
               sx={{ minHeight: '48px' }}
             >
               <MenuItem value="">
                 <em>All Categories</em>
               </MenuItem>
               {tradeCategories.map((cat) => (
-                <MenuItem key={cat.value} value={cat.value}>
+                <MenuItem key={cat.value} value={cat.value} sx={{ whiteSpace: 'normal' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     {cat.icon && (
                       <cat.icon
@@ -179,13 +182,14 @@ const JobsMobileFilterDrawer = ({
               value={filters.location}
               label="Location"
               onChange={(e) => handleFieldChange('location', e.target.value)}
+              inputProps={{ 'aria-label': 'Filter jobs by location' }}
               sx={{ minHeight: '48px' }}
             >
               <MenuItem value="">
                 <em>All Locations</em>
               </MenuItem>
               {locations.map((loc) => (
-                <MenuItem key={loc.value} value={loc.value}>
+                <MenuItem key={loc.value} value={loc.value} sx={{ whiteSpace: 'normal' }}>
                   {loc.label}
                 </MenuItem>
               ))}
@@ -198,7 +202,7 @@ const JobsMobileFilterDrawer = ({
               variant="body2"
               sx={{ mb: 2, fontWeight: 'bold', color: 'text.secondary' }}
             >
-              Salary Range (GH₵)
+              Budget Range (GH₵)
             </Typography>
             <Slider
               value={filters.salaryRange}
@@ -251,7 +255,7 @@ const JobsMobileFilterDrawer = ({
           fullWidth
           sx={{ minHeight: '48px' }}
         >
-          Clear All
+          Clear Filters
         </Button>
         <Button
           variant="contained"
@@ -267,7 +271,7 @@ const JobsMobileFilterDrawer = ({
             },
           }}
         >
-          Apply Filters
+          Show Jobs
         </Button>
       </Box>
     </Drawer>

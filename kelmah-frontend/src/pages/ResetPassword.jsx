@@ -72,6 +72,9 @@ const ResetPassword = () => {
       >
         Reset Password
       </Typography>
+      <Typography variant="body2" sx={{ mb: 1.5, color: 'text.secondary' }}>
+        Choose a new password you can remember. You can sign in right after saving.
+      </Typography>
 
       {status && (
         <Alert severity="success" sx={{ mb: 2 }}>
@@ -92,9 +95,10 @@ const ResetPassword = () => {
         required
         disabled={loading}
         margin="normal"
+        helperText="Use at least 8 characters."
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        inputProps={{ autoComplete: 'new-password', style: { fontSize: 16 } }}
+        inputProps={{ autoComplete: 'new-password', style: { fontSize: 16 }, 'aria-label': 'New password' }}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
@@ -118,9 +122,10 @@ const ResetPassword = () => {
         required
         disabled={loading}
         margin="normal"
+        helperText="Type the same password again."
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
-        inputProps={{ autoComplete: 'new-password', style: { fontSize: 16 } }}
+        inputProps={{ autoComplete: 'new-password', style: { fontSize: 16 }, 'aria-label': 'Confirm new password' }}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
@@ -142,9 +147,10 @@ const ResetPassword = () => {
         variant="contained"
         fullWidth
         disabled={loading}
+        aria-label="Save new password"
         sx={{ mt: 2, minHeight: 48, borderRadius: isMobile ? '24px' : 1 }}
       >
-        {loading ? 'Resetting password...' : 'Reset Password'}
+        {loading ? 'Saving new password...' : 'Save New Password'}
       </Button>
 
       {status && (
@@ -154,13 +160,13 @@ const ResetPassword = () => {
           onClick={() => navigate('/login')}
           sx={{ mt: 1.25, minHeight: 44 }}
         >
-          Continue to Sign in
+          Go to Sign in
         </Button>
       )}
 
       <Box sx={{ mt: 2 }}>
         <Typography variant="body2" color="text.secondary">
-          Remembered your password?{' '}
+          Remember your password now?{' '}
           <Link to="/login" style={{ color: 'inherit', fontWeight: 600, textDecoration: 'none' }}>
             Sign in
           </Link>

@@ -64,7 +64,6 @@ const SkillsRequirementBuilder = ({ value = [], onChange }) => {
           <Button
             variant="contained"
             onClick={add}
-            aria-label="Add skills"
             disabled={!input.trim() || value.length >= MAX_SKILLS}
             sx={{ minHeight: 44, minWidth: { xs: '100%', sm: 'auto' } }}
           >

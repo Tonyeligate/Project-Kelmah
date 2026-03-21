@@ -1,0 +1,21 @@
+{
+  "taskId": "demo-task",
+  "packets": [
+    {
+      "agent": "frontend",
+      "triggerRule": "visible-ui-bug",
+      "filesMeasured": ["kelmah-frontend/src/routes/config.jsx"],
+      "findings": ["missing legacy alias /search/jobs"],
+      "confidence": 0.95,
+      "verification": { "testsRun": ["routed-paths.smoke.test.jsx"], "status": "pass" }
+    },
+    {
+      "agent": "debugger",
+      "triggerRule": "contradiction-resolve",
+      "filesMeasured": ["kelmah-frontend/src/tests/smoke/routed-paths.smoke.test.jsx"],
+      "findings": ["no remaining /search/jobs consumer in active CTA flow"],
+      "confidence": 0.9,
+      "verification": { "testsRun": ["npm run build"], "status": "pass" }
+    }
+  ]
+}

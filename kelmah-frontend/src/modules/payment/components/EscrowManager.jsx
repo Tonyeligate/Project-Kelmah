@@ -142,16 +142,21 @@ const EscrowManager = () => {
       <Typography variant="h5" sx={{ mb: 2 }}>
         Escrow Manager
       </Typography>
+      <Alert severity="info" sx={{ mb: 2 }}>
+        Escrow keeps funds protected until work is confirmed. Use release for completed work and refund for unresolved jobs.
+      </Alert>
       {message && (
         <Alert severity={message.type} sx={{ mb: 2 }}>
           {message.text}
         </Alert>
       )}
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} useFlexGap sx={{ mb: 2, flexWrap: 'wrap' }}>
         <TextField
           label="Amount (GH₵)"
           value={form.amount}
           onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
+          inputProps={{ 'aria-label': 'Escrow amount in Ghana cedis' }}
+          sx={{ minWidth: { md: 180 } }}
         />
         <TextField
           label="Contract ID"
@@ -159,20 +164,28 @@ const EscrowManager = () => {
           onChange={(e) =>
             setForm((f) => ({ ...f, contractId: e.target.value }))
           }
+          inputProps={{ 'aria-label': 'Escrow contract id' }}
+          sx={{ minWidth: { md: 180 } }}
         />
         <TextField
           label="Job ID"
           value={form.jobId}
           onChange={(e) => setForm((f) => ({ ...f, jobId: e.target.value }))}
+          inputProps={{ 'aria-label': 'Escrow job id' }}
+          sx={{ minWidth: { md: 180 } }}
         />
         <TextField
           label="Worker ID"
           value={form.workerId}
           onChange={(e) => setForm((f) => ({ ...f, workerId: e.target.value }))}
+          inputProps={{ 'aria-label': 'Escrow worker id' }}
+          sx={{ minWidth: { md: 180 } }}
         />
         <Select
           value={form.provider}
           onChange={(e) => setForm((f) => ({ ...f, provider: e.target.value }))}
+          inputProps={{ 'aria-label': 'Escrow payment provider' }}
+          sx={{ minWidth: { md: 180 } }}
         >
           <MenuItem value="paystack">Paystack</MenuItem>
           <MenuItem value="stripe">Stripe</MenuItem>
@@ -185,12 +198,14 @@ const EscrowManager = () => {
             label="Email (Paystack)"
             value={form.email || ''}
             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+            inputProps={{ 'aria-label': 'Paystack customer email' }}
+            sx={{ minWidth: { md: 220 } }}
           />
         )}
-        <Button variant="contained" onClick={fundEscrow}>
+        <Button variant="contained" onClick={fundEscrow} sx={{ minHeight: 44 }}>
           Fund Escrow
         </Button>
-        <Button variant="outlined" onClick={initPayment}>
+        <Button variant="outlined" onClick={initPayment} sx={{ minHeight: 44 }}>
           Init Payment
         </Button>
       </Stack>
@@ -209,6 +224,7 @@ const EscrowManager = () => {
                 p: 2,
                 border: '1px solid rgba(255,255,255,0.1)',
                 borderRadius: 1,
+                overflowWrap: 'anywhere',
               }}
             >
               <Typography variant="subtitle1">
@@ -221,14 +237,18 @@ const EscrowManager = () => {
                 <Button
                   size="small"
                   onClick={() => releaseEscrow(e._id)}
+                  aria-label={`Release escrow ${e.reference}`}
                   disabled={e.status !== 'active'}
+                  sx={{ minHeight: 36 }}
                 >
                   Release
                 </Button>
                 <Button
                   size="small"
                   onClick={() => refundEscrow(e._id)}
+                  aria-label={`Refund escrow ${e.reference}`}
                   disabled={!(e.status === 'active' || e.status === 'disputed')}
+                  sx={{ minHeight: 36 }}
                 >
                   Refund
                 </Button>
@@ -236,9 +256,14 @@ const EscrowManager = () => {
             </Box>
           ))}
           {escrows.length === 0 && (
-            <Typography key="empty" variant="body2">
-              No escrows found.
-            </Typography>
+            <Box key="empty" sx={{ py: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                No escrows found.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Start by funding an escrow above to protect both hirer and worker payments.
+              </Typography>
+            </Box>
           )}
         </Stack>
       )}

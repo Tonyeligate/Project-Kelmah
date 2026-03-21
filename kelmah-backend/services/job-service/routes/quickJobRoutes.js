@@ -32,6 +32,38 @@ router.get('/my-jobs', verifyGatewayRequest, quickJobController.getMyQuickJobs);
 // Get jobs where worker has quoted
 router.get('/my-quotes', verifyGatewayRequest, quickJobController.getMyQuotedJobs);
 
+// Signed-upload semantics for completion photos
+router.post('/photos/upload-url', verifyGatewayRequest, async (req, res) => {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const folder = 'quickjobs/completions';
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || '';
+
+  if (!cloudName || !uploadPreset) {
+    return res.status(503).json({
+      success: false,
+      error: {
+        message: 'Signed upload is not configured. Use image URLs from your existing media flow.',
+        code: 'UPLOAD_NOT_CONFIGURED',
+      },
+    });
+  }
+
+  return res.status(201).json({
+    success: true,
+    data: {
+      provider: 'cloudinary',
+      uploadUrl: `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      fields: {
+        upload_preset: uploadPreset,
+        folder,
+        timestamp,
+      },
+      expiresInSeconds: 300,
+    },
+  });
+});
+
 // Payment verification (specific route)
 router.get('/payment/verify/:reference', verifyGatewayRequest, quickJobPaymentController.verifyPayment);
 

@@ -119,7 +119,7 @@ const NotificationItem = ({ notification, sx = {} }) => {
         )}
         <IconButton
           edge="end"
-          aria-label="delete"
+          aria-label="Delete notification"
           onClick={handleDelete}
           size="small"
         >

@@ -50,7 +50,9 @@ const WorkerSearchResults = ({
   const { isAuthenticated } = useSelector((state) => state.auth);
   const isPublicMode = isPublicView || !isAuthenticated;
   const navigate = useNavigate();
-  const [renderedWorkerCount, setRenderedWorkerCount] = useState(INITIAL_RENDERED_WORKERS);
+  const [renderedWorkerCount, setRenderedWorkerCount] = useState(
+    INITIAL_RENDERED_WORKERS,
+  );
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
@@ -167,13 +169,16 @@ const WorkerSearchResults = ({
   }, [selectedSort]);
 
   const hasLocationFilter = Boolean(
-    filters.location || filters.distance || filters.radius || filters.maxDistance,
+    filters.location ||
+      filters.distance ||
+      filters.radius ||
+      filters.maxDistance,
   );
 
   const filterButtonLabel =
     activeFilters.length > 0
       ? isMobile
-        ? `${activeFilters.length} active`
+        ? `${activeFilters.length} filters`
         : `${activeFilters.length} active filter${activeFilters.length === 1 ? '' : 's'}`
       : isMobile
         ? 'Filters'
@@ -215,16 +220,23 @@ const WorkerSearchResults = ({
             mb: 1,
           }}
         >
-          <Typography variant="subtitle2">Active Filters:</Typography>
+          <Typography variant="subtitle2">Active Filters</Typography>
           <Button
             size="small"
             variant="text"
             onClick={() => onRemoveFilter && onRemoveFilter('all')}
-            sx={{ textTransform: 'none' }}
+            sx={{ textTransform: 'none', minHeight: 44 }}
           >
             Clear all filters
           </Button>
         </Box>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: 'block', mb: 1 }}
+        >
+          Remove one filter at a time to broaden your worker matches.
+        </Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {activeFilters.map((filter, index) => (
             <Chip
@@ -236,6 +248,10 @@ const WorkerSearchResults = ({
               color="primary"
               variant="outlined"
               size="small"
+              sx={{
+                maxWidth: '100%',
+                '& .MuiChip-label': { overflowWrap: 'anywhere' },
+              }}
             />
           ))}
         </Box>
@@ -247,7 +263,13 @@ const WorkerSearchResults = ({
   const renderLoadingSkeleton = () => (
     <Grid container spacing={3}>
       {Array.from({ length: 6 }).map((_, index) => (
-        <Grid item xs={12} sm={6} md={4} key={`worker-result-skeleton-${index}`}>
+        <Grid
+          item
+          xs={12}
+          sm={6}
+          md={4}
+          key={`worker-result-skeleton-${index}`}
+        >
           <Paper sx={{ p: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <Skeleton
@@ -334,13 +356,13 @@ const WorkerSearchResults = ({
           sx={{ color: 'text.primary', fontWeight: 'bold' }}
           gutterBottom
         >
-          We couldn’t find any workers that match… yet
+          We could not find matching workers yet
         </Typography>
         <Typography
           variant="body1"
-          sx={{ color: 'text.secondary', mb: 4 }}
+          sx={{ color: 'text.secondary', mb: 4, wordBreak: 'break-word' }}
         >
-          Adjust your filters or explore other talent pools to uncover more
+          Adjust your filters or broaden your location to discover more skilled
           professionals.
         </Typography>
 
@@ -361,10 +383,7 @@ const WorkerSearchResults = ({
               key={tip}
             >
               <LightbulbIcon sx={{ color: '#FFC107', mt: 0.5, fontSize: 20 }} />
-              <Typography
-                variant="body2"
-                sx={{ color: 'text.secondary' }}
-              >
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 {tip}
               </Typography>
             </Stack>
@@ -383,6 +402,7 @@ const WorkerSearchResults = ({
             sx={{
               background: 'linear-gradient(135deg, #FFD700 0%, #FFC000 100%)',
               color: '#000',
+              minHeight: 44,
               '&:hover': {
                 background: 'linear-gradient(135deg, #FFC000 0%, #FFB300 100%)',
               },
@@ -393,7 +413,11 @@ const WorkerSearchResults = ({
           <Button
             variant="outlined"
             onClick={handleBrowseJobs}
-            sx={{ borderColor: 'divider', color: 'text.primary' }}
+            sx={{
+              borderColor: 'divider',
+              color: 'text.primary',
+              minHeight: 44,
+            }}
           >
             Browse open jobs
           </Button>
@@ -415,25 +439,41 @@ const WorkerSearchResults = ({
   const renderWorkerCards = () => (
     <>
       <Grid container spacing={3}>
-      {visibleWorkers.map((worker, index) => (
-        <Grid item xs={12} sm={6} md={4} key={worker.id || worker.userId || `worker-${index}`}>
-          <WorkerCard
-            worker={worker}
-            onSave={onSaveWorker ? () => onSaveWorker(worker) : undefined}
-            isPublicView={isPublicMode}
-          />
-        </Grid>
-      ))}
+        {visibleWorkers.map((worker, index) => (
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={4}
+            key={worker.id || worker.userId || `worker-${index}`}
+          >
+            <WorkerCard
+              worker={worker}
+              onSave={onSaveWorker ? () => onSaveWorker(worker) : undefined}
+              isPublicView={isPublicMode}
+            />
+          </Grid>
+        ))}
       </Grid>
 
       {hasHiddenWorkers && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-          <Button
-            variant="outlined"
-            onClick={() => setRenderedWorkerCount(workers.length)}
-          >
-            Show remaining {workers.length - visibleWorkers.length} workers
-          </Button>
+          <Box sx={{ textAlign: 'center' }}>
+            <Button
+              variant="outlined"
+              onClick={() => setRenderedWorkerCount(workers.length)}
+              sx={{ minHeight: 44, whiteSpace: 'normal' }}
+            >
+              Show remaining {workers.length - visibleWorkers.length} workers
+            </Button>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mt: 0.75, display: 'block' }}
+            >
+              This keeps the page fast on slower phones while you search.
+            </Typography>
+          </Box>
         </Box>
       )}
     </>
@@ -508,10 +548,11 @@ const WorkerSearchResults = ({
               startIcon={<FilterListIcon />}
               size="small"
               onClick={onOpenFilters}
+              aria-label="Open worker filter panel"
               sx={{
                 textTransform: 'none',
                 whiteSpace: 'nowrap',
-                minHeight: { xs: 40, sm: 32 },
+                minHeight: { xs: 44, sm: 40 },
               }}
             >
               {filterButtonLabel}
@@ -535,6 +576,7 @@ const WorkerSearchResults = ({
               onChange={handleSortChange}
               label="Sort by"
               disabled={loading}
+              inputProps={{ 'aria-label': 'Sort worker search results' }}
             >
               <MenuItem value="relevance">Relevance</MenuItem>
               <MenuItem value="rating">Highest Rated</MenuItem>
@@ -551,28 +593,45 @@ const WorkerSearchResults = ({
               onClick={onToggleView}
               disabled={loading}
               size="small"
-              aria-label={showMap ? 'Switch to list view' : 'Switch to map view'}
+              aria-label={
+                showMap ? 'Switch to list view' : 'Switch to map view'
+              }
               sx={{
                 display: 'flex',
                 minWidth: { xs: 44, sm: 'auto' },
-                minHeight: { xs: 40, sm: 32 },
+                minHeight: { xs: 44, sm: 40 },
                 px: { xs: 1.25, sm: 1.5 },
                 whiteSpace: 'nowrap',
               }}
             >
-              {isMobile ? (showMap ? 'List' : 'Map') : showMap ? 'List view' : 'Map view'}
+              {isMobile
+                ? showMap
+                  ? 'List'
+                  : 'Map'
+                : showMap
+                  ? 'List view'
+                  : 'Map view'}
             </Button>
           )}
         </Box>
       </Box>
 
       <Stack spacing={0.5} sx={{ pt: 0.5 }}>
-        <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-word' }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ wordBreak: 'break-word' }}
+        >
           {sortHelpText}
         </Typography>
         {hasLocationFilter && (
-          <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-word' }}>
-            Location is currently narrowed. Broaden your location or increase distance to discover more workers.
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ wordBreak: 'break-word' }}
+          >
+            Location is currently narrowed. Broaden your location or increase
+            distance to discover more workers.
           </Typography>
         )}
       </Stack>
@@ -617,13 +676,13 @@ const WorkerSearchResults = ({
           size="small"
           startIcon={<KeyboardArrowUpIcon />}
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          aria-label="Scroll back to top"
           sx={{
             position: 'fixed',
             right: { xs: 12, sm: 16 },
             bottom: { xs: 76, sm: 24 },
             zIndex: 1200,
             textTransform: 'none',
+            minHeight: 44,
           }}
         >
           Top

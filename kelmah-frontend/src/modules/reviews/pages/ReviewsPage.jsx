@@ -815,8 +815,7 @@ const EnhancedReviewsPage = () => {
                     color: 'success.main',
                     backgroundColor: alpha(theme.palette.success.main, 0.1),
                   },
-                }}
-              >
+                }}>
                 {review.helpfulVotes}
               </Button>
               <Button
@@ -829,8 +828,7 @@ const EnhancedReviewsPage = () => {
                     color: 'error.main',
                     backgroundColor: alpha(theme.palette.error.main, 0.1),
                   },
-                }}
-              >
+                }}>
                 {review.unhelpfulVotes}
               </Button>
             </Stack>
@@ -923,7 +921,7 @@ const EnhancedReviewsPage = () => {
                 fontSize: { xs: '0.9rem', sm: '1rem' },
               }}
             >
-              Manage and respond to client reviews
+              Read client feedback and post clear, respectful replies.
             </Typography>
           </Box>
 
@@ -1012,7 +1010,7 @@ const EnhancedReviewsPage = () => {
               sx={{ mb: 2 }}
             >
               <TextField
-                placeholder="Search reviews..."
+                placeholder="Search by client name, job title, or review words"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 size="small"
@@ -1126,7 +1124,7 @@ const EnhancedReviewsPage = () => {
                 variant="body2"
                 sx={{ color: 'text.disabled', mb: 2 }}
               >
-                Try adjusting your search or filters
+                Try changing your search words or filters.
               </Typography>
               <Button
                 variant="outlined"
@@ -1137,7 +1135,7 @@ const EnhancedReviewsPage = () => {
                 }}
                 sx={{ color: 'text.secondary', borderColor: 'divider', minHeight: 44, '&:hover': { borderColor: 'text.disabled' } }}
               >
-                Clear Filters
+                Clear search and filters
               </Button>
             </Paper>
           ) : (
@@ -1335,7 +1333,7 @@ const EnhancedReviewsPage = () => {
             fullWidth
             multiline
             rows={4}
-            placeholder="Write your reply..."
+            placeholder="Write a short, polite reply"
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
             sx={{
@@ -1388,7 +1386,7 @@ const EnhancedReviewsPage = () => {
               },
             }}
           >
-            Post Reply
+            Post reply
           </Button>
         </DialogActions>
       </Dialog>
@@ -1413,4 +1411,5 @@ const EnhancedReviewsPage = () => {
 };
 
 export default EnhancedReviewsPage;
+
 

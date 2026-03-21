@@ -160,7 +160,7 @@ function JobFilters({ open, onClose, filters, onApply }) {
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           Filter Jobs
-          <IconButton onClick={onClose} size="small">
+          <IconButton onClick={onClose} size="small" aria-label="Close filters">
             <Close />
           </IconButton>
         </Box>

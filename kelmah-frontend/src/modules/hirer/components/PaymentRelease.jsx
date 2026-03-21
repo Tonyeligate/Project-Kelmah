@@ -485,8 +485,8 @@ const PaymentRelease = () => {
                         Due: {formatDate(payment.dueDate)}
                       </Typography>
                       <Box display="flex" gap={1}>
-                        <IconButton size="small" onClick={() => handleDialogOpen('view', payment)} aria-label="View details">
-                          <ViewIcon />
+                        <IconButton size="small" onClick={() => handleDialogOpen('view', payment)} aria-label="View payment details">
+                            <ViewIcon />
                         </IconButton>
                         {payment.status === 'ready_for_release' && (
                           <Button size="small" variant="contained" color="primary" startIcon={<MoneyIcon />} onClick={() => handleDialogOpen('release', payment)}>
@@ -565,6 +565,7 @@ const PaymentRelease = () => {
                             <IconButton
                               size="small"
                               onClick={() => handleDialogOpen('view', payment)}
+                              aria-label={`View payment details for ${payment.workerName || 'worker'}`}
                             >
                               <ViewIcon />
                             </IconButton>
@@ -744,8 +745,7 @@ const PaymentRelease = () => {
                         paymentMethod === method ? 'contained' : 'outlined'
                       }
                       onClick={() => setPaymentMethod(method)}
-                      sx={{ textTransform: 'capitalize' }}
-                    >
+                      sx={{ textTransform: 'capitalize' }}>
                       {method.replace('_', ' ')}
                     </Button>
                   ))}
@@ -771,8 +771,7 @@ const PaymentRelease = () => {
             onClick={handlePaymentRelease}
             variant="contained"
             disabled={loading}
-            startIcon={loading ? <CircularProgress size={18} /> : <MoneyIcon />}
-          >
+            startIcon={loading ? <CircularProgress size={18} /> : <MoneyIcon />}>
             {loading ? 'Processing...' : 'Release Payment'}
           </Button>
         </DialogActions>
@@ -867,3 +866,4 @@ const PaymentRelease = () => {
 };
 
 export default PaymentRelease;
+

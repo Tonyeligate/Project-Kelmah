@@ -612,3 +612,18 @@ Task closes only if:
   - validation evidence logged
 Else: INCOMPLETE
 ```
+
+### DFL-5: Data Drift Sentinel Pack v5
+```
+Mandatory artifact outputs:
+  - schema_drift_report.json
+  - enum_consistency_report.json
+  - query_energy_budget.json
+  - migration_safety_report.json
+
+Advanced tools to activate:
+  - SchemaDriftSentinel
+  - EnumConsistencyOracle
+  - QueryEnergyBudgetAnalyzer
+  - MigrationRollbackVerifier
+```

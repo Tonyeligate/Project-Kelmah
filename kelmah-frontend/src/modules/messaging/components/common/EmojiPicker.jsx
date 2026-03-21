@@ -324,7 +324,7 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
         onClick={handleToggle}
         size="small"
         color="primary"
-        aria-label="emoji picker"
+        aria-label="Open emoji picker"
       >
         <EmojiEmotionsIcon />
       </IconButton>
@@ -362,7 +362,7 @@ const EmojiPicker = ({ onEmojiSelect, onClose }) => {
                   ),
                   endAdornment: searchQuery && (
                     <InputAdornment position="end">
-                      <IconButton size="small" onClick={clearSearch} edge="end">
+                      <IconButton size="small" onClick={clearSearch} edge="end" aria-label="Clear emoji search">
                         <ClearIcon fontSize="small" />
                       </IconButton>
                     </InputAdornment>

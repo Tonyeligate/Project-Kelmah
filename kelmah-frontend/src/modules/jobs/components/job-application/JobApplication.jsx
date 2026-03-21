@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
@@ -518,8 +518,8 @@ function JobApplication() {
                           <strong>Budget:</strong>{' '}
                           {job?.budget
                             ? typeof job.budget === 'object'
-                              ? `${job?.currency || 'GH₵'} ${job.budget?.min || 0} - ${job.budget?.max || 0}`
-                              : `${job?.currency || 'GH₵'} ${job.budget}`
+                              ? `${job?.currency || 'GH?'} ${job.budget?.min || 0} - ${job.budget?.max || 0}`
+                              : `${job?.currency || 'GH?'} ${job.budget}`
                             : 'Not specified'}{' '}
                           {job?.currency}
                         </Typography>
@@ -665,6 +665,7 @@ function JobApplication() {
                         type="file"
                         multiple
                         hidden
+                        aria-label="Upload application attachments"
                         onChange={handleFileUpload}
                       />
                     </Button>
@@ -678,6 +679,7 @@ function JobApplication() {
                               <IconButton
                                 edge="end"
                                 onClick={() => handleRemoveAttachment(index)}
+                                aria-label={`Remove attachment ${file.name}`}
                               >
                                 <DeleteIcon />
                               </IconButton>
@@ -833,6 +835,7 @@ function JobApplication() {
                             <IconButton
                               size="small"
                               onClick={() => handleRemoveMilestone(index)}
+                              aria-label={`Remove milestone ${index + 1}`}
                               sx={{ ml: 1 }}
                             >
                               <DeleteIcon fontSize="small" />
@@ -1046,3 +1049,4 @@ function JobApplication() {
 }
 
 export default JobApplication;
+
