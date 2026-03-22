@@ -194,13 +194,13 @@ const MobileBottomNav = () => {
           path: '/hirer/dashboard',
         },
         {
-          label: 'Post Job',
+          label: isMobile ? 'Post' : 'Post Job',
           value: 'postJob',
           icon: <PostJobIcon />,
           path: '/hirer/jobs/post',
         },
         {
-          label: 'Find Talent',
+          label: isMobile ? 'Talent' : 'Find Talent',
           value: 'findTalent',
           icon: <SearchIcon />,
           path: '/hirer/find-talents',
@@ -212,7 +212,7 @@ const MobileBottomNav = () => {
           path: '/hirer/applications',
         },
         {
-          label: 'Messages',
+          label: isMobile ? 'Inbox' : 'Messages',
           value: 'messages',
           icon: <MessagesIcon />,
           path: '/messages',
@@ -229,7 +229,7 @@ const MobileBottomNav = () => {
         path: '/worker/dashboard',
       },
       {
-        label: 'Find Work',
+        label: isMobile ? 'Find' : 'Find Work',
         value: 'findWork',
         icon: <JobsIcon />,
         path: '/worker/find-work',
@@ -241,7 +241,7 @@ const MobileBottomNav = () => {
         path: '/worker/applications',
       },
       {
-        label: 'Messages',
+        label: isMobile ? 'Inbox' : 'Messages',
         value: 'messages',
         icon: <MessagesIcon />,
         path: '/messages',

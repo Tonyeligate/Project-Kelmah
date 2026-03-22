@@ -44,7 +44,15 @@ export const normalizeApplicationsPage = (value) => {
   return Number.isInteger(parsedValue) && parsedValue > 0 ? parsedValue : 1;
 };
 
-export const isBiddingJob = (job) => Boolean(job?.bidding?.bidStatus);
+export const isBiddingJob = (job) => {
+  if (job?.biddingEnabled === true || job?.biddingEnabled === 'true') {
+    return true;
+  }
+
+  // Legacy fallback for records created before biddingEnabled was persisted.
+  const currentBidders = Number(job?.bidding?.currentBidders ?? 0);
+  return Number.isFinite(currentBidders) && currentBidders > 0;
+};
 
 export const normalizeApplication = (raw, jobIdFallback, jobTitleFallback) => {
   const worker = raw?.worker || {};

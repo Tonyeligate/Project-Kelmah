@@ -412,7 +412,7 @@ async function handleStaticAssetRequest(request) {
 
 function isChunkAsset(url) {
   const parsed = new URL(url, self.location.origin);
-  return /\/assets\/.test(parsed.pathname) && /\.(js|css)$/.test(parsed.pathname);
+  return /\/assets\//.test(parsed.pathname) && /\.(js|css)$/.test(parsed.pathname);
 }
 
 function buildChunkRecoveryScriptResponse() {

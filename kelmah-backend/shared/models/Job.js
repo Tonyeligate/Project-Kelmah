@@ -128,6 +128,11 @@ const JobSchema = new mongoose.Schema(
       type: Date,
     },
 
+    biddingEnabled: {
+      type: Boolean,
+      default: false,
+    },
+
     // Enhanced fields for bidding system
     bidding: {
       maxBidders: {

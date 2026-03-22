@@ -322,8 +322,8 @@ const SmartNavigation = () => {
           <Box
             sx={{
               position: 'fixed',
-              top: '80px',
-              right: '20px',
+              top: { xs: '72px', lg: '80px' },
+              right: { xs: '12px', md: '20px' },
               zIndex: 1000,
             }}
           >
@@ -365,9 +365,10 @@ const SmartNavigation = () => {
         elevation={8}
         sx={{
           position: 'fixed',
-          top: '80px',
-          right: '20px',
-          width: '280px',
+          top: { xs: '72px', lg: '80px' },
+          right: { xs: '12px', md: '20px' },
+          width: 'clamp(240px, 28vw, 320px)',
+          maxWidth: 'calc(100vw - 24px)',
           p: 2,
           bgcolor: 'rgba(26, 26, 26, 0.95)',
           backdropFilter: 'blur(10px)',

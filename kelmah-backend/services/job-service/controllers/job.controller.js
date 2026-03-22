@@ -356,6 +356,16 @@ const extractCoordinates = (entity) => {
   return null;
 };
 
+const isBiddingModeJob = (job = {}) => {
+  if (job?.biddingEnabled === true) {
+    return true;
+  }
+
+  // Legacy fallback: past bidding jobs may not have biddingEnabled persisted.
+  const currentBidders = Number(job?.bidding?.currentBidders ?? 0);
+  return Number.isFinite(currentBidders) && currentBidders > 0;
+};
+
 /**
  * Create a new job
  * @route POST /api/jobs
@@ -499,6 +509,10 @@ const createJob = async (req, res, next) => {
       };
     }
 
+    const requestedBiddingMode = typeof body.biddingEnabled === 'boolean'
+      ? body.biddingEnabled
+      : Boolean(body.bidding);
+
     if (!body.bidding) {
       const base = Number(body.budget) || 0;
       const min = base > 0 ? Math.max(1, Math.floor(base * 0.8)) : 100;
@@ -528,6 +542,8 @@ const createJob = async (req, res, next) => {
       if (body.bidding.currentBidders == null) body.bidding.currentBidders = 0;
       if (!body.bidding.bidStatus) body.bidding.bidStatus = 'open';
     }
+
+    body.biddingEnabled = requestedBiddingMode;
 
     if (!body.locationDetails) {
       const region = body.region || body.location?.region || body.locationRegion || 'Greater Accra';
@@ -3664,12 +3680,12 @@ const getHirerApplicationsSummary = async (req, res, next) => {
     });
 
     const jobs = await Job.find({ hirer: hirerId })
-      .select('title status budget budgetRange paymentType bidding createdAt')
+      .select('title status budget budgetRange paymentType bidding biddingEnabled createdAt')
       .sort({ createdAt: -1 })
       .lean()
       .maxTimeMS(8000);
 
-    const standardJobs = jobs.filter((job) => !job?.bidding?.bidStatus);
+    const standardJobs = jobs.filter((job) => !isBiddingModeJob(job));
     if (standardJobs.length === 0) {
       return successResponse(res, 200, 'Hirer applications summary retrieved', {
         jobs: [],

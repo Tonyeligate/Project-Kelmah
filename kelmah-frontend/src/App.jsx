@@ -245,7 +245,7 @@ const App = () => {
       <KelmahThemeProvider>
         <Box
           sx={{
-            minHeight: '100vh',
+            minHeight: '100dvh',
             bgcolor: 'background.default',
             px: { xs: 2, sm: 3 },
             py: { xs: 3, sm: 4 },

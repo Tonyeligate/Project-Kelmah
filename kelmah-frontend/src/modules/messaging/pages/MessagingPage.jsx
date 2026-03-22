@@ -1808,6 +1808,8 @@ const EnhancedMessagingPage = () => {
                 onClick={() => fileInputRef.current?.click()}
                 aria-label={`Attach files${selectedFiles.length > 0 ? `, ${selectedFiles.length} selected` : ''}`}
                 sx={{
+                  minWidth: 44,
+                  minHeight: 44,
                   color: 'text.secondary',
                   '&:hover': {
                     color: 'primary.main',
@@ -1869,6 +1871,8 @@ const EnhancedMessagingPage = () => {
                     : 'Send message unavailable until you type text or add an attachment'
                 }
                 sx={{
+                  minWidth: 44,
+                  minHeight: 44,
                   background:
                     `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark || '#FFC000'} 100%)`,
                   color: theme.palette.primary.contrastText,

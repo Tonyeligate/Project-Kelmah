@@ -106,7 +106,7 @@ const BottomSheet = ({ open, onToggle, children, title, count, loading }) => {
             <Typography variant="subtitle1" fontWeight="bold">
               {title}
             </Typography>
-            {count > 0 && <Chip label={count} size="small" color="primary" />}
+            {count > 0 && <Chip label={`${count} results`} size="small" color="primary" />}
             {loading && <CircularProgress size={16} />}
           </Box>
         </Box>
@@ -124,7 +124,9 @@ const BottomSheet = ({ open, onToggle, children, title, count, loading }) => {
 // ────────────────────────────────────────────────────────────
 const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
   const theme = useTheme();
+  const isMobile = useBreakpointDown('md');
   const isJob = viewType === 'jobs';
+  const primaryActionLabel = isJob ? 'View Job' : 'View Profile';
 
   return (
     <motion.div
@@ -181,11 +183,11 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                 )}
                 {item.urgent && (
                   <Chip
-                    label="URGENT"
+                    label="Urgent"
                     size="small"
                     sx={{
-                      height: 18,
-                      fontSize: '0.6rem',
+                      height: 22,
+                      fontSize: '0.68rem',
                       bgcolor: 'error.main',
                       color: '#fff',
                       fontWeight: 'bold',
@@ -205,7 +207,7 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                     label={`GH₵ ${item.budget?.toLocaleString() ?? '—'}`}
                     size="small"
                     variant="outlined"
-                    sx={{ height: 24 }}
+                    sx={{ height: 26, fontWeight: 600 }}
                   />
                 ) : (
                   <>
@@ -227,8 +229,8 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                         label="Online"
                         size="small"
                         sx={{
-                          height: 18,
-                          fontSize: '0.6rem',
+                          height: 22,
+                          fontSize: '0.68rem',
                           bgcolor: 'success.light',
                           color: 'success.main',
                           fontWeight: 'bold',
@@ -240,7 +242,8 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
               </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, ml: 'auto' }}>
+            {!isMobile && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, ml: 'auto' }}>
               <Tooltip title="Get Directions">
                 <IconButton
                   size="small"
@@ -277,8 +280,50 @@ const ResultCard = ({ item, viewType, onSelect, onNavigate, onMessage }) => {
                   <ChatIcon sx={{ fontSize: 16 }} />
                 </IconButton>
               </Tooltip>
-            </Box>
+              </Box>
+            )}
           </Box>
+
+          {isMobile && (
+            <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
+              <Button
+                size="small"
+                variant="contained"
+                fullWidth
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect(item);
+                }}
+                sx={{ textTransform: 'none', minHeight: 36 }}
+              >
+                {primaryActionLabel}
+              </Button>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<NavigationIcon sx={{ fontSize: 16 }} />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onNavigate(item);
+                }}
+                sx={{ textTransform: 'none', minHeight: 36 }}
+              >
+                Route
+              </Button>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<ChatIcon sx={{ fontSize: 16 }} />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMessage(item);
+                }}
+                sx={{ textTransform: 'none', minHeight: 36 }}
+              >
+                Message
+              </Button>
+            </Stack>
+          )}
         </CardContent>
       </Card>
     </motion.div>
@@ -563,7 +608,7 @@ const ProfessionalMapPage = () => {
           size="small"
           color="primary"
           variant="outlined"
-          sx={{ display: { xs: 'none', sm: 'flex' } }}
+          sx={{ display: 'flex' }}
         />
       </Box>
 

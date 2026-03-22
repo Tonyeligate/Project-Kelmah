@@ -507,6 +507,8 @@ function ApplicationManagementPage() {
     ? (selectedJob?.applicationCounts?.total || 0)
     : (summary?.totalApplications || 0);
 
+  const hasNoStandardJobs = !initialLoading && allJobs.length === 0;
+
   const triageSummary = useMemo(() => {
     const withRate = filteredApps.filter((app) => Number.isFinite(Number(app?.proposedRate)));
     const avgRate = withRate.length
@@ -700,7 +702,7 @@ function ApplicationManagementPage() {
         )}
       </Box>
 
-      {!isMobile && (
+      {!isMobile && !hasNoStandardJobs && (
         <Paper
           variant="outlined"
           sx={{
@@ -717,7 +719,7 @@ function ApplicationManagementPage() {
           }}
         >
           <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
-            Triage Snapshot
+            Applications Snapshot
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
             <Chip size="small" variant="outlined" label={`${selectedScopeTotal} in scope`} />
@@ -733,186 +735,185 @@ function ApplicationManagementPage() {
         </Paper>
       )}
 
-      {/* ── 3-column layout ───────────────────────────────────── */}
-      <Paper
-        elevation={0}
-        sx={{
-          border: `1px solid ${theme.palette.divider}`,
-          borderRadius: 2,
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          height: isMobile ? 'auto' : 'calc(100dvh - 220px)',
-          minHeight: isMobile ? 'auto' : 500,
-          overflow: 'hidden',
-        }}
-      >
-        {allJobs.length === 0 && biddingJobsCount > 0 && (
-          <Alert severity="info" sx={{ m: 2, mb: 0 }}>
-            This view only shows standard applications. Use Review Bids from job management for bidding jobs.
-          </Alert>
-        )}
-
-        <JobSidebar
-          isMobile={isMobile}
-          showJobList={showJobList}
-          isTablet={isTablet}
-          allJobs={allJobs}
-          selectedJobId={selectedJobId}
-          totalApplications={summary?.totalApplications || 0}
-          totalAppCounts={totalAppCounts}
-          onSelectJob={handleSelectJob}
+      {hasNoStandardJobs ? (
+        <NoStandardJobsPanel
+          hasBiddingJobs={biddingJobsCount > 0}
+          onGoToJobs={() => navigate('/hirer/jobs')}
+          onPostJob={() => navigate('/hirer/jobs/post')}
+          onFindTalent={() => navigate('/hirer/find-talents')}
         />
-
-        {/* ── Col 2: Applications list ────────────────────────── */}
-        <Box
+      ) : (
+        <Paper
+          elevation={0}
           sx={{
-            width: isMobile ? '100%' : isTablet ? 300 : 360,
-            minWidth: isMobile ? 'auto' : isTablet ? 300 : 360,
-            borderRight: isMobile
-              ? 'none'
-              : `1px solid ${theme.palette.divider}`,
+            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: 2,
             display: 'flex',
-            flexDirection: 'column',
+            flexDirection: isMobile ? 'column' : 'row',
+            minHeight: isMobile ? 'auto' : 560,
           }}
         >
-          {/* Status tabs */}
-          <Tabs
-            value={activeTab}
-            onChange={(e, v) => {
-              setCurrentPage(1);
-              setActiveTab(v);
-              setSelectedApplication(null);
-            }}
-            sx={{
-              borderBottom: `1px solid ${theme.palette.divider}`,
-              minHeight: 44,
-              '& .MuiTab-root': {
-                minWidth: 80,
-                minHeight: 44,
-                px: 1.5,
-                fontSize: '0.8rem',
-              },
-            }}
-            variant="fullWidth"
-          >
-            <Tab
-              label={
-                tabCounts.pending
-                  ? `Pending (${tabCounts.pending})`
-                  : 'Pending'
-              }
-              value="pending"
-            />
-            <Tab
-              label={
-                tabCounts.accepted
-                  ? `Accepted (${tabCounts.accepted})`
-                  : 'Accepted'
-              }
-              value="accepted"
-            />
-            <Tab
-              label={
-                tabCounts.rejected
-                  ? `Rejected (${tabCounts.rejected})`
-                  : 'Rejected'
-              }
-              value="rejected"
-            />
-          </Tabs>
-
-          <ApplicationsListContent
-            initialLoading={initialLoading}
-            error={error}
-            applicationsLoading={applicationsLoading}
+          <JobSidebar
+            isMobile={isMobile}
+            showJobList={showJobList}
+            isTablet={isTablet}
+            allJobs={allJobs}
             selectedJobId={selectedJobId}
-            filteredApps={filteredApps}
-            activeTab={activeTab}
-            selectedJob={selectedJob}
-            summary={summary}
-            navigate={navigate}
-            selectedApplicationId={selectedApplication?.id}
-            activeTabCountsByJob={activeTabCountsByJob}
-            onClearError={() => setError(null)}
-            onSelectApplication={setSelectedApplication}
+            totalApplications={summary?.totalApplications || 0}
+            totalAppCounts={totalAppCounts}
             onSelectJob={handleSelectJob}
           />
 
-          <ApplicationsListFooter
-            selectedScopeTotal={selectedScopeTotal}
-            visibleRange={visibleRange}
-            pagination={pagination}
-            selectedJobId={selectedJobId}
-            sortBy={sortBy}
-            pageSize={pageSize}
-            currentPage={currentPage}
-            isMobile={isMobile}
-            onSortChange={handleSortChange}
-            onPageSizeChange={handlePageSizeChange}
-            onPageChange={handlePageChange}
-          />
-        </Box>
-
-        {/* ── Col 3: Application detail ───────────────────────── */}
-        <Box
-          sx={{
-            flex: 1,
-            overflowY: 'auto',
-            p: { xs: 2, md: 3 },
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          {selectedApplication ? (
-            <ApplicationDetailPanel
-              app={selectedApplication}
-              onAccept={() => handleOpenReviewDialog('accepted')}
-              onReject={() => handleOpenReviewDialog('rejected')}
-              onMessage={handleMessage}
-              onViewJob={() =>
-                navigate(`/jobs/${selectedApplication.jobId}`)
-              }
-              navigate={navigate}
-            />
-          ) : (
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%',
-                minHeight: 300,
-                textAlign: 'center',
-                p: 4,
+          {/* ── Col 2: Applications list ────────────────────────── */}
+          <Box
+            sx={{
+              width: isMobile ? '100%' : isTablet ? 300 : 360,
+              minWidth: isMobile ? 'auto' : isTablet ? 300 : 360,
+              borderRight: isMobile
+                ? 'none'
+                : `1px solid ${theme.palette.divider}`,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            {/* Status tabs */}
+            <Tabs
+              value={activeTab}
+              onChange={(e, v) => {
+                setCurrentPage(1);
+                setActiveTab(v);
+                setSelectedApplication(null);
               }}
+              sx={{
+                borderBottom: `1px solid ${theme.palette.divider}`,
+                minHeight: 44,
+                '& .MuiTab-root': {
+                  minWidth: 80,
+                  minHeight: 44,
+                  px: 1.5,
+                  fontSize: '0.8rem',
+                },
+              }}
+              variant="fullWidth"
             >
+              <Tab
+                label={
+                  tabCounts.pending
+                    ? `Pending (${tabCounts.pending})`
+                    : 'Pending'
+                }
+                value="pending"
+              />
+              <Tab
+                label={
+                  tabCounts.accepted
+                    ? `Accepted (${tabCounts.accepted})`
+                    : 'Accepted'
+                }
+                value="accepted"
+              />
+              <Tab
+                label={
+                  tabCounts.rejected
+                    ? `Rejected (${tabCounts.rejected})`
+                    : 'Rejected'
+                }
+                value="rejected"
+              />
+            </Tabs>
+
+            <ApplicationsListContent
+              initialLoading={initialLoading}
+              error={error}
+              applicationsLoading={applicationsLoading}
+              selectedJobId={selectedJobId}
+              filteredApps={filteredApps}
+              activeTab={activeTab}
+              selectedJob={selectedJob}
+              summary={summary}
+              navigate={navigate}
+              selectedApplicationId={selectedApplication?.id}
+              activeTabCountsByJob={activeTabCountsByJob}
+              onClearError={() => setError(null)}
+              onSelectApplication={setSelectedApplication}
+              onSelectJob={handleSelectJob}
+            />
+
+            <ApplicationsListFooter
+              selectedScopeTotal={selectedScopeTotal}
+              visibleRange={visibleRange}
+              pagination={pagination}
+              selectedJobId={selectedJobId}
+              sortBy={sortBy}
+              pageSize={pageSize}
+              currentPage={currentPage}
+              isMobile={isMobile}
+              onSortChange={handleSortChange}
+              onPageSizeChange={handlePageSizeChange}
+              onPageChange={handlePageChange}
+            />
+          </Box>
+
+          {/* ── Col 3: Application detail ───────────────────────── */}
+          <Box
+            sx={{
+              flex: 1,
+              p: { xs: 2, md: 3 },
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            {selectedApplication ? (
+              <ApplicationDetailPanel
+                app={selectedApplication}
+                onAccept={() => handleOpenReviewDialog('accepted')}
+                onReject={() => handleOpenReviewDialog('rejected')}
+                onMessage={handleMessage}
+                onViewJob={() =>
+                  navigate(`/jobs/${selectedApplication.jobId}`)
+                }
+                navigate={navigate}
+              />
+            ) : (
               <Box
                 sx={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: '50%',
-                  bgcolor: 'action.hover',
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  mb: 2,
+                  height: '100%',
+                  minHeight: 300,
+                  textAlign: 'center',
+                  p: 4,
                 }}
               >
-                <BadgeIcon sx={{ fontSize: 36, color: 'text.disabled' }} />
+                <Box
+                  sx={{
+                    width: 72,
+                    height: 72,
+                    borderRadius: '50%',
+                    bgcolor: 'action.hover',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mb: 2,
+                  }}
+                >
+                  <BadgeIcon sx={{ fontSize: 36, color: 'text.disabled' }} />
+                </Box>
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  Select an application to review
+                </Typography>
+                <Typography variant="body2" color="text.disabled">
+                  {selectedJobId
+                    ? 'Choose an application from the middle list to view details and actions.'
+                    : 'Pick a job first, then open an application to continue.'}
+                </Typography>
               </Box>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                No application selected
-              </Typography>
-              <Typography variant="body2" color="text.disabled">
-                {selectedJobId
-                  ? 'Choose an application from the list to review details.'
-                  : 'Select a job from the sidebar, then choose an application.'}
-              </Typography>
-            </Box>
-          )}
-        </Box>
-      </Paper>
+            )}
+          </Box>
+        </Paper>
+      )}
 
       <ApplicationReviewDialog
         open={showReviewDialog}
@@ -1065,7 +1066,7 @@ function JobSidebar({
           Your Jobs ({allJobs.length})
         </Typography>
       </Box>
-      <Box sx={{ flex: 1, overflowY: 'auto', p: 1 }}>
+      <Box sx={{ flex: 1, p: 1 }}>
         {/* "All Jobs" option */}
         <ListItemButton
           selected={!selectedJobId}
@@ -1135,7 +1136,7 @@ function ApplicationsListContent({
   const theme = useTheme();
 
   return (
-    <Box sx={{ flex: 1, overflowY: 'auto', p: 1.5 }}>
+    <Box sx={{ flex: 1, p: 1.5 }}>
       {initialLoading &&
         Array.from({ length: 4 }).map((_, i) => (
           <Skeleton
@@ -1559,6 +1560,55 @@ function ApplicationDetailPanel({
         </Button>
       </Box>
     </>
+  );
+}
+
+function NoStandardJobsPanel({ hasBiddingJobs, onGoToJobs, onPostJob, onFindTalent }) {
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        border: (t) => `1px solid ${t.palette.divider}`,
+        borderRadius: 2,
+        p: { xs: 2.5, md: 4 },
+        textAlign: 'center',
+      }}
+    >
+      <Box
+        sx={{
+          width: 72,
+          height: 72,
+          borderRadius: '50%',
+          background: (t) => `linear-gradient(135deg, ${t.palette.primary.light}22, ${t.palette.primary.main}18)`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          mx: 'auto',
+          mb: 2,
+        }}
+      >
+        <InboxOutlined sx={{ fontSize: 36, color: 'primary.main' }} />
+      </Box>
+      <Typography variant="h6" fontWeight={700} gutterBottom>
+        {hasBiddingJobs ? 'No standard applications to review yet' : 'No applications yet'}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 520, mx: 'auto', mb: 3 }}>
+        {hasBiddingJobs
+          ? 'You currently have bid-based jobs. Review those from job management, or post a standard job to receive direct applications in this view.'
+          : 'Workers will appear here after they apply to your posted jobs. Start by posting a clear job or inviting talent.'}
+      </Typography>
+      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <Button variant="contained" onClick={onGoToJobs} sx={{ minHeight: 44 }}>
+          Go to Job Management
+        </Button>
+        <Button variant="outlined" onClick={onPostJob} sx={{ minHeight: 44 }}>
+          Post a Job
+        </Button>
+        <Button variant="text" onClick={onFindTalent} sx={{ minHeight: 44, textTransform: 'none' }}>
+          Browse Talent
+        </Button>
+      </Box>
+    </Paper>
   );
 }
 

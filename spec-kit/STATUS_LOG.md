@@ -1,3 +1,60 @@
+### Applications Visibility + UX Recovery March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Resolve blank hirer applications page caused by over-broad bidding classification and simplify zero-data UX on Application Management.
+
+**Files touched**
+- kelmah-backend/shared/models/Job.js
+- kelmah-backend/services/job-service/controllers/job.controller.js
+- kelmah-frontend/src/modules/hirer/utils/applicationManagementUtils.js
+- kelmah-frontend/src/modules/hirer/pages/ApplicationManagementPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Fixed applications visibility logic by separating bidding mode from bidding metadata defaults:
+  - added persisted `biddingEnabled` field on jobs (default `false`)
+  - set `biddingEnabled` during job creation from request intent (`biddingEnabled` or bidding payload presence)
+  - replaced applications summary filter from `!job.bidding.bidStatus` to `!isBiddingModeJob(job)`.
+- Added safe backward compatibility for existing records:
+  - legacy fallback marks bidding jobs when `bidding.currentBidders > 0`.
+- Updated frontend bidding classification parity:
+  - `isBiddingJob` now uses `biddingEnabled` first, then legacy `currentBidders > 0` fallback.
+- Improved Application Management zero-data UX:
+  - replaced dead-end tri-pane rendering with a guided single-state panel when no standard jobs are available
+  - added direct actions (`Go to Job Management`, `Post a Job`, `Browse Talent`)
+  - renamed `Triage Snapshot` copy to `Applications Snapshot`.
+- Reduced nested-scroll friction:
+  - removed fixed viewport-height shell and nested pane scroll locking in the application-management surface.
+
+**Validation outcomes**
+- PASS: `npx jest --runTestsByPath services/job-service/tests/hirer-applications-summary.contract.test.js --runInBand` (1 suite, 3 tests passed).
+- PASS: `npm run build` in `kelmah-frontend` (Vite production build succeeded; 13,969 modules transformed).
+
+### Frontend Delta Backlog Theme 13 Map Interaction Ergonomics March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Continue generated backlog execution with mobile map ergonomics improvements focused on chip readability and map-card action clarity.
+
+**Files touched**
+- kelmah-frontend/src/modules/map/pages/ProfessionalMapPage.jsx
+- spec-kit/STATUS_LOG.md
+
+**Implementation summary**
+- Improved mobile bottom-sheet context clarity:
+  - updated count chip from a raw number to explicit `N results` labeling.
+- Improved result-chip readability on map cards:
+  - increased urgency and online chip size/font for easier glance recognition
+  - strengthened budget chip readability with slightly larger height and weight.
+- Improved map-card action clarity on mobile:
+  - added explicit action row with labeled buttons (`View Job`/`View Profile`, `Route`, `Message`)
+  - retained desktop icon-action layout while keeping mobile actions text-labeled and discoverable.
+- Improved header feedback consistency:
+  - made the `N found` context chip visible on mobile as well as desktop.
+
+**Validation outcomes**
+- PASS: `npx jest --runInBand --testPathPattern="routed-paths\.smoke|critical-path-happy-flow|critical-path-gateway-contract"` (3 suites, 29 tests passed).
+- PASS: `npm run build` (Vite production build succeeded; 13,969 modules transformed).
+
 ### Frontend Delta Backlog Theme 12 Review Credibility Surfaces March 22 2026 ✅ COMPLETED
 
 **Date**: March 22, 2026  
@@ -728,6 +785,28 @@
 **Verification notes**
 - Confirmed exactly 1000 generated action items in the delta file.
 - Confirmed matrix file includes dimension model, formula, and execution blueprint.
+
+### Frontend Fix Batch March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Start implementation from the frontend audit backlog with immediate mobile/desktop UX and accessibility fixes.
+
+**Files touched**
+- `kelmah-frontend/src/App.jsx`
+- `kelmah-frontend/src/components/common/SmartNavigation.jsx`
+- `kelmah-frontend/src/modules/layout/components/MobileBottomNav.jsx`
+- `kelmah-frontend/src/modules/messaging/pages/MessagingPage.jsx`
+- `spec-kit/STATUS_LOG.md`
+
+**Implementation summary**
+- Replaced auth bootstrap shell viewport sizing with dynamic viewport units (`100dvh`) to reduce mobile browser chrome clipping.
+- Hardened smart quick-navigation panel placement and width using responsive positioning + `clamp(...)` sizing to reduce overlap risk on smaller desktop widths.
+- Reduced bottom-nav label density on mobile by shortening high-width labels while keeping desktop labels descriptive.
+- Enforced 44x44 touch targets for messaging compose actions (attach and send buttons).
+
+**Validation outcomes**
+- PASS: `npm run build` in `kelmah-frontend` after the first patch batch.
+- PASS: `npm run build` in `kelmah-frontend` after messaging touch-target updates.
 
 ### Generated Backlog Execution Wave 7 March 21 2026 ✅ COMPLETED
 
@@ -21766,3 +21845,11 @@ Full visual and structural redesign of `kelmah-frontend/src/modules/jobs/pages/J
 - Validation: PASS 
   - npm run build (vite build success)
   - npx jest --runTestsByPath src/tests/smoke/routed-paths.smoke.test.jsx --runInBand (17/17).
+
+### [MAR 22, 2026] SW REGISTRATION SYNTAX HOTFIX (COMPLETED)
+- Investigated production Service Worker registration failure with Invalid regular expression flags at sw.js line 415.
+- Root cause: malformed regex literal in chunk detection helper (/\/assets\/.test(...)) where the slash delimiter was not closed before .test, causing SW script evaluation to fail.
+- Fix applied in kelmah-frontend/public/sw.js:
+  - corrected regex to /\/assets\//.test(parsed.pathname) in isChunkAsset(url).
+- Validation: PASS
+  - npm run build (Vite production build succeeded; SW parses and bundles).
