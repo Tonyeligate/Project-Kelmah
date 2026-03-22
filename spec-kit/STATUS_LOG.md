@@ -1,3 +1,27 @@
+### Service Worker Navigation Stability Fix March 22 2026 ✅ COMPLETED
+
+**Date**: March 22, 2026  
+**Scope**: Fix service worker fetch warnings/rejections and reduce view glitching caused by navigation fallback instability and stale chunk drift.
+
+**Files touched**
+- kelmah-frontend/public/sw.js
+- spec-kit/STATUS_LOG.md
+
+**Root cause**
+- Some page navigations were entering the generic network-first path instead of document handling.
+- On network failure, service worker rejected fetch promises for non-API requests, causing browser FetchEvent errors.
+- Static-asset detection used full URL matching, which is brittle when querystrings are present.
+
+**Implementation summary**
+- Route all `request.mode === "navigate"` requests through document handler.
+- In network-first strategy, return safe fallback responses instead of throwing on non-API failures.
+- For navigation failures, return cached app shell/offline fallback instead of rejected promise.
+- Harden static asset detection using parsed URL pathname regex.
+- Bumped service worker cache name to force a clean cache rollover (`kelmah-v1.0.9-nav-stability`).
+
+**Verification outcomes**
+- PASS: `npm run build` in `kelmah-frontend` (Vite production build succeeded).
+
 ### Application Page View-Mode Flicker Fix March 22 2026 ✅ COMPLETED
 
 **Date**: March 22, 2026  

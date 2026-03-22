@@ -1,7 +1,7 @@
 // Kelmah Service Worker for Ghana Market
 // Optimized for poor network conditions and offline functionality
 
-const CACHE_NAME = 'kelmah-v1.0.8-chunk-recovery';
+const CACHE_NAME = 'kelmah-v1.0.9-nav-stability';
 const OFFLINE_URL = '/offline.html';
 const HEALTHY_GATEWAY_DB = 'kelmah-gateway-db';
 const HEALTHY_GATEWAY_STORE = 'healthyGatewayStore';
@@ -298,7 +298,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Handle different types of requests with appropriate strategies
-  if (request.destination === 'document') {
+  if (request.mode === 'navigate' || request.destination === 'document') {
     // HTML documents - Network first, fallback to cache, then offline page
     event.respondWith(handleDocumentRequest(request));
   } else if (isAPIRequest(request.url)) {
@@ -491,7 +491,24 @@ async function handleNetworkFirstRequest(request) {
       );
     }
 
-    throw error;
+    // For navigation requests, never reject the fetch event promise.
+    if (request.mode === 'navigate' || request.destination === 'document') {
+      const cachedIndex = await caches.match('/index.html');
+      if (cachedIndex) {
+        return cachedIndex;
+      }
+
+      const offlineResponse = await caches.match(OFFLINE_URL);
+      return offlineResponse || buildOfflineDocumentResponse();
+    }
+
+    return new Response('Network unavailable', {
+      status: 503,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'X-Service-Worker-Fallback': 'network-first-generic',
+      },
+    });
   }
 }
 
@@ -590,10 +607,12 @@ function isAPIRequest(url) {
 }
 
 function isStaticAsset(url) {
+  const parsed = new URL(url, self.location.origin);
+  const pathname = parsed.pathname || '';
   return (
-    url.includes('/static/') ||
-    url.includes('/assets/') ||
-    url.match(/\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|ico)$/)
+    pathname.includes('/static/') ||
+    pathname.includes('/assets/') ||
+    /\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|ico)$/i.test(pathname)
   );
 }
 
